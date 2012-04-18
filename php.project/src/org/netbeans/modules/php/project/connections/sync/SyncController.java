@@ -198,7 +198,8 @@ public final class SyncController implements Cancellable {
             public void run() {
                 SyncPanel panel = new SyncPanel(phpProject, remoteConfiguration.getDisplayName(), items.getItems(), remoteClient, isForProject(), lastTimeStamp == -1);
                 if (panel.open()) {
-                    doSynchronize(items, panel.getItems(), panel.getSyncInfo(), resultProcessor);
+                    List<SyncItem> itemsToSynchronize = panel.getItems();
+                    doSynchronize(items, itemsToSynchronize, panel.getSyncInfo(itemsToSynchronize), resultProcessor);
                 } else {
                     disconnect();
                     items.cleanup();

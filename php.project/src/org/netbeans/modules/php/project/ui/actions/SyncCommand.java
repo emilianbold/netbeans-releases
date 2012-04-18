@@ -65,7 +65,7 @@ public class SyncCommand extends RemoteCommand implements Displayable {
     static final Logger LOGGER = Logger.getLogger(SyncCommand.class.getName());
 
     public static final String ID = "synchronize"; // NOI18N
-    @NbBundle.Messages("SyncCommand.label=Synchronize")
+    @NbBundle.Messages("SyncCommand.label=Synchronize...")
     public static final String DISPLAY_NAME = Bundle.SyncCommand_label();
 
 

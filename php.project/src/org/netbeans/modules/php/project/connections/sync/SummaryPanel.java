@@ -46,6 +46,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.LayoutStyle.ComponentPlacement;
@@ -74,15 +75,22 @@ public class SummaryPanel extends JPanel {
         setNumber(noopNumberLabel, noopNumber);
     }
 
-    @NbBundle.Messages("SummaryPanel.title=Summary")
+    @NbBundle.Messages({
+        "SummaryPanel.title=Summary",
+        "SummaryPanel.button.titleWithMnemonics=S&ynchronize"
+    })
     public boolean open() {
         assert SwingUtilities.isEventDispatchThread();
+        JButton okButton = new JButton();
+        Mnemonics.setLocalizedText(okButton, Bundle.SummaryPanel_button_titleWithMnemonics());
         DialogDescriptor descriptor = new DialogDescriptor(
                 this,
                 Bundle.SummaryPanel_title(),
                 true,
-                NotifyDescriptor.OK_CANCEL_OPTION,
-                NotifyDescriptor.OK_OPTION,
+                new Object[] {okButton, DialogDescriptor.CANCEL_OPTION},
+                okButton,
+                DialogDescriptor.DEFAULT_ALIGN,
+                null,
                 null);
         final Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
         try {
@@ -90,7 +98,7 @@ public class SummaryPanel extends JPanel {
         } finally {
             dialog.dispose();
         }
-        return descriptor.getValue() == NotifyDescriptor.OK_OPTION;
+        return descriptor.getValue() == okButton;
     }
 
     public void decreaseUploadNumber() {

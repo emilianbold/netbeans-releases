@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,69 +34,56 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.php.project.ui;
 
-package org.netbeans.modules.cnd.navigation.hierarchy;
+import java.awt.Color;
+import java.awt.Font;
+import javax.swing.BorderFactory;
+import javax.swing.JTextPane;
+import javax.swing.UIManager;
 
-import org.netbeans.modules.cnd.navigation.hierarchy.HierarchyTopComponent.InclideContextFinder;
-import org.openide.cookies.EditorCookie;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.CookieAction;
+/**
+ * Inspired by HTMLArea from profiler.
+ */
+public class HintArea extends JTextPane {
 
-public final class ShowIncludeHierarchyAction extends CookieAction {
-    
+    private static final long serialVersionUID = 76873543674545L;
+
+
+    public HintArea() {
+        Color hintBackground = Utils.getHintBackground();
+        setOpaque(true);
+        setAutoscrolls(true);
+        setForeground(UIManager.getColor("Label.foreground")); // NOI18N
+        setFont(UIManager.getFont("Label.font")); // NOI18N
+        setBackground(hintBackground);
+        setBorder(BorderFactory.createMatteBorder(10, 10, 10, 10, hintBackground));
+        setContentType("text/html"); // NOI18N
+        setEditable(false);
+    }
+
     @Override
-    protected void performAction(Node[] activatedNodes) {
-        HierarchyTopComponent view = HierarchyTopComponent.findInstance();
-        if (!view.isOpened()) {
-            view.open();
+    public void setText(String value) {
+        if (value == null) {
+            return;
         }
-        view.setFile(new InclideContextFinder(activatedNodes), false);
-        view.requestActive();
+
+        Font font = getFont();
+        Color textColor = getForeground();
+        value = value.replaceAll("\\n\\r|\\r\\n|\\n|\\r", "<br>"); // NOI18N
+        value = value.replace("<code>", "<code style=\"font-size: " + font.getSize() + "pt;\">"); // NOI18N
+
+        String colorText = "rgb(" + textColor.getRed() + "," + textColor.getGreen() + "," + textColor.getBlue() + ")"; // NOI18N
+        String newText = "<html><body style=\"color: " + colorText + "; font-size: " + font.getSize()  // NOI18N
+                + "pt; font-family: " + font.getName() + ";\">" + value + "</body></html>"; // NOI18N
+
+        setDocument(getEditorKit().createDefaultDocument()); // Workaround for http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5042872
+        super.setText(newText);
     }
-    
-    @Override
-    protected boolean enable(Node[] activatedNodes) {
-        if (activatedNodes != null && activatedNodes.length > 0) {
-            return true;
-        }
-        return false;
-    }
-    
-    @Override
-    protected int mode() {
-        return CookieAction.MODE_EXACTLY_ONE;
-    }
-    
-    @Override
-    public String getName() {
-        return NbBundle.getMessage(getClass(), "CTL_ShowIncludeAction"); // NOI18N
-    }
-    
-    @Override
-    protected Class<?>[] cookieClasses() {
-        return new Class[] {
-            EditorCookie.class
-        };
-    }
-    
-    @Override
-    protected void initialize() {
-        super.initialize();
-        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
-    }
-    
-    @Override
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-    
-    @Override
-    protected boolean asynchronous() {
-        return false;
-    }
-    
+
 }
-

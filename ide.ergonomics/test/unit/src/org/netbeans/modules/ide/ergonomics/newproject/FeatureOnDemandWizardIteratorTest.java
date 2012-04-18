@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,69 +34,66 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.ide.ergonomics.newproject;
 
-package org.netbeans.modules.cnd.navigation.hierarchy;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.EventQueue;
+import static org.junit.Assert.*;
+import org.junit.Test;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.TemplateWizard;
 
-import org.netbeans.modules.cnd.navigation.hierarchy.HierarchyTopComponent.InclideContextFinder;
-import org.openide.cookies.EditorCookie;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.CookieAction;
-
-public final class ShowIncludeHierarchyAction extends CookieAction {
-    
-    @Override
-    protected void performAction(Node[] activatedNodes) {
-        HierarchyTopComponent view = HierarchyTopComponent.findInstance();
-        if (!view.isOpened()) {
-            view.open();
-        }
-        view.setFile(new InclideContextFinder(activatedNodes), false);
-        view.requestActive();
+public class FeatureOnDemandWizardIteratorTest {
+    public FeatureOnDemandWizardIteratorTest() {
     }
     
-    @Override
-    protected boolean enable(Node[] activatedNodes) {
-        if (activatedNodes != null && activatedNodes.length > 0) {
+    @Test
+    public void testIteratorCreatesUI() throws Exception {
+        assertFalse("No EDT", EventQueue.isDispatchThread());
+        
+        FileObject fo = FileUtil.getConfigRoot().createData("smpl.tmp");
+        final FeatureOnDemandWizardIterator it = new FeatureOnDemandWizardIterator(fo);
+        fo.setAttribute("instantiatingIterator", it);
+        
+        final TemplateWizard tw = new TemplateWizard();
+        tw.setTemplate(DataObject.find(fo));
+        
+        EventQueue.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                assertNotNull("Panel found", it.current());
+                assertComponent("Our component found", it.current().getComponent(), tw);
+            }
+        });
+    }
+    static void assertComponent(String msg, Component component, TemplateWizard tw) {
+        Object c = tw.getMessage();
+        assertTrue("Is component: " + c, c instanceof Component);
+        if (contains(component, ((Component)c))) {
+            return;
+        }
+        fail(msg);
+    }
+    private static boolean contains(Component seachFor, Component where) {
+        if (seachFor == where) {
             return true;
         }
+        if (where instanceof Container) {
+            Container c = (Container)where;
+            for (Component a : c.getComponents()) {
+                if (contains(seachFor, a)) {
+                    return true;
+                }
+            }
+        }
         return false;
     }
-    
-    @Override
-    protected int mode() {
-        return CookieAction.MODE_EXACTLY_ONE;
-    }
-    
-    @Override
-    public String getName() {
-        return NbBundle.getMessage(getClass(), "CTL_ShowIncludeAction"); // NOI18N
-    }
-    
-    @Override
-    protected Class<?>[] cookieClasses() {
-        return new Class[] {
-            EditorCookie.class
-        };
-    }
-    
-    @Override
-    protected void initialize() {
-        super.initialize();
-        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
-    }
-    
-    @Override
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-    
-    @Override
-    protected boolean asynchronous() {
-        return false;
-    }
-    
 }
-

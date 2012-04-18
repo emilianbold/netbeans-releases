@@ -356,7 +356,7 @@ class ModuleData {
         deps.addAll(Dependency.create(Dependency.TYPE_NEEDS, attr.getValue("OpenIDE-Module-Needs"))); // NOI18N
         deps.addAll(Dependency.create(Dependency.TYPE_RECOMMENDS, attr.getValue("OpenIDE-Module-Recommends"))); // NOI18N
         forModule.refineDependencies(deps);
-        return deps.toArray(new Dependency[0]);
+        return deps.toArray(new Dependency[deps.size()]);
     }
 
     final String getCodeName() {
@@ -423,7 +423,7 @@ class ModuleData {
     private String[] readStrings(ObjectInput dis) throws IOException {
         List<String> arr = new ArrayList<String>();
         readStrings(dis, arr, false);
-        return arr.toArray(new String[0]);
+        return arr.toArray(new String[arr.size()]);
     }
     private void writeStrings(DataOutput dos, Collection<String> set) 
     throws IOException {

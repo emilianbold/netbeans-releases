@@ -59,7 +59,7 @@ public class QtUiDataObject extends MultiDataObject {
         super(pf, loader);
         CookieSet cookies = getCookieSet();
         cookies.add(new ExternalProgramOpenCookie(
-                this, "designer", NbBundle.getMessage(QtTranslationDataObject.class, "MSG_OpenWithQtDesignerFailed"))); // NOI18N
+                this, new String[]{"designer","designer-qt4"}, NbBundle.getMessage(QtTranslationDataObject.class, "MSG_OpenWithQtDesignerFailed"))); // NOI18N
     }
 
     @Override
