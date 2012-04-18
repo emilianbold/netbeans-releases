@@ -1946,6 +1946,9 @@ public final class FileUtil extends Object {
         }
         return map;
     }
+    static void freeCaches() {
+        normalizedRef.clear();
+    }
 
     /**
      * Returns a FileObject representing the root folder of an archive.
