@@ -840,6 +840,14 @@ public class GotoDeclarationTest extends TestBase {
         checkDeclaration(getTestPath(), "parent::some^Func();", "static function ^someFunc() {");
     }
 
+    public void testIssue211230_01() throws Exception {
+        checkDeclaration(getTestPath(), " * @method F^oo|Bar method() This is my cool magic method description.", "class ^Foo {");
+    }
+
+    public void testIssue211230_02() throws Exception {
+        checkDeclaration(getTestPath(), " * @method Foo|B^ar method() This is my cool magic method description.", "class ^Bar {");
+    }
+
     //TODO: these tests need to be checked, filtered , rewritten , enabled
 //    public void testGotoTypeClsIface6() throws Exception {
 //        String gotoTest = prepareTestFile(

@@ -972,6 +972,26 @@ public class OccurrencesFinderImplTest extends TestBase {
         checkOccurrences(getTestPath(), "parent::some^Func();", true);
     }
 
+    public void testIssue211230_01() throws Exception {
+        checkOccurrences(getTestPath(), "class F^oo {", true);
+    }
+
+    public void testIssue211230_02() throws Exception {
+        checkOccurrences(getTestPath(), " * @method F^oo|Bar method() This is my cool magic method description.", true);
+    }
+
+    public void testIssue211230_03() throws Exception {
+        checkOccurrences(getTestPath(), " * @method Foo|B^ar method() This is my cool magic method description.", true);
+    }
+
+    public void testIssue211230_04() throws Exception {
+        checkOccurrences(getTestPath(), "class B^ar {", true);
+    }
+
+    public void testIssue211230_05() throws Exception {
+        checkOccurrences(getTestPath(), "$b = new B^ar();", true);
+    }
+
     @Override
     protected FileObject[] createSourceClassPathsForTest() {
         return new FileObject[]{FileUtil.toFileObject(new File(getDataDir(), getTestFolderPath()))};
