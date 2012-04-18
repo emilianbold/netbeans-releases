@@ -59,6 +59,7 @@ import org.netbeans.api.db.explorer.support.DatabaseExplorerUIs;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.form.DataImporter;
+import org.netbeans.modules.form.FormDataObject;
 import org.netbeans.modules.form.FormEditor;
 import org.netbeans.modules.form.FormJavaSource;
 import org.netbeans.modules.form.FormModel;
@@ -67,6 +68,7 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
+import org.netbeans.modules.j2ee.persistence.spi.PersistenceLocationProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -81,7 +83,7 @@ import org.openide.util.RequestProcessor;
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.form.DataImporter.class)
 public class JPADataImporter extends JPanel implements DataImporter {
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -171,6 +173,19 @@ private void connectionComboActionPerformed(java.awt.event.ActionEvent evt) {//G
         tableCombo.setModel(model);
         tableCombo.setEnabled(tableCombo.getModel().getSize() != 0);
         tableCombo.setSelectedItem(tableCombo.getSelectedItem());
+    }
+
+    @Override
+    public boolean canImportData(FormModel form) {
+        PersistenceLocationProvider provider = null;
+        FormDataObject fdo = FormEditor.getFormDataObject(form);
+        if (fdo != null) {
+            Project project = FileOwnerQuery.getOwner(fdo.getPrimaryFile());
+            if (project != null) {
+                provider = project.getLookup().lookup(PersistenceLocationProvider.class);
+            }
+        }
+        return (provider != null);
     }
 
     /**
