@@ -373,6 +373,10 @@ public final class RepositoryUtils {
         return translator.getUnitName(unitIndex);
     }
 
+    static CharSequence getUnitNameSafe(int unitIndex) {
+        return translator.getUnitNameSafe(unitIndex);
+    }
+
     static int getFileIdByName(int unitId, CharSequence fileName) {
         return translator.getFileIdByName(unitId, fileName);
     }
