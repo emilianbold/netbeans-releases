@@ -298,7 +298,7 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
                     List<Project> prjs = new ArrayList<Project>();
                     List<POMModel> mdls = new ArrayList<POMModel>();
                     POMQNames names = null;
-                    for (Model m : EmbedderFactory.createModelLineage(file, embedder)) {
+                    for (Model m : embedder.createModelLineage(file)) {
                         File pom = m.getPomFile();
                         if (pom == null) {
                             if (m.getArtifactId() == null) { // normal for superpom

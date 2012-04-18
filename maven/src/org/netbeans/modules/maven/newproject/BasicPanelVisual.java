@@ -711,12 +711,12 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
         });
         List<ArtifactRepository> repos;
         if (arch.getRepository() == null) {
-            repos = Collections.<ArtifactRepository>singletonList(EmbedderFactory.createRemoteRepository(online, RepositorySystem.DEFAULT_REMOTE_REPO_URL, RepositorySystem.DEFAULT_REMOTE_REPO_ID));
+            repos = Collections.<ArtifactRepository>singletonList(online.createRemoteRepository(RepositorySystem.DEFAULT_REMOTE_REPO_URL, RepositorySystem.DEFAULT_REMOTE_REPO_ID));
         } else {
-           repos = Collections.<ArtifactRepository>singletonList(EmbedderFactory.createRemoteRepository(online, arch.getRepository(), "custom-repo"));//NOI18N
+           repos = Collections.<ArtifactRepository>singletonList(online.createRemoteRepository(arch.getRepository(), "custom-repo"));//NOI18N
            for (RepositoryInfo info : RepositoryPreferences.getInstance().getRepositoryInfos()) {
                 if (arch.getRepository().equals(info.getRepositoryUrl())) {
-                    repos = Collections.<ArtifactRepository>singletonList(EmbedderFactory.createRemoteRepository(online, arch.getRepository(), info.getId()));//NOI18N
+                    repos = Collections.<ArtifactRepository>singletonList(online.createRemoteRepository(arch.getRepository(), info.getId()));//NOI18N
                     break;
                 }
             }

@@ -348,14 +348,10 @@ public final class EmbedderFactory {
      * @param url
      * @param id
      * @return 
+     * @deprecated use MavenEmbedder.createRemoteRepository
      */
     public static ArtifactRepository createRemoteRepository(MavenEmbedder embedder, String url, String id) {
-        embedder.setUpLegacySupport();
-        ArtifactRepositoryFactory fact = embedder.lookupComponent(ArtifactRepositoryFactory.class);
-        assert fact!=null : "ArtifactRepositoryFactory component not found in maven";
-        ArtifactRepositoryPolicy snapshotsPolicy = new ArtifactRepositoryPolicy(true, ArtifactRepositoryPolicy.UPDATE_POLICY_ALWAYS, ArtifactRepositoryPolicy.CHECKSUM_POLICY_WARN);
-        ArtifactRepositoryPolicy releasesPolicy = new ArtifactRepositoryPolicy(true, ArtifactRepositoryPolicy.UPDATE_POLICY_ALWAYS, ArtifactRepositoryPolicy.CHECKSUM_POLICY_WARN);
-        return fact.createArtifactRepository(id, url, new DefaultRepositoryLayout(), snapshotsPolicy, releasesPolicy);
+        return embedder.createRemoteRepository(url, id);
     }
 
     /**
@@ -366,31 +362,10 @@ public final class EmbedderFactory {
      * @param embedder an embedder to use
      * @return a list of models, starting with the specified POM, going through any parents, finishing with the Maven superpom (with a null artifactId)
      * @throws ModelBuildingException if the POM or parents could not even be parsed; warnings are not reported
+     * @deprecated use MavenEmbedder.createModelLineage
      */
     public static List<Model> createModelLineage(File pom, MavenEmbedder embedder) throws ModelBuildingException {
-        ModelBuilder mb = embedder.lookupComponent(ModelBuilder.class);
-        assert mb!=null : "ModelBuilder component not found in maven";
-        ModelBuildingRequest req = new DefaultModelBuildingRequest();
-        req.setPomFile(pom);
-        req.setProcessPlugins(false);
-        req.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
-        req.setModelResolver(new NBRepositoryModelResolver(embedder));
-        req.setSystemProperties(embedder.getSystemProperties());
-        
-        ModelBuildingResult res = mb.build(req);
-        List<Model> toRet = new ArrayList<Model>();
-
-        for (String id : res.getModelIds()) {
-            Model m = res.getRawModel(id);
-            toRet.add(m);
-        }
-//        for (ModelProblem p : res.getProblems()) {
-//            System.out.println("problem=" + p);
-//            if (p.getException() != null) {
-//                p.getException().printStackTrace();
-//            }
-//        }
-        return toRet;
+        return embedder.createModelLineage(pom);
     }
 
 
