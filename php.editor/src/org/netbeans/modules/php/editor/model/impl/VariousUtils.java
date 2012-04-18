@@ -415,7 +415,7 @@ public class VariousUtils {
                     } else if (operation.startsWith(STATIC_FIELD_TYPE_PREFIX)) {
                         Set<TypeScope> newRecentTypes = new HashSet<TypeScope>();
                         String[] frgs = frag.split("\\."); //NOI18N
-                        assert frgs.length >= 2 : frag;
+                        assert frgs.length >= 2 : frag + " | " + semiTypeName; //NOI18N
                         String clsName = frgs[0];
                         if (clsName != null) {
                         QualifiedName fullyQualifiedName = getFullyQualifiedName(createQuery(clsName, varScope), offset, varScope);

@@ -43,8 +43,11 @@
  */
 package org.netbeans.modules.html.editor.lib;
 
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.api.html.lexer.HTMLTokenId;
@@ -60,11 +63,11 @@ import org.netbeans.modules.html.editor.lib.api.elements.Element;
  */
 public class ElementsParserCache {
 
-    /* not private final for unit testing */ static int CACHE_BLOCK_SIZE = 100; //number of Element-s in one cache block
+    /* not private final for unit testing */ static int CACHE_BLOCK_SIZE = 1000; //number of Element-s in one cache block
     List<CacheBlock> cacheBlocks = new ArrayList<CacheBlock>();
     
-    private CharSequence sourceCode;
-    private TokenSequence<HTMLTokenId> tokenSequence;
+    private final CharSequence sourceCode;
+    private final TokenSequence<HTMLTokenId> tokenSequence;
 
     public ElementsParserCache(CharSequence sourceCode, TokenSequence<HTMLTokenId> tokenSequence) {
         this.sourceCode = sourceCode;
@@ -73,21 +76,19 @@ public class ElementsParserCache {
 
     public Iterator<Element> createElementsIterator() {
         return new Iterator<Element>() {
+            
             private int index = 0;
-
+            
             @Override
             public boolean hasNext() {
-                CacheBlock block = getCacheBlock();
-                return block.getEndIndex() > index;
+                return getCacheBlock().getEndIndex() > index;
             }
 
             @Override
             public Element next() {
-                return getCacheBlock().getElementAtIndex(index++);
-                
+                return getCacheBlock().getElementAtIndex(index++);                
             }
 
-            
             //notice: new empty block will be created at the end of the source
             //        if the number of elements modulo CACHE_BLOCK_SIZE == 0;
             private CacheBlock getCacheBlock() {
@@ -124,7 +125,7 @@ public class ElementsParserCache {
 
         /* test */ int blockReads = 0;
         
-        WeakReference<CacheBlockContent> blockWeakReference;
+        Reference<CacheBlockContent> blockReference;
         private final int startIndex;
         private int endIndex;
         private int startOffset;
@@ -148,7 +149,7 @@ public class ElementsParserCache {
             
             blockReads++;
 
-            blockWeakReference = new WeakReference<CacheBlockContent>(block);
+            blockReference = new SoftReference<CacheBlockContent>(block);
         }
 
         public int getStartIndex() {
@@ -172,14 +173,16 @@ public class ElementsParserCache {
         }
 
         public List<Element> getElements() {
-            CacheBlockContent block = blockWeakReference.get();
+            CacheBlockContent block = blockReference.get();
             if (block == null) {
                 //reload the content
                 block = new CacheBlockContent(code, tokenSequence, startOffset);
                 
                 blockReads++;
                 
-                blockWeakReference = new WeakReference<CacheBlockContent>(block);
+                blockReference = new SoftReference<CacheBlockContent>(block);
+                
+                System.out.println("block at " + getStartIndex() + " - cache reloaded " + blockReads + " times");
             }
             return block.getElements();
         }

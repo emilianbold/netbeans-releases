@@ -190,6 +190,8 @@ public class ProfilerLauncher {
         }
         
         public boolean configure() {
+            if (ss == null || ss.getJavaExecutable() == null) return false; // No platform defined; fail
+            
             final ProjectProfilingSupport pSupport = ProjectProfilingSupport.get(project);
 
             NetBeansProfiler.getDefaultNB().setProfiledProject(project, fo);
@@ -312,7 +314,8 @@ public class ProfilerLauncher {
     @NbBundle.Messages({
         "InvalidPlatformProjectMsg=The Java platform defined for the project is invalid. Right-click the project\nand choose a different platform using Properties | Libraries | Java Platform.\n\nInvalid platform: {0}",
         "InvalidPlatformProfilerMsg=The Java platform defined for profiling is invalid. Choose a different platform\nin Tools | Options | Miscellaneous | Profiler | Profiler Java Platform.\n\nInvalid platform: {0}",
-        "FailedDetermineJavaPlatformMsg=Failed to determine version of Java platform: {0}"
+        "FailedDetermineJavaPlatformMsg=Failed to determine version of Java platform: {0}",
+        "LBL_Unknown=Unknown"
     })
     private static void config(Session session) {
         Project project = null;
@@ -333,6 +336,21 @@ public class ProfilerLauncher {
         if (pSupport == null) {
             return;
         }
+
+        // *** java platform recheck
+        JavaPlatform platform = pSupport.getProjectJavaPlatform();
+        final String javaFile = platform != null ? platform.getPlatformJavaFile() : null;
+        
+        if (javaFile == null) {
+            if (ProfilerIDESettings.getInstance().getJavaPlatformForProfiling() == null) {
+                // used platform defined for project
+                ProfilerDialogs.displayError(Bundle.InvalidPlatformProjectMsg(platform != null ? platform.getDisplayName() : Bundle.LBL_Unknown()));
+            } else {
+                // used platform defined in Options / Profiler
+                ProfilerDialogs.displayError(Bundle.InvalidPlatformProfilerMsg(platform != null ? platform.getDisplayName() : Bundle.LBL_Unknown()));
+            }
+            return;
+        }
         
         final SessionSettings ss = new SessionSettings();
         // *** session settings setup
@@ -341,21 +359,6 @@ public class ProfilerLauncher {
 
         ss.setPortNo(gps.getPortNo());
         // ***
-
-        // *** java platform recheck
-        JavaPlatform platform = pSupport.getProjectJavaPlatform();
-        final String javaFile = platform.getPlatformJavaFile();
-
-        if (javaFile == null) {
-            if (ProfilerIDESettings.getInstance().getJavaPlatformForProfiling() == null) {
-                // used platform defined for project
-                ProfilerDialogs.displayError(Bundle.InvalidPlatformProjectMsg(platform.getDisplayName()));
-            } else {
-                // used platform defined in Options / Profiler
-                ProfilerDialogs.displayError(Bundle.InvalidPlatformProfilerMsg(platform.getDisplayName()));
-            }
-            return;
-        }
 
         final String javaVersion = platform.getPlatformJDKVersion();
 
@@ -410,7 +413,6 @@ public class ProfilerLauncher {
             activateLinuxPosixThreadTime(pSettings, props);
         }
         
-        props.put("profiler.java.platform", ss.getJavaExecutable());
         props.put("profiler.info.project.dir", project.getProjectDirectory().getPath());
     }
     

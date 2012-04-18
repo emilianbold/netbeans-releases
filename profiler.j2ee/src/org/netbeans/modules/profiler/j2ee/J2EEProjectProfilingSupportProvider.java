@@ -73,9 +73,12 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Properties;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.profiler.api.JavaPlatform;
 import org.netbeans.modules.profiler.api.java.JavaProfilerSource;
 import org.netbeans.modules.profiler.api.ProfilerDialogs;
+import org.netbeans.modules.profiler.j2ee.impl.ServerJavaPlatform;
 import org.netbeans.modules.profiler.nbimpl.actions.ProfilerLauncher;
 import org.netbeans.modules.profiler.nbimpl.project.JavaProjectProfilingSupportProvider;
 import org.netbeans.modules.profiler.nbimpl.project.ProjectUtilities;
@@ -206,7 +209,7 @@ public final class J2EEProjectProfilingSupportProvider extends JavaProjectProfil
             return null;
         }
 
-        return getServerJavaPlatform(serverInstanceID);
+        return ServerJavaPlatform.getPlatform(serverInstanceID);
     }
 
     private static JavaPlatform getServerJavaPlatform(String serverInstanceID) {
@@ -280,93 +283,93 @@ public final class J2EEProjectProfilingSupportProvider extends JavaProjectProfil
                                                                                                                          // redirect profiler.info.jvmargs to profiler.info.jvmargs.extra
                                                                                                                          // NOTE: disabled as a workaround for Issue 102323, needs to be fixed in order to restore the OOME detection functionality!
 
-        String jvmArgs = props.get("profiler.info.jvmargs"); // NOI18N
-
-        if ((jvmArgs != null) && (jvmArgs.trim().length() > 0)) {
-            props.put("profiler.info.jvmargs.extra", jvmArgs);
-        }
-
-        // fix agent startup arguments
-        JavaPlatform javaPlatform = getJavaPlatformFromAntName(project, props);
-        props.put("profiler.java.platform", javaPlatform.getPlatformId()); // set the used platform ant property
-
-        String javaVersion = javaPlatform.getPlatformJDKVersion();
-        String localPlatform = IntegrationUtils.getLocalPlatform(javaPlatform.getPlatformArchitecture());
-
-        if (javaVersion.equals(CommonConstants.JDK_15_STRING)) {
-            // JDK 1.5 used
-            props.put("profiler.info.jvmargs.agent", // NOI18N
-                              IntegrationUtils.getProfilerAgentCommandLineArgs(localPlatform, IntegrationUtils.PLATFORM_JAVA_50,
-                                                                               false,
-                                                                               ProfilerIDESettings.getInstance().getPortNo()));
-        } else {
-            // JDK 1.6 or later used
-            props.put("profiler.info.jvmargs.agent", // NOI18N
-                              IntegrationUtils.getProfilerAgentCommandLineArgs(localPlatform, IntegrationUtils.PLATFORM_JAVA_60,
-                                                                               false,
-                                                                               ProfilerIDESettings.getInstance().getPortNo()));
-        }
-
-        generateAgentPort(); // sets lastAgentPort
-
-        String loadGenPath = LoadGenPanel.hasInstance() ? LoadGenPanel.instance().getSelectedScript() : null;
-        if (loadGenPath != null) {
-            props.put("profiler.loadgen.path", loadGenPath); // TODO factor out "profiler.loadgen.path" to a constant
-        }
-
-        if (profiledClassFile == null) {
-            return;
-        }
-
-        if (WebProjectUtils.isJSP(profiledClassFile)) {
-            props.put("client.urlPart", WebProjectUtils.getJSPFileContext(project, profiledClassFile, false)); // NOI18N
-        } else if (WebProjectUtils.isHttpServlet(profiledClassFile)) {
-            String servletAddress = null;
-            Collection<Document> ddos = WebProjectUtils.getDeploymentDescriptorDocuments(project, true);
-
-            for (Document dd : ddos) {
-                String mapping = WebProjectUtils.getServletMapping(profiledClassFile, dd);
-
-                if ((mapping != null) && (mapping.length() > 0)) {
-                    servletAddress = mapping;
-
-                    break;
-                }
-            }
-
-            if (servletAddress != null) {
-                ServletUriPanel uriPanel = new ServletUriPanel(servletAddress);
-                DialogDescriptor desc = new DialogDescriptor(uriPanel, Bundle.TTL_setServletExecutionUri(),
-                                                             true, // NOI18N
-                                                             new Object[] {
-                                                                 DialogDescriptor.OK_OPTION,
-                                                                 new javax.swing.JButton(Bundle.J2EEProjectTypeProfiler_SkipButtonName()) {
-                        public java.awt.Dimension getPreferredSize() {
-                            return new java.awt.Dimension(super.getPreferredSize().width + 16, super.getPreferredSize().height);
-                        }
-                    }
-                                                             }, DialogDescriptor.OK_OPTION, DialogDescriptor.BOTTOM_ALIGN, null,
-                                                             null);
-                Object res = DialogDisplayer.getDefault().notify(desc);
-
-                if (res.equals(NotifyDescriptor.YES_OPTION)) {
-                    servletAddress = uriPanel.getServletUri();
-                }
-
-                props.put("client.urlPart", servletAddress); // NOI18N
-            }
-        }
-        // FIXME - method should receive the JavaProfilerSource as the parameter
-        JavaProfilerSource src = JavaProfilerSource.createFrom(profiledClassFile);
-        if (src != null) {
-            String profiledClass = src.getTopLevelClass().getQualifiedName();
-            props.put("profile.class", profiledClass); //NOI18N
-            // include it in javac.includes so that the compile-single picks it up
-            final String clazz = FileUtil.getRelativePath(ProjectUtilities.getRootOf(
-                    ProjectUtilities.getSourceRoots(project),profiledClassFile), 
-                    profiledClassFile);
-            props.put("javac.includes", clazz); //NOI18N
-        }
+//        String jvmArgs = props.get("profiler.info.jvmargs"); // NOI18N
+//
+//        if ((jvmArgs != null) && (jvmArgs.trim().length() > 0)) {
+//            props.put("profiler.info.jvmargs.extra", jvmArgs);
+//        }
+//
+//        // fix agent startup arguments
+//        JavaPlatform javaPlatform = getJavaPlatformFromAntName(project, props);
+//        props.put("profiler.platform.java", javaPlatform.getPlatformId()); // set the used platform ant property
+//
+//        String javaVersion = javaPlatform.getPlatformJDKVersion();
+//        String localPlatform = IntegrationUtils.getLocalPlatform(javaPlatform.getPlatformArchitecture());
+//
+//        if (javaVersion.equals(CommonConstants.JDK_15_STRING)) {
+//            // JDK 1.5 used
+//            props.put("profiler.info.jvmargs.agent", // NOI18N
+//                              IntegrationUtils.getProfilerAgentCommandLineArgs(localPlatform, IntegrationUtils.PLATFORM_JAVA_50,
+//                                                                               false,
+//                                                                               ProfilerIDESettings.getInstance().getPortNo()));
+//        } else {
+//            // JDK 1.6 or later used
+//            props.put("profiler.info.jvmargs.agent", // NOI18N
+//                              IntegrationUtils.getProfilerAgentCommandLineArgs(localPlatform, IntegrationUtils.PLATFORM_JAVA_60,
+//                                                                               false,
+//                                                                               ProfilerIDESettings.getInstance().getPortNo()));
+//        }
+//
+//        generateAgentPort(); // sets lastAgentPort
+//
+//        String loadGenPath = LoadGenPanel.hasInstance() ? LoadGenPanel.instance().getSelectedScript() : null;
+//        if (loadGenPath != null) {
+//            props.put("profiler.loadgen.path", loadGenPath); // TODO factor out "profiler.loadgen.path" to a constant
+//        }
+//
+//        if (profiledClassFile == null) {
+//            return;
+//        }
+//
+//        if (WebProjectUtils.isJSP(profiledClassFile)) {
+//            props.put("client.urlPart", WebProjectUtils.getJSPFileContext(project, profiledClassFile, false)); // NOI18N
+//        } else if (WebProjectUtils.isHttpServlet(profiledClassFile)) {
+//            String servletAddress = null;
+//            Collection<Document> ddos = WebProjectUtils.getDeploymentDescriptorDocuments(project, true);
+//
+//            for (Document dd : ddos) {
+//                String mapping = WebProjectUtils.getServletMapping(profiledClassFile, dd);
+//
+//                if ((mapping != null) && (mapping.length() > 0)) {
+//                    servletAddress = mapping;
+//
+//                    break;
+//                }
+//            }
+//
+//            if (servletAddress != null) {
+//                ServletUriPanel uriPanel = new ServletUriPanel(servletAddress);
+//                DialogDescriptor desc = new DialogDescriptor(uriPanel, Bundle.TTL_setServletExecutionUri(),
+//                                                             true, // NOI18N
+//                                                             new Object[] {
+//                                                                 DialogDescriptor.OK_OPTION,
+//                                                                 new javax.swing.JButton(Bundle.J2EEProjectTypeProfiler_SkipButtonName()) {
+//                        public java.awt.Dimension getPreferredSize() {
+//                            return new java.awt.Dimension(super.getPreferredSize().width + 16, super.getPreferredSize().height);
+//                        }
+//                    }
+//                                                             }, DialogDescriptor.OK_OPTION, DialogDescriptor.BOTTOM_ALIGN, null,
+//                                                             null);
+//                Object res = DialogDisplayer.getDefault().notify(desc);
+//
+//                if (res.equals(NotifyDescriptor.YES_OPTION)) {
+//                    servletAddress = uriPanel.getServletUri();
+//                }
+//
+//                props.put("client.urlPart", servletAddress); // NOI18N
+//            }
+//        }
+//        // FIXME - method should receive the JavaProfilerSource as the parameter
+//        JavaProfilerSource src = JavaProfilerSource.createFrom(profiledClassFile);
+//        if (src != null) {
+//            String profiledClass = src.getTopLevelClass().getQualifiedName();
+//            props.put("profile.class", profiledClass); //NOI18N
+//            // include it in javac.includes so that the compile-single picks it up
+//            final String clazz = FileUtil.getRelativePath(ProjectUtilities.getRootOf(
+//                    ProjectUtilities.getSourceRoots(project),profiledClassFile), 
+//                    profiledClassFile);
+//            props.put("javac.includes", clazz); //NOI18N
+//        }
     }
 
     // --- Profiler SPI support --------------------------------------------------------------------------------------------
@@ -383,22 +386,7 @@ public final class J2EEProjectProfilingSupportProvider extends JavaProjectProfil
     }
 
     public static JavaPlatform generateAgentJavaPlatform(String serverInstanceID) {
-        JavaPlatform platform = JavaPlatform.getJavaPlatformById(ProfilerIDESettings.getInstance().getJavaPlatformForProfiling());
-        JavaPlatform projectPlatform = getServerJavaPlatform(serverInstanceID);
-
-        if (platform == null) { // should use the one defined in project
-            platform = projectPlatform;
-
-            if (platform == null) {
-                platform = JavaPlatformSelector.getDefault().selectPlatformToUse();
-
-                if (platform == null) {
-                    return null;
-                }
-            }
-        }
-
-        return platform;
+        return ServerJavaPlatform.getPlatform(serverInstanceID);
     }
 
     public static int generateAgentPort() {
