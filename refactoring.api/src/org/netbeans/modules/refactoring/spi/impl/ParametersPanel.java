@@ -207,7 +207,6 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         help = new javax.swing.JButton();
         runInBackground = new javax.swing.JButton();
         openInNewTab = new javax.swing.JCheckBox();
-        panel = new javax.swing.JPanel();
         innerPanel = new javax.swing.JPanel();
         label = new TooltipLabel();
         containerPanel = new javax.swing.JPanel();
@@ -319,17 +318,13 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
 
         progressPanel.add(controlsPanel, java.awt.BorderLayout.SOUTH);
 
-        panel.setLayout(new java.awt.BorderLayout());
-
         innerPanel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(128, 128, 128)));
         innerPanel.setLayout(new java.awt.BorderLayout());
 
         label.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         innerPanel.add(label, java.awt.BorderLayout.WEST);
 
-        panel.add(innerPanel, java.awt.BorderLayout.CENTER);
-
-        progressPanel.add(panel, java.awt.BorderLayout.PAGE_START);
+        progressPanel.add(innerPanel, java.awt.BorderLayout.NORTH);
 
         add(progressPanel, java.awt.BorderLayout.SOUTH);
 
@@ -550,7 +545,6 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
     private javax.swing.JLabel label;
     private javax.swing.JButton next;
     private javax.swing.JCheckBox openInNewTab;
-    private javax.swing.JPanel panel;
     private javax.swing.JLabel pleaseWait;
     private javax.swing.JButton previewButton;
     private javax.swing.JPanel progressPanel;
@@ -868,13 +862,11 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
             @Override
             public void run() {
                 if (progressBar != null && progressBar.isVisible()) {
-                    LOGGER.log(Level.INFO, event.getSource() + " called start multiple times");
+                    LOGGER.log(Level.INFO, "{0} called start multiple times", event.getSource());
                     stop(event);
                 }
                 progressPanel.remove(innerPanel);
                 progressBar = ProgressBar.create(progressHandle = ProgressHandleFactory.createHandle("")); //NOI18N
-                progressPanel.add(progressBar, BorderLayout.CENTER);
-                //progressPanel.validate();
                 if (event.getCount() == -1) {
                     isIndeterminate = true;
                     progressHandle.start();
@@ -899,10 +891,10 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
                         text = NbBundle.getMessage(ParametersPanel.class, "LBL_Usages");
                         break;
                 }
-                progressBar.setString(text); //NOI18N
-
-                progressPanel.setVisible(true);
-
+                progressBar.setString(text);
+                progressPanel.add(progressBar, BorderLayout.NORTH);
+                progressPanel.setPreferredSize(null);
+                dialog.validate();
                 setButtonsEnabled(false);
             }
         });
@@ -1124,7 +1116,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         private static ProgressBar create(ProgressHandle handle) {
             ProgressBar instance = new ProgressBar();
             instance.setLayout(new BorderLayout());
-            instance.label = new JLabel();
+            instance.label = new JLabel(" "); //NOI18N
             instance.label.setBorder(new EmptyBorder(0, 0, 2, 0));
             instance.add(instance.label, BorderLayout.NORTH);
             JComponent progress = ProgressHandleFactory.createProgressComponent(handle);
