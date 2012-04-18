@@ -218,5 +218,20 @@ public class ServiceProviderProcessorTest extends NbTestCase {
         assertFalse(AnnotationProcessorTestUtils.runJavac(src, "C1", dest, null, baos));
         assertTrue(baos.toString(), baos.toString().contains("not applicable"));
     }
+    
+    public void testInnerClassError() throws Exception {
+        clearWorkDir();
+        File src = new File(getWorkDir(), "src");
+        File dest = new File(getWorkDir(), "classes");
+
+        AnnotationProcessorTestUtils.makeSource(src, "p.C1",
+                "public class C1 {",
+                "  @org.openide.util.lookup.ServiceProvider(service=java.io.Serializable.class)",
+                "  public class Inner implements java.io.Serializable {}",
+                "}");
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        assertFalse("Compilation should fail", AnnotationProcessorTestUtils.runJavac(src, "C1", dest, null, baos));
+        assertTrue("Error should contain warning about static:\n" + baos.toString(), baos.toString().contains("needs to be static"));
+    }
 
 }
