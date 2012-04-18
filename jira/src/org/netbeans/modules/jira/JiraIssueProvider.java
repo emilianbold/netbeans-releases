@@ -83,6 +83,11 @@ public class JiraIssueProvider extends IssueProvider<NbJiraIssue> {
     }
 
     @Override
+    public boolean isFinished(NbJiraIssue data) {
+        return data.isFinished();
+    }
+    
+    @Override
     public boolean refresh(NbJiraIssue data) {
         return data.refresh();
     }

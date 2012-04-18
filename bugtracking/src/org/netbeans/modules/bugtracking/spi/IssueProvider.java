@@ -46,7 +46,7 @@ import java.io.File;
 import org.openide.nodes.Node;
 
 /**
- * Represents a bugtracking IssueProvider
+ * Provides access to a bugtracking Issue
  *
  * @author Tomas Stupka
  */
@@ -104,6 +104,15 @@ public abstract class IssueProvider<I> {
      * @return
      */
     public abstract boolean isNew(I data);
+    
+    /**
+     * Determines if the issue has reached a status when is considered finished 
+     * in the means of the particular bugtracking.
+     * 
+     * @param data
+     * @return true if finished, otherwise false
+     */
+    public abstract boolean isFinished(I data);
 
     /**
      * Refreshes this Issues data from its bugtracking repository
