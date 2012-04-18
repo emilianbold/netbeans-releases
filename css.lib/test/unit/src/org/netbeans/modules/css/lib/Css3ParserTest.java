@@ -889,6 +889,7 @@ public class Css3ParserTest extends CssTestBase {
     
     public void testParsingOfAsterixOnly() throws BadLocationException, ParseException {
         CssParserResult result = TestUtil.parse("*     ");
+        //                                       0123456
         TestUtil.dumpResult(result);
         
         Node node = NodeUtil.query(result.getParseTree(),
