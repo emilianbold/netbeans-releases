@@ -28,11 +28,7 @@
           <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" attributes="0">
-                      <Component id="syncInfoLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="0" pref="593" max="32767" attributes="0"/>
-                  </Group>
-                  <Component id="itemScrollPane" alignment="0" pref="712" max="32767" attributes="0"/>
+                  <Component id="itemScrollPane" alignment="0" pref="728" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="operationsPanel" max="32767" attributes="0"/>
                       <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
@@ -42,6 +38,7 @@
                   </Group>
                   <Component id="messagesScrollPane" alignment="0" min="-2" max="32767" attributes="0"/>
                   <Component id="operationButtonsPanel" max="32767" attributes="0"/>
+                  <Component id="syncInfoPanel" alignment="0" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -57,13 +54,13 @@
                   <Component id="spaceHolderPanel" max="32767" attributes="0"/>
               </Group>
               <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
-              <Component id="itemScrollPane" pref="289" max="32767" attributes="0"/>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="syncInfoLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
+              <Component id="itemScrollPane" pref="283" max="32767" attributes="0"/>
+              <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
+              <Component id="syncInfoPanel" min="-2" max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
               <Component id="operationButtonsPanel" min="-2" max="-2" attributes="0"/>
               <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
-              <Component id="messagesScrollPane" pref="81" max="32767" attributes="0"/>
+              <Component id="messagesScrollPane" min="-2" pref="80" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -271,11 +268,36 @@
         </Component>
       </SubComponents>
     </Container>
-    <Component class="javax.swing.JLabel" name="syncInfoLabel">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="SYNC INFO LABEL" noResource="true"/>
-      </Properties>
-    </Component>
+    <Container class="javax.swing.JPanel" name="syncInfoPanel">
+
+      <Layout>
+        <DimensionLayout dim="0">
+          <Group type="103" groupAlignment="0" attributes="0">
+              <Group type="102" alignment="0" attributes="0">
+                  <EmptySpace min="-2" pref="20" max="-2" attributes="0"/>
+                  <Component id="syncInfoLabel" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="32767" attributes="0"/>
+              </Group>
+          </Group>
+        </DimensionLayout>
+        <DimensionLayout dim="1">
+          <Group type="103" groupAlignment="0" attributes="0">
+              <Group type="102" alignment="0" attributes="0">
+                  <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
+                  <Component id="syncInfoLabel" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
+              </Group>
+          </Group>
+        </DimensionLayout>
+      </Layout>
+      <SubComponents>
+        <Component class="javax.swing.JLabel" name="syncInfoLabel">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="SYNC INFO LABEL" noResource="true"/>
+          </Properties>
+        </Component>
+      </SubComponents>
+    </Container>
     <Container class="javax.swing.JPanel" name="operationButtonsPanel">
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>

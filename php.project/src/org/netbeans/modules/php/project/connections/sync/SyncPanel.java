@@ -53,6 +53,7 @@ import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.logging.Level;
@@ -87,8 +88,10 @@ import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.connections.RemoteClient;
+import org.netbeans.modules.php.project.connections.sync.SyncItem.ValidationResult;
 import org.netbeans.modules.php.project.connections.sync.diff.DiffPanel;
 import org.netbeans.modules.php.project.ui.HintArea;
+import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -107,8 +110,6 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
 
     static final Logger LOGGER = Logger.getLogger(SyncPanel.class.getName());
 
-    @StaticResource
-    private static final String INFO_ICON_PATH = "org/netbeans/modules/php/project/ui/resources/info_icon.png"; // NOI18N
     @StaticResource
     private static final String DIFF_ICON_PATH = "org/netbeans/modules/php/project/ui/resources/diff.png"; // NOI18N
     @StaticResource
@@ -340,6 +341,7 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
                 if (event.getValueIsAdjusting()) {
                     return;
                 }
+                updateSyncInfo();
                 setEnabledOperationButtons(itemTable.getSelectedRows());
                 setEnabledDiffButton(itemTable.getSelectedRowCount());
             }
@@ -396,8 +398,9 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
 
     private void initMessages() {
         // sync info
-        syncInfoLabel.setIcon(ImageUtilities.loadImageIcon(INFO_ICON_PATH, false));
-        // set message
+        syncInfoPanel.setBackground(Utils.getHintBackground());
+        syncInfoPanel.setBorder(BorderFactory.createMatteBorder(0, 1, 1, 1, UIManager.getColor("Table.gridColor"))); // NOI18N
+        // messages
         messagesTextPane.setText(defaultInfoMessage);
     }
 
@@ -478,7 +481,9 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
     List<SyncItem> getSelectedItems() {
         assert SwingUtilities.isEventDispatchThread();
         int[] selectedRows = itemTable.getSelectedRows();
-        assert selectedRows.length > 0;
+        if (selectedRows.length == 0) {
+            return Collections.emptyList();
+        }
         List<SyncItem> selectedItems = new ArrayList<SyncItem>(selectedRows.length);
         for (int index : selectedRows) {
             SyncItem syncItem = displayedItems.get(index);
@@ -548,25 +553,69 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
     }
 
     @NbBundle.Messages({
+        "# {0} - synchronization info",
+        "SyncPanel.info.prefix.all=All: {0}",
+        "# {0} - synchronization info",
+        "SyncPanel.info.prefix.selection=Selection: {0}",
+        "# {0} - file name",
+        "# {1} - message",
+        "SyncPanel.info.prefix.error=Error ({0}): {1}",
+        "# {0} - file name",
+        "# {1} - message",
+        "SyncPanel.info.prefix.warning=Warning ({0}): {1}",
         "# {0} - number of files to be downloaded",
         "# {1} - number of files to be uploaded",
         "# {2} - number of files to be deleted",
         "# {3} - number of files without any operation",
         "# {4} - number of files with errors",
-        "SyncPanel.info.status=Download: {0} files, upload: {1} files, delete: {2} files, "
-            + "no operation: {3} files, errors: {4} files."
+        "# {5} - number of files with warnings",
+        "SyncPanel.info.status={0} downloads, {1} uploads, {2} deletions, "
+            + "{3} no-ops, {4} errors, {5} warnings."
     })
     void updateSyncInfo() {
-        SyncInfo syncInfo = getSyncInfo();
-        syncInfoLabel.setText(Bundle.SyncPanel_info_status(syncInfo.download, syncInfo.upload, syncInfo.delete, syncInfo.noop, syncInfo.errors));
+        List<SyncItem> selectedItems = getSelectedItems();
+        if (selectedItems.size() == 1) {
+            SyncItem syncItem = selectedItems.get(0);
+            ValidationResult result = syncItem.validate();
+            if (result.hasError()) {
+                syncInfoLabel.setForeground(UIManager.getColor("nb.errorForeground")); // NOI18N
+                syncInfoLabel.setText(Bundle.SyncPanel_info_prefix_error(syncItem.getName(), result.getMessage()));
+                return;
+            }
+            if (result.hasWarning()) {
+                syncInfoLabel.setForeground(UIManager.getColor("nb.warningForeground")); // NOI18N
+                syncInfoLabel.setText(Bundle.SyncPanel_info_prefix_warning(syncItem.getName(), result.getMessage()));
+                return;
+            }
+            selectedItems.clear();
+        }
+        // all or selection
+        boolean all = false;
+        if (selectedItems.isEmpty()) {
+            all = true;
+            selectedItems = allItems;
+        }
+        SyncInfo syncInfo = getSyncInfo(selectedItems);
+        String info = Bundle.SyncPanel_info_status(syncInfo.download, syncInfo.upload, syncInfo.delete, syncInfo.noop, syncInfo.errors, syncInfo.warnings);
+        String msg;
+        if (all) {
+            msg = Bundle.SyncPanel_info_prefix_all(info);
+        } else {
+            msg = Bundle.SyncPanel_info_prefix_selection(info);
+        }
+        syncInfoLabel.setForeground(Color.darkGray);
+        syncInfoLabel.setText(msg);
     }
 
-    public SyncInfo getSyncInfo() {
+    public SyncInfo getSyncInfo(List<SyncItem> items) {
         assert SwingUtilities.isEventDispatchThread();
         SyncInfo syncInfo = new SyncInfo();
-        for (SyncItem syncItem : allItems) {
-            if (syncItem.validate().hasError()) {
+        for (SyncItem syncItem : items) {
+            ValidationResult validationResult = syncItem.validate();
+            if (validationResult.hasError()) {
                 syncInfo.errors++;
+            } else if (validationResult.hasWarning()) {
+                syncInfo.warnings++;
             }
             switch (syncItem.getOperation()) {
                 case SYMLINK:
@@ -697,6 +746,7 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
         checkAllButton = new JButton();
         itemScrollPane = new JScrollPane();
         itemTable = new JTable();
+        syncInfoPanel = new JPanel();
         syncInfoLabel = new JLabel();
         operationButtonsPanel = new JPanel();
         diffButton = new JButton();
@@ -763,8 +813,23 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
 
         itemTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         itemScrollPane.setViewportView(itemTable);
-
         Mnemonics.setLocalizedText(syncInfoLabel, "SYNC INFO LABEL"); // NOI18N
+
+        GroupLayout syncInfoPanelLayout = new GroupLayout(syncInfoPanel);
+        syncInfoPanel.setLayout(syncInfoPanelLayout);
+        syncInfoPanelLayout.setHorizontalGroup(
+            syncInfoPanelLayout.createParallelGroup(Alignment.LEADING).addGroup(syncInfoPanelLayout.createSequentialGroup()
+                .addGap(20, 20, 20)
+                .addComponent(syncInfoLabel)
+
+                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        syncInfoPanelLayout.setVerticalGroup(
+            syncInfoPanelLayout.createParallelGroup(Alignment.LEADING).addGroup(syncInfoPanelLayout.createSequentialGroup()
+                .addGap(5, 5, 5)
+                .addComponent(syncInfoLabel)
+                .addGap(5, 5, 5))
+        );
 
         diffButton.setIcon(new ImageIcon(getClass().getResource("/org/netbeans/modules/php/project/ui/resources/diff.png"))); // NOI18N
         diffButton.setEnabled(false);
@@ -800,18 +865,15 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
             layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
                 .addContainerGap()
 
-                .addGroup(layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
-                        .addComponent(syncInfoLabel)
+                .addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(itemScrollPane, GroupLayout.DEFAULT_SIZE, 728, Short.MAX_VALUE).addGroup(layout.createSequentialGroup()
 
-                        .addGap(0, 593, Short.MAX_VALUE)).addComponent(itemScrollPane, GroupLayout.DEFAULT_SIZE, 712, Short.MAX_VALUE).addGroup(layout.createSequentialGroup()
-
-                        .addComponent(operationsPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addPreferredGap(ComponentPlacement.UNRELATED).addComponent(problemsPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addPreferredGap(ComponentPlacement.RELATED, 0, GroupLayout.PREFERRED_SIZE).addComponent(spaceHolderPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)).addComponent(messagesScrollPane, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addComponent(operationButtonsPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)).addContainerGap())
+                        .addComponent(operationsPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addPreferredGap(ComponentPlacement.UNRELATED).addComponent(problemsPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addPreferredGap(ComponentPlacement.RELATED, 0, GroupLayout.PREFERRED_SIZE).addComponent(spaceHolderPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)).addComponent(messagesScrollPane, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addComponent(operationButtonsPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addComponent(syncInfoPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)).addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
                 .addContainerGap()
 
-                .addGroup(layout.createParallelGroup(Alignment.LEADING, false).addComponent(operationsPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addComponent(problemsPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addComponent(spaceHolderPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)).addPreferredGap(ComponentPlacement.UNRELATED).addComponent(itemScrollPane, GroupLayout.DEFAULT_SIZE, 289, Short.MAX_VALUE).addPreferredGap(ComponentPlacement.RELATED).addComponent(syncInfoLabel).addPreferredGap(ComponentPlacement.RELATED).addComponent(operationButtonsPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addGap(18, 18, 18).addComponent(messagesScrollPane, GroupLayout.DEFAULT_SIZE, 81, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(Alignment.LEADING, false).addComponent(operationsPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addComponent(problemsPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addComponent(spaceHolderPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)).addPreferredGap(ComponentPlacement.UNRELATED).addComponent(itemScrollPane, GroupLayout.DEFAULT_SIZE, 283, Short.MAX_VALUE).addGap(0, 0, 0).addComponent(syncInfoPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addPreferredGap(ComponentPlacement.UNRELATED).addComponent(operationButtonsPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addGap(18, 18, 18).addComponent(messagesScrollPane, GroupLayout.PREFERRED_SIZE, 80, GroupLayout.PREFERRED_SIZE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -832,6 +894,7 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
     private JCheckBox showSummaryCheckBox;
     private JPanel spaceHolderPanel;
     private JLabel syncInfoLabel;
+    private JPanel syncInfoPanel;
     private JButton uncheckAllButton;
     private JButton uploadButton;
     private JCheckBox viewDeleteCheckBox;
@@ -1066,7 +1129,7 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
                 closeDialog();
                 return;
             }
-            SyncInfo syncInfo = getSyncInfo();
+            SyncInfo syncInfo = getSyncInfo(allItems);
             SummaryPanel panel = new SummaryPanel(
                     syncInfo.upload,
                     syncInfo.download,
@@ -1120,6 +1183,7 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
         public int delete = 0;
         public int noop = 0;
         public int errors = 0;
+        public int warnings = 0;
 
     }
 
