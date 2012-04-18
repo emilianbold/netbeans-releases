@@ -299,12 +299,14 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
             if (fo == null /*paranoia*/ || !fo.isValid() || !fo.isFolder()) {
                 return;
             }
-            try {
-                FileLock lock = fo.lock();
-                fo.rename(lock, newName, null);
-                lock.releaseLock();
+            FileLock lock = null;
+            try {                
+                lock = fo.lock();
+                fo.rename(lock, newName, null);                
             } catch (IOException ioe) {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(ioe.getMessage()));
+            } finally {
+                if (lock != null) lock.releaseLock();
             }
             return;
         }
