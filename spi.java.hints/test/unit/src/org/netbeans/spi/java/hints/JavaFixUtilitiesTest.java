@@ -73,9 +73,9 @@ import org.openide.util.MapFormat;
  *
  * @author Jan Lahoda
  */
-public class JavaFixTest extends TestBase {
+public class JavaFixUtilitiesTest extends TestBase {
 
-    public JavaFixTest(String name) {
+    public JavaFixUtilitiesTest(String name) {
         super(name);
     }
 
