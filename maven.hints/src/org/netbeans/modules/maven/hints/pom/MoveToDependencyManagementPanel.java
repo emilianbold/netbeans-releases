@@ -73,7 +73,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author mkleint
  */
-public class MoveToDependencyManagementPanel extends javax.swing.JPanel implements ExplorerManager.Provider, Runnable {
+public final class MoveToDependencyManagementPanel extends javax.swing.JPanel implements ExplorerManager.Provider, Runnable {
 
     private BeanTreeView treeView;
     private transient ExplorerManager explorerManager = new ExplorerManager();
@@ -90,6 +90,7 @@ public class MoveToDependencyManagementPanel extends javax.swing.JPanel implemen
         RequestProcessor.getDefault().post(this);
     }
 
+    @Override
     public ExplorerManager getExplorerManager() {
         return explorerManager;
     }
@@ -99,6 +100,7 @@ public class MoveToDependencyManagementPanel extends javax.swing.JPanel implemen
      */
     public void showWaitNode() {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                treeView.setRootVisible(true);
                explorerManager.setRootContext(createWaitNode());
@@ -113,11 +115,13 @@ public class MoveToDependencyManagementPanel extends javax.swing.JPanel implemen
     }
 
 
+    @Override
     public void run() {
                 try {
-                    List<Model> lin = EmbedderFactory.createModelLineage(current, EmbedderFactory.getOnlineEmbedder());
+                    List<Model> lin = EmbedderFactory.getOnlineEmbedder().createModelLineage(current);
                     final Children ch = new PomChildren(lin);
                     SwingUtilities.invokeLater(new Runnable() {
+                @Override
                         public void run() {
                            treeView.setRootVisible(false);
                            explorerManager.setRootContext(new AbstractNode(ch));
@@ -133,6 +137,7 @@ public class MoveToDependencyManagementPanel extends javax.swing.JPanel implemen
                 } catch (ModelBuildingException ex) {
                     Logger.getLogger(getClass().getName()).log(Level.FINE, "Error reading model lineage", ex);
                     SwingUtilities.invokeLater(new Runnable() {
+                @Override
                         public void run() {
                            treeView.setRootVisible(true);
                            explorerManager.setRootContext(createErrorNode());

@@ -574,6 +574,8 @@ public class AbstractLookup extends Lookup implements Serializable {
                 CycleError cycle = new CycleError(err.getMessage());
                 cycle.add(evAndListeners);
                 throw cycle;
+            } catch (ISE ex) {
+                throw ex;
             } catch (RuntimeException e) {
                 // Such as e.g. occurred in #32040. Do not halt other things.
                 e.printStackTrace();

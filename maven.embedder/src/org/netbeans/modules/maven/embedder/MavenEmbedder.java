@@ -58,6 +58,9 @@ import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.InvalidRepositoryException;
 import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.artifact.repository.ArtifactRepositoryFactory;
+import org.apache.maven.artifact.repository.ArtifactRepositoryPolicy;
+import org.apache.maven.artifact.repository.layout.DefaultRepositoryLayout;
 import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionRequest;
@@ -72,7 +75,12 @@ import org.apache.maven.execution.MavenExecutionResult;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.lifecycle.mapping.Lifecycle;
 import org.apache.maven.lifecycle.mapping.LifecycleMapping;
+import org.apache.maven.model.Model;
+import org.apache.maven.model.building.DefaultModelBuildingRequest;
+import org.apache.maven.model.building.ModelBuilder;
+import org.apache.maven.model.building.ModelBuildingException;
 import org.apache.maven.model.building.ModelBuildingRequest;
+import org.apache.maven.model.building.ModelBuildingResult;
 import org.apache.maven.plugin.LegacySupport;
 import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
@@ -215,6 +223,23 @@ public final class MavenEmbedder {
     public Artifact createProjectArtifact(@NonNull String groupId, @NonNull String artifactId, @NonNull String version) {
         return repositorySystem.createProjectArtifact(groupId, artifactId, version);
     }
+    
+    
+    /**
+     * using this method one creates an ArtifactRepository instance with injected mirrors and proxies
+     * @param url
+     * @param id
+     * @return 
+     */
+    public ArtifactRepository createRemoteRepository(String url, String id) {
+        setUpLegacySupport();
+        ArtifactRepositoryFactory fact = lookupComponent(ArtifactRepositoryFactory.class);
+        assert fact!=null : "ArtifactRepositoryFactory component not found in maven";
+        ArtifactRepositoryPolicy snapshotsPolicy = new ArtifactRepositoryPolicy(true, ArtifactRepositoryPolicy.UPDATE_POLICY_ALWAYS, ArtifactRepositoryPolicy.CHECKSUM_POLICY_WARN);
+        ArtifactRepositoryPolicy releasesPolicy = new ArtifactRepositoryPolicy(true, ArtifactRepositoryPolicy.UPDATE_POLICY_ALWAYS, ArtifactRepositoryPolicy.CHECKSUM_POLICY_WARN);
+        return fact.createArtifactRepository(id, url, new DefaultRepositoryLayout(), snapshotsPolicy, releasesPolicy);
+    }
+    
 
     /**
      * 
@@ -253,6 +278,41 @@ public final class MavenEmbedder {
     public MavenExecutionResult execute(MavenExecutionRequest req) {
         return maven.execute(req);
     }
+    
+    /**
+     * Creates a list of POM models in an inheritance lineage.
+     * Each resulting model is "raw", so contains no interpolation or inheritance.
+     * In particular beware that groupId and/or version may be null if inherited from a parent; use {@link Model#getParent} to resolve.
+     * @param pom a POM to inspect
+     * @param embedder an embedder to use
+     * @return a list of models, starting with the specified POM, going through any parents, finishing with the Maven superpom (with a null artifactId)
+     * @throws ModelBuildingException if the POM or parents could not even be parsed; warnings are not reported
+     */
+    public List<Model> createModelLineage(File pom) throws ModelBuildingException {
+        ModelBuilder mb = lookupComponent(ModelBuilder.class);
+        assert mb!=null : "ModelBuilder component not found in maven";
+        ModelBuildingRequest req = new DefaultModelBuildingRequest();
+        req.setPomFile(pom);
+        req.setProcessPlugins(false);
+        req.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
+        req.setModelResolver(new NBRepositoryModelResolver(this));
+        req.setSystemProperties(getSystemProperties());
+        
+        ModelBuildingResult res = mb.build(req);
+        List<Model> toRet = new ArrayList<Model>();
+
+        for (String id : res.getModelIds()) {
+            Model m = res.getRawModel(id);
+            toRet.add(m);
+        }
+//        for (ModelProblem p : res.getProblems()) {
+//            System.out.println("problem=" + p);
+//            if (p.getException() != null) {
+//                p.getException().printStackTrace();
+//            }
+//        }
+        return toRet;
+    }    
     
     public List<String> getLifecyclePhases() {
 
