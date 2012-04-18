@@ -44,16 +44,16 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
-import java.awt.Component;
-import java.awt.Cursor;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.JDialog;
-import javax.swing.JFrame;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
@@ -67,7 +67,6 @@ import org.openide.util.MutexException;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
-import org.openide.windows.WindowManager;
 
 /**
  * Convenient class to be used by {@link CustomizerProvider} implementations.
@@ -126,28 +125,29 @@ public abstract class BasicCustomizer implements CustomizerProvider {
         showCustomizer(preselectedCategory, null);
     }
 
-    @Messages({"# {0} - project display name", "LBL_CustomizerTitle=Project Properties - {0}"})
+    @Messages({
+        "PROGRESS_loading_data=Loading project information",
+        "# {0} - project display name", "LBL_CustomizerTitle=Project Properties - {0}"
+    })
     public void showCustomizer(String preselectedCategory, final String preselectedSubCategory) {
         if (dialog != null) {
             dialog.setVisible(true);
         } else {
             final String category = (preselectedCategory != null) ? preselectedCategory : lastSelectedCategory;
-            Component glassPane = ((JFrame) WindowManager.getDefault().getMainWindow()).getGlassPane();
-            try {
-                glassPane.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                glassPane.setVisible(true);
-                final Lookup context = new ProxyLookup(prepareData(), Lookups.fixed(new SubCategoryProvider(category, preselectedSubCategory)));
-                OptionListener listener = new OptionListener();
-                dialog = ProjectCustomizer.createCustomizerDialog(layerPath, context,
-                        category, listener,
-                        null);
-                dialog.addWindowListener(listener);
-                dialog.setTitle(LBL_CustomizerTitle(ProjectUtils.getInformation(getProject()).getDisplayName()));
-                dialog.setVisible(true);
-            } finally {
-                glassPane.setVisible(false);
-                glassPane.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+            final AtomicReference<Lookup> context = new AtomicReference<Lookup>();
+            ProgressUtils.runOffEventDispatchThread(new Runnable() {
+                @Override public void run() {
+                    context.set(new ProxyLookup(prepareData(), Lookups.fixed(new SubCategoryProvider(category, preselectedSubCategory))));
+                }
+            }, PROGRESS_loading_data(), /* currently unused */new AtomicBoolean(), false);
+            if (context.get() == null) { // canceled
+                return;
             }
+            OptionListener listener = new OptionListener();
+            dialog = ProjectCustomizer.createCustomizerDialog(layerPath, context.get(), category, listener, null);
+            dialog.addWindowListener(listener);
+            dialog.setTitle(LBL_CustomizerTitle(ProjectUtils.getInformation(getProject()).getDisplayName()));
+            dialog.setVisible(true);
         }
     }
     
