@@ -1925,11 +1925,12 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                 formDesigner.getMenuEditLayer().startNewMenuComponentPickAndPlop(item,e.getPoint());
                 return;
             }
-            if( null != item ) {
+            Node itemNode;
+            if (item != null && (itemNode = item.getNode()) != null) {
                 StatusDisplayer.getDefault().setStatusText(
                     FormUtils.getFormattedBundleString(
                         "FMT_MSG_AddingComponent", // NOI18N
-                        new String[] { item.getNode().getDisplayName() }));
+                        new String[] { itemNode.getDisplayName() }));
             }
         }
     }
