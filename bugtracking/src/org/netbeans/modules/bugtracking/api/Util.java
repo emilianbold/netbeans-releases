@@ -88,13 +88,22 @@ public final class Util {
     }    
     
     /**
-     * Opens the create repository dialog and eventually returns a repository
+     * Opens the modal create repository dialog and eventually returns a repository.<br>
+     * Blocks until the dialog isn't closed. 
      * 
      * @return a repository in case it was properly specified n the ui, otherwise null
      */
     public static Repository createRepository() {
         RepositoryImpl impl = BugtrackingUtil.createRepository(false);
         return impl != null ? impl.getRepository() : null;
+    }
+    
+    /**
+     * Opens the modal edit repository dialog.<br>
+     * Blocks until the dialog isn't closed. 
+     */
+    public static void editRepository(Repository repository) {
+        BugtrackingUtil.editRepository(repository);
     }
     
     /*
