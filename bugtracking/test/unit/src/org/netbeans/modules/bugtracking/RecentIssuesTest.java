@@ -264,6 +264,9 @@ public class RecentIssuesTest extends NbTestCase {
         public boolean isNew() {
             return false;
         }
+        public boolean isFinished() {
+            return false;
+        }
         public String getSummary() {
             return "This is" + name;
         }

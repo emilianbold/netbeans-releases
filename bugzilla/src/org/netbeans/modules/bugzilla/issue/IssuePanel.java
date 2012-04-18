@@ -2990,7 +2990,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
         return unitIncrement;
     }
 
-    private static final String CURRENT_NB_VERSION = "7.0";                     // NOI18N
+    private static final String CURRENT_NB_VERSION = "7.2";                     // NOI18N
     private String getCurrentNetBeansVersion() {        
         String version = parseProductVersion(getProductVersionValue());        
         if(version != null) {
@@ -3004,7 +3004,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
     }
 
     static String parseProductVersion(String productVersionValue) {
-        Pattern p = Pattern.compile("NetBeans IDE\\s([a-zA-Z0-9\\.?]*)\\s?.*");                      // NOI18N
+        Pattern p = Pattern.compile("NetBeans IDE\\s([a-zA-Z0-9\\.?]*)\\s?.*"); // NOI18N
         Matcher m = p.matcher(productVersionValue);
         if(m.matches()) {
             String version = m.group(1);

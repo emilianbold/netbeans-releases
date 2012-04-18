@@ -85,6 +85,11 @@ public class TestIssueProvider extends IssueProvider<TestIssue> {
     }
 
     @Override
+    public boolean isFinished(TestIssue data) {
+        return data.isFinished();
+    }
+    
+    @Override
     public boolean refresh(TestIssue data) {
         return data.refresh();
     }
