@@ -70,9 +70,9 @@ import org.openide.util.Exceptions;
  *
  * @author Jan Lahoda
  */
-public abstract class TestBase extends PHPTestBase {
+public abstract class PHPNavTestBase extends PHPTestBase {
 
-    public TestBase(String testName) {
+    public PHPNavTestBase(String testName) {
         super(testName);
     }
 

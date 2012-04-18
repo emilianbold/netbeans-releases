@@ -49,7 +49,7 @@ import org.openide.filesystems.FileUtil;
 /**
  * @author Radek Matous
  */
-public class OccurrencesFinderImplTest extends TestBase {
+public class OccurrencesFinderImplTest extends PHPNavTestBase {
 
     public OccurrencesFinderImplTest(String testName) {
         super(testName);

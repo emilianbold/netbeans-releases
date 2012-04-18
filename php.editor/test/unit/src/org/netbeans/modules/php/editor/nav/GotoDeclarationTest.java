@@ -49,7 +49,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Radek Matous
  */
-public class GotoDeclarationTest extends TestBase {
+public class GotoDeclarationTest extends PHPNavTestBase {
 
     public GotoDeclarationTest(String testName) {
         super(testName);
