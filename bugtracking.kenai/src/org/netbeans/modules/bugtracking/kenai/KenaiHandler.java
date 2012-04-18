@@ -292,7 +292,7 @@ class KenaiHandler {
                 Support.getInstance().post(new Runnable() { // XXX add post method to BM
                     @Override
                     public void run() {
-                        KenaiUtil.openQuery(null, repo, true);
+                        KenaiUtil.openNewQuery(repo, true);
                     }
                 });
             }

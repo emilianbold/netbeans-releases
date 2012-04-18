@@ -47,6 +47,7 @@ package org.netbeans.modules.settings.convertors;
 import java.io.*;
 
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 
 
 import org.netbeans.spi.settings.Convertor;
@@ -288,7 +289,8 @@ public final class XMLPropertiesConvertorTest extends NbTestCase {
         Thread.sleep(3000);
         assertTrue("upgrade failed", last != fo.lastModified().getTime());
     }
-    
+
+    @RandomlyFails // NB-Core-Build #8155
     public void testUpgradeSettingWithUnknownClass() throws Exception {
         String res = "Settings/org-netbeans-modules-settings-convertors-FooSettingSerialDataUnknownClass.settings";
         FileObject fo = FileUtil.getConfigFile(res);

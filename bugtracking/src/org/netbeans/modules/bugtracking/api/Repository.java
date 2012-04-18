@@ -45,6 +45,7 @@ import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.QueryImpl;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
@@ -169,8 +170,13 @@ public final class Repository {
      * @param id
      * @return 
      */
-    public Issue getIssue(String id) {
-        return impl.getIssueImpl(id).getIssue();
+    public Issue[] getIssues(String... ids) {
+        Collection<IssueImpl> impls = impl.getIssueImpls(ids);
+        List<Issue> ret = new ArrayList<Issue>(impls.size());
+        for (IssueImpl issueImpl : impls) {
+            ret.add(issueImpl.getIssue());
+        }
+        return ret.toArray(new Issue[ret.size()]);
     }
     
     <R, Q, I> RepositoryImpl<R, Q, I> getImpl() {

@@ -620,9 +620,11 @@ public abstract class CommonConfigurationXMLCodec
 
     private void writeDiskFolder(XMLEncoderStream xes, Folder folder) {
         List<AttrValuePair> attrList = new ArrayList<AttrValuePair>();
-        attrList.add(new AttrValuePair(NAME_ATTR, "" + folder.getName())); // NOI18N
         if (folder.getRoot() != null) {
+            attrList.add(new AttrValuePair(NAME_ATTR, "" + folder.getDiskName())); // NOI18N    
             attrList.add(new AttrValuePair(ROOT_ATTR, "" + folder.getRoot())); // NOI18N
+        } else {
+            attrList.add(new AttrValuePair(NAME_ATTR, "" + folder.getName())); // NOI18N    
         }
         xes.elementOpen(DISK_FOLDER_ELEMENT, attrList.toArray(new AttrValuePair[attrList.size()]));
 

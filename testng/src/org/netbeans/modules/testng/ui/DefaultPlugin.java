@@ -116,6 +116,7 @@ public final class DefaultPlugin extends TestNGPlugin {
      * each with a suffix <code>&quot;.class&quot;</code>
      */
     private static final String templatePropClasses = "classes";        //NOI18N
+    private static final String NGPrefix = "NG";        //NOI18N
     
     
     /**
@@ -207,7 +208,7 @@ public final class DefaultPlugin extends TestNGPlugin {
         
         return getOppositeLocation(sourceLocation,
                                    srcCp,
-                                   "testng/".concat(testResName),
+                                   testResName,
                                    true);
     }
     
@@ -228,13 +229,10 @@ public final class DefaultPlugin extends TestNGPlugin {
         if (srcResName == null) {
             return null;     //if the selectedFO is not a test class (by name)
         }
-        if (!srcResName.startsWith("testng/")) {
-            return null;     //if the selectedFO is not a TestNG test class
-        }
 
         return getOppositeLocation(testLocation,
                                    srcCp,
-                                   srcResName.substring(srcResName.indexOf("testng/") + 7),
+                                   srcResName,
                                    false);
     }
     
@@ -339,7 +337,7 @@ public final class DefaultPlugin extends TestNGPlugin {
     private static String getTestResName(String baseResName, String ext) {
         StringBuilder buf
                 = new StringBuilder(baseResName.length() + ext.length() + 10);
-        buf.append(baseResName).append("Test");                         //NOI18N
+        buf.append(baseResName).append(NGPrefix + "Test");                         //NOI18N
         if (ext.length() != 0) {
             buf.append('.').append(ext);
         }
@@ -374,13 +372,13 @@ public final class DefaultPlugin extends TestNGPlugin {
     /**
      */
     private static String getSrcResName(String testResName, String ext) {
-        if (!testResName.endsWith("Test")) {                            //NOI18N
+        if (!testResName.endsWith(NGPrefix + "Test")) {                            //NOI18N
             return null;
         }
         
         StringBuilder buf
                 = new StringBuilder(testResName.length() + ext.length());
-        buf.append(testResName.substring(0, testResName.length() - 4));
+        buf.append(testResName.substring(0, testResName.length() - 6));
         if (ext.length() != 0) {
             buf.append('.').append(ext);
         }
@@ -390,7 +388,7 @@ public final class DefaultPlugin extends TestNGPlugin {
     /**
      */
     private static String getTestClassName(String baseClassName) {
-        return baseClassName + "Test";                                  //NOI18N
+        return baseClassName + NGPrefix + "Test";                                  //NOI18N
     }
     
     /**
@@ -735,7 +733,7 @@ public final class DefaultPlugin extends TestNGPlugin {
                         testClassName = requestedTestClassName;
                         mainClassProcessed = true;
                     } else {
-                        testClassName = TestUtil.getTestClassName(srcClassNameFull);
+                        testClassName = TestUtil.getTestClassName(srcClassNameFull.concat(NGPrefix));
                     }
                     String testResourceName = testClassName.replace('.', '/');
 
@@ -890,8 +888,8 @@ public final class DefaultPlugin extends TestNGPlugin {
 //            suiteTemplParams.put(templatePropClasses, classes);
             String projectName = ProjectUtils.getInformation(FileOwnerQuery.getOwner(folder)).getName();
             suiteTemplParams.put("suiteName", projectName);
-            suiteTemplParams.put("testName", "testng.".concat(dotPkg).concat(" suite"));
-            suiteTemplParams.put("pkg", "testng.".concat(dotPkg));
+            suiteTemplParams.put("testName", dotPkg.concat(" suite"));
+            suiteTemplParams.put("pkg", dotPkg);
 
             try {
                 /*

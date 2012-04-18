@@ -114,6 +114,8 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
     private QueryImpl query;
     private ColumnDescriptor[] descriptors;
 
+    private Filter allFilter;
+    private Filter newOrChangedFilter;
     private Filter filter;
     private Filter[] filters;
     private Set<IssueNode> nodes = new HashSet<IssueNode>();
@@ -233,6 +235,14 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
         return filters;
     }
 
+    public Filter getAllFilter() {
+        return allFilter;
+    }
+    
+    public Filter getNewOrChangedFilter() {
+        return newOrChangedFilter;
+    }
+    
     /**
      * Reset the filter criteria set in
      * {@link #setFilterBySummary(java.lang.String, boolean, boolean, boolean) }
@@ -389,8 +399,10 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
     }
 
     private void initFilters() {
-        filters = new Filter[]{Filter.getAllFilter(query), Filter.getNotSeenFilter(query), Filter.getObsoleteDateFilter(query), Filter.getAllButObsoleteDateFilter(query)};
-        filter = filters[0]; // preset the first filter as default
+        allFilter = Filter.getAllFilter(query);
+        newOrChangedFilter = Filter.getNotSeenFilter(query);
+        filters = new Filter[]{allFilter, newOrChangedFilter, Filter.getObsoleteDateFilter(query), Filter.getAllButObsoleteDateFilter(query)};
+        filter = allFilter;
     }
     
     int getSeenColumnIdx() {

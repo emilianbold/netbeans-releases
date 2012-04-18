@@ -49,6 +49,7 @@ import javax.swing.text.BadLocationException;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.html.editor.lib.ElementsParser;
 import org.netbeans.modules.html.editor.lib.api.*;
 import org.netbeans.modules.html.editor.lib.api.elements.*;
 import org.netbeans.modules.html.editor.lib.test.TestBase;
@@ -497,19 +498,19 @@ public class SyntaxTreeBuilderTest extends TestBase {
     public void testUnclosedDivTag_Issue191286() throws Exception {
         //         0123456789
         assertAST("<div</div>",
-                desc(SyntaxAnalyzer.UNEXPECTED_SYMBOL_IN_OPEN_TAG, 4, 6, ProblemDescription.ERROR));
+                desc(ElementsParser.UNEXPECTED_SYMBOL_IN_OPEN_TAG, 4, 6, ProblemDescription.ERROR));
 
         //         0123456789
         assertAST("<div </div>",
-                desc(SyntaxAnalyzer.UNEXPECTED_SYMBOL_IN_OPEN_TAG, 5, 7, ProblemDescription.ERROR));
+                desc(ElementsParser.UNEXPECTED_SYMBOL_IN_OPEN_TAG, 5, 7, ProblemDescription.ERROR));
 
         //         01234567890
         assertAST("<div name</div>",
-                desc(SyntaxAnalyzer.UNEXPECTED_SYMBOL_IN_OPEN_TAG, 9, 11, ProblemDescription.ERROR));
+                desc(ElementsParser.UNEXPECTED_SYMBOL_IN_OPEN_TAG, 9, 11, ProblemDescription.ERROR));
 
         //         012345678901
         assertAST("<div id=</div>",
-                desc(SyntaxAnalyzer.UNEXPECTED_SYMBOL_IN_OPEN_TAG, 9, 11, ProblemDescription.ERROR),
+                desc(ElementsParser.UNEXPECTED_SYMBOL_IN_OPEN_TAG, 9, 11, ProblemDescription.ERROR),
                 desc(SyntaxTreeBuilder.UNMATCHED_TAG, 0, 4, ProblemDescription.ERROR));
 
     }

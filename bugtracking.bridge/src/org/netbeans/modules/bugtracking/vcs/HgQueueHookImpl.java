@@ -388,13 +388,13 @@ public class HgQueueHookImpl extends HgQueueHook {
                 }
             }
         }
-        Issue issue = repository.getIssue(issueID);
-        if (issue != null) {
+        Issue[] issues = repository.getIssues(issueID);
+        if (issues != null && issues.length > 0) {
             synchronized (cachedIssues) {
-                cachedIssues.add(issue);
+                cachedIssues.add(issues[0]);
             }
         }
-        return issue;
+        return issues[0];
     }
 
     private void cacheIssue (Issue issue) {

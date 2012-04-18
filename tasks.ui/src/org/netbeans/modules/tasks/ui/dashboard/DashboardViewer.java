@@ -43,6 +43,8 @@ package org.netbeans.modules.tasks.ui.dashboard;
 
 import java.awt.Component;
 import java.util.*;
+import java.util.List;
+import java.util.Map.Entry;
 import javax.accessibility.AccessibleContext;
 import javax.swing.*;
 import org.netbeans.modules.bugtracking.api.Issue;
@@ -577,14 +579,24 @@ public final class DashboardViewer {
 
     private List<Issue> loadTasks(List<TaskEntry> taskEntries) {
         List<Issue> tasks = new ArrayList<Issue>(taskEntries.size());
+        Map<String, List<String>> m = new HashMap<String, List<String>>();
         for (TaskEntry taskEntry : taskEntries) {
-            Repository repository = getRepository(taskEntry.getRepositoryId());
-            if (repository != null) {
-                Issue issue = repository.getIssue(taskEntry.getIssueId());
-                if (issue != null) {
-                    tasks.add(issue);
-                }
+            List<String> l = m.get(taskEntry.getRepositoryId());
+            if(l == null) {
+                l = new LinkedList<String>();
+                m.put(taskEntry.getRepositoryId(), l);
             }
+            l.add(taskEntry.getIssueId());
+        }
+        for (Entry<String, List<String>> e : m.entrySet()) {
+            Repository repository = getRepository(e.getKey());
+            if (repository != null) {
+                List<String> l = e.getValue();
+                Issue[] issues = repository.getIssues(l.toArray(new String[l.size()]));
+                if (issues != null) {
+                    tasks.addAll(Arrays.asList(issues));
+                }
+            }        
         }
         return tasks;
     }

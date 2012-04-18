@@ -66,7 +66,9 @@ import org.netbeans.modules.jira.commands.PerformQueryCommand;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.kenai.KenaiRepository;
 import org.netbeans.modules.jira.repository.JiraRepository;
+import org.netbeans.modules.jira.util.JiraUtils;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -251,7 +253,12 @@ public class JiraQuery {
         refreshIntern(autoReresh);
     }
 
-    void remove() {
+    public void remove() {
+        if(QueryController.isNamedFilter(jiraFilter)) {
+            // Serverside filter. Can't remove.
+            JiraUtils.notifyErrorMessage(NbBundle.getMessage(JiraQuery.class, "MSG_CANNOT_REMOVE_SERVER_FILTER"));
+            return;
+        }
         repository.removeQuery(this);
         fireQueryRemoved();
     }

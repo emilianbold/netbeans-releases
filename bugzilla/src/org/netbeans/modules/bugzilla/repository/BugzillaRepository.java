@@ -45,15 +45,13 @@ package org.netbeans.modules.bugzilla.repository;
 import java.awt.EventQueue;
 import org.netbeans.modules.bugzilla.*;
 import java.awt.Image;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -71,7 +69,6 @@ import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
-import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.kenai.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
@@ -264,6 +261,27 @@ public class BugzillaRepository {
         return c != null ? c.getPassword().toCharArray() : new char[0]; 
     }
 
+    public BugzillaIssue[] getIssues(final String... ids) {
+        final List<BugzillaIssue> ret = new LinkedList<BugzillaIssue>();
+        TaskDataCollector collector = new TaskDataCollector() {
+            @Override
+            public void accept(TaskData taskData) {
+                String id = BugzillaIssue.getID(taskData);
+                try {
+                    BugzillaIssue issue = (BugzillaIssue) getIssueCache().setIssueData(id, taskData);
+                    if(issue != null) {
+                        ret.add(issue);
+                    }
+                } catch (IOException ex) {
+                    Bugzilla.LOG.log(Level.SEVERE, null, ex);
+                }
+            }
+        };
+        GetMultiTaskDataCommand dataCmd = new GetMultiTaskDataCommand(this, new HashSet<String>(Arrays.asList(ids)), collector);
+        getExecutor().execute(dataCmd, true);
+        return ret.toArray(new BugzillaIssue[ret.size()]);
+    }
+    
     public BugzillaIssue getIssue(final String id) {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
 

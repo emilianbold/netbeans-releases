@@ -67,9 +67,9 @@ public class FindUsagesClassOperator extends ParametersPanelOperator {
     private JRadioButtonOperator findUsages;    
     private JRadioButtonOperator findDirectSubtypes;
     private JRadioButtonOperator findAllSubtypes;
-    private JCheckBoxOperator findOverridding;
+    private JRadioButtonOperator findOverridding;
     private JCheckBoxOperator findFromBaseClass;
-    private JCheckBoxOperator findMethodUsage;
+    private JRadioButtonOperator findMethodUsage;
     
     private JComboBoxOperator scope;
     
@@ -129,24 +129,24 @@ public class FindUsagesClassOperator extends ParametersPanelOperator {
         }
         return scope;
     }
-
+    //looks like unused from 7.2
     public JCheckBoxOperator getFindFromBaseClass() {
         if (findFromBaseClass == null) {
             findFromBaseClass = new JCheckBoxOperator(this,  getBungleText("org.netbeans.modules.refactoring.java.ui.Bundle","DSC_WhereUsedFromBaseClass"));
         }
         return findFromBaseClass;
     }
-
-    public JCheckBoxOperator getFindMethodUsage() {
+    //looks like unused from 7.2 
+    public JRadioButtonOperator getFindMethodUsageAndOverriding() {
         if (findMethodUsage == null) {
-            findMethodUsage = new JCheckBoxOperator(this,  getBungleText("org.netbeans.modules.refactoring.java.ui.Bundle","LBL_WhereUsed"));
+            findMethodUsage = new JRadioButtonOperator(this,  getBungleText("org.netbeans.modules.refactoring.java.ui.Bundle","LBL_FindUsagesOverridingMethods"));
         }
         return findMethodUsage;
     }
 
-    public JCheckBoxOperator getFindOverridding() {
+    public JRadioButtonOperator getFindOverridding() {
         if (findOverridding == null) {
-            findOverridding = new JCheckBoxOperator(this,  getBungleText("org.netbeans.modules.refactoring.java.ui.Bundle","LBL_FindOverridingMethods"));
+            findOverridding = new JRadioButtonOperator(this,  getBungleText("org.netbeans.modules.refactoring.java.ui.Bundle","LBL_FindOverridingMethods"));
         }
         return findOverridding;
     }

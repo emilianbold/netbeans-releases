@@ -45,10 +45,11 @@
 package org.openide.util.test;
 
 import junit.framework.AssertionFailedError;
-import junit.framework.TestCase;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.util.ChangeSupport;
 
-public class MockChangeListenerTest extends TestCase {
+public class MockChangeListenerTest extends NbTestCase {
 
     public MockChangeListenerTest(String n) {
         super(n);
@@ -116,6 +117,7 @@ public class MockChangeListenerTest extends TestCase {
         }
     }
 
+    @RandomlyFails // NB-Core-Build #8154
     public void testExpect() throws Exception {
         l.expectNoEvents(1000);
         cs.fireChange();

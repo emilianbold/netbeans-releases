@@ -329,19 +329,7 @@ public class JiraExecutor {
                 }
             }
             String msg = getMessage(ex);
-            notifyErrorMessage(msg);
-        }
-
-        static void notifyErrorMessage(String msg) {
-            NotifyDescriptor nd =
-                    new NotifyDescriptor(
-                        msg,
-                        NbBundle.getMessage(JiraExecutor.class, "LBLError"),    // NOI18N
-                        NotifyDescriptor.DEFAULT_OPTION,
-                        NotifyDescriptor.ERROR_MESSAGE,
-                        new Object[] {NotifyDescriptor.OK_OPTION},
-                        NotifyDescriptor.OK_OPTION);
-            DialogDisplayer.getDefault().notify(nd);
+            JiraUtils.notifyErrorMessage(msg);
         }
 
         private static class LoginHandler extends ExceptionHandler {
@@ -356,7 +344,7 @@ public class JiraExecutor {
             protected boolean handle() {
                 boolean ret = repository.authenticate(errroMsg);
                 if(!ret) {
-                    notifyErrorMessage(NbBundle.getMessage(JiraExecutor.class, "MSG_ActionCanceledByUser")); // NOI18N
+                    JiraUtils.notifyErrorMessage(NbBundle.getMessage(JiraExecutor.class, "MSG_ActionCanceledByUser")); // NOI18N
                 }
                 return ret;
             }
@@ -373,7 +361,7 @@ public class JiraExecutor {
             protected boolean handle() {
                 boolean ret = BugtrackingUtil.editRepository(JiraUtils.getRepository(executor.repository), errroMsg);
                 if(!ret) {
-                    notifyErrorMessage(NbBundle.getMessage(JiraExecutor.class, "MSG_ActionCanceledByUser")); // NOI18N
+                    JiraUtils.notifyErrorMessage(NbBundle.getMessage(JiraExecutor.class, "MSG_ActionCanceledByUser")); // NOI18N
                 }
                 return ret;
             }
@@ -389,7 +377,7 @@ public class JiraExecutor {
             @Override
             protected boolean handle() {
                 if(errroMsg != null) {
-                    notifyErrorMessage(errroMsg);
+                    JiraUtils.notifyErrorMessage(errroMsg);
                 } else {
                     notifyError(ex, repository);
                 }

@@ -160,12 +160,14 @@ public class HistoryRegistry {
                         Collections.<String>emptyList(),                      // branch names
                         OutputLogger.getLogger(repository.getAbsolutePath()), // logger
                         false); // asc order
-                assert lms != null && lms.length == 1;
-                HgLogMessageChangedPath[] cps = lms[0].getChangedPaths();
-                changePaths = Arrays.asList(cps != null ? cps : new HgLogMessageChangedPath[0]);
-                fileChangesets.put(historyRevision, changePaths);
-                if(LOG.isLoggable(Level.FINE)) {
-                    LOG.log(Level.FINE, " loading changePaths for {0} took {1}", new Object[]{historyRevision, System.currentTimeMillis() - t1}); // NOI18N
+                assert lms != null;
+                if (lms.length > 0) { // can be null, remember .form and .java files, a commit may change only one of them
+                    HgLogMessageChangedPath[] cps = lms[0].getChangedPaths();
+                    changePaths = Arrays.asList(cps != null ? cps : new HgLogMessageChangedPath[0]);
+                    fileChangesets.put(historyRevision, changePaths);
+                    if(LOG.isLoggable(Level.FINE)) {
+                        LOG.log(Level.FINE, " loading changePaths for {0} took {1}", new Object[]{historyRevision, System.currentTimeMillis() - t1}); // NOI18N
+                    }
                 }
             }
             if(changePaths != null) {
