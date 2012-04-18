@@ -47,26 +47,24 @@ package org.netbeans.modules.apisupport.project.ui.customizer;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dialog;
-import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
-import java.util.MissingResourceException;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
+import static org.netbeans.modules.apisupport.project.ui.customizer.Bundle.*;
 import org.netbeans.spi.project.ui.CustomizerProvider;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.ErrorManager;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.WindowManager;
@@ -119,7 +117,7 @@ public abstract class BasicCustomizer implements CustomizerProvider {
     }
     
     /** Show customizer with the first category selected. */
-    public void showCustomizer() {
+    @Override public void showCustomizer() {
         showCustomizer(null);
     }
     
@@ -128,10 +126,10 @@ public abstract class BasicCustomizer implements CustomizerProvider {
         showCustomizer(preselectedCategory, null);
     }
 
+    @Messages({"# {0} - project display name", "LBL_CustomizerTitle=Project Properties - {0}"})
     public void showCustomizer(String preselectedCategory, final String preselectedSubCategory) {
         if (dialog != null) {
             dialog.setVisible(true);
-            return;
         } else {
             final String category = (preselectedCategory != null) ? preselectedCategory : lastSelectedCategory;
             Component glassPane = ((JFrame) WindowManager.getDefault().getMainWindow()).getGlassPane();
@@ -144,8 +142,7 @@ public abstract class BasicCustomizer implements CustomizerProvider {
                         category, listener,
                         null);
                 dialog.addWindowListener(listener);
-                dialog.setTitle(NbBundle.getMessage(getClass(), "LBL_CustomizerTitle",
-                        ProjectUtils.getInformation(getProject()).getDisplayName()));
+                dialog.setTitle(LBL_CustomizerTitle(ProjectUtils.getInformation(getProject()).getDisplayName()));
                 dialog.setVisible(true);
             } finally {
                 glassPane.setVisible(false);
@@ -158,7 +155,7 @@ public abstract class BasicCustomizer implements CustomizerProvider {
     public final void save() {
         try {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
-                public Void run() throws IOException {
+                @Override public Void run() throws IOException {
                     storeProperties();
                     ProjectManager.getDefault().saveProject(project);
                     return null;
@@ -179,7 +176,7 @@ public abstract class BasicCustomizer implements CustomizerProvider {
     protected class OptionListener extends WindowAdapter implements ActionListener {
         
         // Listening to OK button ----------------------------------------------
-        public void actionPerformed(ActionEvent e) {
+        @Override public void actionPerformed(ActionEvent e) {
             save();
         }
         
