@@ -369,7 +369,6 @@ public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Pro
             plain = false;
             whoIncludes = false;
         }
-        updateButtons();
         update(file);
     }
 
