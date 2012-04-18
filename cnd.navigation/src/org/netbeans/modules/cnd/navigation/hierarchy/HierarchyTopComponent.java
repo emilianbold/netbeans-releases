@@ -77,7 +77,7 @@ final class HierarchyTopComponent extends TopComponent implements CsmModelListen
     static final String ICON_PATH = "org/netbeans/modules/cnd/navigation/classhierarchy/resources/subtypehierarchy.gif"; // NOI18N
     private static final String PREFERRED_ID = "HierarchyTopComponent"; // NOI18N
     private JComponent last = null;
-    private static final RequestProcessor RP = new RequestProcessor("HierarchyWorker", 1);
+    private static final RequestProcessor RP = new RequestProcessor("HierarchyWorker", 1); // NOI18N
 
     private HierarchyTopComponent() {
         initComponents();

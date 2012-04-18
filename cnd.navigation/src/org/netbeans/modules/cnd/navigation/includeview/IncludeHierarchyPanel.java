@@ -89,7 +89,7 @@ import org.openide.windows.TopComponent;
  */
 public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Provider, HelpCtx.Provider  {
     public static final String ICON_PATH = "org/netbeans/modules/cnd/navigation/includeview/resources/tree.png"; // NOI18N
-    private static final RequestProcessor RP = new RequestProcessor("IncludeHierarchyWorker", 1);
+    private static final RequestProcessor RP = new RequestProcessor("IncludeHierarchyWorker", 1); // NOI18N
 
     private AbstractNode root;
     private transient ExplorerManager explorerManager = new ExplorerManager();
