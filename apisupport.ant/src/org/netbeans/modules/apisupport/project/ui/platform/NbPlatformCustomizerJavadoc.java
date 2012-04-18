@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.apisupport.project.ui.platform;
 
+import java.awt.EventQueue;
 import java.io.File;
 import java.net.URL;
 import java.util.Locale;
@@ -57,6 +58,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * Represents <em>Javadoc</em> tab in the NetBeans platforms customizer.
@@ -64,6 +66,8 @@ import org.openide.util.NbBundle;
  * @author Martin Krauskopf
  */
 public final class NbPlatformCustomizerJavadoc extends JPanel {
+
+    private static final RequestProcessor RP = new RequestProcessor(NbPlatformCustomizerJavadoc.class);
     
     private JavadocRootsProvider jrp;
     private PlatformComponentFactory.JavadocRootsModel model;
@@ -97,8 +101,16 @@ public final class NbPlatformCustomizerJavadoc extends JPanel {
         // update buttons enability appropriately
         removeButton.setEnabled(javadocList.getModel().getSize() > 0 && javadocList.getSelectedIndex() != -1);
         moveUpButton.setEnabled(javadocList.getSelectionModel().getMinSelectionIndex() > 0);
-        moveDownButton.setEnabled(jrp != null &&
-                javadocList.getSelectionModel().getMaxSelectionIndex() < jrp.getJavadocRoots().length - 1);
+        RP.post(new Runnable() {
+            @Override public void run() {
+                final int rootCount = jrp != null ? jrp.getJavadocRoots().length : 0;
+                EventQueue.invokeLater(new Runnable() {
+                    @Override public void run() {
+                        moveDownButton.setEnabled(javadocList.getSelectionModel().getMaxSelectionIndex() < rootCount - 1);
+                    }
+                });
+            }
+        });
     }
     
     public void setJavadocRootsProvider(JavadocRootsProvider jrp) {
