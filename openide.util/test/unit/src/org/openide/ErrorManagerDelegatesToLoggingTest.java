@@ -154,15 +154,20 @@ public class ErrorManagerDelegatesToLoggingTest extends NbTestCase {
 
     }
 
-    public void testAttachLocalizedMessageForClassNFEIfNoMsg() {
-        Exception e = new ClassNotFoundException("Help");
-        String msg = "me please";
+    public void testAnnotateCNFE() {
+        Exception e = new ClassNotFoundException();
+        String msg = "text of annotation";
         
-        ErrorManager.getDefault().annotate(e, msg);
+        ErrorManager.getDefault().annotate(e, ErrorManager.EXCEPTION, msg, null, null, null);
+        ErrorManager.getDefault().notify(e);
 
-        Object[] arr = ErrorManager.getDefault().findAnnotations(e);
+        assertTrue(MyHandler.lastThrowable == e || MyHandler.lastThrowable.getCause() == e);
         
-        assertNotNull("Arr exists", arr);
+        StringWriter w = new StringWriter();
+        MyHandler.lastThrowable.printStackTrace(new PrintWriter(w));
+        String stackTrace = w.toString();
+
+        if (!stackTrace.contains(msg)) fail("\'"+msg+"\' not found: "+stackTrace);
     }
     
     
