@@ -59,7 +59,7 @@ public class HintArea extends JTextPane {
         Color hintBackground = Utils.getHintBackground();
         setOpaque(true);
         setAutoscrolls(true);
-        setForeground(Color.darkGray);
+        setForeground(UIManager.getColor("Label.foreground")); // NOI18N
         setFont(UIManager.getFont("Label.font")); // NOI18N
         setBackground(hintBackground);
         setBorder(BorderFactory.createMatteBorder(10, 10, 10, 10, hintBackground));

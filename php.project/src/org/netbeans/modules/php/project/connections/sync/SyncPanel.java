@@ -603,7 +603,7 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
         } else {
             msg = Bundle.SyncPanel_info_prefix_selection(info);
         }
-        syncInfoLabel.setForeground(Color.darkGray);
+        syncInfoLabel.setForeground(UIManager.getColor("Label.foreground")); // NOI18N
         syncInfoLabel.setText(msg);
     }
 
