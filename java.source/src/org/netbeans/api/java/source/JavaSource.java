@@ -654,7 +654,7 @@ public final class JavaSource {
             throw new IllegalArgumentException ("Task cannot be null");     //NOI18N
         }        
         final ModificationResult result = new ModificationResult(this);
-        final ElementOverlay overlay = new ElementOverlay();
+        final ElementOverlay overlay = ElementOverlay.getOrCreateOverlay();
         long start = System.currentTimeMillis();
 
         Task<CompilationController> inner = new Task<CompilationController>() {
@@ -683,7 +683,7 @@ public final class JavaSource {
         if (sources.size() == 1) {
             Logger.getLogger("TIMER").log(Level.FINE, "Modification Task",  //NOI18N
                 new Object[] {sources.iterator().next().getFileObject(), System.currentTimeMillis() - start});
-        }            
+        }
         return result;
     }
 

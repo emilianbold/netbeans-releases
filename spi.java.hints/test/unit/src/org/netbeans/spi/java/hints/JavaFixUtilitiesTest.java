@@ -73,9 +73,9 @@ import org.openide.util.MapFormat;
  *
  * @author Jan Lahoda
  */
-public class JavaFixTest extends TestBase {
+public class JavaFixUtilitiesTest extends TestBase {
 
-    public JavaFixTest(String name) {
+    public JavaFixUtilitiesTest(String name) {
         super(name);
     }
 
@@ -502,6 +502,25 @@ public class JavaFixTest extends TestBase {
                                     "package test;\n" +
                                     "public class Test {\n" +
                                     "}\n");
+    }
+    
+    public void testRemoveFromParentExpressionStatement206116() throws Exception {
+        performRemoveFromParentTest("package test;\n" +
+                           "import java.io.InputStream;\n" +
+                           "public class Test {\n" +
+                           "    private void t() throws Exception {\n" +
+                           "        System.err.println();\n" +
+                           "        System.err.println(\"a\");\n" +
+                           "    }\n" +
+                           "}\n",
+                           "System.err.println()",
+                           "package test;\n" +
+                           "import java.io.InputStream;\n" +
+                           "public class Test {\n" +
+                           "    private void t() throws Exception {\n" +
+                           "        System.err.println(\"a\");\n" +
+                           "    }\n" +
+		           "}\n");
     }
 
     public void testUnresolvableTarget() throws Exception {

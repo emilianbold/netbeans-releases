@@ -1118,9 +1118,14 @@ public class JavaFixUtilities {
         protected void performRewrite(TransformationContext ctx) {
             WorkingCopy wc = ctx.getWorkingCopy();
             TreePath tp = ctx.getPath();
+            
+            doRemoveFromParent(wc, tp);
+        }
+        
+        private void doRemoveFromParent(WorkingCopy wc, TreePath what) {
             TreeMaker make = wc.getTreeMaker();
-            Tree leaf = tp.getLeaf();
-            Tree parentLeaf = tp.getParentPath().getLeaf();
+            Tree leaf = what.getLeaf();
+            Tree parentLeaf = what.getParentPath().getLeaf();
 
             switch (parentLeaf.getKind()) {
                 case ANNOTATION:
@@ -1251,8 +1256,11 @@ public class JavaFixUtilities {
 
                     wc.rewrite(tryTree, newTry);
                     break;
+                case EXPRESSION_STATEMENT:
+                    doRemoveFromParent(wc, what.getParentPath());
+                    break;
                 default:
-                    wc.rewrite(tp.getLeaf(), make.Block(Collections.<StatementTree>emptyList(), false));
+                    wc.rewrite(what.getLeaf(), make.Block(Collections.<StatementTree>emptyList(), false));
                     break;
             }
         }
