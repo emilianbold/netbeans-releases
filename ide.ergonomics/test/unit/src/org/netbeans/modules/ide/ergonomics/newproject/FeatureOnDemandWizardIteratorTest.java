@@ -39,28 +39,61 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.performance.scanning;
+package org.netbeans.modules.ide.ergonomics.newproject;
 
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.EventQueue;
+import static org.junit.Assert.*;
+import org.junit.Test;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.TemplateWizard;
 
-/**
- *
- * @author petr
- */
-public class MeasureScanningTest {
-    public static NbTestSuite suite() {
-        PerformanceTestCase.prepareForMeasurements();
-
-        NbTestSuite suite = new NbTestSuite("Scanning suite");
-        System.setProperty("suitename", MeasureScanningTest.class.getCanonicalName());
-        System.setProperty("suite", "Scanning suite");
-
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ScanProjectPerfTest.class)
-                .addTest(ScanSeveralProjectsPerfTest.class)
-                .addTest(JavaNavigatorPerfTest.class)                
-                .enableModules(".*").clusters(".*").reuseUserDir(false)));
-        return suite;
+public class FeatureOnDemandWizardIteratorTest {
+    public FeatureOnDemandWizardIteratorTest() {
+    }
+    
+    @Test
+    public void testIteratorCreatesUI() throws Exception {
+        assertFalse("No EDT", EventQueue.isDispatchThread());
+        
+        FileObject fo = FileUtil.getConfigRoot().createData("smpl.tmp");
+        final FeatureOnDemandWizardIterator it = new FeatureOnDemandWizardIterator(fo);
+        fo.setAttribute("instantiatingIterator", it);
+        
+        final TemplateWizard tw = new TemplateWizard();
+        tw.setTemplate(DataObject.find(fo));
+        
+        EventQueue.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                assertNotNull("Panel found", it.current());
+                assertComponent("Our component found", it.current().getComponent(), tw);
+            }
+        });
+    }
+    static void assertComponent(String msg, Component component, TemplateWizard tw) {
+        Object c = tw.getMessage();
+        assertTrue("Is component: " + c, c instanceof Component);
+        if (contains(component, ((Component)c))) {
+            return;
+        }
+        fail(msg);
+    }
+    private static boolean contains(Component seachFor, Component where) {
+        if (seachFor == where) {
+            return true;
+        }
+        if (where instanceof Container) {
+            Container c = (Container)where;
+            for (Component a : c.getComponents()) {
+                if (contains(seachFor, a)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

@@ -42,6 +42,7 @@
 package org.netbeans.core.startup;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -106,7 +107,8 @@ final class NbStartStop implements LookupListener {
     void waitOnStart() {
         RequestProcessor.Task[] all;
         synchronized (onStart) {
-            all = onStart.values().toArray(new RequestProcessor.Task[0]);
+            Collection<RequestProcessor.Task> values = onStart.values();
+            all = values.toArray(new RequestProcessor.Task[values.size()]);
         }
         for (RequestProcessor.Task t : all) {
             t.waitFinished();
