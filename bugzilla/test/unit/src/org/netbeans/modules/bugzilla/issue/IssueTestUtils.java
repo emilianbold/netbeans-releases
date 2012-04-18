@@ -39,45 +39,17 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.bugtracking.api;
-
-import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
-import org.netbeans.modules.bugtracking.ui.query.QueryAction;
+package org.netbeans.modules.bugzilla.issue;
 
 /**
  *
- * @author Tomas Stupka
+ * @author tomas
  */
-public final class Util {
+public class IssueTestUtils {
     
-    private Util() { }
+    private IssueTestUtils(){}
     
-    /**
-     * Opens an issue.
-     * 
-     * @param repository the repository where where the given issueId originates from
-     * @param issueId the issue id
-     */
-    public static void openIssue(Repository repository, String issueId) {
-        IssueAction.openIssue(repository.getImpl(), issueId);
-    }    
-    
-    /*
-     * Creates a new, not yet saved and named query.  
-     * 
-     * @return 
-     */
-    public static void createNewQuery(Repository repository) {
-        QueryAction.openQuery(null, repository.getImpl());
+    public static void submit(BugzillaIssue issue) {
+        issue.submitAndRefresh();
     }
-
-    /**
-     * Creates a new, not yet submitted issue
-     * 
-     * @return 
-     */
-    public static void createNewIssue(Repository repository) {
-        IssueAction.createIssue(repository.getImpl());
-    }
-    
 }
