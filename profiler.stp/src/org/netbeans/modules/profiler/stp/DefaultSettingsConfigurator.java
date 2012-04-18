@@ -83,10 +83,7 @@ final class DefaultSettingsConfigurator implements SelectProfilingTask.SettingsC
         private Lookup.Provider project;
         private ProfilingSettingsSupport pss;
         private Collection<ChangeListener> changeListeners = new CopyOnWriteArraySet<ChangeListener>();
-        private boolean enableOverride;
         private boolean internalChange = false;
-        private boolean isAttach;
-        private boolean isModify;
         private boolean isPreset;
         final private static boolean useCPUTimer = true; // always enabled
 
@@ -110,14 +107,10 @@ final class DefaultSettingsConfigurator implements SelectProfilingTask.SettingsC
             return basicSettingsPanel;
         }
 
-        public void setContext(Lookup.Provider project, FileObject profiledFile, boolean isAttach, boolean isModify,
-                               boolean enableOverride) {
+        public void setContext(Lookup.Provider project, FileObject profiledFile, boolean isAttach, boolean isModify) {
             this.project = project;
             pss = ProfilingSettingsSupport.get(project);
             this.profiledFile = profiledFile;
-            this.enableOverride = enableOverride;
-            this.isAttach = isAttach;
-            this.isModify = isModify;
         }
 
         public float getProfilingOverhead() {
@@ -170,11 +163,6 @@ final class DefaultSettingsConfigurator implements SelectProfilingTask.SettingsC
 
             advancedSettingsPanel.setThreadsMonitoring(settings.getThreadsMonitoringEnabled());
             advancedSettingsPanel.setThreadsSampling(settings.getThreadsSamplingEnabled());
-            advancedSettingsPanel.setOverrideAvailable(enableOverride);
-            advancedSettingsPanel.setOverrideSettings(settings.getOverrideGlobalSettings());
-            advancedSettingsPanel.setWorkingDirectory(settings.getWorkingDir());
-            advancedSettingsPanel.setJavaPlatformName(settings.getJavaPlatformName());
-            advancedSettingsPanel.setVMArguments(settings.getJVMArgs());
 
             if (settings.isPreset()) {
                 advancedSettingsPanel.disableAll();
@@ -217,10 +205,6 @@ final class DefaultSettingsConfigurator implements SelectProfilingTask.SettingsC
 
             finalSettings.setThreadsMonitoringEnabled(advancedSettingsPanel.getThreadsMonitoring());
             finalSettings.setThreadsSamplingEnabled(advancedSettingsPanel.getThreadsSampling());
-            finalSettings.setOverrideGlobalSettings(advancedSettingsPanel.getOverrideSettings());
-            finalSettings.setWorkingDir(advancedSettingsPanel.getWorkingDirectory());
-            finalSettings.setJavaPlatformName(advancedSettingsPanel.getJavaPlatformName());
-            finalSettings.setJVMArgs(advancedSettingsPanel.getVMArguments());
             
             // generated settings
 //            ClientUtils.SourceCodeSelection[] emptyRoots = new ClientUtils.SourceCodeSelection[0];
@@ -262,9 +246,6 @@ final class DefaultSettingsConfigurator implements SelectProfilingTask.SettingsC
             project = null;
             pss = null;
             profiledFile = null;
-            enableOverride = false;
-            isAttach = false;
-            isModify = false;
             isPreset = false;
         }
 
@@ -310,10 +291,6 @@ final class DefaultSettingsConfigurator implements SelectProfilingTask.SettingsC
 
             settings.setThreadsMonitoringEnabled(advancedSettingsPanel.getThreadsMonitoring());
             settings.setThreadsSamplingEnabled(advancedSettingsPanel.getThreadsSampling());
-            settings.setOverrideGlobalSettings(advancedSettingsPanel.getOverrideSettings());
-            settings.setWorkingDir(advancedSettingsPanel.getWorkingDirectory());
-            settings.setJavaPlatformName(advancedSettingsPanel.getJavaPlatformName());
-            settings.setJVMArgs(advancedSettingsPanel.getVMArguments());
         }
 
         private void fireSettingsChanged() {
@@ -361,8 +338,7 @@ final class DefaultSettingsConfigurator implements SelectProfilingTask.SettingsC
             return basicSettingsPanel;
         }
 
-        public void setContext(Lookup.Provider project, FileObject profiledFile, boolean isAttach, boolean isModify,
-                               boolean enableOverride) {
+        public void setContext(Lookup.Provider project, FileObject profiledFile, boolean isAttach, boolean isModify) {
             this.project = project;
             pss = ProfilingSettingsSupport.get(project);
             this.profiledFile = profiledFile;
@@ -411,11 +387,6 @@ final class DefaultSettingsConfigurator implements SelectProfilingTask.SettingsC
 
             advancedSettingsPanel.setThreadsMonitoring(settings.getThreadsMonitoringEnabled());
             advancedSettingsPanel.setThreadsSampling(settings.getThreadsSamplingEnabled());
-            advancedSettingsPanel.setOverrideAvailable(enableOverride);
-            advancedSettingsPanel.setOverrideSettings(settings.getOverrideGlobalSettings());
-            advancedSettingsPanel.setWorkingDirectory(settings.getWorkingDir());
-            advancedSettingsPanel.setJavaPlatformName(settings.getJavaPlatformName());
-            advancedSettingsPanel.setVMArguments(settings.getJVMArgs());
 
             if (settings.isPreset()) {
                 advancedSettingsPanel.disableAll();
@@ -448,10 +419,6 @@ final class DefaultSettingsConfigurator implements SelectProfilingTask.SettingsC
 
             finalSettings.setThreadsMonitoringEnabled(advancedSettingsPanel.getThreadsMonitoring());
             finalSettings.setThreadsSamplingEnabled(advancedSettingsPanel.getThreadsSampling());
-            finalSettings.setOverrideGlobalSettings(advancedSettingsPanel.getOverrideSettings());
-            finalSettings.setWorkingDir(advancedSettingsPanel.getWorkingDirectory());
-            finalSettings.setJavaPlatformName(advancedSettingsPanel.getJavaPlatformName());
-            finalSettings.setJVMArgs(advancedSettingsPanel.getVMArguments());
 
             return finalSettings;
         }
@@ -497,10 +464,6 @@ final class DefaultSettingsConfigurator implements SelectProfilingTask.SettingsC
 
             settings.setThreadsMonitoringEnabled(advancedSettingsPanel.getThreadsMonitoring());
             settings.setThreadsSamplingEnabled(advancedSettingsPanel.getThreadsSampling());
-            settings.setOverrideGlobalSettings(advancedSettingsPanel.getOverrideSettings());
-            settings.setWorkingDir(advancedSettingsPanel.getWorkingDirectory());
-            settings.setJavaPlatformName(advancedSettingsPanel.getJavaPlatformName());
-            settings.setJVMArgs(advancedSettingsPanel.getVMArguments());
         }
 
         private void fireSettingsChanged() {
@@ -517,13 +480,12 @@ final class DefaultSettingsConfigurator implements SelectProfilingTask.SettingsC
         //~ Instance fields ------------------------------------------------------------------------------------------------------
 
         private FileObject profiledFile;
-        private MonitorSettingsAdvancedPanel advancedSettingsPanel;
+        private JPanel advancedSettingsPanel;
         private MonitorSettingsBasicPanel basicSettingsPanel;
         private ProfilingSettings settings;
         private Lookup.Provider project;
         private ProfilingSettingsSupport pss;
         private Collection<ChangeListener> changeListeners = new CopyOnWriteArraySet<ChangeListener>();
-        private boolean enableOverride;
         private boolean internalChange = false;
         private boolean isAttach;
         private boolean isModify;
@@ -533,10 +495,10 @@ final class DefaultSettingsConfigurator implements SelectProfilingTask.SettingsC
 
         public MonitorContents() {
             basicSettingsPanel = new MonitorSettingsBasicPanel();
-            advancedSettingsPanel = new MonitorSettingsAdvancedPanel();
-
+            advancedSettingsPanel = new JPanel();
+            advancedSettingsPanel.setVisible(false);
+            
             basicSettingsPanel.addChangeListener(this);
-            advancedSettingsPanel.addChangeListener(this);
         }
 
         //~ Methods --------------------------------------------------------------------------------------------------------------
@@ -549,12 +511,10 @@ final class DefaultSettingsConfigurator implements SelectProfilingTask.SettingsC
             return basicSettingsPanel;
         }
 
-        public void setContext(Lookup.Provider project, FileObject profiledFile, boolean isAttach, boolean isModify,
-                               boolean enableOverride) {
+        public void setContext(Lookup.Provider project, FileObject profiledFile, boolean isAttach, boolean isModify) {
             this.project = project;
             pss = ProfilingSettingsSupport.get(project);
             this.profiledFile = profiledFile;
-            this.enableOverride = enableOverride;
             this.isAttach = isAttach;
             this.isModify = isModify;
         }
@@ -580,21 +540,6 @@ final class DefaultSettingsConfigurator implements SelectProfilingTask.SettingsC
             basicSettingsPanel.setThreadsMonitoring(settings.getThreadsMonitoringEnabled());
             basicSettingsPanel.setThreadsSampling(settings.getThreadsSamplingEnabled());
 
-            // advancedSettingsPanel
-            if (!settings.isPreset()) {
-                advancedSettingsPanel.enableAll();
-            }
-
-            advancedSettingsPanel.setOverrideAvailable(enableOverride);
-            advancedSettingsPanel.setOverrideSettings(settings.getOverrideGlobalSettings());
-            advancedSettingsPanel.setWorkingDirectory(settings.getWorkingDir());
-            advancedSettingsPanel.setJavaPlatformName(settings.getJavaPlatformName());
-            advancedSettingsPanel.setVMArguments(settings.getJVMArgs());
-
-            if (settings.isPreset()) {
-                advancedSettingsPanel.disableAll();
-            }
-
             internalChange = false;
 
             fireSettingsChanged();
@@ -615,10 +560,6 @@ final class DefaultSettingsConfigurator implements SelectProfilingTask.SettingsC
             finalSettings.setThreadsSamplingEnabled(basicSettingsPanel.getThreadsSampling());
 
             // advancedSettingsPanel
-            finalSettings.setOverrideGlobalSettings(advancedSettingsPanel.getOverrideSettings());
-            finalSettings.setWorkingDir(advancedSettingsPanel.getWorkingDirectory());
-            finalSettings.setJavaPlatformName(advancedSettingsPanel.getJavaPlatformName());
-            finalSettings.setJVMArgs(advancedSettingsPanel.getVMArguments());
 
             return finalSettings;
         }
@@ -632,7 +573,6 @@ final class DefaultSettingsConfigurator implements SelectProfilingTask.SettingsC
             project = null;
             pss = null;
             profiledFile = null;
-            enableOverride = false;
             isAttach = false;
             isModify = false;
             isPreset = false;
@@ -653,10 +593,6 @@ final class DefaultSettingsConfigurator implements SelectProfilingTask.SettingsC
             settings.setThreadsSamplingEnabled(basicSettingsPanel.getThreadsSampling());
 
             // advancedSettingsPanel
-            settings.setOverrideGlobalSettings(advancedSettingsPanel.getOverrideSettings());
-            settings.setWorkingDir(advancedSettingsPanel.getWorkingDirectory());
-            settings.setJavaPlatformName(advancedSettingsPanel.getJavaPlatformName());
-            settings.setJVMArgs(advancedSettingsPanel.getVMArguments());
         }
 
         private void fireSettingsChanged() {
@@ -683,7 +619,6 @@ final class DefaultSettingsConfigurator implements SelectProfilingTask.SettingsC
     // --- Instance variables ----------------------------------------------------
     private ProfilingSettings settings;
     private Lookup.Provider project;
-    private boolean enableOverride;
     private boolean isAttach;
     private boolean isModify;
     private boolean isPreset;
@@ -697,13 +632,12 @@ final class DefaultSettingsConfigurator implements SelectProfilingTask.SettingsC
     public void setContext(Lookup.Provider project, FileObject profiledFile, boolean isAttach, boolean isModify, boolean enableOverride) {
         this.project = project;
         this.profiledFile = profiledFile;
-        this.enableOverride = enableOverride;
         this.isAttach = isAttach;
         this.isModify = isModify;
 
-        monitorContents.setContext(project, profiledFile, isAttach, isModify, enableOverride);
-        cpuContents.setContext(project, profiledFile, isAttach, isModify, enableOverride);
-        memoryContents.setContext(project, profiledFile, isAttach, isModify, enableOverride);
+        monitorContents.setContext(project, profiledFile, isAttach, isModify);
+        cpuContents.setContext(project, profiledFile, isAttach, isModify);
+        memoryContents.setContext(project, profiledFile, isAttach, isModify);
     }
 
     public JPanel getCustomSettingsPanel() {
@@ -757,7 +691,6 @@ final class DefaultSettingsConfigurator implements SelectProfilingTask.SettingsC
         settings = null;
         project = null;
         profiledFile = null;
-        enableOverride = false;
         isAttach = false;
         isModify = false;
         isPreset = false;
@@ -799,9 +732,5 @@ final class DefaultSettingsConfigurator implements SelectProfilingTask.SettingsC
     // --- Protected interface ---------------------------------------------------
     protected Lookup.Provider getProject() {
         return project;
-    }
-
-    protected boolean enableOverride() {
-        return enableOverride;
     }
 }

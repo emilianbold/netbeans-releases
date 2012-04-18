@@ -73,6 +73,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
     // General
     private BooleanConfiguration excluded;
     private PredefinedToolKind tool = PredefinedToolKind.UnknownTool;
+    private boolean toolDirty = false;
     private LanguageFlavor languageFlavor = LanguageFlavor.UNKNOWN;
     // Tools
     private ConfigurationBase lastConfiguration;
@@ -179,9 +180,18 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         needSave = true;
     }
     
+    public boolean isToolDirty() {
+        return toolDirty;
+    }
+    
+    public void setToolDirty(boolean dirty) {
+        toolDirty = dirty;
+    }
+    
     public void setTool(PredefinedToolKind tool) {
         if (this.tool != tool){
             lastConfiguration = null;
+            toolDirty = true;
         }
         this.tool = tool;
    }

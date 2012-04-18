@@ -39,58 +39,55 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.profiler.nbimpl;
+package org.netbeans.modules.profiler.j2ee.impl;
 
-import java.io.File;
-import java.util.Map;
-import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.Task;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.profiler.api.JavaPlatform;
-import org.netbeans.modules.profiler.nbimpl.actions.ProfilerLauncher;
-import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 
 /**
- *
+ * A simple registry-like access point for server-defined JavaPlatform
  * @author Jaroslav Bachorik
  */
-public class StartProfilerTask extends Task {
-    private String freeformStr = "";
-    private boolean isFreeForm = false;
+public class ServerJavaPlatform {
+    private static final String KEY_PLATFORM = "platform.ant.name"; // NOI18N
     
-    @Override
-    public void execute() throws BuildException {
-        ProfilerLauncher.Session s = ProfilerLauncher.getLastSession();
-        if (s == null && isFreeForm) {
-            File baseDir = getProject().getBaseDir();
-            if (baseDir != null) {
-                Project p = FileOwnerQuery.getOwner(FileUtil.toFileObject(baseDir));
-                if (p != null) {
-                    s = ProfilerLauncher.Session.createSession(p);
+    private static final Logger LOG = Logger.getLogger(ServerJavaPlatform.class.getName());
+    
+    @NbBundle.Messages({
+        "# {0} - the server instance id",
+        "MSG_MissingServerJavaPlatform=Missing JavaPlatform for server {0}.\nUsing the IDE default platform instead."
+    })
+    /**
+     * @since 1.20
+     */
+    public static @NonNull JavaPlatform getPlatform(String serverInstanceId) {
+        ServerInstance si = Deployment.getDefault().getServerInstance(serverInstanceId);
+
+        JavaPlatform newjp = null;
+        try {
+            if (si != null) {
+                J2eePlatform jeep = si.getJ2eePlatform();
+                if (jeep != null) {
+                    org.netbeans.api.java.platform.JavaPlatform pjp = jeep.getJavaPlatform();
+                    newjp = pjp != null ? JavaPlatform.getJavaPlatformById(pjp.getProperties().get(KEY_PLATFORM)) : null;
                 }
             }
-            
+        } catch (InstanceRemovedException e) {
         }
-        if (s != null) {
-            Map<String, String> props = s.getProperties();
-            if (props != null) {
-                for(Map.Entry<String, String> e : props.entrySet()) {
-                    getProject().setProperty(e.getKey(), e.getValue());
-                }
-                if (!NetBeansProfiler.getDefaultNB().startEx(s.getProfilingSettings(), s.getSessionSettings())) {
-                    throw new BuildException("User abort");
-                }
-            }
+        
+        if (newjp == null) {
+            LOG.log(Level.INFO, Bundle.MSG_MissingServerJavaPlatform(serverInstanceId));
+            newjp = JavaPlatform.getDefaultPlatform();
         }
+        
+        return newjp != null ? newjp : JavaPlatform.getDefaultPlatform();
     }
-    
-    public void setFreeform(String val) {
-        freeformStr = val;
-        isFreeForm = Boolean.parseBoolean(val);
-    }
-    
-    public String getFreeform() {
-        return freeformStr;
-    }
+
 }

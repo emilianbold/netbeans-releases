@@ -219,6 +219,9 @@ class WebActionProvider extends BaseActionProvider {
         ));
 
         this.needJavaModelActions = new HashSet<String>(Arrays.asList(
+            COMMAND_PROFILE,
+            COMMAND_PROFILE_SINGLE,
+            COMMAND_PROFILE_TEST_SINGLE,
             JavaProjectConstants.COMMAND_DEBUG_FIX
         ));
         setServerExecution(true);
