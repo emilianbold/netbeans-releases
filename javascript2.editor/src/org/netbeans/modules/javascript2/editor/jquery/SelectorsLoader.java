@@ -79,7 +79,7 @@ public class SelectorsLoader extends DefaultHandler {
             DefaultHandler handler = new SelectorsLoader();
             parser.parse(file, handler);
             long end = System.currentTimeMillis();
-            LOGGER.log(Level.FINE, "Loading selectors from API file took {0}ms ",  (end - start));
+            LOGGER.log(Level.FINE, "Loading selectors from API file took {0}ms ",  (end - start)); //NOI18N
          
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
@@ -93,7 +93,7 @@ public class SelectorsLoader extends DefaultHandler {
 
     private boolean inSelector = false;
     private enum Tag {
-        sample, notinterested;
+        entry, sample, notinterested;
     }
     private String name;
     private String sample;
@@ -105,12 +105,11 @@ public class SelectorsLoader extends DefaultHandler {
           if (qName.equals(Tag.sample.name())){
               inTag = Tag.sample;
           }  
-        } else if(qName.equals("entry")) {
-            String type = attributes.getValue("type");
-            if (type.equals("selector")) {
+        } else if(qName.equals(Tag.entry.name())) {
+            String type = attributes.getValue("type"); //NOI18N
+            if (type.equals("selector")) {  //NOI18N
                 inSelector = true;
-                name = attributes.getValue("name");
-                System.out.println("Selector: " + name);
+                name = attributes.getValue("name"); //NOI18N
             }
         }
         
@@ -118,12 +117,12 @@ public class SelectorsLoader extends DefaultHandler {
 
     @Override
     public void endElement(String uri, String localName, String qName) throws SAXException {
-        if(inSelector && qName.equals("entry")) {
+        if(inSelector && qName.equals(Tag.entry.name())) {
             inSelector = false;
             String template = null;
-            if(sample.indexOf('(') > -1) {
-                template = name + "(${cursor})";
-                name = name + "()";
+            if(sample.indexOf('(') > -1) {          //NOI18N
+                template = name + "(${cursor})";    //NOI18N
+                name = name + "()";                 //NOI18N
             }
             JQueryCodeCompletion.SelectorItem item = new JQueryCodeCompletion.SelectorItem(name, template);
             result.add(item);
@@ -139,7 +138,5 @@ public class SelectorsLoader extends DefaultHandler {
                 break;
         }
     }
-    
-    
     
 }
