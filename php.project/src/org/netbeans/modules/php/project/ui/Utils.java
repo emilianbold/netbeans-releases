@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.php.project.ui;
 
+import java.awt.Color;
 import java.awt.Image;
 import java.io.File;
 import java.io.IOException;
@@ -53,6 +54,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JTextField;
 import javax.swing.MutableComboBoxModel;
+import javax.swing.UIManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.StringUtils;
@@ -87,6 +89,21 @@ public final class Utils {
     private static final char[] INVALID_FILENAME_CHARS = new char[] {'/', '\\', '|', ':', '*', '?', '"', '<', '>'}; // NOI18N
 
     private Utils() {
+    }
+
+    public static Color getSafeColor(int red, int green, int blue) {
+        red = Math.max(red, 0);
+        red = Math.min(red, 255);
+        green = Math.max(green, 0);
+        green = Math.min(green, 255);
+        blue = Math.max(blue, 0);
+        blue = Math.min(blue, 255);
+        return new Color(red, green, blue);
+    }
+
+    public static Color getHintBackground() {
+        Color panelBackground = UIManager.getColor("Panel.background"); // NOI18N
+        return getSafeColor(panelBackground.getRed() - 10, panelBackground.getGreen() - 10, panelBackground.getBlue() - 10);
     }
 
     public static Image getIncludePathIcon(boolean opened) {

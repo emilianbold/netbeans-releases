@@ -92,23 +92,32 @@ public final class TransferFilesChooser {
         return new TransferFilesChooser(transferFiles, TransferType.UPLOAD, timestamp);
     }
 
+    @NbBundle.Messages({
+        "TransferFilesChooser.title.download=File Download",
+        "TransferFilesChooser.title.upload=File Upload",
+        "TransferFilesChooser.button.downloadWithMnemonics=&Download",
+        "TransferFilesChooser.button.uploadWithMnemonics=&Upload"
+    })
     public Set<TransferFile> showDialog() {
-        String titleKey = null;
+        String title;
+        String buttonLabel;
         switch (transferType) {
             case DOWNLOAD:
-                titleKey = "LBL_FileDownload"; // NOI18N
+                title = Bundle.TransferFilesChooser_title_download();
+                buttonLabel = Bundle.TransferFilesChooser_button_downloadWithMnemonics();
                 break;
             case UPLOAD:
-                titleKey = "LBL_FileUpload"; // NOI18N
+                title = Bundle.TransferFilesChooser_title_upload();
+                buttonLabel = Bundle.TransferFilesChooser_button_uploadWithMnemonics();
                 break;
             default:
                 throw new IllegalStateException("Unknown transfer type: " + transferType);
         }
         JButton okButton = new JButton();
-        Mnemonics.setLocalizedText(okButton, NbBundle.getMessage(TransferFilesChooser.class, "LBL_Ok"));
+        Mnemonics.setLocalizedText(okButton, buttonLabel);
         DialogDescriptor descriptor = new DialogDescriptor(
                 getTransferVisual(),
-                NbBundle.getMessage(TransferFilesChooser.class, titleKey),
+                title,
                 true,
                 new Object[] {okButton, DialogDescriptor.CANCEL_OPTION},
                 okButton,
