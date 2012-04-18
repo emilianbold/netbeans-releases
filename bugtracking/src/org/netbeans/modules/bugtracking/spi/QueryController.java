@@ -42,86 +42,47 @@
 
 package org.netbeans.modules.bugtracking.spi;
 
-import java.awt.Image;
-import java.util.Collection;
-import org.openide.util.Lookup;
+import javax.swing.JComponent;
+import org.openide.util.HelpCtx;
 
 /**
- * 
- * Represents a bug tracking repository (server)
- * 
- * @author Tomas Stupka, Jan Stola
+ *
+ * @author Tomas Stupka
  */
-public abstract class RepositoryProvider<R, Q, I> {
+public abstract class QueryController {
 
-    /**
-     * Returns the repository info or null in case the repository is new
-     * 
-     * @param r
-     * @return 
-     */
-    public abstract RepositoryInfo getInfo(R r);
+    public enum QueryMode {
+        SHOW_ALL,
+        SHOW_NEW_OR_CHANGED
+    }
+
+    public abstract void setMode(QueryMode mode);
     
     /**
-     * Returns the icon for this repository
-     * @return
+     * Returns a visual component representing the bugtracking entity this controller is meant for
+     * e.g. Repository, Query, ...
+     * @return a visual component representing a bugtracking entity
      */
-    public abstract Image getIcon(R r);
-
-    /**
-     * Returns an issue with the given ID
-     *
-     * XXX add flag refresh
-     *
-     * @param id
-     * @return
-     */
-    public abstract I[] getIssues(R r, String... ids);
-
-    /**
-     * Removes this repository from its connector
-     *
-     */
-    public abstract void remove(R r);
-
-    /**
-     * Returns the {@link BugtrackignController} for this repository
-     * @return
-     */
-    public abstract RepositoryController getController(R r);
-
-    /**
-     * Creates a new query instance. Might block for a longer time.
-     *
-     * @return a new QueryProvider instance or null if it's not possible
-     * to access the repository.
-     */
-    public abstract Q createQuery(R r); 
-
-    /**
-     * Creates a new IssueProvider instance. Might block for a longer time.
-     *
-     * @return return a new IssueProvider instance or null if it's not possible
-     * to access the repository.
-     */
-    public abstract I createIssue(R r);
-
-    /**
-     * Returns all saved queries
-     * @return
-     */
-    public abstract Collection<Q> getQueries(R r);
-
-    public abstract Lookup getLookup(R r);
+    public abstract JComponent getComponent() ;
     
     /**
-     * Runs a query against the bugtracking repository to get all issues
-     * which applies that their ID or summary contains the given criteria string
-     *
-     * XXX move to siple search
-     *
-     * @param criteria
+     * Returns the help context associated with this controllers visual component
+     * @return
      */
-    public abstract Collection<I> simpleSearch(R r, String criteria);
+    public abstract HelpCtx getHelpCtx();
+
+    /**
+     * Called when this controller was openened
+     */
+    public void opened() {
+
+    }
+
+    /**
+     * Called when this controller was closed
+     */
+    public void closed() {
+
+    }
 
 }

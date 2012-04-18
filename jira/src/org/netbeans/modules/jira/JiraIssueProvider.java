@@ -39,6 +39,7 @@ package org.netbeans.modules.jira;
 
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.util.List;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
@@ -65,6 +66,12 @@ public class JiraIssueProvider extends IssueProvider<NbJiraIssue> {
         return data.getID();
     }
 
+    @Override
+    public String[] getSubtasks(NbJiraIssue data) {
+        List<String> l = data.getSubtaskID();
+        return l.toArray(new String[l.size()]);
+    }
+    
     @Override
     public String getSummary(NbJiraIssue data) {
         return data.getSummary();

@@ -154,5 +154,10 @@ public class HookIssue extends TestIssue {
     public TestIssue createFor(String id) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
+    
+    @Override
+    public String[] getSubtasks() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }    
 
 }

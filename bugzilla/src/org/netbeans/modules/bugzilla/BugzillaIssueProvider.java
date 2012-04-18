@@ -39,10 +39,12 @@ package org.netbeans.modules.bugzilla;
 
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.util.List;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
+import org.netbeans.modules.bugzilla.repository.IssueField;
 import org.openide.nodes.Node;
 
 /**
@@ -64,6 +66,12 @@ public class BugzillaIssueProvider extends IssueProvider<BugzillaIssue> {
     @Override
     public String getID(BugzillaIssue data) {
         return data.getID();
+    }
+
+    @Override
+    public String[] getSubtasks(BugzillaIssue data) {
+        List<String> l = data.getFieldValues(IssueField.BLOCKS);
+        return l.toArray(new String[l.size()]);
     }
 
     @Override

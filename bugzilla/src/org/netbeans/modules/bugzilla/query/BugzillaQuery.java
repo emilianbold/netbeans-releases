@@ -256,7 +256,7 @@ public class BugzillaQuery {
         refreshIntern(autoReresh);
     }
 
-    void remove() {
+    public void remove() {
         repository.removeQuery(this);
         fireQueryRemoved();
     }
