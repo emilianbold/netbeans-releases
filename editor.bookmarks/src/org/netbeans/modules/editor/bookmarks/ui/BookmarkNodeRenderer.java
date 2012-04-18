@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,34 +34,61 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.form;
+package org.netbeans.modules.editor.bookmarks.ui;
 
-import java.util.concurrent.*;
+import java.awt.Component;
+import java.awt.Image;
+import java.beans.BeanInfo;
+import javax.swing.Icon;
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableCellRenderer;
+import org.netbeans.modules.editor.bookmarks.BookmarkInfo;
+import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 
 /**
- * Provider of component with data (for example collection of JPA entities).
+ * Renderer of BookmarkNode in a JTable.
  *
- * @author Jan Stola
+ * @author Miloslav Metelka
  */
-public interface DataImporter {
+public class BookmarkNodeRenderer extends DefaultTableCellRenderer {
+    
+    private boolean forHistoryPopup;
+    
+    BookmarkNodeRenderer(boolean forHistoryPopup) {
+        this.forHistoryPopup = forHistoryPopup;
+    }
+        
+    @Override
+    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+        super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 
-    /**
-     * Determines if any data can be imported into the specified form.
-     * 
-     * @param form target form.
-     * @return {@code true} if this importer is able to import any data
-     * into the specified form, returns {@code false} otherwise.
-     */
-    boolean canImportData(FormModel form);
+        Icon icon = null;
+        BookmarksTableModel model = (BookmarksTableModel) table.getModel();
+        BookmarkNode bNode = model.getEntry(row);
+        BookmarkInfo bookmark = bNode.getBookmarkInfo();
+        Node fNode = bNode.getParentNode();
+        if (fNode != null) {
+            if (!isSelected) {
+                String text = fNode.getHtmlDisplayName();
+                if (text != null) {
+                    text = bookmark.getDescription(text, forHistoryPopup, forHistoryPopup, true);
+                    setText("<html>" + text + "</html>");
+                } // else leave original text set by "super"
+            }
+            Image image = fNode.getIcon(BeanInfo.ICON_COLOR_16x16);
+            if (image != null) {
+                icon = ImageUtilities.image2Icon(image);
+            }
+        }
+        setIcon(icon);
+        return this;
 
-    /**
-     * Imports the data. Usually opens a dialog allowing the user to customize
-     * the data to import.
-     * 
-     * @param form form to import the data into.
-     * @return the component encapsulating the imported data.
-     */
-    Future<RADComponent> importData(FormModel form);
+    }
 
 }

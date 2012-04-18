@@ -121,7 +121,7 @@ public final class ModificationResult {
      */
     public static @NonNull ModificationResult runModificationTask(final @NonNull Collection<Source> sources, final @NonNull UserTask task) throws ParseException {
         final ModificationResult result = new ModificationResult(sources);
-        final ElementOverlay overlay = new ElementOverlay();
+        final ElementOverlay overlay = ElementOverlay.getOrCreateOverlay();
         ParserManager.parse(sources, new UserTask() {
             @Override
             public void run(ResultIterator resultIterator) throws Exception {

@@ -45,7 +45,6 @@
 package org.netbeans.api.java.source;
 
 import com.sun.source.tree.AnnotationTree;
-import com.sun.source.tree.ArrayTypeTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
@@ -98,8 +97,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
@@ -119,10 +116,8 @@ import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Elements;
 import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
 import javax.tools.JavaFileObject;
 
-import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.GuardedDocument;
@@ -201,7 +196,6 @@ public final class GeneratorUtilities {
         assert clazz != null && member != null;
         int idx = 0;
         Document doc = null;
-        int caretPos = -1;
         try {
             doc = copy.getDocument();
             if (doc == null) {
@@ -211,21 +205,16 @@ public final class GeneratorUtilities {
             }
         } catch (IOException ioe) {}
         CodeStyle codeStyle = DiffContext.getCodeStyle(copy);
-        if (codeStyle.getClassMemberInsertionPoint() == CodeStyle.InsertionPoint.CARET_LOCATION) {
-            JTextComponent jtc = EditorRegistry.lastFocusedComponent();
-            if (jtc != null && jtc.getDocument() == doc)
-                caretPos = jtc.getCaretPosition();
-        }
-        ClassMemberComparator comparator = caretPos < 0 ? new ClassMemberComparator(codeStyle) : null;
+        ClassMemberComparator comparator = new ClassMemberComparator(codeStyle);
         SourcePositions sp = copy.getTrees().getSourcePositions();
         TreeUtilities utils = copy.getTreeUtilities();
         CompilationUnitTree compilationUnit = copy.getCompilationUnit();
         Tree lastMember = null;
         for (Tree tree : clazz.getMembers()) {
             TreePath path = TreePath.getPath(compilationUnit, tree);
-            if ((path == null || !utils.isSynthetic(path)) && (caretPos < 0
+            if ((path == null || !utils.isSynthetic(path))
                     && (codeStyle.getClassMemberInsertionPoint() == CodeStyle.InsertionPoint.FIRST_IN_CATEGORY && comparator.compare(member, tree) <= 0
-                    || comparator.compare(member, tree) < 0) || caretPos >= 0 && caretPos < sp.getStartPosition(compilationUnit, tree))) {
+                    || comparator.compare(member, tree) < 0)) {
                 if (doc == null || !(doc instanceof GuardedDocument))
                     break;
                 int pos = (int)(lastMember != null ? sp.getEndPosition(compilationUnit, lastMember) : sp.getStartPosition( compilationUnit,clazz));

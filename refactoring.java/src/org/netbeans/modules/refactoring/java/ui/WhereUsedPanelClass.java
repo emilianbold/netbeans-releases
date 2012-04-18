@@ -75,7 +75,6 @@ public class WhereUsedPanelClass extends WhereUsedPanel.WhereUsedInnerPanel {
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
 
         buttonGroup = new javax.swing.ButtonGroup();
         c_subclasses = new javax.swing.JRadioButton();
@@ -84,37 +83,16 @@ public class WhereUsedPanelClass extends WhereUsedPanel.WhereUsedInnerPanel {
         searchInComments = new javax.swing.JCheckBox();
         label = new javax.swing.JLabel();
         lbl_usagesof = new javax.swing.JLabel();
-        spacer = new javax.swing.JPanel();
-
-        setLayout(new java.awt.GridBagLayout());
 
         buttonGroup.add(c_subclasses);
         org.openide.awt.Mnemonics.setLocalizedText(c_subclasses, org.openide.util.NbBundle.getMessage(WhereUsedPanelClass.class, "LBL_FindAllSubtypes")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 0);
-        add(c_subclasses, gridBagConstraints);
 
         buttonGroup.add(c_usages);
         c_usages.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(c_usages, org.openide.util.NbBundle.getMessage(WhereUsedPanelClass.class, "LBL_FindUsages")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 0);
-        add(c_usages, gridBagConstraints);
 
         buttonGroup.add(c_directOnly);
         org.openide.awt.Mnemonics.setLocalizedText(c_directOnly, org.openide.util.NbBundle.getMessage(WhereUsedPanelClass.class, "LBL_FindDirectSubtypesOnly")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 12, 12, 12);
-        add(c_directOnly, gridBagConstraints);
 
         searchInComments.setSelected(((Boolean) RefactoringModule.getOption("searchInComments.whereUsed", Boolean.FALSE)).booleanValue());
         org.openide.awt.Mnemonics.setLocalizedText(searchInComments, org.openide.util.NbBundle.getBundle(WhereUsedPanelClass.class).getString("LBL_SearchInComents")); // NOI18N
@@ -123,40 +101,45 @@ public class WhereUsedPanelClass extends WhereUsedPanel.WhereUsedInnerPanel {
                 searchInCommentsItemStateChanged(evt);
             }
         });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 0);
-        add(searchInComments, gridBagConstraints);
 
+        label.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/refactoring/java/resources/warning_16.png"))); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(label, "<<Element>>"); // NOI18N
-        label.setDoubleBuffered(true);
-        label.setVerticalTextPosition(javax.swing.SwingConstants.TOP);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 12);
-        add(label, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(lbl_usagesof, org.openide.util.NbBundle.getMessage(WhereUsedPanelClass.class, "LBL_UsagesOfElement")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
-        add(lbl_usagesof, gridBagConstraints);
 
-        spacer.setMinimumSize(new java.awt.Dimension(0, 0));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 6;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weighty = 1.0;
-        add(spacer, gridBagConstraints);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(12, 12, 12)
+                .addComponent(lbl_usagesof)
+                .addGap(12, 12, 12)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(searchInComments)
+                    .addComponent(c_usages)
+                    .addComponent(c_subclasses)
+                    .addComponent(c_directOnly)
+                    .addComponent(label, javax.swing.GroupLayout.DEFAULT_SIZE, 296, Short.MAX_VALUE))
+                .addGap(12, 12, 12))
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(12, 12, 12)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(lbl_usagesof)
+                    .addComponent(label))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(searchInComments)
+                .addGap(6, 6, 6)
+                .addComponent(c_usages)
+                .addGap(6, 6, 6)
+                .addComponent(c_subclasses)
+                .addGap(6, 6, 6)
+                .addComponent(c_directOnly)
+                .addContainerGap(13, Short.MAX_VALUE))
+        );
     }// </editor-fold>//GEN-END:initComponents
 
     private void searchInCommentsItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_searchInCommentsItemStateChanged
@@ -174,7 +157,6 @@ public class WhereUsedPanelClass extends WhereUsedPanel.WhereUsedInnerPanel {
     private javax.swing.JLabel label;
     private javax.swing.JLabel lbl_usagesof;
     private javax.swing.JCheckBox searchInComments;
-    private javax.swing.JPanel spacer;
     // End of variables declaration//GEN-END:variables
 
     @Override

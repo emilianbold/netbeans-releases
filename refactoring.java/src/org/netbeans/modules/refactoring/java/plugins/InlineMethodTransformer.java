@@ -54,6 +54,7 @@ import org.netbeans.modules.refactoring.java.Pair;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -151,7 +152,6 @@ public class InlineMethodTransformer extends RefactoringVisitor {
         final TreePath methodInvocationPath = getCurrentPath();
         ExecutableElement el = (ExecutableElement) trees.getElement(methodInvocationPath);
         if (methodElement.equals(el)) {
-            Map<Tree, List<StatementTree>> original2TranslatedForBlock = queue.getLast();
             List<StatementTree> newStatementList = new LinkedList<StatementTree>();
             final HashMap<Tree, Tree> original2TranslatedBody = new HashMap<Tree, Tree>();
 
@@ -239,7 +239,23 @@ public class InlineMethodTransformer extends RefactoringVisitor {
                 StatementTree translate = (StatementTree) workingCopy.getTreeUtilities().translate(statementTree, Collections.singletonMap(methodInvocation, lastStatement));
                 newStatementList.add(translate);
             }
-            original2TranslatedForBlock.put(statementTree, newStatementList);
+            
+            Element element = workingCopy.getTrees().getElement(statementPath);
+            if (element != null && element.getKind() == ElementKind.FIELD) {
+                if (newStatementList.size() != 1) {
+                    SourcePositions positions = workingCopy.getTrees().getSourcePositions();
+                    long startPosition = positions.getStartPosition(workingCopy.getCompilationUnit(), node);
+                    long lineNumber = workingCopy.getCompilationUnit().getLineMap().getLineNumber(startPosition);
+                    String source = FileUtil.getFileDisplayName(workingCopy.getFileObject()) + ':' + lineNumber;
+                    problem = JavaPluginUtils.chainProblems(problem,
+                            new Problem(false, NbBundle.getMessage(InlineMethodTransformer.class, "WRN_InlineMethodMultipleLines", source)));
+                } else {
+                    rewrite(statementTree, newStatementList.get(0));
+                }
+            } else {
+                Map<Tree, List<StatementTree>> original2TranslatedForBlock = queue.getLast();
+                original2TranslatedForBlock.put(statementTree, newStatementList);
+            }
         }
         return super.visitMethodInvocation(node, methodElement);
     }
@@ -400,9 +416,13 @@ public class InlineMethodTransformer extends RefactoringVisitor {
 
     private TreePath findCorrespondingStatement(TreePath methodInvocationPath) {
         TreePath statementPath = methodInvocationPath;
-        while (statementPath != null) {
-            if (statementPath.getParentPath().getLeaf().getKind() == Tree.Kind.BLOCK) {
-                break;
+        WHILE: while (statementPath != null) {
+            if (statementPath.getParentPath() != null) {
+                switch (statementPath.getParentPath().getLeaf().getKind()) {
+                    case BLOCK:
+                    case CLASS:
+                        break WHILE;
+                }
             }
             statementPath = statementPath.getParentPath();
         }
@@ -447,6 +467,11 @@ public class InlineMethodTransformer extends RefactoringVisitor {
                 }
             }
         } else {
+            if (result != null) {
+                if (result.getKind() == Tree.Kind.RETURN) {
+                    result = make.ExpressionStatement(((ReturnTree) result).getExpression());
+                }
+            }
             switch (grandparent.getKind()) {
                 case FOR_LOOP: {
                     ForLoopTree forLoopTree = (ForLoopTree) grandparent;
@@ -554,11 +579,7 @@ public class InlineMethodTransformer extends RefactoringVisitor {
 
     private void addResultToStatementList(Tree result, List<StatementTree> newStatementList) {
         if (result != null) {
-            if (result.getKind() == Tree.Kind.RETURN) {
-                newStatementList.add(make.ExpressionStatement(((ReturnTree) result).getExpression()));
-            } else {
-                newStatementList.add((StatementTree) result);
-            }
+            newStatementList.add((StatementTree) result);
         }
     }
 }

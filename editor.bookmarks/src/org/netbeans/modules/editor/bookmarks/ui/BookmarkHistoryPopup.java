@@ -57,6 +57,7 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
@@ -66,12 +67,12 @@ import javax.swing.PopupFactory;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import org.netbeans.modules.editor.bookmarks.BookmarkHistory;
 import org.netbeans.modules.editor.bookmarks.BookmarkInfo;
 import org.netbeans.modules.editor.bookmarks.BookmarkUtils;
-import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.WindowManager;
 
@@ -92,7 +93,7 @@ public final class BookmarkHistoryPopup implements KeyListener {
     
     private JTable table;
     
-    private BookmarkHistoryTableModel tableModel;
+    private BookmarksTableModel tableModel;
     
     private int selectedEntryIndex;
     
@@ -172,11 +173,17 @@ public final class BookmarkHistoryPopup implements KeyListener {
     
     private JTable createTable() {
         List<BookmarkInfo> historyBookmarks = BookmarkHistory.get().historyBookmarks();
-        List<BookmarkInfo> entries = new ArrayList<BookmarkInfo>(historyBookmarks.size() + 1);
-        entries.add(BookmarkInfo.BOOKMARKS_WINDOW);
-        entries.addAll(historyBookmarks);
+        BookmarksNodeTree nodeTree = new BookmarksNodeTree();
+        nodeTree.rebuild(null);
+        Map<BookmarkInfo, BookmarkNode> bookmark2NodeMap = nodeTree.bookmark2NodeMap();
+        List<BookmarkNode> entries = new ArrayList<BookmarkNode>(historyBookmarks.size() + 1);
+        entries.add(bookmark2NodeMap.get(BookmarkInfo.BOOKMARKS_WINDOW));
+        for (BookmarkInfo bookmark : historyBookmarks) {
+            entries.add(bookmark2NodeMap.get(bookmark));
+        }
         Collections.reverse(entries);
-        tableModel = new BookmarkHistoryTableModel(entries);
+        tableModel = new BookmarksTableModel(true);
+        tableModel.setEntries(entries);
         return new JTable(tableModel);
     }
     
@@ -196,17 +203,20 @@ public final class BookmarkHistoryPopup implements KeyListener {
             int stringWidth = fm.stringWidth(value);
             maxWidth = Math.max(maxWidth, stringWidth);
         }
-        // Add extra space occupied by cell borders? etc.
-        maxWidth += 4;
+        maxWidth += 16; // Add icon width
+        maxWidth += 12; // Add extra space occupied by cell borders? etc.
         int columnEntryCount = maxBounds.height / maxHeight;
         int columnCount = tableModel.setColumnEntryCount(columnEntryCount);
         table.setTableHeader(null);
+        TableCellRenderer cellRenderer = new BookmarkNodeRenderer(true);
         TableColumnModel columnModel = table.getColumnModel(); // 1 column by default
         TableColumn column = columnModel.getColumn(0);
+        column.setCellRenderer(cellRenderer);
         column.setPreferredWidth(maxWidth);
         while (columnModel.getColumnCount() < columnCount) {
             column = new TableColumn(columnModel.getColumnCount());
             column.setPreferredWidth(maxWidth);
+            column.setCellRenderer(cellRenderer);
             columnModel.addColumn(column);
         }
 
@@ -223,7 +233,7 @@ public final class BookmarkHistoryPopup implements KeyListener {
         this.selectedEntryIndex = entryIndex;
         tableModel.entryIndex2rowColumn(selectedEntryIndex, rowColumn);
         table.changeSelection(rowColumn[0], rowColumn[1], true, false);
-        descriptionLabel.setText(tableModel.getDescription(rowColumn[0], rowColumn[1]));
+        descriptionLabel.setText(tableModel.getToolTipText(rowColumn[0], rowColumn[1]));
         Dimension labelSize = descriptionLabel.getSize();
         if (labelSize != null) {
             if (descriptionLabel.getPreferredSize().width > labelSize.width) {
@@ -253,7 +263,7 @@ public final class BookmarkHistoryPopup implements KeyListener {
     }
     
     private BookmarkInfo getSelectedBookmark() {
-        return (selectedEntryIndex != -1) ? tableModel.getEntry(selectedEntryIndex) : null;
+        return (selectedEntryIndex != -1) ? tableModel.getEntry(selectedEntryIndex).getBookmarkInfo() : null;
     }
     
     private void returnFocus() {

@@ -41,12 +41,15 @@
  */
 package org.netbeans.modules.java.hints.test.api;
 
+import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.util.TreePath;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -56,6 +59,7 @@ import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -81,12 +85,14 @@ import static junit.framework.Assert.assertTrue;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.JavaDataLoader;
 import org.netbeans.modules.java.hints.providers.code.CodeHintProviderImpl;
 import org.netbeans.modules.java.hints.providers.code.FSWrapper;
@@ -470,8 +476,21 @@ public class HintTest {
         }
 
         Collections.sort(result, ERRORS_COMPARATOR);
+        
+        Reference<CompilationUnitTree> cut = new WeakReference<CompilationUnitTree>(info.getCompilationUnit());
+        
+        info = null;
+        
+        DEBUGGING_HELPER.add(result);
+        NbTestCase.assertGC("noone holds javac", cut);
+        DEBUGGING_HELPER.remove(result);
+        
         return new HintOutput(result);
     }
+    
+    //must keep the error descriptions (and their Fixes through them) in a field
+    //so that assertGC is able to provide a useful trace of references:
+    private static Set<List<ErrorDescription>> DEBUGGING_HELPER = Collections.newSetFromMap(new IdentityHashMap<List<ErrorDescription>, Boolean>());
 
     private CompilationInfo parse(FileObject file) throws DataObjectNotFoundException, IllegalArgumentException, IOException {
         DataObject od = DataObject.find(file);
@@ -484,7 +503,7 @@ public class HintTest {
         doc.putProperty(Language.class, JavaTokenId.language());
         doc.putProperty("mimeType", "text/x-java");
 
-        JavaSource js = JavaSource.forFileObject(file);
+        JavaSource js = JavaSource.create(ClasspathInfo.create(file), file);
 
         assertNotNull("found JavaSource for " + file, js);
 
