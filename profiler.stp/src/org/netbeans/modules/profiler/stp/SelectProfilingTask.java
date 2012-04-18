@@ -429,14 +429,6 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
 
             if (spt[0].dd.getValue() == spt[0].runButton) {
                 ProfilingSettings settings = spt[0].createFinalSettings();
-                if (settings.getOverrideGlobalSettings()) {
-                    String workDir = settings.getWorkingDir().trim();
-                    if (workDir.length() != 0 && !new java.io.File(workDir).exists()) {
-                        settings.setWorkingDir(""); // NOI18N
-                        ProfilerDialogs.displayWarning(
-                                Bundle.SelectProfilingTask_WorkDirInvalidMsg());
-                    }
-                }
                 result = new Configuration(project, settings, null);
                 
             }
