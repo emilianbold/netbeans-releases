@@ -97,7 +97,7 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
             isLambda = true;
         }        
         if (name.length() == 0) {
-            throw new AstRendererException((FileImpl) file, startOffset, "Empty function name."); // NOI18N
+            throw AstRendererException.createAstRendererException((FileImpl) file, ast, startOffset, "Empty function name."); // NOI18N
         }
         CharSequence rawName = initRawName(ast);
         
@@ -124,7 +124,7 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
                 AstRenderer.FunctionRenderer.isVoidParameter(ast));
         CsmCompoundStatement body = AstRenderer.findCompoundStatement(ast, file, functionDDImpl);
         if (body == null) {
-            throw new AstRendererException((FileImpl)file, startOffset,
+            throw AstRendererException.createAstRendererException((FileImpl)file, ast, startOffset,
                     "Null body in method definition."); // NOI18N
         }        
         functionDDImpl.setCompoundStatement(body);

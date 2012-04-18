@@ -94,7 +94,7 @@ public class IncludeNode extends AbstractCsmNode {
     
     @Override
     public Image getIcon(int param) {
-        Image image = null;
+        Image image;
         DataObject dataObject =CsmUtilities.getDataObject(object);
         if (dataObject != null){
             image = dataObject.getNodeDelegate().getIcon(param);
