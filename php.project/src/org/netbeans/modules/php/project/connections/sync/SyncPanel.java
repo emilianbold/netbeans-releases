@@ -698,7 +698,7 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
         itemScrollPane = new JScrollPane();
         itemTable = new JTable();
         syncInfoLabel = new JLabel();
-        operationLabel = new JLabel();
+        operationButtonsPanel = new JPanel();
         diffButton = new JButton();
         noopButton = new JButton();
         downloadButton = new JButton();
@@ -765,25 +765,30 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
         itemScrollPane.setViewportView(itemTable);
 
         Mnemonics.setLocalizedText(syncInfoLabel, "SYNC INFO LABEL"); // NOI18N
-        Mnemonics.setLocalizedText(operationLabel, NbBundle.getMessage(SyncPanel.class, "SyncPanel.operationLabel.text")); // NOI18N
 
         diffButton.setIcon(new ImageIcon(getClass().getResource("/org/netbeans/modules/php/project/ui/resources/diff.png"))); // NOI18N
         diffButton.setEnabled(false);
+        operationButtonsPanel.add(diffButton);
 
         Mnemonics.setLocalizedText(noopButton, " "); // NOI18N
         noopButton.setEnabled(false);
+        operationButtonsPanel.add(noopButton);
 
         Mnemonics.setLocalizedText(downloadButton, " "); // NOI18N
         downloadButton.setEnabled(false);
+        operationButtonsPanel.add(downloadButton);
 
         Mnemonics.setLocalizedText(uploadButton, " "); // NOI18N
         uploadButton.setEnabled(false);
+        operationButtonsPanel.add(uploadButton);
 
         Mnemonics.setLocalizedText(deleteButton, " "); // NOI18N
         deleteButton.setEnabled(false);
+        operationButtonsPanel.add(deleteButton);
 
         Mnemonics.setLocalizedText(resetButton, " "); // NOI18N
         resetButton.setEnabled(false);
+        operationButtonsPanel.add(resetButton);
 
         messagesScrollPane.setBorder(null);
         messagesScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
@@ -796,25 +801,17 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
                 .addContainerGap()
 
                 .addGroup(layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
+                        .addComponent(syncInfoLabel)
 
-                        .addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(syncInfoLabel).addGroup(layout.createSequentialGroup()
-                                .addComponent(operationLabel)
+                        .addGap(0, 593, Short.MAX_VALUE)).addComponent(itemScrollPane, GroupLayout.DEFAULT_SIZE, 712, Short.MAX_VALUE).addGroup(layout.createSequentialGroup()
 
-                                .addPreferredGap(ComponentPlacement.RELATED).addComponent(diffButton).addGap(18, 18, 18).addComponent(noopButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(downloadButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(uploadButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(deleteButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(resetButton))).addGap(0, 0, Short.MAX_VALUE)).addComponent(itemScrollPane, GroupLayout.DEFAULT_SIZE, 712, Short.MAX_VALUE).addGroup(layout.createSequentialGroup()
-
-                        .addComponent(operationsPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addPreferredGap(ComponentPlacement.UNRELATED).addComponent(problemsPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addPreferredGap(ComponentPlacement.RELATED, 0, GroupLayout.PREFERRED_SIZE).addComponent(spaceHolderPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)).addComponent(messagesScrollPane, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)).addContainerGap())
+                        .addComponent(operationsPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addPreferredGap(ComponentPlacement.UNRELATED).addComponent(problemsPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addPreferredGap(ComponentPlacement.RELATED, 0, GroupLayout.PREFERRED_SIZE).addComponent(spaceHolderPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)).addComponent(messagesScrollPane, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addComponent(operationButtonsPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)).addContainerGap())
         );
-
-        layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {deleteButton, downloadButton, noopButton, resetButton, uploadButton});
-
         layout.setVerticalGroup(
             layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
                 .addContainerGap()
 
-                .addGroup(layout.createParallelGroup(Alignment.LEADING, false).addComponent(operationsPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addComponent(problemsPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addComponent(spaceHolderPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)).addPreferredGap(ComponentPlacement.UNRELATED).addComponent(itemScrollPane, GroupLayout.DEFAULT_SIZE, 306, Short.MAX_VALUE).addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.TRAILING).addGroup(layout.createSequentialGroup()
-                        .addComponent(syncInfoLabel)
-
-                        .addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.TRAILING).addComponent(operationLabel).addComponent(diffButton))).addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(noopButton).addComponent(downloadButton).addComponent(uploadButton).addComponent(deleteButton).addComponent(resetButton))).addGap(18, 18, 18).addComponent(messagesScrollPane, GroupLayout.DEFAULT_SIZE, 98, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(Alignment.LEADING, false).addComponent(operationsPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addComponent(problemsPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addComponent(spaceHolderPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)).addPreferredGap(ComponentPlacement.UNRELATED).addComponent(itemScrollPane, GroupLayout.DEFAULT_SIZE, 289, Short.MAX_VALUE).addPreferredGap(ComponentPlacement.RELATED).addComponent(syncInfoLabel).addPreferredGap(ComponentPlacement.RELATED).addComponent(operationButtonsPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addGap(18, 18, 18).addComponent(messagesScrollPane, GroupLayout.DEFAULT_SIZE, 81, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -828,7 +825,7 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
     private JScrollPane messagesScrollPane;
     private JTextPane messagesTextPane;
     private JButton noopButton;
-    private JLabel operationLabel;
+    private JPanel operationButtonsPanel;
     private JPanel operationsPanel;
     private JPanel problemsPanel;
     private JButton resetButton;
