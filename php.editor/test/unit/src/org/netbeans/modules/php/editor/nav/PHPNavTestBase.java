@@ -160,7 +160,7 @@ public abstract class PHPNavTestBase extends PHPTestBase {
     private static Document openDocument(FileObject fileObject) throws Exception {
         DataObject dobj = DataObject.find(fileObject);
 
-        EditorCookie ec = dobj.getCookie(EditorCookie.class);
+        EditorCookie ec = dobj.getLookup().lookup(EditorCookie.class);
 
         assertNotNull(ec);
 
