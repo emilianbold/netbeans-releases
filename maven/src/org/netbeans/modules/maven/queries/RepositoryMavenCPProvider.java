@@ -92,35 +92,38 @@ public class RepositoryMavenCPProvider implements ClassPathProvider {
                         // each repository artifact should have this structure
                         String artifact = parentParent.getName();
                         String version = parent.getName();
-                        //TODO is there a need for generified extension lookup or is just .jar files ok?
-                          //TODO can the .jar extension be hardwired? on CP..
-                        File bin = new File(parent, artifact + "-" + version + ".jar"); //NOI18N
-                        File pom = new File(parent, artifact + "-" + version + ".pom"); //NOI18N
-                        URI localRepo = new File(EmbedderFactory.getProjectEmbedder().getLocalRepository().getBasedir()).toURI();
-                        URI rel = localRepo.relativize(parentParent.getParentFile().toURI());
-                        if (!rel.isAbsolute()) {
-                            String groupId = rel.getPath();
-                            if (groupId != null && !groupId.equals("")) {
-                                groupId = groupId.replace("/", ".");
-                                if (groupId.endsWith(".")) {
-                                    groupId = groupId.substring(0, groupId.length() - 1);
+                        if (archive.getNameExt().startsWith(artifact + "-" + version)) { //#211158 another heuristic check to avoid calling EmbedderFactory for non- local maven repository artifacts
+                            
+                            //TODO is there a need for generified extension lookup or is just .jar files ok?
+                              //TODO can the .jar extension be hardwired? on CP..
+                            File bin = new File(parent, artifact + "-" + version + ".jar"); //NOI18N
+                            File pom = new File(parent, artifact + "-" + version + ".pom"); //NOI18N
+                            URI localRepo = new File(EmbedderFactory.getProjectEmbedder().getLocalRepository().getBasedir()).toURI();
+                            URI rel = localRepo.relativize(parentParent.getParentFile().toURI());
+                            if (!rel.isAbsolute()) {
+                                String groupId = rel.getPath();
+                                if (groupId != null && !groupId.equals("")) {
+                                    groupId = groupId.replace("/", ".");
+                                    if (groupId.endsWith(".")) {
+                                        groupId = groupId.substring(0, groupId.length() - 1);
+                                    }
+                                    if (ClassPath.SOURCE.equals(type)) {
+                                        return ClassPathFactory.createClassPath(createSourceCPI(sourceFile));
+                                    }
+                                    if (ClassPath.BOOT.equals(type)) {
+                                        return JavaPlatform.getDefault().getBootstrapLibraries();
+                                    }
+                                    if (ClassPath.COMPILE.equals(type)) {
+                                        MavenProject mp = loadMavenProject(pom, groupId, artifact, version);
+                                        return ClassPathFactory.createClassPath(createCompileCPI(mp, bin));
+                                    }
+                                    if (ClassPath.EXECUTE.equals(type)) {
+                                        MavenProject mp = loadMavenProject(pom, groupId, artifact, version);
+                                        return ClassPathFactory.createClassPath(createExecuteCPI(mp, bin));
+                                    }
+                                } else {
+                                    //some sort of weird groupId?
                                 }
-                                if (ClassPath.SOURCE.equals(type)) {
-                                    return ClassPathFactory.createClassPath(createSourceCPI(sourceFile));
-                                }
-                                if (ClassPath.BOOT.equals(type)) {
-                                    return JavaPlatform.getDefault().getBootstrapLibraries();
-                                }
-                                if (ClassPath.COMPILE.equals(type)) {
-                                    MavenProject mp = loadMavenProject(pom, groupId, artifact, version);
-                                    return ClassPathFactory.createClassPath(createCompileCPI(mp, bin));
-                                }
-                                if (ClassPath.EXECUTE.equals(type)) {
-                                    MavenProject mp = loadMavenProject(pom, groupId, artifact, version);
-                                    return ClassPathFactory.createClassPath(createExecuteCPI(mp, bin));
-                                }
-                            } else {
-                                //some sort of weird groupId?
                             }
                         }
                             
