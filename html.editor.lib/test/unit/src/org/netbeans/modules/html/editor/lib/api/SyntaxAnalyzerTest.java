@@ -606,12 +606,12 @@ public class SyntaxAnalyzerTest extends TestBase {
         assertNotNull(se);
         assertEquals(ElementType.TEXT, se.type());
 
-        assertEquals("<n/a>", se.image());
+        assertEquals(null, se.image());
 
         se = elements.get(3);
         assertNotNull(se);
         assertEquals(ElementType.TEXT, se.type());
-        assertEquals("<n/a>", se.image());
+        assertEquals(null, se.image());
     }
 
     public void testParseNewLineText() throws BadLocationException {
