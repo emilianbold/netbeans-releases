@@ -42,7 +42,9 @@
 
 package org.netbeans.modules.versioning.historystore;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.lang.reflect.Field;
 import java.util.Map;
@@ -50,6 +52,7 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.util.NbPreferences;
 
 
@@ -143,6 +146,33 @@ public class StorageTest extends NbTestCase {
         testContents(storage, originalFile, originalFile, true);
         storage.setContent(originalFile.getAbsolutePath(), originalFile.getName(), originalFile);
         testContents(storage, originalFile, originalFile, false);
+    }
+    
+    public void testSetGetRevisionInfo () throws Exception {
+        Storage historyStore = StorageManager.getInstance().getStorage(workdir.getAbsolutePath());
+        String revision = "revisionABCD";
+        String content = "content of revision";
+        assertNull(historyStore.getRevisionInfo(revision));
+        historyStore.setRevisionInfo(revision, new ByteArrayInputStream(content.getBytes()));
+        byte[] buf = historyStore.getRevisionInfo(revision);
+        assertEquals(content, new String(buf));
+        
+        // now does it clash with content storage??
+        // let's say a file has the same path as revision
+        String path = revision;
+        File f = new File(workdir, "file");
+        f.createNewFile();
+        String fileContent = "content of file";
+        Utils.copyStreamsCloseAll(new FileOutputStream(f), new ByteArrayInputStream(fileContent.getBytes()));
+        historyStore.setContent(path, revision, f);
+        historyStore.setRevisionInfo(revision, new ByteArrayInputStream(content.getBytes()));
+        
+        // test
+        buf = historyStore.getRevisionInfo(revision);
+        assertEquals(content, new String(buf));
+        String tempFileName = "temp";
+        File tmpFile = historyStore.getContent(path, tempFileName, revision);
+        assertFile(f, tmpFile);
     }
 
     private void testStore (final File file) {
