@@ -579,7 +579,7 @@ public class JavaFixUtilitiesTest extends TestBase {
 		           "}\n");
     }
     
-    public void testMultipleStatementsWrapComments() throws Exception {
+    public void testMultipleStatementsWrapComments1() throws Exception {
         performRewriteTest("package test;\n" +
                            "import java.io.InputStream;\n" +
                            "public class Test {\n" +
@@ -600,6 +600,38 @@ public class JavaFixUtilitiesTest extends TestBase {
                            "public class Test {\n" +
                            "    private void t() throws Exception {\n" +
                            "        while (1 == 1) {\n" +
+                           "            System.err.println(\"a\");\n" +
+                           "            \n" +
+                           "            \n" +
+                           "            //C\n" +
+                           "            System.err.println(\"b\");\n" +
+                           "        }\n" +
+                           "    }\n" +
+		           "}\n");
+    }
+    
+    public void testMultipleStatementsWrapComments2() throws Exception {
+        performRewriteTest("package test;\n" +
+                           "import java.io.InputStream;\n" +
+                           "public class Test {\n" +
+                           "    private void t() throws Exception {\n" +
+                           "        if (1 == 1) {\n" +
+                           "            System.err.println();\n" +
+                           "            System.err.println(\"a\");\n" +
+                           "            \n" +
+                           "            \n" +
+                           "            //C\n" +
+                           "            System.err.println(\"b\");\n" +
+                           "        }\n" +
+                           "    }\n" +
+                           "}\n",
+                           "if ($cond) { $stmts$;} => while ($cond) { $stmts$;}",
+                           "package test;\n" +
+                           "import java.io.InputStream;\n" +
+                           "public class Test {\n" +
+                           "    private void t() throws Exception {\n" +
+                           "        while (1 == 1) {\n" +
+                           "            System.err.println();\n" +
                            "            System.err.println(\"a\");\n" +
                            "            \n" +
                            "            \n" +

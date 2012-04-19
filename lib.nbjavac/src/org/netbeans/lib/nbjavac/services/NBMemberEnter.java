@@ -35,39 +35,46 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.java.source.javac;
+package org.netbeans.lib.nbjavac.services;
 
-import com.sun.tools.javac.comp.Attr;
-import com.sun.tools.javac.tree.JCTree.JCBlock;
-import com.sun.tools.javac.tree.JCTree.JCClassDecl;
+import com.sun.tools.javac.comp.MemberEnter;
+import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
+import com.sun.tools.javac.tree.JCTree.JCImport;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
+import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.Context;
 
 /**
  *
  * @author lahvac
  */
-public class NBAttr extends Attr {
+public class NBMemberEnter extends MemberEnter {
 
     public static void preRegister(Context context) {
-        context.put(attrKey, new Context.Factory<Attr>() {
-            public Attr make(Context c) {
-                return new NBAttr(c);
+        context.put(MemberEnter.class, new Context.Factory<MemberEnter>() {
+            public MemberEnter make(Context c) {
+                return new NBMemberEnter(c);
             }
         });
     }
 
     private final CancelService cancelService;
 
-    public NBAttr(Context context) {
+    public NBMemberEnter(Context context) {
         super(context);
         cancelService = CancelService.instance(context);
     }
 
     @Override
-    public void visitClassDef(JCClassDecl tree) {
+    public void visitTopLevel(JCCompilationUnit tree) {
         cancelService.abortIfCanceled();
-        super.visitClassDef(tree);
+        super.visitTopLevel(tree);
+    }
+
+    @Override
+    public void visitImport(JCImport tree) {
+        cancelService.abortIfCanceled();
+        super.visitImport(tree);
     }
 
     @Override
@@ -77,9 +84,9 @@ public class NBAttr extends Attr {
     }
 
     @Override
-    public void visitBlock(JCBlock tree) {
+    public void visitVarDef(JCVariableDecl tree) {
         cancelService.abortIfCanceled();
-        super.visitBlock(tree);
+        super.visitVarDef(tree);
     }
 
 }
