@@ -64,17 +64,15 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
-import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.CommandProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.BuildAction;
 import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.OutputStreamHandler;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PredefinedType;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DebuggerChooserConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
@@ -82,10 +80,12 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.makeproject.ui.SelectExecutablePanel;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.dlight.api.terminal.TerminalSupport;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
@@ -113,6 +113,7 @@ public class ProjectActionSupport {
 
     private static ProjectActionSupport instance;
     private static RequestProcessor RP = new RequestProcessor("ProjectActionSupport.refresh", 1); // NOI18N
+    private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
     private final List<ProjectActionHandlerFactory> handlerFactories;
 
     private ProjectActionSupport() {
@@ -181,7 +182,7 @@ public class ProjectActionSupport {
                 refresher.run();
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.INFO, "Cannot refresh project files", e);
         }
     }
 
@@ -509,9 +510,8 @@ public class ProjectActionSupport {
             }
 
             InputOutput io = ioTab;
-            boolean runInExternalTerminal = false;
             int consoleType = pae.getProfile().getConsoleType().getValue(); 
-            runInExternalTerminal = consoleType == RunProfile.CONSOLE_TYPE_EXTERNAL;            
+            boolean runInExternalTerminal = consoleType == RunProfile.CONSOLE_TYPE_EXTERNAL;            
             if (!pae.getConfiguration().getDevelopmentHost().isLocalhost() && runInExternalTerminal){
                 //set to internal terminal
                 consoleType = RunProfile.getDefaultConsoleType();
@@ -541,31 +541,38 @@ public class ProjectActionSupport {
                     ioTab.getOut().close();
                 }
             }
-            if (type == PredefinedType.CUSTOM_ACTION && customHandler != null) {
-                initHandler(customHandler, pae, paes);
-                customHandler.execute(io);
-            } else {
-                // moved to RemoteBuildProjectActionHandler
-                //if (currentAction == 0 && !checkRemotePath(pae, err, out)) {
-                //    progressHandle.finish();
-                //    return;
-                //}
-                boolean foundFactory = false;
-                for (ProjectActionHandlerFactory factory : handlerFactories) {
-                    if (factory.canHandle(pae)) {
-                        ProjectActionHandler handler = currentHandler = factory.createHandler();
-                        initHandler(handler, pae, paes);
-                        handler.execute(io);
 
-                        foundFactory = true;
-                        break;
+            boolean stopProgress = true;
+
+            try {
+                if (type == PredefinedType.CUSTOM_ACTION && customHandler != null) {
+                    initHandler(customHandler, pae, paes);
+                    customHandler.execute(io);
+                } else {
+                    // moved to RemoteBuildProjectActionHandler
+                    //if (currentAction == 0 && !checkRemotePath(pae, err, out)) {
+                    //    progressHandle.finish();
+                    //    return;
+                    //}
+                    boolean foundFactory = false;
+                    for (ProjectActionHandlerFactory factory : handlerFactories) {
+                        if (factory.canHandle(pae)) {
+                            ProjectActionHandler handler = currentHandler = factory.createHandler();
+                            initHandler(handler, pae, paes);
+                            handler.execute(io);
+
+                            foundFactory = true;
+                            break;
+                        }
                     }
+
+                    stopProgress = !foundFactory;
                 }
-                if (!foundFactory) {
+            } finally {
+                if (stopProgress) {
                     stopProgress();
                 }
             }
-
         }
 
         private void initHandler(ProjectActionHandler handler, ProjectActionEvent pae, ProjectActionEvent[] paes) {
@@ -742,7 +749,14 @@ public class ProjectActionSupport {
                     final ExecutionEnvironment execEnv = conf.getDevelopmentHost().getExecutionEnvironment();
                     if (!pae.isFinalExecutable()) {
                         PathMap mapper = RemoteSyncSupport.getPathMap(pae.getProject());
-                        executable = mapper.getRemotePath(executable, true);
+                        if (mapper != null) {
+                            String anExecutable = mapper.getRemotePath(executable, true);
+                            if (anExecutable != null) {
+                                executable = anExecutable;
+                            }
+                        } else {
+                            LOGGER.log(Level.SEVERE, "Path Mapper not found for project {0} - using local path {1}", new Object[]{pae.getProject(), executable}); //NOI18N
+                        }
                     }
                     CommandProvider cmd = Lookup.getDefault().lookup(CommandProvider.class);
                     if (cmd != null) {
@@ -848,15 +862,21 @@ public class ProjectActionSupport {
         @Override
         public void actionPerformed(ActionEvent e) {
             for (int i = handleEvents.paes.length-1; i >=0 ; i--) {
-                String dir = null;
-                ExecutionEnvironment env = null;
                 ProjectActionEvent pae = handleEvents.paes[i];
                 String projectName = ProjectUtils.getInformation(pae.getProject()).getDisplayName();
-                dir = pae.getProfile().getRunDirectory();                                
-                env = pae.getConfiguration().getDevelopmentHost().getExecutionEnvironment();
+                String dir = pae.getProfile().getRunDirectory();                                
+                ExecutionEnvironment env = pae.getConfiguration().getDevelopmentHost().getExecutionEnvironment();
                 if (env.isRemote()) {
                     if (RemoteFileUtil.getProjectSourceExecutionEnvironment(pae.getProject()).isLocal()) {
-                        dir = RemoteSyncSupport.getPathMap(pae.getProject()).getRemotePath(dir);
+                        PathMap pathMap = RemoteSyncSupport.getPathMap(pae.getProject());
+                        if (pathMap != null) {
+                            String aDir = pathMap.getRemotePath(dir);
+                            if (aDir != null) {
+                                dir = aDir;
+                            }
+                        } else {
+                            LOGGER.log(Level.SEVERE, "Path Mapper not found for project {0} - using local path {1}", new Object[]{pae.getProject(), dir}); //NOI18N
+                        }
                     }
                 }
                 TerminalSupport.openTerminal(getString("TargetExecutor.TermAction.tabTitle", projectName, env.getDisplayName()), env, dir); // NOI18N
@@ -867,7 +887,7 @@ public class ProjectActionSupport {
     
     /** Look up i18n strings here */
     private static String getString(String s) {
-        return NbBundle.getBundle(ProjectActionSupport.class).getString(s);
+        return NbBundle.getMessage(ProjectActionSupport.class, s);
     }
 
     private static String getString(String s, String... arg) {

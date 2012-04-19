@@ -50,6 +50,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -64,11 +65,14 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.SharabilityQuery;
+import org.netbeans.api.queries.SharabilityQuery.Sharability;
 import org.netbeans.modules.cnd.api.project.NativeProjectType;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.xml.LineSeparatorDetector;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
-import org.netbeans.modules.cnd.makeproject.api.support.*;
+import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectEvent;
+import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectHelper;
+import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectListener;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -76,7 +80,7 @@ import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.CacheDirectoryProvider;
 import org.netbeans.spi.project.ProjectState;
-import org.netbeans.spi.queries.SharabilityQueryImplementation;
+import org.netbeans.spi.queries.SharabilityQueryImplementation2;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileAlreadyLockedException;
 import org.openide.filesystems.FileAttributeEvent;
@@ -1020,7 +1024,7 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
      * @see Project#getLookup
      */
     @Override
-    public SharabilityQueryImplementation createSharabilityQuery(String[] sourceRoots, String[] buildDirectories) {
+    public SharabilityQueryImplementation2 createSharabilityQuery(String[] sourceRoots, String[] buildDirectories) {
         String[] includes = new String[sourceRoots.length + 1];
         System.arraycopy(sourceRoots, 0, includes, 0, sourceRoots.length);
         includes[sourceRoots.length] = ""; // NOI18N
@@ -1117,7 +1121,7 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
         }
     }
 
-    private static final class SharabilityQueryImpl implements SharabilityQueryImplementation, PropertyChangeListener, MakeProjectListener {
+    private static final class SharabilityQueryImpl implements SharabilityQueryImplementation2, PropertyChangeListener, MakeProjectListener {
 
         private final MakeProjectHelperImpl h;
         private final String[] includes;
@@ -1156,14 +1160,14 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
         }
 
         @Override
-        public synchronized int getSharability(File file) {
-            String path = file.getAbsolutePath();
+        public Sharability getSharability(URI file) {
+            String path = file.getPath();
             if (contains(path, excludePaths, false)) {
-                return SharabilityQuery.NOT_SHARABLE;
+                return Sharability.NOT_SHARABLE;
             }
             return contains(path, includePaths, false)
-                    ? (contains(path, excludePaths, true) ? SharabilityQuery.MIXED : SharabilityQuery.SHARABLE)
-                    : SharabilityQuery.UNKNOWN;
+                    ? (contains(path, excludePaths, true) ? Sharability.MIXED : Sharability.SHARABLE)
+                    : Sharability.UNKNOWN;
         }
 
         /**
