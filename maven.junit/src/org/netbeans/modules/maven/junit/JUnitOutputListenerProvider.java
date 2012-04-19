@@ -67,7 +67,9 @@ import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.gsf.testrunner.api.TestSuite;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.gsf.testrunner.api.Trouble;
+import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.api.output.OutputProcessor;
@@ -221,7 +223,15 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
 
     
     private void generateTest() {
-        File report = new File(outputDir, "TEST-" + runningTestClass + ".xml");
+        String reportNameSuffix = PluginPropertyUtils.getPluginProperty(config.getMavenProject(), Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_SUREFIRE, "reportNameSuffix", null);
+        String suffix = reportNameSuffix;
+        if (suffix == null) {
+            suffix = "";
+        } else {
+            //#204480
+            suffix = "-" + suffix;
+        }
+        File report = new File(outputDir, "TEST-" + runningTestClass + suffix + ".xml");
         if (!report.isFile()) {
             return;
         }
@@ -236,9 +246,13 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
             
             @SuppressWarnings("unchecked")
             List<Element> testcases = testSuite.getChildren("testcase"); //NOI18N
-            
+            String nameSuffix = reportNameSuffix != null ? "(" + reportNameSuffix + ")" : "";
             for (Element testcase : testcases) {
+                //#204480
                 String name = testcase.getAttributeValue("name");
+                if (name.endsWith(nameSuffix)) {
+                    name = name.substring(0, name.length() - nameSuffix.length());
+                }
                 Testcase test = new Testcase(name, null, session);
                 Element stdout = testcase.getChild("system-out"); //NOI18N
                 if (stdout != null) {
@@ -267,6 +281,10 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
                 }
                 String classname = testcase.getAttributeValue("classname");
                 if (classname != null) {
+                    //#204480
+                    if (classname.endsWith(nameSuffix)) {
+                        classname = classname.substring(0, classname.length() - nameSuffix.length());
+                    }
                     test.setClassName(classname);
                     test.setLocation(test.getClassName().replace('.', '/') + ".java");
                 }
@@ -276,7 +294,7 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
             float fl = NumberFormat.getNumberInstance().parse(time).floatValue();
             long timeinmilis = (long)(fl * 1000);
             Manager.getInstance().displayReport(session, session.getReport(timeinmilis));
-            File output = new File(outputDir, runningTestClass + "-output.txt");
+            File output = new File(outputDir, runningTestClass + suffix + "-output.txt");
             if (output.isFile()) {
                 Manager.getInstance().displayOutput(session, FileUtils.fileRead(output), false);
             }
