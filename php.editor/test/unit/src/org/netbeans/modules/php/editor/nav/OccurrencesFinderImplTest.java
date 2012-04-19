@@ -992,6 +992,14 @@ public class OccurrencesFinderImplTest extends PHPNavTestBase {
         checkOccurrences(getTestPath(), "$b = new B^ar();", true);
     }
 
+    public void testMagicMethod_01() throws Exception {
+        checkOccurrences(getTestPath(), " * @method Foo|Bar met^hod() This is my cool magic method description.", true);
+    }
+
+    public void testMagicMethod_02() throws Exception {
+        checkOccurrences(getTestPath(), "$b->met^hod()->fooMethod();", true);
+    }
+
     @Override
     protected FileObject[] createSourceClassPathsForTest() {
         return new FileObject[]{FileUtil.toFileObject(new File(getDataDir(), getTestFolderPath()))};
