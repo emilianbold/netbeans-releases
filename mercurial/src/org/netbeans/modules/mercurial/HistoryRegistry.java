@@ -153,8 +153,9 @@ public class HistoryRegistry {
         }
     }
 
-    private String getRepositoryPathIntern(List<HgLogMessage> history, String revision, File repository, File originalFile, String path, boolean dryTry, HgProgressSupport support) {
+    private String getRepositoryPathIntern(List<HgLogMessage> history, String revision, File repository, File originalFile, final String path, boolean dryTry, HgProgressSupport support) {
         int count = 0;
+        String historyPath = path;
         Iterator<HgLogMessage> it = history.iterator();
         while(it.hasNext() && !revision.equals(it.next().getHgRevision().getChangesetId())) {
             count++;
@@ -162,7 +163,7 @@ public class HistoryRegistry {
         support.getProgressHandle().switchToDeterminate(count);
         
         // XXX try dry first, might be it will lead to the in in the revision
-        for (int i = 0; i < history.size() ; i ++) {
+        for (int i = 0; i < history.size() && !support.isCanceled(); i ++) {
             HgLogMessage lm = history.get(i);
             String historyRevision = lm.getHgRevision().getChangesetId();
             if(historyRevision.equals(revision)) {
@@ -177,8 +178,8 @@ public class HistoryRegistry {
                 for (HgLogMessageChangedPath cp : changePaths) {
                     String copy = cp.getCopySrcPath();
                     if(copy != null) {
-                        if(path.equals(cp.getPath())) {
-                            path = copy;
+                        if(historyPath.equals(cp.getPath())) {
+                            historyPath = copy;
                             break;
                         }
                     }
@@ -186,7 +187,7 @@ public class HistoryRegistry {
             }
         }
         // XXX check if found path exists in the revision we search for ...
-        return path;
+        return support.isCanceled() ? path : historyPath;
     }
 
     public List<HgLogMessageChangedPath> initializeChangePaths (File repository, ChangePathCollector collector, HgLogMessage lm, boolean onlyCached) {
