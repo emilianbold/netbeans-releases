@@ -59,15 +59,28 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
+import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
+import org.netbeans.modules.cnd.api.toolchain.Tool;
+import org.netbeans.modules.cnd.makeproject.MakeOptions;
+import org.netbeans.modules.cnd.makeproject.SmartOutputStream;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectCustomizer;
+import org.netbeans.modules.cnd.makeproject.api.PackagerDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.PackagerManager;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ArchiverConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CustomToolConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.DefaultMakefileWriter;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
@@ -78,25 +91,13 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.LinkerConfigurati
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakefileConfiguration;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
-import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
-import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
-import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
-import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
-import org.netbeans.modules.cnd.makeproject.MakeOptions;
-import org.netbeans.modules.cnd.makeproject.api.configurations.DefaultMakefileWriter;
-import org.netbeans.modules.cnd.makeproject.spi.configurations.MakefileWriter;
-import org.netbeans.modules.cnd.makeproject.api.PackagerDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.PackagerManager;
+import org.netbeans.modules.cnd.makeproject.packaging.DummyPackager;
 import org.netbeans.modules.cnd.makeproject.platform.Platform;
 import org.netbeans.modules.cnd.makeproject.platform.Platforms;
-import org.netbeans.modules.cnd.makeproject.packaging.DummyPackager;
-import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
-import org.netbeans.modules.cnd.api.toolchain.Tool;
-import org.netbeans.modules.cnd.makeproject.SmartOutputStream;
-import org.netbeans.modules.cnd.makeproject.api.MakeProjectCustomizer;
 import org.netbeans.modules.cnd.makeproject.spi.DatabaseProjectProvider;
+import org.netbeans.modules.cnd.makeproject.spi.configurations.MakefileWriter;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -874,11 +875,11 @@ public class ConfigurationMakefileWriter {
         Item[] items = projectDescriptor.getProjectItems();
         if (conf.isCompileConfiguration()) {
             String target = null;
-            String folders = null;
-            String file = null;
-            String command = null;
-            String comment = null;
-            String additionalDep = null;
+            String folders;
+            String file;
+            String command;
+            String comment;
+            String additionalDep;
             for (int i = 0; i < items.length; i++) {
                 final Folder folder = items[i].getFolder();
                 if (folder.isTest() || folder.isTestLogicalFolder() || folder.isTestRootFolder()) {
@@ -1007,11 +1008,11 @@ public class ConfigurationMakefileWriter {
                     Item[] items = folder.getAllItemsAsArray();
 
                     String target = null;
-                    String folders = null;
-                    String file = null;
-                    String command = null;
-                    String comment = null;
-                    String additionalDep = null;
+                    String folders;
+                    String file;
+                    String command;
+                    String comment;
+                    String additionalDep;
                     for (int i = 0; i < items.length; i++) {
                         ItemConfiguration itemConfiguration = items[i].getItemConfiguration(conf);
                         if (itemConfiguration == null) {
@@ -1129,11 +1130,11 @@ public class ConfigurationMakefileWriter {
         Item[] items = projectDescriptor.getProjectItems();
         if (conf.isCompileConfiguration()) {
             String target = null;
-            String folders = null;
-            String file = null;
-            String command = null;
-            String comment = null;
-            String additionalDep = null;
+            String folders;
+            String file;
+            String command;
+            String comment;
+            String additionalDep;
             for (int i = 0; i < items.length; i++) {
                 final Folder folder = items[i].getFolder();
                 if (folder.isTest() || folder.isTestLogicalFolder() || folder.isTestRootFolder()) {
@@ -1285,7 +1286,7 @@ public class ConfigurationMakefileWriter {
         bw.write("\n"); // NOI18N
         bw.write("# Subprojects\n"); // NOI18N
         bw.write(".build-subprojects:" + "\n"); // NOI18N
-        LibrariesConfiguration librariesConfiguration = null;
+        LibrariesConfiguration librariesConfiguration;
         if (conf.isLinkerConfiguration()) {
             librariesConfiguration = conf.getLinkerConfiguration().getLibrariesConfiguration();
 
@@ -1317,7 +1318,7 @@ public class ConfigurationMakefileWriter {
         bw.write("\n"); // NOI18N
         bw.write("# Subprojects\n"); // NOI18N
         bw.write(".clean-subprojects:" + "\n"); // NOI18N
-        LibrariesConfiguration librariesConfiguration = null;
+        LibrariesConfiguration librariesConfiguration;
         if (conf.isLinkerConfiguration()) {
             librariesConfiguration = conf.getLinkerConfiguration().getLibrariesConfiguration();
 
@@ -1428,6 +1429,8 @@ public class ConfigurationMakefileWriter {
                 if (output == null) {
                     output = conf.getOutputValue();
                 }
+            } else {
+                LOGGER.log(Level.SEVERE, "Path Mapper not found for project {0} - using local path {1}", new Object[]{projectDescriptor.getProject(), output}); // NOI18N
             }
         }
         switch (conf.getDevelopmentHost().getBuildPlatform()) {
@@ -1686,7 +1689,7 @@ public class ConfigurationMakefileWriter {
             return;
         }
 
-        OutputStream os = null;
+        OutputStream os;
         final String scriptName = getPackageScriptName(conf); // NOI18N
         FileObject projectBaseFO = projectDescriptor.getProject().getProjectDirectory();
         if (projectBaseFO == null) {
