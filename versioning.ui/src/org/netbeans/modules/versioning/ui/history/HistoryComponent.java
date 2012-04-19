@@ -998,7 +998,7 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
             sb.append(HistoryUtils.escapeForHTMLLabel(contains)); 
             sb.append("</b>"); // NOI18N
             startIdx = endIdx + contains.length();
-            endIdx = value.indexOf(contains, endIdx + 1);
+            endIdx = value.indexOf(contains, startIdx);
         }
         if(startIdx < value.length()) {
             String t = value.substring(startIdx, value.length());
