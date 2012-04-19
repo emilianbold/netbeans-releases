@@ -48,6 +48,8 @@ import com.sun.jdi.ReferenceType;
 import com.sun.jdi.VirtualMachine;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyVetoException;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -346,6 +348,13 @@ public class EventsModel implements TreeModel, NodeModel, TableModel, NodeAction
             l.modelChanged(me);
         }
     }
+    
+    private void addEvent(RemoteEvent re) {
+        synchronized (events) {
+            events.add(re);
+        }
+        fireNodeChanged(eventsLog);
+    }
 
     @Override
     public String getDisplayName(Object node) throws UnknownTypeException {
@@ -569,7 +578,7 @@ public class EventsModel implements TreeModel, NodeModel, TableModel, NodeAction
                     for (ReferenceType rt : listenerClasses) {
                         ObjectReference l;
                         try {
-                            LoggingEventListener listener = new LoggingEventListener();
+                            LoggingEventListener listener = new LoggingEventListener(EventsModel.this);
                             ClassObjectReference cor = ReferenceTypeWrapper.classObject(rt);
                             l = RemoteServices.attachLoggingListener(ci, cor, listener);
                             listener.setListenerObject(l, cor);
@@ -722,7 +731,7 @@ public class EventsModel implements TreeModel, NodeModel, TableModel, NodeAction
                     ObjectReference l;
                     try {
                         ClassObjectReference cor = ReferenceTypeWrapper.classObject(rt);
-                        l = RemoteServices.attachLoggingListener(ci, cor, new LoggingEventListener());
+                        l = RemoteServices.attachLoggingListener(ci, cor, new LoggingEventListener(EventsModel.this));
                     } catch (PropertyVetoException pvex) {
                         Exceptions.printStackTrace(pvex);
                         return ;
@@ -821,13 +830,18 @@ public class EventsModel implements TreeModel, NodeModel, TableModel, NodeAction
         
     }
     
-    private class LoggingEventListener implements RemoteServices.LoggingListenerCallBack {
+    private static class LoggingEventListener implements RemoteServices.LoggingListenerCallBack {
         
         private ObjectReference listener;
         private ClassObjectReference listenerClass;
+        private final Reference<EventsModel> modelRef;
+        
+        public LoggingEventListener(EventsModel model) {
+            modelRef = new WeakReference<EventsModel>(model);
+        }
 
         @Override
-        public void eventsData(JavaComponentInfo ci, String[] data, String[] stack) {
+        public void eventsData(/*JavaComponentInfo ci,*/ String[] data, String[] stack) {
             RemoteEvent re = new RemoteEvent(data, stack);
             /*
             System.err.println("Have data about "+ci.getType()+":");//\n  "+Arrays.toString(data));
@@ -836,10 +850,10 @@ public class EventsModel implements TreeModel, NodeModel, TableModel, NodeAction
                 System.err.println("    "+data[j]+" = "+data[j+1]);
             }
              */
-            synchronized (events) {
-                events.add(re);
+            EventsModel model = modelRef.get();
+            if (model != null) {
+                model.addEvent(re);
             }
-            fireNodeChanged(eventsLog);
         }
         
         private void setListenerObject(ObjectReference listener, ClassObjectReference listenerClass) {
@@ -857,7 +871,7 @@ public class EventsModel implements TreeModel, NodeModel, TableModel, NodeAction
 
     }
     
-    private class RemoteEvent {
+    private static class RemoteEvent {
         
         private String[] data;
         private Stack stack;
