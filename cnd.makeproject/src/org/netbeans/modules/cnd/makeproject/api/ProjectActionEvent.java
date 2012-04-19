@@ -47,6 +47,8 @@ package org.netbeans.modules.cnd.makeproject.api;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
@@ -55,8 +57,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
-import org.netbeans.modules.cnd.utils.FSPath;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.util.Lookup;
@@ -103,6 +103,7 @@ public final class ProjectActionEvent {
         }
     }
 
+    private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
     private final Project project;
     private final Type type;
     private String executable;
@@ -181,7 +182,14 @@ public final class ProjectActionEvent {
                     String baseDir = configuration.getProfile().getRunDirectory();
                     if (execEnv.isRemote()) {
                         PathMap mapper = RemoteSyncSupport.getPathMap(getProject());
-                        baseDir = mapper.getRemotePath(baseDir, true); // NOI18N
+                        if (mapper != null) {
+                            baseDir = mapper.getRemotePath(baseDir, true);
+                            if (baseDir == null) {
+                                baseDir = configuration.getProfile().getRunDirectory();
+                            }
+                        } else {
+                            LOGGER.log(Level.SEVERE, "Path Mapper not found for project {0} - using local path {1}", new Object[]{getProject(), baseDir}); //NOI18N
+                        }
                     }
                     result = baseDir + FileSystemProvider.getFileSeparatorChar(execEnv) + result;            
                 }
@@ -216,7 +224,15 @@ public final class ProjectActionEvent {
                 command = CndPathUtilitities.expandMacro(command, "${OUTPUT_PATH}", outputValue); // NOI18N
             } else { //            if (!configuration.getDevelopmentHost().isLocalhost()) {
                 PathMap mapper = RemoteSyncSupport.getPathMap(getProject());
-                command = CndPathUtilitities.expandMacro(command, "${OUTPUT_PATH}", mapper.getRemotePath(outputValue, true)); // NOI18N
+                if (mapper != null) {
+                    String aValue = mapper.getRemotePath(outputValue, true);
+                    if (aValue != null) {
+                        outputValue = aValue;
+                    }
+                } else {
+                    LOGGER.log(Level.SEVERE, "Path Mapper not found for project {0} - using local path {1}", new Object[]{getProject(), outputValue}); //NOI18N
+                }
+                command = CndPathUtilitities.expandMacro(command, "${OUTPUT_PATH}", outputValue); // NOI18N
             }
             runCommandCache = Utilities.parseParameters(configuration.expandMacros(command));
         }
