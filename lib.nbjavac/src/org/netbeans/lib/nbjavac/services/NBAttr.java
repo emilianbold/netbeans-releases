@@ -35,30 +35,31 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.java.source.javac;
+package org.netbeans.lib.nbjavac.services;
 
-import com.sun.tools.javac.comp.Enter;
+import com.sun.tools.javac.comp.Attr;
+import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
+import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.util.Context;
-import com.sun.tools.javadoc.JavadocEnter;
 
 /**
  *
  * @author lahvac
  */
-public class NBEnter extends JavadocEnter {
+public class NBAttr extends Attr {
 
     public static void preRegister(Context context) {
-        context.put(Enter.class, new Context.Factory<Enter>() {
-            public Enter make(Context c) {
-                return new NBEnter(c);
+        context.put(attrKey, new Context.Factory<Attr>() {
+            public Attr make(Context c) {
+                return new NBAttr(c);
             }
         });
     }
 
     private final CancelService cancelService;
 
-    public NBEnter(Context context) {
+    public NBAttr(Context context) {
         super(context);
         cancelService = CancelService.instance(context);
     }
@@ -67,6 +68,18 @@ public class NBEnter extends JavadocEnter {
     public void visitClassDef(JCClassDecl tree) {
         cancelService.abortIfCanceled();
         super.visitClassDef(tree);
+    }
+
+    @Override
+    public void visitMethodDef(JCMethodDecl tree) {
+        cancelService.abortIfCanceled();
+        super.visitMethodDef(tree);
+    }
+
+    @Override
+    public void visitBlock(JCBlock tree) {
+        cancelService.abortIfCanceled();
+        super.visitBlock(tree);
     }
 
 }

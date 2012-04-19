@@ -72,7 +72,7 @@ public class OptionPropertySupport extends PropertySupport {
 				 Option option,
 				 String base) {
 	super(option.getName(),
-	      (option.getType() == Option.CHECK_BOX)? Boolean.class:
+	      (option.getType() == Option.Type.CHECK_BOX)? Boolean.class:
 						      Object.class,
 	      option.getDisplayName(),
 	      option.getShortDescription(),
@@ -99,7 +99,7 @@ public class OptionPropertySupport extends PropertySupport {
     public void setValue(Object o) {
 	OptionValue ov = optionSetOwner.getOptions().byType(option);
 	if (ov != null) {
-	    if (option.getType() == Option.CHECK_BOX && o instanceof Boolean) {
+	    if (option.getType() == Option.Type.CHECK_BOX && o instanceof Boolean) {
 		Boolean b = (Boolean) o;
 		ov.set(b == Boolean.TRUE? "on": "off"); // NOI18N
 	    } else {
@@ -116,7 +116,7 @@ public class OptionPropertySupport extends PropertySupport {
     public Object getValue() {
 	OptionValue ov = optionSetOwner.getOptions().byType(option);
 	if (ov != null) {
-	    if (option.getType() == Option.CHECK_BOX) {
+	    if (option.getType() == Option.Type.CHECK_BOX) {
 		if (ov.get().equalsIgnoreCase("on")) // NOI18N
 		    return Boolean.TRUE;
 		else if (ov.get().equalsIgnoreCase("off")) // NOI18N
@@ -142,19 +142,22 @@ public class OptionPropertySupport extends PropertySupport {
 	PropertyEditor propertyEditor = null;
 
 	switch (option.getType()) {
-	    case Option.CHECK_BOX:
+	    case CHECK_BOX:
 		// We pass a Boolean.class above
 		propertyEditor = super.getPropertyEditor();
 		break;
-	    case Option.DIRECTORY:
+	    case DIRECTORY:
 		propertyEditor = new OptionDirectoryEditor(this, base, JFileChooser.DIRECTORIES_ONLY);
 		break;
-	    case Option.FILE:
+            case DIRECTORIES:
+		propertyEditor = new OptionDirectoriesEditor(this, base);
+		break;
+	    case FILE:
 		propertyEditor = new OptionDirectoryEditor(this, base, JFileChooser.FILES_ONLY);
 		break;
-	    case Option.TEXT_AREA:
-	    case Option.RADIO_BUTTON:
-	    case Option.COMBO_BOX:
+	    case TEXT_AREA:
+	    case RADIO_BUTTON:
+	    case COMBO_BOX:
 		propertyEditor = new OptionEnumEditor(this);
 		break;
 	    default:

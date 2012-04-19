@@ -1,9 +1,9 @@
-Version: nb-7.0-b07
-Name: Javac Compiler API
+Version: nb-7.2
+Name: Javac Compiler Implementation
 License: GPL-2-CP
-Description: Javac Compiler API
+Description: Javac Compiler Implementation
 OSR: 6273
-Origin: https://jdk7.dev.java.net/
+Origin: http://hg.openjdk.java.net/
 Source: http://hg.netbeans.org/main/nb-javac/
 
 The GNU General Public License (GPL)
