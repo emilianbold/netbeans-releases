@@ -593,7 +593,9 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
             modeCombo.addItemListener(new ItemListener() {
                 @Override
                 public void itemStateChanged(ItemEvent e) {
-                    onModeChange();
+                    if(e.getStateChange() == ItemEvent.SELECTED) {
+                        onModeChange();
+                    }
                 }
             });
             
@@ -611,7 +613,9 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
             filterCombo.addItemListener(new ItemListener() {
                 @Override
                 public void itemStateChanged(ItemEvent e) {
-                    onFilterChange();
+                    if(e.getStateChange() == ItemEvent.SELECTED) {
+                        onFilterChange();
+                    }
                 }
             });
             
