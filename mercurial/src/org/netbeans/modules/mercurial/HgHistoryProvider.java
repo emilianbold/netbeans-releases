@@ -234,13 +234,21 @@ public class HgHistoryProvider implements VCSHistoryProvider {
         @Override
         public HistoryEntry getParentEntry(File file) {
             HgRevision ancestor = logMessage.getAncestor(file);
-            HgLogMessage[] history = HistoryRegistry.getInstance().getLogs(repository, new File[] {file}, ancestor.getChangesetId(), ancestor.getChangesetId());
-            if(history == null || history.length == 0) {
+            if (ancestor.equals(HgRevision.EMPTY)) {
+                File originalFile = HistoryRegistry.getInstance().getHistoryFile(repository, file, logMessage.getCSetShortID(), false);
+                if (originalFile != null) {
+                    ancestor = logMessage.getAncestor(originalFile);
+                }
+            }
+            if (ancestor.equals(HgRevision.EMPTY)) {
                 return null;
             }
-            assert history.length == 1;
+            HgLogMessage history = HistoryRegistry.getInstance().getLog(repository, file, ancestor.getChangesetId());
+            if(history == null) {
+                return null;
+            }
             
-            return createHistoryEntry(history[0], repository, files);
+            return createHistoryEntry(history, repository, files);
         }
     }
     

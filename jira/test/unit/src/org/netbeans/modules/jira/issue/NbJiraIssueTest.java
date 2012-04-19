@@ -256,6 +256,13 @@ public class NbJiraIssueTest extends NbTestCase {
         closeIssue(issue, JiraIssueResolutionStatus.FIXED);
     }
 
+    public void testIsFinished() throws CoreException {
+        NbJiraIssue issue = createIssue();
+        assertFalse(issue.isFinished());
+        issue.resolve(getResolutionByName(JiraIssueResolutionStatus.FIXED.statusName), "fixed");
+        assertTrue(issue.isFinished());
+    }
+    
     public void testAddComments() throws CoreException {
         int commentCount = 0;
 

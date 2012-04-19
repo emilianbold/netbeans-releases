@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.bugzilla;
 
+import java.text.MessageFormat;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 
@@ -55,6 +56,8 @@ public class LogHandler extends Handler {
     private String interceptedMessage;
     private boolean done = false;
     private final Compare compare;
+    private final int expectedCount;
+    private int interceptedCount = 0;
     private boolean reset = false;
     public enum Compare {
         STARTS_WITH,
@@ -62,10 +65,15 @@ public class LogHandler extends Handler {
     }
 
     public LogHandler(String msg, Compare compare) {
-        this(msg, compare, -1);
+        this(msg, compare, 1);
+    }
+    
+    public LogHandler(String msg, Compare compare, int count) {
+        this(msg, compare, -1, count);
     }
 
-    public LogHandler(String msg, Compare compare, int timeout) {
+    public LogHandler(String msg, Compare compare, int timeout, int count) {
+        this.expectedCount = count;
         this.messageToWaitFor = msg;
         this.compare = compare;
         Bugzilla.LOG.addHandler(this);
@@ -81,22 +89,30 @@ public class LogHandler extends Handler {
             if(message == null) {
                 return;
             }
+            message = MessageFormat.format(message, record.getParameters());
+            boolean intercepted = false;
             switch (compare) {
                 case STARTS_WITH :
-                    done = message.startsWith(messageToWaitFor);
+                    intercepted = message.startsWith(messageToWaitFor);
                     break;
                 case ENDS_WITH :
-                    done = message.endsWith(messageToWaitFor);
+                    intercepted = message.endsWith(messageToWaitFor);
                     break;
                 default:
                     throw new IllegalStateException("wrong value " + compare);
             }
-            if(done) {
+            if(intercepted) {
+                interceptedCount++;
                 interceptedMessage = message;
             }
+            done = intercepted && interceptedCount >= expectedCount;
         }
     }
 
+    public int getInterceptedCount() {
+        return interceptedCount;
+    }
+    
     public boolean isDone() {
         return done;
     }
@@ -117,10 +133,10 @@ public class LogHandler extends Handler {
     public void waitUntilDone() throws InterruptedException {
         reset = false;
         long t = System.currentTimeMillis();
-        while(!done && !reset) {
+        while(!done && !reset && interceptedCount < expectedCount) {
             Thread.sleep(200);
             if(System.currentTimeMillis() - t > TIMEOUT) {
-                throw new IllegalStateException("Timeout >" + TIMEOUT);
+                throw new IllegalStateException("Timeout > " + TIMEOUT + " for " + messageToWaitFor);
             }
         }
     }

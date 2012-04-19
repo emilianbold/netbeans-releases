@@ -39,34 +39,17 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.tasks.ui.filter;
-
-import org.netbeans.modules.bugtracking.api.Issue;
+package org.netbeans.modules.bugzilla.issue;
 
 /**
  *
- * @author jpeska
+ * @author tomas
  */
-public class DisplayTextTaskFilter implements DashboardFilter<Issue> {
-
-    private String summaryParam;
-
-    public DisplayTextTaskFilter(String summaryParam) {
-        this.summaryParam = summaryParam;
-    }
-
-    @Override
-    public boolean isInFilter(Issue task) {
-        return task.getDisplayName().toLowerCase().contains(summaryParam.toLowerCase());
-    }
-
-    @Override
-    public boolean expandNodes() {
-        return true;
-    }
-
-    @Override
-    public boolean showHitCount() {
-        return true;
+public class IssueTestUtils {
+    
+    private IssueTestUtils(){}
+    
+    public static void submit(BugzillaIssue issue) {
+        issue.submitAndRefresh();
     }
 }

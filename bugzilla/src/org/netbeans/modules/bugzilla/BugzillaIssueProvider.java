@@ -85,6 +85,11 @@ public class BugzillaIssueProvider extends IssueProvider<BugzillaIssue> {
     }
 
     @Override
+    public boolean isFinished(BugzillaIssue data) {
+        return data.isFinished();
+    }
+    
+    @Override
     public boolean refresh(BugzillaIssue data) {
         return data.refresh();
     }

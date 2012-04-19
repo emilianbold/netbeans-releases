@@ -1064,6 +1064,11 @@ public class BugzillaIssue {
         return null;
     }
 
+    public boolean isFinished() {
+        String value = getFieldValue(IssueField.STATUS);
+        return "RESOLVED".equals(value);
+    }
+
     class Comment {
         private final Date when;
         private final String author;

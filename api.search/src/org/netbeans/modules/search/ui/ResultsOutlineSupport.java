@@ -41,10 +41,10 @@
  */
 package org.netbeans.modules.search.ui;
 
+import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Image;
-import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.HierarchyEvent;
 import java.awt.event.HierarchyListener;
 import java.awt.event.KeyEvent;
@@ -99,6 +99,7 @@ public class ResultsOutlineSupport {
 
     private static final String ROOT_NODE_ICON =
             "org/netbeans/modules/search/res/context.gif";              //NOI18N
+    private static final int VERTICAL_ROW_SPACE = 2;
 
     OutlineView outlineView;
     private boolean replacing;
@@ -155,6 +156,11 @@ public class ResultsOutlineSupport {
                 new ColumnsListener());
         outlineView.getOutline().getInputMap().remove(
                 KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0)); //#209949
+        outlineView.getOutline().setShowGrid(false);
+        Font font = outlineView.getOutline().getFont();
+        FontMetrics fm = outlineView.getOutline().getFontMetrics(font);
+        outlineView.getOutline().setRowHeight(
+                Math.max(16, fm.getHeight()) + VERTICAL_ROW_SPACE);
     }
 
     private void onAttach() {

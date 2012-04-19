@@ -83,9 +83,18 @@ public class AppliedFilters<T> {
         return true;
     }
 
-      public boolean expandNodes() {
+    public boolean expandNodes() {
         for (DashboardFilter filter : filters) {
             if (filter.expandNodes()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean showHitCount() {
+        for (DashboardFilter filter : filters) {
+            if (filter.showHitCount()) {
                 return true;
             }
         }

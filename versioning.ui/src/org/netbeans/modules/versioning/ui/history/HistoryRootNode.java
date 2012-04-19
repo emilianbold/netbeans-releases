@@ -245,7 +245,7 @@ public class HistoryRootNode extends AbstractNode {
 
         @Override
         public int compareTo(Node n) {
-            return 1;
+            return n instanceof WaitNode ? 0 : 1;
         }
 
         @Override
@@ -299,7 +299,7 @@ public class HistoryRootNode extends AbstractNode {
         
         @Override
         public int compareTo(Node n) {
-            return 1;
+            return n instanceof LoadNextNode ? 0 : 1;
         }   
         
         @Override
@@ -327,10 +327,6 @@ public class HistoryRootNode extends AbstractNode {
                 @Override
                 public String getTooltip() {
                     return BaseProperty.this.getDisplayValue();
-                }
-                @Override
-                public int compareTo(TableEntry e) {
-                    return -1;
                 }
                 @Override
                 public Integer order() {

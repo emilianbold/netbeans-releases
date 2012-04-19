@@ -93,6 +93,19 @@ public class HistoryRegistry {
         }
         return history;
     }
+
+    HgLogMessage getLog (File repository, File file, String changesetId) {
+        List<HgLogMessage> knownLogs = logs.get(file);
+        if (knownLogs != null) {
+            for (HgLogMessage logMessage : knownLogs) {
+                if (logMessage.getCSetShortID().equals(changesetId)) {
+                    return logMessage;
+                }
+            }
+        }
+        HgLogMessage[] history = HgCommand.getRevisionInfo(repository, Collections.singletonList(changesetId), OutputLogger.getLogger(repository.getAbsolutePath()));
+        return history == null || history.length == 0 ? null : history[0];
+    }
     
     public synchronized File getHistoryFile(final File repository, final File originalFile, final String revision, final boolean dryTry) {
         long t = System.currentTimeMillis();
@@ -160,12 +173,14 @@ public class HistoryRegistry {
                         Collections.<String>emptyList(),                      // branch names
                         OutputLogger.getLogger(repository.getAbsolutePath()), // logger
                         false); // asc order
-                assert lms != null && lms.length == 1;
-                HgLogMessageChangedPath[] cps = lms[0].getChangedPaths();
-                changePaths = Arrays.asList(cps != null ? cps : new HgLogMessageChangedPath[0]);
-                fileChangesets.put(historyRevision, changePaths);
-                if(LOG.isLoggable(Level.FINE)) {
-                    LOG.log(Level.FINE, " loading changePaths for {0} took {1}", new Object[]{historyRevision, System.currentTimeMillis() - t1}); // NOI18N
+                assert lms != null;
+                if (lms.length > 0) { // can be null, remember .form and .java files, a commit may change only one of them
+                    HgLogMessageChangedPath[] cps = lms[0].getChangedPaths();
+                    changePaths = Arrays.asList(cps != null ? cps : new HgLogMessageChangedPath[0]);
+                    fileChangesets.put(historyRevision, changePaths);
+                    if(LOG.isLoggable(Level.FINE)) {
+                        LOG.log(Level.FINE, " loading changePaths for {0} took {1}", new Object[]{historyRevision, System.currentTimeMillis() - t1}); // NOI18N
+                    }
                 }
             }
             if(changePaths != null) {
