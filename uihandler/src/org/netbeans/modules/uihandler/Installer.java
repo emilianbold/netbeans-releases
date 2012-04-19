@@ -2196,6 +2196,7 @@ public class Installer extends ModuleInstall implements Runnable {
                 flushSystemLogs();
                 JTabbedPane tabs = new JTabbedPane();
                 tabs.addTab(org.openide.util.NbBundle.getMessage(Installer.class, "UI_TAB_TITLE"), panel);
+                tabs.setPreferredSize(panel.getPreferredSize());
                 File messagesLog = getMessagesLog();
                 try {
                     JEditorPane pane = new JEditorPane(messagesLog.toURI().toURL());
