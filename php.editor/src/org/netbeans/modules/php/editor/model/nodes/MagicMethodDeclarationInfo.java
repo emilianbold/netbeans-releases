@@ -82,10 +82,9 @@ public class MagicMethodDeclarationInfo extends ASTNodeInfo<PHPDocMethodTag> {
                 offset = getOriginalNode().getStartOffset()+PHPDocMethodTag.Type.METHOD.toString().length() + 1 +node.getValue().indexOf(methodName);
             }
         } else if (parts.length >= 2) {
-            String[] typeNames = parts[0].split("\\|", 2);
             String[] methodNames = parts[1].split("[(, ]", 2);
-            if (typeNames.length > 0 && methodNames.length > 0) {
-                returnType = typeNames[0];
+            if (parts[0].length() > 0 && methodNames.length > 0) {
+                returnType = parts[0];
                 methodName = methodNames[0];
                 offset = getOriginalNode().getStartOffset()+PHPDocMethodTag.Type.METHOD.toString().length() + 1 +node.getValue().indexOf(methodName);
                 typeOffset = getOriginalNode().getStartOffset()+PHPDocMethodTag.Type.METHOD.toString().length() + 1 +node.getValue().indexOf(returnType);
