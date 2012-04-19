@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,63 +34,48 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.java.source.javac;
+package org.netbeans.lib.nbjavac.services;
 
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
-import com.sun.tools.javac.comp.Enter;
-import com.sun.tools.javac.tree.JCTree.JCClassDecl;
-import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
+import com.sun.tools.javac.jvm.ClassWriter;
+import com.sun.tools.javac.jvm.Target;
 import com.sun.tools.javac.util.Context;
-import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
-import com.sun.tools.javadoc.JavadocEnter;
-import com.sun.tools.javadoc.Messager;
 
 /**
- * JavadocEnter which doesn't ignore class duplicates unlike the base JavadocEnter
- * Enter - does't ignore duplicates
- * JavadocEnter - ignors duplicates
- * NBJavadocEnter - does't ignore duplicates
- * @author Tomas Zezula
+ *
+ * @author lahvac
  */
-public class NBJavadocEnter extends JavadocEnter {
-        
-    public static void preRegister(final Context context) {
-        context.put(enterKey, new Context.Factory<Enter>() {
-            public Enter make(Context c) {
-                return new NBJavadocEnter(c);
+public class NBClassWriter extends ClassWriter {
+
+    public static void preRegister(Context context) {
+        context.put(classWriterKey, new Context.Factory<ClassWriter>() {
+            public ClassWriter make(Context c) {
+                return new NBClassWriter(c);
             }
         });
     }
 
-    private final Messager messager;
-    private final CancelService cancelService;
+    private final NBNames nbNames;
+    private final Target target;
 
-    protected NBJavadocEnter(Context context) {
+
+    protected NBClassWriter(Context context) {
         super(context);
-        messager = Messager.instance0(context);
-        cancelService = CancelService.instance(context);
-    }
-
-    public @Override void main(com.sun.tools.javac.util.List<JCCompilationUnit> trees) {
-        //Todo: Check everytime after the java update that JavaDocEnter.main or Enter.main
-        //are not changed.
-        this.complete(trees, null);
+        nbNames = NBNames.instance(context);
+        target = Target.instance(context);
     }
 
     @Override
-    protected void duplicateClass(DiagnosticPosition pos, ClassSymbol c) {
-        messager.error(pos, "duplicate.class", c.fullname);
+    protected int writeExtraClassAttributes(ClassSymbol c) {
+        if (!target.hasEnclosingMethodAttribute())
+            return writeEnclosingMethodLikeAttribute(nbNames._org_netbeans_EnclosingMethod, c);
+        else
+            return 0;
     }
-    
-    @Override
-    public void visitClassDef(JCClassDecl tree) {
-        cancelService.abortIfCanceled();
-        super.visitClassDef(tree);
-    }
+
 }
