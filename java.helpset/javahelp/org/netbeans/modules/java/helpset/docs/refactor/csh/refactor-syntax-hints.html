@@ -1,0 +1,219 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright © 1997, 2011, Oracle and/or its affiliates. All rights reserved.
+*     Use is subject to license terms.
+*
+-->
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Syntax Rules for Declarative Hints</title>
+	<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+
+<h2>Syntax Rules for Declarative Hints</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+
+<p>A  hint displays in the Java Source Editor  as a result of code inspection that the IDE automatically runs on the sources in focus. <br>
+You are notified of an editor hint by a lightbulb icon that appears in the left margin of the Source view. You can read the hint by clicking the lightbulb icon or by pressing Alt-Enter. You can generate the code suggested by the hint by clicking the hint or by pressing Enter.</p>
+<p>The syntax rules for declarative hints tell the IDE what kind of code structures to look for and how to transform them.</p>
+<p>A  rule format for a declarative hint is as follows: </p>
+<pre>   &lt;source-pattern&gt; :: &lt;conditions&gt;
+=&gt; &lt;target-pattern&gt; :: &lt;conditions&gt;
+=&gt; &lt;target-pattern&gt; :: &lt;conditions&gt;
+;;</pre>
+<p>Thus, the  hint below </p>
+<pre>   $1 == null                                                                 
+=&gt; null == $1                                                                 
+;;       </pre>
+<p>updates the following code:</p>
+<pre>   if (a == null) {
+   System.err.println(&quot;a is null&quot;);
+   }</pre>
+   <p>to:</p>
+<pre>   if (null == a) {
+   System.err.println(&quot;a is null&quot;);
+   }   </pre>
+   
+   <p>This topic introduces the following components of a rule:</p>
+<dl>
+  <dd><a href="#source">Source Pattern</a></dd>
+  <dd><a href="#condition">Conditions</a></dd>
+  <dd><a href="#target">Target Pattern</a></dd>
+  <dd><a href="#option">Options</a></dd>
+  
+    
+</dl>
+   <a name="source"></a><h3>Source Pattern</h3>
+<p>The source pattern in a declaration can be either a Java expression, statement(s), class, variable, or method.</p>
+<ul class="note"> 
+<li>All references to classes in the source pattern must be resolvable: either fully qualified names or the custom import section must be used.<br> For example,
+<pre>&lt;?
+    import java.util.LinkedList;
+    import java.util.ArrayList;
+?&gt;
+
+   new LinkedList()
+=&amp;gt; new ArrayList()
+;;
+
+   LinkedList $0;
+=&amp;gt; ArrayList $0;
+;;</pre>
+</li>
+</ul>
+<p>Identifiers starting with the dollar sign (<tt>$</tt>) represent variables (for example, <tt>java.util.Arrays.asList($param)</tt>). In the source pattern, first occurrences of a variable are bound to an actual subtree that exists in the code. Second and following occurrences of the variable in the actual subtree are verified against the subtree that is bound to the variable. A source pattern occurs in the text only if the actual subtree matches the subtree that is bound to the variable.</p>
+<p>Identifiers starting and ending with the dollar sign (<tt>$</tt>) consume any number of tree nodes (for example, <tt>java.util.Arrays.asList($params$)</tt>).</p>
+
+<a name="condition"></a><h3>Conditions</h3>
+<p>Both  source and target patterns can specify additional conditions for a hint. Conditions must follow the <tt>::</tt> sign according to the syntax rules.</p>
+<p>Conditions have the following limitations:</p>
+<pre>$1.isDirectory() :: $1 instanceof java.io.File
+=&gt; !$1.isFile()
+;;</pre>
+<p><b>Examples</b></p>
+<ul>
+<li>using a new variant of a deprecated method
+<pre>$component.show($v) :: $component instanceof java.awt.Component &amp;&amp; $v instanceof boolean
+=&gt; $component.setVisible($v)
+;; </pre></li>
+<li>adding a default parameter value
+<pre>$component.show() :: $component instanceof java.awt.Component
+=&gt; $component.setVisible(true)
+;; </pre></li>
+<li>changing the method invocation chain to get correct results
+<pre>$file.toURL() :: $file instanceof java.io.File
+=&gt; $file.toURI().toURL()
+;; </pre></li>
+</ul>
+
+<!--Custom conditions are going to be mentioned in a netbeans wiki-page with the detailed descriprion of the syntax rules
+<p>Custom conditions can use pattern matching.</p>
+<pre>&lt;?
+    import java.util.HashSet;
+?&gt;
+
+   $opt ::    $opt instanceof com.whatever.Option
+           &amp;&amp; matchName($opt)
+=&gt;
+   $optNew :: changeVariableName($opt, $optNew)
+;;
+
+&lt;?
+    public boolean matchName(Variable v) {
+        return names.contains(context.name(v));
+    }
+
+    public boolean changeVariableName(Variable v, Variable target) {
+        String name = context.name(v);
+        context.createRenamed(v, target, name + &quot;Renamed&quot;);
+        return true;
+    }
+
+    final static HashSet&lt;String&gt; names = new HashSet&lt;String&gt;();
+    static {
+        names.add(&quot;p_bs&quot;);
+        names.add(&quot;p_cb&quot;);
+    }
+?&gt;</pre>
+<ul class="note">
+<li>A condition result can be negated.</li>
+<li>The &amp;&amp; logical operator works on condition results.</li>
+</ul>-->
+
+<a name="target"></a><h3>Target Pattern</h3>
+<p>The syntax of a target pattern is similar to the syntax of a <a href="#source">source pattern</a>.</p>
+<p>Special form: empty == remove</p>
+    
+
+<ul class="note">
+  <li>You can use the following variable types in both <a href="#source">source</a> and <a href="#target">target</a> patterns : 
+
+<table border="1" cellpadding="5" cellspacing="0">
+            <tr valign="top"> 
+                <th scope="col" align="center">Variable Types</th>
+                <th scope="col" align="center">Description</th>
+            </tr>
+ 
+            <tr valign="top"> 
+                <td><tt>$[a-zA-Z0-9_]+</tt></td>
+                <td>Any expression
+                </td>
+  </tr>
+                <tr valign="top"> 
+                    <td><tt>$[a-zA-Z0-9_]+;</tt></td>
+                    <td>Any statement
+                    </td>
+                </tr>
+				<tr valign="top"> 
+                    <td><tt>$[a-zA-Z0-9_]+$</tt></td>
+                    <td>Any number of subtrees (except statements)
+                    </td>
+                </tr>
+				<tr valign="top"> 
+                    <td><tt>$[a-zA-Z0-9_]+$;</tt></td>
+                    <td>Any number of statements
+                    </td>
+                </tr>
+				<tr valign="top"> 
+                    <td><tt>$_</tt></td>
+                    <td>For patterns undefined and for target patterns and conditions that are automatically bound to the current matched region
+                    </td>
+                </tr>
+				<tr valign="top"> 
+                    <td><tt>$$[a-zA-Z0-9_]+</tt></td>
+                    <td>Reserved, do not use
+                    </td>
+                </tr>
+               
+</table>
+</li></ul>
+<a name="option"></a><h3>Options</h3>
+<p>Options allow for modifying and fine-tuning the behavior of a hint. The error or warning options allow to specify errors or warnings that are shown in the refactoring UI as appropriate. Suppress warnings allow to add <tt>@SuppressWarnings</tt> keys.</p>
+<p><b>Examples</b></p>
+<ul><li>&lt;!error=&quot;message&quot;&gt;<br>
+remove-from-parent
+<pre>   int i;
+=&gt; /*remove-from-parent*/
+;;
+-&gt; will remove the "int i;" variable declaration from the surrounding block</span>
+   float f;
+=&gt; &lt;!error=&quot;err&quot;&gt;
+;;
+-&gt; will show an error to the user when used from the <a href="inspect_transform.html">Inspect and Transform</a> dialog box, will not remove the "float f;" variable declaration from the surrounding block
+   double d;
+=&gt; &lt;!error=&quot;err&quot;,remove-from-parent=true&gt;
+;;
+-&gt; will show an error to the user (in the <a href="inspect_transform.html">Inspect and Transform</a> dialog box) and will remove the "double d;" variable declaration from the surrounding block</pre>
+</li>
+<li>&lt;!suppress-warnings=xxx&gt;&quot;
+<pre>   $1.isDirectory <!suppress-warnings=isDirectory>
+        :: $1 instanceof java.io.File
+;;</pre></li>
+</ul>
+<ul class="note">
+
+<li>Before you start writing your own declarative hint, check that it does not exist yet in the complete list of hints available in the IDE at the <i>Java Hints</i> wiki page: 
+        <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+            <param name="content" value="http://wiki.netbeans.org/Java_Hints">
+            <param name="text" value="<html><u>http://wiki.netbeans.org/Java_Hints</u></html>"> 
+            <param name="textFontSize" value="medium">
+            <param name="textColor" value="blue">
+        </object></p>
+</li>
+</ul>
+<dl>
+	<dt><a name="seealso">See Also</a></dt>
+	<dd><a href="../use_hint.html">Using Hints in Source Code Analysis and Refactoring</a></dd>
+	<dd><a href="inspect_transform.html">Inspect and Transform Dialog Box</a></dd>
+</dl>
+<hr>
+<small><a href="../credits.html">Legal Notices</a></small>
+<table cellpadding="50" border="0">
+<tr>
+<td>&nbsp;</td>
+</tr>
+</table>
+</body>
+</html>
