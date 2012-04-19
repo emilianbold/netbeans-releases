@@ -182,7 +182,7 @@ public class ElementsParserCache {
                 
                 blockReference = new SoftReference<CacheBlockContent>(block);
                 
-                System.out.println("block at " + getStartIndex() + " - cache reloaded " + blockReads + " times");
+//                System.out.println("block at " + getStartIndex() + " - cache reloaded " + blockReads + " times");
             }
             return block.getElements();
         }

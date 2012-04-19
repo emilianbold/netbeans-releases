@@ -1064,6 +1064,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
 
         if (isRestored) {
+            FileImpl.incParseCount();
             ProgressSupport.instance().fireProjectLoaded(ProjectBase.this);
         }
 
@@ -2624,6 +2625,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     private void onParseFinishImpl(boolean libsAlreadyParsed) {
+        FileImpl.incParseCount();
         synchronized (waitParseLock) {
             waitParseLock.notifyAll();
         }

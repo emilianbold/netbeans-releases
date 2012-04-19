@@ -70,7 +70,6 @@ import org.openide.util.lookup.InstanceContent;
 public class SyntaxAnalyzerResult {
 
     private static final Logger LOG = Logger.getLogger(SyntaxAnalyzerResult.class.getSimpleName());
-    
     /**
      * special namespace which can be used for obtaining a parse tree of tags
      * with undeclared namespace.
@@ -119,7 +118,7 @@ public class SyntaxAnalyzerResult {
             TokenSequence<HTMLTokenId> tokenSequence = hi.tokenSequence(HTMLTokenId.language());
             elementsParserCache = new ElementsParserCache(source.getSourceCode(), tokenSequence);
         }
-        
+
         return elementsParserCache;
     }
 
@@ -143,7 +142,7 @@ public class SyntaxAnalyzerResult {
                     : mayBeXhtml() ? HtmlVersion.getDefaultXhtmlVersion() : HtmlVersion.getDefaultVersion(); //fallback if nothing can be determined
         } finally {
             long end = System.currentTimeMillis();
-            log(String.format("getHtmlVersion() took %s ms.", (end-start)));
+            log(String.format("getHtmlVersion() took %s ms.", (end - start)));
         }
     }
 
@@ -212,70 +211,83 @@ public class SyntaxAnalyzerResult {
     }
 
     private HtmlParseResult doParseHtml() throws ParseException {
-        HtmlVersion version = getHtmlVersion();
-        HtmlParser parser = findParser();
+        log("doParseHtml()...");
+        
+        long start = System.currentTimeMillis();
+        long justParsingStart = 0;
+        try {
+            HtmlVersion version = getHtmlVersion();
+            HtmlParser parser = findParser();
 
-        final Collection<String> prefixes = version.getDefaultNamespace() != null
-                ? getAllDeclaredNamespaces().get(version.getDefaultNamespace())
-                : null;
+            final Collection<String> prefixes = version.getDefaultNamespace() != null
+                    ? getAllDeclaredNamespaces().get(version.getDefaultNamespace())
+                    : null;
 
-        Iterator<Element> original = getElementsIterator();
-        Iterator<Element> filteredIterator = new FilteredIterator(original, new ElementFilter() {
-            @Override
-            public boolean accepts(Element node) {
-                switch (node.type()) {
-                    case OPEN_TAG:
-                    case CLOSE_TAG:
-                        Named named = (Named) node;
-                        CharSequence prefix = named.namespacePrefix();
+            Iterator<Element> original = getElementsIterator();
+            Iterator<Element> filteredIterator = new FilteredIterator(original, new ElementFilter() {
+                @Override
+                public boolean accepts(Element node) {
+                    switch (node.type()) {
+                        case OPEN_TAG:
+                        case CLOSE_TAG:
+                            Named named = (Named) node;
+                            CharSequence prefix = named.namespacePrefix();
 
-                        if (prefix == null) {
-                            return true; //default namespace, should be html in most cases
-                        }
-                        if (prefixes != null) {
-                            if (prefixes.contains(prefix.toString())) {
-                                //the prefix is mapped to the html namespace
-                                return true;
+                            if (prefix == null) {
+                                return true; //default namespace, should be html in most cases
                             }
-                        }
-                        break;
-                    default:
-                        return true;
-                }
-                return false;
-            }
-        });
-
-        MaskedAreas maskedAreas = findMaskedAreas(new TagsFilter() {
-            @Override
-            public boolean accepts(Named tag, CharSequence prefix) {
-                if (prefix == null) {
-                    return true; //default namespace, should be html in most cases
-                }
-                if (prefixes != null) {
-                    if (prefixes.contains(prefix.toString())) {
-                        //the prefix is mapped to the html namespace
-                        return true;
+                            if (prefixes != null) {
+                                if (prefixes.contains(prefix.toString())) {
+                                    //the prefix is mapped to the html namespace
+                                    return true;
+                                }
+                            }
+                            break;
+                        default:
+                            return true;
                     }
+                    return false;
                 }
+            });
 
-                return false;
-            }
-        });
+            MaskedAreas maskedAreas = findMaskedAreas(new TagsFilter() {
+                @Override
+                public boolean accepts(Named tag, CharSequence prefix) {
+                    if (prefix == null) {
+                        return true; //default namespace, should be html in most cases
+                    }
+                    if (prefixes != null) {
+                        if (prefixes.contains(prefix.toString())) {
+                            //the prefix is mapped to the html namespace
+                            return true;
+                        }
+                    }
 
-        //create a new html source with the cleared areas
-        HtmlSource newSource = new HtmlSource(
-                source.getSourceCode(),
-                source.getSnapshot(),
-                source.getSourceFileObject());
+                    return false;
+                }
+            });
 
-        //add the syntax elements to the lookup since the old html4 parser needs them
-        InstanceContent content = new InstanceContent();
-        content.add(new IteratorOfElements(filteredIterator));
-        content.add(maskedAreas);
-        Lookup lookup = new AbstractLookup(content);
+            //create a new html source with the cleared areas
+            HtmlSource newSource = new HtmlSource(
+                    source.getSourceCode(),
+                    source.getSnapshot(),
+                    source.getSourceFileObject());
 
-        return parser.parse(newSource, getHtmlVersion(), lookup);
+            //add the syntax elements to the lookup since the old html4 parser needs them
+            InstanceContent content = new InstanceContent();
+            content.add(new IteratorOfElements(filteredIterator));
+            content.add(maskedAreas);
+            Lookup lookup = new AbstractLookup(content);
+
+            justParsingStart = System.currentTimeMillis();
+
+            log("really parsing...");
+            return parser.parse(newSource, getHtmlVersion(), lookup);
+
+        } finally {
+            long end = System.currentTimeMillis();
+            log(String.format("doParseHtml() took %s ms (clear parsing time %s)", (end - start), (end - justParsingStart)));
+        }
 
     }
 
@@ -292,37 +304,48 @@ public class SyntaxAnalyzerResult {
     }
 
     private ParseResult doParseEmbeddedCode(String namespace) throws ParseException {
-        final Collection<String> prefixes = getAllDeclaredNamespaces().get(namespace);
-        if (prefixes == null || prefixes.isEmpty()) {
-            return new EmptyResult(getSource());
-        }
+        long start = System.currentTimeMillis();
+        long justParsingStart = 0;
+        try {
 
-        Iterator<Element> original = getElementsIterator();
-        Iterator<Element> filteredIterator = new FilteredIterator(original, new ElementFilter() {
-            @Override
-            public boolean accepts(Element node) {
-                switch (node.type()) {
-                    case OPEN_TAG:
-                    case CLOSE_TAG:
-                        Named named = (Named) node;
-                        CharSequence prefix = named.namespacePrefix();
-                        if (prefix != null && prefixes.contains(prefix.toString())) {
-                            return true;
-                        }
-                        break;
-                    default:
-                        return true;
-                }
-                return false;
+            final Collection<String> prefixes = getAllDeclaredNamespaces().get(namespace);
+            if (prefixes == null || prefixes.isEmpty()) {
+                return new EmptyResult(getSource());
             }
-        });
 
-        Node root = XmlSyntaxTreeBuilder.makeUncheckedTree(
-                source,
-                namespace,
-                filteredIterator);
+            Iterator<Element> original = getElementsIterator();
+            Iterator<Element> filteredIterator = new FilteredIterator(original, new ElementFilter() {
+                @Override
+                public boolean accepts(Element node) {
+                    switch (node.type()) {
+                        case OPEN_TAG:
+                        case CLOSE_TAG:
+                            Named named = (Named) node;
+                            CharSequence prefix = named.namespacePrefix();
+                            if (prefix != null && prefixes.contains(prefix.toString())) {
+                                return true;
+                            }
+                            break;
+                        default:
+                            return true;
+                    }
+                    return false;
+                }
+            });
 
-        return new DefaultParseResult(source, root, Collections.<ProblemDescription>emptyList());
+            justParsingStart = System.currentTimeMillis();
+
+            Node root = XmlSyntaxTreeBuilder.makeUncheckedTree(
+                    source,
+                    namespace,
+                    filteredIterator);
+
+            return new DefaultParseResult(source, root, Collections.<ProblemDescription>emptyList());
+
+        } finally {
+            long end = System.currentTimeMillis();
+            log(String.format("doParseEmbeddedCode() took %s ms (clear parsing time %s)", (end - start), (end - justParsingStart)));
+        }
 
     }
 
@@ -331,8 +354,15 @@ public class SyntaxAnalyzerResult {
      * done, just the tag elements are transformed to the tree structure.
      */
     public ParseResult parsePlain() {
-        Node root = XmlSyntaxTreeBuilder.makeUncheckedTree(source, null, getElementsIterator());
-        return new DefaultParseResult(source, root, Collections.<ProblemDescription>emptyList());
+        long start = System.currentTimeMillis();
+        try {
+            Node root = XmlSyntaxTreeBuilder.makeUncheckedTree(source, null, getElementsIterator());
+            return new DefaultParseResult(source, root, Collections.<ProblemDescription>emptyList());
+        } finally {
+            long end = System.currentTimeMillis();
+            log(String.format("parsePlain() took %s ms", (end - start)));
+        }
+
     }
 
     public ParseResult parseUndeclaredEmbeddedCode() throws ParseException {
@@ -343,39 +373,47 @@ public class SyntaxAnalyzerResult {
     }
 
     private ParseResult doParseUndeclaredEmbeddedCode() throws ParseException {
-        final Collection<String> prefixes = getAllDeclaredPrefixes();
+        long start = System.currentTimeMillis();
+        try {
 
-        Iterator<Element> original = getElementsIterator();
-        Iterator<Element> filteredIterator = new FilteredIterator(original, new ElementFilter() {
-            @Override
-            public boolean accepts(Element node) {
-                switch (node.type()) {
-                    case OPEN_TAG:
-                    case CLOSE_TAG:
-                        Named named = (Named) node;
-                        CharSequence prefix = named.namespacePrefix();
-                        if (prefix != null && !prefixes.contains(prefix.toString())) {
+            final Collection<String> prefixes = getAllDeclaredPrefixes();
+
+            Iterator<Element> original = getElementsIterator();
+            Iterator<Element> filteredIterator = new FilteredIterator(original, new ElementFilter() {
+                @Override
+                public boolean accepts(Element node) {
+                    switch (node.type()) {
+                        case OPEN_TAG:
+                        case CLOSE_TAG:
+                            Named named = (Named) node;
+                            CharSequence prefix = named.namespacePrefix();
+                            if (prefix != null && !prefixes.contains(prefix.toString())) {
+                                return true;
+                            }
+                            break;
+                        default:
                             return true;
-                        }
-                        break;
-                    default:
-                        return true;
+                    }
+                    return false;
                 }
-                return false;
-            }
-        });
+            });
 
 
-        Node root = XmlSyntaxTreeBuilder.makeUncheckedTree(
-                source,
-                null,
-                filteredIterator);
+            Node root = XmlSyntaxTreeBuilder.makeUncheckedTree(
+                    source,
+                    null,
+                    filteredIterator);
 
-        return new DefaultParseResult(source, root, Collections.<ProblemDescription>emptyList());
+            return new DefaultParseResult(source, root, Collections.<ProblemDescription>emptyList());
+        } finally {
+            long end = System.currentTimeMillis();
+            log(String.format("doParseUndeclaredEmbeddedCode() took %s ms", (end - start)));
+        }
 
     }
 
     private MaskedAreas findMaskedAreas(TagsFilter filter) {
+        log("findMaskedAreas...");
         long start = System.currentTimeMillis();
         try {
             //html5 parser:
@@ -426,7 +464,7 @@ public class SyntaxAnalyzerResult {
             return new MaskedAreas(positions, lens);
         } finally {
             long end = System.currentTimeMillis();
-            log(String.format("findMaskedAreas() took %s ms.", (end-start)));
+            log(String.format("findMaskedAreas() took %s ms.", (end - start)));
         }
 
     }
@@ -469,7 +507,7 @@ public class SyntaxAnalyzerResult {
             return declaration.get();
         } finally {
             long end = System.currentTimeMillis();
-            log(String.format("getDoctypeDeclaration() took %s ms.", (end-start)));
+            log(String.format("getDoctypeDeclaration() took %s ms.", (end - start)));
         }
     }
 
@@ -511,8 +549,9 @@ public class SyntaxAnalyzerResult {
     }
 
     public String getHtmlTagDefaultNamespace() {
+        log("getHtmlTagDefaultNamespace()...");
         long start = System.currentTimeMillis();
-            try {
+        try {
             //typically the html root element is at the beginning of the file
             int limitCountdown = 100;
             Iterator<Element> elementsIterator = getElementsIterator();
@@ -536,7 +575,7 @@ public class SyntaxAnalyzerResult {
             return null;
         } finally {
             long end = System.currentTimeMillis();
-            log(String.format("getHtmlTagDefaultNamespace() took %s ms.", (end-start)));
+            log(String.format("getHtmlTagDefaultNamespace() took %s ms.", (end - start)));
         }
     }
 
@@ -546,6 +585,7 @@ public class SyntaxAnalyzerResult {
      * list are sorted according to their occurrences in the document.
      */
     public synchronized Map<String, Collection<String>> getAllDeclaredNamespaces() {
+        log("getAllDeclaredNamespaces...");
         long start = System.currentTimeMillis();
         try {
             if (namespaces == null) {
@@ -591,13 +631,13 @@ public class SyntaxAnalyzerResult {
             }
 
             return namespaces;
-        
+
         } finally {
             long end = System.currentTimeMillis();
-            log(String.format("getAllDeclaredNamespaces() took %s ms.", (end-start)));
+            log(String.format("getAllDeclaredNamespaces() took %s ms.", (end - start)));
         }
     }
-    
+
     private void log(String message) {
         LOG.log(Level.FINE, new StringBuilder().append("HtmlSource(").append(source.hashCode()).append("):").append(message).toString());
     }
