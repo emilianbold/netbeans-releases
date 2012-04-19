@@ -58,7 +58,7 @@ public class RtcOption extends Option {
 
     private RtcOption(String inName, String[] inValues,
 			   String inDefaultValue, boolean isClientOption,
-			   int inType, boolean hasTooltip) {
+			   Type inType, boolean hasTooltip) {
 
 	super(inName, catalog, inValues, inDefaultValue, isClientOption, inType,
 	      hasTooltip, false);
@@ -70,7 +70,7 @@ public class RtcOption extends Option {
      * mostly for TextArea options
      */
     private RtcOption(String inName, String inDefaultValue,
-			   boolean isClientOption, int inType, boolean hasTip) {
+			   boolean isClientOption, Type inType, boolean hasTip) {
 	super(inName, catalog, null, inDefaultValue, isClientOption, inType, hasTip, false);
     }
 
@@ -199,7 +199,7 @@ public class RtcOption extends Option {
 		    new String[] {"on", "off"}, // NOI18N //values
 		    NativeDebuggerManager.isStandalone() ? "off" : "on",  // NOI18N //default value
 		    false, // isClientOption
-		    CHECK_BOX, false); //type
+		    Type.CHECK_BOX, false); //type
 
     public static final RtcOption RTC_AUTO_CONTINUE  =
 	new RtcOption( // NOI18N
@@ -207,7 +207,7 @@ public class RtcOption extends Option {
 			    new String[] {"on", "off"}, // NOI18N //values
 			    "off",  // NOI18N //default value
 			    true, // isClientOption
-			    CHECK_BOX, false); //type
+			    Type.CHECK_BOX, false); //type
 
 
 
@@ -234,7 +234,7 @@ public class RtcOption extends Option {
 		    new String[] {"on", "off"}, // NOI18N //values
 		    NativeDebuggerManager.isStandalone() ? "off" : "on",  // NOI18N //default value
 		    false, // isClientOption
-		    CHECK_BOX, false); //type
+		    Type.CHECK_BOX, false); //type
 
 
     public static final RtcOption RTC_EXPERIMENT_NAME  =
@@ -242,14 +242,14 @@ public class RtcOption extends Option {
 			    "rtc_experiment_name",	   // NOI18N //name
 			    "",			  // NOI18N //default value
 			    false, // isClientOption
-			    TEXT_AREA, false);  //type
+			    Type.TEXT_AREA, false);  //type
 
     public static final RtcOption RTC_EXPERIMENT_DIR  =
 	new RtcOption( // NOI18N
 			    "rtc_experiment_dir",	   // NOI18N //name
 			    ".", // NOI18N //default value
 			    false, // isClientOption
-			    DIRECTORY, false);  //type
+			    Type.DIRECTORY, false);  //type
 
 
 
@@ -263,7 +263,7 @@ public class RtcOption extends Option {
 			    "rtc_error_log_file_name",   // NOI18N //name
 			    "",	  // NOI18N //default value
 			    true, // isClientOption
-			    TEXT_AREA, false);  //type
+			    Type.TEXT_AREA, false);  //type
 
 
 
@@ -278,7 +278,7 @@ public class RtcOption extends Option {
 			    new String[] {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16"},	// NOI18N // values
 			    "3",	// NOI18N //default value
 			    false,	//  isClientOption
-			    RADIO_BUTTON, false);
+			    Type.RADIO_BUTTON, false);
 
     /* OLD
     public static final RtcOption RTC_CUSTOM_STACK_MATCH =
@@ -309,7 +309,7 @@ public class RtcOption extends Option {
 			    new String[] {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16"},	// NOI18N // values
 			    "8",	// NOI18N //default value
 			    false,	//  isClientOption
-			    RADIO_BUTTON, false);
+			    Type.RADIO_BUTTON, false);
 
     /* OLD
     public static final RtcOption RTC_CUSTOM_STACK_FRAMES =
@@ -334,7 +334,7 @@ public class RtcOption extends Option {
 			    new String[] {"on", "off"}, // NOI18N //values
 			    "on",  // NOI18N //default value
 			    true, // isClientOption
-			    CHECK_BOX, false); //type
+			    Type.CHECK_BOX, false); //type
 
     public static final RtcOption RTC_INHERIT  =
 	new RtcOption( // NOI18N
@@ -342,7 +342,7 @@ public class RtcOption extends Option {
 			    new String[] {"on", "off"}, // NOI18N //values
 			    "off",  // NOI18N //default value
 			    true, // isClientOption
-			    CHECK_BOX, false); //type
+			    Type.CHECK_BOX, false); //type
 /*
     public static final RtcOption RTC_SKIP_PATCH  =
 	new RtcOption( // NOI18N
@@ -356,7 +356,7 @@ public class RtcOption extends Option {
 			    "rtc_error_limit",   // NOI18N //name
 			    "1000",  // NOI18N //default value
 			    true, // isClientOption
-			    TEXT_AREA, false);  //type
+			    Type.TEXT_AREA, false);  //type
 
     public static final RtcOption RTC_BIU_AT_EXIT  =
 	new RtcOption( // NOI18N
@@ -364,7 +364,7 @@ public class RtcOption extends Option {
 			    new String[] {"on", "off"}, // NOI18N //values
 			    "on",  // NOI18N //default value
 			    true, // isClientOption
-			    CHECK_BOX, false); //type
+			    Type.CHECK_BOX, false); //type
 
     public static final RtcOption RTC_MEL_AT_EXIT  =
 	new RtcOption( // NOI18N
@@ -372,7 +372,7 @@ public class RtcOption extends Option {
 			    new String[] {"on", "off"}, // NOI18N //values
 			    "on",  // NOI18N //default value
 			    true, // isClientOption
-			    CHECK_BOX, false); //type
+			    Type.CHECK_BOX, false); //type
 
     public static final RtcOption RTC_ENABLE_AT_DEBUG  =
 	new RtcOption( // NOI18N
@@ -380,5 +380,5 @@ public class RtcOption extends Option {
 			    new String[] {"on", "off"}, // NOI18N //values
 			    "off",  // NOI18N //default value
 			    false, // isClientOption
-			    CHECK_BOX, false); //type
+			    Type.CHECK_BOX, false); //type
 }
