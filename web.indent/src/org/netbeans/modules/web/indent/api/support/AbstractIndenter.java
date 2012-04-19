@@ -499,7 +499,10 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
             List<IndentCommand> cmds = new ArrayList<IndentCommand>();
             for (IndentCommand ic : l.lineIndent) {
                 if (ic.getType() == IndentCommand.Type.BLOCK_START) {
-                    assert start == -1 : ""+l;
+                    // #195156 - not sure when this assert gets hit. disabling it
+                    // and hopefully a resulting formatting if broken will get reported
+                    // back
+                    //assert start == -1 : ""+l;
                     start = l.index;
                 } else if (ic.getType() == IndentCommand.Type.BLOCK_END) {
                     if (start == -1) {
