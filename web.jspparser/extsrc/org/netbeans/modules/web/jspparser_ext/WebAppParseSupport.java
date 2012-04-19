@@ -1066,14 +1066,25 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         public void run() {
             try {
                 // #188702
-                Field mappings = TldScanner.class.getDeclaredField("mappings"); // NOI18N
-                mappings.setAccessible(true);
-                mappings.set(cache, null);
-                cache.getLocation(""); // NOI18N
-            } catch (JasperException e) {
-                LOG.log(Level.INFO, null, e);
-            } catch (NoSuchFieldException e) {
-                LOG.log(Level.INFO, null, e);
+//                Field mappings = TldScanner.class.getDeclaredField("mappings"); // NOI18N
+//                mappings.setAccessible(true);
+//                mappings.set(cache, null);
+//                cache.getLocation(""); // NOI18N
+                Method mappingsMethod = TldScanner.class.getDeclaredMethod("scanTlds"); //NOI18N
+                mappingsMethod.setAccessible(true);
+                mappingsMethod.invoke(cache);
+            } catch (IllegalArgumentException ex) {
+                LOG.log(Level.INFO, null, ex);
+            } catch (InvocationTargetException ex) {
+                LOG.log(Level.INFO, null, ex);
+            } catch (NoSuchMethodException ex) {
+                LOG.log(Level.INFO, null, ex);
+            } catch (SecurityException ex) {
+                LOG.log(Level.INFO, null, ex);
+//            } catch (JasperException e) {
+//                LOG.log(Level.INFO, null, e);
+//            } catch (NoSuchFieldException e) {
+//                LOG.log(Level.INFO, null, e);
             } catch (IllegalAccessException e) {
                 LOG.log(Level.INFO, null, e);
             }
