@@ -107,6 +107,11 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
         return retval;
     }
 
+    VarAssignmentImpl createAssignment(final Scope scope, final boolean conditionalBlock, final OffsetRange blockRange, final OffsetRange nameRange, final String typeName) {
+        VarAssignmentImpl retval = new VarAssignmentImpl(this, scope, conditionalBlock, blockRange, nameRange, typeName);
+        return retval;
+    }
+
     @Override
     public FileObject getRealFileObject() {
         return (indexedElement != null) ? indexedElement.getFileObject() : null;

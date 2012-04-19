@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.php.editor.model.impl;
 
-import java.security.Policy;
 import java.util.*;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.csl.api.OffsetRange;
@@ -471,8 +470,8 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                     Scope currentScope = modelBuilder.getCurrentScope();
                     VariableNameImpl varN = findVariable(currentScope, var);
                     if (varN != null) {
-                        varN.addElement(new VarAssignmentImpl(varN, currentScope, true,
-                                getBlockRange(currentScope), ASTNodeInfo.create(var).getRange(), clsName));
+                        VarAssignmentImpl varAssignment = varN.createAssignment(currentScope, true, getBlockRange(currentScope), ASTNodeInfo.create(var).getRange(), clsName);
+                        varN.addElement(varAssignment);
                     }
                 }
 
@@ -693,20 +692,20 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                             Expression value = arrayElement.getValue();
                             String typeName = VariousUtils.extractVariableTypeFromExpression(value, allAssignments);
                             ASTNode conditionalNode = findConditionalStatement(getPath());
-                            VarAssignmentImpl vAssignment = new VarAssignmentImpl(varN, scope, conditionalNode != null,
-                                    getBlockRange(conditionalNode, scope), new OffsetRange(var.getStartOffset(), var.getEndOffset()), typeName);
+                            VarAssignmentImpl vAssignment = varN.createAssignment(scope, conditionalNode != null, getBlockRange(conditionalNode, scope), new OffsetRange(var.getStartOffset(), var.getEndOffset()), typeName);
+                            varN.addElement(vAssignment);
                             vAssignment.setAsArrayAccess(true);
                         }
                     } else {
                         String typeName = VariousUtils.extractVariableTypeFromExpression(rightHandSide, allAssignments);
                         ASTNode conditionalNode = findConditionalStatement(getPath());
-                        new VarAssignmentImpl(varN, scope, conditionalNode != null,
-                                    getBlockRange(conditionalNode, scope), new OffsetRange(var.getStartOffset(), var.getEndOffset()), typeName);
+                        VarAssignmentImpl varAssignment = varN.createAssignment(scope, conditionalNode != null, getBlockRange(conditionalNode, scope), new OffsetRange(var.getStartOffset(), var.getEndOffset()), typeName);
+                        varN.addElement(varAssignment);
                     }
                 } else {
                     ASTNode conditionalNode = findConditionalStatement(getPath());
-                    varN.createAssignment(scope, conditionalNode != null, getBlockRange(conditionalNode, scope), new OffsetRange(var.getStartOffset(), var.getEndOffset()), node,
-                            allAssignments);
+                    VarAssignmentImpl varAssignment = varN.createAssignment(scope, conditionalNode != null, getBlockRange(conditionalNode, scope), new OffsetRange(var.getStartOffset(), var.getEndOffset()), node, allAssignments);
+                    varN.addElement(varAssignment);
                 }
                 occurencesBuilder.prepare((Variable) leftHandSide, scope);
             }
@@ -740,13 +739,15 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                     processVarComment(varArray.getName(), scope);
                     Collection<? extends String> typeNames = varArray.getArrayAccessTypeNames(node.getStartOffset());
                     for (String tpName : typeNames) {
-                        new VarAssignmentImpl(varValue, scope, true, getBlockRange(scope), new OffsetRange(value.getStartOffset(), value.getEndOffset()), tpName);
+                        VarAssignmentImpl varAssignment = varValue.createAssignment(scope, true, getBlockRange(scope), new OffsetRange(value.getStartOffset(), value.getEndOffset()), tpName);
+                        varValue.addElement(varAssignment);
                     }
                 }
             } else {
                 String varType = VariousUtils.extractVariableTypeFromExpression(expression, getAssignmentMap(scope, (Variable) value));
                 if (varType != null && varValue != null) {
-                    new VarAssignmentImpl(varValue, scope, true, getBlockRange(scope), new OffsetRange(value.getStartOffset(), value.getEndOffset()), varType);
+                    VarAssignmentImpl varAssignment = varValue.createAssignment(scope, true, getBlockRange(scope), new OffsetRange(value.getStartOffset(), value.getEndOffset()), varType);
+                    varValue.addElement(varAssignment);
                 }
             }
         }
@@ -781,8 +782,8 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                 }
                 VariableNameImpl var = createParameter(fncScope, parameter);
                 if (!types.isEmpty() && var != null) {
-                    var.addElement(new VarAssignmentImpl(var, fncScope, false, fncScope.getBlockRange(),
-                            parameter.getOffsetRange(), typeName));
+                    VarAssignmentImpl varAssignment = var.createAssignment(fncScope, false, fncScope.getBlockRange(), parameter.getOffsetRange(), typeName);
+                    var.addElement(varAssignment);
                 }
             }
         }
@@ -804,8 +805,8 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         if (scope instanceof VariableNameFactory) {
             VariableNameImpl varNameImpl = createVariable((VariableNameFactory) scope, variable);
             if (varNameImpl != null) {
-                varNameImpl.addElement(new VarAssignmentImpl(varNameImpl, scope, true, new OffsetRange(node.getStartOffset(), node.getEndOffset()),
-                        VariableNameImpl.toOffsetRange(variable), CodeUtils.extractUnqualifiedTypeName(node)));
+                VarAssignmentImpl varAssignment = varNameImpl.createAssignment(scope, true, new OffsetRange(node.getStartOffset(), node.getEndOffset()), VariableNameImpl.toOffsetRange(variable), CodeUtils.extractUnqualifiedTypeName(node));
+                varNameImpl.addElement(varAssignment);
             }
         }
         occurencesBuilder.prepare(Kind.CLASS, node.getClassName(), scope);
@@ -985,8 +986,8 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                         varN = new VariableNameImpl(factory, varName, variableScope.getFile(), nameRange, true);
                     }
                     if (varN != null) {
-                        varN.addElement(new VarAssignmentImpl(varN, variableScope,
-                                false, variableScope.getBlockRange(), varN.getNameRange(), typeName));
+                        VarAssignmentImpl varAssignment = varN.createAssignment(variableScope, false, variableScope.getBlockRange(), varN.getNameRange(), typeName);
+                        varN.addElement(varAssignment);
                     }
                 }
             }
@@ -1327,9 +1328,8 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         }
         if (varInstance != null) {
             ASTNode conditionalNode = findConditionalStatement(getPath());
-            VarAssignmentImpl vAssignment = new VarAssignmentImpl(varInstance,
-                    (Scope) varScope, conditionalNode != null, getBlockRange(varScope), phpDocTypeTagInfo.getRange(), phpDocTypeTagInfo.getTypeName());
-            varInstance.addElement(vAssignment);
+            VarAssignmentImpl varAssignment = varInstance.createAssignment((Scope) varScope, conditionalNode != null, getBlockRange(varScope), phpDocTypeTagInfo.getRange(), phpDocTypeTagInfo.getTypeName());
+            varInstance.addElement(varAssignment);
         }
         //scan(phpDocTypeTagInfo.getTypeTag());
         occurencesBuilder.prepare(phpDocTypeTagInfo.getTypeTag(), varScope);

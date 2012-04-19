@@ -57,6 +57,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.cnd.api.lexer.Filter;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.LanguageFlavor;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
@@ -233,8 +234,18 @@ public final class DocumentLanguageFlavorProvider implements CndSourceProperties
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {
-                            MutableTextInput mti = (MutableTextInput) doc.getProperty(MutableTextInput.class);
-                            mti.tokenHierarchyControl().rebuild();
+                            BaseDocument bdoc = (BaseDocument) doc;
+                            try {
+                                if (bdoc != null) {
+                                    bdoc.extWriteLock();
+                                }
+                                MutableTextInput mti = (MutableTextInput) doc.getProperty(MutableTextInput.class);
+                                mti.tokenHierarchyControl().rebuild();
+                            } finally {
+                                if (bdoc != null) {
+                                    bdoc.extWriteUnlock();
+                                }
+                            }
                         }
                     });
                 }
