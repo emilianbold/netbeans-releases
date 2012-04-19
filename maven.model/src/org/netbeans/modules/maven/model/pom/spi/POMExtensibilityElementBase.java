@@ -41,14 +41,13 @@
  */
 package org.netbeans.modules.maven.model.pom.spi;
 
-import org.netbeans.modules.maven.model.pom.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.xml.namespace.QName;
+import org.netbeans.modules.maven.model.pom.*;
 import org.netbeans.modules.maven.model.pom.impl.POMComponentImpl;
-import org.netbeans.modules.maven.model.pom.POMComponentVisitor;
 import org.netbeans.modules.xml.xam.dom.Attribute;
 import org.w3c.dom.Element;
 
@@ -67,14 +66,17 @@ public class POMExtensibilityElementBase extends POMComponentImpl
         this(model, createElementNS(model, name));
     }
      
+    @Override
     public void accept(POMComponentVisitor visitor) {
         visitor.visit(this);
     }
 
+    @Override
     public String getElementText() {
         return getText();
     }
 
+    @Override
     public void setElementText(String text) {
         setText(getQName().getLocalPart(), text);
     }
@@ -82,27 +84,35 @@ public class POMExtensibilityElementBase extends POMComponentImpl
     public static class StringAttribute implements Attribute {
         private String name;
         public StringAttribute(String name) { this.name = name; }
+        @Override
         public Class getType() { return String.class; }
+        @Override
         public String getName() { return name; }
+        @Override
         public Class getMemberType() { return null; }
     }
     
+    @Override
     public String getAttribute(String attribute) {
         return getAttribute(new StringAttribute(attribute));
     }
     
+    @Override
     public void setAttribute(String attribute, String value) {
         setAttribute(attribute, new StringAttribute(attribute), value);
     }
     
+    @Override
     public String getContentFragment() {
         return super.getXmlFragment();
     }
     
+    @Override
     public void setContentFragment(String text) throws IOException {
         super.setXmlFragment(CONTENT_FRAGMENT_PROPERTY, text);
     }
 
+    @Override
     public void addAnyElement(POMExtensibilityElement anyElement, int index) {
         List<POMComponent> all = getChildren();
         if (index > all.size() || index < 0) {
@@ -111,10 +121,12 @@ public class POMExtensibilityElementBase extends POMComponentImpl
         insertAtIndex(EXTENSIBILITY_ELEMENT_PROPERTY, anyElement, index);
     }
 
+    @Override
     public void removeAnyElement(POMExtensibilityElement any) {
         super.removeExtensibilityElement(any);
     }
 
+    @Override
     public List<POMExtensibilityElement> getAnyElements() {
         List<POMExtensibilityElement> result = new ArrayList<POMExtensibilityElement>();
         List<POMExtensibilityElement> allEEs = super.getExtensibilityElements();
