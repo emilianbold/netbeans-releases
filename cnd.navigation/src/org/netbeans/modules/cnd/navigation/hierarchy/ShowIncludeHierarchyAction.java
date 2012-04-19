@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.cnd.navigation.hierarchy;
 
-import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.navigation.hierarchy.HierarchyTopComponent.InclideContextFinder;
 import org.openide.cookies.EditorCookie;
 import org.openide.nodes.Node;
@@ -56,15 +55,12 @@ public final class ShowIncludeHierarchyAction extends CookieAction {
     
     @Override
     protected void performAction(Node[] activatedNodes) {
-        CsmFile file = ContextUtils.findFile(activatedNodes);
-        if (file != null){
-            HierarchyTopComponent view = HierarchyTopComponent.findInstance();
-            if (!view.isOpened()) {
-                view.open();
-            }
-            view.setFile(new InclideContextFinder(activatedNodes), false);
-            view.requestActive();
+        HierarchyTopComponent view = HierarchyTopComponent.findInstance();
+        if (!view.isOpened()) {
+            view.open();
         }
+        view.setFile(new InclideContextFinder(activatedNodes), false);
+        view.requestActive();
     }
     
     @Override

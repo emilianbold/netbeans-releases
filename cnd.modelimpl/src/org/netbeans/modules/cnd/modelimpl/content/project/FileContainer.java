@@ -62,6 +62,7 @@ import org.netbeans.modules.cnd.debug.DebugUtils;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler.State;
+import org.netbeans.modules.cnd.modelimpl.content.project.IncludedFileContainer.Storage;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FilePreprocessorConditionState;
 import org.netbeans.modules.cnd.modelimpl.csm.core.PreprocessorStatePair;
@@ -147,7 +148,7 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
 	    System.err.printf("%s ->\n%s\n\n", entry.getKey(), entry.getValue());
 	}
     }
-    
+
     public void putFile(FileImpl impl, APTPreprocHandler.State state) {
         CharSequence path = getFileKey(impl.getAbsolutePath(), true);
         CharSequence canonicalPath = getCanonicalKey(path);

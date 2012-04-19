@@ -44,9 +44,13 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
-import org.netbeans.modules.cnd.api.model.*;
-import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.IOException;
+import org.netbeans.modules.cnd.antlr.collections.AST;
+import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmMethod;
+import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
@@ -86,7 +90,7 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
         NameHolder nameHolder = NameHolder.createFunctionName(ast);
         CharSequence name = QualifiedNameCache.getManager().getString(nameHolder.getName());
         if (name.length() == 0) {
-            DiagnosticExceptoins.register(new AstRendererException((FileImpl) file, startOffset, "Empty function name.")); // NOI18N
+            DiagnosticExceptoins.register(AstRendererException.createAstRendererException((FileImpl) file, ast, startOffset, "Empty function name.")); // NOI18N
             return null;
         }
         CharSequence rawName = initRawName(ast);

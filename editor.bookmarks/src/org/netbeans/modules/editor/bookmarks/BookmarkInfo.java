@@ -118,19 +118,7 @@ public final class BookmarkInfo {
     }
     
     public String getDisplayName() {
-        String displayName;
-        if (this != BOOKMARKS_WINDOW) {
-            String location = getLocationDescriptionShort();
-            displayName = (name.length() > 0)
-                    ? NbBundle.getMessage(BookmarkInfo.class, "CTL_BookmarkNameAndLocation", name, location) // NOI18N
-                    : location;
-            if (key.length() > 0) {
-                displayName += " <" + key + ">"; // NOI18N
-            }
-        } else {
-            displayName = getBookmarksWindowDisplayName();
-        }
-        return displayName;
+        return getDescription(false, true, true);
     }
 
     /**
@@ -157,21 +145,35 @@ public final class BookmarkInfo {
     public void setCurrentLineIndex(int currentLineIndex) {
         this.currentLineIndex = currentLineIndex;
     }
-
-    public String getLocationDescriptionShort() {
-        return (this != BOOKMARKS_WINDOW)
-                ? NbBundle.getMessage(BookmarkInfo.class, "CTL_BookmarkFileAndLineShort",
-                        getFileBookmarks().getFileObject().getNameExt(),
-                        (getCurrentLineIndex() + 1))
-                : getBookmarksWindowDisplayName();
+    
+    public String getDescription(boolean fullPath, boolean useName, boolean useKey) {
+        return getDescription((this != BOOKMARKS_WINDOW)
+                ? (fullPath 
+                        ? getFileBookmarks().getFileObject().getPath()
+                        : getFileBookmarks().getFileObject().getNameExt())
+                : null,
+                useName,
+                useKey,
+                false
+                );
     }
 
-    public String getLocationDescription() {
-        return (this != BOOKMARKS_WINDOW)
-                ? NbBundle.getMessage(BookmarkInfo.class, "CTL_BookmarkFileAndLine",
-                        getFullPathDescription(),
-                        (getCurrentLineIndex() + 1))
-                : getBookmarksWindowDisplayName();
+    public String getDescription(String fileDescription, boolean useName, boolean useKey, boolean forHtml) {
+        StringBuilder description = new StringBuilder(100);
+        if (this != BOOKMARKS_WINDOW) {
+            description.append(NbBundle.getMessage(BookmarkInfo.class, "CTL_BookmarkFileAndLine",
+                        fileDescription, (getCurrentLineIndex() + 1)));
+            if (useName && name.length() > 0) {
+                description.append(" \"").append(name).append("\""); // NOI18N
+            }
+            if (useKey && key.length() > 0) {
+                description.append(' ').append(forHtml ? "&lt;" : "<"); // NOI18N
+                description.append(key).append(forHtml ? "&gt;" : ">"); // NOI18N
+            }
+        } else {
+            description.append(getBookmarksWindowDisplayName());
+        }
+        return description.toString();
     }
     
     public String getFullPathDescription() {

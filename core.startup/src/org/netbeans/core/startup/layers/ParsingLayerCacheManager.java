@@ -223,7 +223,7 @@ abstract class ParsingLayerCacheManager extends LayerCacheManager implements Con
         } else if (qname.equals("file")) {
             MemFileOrFolder mfof = fileOrFolder(qname, attrs);
             if (!(mfof instanceof MemFile)) { // a collision between modules
-                throw new ClassCastException("Stack: " + curr); // NOI18N
+                throw new ClassCastException("mfof: " + mfof + " stack: " + curr); // NOI18N
             }
             buf.setLength(0);
             ref = null;

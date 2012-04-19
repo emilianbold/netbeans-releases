@@ -43,6 +43,7 @@
 package org.netbeans.modules.masterfs.filebasedfs.fileobjects;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
@@ -86,10 +87,16 @@ final class FileObjectKeeper implements FileChangeListener {
         LOG.log(Level.FINEST, "addRecursiveListener for {0} isEmpty: {1}", new Object[]{root, listeners.isEmpty()});
         if (listeners.isEmpty()) {
             Callable<?> stop = null;
-            if (fcl instanceof Callable && fcl.getClass().getName().equals("org.openide.filesystems.DeepListener")) { // NOI18N
+            final boolean deepClass = fcl.getClass().getName().equals("org.openide.filesystems.DeepListener"); // NOI18N
+            if (fcl instanceof Callable && deepClass) {
                 stop = (Callable<?>)fcl;
             }
-            listenToAll(stop);
+            FileFilter filter = null;
+            if (fcl instanceof FileFilter && deepClass) {
+                filter = (FileFilter)fcl;
+            }
+            
+            listenToAll(stop, filter);
         }
         listeners.add(fcl);
     }
@@ -180,7 +187,7 @@ final class FileObjectKeeper implements FileChangeListener {
         }
     }
 
-    private void listenToAll(Callable<?> stop) {
+    private void listenToAll(Callable<?> stop, FileFilter filter) {
         assert Thread.holdsLock(this);
         assert kept == null : "Already listening to " + kept + " now requested for " + root;
         kept = new HashSet<FolderObj>();
@@ -200,6 +207,9 @@ final class FileObjectKeeper implements FileChangeListener {
             LOG.log(Level.FINEST, "listenToAll, check {0} for stop {1}", new Object[] { fo, stop });
             if (fo instanceof FolderObj) {
                 FolderObj obj = (FolderObj) fo;
+                if (filter != null && !filter.accept(obj.getFileName().getFile())) {
+                    continue;
+                }
                 Object shallStop = null;
                 if (stop != null) {
                     try {
