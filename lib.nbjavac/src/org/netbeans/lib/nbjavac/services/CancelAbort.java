@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2005-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -33,60 +33,20 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2005-2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.java.source.javac;
 
-import com.sun.tools.javac.comp.MemberEnter;
-import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
-import com.sun.tools.javac.tree.JCTree.JCImport;
-import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
-import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
-import com.sun.tools.javac.util.Context;
+package org.netbeans.lib.nbjavac.services;
+
+import com.sun.tools.javac.util.Abort;
 
 /**
  *
- * @author lahvac
+ * @author Tomas Zezula
  */
-public class NBMemberEnter extends MemberEnter {
+public final class CancelAbort extends Abort {
 
-    public static void preRegister(Context context) {
-        context.put(MemberEnter.class, new Context.Factory<MemberEnter>() {
-            public MemberEnter make(Context c) {
-                return new NBMemberEnter(c);
-            }
-        });
-    }
-
-    private final CancelService cancelService;
-
-    public NBMemberEnter(Context context) {
-        super(context);
-        cancelService = CancelService.instance(context);
-    }
-
-    @Override
-    public void visitTopLevel(JCCompilationUnit tree) {
-        cancelService.abortIfCanceled();
-        super.visitTopLevel(tree);
-    }
-
-    @Override
-    public void visitImport(JCImport tree) {
-        cancelService.abortIfCanceled();
-        super.visitImport(tree);
-    }
-
-    @Override
-    public void visitMethodDef(JCMethodDecl tree) {
-        cancelService.abortIfCanceled();
-        super.visitMethodDef(tree);
-    }
-
-    @Override
-    public void visitVarDef(JCVariableDecl tree) {
-        cancelService.abortIfCanceled();
-        super.visitVarDef(tree);
+    CancelAbort() {
     }
 
 }

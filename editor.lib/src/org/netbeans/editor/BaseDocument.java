@@ -109,6 +109,7 @@ import org.netbeans.modules.editor.lib2.document.EditorDocumentContent;
 import org.netbeans.modules.editor.lib2.document.EditorDocumentHandler;
 import org.netbeans.modules.editor.lib2.document.EditorDocumentServices;
 import org.netbeans.modules.editor.lib2.document.LineElementRoot;
+import org.netbeans.modules.editor.lib2.document.ListUndoableEdit;
 import org.netbeans.modules.editor.lib2.document.ReadWriteBuffer;
 import org.netbeans.modules.editor.lib2.document.ReadWriteUtils;
 import org.netbeans.modules.editor.lib2.document.StableCompoundEdit;
@@ -570,6 +571,9 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         TrailingWhitespaceRemove.install(this);
 
         undoEditWrappers = MimeLookup.getLookup(mimeType).lookupAll(UndoableEditWrapper.class);
+        if (undoEditWrappers != null && undoEditWrappers.isEmpty()) {
+            undoEditWrappers = null;
+        }
 
         if (weakPrefsListener == null) {
             // the listening could have already been initialized from setMimeType(), which
@@ -1579,13 +1583,21 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     protected @Override void fireUndoableEditUpdate(UndoableEditEvent e) {
         // Possibly wrap contained edit
         if (undoEditWrappers != null) {
-            UndoableEdit origEdit = e.getEdit();
-            UndoableEdit edit = origEdit;
+            UndoableEdit edit = e.getEdit();
+            ListUndoableEdit listEdit = null;
             for (UndoableEditWrapper wrapper : undoEditWrappers) {
-                edit = wrapper.wrap(edit, this);
+                UndoableEdit wrapEdit = wrapper.wrap(edit, this);
+                if (wrapEdit != edit) {
+                    if (listEdit == null) {
+                        listEdit = new ListUndoableEdit(edit, wrapEdit);
+                    } else {
+                        listEdit.setDelegate(wrapEdit);
+                    }
+                    edit = wrapEdit;
+                }
             }
-            if (edit != origEdit) {
-                e = new UndoableEditEvent(this, edit);
+            if (listEdit != null) {
+                e = new UndoableEditEvent(this, listEdit);
             }
         }
         
