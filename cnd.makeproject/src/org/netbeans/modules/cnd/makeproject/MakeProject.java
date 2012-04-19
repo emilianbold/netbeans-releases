@@ -53,7 +53,6 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -716,7 +715,6 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
      */
     private String getCustomizerIdFromProjectXML() {
         Element data = helper.getPrimaryConfigurationData(true);
-        data = helper.getPrimaryConfigurationData(true);
         NodeList nodeList = data.getElementsByTagName(MakeProjectTypeImpl.CUSTOMIZERID_ELEMENT);
         if (nodeList != null && nodeList.getLength() > 0) {
             Node typeNode = nodeList.item(0).getFirstChild();
@@ -735,8 +733,6 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
      * If not found, try project.xml (V >= V78)
      */
     private int getActiveConfigurationType() {
-        int type = -1;
-
         // If configurations already read, get it from active configuration (it may have changed)
         MakeConfiguration makeConfiguration = getActiveConfiguration();
         if (makeConfiguration != null) {
@@ -744,7 +740,7 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
         }
 
         // Get it from private.xml (version >= V77)
-        type = getActiveConfigurationTypeFromPrivateXML();
+        int type = getActiveConfigurationTypeFromPrivateXML();
         if (type >= 0) {
             return type;
         }
@@ -763,7 +759,6 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
      */
     private int getActiveConfigurationTypeFromProjectXML() {
         Element data = helper.getPrimaryConfigurationData(true);
-        data = helper.getPrimaryConfigurationData(true);
         NodeList nodeList = data.getElementsByTagName(MakeProjectTypeImpl.CONFIGURATION_TYPE_ELEMENT);
         if (nodeList != null && nodeList.getLength() > 0) {
             Node typeNode = nodeList.item(0).getFirstChild();
@@ -1555,28 +1550,24 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
             List<PathResourceImplementation> list = new LinkedList<PathResourceImplementation>();
             SourceGroup[] groups = sources.getSourceGroups("generic"); // NOI18N
             for (SourceGroup g : groups) {
-                try {
-                    FileObject rootFolder = g.getRootFolder();
-                    URL url = rootFolder.getURL();
-                    // A workaround for #196328 - IllegalArgumentException on save Project properties
-                    if (rootFolder.isFolder() && !url.toExternalForm().endsWith("/")) { //NOI18N
-                        try {
-                            URL url2 = new URL(url.toExternalForm() + '/'); //NOI18N                     
-                            FileObject fo = URLMapper.findFileObject(url2);
-                            if (fo != null && fo.equals(rootFolder)) {
-                                url = url2;
-                            }                            
-                        } catch (MalformedURLException ex) {
-                            Exceptions.printStackTrace(ex);
-                        } catch (Exception ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
+                FileObject rootFolder = g.getRootFolder();
+                URL url = rootFolder.toURL();
+                // A workaround for #196328 - IllegalArgumentException on save Project properties
+                if (rootFolder.isFolder() && !url.toExternalForm().endsWith("/")) { //NOI18N
+                    try {
+                        URL url2 = new URL(url.toExternalForm() + '/'); //NOI18N                     
+                        FileObject fo = URLMapper.findFileObject(url2);
+                        if (fo != null && fo.equals(rootFolder)) {
+                            url = url2;
+                        }                            
+                    } catch (MalformedURLException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (Exception ex) {
+                        Exceptions.printStackTrace(ex);
                     }
-                    // end of workaround for #196328
-                    list.add(new PathResourceImpl(ClassPathSupport.createResource(url)));
-                } catch (FileStateInvalidException ex) {
-                    Logger.getLogger(MakeProject.class.getName()).log(Level.WARNING, null, ex);
                 }
+                // end of workaround for #196328
+                list.add(new PathResourceImpl(ClassPathSupport.createResource(url)));
             }
 
             synchronized (this) {
@@ -1669,11 +1660,7 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
             if (MakeProjectPaths.SOURCES.equals(type)) {
                 for (SourceGroup sg : sources.getSourceGroups(MakeSources.GENERIC)) {
                     if (sg.getRootFolder().equals(file)) {
-                        try {
-                            return ClassPathSupport.createClassPath(Arrays.asList(new PathResourceImpl(ClassPathSupport.createResource(file.getURL()))));
-                        } catch (FileStateInvalidException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
+                        return ClassPathSupport.createClassPath(Arrays.asList(new PathResourceImpl(ClassPathSupport.createResource(file.toURL()))));
                     }
                 }
             }
