@@ -540,7 +540,7 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
 
     FileObject[] getFiles() {
         synchronized(FILE_LOCK) {
-            return Arrays.copyOf(files, files.length);
+            return files != null ? Arrays.copyOf(files, files.length) : null;
         }
     }
     
@@ -641,7 +641,7 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
             refreshButton.addActionListener(this);
             settingsButton = new JButton(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/ui/resources/icons/options.png"))); // NOI18N
             settingsButton.addActionListener(this);
-            showHistoryAction = new ShowHistoryAction(vs.getVCSHistoryProvider());
+            showHistoryAction = new ShowHistoryAction(vs);
             searchHistoryButton = new LinkButton(); // NOI18N
             searchHistoryButton.addActionListener(showHistoryAction);
             
@@ -691,6 +691,7 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
         void setup(VersioningSystem vs) {
             boolean visible = vs != null && vs.getVCSHistoryProvider() != null;
             if(visible) { 
+                showHistoryAction.vs = vs;
                 searchHistoryButton.setText(NbBundle.getMessage(this.getClass(), "LBL_ShowVersioningHistory", new Object[] {vs.getDisplayName()})); // NOI18N
                 Filter[] filters = new Filter[] {
                     new AllFilter(), 
@@ -710,16 +711,17 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
         }
         
         private class ShowHistoryAction extends AbstractAction {
-            private final VCSHistoryProvider provider;
+            private VersioningSystem vs;
             private final Set<String> forPaths = new HashSet<String>(1);
             private Action delegate;
 
-            public ShowHistoryAction(VCSHistoryProvider provider) {
-                this.provider = provider;
+            public ShowHistoryAction(VersioningSystem vs) {
+                this.vs = vs;
                 init();
             }
 
             private synchronized void init() {
+                VCSHistoryProvider provider = vs != null ? vs.getVCSHistoryProvider() : null;
                 if(provider == null) return;
                 FileObject[] fs = getFiles();
                 delegate = provider.createShowHistoryAction(History.toProxies(fs));
@@ -742,10 +744,9 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
                                 break;
                             }
                         }
-                            delegate.actionPerformed(e);
+                        assert delegate != null;
                         if(delegate != null) {
-                        } else {
-                        
+                            delegate.actionPerformed(e);
                         }
                     }
                 }); 
