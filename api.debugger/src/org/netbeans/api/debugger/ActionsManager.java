@@ -46,6 +46,7 @@ package org.netbeans.api.debugger;
 
 import java.beans.*;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.SwingUtilities;
 
 import org.netbeans.spi.debugger.ActionsProvider;
@@ -126,6 +127,7 @@ public final class ActionsManager {
     private final HashMap<String, List<ActionsManagerListener>> listeners = new HashMap<String, List<ActionsManagerListener>>();
     private HashMap<Object, ArrayList<ActionsProvider>>  actionProviders;
     private final Object            actionProvidersLock = new Object();
+    private final AtomicBoolean     actionProvidersInitialized = new AtomicBoolean(false);
     private MyActionListener        actionListener = new MyActionListener ();
     private Lookup                  lookup;
     private boolean                 doiingDo = false;
@@ -446,6 +448,16 @@ public final class ActionsManager {
         }
         if (doInit) {
             initActionImpls ();
+        } else {
+            if (!actionProvidersInitialized.get()) {
+                synchronized (actionProvidersInitialized) {
+                    if (!actionProvidersInitialized.get()) {
+                        try {
+                            actionProvidersInitialized.wait();
+                        } catch (InterruptedException ex) {}
+                    }
+                }
+            }
         }
         return getActionProvidersForAction(action);
     }
@@ -485,6 +497,10 @@ public final class ActionsManager {
                 }
         });
         registerActionsProviders(aps);
+        synchronized (actionProvidersInitialized) {
+            actionProvidersInitialized.set(true);
+            actionProvidersInitialized.notifyAll();
+        }
     }
 
     private boolean listerersLoaded = false;
