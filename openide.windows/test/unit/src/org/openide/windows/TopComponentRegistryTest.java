@@ -42,10 +42,18 @@
 
 package org.openide.windows;
 
+import java.awt.GraphicsEnvironment;
 import java.util.Set;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
 
 public class TopComponentRegistryTest extends NbTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(TopComponentRegistryTest.class);
+    }
+
     public TopComponentRegistryTest(String name) {
         super(name);
     }

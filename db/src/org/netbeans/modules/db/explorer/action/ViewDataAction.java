@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -58,6 +58,7 @@ import org.openide.util.RequestProcessor;
  * @author Rob Englander
  */
 public class ViewDataAction extends QueryAction {
+    private static final RequestProcessor RP = new RequestProcessor(ViewDataAction.class.getName(), 1);
 
     @Override
     public String getName() {
@@ -69,11 +70,13 @@ public class ViewDataAction extends QueryAction {
         return new HelpCtx(ViewDataAction.class);
     }
 
+    @Override
     public void performAction (final Node[] activatedNodes) {
         final DatabaseConnection connection = activatedNodes[0].getLookup().lookup(DatabaseConnection.class);
         if (connection != null) {
-            RequestProcessor.getDefault().post(
+            RP.post(
                 new Runnable() {
+                    @Override
                     public void run() {
                         String expression = null;
                         try {

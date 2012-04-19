@@ -187,7 +187,7 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
         lastConsumedToken = (CommonToken) token;
 
         RuleNode ruleNode = callStack.peek();
-        TokenNode elementNode = new TokenNode((CommonToken) token);
+        TokenNode elementNode = new TokenNode(source, (CommonToken) token);
         elementNode.hiddenTokens = this.hiddenTokens;
         hiddenTokens.clear();
         ruleNode.addChild(elementNode);
@@ -272,7 +272,7 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
         ErrorNode errorNode = new ErrorNode(from, to, problemDescription, source);
 
         //add the unexpected token as a child of the error node
-        TokenNode tokenNode = new TokenNode(unexpectedToken);
+        TokenNode tokenNode = new TokenNode(source, unexpectedToken);
         addNodeChild(errorNode, tokenNode);
         
         if(e instanceof NoViableAltException) {
@@ -432,7 +432,7 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
         //set the error tokens as children of the error node
         for(int i = (ignoreFirstToken ? 1 : 0); i < tokens.size(); i++) {
             CommonToken token = (CommonToken)tokens.get(i);
-            TokenNode tokenNode = new TokenNode(token);
+            TokenNode tokenNode = new TokenNode(source, token);
             addNodeChild(peek, tokenNode);
         }
         

@@ -85,10 +85,11 @@ public final class MavenModelUtils {
     private static final String WSIPMORT_GENERATE_PREFIX = "wsimport-generate-"; //NOI18N
     private static final String STALE_FILE_DIRECTORY = "${project.build.directory}/jaxws/stale/"; //NOI18N
     private static final String STALE_FILE_EXTENSION = ".stale"; //NOI18N
-    private static final String JAXWS_GROUP_ID = "org.codehaus.mojo"; //NOI18N
-    private static final String JAXWS_ARTIFACT_ID = "jaxws-maven-plugin"; //NOI18N
-    private static final String JAXWS_PLUGIN_KEY = JAXWS_GROUP_ID+":"+JAXWS_ARTIFACT_ID; //NOI18N
+    public static final String JAXWS_GROUP_ID = "org.jvnet.jax-ws-commons"; //NOI18N
+    public static final String JAXWS_ARTIFACT_ID = "jaxws-maven-plugin"; //NOI18N
+    public static final String JAXWS_PLUGIN_KEY = JAXWS_GROUP_ID+":"+JAXWS_ARTIFACT_ID; //NOI18N
     private static final String JAXWS_CATALOG = "jax-ws-catalog.xml"; //NOI18N
+    public static final String JAX_WS_PLUGIN_VERSION = "2.2";              //NOI18N
 
     /**
      * adds jaxws plugin, requires the model to have a transaction started,
@@ -122,7 +123,7 @@ public final class MavenModelUtils {
         plugin = model.getFactory().createPlugin();
         plugin.setGroupId(JAXWS_GROUP_ID);
         plugin.setArtifactId(JAXWS_ARTIFACT_ID);
-        plugin.setVersion("1.10"); //NOI18N
+        plugin.setVersion(JAX_WS_PLUGIN_VERSION); 
         bld.addPlugin(plugin);
 
         // setup global configuration
@@ -451,7 +452,13 @@ public final class MavenModelUtils {
                ModelUtils.checkModelDependency(model, "com.sun.xml.ws", "webservices-rt", true); //NOI18N
         if (dep != null) {
             dep.setVersion("1.4"); //NOI18N
-            dep.setScope(Artifact.SCOPE_PROVIDED);
+            WSStack<JaxWs> wsStack = new WSStackUtils(project).getWsStack(JaxWs.class);
+            if (wsStack != null && wsStack.isFeatureSupported(JaxWs.Feature.WSIT)) {
+                dep.setScope(Artifact.SCOPE_PROVIDED);
+            }
+            else {
+                dep.setScope(Artifact.SCOPE_COMPILE);
+            }
         }
     }
 

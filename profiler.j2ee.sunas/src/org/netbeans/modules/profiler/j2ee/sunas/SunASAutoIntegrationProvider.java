@@ -773,6 +773,11 @@ public abstract class SunASAutoIntegrationProvider extends AbstractScriptIntegra
         return true;
     }
     
+    @Override
+    protected boolean needsSIPWorkaround() {
+        return false;
+    }
+    
     private String getDomainScriptDirPath(String separator) {
         StringBuilder path = new StringBuilder();
 

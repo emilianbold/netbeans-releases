@@ -86,7 +86,7 @@ import org.openide.text.Line;
     @MimeRegistration(mimeType=POMDataObject.SETTINGS_MIME_TYPE, service=HyperlinkProviderExt.class)
 })
 public class HyperlinkProviderImpl implements HyperlinkProviderExt {
-    private static Logger LOG = Logger.getLogger(HyperlinkProviderImpl.class.getName());
+    private static final Logger LOG = Logger.getLogger(HyperlinkProviderImpl.class.getName());
     
     @Override
     public boolean isHyperlinkPoint(Document doc, int offset, HyperlinkType type) {
@@ -105,7 +105,7 @@ public class HyperlinkProviderImpl implements HyperlinkProviderExt {
             //we are in element text
             FileObject fo = getProjectDir(doc);
             String text = token.text().toString();
-            if (getPath(fo, text) != null) {
+            if (fo != null && getPath(fo, text) != null) {
                 return true;
             }
             // urls get opened..
@@ -148,7 +148,7 @@ public class HyperlinkProviderImpl implements HyperlinkProviderExt {
             //we are in element text
             FileObject fo = getProjectDir(doc);
             String text = token.text().toString();
-            if (getPath(fo, text) != null) {
+            if (fo != null && getPath(fo, text) != null) {
                 return new int[] { tokenOff, tokenOff + text.length() };
             }
             // urls get opened..
@@ -183,7 +183,7 @@ public class HyperlinkProviderImpl implements HyperlinkProviderExt {
             //we are in element text
             FileObject fo = getProjectDir(doc);
             String text = token.text().toString();
-            if (getPath(fo, text) != null) {
+            if (fo != null && getPath(fo, text) != null) {
                 xml.movePrevious();
                 token = xml.token();
                 if (token != null && token.id() == XMLTokenId.TAG && token.text().equals(">")) {//NOI18N
@@ -215,15 +215,14 @@ public class HyperlinkProviderImpl implements HyperlinkProviderExt {
                     String urlText = text;
                     if (urlText.contains("${")) {//NOI18N
                         //special case, need to evaluate expression
-                        Project prj = FileOwnerQuery.getOwner(NbEditorUtilities.getDataObject(doc).getPrimaryFile());
-                         if (prj != null) {
-                            NbMavenProject nbprj = prj.getLookup().lookup(NbMavenProject.class);
+                        NbMavenProject nbprj = getNbMavenProject(doc);
+                        if (nbprj != null) {
                             Object exRes;
                             try {
                                 exRes = PluginPropertyUtils.createEvaluator(nbprj.getMavenProject()).evaluate(urlText);
                                 if (exRes != null) {
-                                   urlText = exRes.toString();
-                                } 
+                                    urlText = exRes.toString();
+                                }
                             } catch (ExpressionEvaluationException ex) {
                                 //just ignore
                                 LOG.log(Level.FINE, "Expression evaluation failed", ex);
@@ -241,24 +240,20 @@ public class HyperlinkProviderImpl implements HyperlinkProviderExt {
                 Tuple tup = findProperty(text, tokenOff, offset);
                 if (tup != null) {
                     String prop = tup.value.substring("${".length(), tup.value.length() - 1); //remove the brackets//NOI18N
-                    Project prj = FileOwnerQuery.getOwner(NbEditorUtilities.getDataObject(doc).getPrimaryFile());
-                    if (prj != null) {
-                        NbMavenProject nbprj = prj.getLookup().lookup(NbMavenProject.class);
-                        if (nbprj != null) {
-                            if (prop != null && (prop.startsWith("project.") || prop.startsWith("pom."))) {//NOI18N
-                                String val = prop.substring(prop.indexOf('.') + 1, prop.length());//NOI18N
-                                //TODO eventually we want to process everything through an evaluation engine..
-                                InputLocation iloc = nbprj.getMavenProject().getModel().getLocation(val);
-                                if (iloc != null) {
-                                    openAtSource(iloc);
-                                    return;
-                                }
+                    NbMavenProject nbprj = getNbMavenProject(doc);
+                    if (nbprj != null) {
+                        if (prop != null && (prop.startsWith("project.") || prop.startsWith("pom."))) {//NOI18N
+                            String val = prop.substring(prop.indexOf('.') + 1, prop.length());//NOI18N
+                            //TODO eventually we want to process everything through an evaluation engine..
+                            InputLocation iloc = nbprj.getMavenProject().getModel().getLocation(val);
+                            if (iloc != null) {
+                                openAtSource(iloc);
+                                return;
                             }
-                            InputLocation location = nbprj.getMavenProject().getModel().getLocation("properties").getLocation(prop);//NOI18N
-                            if (location != null) {
-                                openAtSource(location);
-                            }
-
+                        }
+                        InputLocation location = nbprj.getMavenProject().getModel().getLocation("properties").getLocation(prop);//NOI18N
+                        if (location != null) {
+                            openAtSource(location);
                         }
                     }
                 }
@@ -294,14 +289,12 @@ public class HyperlinkProviderImpl implements HyperlinkProviderExt {
             if (tup != null) {
                String prop = tup.value.substring("${".length(), tup.value.length() - 1); //remove the brackets
                 try {
-                    Project prj = FileOwnerQuery.getOwner(NbEditorUtilities.getDataObject(doc).getPrimaryFile());
-                    if (prj != null) {
-                        NbMavenProject nbprj = prj.getLookup().lookup(NbMavenProject.class);
+                    NbMavenProject nbprj = getNbMavenProject(doc);
+                    if (nbprj != null) {
                         Object exRes = PluginPropertyUtils.createEvaluator(nbprj.getMavenProject()).evaluate(tup.value);
                         if (exRes != null) {
-                            return prop + " resolves to '" + exRes  + "'\nNavigate to definition.";
+                            return prop + " resolves to '" + exRes + "'\nNavigate to definition.";
                         } else {
-                            
                         }
                     } else {
                         //pom file in repository or settings file.
@@ -373,8 +366,22 @@ public class HyperlinkProviderImpl implements HyperlinkProviderExt {
     
     private FileObject getProjectDir(Document doc) {
         DataObject dObject = NbEditorUtilities.getDataObject(doc);
-        return dObject.getPrimaryFile().getParent();
+        if (dObject != null) {
+            return dObject.getPrimaryFile().getParent();
+        }
+        return null;
     }
+    
+    private NbMavenProject getNbMavenProject(Document doc) {
+        DataObject dobj = NbEditorUtilities.getDataObject(doc);
+        if (dobj != null) {
+            Project prj = FileOwnerQuery.getOwner(dobj.getPrimaryFile());
+            if (prj != null) {
+                return prj.getLookup().lookup(NbMavenProject.class);
+            }
+        }
+        return null;
+    } 
     
     private FileObject getPath(FileObject parent, String path) {
         // TODO more substitutions necessary probably..

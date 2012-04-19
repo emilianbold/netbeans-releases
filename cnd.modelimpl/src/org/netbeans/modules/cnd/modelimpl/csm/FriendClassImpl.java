@@ -44,19 +44,34 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
-import org.netbeans.modules.cnd.modelimpl.csm.resolver.Resolver;
-import org.netbeans.modules.cnd.modelimpl.csm.resolver.ResolverFactory;
 import java.io.IOException;
-import java.util.List;
-import org.netbeans.modules.cnd.api.model.*;
-import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.util.Collections;
+import java.util.List;
+import org.netbeans.modules.cnd.antlr.collections.AST;
+import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmClassForwardDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFriendClass;
+import org.netbeans.modules.cnd.api.model.CsmInstantiation;
+import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.CsmTemplate;
+import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
+import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
+import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
+import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
+import org.netbeans.modules.cnd.modelimpl.csm.resolver.Resolver;
+import org.netbeans.modules.cnd.modelimpl.csm.resolver.ResolverFactory;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
-import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
@@ -82,12 +97,12 @@ public final class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendCl
     private int lastParseCount = -1;    
     private int lastFileID = -1;
     
-    private FriendClassImpl(AST ast, AST qid, CsmClassForwardDeclaration cfd, FileImpl file, CsmClass parent, boolean register) throws AstRendererException {
-        super(file, getStartOffset(ast), getEndOffset(ast));
+    private FriendClassImpl(AST ast, AST qid, CsmClassForwardDeclaration cfd, FileImpl file, CsmClass parent, int startOffset, int endOffset, boolean register) throws AstRendererException {
+        super(file, startOffset, endOffset);
         this.parentUID = UIDs.get(parent);
         qid = (qid != null) ? qid : AstUtil.findSiblingOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
         if (qid == null) {
-            throw new AstRendererException(file, getStartOffset(), "Invalid friend class declaration."); // NOI18N
+            throw AstRendererException.createAstRendererException(file, ast, startOffset, "Invalid friend class declaration."); // NOI18N
         }
         name = QualifiedNameCache.getManager().getString(AstRenderer.getQualifiedName(qid));
         nameParts = initNameParts(qid);
@@ -103,7 +118,9 @@ public final class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendCl
     }
 
     public static FriendClassImpl create(AST ast, AST qid, CsmClassForwardDeclaration cfd, FileImpl file, CsmClass parent, boolean register) throws AstRendererException {
-        FriendClassImpl friendClassImpl = new FriendClassImpl(ast, qid, cfd, file, parent, register);
+        int startOffset = getStartOffset(ast);
+        int endOffset = getEndOffset(ast);
+        FriendClassImpl friendClassImpl = new FriendClassImpl(ast, qid, cfd, file, parent, startOffset, endOffset, register);
         postObjectCreateRegistration(register, friendClassImpl);
         return friendClassImpl;
     }

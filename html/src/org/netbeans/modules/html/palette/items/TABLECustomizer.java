@@ -61,6 +61,8 @@ import org.openide.util.NbBundle;
  */
 public class TABLECustomizer extends javax.swing.JPanel {
 
+    private static final int CELLS_LIMIT = 100 * 100;
+    
     private Dialog dialog = null;
     private DialogDescriptor descriptor = null;
     private boolean dialogOK = false;
@@ -90,6 +92,7 @@ public class TABLECustomizer extends javax.swing.JPanel {
     }
     
     public boolean showDialog() {
+        checkTableSize();
         
         dialogOK = false;
         
@@ -166,6 +169,7 @@ public class TABLECustomizer extends javax.swing.JPanel {
         jSpinner4 = new javax.swing.JSpinner();
         jSpinner5 = new javax.swing.JSpinner();
         widthSpinner = new javax.swing.JSpinner();
+        jLabel9 = new javax.swing.JLabel();
 
         jLabel1.setLabelFor(jSpinner2);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(TABLECustomizer.class, "LBL_TABLE_Columns")); // NOI18N
@@ -176,10 +180,20 @@ public class TABLECustomizer extends javax.swing.JPanel {
         jSpinner1.setModel(new SpinnerNumberModel(table.getRows(), 0, Integer.MAX_VALUE, 1));
         jSpinner1.setEditor(new JSpinner.NumberEditor(jSpinner1, "#"));
         jSpinner1.setValue(new Integer(table.getRows()));
+        jSpinner1.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                jSpinner1StateChanged(evt);
+            }
+        });
 
         jSpinner2.setModel(new SpinnerNumberModel(table.getCols(), 0, Integer.MAX_VALUE, 1));
         jSpinner2.setEditor(new JSpinner.NumberEditor(jSpinner2, "#"));
         jSpinner2.setValue(new Integer(table.getCols()));
+        jSpinner2.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                jSpinner2StateChanged(evt);
+            }
+        });
 
         jLabel3.setLabelFor(jSpinner3);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(TABLECustomizer.class, "LBL_TABLE_Border")); // NOI18N
@@ -213,40 +227,40 @@ public class TABLECustomizer extends javax.swing.JPanel {
         widthSpinner.setEditor(new JSpinner.NumberEditor(widthSpinner, "#"));
         widthSpinner.setValue(new Integer(table.getWidth()));
 
+        jLabel9.setForeground(javax.swing.UIManager.getDefaults().getColor("nb.errorForeground"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel9, org.openide.util.NbBundle.getMessage(TABLECustomizer.class, "TABLECustomizer.jLabel9.text")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel2)
-                    .addComponent(jLabel1)
-                    .addComponent(jLabel3)
-                    .addComponent(jLabel4)
-                    .addComponent(jLabel5)
-                    .addComponent(jLabel6))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jSpinner1, javax.swing.GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE)
-                    .addComponent(jSpinner2)
-                    .addComponent(jSpinner3)
-                    .addComponent(widthSpinner, javax.swing.GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE)
-                    .addComponent(jSpinner4)
-                    .addComponent(jSpinner5, javax.swing.GroupLayout.DEFAULT_SIZE, 147, Short.MAX_VALUE))
-                .addGap(245, 245, 245))
-            .addGroup(layout.createSequentialGroup()
-                .addGap(44, 44, 44)
-                .addComponent(jLabel7)
-                .addContainerGap(216, Short.MAX_VALUE))
-            .addGroup(layout.createSequentialGroup()
-                .addGap(44, 44, 44)
-                .addComponent(jLabel8)
-                .addContainerGap(38, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel2)
+                            .addComponent(jLabel1)
+                            .addComponent(jLabel3)
+                            .addComponent(jLabel4)
+                            .addComponent(jLabel5)
+                            .addComponent(jLabel6))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addComponent(widthSpinner, javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jSpinner1, javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jSpinner2, javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jSpinner3, javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jSpinner4, javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jSpinner5, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(44, 44, 44)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel7)
+                            .addComponent(jLabel8)
+                            .addComponent(jLabel9))))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
-
-        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {jSpinner1, jSpinner2, jSpinner3, jSpinner4, jSpinner5, widthSpinner});
-
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
@@ -278,7 +292,9 @@ public class TABLECustomizer extends javax.swing.JPanel {
                     .addComponent(jSpinner5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel8)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jLabel9)
+                .addContainerGap(16, Short.MAX_VALUE))
         );
 
         jLabel1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TABLECustomizer.class, "ACSN_TABLE_Columns")); // NOI18N
@@ -310,7 +326,22 @@ public class TABLECustomizer extends javax.swing.JPanel {
         widthSpinner.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TABLECustomizer.class, "ACSN_TABLE_Width_Spinner")); // NOI18N
         widthSpinner.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TABLECustomizer.class, "ACSD_TABLE_Width_Spinner")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
+
+    private void jSpinner1StateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jSpinner1StateChanged
+        checkTableSize();
+    }//GEN-LAST:event_jSpinner1StateChanged
+
+    private void jSpinner2StateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jSpinner2StateChanged
+        checkTableSize();
+    }//GEN-LAST:event_jSpinner2StateChanged
     
+    private void checkTableSize() {
+        int rows = ((Integer)jSpinner1.getValue()).intValue();
+        int cols = ((Integer)jSpinner2.getValue()).intValue();
+        
+        boolean tooMuch = Math.max(rows * cols, cols) > CELLS_LIMIT;
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel9, tooMuch ? org.openide.util.NbBundle.getMessage(TABLECustomizer.class, "TABLECustomizer.jLabel9.text") : ""); // NOI18N
+    }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
@@ -321,6 +352,7 @@ public class TABLECustomizer extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
     private javax.swing.JSpinner jSpinner1;
     private javax.swing.JSpinner jSpinner2;
     private javax.swing.JSpinner jSpinner3;

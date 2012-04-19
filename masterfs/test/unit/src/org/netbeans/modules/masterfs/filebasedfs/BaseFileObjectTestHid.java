@@ -725,7 +725,8 @@ public class BaseFileObjectTestHid extends TestBaseHid{
             assertTrue(fileObjects.remove(fe.getFile())); 
         }        
     }
-    
+
+    @RandomlyFails // NB-Core-Build #8165 (from FileBasedFileSystemWithExtensionsTest, in implOfTestGetFileObjectForSubversion): Expected: <null> but was: masterfs/build/test/unit/work/o.n.m.m.f.B/srr/subpackage@...
     public void testSimulatesRefactoringRename() throws Exception {
         assertNotNull(root);
         FileSystem fs = root.getFileSystem();

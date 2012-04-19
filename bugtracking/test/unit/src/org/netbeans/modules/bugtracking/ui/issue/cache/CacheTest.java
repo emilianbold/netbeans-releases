@@ -384,6 +384,9 @@ public class CacheTest extends NbTestCase {
         public boolean isNew() {
             return false;
         }
+        public boolean isFinished() {
+            return false;
+        }
         public boolean refresh() {
             return true;
         }
@@ -407,7 +410,8 @@ public class CacheTest extends NbTestCase {
         public void attachPatch(File file, String description) {throw new UnsupportedOperationException("Not supported yet.");}
         public BugtrackingController getController() {throw new UnsupportedOperationException("Not supported yet.");}
         public IssueNode getNode() {throw new UnsupportedOperationException("Not supported yet.");}
-
+        public String[] getSubtasks() {throw new UnsupportedOperationException("Not supported yet.");}
+        
         @Override
         public void setContext(Node[] nodes) {
             throw new UnsupportedOperationException("Not supported yet.");
@@ -453,7 +457,7 @@ public class CacheTest extends NbTestCase {
             return Lookups.singleton(cache);
         }
 
-        public TestIssue getIssue(String id) {throw new UnsupportedOperationException("Not supported yet.");}
+        public TestIssue[] getIssues(String[] id) {throw new UnsupportedOperationException("Not supported yet.");}
         public void remove() {throw new UnsupportedOperationException("Not supported yet.");}
         public RepositoryController getController() {throw new UnsupportedOperationException("Not supported yet.");}
         public TestQuery createQuery() {throw new UnsupportedOperationException("Not supported yet.");}
@@ -544,6 +548,11 @@ public class CacheTest extends NbTestCase {
         public boolean isNew(CTestIssue data) {
             return data.isNew();
         }
+        
+        @Override
+        public boolean isFinished(CTestIssue data) {
+            return data.isFinished();
+        }
 
         @Override
         public boolean refresh(CTestIssue data) {
@@ -579,7 +588,7 @@ public class CacheTest extends NbTestCase {
         public void setContext(CTestIssue data, Node[] nodes) {
             data.setContext(nodes);
         }
-
+        public String[] getSubtasks(CTestIssue data) {throw new UnsupportedOperationException("Not supported yet.");}
     }
 
     private void emptyStorage() throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchFieldException {

@@ -59,16 +59,18 @@ import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.TemplateWizard;
+import org.openide.util.NbBundle;
 
 /**
  * Wizard to create a new TestNG file.
  */
-@TemplateRegistration(folder = "TestNG", position = 1000,
+@TemplateRegistration(folder = "UnitTests", position = 1000,
         content = "resources/EmptyTestNGTest.java.template",
         scriptEngine = "freemarker",
-        displayName = "#Templates/TestNG/TestNGTest.java",
+        displayName = "#EmptyTestNGTest_displayName",
         iconBase = "org/netbeans/modules/testng/resources/testng.gif",
         description = "/org/netbeans/modules/testng/resources/newTest.html")
+@NbBundle.Messages("EmptyTestNGTest_displayName=TestNG Test Case")
 public final class NewTestWizardIterator implements WizardDescriptor.InstantiatingIterator {
 
     private transient int index;
@@ -200,6 +202,10 @@ public final class NewTestWizardIterator implements WizardDescriptor.Instantiati
                            Boolean.valueOf(settings.isGenerateSetUp()));
         wizard.putProperty(GuiUtils.CHK_TEARDOWN,
                            Boolean.valueOf(settings.isGenerateTearDown()));
+        wizard.putProperty(GuiUtils.CHK_BEFORE_CLASS,
+                           Boolean.valueOf(settings.isGenerateClassSetUp()));
+        wizard.putProperty(GuiUtils.CHK_AFTER_CLASS,
+                           Boolean.valueOf(settings.isGenerateClassTearDown()));
         wizard.putProperty(GuiUtils.CHK_HINTS,
                            Boolean.valueOf(settings.isBodyComments()));
     }
@@ -211,6 +217,10 @@ public final class NewTestWizardIterator implements WizardDescriptor.Instantiati
                 Boolean.TRUE.equals(wizard.getProperty(GuiUtils.CHK_SETUP)));
         settings.setGenerateTearDown(
                 Boolean.TRUE.equals(wizard.getProperty(GuiUtils.CHK_TEARDOWN)));
+        settings.setGenerateClassSetUp(
+                Boolean.TRUE.equals(wizard.getProperty(GuiUtils.CHK_BEFORE_CLASS)));
+        settings.setGenerateClassTearDown(
+                Boolean.TRUE.equals(wizard.getProperty(GuiUtils.CHK_AFTER_CLASS)));
         settings.setBodyComments(
                 Boolean.TRUE.equals(wizard.getProperty(GuiUtils.CHK_HINTS)));
     }

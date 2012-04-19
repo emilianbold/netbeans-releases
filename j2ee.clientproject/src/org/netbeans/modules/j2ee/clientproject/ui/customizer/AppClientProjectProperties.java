@@ -44,13 +44,13 @@
 
 package org.netbeans.modules.j2ee.clientproject.ui.customizer;
 
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -61,8 +61,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.ButtonModel;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultListModel;
@@ -74,7 +73,7 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
-import org.netbeans.api.project.Project;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.j2ee.clientproject.AppClientProject;
@@ -87,7 +86,6 @@ import org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.j2ee.common.project.ui.J2eePlatformUiSupport;
 import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.java.api.common.project.ui.customizer.SourceRootsUi;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.AntDeploymentHelper;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
@@ -97,7 +95,6 @@ import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.project.ui.customizer.ClassPathListCellRenderer;
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
-import org.netbeans.modules.websvc.api.client.WebServicesClientConstants;
 import org.netbeans.spi.java.project.support.ui.IncludeExcludeVisualizer;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -107,13 +104,8 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.support.ant.ui.StoreGroup;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
-import org.openide.util.Exceptions;
-import org.openide.util.Mutex;
-import org.openide.util.MutexException;
-import org.openide.util.NbBundle;
+import org.openide.util.*;
 
 /**
  * @author Petr Hrebejk
@@ -294,6 +286,8 @@ final public class AppClientProjectProperties {
     public static final String JAVA_SOURCE_BASED = "java.source.based";
 
     
+    private final List<ActionListener> optionListeners = new CopyOnWriteArrayList<ActionListener>();
+
     AppClientProject getProject() {
         return project;
     }
@@ -844,6 +838,21 @@ final public class AppClientProjectProperties {
         excludes = v.getExcludePattern();
     }
     
+    @NonNull
+    Iterable<? extends ActionListener> getOptionListeners() {
+        return optionListeners;
+    }
+
+    void addOptionListener(@NonNull final ActionListener al) {
+        Parameters.notNull("al", al);   //NOI18N
+        optionListeners.add(al);
+    }
+
+    void removeOptionListener(@NonNull final ActionListener al) {
+        Parameters.notNull("al", al);   //NOI18N
+        optionListeners.remove(al);
+    }
+     
     private static class CallbackImpl implements J2EEProjectProperties.Callback {
 
         private AppClientProject project;

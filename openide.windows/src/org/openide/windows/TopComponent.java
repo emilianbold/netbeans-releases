@@ -855,7 +855,7 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
         }
     }
 
-    /** Activates this <code>TopComponent<code> if it is opened.
+    /** Activates this <code>TopComponent</code> if it is opened.
      * @since 4.13 */
     public void requestActive() {
         WindowManager.getDefault().topComponentRequestActive(this);
@@ -863,7 +863,7 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
 
     /**
      * Attempts to bring the parent <code>Window</code> or <code>Frame</code>
-     * of this <code>TopComponent<code> to front of other windows.
+     * of this <code>TopComponent</code> to front of other windows.
      * @since 5.8
      */
     public void toFront() {

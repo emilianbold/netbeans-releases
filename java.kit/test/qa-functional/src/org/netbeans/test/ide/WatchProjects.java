@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
 
@@ -49,7 +49,9 @@ import java.awt.datatransfer.StringSelection;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Random;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -67,7 +69,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
-import sun.management.ManagementFactory;
 
 /**
  *
@@ -75,19 +76,19 @@ import sun.management.ManagementFactory;
  */
 public final class WatchProjects {
     private static Logger LOG = Logger.getLogger(WatchProjects.class.getName());
-    
-    
+
+
     private WatchProjects() {
     }
-    
+
     public static void initialize() throws Exception {
         Log.enableInstances(Logger.getLogger("TIMER"), "Project", Level.FINEST);
-        
+
     }
-    
+
     private static void cleanWellKnownStaticFields() throws Exception {
         Object o;
-        
+
 //        resetJTreeUIs(Frame.getFrames());
 
         tryCloseNavigator();
@@ -99,7 +100,7 @@ public final class WatchProjects {
         Clipboard clipBoard = Toolkit.getDefaultToolkit().getSystemSelection();
         if (clipBoard != null) {
             clipBoard.setContents(ss, ss);
-        }  
+        }
         Clipboard cc = Lookup.getDefault().lookup(Clipboard.class);
         Assert.assertNotNull("There is a clipboard in lookup", cc);
         cc.setContents(ss, ss);
@@ -117,7 +118,7 @@ public final class WatchProjects {
         empty.requestFocusInWindow();
 // --------------------------------------------------------
 
-        
+
         clearField("sun.awt.im.InputContext", "previousInputMethod");
         clearField("sun.awt.im.InputContext", "inputMethodWindowContext");
         clearField("sun.awt.im.CompositionAreaHandler", "compositionAreaOwner");
@@ -154,7 +155,7 @@ public final class WatchProjects {
         clearField("sun.awt.im.InputContext", "previousInputMethod");
         clearField("sun.awt.im.InputContext", "inputMethodWindowContext");
     }
-    
+
 
     public static void assertTextDocuments() throws Exception {
         for (TopComponent tc : new ArrayList<TopComponent>(TopComponent.getRegistry().getOpened())) {
@@ -171,17 +172,52 @@ public final class WatchProjects {
                 tc.open();
                 tc.requestVisible();
                 tc.requestActive();
-                try {
-                    cleanWellKnownStaticFields();
-                } catch (Exception ex) {
-                    throw new IllegalStateException(ex);
+                if (!("1.8".equals(System.getProperty("java.specification.version")))) {
+                    try {
+                        System.out.println("Cleaning well known static fields");
+                        cleanWellKnownStaticFields();
+                    } catch (Exception ex) {
+                        throw new IllegalStateException(ex);
+                    }
                 }
                 System.setProperty("assertgc.paths", "5");
+                try {
+                    Thread.sleep(4000);
+                } catch (InterruptedException exc) {
+                    Exceptions.printStackTrace(exc);
+                }
+                HotSpotDiagnosticMXBean hdmxb = null;
+                Method m = null;
+                Class c = null;
+                try {
+                    c = Class.forName("ManagementFactoryHelper");//NOI18N
+                } catch (ClassNotFoundException exc) {                    
+                    try {
+                        c = Class.forName("ManagementFactory");//NOI18N
+                    } catch (ClassNotFoundException ex1) {                        
+                    }
+                }
+                if (c!=null) {
+                    try {
+                        m= c.getMethod("getDiagnosticMXBean");//NOI18N
+                    } catch (NoSuchMethodException exc) {                        
+                    } catch (SecurityException exc) {                        
+                    }
+                }
+                if (m!=null) {
+                    try {
+                        int i = new Random().nextInt(1000);
+                        System.out.println("Creating heap dump in: "+System.getProperty("nbjunit.workdir")+File.separator+"Heapdumpdoc"+i+".hprof");
+                        hdmxb.dumpHeap(System.getProperty("nbjunit.workdir")+File.separator+"Heapdumpdoc"+i+".hprof", true);
+                    } catch (IOException ioe) {
+                        System.out.println("Taking of heap dump failed: " + ioe.getMessage());
+                    }
+                }                
                 Log.assertInstances("Are all documents GCed?", "TextDocument");
             }
         });
     }
-    
+
     public static void assertProjects() throws Exception {
         Object o;
 
@@ -210,7 +246,7 @@ public final class WatchProjects {
             System.out.println("Excepton during setting of fake project as main:");
             ae.printStackTrace();
         }
-        
+
         for (int i = 0; i < 10; i++) {
             EventQueue.invokeAndWait(new Runnable() {
             public void run() {
@@ -245,11 +281,37 @@ public final class WatchProjects {
                         throw t;
                     }
                 } finally {
-                    HotSpotDiagnosticMXBean hdmxb = ManagementFactory.getDiagnosticMXBean();
                     try {
-                        hdmxb.dumpHeap(System.getProperty("nbjunit.workdir")+File.separator+"Heapdump.hprof", true);
-                    } catch (IOException ioe) {
-                        System.out.println("Taking of heap dump failed: " + ioe.getMessage());
+                        Thread.sleep(4000);
+                    } catch (InterruptedException exc) {
+                        Exceptions.printStackTrace(exc);
+                    }
+                    HotSpotDiagnosticMXBean hdmxb = null;
+                    Method m = null;
+                    Class c = null;
+                    try {
+                        c = Class.forName("ManagementFactoryHelper");//NOI18N
+                    } catch (ClassNotFoundException exc) {                    
+                        try {
+                            c = Class.forName("ManagementFactory");//NOI18N
+                        } catch (ClassNotFoundException ex1) {                        
+                        }
+                    }
+                    if (c!=null) {
+                        try {
+                            m= c.getMethod("getDiagnosticMXBean");//NOI18N
+                        } catch (NoSuchMethodException exc) {                        
+                        } catch (SecurityException exc) {                        
+                        }
+                    }
+                    if (m!=null) {
+                        try {
+                            int i = new Random().nextInt(1000);
+                            System.out.println("Creating heap dump in: "+System.getProperty("nbjunit.workdir")+File.separator+"Heapdumpproj"+i+".hprof");
+                            hdmxb.dumpHeap(System.getProperty("nbjunit.workdir")+File.separator+"Heapdumpproj"+i+".hprof", true);
+                        } catch (IOException ioe) {
+                            System.out.println("Taking of heap dump failed: " + ioe.getMessage());
+                        }
                     }
                     try {
                         printTreeView(Frame.getFrames());
@@ -260,7 +322,7 @@ public final class WatchProjects {
             }
         });
     }
-    
+
     private static int printTreeView(Component[] arr) throws Exception {
         int cnt = 0;
         StringBuilder str = new StringBuilder();
@@ -313,7 +375,7 @@ public final class WatchProjects {
         }
     }
 
-    /** 
+    /**
      * #124061 workaround - close navigator before tests
      */
     private static void tryCloseNavigator() throws Exception {
@@ -345,8 +407,8 @@ public final class WatchProjects {
         }
         return ret;
     }
-    
-    
+
+
     private static Field getField(String clazz, String name) throws NoSuchFieldException, ClassNotFoundException {
         ClassLoader l = Thread.currentThread().getContextClassLoader();
         if (l == null) {
@@ -360,7 +422,7 @@ public final class WatchProjects {
         f.setAccessible(true);
         return f;
     }
-    
+
     private static Object clearInstanceField(Object obj, String clazz, String... name) throws Exception {
         Object ret = obj;
         for (int i = 0; i < name.length; i++) {
@@ -393,7 +455,7 @@ public final class WatchProjects {
         }
         return ret;
     }
-    
+
     public static void waitScanFinished() {
         try {
             class Wait implements Runnable {

@@ -64,6 +64,7 @@ import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.modelimpl.csm.TypeImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
@@ -72,6 +73,7 @@ import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
@@ -86,6 +88,8 @@ import org.openide.util.CharSequences;
 public class ClassifierContainer extends ProjectComponent implements Persistent, SelfPersistent {
 
     private final Map<CharSequence, CsmUID<CsmClassifier>> classifiers;
+    // storage for classifiers defined as inner classfiers in C structures
+    private final Map<CharSequence, CsmUID<CsmClassifier>> shortClassifiers;
     private final Map<CharSequence, CsmUID<CsmClassifier>> typedefs;
     private final Map<CharSequence, Set<CsmUID<CsmInheritance>>> inheritances;
     private final ReadWriteLock declarationsLock = new ReentrantReadWriteLock();
@@ -108,8 +112,9 @@ public class ClassifierContainer extends ProjectComponent implements Persistent,
     
     /** Creates a new instance of ClassifierContainer */
     public ClassifierContainer(ProjectBase project) {
-        super(new ClassifierContainerKey(project.getUniqueName()), false);
+        super(new ClassifierContainerKey(project.getUniqueName()));
         classifiers = new HashMap<CharSequence, CsmUID<CsmClassifier>>();
+        shortClassifiers = new HashMap<CharSequence, CsmUID<CsmClassifier>>();
         typedefs = new HashMap<CharSequence, CsmUID<CsmClassifier>>();
         inheritances = new HashMap<CharSequence, Set<CsmUID<CsmInheritance>>>();
         put();
@@ -121,6 +126,9 @@ public class ClassifierContainer extends ProjectComponent implements Persistent,
         classifiers = new HashMap<CharSequence, CsmUID<CsmClassifier>>(collSize);
         UIDObjectFactory.getDefaultFactory().readStringToUIDMap(this.classifiers, input, QualifiedNameCache.getManager(), collSize);
         collSize = input.readInt();
+        shortClassifiers = new HashMap<CharSequence, CsmUID<CsmClassifier>>(collSize);
+        UIDObjectFactory.getDefaultFactory().readStringToUIDMap(this.shortClassifiers, input, QualifiedNameCache.getManager(), collSize);
+        collSize = input.readInt();
         typedefs = new HashMap<CharSequence, CsmUID<CsmClassifier>>(collSize);
         UIDObjectFactory.getDefaultFactory().readStringToUIDMap(this.typedefs, input, QualifiedNameCache.getManager(), collSize);
         collSize = input.readInt();
@@ -130,8 +138,9 @@ public class ClassifierContainer extends ProjectComponent implements Persistent,
 
     // only for EMPTY static field
     private ClassifierContainer() {
-        super((org.netbeans.modules.cnd.repository.spi.Key) null, false);
+        super((org.netbeans.modules.cnd.repository.spi.Key) null);
         classifiers = new HashMap<CharSequence, CsmUID<CsmClassifier>>();
+        shortClassifiers = new HashMap<CharSequence, CsmUID<CsmClassifier>>();
         typedefs = new HashMap<CharSequence, CsmUID<CsmClassifier>>();
         inheritances = new HashMap<CharSequence, Set<CsmUID<CsmInheritance>>>();
     }
@@ -143,6 +152,9 @@ public class ClassifierContainer extends ProjectComponent implements Persistent,
         try {
             declarationsLock.readLock().lock();
             uid = classifiers.get(qualifiedName);
+            if (uid == null) {
+                uid = shortClassifiers.get(qualifiedName);
+            }
             if (uid == null) {
                 uid = typedefs.get(qualifiedName);
             }
@@ -173,24 +185,24 @@ public class ClassifierContainer extends ProjectComponent implements Persistent,
 
     // for unit teast
     public Map<CharSequence, CsmClassifier> getTestClassifiers(){
-        Map<CharSequence, CsmClassifier> res = new TreeMap<CharSequence, CsmClassifier>();
-        try {
-            declarationsLock.readLock().lock();
-            for(Map.Entry<CharSequence, CsmUID<CsmClassifier>> entry : classifiers.entrySet()) {
-                res.put(entry.getKey(), UIDCsmConverter.UIDtoDeclaration(entry.getValue()));
-            }
-        } finally {
-            declarationsLock.readLock().unlock();
-        }
-        return res;
+        return convertTestMap(classifiers);
+    }
+
+    // for unit teast
+    public Map<CharSequence, CsmClassifier> getTestShortClassifiers() {
+        return convertTestMap(shortClassifiers);
     }
 
     // for unit teast
     public Map<CharSequence, CsmClassifier> getTestTypedefs(){
+        return convertTestMap(typedefs);
+    }
+
+    private Map<CharSequence, CsmClassifier> convertTestMap(Map<CharSequence, CsmUID<CsmClassifier>> map) {
         Map<CharSequence, CsmClassifier> res = new TreeMap<CharSequence, CsmClassifier>();
         try {
             declarationsLock.readLock().lock();
-            for(Map.Entry<CharSequence, CsmUID<CsmClassifier>> entry : typedefs.entrySet()) {
+            for (Map.Entry<CharSequence, CsmUID<CsmClassifier>> entry : map.entrySet()) {
                 res.put(entry.getKey(), UIDCsmConverter.UIDtoDeclaration(entry.getValue()));
             }
         } finally {
@@ -198,15 +210,18 @@ public class ClassifierContainer extends ProjectComponent implements Persistent,
         }
         return res;
     }
-
+    
     public boolean putClassifier(CsmClassifier decl) {
-        boolean put = false;
+        boolean changed;
         CsmUID<CsmClassifier> uid = UIDCsmConverter.declarationToUID(decl);
         Map<CharSequence, CsmUID<CsmClassifier>> map;
+        Map<CharSequence, CsmUID<CsmClassifier>> shortNamesMap;
         if (isTypedef(decl)) {
             map = typedefs;
+            shortNamesMap = null;
         } else {
             map = classifiers;
+            shortNamesMap = shortClassifiers;
             if (CsmKindUtilities.isClass(decl)) {
                 CsmClass cls = (CsmClass) decl;
                 Collection<CsmInheritance> base = cls.getBaseClasses();
@@ -229,17 +244,21 @@ public class ClassifierContainer extends ProjectComponent implements Persistent,
             }
         }
         CharSequence qn = decl.getQualifiedName();
-        put = putClassifier(map, qn, uid);
+        changed = putClassifier(map, qn, uid);
 
         // Special case for nested structs in C
-        // See Bug 144535 - wrong error highlighting for inner structure
-        CharSequence qn2 = getQualifiedNameWithoutScopeStructNameForC(decl);
-        if (qn2 != null && qn.length() != qn2.length()) {
-            // TODO: think about multiple objects per name in classifier as well
-            putClassifier(map, qn2, uid);
+        if (shortNamesMap != null) {
+            // See Bug 144535 - wrong error highlighting for inner structure
+            CharSequence qn2 = getQualifiedNameWithoutScopeStructNameForC(decl);
+            if (qn2 != null && qn.length() != qn2.length()) {
+                // TODO: think about multiple objects per name in classifier as well
+                changed |= putClassifier(shortNamesMap, qn2, uid);
+            }
         }
-
-        return put;
+        if (changed) {
+            put();
+        }
+        return changed;
     }
 
     private CharSequence inheritanceName(CsmInheritance inh) {
@@ -257,30 +276,32 @@ public class ClassifierContainer extends ProjectComponent implements Persistent,
     }
 
     private boolean putClassifier(Map<CharSequence, CsmUID<CsmClassifier>> map, CharSequence qn, CsmUID<CsmClassifier> uid) {
-        boolean put = false;
+        boolean changed = false;
         try {
             declarationsLock.writeLock().lock();
-            if (!map.containsKey(qn)) {
+            CsmUID<CsmClassifier> old = map.get(qn);
+            if (old == null || (!UIDUtilities.isForwardClass(uid) && UIDUtilities.isForwardClass(old))) {
                 assert uid != null;
                 map.put(qn, uid);
                 assert (UIDCsmConverter.UIDtoDeclaration(uid) != null);
-                put = true;
+                changed = true;
             }
         } finally {
             declarationsLock.writeLock().unlock();
         }
-        if (put) {
-            put();
-        }
-        return put;
+        return changed;
     }
 
     public void removeClassifier(CsmDeclaration decl) {
         Map<CharSequence, CsmUID<CsmClassifier>> map;
+        Map<CharSequence, CsmUID<CsmClassifier>> shortNamesMap;
+        CsmUID<?> uid = UIDs.get(decl);
         if (isTypedef(decl)) {
             map = typedefs;
+            shortNamesMap = null;
         } else {
             map = classifiers;
+            shortNamesMap = shortClassifiers;
             if (CsmKindUtilities.isClass(decl)) {
                 CsmClass cls = (CsmClass) decl;
                 Collection<CsmInheritance> base = cls.getBaseClasses();
@@ -301,30 +322,37 @@ public class ClassifierContainer extends ProjectComponent implements Persistent,
             }
         }
         CharSequence qn = decl.getQualifiedName();
-        removeClassifier(map, qn);
+        boolean changed = removeClassifier(map, qn, uid);
 
         // Special case for nested structs in C
-        // See Bug 144535 - wrong error highlighting for inner structure
-        CharSequence qn2 = getQualifiedNameWithoutScopeStructNameForC(decl);
-        if (qn2 != null && qn.length() != qn2.length()) {
-            // TODO: think about multiple objects per name in classifier as well
-            removeClassifier(map, qn2);
+        if (shortNamesMap != null) {
+            // See Bug 144535 - wrong error highlighting for inner structure
+            CharSequence qn2 = getQualifiedNameWithoutScopeStructNameForC(decl);
+            if (qn2 != null && qn.length() != qn2.length()) {
+                // TODO: think about multiple objects per name in classifier as well
+                changed |= removeClassifier(shortNamesMap, qn2, uid);
+            }
         }
-
+        if (changed) {
+            put();
+        }
     }
 
-    private void removeClassifier(Map<CharSequence, CsmUID<CsmClassifier>> map, CharSequence qn) {
-        CsmUID<CsmClassifier> uid;
+    private boolean removeClassifier(Map<CharSequence, CsmUID<CsmClassifier>> map, CharSequence qn, CsmUID<?> uid) {
+        CsmUID<CsmClassifier> removed;
         try {
             declarationsLock.writeLock().lock();
-            uid = map.remove(qn);
+            removed = map.get(qn);
+            if (removed != null && removed.equals(uid)) {
+                map.remove(qn);
+            } else {
+                removed = null;
+            }
         } finally {
             declarationsLock.writeLock().unlock();
         }
-        assert (uid == null) || (UIDCsmConverter.UIDtoCsmObject(uid) != null) : " no object for UID " + uid;
-        if (uid != null) {
-            put();
-        }
+        assert (removed == null) || (UIDCsmConverter.UIDtoCsmObject(removed) != null) : " no object for UID " + removed;
+        return removed != null;
     }
 
     //public void clearClassifiers() {
@@ -375,6 +403,7 @@ public class ClassifierContainer extends ProjectComponent implements Persistent,
         try {
             declarationsLock.readLock().lock();
             UIDObjectFactory.getDefaultFactory().writeStringToUIDMap(this.classifiers, output, false);
+            UIDObjectFactory.getDefaultFactory().writeStringToUIDMap(this.shortClassifiers, output, false);
             UIDObjectFactory.getDefaultFactory().writeStringToUIDMap(this.typedefs, output, false);
             UIDObjectFactory.getDefaultFactory().writeStringToUIDMapSet(this.inheritances, output);
         } finally {

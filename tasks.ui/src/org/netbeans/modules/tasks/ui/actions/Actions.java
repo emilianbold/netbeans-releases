@@ -50,12 +50,13 @@ import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.tasks.ui.DashboardTopComponent;
-import org.netbeans.modules.tasks.ui.dashboard.AbstractRepositoryNode;
 import org.netbeans.modules.tasks.ui.dashboard.DashboardViewer;
 import org.netbeans.modules.tasks.ui.dashboard.QueryNode;
+import org.netbeans.modules.tasks.ui.dashboard.RepositoryNode;
 import org.netbeans.modules.tasks.ui.dashboard.TaskNode;
 import org.netbeans.modules.tasks.ui.model.Category;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -107,13 +108,16 @@ public class Actions {
 
     private static class RefreshTaskAction extends AbstractAction {
 
+        private Issue task;
+
         public RefreshTaskAction(Issue task) {
-            super("Refresh"); //NOI18N
+            super(NbBundle.getMessage(Actions.class, "CTL_Refresh")); //NOI18N
+            this.task = task;
         }
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            new DummyAction().actionPerformed(e);
+            task.refresh();
         }
     }
 
@@ -207,7 +211,7 @@ public class Actions {
         }
     }
 
-    public static List<Action> getRepositoryPopupActions(AbstractRepositoryNode repositoryNode) {
+    public static List<Action> getRepositoryPopupActions(RepositoryNode repositoryNode) {
         Repository repository = repositoryNode.getRepository();
         List<Action> actions = new ArrayList<Action>();
         actions.add(new EditRepositoryAction(repository));
@@ -218,9 +222,24 @@ public class Actions {
         return actions;
     }
 
+    private static class RemoveRepositoryAction extends AbstractAction {
+
+        private final RepositoryNode repositoryNode;
+
+        public RemoveRepositoryAction(RepositoryNode repositoryNode) {
+            super(NbBundle.getMessage(Actions.class, "CTL_Remove")); //NOI18N
+            this.repositoryNode = repositoryNode;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            DashboardViewer.getInstance().removeRepository(repositoryNode);
+        }
+    }
+
     private static class RefreshRepositoryAction extends AbstractAction {
 
-        public RefreshRepositoryAction(AbstractRepositoryNode repositoryNode) {
+        public RefreshRepositoryAction(RepositoryNode repositoryNode) {
             super("Refresh"); //NOI18N
         }
 
@@ -254,14 +273,20 @@ public class Actions {
     }
 
     private static class DeleteQueryAction extends AbstractAction {
-
+        private final Query query;
         public DeleteQueryAction(Query query) {
             super("Delete"); //NOI18N
+            this.query = query;
         }
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            new DummyAction().actionPerformed(e);
+            RequestProcessor.getDefault().post(new Runnable() {
+                @Override
+                public void run() {
+                    query.remove();
+                }
+            });
         }
     }
 

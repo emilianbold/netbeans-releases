@@ -173,8 +173,15 @@ public final class ProgressContributor {
 //        System.out.println("           step=" + step);
         if (delta >= step) {
             int count = (int) (delta / step);
+            boolean log = current < 0 || delta < 0 || count < 0;
+            if (log) {
+                LOG.log(Level.WARNING, "Progress Contributor before progress: current={0} lastParentedUnit={1}, parentUnits={2}, delta={3}, step={4}", new Object[] {current, lastParentedUnit, parentUnits, delta, step});
+            }
             lastParentedUnit = lastParentedUnit + (int)(count * step);
             parentUnits = parentUnits - count;
+            if (log) {
+                LOG.log(Level.WARNING, "Progress Contributor after progress: count={0}, new parentUnits={2}, new lastParentedUnits={1}", new Object[] {count, lastParentedUnit, parentUnits});
+            }
 //            System.out.println("   count=" + count);
 //            System.out.println("   newparented=" + lastParentedUnit);
 //            System.out.println("   parentUnits=" + parentUnits);

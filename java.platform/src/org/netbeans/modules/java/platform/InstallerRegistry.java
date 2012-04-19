@@ -49,7 +49,6 @@ import java.util.*;
 import org.netbeans.spi.java.platform.CustomPlatformInstall;
 import org.netbeans.spi.java.platform.GeneralPlatformInstall;
 
-import org.openide.filesystems.*;
 import org.netbeans.spi.java.platform.PlatformInstall;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
@@ -68,8 +67,7 @@ public class InstallerRegistry {
     private final Lookup lookup;
     private List<GeneralPlatformInstall> platformInstalls;      //Used by unit test
     
-    InstallerRegistry(FileObject registryResource) {
-        assert registryResource != null;
+    InstallerRegistry() {
         this.lookup = Lookups.forPath(INSTALLER_REGISTRY_FOLDER);
     }
     
@@ -115,7 +113,7 @@ public class InstallerRegistry {
         InstallerRegistry regs = defaultInstance.get();
         if (regs != null)
             return regs;
-        regs = new InstallerRegistry(FileUtil.getConfigFile(INSTALLER_REGISTRY_FOLDER));
+        regs = new InstallerRegistry();
         defaultInstance = new WeakReference<InstallerRegistry>(regs);
         return regs;
     }

@@ -526,11 +526,13 @@ public final class SplashBrandingPanel extends AbstractBrandingPanel {
             try {
                 splashSource = file.toURI().toURL();
                 Image oldImage = splashImage.image;
-                oldImage.flush();
                 splashImage.setSplashImageIcon(splashSource);
                 Image newImage = splashImage.image;
+                assert newImage != null; // since splashSource != null
                 int newWidth = newImage.getWidth(null);
                 int newHeight = newImage.getHeight(null);
+                if (oldImage != null) {
+                oldImage.flush();
                 int oldWidth = oldImage.getWidth(null);
                 int oldHeight = oldImage.getHeight(null);
                 if (newWidth != oldWidth || newHeight != oldHeight) {
@@ -560,6 +562,9 @@ public final class SplashBrandingPanel extends AbstractBrandingPanel {
                     int size = (int)((((Number)fontSize.getValue()).intValue()*yRatio));
                     size = (size <= 6) ? 6 : size;                    
                     fontSize.setValue(size);                    
+                } else {
+                    resetSplashPreview();
+                }
                 } else {
                     resetSplashPreview();
                 }

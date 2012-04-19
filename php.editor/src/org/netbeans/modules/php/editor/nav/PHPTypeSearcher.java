@@ -372,7 +372,6 @@ public class PHPTypeSearcher implements IndexSearcher {
         }
         sb.append(".*");//NOI18N
         String patternString = sb.toString();
-        patternString = patternString.replaceAll(Pattern.quote(".."), ".");//NOI18N
         return caseInsensitive ?
             Pattern.compile(patternString, Pattern.CASE_INSENSITIVE) :
             Pattern.compile(patternString);

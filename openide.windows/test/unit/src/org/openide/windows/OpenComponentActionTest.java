@@ -42,13 +42,14 @@
 
 package org.openide.windows;
 
-import java.awt.Image;
+import java.awt.GraphicsEnvironment;
 import java.awt.event.ActionEvent;
-import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.Action;
 import javax.swing.Icon;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
 
 /**
@@ -57,6 +58,10 @@ import org.netbeans.junit.NbTestCase;
  */
 public class OpenComponentActionTest extends NbTestCase {
     
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(OpenComponentActionTest.class);
+    }
+
     public OpenComponentActionTest(String testName) {
         super(testName);
     }

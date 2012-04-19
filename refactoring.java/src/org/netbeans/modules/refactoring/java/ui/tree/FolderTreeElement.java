@@ -100,7 +100,11 @@ public class FolderTreeElement implements TreeElement {
             return fo.getPath();
         } else {
             if (getJavaSourceGroup(fo)!=null) {
-                String name = cp.getResourceName(fo).replace('/','.');
+                String resourceName = cp.getResourceName(fo);
+                if (resourceName == null) {
+                    return fo.getPath();
+                }
+                String name = resourceName.replace('/','.');
                 if ("".equals(name)) {
                     return NbBundle.getMessage(FolderTreeElement.class, "LBL_DefaultPackage_PDU");
                 }

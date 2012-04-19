@@ -44,9 +44,12 @@
 
 package org.netbeans.modules.project.ui;
 
+import java.awt.GraphicsEnvironment;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.Log;
@@ -62,6 +65,10 @@ import org.openide.util.lookup.Lookups;
  * @author Jiri Rechtacek
  */
 public class OpenProjectListNPUTest extends NbTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(OpenProjectListNPUTest.class);
+    }
 
     static {
         System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");

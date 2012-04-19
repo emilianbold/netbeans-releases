@@ -51,11 +51,17 @@ import org.netbeans.api.visual.widget.LayerWidget;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
 /**
  * @author David Kaspar
  */
 public class OffscreenRenderingTest extends VisualTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(OffscreenRenderingTest.class);
+    }
 
     public OffscreenRenderingTest (String testName) {
         super (testName);

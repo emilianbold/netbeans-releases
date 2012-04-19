@@ -43,9 +43,7 @@ package org.netbeans.performance.scanning;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.StringTokenizer;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -72,12 +70,11 @@ import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
  */
 public class ScanSeveralProjects2PerfTest extends NbTestCase {
 
-    private final List<PerformanceData> data;
     private String nb_all_root;
+    private ScanningHandler handler;
     
     public ScanSeveralProjects2PerfTest(String name) {
         super(name);
-        data = new ArrayList<PerformanceData>();
     }
     
     /**
@@ -99,6 +96,10 @@ public class ScanSeveralProjects2PerfTest extends NbTestCase {
     {
         nb_all_root = System.getProperty("nb_all.root");
         System.err.println(nb_all_root);
+        Logger repositoryUpdater = Logger.getLogger(RepositoryUpdater.class.getName());
+        repositoryUpdater.setLevel(Level.INFO);
+        handler = new ScanningHandler("test projects");
+        repositoryUpdater.addHandler(handler);
         String[][] files = {
                 { "http://hg.netbeans.org/binaries/BBD005CDF8785223376257BD3E211C7C51A821E7-jEdit41.zip",
                             "jEdit41.zip",
@@ -152,12 +153,7 @@ public class ScanSeveralProjects2PerfTest extends NbTestCase {
                 throw new IOException("Project is not found " + projectName);
             }
             projects[i++] = p;
-        }
-        Logger repositoryUpdater = Logger.getLogger(RepositoryUpdater.class.getName());
-        repositoryUpdater.setLevel(Level.INFO);
-        ScanningHandler handler = new ScanningHandler("test projects");
-        repositoryUpdater.addHandler(handler);
-
+        }        
         Logger log = Logger.getLogger("org.openide.filesystems.MIMESupport");
         log.setLevel(Level.FINE);
         ReadingHandler readHandler = new ReadingHandler();
@@ -185,7 +181,7 @@ public class ScanSeveralProjects2PerfTest extends NbTestCase {
         for (PerformanceData rec : getPerformanceData()) {
             Utilities.processUnitTestsResults(ScanSeveralProjects2PerfTest.class.getCanonicalName(), rec);
         }
-        data.clear();
+        handler.clear();
     }
 
     public static Test suite() throws InterruptedException {
@@ -196,85 +192,12 @@ public class ScanSeveralProjects2PerfTest extends NbTestCase {
     }
 
     public PerformanceData[] getPerformanceData() {
-        return data.toArray(new PerformanceData[0]);
-    }
-
-    @SuppressWarnings("serial")
-    private static enum ScanType {
-        INITIAL(" initial "),
-        UP_TO_DATE(" up-to-date ");
-
-        private final String name;
-
-        private ScanType(String name) {
-            this.name = name;
-        }
-        
-        private String getName() {
-            return name;
-        }
-    }
-    
-    private class ScanningHandler extends Handler {
-
-        private final String projectName;
-        private ScanType type;
-
-        public ScanningHandler(String projectName) {
-            this.projectName = projectName;
-            this.type = ScanType.INITIAL;
-        }
-
-        public void setType(ScanType type) {
-            this.type = type;
-        }
-        
-        @Override
-        public void publish(LogRecord record) {
-            String message = record.getMessage();
-            if (message != null && message.startsWith("Complete indexing")) {
-                if (message.contains("source roots")) {
-                    PerformanceData res = new PerformanceData();
-                    StringTokenizer tokenizer = new StringTokenizer(message, " ");
-                    int count = tokenizer.countTokens();
-                    res.name = projectName + type.getName() + "source scan";
-                    
-                    String token = "0";
-                    for (int i = 0; i < count; i++) {
-                        String next = tokenizer.nextToken();
-                        if (next.startsWith("ms")) {
-                            break;
-                        }
-                        token = next;
-                    }
-                    res.value = Long.parseLong(token);
-                    res.unit = "ms";
-                    res.runOrder = 0;
-                    data.add(res);
-                } else if (message.contains("binary roots")) {
-                    PerformanceData res = new PerformanceData();
-                    StringTokenizer tokenizer = new StringTokenizer(message, " ");
-                    int count = tokenizer.countTokens();
-                    res.name = projectName + type.getName() + "binary scan";
-                    for (int i = 0; i < count-2; i++) {
-                        tokenizer.nextToken();
-                    }
-                    String token = tokenizer.nextToken();
-                    res.value = Long.parseLong(token);
-                    res.unit = "ms";
-                    res.runOrder = 0;
-                    data.add(res);
-                }
-            }
-        }
-
-        @Override
-        public void flush() {
-        }
-
-        @Override
-        public void close() throws SecurityException {
-        }
+        List<PerformanceData> data = handler.getData();
+        if (data!=null) {
+            return data.toArray(new PerformanceData[0]);
+        } else {
+            return null;
+        }        
     }
 
     private class ReadingHandler extends Handler {

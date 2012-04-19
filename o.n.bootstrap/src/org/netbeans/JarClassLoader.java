@@ -976,7 +976,12 @@ public class JarClassLoader extends ProxyClassLoader {
         @Override
         protected void parseURL(URL u, String spec, int start, int limit) {
             if (spec.startsWith("/")) {
-                setURL(u, "jar", u.getHost(), u.getPort(), u.getAuthority(), u.getUserInfo(), u.getFile().replaceFirst("!/.+$", "!" + spec), u.getQuery(), u.getRef()); // NOI18N
+                setURL(
+                    u, "jar", u.getHost(), u.getPort(), 
+                    u.getAuthority(), u.getUserInfo(), 
+                    u.getFile().replaceFirst("!/.*$", "!" + spec), // NOI18N
+                    u.getQuery(), u.getRef()
+                ); 
             } else {
                 super.parseURL(u, spec, start, limit);
             }

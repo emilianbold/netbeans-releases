@@ -86,7 +86,8 @@ public class RequiresDependencyTest extends NbmAdvancedTestCase {
     public void testBrokenDepsOfModuleWhichRequires () throws IOException {
         testBrokenDepsOfModuleWhichWants ("Requires", true);
     }
-    
+
+    @RandomlyFails
     public void testBrokenDepsOfModuleWhichNeeds () throws IOException {
         testBrokenDepsOfModuleWhichWants ("Needs", true);
     }

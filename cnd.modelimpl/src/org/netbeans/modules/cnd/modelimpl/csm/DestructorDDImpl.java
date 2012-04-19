@@ -44,9 +44,14 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
-import org.netbeans.modules.cnd.api.model.*;
-import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.IOException;
+import org.netbeans.modules.cnd.antlr.collections.AST;
+import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmMethod;
+import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.CsmType;
+import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
@@ -75,7 +80,7 @@ public final class DestructorDDImpl extends MethodDDImpl<CsmMethod> {
         NameHolder nameHolder = NameHolder.createDestructorName(ast);
         CharSequence name = QualifiedNameCache.getManager().getString(nameHolder.getName());
         if (name.length() == 0) {
-            DiagnosticExceptoins.register(new AstRendererException((FileImpl) file, startOffset, "Empty function name.")); // NOI18N
+            DiagnosticExceptoins.register(AstRendererException.createAstRendererException((FileImpl) file, ast, startOffset, "Empty function name.")); // NOI18N
             return null;
         }
         CharSequence rawName = initRawName(ast);
@@ -113,7 +118,7 @@ public final class DestructorDDImpl extends MethodDDImpl<CsmMethod> {
                 AstRenderer.FunctionRenderer.isVoidParameter(ast));
         CsmCompoundStatement body = AstRenderer.findCompoundStatement(ast, file, destructorDDImpl);
         if (body == null) {
-            throw new AstRendererException((FileImpl)file, startOffset,
+            throw AstRendererException.createAstRendererException((FileImpl)file, ast, startOffset,
                     "Null body in method definition."); // NOI18N
         }        
         destructorDDImpl.setCompoundStatement(body);

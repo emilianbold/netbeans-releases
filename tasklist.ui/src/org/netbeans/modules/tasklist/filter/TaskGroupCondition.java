@@ -58,7 +58,6 @@ import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import org.netbeans.modules.tasklist.trampoline.TaskGroup;
 import org.netbeans.modules.tasklist.ui.checklist.CheckList;
-import org.netbeans.modules.tasklist.ui.checklist.DefaultCheckListModel;
 import org.openide.util.NbBundle;
 
 /**
@@ -121,10 +120,12 @@ class TaskGroupCondition extends FilterCondition {
     }
     
     public JComponent createConstantComponent() {
+        String[] descs = new String[groups.length];
+        for (int i = 0; i < descs.length; i++) {
+            descs[i] = groups[i].getDescription();
+        }
         CheckList list = new CheckList(
-            new DefaultCheckListModel(
-                groupState, groups
-            )
+                groupState, groups, descs
         );
         final JPanel panel = new JPanel(new BorderLayout());
         panel.setOpaque(false);

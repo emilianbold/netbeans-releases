@@ -46,8 +46,18 @@ package org.netbeans.modules.cnd.makeproject.configurations;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.modules.cnd.api.xml.AttrValuePair;
+import org.netbeans.modules.cnd.api.xml.XMLDecoder;
+import org.netbeans.modules.cnd.api.xml.XMLEncoder;
+import org.netbeans.modules.cnd.api.xml.XMLEncoderStream;
+import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
+import org.netbeans.modules.cnd.makeproject.api.PackagerDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.PackagerFileElement;
+import org.netbeans.modules.cnd.makeproject.api.PackagerInfoElement;
+import org.netbeans.modules.cnd.makeproject.api.PackagerManager;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ArchiverConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.AssemblerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
@@ -56,32 +66,25 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Configurations;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CustomToolConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder.Kind;
+import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibrariesConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LinkerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.api.xml.AttrValuePair;
-import org.netbeans.modules.cnd.api.xml.XMLDecoder;
-import org.netbeans.modules.cnd.api.xml.XMLEncoder;
-import org.netbeans.modules.cnd.api.xml.XMLEncoderStream;
-import org.netbeans.modules.cnd.makeproject.MakeProject;
-import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.RequiredProjectsConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.PackagerFileElement;
-import org.netbeans.modules.cnd.makeproject.api.PackagerDescriptor;
-import org.netbeans.modules.cnd.makeproject.api.PackagerInfoElement;
-import org.netbeans.modules.cnd.makeproject.api.PackagerManager;
-import org.netbeans.modules.cnd.makeproject.api.configurations.AssemblerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.RequiredProjectsConfiguration;
 
 /**
  * Common subclass to ConfigurationXMLCodec and AuxConfigurationXMLCodec
  */
 /**
  * Change History:
+ * V82 - NB 7.2
+ *    Hardcoded extension of dynamic library from project is replaced by macros.
+ *    New flavor2 field introduced in item configuration for unmanaged projects.
  * V81 - NB 7.2
  *    Standard selection support for C++ compiler
  *    Standard selection support for C compiler
@@ -231,7 +234,7 @@ public abstract class CommonConfigurationXMLCodec
         extends XMLDecoder
         implements XMLEncoder {
 
-    public final static int CURRENT_VERSION = 81;
+    public final static int CURRENT_VERSION = 82;
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
     protected final static String DEBUGGING_ELEMENT = "justfordebugging"; // NOI18N
@@ -400,6 +403,10 @@ public abstract class CommonConfigurationXMLCodec
     protected final static String QT_QMAKE_SPEC_ELEMENT = "qmakeSpec"; // NOI18N
     private ConfigurationDescriptor projectDescriptor;
     private boolean publicLocation;
+    
+    public static final int PROJECT_LEVEL = 0;
+    public static final int FOLDER_LEVEL = 1;
+    public static final int ITEM_LEVEL = 2;
 
     protected CommonConfigurationXMLCodec(ConfigurationDescriptor projectDescriptor,
             boolean publicLocation) {
@@ -488,8 +495,8 @@ public abstract class CommonConfigurationXMLCodec
 
     private void writeCompiledProjectConfBlock(XMLEncoderStream xes, MakeConfiguration makeConfiguration) {
         xes.elementOpen(COMPILE_TYPE_ELEMENT);
-        writeCCompilerConfiguration(xes, makeConfiguration.getCCompilerConfiguration());
-        writeCCCompilerConfiguration(xes, makeConfiguration.getCCCompilerConfiguration());
+        writeCCompilerConfiguration(xes, makeConfiguration.getCCompilerConfiguration(), PROJECT_LEVEL);
+        writeCCCompilerConfiguration(xes, makeConfiguration.getCCCompilerConfiguration(), PROJECT_LEVEL);
         writeFortranCompilerConfiguration(xes, makeConfiguration.getFortranCompilerConfiguration());
         writeAsmCompilerConfiguration(xes, makeConfiguration.getAssemblerConfiguration());
         switch (makeConfiguration.getConfigurationType().getValue()) {
@@ -555,8 +562,8 @@ public abstract class CommonConfigurationXMLCodec
         xes.element(BUILD_COMMAND_ELEMENT, makeConfiguration.getMakefileConfiguration().getBuildCommand().getValue());
         xes.element(CLEAN_COMMAND_ELEMENT, makeConfiguration.getMakefileConfiguration().getCleanCommand().getValue());
         xes.element(EXECUTABLE_PATH_ELEMENT, makeConfiguration.getMakefileConfiguration().getOutput().getValue());
-        writeCCompilerConfiguration(xes, makeConfiguration.getCCompilerConfiguration());
-        writeCCCompilerConfiguration(xes, makeConfiguration.getCCCompilerConfiguration());
+        writeCCompilerConfiguration(xes, makeConfiguration.getCCompilerConfiguration(), PROJECT_LEVEL);
+        writeCCCompilerConfiguration(xes, makeConfiguration.getCCCompilerConfiguration(), PROJECT_LEVEL);
         writeFortranCompilerConfiguration(xes, makeConfiguration.getFortranCompilerConfiguration());
         writeAsmCompilerConfiguration(xes, makeConfiguration.getAssemblerConfiguration());
         //IZ#110443:Adding "Dependencies" node for makefile projects property is premature
@@ -613,9 +620,11 @@ public abstract class CommonConfigurationXMLCodec
 
     private void writeDiskFolder(XMLEncoderStream xes, Folder folder) {
         List<AttrValuePair> attrList = new ArrayList<AttrValuePair>();
-        attrList.add(new AttrValuePair(NAME_ATTR, "" + folder.getName())); // NOI18N
         if (folder.getRoot() != null) {
+            attrList.add(new AttrValuePair(NAME_ATTR, "" + folder.getDiskName())); // NOI18N    
             attrList.add(new AttrValuePair(ROOT_ATTR, "" + folder.getRoot())); // NOI18N
+        } else {
+            attrList.add(new AttrValuePair(NAME_ATTR, "" + folder.getName())); // NOI18N    
         }
         xes.elementOpen(DISK_FOLDER_ELEMENT, attrList.toArray(new AttrValuePair[attrList.size()]));
 
@@ -663,7 +672,7 @@ public abstract class CommonConfigurationXMLCodec
 //    private void writeSourceEncoding(XMLEncoderStream xes) {
 //        xes.element(SOURCE_ENCODING_ELEMENT, ((MakeConfigurationDescriptor)projectDescriptor).getSourceEncoding());
 //    }
-    public static void writeCCompilerConfiguration(XMLEncoderStream xes, CCompilerConfiguration cCompilerConfiguration) {
+    public static void writeCCompilerConfiguration(XMLEncoderStream xes, CCompilerConfiguration cCompilerConfiguration, int kind) {
         if (!cCompilerConfiguration.getModified()) {
             return;
         }
@@ -677,9 +686,11 @@ public abstract class CommonConfigurationXMLCodec
         if (cCompilerConfiguration.getSixtyfourBits().getModified()) {
             xes.element(ARCHITECTURE_ELEMENT, "" + cCompilerConfiguration.getSixtyfourBits().getValue()); // NOI18N
         }
-        if (cCompilerConfiguration.getCStandard().getModified()) {
-            xes.element(STANDARD_ELEMENT, "" + cCompilerConfiguration.getCStandard().getValue()); // NOI18N
-        }        
+        if (kind != ITEM_LEVEL) {
+            if (cCompilerConfiguration.getCStandard().getModified()) {
+                xes.element(STANDARD_ELEMENT, "" + cCompilerConfiguration.getCStandardExternal()); // NOI18N
+            }
+        }
         if (cCompilerConfiguration.getTool().getModified()) {
             xes.element(COMMANDLINE_TOOL_ELEMENT, "" + cCompilerConfiguration.getTool().getValue()); // NOI18N
         }
@@ -721,7 +732,7 @@ public abstract class CommonConfigurationXMLCodec
         xes.elementClose(CCOMPILERTOOL_ELEMENT2);
     }
 
-    public static void writeCCCompilerConfiguration(XMLEncoderStream xes, CCCompilerConfiguration ccCompilerConfiguration) {
+    public static void writeCCCompilerConfiguration(XMLEncoderStream xes, CCCompilerConfiguration ccCompilerConfiguration, int kind) {
         if (!ccCompilerConfiguration.getModified()) {
             return;
         }
@@ -735,8 +746,10 @@ public abstract class CommonConfigurationXMLCodec
         if (ccCompilerConfiguration.getSixtyfourBits().getModified()) {
             xes.element(ARCHITECTURE_ELEMENT, "" + ccCompilerConfiguration.getSixtyfourBits().getValue()); // NOI18N
         }
-        if (ccCompilerConfiguration.getCppStandard().getModified()) {
-            xes.element(STANDARD_ELEMENT, "" + ccCompilerConfiguration.getCppStandard().getValue()); // NOI18N
+        if (kind != ITEM_LEVEL) {
+            if (ccCompilerConfiguration.getCppStandard().getModified()) {
+                xes.element(STANDARD_ELEMENT, "" + ccCompilerConfiguration.getCppStandardExternal()); // NOI18N
+            }
         }
         if (ccCompilerConfiguration.getTool().getModified()) {
             xes.element(COMMANDLINE_TOOL_ELEMENT, "" + ccCompilerConfiguration.getTool().getValue()); // NOI18N

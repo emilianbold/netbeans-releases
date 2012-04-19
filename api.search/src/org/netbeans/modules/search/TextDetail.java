@@ -46,7 +46,11 @@
 package org.netbeans.modules.search;
 
 import java.awt.Toolkit;
+import java.awt.datatransfer.Transferable;
+import java.awt.event.ActionEvent;
 import java.io.CharConversionException;
+import java.util.List;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
@@ -57,6 +61,7 @@ import org.netbeans.api.search.SearchHistory;
 import org.netbeans.api.search.SearchPattern;
 import org.netbeans.modules.search.ui.ReplaceCheckableNode;
 import org.netbeans.modules.search.ui.ResultsOutlineSupport;
+import org.netbeans.modules.search.ui.UiUtils;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.loaders.DataObject;
@@ -71,6 +76,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
@@ -435,7 +441,7 @@ public final class TextDetail implements Selectable {
          */
         @Override
         public Action getPreferredAction() {
-            return SystemAction.get(GotoDetailAction.class);
+            return new GotoDetailAction(this);
         }
 
         /** {@inheritDoc} */
@@ -640,6 +646,10 @@ public final class TextDetail implements Selectable {
                                                         });
             }
         }
+
+        @Override
+        protected void createPasteTypes(Transferable t, List<PasteType> s) {
+        }
         
     } // End of DetailNode class.
 
@@ -648,30 +658,13 @@ public final class TextDetail implements Selectable {
      * This action is to be used in the window/dialog displaying a list of
      * found occurences of strings matching a search pattern.
      */
-    private static class GotoDetailAction extends NodeAction {
-        
-        /**  {@inheritDoc} */
-        @Override
-        public String getName() {
-            return NbBundle.getMessage(
-                    GotoDetailAction.class, "LBL_GotoDetailAction");
-        }
-        
-        /**  {@inheritDoc} */
-        @Override
-        public HelpCtx getHelpCtx() {
-            return new HelpCtx(GotoDetailAction.class);
-        }
+    private static class GotoDetailAction extends AbstractAction {
 
-        /**  {@inheritDoc}
-         * @return  <code>true</code> if at least one node is activated and
-         *          the first node is an instance of <code>DetailNode</code>
-         *          (or its subclass), <code>false</code> otherwise
-         */
-        @Override
-        protected boolean enable(Node[] activatedNodes) {
-            return activatedNodes != null && activatedNodes.length != 0
-                   && activatedNodes[0] instanceof DetailNode;
+        private DetailNode detailNode;
+
+        public GotoDetailAction(DetailNode detailNode) {
+            super(UiUtils.getText("LBL_GotoDetailAction"));             //NOI18N
+            this.detailNode = detailNode;
         }
 
         /**  {@inheritDoc}
@@ -680,18 +673,8 @@ public final class TextDetail implements Selectable {
          * otherwise does nothing.
          */
         @Override
-        protected void performAction(Node[] activatedNodes) {
-            if (enable(activatedNodes)) {
-                ((DetailNode) activatedNodes[0]).gotoDetail();
-            }
+        public void actionPerformed(ActionEvent e) {
+            detailNode.gotoDetail();
         }
-        
-        /**  {@inheritDoc} */
-        @Override
-        protected boolean asynchronous() {
-            return false;
-        }
-        
     } // End of GotoDetailAction class.
-        
 }

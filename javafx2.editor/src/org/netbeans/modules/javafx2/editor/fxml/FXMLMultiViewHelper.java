@@ -58,7 +58,7 @@ public final class FXMLMultiViewHelper {
     
     @MultiViewElement.Registration(
         displayName="org.netbeans.modules.javafx2.editor.Bundle#CTL_SourceTabCaption", // NOI18N
-        iconBase="org/netbeans/modules/javafx2/editor/resources/fxmlObject.gif", // NOI18N
+        iconBase="org/netbeans/modules/javafx2/editor/resources/fxmlObject.png", // NOI18N
         persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
         preferredID="xml.text", // NOI18N
         mimeType=JavaFXEditorUtils.MIME_TYPE,

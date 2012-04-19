@@ -625,15 +625,16 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
             d.putProperty(ProjectServerWizardPanel.JAVA_PLATFORM, warningPanel.getSuggestedJavaPlatformName());
             if (j2ee != null) {
                 String warningType = J2eeVersionWarningPanel.findWarningType(j2ee);
-                UserProjectSettings fls = UserProjectSettings.getDefault();
-                if (warningType.equals(J2eeVersionWarningPanel.WARN_SET_SOURCE_LEVEL_14) && fls.isAgreedSetSourceLevel14()) {
-                    sourceLevel = "1.4"; //NOI18N
-                } else if (warningType.equals(J2eeVersionWarningPanel.WARN_SET_SOURCE_LEVEL_15) && fls.isAgreedSetSourceLevel15()) {
-                    sourceLevel = "1.5"; //NOI18N
-                } else if (warningType.equals(J2eeVersionWarningPanel.WARN_SET_SOURCE_LEVEL_6)) {
-                    sourceLevel = "1.6"; //NOI18N
+                if (warningType != null) {
+                    UserProjectSettings fls = UserProjectSettings.getDefault();
+                    if (warningType.equals(J2eeVersionWarningPanel.WARN_SET_SOURCE_LEVEL_14) && fls.isAgreedSetSourceLevel14()) {
+                        sourceLevel = "1.4"; //NOI18N
+                    } else if (warningType.equals(J2eeVersionWarningPanel.WARN_SET_SOURCE_LEVEL_15) && fls.isAgreedSetSourceLevel15()) {
+                        sourceLevel = "1.5"; //NOI18N
+                    } else if (warningType.equals(J2eeVersionWarningPanel.WARN_SET_SOURCE_LEVEL_6)) {
+                        sourceLevel = "1.6"; //NOI18N
+                    }
                 }
-
             }
         }
         

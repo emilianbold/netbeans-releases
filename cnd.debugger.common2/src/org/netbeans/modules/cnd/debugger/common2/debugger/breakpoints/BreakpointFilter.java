@@ -88,7 +88,7 @@ import org.netbeans.spi.viewmodel.CheckNodeModel;
 import org.netbeans.spi.viewmodel.CheckNodeModelFilter;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebugger;
-import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.DialogManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.ModelListenerSupport;
 import org.netbeans.modules.cnd.debugger.common2.debugger.Constants;
@@ -116,8 +116,8 @@ public final class BreakpointFilter extends ModelListenerSupport
 		AsynchronousModelFilter,
 		Constants {
 
-	private static DebuggerManager manager() {
-		return DebuggerManager.get();
+	private static NativeDebuggerManager manager() {
+		return NativeDebuggerManager.get();
 	}
 
 	/**
@@ -178,7 +178,7 @@ public final class BreakpointFilter extends ModelListenerSupport
 		}
 
 		if (parent == null) {
-			if (DebuggerManager.isPerTargetBpts()) {
+			if (NativeDebuggerManager.isPerTargetBpts()) {
 				// list of top-level bpts which have a child in current session
 				ArrayList<Object> newChildren = new ArrayList<Object>();
 				for (Object child : children) {
@@ -203,9 +203,9 @@ public final class BreakpointFilter extends ModelListenerSupport
 
 		assert parent.isToplevel();
 
-		if (DebuggerManager.get().sessionCount() == 0) {
+		if (NativeDebuggerManager.get().sessionCount() == 0) {
 			// no sessions
-			if (DebuggerManager.isPerTargetBpts()) {
+			if (NativeDebuggerManager.isPerTargetBpts()) {
 				return new Object[0];
 			} else {
 				return children;
@@ -324,7 +324,7 @@ public final class BreakpointFilter extends ModelListenerSupport
 			return 1;
 			 */
 		} else {
-			if (DebuggerManager.isPerTargetBpts()) {
+			if (NativeDebuggerManager.isPerTargetBpts()) {
 				Object[] oChildren = original.getChildren(parent,
 						0,
 						original.getChildrenCount(parent));
@@ -635,8 +635,8 @@ public final class BreakpointFilter extends ModelListenerSupport
 			super(name);
 		}
 
-		protected DebuggerManager manager() {
-			return DebuggerManager.get();
+		protected NativeDebuggerManager manager() {
+			return NativeDebuggerManager.get();
 		}
 	}
 
@@ -646,8 +646,8 @@ public final class BreakpointFilter extends ModelListenerSupport
 	private abstract static class BptActionPerformer
 			implements Models.ActionPerformer {
 
-		protected DebuggerManager manager() {
-			return DebuggerManager.get();
+		protected NativeDebuggerManager manager() {
+			return NativeDebuggerManager.get();
 		}
 
 		// interface Models.ActionPerformer
@@ -843,7 +843,7 @@ public final class BreakpointFilter extends ModelListenerSupport
 			NativeBreakpoint[] bpts = breakpointBag().getBreakpoints();
 			for (NativeBreakpoint b : bpts) {
 				assert b.isToplevel();
-				NativeDebugger d = DebuggerManager.get().currentDebugger();
+				NativeDebugger d = NativeDebuggerManager.get().currentDebugger();
 				NativeBreakpoint m = b.getMidlevelFor(d);
 				if (m != null && m.isBroken()) {
 					m.dispose();
@@ -854,7 +854,7 @@ public final class BreakpointFilter extends ModelListenerSupport
 		@Override
 		public boolean isEnabled() {
 
-			if (DebuggerManager.get().sessionCount() == 0) {
+			if (NativeDebuggerManager.get().sessionCount() == 0) {
 				// no sessions
 				return false;
 
@@ -863,7 +863,7 @@ public final class BreakpointFilter extends ModelListenerSupport
 				NativeBreakpoint[] bpts = breakpointBag().getBreakpoints();
 				for (NativeBreakpoint b : bpts) {
 					assert b.isToplevel();
-					NativeDebugger d = DebuggerManager.get().currentDebugger();
+					NativeDebugger d = NativeDebuggerManager.get().currentDebugger();
 					NativeBreakpoint m = b.getMidlevelFor(d);
 					if (m != null && m.isBroken()) {
 						return true;
@@ -885,7 +885,7 @@ public final class BreakpointFilter extends ModelListenerSupport
 		OptionSet globalOptions;
 
 		SaveBptAction() {
-			globalOptions = DebuggerManager.get().globalOptions();
+			globalOptions = NativeDebuggerManager.get().globalOptions();
 		}
 
 		@Override
@@ -1054,7 +1054,7 @@ public final class BreakpointFilter extends ModelListenerSupport
 		final Action originals[] = original.getActions(o);
 		final ArrayList<Action> a = new ArrayList<Action>(originals.length);
 
-		if (DebuggerManager.isPerTargetBpts()) {
+		if (NativeDebuggerManager.isPerTargetBpts()) {
 			if (o == TreeModel.ROOT) {
 
 				// global actions
@@ -1115,7 +1115,7 @@ public final class BreakpointFilter extends ModelListenerSupport
 				// for IDE start model, this is not applicable
 				// refer to codes in ProfileBridge SAVE_BREAKPOINTS
 				//
-				if (DebuggerManager.isStandalone()) {
+				if (NativeDebuggerManager.isStandalone()) {
 					a.add(SAVE_ACTION);
 				}
 
@@ -1201,7 +1201,7 @@ public final class BreakpointFilter extends ModelListenerSupport
 			boolean done = false;
 			Controller controller = panel.getController();
 			if (yes) {
-				DebuggerManager.get().registerDialog(this);
+				NativeDebuggerManager.get().registerDialog(this);
 				done = controller.ok();
 				// keep up until bringDown is called externally.
 			} else {
@@ -1212,7 +1212,7 @@ public final class BreakpointFilter extends ModelListenerSupport
 
 		// interface DialogManager
 		public void bringDown() {
-			DebuggerManager.get().deRegisterDialog(this);
+			NativeDebuggerManager.get().deRegisterDialog(this);
 			dialog.setVisible(false);
 			dialog.dispose();
 			dialog = null;

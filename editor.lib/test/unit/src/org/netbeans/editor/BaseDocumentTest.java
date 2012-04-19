@@ -47,6 +47,8 @@ import javax.swing.text.Position.Bias;
 import javax.swing.undo.UndoManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 /**
  * Test functionality of BaseDocument.
@@ -58,7 +60,200 @@ public class BaseDocumentTest extends NbTestCase {
     public BaseDocumentTest(String testName) {
         super(testName);
     }
+
+    public void testRunExclusive() throws Exception {
+        final BaseDocument doc = new BaseDocument(false, "text/plain"); // NOI18N
+        doc.insertString(0, "Nazdar", null);
+        
+        doc.runExclusive(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    doc.getText(0, doc.getLength());
+                } catch (Exception ex) {
+                    fail("Unexpected exception ex=" + ex);
+                }
+            }
+        });
+        
+        doc.runExclusive(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    doc.insertString(0, "a", null);
+                    fail("Exception expected upon insertString()");
+                } catch (IllegalStateException ex) {
+                    // Expected
+                } catch (Exception ex) {
+                    fail("Unexpected exception ex=" + ex);
+                }
+            }
+        });
+        
+        doc.runExclusive(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    doc.runAtomic(new Runnable() {
+                        @Override
+                        public void run() {
+                            fail("Should never run");
+                        }
+                    });
+                    fail("Exception expected upon runAtomic()");
+                } catch (IllegalStateException ex) {
+                    // Expected
+                } catch (Exception ex) {
+                    fail("Unexpected exception ex=" + ex);
+                }
+            }
+        });
+        
+        doc.runAtomic(new Runnable() {
+            @Override
+            public void run() {
+                doc.runExclusive(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            doc.getText(0, doc.getLength());
+                        } catch (BadLocationException ex) {
+                            fail("Unexpected exception ex=" + ex);
+                        }
+                    }
+                });
+            }
+        });
+        
+        doc.runAtomic(new Runnable() {
+            @Override
+            public void run() {
+                doc.runExclusive(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            doc.insertString(0, "a", null);
+                        } catch (IllegalStateException ex) {
+                            // Expected
+                        } catch (BadLocationException ex) {
+                            fail("Unexpected exception ex=" + ex);
+                        }
+                    }
+                });
+            }
+        });
+        
+        // doc.render() in runExclusive()
+        doc.runExclusive(new Runnable() {
+            @Override
+            public void run() {
+                doc.render(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            doc.getText(0, doc.getLength());
+                        } catch (BadLocationException ex) {
+                            fail("Unexpected exception ex=" + ex);
+                        }
+                    }
+                });
+            }
+        });
+
+        // Nested runExclusive()
+        doc.runExclusive(new Runnable() {
+            @Override
+            public void run() {
+                doc.runExclusive(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            doc.getText(0, doc.getLength());
+                        } catch (BadLocationException ex) {
+                            fail("Unexpected exception ex=" + ex);
+                        }
+                    }
+                });
+            }
+        });
+    }
     
+    
+    public void testReadLockInRunExclusive() throws Exception {
+        final BaseDocument doc = new BaseDocument(false, "text/plain"); // NOI18N
+        doc.insertString(0, "Nazdar", null);
+
+        // Test thread access (runExclusive() and attempt read lock.
+        final boolean t2Started[] = new boolean[1];
+        final boolean t2DocReadLockGranted[] = new boolean[1];
+        final Object LOCK = new Object();
+        doc.runExclusive(new Runnable() {
+            @Override
+            public void run() {
+                RequestProcessor.getDefault().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        t2Started[0] = true;
+                        doc.render(new Runnable() {
+                            @Override
+                            public void run() {
+                                t2DocReadLockGranted[0] = true;
+                            }
+                        });
+                    }
+                });
+                while (!t2Started[0]) {
+                    tSleep(1);
+                }
+                tSleep(5);
+                assertFalse("Read lock access granted when in runExclusive", t2DocReadLockGranted[0]);
+            }
+        });
+        tSleep(5);
+        assertTrue("Read lock access not granted in T2", t2DocReadLockGranted[0]);
+    }
+    
+    public void testRunExclusiveInReadLock() throws Exception {
+        final BaseDocument doc = new BaseDocument(false, "text/plain"); // NOI18N
+        doc.insertString(0, "Nazdar", null);
+
+        // Reversed test (read lock and attempt runExclusive()).
+        final boolean t2Started[] = new boolean[1];
+        final boolean t2DocAccess[] = new boolean[1];
+        doc.render(new Runnable() {
+            @Override
+            public void run() {
+                RequestProcessor.getDefault().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        t2Started[0] = true;
+                        doc.runExclusive(new Runnable() {
+                            @Override
+                            public void run() {
+                                t2DocAccess[0] = true;
+                            }
+                        });
+                    }
+                });
+                while (!t2Started[0]) {
+                    tSleep(1);
+                }
+                tSleep(5);
+                assertFalse("runExclusive doc access granted when in render()", t2DocAccess[0]);
+            }
+        });
+        tSleep(5);
+        assertTrue("runExclusive() access not granted in T2", t2DocAccess[0]);
+    }
+    
+    private static final void tSleep(long millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException ex) {
+            fail("Failed sleep");
+        }
+    }
+
     public void testBackwardBiasPosition() throws Exception {
         BaseDocument doc = new BaseDocument(false, "text/plain"); // NOI18N
         UndoManager undoManager = new UndoManager();

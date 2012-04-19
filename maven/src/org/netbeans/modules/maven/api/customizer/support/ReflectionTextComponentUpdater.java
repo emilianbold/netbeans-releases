@@ -79,9 +79,9 @@ public final class ReflectionTextComponentUpdater extends TextComponentUpdater {
         this(getter, null, model, defaults, field, label);
         assert handle != null;
         assert operation != null;
+        this.operation = operation;
         this.handle2 = handle;
         initialValue2 = getValue();
-        this.operation = operation;
     }
     
     
@@ -102,6 +102,9 @@ public final class ReflectionTextComponentUpdater extends TextComponentUpdater {
     
     @Override
     public String getValue() {
+        if (operation.isValueSet) {
+            return operation.getNewValue();
+        }
         try {
             return (String)modelgetter.invoke(model, new Object[0]);
         } catch (IllegalArgumentException ex) {
@@ -135,18 +138,18 @@ public final class ReflectionTextComponentUpdater extends TextComponentUpdater {
     public void setValue(String value) {
         try {
             if (handle != null) {
-            modelsetter.invoke(model, new Object[] { value });
-            if (model instanceof POMComponent) {
-                handle.markAsModified(((POMComponent)model).getModel());
-            } else {
-                handle.markAsModified(model);
-            }
+                modelsetter.invoke(model, new Object[] { value });
+                if (model instanceof POMComponent) {
+                    handle.markAsModified(((POMComponent)model).getModel());
+                } else {
+                    handle.markAsModified(model);
+                }
             }
             if (handle2 != null) {
-                if (value == null || value.equals(initialValue2)) {
+                operation.setNewValue(value);
+                if (value != null && value.equals(initialValue2)) {
                     handle2.removePOMModification(operation);
                 } else {
-                    operation.setNewValue(value);
                     //TODO ideally only add if not added before..
                     handle2.addPOMModification(operation);
                 }
@@ -163,12 +166,13 @@ public final class ReflectionTextComponentUpdater extends TextComponentUpdater {
     
     public static abstract class Operation implements ModelOperation<POMModel> {
 
-        
+        boolean isValueSet = false; 
         private String newValue;
         
         public final void setNewValue(String value) {
             newValue = value;
-}
+            isValueSet = true;
+        }
         
         public final String getNewValue() {
             return newValue;

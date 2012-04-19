@@ -41,6 +41,9 @@
  */
 package org.netbeans.modules.search.matcher;
 
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CodingErrorAction;
 import org.netbeans.api.search.provider.SearchListener;
 import org.netbeans.modules.search.MatchingObject.Def;
 import org.openide.filesystems.FileObject;
@@ -55,6 +58,10 @@ public abstract class AbstractMatcher  {
     private long totalTime = 0;
     private int matchingFiles = 0;
     private int matchingItems = 0;
+    private boolean strict = true;
+
+    public AbstractMatcher() {
+    }
     
     public final Def check(FileObject file, SearchListener listener) {
         long start = System.currentTimeMillis();
@@ -87,4 +94,29 @@ public abstract class AbstractMatcher  {
     }
 
     public abstract void terminate();
+
+    public boolean isStrict() {
+        return strict;
+    }
+
+    /**
+     * @param strict True if an error should be raised for decoding errors
+     * (unmappable character etc.), false if such error should be ignored.
+     * Strict mode should be used when replacing.
+     */
+    public void setStrict(boolean strict) {
+        this.strict = strict;
+    }
+
+    public CharsetDecoder prepareDecoder(Charset charset) {
+        CharsetDecoder decoder = charset.newDecoder();
+        if (strict) {
+            decoder.onMalformedInput(CodingErrorAction.REPORT);
+            decoder.onUnmappableCharacter(CodingErrorAction.REPORT);
+        } else {
+            decoder.onMalformedInput(CodingErrorAction.IGNORE);
+            decoder.onUnmappableCharacter(CodingErrorAction.REPLACE);
+        }
+        return decoder;
+    }
 }

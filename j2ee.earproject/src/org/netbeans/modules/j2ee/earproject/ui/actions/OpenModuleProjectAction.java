@@ -99,7 +99,7 @@ public class OpenModuleProjectAction extends CookieAction {
     
     @Override
     protected boolean asynchronous() {
-        return false;
+        return true;
     }
     
 }

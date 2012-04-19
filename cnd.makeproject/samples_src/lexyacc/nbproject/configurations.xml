@@ -34,8 +34,8 @@
       <item path="token.l">
         <itemTool>3</itemTool>
         <customTool>
-          <customToolCommandline>lex token.l</customToolCommandline>
-          <customToolDescription>Running lex...</customToolDescription>
+          <customToolCommandline>flex token.l</customToolCommandline>
+          <customToolDescription>Running flex...</customToolDescription>
           <customToolOutputs>lex.yy.c</customToolOutputs>
           <customToolAdditionalDep>y.tab.h</customToolAdditionalDep>
         </customTool>

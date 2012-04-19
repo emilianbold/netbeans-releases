@@ -66,8 +66,8 @@ public class TestRepositoryProvider extends RepositoryProvider<TestRepository, T
     }
 
     @Override
-    public TestIssue getIssue(TestRepository r, String id) {
-        return r.getIssue(id);
+    public TestIssue[] getIssues(TestRepository r, String... ids) {
+        return r.getIssues(ids);
     }
 
     @Override

@@ -136,7 +136,7 @@ public class MoveMembersUI implements RefactoringUI {
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(MoveMembersUI.class);
+        return new HelpCtx("org.netbeans.modules.refactoring.java.ui.MoveMembersUI"); // NOI18N
     }
 
     private String getString(String key) {

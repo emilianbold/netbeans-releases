@@ -272,7 +272,7 @@ public class MakeJNLP extends Task {
             if (fs != null) {
                 DirectoryScanner scan = fs.getDirectoryScanner(getProject());
                 for (String f : scan.getIncludedFiles()) {
-                    indirectFilePaths.add(f.replace(File.pathSeparatorChar, '/'));
+                    indirectFilePaths.add(f.replace(File.separatorChar, '/'));
                 }
             }
         }
@@ -471,6 +471,7 @@ public class MakeJNLP extends Task {
 
         fileToOwningModule.remove("VERSION.txt"); // cluster release information
 
+        log("  removing: " + indirectFilePaths, Project.MSG_DEBUG);
         fileToOwningModule.keySet().removeAll(indirectFilePaths);
         
         if (verifyExcludes != null) {

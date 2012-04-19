@@ -61,7 +61,7 @@ import org.netbeans.jemmy.EventTool;
 
 /**
  *
- * @author Vojtech.Sigler@sun.com
+ * @author Vojtech Sigler, Jiri Kovalsky
  */
 public class ApplyCodeChangesTest  extends DebuggerTestCase {
 
@@ -94,8 +94,6 @@ public class ApplyCodeChangesTest  extends DebuggerTestCase {
     public void testModifyLine() {
 
         Node projectNode = ProjectsTabOperator.invoke().getProjectRootNode(Utilities.testProjectName);
-        new Action(null, Utilities.setMainProjectAction).perform(new ProjectsTabOperator().getProjectRootNode(Utilities.testProjectName));
-        new EventTool().waitNoEvent(1000);
 
         Node testFile = new Node(new SourcePackagesNode(projectNode), "tests|FixAndContinue.java");
         new OpenAction().perform(testFile);
@@ -140,8 +138,6 @@ public class ApplyCodeChangesTest  extends DebuggerTestCase {
     public void testAddLine() {
 
         Node projectNode = ProjectsTabOperator.invoke().getProjectRootNode(Utilities.testProjectName);
-        new Action(null, Utilities.setMainProjectAction).perform(new ProjectsTabOperator().getProjectRootNode(Utilities.testProjectName));
-        new EventTool().waitNoEvent(1000);
 
         Node testFile = new Node(new SourcePackagesNode(projectNode), "tests|FixAndContinue.java");
         new OpenAction().perform(testFile);

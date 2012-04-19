@@ -49,6 +49,31 @@ made subject to such option by the copyright holder.
         <apidef name="JavaRefactoringAPI">Java Refactoring API</apidef>
     </apidefs>
     <changes>
+        <change id="ReplaceConstructorWithBuilder-ReplaceConstructorWithFactory-InvertBoolean">
+            <api name="JavaRefactoringAPI"/>
+            <summary>New refactorings on board: ReplaceConstructorWithFactory,
+                ReplaceConstructorWithBuilder and InvertBoolean
+            </summary>
+            <version major="1" minor="36"/>
+            <date day="29" month="3" year="2012"/>
+            <author login="jbecicka"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    New refactorings on board:
+                    ReplaceConstructorWithFactoryRefactoring,
+                    ReplaceConstructorWithBuilderRefactoring and InvertBooleanRefactoring.
+                </p>    
+            </description>
+            <class package="org.netbeans.modules.refactoring.java.api"
+                   name="ReplaceConstructorWithFactoryRefactoring"/>
+            <class package="org.netbeans.modules.refactoring.java.api"
+                   name="ReplaceConstructorWithBuilderRefactoring"/>
+            <class package="org.netbeans.modules.refactoring.java.api"
+                   name="InvertBooleanRefactoring"/>
+            <issue number="208240"/>
+        </change>
+        
         <change id="IntroduceLocalExtension">
             <api name="JavaRefactoringAPI"/>
             <summary>Added support for Introduce Local Extension Refactoring.</summary>

@@ -42,9 +42,16 @@
 package org.netbeans.modules.profiler.nbimpl.project;
 
 import org.netbeans.api.project.Project;
+import org.netbeans.lib.profiler.common.SessionSettings;
+import org.netbeans.lib.profiler.utils.MiscUtils;
+import org.netbeans.modules.profiler.actions.JavaPlatformSelector;
+import org.netbeans.modules.profiler.api.JavaPlatform;
+import org.netbeans.modules.profiler.api.ProfilerDialogs;
+import org.netbeans.modules.profiler.api.ProfilerIDESettings;
 import org.netbeans.modules.profiler.api.java.JavaProfilerSource;
 import org.netbeans.modules.profiler.spi.project.ProjectProfilingSupportProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -53,7 +60,7 @@ import org.openide.filesystems.FileObject;
 public abstract class JavaProjectProfilingSupportProvider extends ProjectProfilingSupportProvider.Basic {
     
     private final Project project;
-    
+    private JavaPlatform projectJavaPlatform = null;
     
     @Override
     public boolean isProfilingSupported() {
@@ -74,7 +81,82 @@ public abstract class JavaProjectProfilingSupportProvider extends ProjectProfili
     
     @Override
     public boolean checkProjectCanBeProfiled(FileObject profiledClassFile) {
-        return true;
+        return getProjectJavaPlatform() != null;
+    }
+
+    @Override
+    public void setupProjectSessionSettings(SessionSettings ss) {
+        JavaPlatform platform = getProjectJavaPlatform();
+        if (platform != null) {
+            ss.setSystemArchitecture(platform.getPlatformArchitecture());
+            ss.setJavaVersionString(platform.getPlatformJDKVersion());
+            ss.setJavaExecutable(platform.getPlatformJavaFile());
+        }
+    }
+
+    @Override
+    @NbBundle.Messages({
+        "IncorrectJavaSpecVersionDialogCaption=Warning",
+        "IncorrectJavaSpecVersionDialogMsg=The specification version of project Java Platform is greater than specification version of the\nplatform that will be used for profiling. You may experience problems unless you set the compiler\nparameter to generate bytecode compatible with the platform that will be used.\n\nDo you want to continue with the current settings?"
+    })
+    synchronized public JavaPlatform getProjectJavaPlatform() {
+        if (projectJavaPlatform == null) {
+            // 1. check if we have a Java platform to use for profiling
+            final ProfilerIDESettings gps = ProfilerIDESettings.getInstance();
+            JavaPlatform platform = JavaPlatform.getJavaPlatformById(gps.getJavaPlatformForProfiling());
+            projectJavaPlatform = resolveProjectJavaPlatform();
+
+            if (platform == null) { // should use the one defined in project
+                platform = projectJavaPlatform;
+
+                if ((platform == null) || !MiscUtils.isSupportedJVM(platform.getSystemProperties())) {
+                    platform = JavaPlatformSelector.getDefault().selectPlatformToUse();
+
+                    if (platform == null) {
+                        projectJavaPlatform = null;
+                        return null;
+                    }
+                    projectJavaPlatform = platform;
+                }
+            }
+
+            if (projectJavaPlatform != null) { // check that the project platform is not newer than platform to use
+
+                while (true) {
+                    if (projectJavaPlatform.getVersion().compareTo(platform.getVersion()) > 0) {
+                        Boolean ret = ProfilerDialogs.displayCancellableConfirmation(
+                                Bundle.IncorrectJavaSpecVersionDialogMsg(),
+                                Bundle.IncorrectJavaSpecVersionDialogCaption());
+
+                        if (Boolean.TRUE.equals(ret)) {
+                            break;
+                        } else if (Boolean.FALSE.equals(ret)) {
+                            platform = JavaPlatformSelector.getDefault().selectPlatformToUse();
+
+                            if (platform == null) {
+                                return null; // cancelled by the user
+                            }
+                        } else { // cancelled
+
+                            return null;
+                        }
+                    } else {
+                        break; // version comparison OK.
+                    }
+                }
+            }
+        }
+        return projectJavaPlatform;
+    }
+    
+    abstract protected JavaPlatform resolveProjectJavaPlatform();
+    
+    protected final JavaPlatform getPlatformByName(String platformName) {
+        if (platformName == null || platformName.equals("default_platform")) { // NOI18N
+            return JavaPlatform.getDefaultPlatform(); 
+        }
+
+        return JavaPlatform.getJavaPlatformById(platformName);
     }
     
     protected final Project getProject() {

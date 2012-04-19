@@ -77,5 +77,9 @@ public abstract class TestIssue {
     public abstract void addPropertyChangeListener(PropertyChangeListener listener);
 
     public abstract void setContext(Node[] nodes);
+
+    public abstract String[] getSubtasks();
+
+    public abstract boolean isFinished();
     
 }

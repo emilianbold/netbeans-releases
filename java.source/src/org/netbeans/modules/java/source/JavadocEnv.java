@@ -180,7 +180,10 @@ public class JavadocEnv extends DocEnv {
     
     @Override
     public ConstructorDocImpl getConstructorDoc(MethodSymbol meth) {
-        ConstructorDocImpl result = (ConstructorDocImpl)methodMap.get(meth);
+        ExecutableMemberDocImpl docImpl = methodMap.get(meth);
+        if (docImpl != null && !docImpl.isConstructor())
+            return null;
+        ConstructorDocImpl result = (ConstructorDocImpl)docImpl;
         if (result != null) return result;
         result = new JavadocConstructor(this, meth);
         methodMap.put(meth, result);
@@ -200,7 +203,10 @@ public class JavadocEnv extends DocEnv {
 
     @Override
     public AnnotationTypeElementDocImpl getAnnotationTypeElementDoc(MethodSymbol meth) {
-        AnnotationTypeElementDocImpl result = (AnnotationTypeElementDocImpl)methodMap.get(meth);
+        ExecutableMemberDocImpl docImpl = methodMap.get(meth);
+        if (docImpl != null && !docImpl.isAnnotationTypeElement())
+            return null;
+        AnnotationTypeElementDocImpl result = (AnnotationTypeElementDocImpl)docImpl;
         if (result != null) return result;
         result = new JavadocAnnotationTypeElement(this, meth);
         methodMap.put(meth, result);

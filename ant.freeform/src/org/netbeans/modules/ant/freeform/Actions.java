@@ -116,6 +116,7 @@ public final class Actions implements ActionProvider {
      */
     private static final Set<String> COMMON_IDE_GLOBAL_ACTIONS = new HashSet<String>(Arrays.asList(
         ActionProvider.COMMAND_DEBUG,
+        ActionProvider.COMMAND_PROFILE,
         ActionProvider.COMMAND_DELETE,
         ActionProvider.COMMAND_COPY,
         ActionProvider.COMMAND_MOVE,

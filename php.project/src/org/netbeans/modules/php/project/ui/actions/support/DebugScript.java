@@ -30,6 +30,7 @@
  */
 package org.netbeans.modules.php.project.ui.actions.support;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
@@ -77,7 +78,8 @@ public class DebugScript  extends RunScript {
                     XDebugStarter.Properties props = XDebugStarter.Properties.create(
                             provider.getStartFile(),
                             true,
-                            provider.getDebugPathMapping(),
+                            // #209682 - "run as script" always from project files
+                            Collections.<Pair<String, String>>emptyList(),
                             provider.getDebugProxy(),
                             encoding);
                     dbgStarter.start(provider.getProject(), callable, props);

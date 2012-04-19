@@ -262,6 +262,7 @@ public class StorageTest extends NbTestCase {
     }
 
     private static class DummyIssue extends TestIssue {
+
         private Map<String, String> m;
         private String id;
 
@@ -325,6 +326,11 @@ public class StorageTest extends NbTestCase {
         public boolean isNew() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
+        
+        @Override
+        public boolean isFinished() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
 
         @Override
         public void setContext(Node[] nodes) {
@@ -343,6 +349,11 @@ public class StorageTest extends NbTestCase {
 
         @Override
         public TestIssue createFor(String id) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        
+        @Override
+        public String[] getSubtasks() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
     }

@@ -114,6 +114,8 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
     private QueryImpl query;
     private ColumnDescriptor[] descriptors;
 
+    private Filter allFilter;
+    private Filter newOrChangedFilter;
     private Filter filter;
     private Filter[] filters;
     private Set<IssueNode> nodes = new HashSet<IssueNode>();
@@ -128,7 +130,7 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
 
     private static final String CONFIG_DELIMITER = "<=>";                       // NOI18N
 
-    private static final Comparator<IssueProperty> NodeComparator = new Comparator<IssueProperty>() {
+    private static final Comparator<IssueProperty> nodeComparator = new Comparator<IssueProperty>() {
         @Override
         public int compare(IssueProperty p1, IssueProperty p2) {
             Integer sk1 = (Integer) p1.getValue("sortkey"); // NOI18N
@@ -161,7 +163,7 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
         
         initFilters();
 
-        sorter.setColumnComparator(Node.Property.class, NodeComparator);
+        sorter.setColumnComparator(Node.Property.class, nodeComparator);
         table = new JTable(sorter);
         sorter.setTableHeader(table.getTableHeader());
         table.setRowHeight(table.getRowHeight() * 6 / 5);
@@ -233,6 +235,14 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
         return filters;
     }
 
+    public Filter getAllFilter() {
+        return allFilter;
+    }
+    
+    public Filter getNewOrChangedFilter() {
+        return newOrChangedFilter;
+    }
+    
     /**
      * Reset the filter criteria set in
      * {@link #setFilterBySummary(java.lang.String, boolean, boolean, boolean) }
@@ -389,8 +399,10 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
     }
 
     private void initFilters() {
-        filters = new Filter[]{Filter.getAllFilter(query), Filter.getNotSeenFilter(query), Filter.getObsoleteDateFilter(query), Filter.getAllButObsoleteDateFilter(query)};
-        filter = filters[0]; // preset the first filter as default
+        allFilter = Filter.getAllFilter(query);
+        newOrChangedFilter = Filter.getNotSeenFilter(query);
+        filters = new Filter[]{allFilter, newOrChangedFilter, Filter.getObsoleteDateFilter(query), Filter.getAllButObsoleteDateFilter(query)};
+        filter = allFilter;
     }
     
     int getSeenColumnIdx() {

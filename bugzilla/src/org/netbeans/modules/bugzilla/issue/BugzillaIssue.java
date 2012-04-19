@@ -396,11 +396,11 @@ public class BugzillaIssue {
 
     public Date getLastModifyDate() {
         String value = getFieldValue(IssueField.MODIFICATION);
-        if(value != null && !value.equals("")) {
+        if(value != null && !value.trim().equals("")) {
             try {
                 return MODIFIED_DATE_FORMAT.parse(value);
             } catch (ParseException ex) {
-                Bugzilla.LOG.log(Level.WARNING, null, ex);
+                Bugzilla.LOG.log(Level.WARNING, value, ex);
             }
         }
         return null;
@@ -417,11 +417,11 @@ public class BugzillaIssue {
 
     public Date getCreatedDate() {
         String value = getFieldValue(IssueField.CREATION);
-        if(value != null && !value.equals("")) {
+        if(value != null && !value.trim().equals("")) {
             try {
                 return CREATED_DATE_FORMAT.parse(value);
             } catch (ParseException ex) {
-                Bugzilla.LOG.log(Level.WARNING, null, ex);
+                Bugzilla.LOG.log(Level.WARNING, value, ex);
             }
         }
         return null;
@@ -557,10 +557,6 @@ public class BugzillaIssue {
         return getFieldValue(IssueField.SUMMARY, taskData);
     }
 
-    TaskRepository getTaskRepository() {
-        return repository.getTaskRepository();
-    }
-
     public BugzillaRepository getRepository() {
         return repository;
     }
@@ -663,7 +659,7 @@ public class BugzillaIssue {
         a.setValues(ccs);
     }
 
-    List<String> getFieldValues(IssueField f) {
+    public List<String> getFieldValues(IssueField f) {
         if(f.isSingleAttribute()) {
             TaskAttribute a = data.getRoot().getMappedAttribute(f.getKey());
             if(a != null) {
@@ -1068,6 +1064,11 @@ public class BugzillaIssue {
         return null;
     }
 
+    public boolean isFinished() {
+        String value = getFieldValue(IssueField.STATUS);
+        return "RESOLVED".equals(value);
+    }
+
     class Comment {
         private final Date when;
         private final String author;
@@ -1078,13 +1079,14 @@ public class BugzillaIssue {
 
         public Comment(TaskAttribute a) {
             Date d = null;
+            String s = "";
             try {
-                String s = getMappedValue(a, TaskAttribute.COMMENT_DATE);
+                s = getMappedValue(a, TaskAttribute.COMMENT_DATE);
                 if(s != null && !s.trim().equals("")) {                         // NOI18N
                     d = CC_DATE_FORMAT.parse(s);
                 }
             } catch (ParseException ex) {
-                Bugzilla.LOG.log(Level.SEVERE, null, ex);
+                Bugzilla.LOG.log(Level.SEVERE, s, ex);
             }
             when = d;
             TaskAttribute authorAttr = a.getMappedAttribute(TaskAttribute.COMMENT_AUTHOR);
@@ -1156,13 +1158,14 @@ public class BugzillaIssue {
         public Attachment(TaskAttribute ta) {
             id = ta.getValue();
             Date d = null;
+            String s = "";
             try {
-                String s = getMappedValue(ta, TaskAttribute.ATTACHMENT_DATE);
+                s = getMappedValue(ta, TaskAttribute.ATTACHMENT_DATE);
                 if(s != null && !s.trim().equals("")) {                         // NOI18N
                     d = CC_DATE_FORMAT.parse(s);
                 }
             } catch (ParseException ex) {
-                Bugzilla.LOG.log(Level.SEVERE, null, ex);
+                Bugzilla.LOG.log(Level.SEVERE, s, ex);
             }
             date = d;
             filename = getMappedValue(ta, TaskAttribute.ATTACHMENT_FILENAME);

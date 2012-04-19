@@ -290,7 +290,9 @@ public class VersionNode extends AbstractNode {
                     ProgressTransferListener.setAggregateHandle(hndl);
                     try {
                         hndl.start();
-                        online.resolve(art, Collections.<ArtifactRepository>singletonList(EmbedderFactory.createRemoteRepository(online, info.getRepositoryUrl(), info.getId())), online.getLocalRepository());
+                        //mkleint: XXX theoretically using info from RepositoryPreferences.getRepositoryInfos() here could cause problems as the 
+                        // maven embedder code might want to retry applying mirrors on it.
+                        online.resolve(art, Collections.<ArtifactRepository>singletonList(online.createRemoteRepository(info.getRepositoryUrl(), info.getId())), online.getLocalRepository());
                     } catch (ThreadDeath d) {
                         return;
                     } catch (AbstractArtifactResolutionException x) {

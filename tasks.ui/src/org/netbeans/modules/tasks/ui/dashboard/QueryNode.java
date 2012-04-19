@@ -93,7 +93,7 @@ public class QueryNode extends AsynchronousNode<List<Issue>> implements Comparab
     }
 
     private void updateNodes() {
-        AppliedFilters appliedFilters = DashboardViewer.getInstance().getAppliedFilters();
+        AppliedFilters appliedFilters = DashboardViewer.getInstance().getAppliedTaskFilters();
         Collection<Issue> issues = query.getIssues();
         removeTaskListeners();
         if (taskListener == null) {

@@ -45,8 +45,10 @@ package org.netbeans.modules.maven.embedder;
 import java.io.File;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.TreeSet;
+import java.util.prefs.Preferences;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenExecutionResult;
@@ -54,6 +56,7 @@ import org.apache.maven.model.Model;
 import org.apache.maven.model.building.ModelBuildingException;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.junit.NbTestCase;
+import org.openide.util.NbPreferences;
 import org.openide.util.test.MockLookup;
 import org.openide.util.test.TestFileUtils;
 
@@ -75,7 +78,7 @@ public class EmbedderFactoryTest extends NbTestCase {
             "<packaging>jar</packaging>" +
             "<version>1.0-SNAPSHOT</version>" +
             "</project>");
-        List<Model> lineage = EmbedderFactory.createModelLineage(pom, EmbedderFactory.createProjectLikeEmbedder());
+        List<Model> lineage = EmbedderFactory.createProjectLikeEmbedder().createModelLineage(pom);
         assertEquals(/* second is inherited master POM */2, lineage.size());
         assertEquals("grp:art:jar:1.0-SNAPSHOT", lineage.get(0).getId());
         // #195295: JDK activation
@@ -94,7 +97,7 @@ public class EmbedderFactoryTest extends NbTestCase {
             "</profile>" +
             "</profiles>" +
             "</project>");
-        lineage = EmbedderFactory.createModelLineage(pom, EmbedderFactory.createProjectLikeEmbedder());
+        lineage = EmbedderFactory.createProjectLikeEmbedder().createModelLineage(pom);
         assertEquals(2, lineage.size());
         assertEquals("grp:art2:jar:1.0-SNAPSHOT", lineage.get(0).getId());
         assertEquals(1, lineage.get(0).getProfiles().size());
@@ -116,7 +119,7 @@ public class EmbedderFactoryTest extends NbTestCase {
             "</parent>" +
             "<artifactId>art3</artifactId>" +
             "</project>");
-        lineage = EmbedderFactory.createModelLineage(pom, EmbedderFactory.createProjectLikeEmbedder());
+        lineage = EmbedderFactory.createProjectLikeEmbedder().createModelLineage(pom);
         assertEquals(3, lineage.size());
         assertEquals("[inherited]:art3:jar:[inherited]", lineage.get(0).getId());
         assertEquals("grp", lineage.get(0).getParent().getGroupId());
@@ -134,7 +137,7 @@ public class EmbedderFactoryTest extends NbTestCase {
             "<repositories><repository><url>http://nowhere.net/</url></repository></repositories>" +
             "</project>");
         try {
-            EmbedderFactory.createModelLineage(pom, EmbedderFactory.createProjectLikeEmbedder());
+            EmbedderFactory.createProjectLikeEmbedder().createModelLineage(pom);
             fail();
         } catch (ModelBuildingException x) {
             // right
@@ -187,6 +190,15 @@ public class EmbedderFactoryTest extends NbTestCase {
         assertEquals(System.getProperty("java.home"), p.getProperty("java.home"));
         assertEquals(System.getenv("PATH"), p.getProperty("env.PATH"));
         // XXX perhaps -Dkey=value (and -Dkey) should be honored in "Global Execution Options"?
+    }
+    
+    public void testCustomProperties() throws Exception {
+        Preferences node = NbPreferences.root().node("org/netbeans/modules/maven");
+        node.put(EmbedderFactory.PROP_DEFAULT_OPTIONS, "--offline -drep -Dmilos=great -Dme=you ");
+        Map<String, String> props = EmbedderFactory.getCustomSystemProperties();
+        assertEquals(2, props.size());
+        assertEquals("great", props.get("milos"));
+        assertEquals("you", props.get("me"));
     }
 
 }

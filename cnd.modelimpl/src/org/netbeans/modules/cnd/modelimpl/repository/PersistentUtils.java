@@ -44,6 +44,7 @@
 package org.netbeans.modules.cnd.modelimpl.repository;
 
 import java.io.IOException;
+import java.io.UTFDataFormatException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -88,6 +89,7 @@ import org.netbeans.modules.cnd.modelimpl.fsm.DummyParametersListImpl;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.AbstractObjectFactory;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.openide.filesystems.FileObject;
@@ -444,26 +446,31 @@ public class PersistentUtils {
     }
 
     public static void writeType(CsmType type, RepositoryDataOutput stream) throws IOException {
-        if (type == null) {
-            stream.writeInt(AbstractObjectFactory.NULL_POINTER);
-        } else if (type instanceof NoType) {
-            stream.writeInt(NO_TYPE);
-        } else if (type instanceof TypeImpl) {
-            if (type instanceof TypeFunPtrImpl) {
-                stream.writeInt(TYPE_FUN_PTR_IMPL);
-                ((TypeFunPtrImpl) type).write(stream);
-            } else if (type instanceof NestedType) {
-                stream.writeInt(NESTED_TYPE);
-                ((NestedType) type).write(stream);
+        try {
+            if (type == null) {
+                stream.writeInt(AbstractObjectFactory.NULL_POINTER);
+            } else if (type instanceof NoType) {
+                stream.writeInt(NO_TYPE);
+            } else if (type instanceof TypeImpl) {
+                if (type instanceof TypeFunPtrImpl) {
+                    stream.writeInt(TYPE_FUN_PTR_IMPL);
+                    ((TypeFunPtrImpl) type).write(stream);
+                } else if (type instanceof NestedType) {
+                    stream.writeInt(NESTED_TYPE);
+                    ((NestedType) type).write(stream);
+                } else {
+                    stream.writeInt(TYPE_IMPL);
+                    ((TypeImpl) type).write(stream);
+                }
+            } else if (type instanceof TemplateParameterTypeImpl) {
+                stream.writeInt(TEMPLATE_PARAM_TYPE);
+                ((TemplateParameterTypeImpl) type).write(stream);
             } else {
-                stream.writeInt(TYPE_IMPL);
-                ((TypeImpl) type).write(stream);
+                throw new IllegalArgumentException("instance of unknown class " + type.getClass().getName());  //NOI18N
             }
-        } else if (type instanceof TemplateParameterTypeImpl) {
-            stream.writeInt(TEMPLATE_PARAM_TYPE);
-            ((TemplateParameterTypeImpl) type).write(stream);
-        } else {
-            throw new IllegalArgumentException("instance of unknown class " + type.getClass().getName());  //NOI18N
+        } catch (UTFDataFormatException e) {
+            CndUtils.assertTrueInConsole(false, "type with too long name ", type); // NOI18N
+            throw e;
         }
     }
     

@@ -59,17 +59,7 @@ import java.util.List;
 import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.AbstractAction;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JComponent;
-import javax.swing.JEditorPane;
-import javax.swing.JToggleButton;
-import javax.swing.JToolBar;
-import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
+import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
@@ -85,14 +75,7 @@ import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
-import org.netbeans.modules.maven.model.pom.ModelList;
-import org.netbeans.modules.maven.model.pom.POMComponent;
-import org.netbeans.modules.maven.model.pom.POMExtensibilityElement;
-import org.netbeans.modules.maven.model.pom.POMModel;
-import org.netbeans.modules.maven.model.pom.POMModelFactory;
-import org.netbeans.modules.maven.model.pom.POMQName;
-import org.netbeans.modules.maven.model.pom.POMQNames;
-import org.netbeans.modules.maven.model.pom.Project;
+import org.netbeans.modules.maven.model.pom.*;
 import org.netbeans.modules.maven.navigator.POMModelVisitor.POMCutHolder;
 import org.netbeans.modules.maven.spi.nodes.NodeUtils;
 import org.netbeans.modules.xml.xam.ModelSource;
@@ -108,12 +91,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
-import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
-import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
+import org.openide.util.*;
 import org.openide.windows.TopComponent;
 import org.w3c.dom.NodeList;
 
@@ -133,6 +111,7 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
     private Reference<JTextComponent> currentComponent;
     private int currentDot = -1;
     private RequestProcessor.Task caretTask = RequestProcessor.getDefault().create(new Runnable() {
+        @Override
         public void run() {
             if (currentDot != -1) {
                 updateCaret(currentDot);
@@ -216,6 +195,7 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
 
     private static void select(final Node node, final int pos, final int layer) {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 POMCutHolder hold = node.getLookup().lookup(POMCutHolder.class);
                 POMModel[] models = hold.getSource();
@@ -275,6 +255,7 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
         });
     }
     
+    @Override
     public ExplorerManager getExplorerManager() {
         return explorerManager;
     }
@@ -297,6 +278,7 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
         }
     }
     
+    @Override
     public void run() {
         DataObject currentFile = current;
         //#164852 somehow a folder dataobject slipped in, test mimetype to avoid that.
@@ -316,7 +298,7 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
                     List<Project> prjs = new ArrayList<Project>();
                     List<POMModel> mdls = new ArrayList<POMModel>();
                     POMQNames names = null;
-                    for (Model m : EmbedderFactory.createModelLineage(file, embedder)) {
+                    for (Model m : embedder.createModelLineage(file)) {
                         File pom = m.getPomFile();
                         if (pom == null) {
                             if (m.getArtifactId() == null) { // normal for superpom
@@ -370,6 +352,7 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
                         hold.addCut(p);
                     }
                     SwingUtilities.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
                            treeView.setRootVisible(false);
                            explorerManager.setRootContext(hold.createNode());
@@ -377,6 +360,7 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
                     });
                 } catch (final ModelBuildingException ex) {
                     SwingUtilities.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
                            treeView.setRootVisible(true);
                            explorerManager.setRootContext(createErrorNode(ex));
@@ -385,6 +369,7 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
                 }
             } else {
                 SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                        treeView.setRootVisible(false);
                        explorerManager.setRootContext(createEmptyNode());
@@ -399,6 +384,7 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
             }
             SwingUtilities.invokeLater(new Runnable() {
 
+                @Override
                 public void run() {
                     JEditorPane[] panes = ec.getOpenedPanes();
                     if (panes != null && panes.length > 0) {
@@ -423,6 +409,7 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
         }
         current = null;
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                treeView.setRootVisible(false);
                explorerManager.setRootContext(createEmptyNode());
@@ -435,6 +422,7 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
      */
     public void showWaitNode() {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                treeView.setRootVisible(true);
                explorerManager.setRootContext(createWaitNode());
@@ -603,6 +591,7 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
         return null;
     }
 
+    @Override
     public void caretUpdate(CaretEvent e) {
         JTextComponent cc = currentComponent != null ? currentComponent.get() : null;
         if (e.getSource() != cc) {
@@ -699,6 +688,7 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
         }
 
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             boolean current = configuration.isFilterUndefined();
             configuration.setFilterUndefined(!current);

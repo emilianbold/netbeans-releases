@@ -237,7 +237,7 @@ public class RecentIssuesTest extends NbTestCase {
         
         public Image getIcon() { throw new UnsupportedOperationException("Not supported yet."); }
         public Lookup getLookup() { throw new UnsupportedOperationException("Not supported yet."); }
-        public TestIssue getIssue(String id) { throw new UnsupportedOperationException("Not supported yet."); }
+        public TestIssue[] getIssues(String[] id) { throw new UnsupportedOperationException("Not supported yet."); }
         public void remove() { throw new UnsupportedOperationException("Not supported yet."); }
         public RepositoryController getController() { throw new UnsupportedOperationException("Not supported yet.");}
         public TestQuery createQuery() { throw new UnsupportedOperationException("Not supported yet.");}
@@ -264,6 +264,9 @@ public class RecentIssuesTest extends NbTestCase {
         public boolean isNew() {
             return false;
         }
+        public boolean isFinished() {
+            return false;
+        }
         public String getSummary() {
             return "This is" + name;
         }
@@ -280,6 +283,7 @@ public class RecentIssuesTest extends NbTestCase {
         public void removePropertyChangeListener(PropertyChangeListener listener) {throw new UnsupportedOperationException("Not supported yet.");}
         public void addPropertyChangeListener(PropertyChangeListener listener) {throw new UnsupportedOperationException("Not supported yet.");}
         public TestIssue createFor(String id) {throw new UnsupportedOperationException("Not supported yet.");}
+        public String[] getSubtasks() {throw new UnsupportedOperationException("Not supported yet.");}
     }
 
     private class RITestConector extends BugtrackingConnector {

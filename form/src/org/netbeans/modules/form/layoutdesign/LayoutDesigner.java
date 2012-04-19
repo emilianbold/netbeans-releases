@@ -72,7 +72,7 @@ public final class LayoutDesigner implements LayoutConstants {
     private ModelHandler modelHandler;
 
     private List<LayoutComponent> selectedComponents = new LinkedList<LayoutComponent>();
-    private List<GapInfo> selectedGaps = new ArrayList<GapInfo>(4);
+    private GapInfo selectedGap;
     private LayoutInterval lastWheelGap;
     private boolean paintWheelGapSnap;
     private javax.swing.Timer wheelPaintTimer;
@@ -138,7 +138,7 @@ public final class LayoutDesigner implements LayoutConstants {
             int type = ev.getType();
             if (type != LayoutEvent.INTERVAL_SIZE_CHANGED
                     && type != LayoutEvent.INTERVAL_PADDING_TYPE_CHANGED) {
-                selectedGaps.clear();
+                selectedGap = null;
             }
         }
     }
@@ -388,11 +388,11 @@ public final class LayoutDesigner implements LayoutConstants {
         if (draggable == null) {
             draggable = Collections.emptyList();
         }
-        if (draggable.isEmpty() && components.size() == 1 && paintGaps && selectedGaps.size() == 1) {
+        if (draggable.isEmpty() && components.size() == 1 && paintGaps && selectedGap != null) {
             LayoutComponent comp = components.get(0);
-            GapInfo gapInfo = selectedGaps.get(0);
             if (comp.isLayoutContainer()
-                    && comp.getDefaultLayoutRoot(gapInfo.dimension).isParentOf(gapInfo.gap)) {
+                    && comp.getDefaultLayoutRoot(selectedGap.dimension).isParentOf(selectedGap.gap)) {
+                // root container with selected gap is considered "draggable"
                 return Collections.singletonList(comp.getId());
             }
         }
@@ -482,13 +482,12 @@ public final class LayoutDesigner implements LayoutConstants {
 
         int gapResizability = getSelectedGapResizability0(hotspot);
         if (gapResizability == LEADING || gapResizability == TRAILING) {
-            GapInfo resizeGap = selectedGaps.get(0);
-            if (resizeEdges[resizeGap.dimension] == gapResizability
+            if (resizeEdges[selectedGap.dimension] == gapResizability
                     && comps[0].isLayoutContainer()
-                    && comps[0].getDefaultLayoutRoot(resizeGap.dimension).isParentOf(resizeGap.gap)) {
+                    && comps[0].getDefaultLayoutRoot(selectedGap.dimension).isParentOf(selectedGap.gap)) {
                 // going to just resize a gap (simplified dragging mode)
                 lastWheelGap = null;
-                dragger = new LayoutDragger(resizeGap, gapResizability, new int[] { hotspot.x, hotspot.y },
+                dragger = new LayoutDragger(selectedGap, gapResizability, new int[] { hotspot.x, hotspot.y },
                                             visualMapper, layoutPainter);
                 return false;
             }
@@ -1273,20 +1272,19 @@ public final class LayoutDesigner implements LayoutConstants {
      * @return true if the applied change deserves a repaint
      */
     public String mouseWheelMoved(int events, int units) {
-        if (!paintGaps || selectedComponents.isEmpty() || selectedGaps.size() != 1
+        if (!paintGaps || selectedComponents.isEmpty() || selectedGap == null
                 || events <= 0 || units == 0) {
             return null;
         }
 
-        GapInfo resizedGap = selectedGaps.get(0);
-        lastWheelGap = resizedGap.gap;
+        lastWheelGap = selectedGap.gap;
         paintWheelGapSnap = false;
-        LayoutInterval gap = resizedGap.gap;
-        int currentSize = resizedGap.currentSize;
+        LayoutInterval gap = selectedGap.gap;
+        int currentSize = selectedGap.currentSize;
         int newSize = Integer.MIN_VALUE;
         units = units * -1; // wheel up should increase the gap size
         PaddingType newPaddingType = null;
-        int[] defaultSizes = resizedGap.defaultGapSizes;
+        int[] defaultSizes = selectedGap.defaultGapSizes;
         if (defaultSizes != null && defaultSizes.length > 0) {
             int defPrefSize = gap.getPreferredSize();
             int defIndex = -1;
@@ -1403,9 +1401,9 @@ public final class LayoutDesigner implements LayoutConstants {
         }
 
         String hint;
-        layoutModel.setUserIntervalSize(resizedGap.gap, resizedGap.dimension, newSize);
+        layoutModel.setUserIntervalSize(selectedGap.gap, selectedGap.dimension, newSize);
         if (newSize == NOT_EXPLICITLY_DEFINED) {
-            layoutModel.setPaddingType(resizedGap.gap, newPaddingType);
+            layoutModel.setPaddingType(selectedGap.gap, newPaddingType);
             // paint snapped size of default gap...
             paintWheelGapSnap = true;
             // ... but hide it after a while
@@ -1452,72 +1450,67 @@ public final class LayoutDesigner implements LayoutConstants {
      * This method assumes the clicked component has been already set via
      * setSelectedComponents method (before calling this method).
      * @param p The point of click in coordinates of the whole design area.
-     * @return true if repaint is needed (to paint the changed selection)
+     * @return true if repaint is needed (selection changed)
      */
     public boolean selectInside(Point p) {
         if (!paintGaps) {
             return false;
         }
-        LayoutComponent component = selectedComponents.size() == 1 ? selectedComponents.get(0) : null;
-        if (component == null || !component.isLayoutContainer()) {
-            return false;
-        }
 
-        List<GapInfo> selected = null;
-        boolean change = false;
-        // Preferentially try to select a gap of a component selected before the
-        // click (if clicking into its parent). If such a component was selected,
-        // LayoutPainter still has the painted gaps at this moment.
-        Collection<GapInfo> gaps = layoutPainter.getPaintedGaps();
-        if (gaps != null && gaps.isEmpty()) {
-            gaps = null;
-        }
-        boolean searchNew = true;
-        do {
-            if (gaps == null) {
-                gaps = visualState.getComponentGaps(component);
-                searchNew = false;
+        GapInfo selected = null;
+        for (LayoutComponent component : selectedComponents) {
+            if (!component.isLayoutContainer()) {
+                continue;
             }
-            for (GapInfo gapInfo : gaps) {
-                if (pointInGap(p, gapInfo)
-                        && component.getDefaultLayoutRoot(gapInfo.dimension).isParentOf(gapInfo.gap)) {
-                    if (selected == null) {
-                        selected = new ArrayList<GapInfo>(4);
-                    }
-                    selected.add(gapInfo);
-                    if (!change && !selectedGaps.contains(gapInfo)) {
-                        change = true;
-                    }
-                    gapInfo.defaultGapSizes = LayoutUtils.getSizesOfDefaultGap(gapInfo.gap, visualMapper);
+            // Preferentially try to select a gap of a component selected before the
+            // click (if clicking into its parent). If such a component was selected,
+            // LayoutPainter still has the painted gaps at this moment.
+            Collection<GapInfo> gaps = layoutPainter.getPaintedGapsForContainer(component);
+            if (gaps != null && gaps.isEmpty()) {
+                gaps = null;
+            }
+            boolean searchedAll = false;
+            selected = null;
+            do {
+                if (gaps == null) {
+                    gaps = visualState.getContainerGaps(component);
+                    searchedAll = true;
                 }
-            }
-            gaps = null;
-        } while (searchNew && selected == null);
+                for (GapInfo gapInfo : gaps) {
+                    if (pointInGap(p, gapInfo)
+                            && component.getDefaultLayoutRoot(gapInfo.dimension).isParentOf(gapInfo.gap)) {
+                        selected = gapInfo;
+                        if (selected == selectedGap) {
+                            break;
+                        } // otherwise preferring last one
+                    }
+                }
+                gaps = null;
+            } while (!searchedAll && selected == null);
 
-        if (!change) {
-            int newSel = selected != null ? selected.size() : 0;
-            if (newSel != selectedGaps.size()) {
-                change = true;
-            }
-        }
-        if (change) {
-            selectedGaps.clear();
             if (selected != null) {
-                selectedGaps.addAll(selected);
+                break;
             }
-            lastWheelGap = null;
         }
-        return change;
+
+        if (selected != selectedGap) {
+            if (selected != null) {
+                selected.defaultGapSizes = LayoutUtils.getSizesOfDefaultGap(selected.gap, visualMapper);
+            }
+            selectedGap = selected;
+            lastWheelGap = null;
+            return true;
+        }
+        return false;
     }
 
     private boolean pointInSelectegGap(Point p) {
-        if (paintGaps && selectedGaps.size() == 1) {
-            GapInfo selectedGap = selectedGaps.get(0);
+        if (paintGaps && selectedGap != null) {
             if (pointInGap(p, selectedGap)
                     || (selectedGap.gap == lastWheelGap && pointInGapStripe(p, selectedGap))) {
                 return true;
             }
-            int res = LayoutPainter.pointOnResizeHandler(selectedGaps.get(0), p);
+            int res = LayoutPainter.pointOnResizeHandler(selectedGap, p);
             return res == LEADING || res == TRAILING;
         }
         return false;
@@ -1553,7 +1546,7 @@ public final class LayoutDesigner implements LayoutConstants {
      */
     public void setSelectedComponents(String... compIds) {
         selectedComponents.clear();
-        selectedGaps.clear();
+        selectedGap = null;
         lastWheelGap = null;
         for (String id : compIds) {
             LayoutComponent comp = layoutModel.getLayoutComponent(id);
@@ -1573,12 +1566,17 @@ public final class LayoutDesigner implements LayoutConstants {
             return;
         }
         if (paintGaps) {
-            layoutPainter.paintGaps(g, selectedComponents, selectedGaps);
-            if (lastWheelGap != null && paintWheelGapSnap && selectedGaps.size() == 1) {
-                GapInfo gapInfo = selectedGaps.get(0);
-                if (gapInfo.gap == lastWheelGap) {
-                    LayoutDragger.paintGapResizingSnap(g, gapInfo);
+            layoutPainter.paintGaps(g, selectedComponents, selectedGap);
+            if (lastWheelGap != null && paintWheelGapSnap
+                    && selectedGap != null && selectedGap.gap == lastWheelGap) {
+                LayoutComponent gapContainer = null;
+                for (LayoutComponent comp : selectedComponents) {
+                    if (comp.isLayoutContainer()) {
+                        gapContainer = comp;
+                        break;
+                    }
                 }
+                LayoutDragger.paintGapResizingSnap(g, selectedGap, gapContainer, visualState);
             }
         }
         layoutPainter.paintComponents(g, selectedComponents, paintAlignment);
@@ -1596,14 +1594,13 @@ public final class LayoutDesigner implements LayoutConstants {
         if (resAlign < 0) {
             return null;
         }
-        GapInfo gapInfo = selectedGaps.get(0);
-        return new int[] { gapInfo.dimension == HORIZONTAL ? resAlign : -1,
-                           gapInfo.dimension == VERTICAL ? resAlign : -1};
+        return new int[] { selectedGap.dimension == HORIZONTAL ? resAlign : -1,
+                           selectedGap.dimension == VERTICAL ? resAlign : -1};
     }
 
     private int getSelectedGapResizability0(Point p) {
-        return paintGaps && selectedGaps.size() == 1
-                ? LayoutPainter.pointOnResizeHandler(selectedGaps.get(0), p) : -1;
+        return paintGaps && selectedGap != null
+                ? LayoutPainter.pointOnResizeHandler(selectedGap, p) : -1;
     }
 
     public String getToolTipText(Point p) {
@@ -1611,9 +1608,130 @@ public final class LayoutDesigner implements LayoutConstants {
             return dragger.getToolTipText();
         }
         if (pointInSelectegGap(p)) {
-            return selectedGaps.get(0).description;
+            return selectedGap.description;
         }
         return null;
+    }
+
+    /**
+     * Data structure representing a layout gap to be customized externally. The
+     * public fields 'definedSize', 'paddingType' and 'resizing' are those to be
+     * edited. Additional information about the gap is available via public methods.
+     */
+    public static final class EditableGap {
+        public int definedSize; // editable
+        public PaddingType paddingType; // editable
+        public boolean resizing; // editable
+
+        private int dimension;
+        private int actualSize;
+        private boolean canHaveDefaultValue;
+        private PaddingType[] possiblePaddingTypes; // null if can't have default value, or if a container gap
+        private String[] paddingDisplayNames; // same array length as possibleDefaultTypes, or 1 if a container gap
+
+        private LayoutInterval gap;
+
+        private EditableGap(LayoutInterval gap) {
+            this.gap = gap;
+        }
+
+        public int getDimension() { return dimension; }
+        public int getActualSize() { return actualSize; }
+        public boolean canHaveDefaultValue() { return canHaveDefaultValue; }
+        public PaddingType[] getPossiblePaddingTypes() { return possiblePaddingTypes; }
+        public String[] getPaddingDisplayNames() { return paddingDisplayNames; }
+    }
+
+    /**
+     * Provides information about layout gaps that can be edited at the moment.
+     * It returns either a single-element array if just one gap is selected, or
+     * a four-element array if exactly one component is selected (so gaps around
+     * the component), or null if there's no suitable selection.
+     * @return array of EditableGap, or null if nothing for editing is currently selected
+     */
+    public EditableGap[] getEditableGaps() {
+        if (paintGaps && selectedGap != null) {
+            LayoutInterval gap = selectedGap.gap;
+            EditableGap eg = new EditableGap(gap);
+            eg.definedSize = gap.getPreferredSize();
+            if (eg.definedSize == NOT_EXPLICITLY_DEFINED) {
+                eg.paddingType = gap.getPaddingType();
+            }
+            eg.resizing = LayoutInterval.canResize(gap);
+            eg.dimension = selectedGap.dimension;
+            eg.actualSize = selectedGap.currentSize;
+            initEditableGapDefaults(eg, selectedGap.defaultGapSizes);
+            return new EditableGap[] { eg };
+        }
+
+        if (selectedComponents.size() == 1) {
+            LayoutComponent comp = selectedComponents.get(0);
+            if (comp.getParent() != null) {
+                List<EditableGap> gapList = new ArrayList<EditableGap>(4);
+                boolean anyGap = false;
+                for (int dim=0; dim < DIM_COUNT; dim++) {
+                    LayoutInterval li = comp.getLayoutInterval(dim);
+                    for (int e=LEADING; e <= TRAILING; e++) {
+                        LayoutInterval gap = LayoutInterval.getNeighbor(li, e, false, true, false);
+                        if (gap != null && gap.isEmptySpace()) {
+                            anyGap = true;
+                            EditableGap eg = new EditableGap(gap);
+                            eg.definedSize = gap.getPreferredSize();
+                            if (eg.definedSize == NOT_EXPLICITLY_DEFINED) {
+                                eg.paddingType = gap.getPaddingType();
+                            }
+                            eg.resizing = LayoutInterval.canResize(gap);
+                            eg.dimension = dim;
+                            eg.actualSize = LayoutInterval.getCurrentSize(gap, dim);
+                            initEditableGapDefaults(eg, LayoutUtils.getSizesOfDefaultGap(gap, visualMapper));
+                            gapList.add(eg);
+                        } else {
+                            gapList.add(null);
+                        }
+                    }
+                }
+                if (anyGap) {
+                    return gapList.toArray(new EditableGap[4]);
+                }
+            }
+        }
+        return null;
+    }
+
+    private static void initEditableGapDefaults(EditableGap eg, int[] defaultSizes) {
+        if (defaultSizes != null) {
+            if (defaultSizes.length == 1) {
+                eg.canHaveDefaultValue = true;
+                eg.paddingDisplayNames = new String[] { VisualState.getDefaultGapDisplayName(null) };
+            } else if (defaultSizes.length > 1) {
+                List<PaddingType> padList = new ArrayList<PaddingType>(defaultSizes.length);
+                List<String> nameList = new ArrayList<String>(defaultSizes.length);
+                for (int i=0; i < defaultSizes.length; i++) {
+                    if (i != PaddingType.INDENT.ordinal()) { // TODO should also detect when INDENT can be used...
+                        PaddingType pt = PaddingType.values()[i];
+                        padList.add(pt);
+                        nameList.add(VisualState.getDefaultGapDisplayName(pt));
+                    }
+                }
+                eg.canHaveDefaultValue = true;
+                eg.possiblePaddingTypes = padList.toArray(new PaddingType[padList.size()]);
+                eg.paddingDisplayNames = nameList.toArray(new String[nameList.size()]);
+            }
+        }
+    }
+
+    /**
+     * Applies changes in given layout gaps, obtained earlier from getEditableGaps()
+     * and then changed externally.
+     * @param editableGaps 
+     */
+    public void applyEditedGaps(EditableGap[] editableGaps) {
+        for (EditableGap eg : editableGaps) {
+            if (eg != null) {
+                layoutModel.setUserIntervalSize(eg.gap, eg.dimension, eg.definedSize, eg.resizing);
+                layoutModel.setPaddingType(eg.gap, eg.paddingType);
+            }
+        }
     }
 
     public String[] positionCode() {
@@ -3576,7 +3694,7 @@ public final class LayoutDesigner implements LayoutConstants {
     }
 
     private void updateContainerAfterBuild(LayoutComponent container, boolean top) {
-        visualState.updateCurrentSpaceOfComponents(container);
+        visualState.updateCurrentSpaceOfComponents(container, top);
         for (LayoutComponent subComp : container.getSubcomponents()) {
             if (subComp.isLayoutContainer()) {
                 updateContainerAfterBuild(subComp, false);

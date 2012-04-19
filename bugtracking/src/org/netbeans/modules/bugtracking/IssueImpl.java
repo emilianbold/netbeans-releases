@@ -168,6 +168,10 @@ public final class IssueImpl<I> {
         return issueProvider.isNew(data);
     }
 
+    public boolean isFinished() {
+        return issueProvider.isFinished(data);
+    }
+    
     public String getDisplayName() {
         return issueProvider.getDisplayName(data);
     }

@@ -369,6 +369,16 @@ public class IssueTest extends NbTestCase implements TestConstants {
 //
 //    }
 
+    public void testIsFinished() throws Throwable {
+        BugzillaRepository br = TestUtil.getRepository("test", REPO_URL, REPO_USER, REPO_PASSWD);
+        String id = TestUtil.createIssue(br, "testIsFinished ");
+        BugzillaIssue issue = (BugzillaIssue) getRepository().getIssue(id);
+        assertFalse(issue.isFinished());
+        issue.resolve("FIXED");
+        issue.submitAndRefresh();
+        assertTrue(issue.isFinished());
+    }
+
     public void testCC() throws Throwable {
         // WARNING: the test assumes that there are more than one value
         // for atributes like platform, versions etc.
@@ -463,7 +473,6 @@ public class IssueTest extends NbTestCase implements TestConstants {
         assertStatus(BugzillaIssue.FIELD_STATUS_MODIFIED, issue, IssueField.CC);
 
     }
-
 //    public void testStartResolveFixedVerifiedClosedReopen() throws Throwable {
 //        long ts = System.currentTimeMillis();
 //        String summary = "somary" + ts;

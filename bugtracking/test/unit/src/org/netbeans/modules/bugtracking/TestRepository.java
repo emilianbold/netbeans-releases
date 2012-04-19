@@ -58,7 +58,7 @@ public abstract class TestRepository {
     
     public abstract Image getIcon();
 
-    public abstract TestIssue getIssue(String id);
+    public abstract TestIssue[] getIssues(String[] id);
 
     public abstract void remove();
 

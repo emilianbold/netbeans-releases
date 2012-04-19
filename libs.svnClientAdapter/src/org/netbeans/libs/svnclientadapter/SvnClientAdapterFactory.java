@@ -46,7 +46,6 @@ import java.util.Collection;
 import java.util.logging.Logger;
 import org.openide.util.Lookup;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
 
 /**
  *
@@ -67,10 +66,8 @@ public abstract class SvnClientAdapterFactory {
         SVNKIT
     }
 
-    public static SvnClientAdapterFactory getInstance(Client client) {
-        assert SvnClientAdapterFactory.client == null || client == SvnClientAdapterFactory.client;
-
-        if(instance == null) {
+    public static synchronized SvnClientAdapterFactory getInstance(Client client) {
+        if (instance == null || SvnClientAdapterFactory.client != client) {
             Collection<SvnClientAdapterFactory> cl = (Collection<SvnClientAdapterFactory>) Lookup.getDefault().lookupAll(SvnClientAdapterFactory.class);
             for (SvnClientAdapterFactory f : cl) {
                 if(f.provides() == client) {

@@ -43,12 +43,18 @@
  */
 package org.netbeans.modules.csl.hints;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import org.netbeans.modules.csl.core.AbstractTaskFactory;
 import org.netbeans.modules.csl.core.Language;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
+import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.openide.filesystems.FileObject;
 
 /**
  * This file is originally from Retouche, the Java Support 
@@ -61,6 +67,7 @@ import org.netbeans.modules.parsing.spi.SchedulerTask;
  * @author Jan Lahoda
  */
 public class GsfHintsFactory extends AbstractTaskFactory {
+    public static final String LAYER_NAME = "csl-hints";
     
     /**
      * Creates a new instance of GsfHintsFactory
@@ -72,6 +79,18 @@ public class GsfHintsFactory extends AbstractTaskFactory {
     @Override
     public Collection<? extends SchedulerTask> createTasks(Language l, Snapshot snapshot) {
         return Collections.singleton(new GsfHintsProvider(snapshot.getSource().getFileObject()));
+    }
+    
+    /**
+     * Forces refresh of errors the same way as if the parse task was called by
+     * the "cycle". Processes just 1 level of ParserResult, does not walk down to embeddings
+     */
+    public static List<ErrorDescription> getErrors(Snapshot s, ParserResult res, Snapshot tls) throws ParseException {
+        FileObject fo = s.getSource().getFileObject();
+        GsfHintsProvider hp = new GsfHintsProvider(fo);
+        List<ErrorDescription> descs = new ArrayList<ErrorDescription>();
+        hp.processErrors(s, res, null, descs, tls);
+        return descs;
     }
 
 }

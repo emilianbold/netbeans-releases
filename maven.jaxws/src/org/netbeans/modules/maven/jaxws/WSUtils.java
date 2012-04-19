@@ -98,7 +98,11 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
+import org.openide.util.Lookup.Result;
 
 /**
  *
@@ -177,6 +181,35 @@ public class WSUtils {
                 }
             }
         });
+    }
+    
+    static final J2eeModuleProvider getModuleProvider(Project project){
+        Lookup lookup = project.getLookup();
+        final Result<J2eeModuleProvider> result = lookup.lookupResult(J2eeModuleProvider.class);
+        LookupListener listener = new LookupListener(){
+
+            @Override
+            public void resultChanged( LookupEvent event ) {
+                synchronized (result) {
+                    result.notifyAll();
+                }
+            }
+            
+        };
+        result.addLookupListener( listener );
+        synchronized (result) {
+            while (lookup.lookup(J2eeModuleProvider.class) == null) {
+                try {
+                    result.wait();
+                }
+                catch( InterruptedException e ){
+                    Logger.getLogger(MavenJAXWSSupportImpl.class.getName()).log(Level.INFO,
+                            "Lookup change wait is interrupted", e); //NOI18N
+                }
+            }
+        }
+        result.removeLookupListener( listener );
+        return lookup.lookup(J2eeModuleProvider.class);
     }
     
     private static String readResource(InputStream is) throws IOException {

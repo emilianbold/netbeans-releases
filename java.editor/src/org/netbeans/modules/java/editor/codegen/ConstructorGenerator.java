@@ -220,9 +220,9 @@ public class ConstructorGenerator implements CodeGenerator {
                                         return;
                                     constrElements.add(constr);
                                 }
-                                GeneratorUtils.generateConstructors(copy, path, variableElements, constrElements);
+                                GeneratorUtils.generateConstructors(copy, path, variableElements, constrElements, caretOffset);
                             } else {
-                                GeneratorUtils.generateConstructor(copy, path, variableElements, constructorHandle != null ? (ExecutableElement)constructorHandle.resolve(copy) : null);
+                                GeneratorUtils.generateConstructor(copy, path, variableElements, constructorHandle != null ? (ExecutableElement)constructorHandle.resolve(copy) : null, caretOffset);
                             }
                         }
                     }

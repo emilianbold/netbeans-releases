@@ -64,9 +64,16 @@ final class SelfProfile {
         this.profiler = Sampler.createSampler("taskcancel"); // NOI18N;
         this.profiling = true;
 
+        LOG.finest("STARTED");  //NOI18N
         if (profiler != null) {
             profiler.start();
-            LOG.log(Level.FINE, "Profiling started {0} at {1}", new Object[] { profiler, time });   //NOI18N
+            LOG.log(
+                Level.FINE,
+                "Profiling started {0} at {1}", //NOI18N
+                new Object[] {
+                    profiler,
+                    time
+                });
         }
     }
 
@@ -89,18 +96,30 @@ final class SelfProfile {
         LOG.log(Level.FINE, "Profiling stopped at {0}", now);
         int report = Integer.getInteger("org.netbeans.modules.parsing.api.taskcancel.slowness.report", 1000); // NOI18N
         if (delta < report) {
-            LOG.log(Level.FINE, "Cancel profiling of {0}. Profiling {1}. Time {2} ms.", new Object[] { profiler, profiling, delta });
+            LOG.finest("CANCEL");  //NOI18N
             if (profiler != null) {
                 profiler.cancel();
+                LOG.log(
+                    Level.FINE,
+                    "Cancel profiling of {0}. Profiling {1}. Time {2} ms.",     //NOI18N
+                    new Object[] {
+                        profiler,
+                        profiling,
+                        delta
+                    });
             }
             return;
         }
         try {
-            LOG.log(Level.FINE, "Obtaining snapshot for {0} ms.", delta);
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             DataOutputStream dos = new DataOutputStream(out);
+            LOG.finest("LOGGED");  //NOI18N
             if (profiler != null) {
                 profiler.stopAndWriteTo(dos);
+                LOG.log(
+                    Level.FINE,
+                    "Obtaining snapshot for {0} ms.",   //NOI18N
+                    delta);
             }
             dos.close();
             if (dos.size() > 0) {

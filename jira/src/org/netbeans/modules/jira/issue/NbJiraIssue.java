@@ -280,6 +280,10 @@ public class NbJiraIssue {
         return taskData == null || taskData.isNew();
     }
 
+    public boolean isFinished() {
+        return getResolution() != null;
+    }
+    
     public void setTaskData(TaskData taskData) {
 //        assert !taskData.isPartial();
         this.taskData = taskData;

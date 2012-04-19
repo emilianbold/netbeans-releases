@@ -178,28 +178,32 @@ public abstract class QueryParameter {
     }
     abstract void setEnabled(boolean b);
 
-    public StringBuffer get() {
+    public StringBuffer get(boolean encode) {
         StringBuffer sb = new StringBuffer();
         ParameterValue[] values = getValues();
         for (ParameterValue pv : values) {
             sb.append("&"); // NOI18N
             sb.append(getParameter());
             sb.append("="); // NOI18N
-            try {
-                String value = pv.getValue();
-                if(value.equals("[Bug+creation]")) {                            // NOI18N
-                    // workaround: while encoding '+' in a products name works fine,
-                    // encoding it in in [Bug+creation] causes an error
-                    sb.append(URLEncoder.encode("[", encoding));                // NOI18N
-                    sb.append("Bug+creation");                                  // NOI18N
-                    sb.append(URLEncoder.encode("]", encoding));                // NOI18N
-                } else {
-                    // use URLEncoder as it is used also by other clients of the bugzilla connector
-                    sb.append(URLEncoder.encode(value, encoding));
+            if(encode) {
+                try {
+                    String value = pv.getValue();
+                    if(value.equals("[Bug+creation]")) {                            // NOI18N
+                        // workaround: while encoding '+' in a products name works fine,
+                        // encoding it in in [Bug+creation] causes an error
+                        sb.append(URLEncoder.encode("[", encoding));                // NOI18N
+                        sb.append("Bug+creation");                                  // NOI18N
+                        sb.append(URLEncoder.encode("]", encoding));                // NOI18N
+                    } else {
+                        // use URLEncoder as it is used also by other clients of the bugzilla connector
+                        sb.append(URLEncoder.encode(value, encoding));
+                    }
+                } catch (UnsupportedEncodingException ex) {
+                    sb.append(URLEncoder.encode(pv.getValue()));
+                    Bugzilla.LOG.log(Level.WARNING, null, ex);
                 }
-            } catch (UnsupportedEncodingException ex) {
-                sb.append(URLEncoder.encode(pv.getValue()));
-                Bugzilla.LOG.log(Level.WARNING, null, ex);
+            } else {
+                sb.append(pv.getValue());
             }
         }
         return sb;
@@ -209,7 +213,7 @@ public abstract class QueryParameter {
     public String toString() {
         StringBuffer sb = new StringBuffer();
         sb.append("["); // NOI18N
-        sb.append(get());
+        sb.append(get(true));
         sb.append("]"); // NOI18N
         return sb.toString();
     }

@@ -196,9 +196,10 @@ public final class SyncController implements Cancellable {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                SyncPanel panel = new SyncPanel(phpProject, remoteConfiguration.getDisplayName(), items.getItems(), remoteClient, isForProject());
-                if (panel.open(lastTimeStamp == -1)) {
-                    doSynchronize(items, panel.getItems(), panel.getSyncInfo(), resultProcessor);
+                SyncPanel panel = new SyncPanel(phpProject, remoteConfiguration.getDisplayName(), items.getItems(), remoteClient, isForProject(), lastTimeStamp == -1);
+                if (panel.open()) {
+                    List<SyncItem> itemsToSynchronize = panel.getItems();
+                    doSynchronize(items, itemsToSynchronize, panel.getSyncInfo(itemsToSynchronize), resultProcessor);
                 } else {
                     disconnect();
                     items.cleanup();

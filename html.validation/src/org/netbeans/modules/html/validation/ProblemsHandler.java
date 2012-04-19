@@ -44,7 +44,7 @@ package org.netbeans.modules.html.validation;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
+import org.netbeans.modules.html.editor.lib.api.ProblemDescription;
 
 /**
  *

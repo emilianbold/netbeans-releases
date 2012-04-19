@@ -43,19 +43,12 @@
 package org.netbeans.modules.maven.profiler;
 
 import java.util.HashSet;
-import java.util.Properties;
 import java.util.Set;
 import org.netbeans.api.project.Project;
-import org.netbeans.lib.profiler.common.ProfilingSettings;
-import org.netbeans.lib.profiler.common.SessionSettings;
 import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.modules.profiler.NetBeansProfiler;
 import org.netbeans.modules.profiler.api.JavaPlatform;
 import org.netbeans.modules.profiler.nbimpl.project.JavaProjectProfilingSupportProvider;
-import org.netbeans.modules.profiler.nbimpl.project.ProjectUtilities;
 import org.netbeans.spi.project.ProjectServiceProvider;
-import org.openide.filesystems.FileObject;
-import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -77,7 +70,7 @@ public class MavenProjectProfilingSupportProvider extends JavaProjectProfilingSu
     };
     
     
-    public JavaPlatform getProjectJavaPlatform() {
+    public JavaPlatform resolveProjectJavaPlatform() {
         return JavaPlatform.getDefaultPlatform();
     }
 
@@ -89,35 +82,7 @@ public class MavenProjectProfilingSupportProvider extends JavaProjectProfilingSu
     public boolean checkProjectIsModifiedForProfiler() {
         return true;
     }
-    
-    @Override
-    public boolean startProfilingSession(final FileObject profiledClassFile, final boolean isTest, final Properties properties) {
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() { startMaven(getProject().getLookup().lookup(Project.class), profiledClassFile, isTest, properties); }
-        });
         
-        return true;
-    }
-    
-    private void startMaven(Project project, FileObject profiledClassFile, boolean isTest, Properties properties) {
-        ProfilingSettings lastProfilingSettings = new ProfilingSettings();
-        SessionSettings lastSessionSettings = new SessionSettings();
-        Properties lastSessionProperties = new Properties(properties);
-        
-        lastProfilingSettings.load(properties);
-        lastSessionSettings.load(properties);
-        
-        RunCheckerImpl.configureProject(project, lastSessionProperties, lastProfilingSettings, lastSessionSettings);
-
-        NetBeansProfiler.getDefaultNB().setProfiledProject(project, profiledClassFile);
-
-        String packaging = project.getLookup().lookup(NbMavenProject.class).getPackagingType();
-        
-        if (profiledClassFile != null) ProjectUtilities.invokeAction(project, isTest ? "profile-tests": (packaging.equals("war") ? "profile-single.deploy" : "profile-single")); //NOI18N
-        else ProjectUtilities.invokeAction(project, isTest ? "profile-tests" : "profile"); //NOI18N
-    }
-    
-    
     public MavenProjectProfilingSupportProvider(Project project) {
         super(project);
     }

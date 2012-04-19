@@ -50,7 +50,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.actions.CallableSystemAction;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebugger;
-import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.State;
 import org.netbeans.modules.cnd.debugger.common2.debugger.StateListener;
 
@@ -64,7 +64,7 @@ public class StepInstAction extends CallableSystemAction implements StateListene
     static final long serialVersionUID = -8705899978543961455L;
 
     public StepInstAction() {
-        debugger = DebuggerManager.get().currentDebugger();
+        debugger = NativeDebuggerManager.get().currentDebugger();
         if (debugger != null)
             debugger.addStateListener(this);
     }
@@ -76,7 +76,7 @@ public class StepInstAction extends CallableSystemAction implements StateListene
 
     // interface CallableSystemAction
     public void performAction() {
-	NativeDebugger debugger = DebuggerManager.get().currentDebugger();
+	NativeDebugger debugger = NativeDebuggerManager.get().currentDebugger();
 	if (debugger != null) {
 	    debugger.stepInst();
 	}

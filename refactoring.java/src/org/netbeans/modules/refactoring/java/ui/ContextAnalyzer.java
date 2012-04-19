@@ -42,16 +42,24 @@
 package org.netbeans.modules.refactoring.java.ui;
 
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.ErrorType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.swing.JOptionPane;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -96,7 +104,16 @@ public final class ContextAnalyzer {
 
                 @Override
                 protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement, int startOffset, int endOffset, final CompilationInfo info) {
-                    return factory.create(info, new TreePathHandle[]{selectedElement}, new FileObject[]{selectedElement.getFileObject()}, new NonRecursiveFolder[0]);
+                    TreePathHandle[] handles;
+                    FileObject[] file;
+                    if(selectedElement != null) {
+                        handles = new TreePathHandle[]{selectedElement};
+                        file = new FileObject[]{selectedElement.getFileObject()};
+                    } else {
+                        handles = new TreePathHandle[0];
+                        file = new FileObject[]{info.getFileObject()};
+                    }
+                    return factory.create(info, handles, file, new NonRecursiveFolder[0]);
                 }
             };
         } else if (nodeHandle(context)) {
@@ -284,15 +301,11 @@ public final class ContextAnalyzer {
         private boolean selection;
         
         public TextComponentTask(EditorCookie ec) {
-            this(ec,false);
-        }
-        
-        public TextComponentTask(EditorCookie ec, boolean selection) {
-            this.selection = selection;
             this.textC = ec.getOpenedPanes()[0];
             this.caret = textC.getCaretPosition();
             this.start = textC.getSelectionStart();
             this.end = textC.getSelectionEnd();
+            this.selection = start != end && (start != -1 || end != -1);
             assert caret != -1;
             assert start != -1;
             assert end != -1;
@@ -304,55 +317,57 @@ public final class ContextAnalyzer {
         
         @Override
         public void run(final CompilationController cc) throws Exception {
-            TreePath selectedElement = null;
             cc.toPhase(JavaSource.Phase.RESOLVED);
-            
             final int c = selection?start:this.caret;
-
-            final int[] adjustedCaret = new int[] {c};
+            final TreePath[] selectedElement = new TreePath[] {null};
 //            final boolean[] insideJavadoc = {false};
             final Document doc = cc.getDocument();
             doc.render(new Runnable() {
                 @Override
                 public void run() {
-                    TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(cc.getTokenHierarchy(), c);
+                    selectedElement[0] = validateSelection(cc, start, end);
 
-                    ts.move(c);
-
-                    if (ts.moveNext() && ts.token()!=null) {
-                        if (ts.token().id() == JavaTokenId.IDENTIFIER) {
-                            adjustedCaret[0] = ts.offset() + ts.token().length() / 2 + 1;
-                        } /*else if (ts.token().id() == JavaTokenId.JAVADOC_COMMENT) {
-                            TokenSequence<JavadocTokenId> jdts = ts.embedded(JavadocTokenId.language());
-                            if (jdts != null && JavadocImports.isInsideReference(jdts, caret)) {
-                                jdts.move(caret);
-                                if (jdts.moveNext() && jdts.token().id() == JavadocTokenId.IDENT) {
-                                    adjustedCaret[0] = jdts.offset();
-                                    insideJavadoc[0] = true;
-                                }
-                            } else if (jdts != null && JavadocImports.isInsideParamName(jdts, caret)) {
-                                jdts.move(caret);
-                                if (jdts.moveNext()) {
-                                    adjustedCaret[0] = jdts.offset();
-                                    insideJavadoc[0] = true;
-                                }
-                            }
-                        }*/
+                    if (selectedElement[0] == null) {
+                        TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(cc.getTokenHierarchy(), c);
+                        int adjustedCaret = c;
+                        ts.move(c);
+                        if (ts.moveNext() && ts.token() != null) {
+                            if (ts.token().id() == JavaTokenId.IDENTIFIER) {
+                                adjustedCaret = ts.offset() + ts.token().length() / 2 + 1;
+                            } /*else if (ts.token().id() == JavaTokenId.JAVADOC_COMMENT) {
+                             TokenSequence<JavadocTokenId> jdts = ts.embedded(JavadocTokenId.language());
+                             if (jdts != null && JavadocImports.isInsideReference(jdts, caret)) {
+                             jdts.move(caret);
+                             if (jdts.moveNext() && jdts.token().id() == JavadocTokenId.IDENT) {
+                             adjustedCaret[0] = jdts.offset();
+                             insideJavadoc[0] = true;
+                             }
+                             } else if (jdts != null && JavadocImports.isInsideParamName(jdts, caret)) {
+                             jdts.move(caret);
+                             if (jdts.moveNext()) {
+                             adjustedCaret[0] = jdts.offset();
+                             insideJavadoc[0] = true;
+                             }
+                             }
+                             }*/
+                        }
+                        selectedElement[0] = cc.getTreeUtilities().pathFor(adjustedCaret);
                     }
                 }
             });
-            selectedElement = cc.getTreeUtilities().pathFor(adjustedCaret[0]);
             //workaround for issue 89064
-            if (selectedElement.getLeaf().getKind() == Tree.Kind.COMPILATION_UNIT) {
+            if (selectedElement[0].getLeaf().getKind() == Tree.Kind.COMPILATION_UNIT) {
                 List<? extends Tree> decls = cc.getCompilationUnit().getTypeDecls();
                 if (!decls.isEmpty()) {
                     TreePath path = TreePath.getPath(cc.getCompilationUnit(), decls.get(0));
                     if (path!=null && cc.getTrees().getElement(path)!=null) {
-                        selectedElement = path;
+                        selectedElement[0] = path;
                     }
+                } else {
+                    selectedElement[0] = null;
                 }
             }
-            ui = createRefactoringUI(TreePathHandle.create(selectedElement, cc), start, end, cc);
+            ui = createRefactoringUI(selectedElement[0] != null ? TreePathHandle.create(selectedElement[0], cc) : null, start, end, cc);
         }
         
         @Override
@@ -370,6 +385,95 @@ public final class ContextAnalyzer {
         }
         
         protected abstract RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, CompilationInfo info);
+    }
+
+    private static final Set<TypeKind> NOT_ACCEPTED_TYPES = EnumSet.of(TypeKind.ERROR, TypeKind.NONE, TypeKind.OTHER, TypeKind.VOID);
+    
+    static TreePath validateSelection(CompilationInfo ci, int start, int end) {
+        return validateSelection(ci, start, end, NOT_ACCEPTED_TYPES);
+    }
+
+    public static TreePath validateSelection(CompilationInfo ci, int start, int end, Set<TypeKind> ignoredTypes) {
+        TreePath tp = ci.getTreeUtilities().pathFor((start + end) / 2 + 1);
+
+        for ( ; tp != null; tp = tp.getParentPath()) {
+            Tree leaf = tp.getLeaf();
+
+            if (   !ExpressionTree.class.isAssignableFrom(leaf.getKind().asInterface())
+                && (leaf.getKind() != Tree.Kind.VARIABLE || ((VariableTree) leaf).getInitializer() == null))
+               continue;
+
+            long treeStart = ci.getTrees().getSourcePositions().getStartPosition(ci.getCompilationUnit(), leaf);
+            long treeEnd   = ci.getTrees().getSourcePositions().getEndPosition(ci.getCompilationUnit(), leaf);
+
+            if (treeStart != start || treeEnd != end) {
+                continue;
+            }
+
+            TypeMirror type = ci.getTrees().getTypeMirror(tp);
+
+            if (type != null && type.getKind() == TypeKind.ERROR) {
+                type = ci.getTrees().getOriginalType((ErrorType) type);
+            }
+
+            if (type == null || ignoredTypes.contains(type.getKind()))
+                continue;
+
+            if(tp.getLeaf().getKind() == Tree.Kind.ASSIGNMENT)
+                continue;
+
+            if (tp.getLeaf().getKind() == Tree.Kind.ANNOTATION)
+                continue;
+
+            if (!isInsideClass(tp))
+                return null;
+
+            TreePath candidate = tp;
+
+            tp = tp.getParentPath();
+
+            while (tp != null) {
+                switch (tp.getLeaf().getKind()) {
+                    case VARIABLE:
+                        VariableTree vt = (VariableTree) tp.getLeaf();
+                        if (vt.getInitializer() == leaf) {
+                            return candidate;
+                        } else {
+                            return null;
+                        }
+                    case NEW_CLASS:
+                        NewClassTree nct = (NewClassTree) tp.getLeaf();
+                        
+                        if (nct.getIdentifier().equals(candidate.getLeaf())) { //avoid disabling hint ie inside of anonymous class higher in treepath
+                            for (Tree p : nct.getArguments()) {
+                                if (p == leaf) {
+                                    return candidate;
+                                }
+                            }
+
+                            return null;
+                        }
+                }
+
+                leaf = tp.getLeaf();
+                tp = tp.getParentPath();
+            }
+
+            return candidate;
+        }
+
+        return null;
+    }
+    
+    private static boolean isInsideClass(TreePath tp) {
+        while (tp != null) {
+            if (TreeUtilities.CLASS_TREE_KINDS.contains(tp.getLeaf().getKind()))
+                return true;
+
+            tp = tp.getParentPath();
+        }
+
+        return false;
     }
     
     private static abstract class NodeToElementTask implements Runnable, CancellableTask<CompilationController>  {

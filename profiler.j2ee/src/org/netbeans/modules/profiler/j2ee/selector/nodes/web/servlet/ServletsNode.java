@@ -77,9 +77,11 @@ public class ServletsNode extends AbstractWebContainerNode {
         Collection<SelectorNode> sNodes = new ArrayList<SelectorNode>();
         for(ServletInfo si : md.getServlets()) {
             SourceClassInfo sType = ProfilerTypeUtils.resolveClass(si.getServletClass(), prj);
-            List<String> patterns = si.getUrlPatterns();
-            if (patterns != null && !patterns.isEmpty()) {
-                sNodes.add(new ServletNode(sType, si.getName(), patterns.get(0) , this));
+            if (sType != null) {
+                List<String> patterns = si.getUrlPatterns();
+                if (patterns != null && !patterns.isEmpty()) {
+                    sNodes.add(new ServletNode(sType, si.getName(), patterns.get(0) , this));
+                }
             }
         }
         return sNodes;

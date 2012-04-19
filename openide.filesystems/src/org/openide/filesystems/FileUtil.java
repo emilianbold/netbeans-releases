@@ -322,8 +322,8 @@ public final class FileUtil extends Object {
         }
     }
     /**
-     * Works like {@link #addRecursiveListener(org.openide.filesystems.FileChangeListener, java.io.File, java.util.concurrent.Callable)
-     * addRecursiveListener(listener, path, null)}.
+     * Works like {@link #addRecursiveListener(org.openide.filesystems.FileChangeListener, java.io.File, java.io.FileFilter, java.util.concurrent.Callable) 
+     * addRecursiveListener(listener, path, null, null)}.
      *
      * @param listener FileChangeListener to listen to changes in path
      * @param path File path to listen to (even not existing)
@@ -331,17 +331,31 @@ public final class FileUtil extends Object {
      * @since org.openide.filesystems 7.28
      */
     public static void addRecursiveListener(FileChangeListener listener, File path) {
-        final DeepListener deep = new DeepListener(listener, path, null);
-        deep.init();
-        addFileChangeListener(deep, path);
+        addRecursiveListener(listener, path, null, null);
     }
 
-    /**
+    /** Works like {@link #addRecursiveListener(org.openide.filesystems.FileChangeListener, java.io.File, java.io.FileFilter, java.util.concurrent.Callable) 
+     * addRecursiveListener(listener, path, null, stop)}.
+     *
+     * @param listener FileChangeListener to listen to changes in path
+     * @param path File path to listen to (even not existing)
+     * @param stop an interface to interrupt the process of registering
+     *    the listener. If the <code>call</code> returns true, the process
+     *    of registering the listener is immediately interrupted
+     *
+     * @see FileObject#addRecursiveListener
+     * @since org.openide.filesystems 7.37
+     */
+    public static void addRecursiveListener(FileChangeListener listener, File path, Callable<Boolean> stop) {
+        addRecursiveListener(listener, path, null, stop);
+    }
+
+    /** 
      * Adds a listener to changes under given path. It permits you to listen to a file
      * which does not yet exist, or continue listening to it after it is deleted and recreated, etc.
      * <br/>
      * When given path represents a file ({@code path.isDirectory() == false}), this
-     * code behaves exectly like {@link #addFileChangeListener(org.openide.filesystems.FileChangeListener, java.io.File)}.
+     * code behaves exactly like {@link #addFileChangeListener(org.openide.filesystems.FileChangeListener, java.io.File)}.
      * Usually the path shall represent a folder ({@code path.isDirectory() == true})
      * <ul>
      * <li>fileFolderCreated event is fired when the folder is created or a child folder created</li>
@@ -369,18 +383,26 @@ public final class FileUtil extends Object {
      * next recursive items is interrupted. The listener may or may not get
      * some events from already registered folders.
      * </div>
-     *
+     * 
+     * Those who provide {@link FileFilter recurseInto} callback can prevent
+     * the system to enter, and register operating system level listeners 
+     * to certain subtrees under the provided <code>path</code>. This does
+     * not prevent delivery of changes, if they are made via the filesystem API.
+     * External changes however will not be detected.
+     * 
      * @param listener FileChangeListener to listen to changes in path
      * @param path File path to listen to (even not existing)
      * @param stop an interface to interrupt the process of registering
      *    the listener. If the <code>call</code> returns true, the process
-     *    of registering the listener is immediately interrupted
-     *
-     * @see FileObject#addRecursiveListener
-     * @since org.openide.filesystems 7.37
+     *    of registering the listener is immediately interrupted. <code>null</code>
+     *    value disables this kind of callback.
+     * @param recurseInto a file filter that may return <code>false</code> when
+     *   a folder should not be traversed into and external changes in it ignored.
+     *   <code>null</code> recurses into all subfolders
+     * @since 7.61
      */
-    public static void addRecursiveListener(FileChangeListener listener, File path, Callable<Boolean> stop) {
-        final DeepListener deep = new DeepListener(listener, path, stop);
+    public static void addRecursiveListener(FileChangeListener listener, File path, FileFilter recurseInto, Callable<Boolean> stop) {
+        final DeepListener deep = new DeepListener(listener, path, recurseInto, stop);
         deep.init();
         addFileChangeListener(deep, path);
     }
@@ -395,7 +417,7 @@ public final class FileUtil extends Object {
      * @since org.openide.filesystems 7.28
      */
     public static void removeRecursiveListener(FileChangeListener listener, File path) {
-        final DeepListener deep = new DeepListener(listener, path, null);
+        final DeepListener deep = new DeepListener(listener, path, null, null);
         // no need to deep.init()
         DeepListener dl = (DeepListener)removeFileChangeListenerImpl(deep, path);
         dl.run();
@@ -2126,13 +2148,22 @@ public final class FileUtil extends Object {
      */
     public static URL urlForArchiveOrDir(File entry) {
         try {
-            URL u = entry.toURI().toURL();
+            boolean wasDir;
+            boolean isDir;
+            URL u;            
+            do {
+                wasDir = entry.isDirectory();
+                LOG.finest("urlForArchiveOrDir:toURI:entry");   //NOI18N
+                u = entry.toURI().toURL();
+                isDir = entry.isDirectory();
+            } while (wasDir ^ isDir);
             if (isArchiveFile(u) || entry.isFile() && entry.length() < 4) {
                 return getArchiveRoot(u);
-            } else if (entry.isDirectory()) {
+            } else if (isDir) {
+                assert u.toExternalForm().endsWith("/");    //NOI18N
                 return u;
             } else if (!entry.exists()) {
-                if (!u.toString().endsWith("/")) {
+                if (!u.toString().endsWith("/")) {  //NOI18N
                     u = new URL(u + "/"); // NOI18N
                 }
                 return u;

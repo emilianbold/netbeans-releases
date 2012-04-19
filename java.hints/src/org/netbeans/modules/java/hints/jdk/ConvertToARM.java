@@ -68,6 +68,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.VariableElement;
@@ -76,6 +78,7 @@ import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.spi.java.hints.Hint;
 import org.netbeans.spi.java.hints.TriggerPattern;
@@ -85,7 +88,6 @@ import org.netbeans.spi.java.hints.JavaFix;
 import org.netbeans.spi.java.hints.MatcherUtilities;
 import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.java.hints.JavaFixUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.NbBundle;
@@ -98,6 +100,7 @@ import org.openide.util.Parameters;
 @Hint(displayName = "#DN_org.netbeans.modules.java.hints.jdk.ConvertToARM", description = "#DESC_org.netbeans.modules.java.hints.jdk.ConvertToARM", category="rules15", suppressWarnings="ConvertToTryWithResources")  //NOI18N
 public class ConvertToARM {
 
+    private static final Logger LOG = Logger.getLogger(ConvertToARMFix.class.getName());
     private static final SpecificationVersion JDK_17 = new SpecificationVersion("1.7"); //NOI18N
     
     private static final String AUTO_CLOSEABLE = "java.lang.AutoCloseable"; //NOI18N
@@ -273,18 +276,50 @@ cleanUpStatements).toEditorFix()
         }
         return Collections.unmodifiableList(result);
     }
+    
+    private static Collection<? extends TreePathHandle> wrap(CompilationInfo info, Collection<? extends TreePath> paths) {
+        if (paths == null) return null;
+        
+        Collection<TreePathHandle> result = new ArrayList<TreePathHandle>(paths.size());
+        
+        for (TreePath tp : paths) {
+            result.add(TreePathHandle.create(tp, info));
+        }
+        
+        return result;
+    }
 
+    private static final Collection<? extends TreePath> UNRESOLVABLE_MARKER = new ArrayList<TreePath>();
+    
+    private static Collection<? extends TreePath> unwrap(CompilationInfo info, Collection<? extends TreePathHandle> paths) {
+        if (paths == null) return null;
+        
+        Collection<TreePath> result = new ArrayList<TreePath>(paths.size());
+        
+        for (TreePathHandle tph : paths) {
+            TreePath tp = tph.resolve(info);
+            
+            if (tp == null) {
+                LOG.log(Level.FINE, "Cannot resolve TreePathHandle: {0}", tp.toString());
+                return UNRESOLVABLE_MARKER;
+            }
+            
+            result.add(tp);
+        }
+        
+        return result;
+    }
     private static final class ConvertToARMFix extends JavaFix {
         
         private final NestingKind nestingKind;
-        private final TreePath init;
-        private final TreePath var;
-        private final Collection<? extends TreePath> armPaths;
-        private final Collection<? extends TreePath> statementsPaths;
-        private final Collection<? extends TreePath> catchesPaths;
-        private final Collection<? extends TreePath> finStatementsPath;
-        private final Collection<? extends TreePath> tail;
-        private final Collection<? extends TreePath> cleanUpStms;
+        private final TreePathHandle initHandle;
+        private final TreePathHandle varHandle;
+        private final Collection<? extends TreePathHandle> armPathHandles;
+        private final Collection<? extends TreePathHandle> statementsPathHandles;
+        private final Collection<? extends TreePathHandle> catchesPathHandles;
+        private final Collection<? extends TreePathHandle> finStatementsPathHandles;
+        private final Collection<? extends TreePathHandle> tailHandle;
+        private final Collection<? extends TreePathHandle> cleanUpStmsHandle;
         
         private ConvertToARMFix(
                 final CompilationInfo info,
@@ -300,14 +335,14 @@ cleanUpStatements).toEditorFix()
                 final Collection<? extends TreePath> cleanUpStms) {
             super(info, owner);
             this.nestingKind = nestignKind;
-            this.var = var;
-            this.init = init;
-            this.armPaths = armPaths;
-            this.statementsPaths = statements;
-            this.catchesPaths = catches;
-            this.finStatementsPath = finStatementsPath;
-            this.tail = tail;
-            this.cleanUpStms = cleanUpStms;
+            this.varHandle = var != null ? TreePathHandle.create(var, info) : null;
+            this.initHandle = init != null ? TreePathHandle.create(init, info) : null;
+            this.armPathHandles = wrap(info, armPaths);
+            this.statementsPathHandles = wrap(info, statements);
+            this.catchesPathHandles = wrap(info, catches);
+            this.finStatementsPathHandles = wrap(info, finStatementsPath);
+            this.tailHandle = wrap(info, tail);
+            this.cleanUpStmsHandle = wrap(info, cleanUpStms);
         }
 
         @Override
@@ -319,6 +354,22 @@ cleanUpStatements).toEditorFix()
         protected void performRewrite(TransformationContext ctx) {
             final WorkingCopy wc = ctx.getWorkingCopy();
             final TreePath tp = ctx.getPath();
+            final TreePath init = this.initHandle.resolve(wc);
+            if (init == null) {
+                LOG.log(Level.FINE, "Cannot resolve TreePathHandle: {0}", this.initHandle.toString());
+                return ;
+            }
+            final TreePath var = this.varHandle.resolve(wc);
+            if (var == null) {
+                LOG.log(Level.FINE, "Cannot resolve TreePathHandle: {0}", this.varHandle.toString());
+                return ;
+            }
+            final Collection<? extends TreePath> armPaths = unwrap(wc, this.armPathHandles);
+            final Collection<? extends TreePath> statementsPaths = unwrap(wc, this.statementsPathHandles);
+            final Collection<? extends TreePath> catchesPaths = unwrap(wc, this.catchesPathHandles);
+            final Collection<? extends TreePath> finStatementsPath = unwrap(wc, this.finStatementsPathHandles);
+            final Collection<? extends TreePath> tail = unwrap(wc, this.tailHandle);
+            final Collection<? extends TreePath> cleanUpStms = unwrap(wc, this.cleanUpStmsHandle);
             final TreeMaker tm = wc.getTreeMaker();
             final Set<StatementTree> nonNeededStms = new HashSet<StatementTree>();
             for (TreePath stm : cleanUpStms) {

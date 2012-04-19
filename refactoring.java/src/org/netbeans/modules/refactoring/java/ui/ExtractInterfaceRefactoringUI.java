@@ -149,7 +149,7 @@ public final class ExtractInterfaceRefactoringUI implements RefactoringUI, JavaR
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(ExtractInterfaceRefactoringUI.class.getName());
+        return new HelpCtx("org.netbeans.modules.refactoring.java.ui.ExtractInterfaceRefactoringUI"); // NOI18N
     }
     
     // --- PRIVATE HELPER METHODS ----------------------------------------------

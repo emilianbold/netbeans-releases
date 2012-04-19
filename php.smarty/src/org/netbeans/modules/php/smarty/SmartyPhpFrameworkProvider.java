@@ -63,6 +63,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * @author Martin Fousek
@@ -182,7 +183,12 @@ public final class SmartyPhpFrameworkProvider extends PhpFrameworkProvider {
                new AtomicBoolean(false), false, 1000, 10000);
 
             if (isSmartyFound.get()) {
-                preferences.putBoolean(PROP_SMARTY_AVAILABLE, true);
+                RequestProcessor.getDefault().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        preferences.putBoolean(PROP_SMARTY_AVAILABLE, true);
+                    }
+                });
             }
 
             return isSmartyFound.get();

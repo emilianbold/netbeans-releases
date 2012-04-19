@@ -86,10 +86,10 @@ public class TestFileContainerAction extends TestProjectActionBase {
         InputOutput io = IOProvider.getDefault().getIO("file container for " + project.getName(), false); // NOI18N
         io.select();
         final OutputWriter out = io.getOut();
-        project.traceFileContainer(out);
+        ProjectBase.dumpFileContainer(project, out);
         for(CsmProject lib : project.getLibraries()){
             if (lib instanceof ProjectBase) {
-                ((ProjectBase) lib).traceFileContainer(out);
+                ProjectBase.dumpFileContainer(lib, out);
             }
         }
         out.close();

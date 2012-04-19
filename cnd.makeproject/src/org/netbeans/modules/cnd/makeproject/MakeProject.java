@@ -43,9 +43,6 @@
  */
 package org.netbeans.modules.cnd.makeproject;
 
-import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectListener;
-import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectEvent;
-import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectHelper;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -53,14 +50,14 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.MessageFormat;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -76,28 +73,37 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.api.search.SearchRoot;
+import org.netbeans.api.search.SearchScopeOptions;
+import org.netbeans.api.search.provider.SearchListener;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectRegistry;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
-import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
-import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
-import org.netbeans.modules.cnd.spi.toolchain.ToolchainProject;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifactProvider;
+import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectCustomizer;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
-import org.netbeans.modules.cnd.makeproject.api.MakeProjectCustomizer;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Folder.FileObjectNameMatcher;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectEvent;
+import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectHelper;
+import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectListener;
+import org.netbeans.modules.cnd.makeproject.ui.FolderSearchInfo.FileObjectNameMatcherImpl;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
+import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
+import org.netbeans.modules.cnd.spi.toolchain.ToolchainProject;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -118,6 +124,7 @@ import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
+import org.netbeans.spi.search.SearchInfoDefinition;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -127,8 +134,6 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataLoaderPool;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -137,10 +142,9 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
-import org.openidex.search.SearchInfo;
 import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 
 /**
@@ -316,7 +320,7 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
                     new NativeProjectSettingsImpl(this, this.kind.getPrimaryConfigurationDataElementNamespace(false), false),
                     new RecommendedTemplatesImpl(projectDescriptorProvider),
                     new MakeProjectOperations(this),
-                    new FolderSearchInfo(projectDescriptorProvider),
+                    new MakeProjectSearchInfo(projectDescriptorProvider),
                     kind,
                     new MakeProjectEncodingQueryImpl(this),
                     new RemoteProjectImpl(),
@@ -711,7 +715,6 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
      */
     private String getCustomizerIdFromProjectXML() {
         Element data = helper.getPrimaryConfigurationData(true);
-        data = helper.getPrimaryConfigurationData(true);
         NodeList nodeList = data.getElementsByTagName(MakeProjectTypeImpl.CUSTOMIZERID_ELEMENT);
         if (nodeList != null && nodeList.getLength() > 0) {
             Node typeNode = nodeList.item(0).getFirstChild();
@@ -730,8 +733,6 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
      * If not found, try project.xml (V >= V78)
      */
     private int getActiveConfigurationType() {
-        int type = -1;
-
         // If configurations already read, get it from active configuration (it may have changed)
         MakeConfiguration makeConfiguration = getActiveConfiguration();
         if (makeConfiguration != null) {
@@ -739,7 +740,7 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
         }
 
         // Get it from private.xml (version >= V77)
-        type = getActiveConfigurationTypeFromPrivateXML();
+        int type = getActiveConfigurationTypeFromPrivateXML();
         if (type >= 0) {
             return type;
         }
@@ -758,7 +759,6 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
      */
     private int getActiveConfigurationTypeFromProjectXML() {
         Element data = helper.getPrimaryConfigurationData(true);
-        data = helper.getPrimaryConfigurationData(true);
         NodeList nodeList = data.getElementsByTagName(MakeProjectTypeImpl.CONFIGURATION_TYPE_ELEMENT);
         if (nodeList != null && nodeList.getLength() > 0) {
             Node typeNode = nodeList.item(0).getFirstChild();
@@ -1177,7 +1177,9 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
                     break;
                 case MakeConfiguration.TYPE_CUSTOM:
                     MakeProjectCustomizer makeProjectCustomizer = getProjectCustomizer(getProjectCustomizerId());
-                    icon = ImageUtilities.loadImageIcon(makeProjectCustomizer.getIconPath(), false); // NOI18N
+                    if (makeProjectCustomizer != null) {
+                        icon = ImageUtilities.loadImageIcon(makeProjectCustomizer.getIconPath(), false); // NOI18N
+                    }
                     break;
             }
             return icon;
@@ -1335,11 +1337,11 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
         }
     }
 
-    private static class FolderSearchInfo implements SearchInfo {
+    private static class MakeProjectSearchInfo extends SearchInfoDefinition {
 
         private ConfigurationDescriptorProvider projectDescriptorProvider;
 
-        FolderSearchInfo(ConfigurationDescriptorProvider projectDescriptorProvider) {
+        MakeProjectSearchInfo(ConfigurationDescriptorProvider projectDescriptorProvider) {
             this.projectDescriptorProvider = projectDescriptorProvider;
         }
 
@@ -1349,27 +1351,45 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
         }
 
         @Override
-        public Iterator<DataObject> objectsToSearch() {
-            MakeConfigurationDescriptor projectDescriptor = projectDescriptorProvider.getConfigurationDescriptor();
-            Folder rootFolder = projectDescriptor.getLogicalFolders();
-            Set<DataObject> res = rootFolder.getAllItemsAsDataObjectSet(false, "text/"); // NOI18N
+        public List<SearchRoot> getSearchRoots() {
+            List<SearchRoot> roots = new ArrayList<SearchRoot>();
             FileObject baseDirFileObject = projectDescriptorProvider.getConfigurationDescriptor().getBaseDirFileObject();
-            addFolder(res, baseDirFileObject.getFileObject("nbproject")); // NOI18N
-            addFolder(res, baseDirFileObject.getFileObject("nbproject/private")); // NOI18N
-            return res.iterator();
-
+            roots.add(new SearchRoot(baseDirFileObject, null));
+            for (String root : projectDescriptorProvider.getConfigurationDescriptor().getAbsoluteSourceRoots()) {
+                try {
+                    FileObject fo = new FSPath(baseDirFileObject.getFileSystem(), root).getFileObject();
+                    if (fo != null) {
+                        roots.add(new SearchRoot(fo, null));
+                    }
+                } catch (FileStateInvalidException ex) {
+                }
+            }
+            return roots;
         }
 
-        private void addFolder(Set<DataObject> res, FileObject fo) {
+        @Override
+        public Iterator<FileObject> filesToSearch(final SearchScopeOptions options, SearchListener listener, final AtomicBoolean terminated) {
+            FileObjectNameMatcherImpl matcher = new FileObjectNameMatcherImpl(options, terminated);
+            MakeConfigurationDescriptor projectDescriptor = projectDescriptorProvider.getConfigurationDescriptor();
+            Folder rootFolder = projectDescriptor.getLogicalFolders();
+            Set<FileObject> res = rootFolder.getAllItemsAsFileObjectSet(false, matcher);
+            FileObject baseDirFileObject = projectDescriptorProvider.getConfigurationDescriptor().getBaseDirFileObject();
+            addFolder(res, baseDirFileObject.getFileObject("nbproject"), matcher); // NOI18N
+            addFolder(res, baseDirFileObject.getFileObject("nbproject/private"), matcher); // NOI18N
+            return res.iterator();
+        }
+
+        private void addFolder(Set<FileObject> res, FileObject fo, FileObjectNameMatcher matcher) {
             if (fo != null && fo.isFolder() && fo.isValid()) {
+                if (matcher.isTerminated()) {
+                    return;
+                }
                 for (FileObject f : fo.getChildren()) {
-                    DataObject dataObject;
-                    try {
-                        dataObject = DataObject.find(f);
-                        if (dataObject != null) {
-                            res.add(dataObject);
-                        }
-                    } catch (DataObjectNotFoundException ex) {
+                    if (matcher.isTerminated()) {
+                        return;
+                    }
+                    if (f.isData() && matcher.pathMatches(f)) {
+                        res.add(f);
                     }
                 }
             }
@@ -1530,28 +1550,24 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
             List<PathResourceImplementation> list = new LinkedList<PathResourceImplementation>();
             SourceGroup[] groups = sources.getSourceGroups("generic"); // NOI18N
             for (SourceGroup g : groups) {
-                try {
-                    FileObject rootFolder = g.getRootFolder();
-                    URL url = rootFolder.getURL();
-                    // A workaround for #196328 - IllegalArgumentException on save Project properties
-                    if (rootFolder.isFolder() && !url.toExternalForm().endsWith("/")) { //NOI18N
-                        try {
-                            URL url2 = new URL(url.toExternalForm() + '/'); //NOI18N                     
-                            FileObject fo = URLMapper.findFileObject(url2);
-                            if (fo != null && fo.equals(rootFolder)) {
-                                url = url2;
-                            }                            
-                        } catch (MalformedURLException ex) {
-                            Exceptions.printStackTrace(ex);
-                        } catch (Exception ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
+                FileObject rootFolder = g.getRootFolder();
+                URL url = rootFolder.toURL();
+                // A workaround for #196328 - IllegalArgumentException on save Project properties
+                if (rootFolder.isFolder() && !url.toExternalForm().endsWith("/")) { //NOI18N
+                    try {
+                        URL url2 = new URL(url.toExternalForm() + '/'); //NOI18N                     
+                        FileObject fo = URLMapper.findFileObject(url2);
+                        if (fo != null && fo.equals(rootFolder)) {
+                            url = url2;
+                        }                            
+                    } catch (MalformedURLException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (Exception ex) {
+                        Exceptions.printStackTrace(ex);
                     }
-                    // end of workaround for #196328
-                    list.add(new PathResourceImpl(ClassPathSupport.createResource(url)));
-                } catch (FileStateInvalidException ex) {
-                    Logger.getLogger(MakeProject.class.getName()).log(Level.WARNING, null, ex);
                 }
+                // end of workaround for #196328
+                list.add(new PathResourceImpl(ClassPathSupport.createResource(url)));
             }
 
             synchronized (this) {
@@ -1644,11 +1660,7 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
             if (MakeProjectPaths.SOURCES.equals(type)) {
                 for (SourceGroup sg : sources.getSourceGroups(MakeSources.GENERIC)) {
                     if (sg.getRootFolder().equals(file)) {
-                        try {
-                            return ClassPathSupport.createClassPath(Arrays.asList(new PathResourceImpl(ClassPathSupport.createResource(file.getURL()))));
-                        } catch (FileStateInvalidException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
+                        return ClassPathSupport.createClassPath(Arrays.asList(new PathResourceImpl(ClassPathSupport.createResource(file.toURL()))));
                     }
                 }
             }

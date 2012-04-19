@@ -52,12 +52,13 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.Utilities;
 import org.w3c.dom.Element;
 import java.util.List;
-import java.util.Properties;
+import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.lib.profiler.common.Profiler;
+import org.netbeans.lib.profiler.common.SessionSettings;
 import org.netbeans.lib.profiler.common.integration.IntegrationUtils;
 import org.netbeans.modules.profiler.api.JavaPlatform;
 import org.netbeans.modules.profiler.api.java.JavaProfilerSource;
@@ -102,7 +103,7 @@ public final class NbModuleProjectProfilingSupportProvider extends JavaProjectPr
     }
 
     @Override
-    public JavaPlatform getProjectJavaPlatform() {
+    public JavaPlatform resolveProjectJavaPlatform() {
         return getProjectJavaPlatform(getProject());
     }
     
@@ -173,32 +174,43 @@ public final class NbModuleProjectProfilingSupportProvider extends JavaProjectPr
     }
 
     @Override
-    public void configurePropertiesForProfiling(final Properties props, final FileObject profiledClassFile) {
+    public void configurePropertiesForProfiling(final Map<String, String> props, final FileObject profiledClassFile) {
         // FIXME
         JavaProfilerSource src = JavaProfilerSource.createFrom(profiledClassFile);
         if (src != null) {
             final String profiledClass = src.getTopLevelClass().getQualifiedName();
-            props.setProperty("profile.class", profiledClass); //NOI18N
+            props.put("profile.class", profiledClass); //NOI18N
             // Set for all cases (incl. Profile Project, Profile File) but should only
             // be taken into account when profiling single test
-            props.setProperty("test.type", getTestType(profiledClassFile)); //NOI18N
+            props.put("test.type", getTestType(profiledClassFile)); //NOI18N
         }
         
-        String agentArg = props.getProperty("profiler.info.jvmargs.agent"); //NOI18N
+        String agentArg = props.get("agent.jvmargs"); //NOI18N
         if (agentArg.indexOf(' ') != -1) { //NOI18N
             if (Utilities.isUnix()) {
                 // Profiler is installed in directory with space on Unix (Linux, Solaris, Mac OS X)
                 // create temporary link in /tmp directory and use it instead of directory with space
                 String libsDir = Profiler.getDefault().getLibsDir();
-                props.setProperty("profiler.info.jvmargs.agent", IntegrationUtils.fixLibsDirPath(libsDir, agentArg)); //NOI18N
+                props.put("agent.jvmargs", IntegrationUtils.fixLibsDirPath(libsDir, agentArg)); //NOI18N
             } else if (Utilities.isWindows() && isNbSourceModule(getProject())) {
                 // Profiler is installed in directory with space on Windows
                 // surround the whole -agentpath argument with quotes for NB source module
                 agentArg = "\"" + agentArg + "\""; //NOI18N
-                props.setProperty("profiler.info.jvmargs.agent", agentArg); //NOI18N
+                props.put("agent.jvmargs", agentArg); //NOI18N
             }
         }
     }
+
+    @Override
+    public void setupProjectSessionSettings(SessionSettings ss) {
+        JavaPlatform platform = getProjectJavaPlatform();
+        
+        ss.setSystemArchitecture(platform.getPlatformArchitecture());
+        ss.setJavaVersionString(platform.getPlatformJDKVersion());
+        ss.setJavaExecutable(platform.getPlatformJavaFile());
+    }
+    
+    
     
     /**
      * Returns true if the provided Project is a NB source module, false otherwise.

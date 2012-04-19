@@ -54,13 +54,11 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitException;
-import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.ui.history.SearchHistoryAction;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
@@ -76,6 +74,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 
 /**
  * @author ondra
@@ -197,7 +196,7 @@ class FilesystemInterceptor extends VCSInterceptor {
     @Override
     public void doMove(final File from, final File to) throws IOException {
         LOG.log(Level.FINE, "doMove {0} -> {1}", new Object[] { from, to }); //NOI18N
-        if (from == null || to == null || to.exists()) return;
+        if (from == null || to == null || to.exists() && !equalPathsIgnoreCase(from, to)) return;
         
         Git git = Git.getInstance();
         File root = git.getRepositoryRoot(from);
@@ -205,7 +204,15 @@ class FilesystemInterceptor extends VCSInterceptor {
         try {
             if (root != null && root.equals(dstRoot) && !cache.getStatus(to).containsStatus(Status.NOTVERSIONED_EXCLUDED)) {
                 // target does not lie under ignored folder and is in the same repo as src
-                git.getClient(root).rename(from, to, false, GitUtils.NULL_PROGRESS_MONITOR);
+                if (equalPathsIgnoreCase(from, to)) {
+                    // must do rename --after because the files/paths equal on Win or Mac
+                    if (!from.renameTo(to)) {
+                        throw new IOException(NbBundle.getMessage(FilesystemInterceptor.class, "MSG_MoveFailed", new Object[] { from, to, "" })); //NOI18N
+                    }
+                    git.getClient(root).rename(from, to, true, GitUtils.NULL_PROGRESS_MONITOR);
+                } else {
+                    git.getClient(root).rename(from, to, false, GitUtils.NULL_PROGRESS_MONITOR);
+                }
             } else {
                 boolean result = from.renameTo(to);
                 if (!result) {
@@ -221,6 +228,10 @@ class FilesystemInterceptor extends VCSInterceptor {
             ex.initCause(e);
             throw ex;
         }
+    }
+
+    private boolean equalPathsIgnoreCase (final File from, final File to) {
+        return Utilities.isWindows() && from.equals(to) || Utilities.isMac() && from.getPath().equalsIgnoreCase(to.getPath());
     }
 
     @Override

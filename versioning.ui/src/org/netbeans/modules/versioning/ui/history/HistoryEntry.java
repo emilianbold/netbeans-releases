@@ -46,12 +46,13 @@ import java.util.Date;
 import javax.swing.Action;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.spi.VCSHistoryProvider;
+import org.netbeans.modules.versioning.core.util.Utils;
 
 /**
  *
  * @author tomas
  */
-public class HistoryEntry {
+class HistoryEntry {
     private final VCSHistoryProvider.HistoryEntry entry;
     private final boolean local;
 
@@ -60,6 +61,18 @@ public class HistoryEntry {
         this.local = local;
     }
 
+    public Object[] getLookupObjects() {
+        Object[] delegates = Utils.getDelegateEntry(entry);
+        if(delegates == null) {
+            return new Object[] { entry };
+        } else {
+            Object[] ret = new Object[delegates.length + 1];
+            System.arraycopy(delegates, 0, ret, 0, delegates.length);
+            ret[delegates.length] = entry;
+            return ret;
+        }
+    }
+    
     public String getUsernameShort() {
         return entry.getUsernameShort();
     }
@@ -104,6 +117,11 @@ public class HistoryEntry {
         return entry.canEdit();
     }
     
+    public HistoryEntry getParent(VCSFileProxy file) {
+        VCSHistoryProvider.HistoryEntry parent = entry.getParentEntry(file);
+        return parent != null ? new HistoryEntry(parent, local) : null;
+    }
+    
     public boolean isLocalHistory() {
         return local;
     }
@@ -137,5 +155,4 @@ public class HistoryEntry {
         return sb.toString();
     }
 
-    
 }

@@ -50,8 +50,6 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.dircache.DirCacheEntry;
@@ -61,8 +59,6 @@ import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitStatus;
 import org.netbeans.libs.git.jgit.AbstractGitTestCase;
 import org.netbeans.libs.git.jgit.Utils;
-import org.netbeans.libs.git.progress.FileListener;
-import org.netbeans.libs.git.progress.ProgressMonitor;
 
 /**
  *
@@ -406,8 +402,9 @@ public class CleanTest extends AbstractGitTestCase {
         
         client.clean(new File[] { workDir }, NULL_PROGRESS_MONITOR);
         Map<File, GitStatus> statuses = client.getStatus(new File[] { workDir }, NULL_PROGRESS_MONITOR);
-        assertEquals(1, statuses.size());
+        assertEquals(2, statuses.size());
         assertStatus(statuses, workDir, f, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
+        assertStatus(statuses, workDir, nested, false, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_ADDED, false);
         
         statuses = clientNested.getStatus(new File[] { nested }, NULL_PROGRESS_MONITOR);
         assertEquals(1, statuses.size());

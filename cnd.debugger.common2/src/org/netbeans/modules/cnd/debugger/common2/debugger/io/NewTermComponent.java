@@ -59,7 +59,7 @@ import org.netbeans.modules.terminal.api.IOVisibility;
 import org.netbeans.lib.terminalemulator.ActiveTerm;
 import org.netbeans.lib.terminalemulator.Term;
 
-import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.options.DebuggerOption;
 import org.netbeans.modules.cnd.debugger.common2.utils.NotifyingInputSteam;
 /**
@@ -117,7 +117,7 @@ public class NewTermComponent implements TermComponent {
 	notifier.setListener(new NotifyingInputSteam.Listener () {
 	    public void activity () {
 		if (DebuggerOption.FRONT_PIO.isEnabled(
-			    DebuggerManager.get().globalOptions()))
+			    NativeDebuggerManager.get().globalOptions()))
 		    NewTermComponent.this.requestVisible();
 	    }
 	});

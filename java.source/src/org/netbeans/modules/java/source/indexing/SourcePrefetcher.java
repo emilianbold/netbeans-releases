@@ -164,6 +164,8 @@ class SourcePrefetcher implements Iterator<CompileTuple> {
     
     private static final class ConcurrentIterator extends SuspendableIterator {
         
+        private static final CompileTuple DUMMY = new CompileTuple(null, null);
+        
         private static final RequestProcessor RP = new RequestProcessor(
                 SourcePrefetcher.class.getName(),
                 PROC_COUNT,
@@ -220,15 +222,15 @@ class SourcePrefetcher implements Iterator<CompileTuple> {
             try {
                 active = cs.take().get();
             } catch (InterruptedException ex) {
-                active = null;
+                active = DUMMY;
                 Exceptions.printStackTrace(ex);
             } catch (ExecutionException ex) {
-                active = null;
+                active = DUMMY;
                 Exceptions.printStackTrace(ex);
             } finally {
                 count--;
             }
-            return active;
+            return active == DUMMY ? null : active;
         }
         
         @Override
@@ -237,8 +239,10 @@ class SourcePrefetcher implements Iterator<CompileTuple> {
                 throw new IllegalStateException("Call next before remove");   //NOI18N
             }
             try {
-                final int len = Math.min(BUFFER_SIZE, active.jfo.dispose());
-                sem.release(len);
+                if (active != DUMMY) {
+                    final int len = Math.min(BUFFER_SIZE, active.jfo.dispose());
+                    sem.release(len);
+                }
             } finally {
                 active = null;
             }

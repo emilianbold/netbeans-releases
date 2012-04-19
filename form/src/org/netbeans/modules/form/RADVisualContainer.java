@@ -325,6 +325,10 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
         return subComponents.get(index);
     }
 
+    boolean hasVisualSubComponents() {
+        return !subComponents.isEmpty();
+    }
+
     // the following methods implement ComponentContainer interface
 
     /** @return all subcomponents (including the menu component) */

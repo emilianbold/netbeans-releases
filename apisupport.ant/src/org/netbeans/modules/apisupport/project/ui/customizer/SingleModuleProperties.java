@@ -530,6 +530,9 @@ public final class SingleModuleProperties extends ModuleProperties {
                         Runnable r;
                         try {
                             final SortedSet<ModuleDependency> deps = getProjectXMLManager().getDirectDependencies(getActivePlatform());
+                            for (ModuleDependency dep : deps) {
+                                dep.getModuleEntry().getLocalizedName(); // warm up
+                            }
                             r = new Runnable() {
 
                                 public void run() {

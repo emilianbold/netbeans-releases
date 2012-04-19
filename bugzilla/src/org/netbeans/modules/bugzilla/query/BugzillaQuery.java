@@ -256,7 +256,7 @@ public class BugzillaQuery {
         refreshIntern(autoReresh);
     }
 
-    void remove() {
+    public void remove() {
         repository.removeQuery(this);
         fireQueryRemoved();
     }
@@ -282,7 +282,7 @@ public class BugzillaQuery {
     }
 
     public String getUrlParameters() {
-        return getController().getUrlParameters();
+        return getController().getUrlParameters(false);
     }
 
     public boolean isUrlDefined() {

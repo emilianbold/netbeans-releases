@@ -190,7 +190,16 @@ final class NetigsoModule extends Module {
 
     @Override
     public Manifest getManifest() {
-        return manifest;
+        if (manifest != null) {
+            return manifest;
+        }
+        // XXX #210310: is anyone actually getting here?
+        try {
+            return getManager().loadManifest(jar);
+        } catch (IOException x) {
+            Util.err.log(Level.WARNING, "While loading manifest for " + this, x);
+            return new Manifest();
+        }
     }
 
     @Override

@@ -138,6 +138,7 @@ public class ModelBasedTestCase extends CndBaseTestCase {
     
     protected CsmFile getCsmFile(File testSourceFile) throws Exception {
         FileObject fo = FileUtil.toFileObject(testSourceFile);
+        assertNotNull("no file object for " + testSourceFile, fo);
         CsmFile csmFile = CsmModelAccessor.getModel().findFile(FSPath.toFSPath(fo), true, false);
         assertNotNull("Unresolved CsmFile for test file " + testSourceFile, csmFile);//NOI18N
         return csmFile;

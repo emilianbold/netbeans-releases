@@ -306,28 +306,28 @@ public class DebuggerAnnotation
     }
 
     public void enableInstBpt(NativeBreakpoint bpt) {
-        NativeDebugger debugger = DebuggerManager.get().currentDebugger();
+        NativeDebugger debugger = NativeDebuggerManager.get().currentDebugger();
         if (debugger != null) {
             debugger.InstBptEnabled(this.addr, bpt);
         }
     }
 
     public void disableInstBpt(NativeBreakpoint bpt) {
-        NativeDebugger debugger = DebuggerManager.get().currentDebugger();
+        NativeDebugger debugger = NativeDebuggerManager.get().currentDebugger();
         if (debugger != null) {
             debugger.InstBptDisabled(this.addr, bpt);
         }
     }
 
     public void addInstBpt(NativeBreakpoint bpt) {
-        NativeDebugger debugger = DebuggerManager.get().currentDebugger();
+        NativeDebugger debugger = NativeDebuggerManager.get().currentDebugger();
         if (debugger != null) {
             debugger.InstBptAdded(this.addr, bpt);
         }
     }
 
     public void removeInstBpt(NativeBreakpoint bpt) {
-        NativeDebugger debugger = DebuggerManager.get().currentDebugger();
+        NativeDebugger debugger = NativeDebuggerManager.get().currentDebugger();
         if (debugger != null) {
             debugger.InstBptRemoved(this.addr, bpt);
         }

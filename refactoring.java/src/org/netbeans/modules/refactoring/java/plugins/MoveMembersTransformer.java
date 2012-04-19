@@ -78,7 +78,6 @@ public class MoveMembersTransformer extends RefactoringVisitor {
     private static final int NOPOS = -2;
     private static final Set<Modifier> ALL_ACCESS_MODIFIERS = EnumSet.of(Modifier.PRIVATE, Modifier.PROTECTED, Modifier.PUBLIC);
     private Problem problem;
-    private IdentityHashMap<Tree, Void> commentsMapped;
     private Collection<? extends TreePathHandle> allElements;
     private final Visibility visibility;
     private final HashMap<TreePathHandle, Boolean> usageOutsideOfPackage;
@@ -100,7 +99,6 @@ public class MoveMembersTransformer extends RefactoringVisitor {
         delegate = properties.isDelegate();
         deprecate = properties.isAddDeprecated();
         updateJavadoc = properties.isUpdateJavaDoc();
-        commentsMapped = new IdentityHashMap<Tree, Void>();
     }
 
     public Problem getProblem() {
@@ -694,11 +692,7 @@ public class MoveMembersTransformer extends RefactoringVisitor {
 
                 // Insert the member and copy its comments
                 if (newMember != null) {
-                    // TODO Remove when #206200 is fixed
-                    if(!commentsMapped.containsKey(member)) {
-                        GeneratorUtilities.get(workingCopy).importComments(member, resolvedPath.getCompilationUnit());
-                        commentsMapped.put(member, null);
-                    }
+                    GeneratorUtilities.get(workingCopy).importComments(member, resolvedPath.getCompilationUnit());
                     GeneratorUtilities.get(workingCopy).copyComments(member, newMember, true);
                     GeneratorUtilities.get(workingCopy).copyComments(member, newMember, false);
                     if(newMember.getKind() == Tree.Kind.METHOD) {
@@ -770,11 +764,7 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                         modifiers = make.addModifiersAnnotation(modifiers, annotation);
                     }
                     MethodTree method = make.Method(modifiers, methodTree.getName(), methodTree.getReturnType(), methodTree.getTypeParameters(), methodTree.getParameters(), methodTree.getThrows(), make.Block(Collections.singletonList(statement), false), (ExpressionTree) methodTree.getDefaultValue());
-                    // TODO Remove when #206200 is fixed
-                    if(!commentsMapped.containsKey(member)) {
-                        GeneratorUtilities.get(workingCopy).importComments(member, resolvedPath.getCompilationUnit());
-                        commentsMapped.put(member, null);
-                    }
+                    GeneratorUtilities.get(workingCopy).importComments(member, resolvedPath.getCompilationUnit());
                     GeneratorUtilities.get(workingCopy).copyComments(member, method, true);
                     GeneratorUtilities.get(workingCopy).copyComments(member, method, false);
                     if(updateJavadoc) {

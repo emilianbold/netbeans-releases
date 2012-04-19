@@ -11,12 +11,6 @@ ant bootstrap
 # performance project
 cd "$performance"
 
-rm -rf build/test/unit
-rm -rf build/test/qa-functional
-
-ant clean -Dnetbeans.dest.dir=$netbeans_dest
-ant -Dnetbeans.dest.dir=$netbeans_dest
-
 ant test-unit -Dsuite.dir=test -Dtest.includes=**/fod/* -Dnetbeans.dest.dir=$netbeans_dest -DBrokenReferencesSupport.suppressBrokenRefAlert=true -Dnetbeans.keyring.no.master=true -Dorg.netbeans.editor.linewrap=true
 ant test-unit -Dsuite.dir=test -Dtest.includes=**/fod/* -Dnetbeans.dest.dir=$netbeans_dest -DBrokenReferencesSupport.suppressBrokenRefAlert=true -Dnetbeans.keyring.no.master=true -Dorg.netbeans.editor.linewrap=true
 ant test-unit -Dsuite.dir=test -Dtest.includes=**/fod/* -Dnetbeans.dest.dir=$netbeans_dest -DBrokenReferencesSupport.suppressBrokenRefAlert=true -Dnetbeans.keyring.no.master=true -Dorg.netbeans.editor.linewrap=true
@@ -50,18 +44,14 @@ rm -rf "$WORKSPACE"/fod/tmpdir
 
 cd "$performance"
 
-rm -rf build/test/unit
-rm -rf build/test/qa-functional
+ant test-unit -Dsuite.dir=test -Dtest.includes=**/MeasureScanningTest* -Dnetbeans.dest.dir=$netbeans_dest -DBrokenReferencesSupport.suppressBrokenRefAlert=true -Dnetbeans.keyring.no.master=true -DSuspendSupport.disabled=true-Drepeat=3 -Dorg.netbeans.editor.linewrap=true
 
-ant test-unit -Dsuite.dir=test -Dtest.includes=**/MeasureScanningTest* -Dnetbeans.dest.dir=$netbeans_dest -DBrokenReferencesSupport.suppressBrokenRefAlert=true -Dnetbeans.keyring.no.master=true -J-DSuspendSupport.disabled=true -Drepeat=1 -Dorg.netbeans.editor.linewrap=true
-ant test-unit -Dsuite.dir=test -Dtest.includes=**/MeasureScanningTest* -Dnetbeans.dest.dir=$netbeans_dest -DBrokenReferencesSupport.suppressBrokenRefAlert=true -Dnetbeans.keyring.no.master=true -J-DSuspendSupport.disabled=true -Drepeat=1 -Dorg.netbeans.editor.linewrap=true
-ant test-unit -Dsuite.dir=test -Dtest.includes=**/MeasureScanningTest* -Dnetbeans.dest.dir=$netbeans_dest -DBrokenReferencesSupport.suppressBrokenRefAlert=true -Dnetbeans.keyring.no.master=true -J-DSuspendSupport.disabled=true-Drepeat=3 -Dorg.netbeans.editor.linewrap=true
-
+gawk -v str="$str" '{print} NR == 4 {printf (str);}'  "$performance"/build/test/unit/results/TEST-org.netbeans.performance.scanning.MeasureScanningTest.xml > tmp.xml && mv tmp.xml "$performance"/build/test/unit/results/TEST-org.netbeans.performance.scanning.MeasureScanningTest.xml
+sed -i "s/\(<property name=\"buildnumber\" value=\"\).*\(\"\)/\1$buildnum\2/g" $performance/build/test/unit/results/TEST-org.netbeans.performance.scanning.MeasureScanningTest.xml
 
 cp -R build/test/unit/work/ "$WORKSPACE"/scanning
 cp -R build/test/unit/results/ "$WORKSPACE"/scanning
 rm -rf "$WORKSPACE"/scanning/userdir0
 rm -rf "$WORKSPACE"/scanning/tmpdir
-
 
 fi

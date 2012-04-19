@@ -80,10 +80,13 @@ public class J2SEActionProvider extends BaseActionProvider implements AntTargets
         COMMAND_RUN_SINGLE,
         COMMAND_DEBUG,
         COMMAND_DEBUG_SINGLE,
+        COMMAND_PROFILE,
+        COMMAND_PROFILE_SINGLE,
         JavaProjectConstants.COMMAND_JAVADOC,
         COMMAND_TEST,
         COMMAND_TEST_SINGLE,
         COMMAND_DEBUG_TEST_SINGLE,
+        COMMAND_PROFILE_TEST_SINGLE,
         SingleMethod.COMMAND_RUN_SINGLE_METHOD,
         SingleMethod.COMMAND_DEBUG_SINGLE_METHOD,
         JavaProjectConstants.COMMAND_DEBUG_FIX,
@@ -103,10 +106,13 @@ public class J2SEActionProvider extends BaseActionProvider implements AntTargets
         COMMAND_RUN_SINGLE,
         COMMAND_DEBUG,
         COMMAND_DEBUG_SINGLE,
+        COMMAND_PROFILE,
+        COMMAND_PROFILE_SINGLE,
         JavaProjectConstants.COMMAND_JAVADOC,
         COMMAND_TEST,
         COMMAND_TEST_SINGLE,
         COMMAND_DEBUG_TEST_SINGLE,
+        COMMAND_PROFILE_TEST_SINGLE,
         SingleMethod.COMMAND_RUN_SINGLE_METHOD,
         SingleMethod.COMMAND_DEBUG_SINGLE_METHOD,
         JavaProjectConstants.COMMAND_DEBUG_FIX,
@@ -139,10 +145,13 @@ public class J2SEActionProvider extends BaseActionProvider implements AntTargets
         commands.put(COMMAND_RUN_SINGLE, new String[] {"run-single"}); // NOI18N
         commands.put(COMMAND_DEBUG, new String[] {"debug"}); // NOI18N
         commands.put(COMMAND_DEBUG_SINGLE, new String[] {"debug-single"}); // NOI18N
+        commands.put(COMMAND_PROFILE, new String[] {"profile"}); // NOI18N
+        commands.put(COMMAND_PROFILE_SINGLE, new String[] {"profile-single"}); // NOI18N
         commands.put(JavaProjectConstants.COMMAND_JAVADOC, new String[] {"javadoc"}); // NOI18N
         commands.put(COMMAND_TEST, new String[] {"test"}); // NOI18N
         commands.put(COMMAND_TEST_SINGLE, new String[] {"test-single"}); // NOI18N
         commands.put(COMMAND_DEBUG_TEST_SINGLE, new String[] {"debug-test"}); // NOI18N
+        commands.put(COMMAND_PROFILE_TEST_SINGLE, new String[]{"profile-test"}); // NOI18N
         commands.put(JavaProjectConstants.COMMAND_DEBUG_FIX, new String[] {"debug-fix"}); // NOI18N
         commands.put(COMMAND_DEBUG_STEP_INTO, new String[] {"debug-stepinto"}); // NOI18N
 
@@ -151,10 +160,16 @@ public class J2SEActionProvider extends BaseActionProvider implements AntTargets
             COMMAND_RUN_SINGLE,
             COMMAND_DEBUG,
             COMMAND_DEBUG_SINGLE,
-            COMMAND_DEBUG_STEP_INTO
+            COMMAND_DEBUG_STEP_INTO,
+            COMMAND_PROFILE,
+            COMMAND_PROFILE_SINGLE,
+            COMMAND_PROFILE_TEST_SINGLE
         ));
 
         this.needJavaModelActions = new HashSet<String>(Arrays.asList(
+            COMMAND_PROFILE,
+            COMMAND_PROFILE_SINGLE,
+            COMMAND_PROFILE_TEST_SINGLE,
             JavaProjectConstants.COMMAND_DEBUG_FIX
         ));
     }

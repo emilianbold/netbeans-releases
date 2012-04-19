@@ -51,6 +51,7 @@ import java.awt.Container;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Frame;
+import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
@@ -150,6 +151,11 @@ public final class JavaHelp extends AbstractHelp implements HelpCtx.Displayer, A
     
     /** progress of merging help sets; max is # of sets to merge */
     private static final BoundedRangeModel mergeModel = new DefaultBoundedRangeModel(0, 0, 0, 0);
+    /** Icons */
+    public static final String HELP_ICON_SMALL =
+            "org/netbeans/modules/javahelp/resources/help.png";         //NOI18N
+    public static final String HELP_ICON_LARGE =
+            "org/netbeans/modules/javahelp/resources/help32x32.png";    //NOI18N
     
     private ProgressHandle progressHandle = null;
     
@@ -260,7 +266,10 @@ public final class JavaHelp extends AbstractHelp implements HelpCtx.Displayer, A
         if (frameViewer == null) {
             Installer.log.fine("\tcreating new");
             frameViewer = new JFrame();
-            frameViewer.setIconImage(ImageUtilities.loadImage("org/netbeans/modules/javahelp/resources/help.gif")); // NOI18N
+            List<Image> iconImages = new ArrayList<Image>(2);
+            iconImages.add(ImageUtilities.loadImage(HELP_ICON_SMALL));
+            iconImages.add(ImageUtilities.loadImage(HELP_ICON_LARGE));
+            frameViewer.setIconImages(iconImages);
             frameViewer.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(JavaHelp.class, "ACSD_JavaHelp_viewer"));
             
             if (isModalExcludedSupported()) {

@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.prefs.AbstractPreferences;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
@@ -145,7 +146,8 @@ public abstract class NbPreferences extends AbstractPreferences implements  Chan
 
     private String[] getKeysSpi() throws BackingStoreException {
         synchronized (lock) {
-            return properties().keySet().toArray(new String[0]);
+            Set<String> keySet = properties().keySet();
+            return keySet.toArray(new String[keySet.size()]);
         }
     }
     
@@ -265,6 +267,9 @@ public abstract class NbPreferences extends AbstractPreferences implements  Chan
         if (fileStorage.isReadOnly()) {
             throw new BackingStoreException("Unsupported operation: read-only storage");//NOI18N
         } else {
+            if (super.isRemoved()) {
+                return;
+            }
             clearProperties();
             super.removeNode();
         }
@@ -289,6 +294,9 @@ public abstract class NbPreferences extends AbstractPreferences implements  Chan
         if (fileStorage.isReadOnly()) {
             throw new BackingStoreException("Unsupported operation: read-only storage");//NOI18N
         } else {
+            if (super.isRemoved()) {
+                return;
+            }
             flushTask.waitFinished();
             super.sync();
         }
@@ -314,7 +322,10 @@ public abstract class NbPreferences extends AbstractPreferences implements  Chan
                 Exceptions.printStackTrace(ex);
             } finally {
                 for(String key : keyEntries) {
-                    if(!entries2add.contains(key)) {
+                    if (!entries2add.contains(key)) {
+                        if (super.isRemoved()) {
+                            continue;
+                        }
                         remove(key);
                     }
                 }

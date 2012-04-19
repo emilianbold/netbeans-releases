@@ -50,6 +50,8 @@ made subject to such option by the copyright holder.
     <folder name="Services">
 	<folder name="Collaboration">
 	    <file name="org-netbeans-modules-collab-provider-im-IMCollabManager.instance">
+                <!-- XXX consider using @ServiceProvider instead -->
+                <attr name="instanceOf" stringvalue="com.sun.collablet.CollabManager"/>
                 <!-- Does not exist:
 		<attr name="SystemFileSystem.icon" urlvalue="nbresloc:/com/sun/collablet/resources/collab.gif"/>
                 -->

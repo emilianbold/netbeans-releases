@@ -70,6 +70,7 @@ import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmTracer;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
+import org.netbeans.modules.cnd.modelimpl.csm.ForwardClass;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Disposable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
@@ -115,6 +116,8 @@ public class UIDUtilities {
         } else {
             if (declaration instanceof CsmTypedef) {
                 uid = new TypedefUID<T>(declaration);
+            } else if (ForwardClass.isForwardClass(declaration)) {
+                uid = new ForwardClassUID<T>(declaration);
             } else if (declaration instanceof CsmClassifier) {
                 uid = new ClassifierUID<T>(declaration);
             } else {
@@ -203,6 +206,14 @@ public class UIDUtilities {
             }
         }
         return isSameFile(uid1.getObject(), uid2.getObject());
+    }
+
+    public static boolean isForwardClass(CsmUID<?> uid) {
+        // TODO: check usages and decide if replaced forward class should be removed from repository
+        if (uid instanceof ForwardClassUID<?>) {
+            return true;
+        }
+        return false;
     }
 
     public static int getFileID(CsmUID<?> uid) {
@@ -691,6 +702,25 @@ public class UIDUtilities {
         @Override
         protected String getToStringPrefix() {
             return "ClassifierUID"; // NOI18N
+        }
+    }
+
+    /**
+     * UID for CsmClassifier
+     */
+    /* package */ static final class ForwardClassUID<T extends CsmOffsetableDeclaration> extends OffsetableDeclarationUIDBaseCached<T> {//OffsetableDeclarationUIDBase<T> {
+
+        public ForwardClassUID(T classifier) {
+            super(classifier);
+        }
+
+        /* package */ ForwardClassUID(RepositoryDataInput aStream) throws IOException {
+            super(aStream);
+        }
+
+        @Override
+        protected String getToStringPrefix() {
+            return "ForwardClassUID"; // NOI18N
         }
     }
 

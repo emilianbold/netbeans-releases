@@ -92,7 +92,7 @@ public class WatchesXMLCodec extends XMLDecoder implements XMLEncoder {
     public void encode(XMLEncoderStream xes) {
 	xes.elementOpen(TAG_WATCHES, version());
 	    for (NativeWatch w : bag.getWatches()) {
-		NativeDebugger debugger = DebuggerManager.get().currentNativeDebugger();
+		NativeDebugger debugger = NativeDebuggerManager.get().currentNativeDebugger();
 		WatchVariable dw = w.findByDebugger(debugger);
 		if (dw != null ) {
                     WatchXMLCodec encoder = new WatchXMLCodec(w);

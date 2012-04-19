@@ -87,9 +87,12 @@ import org.netbeans.modules.cnd.debugger.common2.utils.FileMapper;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
 public class Gdb {
+    private static final boolean GDBINIT = Boolean.getBoolean("gdb.init.enable"); // NOI18N
+    
     protected class StartProgressManager extends ProgressManager {
         private final String[] levelLabels = new String[] {
             "",
@@ -403,10 +406,15 @@ public class Gdb {
 		    avec.add(gdbname);
 		}
                 
-		if (gdbInitFile != null) {
+		if (gdbInitFile != null && !gdbInitFile.isEmpty()) {
 		    avec.add("-x"); // NOI18N
 		    avec.add(gdbInitFile);
 		}
+                
+                // see IZ 207860 - disable sourceing gdbinit files other than the one specified 
+                if (!GDBINIT) {
+                    avec.add("-nx"); // NOI18N
+                }
                     
 		// flags to get gdb going as an MI service
 		avec.add("--interpreter"); // NOI18N
@@ -1045,8 +1053,13 @@ public class Gdb {
                     final String line = interceptedLines.removeFirst();
 
                     processingQueue.post(new Runnable() {
+                        @Override
                         public void run() {
-                            miProxy.processLine(line);
+                            try {
+                                miProxy.processLine(line);
+                            } catch (Exception e) {
+                                Exceptions.printStackTrace(new Exception("when processing line: " + line, e)); //NOI18N
+                            }
                         }
                     });
                 }

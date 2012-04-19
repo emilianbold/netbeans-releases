@@ -61,6 +61,8 @@ class TestSourceClassPathImpl extends AbstractProjectClassPathImpl {
      */
     public TestSourceClassPathImpl(NbMavenProjectImpl proj) {
         super(proj);
+        proj.getProjectWatcher().addWatchedPath("target/generated-test-sources");
+        proj.getProjectWatcher().addWatchedPath("target/generated-sources"); // MCOMPILER-167
     }
     
     @Override

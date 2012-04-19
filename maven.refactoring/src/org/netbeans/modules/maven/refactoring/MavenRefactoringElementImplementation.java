@@ -45,20 +45,17 @@ package org.netbeans.modules.maven.refactoring;
 import java.io.File;
 import java.net.URL;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.artifact.repository.ArtifactRepositoryPolicy;
-import org.apache.maven.artifact.repository.MavenArtifactRepository;
-import org.apache.maven.artifact.repository.layout.DefaultRepositoryLayout;
 import org.apache.maven.artifact.resolver.AbstractArtifactResolutionException;
-import org.apache.maven.repository.RepositorySystem;
 import org.netbeans.api.actions.Openable;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
+import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.indexer.api.RepositoryUtil;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.ui.TreeElementFactory;
@@ -178,8 +175,11 @@ class MavenRefactoringElementImplementation implements RefactoringElementImpleme
                         MavenEmbedder online = EmbedderFactory.getOnlineEmbedder();
                         Artifact sources = online.createArtifactWithClassifier(ref.artifact.getGroupId(), ref.artifact.getArtifactId(), ref.artifact.getVersion(), ref.artifact.getType(), "sources");
                         // XXX how do we get the exact remote repo from this?
-                        ArtifactRepository remote = new MavenArtifactRepository(RepositorySystem.DEFAULT_REMOTE_REPO_ID, RepositorySystem.DEFAULT_REMOTE_REPO_URL, new DefaultRepositoryLayout(), new ArtifactRepositoryPolicy(), new ArtifactRepositoryPolicy());
-                        online.resolve(sources, Collections.singletonList(remote), online.getLocalRepository());
+                        // (Local artifact may well have come from a repository which is no longer registered in the IDE, or was never registered.
+                        // Unfortunately it seems M3 does not preserve enough information in the local repo's metadata to find artifacts
+                        // associated with one which was previously downloaded: _maven.repositories will remember the repositoryId but not its location.)
+                        List<ArtifactRepository> remotes = RepositoryPreferences.getInstance().remoteRepositories(online);
+                        online.resolve(sources, remotes, online.getLocalRepository());
                         // XXX this does not make ClassDataObject.OpenSourceCookie work immediately; clicking repeatedly seems to fix it
                     } catch (AbstractArtifactResolutionException x) {
                         LOG.log(Level.FINE, null, x);

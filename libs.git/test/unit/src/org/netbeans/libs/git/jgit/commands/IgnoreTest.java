@@ -445,6 +445,10 @@ public class IgnoreTest extends AbstractGitTestCase {
     }
     
     public void testIgnoreFileWithStarChar () throws Exception {
+        if (isWindows()) {
+            // win do not allow '*' in filename
+            return;
+        }
         File f = new File(workDir, "fi*le");
         f.createNewFile();
         File gitIgnore = new File(workDir, Constants.DOT_GIT_IGNORE);
@@ -469,6 +473,10 @@ public class IgnoreTest extends AbstractGitTestCase {
     }
     
     public void testIgnoreFileWithQuestionMark () throws Exception {
+        if (isWindows()) {
+            // win do not allow '?' in filename
+            return;
+        }
         File f = new File(workDir, "fi?le");
         f.createNewFile();
         File gitIgnore = new File(workDir, Constants.DOT_GIT_IGNORE);

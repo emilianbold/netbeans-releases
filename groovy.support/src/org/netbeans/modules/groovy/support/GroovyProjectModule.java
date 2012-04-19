@@ -44,10 +44,13 @@
 
 package org.netbeans.modules.groovy.support;
 import javax.swing.Action;
+import static org.netbeans.modules.groovy.support.Bundle.*;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.FileSensitiveActions;
-import org.openide.util.NbBundle;
-
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
+import org.openide.util.NbBundle.Messages;
 
 /**
  * Supplies project-specific file actions (e.g. compile/run) for *.groovy files.
@@ -55,11 +58,14 @@ import org.openide.util.NbBundle;
  * @author Petr Hejl
  */
 public class GroovyProjectModule {
-
+    @Messages("LBL_RunFile_Action=Run File")
+    @ActionID(id = "org.netbeans.modules.groovy.support.GroovyProjectModule", category = "Groovy")
+    @ActionRegistration(lazy = false, displayName = "#LBL_RunFile_Action")
+    @ActionReference(path = "Loaders/text/x-groovy/Actions", position = 550, separatorBefore = 530)
     public static Action run() {
         return FileSensitiveActions.fileCommandAction(
                 ActionProvider.COMMAND_RUN_SINGLE,
-                NbBundle.getMessage(GroovyProjectModule.class, "LBL_RunFile_Action"), // NOI18N
+                LBL_RunFile_Action(), // NOI18N
                 null);
     }
 

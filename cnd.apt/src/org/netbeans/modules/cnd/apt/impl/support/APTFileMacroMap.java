@@ -53,12 +53,12 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.structure.APTDefine;
-import org.netbeans.modules.cnd.apt.support.APTHandlersSupport.StateKey;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTMacro.Kind;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
+import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
@@ -187,9 +187,9 @@ public class APTFileMacroMap extends APTBaseMacroMap {
         }
     }
 
-    public StateKey getStateKey() {
-        return new StateKey(crc1, crc2);
-    }
+//    public StateKey getStateKey() {
+//        return new StateKey(crc1, crc2);
+//    }
 
     public static class FileStateImpl extends StateImpl {
         private final APTMacroMap sysMacroMap;
@@ -210,8 +210,8 @@ public class APTFileMacroMap extends APTBaseMacroMap {
             this.crc2 = state.crc2;
         }
 
-        StateKey getStateKey() {
-            return new StateKey(crc1, crc2);
+        APTHandlersSupportImpl.StateKeyImpl getStateKey(Key startFileProject) {
+            return new APTHandlersSupportImpl.StateKeyImpl(crc1, crc2, startFileProject);
         }
 
         @Override
@@ -221,7 +221,11 @@ public class APTFileMacroMap extends APTBaseMacroMap {
             retValue.append("Snapshot\n"); // NOI18N
             retValue.append(super.toString());
             retValue.append("\nSystem MacroMap\n"); // NOI18N
-            retValue.append(sysMacroMap);
+            if (System.getProperty("cnd.apt.macro.trace") != null) {
+                retValue.append(sysMacroMap);
+            } else {
+                retValue.append(System.identityHashCode(sysMacroMap));
+            }
             return retValue.toString();
         }
 

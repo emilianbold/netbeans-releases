@@ -270,7 +270,7 @@ public final class SessionGenerator {
         } else {
             Project project = FileOwnerQuery.getOwner(pkg);
             J2eeProjectCapabilities projectCap = J2eeProjectCapabilities.forProject(project);
-            if (projectCap != null && projectCap.isEjb31LiteSupported()){
+            if (projectCap != null && projectCap.isEjb31Supported()){
                 this.templateParameters.put(TEMPLATE_PROPERTY_LOCAL_BEAN, Boolean.TRUE.toString());
             }
         }
