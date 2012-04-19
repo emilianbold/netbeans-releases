@@ -508,7 +508,6 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
     } 
     
     private HistoryEntry[] loadLHEntries(VCSFileProxy[] files) {
-        VersioningSystem lh = History.getInstance().getLocalHistory(files);
         if(lh == null) {
             return new HistoryEntry[0];
         }
@@ -558,6 +557,7 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
             add(treeView, BorderLayout.CENTER);
         }   
 
+        @Override
         public ExplorerManager getExplorerManager() {
             return manager;
         }
@@ -645,6 +645,7 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
             
             private void setDefaultColumnSizes() {
                 SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         int width = getWidth();                    
                         getOutline().getColumnModel().getColumn(0).setPreferredWidth(width * 20 / 100);
@@ -768,8 +769,11 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
     
     private static final Icon NO_ICON = new NoIcon();
     private static class NoIcon implements Icon {
+        @Override
         public void paintIcon(Component c, Graphics g, int x, int y) { }
+        @Override
         public int getIconWidth() { return 0; }
+        @Override
         public int getIconHeight() { return 0; }
     }
 
