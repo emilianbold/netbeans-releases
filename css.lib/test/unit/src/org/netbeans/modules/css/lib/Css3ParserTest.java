@@ -47,9 +47,12 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.text.BadLocationException;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.css.lib.api.*;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -64,7 +67,7 @@ public class Css3ParserTest extends CssTestBase {
 //     public static Test suite() throws IOException, BadLocationException {
 //        System.err.println("Beware, only selected tests runs!!!");
 //        TestSuite suite = new TestSuite();
-//        suite.addTest(new Css3ParserTest("testErrors"));
+//        suite.addTest(new Css3ParserTest("testIssue211103"));
 //        return suite;
 //    }
     @Override
@@ -1023,6 +1026,13 @@ public class Css3ParserTest extends CssTestBase {
                 
         assertNotNull(node);
         
+    }
+    
+    //Bug 211103 - Freezes on starting IDE at "Scanning project" for too long
+    public void testIssue211103() throws IOException, ParseException, BadLocationException {
+        FileObject file = getTestFile("testfiles/itabbar.css.testfile");
+        //check if we can even parse the file w/o an infinite loop in the recovery
+        TestUtil.parse(file);
     }
     
 //    public void testRecoveryInBodySet() {
