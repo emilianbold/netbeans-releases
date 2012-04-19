@@ -519,7 +519,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
     }
 
     @Override
-    @Messages({"EXECUTIONS=Executions", "EXECUTION=Execution", "GOALS=Goals", "INHERITED=Inherited", "CONFIGURATION=Configuration"})
+    @Messages({"EXECUTIONS=Executions", "EXECUTION=Execution", "GOALS=Goals", "INHERITED=Inherited", "CONFIGURATION=Configuration", "GOAL=Goal"})
     public void visit(Plugin target) {
         Plugin t = target;
         POMQNames names = parent.getPOMQNames();
@@ -541,7 +541,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
                     }
                 });
         checkDependencies(t);
-        checkStringListObject(names.GOALS, names.GOAL, GOALS(), NbBundle.getMessage(POMModelVisitor.class, "GOAL"), t != null ? t.getGoals() : null);
+        checkStringListObject(names.GOALS, names.GOAL, GOALS(), GOAL(), t != null ? t.getGoals() : null);
         checkChildString(names.INHERITED, INHERITED(), t != null ? (t.isInherited() != null ? t.isInherited().toString() : null) : null);
         checkChildObject(names.CONFIGURATION, Configuration.class, CONFIGURATION(), t != null ? t.getConfiguration() : null);
 
