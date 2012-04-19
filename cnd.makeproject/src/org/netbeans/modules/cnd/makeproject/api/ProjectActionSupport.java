@@ -737,7 +737,7 @@ public class ProjectActionSupport {
                     executable = CndPathUtilitities.toAbsolutePath(pae.getConfiguration().getBaseDir(), executable);
                 } else {
                     runDir = CndPathUtilitities.toAbsolutePath(pae.getConfiguration().getBaseDir(), runDir);
-                    executable = CndPathUtilitities.toAbsolutePath(runDir, executable);
+                    executable = CndPathUtilitities.toAbsolutePath(runDir, CndPathUtilitities.getBaseName(executable));
                 }
                 executable = CndPathUtilitities.normalizeSlashes(executable);
             }
