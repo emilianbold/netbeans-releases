@@ -2252,10 +2252,8 @@ exists or setup the property manually. For example like this:
                     </or>
                 </condition>
             </target>
-
-            <target name="profile" depends="-profile-check,init,-init-cos,compile,compile-jsps,-do-compile-single-jsp,-pre-dist,-do-tmp-dist-with-manifest,-do-tmp-dist-without-manifest,-profile-pre72" if="profiler.configured" unless="profiler.info.jvmargs.agent">
-                <xsl:attribute name="description">Profile a J2EE project in the IDE.</xsl:attribute>
-                
+            
+            <target name="-do-profile" depends="init,-init-cos,compile,compile-jsps,-do-compile-single-jsp,-pre-dist,-do-tmp-dist-with-manifest,-do-tmp-dist-without-manifest">
                 <startprofiler/>
                 <nbstartserver profilemode="true"/>
                 
@@ -2265,6 +2263,14 @@ exists or setup the property manually. For example like this:
                 </antcall>
                 <antcall>
                     <xsl:attribute name="target">-profile-start-loadgen</xsl:attribute>
+                </antcall>
+            </target>
+
+            <target name="profile" depends="-profile-check,-profile-pre72" if="profiler.configured" unless="profiler.info.jvmargs.agent">
+                <xsl:attribute name="description">Profile a J2EE project in the IDE.</xsl:attribute>
+                
+                <antcall>
+                    <xsl:attribute name="target">-do-profile</xsl:attribute>
                 </antcall>
             </target>
             
