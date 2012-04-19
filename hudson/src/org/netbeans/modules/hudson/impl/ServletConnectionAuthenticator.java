@@ -100,8 +100,14 @@ public class ServletConnectionAuthenticator implements ConnectionAuthenticator {
                             try {
                                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                                 FileUtil.copy(is, baos);
-                                LOGGER.log(Level.FINER, "Received crumb: {0}", baos);
-                                crumbs.put(home.toString(), baos.toString().split("=", 2));
+                                String crumb = baos.toString("UTF-8");
+                                String[] crumbA = crumb.split("=", 2);
+                                if (crumbA.length == 2 && crumbA[0].indexOf('\n') == -1) {
+                                    LOGGER.log(Level.FINER, "Received crumb: {0}", crumb);
+                                    crumbs.put(home.toString(), crumbA);
+                                } else {
+                                    LOGGER.log(Level.WARNING, "Bad crumb response: {0}", crumb);
+                                }
                             } finally {
                                 is.close();
                             }
