@@ -191,54 +191,57 @@ public final class ProjectActionEvent {
                             LOGGER.log(Level.SEVERE, "Path Mapper not found for project {0} - using local path {1}", new Object[]{getProject(), baseDir}); //NOI18N
                         }
                     }
-                    result = baseDir + FileSystemProvider.getFileSeparatorChar(execEnv) + result;            
+                    result = baseDir + FileSystemProvider.getFileSeparatorChar(execEnv) + result;
                 }
                 result = FileSystemProvider.normalizeAbsolutePath(result, execEnv);
             }
         } else {
             result = executable;
-        }                 
+        }
 	return result;
+    }
+
+    public String getRunCommandAsString() {
+        String command = getProfile().getRunCommand().getValue();
+        String outputValue = ""; // NOI18N
+
+        if (!configuration.isLibraryConfiguration()) {
+            if (configuration.getOutputValue().length() > 0) {
+                outputValue = configuration.getAbsoluteOutputValue();
+            }
+        }
+
+        if (configuration.getPlatformInfo().isLocalhost()) {
+            command = CndPathUtilitities.expandMacro(command, "${OUTPUT_PATH}", outputValue); // NOI18N
+        } else { //            if (!configuration.getDevelopmentHost().isLocalhost()) {
+            PathMap mapper = RemoteSyncSupport.getPathMap(getProject());
+            if (mapper != null) {
+                String aValue = mapper.getRemotePath(outputValue, true);
+                if (aValue != null) {
+                    outputValue = aValue;
+                }
+            } else {
+                LOGGER.log(Level.SEVERE, "Path Mapper not found for project {0} - using local path {1}", new Object[]{getProject(), outputValue}); //NOI18N
+            }
+
+            command = CndPathUtilitities.expandMacro(command, "${OUTPUT_PATH}", mapper.getRemotePath(outputValue, true)); // NOI18N
+        }
+
+        return configuration.expandMacros(command);
     }
 
     private String[] getRunCommand() {
         if (runCommandCache == null || runCommandCache.length == 0) {
-            String command = getProfile().getRunCommand().getValue();
-
             // not clear what is the difference between getPlatformInfo
-            // and getDevelopmentHost. 
+            // and getDevelopmentHost.
             // TODO: get rid off one of ifs below
             assert(configuration.getPlatformInfo().isLocalhost() == configuration.getDevelopmentHost().isLocalhost());
 
-            String outputValue;
-            if (configuration.isLibraryConfiguration()) {
-                outputValue = "";
-            }
-            else {
-                outputValue = configuration.getOutputValue();
-            }
-            if (outputValue.length() > 0) {
-                outputValue = configuration.getAbsoluteOutputValue();
-            }
-            if (configuration.getPlatformInfo().isLocalhost()) {
-                command = CndPathUtilitities.expandMacro(command, "${OUTPUT_PATH}", outputValue); // NOI18N
-            } else { //            if (!configuration.getDevelopmentHost().isLocalhost()) {
-                PathMap mapper = RemoteSyncSupport.getPathMap(getProject());
-                if (mapper != null) {
-                    String aValue = mapper.getRemotePath(outputValue, true);
-                    if (aValue != null) {
-                        outputValue = aValue;
-                    }
-                } else {
-                    LOGGER.log(Level.SEVERE, "Path Mapper not found for project {0} - using local path {1}", new Object[]{getProject(), outputValue}); //NOI18N
-                }
-                command = CndPathUtilitities.expandMacro(command, "${OUTPUT_PATH}", outputValue); // NOI18N
-            }
-            runCommandCache = Utilities.parseParameters(configuration.expandMacros(command));
+            runCommandCache = Utilities.parseParameters(getRunCommandAsString());
         }
         return runCommandCache;
     }
-  
+
     public ArrayList<String> getArguments() {
         ArrayList<String> result = new ArrayList<String>();
         if (type == PredefinedType.RUN) {

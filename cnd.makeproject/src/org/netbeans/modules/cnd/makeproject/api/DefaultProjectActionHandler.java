@@ -170,17 +170,17 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
         final PlatformInfo pi = conf.getPlatformInfo();
         final ExecutionEnvironment execEnv = conf.getDevelopmentHost().getExecutionEnvironment();
 
-        String exe = pae.getExecutable(); // we don't need quoting - it's execution responsibility
-        // we don't need quoting - it's execution responsibility
-        ArrayList<String> args = pae.getArguments();
         Map<String, String> env = pae.getProfile().getEnvironment().getenvAsMap();
         boolean showInput = actionType == ProjectActionEvent.PredefinedType.RUN;
         boolean unbuffer = false;
         boolean runInInternalTerminal;
         boolean runInExternalTerminal;
+        String commandLine = null;
         CompilerSet cs;
 
         int consoleType = pae.getProfile().getConsoleType().getValue();
+        ArrayList<String> args = null;
+        // Used if not RUN. Also in case of QMake args are tweaked...
 
         if (actionType == ProjectActionEvent.PredefinedType.RUN) {
             runInInternalTerminal = consoleType == RunProfile.CONSOLE_TYPE_INTERNAL;
@@ -201,17 +201,11 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
                     //use default consoly type for remote run
                     //the default is Internal Terminal
                     consoleType = RunProfile.getDefaultConsoleType();
-                    runInInternalTerminal = RunProfile.CONSOLE_TYPE_INTERNAL == consoleType;                            
+                    runInInternalTerminal = RunProfile.CONSOLE_TYPE_INTERNAL == consoleType;
                 }
             }
 
             if (consoleType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
-                if (pi.getPlatform() == PlatformTypes.PLATFORM_WINDOWS) {
-                    exe = CndPathUtilitities.naturalizeSlashes(exe);
-                } 
-                if (conf.getDevelopmentHost().isLocalhost()) {
-                    exe = CndPathUtilitities.toAbsolutePath(runDirectory, exe);
-                } 
                 unbuffer = true;
             } else if (!runInInternalTerminal) {
                 showInput = false;
@@ -237,6 +231,8 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
                 }
                 env.put(pi.getPathName(), path);
             }
+
+            commandLine = pae.getRunCommandAsString();
         } else { // Build or Clean
             // Build or Clean
             cs = conf.getCompilerSet().getCompilerSet();
@@ -257,6 +253,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
             if (conf.isQmakeConfiguration()) {
                 String qmakePath = cs.getTool(PredefinedToolKind.QMakeTool).getPath();
                 qmakePath = CppUtils.normalizeDriveLetter(cs, qmakePath.replace('\\', '/')); // NOI18N
+                args = pae.getArguments();
                 args.add("QMAKE=" + CndPathUtilitities.escapeOddCharacters(qmakePath)); // NOI18N
             }
         }
@@ -290,10 +287,18 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv).
                 setWorkingDirectory(workingDirectory).
                 unbufferOutput(unbuffer).
-                setExecutable(exe).
-                setArguments(args.toArray(new String[args.size()])).
                 addNativeProcessListener(processChangeListener);
-        
+
+        if (commandLine != null) {
+            npb.setCommandLine(commandLine);
+        } else {
+            String exe = pae.getExecutable();
+            if (args == null) {
+                args = pae.getArguments();
+            }
+            npb.setExecutable(exe).setArguments(args.toArray(new String[args.size()]));
+        }
+
         if (actionType == ProjectActionEvent.PredefinedType.BUILD || actionType == ProjectActionEvent.PredefinedType.BUILD_TESTS) {
             npb.redirectError();
         }
@@ -472,7 +477,9 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
     }
 
     private static final class WriterRedirector extends Writer {
+
         private final Collection<OutputStreamHandler> handlers;
+
         WriterRedirector(Collection<BuildActionsProvider.OutputStreamHandler> handlers) {
             this.handlers = handlers;
         }
