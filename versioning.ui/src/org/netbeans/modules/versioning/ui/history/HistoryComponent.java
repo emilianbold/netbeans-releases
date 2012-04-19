@@ -475,22 +475,6 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
         }
     }
 
-    private void onFilterChange() {
-        Filter filter = (Filter) getToolbar().filterCombo.getSelectedItem();
-        getToolbar().containsLabel.setVisible(filter instanceof ByUserFilter || filter instanceof ByMsgFilter);
-        getToolbar().containsField.setVisible(filter instanceof ByUserFilter || filter instanceof ByMsgFilter);
-        masterView.setFilter(filter);
-        getToolbar().containsField.setText(""); // NOI18N
-        getToolbar().containsField.requestFocus();
-    }
-
-    private void onModeChange() {
-        diffView.modeChanged();
-        if(masterView != null) {
-            masterView.requestActive();
-        }
-    }
-                
     @Override
     public Action[] getActions() {
         Action[] retValue;
@@ -699,7 +683,8 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
                     new LHFilter(),
                     new ByUserFilter(),
                     new ByMsgFilter()};
-                filterCombo.setModel(new DefaultComboBoxModel(filters));   
+                filterCombo.setModel(new DefaultComboBoxModel(filters)); 
+                setMode((Filter)filterCombo.getSelectedItem());
             }
             filterCombo.setVisible(visible);
             filterLabel.setVisible(visible);
@@ -710,6 +695,60 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
             separator2.setVisible(visible);
         }
         
+        private void onFilterChange() {
+            Filter filter = (Filter) getToolbar().filterCombo.getSelectedItem();
+            setMode(filter);
+            getToolbar().containsLabel.setVisible(filter instanceof ByUserFilter || filter instanceof ByMsgFilter);
+            getToolbar().containsField.setVisible(filter instanceof ByUserFilter || filter instanceof ByMsgFilter);
+            masterView.setFilter(filter);
+            getToolbar().containsField.setText(""); // NOI18N
+            getToolbar().containsField.requestFocus();
+        }
+
+        private void onModeChange() {
+            if(ignoreModeChange) {
+                return;
+            }
+            Filter filter = (Filter) getToolbar().filterCombo.getSelectedItem();
+            storeMode(filter);
+            diffView.modeChanged();
+            if(masterView != null) {
+                masterView.requestActive();
+            }
+        }
+
+        private void storeMode(Filter filter) {
+            if(filter instanceof AllFilter) {
+                HistorySettings.getInstance().setAllMode(((CompareMode)getToolbar().modeCombo.getSelectedItem()).name());
+                HistorySettings.getInstance().setVCSMode(((CompareMode)getToolbar().modeCombo.getSelectedItem()).name());
+                HistorySettings.getInstance().setLHMode(((CompareMode)getToolbar().modeCombo.getSelectedItem()).name());
+            } else if(filter instanceof VCSFilter) {
+                HistorySettings.getInstance().setVCSMode(((CompareMode)getToolbar().modeCombo.getSelectedItem()).name());
+            } else if(filter instanceof LHFilter) {
+                HistorySettings.getInstance().setLHMode(((CompareMode)getToolbar().modeCombo.getSelectedItem()).name());
+            }
+        }
+
+        private boolean ignoreModeChange = false;
+        private void setMode(Filter filter) {
+            CompareMode mode;
+            if(filter instanceof AllFilter) {
+                mode = CompareMode.valueOf(HistorySettings.getInstance().getAllMode(CompareMode.TOCURRENT.name()));
+            } else if(filter instanceof VCSFilter) {
+                mode = CompareMode.valueOf(HistorySettings.getInstance().getVCSMode(CompareMode.TOCURRENT.name()));
+            } else if(filter instanceof LHFilter) {
+                mode = CompareMode.valueOf(HistorySettings.getInstance().getLHMode(CompareMode.TOCURRENT.name()));
+            } else {
+                return;
+            }
+            ignoreModeChange = true;
+            try {
+                modeCombo.setSelectedItem(mode);
+            } finally {
+                ignoreModeChange = false;
+            }
+        }
+    
         private class ShowHistoryAction extends AbstractAction {
             private VersioningSystem vs;
             private final Set<String> forPaths = new HashSet<String>(1);
