@@ -590,7 +590,7 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
         private final Separator separator3;
         
         private Toolbar(VersioningSystem vs) {
-            setBorder(new EmptyBorder(0, 0, 0, 0));
+//            setBorder(new EmptyBorder(0, 0, 0, 0));
             setOpaque(false);
             setFloatable(false);
             
@@ -658,9 +658,7 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
             prevButton.setBorder(new EmptyBorder(0, 5, 0, 5));
             refreshButton.setBorder(new EmptyBorder(0, 0, 0, 0));
             filterLabel.setBorder(new EmptyBorder(0, 15, 0, 5));
-            filterCombo.setBorder(new EmptyBorder(0, 5, 0, 5));
             modeLabel.setBorder(new EmptyBorder(0, 15, 0, 5));
-            modeCombo.setBorder(new EmptyBorder(0, 5, 0, 5));
             containsLabel.setBorder(new EmptyBorder(0, 5, 0, 10));
             settingsButton.setBorder(new EmptyBorder(0, 5, 0, 10));
 
