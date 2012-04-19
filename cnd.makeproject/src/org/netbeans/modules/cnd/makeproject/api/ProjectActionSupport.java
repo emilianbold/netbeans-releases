@@ -541,31 +541,38 @@ public class ProjectActionSupport {
                     ioTab.getOut().close();
                 }
             }
-            if (type == PredefinedType.CUSTOM_ACTION && customHandler != null) {
-                initHandler(customHandler, pae, paes);
-                customHandler.execute(io);
-            } else {
-                // moved to RemoteBuildProjectActionHandler
-                //if (currentAction == 0 && !checkRemotePath(pae, err, out)) {
-                //    progressHandle.finish();
-                //    return;
-                //}
-                boolean foundFactory = false;
-                for (ProjectActionHandlerFactory factory : handlerFactories) {
-                    if (factory.canHandle(pae)) {
-                        ProjectActionHandler handler = currentHandler = factory.createHandler();
-                        initHandler(handler, pae, paes);
-                        handler.execute(io);
 
-                        foundFactory = true;
-                        break;
+            boolean stopProgress = true;
+
+            try {
+                if (type == PredefinedType.CUSTOM_ACTION && customHandler != null) {
+                    initHandler(customHandler, pae, paes);
+                    customHandler.execute(io);
+                } else {
+                    // moved to RemoteBuildProjectActionHandler
+                    //if (currentAction == 0 && !checkRemotePath(pae, err, out)) {
+                    //    progressHandle.finish();
+                    //    return;
+                    //}
+                    boolean foundFactory = false;
+                    for (ProjectActionHandlerFactory factory : handlerFactories) {
+                        if (factory.canHandle(pae)) {
+                            ProjectActionHandler handler = currentHandler = factory.createHandler();
+                            initHandler(handler, pae, paes);
+                            handler.execute(io);
+
+                            foundFactory = true;
+                            break;
+                        }
                     }
+
+                    stopProgress = !foundFactory;
                 }
-                if (!foundFactory) {
+            } finally {
+                if (stopProgress) {
                     stopProgress();
                 }
             }
-
         }
 
         private void initHandler(ProjectActionHandler handler, ProjectActionEvent pae, ProjectActionEvent[] paes) {
