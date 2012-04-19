@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.modelimpl.content.project;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -139,7 +140,7 @@ public final class IncludedFileContainer {
         }
     }
 
-    private Storage getStorageForProject(ProjectBase includedFileOwner) {
+    public Storage getStorageForProject(ProjectBase includedFileOwner) {
         CsmUID<CsmProject> uid = includedFileOwner.getUID();
         for (Entry entry : list) {
             if (entry.prjUID.equals(uid)) {
@@ -216,6 +217,10 @@ public final class IncludedFileContainer {
             this.fileSystem = fileSystem;
         }
 
+        public Map<CharSequence, FileContainer.FileEntry> getInternalMap() {
+            return Collections.unmodifiableMap(myFiles);
+        }
+        
         private static Storage create(ProjectBase startProject, ProjectBase includedProject) {
             Storage storage = new Storage(new IncludedFileStorageKey(startProject, includedProject), includedProject.getFileSystem());
             storage.put();

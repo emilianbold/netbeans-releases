@@ -76,14 +76,14 @@ public class TestChecker implements PrerequisitesChecker {
                 if (test != null && method != null) {
                     config.setProperty(DefaultReplaceTokenProvider.METHOD_NAME, null);
                     config.setProperty("test", test + '#' + method);
+                }
+            }
         }
-            }
-        } else if (MavenSettings.getDefault().isSkipTests()) {
-            if (config.getPreExecution() != null) {
-                checkRunConfig(config.getPreExecution());
-            }
-            if (config.getProperties().get(PROP_SKIP_TEST) == null) {
-                config.setProperty(PROP_SKIP_TEST, "true"); //NOI18N
+        if (MavenSettings.getDefault().isSkipTests()) {
+            if (!String.valueOf(config.getGoals()).contains("test")) { // incl. integration-test
+                if (config.getProperties().get(PROP_SKIP_TEST) == null) {
+                    config.setProperty(PROP_SKIP_TEST, "true"); //NOI18N
+                }
             }
         }
         return true;

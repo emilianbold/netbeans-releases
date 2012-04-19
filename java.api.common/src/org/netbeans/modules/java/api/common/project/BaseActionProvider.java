@@ -1225,6 +1225,7 @@ public abstract class BaseActionProvider implements ActionProvider {
 
     private static final Pattern SRCDIRJAVA = Pattern.compile("\\.java$"); // NOI18N
     private static final String SUBST = "Test.java"; // NOI18N
+    private static final String SUBSTNG = "NGTest.java"; // NOI18N
 
 
     /**
@@ -1331,6 +1332,10 @@ public abstract class BaseActionProvider implements ActionProvider {
                     FileObject[] files2 = ActionUtils.regexpMapFiles(files,srcRoot, SRCDIRJAVA, testSrcPath[i], SUBST, true);
                     if (files2 != null) {
                         return files2;
+                    }
+                    FileObject[] files2NG = ActionUtils.regexpMapFiles(files, srcRoot, SRCDIRJAVA, testSrcPath[i], SUBSTNG, true);
+                    if (files2NG != null) {
+                        return files2NG;
                     }
                 }
             }

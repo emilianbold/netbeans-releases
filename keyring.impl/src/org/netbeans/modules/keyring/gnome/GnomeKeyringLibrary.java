@@ -63,13 +63,17 @@ public interface GnomeKeyringLibrary extends Library {
 
     class LibFinder { // #203735
         private static final String GENERIC = "gnome-keyring";
-        private static final String EXPLICIT = "/usr/lib/libgnome-keyring.so.0";
+        // http://packages.ubuntu.com/search?suite=precise&arch=any&mode=exactfilename&searchon=contents&keywords=libgnome-keyring.so.0
+        private static final String EXPLICIT_ONEIRIC = "/usr/lib/libgnome-keyring.so.0";
+        private static final String EXPLICIT_PRECISE = "amd64".equals(System.getProperty("os.arch")) ? "/usr/lib/x86_64-linux-gnu/libgnome-keyring.so.0" : "/usr/lib/i386-linux-gnu/libgnome-keyring.so.0";
         private static Object load(Map<?,?> options) {
             try {
                 return Native.loadLibrary(GENERIC, GnomeKeyringLibrary.class, options);
             } catch (UnsatisfiedLinkError x) {
-                if (new File(EXPLICIT).isFile()) {
-                    return Native.loadLibrary(EXPLICIT, GnomeKeyringLibrary.class, options);
+                if (new File(EXPLICIT_ONEIRIC).isFile()) {
+                    return Native.loadLibrary(EXPLICIT_ONEIRIC, GnomeKeyringLibrary.class, options);
+                } else if (new File(EXPLICIT_PRECISE).isFile()) {
+                    return Native.loadLibrary(EXPLICIT_PRECISE, GnomeKeyringLibrary.class, options);
                 } else {
                     throw x;
                 }

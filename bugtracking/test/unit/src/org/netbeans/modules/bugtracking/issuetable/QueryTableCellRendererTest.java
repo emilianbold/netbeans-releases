@@ -351,6 +351,12 @@ public class QueryTableCellRendererTest {
             fail("implement me!!!");
             return false;
         }
+        
+        @Override
+        public boolean isFinished() {
+            fail("implement me!!!");
+            return false;
+        }
 
         @Override
         public boolean refresh() {

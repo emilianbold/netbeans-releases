@@ -258,21 +258,25 @@ public class HistoryDiffView implements PropertyChangeListener {
         public void run() {
             getPreparingDiffHandler().start();
             
-            if(entry2 == null && file2 == null) {
-                entry2 = entry1.getParent(file1);
-                if(entry2 == null) {
-                    entry2 = tc.getParentEntry(entry1);
-                }
-                file2 = file1;
-                if (entry2 == null) {
-                    showNoContent(NbBundle.getMessage(HistoryDiffView.class, "MSG_DiffPanel_NoVersionToCompare")); // NOI18N                                
-                    return;
-                }                
-            }
-            
             VCSFileProxy revisionFile1;
             VCSFileProxy revisionFile2;
             try {
+                if(entry2 == null && file2 == null) {
+                    entry2 = entry1.getParent(file1);
+                    if(entry2 == null) {
+                        entry2 = tc.getParentEntry(entry1);
+                    }
+                    file2 = file1;
+                    if (entry2 == null) {
+                        EventQueue.invokeLater(new Runnable() {
+                            @Override
+                            public void run () {
+                                showNoContent(NbBundle.getMessage(HistoryDiffView.class, "MSG_DiffPanel_NoVersionToCompare")); // NOI18N                                
+                            }
+                        });
+                        return;
+                    }                
+                }
                 revisionFile1 = getRevisionFile(entry1, file1);
                 revisionFile2 = getRevisionFile(entry2, file2);
             } finally {
@@ -523,6 +527,7 @@ public class HistoryDiffView implements PropertyChangeListener {
             add(label, c);
             label.setEnabled(false);
             timer = new Timer(0, this);
+            timer.setRepeats(false);
         }
         
         void start() {

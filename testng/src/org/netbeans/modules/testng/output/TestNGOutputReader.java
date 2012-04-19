@@ -315,7 +315,9 @@ final class TestNGOutputReader {
         }
         if (!offline) {
             //log/verbose level = 0 so don't show output
-            displayOutput(msg, event.getLogLevel() == AntEvent.LOG_WARN);
+            if (!msg.startsWith(RegexpUtils.TEST_LISTENER_PREFIX)) {
+                displayOutput(msg, event.getLogLevel() == AntEvent.LOG_WARN);
+            }
             verboseMessageLogged(event);
         }
     }

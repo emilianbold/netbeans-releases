@@ -126,7 +126,7 @@ public final class CustomizerComponentFactory {
     
     static final class DependencyListModel extends AbstractListModel implements UIUtil.WaitingModel {
         
-        private final Set<ModuleDependency> currentDeps;
+        private Set<ModuleDependency> currentDeps;
         
         private boolean changed;
         private enum State { INVALID, WAITING, OK };
@@ -178,7 +178,7 @@ public final class CustomizerComponentFactory {
             if (state != State.WAITING) {
                 return; // #179979: unknown how this happens
             }
-            currentDeps.addAll(deps);
+            currentDeps = deps;
             state = State.OK;
             int origSize = currentDeps.size();
             fireContentsChanged(this, 0, origSize);

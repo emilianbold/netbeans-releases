@@ -334,7 +334,7 @@ public final class DashboardTopComponent extends TopComponent {
                     filterPanel.setHitsCount(hits);
                 } else {
                     if (displayTextTaskFilter != null) {
-                        DashboardViewer.getInstance().removeTaskFilter(displayTextTaskFilter);
+                        DashboardViewer.getInstance().removeTaskFilter(displayTextTaskFilter, true);
                         displayTextTaskFilter = null;
                     }
                     filterPanel.clear();

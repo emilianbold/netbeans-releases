@@ -366,7 +366,8 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
                                 generateEqualsAndHashCode(
                                     copy, path, 
                                     generateEquals ? equalsElements : null, 
-                                    generateHashCode ? hashCodeElements : null
+                                    generateHashCode ? hashCodeElements : null,
+                                    caretOffset
                                 );
                             }
                         }
@@ -385,23 +386,24 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
         Collection<VariableElement> e = arr[0] == null ? Collections.<VariableElement>emptySet() : null;
         Collection<VariableElement> h = arr[1] == null ? Collections.<VariableElement>emptySet() : null;
 
-        generateEqualsAndHashCode(wc, path, e, h);
+        generateEqualsAndHashCode(wc, path, e, h, -1);
     }
     
-    static void generateEqualsAndHashCode(WorkingCopy wc, TreePath path, Iterable<? extends VariableElement> equalsFields, Iterable<? extends VariableElement> hashCodeFields) {
+    static void generateEqualsAndHashCode(WorkingCopy wc, TreePath path, Iterable<? extends VariableElement> equalsFields, Iterable<? extends VariableElement> hashCodeFields, int offset) {
         assert TreeUtilities.CLASS_TREE_KINDS.contains(path.getLeaf().getKind());
         TypeElement te = (TypeElement)wc.getTrees().getElement(path);
         if (te != null) {
             ClassTree nue = (ClassTree)path.getLeaf();
             Scope scope = wc.getTrees().getScope(path);
             GeneratorUtilities gu = GeneratorUtilities.get(wc);
+            List<Tree> members = new ArrayList<Tree>();
             if (hashCodeFields != null) {
-                nue = gu.insertClassMember(nue, createHashCodeMethod(wc, hashCodeFields, (DeclaredType)te.asType(), scope));
+                members.add(createHashCodeMethod(wc, hashCodeFields, (DeclaredType)te.asType(), scope));
             }
             if (equalsFields != null) {
-                nue = gu.insertClassMember(nue, createEqualsMethod(wc, equalsFields, (DeclaredType)te.asType(), scope));
+                members.add(createEqualsMethod(wc, equalsFields, (DeclaredType)te.asType(), scope));
             }
-            wc.rewrite(path.getLeaf(), nue);
+            wc.rewrite(nue, GeneratorUtils.insertClassMembers(wc, nue, members, offset));
         }        
     }
 

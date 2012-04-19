@@ -162,8 +162,7 @@ public class LoggerGenerator implements CodeGenerator {
                             ClassTree cls = (ClassTree) path.getLeaf();
                             List<String> names = Utilities.varNamesSuggestions(null, "LOG", null, copy.getTypes(), copy.getElements(), e.getEnclosedElements(), true);
                             VariableTree var = createLoggerField(copy.getTreeMaker(), cls, names.size() > 0 ? names.get(0) : "LOG"); //NOI18N
-                            cls = GeneratorUtilities.get(copy).insertClassMember(cls, var);
-                            copy.rewrite(path.getLeaf(), cls);
+                            copy.rewrite(cls, GeneratorUtils.insertClassMembers(copy, cls, Collections.singletonList(var), caretOffset));
                         }
                     }
                 });

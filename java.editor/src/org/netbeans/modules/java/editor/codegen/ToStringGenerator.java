@@ -175,8 +175,7 @@ public class ToStringGenerator implements CodeGenerator {
                                 fields.add(field);
                             }
                             MethodTree mth = createToStringMethod(copy, fields, cls.getSimpleName().toString());
-                            cls = GeneratorUtilities.get(copy).insertClassMember(cls, mth);
-                            copy.rewrite(path.getLeaf(), cls);
+                            copy.rewrite(cls, GeneratorUtils.insertClassMembers(copy, cls, Collections.singletonList(mth), caretOffset));
                         }
                     }
                 });

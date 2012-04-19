@@ -64,4 +64,9 @@ public class DisplayTextTaskFilter implements DashboardFilter<Issue> {
     public boolean expandNodes() {
         return true;
     }
+
+    @Override
+    public boolean showHitCount() {
+        return true;
+    }
 }

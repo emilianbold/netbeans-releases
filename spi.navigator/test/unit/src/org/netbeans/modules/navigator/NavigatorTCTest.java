@@ -634,6 +634,7 @@ public class NavigatorTCTest extends NbTestCase {
         private NavigatorTC navTC;
         NavigatorTCHandle(NavigatorTC navTC) {
             this.navTC = navTC;
+            this.navTC.getController().setUpdateWhenNotShown(true);
         }
         void open() throws Exception {
             Mutex.EVENT.readAccess(new Mutex.ExceptionAction() {

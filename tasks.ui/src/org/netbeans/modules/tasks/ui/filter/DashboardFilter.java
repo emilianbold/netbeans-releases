@@ -47,7 +47,22 @@ package org.netbeans.modules.tasks.ui.filter;
  */
 public interface DashboardFilter<T> {
 
+    /**
+     * 
+     * @param entry
+     * @return <code>true</code> if the entry fulfills the filter requirements; <code>false</code> otherwise
+     */
     public boolean isInFilter(T entry);
 
+    /**
+     * 
+     * @return <code>true</code> if all nodes in result view should be expanded; <code>false</code> otherwise
+     */
     public boolean expandNodes();
+
+    /**
+     *
+     * @return <code>true</code> if hit count should be shown; <code>false</code> otherwise
+     */
+    public boolean showHitCount();
 }
