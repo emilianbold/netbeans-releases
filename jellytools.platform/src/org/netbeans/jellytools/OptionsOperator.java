@@ -353,6 +353,7 @@ public class OptionsOperator extends NbDialogOperator {
      * @param name name of category to be selected
      */
     public void selectCategory(final String name) {
+        new EventTool().waitNoEvent(300);  // prevent clicking on category button when panel not initialized
         final StringComparator comparator = this.getComparator();
         new JLabelOperator(this, new ComponentChooser() {
             public boolean checkComponent(Component comp) {
