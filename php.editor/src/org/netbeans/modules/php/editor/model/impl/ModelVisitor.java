@@ -172,6 +172,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         }
         if (currentScope instanceof TypeScope && kind.equals(PHPDocTag.Type.METHOD)) {
             modelBuilder.buildMagicMethod(node, occurencesBuilder);
+            occurencesBuilder.prepare(node, currentScope);
         }
         // ...and then reset it to avoid possible problems.
         if (scopeHasBeenModified) {

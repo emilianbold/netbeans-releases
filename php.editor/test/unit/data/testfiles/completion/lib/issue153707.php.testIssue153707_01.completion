@@ -109,6 +109,7 @@ CLASS      Blah                            [PUBLIC]   Testing\Ns
 CLASS      Book                            [PUBLIC]   issue197453.php
 CLASS      Book                            [PUBLIC]   mixedtypes.php
 CLASS      Book_1                          [PUBLIC]   mixedtypes_1.php
+CLASS      Brejla                          [PUBLIC]   test211230.php
 CLASS      Buuu                            [PUBLIC]   ShowMe
 CLASS      C                               [PUBLIC]   test.php
 CLASS      CallableClass                   [PUBLIC]   callableTypeHint.php
@@ -199,6 +200,7 @@ CLASS      NewClass                        [PUBLIC]   issue171232_01.php
 CLASS      NewClass                        [PUBLIC]   issue171232_02.php
 CLASS      ObjectTracker                   [PUBLIC]   test204908.php
 CLASS      Omg                             [PUBLIC]   test204104_05.php
+CLASS      Ondrej                          [PUBLIC]   test211230.php
 CLASS      PagePresenter                   [PUBLIC]   AdminModule
 CLASS      ParentClass                     [PUBLIC]   class_member_visibility.php
 CLASS      ParentInterface                 [PUBLIC]   interfaces.php
