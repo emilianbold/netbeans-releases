@@ -53,12 +53,9 @@ import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
-import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
-import org.netbeans.modules.php.api.util.FileUtils;
-import org.netbeans.modules.php.editor.PHPLanguage;
 import org.netbeans.modules.php.editor.PHPTestBase;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
@@ -73,9 +70,9 @@ import org.openide.util.Exceptions;
  *
  * @author Jan Lahoda
  */
-public abstract class TestBase extends PHPTestBase {
+public abstract class PHPNavTestBase extends PHPTestBase {
 
-    public TestBase(String testName) {
+    public PHPNavTestBase(String testName) {
         super(testName);
     }
 
@@ -108,7 +105,8 @@ public abstract class TestBase extends PHPTestBase {
             f.delete();
         }
 
-        Logger.global.setFilter(new Filter() {
+        Logger.getLogger(Logger.GLOBAL_LOGGER_NAME).setFilter(new Filter() {
+            @Override
             public boolean isLoggable(LogRecord record) {
                 Throwable t = record.getThrown();
 
@@ -163,21 +161,11 @@ public abstract class TestBase extends PHPTestBase {
     private static Document openDocument(FileObject fileObject) throws Exception {
         DataObject dobj = DataObject.find(fileObject);
 
-        EditorCookie ec = dobj.getCookie(EditorCookie.class);
+        EditorCookie ec = dobj.getLookup().lookup(EditorCookie.class);
 
         assertNotNull(ec);
 
         return ec.openDocument();
-    }
-
-    @Override
-    protected DefaultLanguageConfig getPreferredLanguage() {
-        return new PHPLanguage();
-    }
-
-    @Override
-    protected String getPreferredMimeType() {
-        return FileUtils.PHP_MIME_TYPE;
     }
 
     @Override

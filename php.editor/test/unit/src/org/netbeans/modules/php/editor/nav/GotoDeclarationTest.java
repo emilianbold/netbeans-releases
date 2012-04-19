@@ -49,7 +49,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Radek Matous
  */
-public class GotoDeclarationTest extends TestBase {
+public class GotoDeclarationTest extends PHPNavTestBase {
 
     public GotoDeclarationTest(String testName) {
         super(testName);
@@ -838,6 +838,14 @@ public class GotoDeclarationTest extends TestBase {
 
     public void testStaticAccessWithNsAlias_07() throws Exception {
         checkDeclaration(getTestPath(), "parent::some^Func();", "static function ^someFunc() {");
+    }
+
+    public void testIssue211230_01() throws Exception {
+        checkDeclaration(getTestPath(), " * @method F^oo|Bar method() This is my cool magic method description.", "class ^Foo {");
+    }
+
+    public void testIssue211230_02() throws Exception {
+        checkDeclaration(getTestPath(), " * @method Foo|B^ar method() This is my cool magic method description.", "class ^Bar {");
     }
 
     //TODO: these tests need to be checked, filtered , rewritten , enabled
