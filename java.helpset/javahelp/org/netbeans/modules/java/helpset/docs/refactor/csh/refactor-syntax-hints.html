@@ -55,11 +55,11 @@ You are notified of an editor hint by a lightbulb icon that appears in the left 
 ?&gt;
 
    new LinkedList()
-=&amp;gt; new ArrayList()
+=&gt; new ArrayList()
 ;;
 
    LinkedList $0;
-=&amp;gt; ArrayList $0;
+=&gt; ArrayList $0;
 ;;</pre>
 </li>
 </ul>
@@ -177,15 +177,15 @@ remove-from-parent
 <pre>   int i;
 =&gt; /*remove-from-parent*/
 ;;
--&gt; will remove the "int i;" variable declaration from the surrounding block</span>
+-&gt; will remove the &quot;int i;&quot; variable declaration from the surrounding block</span>
    float f;
 =&gt; &lt;!error=&quot;err&quot;&gt;
 ;;
--&gt; will show an error to the user when used from the <a href="inspect_transform.html">Inspect and Transform</a> dialog box, will not remove the "float f;" variable declaration from the surrounding block
+-&gt; will show an error to the user when used from the <a href="inspect_transform.html">Inspect and Transform</a> dialog box, will not remove the &quot;float f;&quot; variable declaration from the surrounding block
    double d;
 =&gt; &lt;!error=&quot;err&quot;,remove-from-parent=true&gt;
 ;;
--&gt; will show an error to the user (in the <a href="inspect_transform.html">Inspect and Transform</a> dialog box) and will remove the "double d;" variable declaration from the surrounding block</pre>
+-&gt; will show an error to the user (in the <a href="inspect_transform.html">Inspect and Transform</a> dialog box) and will remove the &quot;double d;&quot; variable declaration from the surrounding block</pre>
 </li>
 <li>&lt;!suppress-warnings=xxx&gt;&quot;
 <pre>   $1.isDirectory <!suppress-warnings=isDirectory>
