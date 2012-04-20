@@ -41,23 +41,24 @@
  */
 package org.netbeans.modules.spring.beans.model.impl;
 
-import java.io.File;
 import org.netbeans.modules.spring.api.beans.model.Location;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
 class SpringAnnotatedBeanLocation implements Location {
-    private final File file;
 
-    public SpringAnnotatedBeanLocation(File file) {
-        this.file = file;
+    private final FileObject fileObject;
+
+    public SpringAnnotatedBeanLocation(FileObject fileObject) {
+        this.fileObject = fileObject;
     }
 
     @Override
-    public File getFile() {
-        return file;
+    public FileObject getFile() {
+        return fileObject;
     }
 
     @Override
