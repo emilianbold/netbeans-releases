@@ -122,7 +122,7 @@ public class ProgressPanel extends JPanel {
         int units = 0;
         for (SyncItem syncItem : items) {
             if (syncItem.getOperation().hasProgress()) {
-                units += syncItem.getSize();
+                units += syncItem.getSize() / 1000;
             }
         }
         progressHandle.start(units == 0 ? NO_SYNC_UNITS : units);
@@ -214,14 +214,16 @@ public class ProgressPanel extends JPanel {
     }
 
     private void progress(SyncItem syncItem, String message) {
-        workUnits += syncItem.getSize();
-        progressHandle.progress(message, workUnits);
+        if (syncItem.getOperation().hasProgress()) {
+            workUnits += syncItem.getSize() / 1000;
+            progressHandle.progress(message, workUnits);
+        }
     }
 
     private void finishProgress() {
         if (workUnits == 0) {
             // no sync at all
-            progressHandle.progress(NO_SYNC_UNITS);
+            progressHandle.progress(" ", NO_SYNC_UNITS); // NOI18N
         } else {
             progressHandle.progress(" "); // NOI18N
         }
