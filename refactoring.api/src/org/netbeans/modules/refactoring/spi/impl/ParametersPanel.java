@@ -852,7 +852,8 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
                 progressBar.setString(text);
                 progressPanel.add(progressBar, BorderLayout.NORTH);
                 progressPanel.setPreferredSize(null);
-                dialog.validate();
+                if (dialog!=null)
+                    dialog.validate();
                 setButtonsEnabled(false);
             }
         });
