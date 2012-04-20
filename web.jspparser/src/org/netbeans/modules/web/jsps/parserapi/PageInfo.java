@@ -854,30 +854,27 @@ public abstract class PageInfo {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < beans.length; i++) {
             sb.append(indent).append("bean : ").append(beans[i].getId()).append(",    ").  // NOI18N
-                append(scopeToString(beans[i].getScope())).append(",    ").  // NOI18N
+//                append(scopeToString(beans[i].getScope())).append(",    ").  // NOI18N
                 append(beans[i].getClassName()).append('\n');  // NOI18N
         }
         return sb.toString();
     }
     
-    private String scopeToString(int scope) {
-        switch (scope) {
-            case PageContext.PAGE_SCOPE        : return "PAGE";  // NOI18N
-            case PageContext.SESSION_SCOPE     : return "SESSION";  // NOI18N
-            case PageContext.APPLICATION_SCOPE : return "APPLICATION";  // NOI18N
-            case PageContext.REQUEST_SCOPE     : return "REQUEST";  // NOI18N
-        }
-        return " !!! ";
-    }
+//    private String scopeToString(int scope) {
+//        switch (scope) {
+//            case PageContext.PAGE_SCOPE        : return "PAGE";  // NOI18N
+//            case PageContext.SESSION_SCOPE     : return "SESSION";  // NOI18N
+//            case PageContext.APPLICATION_SCOPE : return "APPLICATION";  // NOI18N
+//            case PageContext.REQUEST_SCOPE     : return "REQUEST";  // NOI18N
+//        }
+//        return " !!! ";
+//    }
 
     /** Interface which describes data for beans used by this page. */
     public interface BeanData {
 
         /** Identifier of the bean in the page (variable name). */
         public String getId();
-
-        /** Scope for this bean. Returns constants defined in {@link javax.servlet.jsp.PageContext}. */
-        public int getScope();
 
         /** Returns the class name for this bean. */
         public String getClassName();
