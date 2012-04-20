@@ -227,7 +227,7 @@ public final class NbMavenProjectImpl implements Project {
             // that will not be used in current pom anyway..
             // #135070
             req.setRecursive(false);
-            MavenExecutionResult res = embedder.readProjectWithDependencies(req);
+            MavenExecutionResult res = embedder.readProjectWithDependencies(req, true);
             if (!res.hasExceptions()) {
                 return res.getProject();
             } else {
@@ -339,7 +339,7 @@ public final class NbMavenProjectImpl implements Project {
             req.setRecursive(false);
             req.setOffline(true);
             req.setUserProperties(createSystemPropsForProjectLoading());
-             MavenExecutionResult res = getEmbedder().readProjectWithDependencies(req);
+             MavenExecutionResult res = getEmbedder().readProjectWithDependencies(req, true);
              newproject = res.getProject();
             if (res.hasExceptions()) {
                 problemReporter.reportExceptions(res);
