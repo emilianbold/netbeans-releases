@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -95,6 +96,7 @@ implements FileChangeListener {
         }
     }
 
+    @RandomlyFails // NB-Core-Build #8191: No other even delivered: [...] expected:<1> but was:<2>
     public void testAddListenerGetsFiveCallbacks() throws IOException {
         class AtMostFive implements FileFilter {
             @Override
