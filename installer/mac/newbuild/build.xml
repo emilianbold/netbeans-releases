@@ -161,7 +161,7 @@ Microsystems, Inc. All Rights Reserved.
                                          ide(baseide), nb-etc(baseide), platform(baseide)
                                          "/>
         
-        <property name="jdk-bundle.clusters" value="java(javase), 
+        <property name="jdk-bundle.clusters" value="apisupport(javase), profiler(javase), java(javase), harness(javase),
                                                    ide(baseide), nb-etc(baseide), platform(baseide)
                                          "/>
 

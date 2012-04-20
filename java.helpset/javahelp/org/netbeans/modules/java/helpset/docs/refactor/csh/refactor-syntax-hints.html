@@ -174,18 +174,38 @@ You are notified of an editor hint by a lightbulb icon that appears in the left 
 <p><b>Examples</b></p>
 <ul><li>&lt;!error=&quot;message&quot;&gt;<br>
 remove-from-parent
-<pre>   int i;
+
+<table border="1" cellpadding="5" cellspacing="0">
+            <tr valign="top"> 
+                <th scope="col" align="center">Code</th>
+                <th scope="col" align="center">Result</th>
+            </tr>
+ 
+            <tr valign="top"> 
+                <td><pre>   int i;
 =&gt; /*remove-from-parent*/
-;;
--&gt; will remove the &quot;int i;&quot; variable declaration from the surrounding block</span>
-   float f;
+;;</pre></td>
+                <td>Removes the <tt>int i;</tt> variable declaration from the surrounding block
+                </td>
+            </tr>
+            <tr valign="top">
+			<td><pre>   float f;
 =&gt; &lt;!error=&quot;err&quot;&gt;
-;;
--&gt; will show an error to the user when used from the <a href="inspect_transform.html">Inspect and Transform</a> dialog box, will not remove the &quot;float f;&quot; variable declaration from the surrounding block
-   double d;
+;;</pre>
+			</td>
+			<td>Shows an error to the user when used from the <a href="inspect_transform.html">Inspect and Transform</a> dialog box, will not remove the <tt>float f;</tt> variable declaration from the surrounding block
+			</td>
+			</tr>
+			<tr valign="top">
+			<td><pre>   double d;
 =&gt; &lt;!error=&quot;err&quot;,remove-from-parent=true&gt;
-;;
--&gt; will show an error to the user (in the <a href="inspect_transform.html">Inspect and Transform</a> dialog box) and will remove the &quot;double d;&quot; variable declaration from the surrounding block</pre>
+;;</pre>
+			</td>
+			<td>Shows an error to the user (in the <a href="inspect_transform.html">Inspect and Transform</a> dialog box) and will remove the &quot;double d;&quot; variable declaration from the surrounding block
+			</td>
+			</tr>
+  
+</table>
 </li>
 <li>&lt;!suppress-warnings=xxx&gt;&quot;
 <pre>   $1.isDirectory <!suppress-warnings=isDirectory>
