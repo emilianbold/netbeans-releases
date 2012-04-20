@@ -83,11 +83,13 @@ class OSGiClassLoader extends ClassLoader {
                 // Thrown sometimes by Felix during shutdown. Not clear how to avoid this.
                 return Collections.emptySet();
             }
-            return NbCollections.iterable(Enumerations.filter(Enumerations.array(bundles), new Enumerations.Processor<Bundle,Bundle>() {
+            // Sort framework last so since in Felix 4 its loadClass will search app classpath, causing test failures.
+            // (Tried to disable this using various framework config properties without success.)
+            return NbCollections.iterable(Enumerations.concat(Enumerations.filter(Enumerations.array(bundles), new Enumerations.Processor<Bundle,Bundle>() {
                 public @Override Bundle process(Bundle b, Collection<Bundle> _) {
-                    return b.getState() == Bundle.INSTALLED ? null : b;
+                    return b.getBundleId() == 0 || b.getState() == Bundle.INSTALLED ? null : b;
                 }
-            }));
+            }), Enumerations.singleton(context.getBundle(0))));
         } else {
             return Collections.singleton(bundle);
         }
