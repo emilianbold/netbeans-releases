@@ -71,19 +71,28 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
     private final WizardStorage wizardStorage;
     private boolean isValid = false;
     private final boolean fullRemote;
+    private String existingFolder = null;
 
-    public SelectModeDescriptorPanel(boolean fullRemote) {
+    public SelectModeDescriptorPanel(boolean fullRemote, String existingFolder) {
         name = NbBundle.getMessage(SelectModePanel.class, "SelectModeName"); // NOI18N
         this.fullRemote = fullRemote;
         wizardStorage = new WizardStorage(fullRemote);
+        this.existingFolder = existingFolder;
     }
 
+    public SelectModeDescriptorPanel(boolean fullRemote) {
+        this(fullRemote, null);
+    }    
+    
     @Override
     public String getName() {
         return name;
     }
 
-
+    public String getExistingFolder() {
+        return existingFolder;
+    }
+    
     public boolean isFullRemote() {
         return fullRemote;
     }

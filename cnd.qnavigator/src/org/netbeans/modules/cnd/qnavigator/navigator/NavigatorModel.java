@@ -269,8 +269,10 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
     private JEditorPane findCurrentJEditorPane() {
         JEditorPane currentJEditorPane = null;
         if (cdo != null) {
-            EditorCookie ec = cdo.getCookie(EditorCookie.class);
-            currentJEditorPane = NbDocument.findRecentEditorPane(ec);
+            EditorCookie ec = cdo.getLookup().lookup(EditorCookie.class);
+            if (ec != null) {
+                currentJEditorPane = NbDocument.findRecentEditorPane(ec);
+            }
         }
         return currentJEditorPane;
     }
