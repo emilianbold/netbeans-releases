@@ -169,10 +169,10 @@ public class ProgressPanel extends JPanel {
 
     @NbBundle.Messages({
         "# {0} - file name",
-        "ProgressPanel.downloading=Downloading {0}..."
+        "ProgressPanel.uploading=Uploading {0}..."
     })
     public void decreaseUploadNumber(SyncItem syncItem) {
-        progress(syncItem, Bundle.ProgressPanel_downloading(syncItem.getName()));
+        progress(syncItem, Bundle.ProgressPanel_uploading(syncItem.getName()));
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -183,10 +183,10 @@ public class ProgressPanel extends JPanel {
 
     @NbBundle.Messages({
         "# {0} - file name",
-        "ProgressPanel.uploading=Uploading {0}..."
+        "ProgressPanel.downloading=Downloading {0}..."
     })
     public void decreaseDownloadNumber(SyncItem syncItem) {
-        progress(syncItem, Bundle.ProgressPanel_uploading(syncItem.getName()));
+        progress(syncItem, Bundle.ProgressPanel_downloading(syncItem.getName()));
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
