@@ -732,22 +732,24 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         Expression value = node.getValue();
         if (value instanceof Variable) {
             VariableNameImpl varValue = findVariable(scope, (Variable) value);
-            varValue.setTypeResolutionKind(VariableNameImpl.TypeResolutionKind.MERGE_ASSIGNMENTS);
-            if (expression instanceof Variable) {
-                VariableNameImpl varArray = findVariable(scope, (Variable)expression);
-                if (varArray != null && varValue != null) {
-                    processVarComment(varArray.getName(), scope);
-                    Collection<? extends String> typeNames = varArray.getArrayAccessTypeNames(node.getStartOffset());
-                    for (String tpName : typeNames) {
-                        VarAssignmentImpl varAssignment = varValue.createAssignment(scope, true, getBlockRange(scope), new OffsetRange(value.getStartOffset(), value.getEndOffset()), tpName);
+            if (varValue != null) {
+                varValue.setTypeResolutionKind(VariableNameImpl.TypeResolutionKind.MERGE_ASSIGNMENTS);
+                if (expression instanceof Variable) {
+                    VariableNameImpl varArray = findVariable(scope, (Variable)expression);
+                    if (varArray != null) {
+                        processVarComment(varArray.getName(), scope);
+                        Collection<? extends String> typeNames = varArray.getArrayAccessTypeNames(node.getStartOffset());
+                        for (String tpName : typeNames) {
+                            VarAssignmentImpl varAssignment = varValue.createAssignment(scope, true, getBlockRange(scope), new OffsetRange(value.getStartOffset(), value.getEndOffset()), tpName);
+                            varValue.addElement(varAssignment);
+                        }
+                    }
+                } else {
+                    String varType = VariousUtils.extractVariableTypeFromExpression(expression, getAssignmentMap(scope, (Variable) value));
+                    if (varType != null) {
+                        VarAssignmentImpl varAssignment = varValue.createAssignment(scope, true, getBlockRange(scope), new OffsetRange(value.getStartOffset(), value.getEndOffset()), varType);
                         varValue.addElement(varAssignment);
                     }
-                }
-            } else {
-                String varType = VariousUtils.extractVariableTypeFromExpression(expression, getAssignmentMap(scope, (Variable) value));
-                if (varType != null && varValue != null) {
-                    VarAssignmentImpl varAssignment = varValue.createAssignment(scope, true, getBlockRange(scope), new OffsetRange(value.getStartOffset(), value.getEndOffset()), varType);
-                    varValue.addElement(varAssignment);
                 }
             }
         }
