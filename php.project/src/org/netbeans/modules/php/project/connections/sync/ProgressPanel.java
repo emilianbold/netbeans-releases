@@ -139,7 +139,7 @@ public class ProgressPanel extends JPanel {
         });
     }
 
-    @NbBundle.Messages("ProgressPanel.success=Synchronization successfully finished.")
+    @NbBundle.Messages("ProgressPanel.success=<html><b>Synchronization successfully finished.</b><br>Details can be reviewed in Output window.")
     public void finish() {
         finishProgress();
         SwingUtilities.invokeLater(new Runnable() {
@@ -159,7 +159,7 @@ public class ProgressPanel extends JPanel {
         });
     }
 
-    @NbBundle.Messages("ProgressPanel.error=Error occurred, review Output window for details.")
+    @NbBundle.Messages("ProgressPanel.error=<html><b>Error occurred during synchronization.</b><br>Details can be reviewed in Output window.")
     void errorOccurred() {
         if (error) {
             // error already set
@@ -246,12 +246,10 @@ public class ProgressPanel extends JPanel {
     private void initComponents() {
 
         autoCloseCheckBox = new JCheckBox();
-        infoLabel = new JLabel();
         summaryPanelHolder = new JPanel();
         progressPanelHolder = new JPanel();
         progressMessagePanelHolder = new JPanel();
         Mnemonics.setLocalizedText(autoCloseCheckBox, NbBundle.getMessage(ProgressPanel.class, "ProgressPanel.autoCloseCheckBox.text")); // NOI18N
-        Mnemonics.setLocalizedText(infoLabel, NbBundle.getMessage(ProgressPanel.class, "ProgressPanel.infoLabel.text")); // NOI18N
 
         summaryPanelHolder.setLayout(new BorderLayout());
 
@@ -265,16 +263,11 @@ public class ProgressPanel extends JPanel {
             layout.createParallelGroup(Alignment.LEADING).addComponent(summaryPanelHolder, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addGroup(layout.createSequentialGroup()
                 .addContainerGap()
 
-                .addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(progressPanelHolder, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addComponent(progressMessagePanelHolder, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addGroup(layout.createSequentialGroup()
-                        .addComponent(infoLabel)
-
-                        .addGap(0, 0, Short.MAX_VALUE))).addContainerGap())
+                .addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(progressPanelHolder, GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE).addComponent(progressMessagePanelHolder, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)).addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(infoLabel)
-                .addGap(8, 8, 8)
 
                 .addComponent(summaryPanelHolder, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addPreferredGap(ComponentPlacement.UNRELATED).addComponent(progressPanelHolder, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addPreferredGap(ComponentPlacement.RELATED).addComponent(progressMessagePanelHolder, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addContainerGap(20, Short.MAX_VALUE))
         );
@@ -282,7 +275,6 @@ public class ProgressPanel extends JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JCheckBox autoCloseCheckBox;
-    private JLabel infoLabel;
     private JPanel progressMessagePanelHolder;
     private JPanel progressPanelHolder;
     private JPanel summaryPanelHolder;
