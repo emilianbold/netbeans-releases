@@ -114,10 +114,12 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
 
         private JLabel captionLabel;
         private JSeparator captionSeparator;
+        private boolean addSpaceBefore;
 
         //~ Constructors ---------------------------------------------------------------------------------------------------------
 
-        public CategorySeparator(String caption) {
+        public CategorySeparator(String caption, boolean addSpaceBefore) {
+            this.addSpaceBefore = addSpaceBefore;
             initComponents();
             captionLabel.setText(caption);
         }
@@ -128,12 +130,22 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
             setLayout(new GridBagLayout());
 
             GridBagConstraints constraints;
+            if (addSpaceBefore) {
+                JLabel emptyLabel = new JLabel(" ");
+                constraints = new GridBagConstraints();
+                constraints.gridx = 0;
+                constraints.gridy = 0;
+                constraints.anchor = GridBagConstraints.WEST;
+                constraints.fill = GridBagConstraints.BOTH;
+                constraints.insets = new Insets(0, 0, 0, 0);
+                add(emptyLabel, constraints);
+            }
 
             // captionLabel
             captionLabel = new JLabel();
             constraints = new GridBagConstraints();
             constraints.gridx = 0;
-            constraints.gridy = 0;
+            constraints.gridy = addSpaceBefore ? 1 : 0;
             constraints.anchor = GridBagConstraints.WEST;
             constraints.fill = GridBagConstraints.NONE;
             constraints.insets = new Insets(0, 0, 0, 0);
@@ -143,7 +155,7 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
             captionSeparator = new JSeparator();
             constraints = new GridBagConstraints();
             constraints.gridx = 1;
-            constraints.gridy = 0;
+            constraints.gridy = addSpaceBefore ? 1 : 0;
             constraints.weightx = 1;
             constraints.weighty = 1;
             constraints.anchor = GridBagConstraints.CENTER;
@@ -437,7 +449,7 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
         // --- General -------------------------------------------------------------
 
         // General caption
-        CategorySeparator generalSeparator = new CategorySeparator(Bundle.ProfilerOptionsPanel_EngineSettingsBorderText());
+        CategorySeparator generalSeparator = new CategorySeparator(Bundle.ProfilerOptionsPanel_EngineSettingsBorderText(), false);
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -530,7 +542,7 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
         // --- When Profiling Starts -----------------------------------------------
 
         // Profiling Start caption
-        CategorySeparator profilingStartSeparator = new CategorySeparator(Bundle.ProfilerOptionsPanel_WindowsSettingsBorderText());
+        CategorySeparator profilingStartSeparator = new CategorySeparator(Bundle.ProfilerOptionsPanel_WindowsSettingsBorderText(), true);
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -646,7 +658,7 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
         // --- Miscellaneous -------------------------------------------------------
 
         // Miscellaneous caption
-        CategorySeparator miscellaneousSeparator = new CategorySeparator(Bundle.ProfilerOptionsPanel_SnapshotsSettingsBorderText());
+        CategorySeparator miscellaneousSeparator = new CategorySeparator(Bundle.ProfilerOptionsPanel_SnapshotsSettingsBorderText(), true);
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 7;
