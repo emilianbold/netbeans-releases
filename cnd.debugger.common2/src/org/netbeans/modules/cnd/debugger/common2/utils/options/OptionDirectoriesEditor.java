@@ -129,7 +129,7 @@ class OptionDirectoriesEditor extends PropertyEditorSupport
         private final String path;
         
         private DirectoriesChooser(PropertyEditorSupport editor, PropertyEnv env, String baseDir, String path){
-            super(getPathsFromString(editor.getValue().toString()));
+            super(getPathsFromString(path));
             
             getDefaultButton().setVisible(false);
             
@@ -143,10 +143,12 @@ class OptionDirectoriesEditor extends PropertyEditorSupport
         
         private static String fullPath(String baseDir, String path) {
 	    String seed = path;
-	    if (seed.length() == 0)
+	    if (seed.length() == 0) {
 		seed = ".";	// NOI18N
-	    if (!CndPathUtilitities.isPathAbsolute(seed))
+            }
+	    if (!CndPathUtilitities.isPathAbsolute(seed)) {
 		seed = baseDir + File.separatorChar + seed;
+            }
 	    return seed;
 	}
         
@@ -255,15 +257,11 @@ class OptionDirectoriesEditor extends PropertyEditorSupport
             return getString("UP_BUTTON_MN").charAt(0); // NOI18N
         }
         
-        private Object getPropertyValue() throws IllegalStateException {
-            return new ArrayList<String>(getListData());
-        }
-        
         //PropertyChangeListener interface
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName()) && evt.getNewValue() == PropertyEnv.STATE_VALID) {
-                editor.setValue(getPropertyValue());
+                editor.setValue(getListData());
             }
         }
         
