@@ -56,6 +56,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -342,6 +343,7 @@ public final class SyncController implements Cancellable {
         private final List<SyncItem> itemsToSynchronize;
         private final SyncResultProcessor resultProcessor;
         final ProgressPanel progressPanel;
+        final AtomicBoolean cancel = new AtomicBoolean();
 
 
         public Synchronizer(SyncItems syncItems, List<SyncItem> itemsToSynchronize, SyncPanel.SyncInfo syncInfo, SyncResultProcessor resultProcessor) {
@@ -354,7 +356,7 @@ public final class SyncController implements Cancellable {
 
         public void sync(final boolean rememberTimestamp) {
             assert SwingUtilities.isEventDispatchThread();
-            progressPanel.createPanel();
+            progressPanel.createPanel(cancel);
             SYNC_RP.post(new Runnable() {
                 @Override
                 public void run() {
@@ -362,7 +364,11 @@ public final class SyncController implements Cancellable {
                     try {
                         doSync(rememberTimestamp);
                     } finally {
-                        progressPanel.finish();
+                        if (cancel.get()) {
+                            progressPanel.cancel();
+                        } else {
+                            progressPanel.finish();
+                        }
                     }
                 }
             });
@@ -376,6 +382,9 @@ public final class SyncController implements Cancellable {
             Set<TransferFile> localFilesForDelete = new HashSet<TransferFile>();
             final SyncResult syncResult = new SyncResult();
             for (SyncItem syncItem : itemsToSynchronize) {
+                if (cancel.get()) {
+                    break;
+                }
                 TransferFile remoteTransferFile = syncItem.getRemoteTransferFile();
                 TransferFile localTransferFile = syncItem.getLocalTransferFile();
                 switch (syncItem.getOperation()) {
@@ -440,7 +449,9 @@ public final class SyncController implements Cancellable {
                         assert false : "Unsupported synchronization operation: " + syncItem.getOperation();
                 }
             }
-            deleteFiles(syncResult, remoteFilesForDelete, localFilesForDelete);
+            if (!cancel.get()) {
+                deleteFiles(syncResult, remoteFilesForDelete, localFilesForDelete);
+            }
             syncItems.cleanup();
             disconnect();
             if (rememberTimestamp) {

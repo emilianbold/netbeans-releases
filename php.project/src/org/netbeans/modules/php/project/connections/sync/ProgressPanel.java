@@ -44,9 +44,13 @@ package org.netbeans.modules.php.project.connections.sync;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dialog;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -58,7 +62,6 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotificationLineSupport;
-import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
@@ -74,8 +77,9 @@ public class ProgressPanel extends JPanel {
     final SummaryPanel summaryPanel;
     final ProgressHandle progressHandle;
 
+    volatile boolean syncRunning = false;
     // @GuardedBy(AWT)
-    DialogDescriptor descriptor = null;
+    JButton actionButton = null;
     // @GuardedBy(AWT)
     NotificationLineSupport notificationLineSupport = null;
     // @GuardedBy(AWT)
@@ -107,25 +111,34 @@ public class ProgressPanel extends JPanel {
         repaint();
     }
 
-    @NbBundle.Messages("ProgressPanel.title=Synchronization")
-    public void createPanel() {
+    @NbBundle.Messages({
+        "ProgressPanel.title=Synchronization",
+        "ProgressPanel.button.cancel=&Cancel",
+        "ProgressPanel.details.output=Details can be reviewed in Output window."
+    })
+    public void createPanel(AtomicBoolean cancel) {
         assert SwingUtilities.isEventDispatchThread();
-        descriptor = new DialogDescriptor(
+        actionButton = new JButton();
+        actionButton.addActionListener(new ActionButtionListener(cancel));
+        Mnemonics.setLocalizedText(actionButton, Bundle.ProgressPanel_button_cancel());
+        DialogDescriptor descriptor = new DialogDescriptor(
                 this,
                 Bundle.ProgressPanel_title(),
                 true,
-                new Object[] {NotifyDescriptor.OK_OPTION},
-                NotifyDescriptor.OK_OPTION,
+                new Object[] {actionButton},
+                actionButton,
                 DialogDescriptor.DEFAULT_ALIGN,
                 null,
                 null);
         descriptor.setValid(false);
+        descriptor.setClosingOptions(new Object[]{});
         descriptor.setAdditionalOptions(new Object[]{autoCloseCheckBox});
         notificationLineSupport = descriptor.createNotificationLineSupport();
         dialog = DialogDisplayer.getDefault().createDialog(descriptor);
     }
 
     public void start(List<SyncItem> items) {
+        syncRunning = true;
         int units = 0;
         for (SyncItem syncItem : items) {
             if (syncItem.getOperation().hasProgress()) {
@@ -141,20 +154,43 @@ public class ProgressPanel extends JPanel {
         });
     }
 
-    @NbBundle.Messages("ProgressPanel.success=<html><b>Synchronization successfully finished.</b><br>Details can be reviewed in Output window.")
+    @NbBundle.Messages({
+        "# {0} - details info",
+        "ProgressPanel.cancel=<html><b>Synchronization cancelled.</b><br>{0}"
+    })
+    public void cancel() {
+        finishInternal(Bundle.ProgressPanel_cancel(getNormalHtmlText(Bundle.ProgressPanel_details_output())), true);
+    }
+
+    @NbBundle.Messages({
+        "# {0} - details info",
+        "ProgressPanel.success=<html><b>Synchronization successfully finished.</b><br>{0}"
+    })
     public void finish() {
-        finishProgress();
+        finishInternal(Bundle.ProgressPanel_success(Bundle.ProgressPanel_details_output()), false);
+    }
+
+    @NbBundle.Messages({
+        "ProgressPanel.button.ok=&OK"
+    })
+    private void finishInternal(final String message, final boolean cancel) {
+        syncRunning = false;
+        finishProgress(cancel);
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
                 // #211494
                 progressMessageLabel.setText(" "); // NOI18N
-                descriptor.setValid(true);
+                Mnemonics.setLocalizedText(actionButton, Bundle.ProgressPanel_button_ok());
                 if (!error) {
                     if (autoCloseCheckBox.isSelected()) {
                         dialog.dispose();
                     } else {
-                        notificationLineSupport.setInformationMessage(Bundle.ProgressPanel_success());
+                        if (cancel) {
+                            notificationLineSupport.setWarningMessage(message);
+                        } else {
+                            notificationLineSupport.setInformationMessage(message);
+                        }
                     }
                 }
             }
@@ -177,10 +213,8 @@ public class ProgressPanel extends JPanel {
     }
 
     @NbBundle.Messages({
-        "# {0} - red",
-        "# {1} - green",
-        "# {2} - blue",
-        "ProgressPanel.error=<html><b>Error occurred during synchronization.</b><br><span style=\"color: rgb({0}, {1}, {2});\">Details can be reviewed in Output window.</span>"
+        "# {0} - details info",
+        "ProgressPanel.error=<html><b>Error occurred during synchronization.</b><br>{0}"
     })
     private void errorOccurred() {
         if (error) {
@@ -191,10 +225,21 @@ public class ProgressPanel extends JPanel {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                Color color = UIManager.getColor("Label.foreground"); // NOI18N
-                notificationLineSupport.setErrorMessage(Bundle.ProgressPanel_error(color.getRed(), color.getGreen(), color.getBlue()));
+                notificationLineSupport.setErrorMessage(Bundle.ProgressPanel_error(getNormalHtmlText(Bundle.ProgressPanel_details_output())));
             }
         });
+    }
+
+    @NbBundle.Messages({
+        "# {0} - red",
+        "# {1} - green",
+        "# {2} - blue",
+        "# {3} - text message",
+        "ProgressPanel.html.normal=<span style=\"color: rgb({0}, {1}, {2});\">{3}</span>"
+    })
+    private String getNormalHtmlText(String message) {
+        Color color = UIManager.getColor("Label.foreground"); // NOI18N
+        return Bundle.ProgressPanel_html_normal(color.getRed(), color.getGreen(), color.getBlue(), message);
     }
 
     @NbBundle.Messages({
@@ -250,14 +295,16 @@ public class ProgressPanel extends JPanel {
         }
     }
 
-    private void finishProgress() {
+    private void finishProgress(boolean cancel) {
         if (workUnits == 0) {
             // no sync at all
             progressHandle.progress(" ", NO_SYNC_UNITS); // NOI18N
         } else {
             progressHandle.progress(" "); // NOI18N
         }
-        progressHandle.finish();
+        if (!cancel) {
+            progressHandle.finish();
+        }
     }
 
     /**
@@ -302,5 +349,30 @@ public class ProgressPanel extends JPanel {
     private JPanel progressPanelHolder;
     private JPanel summaryPanelHolder;
     // End of variables declaration//GEN-END:variables
+
+    //~ Inner classes
+
+    private final class ActionButtionListener implements ActionListener {
+
+        private final AtomicBoolean cancel;
+
+
+        public ActionButtionListener(AtomicBoolean cancel) {
+            this.cancel = cancel;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if (syncRunning) {
+                // cancel
+                cancel.set(true);
+            } else {
+                // ok -> close the dialog & free all resources
+                progressHandle.finish();
+                dialog.dispose();
+            }
+        }
+
+    }
 
 }
