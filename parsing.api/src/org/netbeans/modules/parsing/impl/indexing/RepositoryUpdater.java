@@ -2623,7 +2623,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 final Map<BinaryIndexerFactory,Context> contexts) throws IOException {
             LOGGER.log(Level.FINE, "Scanning binary root: {0}", root); //NOI18N
 
-            if (!RepositoryUpdater.getDefault().rootsListeners.add(root, false)) {
+            if (!RepositoryUpdater.getDefault().rootsListeners.add(root, false, null)) {
                 return false;
             }
 
@@ -4696,7 +4696,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                             delete(deleted, ctxToFinish, usedIterables);
                             invalidateSources(resources);
                             final long tm = System.currentTimeMillis();
-                            final boolean rlAdded = RepositoryUpdater.getDefault().rootsListeners.add(root, true);
+                            final boolean rlAdded = RepositoryUpdater.getDefault().rootsListeners.add(root, true, entry);
                             if (recursiveListenersTime != null) {
                                 recursiveListenersTime[0] = System.currentTimeMillis() - tm;
                             }
@@ -4725,7 +4725,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     }
                     return false;
                 } else {
-                    RepositoryUpdater.getDefault().rootsListeners.add(root,true);
+                    RepositoryUpdater.getDefault().rootsListeners.add(root,true, null);
                     return true;
                 }
             }
@@ -5556,13 +5556,16 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         @org.netbeans.api.annotations.common.SuppressWarnings(
         value="DMI_COLLECTION_OF_URLS"
         /*,justification="URLs have never host part"*/)
-        public synchronized boolean add(final URL root, final boolean sourceRoot) {
+        public synchronized boolean add(
+                @NonNull final URL root,
+                final boolean sourceRoot,
+                @NullAllowed ClassPath.Entry entry) {
             if (sourceRoot) {
                 if (sourcesListener != null) {
                     if (!sourceRoots.containsKey(root) && root.getProtocol().equals("file")) { //NOI18N
                         try {
                             File f = new File(root.toURI());
-                            safeAddRecursiveListener(sourcesListener, f);
+                            safeAddRecursiveListener(sourcesListener, f, entry);
                             sourceRoots.put(root, f);
                         } catch (URISyntaxException use) {
                             LOGGER.log(Level.INFO, null, use);
@@ -5589,7 +5592,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                                 safeAddFileChangeListener(binariesListener, f);
                             } else {
                                 // listening on a folder
-                                safeAddRecursiveListener(binariesListener, f);
+                                safeAddRecursiveListener(binariesListener, f, entry);
                             }
                             binaryRoots.put(root, Pair.of(f, archiveUrl != null));
                         }
@@ -5626,17 +5629,37 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
             }
         }
 
-        private void safeAddRecursiveListener(FileChangeListener listener, File path) {
+        private void safeAddRecursiveListener(
+                @NonNull final FileChangeListener listener,
+                @NonNull final File path,
+                @NullAllowed final ClassPath.Entry entry) {
             if (useRecursiveListeners) {
                 try {
-                    FileUtil.addRecursiveListener(listener, path, new Callable<Boolean>() {
-                        @Override
-                        public Boolean call() throws Exception {
-                            synchronized (RootsListeners.this) {
-                                return sourcesListener == null || binariesListener == null;
+                    final FileFilter filter = entry == null?
+                        null:
+                        new FileFilter() {
+                            @Override
+                            public boolean accept(@NonNull final File pathname) {
+                                try {
+                                    return entry.includes(pathname.toURI().toURL());
+                                } catch (MalformedURLException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                    return true;
+                                }
                             }
-                        }
-                    });
+                        };
+                    FileUtil.addRecursiveListener(
+                        listener,
+                        path, 
+                        filter,
+                        new Callable<Boolean>() {
+                            @Override
+                            public Boolean call() throws Exception {
+                                synchronized (RootsListeners.this) {
+                                    return sourcesListener == null || binariesListener == null;
+                                }
+                            }
+                        });
                 } catch (ThreadDeath td) {
                     throw td;
                 } catch (Throwable e) {
