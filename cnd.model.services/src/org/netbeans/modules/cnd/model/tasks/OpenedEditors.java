@@ -162,7 +162,8 @@ public final class OpenedEditors {
         visibleEditors.clear();
 
         for(JTextComponent editor : EditorRegistry.componentList()) {
-            if (editor != null && editor.getClass().getName().equals("org.openide.text.QuietEditorPane")) {
+            // skip non-editor components
+            if (editor != null && editor.getClass().getName().equals("org.openide.text.QuietEditorPane")) { // NOI18N
                 FileObject fo = getFileObject(editor);
 
                 if (isSupported(fo)) {
