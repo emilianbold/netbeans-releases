@@ -40,24 +40,29 @@ package org.netbeans.modules.testng.output;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
+import org.apache.tools.ant.module.api.AntTargetExecutor;
+import org.apache.tools.ant.module.api.support.AntScriptUtils;
 import org.apache.tools.ant.module.spi.AntSession;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.testng.actions.TestConfigAccessor;
-import org.netbeans.modules.testng.api.TestNGSupport;
-import org.netbeans.modules.testng.spi.TestConfig;
-import org.netbeans.modules.testng.spi.TestNGSupportImplementation;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.gsf.testrunner.api.RerunHandler;
 import org.netbeans.modules.gsf.testrunner.api.RerunType;
 import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
+import org.netbeans.modules.testng.actions.TestConfigAccessor;
+import org.netbeans.modules.testng.api.TestNGSupport;
+import org.netbeans.modules.testng.spi.TestConfig;
+import org.netbeans.modules.testng.spi.TestNGSupportImplementation;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.SingleMethod;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
@@ -82,18 +87,10 @@ public class TestNGExecutionManager implements RerunHandler {
         try {
             scriptFile = session.getOriginatingScript();
             targets = session.getOriginatingTargets();
-            //transform known ant targets to the action names
-            for (int i = 0; i < targets.length; i++) {
-                if (targets[i].equals("test-single")) {                      //NOI18N
-                    targets[i] = ActionProvider.COMMAND_TEST_SINGLE;
-                } else if (targets[i].equals("debug-test")) {                //NOI18N
-                    targets[i] = ActionProvider.COMMAND_DEBUG_TEST_SINGLE;
-                }
-            }
 
-            String javacIncludes = properties.getProperty("javac.includes");//NOI18N
-            if (javacIncludes != null) {
-                FileObject testFO = testSession.getFileLocator().find(javacIncludes);
+            String testIncludes = properties.getProperty("test.includes");//NOI18N
+            if (testIncludes != null) {
+                FileObject testFO = testSession.getFileLocator().find(testIncludes);
                 if (testFO != null) {
                     lookup = Lookups.fixed(DataObject.find(testFO));
                 }
@@ -111,13 +108,13 @@ public class TestNGExecutionManager implements RerunHandler {
                         lookup = Lookups.fixed(DataObject.find(testFO));
                     }
                 }
-                if (scriptFile.getName().equals("testng.xml")) {              //NOI18N
+                if (scriptFile.getName().equals("junit.xml")) {              //NOI18N
                     if (methodName != null) {
                         targets = new String[]{SingleMethod.COMMAND_RUN_SINGLE_METHOD};
                     } else {
                         targets = new String[]{ActionProvider.COMMAND_TEST_SINGLE};
                     }
-                } else if (scriptFile.getName().equals("testng-debug.xml")) {  //NOI18N
+                } else if (scriptFile.getName().equals("junit-debug.xml")) {  //NOI18N
                     if (methodName != null) {
                         targets = new String[]{SingleMethod.COMMAND_DEBUG_SINGLE_METHOD};
                     } else {
@@ -131,9 +128,25 @@ public class TestNGExecutionManager implements RerunHandler {
     }
 
     public void rerun() {
-        Project project = testSession.getProject();
-        ActionProvider actionProvider = project.getLookup().lookup(ActionProvider.class);
-        actionProvider.invokeAction(targets[0], lookup);
+        if (properties.getProperty("test.includes") != null && properties.getProperty("test.includes").endsWith(".xml")) {   //NOI18N
+            try {
+                runAnt(FileUtil.toFileObject(scriptFile), targets, properties);
+            } catch (IOException ex) {
+                LOGGER.log(Level.SEVERE, ex.getMessage(), ex);
+            }
+        } else {
+            Project project = testSession.getProject();
+            if(ProjectManager.getDefault().isValid(project)) {
+                ActionProvider actionProvider = project.getLookup().lookup(ActionProvider.class);
+                String[] actionNames = getActionNames(targets);
+                if (actionProvider != null) {
+                    if (Arrays.asList(actionProvider.getSupportedActions()).contains(actionNames[0])
+                            && actionProvider.isActionEnabled(actionNames[0], lookup)) {
+                        actionProvider.invokeAction(actionNames[0], lookup);
+                    }
+                }
+            }
+        }
     }
 
     public void rerun(Set<Testcase> tests) {
@@ -191,5 +204,27 @@ public class TestNGExecutionManager implements RerunHandler {
 
     @Override
     public void removeChangeListener(ChangeListener listener) {
+    }
+
+    private static void runAnt(FileObject antScript, String[] antTargets, Properties antProps) throws IOException {
+        AntTargetExecutor.Env execenv = new AntTargetExecutor.Env();
+        Properties props = execenv.getProperties();
+        props.putAll(antProps);
+        execenv.setProperties(props);
+        AntTargetExecutor.createTargetExecutor(execenv).execute(AntScriptUtils.antProjectCookieFor(antScript), antTargets);
+    }
+
+    private static String[] getActionNames(String[] targetNames) {
+        String[] actions = new String[targetNames.length];
+        for (int i = 0; i < targetNames.length; i++) {
+            if (targetNames[i].equals("test-single")) {                      //NOI18N
+                actions[i] = ActionProvider.COMMAND_TEST_SINGLE;
+            } else if (targetNames[i].equals("debug-test")) {                //NOI18N
+                actions[i] = ActionProvider.COMMAND_DEBUG_TEST_SINGLE;
+            } else {
+                actions[i] = targetNames[i];
+            }
+        }
+        return actions;
     }
 }
