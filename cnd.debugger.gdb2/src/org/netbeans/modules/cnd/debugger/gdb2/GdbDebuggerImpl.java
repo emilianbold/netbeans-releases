@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.cnd.debugger.gdb2;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Set;
 import java.util.logging.Level;
@@ -1243,6 +1244,17 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         return fmap;
     }
     
+    private static String parseEnvDirFromOption(String src) {
+        StringBuilder res = new StringBuilder();
+        StringTokenizer st = new StringTokenizer(src, File.pathSeparator); // NOI18N
+        while (st.hasMoreTokens()) {
+            res.append(" \"");
+            res.append(st.nextToken());
+            res.append("\"");
+        }
+        return res.toString();
+    }
+    
     void initializeGdb(FileMapper fmap) {
 	if (org.netbeans.modules.cnd.debugger.common2.debugger.Log.Start.debug) {
 	    System.out.printf("GdbDebuggerImpl.initializeGdb()\n"); // NOI18N
@@ -1282,7 +1294,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         // set extra source folders
         String sourceFolders = DebuggerOption.GDB_SOURCE_DIRS.getCurrValue(optionLayers());
         if (sourceFolders != null && !sourceFolders.isEmpty()) {
-            send("-environment-directory \"" + sourceFolders + '\"'); // NOI18N
+            send("-environment-directory" + parseEnvDirFromOption(sourceFolders)); // NOI18N
         }
         
         // set terminal mode on windows, see IZ 193220
