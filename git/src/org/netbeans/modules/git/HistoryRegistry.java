@@ -129,8 +129,9 @@ public class HistoryRegistry {
     }
 
     private String getRepositoryPathIntern (List<GitRevisionInfo> history, String revision, Map<String, List<GitFileInfo>> fileChangesets, 
-            File repository, File originalFile, String path, boolean dryTry, ProgressHandle progressHandle, ProgressMonitor pm) {
+            File repository, File originalFile, final String path, boolean dryTry, ProgressHandle progressHandle, ProgressMonitor pm) {
         int count = 0;
+        String historyPath = path;
         Iterator<GitRevisionInfo> it = history.iterator();
         while(it.hasNext() && !revision.equals(it.next().getRevision())) {
             count++;
@@ -170,14 +171,14 @@ public class HistoryRegistry {
             if(changePaths != null) {
                 for (GitFileInfo cp : changePaths) {
                     String copy = cp.getOriginalPath();
-                    if (copy != null && path.equals(cp.getRelativePath())) {
-                        path = copy;
+                    if (copy != null && historyPath.equals(cp.getRelativePath())) {
+                        historyPath = copy;
                         break;
                     }
                 }
             }
         }
         // XXX check if found path exists in the revision we search for ...
-        return path;
+        return pm.isCanceled() ? path : historyPath;
     }
 }

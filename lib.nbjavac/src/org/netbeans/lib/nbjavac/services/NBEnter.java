@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2005-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -33,20 +33,40 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2005-2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.lib.nbjavac.services;
 
-package org.netbeans.modules.java.source.javac;
-
-import com.sun.tools.javac.util.Abort;
+import com.sun.tools.javac.comp.Enter;
+import com.sun.tools.javac.tree.JCTree.JCClassDecl;
+import com.sun.tools.javac.util.Context;
+import com.sun.tools.javadoc.JavadocEnter;
 
 /**
  *
- * @author Tomas Zezula
+ * @author lahvac
  */
-public final class CancelAbort extends Abort {
+public class NBEnter extends JavadocEnter {
 
-    CancelAbort() {
+    public static void preRegister(Context context) {
+        context.put(Enter.class, new Context.Factory<Enter>() {
+            public Enter make(Context c) {
+                return new NBEnter(c);
+            }
+        });
+    }
+
+    private final CancelService cancelService;
+
+    public NBEnter(Context context) {
+        super(context);
+        cancelService = CancelService.instance(context);
+    }
+
+    @Override
+    public void visitClassDef(JCClassDecl tree) {
+        cancelService.abortIfCanceled();
+        super.visitClassDef(tree);
     }
 
 }

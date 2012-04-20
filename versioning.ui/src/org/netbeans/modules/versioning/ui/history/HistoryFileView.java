@@ -49,6 +49,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.beans.PropertyVetoException;
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.List;
@@ -74,6 +75,8 @@ import org.netbeans.swing.outline.TreePathSupport;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.OutlineView;
 import org.openide.explorer.view.Visualizer;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -86,7 +89,6 @@ import org.openide.util.RequestProcessor.Task;
 public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProvider.HistoryChangeListener {
            
     private FileTablePanel tablePanel;             
-    private VCSFileProxy[] files;
 
     private RequestProcessor rp = new RequestProcessor("HistoryView", 1, true); // NOI18N
     private final HistoryComponent tc; 
@@ -99,11 +101,10 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
     private Date currentDateFrom; 
     private LoadNextAction loadNextAction;
     
-    public HistoryFileView(VCSFileProxy[] files, VersioningSystem versioningSystem, HistoryComponent tc) {                       
+    public HistoryFileView(VersioningSystem versioningSystem, VersioningSystem lh, HistoryComponent tc) {                       
         this.tc = tc;
-        this.files = files;
         this.versioningSystem = versioningSystem;
-        this.lh = History.getInstance().getLocalHistory(files);
+        this.lh = lh;
         
         tablePanel = new FileTablePanel();
         loadNextAction = new LoadNextAction();
@@ -178,8 +179,8 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
         }
     }
 
-    VCSFileProxy[] getFiles() {
-        return files;
+    FileObject[] getFiles() {
+        return tc.getFiles();
     }
                      
     void setFilter(Filter filter) {
@@ -330,16 +331,21 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
 
     @Override
     public void fireHistoryChanged(HistoryEvent evt) {
-        Set<VCSFileProxy> fileSet = new HashSet<VCSFileProxy>();
+        FileObject[] files = tc.getFiles();
+        if(files == null) {
+            return;
+        }
+        Set<FileObject> fileSet = new HashSet<FileObject>();
         for (VCSFileProxy f : evt.getFiles()) {
-            if(f != null) {
-                fileSet.add(f);
+            FileObject fo = f != null ? f.toFileObject() : null;
+            if(fo != null) {
+                fileSet.add(fo);
             }
         }
         if(fileSet.isEmpty()) {
             return;
         }
-        for (VCSFileProxy file : files) {
+        for (FileObject file : files) {
             if(fileSet.contains(file)) {
                 refreshTablePanel(evt.getSource());
             }
@@ -487,12 +493,14 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
                 tablePanel.getExplorerManager().setRootContext(root);
             }
             
+            VCSFileProxy[] proxies = History.toProxies(tc.getFiles());
+                    
             // refresh local history
             try {
                 root.addWaitNode();
-                VCSHistoryProvider lhProvider = History.getHistoryProvider(History.getInstance().getLocalHistory(files));
+                VCSHistoryProvider lhProvider = History.getHistoryProvider(lh);
                 if(lhProvider != null && (providerToRefresh == null || lhProvider == providerToRefresh)) {
-                    root.addLHEntries(loadLHEntries(files));
+                    root.addLHEntries(loadLHEntries(proxies));
                 }
             } finally {
                 root.removeWaitNode();
@@ -500,15 +508,15 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
             // refresh vcs
             VCSHistoryProvider vcsProvider = History.getHistoryProvider(versioningSystem);
             if(tc != null && vcsProvider != null && (providerToRefresh == null || providerToRefresh == vcsProvider)) {
-                loadVCSEntries(files, false);
+                loadVCSEntries(proxies, false);
             }
             tablePanel.revalidate();
             tablePanel.repaint();
         }
+
     } 
     
     private HistoryEntry[] loadLHEntries(VCSFileProxy[] files) {
-        VersioningSystem lh = History.getInstance().getLocalHistory(files);
         if(lh == null) {
             return new HistoryEntry[0];
         }
@@ -530,7 +538,7 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
         actions.add(new AbstractAction(NbBundle.getMessage(HistoryFileView.class, "LBL_LoadAll")) { // NOI18N
             @Override
             public void actionPerformed(ActionEvent e) {
-                loadVCSEntries(files, true);
+                loadVCSEntries(History.toProxies(tc.getFiles()), true);
             }
         });
         actions.add(null); 
@@ -538,7 +546,7 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
             @Override
             public void actionPerformed(ActionEvent e) {
                 HistorySettings.getInstance().setLoadAll(true);
-                loadVCSEntries(files, true);
+                loadVCSEntries(History.toProxies(tc.getFiles()), true);
             }
         });
         return actions.toArray(new Action[actions.size()]);
@@ -558,6 +566,7 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
             add(treeView, BorderLayout.CENTER);
         }   
 
+        @Override
         public ExplorerManager getExplorerManager() {
             return manager;
         }
@@ -645,6 +654,7 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
             
             private void setDefaultColumnSizes() {
                 SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         int width = getWidth();                    
                         getOutline().getColumnModel().getColumn(0).setPreferredWidth(width * 20 / 100);
@@ -768,8 +778,11 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
     
     private static final Icon NO_ICON = new NoIcon();
     private static class NoIcon implements Icon {
+        @Override
         public void paintIcon(Component c, Graphics g, int x, int y) { }
+        @Override
         public int getIconWidth() { return 0; }
+        @Override
         public int getIconHeight() { return 0; }
     }
 
@@ -957,7 +970,9 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
                     String author = entry.getUsername();
                     String revision = entry.getRevision();
                     Date date = entry.getDateTime();
-                    MsgTooltipWindow ttw = new MsgTooltipWindow(outline, files[0], message, revision, author, date);
+                    FileObject[] files = tc.getFiles();
+                    File file = files[0] != null ? FileUtil.toFile(files[0]) : null;
+                    MsgTooltipWindow ttw = new MsgTooltipWindow(outline, file, message, revision, author, date);
                     Point p = e.getPoint();
                     SwingUtilities.convertPointToScreen(p, outline);
                     ttw.show(new Point(p.x, p.y));
@@ -1010,7 +1025,7 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
         }
         @Override
         public void actionPerformed(ActionEvent e) {
-            loadVCSEntries(files, false); 
+            loadVCSEntries(History.toProxies(tc.getFiles()), false); 
         }
     }
     

@@ -81,7 +81,7 @@ public class HintsTaskTest extends TestBase {
             errors.add(ed.toString());
         }
         
-        assertEquals(Arrays.asList("0:0-0:20:warning:ERR_RemoveExpression"), errors);
+        assertEquals(Arrays.asList("0:0-0:15:warning:ERR_RemoveExpression"), errors);
     }
     
     public void test206116NoWarningAboutRemovingVoidExpression() throws Exception {

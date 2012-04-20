@@ -58,8 +58,8 @@ import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.util.Abort;
-import org.netbeans.modules.java.source.javac.CancelAbort;
-import org.netbeans.modules.java.source.javac.CancelService;
+import org.netbeans.lib.nbjavac.services.CancelAbort;
+import org.netbeans.lib.nbjavac.services.CancelService;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.CouplingAbort;
 import com.sun.tools.javac.util.Log;
@@ -127,12 +127,14 @@ import org.netbeans.modules.java.source.PostFlowAnalysis;
 import org.netbeans.modules.java.source.TreeLoader;
 import org.netbeans.modules.java.source.indexing.APTUtils;
 import org.netbeans.modules.java.source.indexing.FQN2Files;
-import org.netbeans.modules.java.source.javac.NBAttr;
-import org.netbeans.modules.java.source.javac.NBEnter;
-import org.netbeans.modules.java.source.javac.NBJavadocEnter;
-import org.netbeans.modules.java.source.javac.NBJavadocMemberEnter;
-import org.netbeans.modules.java.source.javac.NBMemberEnter;
-import org.netbeans.modules.java.source.javac.NBParserFactory;
+import org.netbeans.lib.nbjavac.services.NBAttr;
+import org.netbeans.lib.nbjavac.services.NBClassReader;
+import org.netbeans.lib.nbjavac.services.NBEnter;
+import org.netbeans.lib.nbjavac.services.NBJavadocEnter;
+import org.netbeans.lib.nbjavac.services.NBJavadocMemberEnter;
+import org.netbeans.lib.nbjavac.services.NBMemberEnter;
+import org.netbeans.lib.nbjavac.services.NBParserFactory;
+import org.netbeans.lib.nbjavac.services.NBClassWriter;
 import org.netbeans.modules.java.source.tasklist.CompilerSettings;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
@@ -732,7 +734,7 @@ public class JavacParser extends Parser {
             task.setProcessors(processors);
         }
         Context context = task.getContext();
-        JavadocClassReader.preRegister(context, !backgroundCompilation);
+        NBClassReader.preRegister(context, !backgroundCompilation);
         if (cnih != null) {
             context.put(ClassNamesForFileOraculum.class, cnih);
         }
@@ -744,6 +746,7 @@ public class JavacParser extends Parser {
         }
         Messager.preRegister(context, null, DEV_NULL, DEV_NULL, DEV_NULL);
         NBAttr.preRegister(context);
+        NBClassWriter.preRegister(context);
         NBParserFactory.preRegister(context);
         if (!backgroundCompilation) {
             JavacFlowListener.preRegister(context);

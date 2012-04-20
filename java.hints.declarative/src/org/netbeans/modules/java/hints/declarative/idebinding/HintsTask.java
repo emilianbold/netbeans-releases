@@ -146,7 +146,7 @@ public class HintsTask extends ParserResultTask<Result> {
                                                                                                   NbBundle.getMessage(HintsTask.class, "ERR_RemoveExpression"),
                                                                                                   file,
                                                                                                   hd.textStart,
-                                                                                                  hd.hintEnd));
+                                                                                                  hd.textEnd));
                                     }
                                 }
                             }

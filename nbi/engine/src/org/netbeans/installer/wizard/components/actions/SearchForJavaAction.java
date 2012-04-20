@@ -142,11 +142,18 @@ public class SearchForJavaAction extends WizardAction {
     
     private static String getLabel(File javaHome, Version version, String vendor) {
         JavaInfo javaInfo = JavaUtils.getInfo(javaHome);
-        return StringUtils.format(JAVA_ENTRY_LABEL,
-                javaHome,
-                version.toJdkStyle(),
-                javaInfo.getArch(),
-                vendor);
+        if (javaInfo == null) {
+            return StringUtils.format(JAVA_ENTRY_LABEL_NO_ARCH,
+                    javaHome,
+                    version.toJdkStyle(),
+                    vendor);
+        } else {
+            return StringUtils.format(JAVA_ENTRY_LABEL,
+                    javaHome,
+                    version.toJdkStyle(),
+                    javaInfo.getArch(),
+                    vendor);
+        }
     }
     
     private void getJavaLocationsInfo(List <File> locations, Progress progress) {
@@ -476,6 +483,9 @@ public class SearchForJavaAction extends WizardAction {
     public static final String JAVA_ENTRY_LABEL =
             ResourceUtils.getString(SearchForJavaAction.class,
             "SFJA.entry.label");//NOI18N
+    public static final String JAVA_ENTRY_LABEL_NO_ARCH =
+            ResourceUtils.getString(SearchForJavaAction.class,
+            "SFJA.entry.label.noarch");//NOI18N
     public static final String JAVA_ENTRY_LABEL_NON_FINAL =
             ResourceUtils.getString(SearchForJavaAction.class,
             "SFJA.entry.label.non.final");//NOI18N
