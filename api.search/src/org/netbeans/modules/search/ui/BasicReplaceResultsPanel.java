@@ -173,9 +173,9 @@ public class BasicReplaceResultsPanel extends BasicAbstractResultsPanel {
 
     public void displayIssues(IssuesPanel issuesPanel) {
         if (issuesPanel != null) {
-            btnModifySearch.setEnabled(true);
-            removeButtons(btnStop, nextButton, prevButton, toggleViewButton,
-                    expandButton, showDetailsButton);
+            showRefreshButton();
+            removeButtons(nextButton, prevButton, treeViewButton,
+                    flatViewButton, expandButton, showDetailsButton);
             Container p = getContentPanel();
             p.removeAll();
             p.add(issuesPanel);
@@ -216,7 +216,8 @@ public class BasicReplaceResultsPanel extends BasicAbstractResultsPanel {
                 getOutlineView().repaint();
                 nextButton.setEnabled(false);
                 prevButton.setEnabled(false);
-                toggleViewButton.setEnabled(false);
+                treeViewButton.setEnabled(false);
+                flatViewButton.setEnabled(false);
                 expandButton.setEnabled(false);
             }
         });

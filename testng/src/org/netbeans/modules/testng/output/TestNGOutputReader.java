@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.testng.output;
 
-import org.netbeans.modules.testng.output.AntSessionInfo;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -61,8 +60,8 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.gsf.testrunner.api.TestSession.SessionType;
 import org.netbeans.modules.gsf.testrunner.api.*;
+import org.netbeans.modules.gsf.testrunner.api.TestSession.SessionType;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.xml.sax.SAXException;
@@ -187,6 +186,7 @@ final class TestNGOutputReader {
     private SuiteStats suiteStat;
     private List<String> txt = new ArrayList<String>();
 
+    private static int x = 0;
     /**
      */
     synchronized void verboseMessageLogged(String msg) {
@@ -247,7 +247,13 @@ final class TestNGOutputReader {
             if (m.matches()) {
                 testStarted(m.group(1), m.group(2), m.group(4), m.group(6));
             } else {
-                assert false : "Cannot match: '" + in + "'.";
+                Matcher m2 = Pattern.compile(RegexpUtils.TEST_REGEX_2).matcher(in);
+                if (m2.matches()) {
+                    x++;
+                    testStarted(m2.group(1), m2.group(2), m2.group(4), "UNKNOWN#" + x);
+                } else {
+                    assert false : "Cannot match: '" + in + "'.";
+                }
             }
             return;
         }
@@ -257,7 +263,12 @@ final class TestNGOutputReader {
             if (m.matches()) {
                 testFinished("PASSED", m.group(1), m.group(2), m.group(4), m.group(6), m.group(8));
             } else {
-                assert false : "Cannot match: '" + in + "'.";
+                Matcher m2 = Pattern.compile(RegexpUtils.TEST_REGEX_2).matcher(in);
+                if (m2.matches()) {
+                    testFinished("PASSED", m2.group(1), m2.group(2), m2.group(4), "UNKNOWN#" + x, "0");
+                } else {
+                    assert false : "Cannot match: '" + in + "'.";
+                }
             }
             return;
         }
@@ -269,7 +280,12 @@ final class TestNGOutputReader {
             if (m.matches()) {
                 testFinished("SKIPPED", m.group(1), m.group(2), m.group(4), m.group(6), m.group(8));
             } else {
-                assert false : "Cannot match: '" + in + "'.";
+                Matcher m2 = Pattern.compile(RegexpUtils.TEST_REGEX_2).matcher(in);
+                if (m2.matches()) {
+                    testFinished("PASSED", m2.group(1), m2.group(2), m2.group(4), "UNKNOWN#" + x, "0");
+                } else {
+                    assert false : "Cannot match: '" + in + "'.";
+                }
             }
             return;
         }
@@ -278,7 +294,12 @@ final class TestNGOutputReader {
             if (m.matches()) {
                 testFinished("FAILED", m.group(1), m.group(2), m.group(4), m.group(6), m.group(8));
             } else {
-                assert false : "Cannot match: '" + in + "'.";
+                Matcher m2 = Pattern.compile(RegexpUtils.TEST_REGEX_2).matcher(in);
+                if (m2.matches()) {
+                    testFinished("PASSED", m2.group(1), m2.group(2), m2.group(4), "UNKNOWN#" + x, "0");
+                } else {
+                    assert false : "Cannot match: '" + in + "'.";
+                }
             }
             return;
         }
@@ -510,6 +531,7 @@ final class TestNGOutputReader {
                 }
             }
         }
+        x = 0;
     }
 
     /**

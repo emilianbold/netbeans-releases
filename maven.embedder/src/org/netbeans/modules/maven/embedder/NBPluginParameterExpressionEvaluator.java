@@ -102,6 +102,7 @@ public class NBPluginParameterExpressionEvaluator
     }
 
 
+    @Override
     public Object evaluate( String expr )
         throws ExpressionEvaluationException
     {

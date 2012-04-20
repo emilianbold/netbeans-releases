@@ -193,7 +193,7 @@ class ResultViewPanel extends JPanel implements Lookup.Provider {
      */
     void searchCancelled() {
         Manager.getInstance().stopSearching(searchTask);
-        searchComposition.terminate();
+        searchTask.cancel();
         showInfo(NbBundle.getMessage(ResultView.class,
                 "TEXT_TASK_CANCELLED"));                                //NOI18N
         setBtnStopEnabled(false);

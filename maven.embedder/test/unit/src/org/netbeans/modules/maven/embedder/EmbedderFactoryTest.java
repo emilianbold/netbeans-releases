@@ -178,7 +178,7 @@ public class EmbedderFactoryTest extends NbTestCase {
         MavenExecutionRequest req = e.createMavenExecutionRequest();
         req.setPom(main);
         req.setOffline(true);
-        MavenExecutionResult res = e.readProjectWithDependencies(req);
+        MavenExecutionResult res = e.readProjectWithDependencies(req, true);
         assertEquals(Collections.emptyList(), res.getExceptions());
         MavenProject prj = res.getProject();
         assertEquals("v", prj.getProperties().getProperty("k"));

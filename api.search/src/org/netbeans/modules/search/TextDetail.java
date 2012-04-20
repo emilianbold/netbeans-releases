@@ -45,6 +45,7 @@
 
 package org.netbeans.modules.search;
 
+import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
@@ -119,6 +120,8 @@ public final class TextDetail implements Selectable {
     private String matchedText;
     /** Selected flag */
     private boolean selected = true;
+    /** Line number indent */
+    private String lineNumberIndent = "";                               //NOI18N
 
     private ChangeSupport changeSupport = new ChangeSupport(this);
     /** Constructor using data object. 
@@ -393,6 +396,8 @@ public final class TextDetail implements Selectable {
      */
     static final class DetailNode extends AbstractNode
                                           implements OutputListener {
+        private static final String ICON =
+                "org/netbeans/modules/search/res/textDetail.png";       //NOI18N
         
         /** Detail to represent. */
         private TextDetail txtDetail;
@@ -424,6 +429,7 @@ public final class TextDetail implements Selectable {
                     ResultsOutlineSupport.toggleParentSelected(DetailNode.this);
                 }
             });
+            setIconBaseWithExtension(ICON);
         }
         
         /** {@inheritDoc} */
@@ -470,6 +476,11 @@ public final class TextDetail implements Selectable {
         public String getHtmlDisplayName() {
             try {
                 StringBuffer text = new StringBuffer();
+                text.append("<font color='!controlShadow'>");           //NOI18N
+                text.append(txtDetail.lineNumberIndent);
+                text.append(txtDetail.getLine());
+                text.append(": ");                                      //NOI18N
+                text.append("</font>");                                 //NOI18N
                 if(canBeMarked()) {
                     appendMarkedText(text);
                 }
@@ -478,7 +489,7 @@ public final class TextDetail implements Selectable {
                 }
                 text.append("      ");  // NOI18N
                 text.append("<font color='!controlShadow'>[");  // NOI18N
-                text.append(escape(DetailNode.getName(txtDetail)));
+                text.append(escape(DetailNode.getLinePos(txtDetail)));
                 text.append("]");  // NOI18N
                 return text.toString();
             } catch (CharConversionException e) {
@@ -582,6 +593,18 @@ public final class TextDetail implements Selectable {
             }
         }
 
+        private static String getLinePos(TextDetail det) {
+            int col = det.getColumn();
+            if (col > 0) {
+                /* column <col> */
+                return NbBundle.getMessage(DetailNode.class,
+                                           "TEXT_DETAIL_FMT_NAME3",     //NOI18N
+                                           col);
+            } else {
+                return "";                                              //NOI18N
+            }
+        }
+
         /**
          * Returns short description of a visual representation of
          * a <code>TextDetail</code>. The description may be used e.g.
@@ -677,4 +700,8 @@ public final class TextDetail implements Selectable {
             detailNode.gotoDetail();
         }
     } // End of GotoDetailAction class.
+
+    void setLineNumberIndent(String lineNumberIndent) {
+        this.lineNumberIndent = lineNumberIndent;
+    }
 }
