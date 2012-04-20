@@ -93,7 +93,7 @@ public class CheckNode extends DefaultMutableTreeNode {
                     }
 
 
-                    this.nodeLabel = "<font color=#808080>" + getLineString(line,4) + "</font>" + nodeLabel; //NOI18N
+                    this.nodeLabel = "<font color='!controlShadow'>" + getLineString(line,4) + "</font>" + nodeLabel; //NOI18N
                     if (this.icon==null) {
                         this.icon = found;
                     }
