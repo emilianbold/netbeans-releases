@@ -74,7 +74,8 @@ public class RemoteAWTService {
     private static volatile boolean awtAccessLoop = false;
     private static volatile RemoteAWTHierarchyListener hierarchyListener;
     
-    private static final Map eventData = new HashMap();
+    //private static final Map eventData = new HashMap();
+    private static final List eventData = new ArrayList();
     
     public RemoteAWTService() {
     }
@@ -129,19 +130,26 @@ public class RemoteAWTService {
         return RemoteAWTServiceListener.remove(c, listenerClass, listener);
     }
     
-    static void pushEventData(Component c, String[] data, String[] stack) {
+    static void pushEventData(Component c, Class listenerClass, String[] data, String[] stack) {
         synchronized (eventData) {
-            List ld = (List) eventData.get(c);
+            List ld = null;
+            if (!eventData.isEmpty()) {
+                ListenerEvent le = (ListenerEvent) eventData.get(eventData.size() - 1);
+                if (le.c == c && le.listenerClass == listenerClass) {
+                    ld = le.data;
+                }
+            }
             if (ld == null) {
-                ld = new ArrayList();
-                eventData.put(c, ld);
+                ListenerEvent le = new ListenerEvent(c, listenerClass);
+                eventData.add(le);
+                ld = le.data;
             }
             ld.add(data);
             ld.add(stack);
         }
     }
     
-    static void calledWithEventsData(Component c, String[] data) {
+    static void calledWithEventsData(Component c, Class listenerClass, String[] data) {
         // A breakpoint is submitted on this method.
         // When breakpoint is hit, data can be retrieved
     }
@@ -205,17 +213,19 @@ public class RemoteAWTService {
                 } catch (InterruptedException ex) {
                     return ;
                 }
-                Map eventDataCopy = null;
+                List eventDataCopy = null;
                 synchronized (eventData) {
                     if (eventData.size() > 0) {
-                        eventDataCopy = new HashMap(eventData);
+                        eventDataCopy = new ArrayList(eventData);
                         eventData.clear();
                     }
                 }
                 if (eventDataCopy != null) {
-                    for (Iterator ic = eventDataCopy.keySet().iterator(); ic.hasNext(); ) {
-                        Component c = (Component) ic.next();
-                        List dataList = (List) eventDataCopy.get(c);
+                    for (Iterator ile = eventDataCopy.iterator(); ile.hasNext(); ) {
+                        ListenerEvent le = (ListenerEvent) ile.next();
+                        Component c = le.c;
+                        Class listenerClass = le.listenerClass;
+                        List dataList = le.data;
                         int totalLength = 0;
                         int l = dataList.size();
                         for (int i = 0; i < l; i++) {
@@ -230,7 +240,7 @@ public class RemoteAWTService {
                                 allData[ii++] = data[j];
                             }
                         }
-                        calledWithEventsData(c, allData);
+                        calledWithEventsData(c, listenerClass, allData);
                     }
                 }
             }
@@ -437,6 +447,19 @@ public class RemoteAWTService {
                     subComponents[i].putNamesTo(sb);
                 }
             }
+        }
+    }
+    
+    private static class ListenerEvent {
+        
+        Component c;
+        Class listenerClass;
+        List data;
+        
+        ListenerEvent(Component c, Class listenerClass) {
+            this.c = c;
+            this.listenerClass = listenerClass;
+            this.data = new ArrayList();
         }
     }
     

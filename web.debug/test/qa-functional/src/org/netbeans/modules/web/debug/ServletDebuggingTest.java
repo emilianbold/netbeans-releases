@@ -134,13 +134,12 @@ public class ServletDebuggingTest extends J2eeTestCase {
         line = Utils.setBreakpoint(eo, "<h1>"); // NOI18N
     }
 
-    /** Step into in Servlet.
-     * - debug project (#199576 - Debug File on servlet doesn't run debugger)
+    /** Debug project.
+     * - debug project
      * - close "Port Selection Notice" dialog
      * - wait until debugger is started
      */
     public void testDebugProject() {
-        //Bug 199576 - Debug File on servlet doesn't run debugger 
         Node rootNode = new ProjectsTabOperator().getProjectRootNode(SAMPLE_WEB_PROJECT_NAME);
         rootNode.performPopupActionNoBlock("Debug");
         // close info message "Use 9009 to attach the debugger to the GlassFish Instance"
@@ -243,7 +242,7 @@ public class ServletDebuggingTest extends J2eeTestCase {
         new ActionNoBlock(null, "Debug File").perform(servletNode);
         String setURITitle = Bundle.getString("org.netbeans.modules.web.project.ui.Bundle", "TTL_setServletExecutionUri");
         new NbDialogOperator(setURITitle).ok();
-        Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "run"); // should be "debug" when #199576 fixed
+        Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug");
         // reload page because browser is suppressed
         Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME + "/DivideServlet");
         waitText("DivideServlet.java:" + line); //NOI18N
