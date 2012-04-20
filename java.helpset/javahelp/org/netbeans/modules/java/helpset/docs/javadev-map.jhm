@@ -279,6 +279,9 @@
 <!--CSH for java source editor-->
 <mapID target="text.x-java" url="editing/csh/about_source_editor.html" />
 
+<!--CSH for editors with hints-->
+<mapID target="text.x-javahints" url="refactor/csh/refactor-syntax-hints.html" />
+
 <!--CSH for manifest source editor-->
 <mapID target="text.x-manifest" url="pending.html" />
 
