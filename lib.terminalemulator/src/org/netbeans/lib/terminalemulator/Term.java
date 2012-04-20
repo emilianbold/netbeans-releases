@@ -61,6 +61,7 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.text.Keymap;
+import org.openide.util.Lookup;
 
 /**
  * Term is a pure Java multi-purpose terminal emulator.
@@ -282,7 +283,7 @@ public class Term extends JComponent implements Accessible {
     // will be quite far from the initial press location.
     private Point left_down_point;
     // getSystemSelection() wasn't available on Java prior to 1.4
-    private Clipboard systemClipboard = getToolkit().getSystemClipboard();
+    private final Clipboard systemClipboard;
     private Clipboard systemSelection = getToolkit().getSystemSelection();
 
     /**
@@ -1609,6 +1610,12 @@ public class Term extends JComponent implements Accessible {
      * Constructor
      */
     public Term() {
+        //systemClipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        Clipboard aSystemClipboard = Lookup.getDefault().lookup(Clipboard.class);
+        if (aSystemClipboard == null) {
+            aSystemClipboard = getToolkit().getSystemClipboard();
+        }
+        systemClipboard = aSystemClipboard;
         st.rows = 25;
         st.firstx = 0;
         st.firsty = 0;
