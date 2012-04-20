@@ -41,19 +41,21 @@
  */
 package org.netbeans.modules.php.project.connections.sync;
 
+import java.awt.Color;
 import java.awt.Dialog;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
@@ -101,6 +103,18 @@ public class SummaryPanel extends JPanel {
         return descriptor.getValue() == okButton;
     }
 
+    public void uploadError() {
+        setErrorComponents(uploadLabel, uploadNumberLabel);
+    }
+
+    public void downloadError() {
+        setErrorComponents(downloadLabel, downloadNumberLabel);
+    }
+
+    public void deleteError() {
+        setErrorComponents(deleteLabel, deleteNumberLabel);
+    }
+
     public void decreaseUploadNumber() {
         decreaseNumber(uploadNumberLabel);
     }
@@ -113,8 +127,8 @@ public class SummaryPanel extends JPanel {
         decreaseNumber(noopNumberLabel);
     }
 
-    public void resetDeleteNumber() {
-        deleteNumberLabel.setText(String.valueOf(0));
+    public void setDeleteNumber(int number) {
+        setNumber(deleteNumberLabel, number);
     }
 
     private void setNumber(JLabel numberLabel, int number) {
@@ -131,6 +145,16 @@ public class SummaryPanel extends JPanel {
             LOGGER.log(Level.WARNING, null, ex);
             numberLabel.setText(Bundle.SummaryPanel_na());
         }
+    }
+
+    private void setErrorComponents(JComponent... components) {
+        for (JComponent component : components) {
+            component.setForeground(getErrorColor());
+        }
+    }
+
+    private Color getErrorColor() {
+        return UIManager.getColor("nb.errorForeground"); // NOI18N
     }
 
     /**
