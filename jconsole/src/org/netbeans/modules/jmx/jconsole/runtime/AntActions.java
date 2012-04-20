@@ -54,7 +54,6 @@ import org.netbeans.spi.project.ui.support.MainProjectSensitiveActions;
 import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
 
 import org.openide.NotifyDescriptor;
 
@@ -73,9 +72,12 @@ import javax.management.remote.*;
 import org.netbeans.modules.jmx.j2seproject.customizer.ManagementCompositePanelProvider;
 import org.netbeans.modules.jmx.common.runtime.J2SEProjectType;
 import org.netbeans.modules.jmx.common.runtime.ManagementDialogs;
+import static org.netbeans.modules.jmx.jconsole.runtime.Bundle.*;
+import org.openide.util.NbBundle.Messages;
 
 public class AntActions {
     
+    @Messages({"LBL_EnableMMAction=Run Main Project with Monitoring and Management...", "HINT_EnableMMAction=Run Main Project with Monitoring and Management"})
     public static Action enableMM() {
         Action a = MainProjectSensitiveActions.mainProjectSensitiveAction(
                 new ProjectActionPerformer() {
@@ -88,11 +90,11 @@ public class AntActions {
                 enableMM(project);
             }
         },
-                NbBundle.getMessage(AntActions.class, "LBL_EnableMMAction"), // NOI18N
+                LBL_EnableMMAction(),
                 null);
         a.putValue(
                 Action.SHORT_DESCRIPTION,
-                NbBundle.getMessage(AntActions.class,"HINT_EnableMMAction")); // NOI18N
+                HINT_EnableMMAction());
         
         a.putValue(
                 "iconBase", // NOI18N
@@ -105,6 +107,7 @@ public class AntActions {
         return a;
     }
     
+    @Messages({"LBL_DebugMMAction=Debug Main Project with Monitoring and Management...", "HINT_DebugMMAction=Debug Main Project with Monitoring and Management"})
     public static Action debugMM() {
         Action a = MainProjectSensitiveActions.mainProjectSensitiveAction(
                 new ProjectActionPerformer() {
@@ -117,11 +120,11 @@ public class AntActions {
                 debugMM(project);
             }
         },
-                NbBundle.getMessage(AntActions.class, "LBL_DebugMMAction"), // NOI18N
+                LBL_DebugMMAction(),
                 null);
         a.putValue(
                 Action.SHORT_DESCRIPTION,
-                NbBundle.getMessage(AntActions.class, "HINT_DebugMMAction")); // NOI18N
+                HINT_DebugMMAction()); // NOI18N
 
         a.putValue(
                 "iconBase", // NOI18N
@@ -157,6 +160,7 @@ public class AntActions {
         return true;
     }
     
+    @Messages("ERR_MMNotEnabled=No Management features enabled. Please check Project properties to enable Monitoring And Management.")
     private static void handleMM(Project project, String target) {
         
         // JConsole properties
@@ -170,7 +174,7 @@ public class AntActions {
         
         if(!rmiConnect && !localAttach) {
             ManagementDialogs.getDefault().notify(
-                new NotifyDescriptor.Message(NbBundle.getMessage(J2SEProjectType.class, "ERR_MMNotEnabled"), NotifyDescriptor.WARNING_MESSAGE));// NOI18N
+                new NotifyDescriptor.Message(ERR_MMNotEnabled(), NotifyDescriptor.WARNING_MESSAGE));
             return;
         }
         Properties p = null;
@@ -181,6 +185,7 @@ public class AntActions {
         //}
     }
     
+    @Messages({"MSG_ConnectingJConsole=Connecting JConsole...", "MSG_EnablingRemoteManagement=Enabling Remote Management..."})
     private static Properties createRemoteManagementProperties(Project project, String target, Properties properties) {
         // 2. check if the project has been modified for management
         if(!ManagementChecker.checkProjectIsModifiedForManagement(project)||
@@ -229,9 +234,9 @@ public class AntActions {
             String url = "localhost:" + rmiPort;// NOI18N
             
             if(launchJConsole)
-                msg = NbBundle.getMessage(AntActions.class, "MSG_ConnectingJConsole");// NOI18N
+                msg = MSG_ConnectingJConsole();
             else
-                msg = NbBundle.getMessage(AntActions.class, "MSG_EnablingRemoteManagement");// NOI18N
+                msg = MSG_EnablingRemoteManagement();
             
             String managementArgs = " -Dcom.sun.management.jmxremote.port=" + rmiPort + " " +   // NOI18N      
                                     (configFile == null ? "-Dcom.sun.management.jmxremote.authenticate=false  -Dcom.sun.management.jmxremote.ssl=false" : "-Dcom.sun.management.config.file=" + "\""+configFile+"\"");// NOI18N
@@ -281,7 +286,7 @@ public class AntActions {
                 managementArgs = managementArgs + " " + remoteArgs;
             
             props.setProperty("management.jvmargs", managementArgs);// NOI18N
-            props.setProperty("connecting.jconsole.msg", NbBundle.getMessage(AntActions.class, "MSG_ConnectingJConsole"));// NOI18N
+            props.setProperty("connecting.jconsole.msg", MSG_ConnectingJConsole());// NOI18N
             if(remoteProperties == null)
                 props.setProperty("jconsole.managed.process.url", "");// NOI18N
             
@@ -338,12 +343,13 @@ public class AntActions {
                 t.getInputOutput().getErr().print(msg);
         }
         
+        @Messages({"MSG_FoundProcessToConnectTo=Found manageable process, connecting JConsole to process...", "MSG_DisplayingJConsole=Displaying JConsole..."})
         protected void connectJConsole(String url) {
             //Access to settings
             String polling = 
                     properties.getProperty(ManagementCompositePanelProvider.POLLING_PERIOD_KEY,"4");
             Properties props = new Properties();
-            t.getInputOutput().getErr().println(NbBundle.getMessage(AntActions.class, "MSG_FoundProcessToConnectTo"));// NOI18N
+            t.getInputOutput().getErr().println(MSG_FoundProcessToConnectTo());
             
             props.setProperty("jconsole.settings.vmoptions", "");// NOI18N
             props.setProperty("jconsole.settings.polling", polling);// NOI18N
@@ -390,7 +396,7 @@ public class AntActions {
             props.setProperty("jconsole.managed.process.url", url);// NOI18N
             ExecutorTask jt = runTarget(project, "-connect-jconsole", props);// NOI18N
             t.getInputOutput().select();
-            jt.getInputOutput().getErr().println(NbBundle.getMessage(AntActions.class, "MSG_DisplayingJConsole"));// NOI18N
+            jt.getInputOutput().getErr().println(MSG_DisplayingJConsole());
             //jt.getInputOutput().closeInputOutput();
             
             //Killing both ways. First killed, kill the other
@@ -414,16 +420,17 @@ public class AntActions {
             super(key, project, t, properties);
         }
     
+        @Messages("MSG_ErrorConnectingJConsole=Unable to connect jconsole to process. CAUSE : process is not waiting (check main method) or process is dead.")
         public void run() {
             try {
                 if(t.isFinished()) {
-                    handleApplicationDied(t, NbBundle.getMessage(AntActions.class, "MSG_ErrorConnectingJConsole"));// NOI18N
+                    handleApplicationDied(t, MSG_ErrorConnectingJConsole());
                 }
                 
                 int pid = findPID((String) key, t);
                 
                 if(pid == -1) {
-                    handleApplicationDied(t, NbBundle.getMessage(AntActions.class, "MSG_ErrorConnectingJConsole"));// NOI18N
+                    handleApplicationDied(t, MSG_ErrorConnectingJConsole());
                     return;
                 }
                 String url = String.valueOf(pid);
@@ -445,16 +452,17 @@ public class AntActions {
             this.host = "localhost";// NOI18N
         }
         
+        @Messages("MSG_ErrorConnectingRemoteJConsole=Unable to connect jconsole to process. CAUSE : process is not waiting (check main method), RMI port is already used or process is dead.")
         public void run() {
             try {
                 if(t.isFinished()) {
-                    handleApplicationDied(t, NbBundle.getMessage(AntActions.class, "MSG_ErrorConnectingRemoteJConsole"));// NOI18N
+                    handleApplicationDied(t, MSG_ErrorConnectingRemoteJConsole());
                 }
                 
                 try {
                     tryConnect((Integer) key, host, t);
                 }catch(Exception e) {
-                    handleApplicationDied(t, NbBundle.getMessage(AntActions.class, "MSG_ErrorConnectingRemoteJConsole"));// NOI18N
+                    handleApplicationDied(t, MSG_ErrorConnectingRemoteJConsole());
                     return;
                 }
                
