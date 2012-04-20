@@ -1248,9 +1248,9 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         StringBuilder res = new StringBuilder();
         StringTokenizer st = new StringTokenizer(src, File.pathSeparator); // NOI18N
         while (st.hasMoreTokens()) {
-            res.append(" \"");
+            res.append(" \"");// NOI18N
             res.append(st.nextToken());
-            res.append("\"");
+            res.append("\"");// NOI18N
         }
         return res.toString();
     }
