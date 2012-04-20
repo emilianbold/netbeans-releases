@@ -354,8 +354,10 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                     }
                     ((DelegatingUndoRedoManager)getUndoRedo()).init();
                     
-                    issue.setContext(context);
-
+                    if(BugtrackingUtil.isNbRepository(issue.getRepositoryImpl().getUrl())) {
+                        issue.setContext(context);
+                    }
+                    
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {

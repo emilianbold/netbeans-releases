@@ -284,11 +284,6 @@ public class QueryTableCellRendererTest {
 //        }
 
         @Override
-        public void setContext(Node[] nodes) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-        
-        @Override
         public void remove() {
             throw new UnsupportedOperationException("Not supported yet.");
         }        
@@ -300,6 +295,10 @@ public class QueryTableCellRendererTest {
         @Override
         public void addPropertyChangeListener(PropertyChangeListener listener) {
             
+        }
+        @Override
+        public void refresh() {
+            throw new UnsupportedOperationException("Not supported yet.");
         }
     }
 
@@ -403,11 +402,6 @@ public class QueryTableCellRendererTest {
         public Map<String, String> getAttributes() {
             fail("implement me!!!");
             return null;
-        }
-
-        @Override
-        public void setContext(Node[] nodes) {
-            throw new UnsupportedOperationException("Not supported yet.");
         }
 
         @Override

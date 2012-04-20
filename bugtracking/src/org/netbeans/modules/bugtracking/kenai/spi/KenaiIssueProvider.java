@@ -7,7 +7,7 @@
  * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
- * General public abstract License Version 2 only ("GPL") or the Common
+ * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
  * "License"). You may not use this file except in compliance with the
  * License. You can obtain a copy of the License at
@@ -39,45 +39,15 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.bugtracking;
+package org.netbeans.modules.bugtracking.kenai.spi;
 
-import java.beans.PropertyChangeListener;
-import java.io.File;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.openide.nodes.Node;
 
 /**
  *
- * @author tomas
+ * @author Tomas Stupka
  */
-public abstract class TestIssue {
-
-    public abstract String getDisplayName();
-
-    public abstract String getTooltip();
-
-    public abstract String getID();
-
-    public abstract String getSummary();
-
-    public abstract boolean isNew();
-
-    public abstract boolean refresh();
-
-    public abstract TestIssue createFor(String id);
-
-    public abstract void addComment(String comment, boolean closeAsFixed);
-
-    public abstract void attachPatch(File file, String description);
-
-    public abstract BugtrackingController getController();
-
-    public abstract void removePropertyChangeListener(PropertyChangeListener listener);
-
-    public abstract void addPropertyChangeListener(PropertyChangeListener listener);
-
-    public abstract String[] getSubtasks();
-
-    public abstract boolean isFinished();
-    
+public abstract class KenaiIssueProvider<I> extends IssueProvider<I> {
+    public abstract void setContext(I data, Node[] nodes);   
 }

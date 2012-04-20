@@ -103,23 +103,24 @@ public class BugzillaQueryProvider extends KenaiQueryProvider<BugzillaQuery, Bug
     }
 
     @Override
-    public void setContext(BugzillaQuery q, Node[] nodes) {
-        q.setContext(nodes);
+    public void refresh(BugzillaQuery query) {
+        query.getController().refresh(true);
     }
+
 
     /************************************************************************************
      * Kenai
      ************************************************************************************/
     
     @Override
+    public void setContext(BugzillaQuery q, Node[] nodes) {
+        q.setContext(nodes);
+    }
+    
+    @Override
     public boolean needsLogin(BugzillaQuery query) {
         BugzillaRepository repository = query.getRepository();
         return query == ((KenaiRepository) repository).getMyIssuesQuery();
-    }
-
-    @Override
-    public void refresh(BugzillaQuery query, boolean synchronously) {
-        query.getController().refresh(synchronously);
     }
 
 }

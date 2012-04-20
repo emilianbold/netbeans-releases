@@ -153,6 +153,10 @@ public final class QueryImpl<Q, I>  {
         return queryProvider.contains(data, id);
     }
 
+    public void refresh() {
+        queryProvider.refresh(data);
+    }
+    
     private Collection<IssueImpl> getIssuesIntern(int includeStatus) {
         Collection<I> issues = queryProvider.getIssues(data);
         List<IssueImpl> ret = new ArrayList<IssueImpl>(issues.size());
@@ -183,17 +187,18 @@ public final class QueryImpl<Q, I>  {
     }
 
     public void setContext(Node[] context) {
-        queryProvider.setContext(data, context);
+        assert (queryProvider instanceof KenaiQueryProvider);
+        if((queryProvider instanceof KenaiQueryProvider)) {
+            ((KenaiQueryProvider<Q, I>)queryProvider).setContext(data, context);
+        }
     }
 
     public boolean needsLogin() {
-        assert KenaiQueryProvider.class.isAssignableFrom(queryProvider.getClass());
-        return ((KenaiQueryProvider<Q, I>)queryProvider).needsLogin(data);
-    }
-
-    public void refresh(boolean synchronously) {
-        assert KenaiQueryProvider.class.isAssignableFrom(queryProvider.getClass());
-        ((KenaiQueryProvider<Q, I>)queryProvider).refresh(data, synchronously);
+        assert (queryProvider instanceof KenaiQueryProvider);
+        if((queryProvider instanceof KenaiQueryProvider)) {
+            return ((KenaiQueryProvider<Q, I>)queryProvider).needsLogin(data);
+        } 
+        return false;
     }
 
 }

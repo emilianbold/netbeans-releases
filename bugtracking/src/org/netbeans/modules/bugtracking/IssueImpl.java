@@ -46,6 +46,8 @@ import java.io.File;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import static java.lang.Character.isSpaceChar;
 import org.netbeans.modules.bugtracking.api.Issue;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiIssueProvider;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiQueryProvider;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
 import org.openide.nodes.Node;
@@ -177,7 +179,10 @@ public final class IssueImpl<I> {
     }
 
     public void setContext(Node[] context) {
-        issueProvider.setContext(data, context);
+        assert issueProvider instanceof KenaiIssueProvider;
+        if(issueProvider instanceof KenaiIssueProvider) {
+            ((KenaiIssueProvider<I>)issueProvider).setContext(data, context);
+        }
     }
 
     public BugtrackingController getController() {

@@ -531,7 +531,9 @@ public final class QueryTopComponent extends TopComponent
 
                     findInQuerySupport.setQuery(query);
 
-                    query.setContext(context);
+                    if(BugtrackingUtil.isNbRepository(query.getRepositoryImpl().getUrl())) {
+                        query.setContext(context);
+                    }
                     query.addPropertyChangeListener(QueryTopComponent.this);
 
                     updateSavedQueriesIntern(repo);

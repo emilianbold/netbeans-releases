@@ -103,13 +103,18 @@ public class JiraQueryProvider extends KenaiQueryProvider<JiraQuery, NbJiraIssue
     }
 
     @Override
-    public void setContext(JiraQuery q, Node[] nodes) {
-        q.setContext(nodes);
+    public void refresh(JiraQuery query) {
+        query.getController().refresh(true);
     }
-
+    
     /********************************************************************************
      * Kenai
      ********************************************************************************/
+    
+    @Override
+    public void setContext(JiraQuery q, Node[] nodes) {
+        // meant only for nb bugzilla
+    }
     
     @Override
     public boolean needsLogin(JiraQuery query) {
@@ -117,8 +122,4 @@ public class JiraQueryProvider extends KenaiQueryProvider<JiraQuery, NbJiraIssue
         return query == ((KenaiRepository) repository).getMyIssuesQuery();
     }
 
-    @Override
-    public void refresh(JiraQuery query, boolean synchronously) {
-        query.getController().refresh(synchronously);
-    }
 }
