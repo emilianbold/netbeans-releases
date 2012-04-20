@@ -330,7 +330,6 @@ final class NbInstaller extends ModuleInstaller {
     protected void classLoaderUp(ClassLoader cl) {
         MainLookup.systemClassLoaderChanged(cl);
         ev.log(Events.PERF_TICK, "META-INF/services/ additions registered"); // NOI18N
-        onStartStop.initialize();
     }
 
     final void waitOnStart() {
@@ -346,6 +345,9 @@ final class NbInstaller extends ModuleInstaller {
         loadLayers(modules, true);
         ev.log(Events.PERF_TICK, "layers loaded"); // NOI18N
 	
+        onStartStop.initialize();
+        ev.log(Events.PERF_TICK, "@OnStart"); // NOI18N
+
         ev.log(Events.PERF_START, "NbInstaller.load - sections"); // NOI18N
         ev.log(Events.LOAD_SECTION);
         CoreBridge.getDefault().loaderPoolTransaction(true);
