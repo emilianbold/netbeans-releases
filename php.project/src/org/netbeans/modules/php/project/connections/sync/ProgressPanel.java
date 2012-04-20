@@ -42,6 +42,7 @@
 package org.netbeans.modules.php.project.connections.sync;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dialog;
 import java.util.List;
 import javax.swing.GroupLayout;
@@ -51,6 +52,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.DialogDescriptor;
@@ -159,8 +161,28 @@ public class ProgressPanel extends JPanel {
         });
     }
 
-    @NbBundle.Messages("ProgressPanel.error=<html><b>Error occurred during synchronization.</b><br>Details can be reviewed in Output window.")
-    void errorOccurred() {
+    public void downloadErrorOccured() {
+        summaryPanel.downloadError();
+        errorOccurred();
+    }
+
+    public void uploadErrorOccured() {
+        summaryPanel.uploadError();
+        errorOccurred();
+    }
+
+    public void deleteErrorOccured() {
+        summaryPanel.deleteError();
+        errorOccurred();
+    }
+
+    @NbBundle.Messages({
+        "# {0} - red",
+        "# {1} - green",
+        "# {2} - blue",
+        "ProgressPanel.error=<html><b>Error occurred during synchronization.</b><br><span style=\"color: rgb({0}, {1}, {2});\">Details can be reviewed in Output window.</span>"
+    })
+    private void errorOccurred() {
         if (error) {
             // error already set
             return;
@@ -169,7 +191,8 @@ public class ProgressPanel extends JPanel {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                notificationLineSupport.setErrorMessage(Bundle.ProgressPanel_error());
+                Color color = UIManager.getColor("Label.foreground"); // NOI18N
+                notificationLineSupport.setErrorMessage(Bundle.ProgressPanel_error(color.getRed(), color.getGreen(), color.getBlue()));
             }
         });
     }
@@ -202,11 +225,11 @@ public class ProgressPanel extends JPanel {
         });
     }
 
-    public void resetDeleteNumber() {
+    public void setDeleteNumber(final int number) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                summaryPanel.resetDeleteNumber();
+                summaryPanel.setDeleteNumber(number);
             }
         });
     }
