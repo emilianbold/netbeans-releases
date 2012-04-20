@@ -207,7 +207,6 @@ public class HtmlStructureScanner implements StructureScanner {
         private List<StructureItem> items = null;
 
         private HtmlStructureItem(HtmlElementHandle handle, Snapshot snapshot) {
-            System.out.println("created HtmlStructureItem for " + handle);
             this.handle = handle;
             this.snapshot = snapshot;
         }
