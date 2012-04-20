@@ -77,6 +77,7 @@ import org.netbeans.modules.versioning.util.VCSHyperlinkSupport;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.IssueLinker;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.StyledDocumentHyperlink;
 import org.netbeans.modules.versioning.util.VCSHyperlinkProvider;
+import org.openide.filesystems.FileObject;
 
 /**
  * Window displaying the line annotation with links to bugtracking in the commit message.
@@ -94,7 +95,7 @@ class MsgTooltipWindow implements AWTEventListener, MouseMotionListener, MouseLi
      */
     private final JComponent parent;
     private final String message;
-    private final VCSFileProxy file;
+    private final File file;
     private JTextPane textPane;
     /**
      * Start of the commit message inside the full displayed message
@@ -112,7 +113,7 @@ class MsgTooltipWindow implements AWTEventListener, MouseMotionListener, MouseLi
     private final String author;
     private final Date date;
 
-    public MsgTooltipWindow(JComponent parent, VCSFileProxy file, String message, String revision, String author, Date date) {
+    public MsgTooltipWindow(JComponent parent, File file, String message, String revision, String author, Date date) {
         this.parent = parent;
         this.file = file;
         this.message = message;
@@ -312,9 +313,8 @@ class MsgTooltipWindow implements AWTEventListener, MouseMotionListener, MouseLi
                 StyledDocumentHyperlink l = null;
                 List<VCSHyperlinkProvider> providers = History.getInstance().getHyperlinkProviders();
                 for (VCSHyperlinkProvider hp : providers) {
-                    File f = file.toFile(); // XXX should work also with VCSFileProxy
-                    if(f != null) {
-                        l = IssueLinker.create(hp, hyperlinkStyle, f, doc, message);
+                    if(file != null) { // XXX should work also with VCSFileProxy
+                        l = IssueLinker.create(hp, hyperlinkStyle, file, doc, message);
                         if (l != null) {
                             linkerSupport.add(l, 0);
                             break;

@@ -49,6 +49,8 @@ import org.netbeans.modules.versioning.core.spi.VCSHistoryProvider;
 import org.netbeans.modules.versioning.core.util.Utils;
 import org.netbeans.modules.versioning.core.util.VCSSystemProvider.VersioningSystem;
 import org.netbeans.modules.versioning.util.VCSHyperlinkProvider;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Result;
 import org.openide.util.RequestProcessor;
@@ -96,9 +98,9 @@ public class History {
         providersList.addAll(providersCol);
         return Collections.unmodifiableList(providersList);
     }
-
-    VersioningSystem getLocalHistory(VCSFileProxy[] files) {
-        File file = files[0].toFile();
+    
+    VersioningSystem getLocalHistory(FileObject fo) {
+        File file = FileUtil.toFile(fo);
         if(file == null) {
             LOG.fine("local history available only for local files"); // NOI18N
             return null; // XXX currently LocalHistory works only with io.File. 
@@ -115,5 +117,20 @@ public class History {
             return null;
         }
         return  versioningSystem.getVCSHistoryProvider();
-    }    
+    }
+    
+    static VCSFileProxy[] toProxies(FileObject[] files) {
+        if(files == null) {
+            return new VCSFileProxy[0];
+        }
+        List<VCSFileProxy> l = new ArrayList<VCSFileProxy>(files.length);
+        for (FileObject f : files) {
+            VCSFileProxy proxy = VCSFileProxy.createFileProxy(f);
+            if(proxy != null) {
+                l.add(proxy);
+            }
+        }
+        return l.toArray(new VCSFileProxy[l.size()]);
+    }
+
 }

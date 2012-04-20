@@ -76,7 +76,7 @@ public class HelpCtxHint {
         "HelpCtx.onClassName.warning=Use of HelpCtx(Class.name) is hazardous",
         "HelpCtx.onClass.fix=Use constant corresponding to class name"
     })
-    public static List<ErrorDescription> onClass(final HintContext hctx) {
+    public static List<ErrorDescription> onClass(HintContext hctx) {
         String text;
         switch (((NewClassTree) hctx.getPath().getLeaf()).getArguments().get(0).getKind()) {
         case MEMBER_SELECT:
@@ -88,12 +88,12 @@ public class HelpCtxHint {
         default:
             throw new IllegalStateException();
         }
+        final String name = hctx.getInfo().getElements().getBinaryName((TypeElement) hctx.getInfo().getTrees().getElement(hctx.getVariables().get("$1"))).toString();
         return Collections.singletonList(ErrorDescriptionFactory.forTree(hctx, hctx.getPath(), text, new JavaFix(hctx.getInfo(), hctx.getPath()) {
             @Override protected String getText() {
                 return HelpCtx_onClass_fix();
             }
             @Override protected void performRewrite(TransformationContext tctx) throws Exception {
-                String name = hctx.getInfo().getElements().getBinaryName((TypeElement) hctx.getInfo().getTrees().getElement(hctx.getVariables().get("$1"))).toString();
                 NewClassTree ctor = (NewClassTree) tctx.getPath().getLeaf();
                 WorkingCopy wc = tctx.getWorkingCopy();
                 TreeMaker make = wc.getTreeMaker();

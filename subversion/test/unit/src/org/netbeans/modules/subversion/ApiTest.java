@@ -245,16 +245,12 @@ public class ApiTest extends NbTestCase {
         assertEquals(false, org.netbeans.modules.subversion.api.Subversion.isRepository("svn+ssh://"));
         assertEquals(false, org.netbeans.modules.subversion.api.Subversion.isRepository("file:///home/nowhere"));
         assertEquals(true, org.netbeans.modules.subversion.api.Subversion.isRepository(TestUtilities.formatFileURL(repoDir)));
-        assertEquals(false, org.netbeans.modules.subversion.api.Subversion.isRepository("http://www.google.com/"));
-        assertEquals(false, org.netbeans.modules.subversion.api.Subversion.isRepository("https://www.google.com/"));
-
-        assertEquals(false, org.netbeans.modules.subversion.api.Subversion.isRepository("http://subclipse.tigris.org/svn"));
-        
-//      requires authentification  assertEquals(true, org.netbeans.modules.subversion.api.Subversion.isRepository(http://subclipse.tigris.org/svn/subclipse/trunk/svnClientAdapter");
-
+        assertEquals(false, org.netbeans.modules.subversion.api.Subversion.isRepository("http://www.netbeans.org/"));
+        assertEquals(false, org.netbeans.modules.subversion.api.Subversion.isRepository("https://www.netbeans.org/"));
         assertEquals(true, org.netbeans.modules.subversion.api.Subversion.isRepository("svn://vcs-test.cz.oracle.com:9630"));
         assertEquals(true, org.netbeans.modules.subversion.api.Subversion.isRepository("svn+ssh://vcs-test.cz.oracle.com/usr/svnrepo"));
         assertEquals(false, org.netbeans.modules.subversion.api.Subversion.isRepository("https://vcs-test.cz.oracle.com:440/svnsecure"));
+        assertEquals(false, org.netbeans.modules.subversion.api.Subversion.isRepository("http://vcs-test.cz.oracle.com/svnrepo"));
     }
 
 //    public void testOpenCheckoutWizard () throws MalformedURLException, IOException {
