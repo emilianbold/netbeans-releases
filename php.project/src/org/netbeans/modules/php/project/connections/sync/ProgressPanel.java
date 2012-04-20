@@ -78,6 +78,8 @@ public class ProgressPanel extends JPanel {
     NotificationLineSupport notificationLineSupport = null;
     // @GuardedBy(AWT)
     Dialog dialog = null;
+    // @GuardedBy(AWT)
+    JLabel progressMessageLabel = null;
 
     volatile boolean error = false;
 
@@ -92,11 +94,13 @@ public class ProgressPanel extends JPanel {
 
         summaryPanel = new SummaryPanel(syncInfo.upload, syncInfo.download, syncInfo.delete, syncInfo.noop);
         progressHandle = ProgressHandleFactory.createHandle(Bundle.ProgressPanel_progress_title());
+        // #211494
+        progressMessageLabel = ProgressHandleFactory.createDetailLabelComponent(progressHandle);
 
         initComponents();
         summaryPanelHolder.add(summaryPanel, BorderLayout.CENTER);
         progressPanelHolder.add(ProgressHandleFactory.createProgressComponent(progressHandle), BorderLayout.CENTER);
-        progressMessagePanelHolder.add(ProgressHandleFactory.createDetailLabelComponent(progressHandle), BorderLayout.CENTER);
+        progressMessagePanelHolder.add(progressMessageLabel, BorderLayout.CENTER);
         revalidate();
         repaint();
     }
@@ -140,6 +144,8 @@ public class ProgressPanel extends JPanel {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
+                // #211494
+                progressMessageLabel.setText(" "); // NOI18N
                 descriptor.setValid(true);
                 if (!error) {
                     if (autoCloseCheckBox.isSelected()) {
