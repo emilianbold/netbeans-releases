@@ -46,6 +46,7 @@ package org.netbeans.modules.spring.beans.model.impl;
 
 import java.io.File;
 import org.netbeans.modules.spring.api.beans.model.Location;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -53,16 +54,16 @@ import org.netbeans.modules.spring.api.beans.model.Location;
  */
 public class ConfigFileLocation implements Location {
 
-    private final File file;
+    private final FileObject fileObject;
     private final int offset;
 
-    public ConfigFileLocation(File file, int offset) {
-        this.file = file;
+    public ConfigFileLocation(FileObject fileObject, int offset) {
+        this.fileObject = fileObject;
         this.offset = offset;
     }
 
-    public File getFile() {
-        return file;
+    public FileObject getFile() {
+        return fileObject;
     }
 
     public int getOffset() {
