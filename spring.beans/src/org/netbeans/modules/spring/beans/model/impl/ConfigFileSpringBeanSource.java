@@ -199,7 +199,7 @@ public class ConfigFileSpringBeanSource implements SpringBeanSource {
             String factoryBean = getTrimmedAttr(node, BeansAttributes.FACTORY_BEAN); 
             String factoryMethod = getTrimmedAttr(node, BeansAttributes.FACTORY_METHOD); 
             Tag tag = (Tag)node;
-            Location location = new ConfigFileLocation(file, tag.getElementOffset());
+            Location location = new ConfigFileLocation(FileUtil.toFileObject(file), tag.getElementOffset());
             Set<SpringBeanProperty> properties = parseBeanProperties(node, prefixesMap);
             ConfigFileSpringBean bean = new ConfigFileSpringBean(id, names, clazz, parent, factoryBean, factoryMethod, properties, location);
             if (id != null) {
