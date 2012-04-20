@@ -1340,16 +1340,11 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         Parameters.notNull("variableScope", variableScope); //NOI18N
         List<PhpDocTypeTagInfo> varComments = varTypeComments.get(variableName);
         if (varComments != null) {
-            List<PhpDocTypeTagInfo> commentsToRemove = new LinkedList<PhpDocTypeTagInfo>();
             for (PhpDocTypeTagInfo phpDocTypeTagInfo : varComments) {
                 VariableScope varScope = getVariableScope(phpDocTypeTagInfo.getRange().getStart());
                 if (varScope.equals(variableScope)) {
                     handleVarAssignment(variableName, varScope, phpDocTypeTagInfo);
-                    commentsToRemove.add(phpDocTypeTagInfo);
                 }
-            }
-            for (PhpDocTypeTagInfo phpDocTypeTagInfo : commentsToRemove) {
-                varComments.remove(phpDocTypeTagInfo);
             }
         }
     }
