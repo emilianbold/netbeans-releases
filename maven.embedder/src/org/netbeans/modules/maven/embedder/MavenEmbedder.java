@@ -187,9 +187,16 @@ public final class MavenEmbedder {
             return new Settings();
         }
     }
-
+    
+    @Deprecated
     public MavenExecutionResult readProjectWithDependencies(MavenExecutionRequest req) {
-        req.setWorkspaceReader(new NbWorkspaceReader());
+        return readProjectWithDependencies(req, true);
+    }
+    
+    public MavenExecutionResult readProjectWithDependencies(MavenExecutionRequest req, boolean useWorkspaceResolution) {
+        if (useWorkspaceResolution) {
+            req.setWorkspaceReader(new NbWorkspaceReader());
+        }
         File pomFile = req.getPom();
         MavenExecutionResult result = new DefaultMavenExecutionResult();
         try {
