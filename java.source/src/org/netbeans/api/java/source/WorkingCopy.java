@@ -605,7 +605,7 @@ public class WorkingCopy extends CompilationController {
 
                 StringWriter target = new StringWriter();
 
-                ModificationResult.commit(targetFile, processCurrentCompilationUnit(new DiffContext(this, templateCUT, codeForCompilationUnit(templateCUT), new PositionConverter(), targetFile, notSyntheticTrees), tag2Span), target);
+                ModificationResult.commit(targetFile, processCurrentCompilationUnit(new DiffContext(this, templateCUT, codeForCompilationUnit(templateCUT), new PositionConverter(), targetFile, notSyntheticTrees, getFileObject() != null ? getCompilationUnit() : null, getFileObject() != null ? getText() : null), tag2Span), target);
                 result.add(new CreateChange(t.getSourceFile(), target.toString()));
                 target.close();
             } catch (BadLocationException ex) {
