@@ -114,7 +114,6 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
     private boolean cancelRequest = false;
     private boolean canceledDialog;
     private boolean forcePreview = false;
-    private final Object backgroundLock = new Object();
 
     /**
      * Enables/disables Preview button of dialog. Can be used by
@@ -140,7 +139,6 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         RefactoringPanel.checkEventThread();
         this.rui = rui;
         initComponents();
-        runInBackground.setVisible(false);
 
         // #143551 
         HelpCtx helpCtx = getHelpCtx();
@@ -205,7 +203,6 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         next = new javax.swing.JButton();
         cancel = new javax.swing.JButton();
         help = new javax.swing.JButton();
-        runInBackground = new javax.swing.JButton();
         openInNewTab = new javax.swing.JCheckBox();
         panel = new javax.swing.JPanel();
         innerPanel = new javax.swing.JPanel();
@@ -262,13 +259,6 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(runInBackground, org.openide.util.NbBundle.getMessage(ParametersPanel.class, "ParametersPanel.runInBackground.text")); // NOI18N
-        runInBackground.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                runInBackgroundActionPerformed(evt);
-            }
-        });
-
         javax.swing.GroupLayout buttonsPanelLayout = new javax.swing.GroupLayout(buttonsPanel);
         buttonsPanel.setLayout(buttonsPanelLayout);
         buttonsPanelLayout.setHorizontalGroup(
@@ -278,13 +268,12 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
                 .addGap(4, 4, 4)
                 .addComponent(previewButton, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(runInBackground)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(next)
-                .addGap(4, 4, 4)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(cancel, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(4, 4, 4)
-                .addComponent(help, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(help, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
 
         buttonsPanelLayout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {back, cancel, help, next, previewButton});
@@ -292,12 +281,11 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         buttonsPanelLayout.setVerticalGroup(
             buttonsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(back)
-            .addComponent(previewButton)
             .addGroup(buttonsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addComponent(previewButton)
                 .addComponent(next)
-                .addComponent(runInBackground))
-            .addComponent(cancel)
-            .addComponent(help)
+                .addComponent(cancel)
+                .addComponent(help))
         );
 
         back.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_Back")); // NOI18N
@@ -418,11 +406,6 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         cancel.setEnabled(true);
         openInNewTab.setVisible(false);
         next.setVisible(false);
-        if (rui.isQuery()) {
-            runInBackground.setVisible(true);
-            dialog.getRootPane().setDefaultButton(runInBackground);
-            validate();
-        }
 
         RequestProcessor rp = new RequestProcessor();
         final int inputState = currentState;
@@ -523,22 +506,6 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         prefs.putBoolean(PREF_OPEN_NEW_TAB, openInNewTab.isSelected());
     }//GEN-LAST:event_openInNewTabStateChanged
 
-    private void runInBackgroundActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runInBackgroundActionPerformed
-        backgroundQuery = true;
-        if (rui.getRefactoring() instanceof WhereUsedQuery) {
-            //hack for cnd
-            //TODO: create API for it
-            ((WhereUsedQuery) rui.getRefactoring()).putValue("BACKGROUND_QUERY", true);
-        }
-        synchronized (backgroundLock) {
-            backgroundLock.notify();
-        }
-        synchronized (this) {
-            if (dialog != null) {
-                dialog.setVisible(false);
-            }
-        }
-    }//GEN-LAST:event_runInBackgroundActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton back;
     private javax.swing.JPanel buttonsPanel;
@@ -554,7 +521,6 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
     private javax.swing.JLabel pleaseWait;
     private javax.swing.JButton previewButton;
     private javax.swing.JPanel progressPanel;
-    private javax.swing.JButton runInBackground;
     // End of variables declaration//GEN-END:variables
 
     /**
@@ -621,20 +587,12 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
      * <code>null</code> if the operation was cancelled.
      */
     public synchronized RefactoringSession showDialog() {
-        backgroundQuery = false;
-        if (rui.getRefactoring() instanceof WhereUsedQuery) {
-            //hack for cnd
-            //TODO: create API for it
-            ((WhereUsedQuery) rui.getRefactoring()).putValue("BACKGROUND_QUERY", false);
-        }
-
         RefactoringPanel.checkEventThread();
         putClientProperty(JUMP_TO_FIRST_OCCURENCE, false);
         if (rui != null) {
             rui.getRefactoring().addProgressListener(this);
 
             openInNewTab.setVisible(rui.isQuery());
-            runInBackground.setVisible(false);
             next.setVisible(true);
 
         }
@@ -1051,22 +1009,9 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
                         RequestProcessor.Task post = RequestProcessor.getDefault().post(new Runnable() {
                             @Override
                             public void run() {
-                                try {
                                     problem = rui.getRefactoring().prepare(refactoringSession);
-                                } finally {
-                                    synchronized (backgroundLock) {
-                                        backgroundLock.notify();
-                                    }
-                                }
                             }
                         });
-                        synchronized (backgroundLock) {
-                            try {
-                                backgroundLock.wait();
-                            } catch (InterruptedException ex) {
-                                Exceptions.printStackTrace(ex);
-                            }
-                        }
                     } else {
                         problem = rui.getRefactoring().prepare(refactoringSession);
                     }
@@ -1086,11 +1031,6 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
                 });
             }
         }
-    }
-    private boolean backgroundQuery;
-
-    boolean isBackgroundQuery() {
-        return backgroundQuery;
     }
 
     private void setButtonsEnabled(boolean enabled) {
