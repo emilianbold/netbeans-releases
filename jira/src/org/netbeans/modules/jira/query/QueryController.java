@@ -87,7 +87,6 @@ import javax.swing.JComponent;
 import javax.swing.JList;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.Document;
@@ -95,7 +94,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.api.Util;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer;
@@ -150,6 +148,8 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
 
     private static final String[] LBL_LOADING = new String[]{ NbBundle.getMessage(QueryController.class, "LBL_Loading") };
 
+    private final Object REFRESH_LOCK = new Object();
+        
     public QueryController(JiraRepository repository, JiraQuery query, FilterDefinition fd) {
         this(repository, query, fd, true);
     }
@@ -606,8 +606,10 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
     @Override
     public void closed() {
         onCancelChanges();
-        if(refreshTask != null) {
-            refreshTask.cancel();
+        synchronized(REFRESH_LOCK) {
+            if(refreshTask != null) {
+                refreshTask.cancel();
+            }
         }
         if(query.isSaved()) {
             if(!(query.getRepository() instanceof KenaiRepository)) {
@@ -1036,10 +1038,18 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
     }
 
     private void refresh(final boolean autoRefresh, boolean synchronously) {
-        if(refreshTask == null) {
-            refreshTask = new QueryTask();
+        Task t;
+        synchronized(REFRESH_LOCK) {
+            if(refreshTask == null) {
+                refreshTask = new QueryTask();
+            } else {
+                refreshTask.cancel();
+            }
+            t = refreshTask.post(autoRefresh);
         }
-        refreshTask.post(autoRefresh, synchronously);
+        if(synchronously) {
+            t.waitFinished();
+        }
     }
 
     private void onModify() {
@@ -1207,8 +1217,10 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
 
 
     private void remove() {
-        if (refreshTask != null) {
-            refreshTask.cancel();
+        synchronized(REFRESH_LOCK) {
+            if (refreshTask != null) {
+                refreshTask.cancel();
+            }
         }
         query.remove();
     }
@@ -1230,8 +1242,10 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
     }
 
     void progress(String issueDesc) {
-        if(refreshTask != null) {
-            refreshTask.progress(issueDesc);
+        synchronized(REFRESH_LOCK) {
+            if(refreshTask != null) {
+                refreshTask.progress(issueDesc);
+            }
         }
     }
 
@@ -1277,7 +1291,7 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
             });
         }
 
-        synchronized void progress(String issueDesc) {
+        void progress(String issueDesc) {
             if(handle != null) {
                 handle.progress(
                     NbBundle.getMessage(
@@ -1315,17 +1329,14 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
             }
         }
 
-        synchronized void post(boolean autoRefresh, boolean synchronously) {
+        Task post(boolean autoRefresh) {
             if(task != null) {
                 task.cancel();
             }
             task = rp.create(this);
             this.autoRefresh = autoRefresh;
-            if (synchronously) {
-                task.run();
-            } else {
-                task.schedule(0);
-            }
+            task.schedule(0);
+            return task;
         }
 
         @Override

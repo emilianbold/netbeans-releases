@@ -40,12 +40,12 @@ package org.netbeans.modules.bugzilla;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiQueryProvider;
+import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
-import org.openide.nodes.Node;
 
 /**
  *
@@ -103,23 +103,24 @@ public class BugzillaQueryProvider extends KenaiQueryProvider<BugzillaQuery, Bug
     }
 
     @Override
-    public void setContext(BugzillaQuery q, Node[] nodes) {
-        q.setContext(nodes);
+    public void refresh(BugzillaQuery query) {
+        query.getController().refresh(true);
     }
+
 
     /************************************************************************************
      * Kenai
      ************************************************************************************/
     
     @Override
+    public void setOwnerInfo(BugzillaQuery q, OwnerInfo info) {
+        q.setOwnerInfo(info);
+    }
+    
+    @Override
     public boolean needsLogin(BugzillaQuery query) {
         BugzillaRepository repository = query.getRepository();
         return query == ((KenaiRepository) repository).getMyIssuesQuery();
-    }
-
-    @Override
-    public void refresh(BugzillaQuery query, boolean synchronously) {
-        query.getController().refresh(synchronously);
     }
 
 }

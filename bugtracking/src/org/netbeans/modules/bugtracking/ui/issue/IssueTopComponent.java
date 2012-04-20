@@ -50,6 +50,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.util.HashSet;
 import java.util.List;
 import java.util.MissingResourceException;
@@ -74,10 +75,11 @@ import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
+import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.ui.search.FindSupport;
 import org.netbeans.modules.bugtracking.util.*;
 import org.openide.awt.UndoRedo;
-import org.openide.nodes.Node;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -97,7 +99,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
     private RequestProcessor rp = new RequestProcessor("Bugtracking issue", 1, true); // NOI18N
     private Task prepareTask;
     private RepositoryComboSupport rs;
-    private Node[] context;
+    private File context;
     private DelegatingUndoRedoManager delegatingUndoRedoManager;
 
     /**
@@ -135,11 +137,11 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         return issue;
     }
 
-    public void initNewIssue(RepositoryImpl toSelect, Node[] context) {
+    public void initNewIssue(RepositoryImpl toSelect, File context) {
         initNewIssue(toSelect, false, context);
     }
 
-    public void initNewIssue(RepositoryImpl defaultRepository, boolean suggestedSelectionOnly, Node[] context) {
+    public void initNewIssue(RepositoryImpl defaultRepository, boolean suggestedSelectionOnly, File context) {
         LogUtils.logBugtrackingUsage(defaultRepository != null ? defaultRepository.getRepository() : null, "ISSUE_EDIT"); // NOI18N
         this.context = context;
 
@@ -354,8 +356,13 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                     }
                     ((DelegatingUndoRedoManager)getUndoRedo()).init();
                     
-                    issue.setContext(context);
-
+                    if(context != null && BugtrackingUtil.isNbRepository(repo.getUrl())) {
+                        OwnerInfo ownerInfo = KenaiUtil.getOwnerInfo(context);
+                        if(ownerInfo != null) {
+                            issue.setContext(ownerInfo);
+                        }
+                    }
+                    
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {

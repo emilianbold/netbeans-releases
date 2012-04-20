@@ -54,9 +54,9 @@ import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
+import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.util.LogUtils;
 import org.netbeans.modules.bugzilla.commands.GetMultiTaskDataCommand;
 import org.netbeans.modules.bugzilla.commands.PerformQueryCommand;
@@ -82,7 +82,7 @@ public class BugzillaQuery {
 
     private boolean firstRun = true;
     private ColumnDescriptor[] columnDescriptors;
-    private Node[] context;
+    private OwnerInfo info;
     private boolean saved;
     protected long lastRefresh;
     private final PropertyChangeSupport support;
@@ -265,12 +265,12 @@ public class BugzillaQuery {
         return issues.contains(id);
     }
 
-    public void setContext(Node[] nodes) {
-        context = nodes;
+    public void setOwnerInfo(OwnerInfo info) {
+        this.info = info;
     }
 
-    public Node[] getContext() {
-        return context;
+    public OwnerInfo getOwnerInfo() {
+        return info;
     }
 
     public int getIssueStatus(String id) {
@@ -295,7 +295,7 @@ public class BugzillaQuery {
 
     public void setSaved(boolean saved) {
         if(saved) {
-            context = null;
+            info = null;
         }
         this.saved = saved;
         fireQuerySaved();

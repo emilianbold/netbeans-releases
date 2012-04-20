@@ -41,24 +41,12 @@
  */
 package org.netbeans.modules.bugtracking.kenai.spi;
 
-import org.netbeans.modules.bugtracking.spi.QueryProvider;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
 
 /**
  *
  * @author Tomas Stupka
  */
-public abstract class KenaiQueryProvider<Q, I> extends QueryProvider<Q, I> {
-    
-    /**
-     * Determines if the query needs the user to be logged in to show some
-     * results - e.g. MyIssues queries have no results in case the user is
-     * not loged in
-     *
-     * @param query
-     * @return true if login needed, otherwise false
-     */
-    public abstract boolean needsLogin(Q q);
-    
-    public abstract void setOwnerInfo(Q q, OwnerInfo info);
-    
+public abstract class KenaiIssueProvider<I> extends IssueProvider<I> {
+    public abstract void setOwnerInfo(I data, OwnerInfo info);   
 }
