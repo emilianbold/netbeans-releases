@@ -42,12 +42,11 @@
 package org.netbeans.modules.bugtracking.kenai.spi;
 
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
-import org.openide.nodes.Node;
 
 /**
  *
  * @author Tomas Stupka
  */
 public abstract class KenaiIssueProvider<I> extends IssueProvider<I> {
-    public abstract void setContext(I data, Node[] nodes);   
+    public abstract void setOwnerInfo(I data, OwnerInfo info);   
 }

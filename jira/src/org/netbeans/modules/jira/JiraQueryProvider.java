@@ -40,12 +40,12 @@ package org.netbeans.modules.jira;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiQueryProvider;
+import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.kenai.KenaiRepository;
 import org.netbeans.modules.jira.query.JiraQuery;
 import org.netbeans.modules.jira.repository.JiraRepository;
-import org.openide.nodes.Node;
 
 /**
  *
@@ -112,7 +112,7 @@ public class JiraQueryProvider extends KenaiQueryProvider<JiraQuery, NbJiraIssue
      ********************************************************************************/
     
     @Override
-    public void setContext(JiraQuery q, Node[] nodes) {
+    public void setOwnerInfo(JiraQuery q, OwnerInfo info) {
         // meant only for nb bugzilla
     }
     

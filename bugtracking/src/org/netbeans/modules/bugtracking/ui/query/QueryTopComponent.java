@@ -58,6 +58,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -85,7 +86,6 @@ import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.bugtracking.util.PlaceholderPanel;
 import org.netbeans.modules.bugtracking.util.RepositoryComboSupport;
 import org.openide.awt.Mnemonics;
-import org.openide.nodes.Node;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -98,6 +98,8 @@ import static javax.swing.SwingConstants.WEST;
 import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
 import org.netbeans.modules.bugtracking.*;
 import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
+import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.util.*;
@@ -132,7 +134,7 @@ public final class QueryTopComponent extends TopComponent
     private RequestProcessor rp = new RequestProcessor("Bugtracking query", 1, true); // NOI18N
     private Task prepareTask;
     private RepositoryComboSupport rs;
-    private Node[] context;
+    private File context;
 
     QueryTopComponent() {
         RepositoryRegistry.getInstance().addPropertyChangeListener(this);
@@ -233,7 +235,7 @@ public final class QueryTopComponent extends TopComponent
         return query;
     }
 
-    void init(QueryImpl query, RepositoryImpl defaultRepository, Node[] context, boolean suggestedSelectionOnly) {
+    void init(QueryImpl query, RepositoryImpl defaultRepository, File context, boolean suggestedSelectionOnly) {
         this.query = query;
         this.context = context;
 
@@ -530,9 +532,12 @@ public final class QueryTopComponent extends TopComponent
                     }
 
                     findInQuerySupport.setQuery(query);
-
-                    if(BugtrackingUtil.isNbRepository(query.getRepositoryImpl().getUrl())) {
-                        query.setContext(context);
+                    
+                    if(context != null && BugtrackingUtil.isNbRepository(repo.getUrl())) {
+                        OwnerInfo ownerInfo = KenaiUtil.getOwnerInfo(context);
+                        if(ownerInfo != null) {
+                            query.setContext(ownerInfo);
+                        }
                     }
                     query.addPropertyChangeListener(QueryTopComponent.this);
 

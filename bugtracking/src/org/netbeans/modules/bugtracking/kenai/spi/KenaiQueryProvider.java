@@ -42,7 +42,6 @@
 package org.netbeans.modules.bugtracking.kenai.spi;
 
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
-import org.openide.nodes.Node;
 
 /**
  *
@@ -60,6 +59,6 @@ public abstract class KenaiQueryProvider<Q, I> extends QueryProvider<Q, I> {
      */
     public abstract boolean needsLogin(Q q);
     
-    public abstract void setContext(Q q, Node[] nodes);
+    public abstract void setOwnerInfo(Q q, OwnerInfo info);
     
 }

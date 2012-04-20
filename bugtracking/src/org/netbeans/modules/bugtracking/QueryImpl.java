@@ -45,13 +45,13 @@ import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiQueryProvider;
+import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.openide.nodes.Node;
 
 /**
  *
@@ -186,10 +186,10 @@ public final class QueryImpl<Q, I>  {
         queryProvider.removePropertyChangeListener(data, listener);                   
     }
 
-    public void setContext(Node[] context) {
+    public void setContext(OwnerInfo info) {
         assert (queryProvider instanceof KenaiQueryProvider);
         if((queryProvider instanceof KenaiQueryProvider)) {
-            ((KenaiQueryProvider<Q, I>)queryProvider).setContext(data, context);
+            ((KenaiQueryProvider<Q, I>)queryProvider).setOwnerInfo(data, info);
         }
     }
 
