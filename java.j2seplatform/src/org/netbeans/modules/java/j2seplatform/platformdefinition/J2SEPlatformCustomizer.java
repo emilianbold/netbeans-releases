@@ -86,6 +86,8 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 
@@ -507,10 +509,12 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
 
 
     static class PathModel extends AbstractListModel/*<String>*/ {
+        
+        private static final RequestProcessor RP = new RequestProcessor(PathModel.class);
 
         private J2SEPlatformImpl platform;
         private int type;
-        private java.util.List<URL> data;
+        private volatile java.util.List<URL> data;
 
         public PathModel (J2SEPlatformImpl platform, int type) {
             this.platform = platform;
@@ -627,8 +631,19 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
             if (this.data == null) {
                 switch (this.type) {
                     case CLASSPATH:
-                        this.data = getPathList(this.platform.getBootstrapLibraries());
-                        break;
+                        RP.execute(new Runnable() {
+                            @Override
+                            public void run() {
+                                data = getPathList(platform.getBootstrapLibraries());
+                                Mutex.EVENT.readAccess(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        fireIntervalAdded(PathModel.this, 0, data.size());
+                                    }
+                                });
+                            }
+                        });
+                        return Collections.<URL>emptyList();
                     case SOURCES:
                         this.data = getPathList(this.platform.getSourceFolders());
                         break;

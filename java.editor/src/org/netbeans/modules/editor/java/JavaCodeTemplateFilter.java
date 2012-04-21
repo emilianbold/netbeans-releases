@@ -49,21 +49,25 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
+
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Dusan Balek
  */
-public class JavaCodeTemplateFilter implements CodeTemplateFilter, Task<CompilationController> {
+public class JavaCodeTemplateFilter implements CodeTemplateFilter {
     
     private static final Logger LOG = Logger.getLogger(JavaCodeTemplateFilter.class.getName());
     
@@ -75,13 +79,32 @@ public class JavaCodeTemplateFilter implements CodeTemplateFilter, Task<Compilat
         if (Utilities.isJavaContext(component, offset, false)) {
             this.startOffset = offset;
             this.endOffset = component.getSelectionStart() == offset ? component.getSelectionEnd() : -1;            
-            JavaSource js = JavaSource.forDocument(component.getDocument());
+            final JavaSource js = JavaSource.forDocument(component.getDocument());
             if (js != null) {
-                try {
-                    js.runUserActionTask(this, true);
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+                final AtomicBoolean cancel = new AtomicBoolean();
+                ProgressUtils.runOffEventDispatchThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            js.runUserActionTask(new Task<CompilationController>() {
+                                @Override
+                                public void run(CompilationController controller) throws Exception {
+                                    if (cancel.get())
+                                        return;
+                                    controller.toPhase(Phase.PARSED);
+                                    Tree tree = controller.getTreeUtilities().pathFor(startOffset).getLeaf();
+                                    if (endOffset >= 0 && startOffset != endOffset) {
+                                        if (controller.getTreeUtilities().pathFor(endOffset).getLeaf() != tree)
+                                            return;
+                                    }
+                                    ctx = tree.getKind();
+                                }
+                            }, true);
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                }, NbBundle.getMessage(JavaCodeTemplateProcessor.class, "JCT-init"), cancel, false); //NOI18N
             }
         }
     }
@@ -93,17 +116,6 @@ public class JavaCodeTemplateFilter implements CodeTemplateFilter, Task<Compilat
         return contexts.size() == 0 || contexts.contains(ctx);
     }
     
-
-    public synchronized void run(CompilationController controller) throws IOException {
-        controller.toPhase(Phase.PARSED);
-        Tree tree = controller.getTreeUtilities().pathFor(startOffset).getLeaf();
-        if (endOffset >= 0 && startOffset != endOffset) {
-            if (controller.getTreeUtilities().pathFor(endOffset).getLeaf() != tree)
-                return;
-        }
-        ctx = tree.getKind();
-    }
-
     private EnumSet<Tree.Kind> getTemplateContexts(CodeTemplate template) {
         List<String> contexts = template.getContexts();
         List<Tree.Kind> kinds = new ArrayList<Tree.Kind>();
