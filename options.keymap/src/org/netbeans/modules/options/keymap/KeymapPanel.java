@@ -83,7 +83,7 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
     private static final int SEARCH_DELAY_TIME_LONG = 300; // < 3 chars
     private static final int SEARCH_DELAY_TIME_SHORT = 20; // >= 3 chars
 
-    private static volatile KeymapViewModel keymapModel;
+    private volatile KeymapViewModel keymapModel;
     private TableSorter sorter;
 
     private JPopupMenu popup = new JPopupMenu();
@@ -234,10 +234,10 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
             getModel().update();
     }
 
-    static KeymapViewModel getModel() {
+    KeymapViewModel getModel() {
         if (keymapModel == null) {
             KeymapViewModel tmpModel = new KeymapViewModel();
-            synchronized (KeymapPanel.class) {
+            synchronized (this) {
                 if (keymapModel == null) {
                     keymapModel = tmpModel;
                 }
@@ -554,7 +554,7 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
             Set<String> deletedProfiles = getModel().getDeletedProfiles();
 
             //show manage profiles dialog
-            final ProfilesPanel profilesPanel = new ProfilesPanel();
+            final ProfilesPanel profilesPanel = new ProfilesPanel(this);
             DialogDescriptor dd = new DialogDescriptor(profilesPanel, NbBundle.getMessage(KeymapPanel.class, "CTL_Manage_Keymap_Profiles"));
             DialogDisplayer.getDefault().notify(dd);
 
