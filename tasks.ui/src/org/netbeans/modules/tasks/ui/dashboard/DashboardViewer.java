@@ -641,7 +641,7 @@ public final class DashboardViewer {
 
     private void refreshQueries(Collection<Query> queries) {
         for (Query query : queries) {
-            query.refresh(true);
+            query.refresh();
         }
     }
 

@@ -202,8 +202,8 @@ public class ExceptionHandlerTest extends NbTestCase implements TestConstants {
         TestUtil.postTaskData(brc, repository.getTaskRepository(), data2);
         
         // try to submit
-        LogHandler lhExecute = new LogHandler("execute SubmitCommand [issue #"+id, LogHandler.Compare.STARTS_WITH, 2);
-        LogHandler lhRefresh = new LogHandler(" Refresh bugzilla configuration", LogHandler.Compare.STARTS_WITH, 1);
+        LogHandler lhExecute = new LogHandler("execute SubmitCommand [issue #"+id, LogHandler.Compare.STARTS_WITH, LogHandler.DEFAULT_TIMEOUT, 2);
+        LogHandler lhRefresh = new LogHandler(" Refresh bugzilla configuration", LogHandler.Compare.STARTS_WITH, LogHandler.DEFAULT_TIMEOUT, 1);
         System.setProperty("netbeans.t9y.throwOnClientError", "true");
         
         Throwable st = null;

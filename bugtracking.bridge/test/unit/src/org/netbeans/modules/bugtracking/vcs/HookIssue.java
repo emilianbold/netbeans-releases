@@ -147,9 +147,6 @@ public class HookIssue extends TestIssue {
     }
 
     @Override
-    public void setContext(Node[] nodes) { }
-
-    @Override
     public void removePropertyChangeListener(PropertyChangeListener listener) { }
 
     @Override

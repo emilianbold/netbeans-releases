@@ -43,7 +43,6 @@ import java.util.List;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
-import org.openide.nodes.Node;
 
 /**
  *
@@ -117,9 +116,4 @@ public class JiraIssueProvider extends IssueProvider<NbJiraIssue> {
         data.addPropertyChangeListener(listener);
     }
 
-    @Override
-    public void setContext(NbJiraIssue data, Node[] nodes) {
-        data.setContext(nodes);
-    }
-    
 }

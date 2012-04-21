@@ -333,11 +333,6 @@ public class StorageTest extends NbTestCase {
         }
 
         @Override
-        public void setContext(Node[] nodes) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
         public void removePropertyChangeListener(PropertyChangeListener listener) {
             throw new UnsupportedOperationException("Not supported yet.");
         }

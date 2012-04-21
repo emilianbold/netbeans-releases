@@ -85,6 +85,7 @@ import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
+import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.UIUtils;
@@ -126,7 +127,7 @@ public class BugzillaIssue {
 
     private IssueController controller;
     private IssueNode node;
-    private Node[] context;
+    private OwnerInfo info;
 
     static final String LABEL_NAME_ID           = "bugzilla.issue.id";          // NOI18N
     static final String LABEL_NAME_SEVERITY     = "bugzilla.issue.severity";    // NOI18N
@@ -364,12 +365,12 @@ public class BugzillaIssue {
         return node;
     }
 
-    public void setContext(Node[] nodes) {
-        this.context = nodes;
+    public void setOwnerInfo(OwnerInfo info) {
+        this.info = info;
     }
     
-    public Node[] getContext() {
-        return context;
+    public OwnerInfo getOwnerInfo() {
+        return info;
     }
 
     public Map<String, String> getAttributes() {

@@ -40,9 +40,9 @@ package org.netbeans.modules.bugzilla;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.List;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiIssueProvider;
+import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.spi.IssueProvider;
-import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.repository.IssueField;
 import org.openide.nodes.Node;
@@ -51,7 +51,7 @@ import org.openide.nodes.Node;
  *
  * @author Tomas Stupka
  */
-public class BugzillaIssueProvider extends IssueProvider<BugzillaIssue> {
+public class BugzillaIssueProvider extends KenaiIssueProvider<BugzillaIssue> {
 
     @Override
     public String getDisplayName(BugzillaIssue data) {
@@ -119,9 +119,13 @@ public class BugzillaIssueProvider extends IssueProvider<BugzillaIssue> {
         data.addPropertyChangeListener(listener);
     }
 
+    /************************************************************************************
+     * Kenai
+     ************************************************************************************/
+    
     @Override
-    public void setContext(BugzillaIssue data, Node[] nodes) {
-        data.setContext(nodes);
+    public void setOwnerInfo(BugzillaIssue data, OwnerInfo info) {
+        data.setOwnerInfo(info);
     }
     
 }

@@ -230,7 +230,6 @@ public class NbJiraIssue {
      */
     public static ColumnDescriptor[] DESCRIPTORS;
     private IssueNode node;
-    private Node[] context;
     
     public NbJiraIssue(TaskData data, JiraRepository repo) {
         this.taskData = data;
@@ -314,10 +313,6 @@ public class NbJiraIssue {
 
     public String getSummary() {
         return getSummary(taskData);
-    }
-
-    public void setContext(Node[] nodes) {
-        this.context = nodes;
     }
 
     private static String getSummary(TaskData taskData) {
