@@ -43,7 +43,6 @@ package org.netbeans.modules.bugtracking.spi;
 
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import org.openide.nodes.Node;
 
 /**
  * Provides access to a bugtracking Issue
@@ -148,7 +147,5 @@ public abstract class IssueProvider<I> {
     public abstract void removePropertyChangeListener(I data, PropertyChangeListener listener);
 
     public abstract void addPropertyChangeListener(I data, PropertyChangeListener listener);
-
-    public abstract void setContext(I data, Node[] nodes);
 
 }
