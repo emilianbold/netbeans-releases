@@ -282,7 +282,7 @@ final class TestNGOutputReader {
             } else {
                 Matcher m2 = Pattern.compile(RegexpUtils.TEST_REGEX_2).matcher(in);
                 if (m2.matches()) {
-                    testFinished("PASSED", m2.group(1), m2.group(2), m2.group(4), "UNKNOWN#" + x, "0");
+                    testFinished("SKIPPED", m2.group(1), m2.group(2), m2.group(4), "UNKNOWN#" + x, "0");
                 } else {
                     assert false : "Cannot match: '" + in + "'.";
                 }
@@ -296,7 +296,7 @@ final class TestNGOutputReader {
             } else {
                 Matcher m2 = Pattern.compile(RegexpUtils.TEST_REGEX_2).matcher(in);
                 if (m2.matches()) {
-                    testFinished("PASSED", m2.group(1), m2.group(2), m2.group(4), "UNKNOWN#" + x, "0");
+                    testFinished("FAILED", m2.group(1), m2.group(2), m2.group(4), "UNKNOWN#" + x, "0");
                 } else {
                     assert false : "Cannot match: '" + in + "'.";
                 }
