@@ -45,6 +45,8 @@
     <mapID target="org.netbeans.modules.php.project.ui.customizer.CustomizerPhpUnit" url="csh/customize-project-phpunit.html"/>
     <mapID target="org.netbeans.modules.php.phpdoc.ui.customizer.PhpDocPanel" url="csh/customize-project-phpdoc.html"/>
     <mapID target="org.netbeans.modules.php.apigen.ui.customizer.ApiGen" url="csh/customize-project-apigen.html" />
+    <!-- Remote Synchronization dialog CSH -->
+    <mapID target="org.netbeans.modules.php.project.connections.sync.SyncPanel" url="csh/synch-dialog.html"/>
     
     <!-- CSH for the Find Usages dialog -->
     <mapID target="org.netbeans.modules.refactoring.php.findusages.WhereUsedQueryUI" url="csh/findUsages-CSH.html"/>
