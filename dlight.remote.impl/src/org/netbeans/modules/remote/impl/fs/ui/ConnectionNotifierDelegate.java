@@ -192,9 +192,11 @@ public class ConnectionNotifierDelegate implements ConnectionListener {
                 String text = null;
                 if (error == null) {
                     StringBuilder reasons = new StringBuilder();
-                    for (ConnectionNotifier.NamedRunnable task : tasks) {
-                        reasons.append(task.getName());
-                        reasons.append(' ');
+                    synchronized (tasks) {
+                        for (ConnectionNotifier.NamedRunnable task : tasks) {
+                            reasons.append(task.getName());
+                            reasons.append(' ');
+                        }
                     }
                     text = reasons.toString();
                     title = NbBundle.getMessage(ConnectionNotifierDelegate.class, "ConnectionNotifier.TITLE", envString);
