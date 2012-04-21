@@ -75,6 +75,9 @@ public class DiffContext {
     public final PositionConverter positionConverter;
     public final FileObject file;
     public final Set<Tree> notSyntheticTrees;
+    
+    public final JCCompilationUnit mainUnit;
+    public final String mainCode;
 
     public DiffContext(CompilationInfo copy) {
         this(copy, new HashSet<Tree>());
@@ -82,10 +85,10 @@ public class DiffContext {
 
     public DiffContext(CompilationInfo copy, Set<Tree> notSyntheticTrees) {
         this.tokenSequence = copy.getTokenHierarchy().tokenSequence(JavaTokenId.language());
-        this.origText = copy.getText();
+        this.mainCode = this.origText = copy.getText();
         this.style = getCodeStyle(copy);
         this.context = JavaSourceAccessor.getINSTANCE().getJavacTask(copy).getContext();
-        this.origUnit = (JCCompilationUnit) copy.getCompilationUnit();
+        this.mainUnit = this.origUnit = (JCCompilationUnit) copy.getCompilationUnit();
         this.trees = copy.getTrees();
         this.doc = copy.getSnapshot().getSource().getDocument(false); //TODO: true or false?
         this.positionConverter = copy.getPositionConverter();
@@ -93,7 +96,7 @@ public class DiffContext {
         this.notSyntheticTrees = notSyntheticTrees;
     }
 
-    public DiffContext(CompilationInfo copy, CompilationUnitTree cut, String code, PositionConverter positionConverter, FileObject file, Set<Tree> notSyntheticTrees) {
+    public DiffContext(CompilationInfo copy, CompilationUnitTree cut, String code, PositionConverter positionConverter, FileObject file, Set<Tree> notSyntheticTrees, CompilationUnitTree mainUnit, String mainCode) {
         this.tokenSequence = TokenHierarchy.create(code, JavaTokenId.language()).tokenSequence(JavaTokenId.language());
         this.origText = code;
         this.style = getCodeStyle(copy);
@@ -104,6 +107,8 @@ public class DiffContext {
         this.positionConverter = positionConverter;
         this.file = file;
         this.notSyntheticTrees = notSyntheticTrees;
+        this.mainUnit = (JCCompilationUnit) mainUnit;
+        this.mainCode = mainCode;
     }
 
     public static CodeStyle getCodeStyle(CompilationInfo info) {
