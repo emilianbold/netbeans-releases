@@ -306,7 +306,7 @@ public abstract class AbstractRefactoring {
             progressSupport.removeProgressListener(listener); 
         }
 
-        if (pluginsWithProgress != null) {
+        if (pluginsWithProgress != null && progressSupport!=null && progressSupport.isEmpty()) {
             Iterator pIt=pluginsWithProgress.iterator();
             
             while(pIt.hasNext()) {
