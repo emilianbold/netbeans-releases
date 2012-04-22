@@ -195,7 +195,7 @@ public class JavadocHelper {
                 return f.getInputStream();
             }
         }
-        if (url.getProtocol().startsWith("http")) { // NOI18N
+        if (isRemote(url)) {
             LOG.log(Level.FINE, "opening network stream: {0}", url);
         }
         return url.openStream();

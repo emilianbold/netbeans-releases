@@ -53,6 +53,10 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import org.apache.lucene.analysis.KeywordAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -63,7 +67,10 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.store.Directory;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.parsing.lucene.support.Convertor;
+import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
 import org.netbeans.modules.parsing.lucene.support.Index;
+import org.netbeans.modules.parsing.lucene.support.IndexDocument;
+import org.netbeans.modules.parsing.lucene.support.IndexManager;
 
 /**
  *
@@ -140,9 +147,129 @@ public class LuceneIndexTest extends NbTestCase {
         }
         assertEquals(Index.Status.INVALID, index.getStatus(true));
         assertTrue(cache.listFiles().length==0);
-
+        
     }
+    
+    public void testAssertNoModifiedWriter() throws IOException {
+        final File wd = getWorkDir();
+        final File cache = new File (wd,"cache");   //NOI18N
+        cache.mkdir();
+        Index index = IndexManager.createIndex(cache, new KeywordAnalyzer());
+        assertTrue(index instanceof Runnable);
+        final Logger log = Logger.getLogger("org.netbeans.modules.parsing.lucene.LuceneIndex");
+        log.setLevel(Level.WARNING);
+        final WarningHandler handler = new WarningHandler();
+        log.addHandler(handler);
+        
+        //No TX store -> no warning
+        handler.clear();
+        List<String> refs = new ArrayList<String>();
+        refs.add("A");
+        Set<String> toDel = new HashSet<String>();
+        index.store(
+            refs,
+            toDel,
+            new StrToDocConvertor("resources"),
+            new StrToQueryCovertor("resource"),
+            true);
+        assertFalse(handler.hasWarning());
 
+        //TX store  + commit -> no warning
+        handler.clear();
+        refs.clear();
+        refs.add("B");
+        ((Index.Transactional)index).txStore(
+            refs,
+            toDel,
+            new StrToDocConvertor("resources"),
+            new StrToQueryCovertor("resource"));
+        ((Index.Transactional)index).commit();
+        assertFalse(handler.hasWarning());
+
+        //TX store  + rollback -> no warning
+        handler.clear();
+        refs.clear();
+        refs.add("C");
+        ((Index.Transactional)index).txStore(
+            refs,
+            toDel,
+            new StrToDocConvertor("resources"),
+            new StrToQueryCovertor("resource"));
+        ((Index.Transactional)index).rollback();
+        assertFalse(handler.hasWarning());
+        
+        //No TX store + commit -> no warning
+        handler.clear();
+        refs.clear();
+        ((Runnable)index).run();
+        ((Index.Transactional)index).commit();
+
+        //2*( TX store  + commit) -> no warning
+        handler.clear();
+        refs.clear();
+        refs.add("D");
+        ((Runnable)index).run();
+        ((Index.Transactional)index).txStore(
+            refs,
+            toDel,
+            new StrToDocConvertor("resources"),
+            new StrToQueryCovertor("resource"));
+        ((Index.Transactional)index).commit();
+        refs.clear();
+        refs.add("E");
+        ((Runnable)index).run();
+        ((Index.Transactional)index).txStore(
+            refs,
+            toDel,
+            new StrToDocConvertor("resources"),
+            new StrToQueryCovertor("resource"));
+        ((Index.Transactional)index).commit();
+        assertFalse(handler.hasWarning());
+        
+        //TX store  + rollback + TX store + commit -> no warning
+        handler.clear();
+        refs.clear();
+        refs.add("F");
+        ((Runnable)index).run();
+        ((Index.Transactional)index).txStore(
+            refs,
+            toDel,
+            new StrToDocConvertor("resources"),
+            new StrToQueryCovertor("resource"));
+        ((Index.Transactional)index).rollback();
+        refs.clear();
+        refs.add("G");
+        ((Runnable)index).run();
+        ((Index.Transactional)index).txStore(
+            refs,
+            toDel,
+            new StrToDocConvertor("resources"),
+            new StrToQueryCovertor("resource"));
+        ((Index.Transactional)index).commit();
+        assertFalse(handler.hasWarning());
+        
+        //TX store  + NO commit + TX store + commit -> warning
+        handler.clear();
+        refs.clear();
+        refs.add("H");
+        ((Runnable)index).run();
+        ((Index.Transactional)index).txStore(
+            refs,
+            toDel,
+            new StrToDocConvertor("resources"),
+            new StrToQueryCovertor("resource"));
+        //Forgot to call commit - should cause warning
+        refs.clear();
+        refs.add("I");
+        ((Runnable)index).run();
+        ((Index.Transactional)index).txStore(
+            refs,
+            toDel,
+            new StrToDocConvertor("resources"),
+            new StrToQueryCovertor("resource"));
+        ((Index.Transactional)index).commit();
+        assertTrue(handler.hasWarning());
+    }
 
     private void createLock(final LuceneIndex index) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException, IOException {
         final Class<LuceneIndex> li = LuceneIndex.class;
@@ -198,6 +325,35 @@ public class LuceneIndexTest extends NbTestCase {
         public Query convert(String p) {
             return new TermQuery(new Term(name, p));
         }        
+    }
+    
+    private static class WarningHandler extends Handler {
+        
+        private volatile boolean warning;
+
+        @Override
+        public void publish(LogRecord record) {
+            if (record.getLevel() == Level.WARNING && record.getThrown() != null) {
+                warning = true;
+            }
+        }
+        
+        public void clear() {
+            warning = false;
+        }
+        
+        public boolean hasWarning() {
+            return warning;
+        }
+
+        @Override
+        public void flush() {
+        }
+
+        @Override
+        public void close() throws SecurityException {
+        }
+        
     }
     
 }

@@ -57,6 +57,7 @@ import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Properties;
 import java.util.ResourceBundle;
+import javax.swing.JComponent;
 import org.netbeans.modules.profiler.attach.spi.IntegrationProvider;
 import org.openide.util.NbBundle;
 
@@ -168,6 +169,12 @@ public abstract class AbstractJBossIntegrationProvider extends AbstractScriptInt
         IntegrationProvider.IntegrationHints instructions = new IntegrationProvider.IntegrationHints();
         String targetOS = attachSettings.getHostOS();
 
+        String agentArgs = IntegrationUtils.getProfilerAgentCommandLineArgs(targetOS,
+                                getTargetJava(),
+                                false,
+                                attachSettings.getPort()
+        );
+        
         // Step 1
         instructions.addStep(Bundle.JBossIntegrationProvider_IntegrReviewStep1Msg(
                                 new File(getScriptPath(targetOS, true)),
@@ -184,31 +191,35 @@ public abstract class AbstractJBossIntegrationProvider extends AbstractScriptInt
                                     + IntegrationUtils.getAssignEnvVariableValueString(
                                         targetOS,
                                         "JAVA_OPTS",
-                                        IntegrationUtils.getProfilerAgentCommandLineArgs(targetOS,
-                                            getTargetJava(),
-                                            false,
-                                            attachSettings
-                                            .getPort()))
+                                        agentArgs)
                                     + "<br>") : "")));
 
+        addLinkWarning(instructions, "JAVA_OPTS", attachSettings);
+        
         return instructions;
     }
 
     public IntegrationProvider.IntegrationHints getModificationHints(AttachSettings attachSettings) {
         String targetOS = attachSettings.getHostOS();
 
+        
+        IntegrationHints h;
         // Remote attach instructions
         if (attachSettings.isRemote()) {
-            return getManualRemoteIntegrationStepsInstructions(targetOS, attachSettings);
+            h = getManualRemoteIntegrationStepsInstructions(targetOS, attachSettings);
         }
         // Local direct attach
         else if (attachSettings.isDirect()) {
-            return getManualLocalDirectIntegrationStepsInstructions(targetOS, attachSettings);
+            h = getManualLocalDirectIntegrationStepsInstructions(targetOS, attachSettings);
         }
         // Local dynamic attach
         else {
-            return getManualLocalDynamicIntegrationStepsInstructions(targetOS, attachSettings);
+            h = getManualLocalDynamicIntegrationStepsInstructions(targetOS, attachSettings);
         }
+        
+        addLinkWarning(h, "JAVA_OPTS", attachSettings); // NOI18N
+        
+        return h;
     }
 
     public SettingsPersistor getSettingsPersistor() {
@@ -258,7 +269,15 @@ public abstract class AbstractJBossIntegrationProvider extends AbstractScriptInt
     protected IntegrationProvider.IntegrationHints getManualLocalDirectIntegrationStepsInstructions(String targetOS,
                                                                                                     AttachSettings attachSettings) {
         IntegrationProvider.IntegrationHints instructions = new IntegrationProvider.IntegrationHints();
-
+        
+        String agentArgs = IntegrationUtils.getProfilerAgentCommandLineArgs(
+                            targetOS,
+                            getTargetJava(),
+                            attachSettings
+                            .isRemote(),
+                            attachSettings.getPort()
+        );
+        
         // Step 1
         instructions.addStep(Bundle.JBossIntegrationProvider_ManualDirectDynamicStep1Msg(
                                 IntegrationUtils.getEnvVariableReference("JBOSS_HOME", targetOS), // NOI18N
@@ -276,12 +295,7 @@ public abstract class AbstractJBossIntegrationProvider extends AbstractScriptInt
                                                       IntegrationUtils.getAssignEnvVariableValueString(
                                                             targetOS, 
                                                             "JAVA_OPTS", // NOI18N
-                                                            IntegrationUtils.getProfilerAgentCommandLineArgs(
-                                                                targetOS,
-                                                                getTargetJava(),
-                                                                attachSettings
-                                                                .isRemote(),
-                                                                attachSettings.getPort()))));
+                                                            agentArgs)));
 
         // Step 3
         instructions.addStep(Bundle.JBossIntegrationProvider_ManualDirectDynamicStep3Msg(
@@ -289,7 +303,7 @@ public abstract class AbstractJBossIntegrationProvider extends AbstractScriptInt
 
         // Step 4
         instructions.addStep(Bundle.JBossIntegrationProvider_ManualDirectStep4Msg());
-
+        
         // Note about decreasing CPU profiling overhead
         instructions.addHint(REDUCE_OVERHEAD_MSG);
 
@@ -446,8 +460,7 @@ public abstract class AbstractJBossIntegrationProvider extends AbstractScriptInt
                                                                                             false, false) + lineBreak;
         String javaOpts = IntegrationUtils.getAssignEnvVariableValueString(targetOS, "JAVA_OPTS",
                                                                            IntegrationUtils.getProfilerAgentCommandLineArgs(targetOS,
-                                                                                                                            this
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    .getTargetJava(),
+                                                                                                                            this.getTargetJava(),
                                                                                                                             false,
                                                                                                                             commPort)
                                                                            + debugJavaOpts) + lineBreak; // NOI18N
@@ -500,7 +513,7 @@ public abstract class AbstractJBossIntegrationProvider extends AbstractScriptInt
         buffer.insert(insertionPoint1 + currentOffset, exportJavaHome);
         currentOffset += exportJavaHome.length();
     }
-
+    
     private String getDefaultInstallationPath() {
         String home = ""; // NOI18N
 

@@ -42,10 +42,17 @@
 
 package org.netbeans.modules.keyring.fallback;
 
+import java.awt.GraphicsEnvironment;
 import java.util.logging.Level;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
 
 public class MasterPasswordEncryptionTest extends NbTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(MasterPasswordEncryptionTest.class);
+    }
 
     public MasterPasswordEncryptionTest(String n) {
         super(n);

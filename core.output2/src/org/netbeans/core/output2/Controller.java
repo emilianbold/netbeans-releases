@@ -51,10 +51,13 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.HashMap;
+import java.lang.ref.WeakReference;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JComponent;
@@ -88,7 +91,8 @@ public class Controller {
         return controller;
     }
 
-    private Map<NbIO, OutputTab> ioToTab = new HashMap<NbIO, OutputTab>();
+    private Map<NbIO, WeakReference<OutputTab>> ioToTab =
+            new WeakHashMap<NbIO, WeakReference<OutputTab>>();
 
     Controller() {}
 
@@ -98,7 +102,7 @@ public class Controller {
         int command = ioe.getCommand();
         boolean value = ioe.getValue();
         Object data = ioe.getData();
-        OutputTab comp = ioToTab.get(io);
+        OutputTab comp = findTabForIo(io);
         if (Controller.LOG) Controller.log ("Passing command to controller " + ioe);
         performCommand(comp, io, command, value, data);
         ioe.consume();
@@ -114,7 +118,7 @@ public class Controller {
         }
 
         if (LOG) log ("Adding new tab " + result);
-        ioToTab.put(io, result);
+        ioToTab.put(io, new WeakReference<OutputTab>(result));
         IOContainer ioContainer = io.getIOContainer();
         ioContainer.add(result, result);
         ioContainer.setToolbarActions(result, a);
@@ -129,15 +133,20 @@ public class Controller {
         //Make sure names are boldfaced for all open streams - if the tabbed
         //pane was just added in, it will just have used the name of the
         //component, which won't contain html
-        for (OutputTab tab : ioToTab.values()) {
+        for (OutputTab tab : getAllTabs()) {
             updateName(tab);
         }
         return result;
     }
 
     void removeTab(NbIO io) {
-        OutputTab tab = ioToTab.remove(io);
-        removeFromUpdater(tab);
+        WeakReference<OutputTab> tabReference = ioToTab.remove(io);
+        if (tabReference != null) {
+            OutputTab tab = tabReference.get();
+            if (tab != null) {
+                removeFromUpdater(tab);
+            }
+        }
     }
 
     private static final String KEY_FONTSIZE = "fontsize";
@@ -171,7 +180,7 @@ public class Controller {
             currentFont = currentFont.deriveFont((float) fontSize);
             font = currentFont;
         }
-        for (OutputTab tab : ioToTab.values()) {
+        for (OutputTab tab : getAllTabs()) {
             if (allMonospaced || tab.getOutputPane().isWrapped() == monospaced) {
                 tab.getOutputPane().setViewFont(font);
             }
@@ -189,7 +198,7 @@ public class Controller {
         NbPreferences.forModule(Controller.class).putInt(KEY_FONTSIZE, currentFont.getSize());
         NbPreferences.forModule(Controller.class).putInt(KEY_FONTSTYLE, currentFont.getStyle());
         NbPreferences.forModule(Controller.class).put(KEY_FONTNAME, currentFont.getName());
-        for (OutputTab tab : ioToTab.values()) {
+        for (OutputTab tab : getAllTabs()) {
             if (allMonospaced || !tab.getOutputPane().isWrapped()) {
                 tab.getOutputPane().setViewFont(currentFont);
             }
@@ -307,7 +316,7 @@ public class Controller {
      * This class coalesces name changes, which are run afterward on the event
      * queue.
      */
-    private class CoalescedNameUpdater implements Runnable {
+    class CoalescedNameUpdater implements Runnable {
         private Set<OutputTab> components = new HashSet<OutputTab>();
         CoalescedNameUpdater() {
         }
@@ -320,10 +329,19 @@ public class Controller {
             components.remove(tab);
         }
 
+        boolean contains(OutputTab tab) {
+            return components.contains(tab);
+        }
+
         public void run() {
+            List<OutputTab> toRemove = null;
             for (OutputTab t : components) {
                 NbIO io = t.getIO();
                 if (!ioToTab.containsKey(io)) {
+                    if (toRemove == null) {
+                        toRemove = new LinkedList<OutputTab>();
+                    }
+                    toRemove.add(t);
                     continue;
                 }
                 if (LOG) {
@@ -344,6 +362,9 @@ public class Controller {
                 }
                 //#88204 apostophes are escaped in xm but not html
                 io.getIOContainer().setTitle(t, name.replace("&apos;", "'"));
+            }
+            if (toRemove != null) {
+                components.removeAll(toRemove);
             }
             nameUpdater = null;
         }
@@ -626,6 +647,29 @@ public class Controller {
             }
         }
         return logStream;
+    }
+
+    private synchronized OutputTab findTabForIo(NbIO io) {
+        WeakReference<OutputTab> tabReference = ioToTab.get(io);
+        OutputTab result = tabReference == null ? null : tabReference.get();
+        if (result == null && Controller.LOG) {
+            Controller.log("Tab for IO " + io.getName() //NOI18N
+                    + " was not found."); //NOI18N)
+        }
+        return result;
+    }
+
+    private synchronized List<OutputTab> getAllTabs() {
+        List<OutputTab> tabs = new LinkedList<OutputTab>();
+        for (WeakReference<OutputTab> tabReference : ioToTab.values()) {
+            if (tabReference != null) {
+                OutputTab outputTab = tabReference.get();
+                if (outputTab != null) {
+                    tabs.add(outputTab);
+                }
+            }
+        }
+        return tabs;
     }
 }
 

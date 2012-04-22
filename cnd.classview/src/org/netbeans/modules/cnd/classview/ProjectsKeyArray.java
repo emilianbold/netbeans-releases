@@ -45,16 +45,26 @@
 package org.netbeans.modules.cnd.classview;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import org.netbeans.modules.cnd.api.model.CsmClassifier;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
+import org.netbeans.modules.cnd.api.model.CsmNamespace;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.classview.model.CVUtil;
 import org.netbeans.modules.cnd.classview.model.ProjectNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -65,6 +75,7 @@ public class ProjectsKeyArray extends Children.Keys<CsmProject> {
     private ChildrenUpdater childrenUpdater;
     private static Comparator<java.util.Map.Entry<CsmProject, SortedName>> COMARATOR = new ProjectComparator();
     private final Object lock = new Object();
+    private static final RequestProcessor RP = new RequestProcessor(ProjectsKeyArray.class.getName(), 1);
     
     public ProjectsKeyArray(ChildrenUpdater childrenUpdater){
         this.childrenUpdater = childrenUpdater;
@@ -120,7 +131,7 @@ public class ProjectsKeyArray extends Children.Keys<CsmProject> {
     public boolean isEmpty(){
         synchronized(lock) {
             if (myProjects != null) {
-                return myProjects.size()==0;
+                return myProjects.isEmpty();
             }
         }
         return true;
@@ -130,6 +141,12 @@ public class ProjectsKeyArray extends Children.Keys<CsmProject> {
         synchronized(lock) {
             if (myProjects == null) {
                 return;
+            }
+            for(java.util.Map.Entry<CsmProject,SortedName> entry : myProjects.entrySet()) {
+                if (entry.getKey() instanceof DummyProject) {
+                    myProjects.clear();
+                    break;
+                }
             }
             if (myProjects.containsKey(project)) {
                 return;
@@ -141,7 +158,7 @@ public class ProjectsKeyArray extends Children.Keys<CsmProject> {
     
     public void closeProject(CsmProject project){
         synchronized(lock) {
-            if (myProjects == null || myProjects.size() == 0){
+            if (myProjects == null || myProjects.isEmpty()){
                 return;
             }
             if (!myProjects.containsKey(project)){
@@ -167,38 +184,59 @@ public class ProjectsKeyArray extends Children.Keys<CsmProject> {
         resetKeys();
     }
     
-    public void resetProjects(){
-        Set<CsmProject> newProjects = getProjects();
+    private void resetProjects(){
         synchronized(lock) {
             if (myProjects != null) {
                 for (CsmProject p : myProjects.keySet()) {
-                    if (!newProjects.contains(p)) {
-                        childrenUpdater.unregister(p);
-                    }
+                    childrenUpdater.unregister(p);
                 }
             }
             myProjects = createProjectsMap();
-            for (CsmProject p : newProjects) {
-                myProjects.put(p, getSortedName(p, false));
-            }
+            myProjects.put(new DummyProject(), new SortedName(0, "", 0));
         }
         resetKeys();
+        RP.post(new Runnable(){
+            @Override
+            public void run() {
+                Set<CsmProject> newProjects = getProjects();
+                synchronized(lock) {
+                    if (myProjects != null) {
+                        for (CsmProject p : myProjects.keySet()) {
+                            if (!newProjects.contains(p)) {
+                                childrenUpdater.unregister(p);
+                            }
+                        }
+                    }
+                    myProjects = createProjectsMap();
+                    for (CsmProject p : newProjects) {
+                        if (p.isValid()) {
+                            myProjects.put(p, getSortedName(p, false));
+                        }
+                    }
+                }
+                resetKeys();
+            }
+        });
     }
     
     private java.util.Map<CsmProject, SortedName> createProjectsMap() {
-	return new java.util.concurrent.ConcurrentHashMap<CsmProject,SortedName>();
+	return new ConcurrentHashMap<CsmProject,SortedName>();
     }
     
+    @Override
     protected Node[] createNodes(CsmProject project) {
         //System.out.println("Create project"); // NOI18N
         Node node = null;
         try {
-            node = new ProjectNode(project,
-                   new NamespaceKeyArray(childrenUpdater,project));
+            if (project instanceof DummyProject) {
+                node = CVUtil.createLoadingNode();
+            } else {
+                node = new ProjectNode(project, new NamespaceKeyArray(childrenUpdater,project));
+            }
         } catch (AssertionError ex){
-            ex.printStackTrace();
+            ex.printStackTrace(System.err);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            ex.printStackTrace(System.err);
         }
         if (node != null) {
             return new Node[] {node};
@@ -244,11 +282,115 @@ public class ProjectsKeyArray extends Children.Keys<CsmProject> {
     }
     
     private static final class ProjectComparator implements Comparator<java.util.Map.Entry<CsmProject,SortedName>> {
+        @Override
         public int compare(java.util.Map.Entry<CsmProject, SortedName> o1, java.util.Map.Entry<CsmProject, SortedName> o2) {
             if (o1.getKey().isArtificial() != o2.getKey().isArtificial()){
                 return o1.getKey().isArtificial()?1:-1;
             }
             return o1.getValue().compareTo(o2.getValue());
+        }
+    }
+    
+    private static final class DummyProject implements CsmProject {
+
+        @Override
+        public CsmNamespace getGlobalNamespace() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void waitParse() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Object getPlatformProject() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public String getDisplayName() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public String getHtmlDisplayName() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public CsmNamespace findNamespace(CharSequence qualifiedName) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public CsmClassifier findClassifier(CharSequence qualifiedName) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Collection<CsmClassifier> findClassifiers(CharSequence qualifiedName) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Collection<CsmInheritance> findInheritances(CharSequence name) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public CsmDeclaration findDeclaration(CharSequence uniqueName) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Collection<CsmOffsetableDeclaration> findDeclarations(CharSequence uniqueName) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public CsmFile findFile(Object absolutePathOrNativeFileItem, boolean createIfPossible, boolean snapShot) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Collection<CsmFile> getSourceFiles() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Collection<CsmFile> getHeaderFiles() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Collection<CsmFile> getAllFiles() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Collection<CsmProject> getLibraries() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean isStable(CsmFile skipFile) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean isArtificial() {
+            return false;
+        }
+
+        @Override
+        public CharSequence getName() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean isValid() {
+            throw new UnsupportedOperationException();
         }
     }
 }

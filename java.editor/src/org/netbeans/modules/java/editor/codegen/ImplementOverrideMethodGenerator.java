@@ -44,8 +44,6 @@
 package org.netbeans.modules.java.editor.codegen;
 
 import org.netbeans.spi.editor.codegen.CodeGenerator;
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.awt.Dialog;
 import java.io.IOException;
@@ -175,9 +173,9 @@ public class ImplementOverrideMethodGenerator implements CodeGenerator {
                                 for (ElementHandle<? extends Element> elementHandle : panel.getSelectedMethods())
                                     methodElements.add((ExecutableElement)elementHandle.resolve(copy));
                                 if (isImplement)
-                                    GeneratorUtils.generateAbstractMethodImplementations(copy, path, methodElements);
+                                    GeneratorUtils.generateAbstractMethodImplementations(copy, path, methodElements, caretOffset);
                                 else
-                                    GeneratorUtils.generateMethodOverrides(copy, path, methodElements);
+                                    GeneratorUtils.generateMethodOverrides(copy, path, methodElements, caretOffset);
                             }
                         }
                     });

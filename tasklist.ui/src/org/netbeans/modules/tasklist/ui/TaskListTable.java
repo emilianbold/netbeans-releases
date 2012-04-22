@@ -767,7 +767,7 @@ class TaskListTable extends JTable {
         }
 
         public int getIconHeight() {
-            return 16;
+            return 8;
         }
     };
     

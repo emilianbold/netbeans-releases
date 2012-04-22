@@ -48,7 +48,7 @@ made subject to such option by the copyright holder.
     <linker>
         <library_prefix stringvalue="lib"/>
         <library_search flags="-L"/>
-        <dynamic_library_search flags="-Wl,-rpath "/>
+        <dynamic_library_search flags="-Wl,-rpath,"/>
         <library_flag flags="-l"/>
         <PIC flags="-fPIC "/>
         <static_library flags="-static"/>

@@ -8,6 +8,6 @@
                display-name-key="NAME_javax-persistence-EntityManager"
                tooltip-key="HINT_javax-persistence-EntityManager" />
   <classpath>
-      <resource type="library" name="toplink" />
+      <resource type="library" name="eclipselink" />
   </classpath>
 </palette_item>

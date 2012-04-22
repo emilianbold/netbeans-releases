@@ -13,13 +13,17 @@
 <body>
 <h2>Create Tests Dialog Box</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
-<p>This dialog box lets you specify the options for generating JUnit test classes 
+<p>This dialog box enables you to specify the options for generating unit test classes 
   and suites for existing Java classes. You open the dialog box by right-clicking 
   any Java file, package, or the Source Packages node and choosing Tools &gt; 
-  Create JUnit Tests (Ctrl-Shift-U). </p>
-<p>In addition to specifying the location of the generated test classes, you can 
-  specify the following options:</p>
+  Create Tests (Ctrl-Shift-U). </p>
+<p>You can specify the following options in this dialog box.</p>
   <ul>
+    <li><b>Class Name.</b> Specify the name for the test class. 
+        By default the IDE generates a name for the test class 
+        that is the fully-qualified class name appended with <i>Test</i>.</li>
+    <li><b>Location.</b> Select a test package from the dropdown list.</li>
+    <li><b>Framework.</b> Select a unit testing framework from the dropdown list.</li>
     <li><b>Method Access Levels.</b> Specifies which methods to generate test 
       methods for.</li>
     <li><b>Class Types.</b> Specifies which class types to generate test classes 
@@ -41,11 +45,22 @@
       for the test methods and comments that suggest how to implement the test 
       methods.</li>
   </ul>
+
+<p><b>Notes.</b></p>
+<ul class="notes">
+    <li>Depending on the version of the unit testing framework you are using,
+        the name of the test class is not required to end with <i>Test</i>.</li>
+    <li>You can modify the default name of the test class, but some of the 
+        navigation in the IDE between classes and test classes might not function
+        if the name of the test class does not contain the name of the
+        class that is tested.</li>
+</ul>
+
 <dl>
   <dt><a name="seealso">See Also</a></dt>
-  <dd><a href="junit_creatingtests.html">Creating a JUnit Test</a></dd>
-  <dd><a href="junit_runningtests.html">Running a JUnit Test</a></dd>
-  <dd><a href="junit_about.html">About JUnit</a></dd>
+  <dd><a href="junit_creatingtests.html">Creating a Unit Test</a></dd>
+  <dd><a href="junit_runningtests.html">Running a Unit Test</a></dd>
+  <dd><a href="junit_about.html">About Unit Testing</a></dd>
 </dl>
 <hr>
 <small><a href="../credits.html">Legal Notices</a></small>

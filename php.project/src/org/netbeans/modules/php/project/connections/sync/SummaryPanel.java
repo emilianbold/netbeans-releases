@@ -41,18 +41,21 @@
  */
 package org.netbeans.modules.php.project.connections.sync;
 
+import java.awt.Color;
 import java.awt.Dialog;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
+import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
@@ -74,15 +77,22 @@ public class SummaryPanel extends JPanel {
         setNumber(noopNumberLabel, noopNumber);
     }
 
-    @NbBundle.Messages("SummaryPanel.title=Summary")
+    @NbBundle.Messages({
+        "SummaryPanel.title=Summary",
+        "SummaryPanel.button.titleWithMnemonics=S&ynchronize"
+    })
     public boolean open() {
         assert SwingUtilities.isEventDispatchThread();
+        JButton okButton = new JButton();
+        Mnemonics.setLocalizedText(okButton, Bundle.SummaryPanel_button_titleWithMnemonics());
         DialogDescriptor descriptor = new DialogDescriptor(
                 this,
                 Bundle.SummaryPanel_title(),
                 true,
-                NotifyDescriptor.OK_CANCEL_OPTION,
-                NotifyDescriptor.OK_OPTION,
+                new Object[] {okButton, DialogDescriptor.CANCEL_OPTION},
+                okButton,
+                DialogDescriptor.DEFAULT_ALIGN,
+                null,
                 null);
         final Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
         try {
@@ -90,7 +100,19 @@ public class SummaryPanel extends JPanel {
         } finally {
             dialog.dispose();
         }
-        return descriptor.getValue() == NotifyDescriptor.OK_OPTION;
+        return descriptor.getValue() == okButton;
+    }
+
+    public void uploadError() {
+        setErrorComponents(uploadLabel, uploadNumberLabel);
+    }
+
+    public void downloadError() {
+        setErrorComponents(downloadLabel, downloadNumberLabel);
+    }
+
+    public void deleteError() {
+        setErrorComponents(deleteLabel, deleteNumberLabel);
     }
 
     public void decreaseUploadNumber() {
@@ -105,8 +127,8 @@ public class SummaryPanel extends JPanel {
         decreaseNumber(noopNumberLabel);
     }
 
-    public void resetDeleteNumber() {
-        deleteNumberLabel.setText(String.valueOf(0));
+    public void setDeleteNumber(int number) {
+        setNumber(deleteNumberLabel, number);
     }
 
     private void setNumber(JLabel numberLabel, int number) {
@@ -123,6 +145,16 @@ public class SummaryPanel extends JPanel {
             LOGGER.log(Level.WARNING, null, ex);
             numberLabel.setText(Bundle.SummaryPanel_na());
         }
+    }
+
+    private void setErrorComponents(JComponent... components) {
+        for (JComponent component : components) {
+            component.setForeground(getErrorColor());
+        }
+    }
+
+    private Color getErrorColor() {
+        return UIManager.getColor("nb.errorForeground"); // NOI18N
     }
 
     /**

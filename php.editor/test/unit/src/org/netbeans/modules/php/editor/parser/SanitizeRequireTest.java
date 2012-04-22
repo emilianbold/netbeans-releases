@@ -42,17 +42,17 @@
 
 package org.netbeans.modules.php.editor.parser;
 
-import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.php.editor.PHPTestBase;
 import org.netbeans.modules.php.editor.parser.GSFPHPParser.Context;
 
 /**
  *
  * @author Ondřej Brejla <ondrej@brejla.cz>
  */
-public class SanitizeRequireTest extends NbTestCase {
+public class SanitizeRequireTest extends PHPTestBase {
 
     private String phpOpenDelimiter = "<?php\n";
-    
+
     public SanitizeRequireTest(String testName) {
         super(testName);
     }
@@ -450,7 +450,7 @@ public class SanitizeRequireTest extends NbTestCase {
         Context context = new GSFPHPParser.Context(null , original, -1);
 
         parser.sanitizeRequireAndInclude(context, phpOpenDelimiter.length(), original.length());
-        
+
         assertEquals(expected, context.getSanitizedSource());
     }
 

@@ -858,8 +858,12 @@ public class JavaCustomIndexer extends CustomIndexer {
                     //Closing
                     return;
                 }
-                uq.setState(ClassIndexImpl.State.INITIALIZED);
-                JavaIndex.setAttribute(context.getRootURI(), ClassIndexManager.PROP_SOURCE_ROOT, Boolean.TRUE.toString());
+                if (uq.getState() == ClassIndexImpl.State.NEW) {
+                    if (uq.getType() != ClassIndexImpl.Type.SOURCE) {
+                        JavaIndex.setAttribute(context.getRootURI(), ClassIndexManager.PROP_SOURCE_ROOT, Boolean.TRUE.toString());
+                    }
+                    uq.setState(ClassIndexImpl.State.INITIALIZED);
+                }
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             } finally {

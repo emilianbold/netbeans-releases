@@ -147,14 +147,14 @@ public final class EntityChildren extends Children.Keys<EntityChildren.KEY> impl
      
     protected Node[] createNodes(KEY key) {
         if (key == KEY.LOCAL) {
-            Children children = new MethodChildren(cpInfo, controller, model, controller.getLocalInterfaces(), true, ejbModule.getDeploymentDescriptor());
+            Children children = new MethodChildren(cpInfo, ejbModule, controller, model, controller.getLocalInterfaces(), true, ejbModule.getDeploymentDescriptor());
             MethodsNode n = new MethodsNode(ejbClass, ejbModule, children, MethodsNode.ViewType.LOCAL);
             n.setIconBaseWithExtension("org/netbeans/modules/j2ee/ejbcore/resources/LocalMethodContainerIcon.gif");
             n.setDisplayName(NbBundle.getMessage(EjbViewController.class, "LBL_LocalMethods"));
             return new Node[] { n };
         }
         if (key == KEY.REMOTE) {
-            Children children = new MethodChildren(cpInfo, controller, model, controller.getRemoteInterfaces(), false, ejbModule.getDeploymentDescriptor());
+            Children children = new MethodChildren(cpInfo, ejbModule, controller, model, controller.getRemoteInterfaces(), false, ejbModule.getDeploymentDescriptor());
             MethodsNode n = new MethodsNode(ejbClass, ejbModule, children, MethodsNode.ViewType.REMOTE);
             n.setIconBaseWithExtension("org/netbeans/modules/j2ee/ejbcore/resources/RemoteMethodContainerIcon.gif");
             n.setDisplayName(NbBundle.getMessage(EjbViewController.class, "LBL_RemoteMethods"));

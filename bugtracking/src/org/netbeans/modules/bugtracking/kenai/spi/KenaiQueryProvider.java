@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.bugtracking.kenai.spi;
 
-import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
 
 /**
@@ -49,13 +48,6 @@ import org.netbeans.modules.bugtracking.spi.QueryProvider;
  * @author Tomas Stupka
  */
 public abstract class KenaiQueryProvider<Q, I> extends QueryProvider<Q, I> {
-    
-    /**
-     * 
-     * @param query
-     * @param filter
-     */
-    public abstract void setFilter(Q q, Filter filter);
     
     /**
      * Determines if the query needs the user to be logged in to show some
@@ -67,12 +59,6 @@ public abstract class KenaiQueryProvider<Q, I> extends QueryProvider<Q, I> {
      */
     public abstract boolean needsLogin(Q q);
     
-    /**
-     * Refreshes the given query
-     * 
-     * @param query
-     * @param synchronously
-     */
-    public abstract void refresh(Q query, boolean synchronously);
+    public abstract void setOwnerInfo(Q q, OwnerInfo info);
     
 }

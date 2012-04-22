@@ -49,7 +49,10 @@ package org.netbeans.modules.debugger.jpda.ui;
 import java.io.IOException;
 import junit.framework.Test;
 import junit.textui.TestRunner;
-import org.netbeans.jellytools.*;
+import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.OutlineOperator;
+import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.OutlineNode;
@@ -62,7 +65,7 @@ import org.openide.nodes.Node;
 
 /**
  *
- * @author ehucka
+ * @author ehucka, Jiri Kovalsky
  */
 public class WatchesTest extends DebuggerTestCase {
 
@@ -140,7 +143,7 @@ public class WatchesTest extends DebuggerTestCase {
         }
         Utilities.toggleBreakpoint(eo, 76);
         Utilities.startDebugger();
-        Utilities.waitStatusText("Thread main stopped at MemoryView.java:76");
+        Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:76");
         createWatch("Vpublic");
         createWatch("Spublic");
         createWatch("inheritedVpublic");
@@ -160,7 +163,7 @@ public class WatchesTest extends DebuggerTestCase {
         EditorOperator eo = new EditorOperator("MemoryView.java");
         Utilities.toggleBreakpoint(eo, 76);
         Utilities.startDebugger();
-        Utilities.waitStatusText("Thread main stopped at MemoryView.java:76");
+        Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:76");
         createWatch("Vprotected");
         createWatch("Sprotected");
         createWatch("inheritedVprotected");
@@ -180,7 +183,7 @@ public class WatchesTest extends DebuggerTestCase {
         EditorOperator eo = new EditorOperator("MemoryView.java");
         Utilities.toggleBreakpoint(eo, 76);
         Utilities.startDebugger();
-        Utilities.waitStatusText("Thread main stopped at MemoryView.java:76");
+        Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:76");
         createWatch("Vprivate");
         createWatch("Sprivate");
         createWatch("inheritedVprivate");
@@ -200,7 +203,7 @@ public class WatchesTest extends DebuggerTestCase {
         EditorOperator eo = new EditorOperator("MemoryView.java");
         Utilities.toggleBreakpoint(eo, 76);
         Utilities.startDebugger();
-        Utilities.waitStatusText("Thread main stopped at MemoryView.java:76");
+        Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:76");
         createWatch("VpackagePrivate");
         createWatch("SpackagePrivate");
         createWatch("inheritedVpackagePrivate");
@@ -220,7 +223,7 @@ public class WatchesTest extends DebuggerTestCase {
         EditorOperator eo = new EditorOperator("MemoryView.java");
         Utilities.toggleBreakpoint(eo, 76);
         Utilities.startDebugger();
-        Utilities.waitStatusText("Thread main stopped at MemoryView.java:76");
+        Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:76");
         createWatch("1==1");
         createWatch("1==0");
         createWatch("Integer.toString(10)");
@@ -243,7 +246,7 @@ public class WatchesTest extends DebuggerTestCase {
         EditorOperator eo = new EditorOperator("MemoryView.java");
         Utilities.toggleBreakpoint(eo, 76);
         Utilities.startDebugger();
-        Utilities.waitStatusText("Thread main stopped at MemoryView.java:76");
+        Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:76");
         createWatch("llist");
         createWatch("llist.toString()");
         createWatch("llist.getFirst()");
@@ -266,7 +269,7 @@ public class WatchesTest extends DebuggerTestCase {
         EditorOperator eo = new EditorOperator("MemoryView.java");
         Utilities.toggleBreakpoint(eo, 76);
         Utilities.startDebugger();
-        Utilities.waitStatusText("Thread main stopped at MemoryView.java:76");
+        Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:76");
         createWatch("alist");
         createWatch("alist.toString()");
         createWatch("alist.get(2)");
@@ -285,7 +288,7 @@ public class WatchesTest extends DebuggerTestCase {
         EditorOperator eo = new EditorOperator("MemoryView.java");
         Utilities.toggleBreakpoint(eo, 76);
         Utilities.startDebugger();
-        Utilities.waitStatusText("Thread main stopped at MemoryView.java:76");
+        Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:76");
         createWatch("vec");
         createWatch("vec.toString()");
         createWatch("vec.get(3)");
@@ -304,7 +307,7 @@ public class WatchesTest extends DebuggerTestCase {
         EditorOperator eo = new EditorOperator("MemoryView.java");
         Utilities.toggleBreakpoint(eo, 76);
         Utilities.startDebugger();
-        Utilities.waitStatusText("Thread main stopped at MemoryView.java:76");
+        Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:76");
         createWatch("hmap");
         createWatch("hmap.containsKey(\"4\")");
         createWatch("hmap.get(\"5\")");
@@ -325,7 +328,7 @@ public class WatchesTest extends DebuggerTestCase {
         EditorOperator eo = new EditorOperator("MemoryView.java");
         Utilities.toggleBreakpoint(eo, 76);
         Utilities.startDebugger();
-        Utilities.waitStatusText("Thread main stopped at MemoryView.java:76");
+        Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:76");
         createWatch("htab");
         createWatch("htab.containsKey(\"7\")");
         createWatch("htab.get(\"9\")");
@@ -346,7 +349,7 @@ public class WatchesTest extends DebuggerTestCase {
         EditorOperator eo = new EditorOperator("MemoryView.java");
         Utilities.toggleBreakpoint(eo, 76);
         Utilities.startDebugger();
-        Utilities.waitStatusText("Thread main stopped at MemoryView.java:76");
+        Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:76");
         createWatch("tmap");
         createWatch("tmap.containsKey(\"11\")");
         createWatch("tmap.get(\"12\")");
@@ -367,7 +370,7 @@ public class WatchesTest extends DebuggerTestCase {
         EditorOperator eo = new EditorOperator("MemoryView.java");
         Utilities.toggleBreakpoint(eo, 76);
         Utilities.startDebugger();
-        Utilities.waitStatusText("Thread main stopped at MemoryView.java:76");
+        Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:76");
         createWatch("tset");
         createWatch("tset.contains(\"14. item\")");
         createWatch("tset.iterator()");
@@ -387,7 +390,7 @@ public class WatchesTest extends DebuggerTestCase {
         EditorOperator eo = new EditorOperator("MemoryView.java");
         Utilities.toggleBreakpoint(eo, 76);
         Utilities.startDebugger();
-        Utilities.waitStatusText("Thread main stopped at MemoryView.java:76");
+        Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:76");
         createWatch("policko");
         createWatch("policko.length");
         createWatch("policko[1]");
@@ -415,7 +418,7 @@ public class WatchesTest extends DebuggerTestCase {
         EditorOperator eo = new EditorOperator("MemoryView.java");
         Utilities.toggleBreakpoint(eo, 76);
         Utilities.startDebugger();
-        Utilities.waitStatusText("Thread main stopped at MemoryView.java:76");
+        Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:76");
         createWatch("d2");
         createWatch("d2.length");
         createWatch("d2[1]");
@@ -441,7 +444,7 @@ public class WatchesTest extends DebuggerTestCase {
         EditorOperator eo = new EditorOperator("MemoryView.java");
         Utilities.toggleBreakpoint(eo, 104);
         Utilities.startDebugger();
-        Utilities.waitStatusText("Thread main stopped at MemoryView.java:104");
+        Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:104");
 
         createWatch("free");
         createWatch("taken");

@@ -88,17 +88,15 @@ public class OSGiMainLookupTest extends NbTestCase {
                 "OpenIDE-Module-Module-Dependencies: org.openide.modules, org.openide.util.lookup, org.netbeans.core/2").done().
                 module("org.netbeans.core").
                 run();
-        assertEquals("ok", System.getProperty("custom.service.result"));
+        assertEquals("[ok]", System.getProperty("custom.service.result"));
     }
-    public interface Interface {
-        String result();
-    }
+    public interface Interface {}
     public static class Service implements Interface {
-        public @Override String result() {return "ok";}
+        public @Override String toString() {return "ok";}
     }
     public static class ServicesFolderInstall extends ModuleInstall {
         public @Override void restored() {
-            System.setProperty("custom.service.result", Lookup.getDefault().lookup(Interface.class).result());
+            System.setProperty("custom.service.result", Lookup.getDefault().lookupAll(Interface.class).toString());
         }
     }
 

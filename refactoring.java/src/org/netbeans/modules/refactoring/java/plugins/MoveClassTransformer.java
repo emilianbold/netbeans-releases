@@ -135,9 +135,10 @@ public class MoveClassTransformer extends RefactoringVisitor {
                     }
 
                     GeneratorUtilities.get(workingCopy).importComments(clazz, node);
-                    CompilationUnitTree compilationUnit = make.CompilationUnit(targetRoot, relativePath + "/" + ((ClassTree) clazz).getSimpleName() + ".java", imports, (List<? extends Tree>) Collections.singletonList(clazz));
-                    CompilationUnitTree importFQNs = GeneratorUtilities.get(workingCopy).importFQNs(compilationUnit);
-                    rewrite(null, importFQNs);
+                    String cuPath = relativePath + "/" + ((ClassTree) clazz).getSimpleName() + ".java";
+                    CompilationUnitTree compilationUnit = JavaPluginUtils.createCompilationUnit(targetRoot, cuPath, clazz, workingCopy, make);
+                    compilationUnit = GeneratorUtilities.get(workingCopy).importFQNs(compilationUnit);
+                    rewrite(null, compilationUnit);
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }

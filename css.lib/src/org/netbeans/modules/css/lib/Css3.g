@@ -201,45 +201,51 @@ package org.netbeans.modules.css.lib;
          * synces to next RBRACE "}" taking nesting into account
          */
         protected void syncToRBRACE(int nest)
-        {
-            //create error-recovery node
-            dbg.enterRule(getGrammarFileName(), "recovery");
-
-            try {
+            {
                 
-                for(;;) {
-                    //read char
-                    int c = input.LA(1);
-                    
-                    switch(c) {
-                        case Token.EOF:
-                            input.rewind();
-                            return ;
-                        case Css3Lexer.LBRACE:
-                            nest++;
-                            break;
-                        case Css3Lexer.RBRACE:
-                            nest--;
-                            if(nest == 0) {
-                                //do not eat the final RBRACE
+                int mark = -1;
+                //create error-recovery node
+                dbg.enterRule(getGrammarFileName(), "recovery");
+
+                try {
+                    mark = input.mark();
+                    for(;;) {
+                        //read char
+                        int c = input.LA(1);
+                        
+                        switch(c) {
+                            case Token.EOF:
+                                input.rewind();
+                                mark = -1;
                                 return ;
-                            }
+                            case Css3Lexer.LBRACE:
+                                nest++;
+                                break;
+                            case Css3Lexer.RBRACE:
+                                nest--;
+                                if(nest == 0) {
+                                    //do not eat the final RBRACE
+                                    return ;
+                                }
+                        }
+                        
+                        input.consume();
+                                            
                     }
-                    
-                    input.consume();
-                                        
+
+                } catch (Exception e) {
+
+                  // Just ignore any errors here, we will just let the recognizer
+                  // try to resync as normal - something must be very screwed.
+                  //
                 }
-
-            } catch (Exception e) {
-
-              // Just ignore any errors here, we will just let the recognizer
-              // try to resync as normal - something must be very screwed.
-              //
+                finally {
+                    if  (mark != -1) {
+                        input.release(mark);
+                    }
+                    dbg.exitRule(getGrammarFileName(), "recovery");
+                }
             }
-            finally {
-                dbg.exitRule(getGrammarFileName(), "recovery");
-            }
-        }
     
 }
 

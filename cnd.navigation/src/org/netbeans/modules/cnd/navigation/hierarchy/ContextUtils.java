@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.cnd.navigation.hierarchy;
 
-import java.util.Collections;
 import java.util.Iterator;
 import javax.swing.JEditorPane;
 import org.netbeans.modules.cnd.api.model.CsmClass;
@@ -98,7 +97,7 @@ public class ContextUtils {
     }
 
     public static CsmFile findFile(Node activatedNode) {
-        EditorCookie c = activatedNode.getCookie(EditorCookie.class);
+        EditorCookie c = activatedNode.getLookup().lookup(EditorCookie.class);
         if (c != null && CsmUtilities.findRecentEditorPaneInEQ(c) != null) {
             return CsmUtilities.getCsmFile(activatedNode,false);
         } else {
@@ -107,7 +106,7 @@ public class ContextUtils {
     }
 
     public static CsmClass getContextClass(Node[] activatedNodes){
-        CsmObject decl = null;
+        CsmObject decl;
         if (ContextUtils.USE_REFERENCE_RESOLVER) {
             CsmReference ref = ContextUtils.findReference(activatedNodes[0]);            
             if (isSupportedReference(ref)) {
@@ -147,7 +146,7 @@ public class ContextUtils {
     }
     
     public static CsmDeclaration findDeclaration(Node activatedNode) {
-        EditorCookie c = activatedNode.getCookie(EditorCookie.class);
+        EditorCookie c = activatedNode.getLookup().lookup(EditorCookie.class);
         if (c != null) {
             JEditorPane pane = CsmUtilities.findRecentEditorPaneInEQ(c);
             if (pane != null ) {
@@ -173,7 +172,7 @@ public class ContextUtils {
     }
 
     private static Iterator<? extends CsmObject> getInnerObjectsIterator(CsmFilter offsetFilter, CsmScope scope) {
-        Iterator<? extends CsmObject> out = Collections.<CsmObject>emptyList().iterator();
+        Iterator<? extends CsmObject> out;
         if (CsmKindUtilities.isFile(scope)) {
             out = CsmSelect.getDeclarations((CsmFile)scope, offsetFilter);
         } else if (CsmKindUtilities.isNamespaceDefinition(scope)) {
@@ -215,7 +214,7 @@ public class ContextUtils {
     }
 
     public static CsmScope findScope(Node activatedNode) {
-        EditorCookie c = activatedNode.getCookie(EditorCookie.class);
+        EditorCookie c = activatedNode.getLookup().lookup(EditorCookie.class);
         if (c != null) {
             JEditorPane pane = CsmUtilities.findRecentEditorPaneInEQ(c);
             if (pane != null ) {
@@ -282,7 +281,4 @@ public class ContextUtils {
 
         return null;
     }
-
-
-
 }

@@ -81,6 +81,7 @@ CLASS      A                               [PUBLIC]   classConstructorOptionalPa
 CLASS      A                               [PUBLIC]   test.php
 CLASS      A135618                         [PUBLIC]   issue135618.php
 CLASS      AA                              [PUBLIC]   Test197084.php
+CLASS      ABCX                            [PUBLIC]   test200501.php
 CLASS      Abc                             [PUBLIC]   issue209405.php
 CLASS      Admin                           [PUBLIC]   Admin
 CLASS      AdminPresenter                  [PUBLIC,   AdminModule
@@ -94,6 +95,8 @@ CLASS      B                               [PUBLIC]   test.php
 CLASS      B135618                         [PUBLIC]   issue135618.php
 CLASS      BadRequestException             [PUBLIC]   Nette\Application
 CLASS      Bar                             [PUBLIC]   issue191666.php
+CLASS      Barrr                           [PUBLIC]   test204104.php
+CLASS      Barrr                           [PUBLIC]   test204104_02.php
 CLASS      BaseClass                       [PUBLIC]   FrontSpace
 CLASS      BaseClass                       [PUBLIC]   traits.php
 CLASS      BaseFrontClass                  [PUBLIC]   FrontSpace
@@ -104,6 +107,7 @@ CLASS      Book                            [PUBLIC]   issue153707.php
 CLASS      Book                            [PUBLIC]   issue197453.php
 CLASS      Book                            [PUBLIC]   mixedtypes.php
 CLASS      Book_1                          [PUBLIC]   mixedtypes_1.php
+CLASS      Brejla                          [PUBLIC]   test211230.php
 CLASS      Buuu                            [PUBLIC]   ShowMe
 CLASS      C                               [PUBLIC]   test.php
 CLASS      CallableClass                   [PUBLIC]   callableTypeHint.php
@@ -145,6 +149,8 @@ CLASS      ExceptionClassName              [PUBLIC]   issue207594.php
 CLASS      Foo                             [PUBLIC]   issue159970.php
 CLASS      Foo                             [PUBLIC]   issue191666.php
 CLASS      Foo                             [PUBLIC]   test203294.php
+CLASS      Foooo                           [PUBLIC]   test204104.php
+CLASS      Foooo                           [PUBLIC]   test204104_02.php
 CLASS      ForClsCtxCodeCompletion         [PUBLIC]   insideClass3.php
 CLASS      ForbiddenRequestException       [PUBLIC]   Nette\Application
 CLASS      HTML                            [PUBLIC]   html.php
@@ -179,6 +185,8 @@ CLASS      MyTextException                 [PUBLIC]   catchinstanceof.php
 CLASS      NewClass                        [PUBLIC]   issue171232_01.php
 CLASS      NewClass                        [PUBLIC]   issue171232_02.php
 CLASS      ObjectTracker                   [PUBLIC]   test204908.php
+CLASS      Omg                             [PUBLIC]   test204104_05.php
+CLASS      Ondrej                          [PUBLIC]   test211230.php
 CLASS      PagePresenter                   [PUBLIC]   AdminModule
 CLASS      ParentClass                     [PUBLIC]   class_member_visibility.php
 CLASS      Person148213                    [PUBLIC]   issue148213.php
@@ -282,6 +290,9 @@ CLASS      cls_B                           [PUBLIC]   insideClass2.php
 CLASS      foo                             [PUBLIC]   tests178955.php
 CLASS      foo2                            [PUBLIC]   tests178955.php
 CLASS      issue1480109                    [PUBLIC]   issue148109.php
+CLASS      myClass                         [PUBLIC]   test204104_03.php
+CLASS      myClass                         [PUBLIC]   test204104_04.php
+CLASS      myClass                         [PUBLIC]   test204104_05.php
 CLASS      pupil140784                     [PUBLIC]   issue140784.php
 CLASS      sfWidgetFormSchema              [PUBLIC]   issue197571.php
 CLASS      some_class                      [PUBLIC]   test.php

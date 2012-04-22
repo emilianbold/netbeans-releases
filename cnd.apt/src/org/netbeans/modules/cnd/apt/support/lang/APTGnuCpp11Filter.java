@@ -182,7 +182,13 @@ class APTGnuCpp11Filter extends APTBaseLanguageFilter {
         filter("__clrcall", APTTokenTypes.LITERAL___clrcall); // NOI18N
         filter("__try", APTTokenTypes.LITERAL___try); // NOI18N
         filter("__finally", APTTokenTypes.LITERAL___finally); // NOI18N
-
+        filter("__null", APTTokenTypes.LITERAL___null); // NOI18N
+        filter("__alignof", APTTokenTypes.LITERAL___alignof); // NOI18N
+        filter("__is_class", APTTokenTypes.LITERAL___is_class); // NOI18N
+        filter("__is_pod", APTTokenTypes.LITERAL___is_pod); // NOI18N
+        filter("__is_base_of", APTTokenTypes.LITERAL___is_base_of); // NOI18N
+        filter("__has_trivial_constructor", APTTokenTypes.LITERAL___has_trivial_constructor); // NOI18N
+        
         // C++11
         filter("final", APTTokenTypes.LITERAL_final); // NOI18N
         filter("override", APTTokenTypes.LITERAL_override); // NOI18N

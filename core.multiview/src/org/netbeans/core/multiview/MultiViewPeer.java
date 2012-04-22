@@ -553,11 +553,17 @@ public final class MultiViewPeer implements PropertyChangeListener {
                     descList.add(lastDescription);
                 }
                 else if (obj instanceof String) {
+                    boolean match = false;
                     for (MultiViewDescription md : descList) {
                         if (md.preferredID().equals(obj)) {
                             lastDescription = md;
+                            match = true;
                             break;
                         }
+                    }
+                    if( !match ) {
+                        throw new IOException( "Cannot find multiview description for id \"" + obj
+                                + "\". Maybe some module(s) is not installed or activated." );
                     }
                 }
                 else if (obj instanceof MultiViewElement) {

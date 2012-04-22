@@ -44,6 +44,7 @@ package org.netbeans.modules.editor.search.actions;
 import java.awt.event.ActionEvent;
 import java.util.Map;
 import javax.swing.JComponent;
+import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.EditorUI;
@@ -61,6 +62,8 @@ public class SearchAction extends AbstractEditorAction {
         @Override
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             if (target != null) {
+                if ((target instanceof JEditorPane) && ((JEditorPane) target).getEditorKit() instanceof SearchNbEditorKit)
+                    target = SearchBar.getInstance().getActualTextComponent();
                 EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(target);
                 if (eui != null) {
                     //need to find if it has extended editor firsfaft, otherwise getExtComponent() will create all sidebars

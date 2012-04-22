@@ -43,6 +43,8 @@ package org.netbeans.modules.versioning.historystore;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -57,7 +59,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
 import org.netbeans.modules.versioning.util.Utils;
-import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
 
 /**
@@ -72,6 +73,9 @@ public class Storage {
     private static final String DATA_FILE = "data";                  // NOI18N
     static final String PREF_KEY_TTL = "HistoryStorage.ttl"; //NOI18N - how long to keep data in the cache, in days
     static final int INDEFINITE_TTL = Integer.MAX_VALUE;
+    private static final String KIND_FILE_CONTENT = "fileContent"; //NOI18N
+    private static final String KIND_REVISION_INFO = "revisionInfo"; //NOI18N
+    private static final String REVISION_CONTENT_FN = "revisionContent"; //NOI18N
     private static final FilenameFilter FILE_FILTER = new FilenameFilter() {
         @Override
         public boolean accept(File dir, String name) {
@@ -99,7 +103,7 @@ public class Storage {
         File content = new File(Utils.getTempFolder(), filename); //NOI18N
         if (storageAccessible) {
             content.deleteOnExit();
-            Entry entry = getEntry(repositoryPath, revision, false);
+            Entry entry = getEntry(repositoryPath, revision, KIND_FILE_CONTENT, false);
             InputStream is = null;
             try {
                 is = entry.getStoreFileInputStream();
@@ -129,7 +133,7 @@ public class Storage {
      */
     public synchronized void setContent (String repositoryPath, String revision, InputStream content) {
         if (ensureAccessible()) {
-            Entry entry = getEntry(repositoryPath, revision, true);
+            Entry entry = getEntry(repositoryPath, revision, KIND_FILE_CONTENT, true);
             try {
                 OutputStream os = entry.getStoreFileOutputStream();
                 Utils.copyStreamsCloseAll(os, content);
@@ -153,7 +157,7 @@ public class Storage {
      */
     public synchronized void setContent (String repositoryPath, String revision, File content) {
         if (ensureAccessible()) {
-            Entry entry = getEntry(repositoryPath, revision, true);
+            Entry entry = getEntry(repositoryPath, revision, KIND_FILE_CONTENT, true);
             try {
                 OutputStream os = entry.getStoreFileOutputStream();
                 Utils.copyStreamsCloseAll(os, new FileInputStream(content));
@@ -163,31 +167,89 @@ public class Storage {
         }
     }
 
-    private Entry getEntry(String repositoryPath, String revision, boolean write) {
-        return new Entry(getStoreFile(repositoryPath, revision, write));
+    /**
+     * Returns stored information about a revision. The content stored can be anything 
+     * passed in the last call of {@link #setRevisionInfo(java.lang.String, java.lang.String, java.io.ByteArrayInputStream) setRevisionInfo}
+     * @param revision a unique identifier of the data persisted
+     * @return content of the requested data or <code>null</code> if no such data found
+     * @since 1.24
+     */
+    public synchronized byte[] getRevisionInfo (String revision) {
+        byte[] content = null;
+        if (storageAccessible) {
+            Entry entry = getEntry(revision, REVISION_CONTENT_FN, KIND_FILE_CONTENT, false);
+            InputStream is = null;
+            try {
+                is = entry.getStoreFileInputStream();
+                ByteArrayOutputStream os = new ByteArrayOutputStream();
+                Utils.copyStreamsCloseAll(os, is);
+                is = null;
+                content = os.toByteArray();
+            } catch (FileNotFoundException ex) {
+                //
+            } catch (IOException ex) {
+                StorageManager.LOG.log(Level.INFO, "getRevisionInfo(): Cannot read file's content", ex); //NOI18N
+            } finally {
+                if (is != null) {
+                    try {
+                        is.close();
+                    } catch (IOException ex) {
+                    }
+                }
+            }
+        }
+        return content;
+    }
+    
+    /**
+     * Persists whatever content you wish to save for a given revision.
+     * @param revision unique revision id
+     * @param content content to save
+     * @since 1.24
+     */
+    public synchronized void setRevisionInfo (String revision, InputStream content) {
+        if (ensureAccessible()) {
+            Entry entry = getEntry(revision, REVISION_CONTENT_FN, KIND_FILE_CONTENT, true);
+            try {
+                OutputStream os = entry.getStoreFileOutputStream();
+                Utils.copyStreamsCloseAll(os, content);
+            } catch (IOException ex) {
+                StorageManager.LOG.log(Level.INFO, "setRevisionInfo(): Cannot save revision content", ex); //NOI18N
+            }
+        } else {
+            try {
+                content.close();
+            } catch (IOException ex) {
+                StorageManager.LOG.log(Level.INFO, "setRevisionInfo(): Cannot close stream's content", ex); //NOI18N
+            }
+        }
     }
 
-    private File getStoreFile (String repositoryPath, String revision, boolean write) {
-        File storeFolder = getStoreFolder(repositoryPath);
+    private Entry getEntry(String key, String name, String expectedKind, boolean write) {
+        return new Entry(getStoreFile(key, name, expectedKind, write));
+    }
+
+    private File getStoreFile (String key, String name, String expectedKind, boolean write) {
+        File storeFolder = getStoreFolder(key, expectedKind);
         if (write) { 
             if(!storeFolder.exists()) {
                 storeFolder.mkdirs();
             }
-            StoreDataFile.write(new File(storeFolder, DATA_FILE), new StoreDataFile(repositoryPath));
+            StoreDataFile.write(new File(storeFolder, DATA_FILE), new StoreDataFile(key));
         }
-        return new File(storeFolder, revision);
+        return new File(storeFolder, name);
     }
 
-    private File getStoreFolder(String repositoryPath) {
-        File storeFolder = getStoreFolderName(repositoryPath);
+    private File getStoreFolder (String key, String expectedKind) {
+        File storeFolder = getStoreFolderName(key);
         int i = 0;
         while (storeFolder.exists()) {
             // check for collisions 
-            StoreDataFile data = StoreDataFile.read(new File(storeFolder, DATA_FILE));
-            if (data == null || data.getRelativePath().equals(repositoryPath)) {
+            StoreDataFile data = StoreDataFile.read(new File(storeFolder, DATA_FILE), expectedKind);
+            if (data == null || data.getKey ().equals(key)) {
                 break;
             }
-            storeFolder = getStoreFolderName(repositoryPath + "." + i++); //NOI18N
+            storeFolder = getStoreFolderName(key + "." + i++); //NOI18N
         }
         return storeFolder;
     }
@@ -262,26 +324,30 @@ public class Storage {
 
     private static class StoreDataFile {
 
-        private final String relativePath;
-        private static final int VERSION = 1;
+        private final String key;
+        private static final int VERSION = 2;
 
-        private StoreDataFile(String relativePath) {
-            this.relativePath = relativePath;
+        private StoreDataFile(String key) {
+            this.key = key;
         }
 
-        String getRelativePath() {
-            return relativePath;
+        String getKey () {
+            return key;
         }
 
-        static synchronized StoreDataFile read(File storeFile) {
+        static synchronized StoreDataFile read (File storeFile, String expectedKind) {
             DataInputStream dis = null;
             try {
                 if (storeFile.exists()) {
                     dis = getInputStream(storeFile);
                     long version = dis.readInt();
+                    boolean found = false;
                     if (version == VERSION) {
-                        String fileName = dis.readUTF();
-                        return new StoreDataFile(fileName);
+                        String kind = dis.readUTF();
+                        if (expectedKind.equals(kind)) {
+                            String key = dis.readUTF();
+                            return new StoreDataFile(key);
+                        }
                     } else {
                         // old data file version, delete the whole obsolete folder
                         Utils.deleteRecursively(storeFile.getParentFile());
@@ -308,7 +374,7 @@ public class Storage {
                 dos = getOutputStream(storeFile, false);
                 StoreDataFile data = (StoreDataFile) value;
                 dos.writeInt(VERSION);
-                dos.writeUTF(data.getRelativePath());
+                dos.writeUTF(data.getKey ());
                 dos.flush();
             } catch (FileNotFoundException e) {
                 StorageManager.LOG.log(Level.FINEST, null, e);

@@ -49,11 +49,16 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.management.MBeanServerConnection;
 import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 import javax.management.QueryExp;
+import org.netbeans.modules.j2ee.jboss4.JBDeploymentManager;
+import org.netbeans.modules.j2ee.jboss4.JBRemoteAction;
+import org.netbeans.modules.j2ee.jboss4.JBoss5ProfileServiceProxy;
 import org.netbeans.modules.j2ee.jboss4.nodes.actions.Refreshable;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -67,7 +72,8 @@ import org.openide.util.RequestProcessor;
  * @author Michal Mocnak
  */
 public class JBEjbModulesChildren extends Children.Keys implements Refreshable {
-    
+
+    private static final Logger LOGGER = Logger.getLogger(JBEjbModulesChildren.class.getName());
     
     private final JBAbilitiesSupport abilitiesSupport;
     
@@ -84,9 +90,9 @@ public class JBEjbModulesChildren extends Children.Keys implements Refreshable {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 List keys = new LinkedList();
-                Object server = Util.getRMIServer(lookup);
-                addEjbModules(server, keys);
-                addEJB3Modules(server, keys);
+                JBDeploymentManager dm = lookup.lookup(JBDeploymentManager.class);
+                addEjbModules(dm, keys);
+                addEJB3Modules(dm, keys);
                 
                 setKeys(keys);
             }
@@ -94,74 +100,74 @@ public class JBEjbModulesChildren extends Children.Keys implements Refreshable {
         
     }
     
-    private void addEjbModules(Object server, List keys) {
-        ClassLoader orig = Thread.currentThread().getContextClassLoader();
-        
+    private void addEjbModules(JBDeploymentManager dm, final List keys) {
         try {
-            Thread.currentThread().setContextClassLoader(server.getClass().getClassLoader());
-            
-            String propertyName;
-            Object searchPattern;
-            if (abilitiesSupport.isRemoteManagementSupported()
-                    && (abilitiesSupport.isJB4x() || abilitiesSupport.isJB6x())) {
-                propertyName = "name"; // NOI18N
-                searchPattern = new ObjectName("jboss.management.local:j2eeType=EJBModule,J2EEApplication=null,*"); // NOI18N
-            }
-            else {
-                propertyName = "module"; // NOI18N
-                searchPattern = new ObjectName("jboss.j2ee:service=EjbModule,*"); // NOI18N
-            }
-            
-            Method method = server.getClass().getMethod("queryMBeans", new Class[] {ObjectName.class, QueryExp.class});
-            method = Util.fixJava4071957(method);
-            Set managedObj = (Set) method.invoke(server, new Object[] {searchPattern, null}); // NOI18N
+            dm.invokeRemoteAction(new JBRemoteAction<Void>() {
 
-            Iterator it = managedObj.iterator();
+                @Override
+                public Void action(MBeanServerConnection connection, JBoss5ProfileServiceProxy profileService) throws Exception {
+                    String propertyName;
+                    Object searchPattern;
+                    if (abilitiesSupport.isRemoteManagementSupported()
+                            && (abilitiesSupport.isJB4x() || abilitiesSupport.isJB6x())) {
+                        propertyName = "name"; // NOI18N
+                        searchPattern = new ObjectName("jboss.management.local:j2eeType=EJBModule,J2EEApplication=null,*"); // NOI18N
+                    } else {
+                        propertyName = "module"; // NOI18N
+                        searchPattern = new ObjectName("jboss.j2ee:service=EjbModule,*"); // NOI18N
+                    }
 
-            // Query results processing
-            while(it.hasNext()) {
-                ObjectName elem = ((ObjectInstance) it.next()).getObjectName();
-                String name = elem.getKeyProperty(propertyName);
-                keys.add(new JBEjbModuleNode(name, lookup));
-            }
+                    Method method = connection.getClass().getMethod("queryMBeans", new Class[]{ObjectName.class, QueryExp.class});
+                    method = Util.fixJava4071957(method);
+                    Set managedObj = (Set) method.invoke(connection, new Object[]{searchPattern, null}); // NOI18N
 
-        } catch (Exception ex) {
-            Logger.getLogger("global").log(Level.INFO, null, ex);
-        } finally {
-            Thread.currentThread().setContextClassLoader(orig);
+                    Iterator it = managedObj.iterator();
+
+                    // Query results processing
+                    while (it.hasNext()) {
+                        ObjectName elem = ((ObjectInstance) it.next()).getObjectName();
+                        String name = elem.getKeyProperty(propertyName);
+                        keys.add(new JBEjbModuleNode(name, lookup));
+                    }
+                    return null;
+                }
+            });
+        } catch (ExecutionException ex) {
+            LOGGER.log(Level.INFO, null, ex);
         }
     }
     
     // JBoss 5 only ?
-    private void addEJB3Modules(Object server, List keys) {
-        ClassLoader orig = Thread.currentThread().getContextClassLoader();
-        
+    private void addEJB3Modules(JBDeploymentManager dm, final List keys) {
         try {
-            Thread.currentThread().setContextClassLoader(server.getClass().getClassLoader());
-            
-            ObjectName searchPattern = new ObjectName("jboss.j2ee:service=EJB3,*"); // NOI18N
-            Method method = server.getClass().getMethod("queryMBeans", new Class[] {ObjectName.class, QueryExp.class});
-            method = Util.fixJava4071957(method);
-            Set managedObj = (Set) method.invoke(server, new Object[] {searchPattern, null}); // NOI18N
+            dm.invokeRemoteAction(new JBRemoteAction<Void>() {
 
-            Iterator it = managedObj.iterator();
+                @Override
+                public Void action(MBeanServerConnection connection, JBoss5ProfileServiceProxy profileService) throws Exception {
+                    ObjectName searchPattern = new ObjectName("jboss.j2ee:service=EJB3,*"); // NOI18N
+                    Method method = connection.getClass().getMethod("queryMBeans", new Class[] {ObjectName.class, QueryExp.class});
+                    method = Util.fixJava4071957(method);
+                    Set managedObj = (Set) method.invoke(connection, new Object[] {searchPattern, null}); // NOI18N
 
-            // Query results processing
-            while(it.hasNext()) {
-                try {
-                    ObjectName elem = ((ObjectInstance) it.next()).getObjectName();
-                    String name = elem.getKeyProperty("module"); // NOI18N
-                    if (name != null) {
-                        keys.add(new JBEjbModuleNode(name, lookup, true));
+                    Iterator it = managedObj.iterator();
+
+                    // Query results processing
+                    while(it.hasNext()) {
+                        try {
+                            ObjectName elem = ((ObjectInstance) it.next()).getObjectName();
+                            String name = elem.getKeyProperty("module"); // NOI18N
+                            if (name != null) {
+                                keys.add(new JBEjbModuleNode(name, lookup, true));
+                            }
+                        } catch (Exception ex) {
+                            LOGGER.log(Level.INFO, null, ex);
+                        }
                     }
-                } catch (Exception ex) {
-                    Logger.getLogger("global").log(Level.INFO, null, ex);
+                    return null;
                 }
-            }
-        } catch (Exception ex) {
-            Logger.getLogger("global").log(Level.INFO, null, ex);
-        } finally {
-            Thread.currentThread().setContextClassLoader(orig);
+            });
+        } catch (ExecutionException ex) {
+            LOGGER.log(Level.INFO, null, ex);
         }
     }
     

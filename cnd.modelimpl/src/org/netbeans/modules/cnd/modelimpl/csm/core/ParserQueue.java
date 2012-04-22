@@ -297,10 +297,8 @@ public final class ParserQueue {
 
         // there are no more simultaneously parsing files than threads, so LinkedList suites even better
         private final Collection<FileImpl> filesBeingParsed = new LinkedHashSet<FileImpl>();
-        private volatile boolean notifyListeners;
         private volatile int pendingActivity;
-        ProjectData(boolean notifyListeners) {
-            this.notifyListeners = notifyListeners;
+        ProjectData() {
             this.pendingActivity = 0;
         }
 
@@ -323,8 +321,11 @@ public final class ParserQueue {
     private static ParserQueue instance = new ParserQueue(false);
     private final PriorityQueue<Entry> queue = new PriorityQueue<Entry>();
     private volatile State state;
-    private static final class SuspendLock {}
-    private final Object suspendLock = new SuspendLock();
+    private static final class SuspendLock { 
+        private final AtomicInteger counter = new AtomicInteger(0);
+    }
+    
+    private final SuspendLock suspendLock = new SuspendLock();
 
     // do not need UIDs for ProjectBase in parsing data collection
     private final Map<ProjectBase, ProjectData> projectData = new HashMap<ProjectBase, ProjectData>();
@@ -527,6 +528,7 @@ public final class ParserQueue {
             System.err.println("ParserQueue: suspending"); // NOI18N
         }
         synchronized (suspendLock) {
+            suspendLock.counter.incrementAndGet();
             state = State.SUSPENDED;
         }
     }
@@ -536,8 +538,10 @@ public final class ParserQueue {
             System.err.println("ParserQueue: resuming"); // NOI18N
         }
         synchronized (suspendLock) {
-            state = State.ON;
-            suspendLock.notifyAll();
+            if (suspendLock.counter.decrementAndGet() == 0) {
+                state = State.ON;
+                suspendLock.notifyAll();
+            }
         }
     }
 
@@ -745,23 +749,20 @@ public final class ParserQueue {
         return getProjectData(project, true).filesInQueue;
     }
 
+    private void createProjectDataIfNeeded(ProjectBase project) {
+        getProjectData(project, true);
+    }
+
     private ProjectData getProjectData(ProjectBase project, boolean create) {
         // must be in synchronized( lock ) block
         synchronized (lock) {
             ProjectBase key = project;
             ProjectData data = projectData.get(key);
             if (data == null && create) {
-                data = new ProjectData(false);
+                data = new ProjectData();
                 projectData.put(key, data);
             }
             return data;
-        }
-    }
-
-    private void removeProjectData(ProjectBase project) {
-        // must be in synchronized( lock ) block
-        synchronized (lock) {
-            projectData.remove(project);
         }
     }
 
@@ -771,6 +772,8 @@ public final class ParserQueue {
     }
 
     public void onStartAddingProjectFiles(ProjectBase project) {
+        suspend();
+        createProjectDataIfNeeded(project);
         boolean fire;
         synchronized(onStartLevel) {
             AtomicInteger level = onStartLevel.get(project);
@@ -781,7 +784,6 @@ public final class ParserQueue {
             fire = level.incrementAndGet() == 1;
         }
         if (fire) {
-            getProjectData(project, true).notifyListeners = true;
             ProgressSupport.instance().fireProjectParsingStarted(project);
         }
     }
@@ -801,9 +803,10 @@ public final class ParserQueue {
             }
         }
         if (fire) {
-            ProjectData pd = getProjectData(project, true);
+            ProjectData pd;
             boolean noFiles;
             synchronized (lock) {
+                pd = getProjectData(project, true);
                 noFiles = markLastProjectFileActivityIfNeeded(pd);
             }
             ProgressSupport.instance().fireProjectFilesCounted(project, pd.filesInQueue.size());
@@ -811,6 +814,7 @@ public final class ParserQueue {
                 handleLastProjectFile(project, pd);
             }
         }
+        resume();
     }
 
     /*package*/ void onFileParsingFinished(FileImpl file) {
@@ -871,9 +875,7 @@ public final class ParserQueue {
         }
         if (last) {
             project.notifyOnWaitParseLock();
-            if (data.notifyListeners) {
-                ProgressSupport.instance().fireProjectParsingFinished(project);
-            }
+            ProgressSupport.instance().fireProjectParsingFinished(project);
         }
     }
 

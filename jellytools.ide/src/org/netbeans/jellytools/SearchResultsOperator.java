@@ -41,13 +41,13 @@ package org.netbeans.jellytools;
 
 import java.awt.Container;
 import javax.swing.JButton;
-import org.netbeans.jellytools.nodes.Node;
+import javax.swing.tree.TreePath;
+import org.netbeans.jellytools.nodes.OutlineNode;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.Timeouts;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JTreeOperator;
 
 /**
  * Provides access to the "Search Results" view. <p> Usage:<br>
@@ -65,7 +65,7 @@ public class SearchResultsOperator extends TopComponentOperator {
     private JButtonOperator _btStop;
     private JButtonOperator _btShowDetails;
     private JButtonOperator _btModifySearch;
-    private JTreeOperator _treeResult;
+    private OutlineOperator _outlineResult;
 
     /**
      * Waits for view opened.
@@ -126,31 +126,35 @@ public class SearchResultsOperator extends TopComponentOperator {
     }
 
     /**
-     * Returns operator for search result tree.
-     * @return JTreeOperator instance
+     * Returns operator for search outline.
+     *
+     * @return OutlineOperator instance
      */
-    public JTreeOperator treeResult() {
-        if (_treeResult == null) {
-            _treeResult = new JTreeOperator(this);
+    public OutlineOperator outlineResult() {
+        if (_outlineResult == null) {
+            _outlineResult = new OutlineOperator(this);
         }
-        return _treeResult;
+        return _outlineResult;
     }
 
     /**
      * Selects a path in the results tree
+     *
      * @param path path to requested result (e.g. "MyClass|myMethod")
      */
     public void selectResult(String path) {
-        new Node(treeResult(), path).select();
+        new OutlineNode(outlineResult(), "Found|" + path).select();
     }
 
     /**
-     * Double clicks on the specified path in the results tree. It opens file
-     * in editor.
+     * Double clicks on the specified path in the results tree. It opens file in
+     * editor.
+     *
      * @param path path to requested result (e.g. "MyClass|myMethod")
      */
     public void openResult(String path) {
-        treeResult().clickOnPath(new Node(treeResult(), path).getTreePath(), 2);
+        TreePath treePath = new OutlineNode(outlineResult(), "Found|" + path).getTreePath();
+        outlineResult().clickOnCell(outlineResult().getRowForPath(treePath), 0, 2);
     }
 
     /**
@@ -210,6 +214,6 @@ public class SearchResultsOperator extends TopComponentOperator {
         btStopSearch();
         btShowDetails();
         btModifySearch();
-        treeResult();
+        outlineResult();
     }
 }

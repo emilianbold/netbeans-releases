@@ -41,10 +41,10 @@
  */
 package org.netbeans.modules.tasks.ui.actions;
 
-import org.netbeans.modules.tasks.ui.dashboard.DashboardViewer;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
-import org.netbeans.modules.tasks.ui.dashboard.ClosedRepositoryNode;
+import org.netbeans.modules.tasks.ui.dashboard.DashboardViewer;
+import org.netbeans.modules.tasks.ui.dashboard.RepositoryNode;
 
 /**
  *
@@ -52,15 +52,15 @@ import org.netbeans.modules.tasks.ui.dashboard.ClosedRepositoryNode;
  */
 public class OpenRepositoryNodeAction extends AbstractAction {
 
-    private final ClosedRepositoryNode repositoryNode;
+    private final RepositoryNode repositoryNode;
 
-    public OpenRepositoryNodeAction(ClosedRepositoryNode repositoryNode) {
+    public OpenRepositoryNodeAction(RepositoryNode repositoryNode) {
         super(org.openide.util.NbBundle.getMessage(OpenCategoryNodeAction.class, "CTL_OpenNode")); //NOI18N
         this.repositoryNode = repositoryNode;
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        DashboardViewer.getInstance().openRepository(repositoryNode);
+        DashboardViewer.getInstance().setRepositoryOpened(repositoryNode, true);
     }
 }

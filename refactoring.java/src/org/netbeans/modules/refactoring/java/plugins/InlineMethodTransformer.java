@@ -54,6 +54,7 @@ import org.netbeans.modules.refactoring.java.Pair;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -139,26 +140,34 @@ public class InlineMethodTransformer extends RefactoringVisitor {
     }
 
     @Override
-    public Tree visitMethodInvocation(MethodInvocationTree node, Element p) {
+    public Tree visitMethod(MethodTree node, Element p) {
+        if (workingCopy.getTreeUtilities().isSynthetic(getCurrentPath())) {
+            return node;
+        }
+        return super.visitMethod(node, p);
+    }
+
+    @Override
+    public Tree visitMethodInvocation(MethodInvocationTree node, Element methodElement) {
         final TreePath methodInvocationPath = getCurrentPath();
         ExecutableElement el = (ExecutableElement) trees.getElement(methodInvocationPath);
-        if (p.equals(el)) {
-            Map<Tree, List<StatementTree>> original2TranslatedForBlock = queue.getLast();
+        if (methodElement.equals(el)) {
             List<StatementTree> newStatementList = new LinkedList<StatementTree>();
             final HashMap<Tree, Tree> original2TranslatedBody = new HashMap<Tree, Tree>();
 
-            final TypeElement bodyEnclosingTypeElement = workingCopy.getElementUtilities().enclosingTypeElement(p);
+            final TypeElement bodyEnclosingTypeElement = workingCopy.getElementUtilities().enclosingTypeElement(methodElement);
             TreePath findEnclosingClass = JavaRefactoringUtils.findEnclosingClass(workingCopy, methodInvocationPath, true, true, true, true, true);
             final Element invocationEnclosingTypeElement = workingCopy.getTrees().getElement(findEnclosingClass);
 
             boolean inSameClass = bodyEnclosingTypeElement.equals(invocationEnclosingTypeElement);
+            boolean inStatic = !methodElement.getModifiers().contains(Modifier.STATIC) && isInStaticContext(methodInvocationPath);
 
             TreePath statementPath = findCorrespondingStatement(methodInvocationPath);
             StatementTree statementTree = (StatementTree) statementPath.getLeaf();
 
             BlockTree body = methodTree.getBody();
 
-            scanForNameClash(methodInvocationPath, body, p);
+            scanForNameClash(methodInvocationPath, body, methodElement);
             if (problem != null && problem.isFatal()) {
                 return node;
             }
@@ -168,14 +177,14 @@ public class InlineMethodTransformer extends RefactoringVisitor {
             }
 
             body = (BlockTree) workingCopy.getTreeUtilities().translate(body, original2TranslatedBody);
-            
-            TreePath methodPath = trees.getPath(p);
+
+            TreePath methodPath = trees.getPath(methodElement);
             TreePath bodyPath = new TreePath(methodPath, methodTree.getBody());
             Scope scope = workingCopy.getTrees().getScope(methodInvocationPath);
-            
+
             ExpressionTree methodSelect = node.getMethodSelect();
-            if(methodSelect.getKind() == Tree.Kind.MEMBER_SELECT) {
-                methodSelect = ((MemberSelectTree)methodSelect).getExpression();
+            if (methodSelect.getKind() == Tree.Kind.MEMBER_SELECT) {
+                methodSelect = ((MemberSelectTree) methodSelect).getExpression();
             } else {
                 methodSelect = null;
             }
@@ -183,9 +192,11 @@ public class InlineMethodTransformer extends RefactoringVisitor {
             // Add statements up to the last statement (return)
             for (int i = 0; i < body.getStatements().size() - 1; i++) {
                 StatementTree statement = body.getStatements().get(i);
-                if (!inSameClass) {
+                if (!inSameClass || inStatic) {
                     statement = (StatementTree) fixReferences(statement, new TreePath(bodyPath, statement), el, scope, methodSelect);
-                    statement = GeneratorUtilities.get(workingCopy).importFQNs(statement);
+                    if (!inSameClass) {
+                        statement = GeneratorUtilities.get(workingCopy).importFQNs(statement);
+                    }
                 }
                 newStatementList.add(statement);
             }
@@ -211,18 +222,53 @@ public class InlineMethodTransformer extends RefactoringVisitor {
                 }
             }
 
-            Tree lastStatement = body.getStatements().get(body.getStatements().size() - 1);
-            if (!inSameClass) {
+            Tree lastStatement;
+            if (body.getStatements().size() > 0) {
+                lastStatement = body.getStatements().get(body.getStatements().size() - 1);
+            } else {
+                lastStatement = null;
+            }
+            if (lastStatement != null && (!inSameClass || inStatic)) {
                 lastStatement = fixReferences(lastStatement, new TreePath(bodyPath, lastStatement), el, scope, methodSelect);
-                lastStatement = GeneratorUtilities.get(workingCopy).importFQNs(lastStatement);
+                if (!inSameClass) {
+                    lastStatement = GeneratorUtilities.get(workingCopy).importFQNs(lastStatement);
+                }
             }
             lastStatement = translateLastStatement(body, parent, grandparent, newStatementList, lastStatement);
-            StatementTree translate = (StatementTree) workingCopy.getTreeUtilities().translate(statementTree, Collections.singletonMap(methodInvocation, lastStatement));
-
-            newStatementList.add(translate);
-            original2TranslatedForBlock.put(statementTree, newStatementList);
+            if(lastStatement != null) {
+                StatementTree translate = (StatementTree) workingCopy.getTreeUtilities().translate(statementTree, Collections.singletonMap(methodInvocation, lastStatement));
+                newStatementList.add(translate);
+            }
+            
+            Element element = workingCopy.getTrees().getElement(statementPath);
+            if (element != null && element.getKind() == ElementKind.FIELD) {
+                if (newStatementList.size() != 1) {
+                    SourcePositions positions = workingCopy.getTrees().getSourcePositions();
+                    long startPosition = positions.getStartPosition(workingCopy.getCompilationUnit(), node);
+                    long lineNumber = workingCopy.getCompilationUnit().getLineMap().getLineNumber(startPosition);
+                    String source = FileUtil.getFileDisplayName(workingCopy.getFileObject()) + ':' + lineNumber;
+                    problem = JavaPluginUtils.chainProblems(problem,
+                            new Problem(false, NbBundle.getMessage(InlineMethodTransformer.class, "WRN_InlineMethodMultipleLines", source)));
+                } else {
+                    rewrite(statementTree, newStatementList.get(0));
+                }
+            } else {
+                Map<Tree, List<StatementTree>> original2TranslatedForBlock = queue.getLast();
+                original2TranslatedForBlock.put(statementTree, newStatementList);
+            }
         }
-        return super.visitMethodInvocation(node, p);
+        return super.visitMethodInvocation(node, methodElement);
+    }
+
+    private boolean isInStaticContext(TreePath methodInvocationPath) {
+        TreePath parent = methodInvocationPath.getParentPath();
+        while (parent != null) {
+            if (parent.getLeaf().getKind() == Tree.Kind.METHOD) {
+                break;
+            }
+            parent = parent.getParentPath();
+        }
+        return parent != null && ((MethodTree) parent.getLeaf()).getModifiers().getFlags().contains(Modifier.STATIC);
     }
 
     private Tree fixReferences(Tree tree, TreePath treePath, final ExecutableElement method, final Scope scope, final ExpressionTree methodSelect) {
@@ -247,7 +293,7 @@ public class InlineMethodTransformer extends RefactoringVisitor {
                         problem = JavaPluginUtils.chainProblems(problem, new Problem(false, NbBundle.getMessage(MoveMembersTransformer.class, "WRN_InlineNotAccessible", el, declaredType)));
                     }
                     TypeElement invocationEnclosingTypeElement = elementUtilities.enclosingTypeElement(el);
-                    if (bodyEnclosingTypeElement.equals(invocationEnclosingTypeElement)) {
+                    if (el.getKind() != ElementKind.LOCAL_VARIABLE && bodyEnclosingTypeElement.equals(invocationEnclosingTypeElement)) {
                         if (el.getModifiers().contains(Modifier.STATIC)) {
                             Tree newTree = make.QualIdent(el);
                             orig2trans.put(node, newTree);
@@ -259,14 +305,14 @@ public class InlineMethodTransformer extends RefactoringVisitor {
                 }
                 return super.visitIdentifier(node, p);
             }
-            
+
             @Override
             public Void visitMethodInvocation(MethodInvocationTree node, ExecutableElement p) {
                 TreePath currentPath = getCurrentPath();
                 if (currentPath.getParentPath().getLeaf().getKind() == Tree.Kind.MEMBER_SELECT) {
                     return super.visitMethodInvocation(node, p); // Already checked by visitMemberSelect
                 }
-                
+
                 Element el = trees.getElement(currentPath);
                 if (el != null) {
                     DeclaredType declaredType = workingCopy.getTypes().getDeclaredType(scope.getEnclosingClass());
@@ -282,8 +328,8 @@ public class InlineMethodTransformer extends RefactoringVisitor {
                             orig2trans.put(node.getMethodSelect(), newTree);
                         } else {
                             ExpressionTree methodInvocationSelect = node.getMethodSelect();
-                            if(methodInvocationSelect.getKind() == Tree.Kind.MEMBER_SELECT) {
-                                ExpressionTree expression = ((MemberSelectTree)methodInvocationSelect).getExpression();
+                            if (methodInvocationSelect.getKind() == Tree.Kind.MEMBER_SELECT) {
+                                ExpressionTree expression = ((MemberSelectTree) methodInvocationSelect).getExpression();
                                 String isThis = expression.toString();
                                 if (isThis.equals("this") || isThis.endsWith(".this")) { //NOI18N
                                     orig2trans.put(expression, methodSelect);
@@ -300,7 +346,6 @@ public class InlineMethodTransformer extends RefactoringVisitor {
                 }
                 return super.visitMethodInvocation(node, p);
             }
-
 
             @Override
             public Void visitMemberSelect(MemberSelectTree node, ExecutableElement p) {
@@ -322,14 +367,14 @@ public class InlineMethodTransformer extends RefactoringVisitor {
                             ExpressionTree expression = node.getExpression();
                             String isThis = expression.toString();
                             if (isThis.equals("this") || isThis.endsWith(".this")) { //NOI18N
-                                if(methodSelect == null) { // We must be in Inner class.
-                                    MemberSelectTree memberSelect = make.MemberSelect(workingCopy.getTreeUtilities().parseExpression(bodyEnclosingTypeElement.getSimpleName() + ".this",  new SourcePositions[1]), el);
+                                if (methodSelect == null) { // We must be in Inner class.
+                                    MemberSelectTree memberSelect = make.MemberSelect(workingCopy.getTreeUtilities().parseExpression(bodyEnclosingTypeElement.getSimpleName() + ".this", new SourcePositions[1]), el);
                                     orig2trans.put(node, memberSelect);
                                 } else {
                                     orig2trans.put(expression, methodSelect);
                                 }
                             } else {
-                                if(methodSelect != null) {
+                                if (methodSelect != null) {
                                     Tree newTree = make.MemberSelect(methodSelect, el);
                                     orig2trans.put(node, newTree);
                                 }
@@ -371,9 +416,13 @@ public class InlineMethodTransformer extends RefactoringVisitor {
 
     private TreePath findCorrespondingStatement(TreePath methodInvocationPath) {
         TreePath statementPath = methodInvocationPath;
-        while (statementPath != null) {
-            if (statementPath.getParentPath().getLeaf().getKind() == Tree.Kind.BLOCK) {
-                break;
+        WHILE: while (statementPath != null) {
+            if (statementPath.getParentPath() != null) {
+                switch (statementPath.getParentPath().getLeaf().getKind()) {
+                    case BLOCK:
+                    case CLASS:
+                        break WHILE;
+                }
             }
             statementPath = statementPath.getParentPath();
         }
@@ -381,10 +430,12 @@ public class InlineMethodTransformer extends RefactoringVisitor {
     }
 
     private void replaceParametersWithArguments(final HashMap<Tree, Tree> original2TranslatedBody, ExecutableElement el, MethodInvocationTree node, BlockTree body) {
+        Element resolved = tph.getElementHandle().resolve(workingCopy);
+        final CompilationUnitTree compilationUnitTree = workingCopy.getTrees().getPath(resolved).getCompilationUnit();
         TreeScanner<Void, Pair<Element, ExpressionTree>> idScan = new TreeScanner<Void, Pair<Element, ExpressionTree>>() {
             @Override
             public Void visitIdentifier(IdentifierTree node, Pair<Element, ExpressionTree> p) {
-                TreePath currentPath = trees.getPath(workingCopy.getCompilationUnit(), node);
+                TreePath currentPath = trees.getPath(compilationUnitTree, node);
                 Element el = trees.getElement(currentPath);
                 if (p.first.equals(el)) {
                     original2TranslatedBody.put(node, p.second);
@@ -403,27 +454,30 @@ public class InlineMethodTransformer extends RefactoringVisitor {
     private Tree translateLastStatement(BlockTree body, Tree parent, Tree grandparent, List<StatementTree> newStatementList, Tree lastStatement) {
         Tree result = lastStatement;
         if (parent.getKind() != Tree.Kind.EXPRESSION_STATEMENT) {
-            switch (result.getKind()) {
-                case EXPRESSION_STATEMENT:
-                    result = ((ExpressionStatementTree) result).getExpression();
-                    break;
-                case RETURN:
-                    result = ((ReturnTree) result).getExpression();
-                    break;
-                default:
+            if (result != null) {
+                switch (result.getKind()) {
+                    case EXPRESSION_STATEMENT:
+                        result = ((ExpressionStatementTree) result).getExpression();
+                        break;
+                    case RETURN:
+                        result = ((ReturnTree) result).getExpression();
+                        break;
+                    default:
                     // TODO: Problem, need an expression, but last statement is not an expression.
+                }
             }
         } else {
+            if (result != null) {
+                if (result.getKind() == Tree.Kind.RETURN) {
+                    result = make.ExpressionStatement(((ReturnTree) result).getExpression());
+                }
+            }
             switch (grandparent.getKind()) {
                 case FOR_LOOP: {
                     ForLoopTree forLoopTree = (ForLoopTree) grandparent;
                     StatementTree statement = forLoopTree.getStatement();
                     if (statement == parent) {
-                        if (result.getKind() == Tree.Kind.RETURN) {
-                            newStatementList.add(make.ExpressionStatement(((ReturnTree) result).getExpression()));
-                        } else {
-                            newStatementList.add((StatementTree) result);
-                        }
+                        addResultToStatementList(result, newStatementList);
                         statement = make.Block(newStatementList, false);
                         newStatementList.clear();
                     }
@@ -431,11 +485,7 @@ public class InlineMethodTransformer extends RefactoringVisitor {
                     List<ExpressionStatementTree> newUpdates = new LinkedList<ExpressionStatementTree>();
                     for (ExpressionStatementTree update : updates) {
                         if (update == parent) {
-                            if (result.getKind() == Tree.Kind.RETURN) {
-                                newStatementList.add(make.ExpressionStatement(((ReturnTree) result).getExpression()));
-                            } else {
-                                newStatementList.add((StatementTree) result);
-                            }
+                            addResultToStatementList(result, newStatementList);
                             for (StatementTree statementTree1 : newStatementList) {
                                 if (statementTree1.getKind() == Tree.Kind.EXPRESSION_STATEMENT) {
                                     newUpdates.add((ExpressionStatementTree) statementTree1);
@@ -453,11 +503,7 @@ public class InlineMethodTransformer extends RefactoringVisitor {
                     List<StatementTree> newInitializers = new LinkedList<StatementTree>();
                     for (StatementTree initiazer : initializers) {
                         if (initiazer == parent) {
-                            if (result.getKind() == Tree.Kind.RETURN) {
-                                newStatementList.add(make.ExpressionStatement(((ReturnTree) result).getExpression()));
-                            } else {
-                                newStatementList.add((StatementTree) result);
-                            }
+                            addResultToStatementList(result, newStatementList);
                             for (StatementTree statementTree1 : newStatementList) {
                                 if (statementTree1.getKind() == Tree.Kind.EXPRESSION_STATEMENT) {
                                     newInitializers.add((ExpressionStatementTree) statementTree1);
@@ -480,11 +526,7 @@ public class InlineMethodTransformer extends RefactoringVisitor {
                     EnhancedForLoopTree enhancedForLoopTree = (EnhancedForLoopTree) grandparent;
                     StatementTree statement = enhancedForLoopTree.getStatement();
                     if (statement == parent) {
-                        if (result.getKind() == Tree.Kind.RETURN) {
-                            newStatementList.add(make.ExpressionStatement(((ReturnTree) result).getExpression()));
-                        } else {
-                            newStatementList.add((StatementTree) result);
-                        }
+                        addResultToStatementList(result, newStatementList);
                         statement = make.Block(newStatementList, false);
                         newStatementList.clear();
                     }
@@ -495,11 +537,7 @@ public class InlineMethodTransformer extends RefactoringVisitor {
                     WhileLoopTree whileLoopTree = (WhileLoopTree) grandparent;
                     StatementTree statement = whileLoopTree.getStatement();
                     if (statement == parent) {
-                        if (result.getKind() == Tree.Kind.RETURN) {
-                            newStatementList.add(make.ExpressionStatement(((ReturnTree) result).getExpression()));
-                        } else {
-                            newStatementList.add((StatementTree) result);
-                        }
+                        addResultToStatementList(result, newStatementList);
                         statement = make.Block(newStatementList, false);
                         newStatementList.clear();
                     }
@@ -510,11 +548,7 @@ public class InlineMethodTransformer extends RefactoringVisitor {
                     DoWhileLoopTree doWhileLoopTree = (DoWhileLoopTree) grandparent;
                     StatementTree statement = doWhileLoopTree.getStatement();
                     if (statement == parent) {
-                        if (result.getKind() == Tree.Kind.RETURN) {
-                            newStatementList.add(make.ExpressionStatement(((ReturnTree) result).getExpression()));
-                        } else {
-                            newStatementList.add((StatementTree) result);
-                        }
+                        addResultToStatementList(result, newStatementList);
                         statement = make.Block(newStatementList, false);
                         newStatementList.clear();
                     }
@@ -525,21 +559,13 @@ public class InlineMethodTransformer extends RefactoringVisitor {
                     IfTree ifTree = (IfTree) grandparent;
                     StatementTree thenStatement = ifTree.getThenStatement();
                     if (thenStatement == parent) {
-                        if (result.getKind() == Tree.Kind.RETURN) {
-                            newStatementList.add(make.ExpressionStatement(((ReturnTree) result).getExpression()));
-                        } else {
-                            newStatementList.add((StatementTree) result);
-                        }
+                        addResultToStatementList(result, newStatementList);
                         thenStatement = make.Block(newStatementList, false);
                         newStatementList.clear();
                     }
                     StatementTree elseStatement = ifTree.getElseStatement();
                     if (elseStatement == parent) {
-                        if (result.getKind() == Tree.Kind.RETURN) {
-                            newStatementList.add(make.ExpressionStatement(((ReturnTree) result).getExpression()));
-                        } else {
-                            newStatementList.add((StatementTree) result);
-                        }
+                        addResultToStatementList(result, newStatementList);
                         elseStatement = make.Block(newStatementList, false);
                         newStatementList.clear();
                     }
@@ -549,5 +575,11 @@ public class InlineMethodTransformer extends RefactoringVisitor {
             }
         }
         return result;
+    }
+
+    private void addResultToStatementList(Tree result, List<StatementTree> newStatementList) {
+        if (result != null) {
+            newStatementList.add((StatementTree) result);
+        }
     }
 }

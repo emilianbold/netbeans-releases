@@ -52,7 +52,6 @@ import java.util.Map;
 import org.netbeans.modules.cnd.apt.impl.support.APTBaseMacroMap.StateImpl;
 import org.netbeans.modules.cnd.apt.impl.support.APTFileMacroMap.FileStateImpl;
 import org.netbeans.modules.cnd.apt.support.APTFileSearch;
-import org.netbeans.modules.cnd.apt.support.APTHandlersSupport.StateKey;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
@@ -60,6 +59,7 @@ import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler.State;
 import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
 import org.netbeans.modules.cnd.apt.support.StartEntry;
+import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 
 /**
@@ -149,10 +149,11 @@ public class APTHandlersSupportImpl {
         return (StateImpl) ((APTPreprocHandlerImpl.StateImpl)state).macroState;
     }
 
-    public static StateKey getMacroMapID(APTPreprocHandler.State state){
+    public static StateKeyImpl getStateKey(APTPreprocHandler.State state){
         assert state != null;
         APTFileMacroMap.FileStateImpl macro = (FileStateImpl) ((APTPreprocHandlerImpl.StateImpl)state).macroState;
-        return macro.getStateKey();
+        StartEntry extractStartEntry = extractStartEntry(((APTPreprocHandlerImpl.StateImpl)state).inclState);
+        return macro.getStateKey(extractStartEntry == null ? null : extractStartEntry.getStartFileProject());
     }
 
     public static boolean isEmptyActiveMacroMap(APTPreprocHandler.State state) {
@@ -209,5 +210,52 @@ public class APTHandlersSupportImpl {
             out = ((APTBaseMacroMap.StateImpl)macroState).copyCleaned();
         }
         return out;
-    }       
+    }
+
+    public static final class StateKeyImpl implements APTPreprocHandler.StateKey {
+
+        private final int crc1, crc2;
+        private final Key startProjectKey;
+        private final int hashCode;
+
+        public StateKeyImpl(int crc1, int crc2, Key startProjectKey) {
+            this.crc1 = crc1;
+            this.crc2 = crc2;
+            this.startProjectKey = startProjectKey;
+            int hash = startProjectKey == null ? -1 : startProjectKey.hashCode();
+            this.hashCode = crc1 ^ crc2 ^ hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof StateKeyImpl)) {
+                return false;
+            }
+            final StateKeyImpl other = (StateKeyImpl) obj;
+            if (this.hashCode != other.hashCode) {
+                return false;
+            }
+            if (this.crc1 != other.crc1) {
+                return false;
+            }
+            if (this.crc2 != other.crc2) {
+                return false;
+            }
+            if (this.startProjectKey != other.startProjectKey && (this.startProjectKey == null || !this.startProjectKey.equals(other.startProjectKey))) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            return hashCode;
+        }
+
+        @Override
+        public String toString() {
+            return "<" + crc1 + "," + crc2 + ">" + "from " + startProjectKey; // NOI18N
+        }
+    }
+
 }

@@ -67,6 +67,7 @@ import org.netbeans.modules.web.el.spi.ELPlugin;
 import org.netbeans.modules.web.el.spi.Function;
 import org.netbeans.modules.web.el.spi.ImplicitObject;
 import org.netbeans.modules.web.el.spi.ImplicitObjectType;
+import org.netbeans.modules.web.el.spi.ResolverContext;
 import org.netbeans.modules.web.el.spi.ResourceBundle;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -110,7 +111,7 @@ public class JSPELPlugin implements ELPlugin {
     }
 
     @Override
-    public List<ResourceBundle> getResourceBundles(FileObject file) {
+    public List<ResourceBundle> getResourceBundles(FileObject file, ResolverContext context) {
         return Collections.emptyList();
     }
 

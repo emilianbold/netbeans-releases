@@ -66,18 +66,18 @@ public class DependenciesNodeFactory implements NodeFactory {
         return new NList(prj);
     }
     
-    private static class NList extends AbstractMavenNodeList<DependenciesNode.DependenciesChildren> implements PropertyChangeListener {
+    private static class NList extends AbstractMavenNodeList<DependenciesNode.DependenciesSet> implements PropertyChangeListener {
         private NbMavenProjectImpl project;
-        private DependenciesNode.DependenciesChildren compile;
-        private DependenciesNode.DependenciesChildren runtime;
-        private DependenciesNode.DependenciesChildren test;
-        private DependenciesNode.DependenciesChildren noncp;
+        private DependenciesNode.DependenciesSet compile;
+        private DependenciesNode.DependenciesSet runtime;
+        private DependenciesNode.DependenciesSet test;
+        private DependenciesNode.DependenciesSet noncp;
         NList(NbMavenProjectImpl prj) {
             project = prj;
-            compile = new DependenciesNode.DependenciesChildren(project, DependenciesNode.Type.COMPILE);
-            runtime = new DependenciesNode.DependenciesChildren(project, DependenciesNode.Type.RUNTIME);
-            test = new DependenciesNode.DependenciesChildren(project, DependenciesNode.Type.TEST);
-            noncp = new DependenciesNode.DependenciesChildren(project, DependenciesNode.Type.NONCP);
+            compile = new DependenciesNode.DependenciesSet(project, DependenciesNode.Type.COMPILE);
+            runtime = new DependenciesNode.DependenciesSet(project, DependenciesNode.Type.RUNTIME);
+            test = new DependenciesNode.DependenciesSet(project, DependenciesNode.Type.TEST);
+            noncp = new DependenciesNode.DependenciesSet(project, DependenciesNode.Type.NONCP);
         }
         
         @Override public void propertyChange(PropertyChangeEvent evt) {
@@ -86,29 +86,25 @@ public class DependenciesNodeFactory implements NodeFactory {
             }
         }
         
-        @Override public List<DependenciesNode.DependenciesChildren> keys() {
-            List<DependenciesNode.DependenciesChildren> list = new ArrayList<DependenciesNode.DependenciesChildren>();
-            int compileCount = compile.regenerateKeys();
-            if (compileCount > 0 || !project.getProjectWatcher().getPackagingType().equals(NbMavenProject.TYPE_POM)) {
+        @Override public List<DependenciesNode.DependenciesSet> keys() {
+            List<DependenciesNode.DependenciesSet> list = new ArrayList<DependenciesNode.DependenciesSet>();
+            if (!compile.list().isEmpty() || !project.getProjectWatcher().getPackagingType().equals(NbMavenProject.TYPE_POM)) {
                 list.add(compile);
             }
-            if (runtime.regenerateKeys() > 0) {
+            if (!runtime.list().isEmpty()) {
                 list.add(runtime);
             }
-            if (test.regenerateKeys() > 0) {
+            if (!test.list().isEmpty()) {
                 list.add(test);
             }
-            if (noncp.regenerateKeys() > 0) {
+            if (!noncp.list().isEmpty()) {
                 list.add(noncp);
             }
             return list;
         }
         
-        @Override public Node node(DependenciesNode.DependenciesChildren key) {
-            if (key.getParentNode() != null) {
-                return key.getParentNode();
-            }
-            return new DependenciesNode(key, project, key.type);
+        @Override public Node node(DependenciesNode.DependenciesSet key) {
+            return new DependenciesNode(key);
         }
         
         @Override

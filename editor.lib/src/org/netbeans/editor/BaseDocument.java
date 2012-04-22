@@ -57,8 +57,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeSupport;
 import java.util.Collection;
 import java.util.EventListener;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
@@ -108,7 +106,10 @@ import org.netbeans.modules.editor.lib.impl.MarkVector;
 import org.netbeans.modules.editor.lib.impl.MultiMark;
 import org.netbeans.modules.editor.lib2.document.ContentEdit;
 import org.netbeans.modules.editor.lib2.document.EditorDocumentContent;
+import org.netbeans.modules.editor.lib2.document.EditorDocumentHandler;
+import org.netbeans.modules.editor.lib2.document.EditorDocumentServices;
 import org.netbeans.modules.editor.lib2.document.LineElementRoot;
+import org.netbeans.modules.editor.lib2.document.ListUndoableEdit;
 import org.netbeans.modules.editor.lib2.document.ReadWriteBuffer;
 import org.netbeans.modules.editor.lib2.document.ReadWriteUtils;
 import org.netbeans.modules.editor.lib2.document.StableCompoundEdit;
@@ -130,6 +131,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
 
     static {
         EditorPackageAccessor.register(new Accessor());
+        EditorDocumentHandler.setEditorDocumentServices(BaseDocument.class, BaseDocumentServices.INSTANCE);
     }
 
     // -J-Dorg.netbeans.editor.BaseDocument.level=FINE
@@ -344,10 +346,12 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     private CharSequence text;
     
     private UndoableEdit removeUpdateLineUndo;
-    
+
     private Collection<? extends UndoableEditWrapper> undoEditWrappers;
 
     private DocumentFilter.FilterBypass filterBypass;
+    
+    private int runExclusiveDepth;
 
     private Preferences prefs;
     private final PreferenceChangeListener prefsListener = new PreferenceChangeListener() {
@@ -565,8 +569,11 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         findSupportChange(null); // update doc by find settings
 
         TrailingWhitespaceRemove.install(this);
-        
+
         undoEditWrappers = MimeLookup.getLookup(mimeType).lookupAll(UndoableEditWrapper.class);
+        if (undoEditWrappers != null && undoEditWrappers.isEmpty()) {
+            undoEditWrappers = null;
+        }
 
         if (weakPrefsListener == null) {
             // the listening could have already been initialized from setMimeType(), which
@@ -1000,7 +1007,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     
     private void checkModifiable(int offset) throws BadLocationException {
         if (!modifiable) {
-            throw new GuardedException("Modification prohibited", offset);
+            throw new GuardedException("Modification prohibited", offset); // NOI18N
         }
     }
 
@@ -1576,13 +1583,21 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     protected @Override void fireUndoableEditUpdate(UndoableEditEvent e) {
         // Possibly wrap contained edit
         if (undoEditWrappers != null) {
-            UndoableEdit origEdit = e.getEdit();
-            UndoableEdit edit = origEdit;
+            UndoableEdit edit = e.getEdit();
+            ListUndoableEdit listEdit = null;
             for (UndoableEditWrapper wrapper : undoEditWrappers) {
-                edit = wrapper.wrap(edit, this);
+                UndoableEdit wrapEdit = wrapper.wrap(edit, this);
+                if (wrapEdit != edit) {
+                    if (listEdit == null) {
+                        listEdit = new ListUndoableEdit(edit, wrapEdit);
+                    } else {
+                        listEdit.setDelegate(wrapEdit);
+                    }
+                    edit = wrapEdit;
+                }
             }
-            if (edit != origEdit) {
-                e = new UndoableEditEvent(this, edit);
+            if (listEdit != null) {
+                e = new UndoableEditEvent(this, listEdit);
             }
         }
         
@@ -1633,6 +1648,10 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     final void atomicLockImpl () {
         boolean alreadyAtomicLocker;
         synchronized (this) {
+            if (runExclusiveDepth > 0) {
+                throw new IllegalStateException(
+                        "Document modifications or atomic locking not allowed in runExclusive()"); // NOI18N
+            }
             alreadyAtomicLocker = Thread.currentThread() == getCurrentWriter() && atomicDepth > 0;
             if (alreadyAtomicLocker) {
                 atomicDepth++;
@@ -1778,6 +1797,29 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
 
     protected final int getAtomicDepth() {
         return atomicDepth;
+    }
+
+    void runExclusive(Runnable r) {
+        boolean writeLockDone = false;
+        synchronized (this) {
+            Thread currentWriter = getCurrentWriter();
+            if (currentWriter != Thread.currentThread()) {
+                assert (runExclusiveDepth == 0) : "runExclusiveDepth=" + runExclusiveDepth + " != 0"; // NOI18N
+                writeLock();
+                writeLockDone = true;
+            }
+            runExclusiveDepth++;   
+        }
+        try {
+            r.run();
+        } finally {
+            runExclusiveDepth--;
+            if (writeLockDone) {
+                writeUnlock();
+                assert (runExclusiveDepth == 0) : "runExclusiveDepth=" + runExclusiveDepth + " != 0"; // NOI18N
+            }
+            
+        }
     }
 
     @Override
@@ -2028,7 +2070,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         if (atomicEdits == null)
             atomicEdits = new AtomicCompoundEdit();
     }
-
+    
     public @Override String toString() {
         return super.toString() +
             ", mimeType='" + mimeType + "'" + //NOI18N
@@ -2371,4 +2413,23 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
             handleInsertString(offset, text, attrs);
         }
     }
+
+    /**
+    * Implementation of EditorDocumentServices for BaseDocument.
+    *
+    * @author Miloslav Metelka
+    */
+    private static final class BaseDocumentServices implements EditorDocumentServices {
+        
+        static final EditorDocumentServices INSTANCE = new BaseDocumentServices();
+
+        @Override
+        public void runExclusive(Document doc, Runnable r) {
+            BaseDocument bDoc = (BaseDocument) doc;
+            bDoc.runExclusive(r);
+        }
+
+
+    }
+
 }

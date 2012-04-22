@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+Copyright 2010-2012 Oracle and/or its affiliates. All rights reserved.
 
 Oracle and Java are registered trademarks of Oracle and/or its affiliates.
 Other names may be trademarks of their respective owners.
@@ -44,12 +44,27 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 <project name="{0} (test)" default="test" basedir=".">
+    <target name="-init">
+        <condition property="testng.available" value="true" else="false">
+            <available classname="org.testng.annotations.Test" classpath="${classpath}"/>
+        </condition>
+        <condition property="testng.mode" value="-mixed" else="">
+            <and>
+                <istrue value="${testng.available}"/>
+                <available classname="org.junit.Test" classpath="${classpath}"/>
+            </and>
+        </condition>
+    </target>
     <target name="-check-run-test-single-method-supported" if="methodname">
-        <available property="run.test.single.method.supported"
-                   resource="org/apache/tools/ant/taskdefs/optional/junit/JUnit4TestMethodAdapter.class"/>
+        <condition property="run.test.single.method.supported">
+            <or>
+                <available resource="org/apache/tools/ant/taskdefs/optional/junit/JUnit4TestMethodAdapter.class"/>
+                <istrue value="${testng.available}"/>
+            </or>
+        </condition>
         <fail unless="run.test.single.method.supported">Execution of a single test method is not supported by this version of Ant.</fail>
     </target>
-    <target name="-prepare-execution">
+    <target name="-prepare-junit-execution" unless="${testng.available}">
         <property name="test.result.dir" location="${java.io.tmpdir}"/>
         <property name="test.result.file"
                   location="${test.result.dir}/TEST-${classname}.xml"/>
@@ -74,20 +89,60 @@ made subject to such option by the copyright holder.
                 </junit>
             </sequential>
         </macrodef>
+        <macrodef name="testng-template">
+            <attribute name="test"/>
+            <attribute name="method" default=""/>
+            <sequential/>
+        </macrodef>
         <translate-classpath classpath="${classpath}" targetProperty="classpath-translated"/>
     </target>
+    <target name="-prepare-testng-execution" if="${testng.available}">
+        <property name="test.result.dir" location="${java.io.tmpdir}/${classname}"/>
+        <property  name="tmp.dir" value="${basedir}"/>
+        <macrodef name="junit-template">
+            <element name="test-spec" implicit="yes"/>
+            <sequential/>
+        </macrodef>
+        <macrodef name="testng-template">
+            <attribute name="test"/>
+            <attribute name="method" default=""/>
+            <sequential>
+                <condition else="-testclass @{test}" property="testng.cmd.args" value="-methods @{test}.@{method}">
+                    <length string="@{method}" when="gt" length="0" trim="true"/>
+                </condition>
+                <property name="work.dir" value="${basedir}"/>
+                <java classname="org.testng.TestNG" dir="${work.dir}" jvm="${platform.java}" fork="true">
+                    <jvmarg line="${run.jvmargs}"/>
+                    <classpath path="${classpath-translated}" />
+                    <syspropertyset>
+                        <propertyref prefix="run-sys-prop."/>
+                        <mapper from="run-sys-prop.*" to="*" type="glob"/>
+                    </syspropertyset>
+                    <arg line="${testng.mode}"/>
+                    <arg line="-d ${test.result.dir}"/>
+                    <arg line="-listener org.testng.reporters.VerboseReporter"/>
+                    <arg line="${testng.cmd.args}"/>
+                </java>
+                <delete dir="${test.result.dir}" quiet="true"/>
+            </sequential>
+        </macrodef>
+        <translate-classpath classpath="${classpath}" targetProperty="classpath-translated"/>
+    </target>
+    <target name="-prepare-execution" depends="-prepare-junit-execution,-prepare-testng-execution"/>
     <target name="-test-class" depends="-prepare-execution" unless="methodname">
         <junit-template>
             <test name="${classname}" todir="${test.result.dir}"/>
         </junit-template>
+        <testng-template test="${classname}" />
     </target>
     <target name="-test-method" depends="-check-run-test-single-method-supported,-prepare-execution" if="methodname">
         <junit-template>
             <test name="${classname}" methods="${methodname}"
                   todir="${test.result.dir}"/>
         </junit-template>
+        <testng-template test="${classname}" method="${methodname}"/>
     </target>
-    <target name="test" depends="-test-class,-test-method" >
+    <target name="test" depends="-init,-test-class,-test-method" >
         <!-- This target is intended to be used in conjunction with the
         org.apache.tools.ant.module.spi.AntLogger. Note, the next task
         deletes just created test report. -->

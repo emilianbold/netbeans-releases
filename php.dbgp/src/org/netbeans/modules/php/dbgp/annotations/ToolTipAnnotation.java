@@ -47,13 +47,11 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
-
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.php.api.util.StringUtils;
@@ -83,6 +81,8 @@ import org.openide.util.RequestProcessor;
 public class ToolTipAnnotation extends Annotation
     implements PropertyChangeListener
 {
+
+    private static final RequestProcessor RP = new RequestProcessor("Tool Tip Annotation"); //NOI18N
 
     /* (non-Javadoc)
      * @see org.openide.text.Annotation#getAnnotationType()
@@ -157,8 +157,7 @@ public class ToolTipAnnotation extends Annotation
         if ( !isPhpDataObject( dataObject) ){
             return;
         }
-        EditorCookie editorCookie = (EditorCookie)dataObject.
-            getCookie(EditorCookie.class);
+        EditorCookie editorCookie = (EditorCookie) dataObject.getLookup().lookup(EditorCookie.class);
         StyledDocument document = editorCookie.getDocument();
         if (document == null) {return;}
         final int offset = NbDocument.findLineOffset(document,
@@ -180,7 +179,7 @@ public class ToolTipAnnotation extends Annotation
                         sendPropertyGetCommand(identifier);
                     }
                 };
-                RequestProcessor.getDefault().post(runnable);
+                RP.post(runnable);
             }
         }
         //TODO: review, replace the code depending on lexer.model - part I
@@ -212,7 +211,8 @@ public class ToolTipAnnotation extends Annotation
 
     static String getExpressionToEvaluate(String text, int col) {
         int identStart = col;
-        while (identStart > 0 && (isPHPIdentifier(text.charAt(identStart - 1)) || (text.charAt(identStart - 1) == '.') || (text.charAt(identStart - 1) == '>'))) {
+        boolean isInFieldDeclaration = false;
+        while (identStart > 0 && ((text.charAt(identStart - 1) == ' ') || isPHPIdentifier(text.charAt(identStart - 1)) || (text.charAt(identStart - 1) == '.') || (text.charAt(identStart - 1) == '>'))) {
             identStart--;
             if (text.charAt(identStart) == '>') { // NOI18N
                 if (text.charAt(identStart - 1) == '-') { // NOI18N
@@ -222,6 +222,13 @@ public class ToolTipAnnotation extends Annotation
                     break;
                 }
             }
+            if (text.charAt(identStart) == ' ') {
+                String possibleAccessModifier = text.substring(0, identStart).trim();
+                if (endsWithAccessModifier(possibleAccessModifier)) {
+                    isInFieldDeclaration = true;
+                }
+                break;
+            }
         }
         int identEnd = col;
         while (identEnd < text.length() && Character.isJavaIdentifierPart(text.charAt(identEnd))) {
@@ -230,7 +237,13 @@ public class ToolTipAnnotation extends Annotation
         if (identStart == identEnd) {
             return null;
         }
-        return text.substring(identStart, identEnd);
+        String simpleExpression = text.substring(identStart, identEnd).trim();
+        return isInFieldDeclaration ? "$this->" + simpleExpression.substring(1) : simpleExpression; //NOI18N
+    }
+
+    private static boolean endsWithAccessModifier(final String possibleAccessModifier) {
+        String lowerCased = possibleAccessModifier.toLowerCase();
+        return lowerCased.endsWith("private") || lowerCased.endsWith("protected") || lowerCased.endsWith("public") || lowerCased.endsWith("var"); //NOI18N
     }
 
     static boolean isPHPIdentifier(char ch) {

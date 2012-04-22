@@ -76,7 +76,7 @@ public abstract class RepositoryProvider<R, Q, I> {
      * @param id
      * @return
      */
-    public abstract I getIssue(R r, String id);
+    public abstract I[] getIssues(R r, String... ids);
 
     /**
      * Removes this repository from its connector

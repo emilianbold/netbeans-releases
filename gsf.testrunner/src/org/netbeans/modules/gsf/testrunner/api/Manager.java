@@ -44,22 +44,30 @@
 
 package org.netbeans.modules.gsf.testrunner.api;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
-import org.openide.util.Exceptions;
-import org.openide.util.Mutex;
-import org.openide.util.NbBundle;
-import org.openide.util.WeakSet;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.gsf.testrunner.api.TestSession.SessionResult;
+import org.openide.awt.Notification;
+import org.openide.awt.NotificationDisplayer;
+import org.openide.util.*;
+import org.openide.windows.Mode;
+import org.openide.windows.WindowManager;
 
 /**
  * This class gets informed about started and finished JUnit test sessions
@@ -94,6 +102,9 @@ public final class Manager {
     public static final String JUNIT_TF = "junit"; // NOI18N
     public static final String TESTNG_TF = "testng"; // NOI18N
     private String testingFramework = ""; // NOI18N
+    private Notification bubbleNotification = null;
+    private final RequestProcessor.Task bubbleTask;
+    private final RequestProcessor RP = new RequestProcessor(Manager.class.getName(), 1, true);
     
     public void setTestingFramework(String testingFramework) {
         this.testingFramework = testingFramework;
@@ -151,6 +162,13 @@ public final class Manager {
 
     private Manager() {
         lateWindowPromotion = true;
+        bubbleTask = RP.create(new Runnable() {
+
+            @Override
+            public void run() {
+                bubbleNotification.clear();
+            }
+        });
     }
 
     public synchronized void emptyTestRun(TestSession session) {
@@ -342,6 +360,8 @@ public final class Manager {
 
     /**
      */
+    @NbBundle.Messages({"# {0} - project", "LBL_NotificationDisplayer_title=Tests finished successfully for project: {0}",
+        "LBL_NotificationDisplayer_detailsText=Open Test Results Window"})
     private void displayInWindow(final TestSession session,
                                  final ResultDisplayHandler displayHandler,
                                  final boolean sessionEnd) {
@@ -351,12 +371,47 @@ public final class Manager {
                 ? firstDisplay || sessionEnd
                 : sessionEnd;
 
-        int displayIndex = getDisplayIndex(session);
-        if (displayIndex == -1) {
-            addDisplay(session);
-            Mutex.EVENT.writeAccess(new Displayer(displayHandler, promote));
-        } else if (promote) {
-            Mutex.EVENT.writeAccess(new Displayer(null, promote));
+        SessionResult sessionResult = session.getSessionResult();
+        if (sessionResult.getErrors() + sessionResult.getFailed() > 0) {
+            int displayIndex = getDisplayIndex(session);
+            if (displayIndex == -1) {
+                addDisplay(session);
+                Mutex.EVENT.writeAccess(new Displayer(displayHandler, promote));
+            } else if (promote) {
+                Mutex.EVENT.writeAccess(new Displayer(null, promote));
+            }
+        } else {
+            if (sessionEnd) {
+                Mutex.EVENT.writeAccess(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        final ResultWindow window = ResultWindow.getInstance();
+                        Mode mode = WindowManager.getDefault().findMode(window);
+                        boolean isInSlidingMode = mode != null && mode.getName().contains("SlidingSide");   //NOI18N
+                        if (window.isOpened() && !isInSlidingMode) {
+                            window.promote();
+                        } else if (!window.isOpened() || (window.isOpened() && !window.isShowing() && isInSlidingMode)) {
+                            Icon icon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/testResults.png"));   //NOI18N
+                            String projectname = ProjectUtils.getInformation(session.getProject()).getDisplayName();
+                            
+                            if(bubbleTask.cancel()) {
+                                bubbleTask.schedule(0);
+                            }
+                            bubbleNotification = NotificationDisplayer.getDefault().notify(Bundle.LBL_NotificationDisplayer_title(projectname), icon,
+                                    Bundle.LBL_NotificationDisplayer_detailsText(), new ActionListener() {
+
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    window.promote();
+                                    bubbleTask.cancel();
+                                }
+                            });
+                            bubbleTask.schedule(15000);
+                        }
+                    }
+                });
+            }
         }
     }
 
@@ -374,14 +429,14 @@ public final class Manager {
         public void run() {
             final ResultWindow window = ResultWindow.getInstance();
             if (promote) {
-               window.promote();
+                window.promote();
             }
         }
     }
 
     /** singleton of the <code>ResultDisplayHandler</code> */
     private Map<TestSession,ResultDisplayHandler> displayHandlers;
-
+    private Semaphore lock;
     /**
      */
     private synchronized ResultDisplayHandler getDisplayHandler(final TestSession session) {
@@ -395,6 +450,27 @@ public final class Manager {
             displayHandler = new ResultDisplayHandler(session);
             createIO(displayHandler);
             displayHandlers.put(session, displayHandler);
+            final ResultDisplayHandler dispHandler = displayHandler;
+            lock = new Semaphore(1);
+            try {
+                lock.acquire(1);
+            } catch (InterruptedException e) {
+                LOGGER.log(Level.FINE, "Current thread was interrupted while acquiring a permit: {0}", e);
+            }
+            Mutex.EVENT.writeAccess(new Runnable() {
+
+                @Override
+                public void run() {
+                    StatisticsPanel comp = (StatisticsPanel) dispHandler.getDisplayComponent().getLeftComponent();
+                    dispHandler.setTreePanel(comp.getTreePanel());
+                    lock.release();
+                }
+            });
+            try {
+                lock.acquire(1);
+            } catch (InterruptedException e) {
+                LOGGER.log(Level.FINE, "Current thread was interrupted while acquiring a permit: {0}", e);
+            }
         }
         return displayHandler;
     }

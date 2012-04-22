@@ -53,6 +53,7 @@ import com.sun.jna.TypeConverter;
 import java.io.File;
 import java.util.Collections;
 import java.util.Map;
+import org.netbeans.api.annotations.common.SuppressWarnings;
 
 /**
  * JNA wrapper for certain functions from GNOME Keyring API.
@@ -61,15 +62,20 @@ import java.util.Map;
  */
 public interface GnomeKeyringLibrary extends Library {
 
-    class LibFinder { // #203735
+    class LibFinder {
         private static final String GENERIC = "gnome-keyring";
-        private static final String EXPLICIT = "/usr/lib/libgnome-keyring.so.0";
+        // http://packages.ubuntu.com/search?suite=precise&arch=any&mode=exactfilename&searchon=contents&keywords=libgnome-keyring.so.0
+        private static final String EXPLICIT_ONEIRIC = "/usr/lib/libgnome-keyring.so.0";
+        @SuppressWarnings("DMI_HARDCODED_ABSOLUTE_FILENAME")
         private static Object load(Map<?,?> options) {
             try {
                 return Native.loadLibrary(GENERIC, GnomeKeyringLibrary.class, options);
             } catch (UnsatisfiedLinkError x) {
-                if (new File(EXPLICIT).isFile()) {
-                    return Native.loadLibrary(EXPLICIT, GnomeKeyringLibrary.class, options);
+                // #203735: on Oneiric, may have trouble finding right lib.
+                // Precise is using multiarch (#211401) which should work automatically using JNA 3.4+ (#211403).
+                // Unclear if this workaround is still needed for Oneiric with 3.4, but seems harmless to leave it in for now.
+                if (new File(EXPLICIT_ONEIRIC).isFile()) {
+                    return Native.loadLibrary(EXPLICIT_ONEIRIC, GnomeKeyringLibrary.class, options);
                 } else {
                     throw x;
                 }

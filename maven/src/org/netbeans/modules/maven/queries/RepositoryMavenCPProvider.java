@@ -50,10 +50,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.model.building.ModelBuildingRequest;
 import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
+import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.project.ProjectBuildingResult;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -90,35 +92,38 @@ public class RepositoryMavenCPProvider implements ClassPathProvider {
                         // each repository artifact should have this structure
                         String artifact = parentParent.getName();
                         String version = parent.getName();
-                        //TODO is there a need for generified extension lookup or is just .jar files ok?
-                          //TODO can the .jar extension be hardwired? on CP..
-                        File bin = new File(parent, artifact + "-" + version + ".jar"); //NOI18N
-                        File pom = new File(parent, artifact + "-" + version + ".pom"); //NOI18N
-                        URI localRepo = new File(EmbedderFactory.getProjectEmbedder().getLocalRepository().getBasedir()).toURI();
-                        URI rel = localRepo.relativize(parentParent.getParentFile().toURI());
-                        if (!rel.isAbsolute()) {
-                            String groupId = rel.getPath();
-                            if (groupId != null && !groupId.equals("")) {
-                                groupId = groupId.replace("/", ".");
-                                if (groupId.endsWith(".")) {
-                                    groupId = groupId.substring(0, groupId.length() - 1);
+                        if (archive.getNameExt().startsWith(artifact + "-" + version)) { //#211158 another heuristic check to avoid calling EmbedderFactory for non- local maven repository artifacts
+                            
+                            //TODO is there a need for generified extension lookup or is just .jar files ok?
+                              //TODO can the .jar extension be hardwired? on CP..
+                            File bin = new File(parent, artifact + "-" + version + ".jar"); //NOI18N
+                            File pom = new File(parent, artifact + "-" + version + ".pom"); //NOI18N
+                            URI localRepo = new File(EmbedderFactory.getProjectEmbedder().getLocalRepository().getBasedir()).toURI();
+                            URI rel = localRepo.relativize(parentParent.getParentFile().toURI());
+                            if (!rel.isAbsolute()) {
+                                String groupId = rel.getPath();
+                                if (groupId != null && !groupId.equals("")) {
+                                    groupId = groupId.replace("/", ".");
+                                    if (groupId.endsWith(".")) {
+                                        groupId = groupId.substring(0, groupId.length() - 1);
+                                    }
+                                    if (ClassPath.SOURCE.equals(type)) {
+                                        return ClassPathFactory.createClassPath(createSourceCPI(sourceFile));
+                                    }
+                                    if (ClassPath.BOOT.equals(type)) {
+                                        return JavaPlatform.getDefault().getBootstrapLibraries();
+                                    }
+                                    if (ClassPath.COMPILE.equals(type)) {
+                                        MavenProject mp = loadMavenProject(pom, groupId, artifact, version);
+                                        return ClassPathFactory.createClassPath(createCompileCPI(mp, bin));
+                                    }
+                                    if (ClassPath.EXECUTE.equals(type)) {
+                                        MavenProject mp = loadMavenProject(pom, groupId, artifact, version);
+                                        return ClassPathFactory.createClassPath(createExecuteCPI(mp, bin));
+                                    }
+                                } else {
+                                    //some sort of weird groupId?
                                 }
-                                if (ClassPath.SOURCE.equals(type)) {
-                                    return ClassPathFactory.createClassPath(createSourceCPI(sourceFile));
-                                }
-                                if (ClassPath.BOOT.equals(type)) {
-                                    return JavaPlatform.getDefault().getBootstrapLibraries();
-                                }
-                                if (ClassPath.COMPILE.equals(type)) {
-                                    MavenProject mp = loadMavenProject(pom, groupId, artifact, version);
-                                    return ClassPathFactory.createClassPath(createCompileCPI(mp, bin));
-                                }
-                                if (ClassPath.EXECUTE.equals(type)) {
-                                    MavenProject mp = loadMavenProject(pom, groupId, artifact, version);
-                                    return ClassPathFactory.createClassPath(createExecuteCPI(mp, bin));
-                                }
-                            } else {
-                                //some sort of weird groupId?
                             }
                         }
                             
@@ -135,20 +140,14 @@ public class RepositoryMavenCPProvider implements ClassPathProvider {
         MavenEmbedder embedder = EmbedderFactory.getProjectEmbedder();
         Artifact projectArtifact = embedder.createArtifact(groupId, artifactId, version,  "jar");
         try {
-            DefaultProjectBuildingRequest dpbr = new DefaultProjectBuildingRequest();
-            dpbr.setLocalRepository(embedder.getLocalRepository());
+            ProjectBuildingRequest dpbr = embedder.createMavenExecutionRequest().getProjectBuildingRequest();
             dpbr.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
-            dpbr.setSystemProperties(embedder.getSystemProperties());
             
             dpbr.setProcessPlugins(false);
             dpbr.setResolveDependencies(true);
             ArrayList<ArtifactRepository> remoteRepos = new ArrayList<ArtifactRepository>();
 //for project embedder doens't matter            
-//            for (RepositoryInfo info : RepositoryPreferences.getInstance().getRepositoryInfos()) {
-//                if (!info.isLocal()) {
-//                    remoteRepos.add(new MavenArtifactRepository(info.getId(), info.getRepositoryUrl(), new DefaultRepositoryLayout(), new ArtifactRepositoryPolicy(), new ArtifactRepositoryPolicy()));
-//                }
-//            }
+//            remoteRepos = RepositoryPreferences.getInstance().remoteRepositories();
             dpbr.setRemoteRepositories(remoteRepos);
             
             ProjectBuildingResult res = embedder.buildProject(projectArtifact, dpbr);

@@ -47,23 +47,20 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
-import java.io.ObjectStreamException;
 import java.io.OutputStream;
-import java.io.Serializable;
 import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.List;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
-import org.netbeans.modules.dlight.libs.common.InvalidFileObjectSupport;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo.FileType;
@@ -74,13 +71,12 @@ import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptor
 import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptorProvider.FilesystemInterceptor;
 import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptorProvider.IOHandler;
 import org.openide.filesystems.*;
-import org.openide.util.Exceptions;
 
 /**
  *
  * @author Vladimir Kvashin
  */
-public abstract class RemoteFileObjectBase implements Serializable {
+public abstract class RemoteFileObjectBase {
 
     private final RemoteFileSystem fileSystem;
     private final RemoteFileObjectBase parent;
@@ -89,7 +85,6 @@ public abstract class RemoteFileObjectBase implements Serializable {
     private CopyOnWriteArrayList<FileChangeListener> listeners = new CopyOnWriteArrayList<FileChangeListener>();
     private FileLock lock;
     private final Object instanceLock = new Object();
-    static final long serialVersionUID = 1931650016889811086L;
     public static final boolean USE_VCS;
     public static final boolean DEFER_WRITES = Boolean.getBoolean("cnd.remote.defer.writes"); //NOI18Ns
     static {
@@ -381,7 +376,7 @@ public abstract class RemoteFileObjectBase implements Serializable {
                 return canonicalParent.getSize(this);
             }
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            reportIOException(ex);
         }
         return 0;
     }
@@ -410,7 +405,7 @@ public abstract class RemoteFileObjectBase implements Serializable {
                 return canonicalParent.canRead(getNameExt());
             }
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            reportIOException(ex);
             return true;
         }
     }
@@ -425,7 +420,7 @@ public abstract class RemoteFileObjectBase implements Serializable {
                 return canonicalParent.canExecute(getNameExt());
             }
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            reportIOException(ex);
             return true;
         }
     }
@@ -433,13 +428,20 @@ public abstract class RemoteFileObjectBase implements Serializable {
     void connectionChanged() {
         if (getFlag(CHECK_CAN_WRITE)) {
             setFlag(CHECK_CAN_WRITE, false);
-            // react the same way org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObj does
-            RemoteFileObject fo = getOwnerFileObject();
-            fo.fireFileAttributeChangedEvent(getListeners(), 
-                    new FileAttributeEvent(fo, fo, "DataEditorSupport.read-only.refresh", null, null)); //NOI18N
+            fireFileAttributeChangedEvent("DataEditorSupport.read-only.refresh", null, null);  //NOI18N
         }
     }
-    
+
+    final void fireFileAttributeChangedEvent(final String attrName, final Object oldValue, final Object newValue) {
+        Enumeration<FileChangeListener> pListeners = (parent != null) ? parent.getListeners() : null;
+
+        fireFileAttributeChangedEvent(getListeners(), new FileAttributeEvent(getOwnerFileObject(), getOwnerFileObject(), attrName, oldValue, newValue));
+
+        if (parent != null && pListeners != null) {
+            parent.fireFileAttributeChangedEvent(pListeners, new FileAttributeEvent(parent.getOwnerFileObject(), getOwnerFileObject(), attrName, oldValue, newValue));
+        }
+    }
+
     public final boolean canWrite() {
         return canWriteImpl(this);
     }
@@ -470,7 +472,7 @@ public abstract class RemoteFileObjectBase implements Serializable {
         } catch (ConnectException ex) {
             return false;
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            reportIOException(ex);
             return false;
         }
     }
@@ -497,7 +499,7 @@ public abstract class RemoteFileObjectBase implements Serializable {
         }
     }
 
-    public void refresh(boolean expected) {
+    public final void refresh(boolean expected) {
         try {
             refreshImpl(true, null, expected);
         } catch (ConnectException ex) {
@@ -513,7 +515,7 @@ public abstract class RemoteFileObjectBase implements Serializable {
         }
     }
 
-    public void refresh() {
+    public final void refresh() {
         refresh(false);
     }
     
@@ -547,9 +549,13 @@ public abstract class RemoteFileObjectBase implements Serializable {
                 return canonicalParent.lastModified(this);
             }
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            reportIOException(ex);
         }
         return new Date(0); // consistent with File.lastModified(), which returns 0 for inexistent file
+    }
+
+    private void reportIOException(IOException ex) {
+        System.err.printf("Error in %s: %s\n", remotePath, ex.getMessage());
     }
 
     public final FileLock lock() throws IOException {
@@ -848,28 +854,4 @@ public abstract class RemoteFileObjectBase implements Serializable {
     protected static String composeName(String name, String ext) {
         return (ext != null && ext.length() > 0) ? (name + "." + ext) : name;//NOI18N
     }
-    
-   /* Java serialization*/ Object writeReplace() throws ObjectStreamException {
-        return new SerializedForm(getExecutionEnvironment(), getPath());
-    }
-    
-    private static class SerializedForm implements Serializable {
-        
-        private final ExecutionEnvironment env;
-        private final String remotePath;
-
-        public SerializedForm(ExecutionEnvironment env, String remotePath) {
-            this.env = env;
-            this.remotePath = remotePath;
-        }
-                
-        /* Java serialization*/ Object readResolve() throws ObjectStreamException {
-            RemoteFileSystem fs = RemoteFileSystemManager.getInstance().getFileSystem(env);
-            FileObject fo = fs.findResource(remotePath);
-            if (fo == null) {
-                fo = InvalidFileObjectSupport.getInvalidFileObject(fs, remotePath);
-            }
-            return fo;
-        }
-    }    
 }

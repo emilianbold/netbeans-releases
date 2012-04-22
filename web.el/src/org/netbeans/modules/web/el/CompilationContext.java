@@ -41,7 +41,10 @@
  */
 package org.netbeans.modules.web.el;
 
+import java.util.HashMap;
+import java.util.Map;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.modules.web.el.spi.ResolverContext;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -52,6 +55,7 @@ public class CompilationContext {
     
     private final FileObject file;
     private final CompilationInfo info;
+    private final ResolverContext context = new ResolverContext();
     private CompilationCache cache;
 
     private CompilationContext(FileObject file, CompilationInfo info) {
@@ -69,6 +73,10 @@ public class CompilationContext {
 
     public CompilationInfo info() {
         return info;
+    }
+
+    public ResolverContext context() {
+        return context;
     }
     
     public synchronized CompilationCache cache() {

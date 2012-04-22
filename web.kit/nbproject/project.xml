@@ -109,12 +109,6 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.web.client.javascript.debugger.ant</code-name-base>
-                    <run-dependency>
-                        <specification-version>0.6</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.web.core</code-name-base>
                     <run-dependency>
                         <release-version>2</release-version>
@@ -183,6 +177,13 @@
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.cloud.amazon</code-name-base>
+                    <run-dependency>
+                        <release-version>0</release-version>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.cloud.oracle</code-name-base>
                     <run-dependency>
                         <release-version>0</release-version>
                         <specification-version>1.0</specification-version>

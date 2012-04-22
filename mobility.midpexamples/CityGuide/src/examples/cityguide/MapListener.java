@@ -1,8 +1,9 @@
 /*
  *
- * Copyright (c) 2010, Oracle.
+ * Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
+
  *
- * All rights reserved.
+ * This file is available and licensed under the following license:
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -13,7 +14,7 @@
  *  * Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- *  * Neither the name of Oracle nor the names of its contributors
+ *  * Neither the name of Oracle Corporation nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,24 +32,29 @@
  */
 package examples.cityguide;
 
-import javax.microedition.location.Landmark;
-
-
 /**
  * An interface which allows receiving notifications from a CityMap instance.
  *
  * @version 1.3
  */
 public interface MapListener {
-    /** Called when the position of the map visitor changes. */
-    void visitorPositionChanged(CityMap sender);
+    /**
+     * Called when the position of the map visitor changes.
+     */
+    void visitorPositionChanged (CityMap sender);
 
-    /** Called when the state of the map visitor changes. */
-    void visitorStateChanged(CityMap sender);
+    /**
+     * Called when the state of the map visitor changes.
+     */
+    void visitorStateChanged (CityMap sender);
 
-    /** Called when the state of a landmark changes. */
-    void landmarkStateChanged(CityMap sender, MapLandmark mapLandmark);
+    /**
+     * Called when the state of a landmark changes.
+     */
+    void landmarkStateChanged (CityMap sender, MapLandmark mapLandmark);
 
-    /** Called when the whole set of map landmarks changes. */
-    void landmarksChanged(CityMap sender);
+    /**
+     * Called when the whole set of map landmarks changes.
+     */
+    void landmarksChanged (CityMap sender);
 }

@@ -48,6 +48,8 @@ import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.Deque;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -202,6 +204,43 @@ public class SourcePrefetcherTest extends NbTestCase {
                 assertNull(getCache(ct.jfo));
             }
             assertCollectionsEqual(files,got);
+        } finally {
+            log.removeHandler(handler);
+        }
+    }
+    
+    public void testDeletedFile() throws Exception {
+        CompileTuple ct = files.iterator().next();
+        final FileObject fo = URLMapper.findFileObject(ct.indexable.getURL());        
+        fo.delete();
+        
+        SourcePrefetcher.TEST_DO_PREFETCH = true;
+        final LogHandler handler = new LogHandler();
+        handler.expect("Using concurrent iterator, {0} workers");    //NOI18N
+        final Logger log = Logger.getLogger(SourcePrefetcher.class.getName());
+        log.setLevel(Level.FINE);
+        log.addHandler(handler);
+        try {
+            SourcePrefetcher pf = SourcePrefetcher.create(files, SuspendSupport.NOP);
+            assertTrue(handler.isFound());
+            final Deque<CompileTuple> got = new ArrayDeque<CompileTuple>(FILE_COUNT);
+            while (pf.hasNext()) {
+                ct = pf.next();
+                try {
+                    if (ct != null) {
+                        assertNotNull(getCache(ct.jfo));
+                        got.offer(ct);
+                    }
+                } finally {
+                    pf.remove();
+                }
+                if (ct != null) {
+                    assertNull(getCache(ct.jfo));
+                }
+            }
+            final List<CompileTuple> allButFirst = new LinkedList<CompileTuple>(files);
+            allButFirst.remove(0);
+            assertCollectionsEqual(allButFirst,got);
         } finally {
             log.removeHandler(handler);
         }

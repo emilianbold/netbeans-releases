@@ -63,6 +63,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.el.spi.ELPlugin;
+import org.netbeans.modules.web.el.spi.ResolverContext;
 import org.netbeans.modules.web.el.spi.ResourceBundle;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.filesystems.FileChangeAdapter;
@@ -138,8 +139,8 @@ public final class ResourceBundles {
      * @param identifier
      * @return
      */
-    public boolean isResourceBundleIdentifier(String identifier) {
-        for (ResourceBundle bundle : getBundles()) {
+    public boolean isResourceBundleIdentifier(String identifier, ResolverContext context) {
+        for (ResourceBundle bundle : getBundles(context)) {
             if (bundle.getVar().equals(identifier)) {
                 return true;
             }
@@ -163,16 +164,20 @@ public final class ResourceBundles {
         return rbInfo.getResourceBundle().containsKey(key);
     }
 
+    public List<Pair<AstIdentifier, AstString>> collectKeys(final Node root) {
+        return collectKeys(root, new ResolverContext());
+    }
+
     /**
      * Collects references to resource bundle keys in the given {@code root}.
      * @return List of identifier/string pairs. Identifier = resource bundle base name - string = res bundle key.
      */
-    public List<Pair<AstIdentifier, AstString>> collectKeys(final Node root) {
+    public List<Pair<AstIdentifier, AstString>> collectKeys(final Node root, ResolverContext context) {
         final List<Pair<AstIdentifier, AstString>> result = new ArrayList<Pair<AstIdentifier, AstString>>();
         List<Node> path = new AstPath(root).rootToLeaf();
         for (int i = 0; i < path.size(); i++) {
             Node node = path.get(i);
-            if (node instanceof AstIdentifier && isResourceBundleIdentifier(node.getImage())) {
+            if (node instanceof AstIdentifier && isResourceBundleIdentifier(node.getImage(), context)) {
                 // check for i18n["my.key"] => AST for that is: identifier, brackets and string
                 if (i + 2 < path.size()) {
                     Node brackets = path.get(i + 1);
@@ -200,7 +205,7 @@ public final class ResourceBundles {
                     Node identifier = path.get(i + 2);
                     if (brackets instanceof AstBracketSuffix
                             && identifier instanceof AstIdentifier
-                            && isResourceBundleIdentifier(identifier.getImage())) {
+                            && isResourceBundleIdentifier(identifier.getImage(), new ResolverContext())) {
                         return identifier.getImage();
                     }
                 }
@@ -248,7 +253,10 @@ public final class ResourceBundles {
     
     
     private ResourceBundle findResourceBundleForVar(String variableName) {
-        List<ResourceBundle> foundBundles = webModule != null ? ELPlugin.Query.getResourceBundles(webModule.getDocumentBase()) : Collections.<ResourceBundle>emptyList();
+        List<ResourceBundle> foundBundles = webModule != null ? 
+                ELPlugin.Query.getResourceBundles(webModule.getDocumentBase(), new ResolverContext())
+                :
+                Collections.<ResourceBundle>emptyList();
         //make the bundle var to bundle 
         for(ResourceBundle b : foundBundles) {
             if(variableName.equals(b.getVar())) {
@@ -261,8 +269,8 @@ public final class ResourceBundles {
      * Finds list of all ResourceBundles, which are registered in all
      * JSF configuration files in a web module.
      */
-     public synchronized List<ResourceBundle> getBundles() {
-        List<ResourceBundle> bundles =  webModule != null ? ELPlugin.Query.getResourceBundles(webModule.getDocumentBase()) : Collections.<ResourceBundle>emptyList();
+     public synchronized List<ResourceBundle> getBundles(ResolverContext context) {
+        List<ResourceBundle> bundles =  webModule != null ? ELPlugin.Query.getResourceBundles(webModule.getDocumentBase(), context) : Collections.<ResourceBundle>emptyList();
         return bundles;
     }
 
@@ -307,7 +315,7 @@ public final class ResourceBundles {
         //compute hashcode so we can compare if there are changes since the last time and possibly
         //reset the bundle map cache
         long hash = 3;
-        for(ResourceBundle rb : getBundles()) {
+        for(ResourceBundle rb : getBundles(new ResolverContext())) {
             hash = 11 * hash + rb.getBaseName().hashCode();
             hash = 11 * hash + (rb.getVar() != null ? rb.getVar().hashCode() : 0);
         }
@@ -327,7 +335,7 @@ public final class ResourceBundles {
         }
 
         SourceGroup[] sourceGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        for (ResourceBundle bundle : getBundles()) {
+        for (ResourceBundle bundle : getBundles(new ResolverContext())) {
             String bundleFile = bundle.getBaseName();
             for (SourceGroup sourceGroup : sourceGroups) {
                 FileObject rootFolder = sourceGroup.getRootFolder();

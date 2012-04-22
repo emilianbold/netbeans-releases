@@ -67,8 +67,6 @@ public class OSGiInstalledFileLocatorTest extends NbTestCase {
                 "OpenIDE-Module: custom",
                 "OpenIDE-Module-Install: " + LocateInstall.class.getName(),
                 "OpenIDE-Module-Module-Dependencies: org.openide.modules").done().
-                module("org.netbeans.modules.masterfs").
-                backwards(). // XXX will not pass otherwise
                 run();
         assertEquals("2", System.getProperty("my.file.count"));
         assertEquals("6", System.getProperty("my.file.length"));

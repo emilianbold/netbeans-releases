@@ -55,7 +55,7 @@ import org.openide.util.Lookup;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.actions.ProjectSupport;
 import org.netbeans.modules.cnd.debugger.common2.debugger.debugtarget.DebugTarget;
-import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineTypeManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.CndRemote;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
@@ -102,7 +102,7 @@ public final class ExternalStartManager {
     }
 
     public static ExternalStart getXstart(Host host) {
-	if (DebuggerManager.isStandalone()) {
+	if (NativeDebuggerManager.isStandalone()) {
 	    return hostXstartMap.get(host.getHostName());
 	} else {
 	    if (host.getHostName().equals(Host.localhost)) {
@@ -124,7 +124,7 @@ public final class ExternalStartManager {
     }
 
     /* package */ static void addXstart(Host host, ExternalStart x) {
-	if (DebuggerManager.isStandalone()) {
+	if (NativeDebuggerManager.isStandalone()) {
 	    hostXstartMap.put(host.getHostName(), x);
 	} else {
 	    if (host.getHostName().equals(Host.localhost)) {
@@ -267,7 +267,7 @@ public final class ExternalStartManager {
             dt.setHostName(seed.getHostName());
             dt.setPid(seed.pid());
             dt.setCaptureInfo(pendingJob.captureInfo());
-            DebuggerManager.get().attach(dt);
+            NativeDebuggerManager.get().attach(dt);
         } catch (Exception e) {
             ErrorManager.getDefault().notify(e);
             fail("LBL_IDEError");       // NOI18N

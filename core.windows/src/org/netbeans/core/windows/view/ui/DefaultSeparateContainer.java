@@ -67,6 +67,7 @@ import java.awt.event.*;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.core.windows.Switches;
 import org.netbeans.core.windows.options.WinSysPrefs;
 import org.netbeans.core.windows.view.dnd.TopComponentDraggable;
 import org.netbeans.swing.tabcontrol.customtabs.TabbedComponentFactory;
@@ -449,7 +450,14 @@ public final class DefaultSeparateContainer extends AbstractModeContainer {
             w.addWindowListener(new WindowAdapter() {
                 @Override
                 public void windowClosing(WindowEvent evt) {
+                    WindowManagerImpl wm = WindowManagerImpl.getInstance();
                     for( TopComponent tc : modeView.getTopComponents() ) {
+                        if( !Switches.isEditorTopComponentClosingEnabled() && wm.isEditorTopComponent( tc ) )
+                            return;
+                        if( !Switches.isViewTopComponentClosingEnabled() && !wm.isEditorTopComponent( tc ) )
+                            return;
+                        if( !Switches.isClosingEnabled( tc ) )
+                            return;
                         if( !tc.close() )
                             return;
                     }

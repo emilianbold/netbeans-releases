@@ -42,8 +42,12 @@ package org.netbeans.modules.java.hints.declarative;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.java.hints.declarative.Condition.Instanceof;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -79,6 +83,21 @@ public class Utilities {
                 }
             }
         }
+    }
+    
+    public static Map<String, String> conditions2Constraints(List<Condition> conditions) {
+        Map<String, String> constraints = new HashMap<String, String>();
+
+        for (Condition c : conditions) {
+            if (!(c instanceof Instanceof) || c.not)
+                continue;
+
+            Instanceof i = (Instanceof) c;
+
+            constraints.put(i.variable, i.constraint.trim()); //TODO: may i.constraint contain comments? if so, they need to be removed
+        }
+        
+        return constraints;
     }
 
 }

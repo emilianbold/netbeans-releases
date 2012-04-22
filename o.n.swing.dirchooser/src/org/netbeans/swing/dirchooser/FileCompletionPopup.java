@@ -243,7 +243,7 @@ public class FileCompletionPopup extends JPopupMenu implements KeyListener {
             break;
         }
         
-        if (isCompletionKey(code, textField)) {
+        if (isCompletionKey(code, textField) && !e.isConsumed()) {
             File file = (File)list.getSelectedValue();
             if(file != null) { 
                 if(file.equals(chooser.getCurrentDirectory())) {

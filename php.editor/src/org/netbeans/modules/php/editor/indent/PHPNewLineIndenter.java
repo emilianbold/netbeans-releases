@@ -222,8 +222,9 @@ public class PHPNewLineIndenter {
                                 newIndent = Utilities.getRowIndent(doc, startExpression) + indentSize;
                                 break;
                             }
-
-                            newIndent = Utilities.getRowIndent(doc, anchor) + delimiter.indentDelta + shiftAtAncor;
+                            if (anchor >= 0) {
+                                newIndent = Utilities.getRowIndent(doc, anchor) + delimiter.indentDelta + shiftAtAncor;
+                            }
                             break;
                         } else {
                             if (ts.token().id() == PHPTokenId.PHP_TOKEN){

@@ -79,8 +79,9 @@ public class ListenersNode extends AbstractWebContainerNode {
         if (root != null) {
             for(Listener li : root.getListener()) {
                 SourceClassInfo sType = ProfilerTypeUtils.resolveClass(li.getListenerClass(), prj);
-
-                fNodes.add(new ListenerNode(sType, this));
+                if (sType != null) {
+                    fNodes.add(new ListenerNode(sType, this));
+                }
             }
         }
         return fNodes;

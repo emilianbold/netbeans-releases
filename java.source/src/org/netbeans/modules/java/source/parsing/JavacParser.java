@@ -58,8 +58,8 @@ import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.util.Abort;
-import org.netbeans.modules.java.source.javac.CancelAbort;
-import org.netbeans.modules.java.source.javac.CancelService;
+import org.netbeans.lib.nbjavac.services.CancelAbort;
+import org.netbeans.lib.nbjavac.services.CancelService;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.CouplingAbort;
 import com.sun.tools.javac.util.Log;
@@ -127,12 +127,14 @@ import org.netbeans.modules.java.source.PostFlowAnalysis;
 import org.netbeans.modules.java.source.TreeLoader;
 import org.netbeans.modules.java.source.indexing.APTUtils;
 import org.netbeans.modules.java.source.indexing.FQN2Files;
-import org.netbeans.modules.java.source.javac.NBAttr;
-import org.netbeans.modules.java.source.javac.NBEnter;
-import org.netbeans.modules.java.source.javac.NBJavadocEnter;
-import org.netbeans.modules.java.source.javac.NBJavadocMemberEnter;
-import org.netbeans.modules.java.source.javac.NBMemberEnter;
-import org.netbeans.modules.java.source.javac.NBParserFactory;
+import org.netbeans.lib.nbjavac.services.NBAttr;
+import org.netbeans.lib.nbjavac.services.NBClassReader;
+import org.netbeans.lib.nbjavac.services.NBEnter;
+import org.netbeans.lib.nbjavac.services.NBJavadocEnter;
+import org.netbeans.lib.nbjavac.services.NBJavadocMemberEnter;
+import org.netbeans.lib.nbjavac.services.NBMemberEnter;
+import org.netbeans.lib.nbjavac.services.NBParserFactory;
+import org.netbeans.lib.nbjavac.services.NBClassWriter;
 import org.netbeans.modules.java.source.tasklist.CompilerSettings;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
@@ -230,6 +232,8 @@ public class JavacParser extends Parser {
     private long parseId;
     //Weak Change listener on ClasspathInfo, created by init
     private ChangeListener weakCpListener;
+    //Current source for parse optmalization of task with no Source (identity)
+    private Reference<JavaSource> currentSource;
 
     JavacParser (final Collection<Snapshot> snapshots, boolean privateParser) {
         this.privateParser = privateParser;
@@ -326,15 +330,46 @@ public class JavacParser extends Parser {
     @Override
     public void parse(final Snapshot snapshot, final Task task, SourceModificationEvent event) throws ParseException {
         try {
-            parseImpl(snapshot, task, event);
+            if (shouldParse(task)) {
+                parseImpl(snapshot, task, event);
+            }
         } catch (FileObjects.InvalidFileException ife) {
             invalidate();
         } catch (IOException ioe) {
             throw new ParseException ("JavacParser failure", ioe); //NOI18N
         }
     }
-
-    private void parseImpl(final Snapshot snapshot, final Task task, SourceModificationEvent event) throws IOException {
+    
+    
+    private boolean shouldParse(@NonNull Task task) {
+        if (sourceCount > 0) {
+            return true;
+        }
+        if (invalid) {
+            currentSource = null;
+            return true;
+        }
+        if (!(task instanceof MimeTask)) {
+            currentSource = null;
+            return true;
+        }
+        final JavaSource newSource = ((MimeTask)task).getJavaSource();
+        final JavaSource oldSource = currentSource == null ?
+                null :
+                currentSource.get();
+        if (oldSource == null) {
+            currentSource = new WeakReference<JavaSource>(newSource);
+            return true;
+        }
+        if (newSource.equals(oldSource)) {
+            return false;
+        } else {
+            currentSource = new WeakReference<JavaSource>(newSource);
+            return true;
+        }
+    }
+    
+    private void parseImpl(final Snapshot snapshot, final Task task, SourceModificationEvent event) throws IOException {        
         assert task != null;
         assert privateParser || Utilities.holdsParserLock();
         parseId++;
@@ -418,7 +453,7 @@ public class JavacParser extends Parser {
                 reparse = true;                 //Force reparse
             }
             if (reparse) {
-                assert cachedSnapShot != null;
+                assert cachedSnapShot != null || sourceCount == 0;
                 try {
                     parseImpl(cachedSnapShot, task, null);
                 } catch (FileObjects.InvalidFileException ife) {
@@ -732,7 +767,7 @@ public class JavacParser extends Parser {
             task.setProcessors(processors);
         }
         Context context = task.getContext();
-        JavadocClassReader.preRegister(context, !backgroundCompilation);
+        NBClassReader.preRegister(context, !backgroundCompilation);
         if (cnih != null) {
             context.put(ClassNamesForFileOraculum.class, cnih);
         }
@@ -744,6 +779,7 @@ public class JavacParser extends Parser {
         }
         Messager.preRegister(context, null, DEV_NULL, DEV_NULL, DEV_NULL);
         NBAttr.preRegister(context);
+        NBClassWriter.preRegister(context);
         NBParserFactory.preRegister(context);
         if (!backgroundCompilation) {
             JavacFlowListener.preRegister(context);

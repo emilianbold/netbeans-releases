@@ -51,12 +51,18 @@ import org.netbeans.api.visual.widget.Widget;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
 /**
  * Test for #98641 - Missing vertical labels
  * @author David Kaspar
  */
 public class LabelOrientationTest extends VisualTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(LabelOrientationTest.class);
+    }
 
     public LabelOrientationTest (String testName) {
         super (testName);

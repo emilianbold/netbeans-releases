@@ -60,11 +60,13 @@ import org.codehaus.plexus.PlexusContainerException;
 import org.codehaus.plexus.classworlds.ClassWorld;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.codehaus.plexus.logging.BaseLoggerManager;
+import org.codehaus.plexus.util.cli.CommandLineUtils;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.maven.embedder.impl.ExtensionModule;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbPreferences;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 /**
@@ -73,6 +75,9 @@ import org.openide.util.Utilities;
 public final class EmbedderFactory {
 
     private static final String PROP_COMMANDLINE_PATH = "commandLineMavenPath";
+    
+    //same prop constant in MavenSettings.java
+    static final String PROP_DEFAULT_OPTIONS = "defaultOptions"; 
 
     private static final Logger LOG = Logger.getLogger(EmbedderFactory.class.getName());
 
@@ -80,6 +85,17 @@ public final class EmbedderFactory {
     private static final Object PROJECT_LOCK = new Object();
     private static MavenEmbedder online;
     private static final Object ONLINE_LOCK = new Object();
+    
+    private static final RequestProcessor RP = new RequestProcessor("Maven Embedder warmup");
+    
+    private static final RequestProcessor.Task warmupTask = RP.create(new Runnable() {
+            @Override
+            public void run() {
+                //#211158 after being reset, recreate the instance for followup usage. 
+                //makes the performance stats of the project embedder after resetting more predictable
+                getProjectEmbedder();
+            }
+        });
 
     private EmbedderFactory() {
     }
@@ -94,6 +110,8 @@ public final class EmbedderFactory {
         synchronized (ONLINE_LOCK) {
             online = null;
         }
+        //just delay a bit in case both MavenSettings.setDefaultOptions and Embedderfactory.setMavenHome are called..
+        RP.post(warmupTask, 100);
     }
 
     public static File getDefaultMavenHome() {
@@ -104,7 +122,7 @@ public final class EmbedderFactory {
         return NbPreferences.root().node("org/netbeans/modules/maven");
     }
 
-    public static File getMavenHome() {
+    public static @NonNull File getMavenHome() {
         String str =  getPreferences().get(PROP_COMMANDLINE_PATH, null);
         if (str != null) {
             return FileUtil.normalizeFile(new File(str));
@@ -114,12 +132,45 @@ public final class EmbedderFactory {
     }
 
     public static void setMavenHome(File path) {
-        if (path == null || path.equals(getDefaultMavenHome())) {
+        File oldValue = getMavenHome();
+        File defValue = getDefaultMavenHome();
+        if (oldValue.equals(path) || path == null && oldValue.equals(defValue)) {
+            //no change happened, prevent resetting the embedders
+            return;
+        }
+        if (path == null || path.equals(defValue)) {
             getPreferences().remove(PROP_COMMANDLINE_PATH);
         } else {
             getPreferences().put(PROP_COMMANDLINE_PATH, FileUtil.normalizeFile(path).getAbsolutePath());
         }
         resetCachedEmbedders();
+    }
+    
+    
+    static Map<String, String> getCustomSystemProperties() {
+        Map<String, String> toRet = new HashMap<String, String>();
+        String options = getPreferences().get(PROP_DEFAULT_OPTIONS, "");
+        try {
+            
+            String[] cmdlines = CommandLineUtils.translateCommandline(options);
+            if (cmdlines != null) {
+                for (String cmd : cmdlines) {
+                    if (cmd != null && cmd.startsWith("-D")) {
+                        cmd = cmd.substring("-D".length());
+                        int ind = cmd.indexOf('=');
+                        if (ind > -1) {
+                            String key = cmd.substring(0, ind);
+                            String val = cmd.substring(ind + 1);
+                            toRet.put(key, val);
+                        }
+                    }
+                }
+            }
+            return toRet;
+        } catch (Exception ex) {
+            LOG.log(Level.FINE, "cannot parse " + options, ex);
+            return Collections.emptyMap();
+        }
     }
 
     private static File getSettingsXml() {
@@ -191,6 +242,7 @@ public final class EmbedderFactory {
 
         Properties props = new Properties();
         props.putAll(System.getProperties());
+        props.putAll(getCustomSystemProperties());
         EmbedderConfiguration configuration = new EmbedderConfiguration(pc, fillEnvVars(props), true, getSettingsXml());
         
         try {
@@ -252,6 +304,7 @@ public final class EmbedderFactory {
 
         Properties props = new Properties();
         props.putAll(System.getProperties());
+        props.putAll(getCustomSystemProperties());        
         EmbedderConfiguration req = new EmbedderConfiguration(pc, fillEnvVars(props), false, getSettingsXml());
 
 //        //TODO remove explicit activation
@@ -289,13 +342,16 @@ public final class EmbedderFactory {
 //            }
     }
 
+    /**
+     * using this method one creates an ArtifactRepository instance with injected mirrors and proxies
+     * @param embedder
+     * @param url
+     * @param id
+     * @return 
+     * @deprecated use MavenEmbedder.createRemoteRepository
+     */
     public static ArtifactRepository createRemoteRepository(MavenEmbedder embedder, String url, String id) {
-        embedder.setUpLegacySupport();
-        ArtifactRepositoryFactory fact = embedder.lookupComponent(ArtifactRepositoryFactory.class);
-        assert fact!=null : "ArtifactRepositoryFactory component not found in maven";
-        ArtifactRepositoryPolicy snapshotsPolicy = new ArtifactRepositoryPolicy(true, ArtifactRepositoryPolicy.UPDATE_POLICY_ALWAYS, ArtifactRepositoryPolicy.CHECKSUM_POLICY_WARN);
-        ArtifactRepositoryPolicy releasesPolicy = new ArtifactRepositoryPolicy(true, ArtifactRepositoryPolicy.UPDATE_POLICY_ALWAYS, ArtifactRepositoryPolicy.CHECKSUM_POLICY_WARN);
-        return fact.createArtifactRepository(id, url, new DefaultRepositoryLayout(), snapshotsPolicy, releasesPolicy);
+        return embedder.createRemoteRepository(url, id);
     }
 
     /**
@@ -306,31 +362,10 @@ public final class EmbedderFactory {
      * @param embedder an embedder to use
      * @return a list of models, starting with the specified POM, going through any parents, finishing with the Maven superpom (with a null artifactId)
      * @throws ModelBuildingException if the POM or parents could not even be parsed; warnings are not reported
+     * @deprecated use MavenEmbedder.createModelLineage
      */
     public static List<Model> createModelLineage(File pom, MavenEmbedder embedder) throws ModelBuildingException {
-        ModelBuilder mb = embedder.lookupComponent(ModelBuilder.class);
-        assert mb!=null : "ModelBuilder component not found in maven";
-        ModelBuildingRequest req = new DefaultModelBuildingRequest();
-        req.setPomFile(pom);
-        req.setProcessPlugins(false);
-        req.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
-        req.setModelResolver(new NBRepositoryModelResolver(embedder));
-        req.setSystemProperties(embedder.getSystemProperties());
-        
-        ModelBuildingResult res = mb.build(req);
-        List<Model> toRet = new ArrayList<Model>();
-
-        for (String id : res.getModelIds()) {
-            Model m = res.getRawModel(id);
-            toRet.add(m);
-        }
-//        for (ModelProblem p : res.getProblems()) {
-//            System.out.println("problem=" + p);
-//            if (p.getException() != null) {
-//                p.getException().printStackTrace();
-//            }
-//        }
-        return toRet;
+        return embedder.createModelLineage(pom);
     }
 
 

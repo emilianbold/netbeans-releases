@@ -751,10 +751,18 @@ public class CPUSettingsBasicPanel extends DefaultSettingsPanel implements Actio
                         @Override
                         protected void done() {
                             pd.close();
-                            ClientUtils.SourceCodeSelection[] roots = ProfilingRoots.selectRoots(rms, project);
-                            if (roots != null) {
-                                rootMethods = roots;
-                                updateControls();
+                            if (!cancelled.get()) {
+                                ClientUtils.SourceCodeSelection[] roots = ProfilingRoots.selectRoots(rms, project);
+                                if (roots != null) {
+                                    rootMethods = roots;
+                                    SwingUtilities.invokeLater(new Runnable() {
+
+                                        @Override
+                                        public void run() {
+                                            updateControls();
+                                        }
+                                    });
+                                }
                             }
                             rootMethodsActionExecuting.set(false);
                         }

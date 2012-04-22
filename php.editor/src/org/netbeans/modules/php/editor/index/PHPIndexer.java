@@ -347,10 +347,25 @@ public final class PHPIndexer extends EmbeddingIndexer {
             Program program = r.getProgram();
             Visitor identifierVisitor = new DefaultVisitor() {
                 @Override
+                public void visit(Program node) {
+                    scan(node.getStatements());
+                    scan(node.getComments());
+                }
+
+                @Override
                 public void visit(Identifier identifier) {
-                    IdentifierSignature idSign = IdentifierSignature.createIdentifier(identifier);
-                    identifierDocument.addPair(FIELD_IDENTIFIER, idSign.getSignature(), true, true);
+                    addSignature(IdentifierSignature.createIdentifier(identifier));
                     super.visit(identifier);
+                }
+
+                @Override
+                public void visit(PHPDocTypeNode node) {
+                    addSignature(IdentifierSignature.create(node));
+                    super.visit(node);
+                }
+
+                private void addSignature(final IdentifierSignature signature) {
+                    identifierDocument.addPair(FIELD_IDENTIFIER, signature.getSignature(), true, true);
                 }
             };
             program.accept(identifierVisitor);

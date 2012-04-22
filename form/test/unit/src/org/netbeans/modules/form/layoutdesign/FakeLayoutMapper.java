@@ -45,8 +45,8 @@
 package org.netbeans.modules.form.layoutdesign;
 
 import java.awt.Dimension;
-import java.awt.Graphics;
 import java.awt.Rectangle;
+import java.awt.Shape;
 import java.util.HashMap;
 import org.netbeans.modules.form.FormModel;
 
@@ -172,10 +172,11 @@ public class FakeLayoutMapper implements VisualMapper {
     }
 
     @Override
-    public void repaintComponent(String componentId, Graphics g) {
+    public void repaintDesigner(String forComponentId) {
     }
 
     @Override
-    public void repaintDesigner(String forComponentId) {
+    public Shape getComponentVisibilityClip(String componentId) {
+        return null;
     }
 }

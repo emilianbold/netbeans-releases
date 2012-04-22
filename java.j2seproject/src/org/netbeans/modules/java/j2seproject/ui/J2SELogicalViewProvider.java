@@ -121,6 +121,7 @@ public class J2SELogicalViewProvider implements LogicalViewProvider2 {
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private final PropertyChangeListener pcl;
     private Map<URL,Object[]> activeLibManLocs;
+    private boolean listenersInited;
     
     public J2SELogicalViewProvider(J2SEProject project, UpdateHelper helper, PropertyEvaluator evaluator, ReferenceHelper resolver) {
         this.project = project;
@@ -139,11 +140,17 @@ public class J2SELogicalViewProvider implements LogicalViewProvider2 {
                 testBroken();
             }
         };
+    }
 
+    private synchronized void initListeners() {
+        if (listenersInited) {
+            return;
+        }
         evaluator.addPropertyChangeListener(pcl);
         JavaPlatformManager.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(pcl, JavaPlatformManager.getDefault()));
         LibraryManager.addOpenManagersPropertyChangeListener(new OpenManagersWeakListener(pcl));
         addLibraryManagerListener();
+        listenersInited = true;
     }
 
     private void addLibraryManagerListener() {
@@ -187,7 +194,8 @@ public class J2SELogicalViewProvider implements LogicalViewProvider2 {
         }
     }
     
-    public Node createLogicalView() {
+    @Override public Node createLogicalView() {
+        initListeners();
         return new J2SELogicalViewRootNode();
     }
     

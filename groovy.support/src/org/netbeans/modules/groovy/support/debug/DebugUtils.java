@@ -74,6 +74,10 @@ public class DebugUtils {
 
     public static String getClassFilter(String url) {
         String relativePath = getRelativePath(url);
+        if (relativePath == null) {
+            return "";
+        }
+
         if (relativePath.endsWith(".groovy")) { // NOI18N
             relativePath = relativePath.substring(0, relativePath.length() - 7);
         }

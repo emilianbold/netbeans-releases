@@ -485,10 +485,12 @@ final class XmlOutputParser extends DefaultHandler {
 
         Matcher matcher = regexp.getComparisonPattern().matcher(line.replaceAll("\n", "")); // NOI18N
         if (matcher.matches()){
+            String startExpected = "expected:<"; // NOI18N
+            String startActual = "> but was:<"; // NOI18N
             tr.setComparisonFailure(
                     new Trouble.ComparisonFailure(
-                        matcher.group(1)+matcher.group(2)+matcher.group(3),
-                        matcher.group(4)+matcher.group(5)+matcher.group(6))
+                        line.substring(line.indexOf(startExpected) + startExpected.length(), line.indexOf(startActual)),
+                        line.substring(line.indexOf(startActual) + startActual.length(), line.length() - 1))
             );
             return;
         }

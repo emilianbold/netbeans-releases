@@ -47,8 +47,11 @@ package org.openide.text;
 
 
 
+import java.awt.GraphicsEnvironment;
 import java.io.IOException;
 import javax.swing.text.StyledDocument;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 
@@ -64,6 +67,11 @@ import org.openide.util.RequestProcessor;
  * @author  Jarda Tulach
  */
 public class InitializeBug132662Test extends NbTestCase implements CloneableEditorSupport.Env {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(InitializeBug132662Test.class);
+    }
+
     static {
         System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
     }

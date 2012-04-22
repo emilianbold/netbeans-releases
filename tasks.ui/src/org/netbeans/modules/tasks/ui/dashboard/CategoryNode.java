@@ -47,11 +47,16 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.*;
+import org.netbeans.modules.bugtracking.api.Issue;
+import org.netbeans.modules.tasks.ui.actions.Actions;
 import org.netbeans.modules.tasks.ui.model.Category;
 import org.netbeans.modules.tasks.ui.actions.CloseCategoryNodeAction;
 import org.netbeans.modules.tasks.ui.actions.DummyAction;
+import org.netbeans.modules.tasks.ui.actions.OpenCategoryNodeAction;
+import org.netbeans.modules.tasks.ui.filter.AppliedFilters;
 import org.netbeans.modules.tasks.ui.treelist.TreeLabel;
 import org.netbeans.modules.tasks.ui.treelist.TreeListNode;
+import org.netbeans.modules.tasks.ui.utils.Utils;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -59,24 +64,29 @@ import org.openide.util.NbBundle;
  *
  * @author jpeska
  */
-public class CategoryNode extends AbstractCategoryNode {
+public class CategoryNode extends TreeListNode implements Comparable<CategoryNode> {
 
-    private static ImageIcon iconClose = null;
-    private static ImageIcon iconCloseOver = null;
+    private final Category category;
+    private List<TaskNode> taskNodes;
+    private List<TaskNode> filteredTaskNodes;
     private JPanel panel;
     private TreeLabel lblName;
-    private LinkButton btnClose;
     private final Object LOCK = new Object();
     private LinkButton btnRefresh;
     private TreeLabel counts;
-    private CloseCategoryNodeAction categoryAction;
+    private CloseCategoryNodeAction closeCategoryAction;
+    private OpenCategoryNodeAction openCategoryAction;
+    private boolean opened;
 
     public CategoryNode(Category category) {
-        super(true, category);
-        if (iconClose == null) {
-            iconClose = ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/close.png", true); //NOI18N
-            iconCloseOver = ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/close_over.png", true); //NOI18N
-        }
+        this(category, true);
+    }
+
+    public CategoryNode(Category category, boolean opened) {
+        super(true, null);
+        this.category = category;
+        this.opened = opened;
+        updateNodes();
     }
 
     @Override
@@ -86,7 +96,6 @@ public class CategoryNode extends AbstractCategoryNode {
         return new ArrayList<TreeListNode>(children);
     }
 
-    @Override
     void updateContent() {
         updateNodes();
         refreshChildren();
@@ -109,36 +118,148 @@ public class CategoryNode extends AbstractCategoryNode {
 
                 panel.add(new JLabel(), new GridBagConstraints(3, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 
-                btnClose = new LinkButton(iconClose, new CloseCategoryNodeAction(this));
-                btnClose.setToolTipText(NbBundle.getMessage(CategoryNode.class, "LBL_Close")); //NOI18N
-                btnClose.setRolloverEnabled(true);
-                btnClose.setRolloverIcon(iconCloseOver); // NOI18N
-                panel.add(btnClose, new GridBagConstraints(5, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 3, 0, 0), 0, 0));
-
                 btnRefresh = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/refresh.png", true), new DummyAction()); //NOI18N
                 btnRefresh.setToolTipText(NbBundle.getMessage(CategoryNode.class, "LBL_Refresh")); //NOI18N
                 panel.add(btnRefresh, new GridBagConstraints(4, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 3, 0, 0), 0, 0));
             }
-            lblName.setText(getCategory().getName());
+            lblName.setText(Utils.getCategoryDisplayText(this));
             lblName.setForeground(foreground);
-            if (DashboardViewer.getInstance().containsActiveTask(this)) {
-                lblName.setFont(lblName.getFont().deriveFont(Font.BOLD));
-            } else {
-                lblName.setFont(lblName.getFont().deriveFont(Font.PLAIN));
-            }
             counts.setText(getCountText());
             counts.setForeground(foreground);
-            btnClose.setForeground(foreground, isSelected);
             return panel;
         }
     }
 
-    @Override
-    protected Action getCategoryAction() {
-        if (categoryAction == null) {
-            categoryAction = new CloseCategoryNodeAction(this);
+    private Action getCategoryAction() {
+        if (opened) {
+            if (closeCategoryAction == null) {
+                closeCategoryAction = new CloseCategoryNodeAction(this);
+            }
+            return closeCategoryAction;
+        } else {
+            if (openCategoryAction == null) {
+                openCategoryAction = new OpenCategoryNodeAction(this);
+            }
+            return openCategoryAction;
         }
-        return categoryAction;
+    }
+
+    final void updateNodes() {
+        AppliedFilters appliedTaskFilters = DashboardViewer.getInstance().getAppliedTaskFilters();
+        List<Issue> tasks = category.getTasks();
+        taskNodes = new ArrayList<TaskNode>(tasks.size());
+        filteredTaskNodes = new ArrayList<TaskNode>(tasks.size());
+        for (Issue issue : tasks) {
+            TaskNode taskNode = new TaskNode(issue, this);
+            taskNode.setCategory(category);
+            taskNodes.add(taskNode);
+            if (appliedTaskFilters.isInFilter(issue)) {
+                filteredTaskNodes.add(taskNode);
+            }
+        }
+    }
+
+    public final Category getCategory() {
+        return category;
+    }
+
+    public boolean isOpened() {
+        return opened;
+    }
+
+    public void setOpened(boolean opened) {
+        this.opened = opened;
+    }
+
+    @Override
+    public final Action[] getPopupActions() {
+        List<Action> actions = new ArrayList<Action>();
+        actions.add(getCategoryAction());
+        actions.addAll(Actions.getCategoryPopupActions(category));
+        return actions.toArray(new Action[actions.size()]);
+    }
+
+    public List<TaskNode> getTaskNodes() {
+        return new ArrayList<TaskNode>(taskNodes);
+    }
+
+    public int getTotalCount() {
+        return filteredTaskNodes.size();
+    }
+
+    public int getModifiedCount() {
+        int modifiedCount = 0;
+        for (TaskNode taskNode : getFilteredTaskNodes()) {
+            if (taskNode.getTask().getStatus() != Issue.Status.UPTODATE) {
+                modifiedCount++;
+            }
+        }
+        return modifiedCount;
+    }
+
+    public List<TaskNode> getFilteredTaskNodes() {
+        return filteredTaskNodes;
+    }
+
+    public void setFilteredTaskNodes(List<TaskNode> filteredTaskNodes) {
+        this.filteredTaskNodes = filteredTaskNodes;
+    }
+
+    public boolean addTaskNode(TaskNode taskNode, boolean isInFilter) {
+        if (taskNodes.contains(taskNode)) {
+            return false;
+        }
+        taskNodes.add(taskNode);
+        category.addTask(taskNode.getTask());
+        if (isInFilter) {
+            filteredTaskNodes.add(taskNode);
+        }
+        return true;
+    }
+
+    public void removeTaskNode(TaskNode taskNode) {
+        taskNodes.remove(taskNode);
+        category.removeTask(taskNode.getTask());
+        filteredTaskNodes.remove(taskNode);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final CategoryNode other = (CategoryNode) obj;
+        return category.equals(other.category);
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 29 * hash + (this.category != null ? this.category.hashCode() : 0);
+        return hash;
+    }
+
+    @Override
+    public int compareTo(CategoryNode toCompare) {
+        return category.getName().compareToIgnoreCase(toCompare.getCategory().getName());
+    }
+
+    @Override
+    public String toString() {
+        return category.getName();
+    }
+
+    int indexOf(Issue task) {
+        for (int i = 0; i < taskNodes.size(); i++) {
+            TaskNode taskNode = taskNodes.get(i);
+            if (taskNode.getTask().equals(task)) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     private String getCountText() {

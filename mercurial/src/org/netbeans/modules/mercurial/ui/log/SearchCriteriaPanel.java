@@ -58,6 +58,7 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
     public SearchCriteriaPanel() {
         initComponents();
         showMergesChkBox.setSelected(HgModuleConfig.getDefault().getShowHistoryMerges());
+        tfLimit.setText(Integer.toString(SearchExecutor.DEFAULT_LIMIT));
     }
 
     public String getFrom() {
@@ -129,6 +130,8 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
     void setLimit (int limit) {
         if (limit > 0) {
             tfLimit.setText(Integer.toString(limit));
+        } else {
+            tfLimit.setText("");
         }
     }
 

@@ -418,8 +418,11 @@ public final class NativeExecutionService {
             final NativeProcessChangeEvent event = (NativeProcessChangeEvent) e;
             processRef.compareAndSet(null, (NativeProcess) event.getSource());
 
-            if (event.state == NativeProcess.State.RUNNING) {
-                startTimeMillis = System.currentTimeMillis();
+            switch (event.state) {
+                case RUNNING:
+                case ERROR:
+                    startTimeMillis = System.currentTimeMillis();
+                    break;
             }
         }
     }

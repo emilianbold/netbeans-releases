@@ -88,9 +88,8 @@ public class GitCommitParameters extends DefaultCommitParameters implements Item
         return panel;
     }
 
-    @Override
     public JLabel getMessagesTemplateLink(JTextArea text) {
-        return super.getMessagesTemplateLink(text);
+        return super.getMessagesTemplateLink(text, "org.netbeans.modules.git.ui.commit.TemplatePanel"); //NOI18N
     }
 
     @Override

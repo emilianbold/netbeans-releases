@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -68,6 +68,7 @@ import java.util.TreeSet;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.Events;
@@ -87,6 +88,7 @@ import org.openide.modules.SpecificationVersion;
 import org.openide.util.NbCollections;
 import org.openide.util.SharedClassObject;
 import org.openide.util.NbBundle;
+import org.openide.util.Task;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.InstanceContent;
 import org.xml.sax.SAXException;
@@ -124,6 +126,8 @@ final class NbInstaller extends ModuleInstaller {
     private final Map<Module.PackageExport,List<Module>> hiddenClasspathPackagesReverse = new HashMap<Module.PackageExport,List<Module>>();
     /** caches important values from module manifests */
     private final Cache cache = new Cache();
+    /** Processing @OnStart/@OnStop calls */
+    private final NbStartStop onStartStop = new NbStartStop(null, null);
         
     /** Create an NbInstaller.
      * You should also call {@link #registerManager} and if applicable
@@ -155,7 +159,11 @@ final class NbInstaller extends ModuleInstaller {
         String processSections = cache.findGlobalProperty("processSections", null, "false"); // NOI18N
         if (!"false".equals(processSections)) { // NOI18N
             // Find and load manifest sections.
-            for (Map.Entry<String,Attributes> entry : m.getManifest().getEntries().entrySet()) {
+            Manifest mani = m.getManifest();
+            if (mani == null) {
+                throw new InvalidException(m, "no manifest");
+            }
+            for (Map.Entry<String,Attributes> entry : mani.getEntries().entrySet()) {
                 ManifestSection section = ManifestSection.create(entry.getKey(), entry.getValue(), m);
                 if (section != null) {
                     if (mysections == null) {
@@ -322,6 +330,11 @@ final class NbInstaller extends ModuleInstaller {
     protected void classLoaderUp(ClassLoader cl) {
         MainLookup.systemClassLoaderChanged(cl);
         ev.log(Events.PERF_TICK, "META-INF/services/ additions registered"); // NOI18N
+        onStartStop.initialize();
+    }
+
+    final void waitOnStart() {
+        onStartStop.waitOnStart();
     }
     
     @Override
@@ -651,7 +664,7 @@ final class NbInstaller extends ModuleInstaller {
         
     public boolean closing(List<Module> modules) {
         Util.err.fine("closing: " + modules);
-	for (Module m: modules) {
+        for (Module m: modules) {
             Class<? extends ModuleInstall> instClazz = installs.get(m);
             if (instClazz != null) {
                 try {
@@ -668,13 +681,14 @@ final class NbInstaller extends ModuleInstaller {
                 }
             }
         }
-        return true;
+        return onStartStop.closing(modules);
     }
     
     public void close(List<Module> modules) {
         Util.err.fine("close: " + modules);
         ev.log(Events.CLOSE);
         moduleList.shutDown();
+        List<Task> waitFor = onStartStop.startClose(modules);
         // [PENDING] this may need to write out changed ModuleInstall externalized
         // forms...is that really necessary to do here, or isn't it enough to
         // do right after loading etc.? Currently these are only written when
@@ -695,6 +709,9 @@ final class NbInstaller extends ModuleInstaller {
                 }
             }
         }
+        for (Task t : waitFor) {
+            t.waitFinished();
+        }
     }
 
     private static String cacheCnb;
@@ -709,8 +726,6 @@ final class NbInstaller extends ModuleInstaller {
         cacheDeps = (Set<Dependency>)obj;
     }
 
-    
-    private AutomaticDependencies autoDepsHandler = null;
     
     /** Overridden to perform automatic API upgrades.
      * That is, should do nothing on new modules, but for older ones will
@@ -731,33 +746,7 @@ final class NbInstaller extends ModuleInstaller {
             // Skip them all - useful for unit tests.
             return;
         }
-        if (autoDepsHandler == null) {
-            FileObject depsFolder = FileUtil.getConfigFile("ModuleAutoDeps");
-            if (depsFolder != null) {
-                FileObject[] kids = depsFolder.getChildren();
-                List<URL> urls = new ArrayList<URL>(Math.max(kids.length, 1));
-                for (FileObject kid : kids) {
-                    if (kid.hasExt("xml")) { // NOI18N
-                        urls.add(kid.toURL());
-                    }
-                }
-                try {
-                    autoDepsHandler = AutomaticDependencies.parse(urls.toArray(new URL[urls.size()]));
-                } catch (IOException e) {
-                    Util.err.log(Level.WARNING, null, e);
-                } catch (SAXException e) {
-                    Util.err.log(Level.WARNING, null, e);
-                }
-            }
-            if (autoDepsHandler == null) {
-                // Parsing failed, or no files.
-                autoDepsHandler = AutomaticDependencies.empty();
-            }
-            if (Util.err.isLoggable(Level.FINE)) {
-                Util.err.fine("Auto deps: " + autoDepsHandler);
-            }
-        }
-        AutomaticDependencies.Report rep = autoDepsHandler.refineDependenciesAndReport(m.getCodeNameBase(), dependencies);
+        AutomaticDependencies.Report rep = AutomaticDependencies.getDefault().refineDependenciesAndReport(m.getCodeNameBase(), dependencies);
         if (rep.isModified()) {
             Util.err.warning(rep.toString());
         }
@@ -772,7 +761,7 @@ final class NbInstaller extends ModuleInstaller {
             arr.add("org.openide.modules.ModuleFormat1"); // NOI18N
             arr.add("org.openide.modules.ModuleFormat2"); // NOI18N
             
-            return arr.toArray (new String[0]);
+            return arr.toArray (new String[arr.size()]);
         }
         return null;
     }

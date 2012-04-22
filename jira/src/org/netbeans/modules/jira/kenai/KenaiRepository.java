@@ -251,6 +251,11 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
     }
 
     @Override
+    public void ensureCredentials() {
+        authenticate(null);
+    }
+    
+    @Override
     public boolean authenticate(String errroMsg) {
         PasswordAuthentication pa = KenaiUtil.getPasswordAuthentication(kenaiProject.getWebLocation().toString(), true);
         if(pa == null) {

@@ -78,7 +78,7 @@ import org.openide.util.test.MockChangeListener;
  */
 public class PersistentObjectManagerTest extends PersistenceTestCase {
     
-    private static final int EVENT_TIMEOUT = 10; // seconds
+    private static final int EVENT_TIMEOUT = 15; // seconds
 
     private PersistentObjectManager<EntityImpl> manager;
 
@@ -288,6 +288,7 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
     }
 
     public void testChangedFiles() throws Exception {
+        GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, new ClassPath[] { ClassPath.getClassPath(srcFO, ClassPath.SOURCE) });
         IndexingManager.getDefault().refreshIndexAndWait(srcFO.getURL(), null);
         ClasspathInfo cpi = ClasspathInfo.create(srcFO);
         final AnnotationModelHelper helper = AnnotationModelHelper.create(cpi);

@@ -41,13 +41,8 @@
  */
 package org.netbeans.modules.bugtracking.api;
 
-import java.util.ArrayList;
-import org.netbeans.modules.bugtracking.RepositoryImpl;
-import java.util.Collection;
-import org.netbeans.modules.bugtracking.RepositoryRegistry;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 
 /**
  *
@@ -56,27 +51,7 @@ import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 public final class Util {
     
     private Util() { }
-            
-    /**
-     * Returns all registered repositories
-     * 
-     * @return 
-     */
-    public static Collection<Repository> getRepositories() {
-        Collection<Repository> ret = toRepositories(RepositoryRegistry.getInstance().getRepositories());
-        return ret;
-    }
     
-    /**
-     * Returns all registered repositories for a connector with the given id
-     * @param connectorId
-     * @return 
-     */
-    public static Collection<Repository> getRepositories(String connectorId) {
-        Collection<Repository> ret = toRepositories(RepositoryRegistry.getInstance().getRepositories(connectorId));
-        return ret;
-    }
-
     /**
      * Opens an issue.
      * 
@@ -86,16 +61,6 @@ public final class Util {
     public static void openIssue(Repository repository, String issueId) {
         IssueAction.openIssue(repository.getImpl(), issueId);
     }    
-    
-    /**
-     * Opens the create repository dialog and eventually returns a repository
-     * 
-     * @return a repository in case it was properly specified n the ui, otherwise null
-     */
-    public static Repository createRepository() {
-        RepositoryImpl impl = BugtrackingUtil.createRepository(false);
-        return impl != null ? impl.getRepository() : null;
-    }
     
     /*
      * Creates a new, not yet saved and named query.  
@@ -113,14 +78,6 @@ public final class Util {
      */
     public static void createNewIssue(Repository repository) {
         IssueAction.createIssue(repository.getImpl());
-    }
-    
-    private static Collection<Repository> toRepositories(Collection<RepositoryImpl> impls) {
-        Collection<Repository> ret = new ArrayList<Repository>(impls.size());
-        for (RepositoryImpl impl : impls) {
-            ret.add(impl.getRepository());
-        }
-        return ret;
     }
     
 }

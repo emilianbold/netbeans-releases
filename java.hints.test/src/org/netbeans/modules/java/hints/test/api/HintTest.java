@@ -41,12 +41,15 @@
  */
 package org.netbeans.modules.java.hints.test.api;
 
+import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.util.TreePath;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -56,6 +59,7 @@ import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -81,12 +85,14 @@ import static junit.framework.Assert.assertTrue;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.JavaDataLoader;
 import org.netbeans.modules.java.hints.providers.code.CodeHintProviderImpl;
 import org.netbeans.modules.java.hints.providers.code.FSWrapper;
@@ -94,6 +100,7 @@ import org.netbeans.modules.java.hints.providers.code.FSWrapper.ClassWrapper;
 import org.netbeans.modules.java.hints.providers.spi.HintDescription;
 import org.netbeans.modules.java.hints.providers.spi.HintMetadata;
 import org.netbeans.modules.java.hints.spiimpl.MessageImpl;
+import org.netbeans.modules.java.hints.spiimpl.SyntheticFix;
 import org.netbeans.modules.java.hints.spiimpl.hints.HintsInvoker;
 import org.netbeans.modules.java.hints.spiimpl.options.HintsSettings;
 import org.netbeans.modules.java.hints.test.Utilities.TestLookup;
@@ -152,6 +159,11 @@ import org.openide.util.lookup.Lookups;
  * @author lahvac
  */
 public class HintTest {
+
+    private static final Logger INDEXING_LOGGER = /* RepositoryUpdater.UI_LOGGER */ Logger.getLogger("org.netbeans.ui.indexing");
+    static {
+        INDEXING_LOGGER.setLevel(Level.WARNING);
+    }
 
     private final File workDir;
     private final FileObject sourceRoot;
@@ -464,8 +476,21 @@ public class HintTest {
         }
 
         Collections.sort(result, ERRORS_COMPARATOR);
+        
+        Reference<CompilationUnitTree> cut = new WeakReference<CompilationUnitTree>(info.getCompilationUnit());
+        
+        info = null;
+        
+        DEBUGGING_HELPER.add(result);
+        NbTestCase.assertGC("noone holds javac", cut);
+        DEBUGGING_HELPER.remove(result);
+        
         return new HintOutput(result);
     }
+    
+    //must keep the error descriptions (and their Fixes through them) in a field
+    //so that assertGC is able to provide a useful trace of references:
+    private static Set<List<ErrorDescription>> DEBUGGING_HELPER = Collections.newSetFromMap(new IdentityHashMap<List<ErrorDescription>, Boolean>());
 
     private CompilationInfo parse(FileObject file) throws DataObjectNotFoundException, IllegalArgumentException, IOException {
         DataObject od = DataObject.find(file);
@@ -478,7 +503,7 @@ public class HintTest {
         doc.putProperty(Language.class, JavaTokenId.language());
         doc.putProperty("mimeType", "text/x-java");
 
-        JavaSource js = JavaSource.forFileObject(file);
+        JavaSource js = JavaSource.create(ClasspathInfo.create(file), file);
 
         assertNotNull("found JavaSource for " + file, js);
 
@@ -491,6 +516,10 @@ public class HintTest {
 
     private Map<HintDescription, List<ErrorDescription>> computeErrors(CompilationInfo info, Iterable<? extends HintDescription> hints, AtomicBoolean cancel) {
         return new HintsInvoker(info, caret, cancel).computeHints(info, new TreePath(info.getCompilationUnit()), hints, new LinkedList<MessageImpl>());
+    }
+
+    FileObject getSourceRoot() {
+        return sourceRoot;
     }
 
     private static class TempPreferences extends AbstractPreferences {
@@ -797,6 +826,10 @@ public class HintTest {
          * @throws AssertionError if there is not one fix for the given {@link ErrorDescription}
          */
         public AppliedFix applyFix() throws Exception {
+            return applyFix(true);
+        }
+
+        AppliedFix applyFix(boolean saveAll) throws Exception {
             assertTrue("Must be computed", warning.getFixes().isComputed());
 
             List<Fix> fixes = warning.getFixes().getFixes();
@@ -804,7 +837,9 @@ public class HintTest {
             assertEquals(1, fixes.size());
 
             fixes.get(0).implement();
-            LifecycleManager.getDefault().saveAll();
+
+            if (saveAll)
+                LifecycleManager.getDefault().saveAll();
             
             return new AppliedFix();
         }
@@ -838,6 +873,27 @@ public class HintTest {
             LifecycleManager.getDefault().saveAll();
 
             return new AppliedFix();
+        }
+        /**Verifies that the current warning provides the given fixes.
+         *
+         * @param fixes the {@link Fix#getText() } of the expected fixes
+         * @return itself
+         * @throws AssertionError if the expected fixes do not match the provided fixes
+         * @since 1.1
+         */
+        public HintWarning assertFixes(String... expectedFixes) throws Exception {
+            assertTrue("Must be computed", warning.getFixes().isComputed());
+
+            List<String> fixNames = new LinkedList<String>();
+
+            for (Fix f : warning.getFixes().getFixes()) {
+                if (f instanceof SyntheticFix) continue;
+                fixNames.add(f.getText());
+            }
+
+            assertEquals("Fixes for the current warning do not match the expected fixes. All fixes: " + fixNames.toString(), Arrays.asList(expectedFixes), fixNames);
+
+            return this;
         }
     }
 

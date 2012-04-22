@@ -204,7 +204,14 @@ public final class VersioningInfoAction extends ContextAction {
                     }
                     try {
                         SvnClient client = Subversion.getInstance().getClient(file);
-                        ISVNInfo info = client.getInfo(status.getUrl());
+                        SVNUrl url = status.getUrl();
+                        ISVNInfo info = null;
+                        if (url == null) {
+                            LOG.log(Level.WARNING, "putPropsForVersioned: though versioned it has no svn url: {0}, {1}, {2}, {3}, {4}", //NOI18N
+                                    new Object[] { file, fi, status.getTextStatus(), status.getUrlString(), status.getFile() });
+                        } else {
+                            info = client.getInfo(url);
+                        }
                         if (info != null) {
                             if (!lockedLocally && info.getLockOwner() != null) {
                                 fileProps.put(getMessage("LBL_VersioningInfo_Property_Lock"), getMessage("LBL_VersioningInfo_Property_LockRemote")); //NOI18N

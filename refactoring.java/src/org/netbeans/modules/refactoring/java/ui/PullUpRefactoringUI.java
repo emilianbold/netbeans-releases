@@ -162,7 +162,7 @@ public class PullUpRefactoringUI implements RefactoringUI, JavaRefactoringUIFact
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(PullUpRefactoringUI.class.getName());
+        return new HelpCtx("org.netbeans.modules.refactoring.java.ui.PullUpRefactoringUI"); // NOI18N
     }
     
     // --- PRIVATE HELPER METHODS ----------------------------------------------

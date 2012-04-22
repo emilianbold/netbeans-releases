@@ -230,10 +230,10 @@ public class RenamePropertyRefactoringPlugin extends JavaRefactoringPlugin {
                     p.toPhase(JavaSource.Phase.RESOLVED);
                     Element propertyElement = property.resolveElement(p);
                     for (ExecutableElement el : ElementFilter.methodsIn(propertyElement.getEnclosingElement().getEnclosedElements())) {
-                        if (RefactoringUtils.isGetter(el, propertyElement)) {
+                        if (RefactoringUtils.isGetter(p, el, propertyElement)) {
                             getterDelegate = new RenameRefactoring(Lookups.singleton(TreePathHandle.create(el, p)));
                             getterDelegate.setNewName(RefactoringUtils.getGetterName(refactoring.getNewName()));
-                        } else if (RefactoringUtils.isSetter(el, propertyElement)) {
+                        } else if (RefactoringUtils.isSetter(p, el, propertyElement)) {
                             setterDelegate = new RenameRefactoring(Lookups.singleton(TreePathHandle.create(el, p)));
                             setterDelegate.setNewName(RefactoringUtils.getSetterName(refactoring.getNewName()));
                             VariableElement par = el.getParameters().iterator().next();

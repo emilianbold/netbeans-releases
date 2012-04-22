@@ -212,7 +212,7 @@ public class ShortcutTextField extends JTextField {
      * @param prefix the prefix the shortcut should begin with
      * @return set of free shortcuts
      */
-    private static Vector<String> getFreeShortcuts(String prefix) {
+    private Vector<String> getFreeShortcuts(String prefix) {
         Vector<String> vec = new Vector<String>();
         for (String s : getAllFreeShortcuts()) {
             if (s.startsWith(prefix)) {
@@ -227,9 +227,11 @@ public class ShortcutTextField extends JTextField {
     /**
      * @return set of all, system specific, currently unoccupied shortcuts
      */
-    private static Set<String> getAllFreeShortcuts() {
-        //need table KeymapVeiwModel ; lookup???
-        KeymapViewModel model = KeymapPanel.getModel();
+    private Set<String> getAllFreeShortcuts() {
+        // I know that the next line is not the smartest code on earth:
+        KeymapViewModel model = ((KeymapPanel)
+                getParent().getParent().getParent().
+                getParent().getParent()).getModel();
         //get shortcut cache (used shortcuts in current profile)
         Set<String> allCurrentlyUsedShortcuts = model.getAllCurrentlyUsedShortcuts();
 

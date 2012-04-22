@@ -105,7 +105,7 @@ public class testNavigation extends navigation
     EditorOperator eoPHP = new EditorOperator( "EmptyPHPWebPage.php" );
     eoPHP.clickForPopup( );
     JPopupMenuOperator menu = new JPopupMenuOperator( );
-    menu.pushMenuNoBlock( "Navigate|Line..." );
+    menu.pushMenuNoBlock( "Navigate|Go to Line or Bookmark ..." );
     JDialogOperator jdGoto = new JDialogOperator( "Go To Line" );
     JComboBoxOperator jcLine = new JComboBoxOperator( jdGoto, 0 );
     JTextFieldOperator jtTemp = jcLine.getTextField( );

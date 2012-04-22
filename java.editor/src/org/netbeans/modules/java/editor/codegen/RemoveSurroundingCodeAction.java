@@ -428,10 +428,12 @@ public class RemoveSurroundingCodeAction extends BaseAction {
         }
 
         private void addStat(StatementTree stat, List<StatementTree> to) {
-            if (stat.getKind() == Tree.Kind.BLOCK) {
-                to.addAll(((BlockTree) stat).getStatements());
-            } else {
-                to.add(stat);
+            if (stat != null) {
+                if (stat.getKind() == Tree.Kind.BLOCK) {
+                    to.addAll(((BlockTree) stat).getStatements());
+                } else {
+                    to.add(stat);
+                }
             }
         }
 

@@ -52,11 +52,10 @@ import java.awt.event.KeyEvent;
 import java.beans.BeanInfo;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.EnumMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -91,7 +90,13 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.spring.api.beans.model.SpringBean;
+import org.netbeans.modules.spring.beans.completion.SpringXMLConfigCompletionDoc.JavaElementDoc;
 import org.netbeans.modules.spring.java.JavaUtils;
 import org.netbeans.modules.spring.java.Property;
 import org.netbeans.modules.spring.java.PropertyType;
@@ -263,8 +268,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
             this.beanClass = bean.getClassName();
             this.beanNames = bean.getNames();
             if (bean.getLocation() != null) {
-                File file = bean.getLocation().getFile();
-                FileObject fo = FileUtil.toFileObject(file);
+                FileObject fo = bean.getLocation().getFile();
                 if (fo != null) {
                     this.beanLocFile = FileUtil.getRelativePath(containerFO.getParent(), fo);
                 }
@@ -1145,6 +1149,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
     
     private static class JavaElementDocQuery extends AsyncCompletionQuery {
 
+        private CompletionDocumentation documentation;
         private ElementHandle<?> elemHandle;
         
         public JavaElementDocQuery(ElementHandle<?> elemHandle) {
@@ -1159,21 +1164,50 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
                     return;
                 }
 
-                js.runUserActionTask(new Task<CompilationController>() {
-
+                js.runUserActionTask(new org.netbeans.api.java.source.Task<CompilationController>() {
+                    @Override
                     public void run(CompilationController cc) throws Exception {
                         cc.toPhase(Phase.RESOLVED);
                         Element element = elemHandle.resolve(cc);
                         if (element == null) {
                             return;
                         }
-                        SpringXMLConfigCompletionDoc doc = SpringXMLConfigCompletionDoc.createJavaDoc(cc, element);
-                        resultSet.setDocumentation(doc);
+                        resolveDocumentation(cc, element);
+                        if (documentation instanceof JavaElementDoc) {
+                            while (!isTaskCancelled()) {
+                                try {
+                                    ((JavaElementDoc) documentation).getFutureText().get(250, TimeUnit.MILLISECONDS);
+                                    resultSet.setDocumentation(documentation);
+                                    break;
+                                } catch (InterruptedException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                } catch (ExecutionException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                } catch (TimeoutException timeOut) {/*retry*/}
+                            }
+                        }
                     }
                 }, false);
+
                 resultSet.finish();
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
+            }
+        }
+
+        private void resolveDocumentation(CompilationController controller, Element el) throws IOException {
+            switch (el.getKind()) {
+            case ANNOTATION_TYPE:
+            case CLASS:
+            case ENUM:
+            case INTERFACE:
+                if (el.asType().getKind() == TypeKind.ERROR)
+                    break;
+            case CONSTRUCTOR:
+            case ENUM_CONSTANT:
+            case FIELD:
+            case METHOD:
+                documentation = SpringXMLConfigCompletionDoc.createJavaDoc(controller, el);
             }
         }
     }

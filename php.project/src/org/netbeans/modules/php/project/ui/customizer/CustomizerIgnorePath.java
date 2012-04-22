@@ -85,11 +85,12 @@ public class CustomizerIgnorePath extends JPanel implements HelpCtx.Provider {
 
         PathUiSupport.EditMediator.FileChooserDirectoryHandler directoryHandler = new PathUiSupport.EditMediator.FileChooserDirectoryHandler() {
             @Override
-            public File getCurrentDirectory() {
-                return FileUtil.toFile(ProjectPropertiesSupport.getSourcesDirectory(project));
+            public String getDirKey() {
+                return CustomizerIgnorePath.class.getName();
             }
             @Override
-            public void setCurrentDirectory(File currentDirectory) {
+            public File getCurrentDirectory() {
+                return FileUtil.toFile(ProjectPropertiesSupport.getSourcesDirectory(project));
             }
         };
 
@@ -126,11 +127,10 @@ public class CustomizerIgnorePath extends JPanel implements HelpCtx.Provider {
             if (item.isBroken()) {
                 continue;
             }
-            String filePath = item.getFilePath();
-            FileObject fo = project.getHelper().resolveFileObject(filePath);
+            FileObject fo = item.getFileObject(project.getProjectDirectory());
             if (fo == null) {
                 // not broken but not found?!
-                category.setErrorMessage(NbBundle.getMessage(CustomizerIgnorePath.class, "MSG_NotFound", filePath));
+                category.setErrorMessage(NbBundle.getMessage(CustomizerIgnorePath.class, "MSG_NotFound", item.getFilePath()));
                 category.setValid(false);
                 return;
             }
@@ -225,6 +225,6 @@ public class CustomizerIgnorePath extends JPanel implements HelpCtx.Provider {
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(CustomizerIgnorePath.class);
+        return new HelpCtx("org.netbeans.modules.php.project.ui.customizer.CustomizerIgnorePath"); // NOI18N
     }
 }

@@ -44,10 +44,14 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
@@ -61,14 +65,15 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.Hint.Options;
+import org.netbeans.spi.java.hints.HintContext;
 import org.netbeans.spi.java.hints.TriggerPattern;
 import org.netbeans.spi.java.hints.TriggerTreeKind;
-import org.netbeans.spi.java.hints.HintContext;
-import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
-import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.java.hints.Hint.Options;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -77,6 +82,7 @@ import org.openide.util.NbBundle;
 public class Unbalanced {
 
     private static final Map<CompilationInfo, Map<Element, Set<State>>> seen = new WeakHashMap<CompilationInfo, Map<Element, Set<State>>>();
+    private static final Set<Reference<CompilationInfo>> cleaning = Collections.newSetFromMap(new IdentityHashMap<Reference<CompilationInfo>, Boolean>());
 
     private static boolean isAcceptable(Element el) {
         return el != null && (el.getKind() == ElementKind.LOCAL_VARIABLE || (el.getKind() == ElementKind.FIELD && el.getModifiers().contains(Modifier.PRIVATE)));
@@ -87,6 +93,7 @@ public class Unbalanced {
 
         if (cache == null) {
             seen.put(info, cache = new HashMap<Element, Set<State>>());
+            cleaning.add(new CleaningReference(info));
         }
 
         Set<State> state = cache.get(el);
@@ -119,7 +126,7 @@ public class Unbalanced {
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), warning);
     }
 
-    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.bugs.Unbalanced.Array", description = "#DESC_org.netbeans.modules.java.hints.bugs.Unbalanced.Array", category="bugs", options=Options.QUERY)
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.bugs.Unbalanced.Array", description = "#DESC_org.netbeans.modules.java.hints.bugs.Unbalanced.Array", category="bugs", options=Options.QUERY, suppressWarnings="MismatchedReadAndWriteOfArray")
     public static final class Array {
         private static final Set<Kind> ARRAY_WRITE = EnumSet.of(
             Kind.AND_ASSIGNMENT, Kind.ASSIGNMENT, Kind.CONDITIONAL_AND, Kind.CONDITIONAL_OR,
@@ -180,7 +187,7 @@ public class Unbalanced {
         }
     }
 
-    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.bugs.Unbalanced.Collection", description = "#DESC_org.netbeans.modules.java.hints.bugs.Unbalanced.Collection", category="bugs", options=Options.QUERY)
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.bugs.Unbalanced.Collection", description = "#DESC_org.netbeans.modules.java.hints.bugs.Unbalanced.Collection", category="bugs", options=Options.QUERY, suppressWarnings="MismatchedQueryAndUpdateOfCollection")
     public static final class Collection {
         private static final Set<String> READ_METHODS = new HashSet<String>(Arrays.asList("get", "contains", "remove", "containsAll", "removeAll", "retain", "retainAll", "containsKey", "containsValue", "iterator", "isEmpty", "size", "toArray", "listIterator", "indexOf", "lastIndexOf"));
         private static final Set<String> WRITE_METHODS = new HashSet<String>(Arrays.asList("add", "addAll", "set"));
@@ -272,5 +279,15 @@ public class Unbalanced {
 
     public enum State {
         READ, WRITE;
+    }
+
+    private static class CleaningReference extends WeakReference<CompilationInfo> implements Runnable {
+        public CleaningReference(CompilationInfo referent) {
+            super(referent, Utilities.activeReferenceQueue());
+        }
+        @Override public void run() {
+            seen.size();
+            cleaning.remove(this);
+        }
     }
 }

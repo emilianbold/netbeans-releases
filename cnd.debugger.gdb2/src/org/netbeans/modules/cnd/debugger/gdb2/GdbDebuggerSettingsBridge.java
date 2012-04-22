@@ -158,28 +158,36 @@ public final class GdbDebuggerSettingsBridge extends DebuggerSettingsBridge {
         // on attach we should set breakpoints and watches later, see IZ 197786
         if (debugger.getNDI().getPid() != -1) {
             return 0xffffffff & ~DIRTY_BREAKPOINTS & ~DIRTY_WATCHES;
-        } else {
+        } else if (debugger.getNDI().getCorefile() != null) {
             return super.getProgLoadedDirty();
+        } else {
+            // do not create watches, this will be done on the first stop, see IZ 210468
+            return super.getProgLoadedDirty() & ~DIRTY_WATCHES;
         }
     }
     
     void noteAttached() {
         initialApply(DIRTY_BREAKPOINTS | DIRTY_WATCHES);
     }
+    
+    void noteFistStop() {
+        initialApply(DIRTY_WATCHES);
+    }
 
     @Override
     protected void applyRunargs() {
 	String runargs = getArgsFlatEx();
-	if (runargs == null)
+	if (runargs == null) {
 	    runargs = "";
-	gdbDebugger.runArgs(runargs + ioRedirect());
+        }
+	gdbDebugger.runArgs(ioRedirect(runargs));
     }
 
     @Override
     protected void applyRunDirectory() {
-        RunProfile mainRunProfile = getMainSettings().runProfile();
-        if (mainRunProfile.getRunDirectory() != null) {
-            gdbDebugger.runDir(mainRunProfile.getRunDirectory());
+        String runDirectory = getRunDirectory();
+	if (runDirectory != null) {
+            gdbDebugger.runDir(runDirectory);
         }
     }
 
@@ -249,10 +257,35 @@ public final class GdbDebuggerSettingsBridge extends DebuggerSettingsBridge {
 	// System.out.println("GdbDebuggerSettingsBridge.applyRunargs(): NOT IMPLEMENTED");
     }
 
-    private String ioRedirect() {
-        String[] files = gdbDebugger.getIOPack().getIOFiles();
-        if (files == null) {
-            return "";
+    private String ioRedirect(String runargs) {
+        int inArgPos = runargs.indexOf("<"); // NOI18N
+        int outArgPos = runargs.indexOf(">"); // NOI18N
+        
+        String inArg = null, outArg = null, files[] = {};
+        
+        if(inArgPos < outArgPos) {
+            if (inArgPos != -1) {
+                inArg = runargs.substring(inArgPos+1, Math.min(outArgPos, runargs.length()));
+            }
+
+            if (outArgPos != -1) {
+                outArg = runargs.substring(outArgPos+1, Math.max(inArgPos, runargs.length()));
+            }
+        } else {
+            if (inArgPos != -1) {
+                inArg = runargs.substring(inArgPos+1, Math.max(outArgPos, runargs.length()));
+            }
+
+            if (outArgPos != -1) {
+                outArg = runargs.substring(outArgPos+1, Math.min(inArgPos, runargs.length()));
+            }
+        }
+        
+        if ((inArgPos == -1) || (outArgPos == -1)) {
+            files = gdbDebugger.getIOPack().getIOFiles();
+            if (files == null) {
+                return "";
+            }
         }
         OSFamily osFamily = OSFamily.UNKNOWN;
         try {
@@ -263,8 +296,8 @@ public final class GdbDebuggerSettingsBridge extends DebuggerSettingsBridge {
         }
 
         String inRedir = "";
-        String inFile = files[0];
-        String outFile = files[1];
+        String inFile = (inArg == null ? files[0] : inArg);
+        String outFile = (outArg == null ? files[1] : outArg);
         if (osFamily == OSFamily.WINDOWS) {
             inFile = gdbDebugger.fmap().worldToEngine(inFile);
             outFile = gdbDebugger.fmap().worldToEngine(outFile);

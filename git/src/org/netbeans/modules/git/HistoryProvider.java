@@ -52,9 +52,11 @@ import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitRevisionInfo;
+import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.history.SearchHistoryAction;
 import org.netbeans.modules.git.utils.GitUtils;
+import org.netbeans.modules.versioning.history.HistoryAction;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VCSHistoryProvider;
 import org.netbeans.modules.versioning.util.FileUtils;
@@ -73,6 +75,7 @@ public class HistoryProvider implements VCSHistoryProvider {
     
     private final List<VCSHistoryProvider.HistoryChangeListener> listeners = new LinkedList<VCSHistoryProvider.HistoryChangeListener>();
     private static final Logger LOG = Logger.getLogger(HistoryProvider.class.getName());
+    private Action[] actions;
 
     @Override
     public void addHistoryChangeListener(VCSHistoryProvider.HistoryChangeListener l) {
@@ -99,19 +102,19 @@ public class HistoryProvider implements VCSHistoryProvider {
         
         List<HistoryEntry> ret = new LinkedList<HistoryEntry>();
         Map<String, Set<File>> rev2FileMap = new HashMap<String, Set<File>>();
-        Map<String, GitRevisionInfo> rev2LMMap = new HashMap<String, GitRevisionInfo>();
+        Map<String, GitRevisionInfo> rev2LMMap = new LinkedHashMap<String, GitRevisionInfo>();
             
         Date toDate = null;
         if (fromDate != null) {
             toDate = new Date(System.currentTimeMillis());
         }
 
+        File repositoryRoot = repositories.iterator().next();
         for (File file : files) {
             FileInformation info = Git.getInstance().getFileStatusCache().getStatus(file);
             if (!info.containsStatus(FileInformation.STATUS_MANAGED)) {
                 continue;
             }
-            File repositoryRoot = repositories.iterator().next();
             GitRevisionInfo[] history;
             try {
                 history = HistoryRegistry.getInstance().getLogs(repositoryRoot, files, fromDate, toDate, GitUtils.NULL_PROGRESS_MONITOR);
@@ -133,25 +136,32 @@ public class HistoryProvider implements VCSHistoryProvider {
         for (GitRevisionInfo h : rev2LMMap.values()) {
             Set<File> s = rev2FileMap.get(h.getRevision());
             File[] involvedFiles = s.toArray(new File[s.size()]);
-            String username = h.getCommitter().toString();
-            String author = h.getAuthor().toString();
-            if (author == null || author.trim().isEmpty()) {
-                author = username;
-            }
             
-            HistoryEntry e = new HistoryEntry(
-                    involvedFiles, 
-                    new Date(h.getCommitTime()),
-                    h.getFullMessage(), 
-                    author, 
-                    username, 
-                    h.getRevision(), 
-                    h.getRevision().length() > 7 ? h.getRevision().substring(0, 7) : h.getRevision(), 
-                    createActions(h.getRevision(), files), 
-                    new RevisionProviderImpl(h.getRevision()));
+            HistoryEntry e = createHistoryEntry(h, involvedFiles, repositoryRoot);
             ret.add(e);
         }
         return ret.toArray(new HistoryEntry[ret.size()]);
+    }
+
+    private HistoryEntry createHistoryEntry (GitRevisionInfo h, File[] involvedFiles, File repositoryRoot) {
+        String username = h.getCommitter().toString();
+        String author = h.getAuthor().toString();
+        if (author == null || author.trim().isEmpty()) {
+            author = username;
+        }
+        HistoryEntry e = new HistoryEntry(
+                involvedFiles, 
+                new Date(h.getCommitTime()),
+                h.getFullMessage(), 
+                author, 
+                username, 
+                h.getRevision(), 
+                h.getRevision().length() > 7 ? h.getRevision().substring(0, 7) : h.getRevision(), 
+                getActions(), 
+                new RevisionProviderImpl(h.getRevision()),
+                null,
+                new ParentProviderImpl(h, involvedFiles, repositoryRoot));
+        return e;
     }
 
     @Override
@@ -251,25 +261,28 @@ public class HistoryProvider implements VCSHistoryProvider {
         
     }
 
-    private Action[] createActions(final String revision, final File... files) {
-        return new Action[] {
-        new AbstractAction(NbBundle.getMessage(SearchHistoryAction.class, "CTL_SummaryView_View")) { // NOI18N
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                view(revision, false, files);
-            }
-
-        },
-        new AbstractAction(NbBundle.getMessage(SearchHistoryAction.class, "CTL_SummaryView_ShowAnnotations")) { // NOI18N
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                view(revision, true, files);
-            }
-        }};
+    private synchronized Action[] getActions() {
+        if(actions == null) {
+            actions = new Action[] {
+                new HistoryAction(NbBundle.getMessage(SearchHistoryAction.class, "CTL_SummaryView_View")) {
+                    @Override
+                    protected void perform(HistoryEntry entry, Set<File> files) {
+                        view(entry.getRevision(), false, files);
+                    }
+                },
+                new HistoryAction(NbBundle.getMessage(SearchHistoryAction.class, "CTL_SummaryView_ShowAnnotations")) {
+                    @Override
+                    protected void perform(HistoryEntry entry, Set<File> files) {
+                        view(entry.getRevision(), true, files);
+                    }
+                }
+            };
+        }
+        return actions;
     }
     
-    private void view(final String revision, final boolean showAnnotations, final File... files) {
-        final File root = Git.getInstance().getRepositoryRoot(files[0]);
+    private void view(final String revision, final boolean showAnnotations, final Set<File> files) {
+        final File root = Git.getInstance().getRepositoryRoot(files.iterator().next());
         new GitProgressSupport() {
             @Override
             protected void perform () {
@@ -295,6 +308,46 @@ public class HistoryProvider implements VCSHistoryProvider {
             return null;
         }
         return repositories;
+    }
+    
+    private class ParentProviderImpl implements ParentProvider {
+        private GitRevisionInfo info;
+        private File[] files;
+        private File repository;
+        private Map<File, HistoryEntry> commonAncestors;
+
+        public ParentProviderImpl (GitRevisionInfo info, File[] files, File repository) {
+            this.info = info;
+            this.files = files;
+            this.repository = repository;
+            this.commonAncestors = new HashMap<File, HistoryEntry>(files.length);
+        }
+
+        @Override
+        public HistoryEntry getParentEntry (File file) {
+            HistoryEntry ancestorEntry = commonAncestors.get(file);
+            if (ancestorEntry == null && !commonAncestors.containsKey(file)) {
+                GitRevisionInfo parent = null;
+                try {
+                    GitClient client = Git.getInstance().getClient(repository);
+                    if (info.getParents().length == 1) {
+                        File historyFile = info.getModifiedFiles().containsKey(file)
+                                ? file
+                                : HistoryRegistry.getInstance().getHistoryFile(repository, file, info.getRevision(), false);
+                        if (historyFile != null) {
+                            parent = client.getPreviousRevision(historyFile, info.getRevision(), GitUtils.NULL_PROGRESS_MONITOR);
+                        }
+                    } else if (info.getParents().length > 1) {
+                        parent = client.getCommonAncestor(info.getParents(), GitUtils.NULL_PROGRESS_MONITOR);
+                    }
+                } catch (GitException ex) {
+                    LOG.log(Level.INFO, null, ex);
+                }
+                ancestorEntry = parent == null ? null : createHistoryEntry(parent, files, repository);
+                commonAncestors.put(file, ancestorEntry);
+            }
+            return ancestorEntry;
+        }
     }
 }
 

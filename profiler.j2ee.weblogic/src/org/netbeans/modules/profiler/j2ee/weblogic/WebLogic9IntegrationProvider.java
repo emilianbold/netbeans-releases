@@ -105,7 +105,8 @@ public class WebLogic9IntegrationProvider extends WebLogicIntegrationProvider {
                                             targetOS,
                                             getTargetJava(),
                                             attachSettings.isRemote(),
-                                            attachSettings.getPort())
+                                            attachSettings.getPort(),
+                                            false)
                                             + " "
                                             + IntegrationUtils.getEnvVariableReference(
                                                 "JAVA_OPTIONS", // NOI18N

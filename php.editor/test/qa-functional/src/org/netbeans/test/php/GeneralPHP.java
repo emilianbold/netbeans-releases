@@ -467,6 +467,38 @@ public class GeneralPHP extends JellyTestCase {
         jdProperties.waitClosed();
     }
 
+    protected void SetPhpVersion(String sProject, int version) {
+        // Open project properties
+        ProjectsTabOperator pto = new ProjectsTabOperator();
+        ProjectRootNode prn = pto.getProjectRootNode(sProject);
+        prn.select();
+        prn.callPopup();
+        JPopupMenuOperator popup = new JPopupMenuOperator();
+        popup.pushMenuNoBlock("Properties");
+        JDialogOperator jdProperties = new JDialogOperator("Project Properties - ");
+        // Set support
+        JComboBoxOperator box = new JComboBoxOperator(jdProperties, 1);
+        switch (version) {
+            case 2:
+                box.selectItem(0);
+                break;
+            case 3:
+                box.selectItem(1);
+                break;
+            case 4:
+                box.selectItem(2);
+                break;
+            default:
+                box.selectItem(2);
+                break;
+        }
+        //Sleep( 10000 );
+        // Close dialog
+        JButtonOperator bOk = new JButtonOperator(jdProperties, "OK");
+        bOk.push();
+        jdProperties.waitClosed();
+    }
+
     protected void SetShortTags(String sProject, boolean b) {
         SetTagsSupport("Allow short tags", sProject, b);
     }
@@ -475,7 +507,7 @@ public class GeneralPHP extends JellyTestCase {
         SetTagsSupport("Allow ASP tags", sProject, b);
     }
 
-    protected void CreatePHPFile(
+    protected EditorOperator CreatePHPFile(
             String sProject,
             String sItem,
             String sName) {
@@ -507,7 +539,7 @@ public class GeneralPHP extends JellyTestCase {
         prn.select();
 
         // Check created in editor
-        new EditorOperator(sName);
+        return new EditorOperator(sName);
     }
 
     protected CompletionInfo GetCompletion() {

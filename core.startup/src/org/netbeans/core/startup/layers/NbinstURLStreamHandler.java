@@ -44,6 +44,8 @@
 
 package org.netbeans.core.startup.layers;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -52,6 +54,7 @@ import java.net.URLConnection;
 import java.net.URLStreamHandler;
 import java.net.UnknownServiceException;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.URLStreamHandlerRegistration;
 
@@ -70,7 +73,7 @@ public class NbinstURLStreamHandler extends URLStreamHandler {
      */
     private static class NbinstURLConnection extends URLConnection {
 
-        private FileObject fo;
+        private File f;
         private InputStream iStream;
 
         /**
@@ -84,16 +87,13 @@ public class NbinstURLStreamHandler extends URLStreamHandler {
 
 
         public void connect() throws IOException {
-            if (fo == null) {
-                FileObject[] decoded = NbinstURLMapper.decodeURL(this.url);
-                if (decoded != null && decoded.length>0) {
-                    fo = decoded[0];
-                }
-                else {
+            if (f == null) {
+                f = NbinstURLMapper.decodeURL(url);
+                if (f == null) {
                     throw new FileNotFoundException("Cannot find: " + url); // NOI18N
                 }
             }
-            if (fo.isFolder()) {
+            if (!f.isFile()) {
                 throw new UnknownServiceException();
             }
         }
@@ -101,7 +101,7 @@ public class NbinstURLStreamHandler extends URLStreamHandler {
         public int getContentLength() {
             try {
                 this.connect();
-                return (int) this.fo.getSize();     //May cause overflow long->int
+                return (int) f.length();     //May cause overflow long->int
             } catch (IOException e) {
                 return -1;
             }
@@ -111,7 +111,7 @@ public class NbinstURLStreamHandler extends URLStreamHandler {
         public InputStream getInputStream() throws IOException {
             this.connect();
             if (iStream == null) {
-                iStream = fo.getInputStream();
+                iStream = new FileInputStream(f);
             }
             return iStream;
         }
@@ -121,7 +121,10 @@ public class NbinstURLStreamHandler extends URLStreamHandler {
             if ("content-type".equals(name)) {                  //NOI18N
                 try {
                     this.connect();
-                    return fo.getMIMEType();
+                    FileObject fo = FileUtil.toFileObject(f);
+                    if (fo != null) {
+                        return fo.getMIMEType();
+                    }
                 } catch (IOException ioe) {
                     Exceptions.printStackTrace(ioe);
                 }

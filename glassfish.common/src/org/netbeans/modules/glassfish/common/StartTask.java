@@ -363,7 +363,7 @@ public class StartTask extends BasicTask<OperationState> {
                 Logger.getLogger("glassfish").log(Level.FINE, "Server HTTP is live."); // NOI18N
                 OperationState state = OperationState.COMPLETED;
                 String messageKey = "MSG_SERVER_STARTED"; // NOI18N
-                if (!support.isReady(true,30,TimeUnit.SECONDS)) {
+                if (!support.isReady(true,3,TimeUnit.HOURS)) {
                     state = OperationState.FAILED;
                     messageKey = "MSG_START_SERVER_FAILED"; // NOI18N
                     serverProcess.destroy();

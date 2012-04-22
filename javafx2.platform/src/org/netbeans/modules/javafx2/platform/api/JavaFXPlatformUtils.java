@@ -51,6 +51,7 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.javafx2.platform.PlatformPropertiesHandler;
 import org.netbeans.modules.javafx2.platform.Utils;
+import org.netbeans.modules.javafx2.platform.registration.PlatformAutoInstaller;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Parameters;
@@ -219,6 +220,12 @@ public final class JavaFXPlatformUtils {
         String javadocPath = null;
         String srcPath = null;
 
+        // try to create using registry entries (defined in NB-JDK co-bundle)
+        JavaPlatform registered = PlatformAutoInstaller.createRegisteredJavaFXPlatform();
+        if(registered != null) {
+            return registered;
+        }
+        
         Set<String> locations = new LinkedHashSet<String>();
         JavaPlatform defaultPlatform = JavaPlatformManager.getDefault().getDefaultPlatform();
         Collection<FileObject> roots = defaultPlatform.getInstallFolders();

@@ -150,4 +150,8 @@ public class SourceRootContainer {
 //            }
 //        }
 //    }
+
+    void clear() {
+        projectRoots.clear();
+    }
 }

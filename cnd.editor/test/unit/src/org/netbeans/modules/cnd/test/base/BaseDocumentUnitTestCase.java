@@ -60,6 +60,7 @@ import junit.framework.TestCase;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
+import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  * Vladimir Voskresensky copied this class to prevent dependency on editor tests
@@ -260,7 +261,7 @@ public abstract class BaseDocumentUnitTestCase extends CndBaseTestCase {
      *
      * @return caret instance.
      */
-    private synchronized final Caret getCaret () {
+    private synchronized Caret getCaret () {
         if (caret == null) {
             caret = new CaretImpl(getDocument(), loadCaretOffset);
         }
@@ -310,6 +311,7 @@ public abstract class BaseDocumentUnitTestCase extends CndBaseTestCase {
     protected void assertDocumentText(String msg, String expectedText) {
         String docText = getDocumentText();
         if (!docText.equals(expectedText)) {
+            CndUtils.threadsDump();
             StringBuffer sb = new StringBuffer();
             sb.append(msg);
             sb.append("\n----- expected text: -----\n");
@@ -323,17 +325,17 @@ public abstract class BaseDocumentUnitTestCase extends CndBaseTestCase {
                     startLine++;
                 }
                 if (expectedText.charAt(i) != docText.charAt(i)){
-                    sb.append("Diff starts in line "+startLine+"\n");
+                    sb.append("Diff starts in line ").append(startLine).append("\n");
                     String context = expectedText.substring(i);
                     if (context.length()>40){
                         context = context.substring(0, 40);
                     }
-                    sb.append("Expected:"+context+"\n");
+                    sb.append("Expected:").append(context).append("\n");
                     context = docText.substring(i);
                     if (context.length()>40){
                         context = context.substring(0, 40);
                     }
-                    sb.append("   Found:"+context+"\n");
+                    sb.append("   Found:").append(context).append("\n");
                     break;
                 }
             }
@@ -457,68 +459,84 @@ public abstract class BaseDocumentUnitTestCase extends CndBaseTestCase {
             setDot(dot);
         }
 
+        @Override
         public void deinstall (javax.swing.text.JTextComponent c) {
             fail("Not yet implemented");
         }
         
+        @Override
         public void install (javax.swing.text.JTextComponent c) {
             fail("Not yet implemented");
         }
         
+        @Override
         public java.awt.Point getMagicCaretPosition () {
             fail("Not yet implemented");
             return null;
         }
         
+        @Override
         public void setMagicCaretPosition (java.awt.Point p) {
             fail("Not yet implemented");
         }
         
+        @Override
         public int getDot () {
             return dot;
         }
         
+        @Override
         public int getMark () {
             return mark;
         }
         
+        @Override
        public void setDot (int dot) {
             this.mark = this.dot;
             changeCaretPosition(dot);
         }
         
+        @Override
         public void moveDot (int dot) {
             changeCaretPosition(dot);
         }
         
+        @Override
         public int getBlinkRate () {
             return blinkRate;
         }
         
+        @Override
         public void setBlinkRate (int rate) {
             this.blinkRate = rate;
         }
         
+        @Override
         public boolean isVisible () {
             return visible;
         }
         
+        @Override
         public void setVisible (boolean v) {
             this.visible = v;
         }
         
+        @Override
         public boolean isSelectionVisible () {
             return selectionVisible;
         }
         
+        @Override
         public void setSelectionVisible (boolean v) {
             this.selectionVisible = v;
         }
         
+        @Override
         public void addChangeListener (ChangeListener l) {
             listenerList.add(ChangeListener.class, l);
         }
         
+        @Override
         public void removeChangeListener (ChangeListener l) {
             listenerList.remove(ChangeListener.class, l);
         }
@@ -535,9 +553,11 @@ public abstract class BaseDocumentUnitTestCase extends CndBaseTestCase {
             }
         }
         
+        @Override
         public void paint (java.awt.Graphics g) {
         }
         
+        @Override
         public void insertUpdate(DocumentEvent e) {
             int offset = e.getOffset();
             int length = e.getLength();
@@ -568,6 +588,7 @@ public abstract class BaseDocumentUnitTestCase extends CndBaseTestCase {
             }
         }
         
+        @Override
         public void removeUpdate(DocumentEvent e) {
             int offs0 = e.getOffset();
             int offs1 = offs0 + e.getLength();
@@ -595,6 +616,7 @@ public abstract class BaseDocumentUnitTestCase extends CndBaseTestCase {
             }
         }
         
+        @Override
         public void changedUpdate(DocumentEvent e) {
             
         }

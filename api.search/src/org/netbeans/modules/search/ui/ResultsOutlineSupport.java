@@ -41,19 +41,25 @@
  */
 package org.netbeans.modules.search.ui;
 
+import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Image;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.HierarchyEvent;
 import java.awt.event.HierarchyListener;
+import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
+import javax.swing.Action;
 import javax.swing.JScrollPane;
+import javax.swing.KeyStroke;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.TableColumnModelEvent;
@@ -93,6 +99,7 @@ public class ResultsOutlineSupport {
 
     private static final String ROOT_NODE_ICON =
             "org/netbeans/modules/search/res/context.gif";              //NOI18N
+    private static final int VERTICAL_ROW_SPACE = 2;
 
     OutlineView outlineView;
     private boolean replacing;
@@ -105,6 +112,7 @@ public class ResultsOutlineSupport {
     private Node invisibleRoot;
     private List<TableColumn> allColumns = new ArrayList<TableColumn>(5);
     private ETableColumnModel columnModel;
+    private List<MatchingObjectNode> matchingObjectNodes;
 
     public ResultsOutlineSupport(boolean replacing, boolean details,
             ResultModel resultModel, List<FileObject> rootFiles,
@@ -117,6 +125,7 @@ public class ResultsOutlineSupport {
         this.resultsNode = new ResultsNode();
         this.infoNode = infoNode;
         this.invisibleRoot = new RootNode();
+        this.matchingObjectNodes = new LinkedList<MatchingObjectNode>();
         createOutlineView();
     }
 
@@ -145,15 +154,29 @@ public class ResultsOutlineSupport {
         });
         outlineView.getOutline().getColumnModel().addColumnModelListener(
                 new ColumnsListener());
+        outlineView.getOutline().getInputMap().remove(
+                KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0)); //#209949
+        outlineView.getOutline().setShowGrid(false);
+        Font font = outlineView.getOutline().getFont();
+        FontMetrics fm = outlineView.getOutline().getFontMetrics(font);
+        outlineView.getOutline().setRowHeight(
+                Math.max(16, fm.getHeight()) + VERTICAL_ROW_SPACE);
     }
 
     private void onAttach() {
         outlineView.expandNode(resultsNode);
     }
 
-    private void onDetach() {
-        resultModel.close();
+    private synchronized void onDetach() {
+        clean();
         saveColumnState();
+    }
+
+    public void clean() {
+        resultModel.close();
+        for (MatchingObjectNode mo : matchingObjectNodes) {
+            mo.clean();
+        }
     }
 
     private void loadColumnState() {
@@ -381,6 +404,15 @@ public class ResultsOutlineSupport {
         public Image getOpenedIcon(int type) {
             return getIcon(type);
         }
+
+        @Override
+        public Action[] getActions(boolean context) {
+            return new Action[0];
+        }
+
+        @Override
+        protected void createPasteTypes(Transferable t, List<PasteType> s) {
+        }
     }
 
     private void expandOnlyChilds(Node parent) {
@@ -423,7 +455,10 @@ public class ResultsOutlineSupport {
         } else {
             children = key.getDetailsChildren(replacing);
         }
-        return new MatchingObjectNode(delegate, children, key, replacing);
+        MatchingObjectNode mon =
+                new MatchingObjectNode(delegate, children, key, replacing);
+        matchingObjectNodes.add(mon);
+        return mon;
     }
 
     public void addMatchingObject(MatchingObject mo) {
@@ -584,7 +619,8 @@ public class ResultsOutlineSupport {
             super(pathItem.getFolder().getNodeDelegate(),
                     new FolderTreeChildren(pathItem),
                     Lookups.fixed(pathItem,
-                    new ReplaceCheckableNode(pathItem, replacing)));
+                    new ReplaceCheckableNode(pathItem, replacing),
+                    pathItem.getFolder().getPrimaryFile()));
             pathItem.addPropertyChangeListener(new PropertyChangeListener() {
                 @Override
                 public void propertyChange(PropertyChangeEvent evt) {
@@ -606,6 +642,16 @@ public class ResultsOutlineSupport {
         @Override
         public PasteType getDropType(Transferable t, int action, int index) {
             return null;
+        }
+
+        @Override
+        public Transferable drag() throws IOException {
+            return UiUtils.DISABLE_TRANSFER;
+        }
+
+        @Override
+        public Action[] getActions(boolean context) {
+            return new Action[0];
         }
     }
 

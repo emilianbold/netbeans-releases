@@ -44,19 +44,35 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
-import org.netbeans.modules.cnd.modelimpl.csm.resolver.Resolver;
-import org.netbeans.modules.cnd.modelimpl.csm.resolver.ResolverFactory;
-import org.netbeans.modules.cnd.api.model.*;
-import java.util.*;
-import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import org.netbeans.modules.cnd.antlr.collections.AST;
+import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmClassifier;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmMember;
+import org.netbeans.modules.cnd.api.model.CsmNamespace;
+import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
+import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmQualifiedNamedElement;
+import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
-import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
-import org.netbeans.modules.cnd.modelimpl.csm.core.*;
+import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
+import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
+import org.netbeans.modules.cnd.modelimpl.csm.resolver.Resolver;
+import org.netbeans.modules.cnd.modelimpl.csm.resolver.ResolverFactory;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
+import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
@@ -90,7 +106,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
         NameHolder nameHolder = NameHolder.createFunctionName(ast);
         CharSequence name = QualifiedNameCache.getManager().getString(nameHolder.getName());
         if (name.length() == 0) {
-            DiagnosticExceptoins.register(new AstRendererException((FileImpl) file, startOffset, "Empty function name.")); // NOI18N
+            DiagnosticExceptoins.register(AstRendererException.createAstRendererException((FileImpl) file, ast, startOffset, "Empty function name.")); // NOI18N
             return null;
         }
         CharSequence rawName = initRawName(ast);

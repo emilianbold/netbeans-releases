@@ -109,11 +109,15 @@ public final class DiffPanel extends JPanel {
         setPreferredSize(new Dimension(600, 450));
     }
 
+    @NbBundle.Messages({
+        "# {0} - file path",
+        "DiffPanel.title=Remote Diff for {0}"
+    })
     public boolean open() throws IOException {
         assert SwingUtilities.isEventDispatchThread();
         descriptor = new DialogDescriptor(
                 this,
-                syncItem.getPath(),
+                Bundle.DiffPanel_title(syncItem.getPath()),
                 true,
                 NotifyDescriptor.OK_CANCEL_OPTION,
                 NotifyDescriptor.OK_OPTION,

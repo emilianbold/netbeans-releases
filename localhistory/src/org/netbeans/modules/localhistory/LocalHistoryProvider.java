@@ -48,15 +48,15 @@ import java.util.*;
 import java.util.logging.Level;
 import javax.swing.Action;
 import org.netbeans.modules.localhistory.store.StoreEntry;
-import org.netbeans.modules.localhistory.ui.view.DeleteAction;
-import org.netbeans.modules.localhistory.ui.view.RevertFileAction;
 import org.netbeans.modules.localhistory.utils.FileUtils;
+import org.netbeans.modules.versioning.history.HistoryAction;
 import org.netbeans.modules.versioning.spi.VCSHistoryProvider;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.util.VersioningEvent;
 import org.netbeans.modules.versioning.util.VersioningListener;
+import org.openide.LifecycleManager;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.SystemAction;
 
 /**
  *
@@ -65,7 +65,7 @@ import org.openide.util.actions.SystemAction;
 public class LocalHistoryProvider implements VCSHistoryProvider, VersioningListener {
 
     private final List<HistoryChangeListener> listeners = new LinkedList<HistoryChangeListener>();
-
+    private Action[] actions;
     public LocalHistoryProvider() {
         LocalHistory.getInstance().getLocalHistoryStore().addVersioningListener(this);
     }
@@ -133,11 +133,14 @@ public class LocalHistoryProvider implements VCSHistoryProvider, VersioningListe
         }
     }
 
-    private Action[] getActions() {
-        return new Action[] {
-            SystemAction.get(RevertFileAction.class),
-            SystemAction.get(DeleteAction.class)    
-        };
+    private synchronized Action[] getActions() {
+        if(actions == null) {
+            actions = new Action[] {
+                new RevertFileAction(),
+                new DeleteAction()
+            };
+        }
+        return actions;
     }
 
     @Override
@@ -167,11 +170,15 @@ public class LocalHistoryProvider implements VCSHistoryProvider, VersioningListe
                 // we won't use the member store entry as that might have been 
                 // set for e.g. a stored .form while this is the according .java
                 // file beeing requested. In case the storage can't find a revision it 
-                // return next nearest in time 
+                // returns the next nearest in time 
                 long ts = se.getTimestamp();
                 StoreEntry storeEntry = LocalHistory.getInstance().getLocalHistoryStore().getStoreEntry(originalFile, ts);
-                FileUtils.copy(storeEntry.getStoreFileInputStream(), revisionFile);
-                Utils.associateEncoding(originalFile, revisionFile);
+                if(storeEntry != null) {
+                    FileUtils.copy(storeEntry.getStoreFileInputStream(), revisionFile); 
+                    Utils.associateEncoding(originalFile, revisionFile);
+                } else {
+                    LocalHistory.LOG.log(Level.WARNING, "No entry in Local History for file {0} {1} {2}", new Object[]{originalFile, new Date(ts), ts}); // NOI18N
+                }
             } catch (IOException e) {
                 LocalHistory.LOG.log(Level.WARNING, "Error while retrieving history for file {0} stored as {1}", new Object[]{se.getFile(), se.getStoreFile()}); // NOI18N
             }
@@ -224,4 +231,76 @@ public class LocalHistoryProvider implements VCSHistoryProvider, VersioningListe
         }
         return sb.toString();
     }
-}
+    
+    private class RevertFileAction extends LHAction {
+        
+        @Override
+        void perform(StoreEntry se) {
+            org.netbeans.modules.localhistory.utils.Utils.revert(se);
+        }   
+
+        @Override
+        protected void perform(final HistoryEntry entry, final Set<File> files) {
+            // XXX try to save files in invocation context only
+            // list somehow modified file in the context and save
+            // just them.
+            // The same (global save) logic is in CVS, no complaint
+            LifecycleManager.getDefault().saveAll();  
+            
+            super.perform(entry, files);
+        }
+
+        @Override
+        protected boolean isMultipleHistory() {
+            return false;
+        }
+        
+        @Override
+        public HelpCtx getHelpCtx() {
+            return new HelpCtx("org.netbeans.modules.localhistory.ui.view.RevertFileAction"); // NOI18N
+        }    
+
+        @Override
+        public String getName() {
+            return NbBundle.getMessage(LocalHistoryProvider.class, "LBL_RevertFileAction"); // NOI18N
+        }
+    }
+    
+    private class DeleteAction extends LHAction {
+
+        @Override
+        void perform(StoreEntry se) {
+            LocalHistory.getInstance().getLocalHistoryStore().deleteEntry(se.getFile(), se.getTimestamp());
+        }    
+    
+        @Override
+        public String getName() {
+            return NbBundle.getMessage(LocalHistoryProvider.class, "LBL_DeleteAction"); // NOI18N
+        }
+        
+        @Override
+        public HelpCtx getHelpCtx() {
+            return new HelpCtx("org.netbeans.modules.localhistory.ui.view.DeleteAction"); // NOI18N
+        }
+        
+    }    
+
+    private abstract class LHAction extends HistoryAction {
+        @Override
+        protected void perform(final HistoryEntry entry, final Set<File> files) {
+            LocalHistory.getInstance().getParallelRequestProcessor().post(new Runnable() {
+                @Override
+                public void run() { 
+                    for (File file : files) {
+                        StoreEntry se = LocalHistory.getInstance().getLocalHistoryStore().getStoreEntry(file, entry.getDateTime().getTime());
+                        if(se != null) {
+                            perform(se);
+                        }
+                    }   
+                }
+            });
+        }
+        abstract void perform(StoreEntry se);
+    }
+
+}    

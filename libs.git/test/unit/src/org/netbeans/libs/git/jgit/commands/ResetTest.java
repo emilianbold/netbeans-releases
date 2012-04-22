@@ -44,18 +44,22 @@ package org.netbeans.libs.git.jgit.commands;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.LogCommand;
+import org.eclipse.jgit.dircache.DirCacheEntry;
+import org.eclipse.jgit.lib.ConfigConstants;
 import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.lib.StoredConfig;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitClient.ResetType;
 import org.netbeans.libs.git.GitStatus;
 import org.netbeans.libs.git.GitStatus.Status;
 import org.netbeans.libs.git.jgit.AbstractGitTestCase;
-import org.netbeans.libs.git.progress.ProgressMonitor;
 
 /**
  *
@@ -423,10 +427,11 @@ public class ResetTest extends AbstractGitTestCase {
         write(f2, "change");
         clientNested.add(new File[] { f2 }, NULL_PROGRESS_MONITOR);
         
-        client.reset(new File[] { workDir }, "HEAD", true, NULL_PROGRESS_MONITOR);
+        client.reset(new File[] { workDir, nested }, "HEAD", true, NULL_PROGRESS_MONITOR);
         Map<File, GitStatus> statuses = client.getStatus(new File[] { workDir }, NULL_PROGRESS_MONITOR);
-        assertEquals(1, statuses.size());
+        assertEquals(2, statuses.size());
         assertStatus(statuses, workDir, f, true, Status.STATUS_NORMAL, Status.STATUS_MODIFIED, Status.STATUS_MODIFIED, false);
+        assertStatus(statuses, workDir, nested, false, Status.STATUS_NORMAL, Status.STATUS_ADDED, Status.STATUS_ADDED, false);
         statuses = clientNested.getStatus(new File[] { nested }, NULL_PROGRESS_MONITOR);
         assertEquals(1, statuses.size());
         assertStatus(statuses, nested, f2, true, Status.STATUS_MODIFIED, Status.STATUS_NORMAL, Status.STATUS_MODIFIED, false);
@@ -440,6 +445,53 @@ public class ResetTest extends AbstractGitTestCase {
         statuses = clientNested.getStatus(new File[] { nested }, NULL_PROGRESS_MONITOR);
         assertEquals(1, statuses.size());
         assertStatus(statuses, nested, f2, true, Status.STATUS_MODIFIED, Status.STATUS_NORMAL, Status.STATUS_MODIFIED, false);
+    }
+    
+    public void testLineEndingsWindows () throws Exception {
+        if (!isWindows()) {
+            return;
+        }
+        // lets turn autocrlf on
+        Thread.sleep(1100);
+        StoredConfig cfg = repository.getConfig();
+        cfg.setString(ConfigConstants.CONFIG_CORE_SECTION, null, ConfigConstants.CONFIG_KEY_AUTOCRLF, "true");
+        cfg.save();
+        
+        File f = new File(workDir, "f");
+        write(f, "a\r\nb\r\n");
+        File[] roots = new File[] { f };
+        
+        GitClient client = getClient(workDir);
+        runExternally(workDir, Arrays.asList("git.cmd", "add", "f"));
+        List<String> res = runExternally(workDir, Arrays.asList("git.cmd", "status", "-s"));
+        assertEquals(Arrays.asList("A  f"), res);
+        DirCacheEntry e1 = repository.readDirCache().getEntry("f");
+        runExternally(workDir, Arrays.asList("git.cmd", "commit", "-m", "hello"));
+        
+        write(f, "a\r\nb\r\nc\r\n");
+        res = runExternally(workDir, Arrays.asList("git.cmd", "status", "-s"));
+        assertEquals(Arrays.asList(" M f"), res);
+        runExternally(workDir, Arrays.asList("git.cmd", "add", "f"));
+        res = runExternally(workDir, Arrays.asList("git.cmd", "status", "-s"));
+        assertEquals(Arrays.asList("M  f"), res);
+        assertStatus(client.getStatus(roots, NULL_PROGRESS_MONITOR), workDir, f, true, Status.STATUS_MODIFIED, Status.STATUS_NORMAL, Status.STATUS_MODIFIED, false);
+        
+        client.reset(roots, "HEAD", true, NULL_PROGRESS_MONITOR);
+        assertStatus(client.getStatus(roots, NULL_PROGRESS_MONITOR), workDir, f, true, Status.STATUS_NORMAL, Status.STATUS_MODIFIED, Status.STATUS_MODIFIED, false);
+        assertEquals(e1.getObjectId(), repository.readDirCache().getEntry("f").getObjectId());
+        res = runExternally(workDir, Arrays.asList("git.cmd", "status", "-s"));
+        assertEquals(Arrays.asList(" M f"), res);
+        
+        runExternally(workDir, Arrays.asList("git.cmd", "add", "f"));
+        res = runExternally(workDir, Arrays.asList("git.cmd", "status", "-s"));
+        assertEquals(Arrays.asList("M  f"), res);
+        assertStatus(client.getStatus(roots, NULL_PROGRESS_MONITOR), workDir, f, true, Status.STATUS_MODIFIED, Status.STATUS_NORMAL, Status.STATUS_MODIFIED, false);
+        
+        client.reset("HEAD", ResetType.HARD, NULL_PROGRESS_MONITOR);
+        assertStatus(client.getStatus(roots, NULL_PROGRESS_MONITOR), workDir, f, true, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false);
+        assertEquals(e1.getObjectId(), repository.readDirCache().getEntry("f").getObjectId());
+        res = runExternally(workDir, Arrays.asList("git.cmd", "status", "-s"));
+        assertEquals(0, res.size());
     }
 
     // TODO: more tests when branches are implemented

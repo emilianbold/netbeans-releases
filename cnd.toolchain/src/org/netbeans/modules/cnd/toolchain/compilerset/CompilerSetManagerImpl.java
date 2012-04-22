@@ -988,8 +988,8 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
             return true;
         }
         String s = cs.getDirectory()+"/"+name; // NOI18N
-        s = s.replaceAll("\\\\", "/"); // NOI18N
-        path = path.replaceAll("\\\\", "/"); // NOI18N
+        s = s.replace('\\', '/'); // NOI18N
+        path = path.replace('\\', '/'); // NOI18N
         return !path.startsWith(s);
     }
 

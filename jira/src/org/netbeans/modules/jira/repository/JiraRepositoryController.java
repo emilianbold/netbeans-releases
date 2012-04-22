@@ -54,14 +54,13 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
-import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.api.Util;
+import org.netbeans.modules.bugtracking.api.RepositoryManager;
 import org.netbeans.modules.bugtracking.spi.RepositoryController;
+import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConnector;
@@ -155,7 +154,7 @@ public class JiraRepositoryController implements RepositoryController, DocumentL
         // is name unique?
         Collection<Repository> repositories = null;
         if(repository.getTaskRepository() == null) {
-            repositories = Util.getRepositories(JiraConnector.ID);
+            repositories = RepositoryManager.getInstance().getRepositories(JiraConnector.ID);
             for (Repository rp : repositories) {
                 if(name.equals(rp.getDisplayName())) {
                     errorMessage = NbBundle.getMessage(JiraRepositoryController.class, "MSG_NAME_ALREADY_EXISTS");  // NOI18N
@@ -233,27 +232,22 @@ public class JiraRepositoryController implements RepositoryController, DocumentL
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        TaskRepository taskRepository = repository.getTaskRepository();
-                        if(taskRepository != null) {
-                            AuthenticationCredentials c = taskRepository.getCredentials(AuthenticationType.REPOSITORY);
-                            if(c != null) {
-                                panel.userField.setText(c.getUserName());
-                                panel.psswdField.setText(c.getPassword());
+                        RepositoryInfo info = repository.getInfo();
+                        if(info != null) {
+                            panel.userField.setText(info.getUsername());
+                            char[] psswd = info.getPassword();
+                            panel.psswdField.setText(psswd != null ? new String(psswd) : "");
+                            String httpUser = info.getHttpUsername();
+                            char[] httpPsswd = info.getHttpPassword();
+                            if(httpUser != null && !httpUser.equals("")) {
+                                panel.httpCheckBox.setSelected(true);
+                                panel.httpUserField.setText(httpUser);
                             }
-                            c = taskRepository.getCredentials(AuthenticationType.HTTP);
-                            if(c != null) {
-                                String httpUser = c.getUserName();
-                                String httpPsswd = c.getPassword();
-                                if(httpUser != null && !httpUser.equals("")) {
-                                    panel.httpCheckBox.setSelected(true);
-                                    panel.httpUserField.setText(httpUser);
-                                }
-                                if(httpPsswd != null && !httpPsswd.equals("")) {
-                                    panel.httpCheckBox.setSelected(true);
-                                    panel.httpPsswdField.setText(httpPsswd);
-                                }
+                            if(httpPsswd != null && httpPsswd.length > 0) {
+                                panel.httpCheckBox.setSelected(true);
+                                panel.httpPsswdField.setText(new String(httpPsswd));
                             }
-                            panel.urlField.setText(taskRepository.getUrl());
+                            panel.urlField.setText(info.getUrl());
                             panel.nameField.setText(repository.getDisplayName());
                         }
                         populated = true;
@@ -316,7 +310,7 @@ public class JiraRepositoryController implements RepositoryController, DocumentL
                         httpPassword);
 
                 ValidateCommand cmd = new ValidateCommand(taskRepo);
-                repository.getExecutor().execute(cmd, false, false, false);
+                repository.getExecutor().execute(cmd, false, false, false, false);
                 if(cmd.hasFailed()) {
                     if(cmd.getErrorMessage() == null) {
                         logValidateMessage("validate for [{0},{1},{2},{3},{4},{5}] has failed, yet the returned error message is null.", // NOI18N

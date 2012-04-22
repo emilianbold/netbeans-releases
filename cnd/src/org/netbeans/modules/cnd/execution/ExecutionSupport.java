@@ -304,6 +304,9 @@ public class ExecutionSupport implements Node.Cookie {
                 return getEntry().getFile().getParent().canWrite();
             }
         };
+        //String editor hint to use a JTextField, not a JTextArea for the
+        //custom editor.
+        result.setValue("oneline", Boolean.TRUE); // NOI18N
         return result;
     }
 

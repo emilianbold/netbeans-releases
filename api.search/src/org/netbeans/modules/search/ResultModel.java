@@ -74,7 +74,7 @@ public final class ResultModel {
     private FileObject commonSearchRoot;
 
     /** */
-    private final long creationTime;   
+    private long startTime;
     /** */
     private int totalDetailsCount = 0;
     /**
@@ -116,13 +116,17 @@ public final class ResultModel {
 
 	basicCriteria = basicSearchCriteria;
 	isFullText = (basicCriteria != null) && basicCriteria.isFullText();        
-        creationTime = System.currentTimeMillis();
+        startTime = -1;
     }
     
     /**
      */
-    long getCreationTime() {
-        return creationTime;
+    synchronized long getStartTime() {
+        if (startTime == -1) {
+            throw new IllegalStateException(
+                    "Search has not started yet");                      //NOI18N
+        }
+        return startTime;
     }
     
     /**
@@ -434,6 +438,14 @@ public final class ResultModel {
             PropertyChangeListener listener) {
         propertyChangeSupport.removePropertyChangeListener(propertyName,
                 listener);
+    }
+
+    synchronized void setStartTime() {
+        if (startTime != -1) {
+            throw new IllegalStateException();
+        } else {
+            startTime = System.currentTimeMillis();
+        }
     }
 
     private class MatchSelectionListener implements ChangeListener {

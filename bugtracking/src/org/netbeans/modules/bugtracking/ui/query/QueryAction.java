@@ -47,11 +47,13 @@ import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
 
 import java.awt.event.ActionEvent;
+import java.io.File;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.QueryImpl;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
@@ -101,28 +103,34 @@ public class QueryAction extends SystemAction {
     }
 
     private static void openQuery(final QueryImpl query, final RepositoryImpl repository, final Node[] context, final boolean suggestedSelectionOnly) {
-        SwingUtilities.invokeLater(new Runnable() {
+        BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
             @Override
             public void run() {
-                BugtrackingManager.LOG.log(Level.FINE, "QueryAction.openQuery start. query [{0}]", new Object[] {query != null ? query.getDisplayName() : null});
-                UIUtils.setWaitCursor(true);
-                try {
-                    QueryTopComponent tc = null;
-                    if(query != null) {
-                        tc = QueryTopComponent.find(query);
+                final File file = BugtrackingUtil.getFile(context);
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        BugtrackingManager.LOG.log(Level.FINE, "QueryAction.openQuery start. query [{0}]", new Object[] {query != null ? query.getDisplayName() : null});
+                        UIUtils.setWaitCursor(true);
+                        try {
+                            QueryTopComponent tc = null;
+                            if(query != null) {
+                                tc = QueryTopComponent.find(query);
+                            }
+                            if(tc == null) {
+                                tc = new QueryTopComponent();
+                                tc.init(query, repository, file, suggestedSelectionOnly);
+                            }
+                            if(!tc.isOpened()) {
+                                tc.open();
+                            }
+                            tc.requestActive();
+                            BugtrackingManager.LOG.log(Level.FINE, "QueryAction.openQuery finnish. query [{0}]", new Object[] {query != null ? query.getDisplayName() : null});
+                        } finally {
+                            UIUtils.setWaitCursor(false);
+                        }
                     }
-                    if(tc == null) {
-                        tc = new QueryTopComponent();
-                        tc.init(query, repository, context, suggestedSelectionOnly);
-                    }
-                    if(!tc.isOpened()) {
-                        tc.open();
-                    }
-                    tc.requestActive();
-                    BugtrackingManager.LOG.log(Level.FINE, "QueryAction.openQuery finnish. query [{0}]", new Object[] {query != null ? query.getDisplayName() : null});
-                } finally {
-                    UIUtils.setWaitCursor(false);
-                }
+                });
             }
         });
     }

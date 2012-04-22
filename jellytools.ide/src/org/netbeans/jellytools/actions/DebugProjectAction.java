@@ -47,29 +47,33 @@ import java.awt.event.KeyEvent;
 import javax.swing.KeyStroke;
 import org.netbeans.jellytools.Bundle;
 
-/** Used to call "Debug" popup menu item on project's root node,
- * "Run|Debug Main Project" main menu item or Ctrl+F5 shortcut.
+/**
+ * Used to call "Debug" popup menu item on project's root node, "Debug|Debug
+ * Main Project" main menu item or Ctrl+F5 shortcut.
+ *
  * @see Action
  * @see org.netbeans.jellytools.nodes.ProjectRootNode
- * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
- * @author Jiri.Skrivanek@sun.com
+ * @author Adam Sotona
+ * @author Jiri Skrivanek
  */
 public class DebugProjectAction extends Action {
 
     // "Debug"
-    private static final String debugProjectPopup = 
+    private static final String debugProjectPopup =
             Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle",
-                                    "LBL_DebugProjectActionOnProject_Name");
-    // "Run|Debug Main Project"
-    private static final String debugProjectMenu = 
-            Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "Menu/RunProject")+
-            "|"+
-            Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "LBL_DebugMainProjectAction_Name");
-    private static final KeyStroke KEYSTROKE = System.getProperty("os.name").toLowerCase().indexOf("mac") > -1 ?
-            KeyStroke.getKeyStroke(KeyEvent.VK_F5, KeyEvent.META_MASK) :
-            KeyStroke.getKeyStroke(KeyEvent.VK_F5, KeyEvent.CTRL_MASK);
-    
-    /** creates new DebugProjectAction instance */    
+            "LBL_DebugProjectActionOnProject_Name");
+    // "Debug|Debug Main Project"
+    private static final String debugProjectMenu =
+            Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "Menu/RunProject")
+            + "|"
+            + Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "LBL_DebugMainProjectAction_Name");
+    private static final KeyStroke KEYSTROKE = System.getProperty("os.name").toLowerCase().indexOf("mac") > -1
+            ? KeyStroke.getKeyStroke(KeyEvent.VK_F5, KeyEvent.META_MASK)
+            : KeyStroke.getKeyStroke(KeyEvent.VK_F5, KeyEvent.CTRL_MASK);
+
+    /**
+     * creates new DebugProjectAction instance
+     */
     public DebugProjectAction() {
         super(debugProjectMenu, debugProjectPopup, KEYSTROKE);
     }

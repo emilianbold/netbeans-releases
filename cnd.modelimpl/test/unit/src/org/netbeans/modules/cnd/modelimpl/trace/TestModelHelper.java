@@ -53,8 +53,8 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
  * @author Vladimir Voskresensky
  */
 public final class TestModelHelper {
-    private TraceModel traceModel;
-    
+    private final TraceModel traceModel;
+    private CharSequence projectName;
     /**
      * Creates a new instance of TestModelHelper
      */
@@ -78,9 +78,17 @@ public final class TestModelHelper {
     }     
     
     public ProjectBase getProject(){
-        return traceModel.getProject();
+        ProjectBase project = traceModel.getProject();
+        if (projectName == null) {
+            projectName = project.getName();
+        }
+        return project;
     }
-    
+
+    public CharSequence getProjectName() {
+        return projectName;
+    }
+
     public void resetProject() {
 	traceModel.resetProject();
     }
@@ -91,5 +99,10 @@ public final class TestModelHelper {
     
     public void shutdown(boolean clearCache) {
         traceModel.shutdown(clearCache);
+    }
+
+    @Override
+    public String toString() {
+        return "TestModelHelper{" + "projectName=" + projectName + '}';
     }
 }

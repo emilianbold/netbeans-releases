@@ -37,14 +37,22 @@
  */
 package org.netbeans.core.startup;
 
+import java.awt.GraphicsEnvironment;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.junit.Assert;
-import org.junit.Test;
+import org.netbeans.junit.NbTestCase;
 
-public class SplashTest {
-    public SplashTest() {
+public class SplashTest extends NbTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(SplashTest.class);
     }
 
-    @Test
+    public SplashTest(String name) {
+        super(name);
+    }
+
     public void testIncrementStepsInSplash() {
         Splash splash = Splash.getInstance();
         splash.addToMaxSteps(10);

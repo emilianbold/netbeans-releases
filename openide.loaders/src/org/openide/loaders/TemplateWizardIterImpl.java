@@ -50,6 +50,7 @@ import javax.swing.event.*;
 import org.netbeans.api.progress.ProgressHandle;
 
 import org.openide.WizardDescriptor;
+import org.openide.util.Mutex;
 
 /** Implementation of template wizard's iterator that allows to
 * delegate all functionality to another wizard.
@@ -57,7 +58,7 @@ import org.openide.WizardDescriptor;
 * @author  Jaroslav Tulach
 */
 class TemplateWizardIterImpl extends Object
-    implements WizardDescriptor.Iterator, ChangeListener {
+implements WizardDescriptor.Iterator, ChangeListener, Runnable {
 
     /** iterator to delegate to */
     private TemplateWizard.Iterator iterator;
@@ -257,6 +258,11 @@ class TemplateWizardIterImpl extends Object
      *@param param1 Parameter #1 of the <CODE>ChangeEvent<CODE> constructor.
      */
     private void fireStateChanged() {
+        Mutex.EVENT.writeAccess(this);
+    }
+    
+    @Override
+    public void run() {
         if (listenerList == null)
             return;
         

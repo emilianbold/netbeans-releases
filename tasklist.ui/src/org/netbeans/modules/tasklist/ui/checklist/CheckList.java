@@ -60,6 +60,8 @@ public class CheckList extends JList {
 
     private static final long serialVersionUID = 1;
 
+    private final CheckListModel model;
+
     /**
      * Constructs a <code>CheckList</code> that displays the elements in the
      * specified, non-<code>null</code> model. 
@@ -71,6 +73,7 @@ public class CheckList extends JList {
      */    
     public CheckList(CheckListModel dataModel) {
         super(dataModel);
+        this.model = dataModel;
         setCellRenderer(new DefaultCheckListCellRenderer());
         Action action = new CheckAction();
         getActionMap().put("check", action); //NOI18N
@@ -88,7 +91,6 @@ public class CheckList extends JList {
                     if (e.getX() > 15)
                         return;
 
-                    CheckListModel model = (CheckListModel) getModel();
                     model.setChecked(index, !model.isChecked(index));
                     
                     e.consume();
@@ -106,28 +108,21 @@ public class CheckList extends JList {
      * @param state state of the checkboxes
      * @param  listData  the array of Objects to be loaded into the data model
      */
-    public CheckList(boolean[] state, Object[] listData) {
-        this(new DefaultCheckListModel(state, listData));
+    public CheckList(boolean[] state, Object[] listData, String[] descriptions) {
+        this(new DefaultCheckListModel(state, listData, descriptions));
     }
 
-    /**
-     * Constructs a <code>CheckList</code> with an empty model.
-     */
-    public CheckList() {
-        this(new AbstractCheckListModel() {
-            public boolean isChecked(int index) {
-                return false;
-            }
-            public void setChecked(int index, boolean c) {
-            }
-            public int getSize() {
-                return 0;
-            }
-            public Object getElementAt(int index) {
-                return null;
-            }
-        });
+    @Override public String getToolTipText(MouseEvent event) {
+        return model.getDescription(locationToIndex(event.getPoint()));
     }
+
+    /* Seems more annoying than helpful:
+    @Override public Point getToolTipLocation(MouseEvent event) {
+        int index = locationToIndex(event.getPoint());
+        Rectangle bounds = getCellBounds(index, index);
+        return new Point(bounds.width, bounds.y);
+    }
+    */
     
     /**
      * Check/uncheck currently selected item

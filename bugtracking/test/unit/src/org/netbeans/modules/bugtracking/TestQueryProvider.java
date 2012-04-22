@@ -43,7 +43,7 @@ package org.netbeans.modules.bugtracking;
 
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.openide.nodes.Node;
 
@@ -64,10 +64,15 @@ public class TestQueryProvider extends QueryProvider<TestQuery, TestIssue> {
     }
 
     @Override
-    public BugtrackingController getController(TestQuery q) {
+    public QueryController getController(TestQuery q) {
         return q.getController();
     }
 
+    @Override
+    public void remove(TestQuery q) {
+        q.remove();
+    }
+    
     @Override
     public boolean isSaved(TestQuery q) {
         return q.isSaved();
@@ -82,6 +87,11 @@ public class TestQueryProvider extends QueryProvider<TestQuery, TestIssue> {
     public boolean contains(TestQuery q, String id) {
         return q.contains(id);
     }
+    
+    @Override
+    public void refresh(TestQuery q) {
+        q.refresh();
+    }
 
     @Override
     public void removePropertyChangeListener(TestQuery q, PropertyChangeListener listener) {
@@ -93,9 +103,4 @@ public class TestQueryProvider extends QueryProvider<TestQuery, TestIssue> {
         q.addPropertyChangeListener(listener);
     }
 
-    @Override
-    public void setContext(TestQuery q, Node[] nodes) {
-        q.setContext(nodes);
-    }
-    
 }

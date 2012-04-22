@@ -125,12 +125,12 @@ public class CLICoreBridge extends CLIHandler {
             }
         }
         
-        URLClassLoader loader = new URLClassLoader(urls.toArray(new URL[0]), getClass().getClassLoader());
+        URLClassLoader loader = new URLClassLoader(urls.toArray(new URL[urls.size()]), getClass().getClassLoader());
         MainLookup.systemClassLoaderChanged(loader);
         try {
             final List<URL> layers = ModuleLayeredFileSystem.collectLayers(loader);
             XMLFileSystem xfs = new XMLFileSystem();
-            xfs.setXmlUrls(layers.toArray(new URL[0]));
+            xfs.setXmlUrls(layers.toArray(new URL[layers.size()]));
             MainLookup.register(xfs);
             MainLookup.modulesClassPathInitialized(Lookups.forPath("Services/OptionProcessors")); // NOI18N
         } catch (Exception ex) {

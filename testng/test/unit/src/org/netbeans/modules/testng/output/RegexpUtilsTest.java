@@ -581,6 +581,21 @@ public class RegexpUtilsTest extends TestCase {
         assertNull(m.group(7));
     }
 
+    public void testTestRegexp2() throws Exception {
+        Pattern pattern = getPattern("TEST_REGEX_2");
+        final String matchingString =
+            "INVOKING: \"Mustache\" - test.mustache.MustacheTest.runTest(java.util.Map, java.lang.String, java.lang.String)(value(s): {}, \"Hello";
+        Matcher m = pattern.matcher(matchingString);
+        assertTrue(m.matches());
+//        assertEquals(8, m.groupCount());
+        assertEquals("Mustache", m.group(1));
+        assertEquals("test.mustache.MustacheTest.runTest", m.group(2));
+        assertEquals("java.util.Map, java.lang.String, java.lang.String", m.group(4));
+//        assertNull(m.group(5));
+//        assertNull(m.group(6));
+//        assertEquals("4", m.group(8));
+    }
+
     public void testStatsRegexp() throws Exception {
         Pattern pattern = getPattern("STATS_REGEX");
         final String matchingString =
