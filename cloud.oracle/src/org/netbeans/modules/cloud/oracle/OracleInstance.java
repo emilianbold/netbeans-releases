@@ -97,8 +97,6 @@ public class OracleInstance {
     private String user;
     private String password;
     private String adminURL;
-    private String instanceURL;
-    private String cloudURL;
     private String identityDomain;
     private String serviceInstance;
     private String onPremiseServerInstanceId;
@@ -112,40 +110,17 @@ public class OracleInstance {
     private OracleJ2EEInstance j2eeInstance;
     
     public OracleInstance(String name, String tenantUserName, String tenantPassword, 
-          String adminURL, String instanceURL, String cloudURL, String identityDomain, 
+          String adminURL, String identityDomain, 
           String serviceInstance, String onPremiseServerInstanceId,
           String sdkFolder) {
         this.name = name;
         this.user = tenantUserName;
         this.password = tenantPassword;
         this.adminURL = adminURL;
-        this.instanceURL = instanceURL;
-        this.cloudURL = cloudURL;
         this.identityDomain = identityDomain;
         this.serviceInstance = serviceInstance;
         this.onPremiseServerInstanceId = onPremiseServerInstanceId;
         this.sdkFolder = sdkFolder;
-    }
-
-    public String getCloudURL() {
-        return cloudURL;
-    }
-
-    public void setCloudURL(String cloudURL) {
-        this.cloudURL = cloudURL;
-    }
-
-    public String getInstanceURL() {
-        return instanceURL;
-    }
-
-    public void setInstanceURL(String instanceURL) {
-        this.instanceURL = instanceURL;
-        synchronized (this) {
-            if (j2eeInstance != null) {
-                j2eeInstance.getInstanceProperties().setProperty(OracleDeploymentFactory.IP_INSTANCE_URL, getInstanceURL());
-            }
-        }
     }
 
     void setServerInstance(ServerInstance serverInstance) {
@@ -292,7 +267,7 @@ public class OracleInstance {
         }
     }
     
-    public static Future<DeploymentStatus> deployAsync(final String instanceUrl, final ApplicationManager pm, final File f, 
+    public static Future<DeploymentStatus> deployAsync(final ApplicationManager pm, final File f, 
                          final String identityDomain, 
                          final String serviceName, 
                          final ProgressObjectImpl po,
@@ -302,7 +277,7 @@ public class OracleInstance {
             @Override
             public DeploymentStatus call() throws Exception {
                 String url[] = new String[1];
-                DeploymentStatus ds = deploy(instanceUrl, pm, f, identityDomain, serviceName, po, url, cloudInstanceName, onPremiseServiceInstanceId);
+                DeploymentStatus ds = deploy(pm, f, identityDomain, serviceName, po, url, cloudInstanceName, onPremiseServiceInstanceId);
                 LOG.log(Level.INFO, "deployment result: "+ds); // NOI18N
                 po.updateDepoymentResult(ds, url[0]);
                 return ds;
@@ -310,7 +285,7 @@ public class OracleInstance {
         });
     }
     
-    public static DeploymentStatus deploy(String instanceURL, ApplicationManager am, File f, String identityDomain, String serviceName, 
+    public static DeploymentStatus deploy(ApplicationManager am, File f, String identityDomain, String serviceName, 
                           ProgressObjectImpl po, String[] url, String cloudInstanceName, String onPremiseServiceInstanceId) {
         assert !SwingUtilities.isEventDispatchThread();
         OutputWriter ow = null;
@@ -387,11 +362,8 @@ public class OracleInstance {
                 if (JobStatus.COMPLETE.equals(jobStatus)) {
                     Application app2 = am.describeApplication(identityDomain, serviceName, appId);
                     List<String> urls = app2.getApplicationUrls();
-                    if (urls != null && !urls.isEmpty()) {
-                        url[0] = app2.getApplicationUrls().get(0);
-                    } else {
-                        url[0] = instanceURL+(instanceURL.endsWith("/") ? (ctx.length() > 1 ? ctx.substring(1) : "") : ctx);
-                    }
+                    assert urls != null && !urls.isEmpty() : "deployed app must have a URL. "+app2;
+                    url[0] = app2.getApplicationUrls().get(0);
                     ow.println();
                     ow.println(NbBundle.getMessage(OracleInstance.class, "MSG_Deployment_OK", url[0]));
                     return DeploymentStatus.SUCCESS;

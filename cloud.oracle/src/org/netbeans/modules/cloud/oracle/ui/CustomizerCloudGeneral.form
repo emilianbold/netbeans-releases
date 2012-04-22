@@ -18,9 +18,7 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="instanceUrlLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="adminUrlLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="cloudUrlLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="passwordLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="usernameLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="serviceInstanceLabel" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -34,9 +32,7 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="configureButton" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="cloudUrlField" alignment="0" max="32767" attributes="0"/>
                   <Component id="adminUrlField" alignment="0" max="32767" attributes="0"/>
-                  <Component id="instanceUrlField" alignment="0" max="32767" attributes="0"/>
                   <Component id="serviceInstanceField" alignment="0" max="32767" attributes="0"/>
                   <Component id="identityDomainField" alignment="0" pref="284" max="32767" attributes="0"/>
                   <Group type="102" attributes="0">
@@ -69,17 +65,7 @@
                   <Component id="adminUrlLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="adminUrlField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="instanceUrlLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="instanceUrlField" alignment="3" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="cloudUrlLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="cloudUrlField" alignment="3" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="jLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="sdkTextField" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -95,7 +81,7 @@
                   <Component id="passwordLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="passwordField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+              <EmptySpace min="0" pref="6" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -115,36 +101,6 @@
       </AuxValues>
     </Component>
     <Component class="javax.swing.JTextField" name="adminUrlField">
-    </Component>
-    <Component class="javax.swing.JLabel" name="instanceUrlLabel">
-      <Properties>
-        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="instanceUrlField"/>
-        </Property>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/cloud/oracle/ui/Bundle.properties" key="CustomizerCloudGeneral.instanceUrlLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-      <AuxValues>
-        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
-      </AuxValues>
-    </Component>
-    <Component class="javax.swing.JTextField" name="instanceUrlField">
-    </Component>
-    <Component class="javax.swing.JLabel" name="cloudUrlLabel">
-      <Properties>
-        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="cloudUrlField"/>
-        </Property>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/cloud/oracle/ui/Bundle.properties" key="CustomizerCloudGeneral.cloudUrlLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-      <AuxValues>
-        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
-      </AuxValues>
-    </Component>
-    <Component class="javax.swing.JTextField" name="cloudUrlField">
     </Component>
     <Component class="javax.swing.JLabel" name="usernameLabel">
       <Properties>

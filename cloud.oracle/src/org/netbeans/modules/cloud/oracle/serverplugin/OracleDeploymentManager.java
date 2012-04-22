@@ -79,8 +79,6 @@ public class OracleDeploymentManager implements DeploymentManager2 {
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
-    private final String instanceUrl;
-    
     private final InstanceProperties props;
     
     private ApplicationManager pm;
@@ -90,12 +88,11 @@ public class OracleDeploymentManager implements DeploymentManager2 {
 
     // FIXME should we query IP for other props as well rather than fetching
     // them before construction
-    public OracleDeploymentManager(String instanceUrl, ApplicationManager pm, String identityDomain, 
+    public OracleDeploymentManager(ApplicationManager pm, String identityDomain, 
           String serviceInstance, String cloudInstanceName, InstanceProperties props) {
         this.pm = pm;
         this.identityDomain = identityDomain;
         this.serviceInstance = serviceInstance;
-        this.instanceUrl = instanceUrl;
         this.cloudInstanceName = cloudInstanceName;
         
         this.props = props;
@@ -144,7 +141,7 @@ public class OracleDeploymentManager implements DeploymentManager2 {
             po.updateDepoymentResult(DeploymentStatus.FAILED, null);
             return po;
         }
-        Future<DeploymentStatus> task = OracleInstance.deployAsync(instanceUrl, pm, f, identityDomain, serviceInstance, po, cloudInstanceName, getOnPremiseServiceInstanceId());
+        Future<DeploymentStatus> task = OracleInstance.deployAsync(pm, f, identityDomain, serviceInstance, po, cloudInstanceName, getOnPremiseServiceInstanceId());
         return po;
     }
 

@@ -64,8 +64,6 @@ public class OracleInstanceManager {
     private static final String PASSWORD = "password"; // NOI18N
     private static final String NAME = "name"; // NOI18N
     private static final String ADMIN_URL = "admin-url"; // NOI18N
-    private static final String INSTANCE_URL = "instance-url"; // NOI18N
-    private static final String CLOUD_URL = "cloud-url"; // NOI18N
     private static final String SERVICE_GROUP = "service-group"; // NOI18N
     private static final String SERVICE_INSTANCE = "service-instance"; // NOI18N
     private static final String ON_PREMISE_SERVICE_INSTANCE_ID = "on-premise"; // NOI18N
@@ -112,8 +110,6 @@ public class OracleInstanceManager {
         InstanceProperties props = InstancePropertiesManager.getInstance().createProperties(ORACLE_IP_NAMESPACE);
         saveUsernameAndPassword(ai);
         props.putString(ADMIN_URL, ai.getAdminURL());
-        props.putString(INSTANCE_URL, ai.getInstanceURL());
-        props.putString(CLOUD_URL, ai.getCloudURL());
         props.putString(SERVICE_GROUP, ai.getIdentityDomain());
         props.putString(SERVICE_INSTANCE, ai.getServiceInstance());
         props.putString(NAME, ai.getName());
@@ -127,8 +123,6 @@ public class OracleInstanceManager {
             String name = props.getString(NAME, null); // NOI18N
             if (name.equals(ai.getName())) {
                 props.putString(ADMIN_URL, ai.getAdminURL());
-                props.putString(INSTANCE_URL, ai.getInstanceURL());
-                props.putString(CLOUD_URL, ai.getCloudURL());
                 props.putString(SERVICE_GROUP, ai.getIdentityDomain());
                 props.putString(SERVICE_INSTANCE, ai.getServiceInstance());
                 if (ai.getOnPremiseServerInstanceId() == null) {
@@ -166,8 +160,6 @@ public class OracleInstanceManager {
             String name = props.getString(NAME, null); // NOI18N
             assert name != null : "Instance without name";
             String adminURL = props.getString(ADMIN_URL, ""); // NOI18N
-            String instanceURL = props.getString(INSTANCE_URL, ""); // NOI18N
-            String cloudURL = props.getString(CLOUD_URL, ""); // NOI18N
             
             char ch[] = Keyring.read(PREFIX+USERNAME+"."+name);
             if (ch == null) {
@@ -187,7 +179,7 @@ public class OracleInstanceManager {
             String service = props.getString(SERVICE_INSTANCE, "undefined"); // NOI18N
             String onPremise = props.getString(ON_PREMISE_SERVICE_INSTANCE_ID, null); // NOI18N
             String sdkFolder = CloudSDKHelper.getSDKFolder();
-            result.add(new OracleInstance(name, userName, password, adminURL, instanceURL, cloudURL, tenant, service, onPremise, sdkFolder));
+            result.add(new OracleInstance(name, userName, password, adminURL, tenant, service, onPremise, sdkFolder));
         }
         return result;
     }

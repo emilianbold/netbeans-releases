@@ -33,18 +33,14 @@
                   <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
                   <Component id="jLabel4" min="-2" max="-2" attributes="0"/>
                   <Component id="sdkLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="instanceLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="cloudLabel" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="instanceURLTextField" alignment="0" pref="233" max="32767" attributes="0"/>
                   <Component id="adminURLTextField" alignment="0" pref="233" max="32767" attributes="0"/>
                   <Component id="passwordField" alignment="0" pref="233" max="32767" attributes="0"/>
                   <Component id="userNameTextField" alignment="0" pref="233" max="32767" attributes="0"/>
                   <Component id="identityDomainTextField" alignment="0" pref="233" max="32767" attributes="0"/>
                   <Component id="serviceInstanceTextField" alignment="0" pref="233" max="32767" attributes="0"/>
-                  <Component id="cloudURLTextField" alignment="0" pref="233" max="32767" attributes="0"/>
                   <Group type="102" attributes="0">
                       <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
@@ -93,16 +89,6 @@
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="adminLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="adminURLTextField" alignment="3" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="instanceLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="instanceURLTextField" alignment="3" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="cloudLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="cloudURLTextField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
           </Group>
       </Group>
@@ -159,25 +145,7 @@
         </Property>
       </Properties>
     </Component>
-    <Component class="javax.swing.JTextField" name="instanceURLTextField">
-    </Component>
-    <Component class="javax.swing.JLabel" name="instanceLabel">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/cloud/oracle/ui/Bundle.properties" key="OracleWizardComponent.instanceLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
     <Component class="javax.swing.JTextField" name="identityDomainTextField">
-    </Component>
-    <Component class="javax.swing.JLabel" name="cloudLabel">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/cloud/oracle/ui/Bundle.properties" key="OracleWizardComponent.cloudLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JTextField" name="cloudURLTextField">
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel1">
       <Properties>

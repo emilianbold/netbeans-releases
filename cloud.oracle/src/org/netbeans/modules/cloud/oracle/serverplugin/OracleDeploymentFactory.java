@@ -65,7 +65,6 @@ public class OracleDeploymentFactory implements DeploymentFactory {
     public static final String IP_SERVICE_GROUP = "service-group";  // NOI18N
     public static final String IP_SERVICE_INSTANCE = "service-instance";  // NOI18N
     public static final String IP_ADMIN_URL = "admin-url";  // NOI18N
-    public static final String IP_INSTANCE_URL = "instance-url";  // NOI18N
     public static final String IP_PREMISE_SERVICE_INSTANCE_ID = "on-premise"; // NOI18N
     
     @Override
@@ -89,7 +88,7 @@ public class OracleDeploymentFactory implements DeploymentFactory {
             am = null;
         }
 
-        return new OracleDeploymentManager(props.getProperty(IP_INSTANCE_URL), 
+        return new OracleDeploymentManager(
                 am,
                 props.getProperty(IP_SERVICE_GROUP),
                 props.getProperty(IP_SERVICE_INSTANCE),
@@ -100,7 +99,7 @@ public class OracleDeploymentFactory implements DeploymentFactory {
     @Override
     public DeploymentManager getDisconnectedDeploymentManager(String uri) throws DeploymentManagerCreationException {
         InstanceProperties props = InstanceProperties.getInstanceProperties(uri);
-        return new OracleDeploymentManager(props.getProperty(IP_INSTANCE_URL), 
+        return new OracleDeploymentManager(
                 null,
                 props.getProperty(IP_SERVICE_GROUP),
                 props.getProperty(IP_SERVICE_INSTANCE),
