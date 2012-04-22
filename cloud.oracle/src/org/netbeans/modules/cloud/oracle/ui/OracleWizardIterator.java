@@ -89,9 +89,9 @@ public class OracleWizardIterator implements WizardDescriptor.AsynchronousInstan
         assert adminURL != null;
         String name = (String)wizard.getProperty(PROP_DISPLAY_NAME);
         assert name != null;
-        String identityDomain = (String)wizard.getProperty(OracleWizardPanel.SERVICE_GROUP);
+        String identityDomain = (String)wizard.getProperty(OracleWizardPanel.IDENTITY_DOMAIN);
         assert identityDomain != null;
-        String serviceName = (String)wizard.getProperty(OracleWizardPanel.SERVICE_NAME);
+        String serviceName = (String)wizard.getProperty(OracleWizardPanel.SERVICE_INSTANCE);
         assert serviceName != null;
         String sdk = (String)wizard.getProperty(OracleWizardPanel.SDK);
         assert sdk != null;

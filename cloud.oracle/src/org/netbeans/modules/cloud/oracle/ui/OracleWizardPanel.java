@@ -75,8 +75,8 @@ public class OracleWizardPanel implements WizardDescriptor.AsynchronousValidatin
     public static final String USERNAME = "username"; // String
     public static final String PASSWORD = "password"; // String
     public static final String ADMIN_URL = "admin-url"; // List<Node>
-    public static final String SERVICE_GROUP = "service-group"; // List<Node>
-    public static final String SERVICE_NAME = "service-name"; // List<Node>
+    public static final String IDENTITY_DOMAIN = "identity-domain"; // List<Node>
+    public static final String SERVICE_INSTANCE = "service-instance"; // List<Node>
     public static final String SDK = "sdk"; // String
     
     private OracleWizardComponent component;
@@ -119,8 +119,8 @@ public class OracleWizardPanel implements WizardDescriptor.AsynchronousValidatin
             settings.putProperty(USERNAME, component.getUserName());
             settings.putProperty(PASSWORD, component.getPassword());
             settings.putProperty(ADMIN_URL, component.getAdminUrl());
-            settings.putProperty(SERVICE_GROUP, component.getIdentityDomain());
-            settings.putProperty(SERVICE_NAME, component.getServiceInstance());
+            settings.putProperty(IDENTITY_DOMAIN, component.getIdentityDomain());
+            settings.putProperty(SERVICE_INSTANCE, component.getServiceInstance());
             settings.putProperty(SDK, component.getSDKFolder());
             settings.putProperty(CloudResourcesWizardPanel.PROP_SERVER_RESOURCES, servers);
         }

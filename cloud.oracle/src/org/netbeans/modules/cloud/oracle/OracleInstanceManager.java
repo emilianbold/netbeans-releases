@@ -64,7 +64,7 @@ public class OracleInstanceManager {
     private static final String PASSWORD = "password"; // NOI18N
     private static final String NAME = "name"; // NOI18N
     private static final String ADMIN_URL = "admin-url"; // NOI18N
-    private static final String SERVICE_GROUP = "service-group"; // NOI18N
+    private static final String IDENTITY_DOMAIN = "identity-domain"; // NOI18N
     private static final String SERVICE_INSTANCE = "service-instance"; // NOI18N
     private static final String ON_PREMISE_SERVICE_INSTANCE_ID = "on-premise"; // NOI18N
     
@@ -110,7 +110,7 @@ public class OracleInstanceManager {
         InstanceProperties props = InstancePropertiesManager.getInstance().createProperties(ORACLE_IP_NAMESPACE);
         saveUsernameAndPassword(ai);
         props.putString(ADMIN_URL, ai.getAdminURL());
-        props.putString(SERVICE_GROUP, ai.getIdentityDomain());
+        props.putString(IDENTITY_DOMAIN, ai.getIdentityDomain());
         props.putString(SERVICE_INSTANCE, ai.getServiceInstance());
         props.putString(NAME, ai.getName());
         if (ai.getOnPremiseServerInstanceId() != null) {
@@ -123,7 +123,7 @@ public class OracleInstanceManager {
             String name = props.getString(NAME, null); // NOI18N
             if (name.equals(ai.getName())) {
                 props.putString(ADMIN_URL, ai.getAdminURL());
-                props.putString(SERVICE_GROUP, ai.getIdentityDomain());
+                props.putString(IDENTITY_DOMAIN, ai.getIdentityDomain());
                 props.putString(SERVICE_INSTANCE, ai.getServiceInstance());
                 if (ai.getOnPremiseServerInstanceId() == null) {
                     props.removeKey(ON_PREMISE_SERVICE_INSTANCE_ID);
@@ -137,12 +137,12 @@ public class OracleInstanceManager {
         }
     }
     
-    public boolean exist(String adminURL, String identityDomain, String serviceInstance, String tenantUserName) {
+    public boolean exist(String adminURL, String identityDomain, String serviceInstance, String user) {
         for (OracleInstance oi : getInstances()) {
             if (adminURL.equals(oi.getAdminURL()) &&
                     identityDomain.equals(oi.getIdentityDomain()) &&
                     serviceInstance.equals(oi.getServiceInstance()) &&
-                    tenantUserName.equals(oi.getUser())) {
+                    user.equals(oi.getUser())) {
                 return true;
             }
         }
@@ -175,11 +175,11 @@ public class OracleInstanceManager {
             }
             String password = new String(ch);
             assert password != null : "password is missing for "+name; // NOI18N
-            String tenant = props.getString(SERVICE_GROUP, "undefined"); // NOI18N
-            String service = props.getString(SERVICE_INSTANCE, "undefined"); // NOI18N
+            String identityDomain = props.getString(IDENTITY_DOMAIN, "undefined"); // NOI18N
+            String serviceInstance = props.getString(SERVICE_INSTANCE, "undefined"); // NOI18N
             String onPremise = props.getString(ON_PREMISE_SERVICE_INSTANCE_ID, null); // NOI18N
             String sdkFolder = CloudSDKHelper.getSDKFolder();
-            result.add(new OracleInstance(name, userName, password, adminURL, tenant, service, onPremise, sdkFolder));
+            result.add(new OracleInstance(name, userName, password, adminURL, identityDomain, serviceInstance, onPremise, sdkFolder));
         }
         return result;
     }

@@ -109,13 +109,13 @@ public class OracleInstance {
     /* GuardedBy(this) */
     private OracleJ2EEInstance j2eeInstance;
     
-    public OracleInstance(String name, String tenantUserName, String tenantPassword, 
+    public OracleInstance(String name, String user, String password, 
           String adminURL, String identityDomain, 
           String serviceInstance, String onPremiseServerInstanceId,
           String sdkFolder) {
         this.name = name;
-        this.user = tenantUserName;
-        this.password = tenantPassword;
+        this.user = user;
+        this.password = password;
         this.adminURL = adminURL;
         this.identityDomain = identityDomain;
         this.serviceInstance = serviceInstance;
@@ -177,23 +177,23 @@ public class OracleInstance {
         resetCache();
     }
 
-    public void setPassword(String tenantPassword) {
-        this.password = tenantPassword;
+    public void setPassword(String password) {
+        this.password = password;
         synchronized (this) {
             if (j2eeInstance != null) {
                 j2eeInstance.getInstanceProperties().setProperty(
-                                    InstanceProperties.PASSWORD_ATTR, tenantPassword);
+                                    InstanceProperties.PASSWORD_ATTR, password);
             }
         }
         resetCache();
     }
 
-    public void setUser(String tenantUserName) {
-        this.user = tenantUserName;
+    public void setUser(String user) {
+        this.user = user;
         synchronized (this) {
             if (j2eeInstance != null) {
                 j2eeInstance.getInstanceProperties().setProperty(
-                                    InstanceProperties.USERNAME_ATTR, tenantUserName);
+                                    InstanceProperties.USERNAME_ATTR, user);
             }
         }
         resetCache();
@@ -234,13 +234,13 @@ public class OracleInstance {
         return platform;
     }
     
-    public static ApplicationManager createApplicationManager(String adminUrl, String tenantUserName, String tenantPassword, String sdkFolder) {
+    public static ApplicationManager createApplicationManager(String adminUrl, String user, String password, String sdkFolder) {
         String url = adminUrl;
         if (!url.endsWith("/")) {
             url += "/";
         }
         url += "manager/rest"; // NOI18N
-        return CloudSDKHelper.createSDKFactory(sdkFolder).createServiceEndpoint(url, tenantUserName, tenantPassword);
+        return CloudSDKHelper.createSDKFactory(sdkFolder).createServiceEndpoint(url, user, password);
     }
     
     public void testConnection() throws ManagerException {
