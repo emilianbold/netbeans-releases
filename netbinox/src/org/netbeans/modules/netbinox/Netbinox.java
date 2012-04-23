@@ -152,6 +152,9 @@ class Netbinox extends Equinox {
                 String filePart = url.substring(pref.length());
                 if (filePart.startsWith(installArea)) {
                     url = pref + filePart.substring(installArea.length());
+                    if (url.startsWith("/")) { // NOI18N
+                        url = url.substring(1);
+                    }
                 }
                 NetbinoxFactory.LOG.log(Level.FINE, "Converted to relative {0}", url);
             }
