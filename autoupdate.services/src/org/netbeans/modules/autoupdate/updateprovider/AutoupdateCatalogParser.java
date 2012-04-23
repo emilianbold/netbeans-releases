@@ -169,6 +169,7 @@ public class AutoupdateCatalogParser extends DefaultHandler {
     private static final String L10N_ATTR_LOCALIZED_MODULE_DESCRIPTION = "OpenIDE-Module-Long-Description"; // NOI18N
     
     private static String GZIP_EXTENSION = ".gz"; // NOI18N
+    private static String XML_EXTENSION = ".xml"; // NOI18N
     private static String GZIP_MIME_TYPE = "application/x-gzip"; // NOI18N
     
     public synchronized static Map<String, UpdateItem> getUpdateItems (URL url, AutoupdateCatalogProvider provider) throws IOException {
@@ -208,14 +209,18 @@ public class AutoupdateCatalogParser extends DefaultHandler {
         if (p != null) {
             URL url = p.getUpdateCenterURL ();
             if (url != null) {
-                res = url.getPath ().toLowerCase ().endsWith (GZIP_EXTENSION);
+                String path = url.getPath ().toLowerCase ();
+                res = path.endsWith (GZIP_EXTENSION);
                 if (! res) {
-                    try {
-                        URLConnection conn = url.openConnection();
-                        String contentType = conn.getContentType();
-                        res = GZIP_MIME_TYPE.equals(contentType);
-                    } catch (IOException ex) {
-                        ERR.log (Level.INFO, "Cannot read Content-Type HTTP header, using file extension, cause: ", ex);
+                    boolean isXML = path.endsWith (XML_EXTENSION);
+                    if (! isXML) {
+                        try {
+                            URLConnection conn = url.openConnection();
+                            String contentType = conn.getContentType();
+                            res = GZIP_MIME_TYPE.equals(contentType);
+                        } catch (IOException ex) {
+                            ERR.log (Level.INFO, "Cannot read Content-Type HTTP header, using file extension, cause: ", ex);
+                        }
                     }
                 }
                 ERR.log (Level.FINER, "Is GZIP " + url + " ? " + res);
