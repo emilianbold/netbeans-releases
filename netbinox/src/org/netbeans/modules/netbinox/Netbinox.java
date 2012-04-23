@@ -157,6 +157,8 @@ class Netbinox extends Equinox {
                     url = pref + filePart.substring(installArea.length());
                 }
                 NetbinoxFactory.LOG.log(Level.FINE, "Converted to relative {0}", url);
+            } else {
+                NetbinoxFactory.LOG.log(Level.FINE, "Kept absolute {0}", url);
             }
             return delegate.installBundle(url, in);
         }
