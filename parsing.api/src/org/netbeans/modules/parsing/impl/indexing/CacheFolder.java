@@ -60,6 +60,8 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.modules.Places;
+import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -68,6 +70,9 @@ import org.openide.modules.Places;
 public final class CacheFolder {
 
     private static final Logger LOG = Logger.getLogger(CacheFolder.class.getName());
+    private static final RequestProcessor RP = new RequestProcessor(CacheFolder.class.getName(), 1, false, false);
+    private static final RequestProcessor.Task SAVER = RP.create(new Saver());
+    private static final int SLIDING_WINDOW = 500;
 
     private static final String SEGMENTS_FILE = "segments";      //NOI18N
     private static final String SLICE_PREFIX = "s";              //NOI18N
@@ -152,42 +157,35 @@ public final class CacheFolder {
     }
 
     public static FileObject getDataFolder (final URL root, final boolean onlyIfAlreadyExists) throws IOException {
+        final String rootName = root.toExternalForm();
         final FileObject _cacheFolder = getCacheFolder();
-        final FileObject [] dataFolder = new FileObject[] { null };
-
-        // #170182 - preventing filesystem events being fired from under the CacheFolder.class lock
-        _cacheFolder.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
-            public void run() throws IOException {
-                synchronized (CacheFolder.class) {
-                    loadSegments(_cacheFolder);
-                    final String rootName = root.toExternalForm();
-                    String slice = invertedSegments.get (rootName);
-                    if ( slice == null) {
-                        if (onlyIfAlreadyExists) {
-                            return;
-                        }
-                        slice = SLICE_PREFIX + (++index);
-                        while (segments.getProperty(slice) != null) {
-                            slice = SLICE_PREFIX + (++index);
-                        }
-                        segments.put (slice,rootName);
-                        invertedSegments.put(rootName, slice);
-                        storeSegments(_cacheFolder);
-                    }
-                    if (onlyIfAlreadyExists) {
-                        dataFolder[0] = _cacheFolder.getFileObject(slice);
-                    } else {
-                        dataFolder[0] = FileUtil.createFolder(_cacheFolder, slice);
-                    }
+        String slice;
+        synchronized (CacheFolder.class) {
+            loadSegments(_cacheFolder);
+            slice = invertedSegments.get (rootName);
+            if (slice == null) {
+                if (onlyIfAlreadyExists) {
+                    return null;
                 }
+                slice = SLICE_PREFIX + (++index);
+                while (segments.getProperty(slice) != null) {
+                    slice = SLICE_PREFIX + (++index);
+                }
+                segments.put (slice,rootName);
+                invertedSegments.put(rootName, slice);
+                SAVER.schedule(SLIDING_WINDOW);
             }
-        });
-
-        return dataFolder[0];
+        }
+        assert slice != null;
+        if (onlyIfAlreadyExists) {
+            return cacheFolder.getFileObject(slice);
+        } else {
+            return FileUtil.createFolder(_cacheFolder, slice);
+        }
     }
 
     public static synchronized Iterable<? extends FileObject> findRootsWithCacheUnderFolder(FileObject folder) throws IOException {
-        URL folderURL = folder.getURL();
+        URL folderURL = folder.toURL();
         String prefix = folderURL.toExternalForm();
         final FileObject _cacheFolder = getCacheFolder();
         List<FileObject> result = new LinkedList<FileObject>();
@@ -242,5 +240,25 @@ public final class CacheFolder {
 
     private CacheFolder() {
         // no-op
+    }
+    
+    private static class Saver implements Runnable {
+        @Override
+        public void run() {
+            try {
+                final FileObject cf = getCacheFolder();
+                // #170182 - preventing filesystem events being fired from under the CacheFolder.class lock
+                cf.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+                    @Override
+                    public void run() throws IOException {
+                        synchronized (CacheFolder.class) {
+                            storeSegments(cf);
+                        }
+                    }
+                });
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
+            }
+        }
     }
 }
