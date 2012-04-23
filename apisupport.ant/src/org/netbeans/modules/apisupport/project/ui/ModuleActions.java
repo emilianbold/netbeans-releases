@@ -558,7 +558,7 @@ public final class ModuleActions implements ActionProvider, ExecProject {
         try {
             RandomAccessFile raf = new RandomAccessFile(file, "rw");
             try {
-                FileLock lock = raf.getChannel().tryLock(0, Long.MAX_VALUE, false);
+                FileLock lock = raf.getChannel().tryLock();
                 if (lock == null) {
                     return true;
                 }
