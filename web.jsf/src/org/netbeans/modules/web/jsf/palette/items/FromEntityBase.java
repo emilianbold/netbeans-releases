@@ -69,6 +69,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerUtil;
 import org.netbeans.modules.web.jsf.palette.JSFPaletteUtilities;
+import org.netbeans.modules.web.jsfapi.api.DefaultLibraryInfo;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
@@ -81,6 +82,8 @@ public abstract class FromEntityBase {
     private static final String ITEM_VAR = "item";
 
     private boolean readOnly = false;
+
+    protected JsfLibrariesSupport jsfLibrariesSupport;
 
     protected abstract boolean isCollectionComponent();
 
@@ -97,6 +100,7 @@ public abstract class FromEntityBase {
     public boolean handleTransfer(JTextComponent targetComponent) {
         Project p = null;
         FileObject fo = JSFPaletteUtilities.getFileObject(targetComponent);
+        jsfLibrariesSupport = JsfLibrariesSupport.get(targetComponent);
         if (fo != null) {
             p = FileOwnerQuery.getOwner(fo);
         }
@@ -130,6 +134,8 @@ public abstract class FromEntityBase {
                 String body = expandTemplate(targetComponent, !containsFView, FileEncodingQuery.getEncoding(fo),
                         mbc.getBeanClass(), managedBean, mbc.getManagedBeanProperty());
                 JSFPaletteUtilities.insert(body, targetComponent);
+                jsfLibrariesSupport.importLibraries(DefaultLibraryInfo.HTML);
+                jsfLibrariesSupport.importLibraries(DefaultLibraryInfo.JSF_CORE);
             } catch (IOException ioe) {
                 Exceptions.printStackTrace(ioe);
                 accept = false;
@@ -147,8 +153,8 @@ public abstract class FromEntityBase {
             int position0 = Math.min(caret.getDot(), caret.getMark());
             int position1 = Math.max(caret.getDot(), caret.getMark());
             int len = targetComponent.getDocument().getLength() - position1;
-            return targetComponent.getText(0, position0).contains("<f:view>") // NOI18N
-                    && targetComponent.getText(position1, len).contains("</f:view>"); // NOI18N
+            return targetComponent.getText(0, position0).contains(PaletteUtils.createViewTag(targetComponent, false))
+                    && targetComponent.getText(position1, len).contains(PaletteUtils.createViewTag(targetComponent, true));
         } catch (BadLocationException ble) {
             Exceptions.printStackTrace(ble);
             // we don't know; let's assume we are:
@@ -165,11 +171,11 @@ public abstract class FromEntityBase {
             final String managedBeanProperty) throws IOException {
         final StringBuffer stringBuffer = new StringBuffer();
         if (surroundWithFView) {
-            stringBuffer.append("<f:view>\n"); // NOI18N
+            stringBuffer.append(PaletteUtils.createViewTag(target, false)).append("\n"); // NOI18N
         }
         FileObject targetJspFO = EntityClass.getFO(target);
         final Map<String, Object> params = createFieldParameters(targetJspFO, entityClass, 
-                managedBean, managedBeanProperty, isCollectionComponent(), false);
+                managedBean, managedBeanProperty, isCollectionComponent(), false, jsfLibrariesSupport);
 
         FileObject tableTemplate = FileUtil.getConfigRoot().getFileObject(getTemplate());
         StringWriter w = new StringWriter();
@@ -177,14 +183,14 @@ public abstract class FromEntityBase {
         stringBuffer.append(w.toString());
 
         if (surroundWithFView) {
-            stringBuffer.append("</f:view>\n"); // NOI18N
+            stringBuffer.append(PaletteUtils.createViewTag(target, true)).append("\n"); // NOI18N
         }
         return stringBuffer.toString();
     }
 
     public static Map<String, Object> createFieldParameters(FileObject targetJspFO, final String entityClass,
             final String managedBean, final String managedBeanProperty, final boolean collectionComponent,
-            final boolean initValueGetters) throws IOException {
+            final boolean initValueGetters, JsfLibrariesSupport jls) throws IOException {
         final Map<String, Object> params = new HashMap<String, Object>();
         JavaSource javaSource = JavaSource.create(EntityClass.createClasspathInfo(targetJspFO));
         javaSource.runUserActionTask(new Task<CompilationController>() {
@@ -201,6 +207,10 @@ public abstract class FromEntityBase {
             entityName = entityName.substring(entityClass.lastIndexOf(".")+1);
         }
         params.put("entityName", entityName); // NOI18N
+        if (jls != null) {
+            params.put("htmlTagPrefix", jls.getLibraryPrefix(DefaultLibraryInfo.HTML));
+            params.put("coreTagPrefix", jls.getLibraryPrefix(DefaultLibraryInfo.JSF_CORE));
+        }
         return params;
     }
 

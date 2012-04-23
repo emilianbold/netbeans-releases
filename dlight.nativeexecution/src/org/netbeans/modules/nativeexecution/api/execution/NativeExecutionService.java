@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.nativeexecution.api.execution;
 
+import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -52,24 +53,28 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
+import javax.swing.AbstractAction;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.lib.terminalemulator.Term;
-import org.netbeans.modules.terminal.api.IOEmulation;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcess.State;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
 import org.netbeans.modules.nativeexecution.api.pty.PtySupport;
-import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
+import org.netbeans.modules.terminal.api.IOEmulation;
 import org.netbeans.modules.terminal.api.IOTerm;
 import org.openide.awt.StatusDisplayer;
+import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.WeakListeners;
 import org.openide.windows.IOSelect;
@@ -143,6 +148,8 @@ public final class NativeExecutionService {
     }
 
     private Future<Integer> runTerm() {
+        final AtomicReference<FutureTask<Integer>> runTaskRef = new AtomicReference<FutureTask<Integer>>(null);
+
         processBuilder.setUsePty(true);
 
         if (IOEmulation.isSupported(descriptor.inputOutput)) {
@@ -155,7 +162,32 @@ public final class NativeExecutionService {
 
             @Override
             public Integer call() throws Exception {
+                ProgressHandle progressHandle = null;
                 try {
+                    if (descriptor.showProgress) {
+                        Cancellable c = null;
+                        if (descriptor.controllable) {
+                            c = new Cancellable() {
+
+                                @Override
+                                public boolean cancel() {
+                                    FutureTask<Integer> task = runTaskRef.get();
+                                    if (task != null) {
+                                        return task.cancel(true);
+                                    }
+                                    return false;
+                                }
+                            };
+                        }
+                        progressHandle = ProgressHandleFactory.createHandle(displayName, c, new AbstractAction() {
+
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                descriptor.inputOutput.select();
+                            }
+                        });
+                        progressHandle.start();
+                    }
                     final NativeProcess process = processBuilder.call();
 
                     if (descriptor.frontWindow) {
@@ -189,7 +221,7 @@ public final class NativeExecutionService {
                      * (It is always set to read-only mode on run finish)
                      */
                     IOTerm.term(descriptor.inputOutput).setReadOnly(!descriptor.inputVisible);
-                    
+
                     PtySupport.connect(descriptor.inputOutput, process);
 
                     /**
@@ -262,6 +294,9 @@ public final class NativeExecutionService {
                     } finally {
                         IOTerm.term(descriptor.inputOutput).setReadOnly(true);
                         descriptor.inputOutput.getOut().close();
+                        if (progressHandle != null) {
+                            progressHandle.finish();
+                        }
                     }
                 }
             }
@@ -298,6 +333,7 @@ public final class NativeExecutionService {
             }
         };
 
+        runTaskRef.set(runTask);
         NativeTaskExecutorService.submit(runTask, "start process in term"); // NOI18N
 
         return runTask;

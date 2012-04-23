@@ -599,7 +599,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
             dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ParametersPanel.class, "ACSD_FindUsagesDialog"));
         }
 
-        setOkCancelStuff();
+        setOkCancelShortcuts();
         RequestProcessor.Task task = RP.post(new Runnable() {
             @Override
             public void run() {
@@ -675,7 +675,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         return temp;
     }
 
-    private void setOkCancelStuff() {
+    private void setOkCancelShortcuts() {
         canceledDialog = false;
         KeyStroke cancelKS = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
         String cancelActionKey = "cancel"; // NOI18N
@@ -797,6 +797,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         }
         setOKorRefactor();
         ((BorderLayout)this.getLayout()).invalidateLayout(this);
+        stop(new ProgressEvent(this, ProgressEvent.STOP));
         dialog.pack();
     }
 

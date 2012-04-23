@@ -43,7 +43,7 @@
 package org.netbeans.modules.groovy.grailsproject.actions;
 
 import static org.netbeans.modules.groovy.editor.api.parser.GroovyLanguage.ACTIONS;
-import static org.netbeans.modules.groovy.grailsproject.actions.Bundle.CTL_GenerateViewsAction;
+import static org.netbeans.modules.groovy.grailsproject.actions.Bundle.*;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
