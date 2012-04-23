@@ -154,7 +154,8 @@ class SQLExecutionHelper {
                         Object val = insertedRow[i];
 
                         // Check for Constant e.g <NULL>, <DEFAULT>, <CURRENT_TIMESTAMP> etc
-                        if (DataViewUtils.isSQLConstantString(val)) {
+                        if (DataViewUtils.isSQLConstantString(val,
+                                dataView.getDataViewDBTable().getColumn(i))) {
                             continue;
                         }
 
