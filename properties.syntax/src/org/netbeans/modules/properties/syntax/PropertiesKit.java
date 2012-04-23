@@ -45,10 +45,10 @@
 package org.netbeans.modules.properties.syntax;
 
 import javax.swing.Action;
-import org.netbeans.editor.Syntax;
-import org.netbeans.modules.editor.NbEditorKit;
 import javax.swing.text.Document;
 import javax.swing.text.TextAction;
+import org.netbeans.editor.Syntax;
+import org.netbeans.modules.editor.NbEditorKit;
 
 /**
 * Editor kit implementation for text/properties content type
@@ -63,15 +63,18 @@ public class PropertiesKit extends NbEditorKit {
 
     static final long serialVersionUID = 3229768447965508461L;
 
+    @Override
     public String getContentType() {
         return PROPERTIES_MIME_TYPE;
     }
     
     /** Create new instance of syntax coloring parser */
+    @Override
     public Syntax createSyntax(Document doc) {
         return new PropertiesSyntax();
     }
 
+    @Override
     protected Action[] createActions() {
         Action[]  actions = new Action[] {
             new ToggleCommentAction("#"), //NOI18N
