@@ -519,16 +519,17 @@ public class ParseTreeBuilder extends CoalescingTreeBuilder<Named> implements Tr
         for (int i = 0; i < attrs_count; i++) {
             //XXX I assume the attributes order is the same as in the source code
             AttrInfo attrInfo = attrs.elementAt(i);
-            StringBuilder value = new StringBuilder();
-            
-            appendQuotation(value, attrInfo.valueQuotationType);
-            value.append(attributes.getValue(i));
-            appendQuotation(value, attrInfo.valueQuotationType);
-            
             String attributeName = attributes.getLocalName(i);
-            
             int attributeNameLength = attributeName.length();
-            int attributeValueLength = value.length();
+            
+            int attributeValueLength;
+            if(attrInfo.valueOffset == -1) {
+                //no value
+                attributeValueLength = -1;
+            } else {
+                attributeValueLength = attributes.getValue(i).length() 
+                        + (attrInfo.valueQuotationType == AttrInfo.ValueQuotation.NONE ? 0 : 2);
+            }
             
             Attribute attr = factory.createAttribute(
                     attrInfo.nameOffset,
@@ -539,21 +540,7 @@ public class ParseTreeBuilder extends CoalescingTreeBuilder<Named> implements Tr
             mot.setAttribute(attr);
         }
     }
-    
-    private void appendQuotation(StringBuilder builder, AttrInfo.ValueQuotation kind) {
-        if(kind == null) {
-            return ;
-        }
-        switch(kind) {
-            case DOUBLE:
-                builder.append('"');
-                break;
-            case SINGLE:
-                builder.append('\'');
-                break;
-        }
-    }
-
+   
     //for unit tests
     static void setLoggerLevel(Level level) {
         LOGGER.setLevel(level);
@@ -578,7 +565,9 @@ public class ParseTreeBuilder extends CoalescingTreeBuilder<Named> implements Tr
 
     private static class AttrInfo {
 
-        public int nameOffset, equalSignOffset, valueOffset;
+        public int nameOffset, equalSignOffset;;
+        public int valueOffset = -1;
+        
         public ValueQuotation valueQuotationType;
 
         private enum ValueQuotation {

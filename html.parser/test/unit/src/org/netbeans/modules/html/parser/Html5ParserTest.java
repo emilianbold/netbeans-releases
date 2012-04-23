@@ -940,6 +940,25 @@ public class Html5ParserTest extends NbTestCase {
         assertTrue("found duplicated entry/ies: " + sb.toString(), sb.length() == 0);
     }
 
+    public void testParseTagAttributeWithoutValue() throws ParseException {
+        String code = "<!doctype html><body><div align/></body>";
+         HtmlParseResult result = parse(code);
+        Node root = result.root();
+        assertNotNull(root);
+
+//        ElementUtils.dumpTree(root);
+        
+        OpenTag div = ElementUtils.query(root, "html/body/div");
+        assertNotNull(div);
+        
+        Attribute attr = div.getAttribute("align");
+        assertNotNull(attr);
+        
+        assertNull(attr.value());
+        assertNull(attr.unquotedValue());
+
+    }
+    
     //fails
 //     //Bug 194037 - AssertionError at nu.validator.htmlparser.impl.TreeBuilder.endTag
 //    public void testIssue194037() throws ParseException {
