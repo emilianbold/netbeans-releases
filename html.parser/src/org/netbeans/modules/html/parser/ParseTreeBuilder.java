@@ -338,17 +338,24 @@ public class ParseTreeBuilder extends CoalescingTreeBuilder<Named> implements Tr
                 break;
 
             case ATTRIBUTE_VALUE_DOUBLE_QUOTED:
-                attrs.peek().valueQuotationType = AttrInfo.ValueQuotation.DOUBLE;
-                attrs.peek().valueOffset = offset;
+                if(from == BEFORE_ATTRIBUTE_VALUE) {
+                    attrs.peek().valueQuotationType = AttrInfo.ValueQuotation.DOUBLE;
+                    attrs.peek().valueOffset = offset;
+                }
                 break;
             case ATTRIBUTE_VALUE_SINGLE_QUOTED:
-                attrs.peek().valueQuotationType = AttrInfo.ValueQuotation.SINGLE;
-                attrs.peek().valueOffset = offset;
+                if(from == BEFORE_ATTRIBUTE_VALUE) {
+                    attrs.peek().valueQuotationType = AttrInfo.ValueQuotation.SINGLE;
+                    attrs.peek().valueOffset = offset;
+                }
                 break;
             case ATTRIBUTE_VALUE_UNQUOTED:
-                attrs.peek().valueQuotationType = AttrInfo.ValueQuotation.NONE;
-                attrs.peek().valueOffset = offset;
+                if(from == BEFORE_ATTRIBUTE_VALUE) {
+                    attrs.peek().valueQuotationType = AttrInfo.ValueQuotation.NONE;
+                    attrs.peek().valueOffset = offset;
+                }
                 break;
+                
 
         }
 
