@@ -121,7 +121,7 @@ public class QueryNode extends AsynchronousNode<List<Issue>> implements Comparab
     @Override
     protected List<Issue> load() {
         if (refresh) {
-            query.refresh(true);
+            query.refresh();
             refresh = false;
         }
         return new ArrayList<Issue>(query.getIssues());

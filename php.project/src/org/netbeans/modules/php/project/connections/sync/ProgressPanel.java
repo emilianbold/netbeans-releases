@@ -42,21 +42,26 @@
 package org.netbeans.modules.php.project.connections.sync;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dialog;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotificationLineSupport;
-import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
@@ -72,12 +77,15 @@ public class ProgressPanel extends JPanel {
     final SummaryPanel summaryPanel;
     final ProgressHandle progressHandle;
 
+    volatile boolean syncRunning = false;
     // @GuardedBy(AWT)
-    DialogDescriptor descriptor = null;
+    JButton actionButton = null;
     // @GuardedBy(AWT)
     NotificationLineSupport notificationLineSupport = null;
     // @GuardedBy(AWT)
     Dialog dialog = null;
+    // @GuardedBy(AWT)
+    JLabel progressMessageLabel = null;
 
     volatile boolean error = false;
 
@@ -92,37 +100,49 @@ public class ProgressPanel extends JPanel {
 
         summaryPanel = new SummaryPanel(syncInfo.upload, syncInfo.download, syncInfo.delete, syncInfo.noop);
         progressHandle = ProgressHandleFactory.createHandle(Bundle.ProgressPanel_progress_title());
+        // #211494
+        progressMessageLabel = ProgressHandleFactory.createDetailLabelComponent(progressHandle);
 
         initComponents();
         summaryPanelHolder.add(summaryPanel, BorderLayout.CENTER);
         progressPanelHolder.add(ProgressHandleFactory.createProgressComponent(progressHandle), BorderLayout.CENTER);
-        progressMessagePanelHolder.add(ProgressHandleFactory.createDetailLabelComponent(progressHandle), BorderLayout.CENTER);
+        progressMessagePanelHolder.add(progressMessageLabel, BorderLayout.CENTER);
         revalidate();
         repaint();
     }
 
-    @NbBundle.Messages("ProgressPanel.title=Synchronization")
-    public void createPanel() {
+    @NbBundle.Messages({
+        "ProgressPanel.title=Synchronization",
+        "ProgressPanel.button.cancel=&Cancel",
+        "ProgressPanel.details.output=Details can be reviewed in Output window."
+    })
+    public void createPanel(AtomicBoolean cancel) {
         assert SwingUtilities.isEventDispatchThread();
-        descriptor = new DialogDescriptor(
+        actionButton = new JButton();
+        actionButton.addActionListener(new ActionButtionListener(cancel));
+        Mnemonics.setLocalizedText(actionButton, Bundle.ProgressPanel_button_cancel());
+        DialogDescriptor descriptor = new DialogDescriptor(
                 this,
                 Bundle.ProgressPanel_title(),
                 true,
-                new Object[] {NotifyDescriptor.OK_OPTION},
-                NotifyDescriptor.OK_OPTION,
+                new Object[] {actionButton},
+                actionButton,
                 DialogDescriptor.DEFAULT_ALIGN,
                 null,
                 null);
         descriptor.setValid(false);
+        descriptor.setClosingOptions(new Object[]{});
+        descriptor.setAdditionalOptions(new Object[]{autoCloseCheckBox});
         notificationLineSupport = descriptor.createNotificationLineSupport();
         dialog = DialogDisplayer.getDefault().createDialog(descriptor);
     }
 
     public void start(List<SyncItem> items) {
+        syncRunning = true;
         int units = 0;
         for (SyncItem syncItem : items) {
             if (syncItem.getOperation().hasProgress()) {
-                units += syncItem.getSize();
+                units += syncItem.getSize() / 1000;
             }
         }
         progressHandle.start(units == 0 ? NO_SYNC_UNITS : units);
@@ -134,26 +154,69 @@ public class ProgressPanel extends JPanel {
         });
     }
 
-    @NbBundle.Messages("ProgressPanel.success=Synchronization successfully finished.")
+    @NbBundle.Messages({
+        "# {0} - details info",
+        "ProgressPanel.cancel=<html><b>Synchronization cancelled.</b><br>{0}"
+    })
+    public void cancel() {
+        finishInternal(Bundle.ProgressPanel_cancel(getNormalHtmlText(Bundle.ProgressPanel_details_output())), true);
+    }
+
+    @NbBundle.Messages({
+        "# {0} - details info",
+        "ProgressPanel.success=<html><b>Synchronization successfully finished.</b><br>{0}"
+    })
     public void finish() {
-        finishProgress();
+        finishInternal(Bundle.ProgressPanel_success(Bundle.ProgressPanel_details_output()), false);
+    }
+
+    @NbBundle.Messages({
+        "ProgressPanel.button.ok=&OK"
+    })
+    private void finishInternal(final String message, final boolean cancel) {
+        syncRunning = false;
+        finishProgress(cancel);
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                descriptor.setValid(true);
+                // #211494
+                progressMessageLabel.setText(" "); // NOI18N
+                Mnemonics.setLocalizedText(actionButton, Bundle.ProgressPanel_button_ok());
                 if (!error) {
                     if (autoCloseCheckBox.isSelected()) {
                         dialog.dispose();
                     } else {
-                        notificationLineSupport.setInformationMessage(Bundle.ProgressPanel_success());
+                        if (cancel) {
+                            notificationLineSupport.setWarningMessage(message);
+                        } else {
+                            notificationLineSupport.setInformationMessage(message);
+                        }
                     }
                 }
             }
         });
     }
 
-    @NbBundle.Messages("ProgressPanel.error=Error occurred, review Output window for details.")
-    void errorOccurred() {
+    public void downloadErrorOccured() {
+        summaryPanel.downloadError();
+        errorOccurred();
+    }
+
+    public void uploadErrorOccured() {
+        summaryPanel.uploadError();
+        errorOccurred();
+    }
+
+    public void deleteErrorOccured() {
+        summaryPanel.deleteError();
+        errorOccurred();
+    }
+
+    @NbBundle.Messages({
+        "# {0} - details info",
+        "ProgressPanel.error=<html><b>Error occurred during synchronization.</b><br>{0}"
+    })
+    private void errorOccurred() {
         if (error) {
             // error already set
             return;
@@ -162,17 +225,29 @@ public class ProgressPanel extends JPanel {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                notificationLineSupport.setErrorMessage(Bundle.ProgressPanel_error());
+                notificationLineSupport.setErrorMessage(Bundle.ProgressPanel_error(getNormalHtmlText(Bundle.ProgressPanel_details_output())));
             }
         });
     }
 
     @NbBundle.Messages({
+        "# {0} - red",
+        "# {1} - green",
+        "# {2} - blue",
+        "# {3} - text message",
+        "ProgressPanel.html.normal=<span style=\"color: rgb({0}, {1}, {2});\">{3}</span>"
+    })
+    private String getNormalHtmlText(String message) {
+        Color color = UIManager.getColor("Label.foreground"); // NOI18N
+        return Bundle.ProgressPanel_html_normal(color.getRed(), color.getGreen(), color.getBlue(), message);
+    }
+
+    @NbBundle.Messages({
         "# {0} - file name",
-        "ProgressPanel.downloading=Downloading {0}..."
+        "ProgressPanel.uploading=Uploading {0}..."
     })
     public void decreaseUploadNumber(SyncItem syncItem) {
-        progress(syncItem, Bundle.ProgressPanel_downloading(syncItem.getName()));
+        progress(syncItem, Bundle.ProgressPanel_uploading(syncItem.getName()));
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -183,10 +258,10 @@ public class ProgressPanel extends JPanel {
 
     @NbBundle.Messages({
         "# {0} - file name",
-        "ProgressPanel.uploading=Uploading {0}..."
+        "ProgressPanel.downloading=Downloading {0}..."
     })
     public void decreaseDownloadNumber(SyncItem syncItem) {
-        progress(syncItem, Bundle.ProgressPanel_uploading(syncItem.getName()));
+        progress(syncItem, Bundle.ProgressPanel_downloading(syncItem.getName()));
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -195,11 +270,11 @@ public class ProgressPanel extends JPanel {
         });
     }
 
-    public void resetDeleteNumber() {
+    public void setDeleteNumber(final int number) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                summaryPanel.resetDeleteNumber();
+                summaryPanel.setDeleteNumber(number);
             }
         });
     }
@@ -214,18 +289,22 @@ public class ProgressPanel extends JPanel {
     }
 
     private void progress(SyncItem syncItem, String message) {
-        workUnits += syncItem.getSize();
-        progressHandle.progress(message, workUnits);
+        if (syncItem.getOperation().hasProgress()) {
+            workUnits += syncItem.getSize() / 1000;
+            progressHandle.progress(message, workUnits);
+        }
     }
 
-    private void finishProgress() {
+    private void finishProgress(boolean cancel) {
         if (workUnits == 0) {
             // no sync at all
-            progressHandle.progress(NO_SYNC_UNITS);
+            progressHandle.progress(" ", NO_SYNC_UNITS); // NOI18N
         } else {
             progressHandle.progress(" "); // NOI18N
         }
-        progressHandle.finish();
+        if (!cancel) {
+            progressHandle.finish();
+        }
     }
 
     /**
@@ -236,19 +315,17 @@ public class ProgressPanel extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        infoLabel = new JLabel();
+        autoCloseCheckBox = new JCheckBox();
         summaryPanelHolder = new JPanel();
         progressPanelHolder = new JPanel();
         progressMessagePanelHolder = new JPanel();
-        autoCloseCheckBox = new JCheckBox();
-        Mnemonics.setLocalizedText(infoLabel, NbBundle.getMessage(ProgressPanel.class, "ProgressPanel.infoLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(autoCloseCheckBox, NbBundle.getMessage(ProgressPanel.class, "ProgressPanel.autoCloseCheckBox.text")); // NOI18N
 
         summaryPanelHolder.setLayout(new BorderLayout());
 
         progressPanelHolder.setLayout(new BorderLayout());
 
         progressMessagePanelHolder.setLayout(new BorderLayout());
-        Mnemonics.setLocalizedText(autoCloseCheckBox, NbBundle.getMessage(ProgressPanel.class, "ProgressPanel.autoCloseCheckBox.text")); // NOI18N
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
@@ -256,26 +333,46 @@ public class ProgressPanel extends JPanel {
             layout.createParallelGroup(Alignment.LEADING).addComponent(summaryPanelHolder, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addGroup(layout.createSequentialGroup()
                 .addContainerGap()
 
-                .addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(progressPanelHolder, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addComponent(progressMessagePanelHolder, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addGroup(layout.createSequentialGroup()
-
-                        .addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(infoLabel).addComponent(autoCloseCheckBox)).addGap(0, 0, Short.MAX_VALUE))).addContainerGap())
+                .addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(progressPanelHolder, GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE).addComponent(progressMessagePanelHolder, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)).addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(infoLabel)
-                .addGap(8, 8, 8)
 
-                .addComponent(summaryPanelHolder, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addPreferredGap(ComponentPlacement.UNRELATED).addComponent(progressPanelHolder, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addPreferredGap(ComponentPlacement.RELATED).addComponent(progressMessagePanelHolder, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addPreferredGap(ComponentPlacement.RELATED, 20, Short.MAX_VALUE).addComponent(autoCloseCheckBox).addContainerGap())
+                .addComponent(summaryPanelHolder, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addPreferredGap(ComponentPlacement.UNRELATED).addComponent(progressPanelHolder, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addPreferredGap(ComponentPlacement.RELATED).addComponent(progressMessagePanelHolder, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addContainerGap(20, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JCheckBox autoCloseCheckBox;
-    private JLabel infoLabel;
     private JPanel progressMessagePanelHolder;
     private JPanel progressPanelHolder;
     private JPanel summaryPanelHolder;
     // End of variables declaration//GEN-END:variables
+
+    //~ Inner classes
+
+    private final class ActionButtionListener implements ActionListener {
+
+        private final AtomicBoolean cancel;
+
+
+        public ActionButtionListener(AtomicBoolean cancel) {
+            this.cancel = cancel;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if (syncRunning) {
+                // cancel
+                cancel.set(true);
+            } else {
+                // ok -> close the dialog & free all resources
+                progressHandle.finish();
+                dialog.dispose();
+            }
+        }
+
+    }
 
 }

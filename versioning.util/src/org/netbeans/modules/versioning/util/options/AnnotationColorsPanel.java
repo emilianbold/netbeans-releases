@@ -287,7 +287,7 @@ public class AnnotationColorsPanel extends javax.swing.JPanel implements ActionL
                     .addComponent(jLabel1)
                     .addGroup(containerPanelLayout.createSequentialGroup()
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 511, Short.MAX_VALUE)
-                        .addGap(18, 18, 18)
+                        .addGap(20, 20, 20)
                         .addGroup(containerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(containerPanelLayout.createSequentialGroup()
                                 .addComponent(jLabel3)

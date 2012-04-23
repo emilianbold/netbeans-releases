@@ -84,7 +84,6 @@ public class JiraQuery {
 
     protected JiraFilter jiraFilter;
     private boolean firstRun = true;
-    private Node[] context;
     private boolean saved;
     protected long lastRefresh;
     private final PropertyChangeSupport support;
@@ -157,14 +156,6 @@ public class JiraQuery {
         return repository;
     }
 
-    public void setContext(Node[] nodes) {
-        context = nodes;
-    }
-
-    public Node[] getContext() {
-        return context;
-    }
-    
     protected QueryController createControler(JiraRepository r, JiraQuery q, JiraFilter jiraFilter) {
         if(jiraFilter == null || jiraFilter instanceof FilterDefinition) {
             return new QueryController(r, q, (FilterDefinition) jiraFilter);
@@ -280,9 +271,6 @@ public class JiraQuery {
     }
 
     public void setSaved(boolean saved) {
-        if(saved) {
-            context = null;
-        }
         this.saved = saved;
     }
 

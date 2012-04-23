@@ -119,9 +119,4 @@ public class TestIssueProvider extends IssueProvider<TestIssue> {
         data.addPropertyChangeListener(listener);
     }
 
-    @Override
-    public void setContext(TestIssue data, Node[] nodes) {
-        data.setContext(nodes);
-    }
-    
 }

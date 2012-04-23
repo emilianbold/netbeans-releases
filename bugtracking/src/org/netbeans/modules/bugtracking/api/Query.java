@@ -104,8 +104,8 @@ public final class Query {
         impl.removePropertyChangeListener(listener);
     }
 
-    public void refresh(boolean synchronously) {
-        impl.refresh(synchronously);
+    public void refresh() {
+        impl.refresh();
     }
 
     public void open(QueryMode mode) {

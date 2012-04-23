@@ -210,7 +210,7 @@ public final class NbMavenProject {
                         MavenExecutionRequest req = online.createMavenExecutionRequest();
                         req.setPom(pomFile);
                         req.setTransferListener(ProgressTransferListener.activeListener());
-                        MavenExecutionResult res = online.readProjectWithDependencies(req); //NOI18N
+                        MavenExecutionResult res = online.readProjectWithDependencies(req, false); //NOI18N
                         if (res.hasExceptions()) {
                             ok = false;
                             Exception ex = (Exception)res.getExceptions().get(0);

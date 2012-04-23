@@ -347,13 +347,13 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
         if (issue.isNew()) {
             if(BugtrackingUtil.isNbRepository(issue.getRepository().getUrl())) {
-                Node[] selection = issue.getContext();
-                if(selection == null) {
+                ownerInfo = issue.getOwnerInfo();
+                if(ownerInfo == null) {
                     // XXX not sure why we need this - i'm going to keep it for now,
                     // doesn't seem to harm
-                    selection = WindowManager.getDefault().getRegistry().getActivatedNodes();
+                    Node[] selection = WindowManager.getDefault().getRegistry().getActivatedNodes();
+                    ownerInfo = issue.getRepository().getOwnerInfo(selection);
                 }
-                ownerInfo = issue.getRepository().getOwnerInfo(selection);
                 addNetbeansInfo();
             }
             selectProduct();

@@ -45,13 +45,13 @@ import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiQueryProvider;
+import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.openide.nodes.Node;
 
 /**
  *
@@ -153,6 +153,10 @@ public final class QueryImpl<Q, I>  {
         return queryProvider.contains(data, id);
     }
 
+    public void refresh() {
+        queryProvider.refresh(data);
+    }
+    
     private Collection<IssueImpl> getIssuesIntern(int includeStatus) {
         Collection<I> issues = queryProvider.getIssues(data);
         List<IssueImpl> ret = new ArrayList<IssueImpl>(issues.size());
@@ -182,18 +186,19 @@ public final class QueryImpl<Q, I>  {
         queryProvider.removePropertyChangeListener(data, listener);                   
     }
 
-    public void setContext(Node[] context) {
-        queryProvider.setContext(data, context);
+    public void setContext(OwnerInfo info) {
+        assert (queryProvider instanceof KenaiQueryProvider);
+        if((queryProvider instanceof KenaiQueryProvider)) {
+            ((KenaiQueryProvider<Q, I>)queryProvider).setOwnerInfo(data, info);
+        }
     }
 
     public boolean needsLogin() {
-        assert KenaiQueryProvider.class.isAssignableFrom(queryProvider.getClass());
-        return ((KenaiQueryProvider<Q, I>)queryProvider).needsLogin(data);
-    }
-
-    public void refresh(boolean synchronously) {
-        assert KenaiQueryProvider.class.isAssignableFrom(queryProvider.getClass());
-        ((KenaiQueryProvider<Q, I>)queryProvider).refresh(data, synchronously);
+        assert (queryProvider instanceof KenaiQueryProvider);
+        if((queryProvider instanceof KenaiQueryProvider)) {
+            return ((KenaiQueryProvider<Q, I>)queryProvider).needsLogin(data);
+        } 
+        return false;
     }
 
 }

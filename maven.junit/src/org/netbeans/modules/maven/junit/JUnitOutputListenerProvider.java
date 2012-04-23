@@ -58,6 +58,7 @@ import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.gsf.testrunner.api.Manager;
 import org.netbeans.modules.gsf.testrunner.api.RerunHandler;
@@ -75,14 +76,14 @@ import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.api.output.OutputProcessor;
 import org.netbeans.modules.maven.api.output.OutputVisitor;
 import org.netbeans.modules.maven.junit.nodes.JUnitTestRunnerNodeFactory;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
  * @author mkleint
  */
 public class JUnitOutputListenerProvider implements OutputProcessor {
-    private Project prj;
-    private NbMavenProject mavenproject;
     TestSession session;
     private Pattern runningPattern;
     private Pattern outDirPattern2;
@@ -93,9 +94,7 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
     private static final Logger LOG = Logger.getLogger(JUnitOutputListenerProvider.class.getName());
     private RunConfig config;
     
-    public JUnitOutputListenerProvider(Project project, RunConfig config) {
-        prj = project;
-        mavenproject = prj.getLookup().lookup(NbMavenProject.class);
+    public JUnitOutputListenerProvider(RunConfig config) {
         runningPattern = Pattern.compile("(?:\\[surefire\\] )?Running (.*)", Pattern.DOTALL); //NOI18N
         outDirPattern = Pattern.compile("Surefire report directory\\: (.*)", Pattern.DOTALL); //NOI18N
         outDirPattern2 = Pattern.compile("Setting reports dir\\: (.*)", Pattern.DOTALL); //NOI18N
@@ -110,20 +109,26 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
     }
 
     public @Override void processLine(String line, OutputVisitor visitor) {
-        if (session == null) {
-            return;
-        }
         Matcher match = outDirPattern.matcher(line);
         if (match.matches()) {
             outputDir = new File(match.group(1));
+            if (session == null) {
+                createSession(outputDir);
+            }
             return;
         }
         match = outDirPattern2.matcher(line);
         if (match.matches()) {
             outputDir = new File(match.group(1));
+            if (session == null) {
+                createSession(outputDir);
+            }
             return;
         }
         
+        if (session == null) {
+            return;
+        }
         match = runningPattern.matcher(line);
         if (match.matches()) {
             if (runningTestClass != null && outputDir != null) {
@@ -134,51 +139,75 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
     }
 
     public @Override void sequenceStart(String sequenceId, OutputVisitor visitor) {
+        session = null;
+    }
+
+    private void createSession(File file) {
         if (session == null) {
-            TestSession.SessionType type = TestSession.SessionType.TEST;
-            String action = config.getActionName();
-            if (action != null) { //custom
-                if (action.contains("debug")) { //NOI81N
-                     type = TestSession.SessionType.DEBUG;
+            File fil = FileUtil.normalizeFile(file);
+            FileObject fo = FileUtil.toFileObject(file);
+            if (fo != null) {
+                Project prj = FileOwnerQuery.getOwner(fo);
+                if (prj != null) {
+                    NbMavenProject mvnprj = prj.getLookup().lookup(NbMavenProject.class);
+                    if (mvnprj != null) {
+                        TestSession.SessionType type = TestSession.SessionType.TEST;
+                        String action = config.getActionName();
+                        if (action != null) { //custom
+                            if (action.contains("debug")) { //NOI81N
+                                type = TestSession.SessionType.DEBUG;
+                            }
+                        }
+                        final TestSession.SessionType fType = type;
+                        session = new TestSession(mvnprj.getMavenProject().getId(), prj, TestSession.SessionType.TEST,
+                                new JUnitTestRunnerNodeFactory(session, prj));
+                        session.setRerunHandler(new RerunHandler() {
+                            public @Override
+                            void rerun() {
+                                RunUtils.executeMaven(config);
+                            }
+
+                            public @Override
+                            void rerun(Set<Testcase> tests) {
+                                RunConfig brc = RunUtils.cloneRunConfig(config);
+                                StringBuilder tst = new StringBuilder();
+                                for (Testcase tc : tests) {
+                                    //TODO just when is the classname null??
+                                    if (tc.getClassName() != null) {
+                                        tst.append(",");
+                                        tst.append(tc.getClassName());
+                                        //tst.append(tc.getClassName().substring(tc.getClassName().lastIndexOf('.') + 1));
+
+                                        //#name only in surefire > 2.7.2 and junit > 4.0 or testng
+                                        // bug works with the setting also for junit 3.x
+                                        tst.append("#").append(tc.getName());
+                                    }
+                                }
+                                if (tst.length() > 0) {
+                                    brc.setProperty("test", tst.substring(1));
+                                }
+                                RunUtils.executeMaven(brc);
+                            }
+
+                            public @Override
+                            boolean enabled(RerunType type) {
+                                //TODO debug doesn't property update debug port in runconfig..
+                                return (RerunType.ALL.equals(type) || RerunType.CUSTOM.equals(type)) && fType.equals(TestSession.SessionType.TEST);
+                            }
+
+                            public @Override
+                            void addChangeListener(ChangeListener listener) {
+                            }
+
+                            public @Override
+                            void removeChangeListener(ChangeListener listener) {
+                            }
+                        });
+                        Manager.getInstance().testStarted(session);
+
+                    }
                 }
             }
-            final TestSession.SessionType fType = type;
-            session = new TestSession(mavenproject.getMavenProject().getId(), prj, TestSession.SessionType.TEST,
-                    new JUnitTestRunnerNodeFactory(session, prj));
-            session.setRerunHandler(new RerunHandler() {
-                public @Override void rerun() {
-                    RunUtils.executeMaven(config);
-                }
-                public @Override void rerun(Set<Testcase> tests) {
-                    RunConfig brc = RunUtils.cloneRunConfig(config);
-                    StringBuilder tst = new StringBuilder();    
-                    for (Testcase tc : tests) {
-                        //TODO just when is the classname null??
-                        if (tc.getClassName() != null) {
-                           tst.append(",");
-                           tst.append(tc.getClassName());
-                           //tst.append(tc.getClassName().substring(tc.getClassName().lastIndexOf('.') + 1));
-                           
-                           //#name only in surefire > 2.7.2 and junit > 4.0 or testng
-                           // bug works with the setting also for junit 3.x
-                           tst.append("#").append(tc.getName());
-                        }      
-                    }
-                    if (tst.length() > 0) {
-                        brc.setProperty("test", tst.substring(1));
-                    }
-                    RunUtils.executeMaven(brc);
-                }
-                public @Override boolean enabled(RerunType type) {
-                    //TODO debug doesn't property update debug port in runconfig..
-                    return (RerunType.ALL.equals(type) || RerunType.CUSTOM.equals(type)) && fType.equals(TestSession.SessionType.TEST);
-                }
-                public @Override void addChangeListener(ChangeListener listener) {
-                }
-                public @Override void removeChangeListener(ChangeListener listener) {
-                }
-            });
-            Manager.getInstance().testStarted(session);
         }
     }
 
@@ -192,6 +221,7 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
         Manager.getInstance().sessionFinished(session);
         runningTestClass = null;
         outputDir = null;
+        session = null;
     }
 
     private static Pattern COMPARISON_PATTERN = Pattern.compile(".*expected:<(.*)> but was:<(.*)>$"); //NOI18N

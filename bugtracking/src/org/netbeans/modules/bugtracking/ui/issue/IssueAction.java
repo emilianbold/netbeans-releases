@@ -52,12 +52,20 @@ import java.util.Collection;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
+import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
 import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.UIUtils;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.WindowManager;
@@ -127,19 +135,25 @@ public class IssueAction extends SystemAction {
     }
 
     private static void createIssue(final RepositoryImpl repository, final Node[] context) {
-        final boolean repositoryGiven = repository != null;
-        SwingUtilities.invokeLater(new Runnable() {
+        BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
             @Override
             public void run() {
-                UIUtils.setWaitCursor(true);
-                try {
-                    IssueTopComponent tc = new IssueTopComponent();
-                    tc.initNewIssue(repository, !repositoryGiven, context);
-                    tc.open();
-                    tc.requestActive();
-                } finally {
-                    UIUtils.setWaitCursor(false);
-                }
+                final File file = BugtrackingUtil.getFile(context);
+                final boolean repositoryGiven = repository != null;
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        UIUtils.setWaitCursor(true);
+                        try {
+                            final IssueTopComponent tc = new IssueTopComponent();
+                            tc.initNewIssue(repository, !repositoryGiven, file);
+                            tc.open();
+                            tc.requestActive();
+                        } finally {
+                            UIUtils.setWaitCursor(false);
+                        }
+                    }
+                });
             }
         });
     }
@@ -246,5 +260,5 @@ public class IssueAction extends SystemAction {
                 }
             }
         });
-    }
+    }    
 }

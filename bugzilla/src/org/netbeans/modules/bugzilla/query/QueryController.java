@@ -141,6 +141,8 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
     private final IssueTable issueTable;
     private final boolean isNetbeans;
 
+    private final Object REFRESH_LOCK = new Object();
+        
     public QueryController(BugzillaRepository repository, BugzillaQuery query, String urlParameters, boolean urlDef) {
         this(repository, query, urlParameters, false, true);
     }
@@ -271,8 +273,10 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
     @Override
     public void closed() {
         onCancelChanges();
-        if(refreshTask != null) {
-            refreshTask.cancel();
+        synchronized(REFRESH_LOCK) {
+            if(refreshTask != null) {
+                refreshTask.cancel();
+            }
         }
         if(query.isSaved()) {
             if(!(query.getRepository() instanceof KenaiRepository)) {
@@ -789,12 +793,18 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
     }
 
     private void refresh(final boolean auto, boolean synchronously) {
-        if(refreshTask == null) {
-            refreshTask = new QueryTask();
-        } else {
-            refreshTask.cancel();
+        Task t;
+        synchronized(REFRESH_LOCK) {
+            if(refreshTask == null) {
+                refreshTask = new QueryTask();
+            } else {
+                refreshTask.cancel();
+            }
+            t = refreshTask.post(auto);
         }
-        refreshTask.post(auto, synchronously);
+        if(synchronously) {
+            t.waitFinished();
+        }
     }
 
     private void onModify() {
@@ -869,8 +879,10 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
     }
 
     private void remove() {
-        if (refreshTask != null) {
-            refreshTask.cancel();
+        synchronized(REFRESH_LOCK) {
+            if (refreshTask != null) {
+                refreshTask.cancel();
+            }
         }
         query.remove();
     }
@@ -997,14 +1009,18 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
     }
 
     void switchToDeterminateProgress(long issuesCount) {
-        if(refreshTask != null) {
-            refreshTask.switchToDeterminateProgress(issuesCount);
+        synchronized(REFRESH_LOCK) {
+            if(refreshTask != null) {
+                refreshTask.switchToDeterminateProgress(issuesCount);
+            }
         }
     }
 
     void addProgressUnit(String issueDesc) {
-        if(refreshTask != null) {
-            refreshTask.addProgressUnit(issueDesc);
+        synchronized(REFRESH_LOCK) {
+            if(refreshTask != null) {
+                refreshTask.addProgressUnit(issueDesc);
+            }
         }
     }
 
@@ -1020,7 +1036,7 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
             query.addNotifyListener(this);
         }
 
-        private synchronized void startQuery() {
+        private void startQuery() {
             handle = ProgressHandleFactory.createHandle(
                     NbBundle.getMessage(
                         QueryController.class,
@@ -1040,7 +1056,7 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
             handle.start();
         }
 
-        private synchronized void finnishQuery() {
+        private void finnishQuery() {
             task = null;
             if(handle != null) {
                 handle.finish();
@@ -1057,7 +1073,7 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
             });
         }
 
-        synchronized void switchToDeterminateProgress(long progressMaxWorkunits) {
+        void switchToDeterminateProgress(long progressMaxWorkunits) {
             if(handle != null) {
                 handle.switchToDeterminate((int) progressMaxWorkunits);
                 this.progressMaxWorkunits = progressMaxWorkunits;
@@ -1065,7 +1081,7 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
             }
         }
 
-        synchronized void addProgressUnit(String issueDesc) {
+        void addProgressUnit(String issueDesc) {
             if(handle != null && progressWorkunits < progressMaxWorkunits) {
                 handle.progress(
                     NbBundle.getMessage(
@@ -1074,7 +1090,7 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
             }
         }
 
-        public void executeQuery() {
+        private void executeQuery() {
             setQueryRunning(true);
             // XXX isn't persistent and should be merged with refresh
             String lastChageFrom = panel.changedFromTextField.getText().trim();
@@ -1115,17 +1131,14 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
             }
         }
 
-        synchronized void post(boolean autoRefresh, boolean synchronously) {
+        Task post(boolean autoRefresh) {
             if(task != null) {
                 task.cancel();
             }
             task = rp.create(this);
             this.autoRefresh = autoRefresh;
-            if(synchronously) {
-                task.run();
-            } else {
-                task.schedule(0);
-            }
+            task.schedule(0);
+            return task;
         }
 
         @Override

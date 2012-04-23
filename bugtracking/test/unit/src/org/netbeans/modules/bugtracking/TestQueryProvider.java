@@ -87,6 +87,11 @@ public class TestQueryProvider extends QueryProvider<TestQuery, TestIssue> {
     public boolean contains(TestQuery q, String id) {
         return q.contains(id);
     }
+    
+    @Override
+    public void refresh(TestQuery q) {
+        q.refresh();
+    }
 
     @Override
     public void removePropertyChangeListener(TestQuery q, PropertyChangeListener listener) {
@@ -98,9 +103,4 @@ public class TestQueryProvider extends QueryProvider<TestQuery, TestIssue> {
         q.addPropertyChangeListener(listener);
     }
 
-    @Override
-    public void setContext(TestQuery q, Node[] nodes) {
-        q.setContext(nodes);
-    }
-    
 }

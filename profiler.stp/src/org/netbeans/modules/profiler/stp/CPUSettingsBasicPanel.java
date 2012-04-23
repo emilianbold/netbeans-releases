@@ -755,7 +755,13 @@ public class CPUSettingsBasicPanel extends DefaultSettingsPanel implements Actio
                                 ClientUtils.SourceCodeSelection[] roots = ProfilingRoots.selectRoots(rms, project);
                                 if (roots != null) {
                                     rootMethods = roots;
-                                    updateControls();
+                                    SwingUtilities.invokeLater(new Runnable() {
+
+                                        @Override
+                                        public void run() {
+                                            updateControls();
+                                        }
+                                    });
                                 }
                             }
                             rootMethodsActionExecuting.set(false);

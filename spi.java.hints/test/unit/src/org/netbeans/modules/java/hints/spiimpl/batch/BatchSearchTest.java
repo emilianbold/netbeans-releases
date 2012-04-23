@@ -69,6 +69,7 @@ import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.core.startup.Main;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.java.hints.spiimpl.batch.BatchSearch.BatchResult;
 import org.netbeans.modules.java.hints.spiimpl.batch.BatchSearch.Folder;
 import org.netbeans.modules.java.hints.spiimpl.batch.BatchSearch.Resource;
@@ -180,6 +181,7 @@ public class BatchSearchTest extends NbTestCase {
         assertEquals(golden, snipets);
     }
 
+    @RandomlyFails
     public void testBatchSearchNotIndexed() throws Exception {
         writeFilesAndWaitForScan(src1,
                                  new File("test/Test1.java", "package test; public class Test1 { private void test() { java.io.File f = null; f.isDirectory(); } }"),

@@ -122,8 +122,12 @@ made subject to such option by the copyright holder.
         
         <!--CSH ID for Options | Misc | Profiler :-->
         <mapID target="ProfilerOptions.Help" url="helppages/csh/options_profiler.html"/>
+        <!-- TODO: create CSH topic for this id -->
         <!--CSH ID for select profiling task target dialog when profiling a freeform project -->
         <mapID target="FreeFormProjectTypeProfiler.AntTaskSelectPanel.HelpCtx" url="helppages/profile_freeform.html"/>
+        
+        <!--CSH ID for selecting Java platform when calibrating profiler -->
+        <mapID target="JavaPlatformSelector.HelpCtx" url="helppages/csh/csh_select_platform.html"/>
         
         <!--CSH ID for root methods dialogs -->
         <mapID target="ManualMethodSelect.HelpCtx" url="helppages/csh/csh_rootmethod_definenew.html"/>
@@ -148,6 +152,8 @@ made subject to such option by the copyright holder.
         <mapID target="HeapWalker.HelpCtx" url="helppages/csh/view_heap.html"/>
         <mapID target="OQLControllerUI.HelpCtx" url="helppages/csh/csh_view_oqlconsole.html"/>
         <mapID target="text.x-oql" url="helppages/csh/csh_view_oqlconsole.html"/>
+        <!--CSH ID for Choose Heap Destination dialog -->
+        <mapID target="ChooseHeapdumpTargetPanel.HelpCtx" url="helppages/csh/csh_heap_save.html"/>
         
         
         <!--CSH ID for Snapshot windows -->
@@ -155,5 +161,9 @@ made subject to such option by the copyright holder.
         <mapID target="MemorySnapshot.HelpCtx" url="helppages/csh/view_snap_memory.html"/>
         <!--CSH ID for Compare Memory Snapshot window -->
         <mapID target="MemoryDiff.HelpCtx" url="helppages/csh/view_snap_memorycompare.html"/>
+        <!--CSH ID for Select Memory Snapshot to Compare window -->
+        <mapID target="SelectExternalSnapshotsPanel.HelpCtx" url="helppages/csh/csh_select_memorycompare.html"/>
+        <!--CSH ID for Find Results dialog invoked from Combined tab in CPU Snapshot window -->
+        <mapID target="ProfilerUiFindDialog.HelpCtx" url="helppages/csh/csh_snap_cpu_find.html"/>
        
     </map>

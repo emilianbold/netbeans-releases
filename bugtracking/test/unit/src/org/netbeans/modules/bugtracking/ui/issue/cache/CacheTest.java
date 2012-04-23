@@ -413,11 +413,6 @@ public class CacheTest extends NbTestCase {
         public String[] getSubtasks() {throw new UnsupportedOperationException("Not supported yet.");}
         
         @Override
-        public void setContext(Node[] nodes) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
         public void removePropertyChangeListener(PropertyChangeListener listener) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
@@ -584,10 +579,6 @@ public class CacheTest extends NbTestCase {
             data.addPropertyChangeListener(listener);
         }
 
-        @Override
-        public void setContext(CTestIssue data, Node[] nodes) {
-            data.setContext(nodes);
-        }
         public String[] getSubtasks(CTestIssue data) {throw new UnsupportedOperationException("Not supported yet.");}
     }
 

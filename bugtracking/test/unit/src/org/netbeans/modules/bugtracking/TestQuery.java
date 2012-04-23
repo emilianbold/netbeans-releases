@@ -44,7 +44,6 @@ package org.netbeans.modules.bugtracking;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import org.netbeans.modules.bugtracking.spi.QueryController;
-import org.openide.nodes.Node;
 
 /**
  *
@@ -68,8 +67,8 @@ public abstract class TestQuery {
 
     public abstract void addPropertyChangeListener(PropertyChangeListener listener);
 
-    public abstract void setContext(Node[] nodes);
-
     public abstract void remove();
+
+    public abstract void refresh();
     
 }

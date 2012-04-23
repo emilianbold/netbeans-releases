@@ -73,7 +73,7 @@ import org.netbeans.lib.profiler.common.Profiler;
     "GlobalFiltersPanel_ColumnNameValue=Value",
     "GlobalFiltersPanel_DefinedFiltersLabelText=Defined &Filters:",
     "GlobalFiltersPanel_NewButtonText=&New",
-    "GlobalFiltersPanel_EditButtonText=Edit",
+    "GlobalFiltersPanel_EditButtonText=&Edit",
     "GlobalFiltersPanel_DeleteButtonText=&Delete",
     "GlobalFiltersPanel_MoveUpButtonText=Move &Up",
     "GlobalFiltersPanel_MoveDownButtonText=Move Do&wn",

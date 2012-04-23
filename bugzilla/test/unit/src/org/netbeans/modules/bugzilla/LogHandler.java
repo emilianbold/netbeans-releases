@@ -51,7 +51,8 @@ import java.util.logging.LogRecord;
  * @author tomas
  */
 public class LogHandler extends Handler {
-    private long TIMEOUT = 30 * 1000;
+    public static long DEFAULT_TIMEOUT = 30 * 1000;
+    private long TIMEOUT = DEFAULT_TIMEOUT;
     private final String messageToWaitFor;
     private String interceptedMessage;
     private boolean done = false;
@@ -65,14 +66,14 @@ public class LogHandler extends Handler {
     }
 
     public LogHandler(String msg, Compare compare) {
-        this(msg, compare, 1);
+        this(msg, compare, DEFAULT_TIMEOUT);
     }
     
-    public LogHandler(String msg, Compare compare, int count) {
-        this(msg, compare, -1, count);
+    public LogHandler(String msg, Compare compare, long timeout) {
+        this(msg, compare, timeout, 1);
     }
 
-    public LogHandler(String msg, Compare compare, int timeout, int count) {
+    public LogHandler(String msg, Compare compare, long timeout, int count) {
         this.expectedCount = count;
         this.messageToWaitFor = msg;
         this.compare = compare;
