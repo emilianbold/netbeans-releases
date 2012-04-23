@@ -45,8 +45,6 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.event.ItemEvent;
-import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Element;
@@ -61,7 +59,6 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.ui.ElementIcons;
 import org.netbeans.modules.refactoring.java.Pair;
 import org.netbeans.modules.refactoring.java.RefactoringModule;
-import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 
 /**
  *
@@ -76,11 +73,14 @@ public class WhereUsedPanelMethod extends WhereUsedPanel.WhereUsedInnerPanel {
     /**
      * Creates new form WhereUsedPanelMethod
      */
-    public WhereUsedPanelMethod(ChangeListener parent, TreePathHandle element) {
+    public WhereUsedPanelMethod(ChangeListener parent, TreePathHandle element, List<Pair<Pair<String, Icon>, TreePathHandle>> classes) {
         this.parent = parent;
         this.tph = element;
         initComponents();
         jComboBox1.setRenderer(new ComboBoxRenderer());
+        jComboBox1.setModel(new DefaultComboBoxModel(classes.toArray(new Pair[classes.size()])));
+        jComboBox1.setSelectedIndex(1 % jComboBox1.getItemCount());
+        jComboBox1.setEnabled(classes.size() > 1);
     }
 
     /**
@@ -197,21 +197,8 @@ public class WhereUsedPanelMethod extends WhereUsedPanel.WhereUsedInnerPanel {
         ExecutableElement method = (ExecutableElement) element;
         final Set<Modifier> modifiers = method.getModifiers();
         final Icon labelIcon = ElementIcons.getElementIcon(element.getKind(), element.getModifiers());
-        final List<Pair<Pair<String, Icon>, TreePathHandle>> classes = new LinkedList<Pair<Pair<String, Icon>, TreePathHandle>>();
         final String labelText = UIUtilities.createHeader(method, info.getElements().isDeprecated(element), false, false, true);
-        Element enclosingElement = method.getEnclosingElement();
-        String methodDeclaringClass = enclosingElement.getSimpleName().toString();
-        Icon icon = ElementIcons.getElementIcon(enclosingElement.getKind(), enclosingElement.getModifiers());
-        classes.add(Pair.of(Pair.of(methodDeclaringClass, icon), tph));
-        Collection<ExecutableElement> overridens = JavaRefactoringUtils.getOverriddenMethods(method, info);
-        for (ExecutableElement executableElement : overridens) {
-            Element enclosingTypeElement = executableElement.getEnclosingElement();
-            String name = enclosingTypeElement.getSimpleName().toString();
-            TreePathHandle handle = TreePathHandle.create(executableElement, info);
-            Icon typeIcon = ElementIcons.getElementIcon(enclosingTypeElement.getKind(), enclosingTypeElement.getModifiers());
-            classes.add(Pair.of(Pair.of(name, typeIcon), handle));
-        }
-
+        
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -223,9 +210,6 @@ public class WhereUsedPanelMethod extends WhereUsedPanel.WhereUsedInnerPanel {
                 btn_usages.setVisible(!modifiers.contains(Modifier.STATIC));
                 btn_overriders.setVisible(!(modifiers.contains(Modifier.STATIC) || modifiers.contains(Modifier.PRIVATE) || element.getKind() == ElementKind.CONSTRUCTOR));
                 btn_usages_overriders.setVisible(btn_usages.isVisible() && btn_overriders.isVisible());
-                jComboBox1.setModel(new DefaultComboBoxModel(classes.toArray(new Pair[classes.size()])));
-                jComboBox1.setSelectedIndex(1 % jComboBox1.getItemCount());
-                jComboBox1.setEnabled(classes.size() > 1);
             }
         });
     }
