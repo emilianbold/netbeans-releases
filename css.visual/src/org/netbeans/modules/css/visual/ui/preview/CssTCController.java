@@ -49,6 +49,7 @@ import java.lang.ref.WeakReference;
 import javax.swing.SwingUtilities;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.css.visual.api.StyleBuilderTopComponent;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
 import org.openide.windows.TopComponent.Registry;
@@ -104,23 +105,42 @@ public class CssTCController implements PropertyChangeListener {
         if (TopComponent.Registry.PROP_ACTIVATED.equals(evt.getPropertyName())) {
             //a TC activated -
             //check if the TC is editor TC and if so close the CSS preview and style builder
-            TopComponent activated = (TopComponent) evt.getNewValue();
-            boolean isEditor = WindowManager.getDefault().isOpenedEditorTopComponent(activated);
+            final TopComponent activated = (TopComponent) evt.getNewValue();
+            final boolean isEditor = WindowManager.getDefault().isOpenedEditorTopComponent(activated);
 
-            if (isEditor && isCssFileBound(activated)) {
-                //editor with css file has been opened
-                previewableActivated(activated);
-            } else {
-                //issue 104603 workaround
-                if (activated instanceof CssPreviewTopComponent || activated instanceof StyleBuilderTopComponent) {
-                    return; //do not close the windows if user click on them
-                }
+            RequestProcessor.getDefault().post(new Runnable() {
 
-                //A non - CSS previewable activated in editor - close the CSS windows
-                if (isEditor && lastCSSTC != null) {
-                    notPreviewableActivated();
+                @Override
+                public void run() {
+                    
+                    //slow IO, do not run in EDT
+                    final boolean isCssFileBound = isCssFileBound(activated);
+                    
+                    SwingUtilities.invokeLater(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            if (isEditor && isCssFileBound) {
+                                //editor with css file has been opened
+                                previewableActivated(activated);
+                            } else {
+                                //issue 104603 workaround
+                                if (activated instanceof CssPreviewTopComponent || activated instanceof StyleBuilderTopComponent) {
+                                    return; //do not close the windows if user click on them
+                                }
+
+                                //A non - CSS previewable activated in editor - close the CSS windows
+                                if (isEditor && lastCSSTC != null) {
+                                    notPreviewableActivated();
+                                }
+                            }
+                        }
+                    });
+                    
                 }
-            }
+                
+            });
+            
         } else if (lastCSSTC != null && TopComponent.Registry.PROP_TC_CLOSED.equals(evt.getPropertyName())) {
             //a TC closed - check if the TC is CSSpreviewable
             //check if the activated nodes
