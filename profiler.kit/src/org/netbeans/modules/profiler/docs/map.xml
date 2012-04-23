@@ -152,6 +152,9 @@ made subject to such option by the copyright holder.
         <mapID target="HeapWalker.HelpCtx" url="helppages/csh/view_heap.html"/>
         <mapID target="OQLControllerUI.HelpCtx" url="helppages/csh/csh_view_oqlconsole.html"/>
         <mapID target="text.x-oql" url="helppages/csh/csh_view_oqlconsole.html"/>
+        <!-- CSH ID for dialogs in OQL Console -->
+        <mapID target="OQLQueryCustomizer.QueryProps.HelpCtx" url="helppages/csh/csh_oql_queryproperties.html"/>
+        <mapID target="OQLQueryCustomizer.SaveQuery.HelpCtx" url="helppages/csh/csh_oql_querysave.html"/>
         <!--CSH ID for Choose Heap Destination dialog -->
         <mapID target="ChooseHeapdumpTargetPanel.HelpCtx" url="helppages/csh/csh_heap_save.html"/>
         
