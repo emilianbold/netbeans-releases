@@ -69,6 +69,7 @@ import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
 import org.netbeans.modules.web.jsf.palette.JSFPaletteUtilities;
+import org.netbeans.modules.web.jsfapi.api.DefaultLibraryInfo;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -85,6 +86,8 @@ public abstract class EntityClass {
     protected String variable = "";
     protected String bean = "";
     protected int formType = FORM_TYPE_EMPTY;
+
+    protected JsfLibrariesSupport jsfLibrariesSupport;
     
     protected abstract String getName();
 
@@ -114,11 +117,7 @@ public abstract class EntityClass {
    
     public boolean handleTransfer(JTextComponent targetComponent) {
             try {
-
-                //marek: not necessary since the default prefixes are hardcoded in the palette item impls
-//                String prefixHtml = JSFPaletteUtilities.findJsfHtmlPrefix(targetComponent);
-//                String prefixCore = JSFPaletteUtilities.findJsfCorePrefix(targetComponent);
-//
+                jsfLibrariesSupport = JsfLibrariesSupport.get(targetComponent);
                 Caret caret = targetComponent.getCaret();
                 int position0 = Math.min(caret.getDot(), caret.getMark());
                 int position1 = Math.max(caret.getDot(), caret.getMark());
@@ -127,6 +126,8 @@ public abstract class EntityClass {
                         && targetComponent.getText(position1, len).contains("</f:view>");
                 String body = createBody(targetComponent, !containsFView);
                 JSFPaletteUtilities.insert(body, targetComponent);
+                jsfLibrariesSupport.importLibraries(DefaultLibraryInfo.HTML);
+                jsfLibrariesSupport.importLibraries(DefaultLibraryInfo.JSF_CORE);
             } catch (IOException ioe) {
                 Exceptions.printStackTrace(ioe);
                 return false;

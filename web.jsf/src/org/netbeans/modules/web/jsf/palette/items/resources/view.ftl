@@ -6,6 +6,8 @@
   is performed using FreeMaker (http://freemarker.org/) - see its documentation
   for full syntax. Variables available for templating are:
 
+    htmlTagPrefix - prefix of facelet's html tags
+    coreTagPrefix - prefix of facelet's core tags
     entityName - name of entity being modified (type: String)
     managedBean - name of managed choosen in UI (type: String)
     managedBeanProperty - name of managed bean property choosen in UI (type: String)
@@ -27,18 +29,18 @@
   be found in category JavaServer Faces->JSF Data/Form from Entity.
 
 </#if>
-<h:form>
-    <h1><h:outputText value="View"/></h1>
-    <h:panelGrid columns="2">
+<${htmlTagPrefix}:form>
+    <h1><${htmlTagPrefix}:outputText value="View"/></h1>
+    <${htmlTagPrefix}:panelGrid columns="2">
 <#list entityDescriptors as entityDescriptor>
-        <h:outputText value="${entityDescriptor.label}:"/>
+        <${htmlTagPrefix}:outputText value="${entityDescriptor.label}:"/>
 <#if entityDescriptor.dateTimeFormat?? && entityDescriptor.dateTimeFormat != "">
-        <h:outputText value="${r"#{"}${entityDescriptor.name}${r"}"}" title="${entityDescriptor.label}">
-            <f:convertDateTime pattern="${entityDescriptor.dateTimeFormat}" />
-        </h:outputText>
+        <${htmlTagPrefix}:outputText value="${r"#{"}${entityDescriptor.name}${r"}"}" title="${entityDescriptor.label}">
+            <${coreTagPrefix}:convertDateTime pattern="${entityDescriptor.dateTimeFormat}" />
+        </${htmlTagPrefix}:outputText>
 <#else>
-        <h:outputText value="${r"#{"}${entityDescriptor.name}${r"}"}" title="${entityDescriptor.label}"/>
+        <${htmlTagPrefix}:outputText value="${r"#{"}${entityDescriptor.name}${r"}"}" title="${entityDescriptor.label}"/>
 </#if>
 </#list>
-    </h:panelGrid>
-</h:form>
+    </${htmlTagPrefix}:panelGrid>
+</${htmlTagPrefix}:form>
