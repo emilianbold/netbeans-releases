@@ -102,6 +102,8 @@ import org.openide.awt.Mnemonics;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import static org.netbeans.modules.maven.customizer.Bundle.*;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
@@ -235,6 +237,7 @@ public class ActionMappings extends javax.swing.JPanel {
         if (project != null) {
             menu.add(new PluginPropertyAction(area, goalsField, project));
         }
+        menu.add(createFileSelectionSubmenu(area));
         menu.show(btn, btn.getSize().width, 0);
     }
     
@@ -1030,11 +1033,13 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
             this.project = prj;
         }
 
-        @Override public void actionPerformed(ActionEvent e) {
+        @Override
+        @Messages("TIT_PLUGIN_EXPRESSION=Add Plugin Expression Property")
+        public void actionPerformed(ActionEvent e) {
             GoalsProvider provider = Lookup.getDefault().lookup(GoalsProvider.class);
             if (provider != null) {
                 AddPropertyDialog panel = new AddPropertyDialog(project, goals.getText());
-                DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(ActionMappings.class, "TIT_PLUGIN_EXPRESSION"));
+                DialogDescriptor dd = new DialogDescriptor(panel, TIT_PLUGIN_EXPRESSION());
                 dd.setOptions(new Object[] {panel.getOkButton(), DialogDescriptor.CANCEL_OPTION});
                 dd.setClosingOptions(new Object[] {panel.getOkButton(), DialogDescriptor.CANCEL_OPTION});
                 DialogDisplayer.getDefault().notify(dd);
@@ -1080,9 +1085,10 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
         }
     }
 
+    @Messages("ActionMappings.globalVar=Reference IDE Global Variable")
     private static JMenu createGlobalVarSubmenu(JTextArea area) {
         JMenu menu = new JMenu();
-            menu.setText(NbBundle.getMessage(ActionMappings.class, "ActionMappings.globalVar"));
+        menu.setText(ActionMappings_globalVar());
         Map<String, String> vars = DefaultReplaceTokenProvider.readVariables();
         boolean hasAny = false;
         for (Map.Entry<String, String> ent : vars.entrySet()) {
@@ -1095,6 +1101,19 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
         return menu;
     }
 
+    @Messages("ActionMappings.fileExpressions=IDE Selection Expressions")
+    private static JMenu createFileSelectionSubmenu(JTextArea area) {
+        JMenu menu = new JMenu();
+        menu.setText(ActionMappings_fileExpressions());
+        menu.add(new FileVariableAction(area, "packageClassName"));
+        menu.add(new FileVariableAction(area, "className"));
+        menu.add(new FileVariableAction(area, "classNameWithExtension"));
+        menu.add(new FileVariableAction(area, "webPagePath"));
+        menu.add(new FileVariableAction(area, "classPathScope"));
+            
+        return menu;
+    }
+    
     static class UseGlobalVarAction extends AbstractAction {
         private JTextArea area;
         private final String key;
@@ -1116,6 +1135,28 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
             }
         }
     }
+    
+    static class FileVariableAction extends AbstractAction {
+        private JTextArea area;
+        private final String key;
+
+        FileVariableAction(JTextArea area, String key) {
+            putValue(Action.NAME, "${" + key + "}"); //NOI18N
+            this.area = area;
+            this.key = key;
+        }
+
+        @Override public void actionPerformed(ActionEvent e) {
+            try {
+                area.getDocument().insertString(area.getCaretPosition(), "${" + key + "}", null); //NOI18N
+            } catch (BadLocationException ex) {
+                String text = area.getText();
+                text = text + "${" + key + "}"; //NOI18N
+                area.setText(text);
+                area.requestFocusInWindow();
+            }
+        }
+    }    
 
 
     private static void replacePattern(String pattern, JTextArea area, String replace, boolean select) {
