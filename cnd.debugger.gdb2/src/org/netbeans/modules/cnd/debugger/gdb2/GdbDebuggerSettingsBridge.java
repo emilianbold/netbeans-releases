@@ -180,7 +180,7 @@ public final class GdbDebuggerSettingsBridge extends DebuggerSettingsBridge {
 	if (runargs == null) {
 	    runargs = "";
         }
-	gdbDebugger.runArgs(ioRedirect(runargs));
+	gdbDebugger.runArgs(runargs + ioRedirect());
     }
 
     @Override
@@ -257,35 +257,10 @@ public final class GdbDebuggerSettingsBridge extends DebuggerSettingsBridge {
 	// System.out.println("GdbDebuggerSettingsBridge.applyRunargs(): NOT IMPLEMENTED");
     }
 
-    private String ioRedirect(String runargs) {
-        int inArgPos = runargs.indexOf("<"); // NOI18N
-        int outArgPos = runargs.indexOf(">"); // NOI18N
-        
-        String inArg = null, outArg = null, files[] = {};
-        
-        if(inArgPos < outArgPos) {
-            if (inArgPos != -1) {
-                inArg = runargs.substring(inArgPos+1, Math.min(outArgPos, runargs.length()));
-            }
-
-            if (outArgPos != -1) {
-                outArg = runargs.substring(outArgPos+1, Math.max(inArgPos, runargs.length()));
-            }
-        } else {
-            if (inArgPos != -1) {
-                inArg = runargs.substring(inArgPos+1, Math.max(outArgPos, runargs.length()));
-            }
-
-            if (outArgPos != -1) {
-                outArg = runargs.substring(outArgPos+1, Math.min(inArgPos, runargs.length()));
-            }
-        }
-        
-        if ((inArgPos == -1) || (outArgPos == -1)) {
-            files = gdbDebugger.getIOPack().getIOFiles();
-            if (files == null) {
-                return "";
-            }
+    private String ioRedirect() {
+        String[] files = gdbDebugger.getIOPack().getIOFiles();
+        if (files == null) {
+            return "";
         }
         OSFamily osFamily = OSFamily.UNKNOWN;
         try {
@@ -296,8 +271,8 @@ public final class GdbDebuggerSettingsBridge extends DebuggerSettingsBridge {
         }
 
         String inRedir = "";
-        String inFile = (inArg == null ? files[0] : inArg);
-        String outFile = (outArg == null ? files[1] : outArg);
+        String inFile = files[0];
+        String outFile = files[1];
         if (osFamily == OSFamily.WINDOWS) {
             inFile = gdbDebugger.fmap().worldToEngine(inFile);
             outFile = gdbDebugger.fmap().worldToEngine(outFile);

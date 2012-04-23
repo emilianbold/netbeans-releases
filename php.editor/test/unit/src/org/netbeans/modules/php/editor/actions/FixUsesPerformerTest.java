@@ -100,6 +100,18 @@ public class FixUsesPerformerTest extends PHPCodeCompletionTestBase {
         performTest("function testFail(\\Issue\\Martin\\Pond^eli $param) {}", selections, true, options);
     }
 
+    public void testIssue211566_01() throws Exception {
+        String[] selections = new String[] {"\\Foo\\Bar\\Baz"};
+        Options options = new Options(false, false, false);
+        performTest("new \\Foo\\Bar\\B^az(); //HERE", selections, true, options);
+    }
+
+    public void testIssue211566_02() throws Exception {
+        String[] selections = new String[] {"\\Foo\\Bar\\Baz"};
+        Options options = new Options(false, false, true);
+        performTest("new \\Foo\\Bar\\B^az(); //HERE", selections, true, options);
+    }
+
     private String getTestResult(final String fileName, final String caretLine, final String[] selections, final boolean removeUnusedUses, final Options options) throws Exception {
         FileObject testFile = getTestFile(fileName);
 
