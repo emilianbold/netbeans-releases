@@ -66,9 +66,9 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
     // want to be polluted with NB dependencies
     // If we use cusom code and inline the Catalog.get() then there's
     // no opportunity to insert a // NOI18N.
-    static final String LBL_ChooseForegroundColor = Catalog.get("LBL_ChooseForegroundColor");	// NOI18N
-    static final String LBL_ChooseBackgroundColor = Catalog.get("LBL_ChooseBackgroundColor");	// NOI18N
-    static final String LBL_ChooseSelectionBackgroundColor = Catalog.get("LBL_ChooseSelectionBackgroundColor");	// NOI18N
+    //static final String LBL_ChooseForegroundColor = Catalog.get("LBL_ChooseForegroundColor");	// NOI18N
+    //static final String LBL_ChooseBackgroundColor = Catalog.get("LBL_ChooseBackgroundColor");	// NOI18N
+    //static final String LBL_ChooseSelectionBackgroundColor = Catalog.get("LBL_ChooseSelectionBackgroundColor");	// NOI18N
     static final String LBL_Options = Catalog.get("LBL_Options");	// NOI18N
     static final String CTL_Restore = Catalog.get("CTL_Restore");	// NOI18N
     static final String LBL_Font = Catalog.get("LBL_Font");	// NOI18N
