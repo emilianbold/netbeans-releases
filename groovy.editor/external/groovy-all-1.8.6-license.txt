@@ -1,10 +1,8 @@
-Name: Apache Commons Logging
-Version: 1.1.1
+Name: Groovy
+Version: 1.8.6
+Description: Groovy Language distribution.
 License: Apache-2.0
-OSR: -
-Files: commons-logging-1.1.1.jar, commons-logging-api-1.1.1.jar
-Description: Logging support library
-Origin: http://commons.apache.org/logging/
+Origin: http://dist.groovy.codehaus.org/distributions/groovy-binary-1.8.6.zip
 
                                  Apache License
                            Version 2.0, January 2004

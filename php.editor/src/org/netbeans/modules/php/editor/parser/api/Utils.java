@@ -192,20 +192,30 @@ public class Utils {
 
         protected int offset = 0;
         protected ASTNode node = null;
+        private Program programNode = null;
 
         public ASTNode locate(ASTNode beginNode, int astOffset) {
-            offset = astOffset;            scan(beginNode);
+            offset = astOffset;
+            scan(beginNode);
             if (node instanceof Program) {
                 // probably no node was found except whole file.
                 // try to look for a documentation node
-                List<Comment> comments = ((Program)node).getComments();
-                for (Comment comment : comments) {
-                    if (comment.getStartOffset() <= offset && offset <= comment.getEndOffset()){
-                        scan(comment);
-                    }
-                }
+                processComments((Program) node);
+            } else if (programNode instanceof Program) {
+                // we need to handle comment nodes too,
+                // but we need a program node for that
+                processComments((Program) programNode);
             }
             return this.node;
+        }
+
+        private void processComments(final Program program) {
+            List<Comment> comments = program.getComments();
+            for (Comment comment : comments) {
+                if (comment.getStartOffset() <= offset && offset <= comment.getEndOffset()){
+                    scan(comment);
+                }
+            }
         }
 
         @Override
@@ -216,6 +226,12 @@ public class Utils {
                     node.accept(this);
                 }
             }
+        }
+
+        @Override
+        public void visit(Program node) {
+            programNode = node;
+            super.visit(node);
         }
 
         @Override

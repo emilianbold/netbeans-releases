@@ -6,6 +6,10 @@
             <code-name-base>org.netbeans.modules.html.validation</code-name-base>
             <module-dependencies>
                 <dependency>
+                    <code-name-base>org.apache.commons.logging</code-name-base>
+                    <run-dependency/>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.api.progress</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -118,14 +122,6 @@
             <class-path-extension>
                 <runtime-relative-path>ext/log4j-1.2.15.jar</runtime-relative-path>
                 <binary-origin>external/log4j-1.2.15.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/commons-logging-1.1.1.jar</runtime-relative-path>
-                <binary-origin>external/commons-logging-1.1.1.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/commons-logging-api-1.1.1.jar</runtime-relative-path>
-                <binary-origin>external/commons-logging-api-1.1.1.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/iri.jar</runtime-relative-path>

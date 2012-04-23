@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,42 +37,29 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.groovy.grailsproject.actions;
+package org.netbeans.modules.web.jsf.palette.items;
 
-import java.awt.event.ActionEvent;
+import java.text.MessageFormat;
 import javax.swing.text.JTextComponent;
-import org.netbeans.editor.BaseAction;
-import org.netbeans.modules.groovy.grailsproject.NavigationSupport;
-import static org.netbeans.modules.groovy.grailsproject.actions.Bundle.*;
-import org.openide.awt.ActionID;
-import org.openide.awt.ActionReference;
-import org.openide.awt.ActionReferences;
-import org.openide.awt.ActionRegistration;
-import org.openide.util.NbBundle.Messages;
+import org.netbeans.modules.web.jsfapi.api.DefaultLibraryInfo;
 
-@Messages("CTL_GotoControllerAction=Go to Grails Con&troller")
-@ActionID(id = "org.netbeans.modules.groovy.grailsproject.actions.GotoControllerAction", category = "Groovy")
-@ActionRegistration(lazy = false, displayName = "#CTL_GotoControllerAction")
-@ActionReferences(value = {
-    @ActionReference(path = "Menu/GoTo", position = 550),
-    @ActionReference(path = "Editors/text/x-groovy/Popup/goto", position = 150),
-    @ActionReference(path = "Editors/text/x-gsp/Popup/goto", position = 150)})
+/**
+ *
+ * @author Martin Fousek <marfous@netbeans.org>
+ */
+public class PaletteUtils {
 
-public final class GotoControllerAction extends BaseAction {
-
-    public GotoControllerAction() {
-        super(CTL_GotoControllerAction()); // NOI18N
+    private PaletteUtils() {
     }
 
-    @Override
-    public boolean isEnabled() {
-        return NavigationSupport.isActionEnabled(this);
+    protected static String createViewTag(JTextComponent jtc, boolean ending) {
+        JsfLibrariesSupport jls = JsfLibrariesSupport.get(jtc);
+        StringBuilder sb =  new StringBuilder(ending ? "</" : "<"); //NOI18N
+        sb.append(jls.getLibraryPrefix(DefaultLibraryInfo.JSF_CORE));
+        sb.append(":view>"); //NOI18N
+        return sb.toString();
     }
 
-    @Override
-    public void actionPerformed(ActionEvent evt, JTextComponent target) {
-        NavigationSupport.openArtifact(this, target);
-    }
 }
