@@ -76,7 +76,7 @@ public abstract class JQueryCompletionItem implements CompletionProposal {
     }
 
     static CompletionProposal createJQueryItem(String name, int anchorOffset, String surround, String codeTemplate) {
-        ElementHandle element = new SimpleElement(name, ElementKind.RULE);
+        ElementHandle element = new SimpleElement(name, ElementKind.CALL);
         return new JQuerySimpleItem(element, anchorOffset, surround, codeTemplate);
     }
 

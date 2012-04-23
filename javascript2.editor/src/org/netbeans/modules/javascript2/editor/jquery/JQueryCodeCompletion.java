@@ -53,6 +53,8 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.csl.api.CodeCompletionContext;
 import org.netbeans.modules.csl.api.CompletionProposal;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.css.indexing.api.CssIndex;
 import org.netbeans.modules.html.editor.lib.api.HtmlParser;
@@ -116,6 +118,20 @@ public class JQueryCodeCompletion {
         }
         return (lastToken.id() == JsTokenId.IDENTIFIER && "$".equals(lastToken.text().toString()))
                 || (!ts.movePrevious() && "$".equals(token.text().toString()));
+    }
+
+    public String getHelpDocumentation(ParserResult info, ElementHandle element) {
+        if (element.getKind() == ElementKind.CALL) {
+            String name = element.getName();
+            name = name.substring(1); // remove :
+            int index = name.indexOf('(');
+            if (index > -1) {
+                name = name.substring(0, index);
+            }
+            File apiFile = InstalledFileLocator.getDefault().locate(HELP_LOCATION, null, false); //NoI18N
+            return SelectorsLoader.getDocumentation(apiFile, name);
+        }
+        return null;
     }
     
     private enum SelectorKind {

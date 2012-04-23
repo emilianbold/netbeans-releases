@@ -52,6 +52,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -62,7 +63,10 @@ import org.xml.sax.helpers.DefaultHandler;
  * @author Petr Pisl
  */
 public class SelectorsLoader extends DefaultHandler {
-    
+    public static final String TYPE = "type";   //NOI18N
+    public static final String NAME = "name";   //NOI18N
+    public static final String SELECTOR = "selector";   //NOI18N
+        
     private static final Logger LOGGER = Logger.getLogger(SelectorsLoader.class.getName());
     
     private SelectorsLoader() {
@@ -90,10 +94,16 @@ public class SelectorsLoader extends DefaultHandler {
         }
         return result;
     }
+    
+    public static String getDocumentation(File file, String selectorName) {
+        DocumentationBuilder documentationBuilder = new DocumentationBuilder(file);
+        return documentationBuilder.buildForSelector(selectorName);
+    }
 
     private boolean inSelector = false;
+    
     private enum Tag {
-        entry, sample, notinterested;
+        added, argument, desc, entry, longdesc, note, sample, signature, notinterested;
     }
     private String name;
     private String sample;
@@ -106,10 +116,10 @@ public class SelectorsLoader extends DefaultHandler {
               inTag = Tag.sample;
           }  
         } else if(qName.equals(Tag.entry.name())) {
-            String type = attributes.getValue("type"); //NOI18N
-            if (type.equals("selector")) {  //NOI18N
+            String type = attributes.getValue(TYPE); //NOI18N
+            if (type.equals(SELECTOR)) {  //NOI18N
                 inSelector = true;
-                name = attributes.getValue("name"); //NOI18N
+                name = attributes.getValue(NAME); //NOI18N
             }
         }
         
@@ -139,4 +149,185 @@ public class SelectorsLoader extends DefaultHandler {
         }
     }
     
+    private static class Argument {
+        String name;
+        String type;
+        String description;
+
+        public Argument(String name, String type, String description) {
+            this.name = name;
+            this.type = type;
+            this.description = description;
+        }    
+    }
+    
+    private static class DocumentationBuilder extends DefaultHandler {
+
+        
+        private static final String TABLE_STYLE= "style=\"border: 0px; width: 100%;\""; //NOI18N
+        private static final String TD_STYLE = "style=\"text-aling:left; border-width: 0px;padding: 1px;padding:3px;\" ";  //NOI18N
+        private static final String TD_STYLE_MAX_WIDTH = "style=\"text-aling:left; border-width: 0px;padding: 1px;padding:3px;width:80%;\" ";  //NOI18N
+        
+        private StringBuilder documentation;
+        private boolean inSelector;
+        private String selectorName;
+        private File file;
+        private List<Tag> tagPath;
+        
+        private String sample;
+        private String description;
+        private List<String> notes;
+        private String exampleDesc;
+        private String longDescription;
+        private String fromVersion;
+        private String argName;
+        private String argType;
+        private List<Argument> arguments;
+        
+        public DocumentationBuilder(File file) {
+            inSelector = false;
+            this.file = file;
+            tagPath = new ArrayList<Tag>();
+        }
+        
+        public String buildForSelector(String name) {
+            documentation = new StringBuilder();
+            try {
+                long start = System.currentTimeMillis();
+                selectorName = name;
+                SAXParserFactory factory = SAXParserFactory.newInstance();
+                SAXParser parser = factory.newSAXParser();
+                parser.parse(file, this);
+                long end = System.currentTimeMillis();
+                LOGGER.log(Level.FINE, "Loading selectors from API file took {0}ms ", (end - start)); //NOI18N
+
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (ParserConfigurationException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (SAXException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            return documentation.toString();
+        }
+        
+        @Override
+    public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+        if (inSelector){
+            
+                Tag current;
+                try {
+                    current = Tag.valueOf(qName);
+                } catch(IllegalArgumentException iae) {
+                    current = Tag.notinterested;
+                }
+                tagPath.add(0, current);
+                if (current == Tag.argument) {
+                    argName = attributes.getValue(NAME);  
+                    argType = attributes.getValue(TYPE);  
+                }
+        } else if(qName.equals(Tag.entry.name())) {
+            String type = attributes.getValue(TYPE); 
+            if (type.equals(SELECTOR)) {
+                String name = attributes.getValue(NAME);
+                if (name.equals(selectorName)) {
+                    inSelector = true;
+                    description = "";
+                    longDescription = "";
+                    sample = "";
+                    fromVersion = longDescription = "";
+                    notes = new ArrayList<String>();
+                    arguments = new ArrayList<Argument>();
+                }
+            }
+        }
+        
+    }
+
+        @Override
+        public void endElement(String uri, String localName, String qName) throws SAXException {
+            if (inSelector) {
+                if (qName.equals(Tag.entry.name())) {
+                    inSelector = false;
+                    createHtmlDoc();
+                } else if (tagPath.size() > 0) {
+                    tagPath.remove(0);
+
+                }
+            }
+        }
+
+        private void createHtmlDoc() {
+            documentation.append("<html>\n");
+            documentation.append("<head>\n");
+
+            documentation.append("</head>\n");
+            documentation.append("<body style='font-family: Arial; font-size: 11px'>\n");
+            documentation.append("<table width='100%'><tr>\n");
+            documentation.append("<td style='font-weight: bold; font-size: large'>jQuery('").append(sample).append("')</td>\n");
+            documentation.append("<td style='vertical-align: bottom; text-align: right; font-weight: bold;font-size: small'>version added: ").append(fromVersion).append("</td>\n");
+            documentation.append("</tr></table>\n");
+            documentation.append("<hr/>\n");
+            documentation.append("<p style='font-size: 12px'>\n");
+            documentation.append("<span style='font-weight: bold'>").append(NbBundle.getMessage(SelectorsLoader.class, "LBL_Description")).append(" </span>\n");
+            documentation.append("<span>").append(description).append("</span>\n");
+            documentation.append("</p> \n");
+            if (!arguments.isEmpty()) {
+                documentation.append("<p style='font-size: 12px'>\n");
+                documentation.append("<span style='font-weight: bold'>").append(NbBundle.getMessage(SelectorsLoader.class, "LBL_Arguments")).append("</span>\n");
+                documentation.append("<table cellspacing=0 " + TABLE_STYLE + ">\n");
+                for (Argument arg : arguments) {
+                    documentation.append(String.format("<tr><td>&nbsp;</td><td valign=\"top\" %s><nobr>%s</nobr></td><td valign=\"top\" %s><nobr><b>%s</b></nobr></td><td valign=\"top\" %s>%s</td></tr>\n", //NOI18N
+                            TD_STYLE, arg.type, TD_STYLE, arg.name, TD_STYLE_MAX_WIDTH, arg.description));
+                }
+                documentation.append("</table>\n"); //NOI18N
+                documentation.append("</p> \n");
+            }
+            if (!longDescription.isEmpty()) {
+                documentation.append("<div style='font-size: small'>").append(longDescription).append("</div>\n");
+            }
+            if (!notes.isEmpty()) {
+                documentation.append("<p style='font-size: 12px'>\n");
+                documentation.append("<span style='font-weight: bold'>Additional Notes: </span>\n");
+                documentation.append("<ul>\n");
+                for (String note : notes) {
+                    documentation.append("<li>").append(note).append("</li>\n");
+                }
+                documentation.append("</ul>\n");
+                documentation.append("</p> \n");
+
+            }
+            documentation.append("</body>\n");
+            documentation.append("</html>\n");
+        }
+
+        @Override
+        public void characters(char[] ch, int start, int length) throws SAXException {
+            if (inSelector && tagPath.size() > 0) {
+                switch (tagPath.get(0)) {
+                    case added:
+                        fromVersion = new String(ch, start, length);
+                        break;
+                    case desc:
+                        if (tagPath.size() == 1) {
+                            description = new String(ch, start, length);
+                        } else {
+                            if (tagPath.get(1) == Tag.argument) {
+                                arguments.add(new Argument(argName, argType, new String(ch, start, length)));
+                            }
+                        }
+                        break;
+                    case longdesc:
+                        longDescription = new String(ch, start, length);
+                        break;
+                    case note:
+                        notes.add(new String(ch, start, length));
+                        break;
+                    case sample:
+                        sample = new String(ch, start, length);
+                        break;
+                }
+            }
+        }
+    }   
 }

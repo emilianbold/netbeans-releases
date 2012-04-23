@@ -223,8 +223,9 @@ class JsCodeCompletion implements CodeCompletionHandler {
 
     @Override
     public String document(ParserResult info, ElementHandle element) {
-        // TODO needs to be implemented
-        return null;
+        JQueryCodeCompletion jqueryCC = new JQueryCodeCompletion();
+        String help = jqueryCC.getHelpDocumentation(info, element);
+        return help;
     }
 
     @Override
