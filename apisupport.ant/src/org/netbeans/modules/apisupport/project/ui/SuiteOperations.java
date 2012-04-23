@@ -76,15 +76,12 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
-import org.openide.DialogDisplayer;
 import org.openide.LifecycleManager;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
-import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -249,16 +246,6 @@ public final class SuiteOperations implements DeleteOperationImplementation,
         return opened;
     }
     
-    static boolean canRun(final SuiteProject project) {
-        boolean result = true;
-        if (project.getTestUserDirLockFile().isFile()) {
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    NbBundle.getMessage(ModuleOperations.class, "ERR_ModuleIsBeingRun")));
-            result = false;
-        }
-        return result;
-    }
-
 // XXX following is copy-pasted from the Project APIs
 //<editor-fold defaultstate="collapsed" desc="copy-pasted from Project API">
     private static FileObject doCopy(final Project original,
