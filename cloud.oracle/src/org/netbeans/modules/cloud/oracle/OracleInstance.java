@@ -97,10 +97,9 @@ public class OracleInstance {
     private String user;
     private String password;
     private String adminURL;
-    private String instanceURL;
-    private String cloudURL;
     private String identityDomain;
-    private String serviceInstance;
+    private String javaServiceName;
+    private String dbServiceName;
     private String onPremiseServerInstanceId;
     private String sdkFolder;
     
@@ -111,41 +110,19 @@ public class OracleInstance {
     /* GuardedBy(this) */
     private OracleJ2EEInstance j2eeInstance;
     
-    public OracleInstance(String name, String tenantUserName, String tenantPassword, 
-          String adminURL, String instanceURL, String cloudURL, String identityDomain, 
-          String serviceInstance, String onPremiseServerInstanceId,
+    public OracleInstance(String name, String user, String password, 
+          String adminURL, String identityDomain, 
+          String javaServiceName, String dbServiceName, String onPremiseServerInstanceId,
           String sdkFolder) {
         this.name = name;
-        this.user = tenantUserName;
-        this.password = tenantPassword;
+        this.user = user;
+        this.password = password;
         this.adminURL = adminURL;
-        this.instanceURL = instanceURL;
-        this.cloudURL = cloudURL;
         this.identityDomain = identityDomain;
-        this.serviceInstance = serviceInstance;
+        this.javaServiceName = javaServiceName;
+        this.dbServiceName = dbServiceName;
         this.onPremiseServerInstanceId = onPremiseServerInstanceId;
         this.sdkFolder = sdkFolder;
-    }
-
-    public String getCloudURL() {
-        return cloudURL;
-    }
-
-    public void setCloudURL(String cloudURL) {
-        this.cloudURL = cloudURL;
-    }
-
-    public String getInstanceURL() {
-        return instanceURL;
-    }
-
-    public void setInstanceURL(String instanceURL) {
-        this.instanceURL = instanceURL;
-        synchronized (this) {
-            if (j2eeInstance != null) {
-                j2eeInstance.getInstanceProperties().setProperty(OracleDeploymentFactory.IP_INSTANCE_URL, getInstanceURL());
-            }
-        }
     }
 
     void setServerInstance(ServerInstance serverInstance) {
@@ -172,8 +149,12 @@ public class OracleInstance {
         return adminURL;
     }
 
-    public String getServiceInstance() {
-        return serviceInstance;
+    public String getJavaServiceName() {
+        return javaServiceName;
+    }
+
+    public String getDatabaseServiceName() {
+        return dbServiceName;
     }
 
     public String getIdentityDomain() {
@@ -192,33 +173,38 @@ public class OracleInstance {
         this.platform = platform;
     }
 
-    public void setServiceInstance(String serviceInstance) {
-        this.serviceInstance = serviceInstance;
+    public void setJavaServiceName(String javaServiceName) {
+        this.javaServiceName = javaServiceName;
         resetCache();
     }
+
+    public void setDatabaseServiceName(String dbServiceName) {
+        this.dbServiceName = dbServiceName;
+    }
+    
     
     public void setIdentityDomain(String identityDomain) {
         this.identityDomain = identityDomain;
         resetCache();
     }
 
-    public void setPassword(String tenantPassword) {
-        this.password = tenantPassword;
+    public void setPassword(String password) {
+        this.password = password;
         synchronized (this) {
             if (j2eeInstance != null) {
                 j2eeInstance.getInstanceProperties().setProperty(
-                                    InstanceProperties.PASSWORD_ATTR, tenantPassword);
+                                    InstanceProperties.PASSWORD_ATTR, password);
             }
         }
         resetCache();
     }
 
-    public void setUser(String tenantUserName) {
-        this.user = tenantUserName;
+    public void setUser(String user) {
+        this.user = user;
         synchronized (this) {
             if (j2eeInstance != null) {
                 j2eeInstance.getInstanceProperties().setProperty(
-                                    InstanceProperties.USERNAME_ATTR, tenantUserName);
+                                    InstanceProperties.USERNAME_ATTR, user);
             }
         }
         resetCache();
@@ -259,13 +245,13 @@ public class OracleInstance {
         return platform;
     }
     
-    public static ApplicationManager createApplicationManager(String adminUrl, String tenantUserName, String tenantPassword, String sdkFolder) {
+    public static ApplicationManager createApplicationManager(String adminUrl, String user, String password, String sdkFolder) {
         String url = adminUrl;
         if (!url.endsWith("/")) {
             url += "/";
         }
         url += "manager/rest"; // NOI18N
-        return CloudSDKHelper.createSDKFactory(sdkFolder).createServiceEndpoint(url, tenantUserName, tenantPassword);
+        return CloudSDKHelper.createSDKFactory(sdkFolder).createServiceEndpoint(url, user, password);
     }
     
     public void testConnection() throws ManagerException {
@@ -292,7 +278,7 @@ public class OracleInstance {
         }
     }
     
-    public static Future<DeploymentStatus> deployAsync(final String instanceUrl, final ApplicationManager pm, final File f, 
+    public static Future<DeploymentStatus> deployAsync(final ApplicationManager pm, final File f, 
                          final String identityDomain, 
                          final String serviceName, 
                          final ProgressObjectImpl po,
@@ -302,7 +288,7 @@ public class OracleInstance {
             @Override
             public DeploymentStatus call() throws Exception {
                 String url[] = new String[1];
-                DeploymentStatus ds = deploy(instanceUrl, pm, f, identityDomain, serviceName, po, url, cloudInstanceName, onPremiseServiceInstanceId);
+                DeploymentStatus ds = deploy(pm, f, identityDomain, serviceName, po, url, cloudInstanceName, onPremiseServiceInstanceId);
                 LOG.log(Level.INFO, "deployment result: "+ds); // NOI18N
                 po.updateDepoymentResult(ds, url[0]);
                 return ds;
@@ -310,7 +296,7 @@ public class OracleInstance {
         });
     }
     
-    public static DeploymentStatus deploy(String instanceURL, ApplicationManager am, File f, String identityDomain, String serviceName, 
+    public static DeploymentStatus deploy(ApplicationManager am, File f, String identityDomain, String serviceName, 
                           ProgressObjectImpl po, String[] url, String cloudInstanceName, String onPremiseServiceInstanceId) {
         assert !SwingUtilities.isEventDispatchThread();
         OutputWriter ow = null;
@@ -387,11 +373,8 @@ public class OracleInstance {
                 if (JobStatus.COMPLETE.equals(jobStatus)) {
                     Application app2 = am.describeApplication(identityDomain, serviceName, appId);
                     List<String> urls = app2.getApplicationUrls();
-                    if (urls != null && !urls.isEmpty()) {
-                        url[0] = app2.getApplicationUrls().get(0);
-                    } else {
-                        url[0] = instanceURL+(instanceURL.endsWith("/") ? (ctx.length() > 1 ? ctx.substring(1) : "") : ctx);
-                    }
+                    assert urls != null && !urls.isEmpty() : "deployed app must have a URL. "+app2;
+                    url[0] = app2.getApplicationUrls().get(0);
                     ow.println();
                     ow.println(NbBundle.getMessage(OracleInstance.class, "MSG_Deployment_OK", url[0]));
                     return DeploymentStatus.SUCCESS;
@@ -490,17 +473,17 @@ public class OracleInstance {
     
     public List<Application> getApplications() {
         assert !SwingUtilities.isEventDispatchThread();
-        return getApplicationManager().listApplications(getIdentityDomain(), getServiceInstance());
+        return getApplicationManager().listApplications(getIdentityDomain(), getJavaServiceName());
     }
 
     public Job undeploy(Application app) {
         assert !SwingUtilities.isEventDispatchThread();
-        return getApplicationManager().undeployApplication(getIdentityDomain(), getServiceInstance(), app.getApplicationName());
+        return getApplicationManager().undeployApplication(getIdentityDomain(), getJavaServiceName(), app.getApplicationName());
     }
     
     public Job start(Application app) {
         assert !SwingUtilities.isEventDispatchThread();
-        return getApplicationManager().startApplication(getIdentityDomain(), getServiceInstance(), app.getApplicationName());
+        return getApplicationManager().startApplication(getIdentityDomain(), getJavaServiceName(), app.getApplicationName());
     }
     
     public Application refreshApplication(Application app) {
@@ -510,7 +493,7 @@ public class OracleInstance {
     
     public Job stop(Application app) {
         assert !SwingUtilities.isEventDispatchThread();
-        return getApplicationManager().stopApplication(getIdentityDomain(), getServiceInstance(), app.getApplicationName());
+        return getApplicationManager().stopApplication(getIdentityDomain(), getJavaServiceName(), app.getApplicationName());
     }
     
     public static File findWeblogicJar(String onPremiseServerInstanceId) {
