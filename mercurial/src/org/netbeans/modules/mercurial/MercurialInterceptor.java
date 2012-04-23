@@ -44,7 +44,6 @@
 package org.netbeans.modules.mercurial;
 
 import java.util.Map;
-import javax.swing.SwingUtilities;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import java.io.File;
 import java.io.IOException;
@@ -160,9 +159,6 @@ public class MercurialInterceptor extends VCSInterceptor {
     public void doMove(final File from, final File to) throws IOException {
         Mercurial.LOG.log(Level.FINE, "doMove {0}->{1}", new Object[]{from, to});
         if (from == null || to == null || to.exists() && !equalPathsIgnoreCase(from, to)) return;
-        if (SwingUtilities.isEventDispatchThread()) {
-            Mercurial.LOG.log(Level.INFO, "Warning: launching external process in AWT", new Exception().fillInStackTrace()); // NOI18N
-        }
         hgMoveImplementation(from, to);
     }
 
