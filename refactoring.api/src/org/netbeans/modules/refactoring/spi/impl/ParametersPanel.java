@@ -797,6 +797,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         }
         setOKorRefactor();
         ((BorderLayout)this.getLayout()).invalidateLayout(this);
+        stop(new ProgressEvent(this, ProgressEvent.STOP));
         dialog.pack();
     }
 
