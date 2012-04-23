@@ -216,35 +216,37 @@ public class JPACodeCompletionProvider implements CompletionProvider {
         }
 
         private void run(CompilationController controller) {
-            int startOffset = caretOffset;
-            Iterator resolversItr = resolvers.iterator();
-            TreePath env = null;
-            try {
-                env = getCompletionTreePath(controller, caretOffset, CompletionProvider.COMPLETION_QUERY_TYPE);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            if (env == null) {
-                return;
-            }
-            results = new ArrayList<JPACompletionItem>();
-            while (resolversItr.hasNext()) {
-                CompletionContextResolver resolver = (CompletionContextResolver) resolversItr.next();
-                TaskUserAction task = new TaskUserAction(controller, resolver, startOffset);
+            if(hasTask && !isTaskCancelled()){
+                int startOffset = caretOffset;
+                Iterator resolversItr = resolvers.iterator();
+                TreePath env = null;
                 try {
-                    EntityClassScope scope = EntityClassScope.getEntityClassScope(URLMapper.findFileObject(controller.getCompilationUnit().getSourceFile().toUri().toURL()));
-                    MetadataModel<EntityMappingsMetadata> entityMappingsModel = null;
-                    if (scope != null) {
-                        entityMappingsModel = scope.getEntityMappingsModel(false); // false since I guess you only want the entity classes defined in the project
-                    }
-                    if (entityMappingsModel != null) {
-                        entityMappingsModel.runReadAction(task);
-                    }
+                    env = getCompletionTreePath(controller, caretOffset, CompletionProvider.COMPLETION_QUERY_TYPE);
                 } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
+                if (env == null) {
+                    return;
+                }
+                results = new ArrayList<JPACompletionItem>();
+                while (resolversItr.hasNext()) {
+                    CompletionContextResolver resolver = (CompletionContextResolver) resolversItr.next();
+                    TaskUserAction task = new TaskUserAction(controller, resolver, startOffset);
+                    try {
+                        EntityClassScope scope = EntityClassScope.getEntityClassScope(URLMapper.findFileObject(controller.getCompilationUnit().getSourceFile().toUri().toURL()));
+                        MetadataModel<EntityMappingsMetadata> entityMappingsModel = null;
+                        if (scope != null) {
+                            entityMappingsModel = scope.getEntityMappingsModel(false); // false since I guess you only want the entity classes defined in the project
+                        }
+                        if (entityMappingsModel != null) {
+                            entityMappingsModel.runReadAction(task);
+                        }
+                    } catch (IOException ex) {
+                    }
 
-                if (!task.isValid()) {
-                    break;
+                    if (!task.isValid()) {
+                        break;
+                    }
                 }
             }
         }
