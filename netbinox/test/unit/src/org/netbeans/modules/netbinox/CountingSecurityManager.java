@@ -462,6 +462,7 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
         if (
             file.equals(System.getProperty("netbeans.user")) ||
             file.equals(System.getProperty("netbeans.home")) ||
+            (file + File.separator + "platform").equals(System.getProperty("netbeans.home")) ||
             file.matches(".*/modules/ext/org\\.eclipse\\.osgi_[0-9\\.]*v[0-9]*\\.jar") ||
             file.endsWith("modules/ext/org.eclipse.osgi_3.7.1.R37x_v20110808-1106.jar") ||
             file.endsWith("modules/org-netbeans-modules-netbinox.jar") ||

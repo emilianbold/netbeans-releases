@@ -41,8 +41,10 @@
  */
 package org.netbeans.modules.netbinox;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.eclipse.osgi.launch.EquinoxFactory;
 import org.netbeans.core.netigso.spi.NetigsoArchive;
@@ -75,7 +77,7 @@ public class NetbinoxFactory implements FrameworkFactory {
         configMap.put("osgi.hook.configurators.include", NetbinoxHooks.class.getName()); // NOI18N
         configMap.put("osgi.user.area.default", configMap.get(Constants.FRAMEWORK_STORAGE)); // NOI18N
         configMap.put("osgi.instance.area.default", System.getProperty("netbeans.user")); // NOI18N
-        configMap.put("osgi.install.area", System.getProperty("netbeans.home")); // NOI18N
+        configMap.put("osgi.install.area", findInstallArea()); // NOI18N
         // some useless value
         configMap.put("osgi.framework.properties", System.getProperty("netbeans.user")); // NOI18N
         // don't change classloader when getting XMLParsers
@@ -104,5 +106,30 @@ public class NetbinoxFactory implements FrameworkFactory {
         }
         configMap.put("osgi.framework", loc);
         return new Netbinox(configMap);
+    }
+    private static String findInstallArea() {
+        String ia = System.getProperty("netbeans.home"); // NOI18N
+        String rest = System.getProperty("netbeans.dirs"); // NOI18N
+        if (rest != null) {
+            for (String c : rest.split(File.pathSeparator)) {
+                int prefix = findCommonPrefix(ia, c);
+                if (prefix <= 3) {
+                    LOG.log(Level.WARNING, "Cannot compute install area. No common prefix between {0} and {1}", new Object[]{ia, c});
+                } else {
+                    ia = ia.substring(0, prefix);
+                }
+            }
+        }
+        return ia;
+    }
+
+    private static int findCommonPrefix(String s1, String s2) {
+        int len = Math.min(s1.length(), s2.length());
+        for (int i = 0; i < len; i++) {
+            if (s1.charAt(i) != s2.charAt(i)) {
+                return i;
+            }
+        }
+        return len;
     }
 }
