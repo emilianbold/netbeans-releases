@@ -74,16 +74,6 @@ public class OracleWizardComponent extends javax.swing.JPanel implements Documen
     /** Creates new form OracleWizardComponent */
     public OracleWizardComponent() {
         initComponents();
-        
-        // not needed anymore as Application.getApplicationUrls returns full URL
-        instanceLabel.setVisible(false);
-        instanceURLTextField.setVisible(false);
-
-        // just hardcode this; URL is life internally now
-        cloudLabel.setVisible(false);
-        cloudURLTextField.setVisible(false);
-        cloudURLTextField.setText("http://cloud.oracle.com"); // NOI18N
-        
         adminLabel.setVisible(SHOW_CLOUD_URLS);
         adminURLTextField.setVisible(SHOW_CLOUD_URLS);
         
@@ -91,24 +81,13 @@ public class OracleWizardComponent extends javax.swing.JPanel implements Documen
         if (folder.length() != 0) {
             sdkTextField.setText(folder);
         }
-        if (SHOW_CLOUD_URLS) {
-            identityDomainTextField.setText("s11group3"); // NOI18N
-            serviceInstanceTextField.setText("s11wls3"); // NOI18N
-            userNameTextField.setText("jing.zhao@oracle.com");
-            passwordField.setText("Welcome1");
-            adminURLTextField.setText("http://slc00ggp.us.oracle.com:7003");
-            instanceURLTextField.setText("http://slc00ggp.us.oracle.com:7013");
-        }
         
         setName(NbBundle.getBundle(OracleWizardComponent.class).getString("LBL_Name")); // NOI18N
 
         if (!SHOW_CLOUD_URLS) {
             adminURLTextField.setText(ADMIN_URL); // NOI18N
-            cloudURLTextField.setText("https://cloud.oracle.com"); // NOI18N
         }
         adminURLTextField.getDocument().addDocumentListener(this);
-        instanceURLTextField.getDocument().addDocumentListener(this);
-        cloudURLTextField.getDocument().addDocumentListener(this);
         passwordField.getDocument().addDocumentListener(this);
         userNameTextField.getDocument().addDocumentListener(this);
         identityDomainTextField.getDocument().addDocumentListener(this);
@@ -118,8 +97,6 @@ public class OracleWizardComponent extends javax.swing.JPanel implements Documen
 
     void disableModifications(boolean disable) {
         adminURLTextField.setEditable(!disable);
-        cloudURLTextField.setEditable(!disable);
-        instanceURLTextField.setEditable(!disable);
         passwordField.setEditable(!disable);
         identityDomainTextField.setEditable(!disable);
         serviceInstanceTextField.setEditable(!disable);
@@ -150,14 +127,12 @@ public class OracleWizardComponent extends javax.swing.JPanel implements Documen
         sdkLabel = new javax.swing.JLabel();
         serviceInstanceTextField = new javax.swing.JTextField();
         jLabel5 = new javax.swing.JLabel();
-        instanceURLTextField = new javax.swing.JTextField();
-        instanceLabel = new javax.swing.JLabel();
         identityDomainTextField = new javax.swing.JTextField();
-        cloudLabel = new javax.swing.JLabel();
-        cloudURLTextField = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
         configureButton = new javax.swing.JButton();
         sdkTextField = new javax.swing.JTextField();
+        jLabel6 = new javax.swing.JLabel();
+        dbServiceNameTextField = new javax.swing.JTextField();
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(OracleWizardComponent.class, "OracleWizardComponent.jLabel3.text")); // NOI18N
 
@@ -172,10 +147,6 @@ public class OracleWizardComponent extends javax.swing.JPanel implements Documen
         org.openide.awt.Mnemonics.setLocalizedText(sdkLabel, org.openide.util.NbBundle.getMessage(OracleWizardComponent.class, "OracleWizardComponent.sdkLabel.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(OracleWizardComponent.class, "OracleWizardComponent.jLabel7.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(instanceLabel, org.openide.util.NbBundle.getMessage(OracleWizardComponent.class, "OracleWizardComponent.instanceLabel.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(cloudLabel, org.openide.util.NbBundle.getMessage(OracleWizardComponent.class, "OracleWizardComponent.cloudLabel.text")); // NOI18N
 
         jLabel1.setFont(jLabel1.getFont().deriveFont(jLabel1.getFont().getSize()-2f));
         jLabel1.setForeground(java.awt.Color.blue);
@@ -196,6 +167,10 @@ public class OracleWizardComponent extends javax.swing.JPanel implements Documen
         sdkTextField.setEditable(false);
         sdkTextField.setText(org.openide.util.NbBundle.getMessage(OracleWizardComponent.class, "OracleWizardComponent.sdkTextField.text")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel6, org.openide.util.NbBundle.getMessage(OracleWizardComponent.class, "OracleWizardComponent.jLabel6.text")); // NOI18N
+
+        dbServiceNameTextField.setText(org.openide.util.NbBundle.getMessage(OracleWizardComponent.class, "OracleWizardComponent.dbServiceNameTextField.text")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -208,25 +183,22 @@ public class OracleWizardComponent extends javax.swing.JPanel implements Documen
                     .addComponent(jLabel2)
                     .addComponent(jLabel4)
                     .addComponent(sdkLabel)
-                    .addComponent(instanceLabel)
-                    .addComponent(cloudLabel))
+                    .addComponent(jLabel6))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(instanceURLTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 233, Short.MAX_VALUE)
-                    .addComponent(adminURLTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 233, Short.MAX_VALUE)
-                    .addComponent(passwordField, javax.swing.GroupLayout.DEFAULT_SIZE, 233, Short.MAX_VALUE)
-                    .addComponent(userNameTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 233, Short.MAX_VALUE)
-                    .addComponent(identityDomainTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 233, Short.MAX_VALUE)
-                    .addComponent(serviceInstanceTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 233, Short.MAX_VALUE)
-                    .addComponent(cloudURLTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 233, Short.MAX_VALUE)
+                    .addComponent(adminURLTextField)
+                    .addComponent(passwordField)
+                    .addComponent(userNameTextField)
+                    .addComponent(identityDomainTextField)
+                    .addComponent(serviceInstanceTextField)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE))
+                        .addGap(0, 90, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(sdkTextField)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(configureButton)))
-                .addGap(0, 0, 0))
+                        .addComponent(configureButton))
+                    .addComponent(dbServiceNameTextField)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -240,6 +212,10 @@ public class OracleWizardComponent extends javax.swing.JPanel implements Documen
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(serviceInstanceTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel5))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel6)
+                    .addComponent(dbServiceNameTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(userNameTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -256,21 +232,13 @@ public class OracleWizardComponent extends javax.swing.JPanel implements Documen
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(adminLabel)
-                    .addComponent(adminURLTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(instanceLabel)
-                    .addComponent(instanceURLTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(cloudLabel)
-                    .addComponent(cloudURLTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(adminURLTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
         );
     }// </editor-fold>//GEN-END:initComponents
 
 private void jLabel1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel1MouseClicked
         try {
-            URLDisplayer.getDefault().showURL(new URL(getCloudUrl()));
+            URLDisplayer.getDefault().showURL(new URL("http://cloud.oracle.com"));
         } catch (MalformedURLException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -287,17 +255,15 @@ private void jLabel1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:eve
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel adminLabel;
     private javax.swing.JTextField adminURLTextField;
-    private javax.swing.JLabel cloudLabel;
-    private javax.swing.JTextField cloudURLTextField;
     private javax.swing.JButton configureButton;
+    private javax.swing.JTextField dbServiceNameTextField;
     private javax.swing.JTextField identityDomainTextField;
-    private javax.swing.JLabel instanceLabel;
-    private javax.swing.JTextField instanceURLTextField;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JPasswordField passwordField;
     private javax.swing.JLabel sdkLabel;
@@ -308,14 +274,6 @@ private void jLabel1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:eve
 
     public String getAdminUrl() {
         return adminURLTextField.getText();
-    }
-    
-    public String getInstanceUrl() {
-        return instanceURLTextField.getText();
-    }
-    
-    public String getCloudUrl() {
-        return cloudURLTextField.getText();
     }
     
     public String getUserName() {
@@ -346,8 +304,12 @@ private void jLabel1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:eve
         return identityDomainTextField.getText().trim();
     }
 
-    public String getServiceInstance() {
+    public String getJavaServiceName() {
         return serviceInstanceTextField.getText().trim();
+    }
+
+    public String getDatabaseServiceName() {
+        return dbServiceNameTextField.getText().trim();
     }
 
     public String getSDKFolder() {
@@ -372,11 +334,6 @@ private void jLabel1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:eve
     private void update(DocumentEvent e) {
         if (l != null) {
             l.stateChanged(new ChangeEvent(this));
-        }
-        if (ADMIN_URL.equals(adminURLTextField.getText()) && 
-                (e.getDocument() == serviceInstanceTextField.getDocument() ||
-                 e.getDocument() == identityDomainTextField.getDocument())) {
-            instanceURLTextField.setText(MessageFormat.format("https://{0}.{1}.java.cloud.oracle.com", getServiceInstance(), getIdentityDomain())); // NOI18N
         }
     }
 }
