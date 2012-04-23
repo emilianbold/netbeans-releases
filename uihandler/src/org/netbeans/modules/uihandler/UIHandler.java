@@ -147,6 +147,9 @@ implements ActionListener, Runnable, Callable<JButton> {
             }
         }
 
+        if (Installer.isImmediateWriteOut(record)) {
+            return ;
+        }
         class WriteOut implements Runnable {
             public LogRecord r;
             @Override

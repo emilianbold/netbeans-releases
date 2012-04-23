@@ -97,7 +97,7 @@ made subject to such option by the copyright holder.
         -->
         <!-- location of glassfish instalation -->
         
-        <!-- <property name="glassfish_location" location="/Users/tomslot/glassfishv3"/> -->
+        <property name="glassfish_location" location="/home/marfous/Downloads/glassfish3"/>
         <fail message="Set glassfish_location">
             <condition>
                 <not>
@@ -108,8 +108,8 @@ made subject to such option by the copyright holder.
 
         <!-- glassfish-jspparser.jar -->
         <mkdir dir="glassfishjspparser"/>
-        <unzip src="${glassfish_location}/glassfish/modules/jsp-impl.jar" dest="glassfishjspparser/"/>
-        <unzip src="${glassfish_location}/glassfish/modules/el-impl.jar" dest="glassfishjspparser/"/>
+        <unzip src="${glassfish_location}/glassfish/modules/javax.servlet.jsp.jar" dest="glassfishjspparser/"/>
+        <unzip src="${glassfish_location}/glassfish/modules/javax.el.jar" dest="glassfishjspparser/"/>
         <unzip src="${glassfish_location}/glassfish/modules/glassfish-ee-api.jar" dest="glassfishjspparser/"/>
         <unzip src="${glassfish_location}/glassfish/modules/common-util.jar" dest="glassfishjspparser/"/>
         <delete file="./external/glassfish-jspparser-3.0.jar" />
@@ -122,8 +122,9 @@ made subject to such option by the copyright holder.
         <!-- servlet3.0-jsp2.2-api.jar -->
         <mkdir dir="servletjspapi" />
         <unzip src="${glassfish_location}/glassfish/modules/gf-client-module.jar" dest="./servletjspapi/"/>
-        <unzip src="${glassfish_location}/glassfish/modules/javax.servlet.jar" dest="./servletjspapi/"/>
-        <unzip src="${glassfish_location}/glassfish/modules/javax.servlet.jsp.jar" dest="./servletjspapi/"/>
+        <unzip src="${glassfish_location}/glassfish/modules/javax.servlet-api.jar" dest="./servletjspapi/"/>
+        <unzip src="${glassfish_location}/glassfish/modules/javax.servlet.jsp-api.jar" dest="./servletjspapi/"/>
+        <unzip src="${glassfish_location}/glassfish/modules/javax.el-api.jar" dest="./servletjspapi/"/>
 
         <mkdir dir="servletjspapi/resources/dtds" />
         <copy todir="servletjspapi/resources/dtds">

@@ -296,8 +296,7 @@ public class FixUsesPerformer {
         }
 
         public String getSanitizedUsePart() {
-            String sanitizedUsePart = hasAlias() ? use + AS_CONCAT + alias : use;
-            return options.startUseWithNamespaceSeparator() ? sanitizedUsePart : sanitizedUsePart.substring(ImportDataCreator.NS_SEPARATOR.length());
+            return hasAlias() ? use + AS_CONCAT + alias : use;
         }
 
         private boolean hasAlias() {
