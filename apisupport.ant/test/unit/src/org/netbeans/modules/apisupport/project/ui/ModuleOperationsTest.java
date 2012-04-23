@@ -45,6 +45,8 @@
 package org.netbeans.modules.apisupport.project.ui;
 
 import java.awt.EventQueue;
+import java.io.RandomAccessFile;
+import java.nio.channels.FileLock;
 import java.util.Arrays;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.Project;
@@ -132,6 +134,8 @@ public class ModuleOperationsTest extends TestBase {
         cgpi.setProject(project);
         DialogDisplayerImpl dd = (DialogDisplayerImpl) Lookup.getDefault().lookup(DialogDisplayer.class);
         FileObject lock = FileUtil.createData(project.getProjectDirectory(), "build/testuserdir/lock");
+        RandomAccessFile raf = new RandomAccessFile(FileUtil.toFile(lock), "rw");
+        FileLock lck = raf.getChannel().lock();
         EventQueue.invokeAndWait(new Runnable() {
             public void run() {
                 ((ContextAwareAction) CommonProjectActions.deleteProjectAction()).createContextAwareInstance(Lookups.singleton(project)).actionPerformed(null);
@@ -141,6 +145,8 @@ public class ModuleOperationsTest extends TestBase {
         assertEquals("warning message emitted", dd.getLastNotifyDescriptor().getMessage(),
                 NbBundle.getMessage(ModuleOperationsTest.class, "ERR_ModuleIsBeingRun"));
         dd.reset();
+        lck.release();
+        raf.close();
         lock.delete();
         EventQueue.invokeAndWait(new Runnable() {
             public void run() {
