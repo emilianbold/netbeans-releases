@@ -151,10 +151,11 @@ class Netbinox extends Equinox {
                 url = url.replaceAll("%20", " ");
                 String filePart = url.substring(pref.length());
                 if (filePart.startsWith(installArea)) {
-                    if (filePart.startsWith("/")) { // NOI18N
-                        filePart = filePart.substring(1);
+                    String relPath = filePart.substring(installArea.length());
+                    if (relPath.startsWith("/")) { // NOI18N
+                        relPath = relPath.substring(1);
                     }
-                    url = pref + filePart.substring(installArea.length());
+                    url = pref + relPath;
                 }
                 NetbinoxFactory.LOG.log(Level.FINE, "Converted to relative {0}", url);
             } else {
