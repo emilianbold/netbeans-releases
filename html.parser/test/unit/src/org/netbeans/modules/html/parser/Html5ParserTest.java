@@ -959,6 +959,34 @@ public class Html5ParserTest extends NbTestCase {
 
     }
     
+    //Bug 210976 - StringIndexOutOfBoundsException: String index out of range: 399
+    public void testIssue210976() throws ParseException {
+        String code = "<a href=\"@&msc=@@@&klub=@@@\"></a>";
+        //             01234567 8901234567890123456 7890123
+        //             0          1         2          3    
+        
+        HtmlParseResult result = parse(code);
+        Node root = result.root();
+        assertNotNull(root);
+
+        ElementUtils.dumpTree(root);
+        
+        OpenTag a = ElementUtils.query(root, "html/body/a");
+        assertNotNull(a);
+        assertEquals(0, a.from());
+        assertEquals(29, a.to());
+        
+        Attribute attr = a.getAttribute("href");
+        assertNotNull(attr);
+        
+        assertNotNull(attr.value());
+        assertNotNull(attr.unquotedValue());
+        
+        assertEquals("\"@&msc=@@@&klub=@@@\"", attr.value());
+        assertEquals("@&msc=@@@&klub=@@@", attr.unquotedValue());
+
+    }
+    
     //fails
 //     //Bug 194037 - AssertionError at nu.validator.htmlparser.impl.TreeBuilder.endTag
 //    public void testIssue194037() throws ParseException {
