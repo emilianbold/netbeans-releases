@@ -101,9 +101,11 @@ public class ImmutableVariablesHint extends AbstractRule implements PHPRuleWithP
         private final Map<ASTNode, Map<String, List<Variable>>> assignments = new HashMap<ASTNode, Map<String, List<Variable>>>();
         private final List<Hint> hints = new LinkedList<Hint>();
         private boolean variableAssignment;
+        private final int numberOfAllowedAssignments;
 
         public CheckVisitor(FileObject fileObject) {
             this.fileObject = fileObject;
+            this.numberOfAllowedAssignments = getNumberOfAllowedAssignments(preferences);
         }
 
         public List<Hint> getHints() {
@@ -123,22 +125,23 @@ public class ImmutableVariablesHint extends AbstractRule implements PHPRuleWithP
 
         private void checkAllowedAssignments(List<Variable> variables) {
             int variablesSize = variables.size();
-            if (variablesSize > getNumberOfAllowedAssignments(preferences)) {
+            if (variablesSize > numberOfAllowedAssignments) {
                 createHints(variables);
             }
         }
 
         @Messages({
-            "# {0} - Number of assignments",
-            "# {1} - Variable name",
-            "ImmutableVariablesHintCustom=Too many assignments ({0}) into variable ${1}"
+            "# {0} - Number of allowed assignments",
+            "# {1} - Number of assignments",
+            "# {2} - Variable name",
+            "ImmutableVariablesHintCustom=You should use only:\n{0} assignment(s) ({1} used)\nto a variable:\n${2}\nto avoid accidentally overwriting it and make your code easier to read."
         })
         private void createHints(List<Variable> variables) {
             for (Variable variable : variables) {
                 int start = variable.getStartOffset() + 1;
                 int end = variable.getEndOffset();
                 OffsetRange offsetRange = new OffsetRange(start, end);
-                hints.add(new Hint(ImmutableVariablesHint.this, Bundle.ImmutableVariablesHintCustom(variables.size(), getIdentifier(variable).getName()), fileObject, offsetRange, null, 500));
+                hints.add(new Hint(ImmutableVariablesHint.this, Bundle.ImmutableVariablesHintCustom(numberOfAllowedAssignments, variables.size(), getIdentifier(variable).getName()), fileObject, offsetRange, null, 500));
             }
         }
 

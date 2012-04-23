@@ -832,7 +832,8 @@ public final class EditorContextDispatcher {
             try {
                 w.waitFinished(TIMEOUT);
             } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
+                // Re-interrupt
+                Thread.currentThread().interrupt();
             }
         }
         
