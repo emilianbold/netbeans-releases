@@ -2198,6 +2198,18 @@
     <!-- Running/Debugging in Browser -->
 
     <target name="-check-selected-browser-path" depends="-check-default-run-config">
+        <condition property="javafx.run.inbrowser.undefined">
+            <or>
+                <and>
+                    <isset property="javafx.run.inbrowser"/>
+                    <equals arg1="${javafx.run.inbrowser}" arg2="undefined"/>
+                </and>
+                <and>
+                    <isset property="javafx.run.inbrowser.path"/>
+                    <equals arg1="${javafx.run.inbrowser.path}" arg2="undefined"/>
+                </and>
+            </or>
+        </condition>
         <condition property="javafx.run.inbrowser.path-exists">
             <and>
                 <isset property="javafx.run.inbrowser.path"/>
@@ -2205,6 +2217,7 @@
             </and>
         </condition>
         <fail message="Error:${line.separator}Browser selection not recognizable from ${config} run configuration.${line.separator}Please go to Project Properties dialog, category Run, to select a valid browser." unless="javafx.run.inbrowser.path"/>
+        <fail message="Error:${line.separator}No browser defined in ${config} run configuration.${line.separator}Please verify in Tools->Options dialog that NetBeans recognizes a valid browser, then go to Project Properties dialog, category Run, to select a valid browser." if="javafx.run.inbrowser.undefined"/>
         <fail message="Error:${line.separator}Browser ${javafx.run.inbrowser.path} referred from ${config} run configuration can not be found.${line.separator}(This can happen, e.g, when the FX Project is transferred to another system.)${line.separator}Please go to Project Properties dialog, category Run, to select a valid browser." unless="javafx.run.inbrowser.path-exists"/>
     </target>
 
