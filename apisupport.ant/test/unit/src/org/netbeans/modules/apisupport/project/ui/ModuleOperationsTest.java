@@ -54,7 +54,6 @@ import org.netbeans.modules.apisupport.project.DialogDisplayerImpl;
 import org.netbeans.modules.apisupport.project.InstalledFileLocatorImpl;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.TestBase;
-import org.netbeans.modules.apisupport.project.layers.LayerTestBase;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ProjectOperations;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
@@ -66,8 +65,8 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.ContextGlobalProvider;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.test.MockLookup;
 
 /**
  * Test ModuleOperations.
@@ -76,23 +75,22 @@ import org.openide.util.lookup.Lookups;
  */
 public class ModuleOperationsTest extends TestBase {
     
-    private static ContextGlobalProviderImpl cgpi = new ContextGlobalProviderImpl();
-    
     static {
         System.setProperty("org.netbeans.core.startup.ModuleSystem.CULPRIT", "true");
-        LayerTestBase.Lkp.setLookup(new Object[] {
-            cgpi,
-        });
-        DialogDisplayerImpl.returnFromNotify(DialogDescriptor.NO_OPTION);
     }
     
     public ModuleOperationsTest(String name) {
         super(name);
     }
     
+    private ContextGlobalProviderImpl cgpi = new ContextGlobalProviderImpl();
+
     protected @Override void setUp() throws Exception {
         super.setUp();
+        MockLookup.setLayersAndInstances(cgpi);
         InstalledFileLocatorImpl.registerDestDir(destDirF);
+        ((DialogDisplayerImpl) Lookup.getDefault().lookup(DialogDisplayer.class)).reset();
+        DialogDisplayerImpl.returnFromNotify(DialogDescriptor.NO_OPTION);
     }
     
     public void testDelete() throws Exception {
@@ -137,19 +135,19 @@ public class ModuleOperationsTest extends TestBase {
         RandomAccessFile raf = new RandomAccessFile(FileUtil.toFile(lock), "rw");
         FileLock lck = raf.getChannel().lock();
         EventQueue.invokeAndWait(new Runnable() {
-            public void run() {
+            @Override public void run() {
                 ((ContextAwareAction) CommonProjectActions.deleteProjectAction()).createContextAwareInstance(Lookups.singleton(project)).actionPerformed(null);
             }
         });
         assertNotNull("warning message emitted", dd.getLastNotifyDescriptor());
         assertEquals("warning message emitted", dd.getLastNotifyDescriptor().getMessage(),
-                NbBundle.getMessage(ModuleOperationsTest.class, "ERR_ModuleIsBeingRun"));
+                Bundle.ERR_ModuleIsBeingRun());
         dd.reset();
         lck.release();
         raf.close();
         lock.delete();
         EventQueue.invokeAndWait(new Runnable() {
-            public void run() {
+            @Override public void run() {
                 CommonProjectActions.deleteProjectAction().actionPerformed(null);
             }
         });
@@ -164,7 +162,7 @@ public class ModuleOperationsTest extends TestBase {
             contextLookup = Lookups.singleton(project);
         }
         
-        public Lookup createGlobalContext() {
+        @Override public Lookup createGlobalContext() {
             return contextLookup;
         }
         
