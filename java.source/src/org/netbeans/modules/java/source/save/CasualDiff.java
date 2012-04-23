@@ -1899,6 +1899,9 @@ public class CasualDiff {
             }
         } else {
             if (endOffset > localPointer) {
+                if(localPointer == startPos) {
+                    printer.toLeftMargin();
+                }
                 copyTo(localPointer, localPointer = endOffset);
             }
         }
