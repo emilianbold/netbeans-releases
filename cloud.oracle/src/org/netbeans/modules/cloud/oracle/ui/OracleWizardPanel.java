@@ -76,7 +76,8 @@ public class OracleWizardPanel implements WizardDescriptor.AsynchronousValidatin
     public static final String PASSWORD = "password"; // String
     public static final String ADMIN_URL = "admin-url"; // List<Node>
     public static final String IDENTITY_DOMAIN = "identity-domain"; // List<Node>
-    public static final String SERVICE_INSTANCE = "service-instance"; // List<Node>
+    public static final String JAVA_SERVICE_NAME = "java-service-name"; // List<Node>
+    public static final String DB_SERVICE_NAME = "db-service-name"; // List<Node>
     public static final String SDK = "sdk"; // String
     
     private OracleWizardComponent component;
@@ -120,7 +121,8 @@ public class OracleWizardPanel implements WizardDescriptor.AsynchronousValidatin
             settings.putProperty(PASSWORD, component.getPassword());
             settings.putProperty(ADMIN_URL, component.getAdminUrl());
             settings.putProperty(IDENTITY_DOMAIN, component.getIdentityDomain());
-            settings.putProperty(SERVICE_INSTANCE, component.getServiceInstance());
+            settings.putProperty(JAVA_SERVICE_NAME, component.getJavaServiceName());
+            settings.putProperty(DB_SERVICE_NAME, component.getDatabaseServiceName());
             settings.putProperty(SDK, component.getSDKFolder());
             settings.putProperty(CloudResourcesWizardPanel.PROP_SERVER_RESOURCES, servers);
         }
@@ -144,7 +146,7 @@ public class OracleWizardPanel implements WizardDescriptor.AsynchronousValidatin
         if (component == null || wd == null) {
             // ignore this case
             return "";
-        } else if (component.getServiceInstance().trim().length() == 0) {
+        } else if (component.getJavaServiceName().trim().length() == 0) {
             return NbBundle.getMessage(OracleWizardPanel.class, "OracleWizardPanel.missingServiceInstance");
         } else if (component.getIdentityDomain().trim().length() == 0) {
             return NbBundle.getMessage(OracleWizardPanel.class, "OracleWizardPanel.missingIdentityDomain");
@@ -159,7 +161,7 @@ public class OracleWizardPanel implements WizardDescriptor.AsynchronousValidatin
         } else if (component.getAdminUrl().trim().length() == 0) {
             return NbBundle.getMessage(OracleWizardPanel.class, "OracleWizardPanel.missingAdminUrl");
         } else if (OracleInstanceManager.getDefault().exist(component.getAdminUrl(), component.getIdentityDomain(), 
-                component.getServiceInstance(), component.getUserName())) {
+                component.getJavaServiceName(), component.getUserName())) {
             return NbBundle.getMessage(OracleWizardPanel.class, "OracleWizardPanel.alreadyRegistered");
         }
         return "";
@@ -198,7 +200,7 @@ public class OracleWizardPanel implements WizardDescriptor.AsynchronousValidatin
             servers = new ArrayList<ServerResourceDescriptor>();
             OracleInstance ai = new OracleInstance("Oracle Cloud", OracleWizardComponent.getPrefixedUserName(component.getIdentityDomain(), component.getUserName()), 
                     component.getPassword(), component.getAdminUrl(),
-                    component.getIdentityDomain(), component.getServiceInstance(), null, component.getSDKFolder());
+                    component.getIdentityDomain(), component.getJavaServiceName(), component.getDatabaseServiceName(), null, component.getSDKFolder());
             try {
                 ai.testConnection();
             } catch (SDKException ex) {

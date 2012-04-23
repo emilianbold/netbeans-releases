@@ -83,16 +83,16 @@ public class OracleDeploymentManager implements DeploymentManager2 {
     
     private ApplicationManager pm;
     private String identityDomain;
-    private String serviceInstance;
+    private String javaServiceName;
     private String cloudInstanceName;
 
     // FIXME should we query IP for other props as well rather than fetching
     // them before construction
     public OracleDeploymentManager(ApplicationManager pm, String identityDomain, 
-          String serviceInstance, String cloudInstanceName, InstanceProperties props) {
+          String javaServiceName, String cloudInstanceName, InstanceProperties props) {
         this.pm = pm;
         this.identityDomain = identityDomain;
-        this.serviceInstance = serviceInstance;
+        this.javaServiceName = javaServiceName;
         this.cloudInstanceName = cloudInstanceName;
         
         this.props = props;
@@ -141,7 +141,7 @@ public class OracleDeploymentManager implements DeploymentManager2 {
             po.updateDepoymentResult(DeploymentStatus.FAILED, null);
             return po;
         }
-        Future<DeploymentStatus> task = OracleInstance.deployAsync(pm, f, identityDomain, serviceInstance, po, cloudInstanceName, getOnPremiseServiceInstanceId());
+        Future<DeploymentStatus> task = OracleInstance.deployAsync(pm, f, identityDomain, javaServiceName, po, cloudInstanceName, getOnPremiseServiceInstanceId());
         return po;
     }
 

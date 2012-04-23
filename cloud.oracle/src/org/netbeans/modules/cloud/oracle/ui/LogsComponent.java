@@ -118,7 +118,7 @@ public class LogsComponent extends TopComponent {
             public Void call() throws Exception {
                 final List<Job> jobs_;
                 try {
-                    jobs_ = am.listJobs(oi.getIdentityDomain(), oi.getServiceInstance());
+                    jobs_ = am.listJobs(oi.getIdentityDomain(), oi.getJavaServiceName());
                 } catch (Throwable t) {
                     LOG.log(Level.INFO, "cannot fetch jobs", t);
                     jobs = new ArrayList<Job>();
@@ -217,7 +217,7 @@ public class LogsComponent extends TopComponent {
 //            @Override
 //            public Void call() throws Exception {
 //                final StringBuffer sb = new StringBuffer();
-//                List<Log> logs = am.listServiceInstanceLogs(oi.getIdentityDomain(), oi.getServiceInstance());
+//                List<Log> logs = am.listServiceInstanceLogs(oi.getIdentityDomain(), oi.getJavaServiceName());
 //                sb.append(""+logs.size()+ " log file(s) found:\n\n");
 //                for (Log lt : logs) {
 //                    sb.append("==================== Log file: "+lt.getName()+"==========================\n\n");
@@ -227,7 +227,7 @@ public class LogsComponent extends TopComponent {
 //                    }
 //                    ByteArrayOutputStream os = new ByteArrayOutputStream(8000);
 //                    try {
-//                        am.fetchServiceInstanceLog(oi.getIdentityDomain(), oi.getServiceInstance(), lt.getName(), os);
+//                        am.fetchServiceInstanceLog(oi.getIdentityDomain(), oi.getJavaServiceName(), lt.getName(), os);
 //                    } catch (Throwable t) {
 //                        sb.append("Exception occured while retrieving the log:\n"+t.toString());
 //                        continue;

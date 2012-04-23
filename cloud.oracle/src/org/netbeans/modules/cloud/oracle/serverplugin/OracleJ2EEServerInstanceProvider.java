@@ -112,7 +112,8 @@ public final class OracleJ2EEServerInstanceProvider implements ServerInstancePro
                 try {
                     Map<String, String>props = new HashMap<String, String>();
                     props.put(OracleDeploymentFactory.IP_IDENTITY_DOMAIN, inst.getOracleInstance().getIdentityDomain());
-                    props.put(OracleDeploymentFactory.IP_SERVICE_INSTANCE, inst.getOracleInstance().getServiceInstance());
+                    props.put(OracleDeploymentFactory.IP_JAVA_SERVICE_NAME, inst.getOracleInstance().getJavaServiceName());
+                    props.put(OracleDeploymentFactory.IP_DATABASE_SERVICE_NAME, inst.getOracleInstance().getDatabaseServiceName());
                     props.put(OracleDeploymentFactory.IP_ADMIN_URL, ai.getAdminURL());
                     props.put(OracleDeploymentFactory.IP_PREMISE_SERVICE_INSTANCE_ID, ai.getOnPremiseServerInstanceId());
                     ip = InstanceProperties.createInstancePropertiesNonPersistent(inst.getId(), 

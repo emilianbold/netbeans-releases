@@ -98,7 +98,8 @@ public class OracleInstance {
     private String password;
     private String adminURL;
     private String identityDomain;
-    private String serviceInstance;
+    private String javaServiceName;
+    private String dbServiceName;
     private String onPremiseServerInstanceId;
     private String sdkFolder;
     
@@ -111,14 +112,15 @@ public class OracleInstance {
     
     public OracleInstance(String name, String user, String password, 
           String adminURL, String identityDomain, 
-          String serviceInstance, String onPremiseServerInstanceId,
+          String javaServiceName, String dbServiceName, String onPremiseServerInstanceId,
           String sdkFolder) {
         this.name = name;
         this.user = user;
         this.password = password;
         this.adminURL = adminURL;
         this.identityDomain = identityDomain;
-        this.serviceInstance = serviceInstance;
+        this.javaServiceName = javaServiceName;
+        this.dbServiceName = dbServiceName;
         this.onPremiseServerInstanceId = onPremiseServerInstanceId;
         this.sdkFolder = sdkFolder;
     }
@@ -147,8 +149,12 @@ public class OracleInstance {
         return adminURL;
     }
 
-    public String getServiceInstance() {
-        return serviceInstance;
+    public String getJavaServiceName() {
+        return javaServiceName;
+    }
+
+    public String getDatabaseServiceName() {
+        return dbServiceName;
     }
 
     public String getIdentityDomain() {
@@ -167,10 +173,15 @@ public class OracleInstance {
         this.platform = platform;
     }
 
-    public void setServiceInstance(String serviceInstance) {
-        this.serviceInstance = serviceInstance;
+    public void setJavaServiceName(String javaServiceName) {
+        this.javaServiceName = javaServiceName;
         resetCache();
     }
+
+    public void setDatabaseServiceName(String dbServiceName) {
+        this.dbServiceName = dbServiceName;
+    }
+    
     
     public void setIdentityDomain(String identityDomain) {
         this.identityDomain = identityDomain;
@@ -462,17 +473,17 @@ public class OracleInstance {
     
     public List<Application> getApplications() {
         assert !SwingUtilities.isEventDispatchThread();
-        return getApplicationManager().listApplications(getIdentityDomain(), getServiceInstance());
+        return getApplicationManager().listApplications(getIdentityDomain(), getJavaServiceName());
     }
 
     public Job undeploy(Application app) {
         assert !SwingUtilities.isEventDispatchThread();
-        return getApplicationManager().undeployApplication(getIdentityDomain(), getServiceInstance(), app.getApplicationName());
+        return getApplicationManager().undeployApplication(getIdentityDomain(), getJavaServiceName(), app.getApplicationName());
     }
     
     public Job start(Application app) {
         assert !SwingUtilities.isEventDispatchThread();
-        return getApplicationManager().startApplication(getIdentityDomain(), getServiceInstance(), app.getApplicationName());
+        return getApplicationManager().startApplication(getIdentityDomain(), getJavaServiceName(), app.getApplicationName());
     }
     
     public Application refreshApplication(Application app) {
@@ -482,7 +493,7 @@ public class OracleInstance {
     
     public Job stop(Application app) {
         assert !SwingUtilities.isEventDispatchThread();
-        return getApplicationManager().stopApplication(getIdentityDomain(), getServiceInstance(), app.getApplicationName());
+        return getApplicationManager().stopApplication(getIdentityDomain(), getJavaServiceName(), app.getApplicationName());
     }
     
     public static File findWeblogicJar(String onPremiseServerInstanceId) {

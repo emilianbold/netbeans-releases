@@ -63,7 +63,8 @@ public class OracleDeploymentFactory implements DeploymentFactory {
     public static final String ORACLE_URI = "oracle:";  // NOI18N
 
     public static final String IP_IDENTITY_DOMAIN = "identity-domain";  // NOI18N
-    public static final String IP_SERVICE_INSTANCE = "service-instance";  // NOI18N
+    public static final String IP_JAVA_SERVICE_NAME = "java-service-name";  // NOI18N
+    public static final String IP_DATABASE_SERVICE_NAME = "db-service-name";  // NOI18N
     public static final String IP_ADMIN_URL = "admin-url";  // NOI18N
     public static final String IP_PREMISE_SERVICE_INSTANCE_ID = "on-premise"; // NOI18N
     
@@ -91,7 +92,7 @@ public class OracleDeploymentFactory implements DeploymentFactory {
         return new OracleDeploymentManager(
                 am,
                 props.getProperty(IP_IDENTITY_DOMAIN),
-                props.getProperty(IP_SERVICE_INSTANCE),
+                props.getProperty(IP_JAVA_SERVICE_NAME),
                 props.getProperty(InstanceProperties.DISPLAY_NAME_ATTR),
                 props);
     }
@@ -102,7 +103,7 @@ public class OracleDeploymentFactory implements DeploymentFactory {
         return new OracleDeploymentManager(
                 null,
                 props.getProperty(IP_IDENTITY_DOMAIN),
-                props.getProperty(IP_SERVICE_INSTANCE),
+                props.getProperty(IP_JAVA_SERVICE_NAME),
                 props.getProperty(InstanceProperties.DISPLAY_NAME_ATTR),
                 props);
     }

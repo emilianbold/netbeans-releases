@@ -91,13 +91,17 @@ public class OracleWizardIterator implements WizardDescriptor.AsynchronousInstan
         assert name != null;
         String identityDomain = (String)wizard.getProperty(OracleWizardPanel.IDENTITY_DOMAIN);
         assert identityDomain != null;
-        String serviceName = (String)wizard.getProperty(OracleWizardPanel.SERVICE_INSTANCE);
-        assert serviceName != null;
+        String javaServiceName = (String)wizard.getProperty(OracleWizardPanel.JAVA_SERVICE_NAME);
+        assert javaServiceName != null;
+        String dbServiceName = (String)wizard.getProperty(OracleWizardPanel.DB_SERVICE_NAME);
+        if (dbServiceName == null) {
+            dbServiceName = "";
+        }
         String sdk = (String)wizard.getProperty(OracleWizardPanel.SDK);
         assert sdk != null;
         Collection<WLDomain> localInstances = DomainSupport.getUsableDomainInstances(null);
         OracleInstance instance = new OracleInstance(name, OracleWizardComponent.getPrefixedUserName(identityDomain, username), pwd, adminURL, 
-                identityDomain, serviceName,
+                identityDomain, javaServiceName, dbServiceName,
                 localInstances.isEmpty() ? null : localInstances.iterator().next().getUrl(), sdk);
         OracleInstanceManager.getDefault().add(instance);
         

@@ -70,17 +70,19 @@ public class CustomizerCloudGeneral extends javax.swing.JPanel implements Docume
         adminUrlField.setVisible(OracleWizardComponent.SHOW_CLOUD_URLS);
         
         this.instance = instance;
-        serviceInstanceField.setText(instance.getServiceInstance());
+        serviceInstanceField.setText(instance.getJavaServiceName());
         identityDomainField.setText(instance.getIdentityDomain());
         adminUrlField.setText(instance.getAdminURL());
         usernameField.setText(OracleWizardComponent.getUnprefixedUserName(instance.getIdentityDomain(), instance.getUser()));
         passwordField.setText(instance.getPassword());
         sdkTextField.setText(instance.getSDKFolder());
+        dbServiceNameTextField.setText(instance.getDatabaseServiceName());
         
         adminUrlField.getDocument().addDocumentListener(this);
         usernameField.getDocument().addDocumentListener(this);
         passwordField.getDocument().addDocumentListener(this);
         sdkTextField.getDocument().addDocumentListener(this);
+        dbServiceNameTextField.getDocument().addDocumentListener(this);
     }
 
     @Override
@@ -120,6 +122,13 @@ public class CustomizerCloudGeneral extends javax.swing.JPanel implements Docume
             return;
         }
         
+        if (dbServiceNameTextField.getDocument().equals(e.getDocument())
+                && !dbServiceNameTextField.getText().equals(instance.getDatabaseServiceName())) {
+            instance.setDatabaseServiceName(dbServiceNameTextField.getText());
+            OracleInstanceManager.getDefault().update(instance);
+            return;
+        }
+        
         if (sdkTextField.getDocument().equals(e.getDocument())
                 && !sdkTextField.getText().equals(instance.getSDKFolder())) {
             instance.setSDKFolder(sdkTextField.getText());
@@ -150,6 +159,8 @@ public class CustomizerCloudGeneral extends javax.swing.JPanel implements Docume
         jLabel1 = new javax.swing.JLabel();
         sdkTextField = new javax.swing.JTextField();
         configureButton = new javax.swing.JButton();
+        jLabel2 = new javax.swing.JLabel();
+        dbServiceNameTextField = new javax.swing.JTextField();
 
         adminUrlLabel.setLabelFor(adminUrlField);
         org.openide.awt.Mnemonics.setLocalizedText(adminUrlLabel, org.openide.util.NbBundle.getMessage(CustomizerCloudGeneral.class, "CustomizerCloudGeneral.adminUrlLabel.text")); // NOI18N
@@ -182,6 +193,10 @@ public class CustomizerCloudGeneral extends javax.swing.JPanel implements Docume
             }
         });
 
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(CustomizerCloudGeneral.class, "CustomizerCloudGeneral.jLabel2.text")); // NOI18N
+
+        dbServiceNameTextField.setText(org.openide.util.NbBundle.getMessage(CustomizerCloudGeneral.class, "CustomizerCloudGeneral.dbServiceNameTextField.text")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -193,7 +208,8 @@ public class CustomizerCloudGeneral extends javax.swing.JPanel implements Docume
                     .addComponent(usernameLabel)
                     .addComponent(serviceInstanceLabel)
                     .addComponent(identityDomainLabel)
-                    .addComponent(jLabel1))
+                    .addComponent(jLabel1)
+                    .addComponent(jLabel2))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
@@ -202,13 +218,13 @@ public class CustomizerCloudGeneral extends javax.swing.JPanel implements Docume
                         .addComponent(configureButton))
                     .addComponent(adminUrlField)
                     .addComponent(serviceInstanceField)
-                    .addComponent(identityDomainField, javax.swing.GroupLayout.DEFAULT_SIZE, 284, Short.MAX_VALUE)
+                    .addComponent(identityDomainField, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(usernameField, javax.swing.GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE)
                             .addComponent(passwordField))
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addGap(0, 0, 0))
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(dbServiceNameTextField)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -221,6 +237,10 @@ public class CustomizerCloudGeneral extends javax.swing.JPanel implements Docume
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(serviceInstanceLabel)
                     .addComponent(serviceInstanceField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel2)
+                    .addComponent(dbServiceNameTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(adminUrlLabel)
@@ -238,7 +258,7 @@ public class CustomizerCloudGeneral extends javax.swing.JPanel implements Docume
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(passwordLabel)
                     .addComponent(passwordField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(0, 6, Short.MAX_VALUE))
+                .addGap(0, 0, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -253,9 +273,11 @@ public class CustomizerCloudGeneral extends javax.swing.JPanel implements Docume
     private javax.swing.JTextField adminUrlField;
     private javax.swing.JLabel adminUrlLabel;
     private javax.swing.JButton configureButton;
+    private javax.swing.JTextField dbServiceNameTextField;
     private javax.swing.JTextField identityDomainField;
     private javax.swing.JLabel identityDomainLabel;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JPasswordField passwordField;
     private javax.swing.JLabel passwordLabel;
     private javax.swing.JTextField sdkTextField;

@@ -131,6 +131,8 @@ public class OracleWizardComponent extends javax.swing.JPanel implements Documen
         jLabel1 = new javax.swing.JLabel();
         configureButton = new javax.swing.JButton();
         sdkTextField = new javax.swing.JTextField();
+        jLabel6 = new javax.swing.JLabel();
+        dbServiceNameTextField = new javax.swing.JTextField();
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(OracleWizardComponent.class, "OracleWizardComponent.jLabel3.text")); // NOI18N
 
@@ -165,6 +167,10 @@ public class OracleWizardComponent extends javax.swing.JPanel implements Documen
         sdkTextField.setEditable(false);
         sdkTextField.setText(org.openide.util.NbBundle.getMessage(OracleWizardComponent.class, "OracleWizardComponent.sdkTextField.text")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel6, org.openide.util.NbBundle.getMessage(OracleWizardComponent.class, "OracleWizardComponent.jLabel6.text")); // NOI18N
+
+        dbServiceNameTextField.setText(org.openide.util.NbBundle.getMessage(OracleWizardComponent.class, "OracleWizardComponent.dbServiceNameTextField.text")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -176,22 +182,23 @@ public class OracleWizardComponent extends javax.swing.JPanel implements Documen
                     .addComponent(jLabel5)
                     .addComponent(jLabel2)
                     .addComponent(jLabel4)
-                    .addComponent(sdkLabel))
+                    .addComponent(sdkLabel)
+                    .addComponent(jLabel6))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(adminURLTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 233, Short.MAX_VALUE)
-                    .addComponent(passwordField, javax.swing.GroupLayout.DEFAULT_SIZE, 233, Short.MAX_VALUE)
-                    .addComponent(userNameTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 233, Short.MAX_VALUE)
-                    .addComponent(identityDomainTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 233, Short.MAX_VALUE)
-                    .addComponent(serviceInstanceTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 233, Short.MAX_VALUE)
+                    .addComponent(adminURLTextField)
+                    .addComponent(passwordField)
+                    .addComponent(userNameTextField)
+                    .addComponent(identityDomainTextField)
+                    .addComponent(serviceInstanceTextField)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE))
+                        .addGap(0, 90, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(sdkTextField)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(configureButton)))
-                .addGap(0, 0, 0))
+                        .addComponent(configureButton))
+                    .addComponent(dbServiceNameTextField)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -205,6 +212,10 @@ public class OracleWizardComponent extends javax.swing.JPanel implements Documen
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(serviceInstanceTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel5))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel6)
+                    .addComponent(dbServiceNameTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(userNameTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -245,12 +256,14 @@ private void jLabel1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:eve
     private javax.swing.JLabel adminLabel;
     private javax.swing.JTextField adminURLTextField;
     private javax.swing.JButton configureButton;
+    private javax.swing.JTextField dbServiceNameTextField;
     private javax.swing.JTextField identityDomainTextField;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JPasswordField passwordField;
     private javax.swing.JLabel sdkLabel;
@@ -291,8 +304,12 @@ private void jLabel1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:eve
         return identityDomainTextField.getText().trim();
     }
 
-    public String getServiceInstance() {
+    public String getJavaServiceName() {
         return serviceInstanceTextField.getText().trim();
+    }
+
+    public String getDatabaseServiceName() {
+        return dbServiceNameTextField.getText().trim();
     }
 
     public String getSDKFolder() {
