@@ -88,6 +88,7 @@ public class ProblemsPanel extends javax.swing.JPanel {
         });
         lstProblems.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         lstProblems.addListSelectionListener(new ListSelectionListener() {
+            @Override
               public void valueChanged(ListSelectionEvent e) {
                   Object val = lstProblems.getSelectedValue();
                   if (val != null) {
@@ -105,8 +106,10 @@ public class ProblemsPanel extends javax.swing.JPanel {
               }
         });
         change = new ChangeListener() {
+            @Override
             public void stateChanged(ChangeEvent e) {
                 SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         populateUI();
                     }
@@ -225,6 +228,7 @@ public class ProblemsPanel extends javax.swing.JPanel {
             putValue(Action.NAME, BTN_Correct());
         }
         
+        @Override
         public void actionPerformed(ActionEvent e) {
         }
         
