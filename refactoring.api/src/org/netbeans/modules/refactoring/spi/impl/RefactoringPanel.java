@@ -865,7 +865,8 @@ public class RefactoringPanel extends JPanel {
             cont.addPanel(this);
             isVisible = true;
         }
-        setRefactoringEnabled(false, true);
+        if (!isQuery)
+            setRefactoringEnabled(false, true);
     }
     
     private void setupTree(final CheckNode root, final boolean showParametersPanel, final int size) {

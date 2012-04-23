@@ -483,7 +483,14 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
     @Override
     public void visit(MethodInvocation node) {
-        occurencesBuilder.prepare(node, modelBuilder.getCurrentScope());
+        FunctionInvocation method = node.getMethod();
+        if (method != null) {
+            if (hasCommonFunctionName(method)) {
+                occurencesBuilder.prepare(node, modelBuilder.getCurrentScope());
+            } else {
+                scan(method);
+            }
+        }
         scan(node.getDispatcher());
         scan(node.getMethod().getParameters());
     }
@@ -501,7 +508,14 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     @Override
     public void visit(StaticMethodInvocation node) {
         Scope scope = modelBuilder.getCurrentScope();
-        occurencesBuilder.prepare(node, scope);
+        FunctionInvocation method = node.getMethod();
+        if (method != null) {
+            if (hasCommonFunctionName(method)) {
+                occurencesBuilder.prepare(node, modelBuilder.getCurrentScope());
+            } else {
+                scan(method);
+            }
+        }
         Expression className = node.getClassName();
         if (className instanceof Variable) {
             scan(className);
@@ -509,6 +523,25 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             occurencesBuilder.prepare((NamespaceName) className, scope);
         }
         scan(node.getMethod().getParameters());
+    }
+
+    private boolean hasCommonFunctionName(final FunctionInvocation functionInvocation) {
+        boolean result = false;
+        FunctionName functionName = functionInvocation.getFunctionName();
+        if (functionName != null) {
+            Expression name = functionName.getName();
+            if (name instanceof Variable) {
+                Variable variable = (Variable) name;
+                if (variable.isDollared()) {
+                    result = false;
+                } else {
+                    result = true;
+                }
+            } else {
+                result = true;
+            }
+        }
+        return result;
     }
 
     @Override

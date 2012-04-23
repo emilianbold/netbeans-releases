@@ -46,6 +46,7 @@ import java.awt.event.ActionEvent;
 import java.util.Arrays;
 import javax.swing.AbstractAction;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
+import org.netbeans.modules.maven.TestChecker;
 import org.netbeans.modules.maven.api.execute.RunConfig.ReactorStyle;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.execute.BeanRunConfig;
@@ -73,6 +74,7 @@ public class SanityBuildAction extends AbstractAction {
         config.setExecutionDirectory(FileUtil.toFile(nbproject.getProjectDirectory()));
         config.setGoals(Arrays.asList("--fail-at-end", "install")); // NOI18N
         config.setReactorStyle(ReactorStyle.ALSO_MAKE);
+        config.setProperty(TestChecker.PROP_SKIP_TEST, "true"); //priming doesn't need test execution, just compilation
         config.setProject(nbproject);
         String label = build_label(nbproject.getProjectDirectory().getNameExt());
         config.setExecutionName(label);

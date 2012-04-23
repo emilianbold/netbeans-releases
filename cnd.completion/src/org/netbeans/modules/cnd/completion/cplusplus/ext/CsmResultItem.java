@@ -496,6 +496,9 @@ public abstract class CsmResultItem implements CompletionItem {
                             ts = CndLexerUtilities.getCppTokenSequence(component, guardOffset.getStartOffset(), false, false);
                         } else {
                             ts = CndLexerUtilities.getCppTokenSequence(component, 0, false, false);
+                            if (ts != null) {
+                                ts.moveStart();
+                            }
                         }
                         if (ts != null) {
                             int offset = getIncludeOffsetFromTokenSequence(ts);

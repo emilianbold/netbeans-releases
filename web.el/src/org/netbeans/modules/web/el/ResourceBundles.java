@@ -136,12 +136,17 @@ public final class ResourceBundles {
     /**
      * Checks whether the given {@code identifier} represents 
      * a base name of a resource bundle.
-     * @param identifier
-     * @return
+     * @param identifier non-null identifier
+     * @param context non-null {@link ResolverContext} instance
+     * 
+     * @return true if the given identifier represents a resource bundle
      */
     public boolean isResourceBundleIdentifier(String identifier, ResolverContext context) {
+        Parameters.notNull("indentifier", identifier);
+        Parameters.notNull("context", context);
+        
         for (ResourceBundle bundle : getBundles(context)) {
-            if (bundle.getVar().equals(identifier)) {
+            if (identifier.equals(bundle.getVar())) {
                 return true;
             }
         }
