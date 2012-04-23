@@ -598,7 +598,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                 if (ts.offset()+token.length() > offset+1) {
                     // See if the remaining text is just whitespace
                     String trailing = doc.getText(offset,Utilities.getRowEnd(doc, offset)-offset);
-                    if (trailing.trim().length() != 0) {
+                    if (trailing.trim().length() != 0 && !trailing.startsWith("//")) { //NOI18N
                         continueComment = true;
                     }
                 } else if (CONTINUE_COMMENTS) {
