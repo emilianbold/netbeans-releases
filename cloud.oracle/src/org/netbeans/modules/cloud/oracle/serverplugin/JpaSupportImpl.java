@@ -52,7 +52,6 @@ import org.netbeans.modules.javaee.specs.support.spi.JpaSupportImplementation;
  */
 class JpaSupportImpl implements JpaSupportImplementation {
     
-    static final String OPENJPA_JPA_PROVIDER = "org.apache.openjpa.persistence.PersistenceProviderImpl"; // NOI18N
     static final String ECLIPSELINK_JPA_PROVIDER = "org.eclipse.persistence.jpa.PersistenceProvider"; // NOI18N
 
     public JpaSupportImpl() {
@@ -64,14 +63,13 @@ class JpaSupportImpl implements JpaSupportImplementation {
     }
 
     private static JpaProvider createDefaultProvider() {
-        return JpaProviderFactory.createJpaProvider(OPENJPA_JPA_PROVIDER, true, true, false);        
+        return JpaProviderFactory.createJpaProvider(ECLIPSELINK_JPA_PROVIDER, true, true, true);
     }
     
     @Override
     public Set<JpaProvider> getProviders() {
         Set<JpaProvider> providers = new HashSet<JpaProvider>();
         providers.add(createDefaultProvider());
-        providers.add(JpaProviderFactory.createJpaProvider(ECLIPSELINK_JPA_PROVIDER, false, true, false));
         return providers;
     }
 
