@@ -88,7 +88,11 @@ public class PropertySplitter {
                                                            || inQuote || escapeNext)) {
                 char c = line.charAt(location);
                 if (escapeNext) {
-                    buffer.append(c);
+                    if (c == newline) {
+                        //just continue.. equals to \ + newline
+                    } else {
+                        buffer.append(c);
+                    }
                     escapeNext = false;
                 } else if (!inQuote && c == escape) {
                     escapeNext = true;
