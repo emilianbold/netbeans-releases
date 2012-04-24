@@ -125,7 +125,7 @@ import org.openide.util.RequestProcessor.Task;
  *
  * @author Tomas Stupka
  */
-public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryController implements ItemListener, ListSelectionListener, ActionListener, FocusListener, KeyListener {
+public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryController implements ItemListener, ListSelectionListener, ActionListener, FocusListener, KeyListener, IssueTable.IssueTableProvider {
     private QueryPanel panel;
 
     private RequestProcessor rp = new RequestProcessor("Jira query", 1, true);  // NOI18N
@@ -1247,6 +1247,11 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
                 refreshTask.progress(issueDesc);
             }
         }
+    }
+
+    @Override
+    public IssueTable getIssueTable() {
+        return issueTable;
     }
 
     private class QueryTask implements Runnable, Cancellable, QueryNotifyListener {

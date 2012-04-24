@@ -56,6 +56,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.swing.Icon;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
@@ -178,8 +179,9 @@ public final class SuiteProject implements Project {
         return eval;
     }
 
-    public File getTestUserDirLockFile() {
-        return getHelper().resolveFile(getEvaluator().evaluate("${test.user.dir}/lock"));
+    public @NonNull File getTestUserDirLockFile() {
+        String v = getEvaluator().evaluate("${test.user.dir}/lock");
+        return getHelper().resolveFile(v != null ? v : "unknown");
     }
     
     /**

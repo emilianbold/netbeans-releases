@@ -82,6 +82,15 @@ public class VCSCollocationQueryTest extends NbTestCase {
         
         assertRoot(folder, file);
     }
+    
+    public void testBlankInPath() throws FileStateInvalidException, IOException, Exception {
+        File folder = createVersionedFolder();
+        File folder2 = new File(folder, "some folder");
+        folder2.mkdirs();
+        File file = new File(folder2, "somefile");
+        
+        assertRoot(folder, file);
+    }
 
     public void testFindRootNotExisting() throws FileStateInvalidException, IOException, Exception {
         File folder = createVersionedFolder();

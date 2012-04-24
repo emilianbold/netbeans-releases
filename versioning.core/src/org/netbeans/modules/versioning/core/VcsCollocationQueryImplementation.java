@@ -106,7 +106,7 @@ public class VcsCollocationQueryImplementation implements CollocationQueryImplem
             String path = uri.getPath();
             URI parent;
             try {
-                parent = new URI(path.endsWith("/") ? path : path + "/").resolve(".."); // NOI18N
+                parent = path.endsWith("/") ? uri.resolve("..") : new URI(uri + "/").resolve(".."); // NOI18N
                 path = parent.getPath();
                 uri = new URI(uri.getScheme(), uri.getUserInfo(), uri.getHost(), uri.getPort(), path, uri.getQuery(), uri.getFragment());
             } catch (URISyntaxException ex) {

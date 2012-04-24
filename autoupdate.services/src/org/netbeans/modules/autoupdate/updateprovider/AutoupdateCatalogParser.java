@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -48,20 +48,11 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLConnection;
+import java.net.*;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Stack;
+import java.util.*;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -71,13 +62,9 @@ import javax.xml.parsers.SAXParserFactory;
 import org.netbeans.modules.autoupdate.services.Trampoline;
 import org.netbeans.modules.autoupdate.services.UpdateLicenseImpl;
 import org.netbeans.modules.autoupdate.services.Utilities;
-import org.xml.sax.Attributes;
-import org.xml.sax.EntityResolver;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 import org.netbeans.spi.autoupdate.UpdateItem;
 import org.netbeans.spi.autoupdate.UpdateLicense;
-import org.xml.sax.SAXParseException;
+import org.xml.sax.*;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
@@ -169,6 +156,7 @@ public class AutoupdateCatalogParser extends DefaultHandler {
     private static final String L10N_ATTR_LOCALIZED_MODULE_DESCRIPTION = "OpenIDE-Module-Long-Description"; // NOI18N
     
     private static String GZIP_EXTENSION = ".gz"; // NOI18N
+    private static String XML_EXTENSION = ".xml"; // NOI18N
     private static String GZIP_MIME_TYPE = "application/x-gzip"; // NOI18N
     
     public synchronized static Map<String, UpdateItem> getUpdateItems (URL url, AutoupdateCatalogProvider provider) throws IOException {
@@ -208,14 +196,18 @@ public class AutoupdateCatalogParser extends DefaultHandler {
         if (p != null) {
             URL url = p.getUpdateCenterURL ();
             if (url != null) {
-                res = url.getPath ().toLowerCase ().endsWith (GZIP_EXTENSION);
+                String path = url.getPath ().toLowerCase ();
+                res = path.endsWith (GZIP_EXTENSION);
                 if (! res) {
-                    try {
-                        URLConnection conn = url.openConnection();
-                        String contentType = conn.getContentType();
-                        res = GZIP_MIME_TYPE.equals(contentType);
-                    } catch (IOException ex) {
-                        ERR.log (Level.INFO, "Cannot read Content-Type HTTP header, using file extension, cause: ", ex);
+                    boolean isXML = path.endsWith (XML_EXTENSION);
+                    if (! isXML) {
+                        try {
+                            URLConnection conn = url.openConnection();
+                            String contentType = conn.getContentType();
+                            res = GZIP_MIME_TYPE.equals(contentType);
+                        } catch (IOException ex) {
+                            ERR.log (Level.INFO, "Cannot read Content-Type HTTP header, using file extension, cause: ", ex);
+                        }
                     }
                 }
                 ERR.log (Level.FINER, "Is GZIP " + url + " ? " + res);
@@ -241,7 +233,6 @@ public class AutoupdateCatalogParser extends DefaultHandler {
                     //#150034
                     // Sometimes the .xml.gz file is downloaded as the pure .xml file due to the strange content-encoding processing
                     is.close();
-                    is = null;
                     is = toParse.openStream();
                 }
             }

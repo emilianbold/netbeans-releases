@@ -46,6 +46,9 @@ package org.netbeans.modules.apisupport.project.ui;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.nio.channels.FileLock;
+import java.nio.channels.OverlappingFileLockException;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicReference;
@@ -108,7 +111,6 @@ import org.openide.util.lookup.Lookups;
 
 public final class ModuleActions implements ActionProvider, ExecProject {
     private static final String RUN_ARGS_IDE = "run.args.ide";    // NOI18N
-    private static final String TEST_USERDIR_LOCK_PROP_VALUE = "--test-userdir-lock-with-invalid-arg";    // NOI18N
 
     private static final String COMMAND_NBM = "nbm";
     private static final String MODULE_ACTIONS_TYPE = "org-netbeans-modules-apisupport-project";
@@ -345,25 +347,20 @@ public final class ModuleActions implements ActionProvider, ExecProject {
     
     @Messages("MSG_no_source=No source to operate on.")
     public void invokeAction(final String command, final Lookup context) throws IllegalArgumentException {
+        if (!canRunNoLock(command, project.getTestUserDirLockFile())) {
+            return;
+        }
         if (ActionProvider.COMMAND_DELETE.equals(command)) {
-            if (ModuleOperations.canRun(project)) {
-                DefaultProjectOperations.performDefaultDeleteOperation(project);
-            }
+            DefaultProjectOperations.performDefaultDeleteOperation(project);
             return;
         } else if (ActionProvider.COMMAND_RENAME.equals(command)) {
-            if (ModuleOperations.canRun(project)) {
-                DefaultProjectOperations.performDefaultRenameOperation(project, null);
-            }
+            DefaultProjectOperations.performDefaultRenameOperation(project, null);
             return;
         } else if (ActionProvider.COMMAND_MOVE.equals(command)) {
-            if (ModuleOperations.canRun(project)) {
-                DefaultProjectOperations.performDefaultMoveOperation(project);
-            }
+            DefaultProjectOperations.performDefaultMoveOperation(project);
             return;
         } else if (ActionProvider.COMMAND_COPY.equals(command)) {
-            if (ModuleOperations.canRun(project)) {
-                DefaultProjectOperations.performDefaultCopyOperation(project);
-            }
+            DefaultProjectOperations.performDefaultCopyOperation(project);
             return;
         }
         if (!verifySufficientlyNewHarness(project)) {
@@ -510,7 +507,7 @@ public final class ModuleActions implements ActionProvider, ExecProject {
                     }
                 }
                 try {
-                    setRunArgsIde(project, SingleModuleProperties.getInstance(project), command, p, project.getTestUserDirLockFile());
+                    setRunArgsIde(project, SingleModuleProperties.getInstance(project), command, p);
                     task =
                     ActionUtils.runTarget(findBuildXml(project), targetNames, p);
                 } catch (IOException e) {
@@ -520,14 +517,70 @@ public final class ModuleActions implements ActionProvider, ExecProject {
         };
         RP.post(runnable);
     }
+
+    /**
+     * Checks if a given command can be run at the moment from the perspective of the test userdir lock file.
+     * Cf. #63652, #72397, #141069, #207530.
+     * @param command as in {@link ActionProvider}
+     * @param lock from {@link NbModuleProject#getTestUserDirLockFile} or {@link SuiteProject#getTestUserDirLockFile}
+     * @return true if the command is unrelated, there is no lock file, or the lock file is stale and can be safely deleted;
+     *         false (after showing a warning dialog) if the command must not proceed
+     */
+    @Messages({
+        "ERR_module_already_running=The application is already running within the test user directory. You must shut it down before trying to run it again.",
+        "ERR_ModuleIsBeingRun=Cannot copy/move/rename/delete a module or suite while the application is running; shut it down first."
+    })
+    static boolean canRunNoLock(String command, File lock) {
+        if (command.equals(ActionProvider.COMMAND_RUN) ||
+                command.equals(ActionProvider.COMMAND_DEBUG) ||
+                command.equals(ActionProvider.COMMAND_PROFILE)) {
+            if (isLocked(lock)) {
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(ERR_module_already_running()));
+                return false;
+            }
+        } else if (ActionProvider.COMMAND_DELETE.equals(command) ||
+                ActionProvider.COMMAND_RENAME.equals(command) ||
+                ActionProvider.COMMAND_MOVE.equals(command) ||
+                ActionProvider.COMMAND_COPY.equals(command)) {
+            if (isLocked(lock)) {
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(ERR_ModuleIsBeingRun()));
+                return false;
+            }
+        }
+        return true;
+    }
     
+    // Cf. org.netbeans.nbbuild.IsLocked
+    private static boolean isLocked(File file) {
+        if (!file.exists()) {
+            return false;
+        }
+        try {
+            RandomAccessFile raf = new RandomAccessFile(file, "rw");
+            try {
+                FileLock lock = raf.getChannel().tryLock();
+                if (lock == null) {
+                    return true;
+                }
+                lock.release();
+                return false;
+            } finally {
+                raf.close();
+            }
+        } catch (IOException x) {
+            return true;
+        } catch (OverlappingFileLockException x) {
+            return true; // ?
+        }
+    }
+
     private String[] setupProfileTestSingle(Properties p, TestSources testSources) {
         p.setProperty("test.includes", testSources.includes().replace("**", "**/*Test.java")); // NOI18N
         p.setProperty("test.type", testSources.testType); // NOI18N
         return new String[] {"profile-test-single-nb"}; // NOI18N
     }
 
-    static void setRunArgsIde(Project project, ModuleProperties modprops, String command, Properties p, File testUserDirLockFile) {
+    static void setRunArgsIde(Project project, ModuleProperties modprops, String command, Properties p) {
         StringBuilder runArgsIde = new StringBuilder();
         StartupExtender.StartMode mode;
         if (command.equals(COMMAND_RUN) || command.equals(COMMAND_RUN_SINGLE)) {
@@ -559,13 +612,6 @@ public final class ModuleActions implements ActionProvider, ExecProject {
                     runArgsIde.append(isTest ? "" : "-J").append(arg).append(' ');
                 }
             }
-        }
-        if ((command.equals(ActionProvider.COMMAND_RUN) || 
-             command.equals(ActionProvider.COMMAND_DEBUG) ||
-             command.equals(ActionProvider.COMMAND_PROFILE)) // #63652
-                && testUserDirLockFile.isFile()) {
-            // #141069: lock file exists, run with bogus option
-            runArgsIde.append(TEST_USERDIR_LOCK_PROP_VALUE);
         }
         if (runArgsIde.length() > 0) {
             p.setProperty(RUN_ARGS_IDE, runArgsIde.toString());
