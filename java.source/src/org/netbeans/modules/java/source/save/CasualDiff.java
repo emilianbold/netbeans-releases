@@ -1143,7 +1143,7 @@ public class CasualDiff {
                 copyTo(localPointer, finalBounds[0]);
                 localPointer = diffTree(oldT.finalizer, newT.finalizer, finalBounds);
             } else {
-                int endetHier = oldT.catchers.isEmpty() ? endPos(oldT.body) : endPos(oldT.catchers);
+                int endetHier = oldT.catchers.isEmpty() ? Math.max(endPos(oldT.body), localPointer) : endPos(oldT.catchers);
                 copyTo(localPointer, endetHier);
                 localPointer = finalBounds[1];
             }
