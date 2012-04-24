@@ -76,6 +76,14 @@ public class ProxyPreferencesTest extends NbTestCase {
         test.put("key-1", "xyz");
         assertEquals("Wrong value", "xyz", test.get("key-1", null));
     }
+
+    public void testBase64() {
+        Preferences orig = Preferences.userRoot().node(getName());
+        assertNull("Original contains value", orig.get("key-1", null));
+        Preferences test = ProxyPreferences.getProxyPreferences(this, orig);
+        test.putByteArray("key-1", "however you like it".getBytes());
+        assertEquals("Wrong value", "however you like it", new String(test.getByteArray("key-1", null)));
+    }
     
     public void testSimpleSync() throws BackingStoreException {
         Preferences orig = Preferences.userRoot().node(getName());
