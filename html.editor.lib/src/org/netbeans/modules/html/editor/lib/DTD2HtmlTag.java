@@ -39,44 +39,20 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.pty;
+package org.netbeans.modules.html.editor.lib;
 
-import java.io.IOException;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
-import org.netbeans.modules.nativeexecution.support.ShellSession;
+import java.util.*;
+import java.util.logging.Logger;
+import org.netbeans.modules.html.editor.lib.api.HelpItem;
+import org.netbeans.modules.html.editor.lib.api.model.*;
+import org.netbeans.modules.html.editor.lib.dtd.*;
+import org.netbeans.modules.html.editor.lib.dtd.DTD.Attribute;
+import org.netbeans.modules.html.editor.lib.dtd.DTD.Element;
 
 /**
  *
- * @author ak119685
+ * XXX Maybe the DTD.Element could implement HtmlTag directly instead of the wrapping
+ *
+ * @author marekfukala
  */
-public final class SttySupport {
 
-    private static final boolean disableSTTY = Boolean.getBoolean("nativeexecution.nostty"); // NOI18N
-
-    private SttySupport() {
-    }
-
-    /**
-     *
-     * @param env
-     * @param tty
-     * @param args
-     * @return may return null in case of failure
-     */
-    public static String[] apply(final ExecutionEnvironment env, final String tty, final String args) {
-        String[] result = null;
-
-        if (!disableSTTY) {
-            try {
-                result = ShellSession.execute(env, "/bin/stty " + args + " < " + tty + " 2>/dev/null"); // NOI18N
-            } catch (IOException ex) {
-                // bad luck.. still just ignore..
-            } catch (CancellationException ex) {
-                // TODO:CancellationException error processing
-            }
-        }
-
-        return result;
-    }
-}

@@ -40,7 +40,7 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.html.editor.lib.html4parser;
+package org.netbeans.modules.html.editor.lib;
 
 import java.util.Collection;
 import java.util.Iterator;

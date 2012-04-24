@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,46 +37,43 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.pty;
+package org.netbeans.modules.html.editor.lib.api.model;
 
-import java.io.IOException;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
-import org.netbeans.modules.nativeexecution.support.ShellSession;
+import java.util.Collection;
+import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
+import org.openide.util.Lookup;
 
 /**
- *
- * @author ak119685
+ * Creates a instance of {@link HtmlModel} for given {@link HtmlVersion}.
+ * 
+ * The factory gathers all instancies of {@link HtmlModelProvider} from global lookup and ask 
+ * each of them for {@link HtmlModel}. If the provider returns null it proceeds with another
+ * until a provider returns non-null {@link HtmlModel} 
+ * 
+ * @since 3.3
+ * @author marekfukala
  */
-public final class SttySupport {
-
-    private static final boolean disableSTTY = Boolean.getBoolean("nativeexecution.nostty"); // NOI18N
-
-    private SttySupport() {
-    }
+public final class HtmlModelFactory {
 
     /**
-     *
-     * @param env
-     * @param tty
-     * @param args
-     * @return may return null in case of failure
+     * Creates a instance of {@link HtmlModel} for given {@link HtmlVersion}.
+     * 
+     * @param version instance of {@link HtmlVersion}
+     * @return instance of {@link HtmlModel} or null if none of the {@link HtmlModelProvider} provides
+     * model for the given html version.
      */
-    public static String[] apply(final ExecutionEnvironment env, final String tty, final String args) {
-        String[] result = null;
-
-        if (!disableSTTY) {
-            try {
-                result = ShellSession.execute(env, "/bin/stty " + args + " < " + tty + " 2>/dev/null"); // NOI18N
-            } catch (IOException ex) {
-                // bad luck.. still just ignore..
-            } catch (CancellationException ex) {
-                // TODO:CancellationException error processing
+    public static HtmlModel getModel(HtmlVersion version) {
+        Collection<? extends HtmlModelProvider> providers = Lookup.getDefault().lookupAll(HtmlModelProvider.class);
+        for(HtmlModelProvider provider : providers) {
+            HtmlModel model = provider.getModel(version);
+            if(model != null) {
+                return model;
             }
         }
-
-        return result;
+        return null;
+        
     }
+    
 }

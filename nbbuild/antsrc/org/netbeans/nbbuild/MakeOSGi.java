@@ -369,6 +369,23 @@ public class MakeOSGi extends Task {
                 }
                 osgiAttr.putValue("Bundle-Classpath", bundleCP + ".");
             }
+            StringBuilder execFiles = null;
+            for (Map.Entry<String,File> bundledFile : bundledFiles.entrySet()) {
+                // XXX would be better to use ${nbm.executable.files} as specified by project
+                // (since building bundles on Windows will never set this even if running on Unix)
+                // but this information is available only during the project's build or in its NBM
+                if (bundledFile.getValue().canExecute()) {
+                    String name = bundledFile.getKey();
+                    if (execFiles == null) {
+                        execFiles = new StringBuilder(name);
+                    } else {
+                        execFiles.append(',').append(name);
+                    }
+                }
+            }
+            if (execFiles != null) {
+                osgiAttr.putValue("NetBeans-Executable-Files", execFiles.toString());
+            }
             // XXX modules/lib/*.dll/so => Bundle-NativeCode (but syntax is rather complex)
             OutputStream bundle = new FileOutputStream(bundleFile);
             try {

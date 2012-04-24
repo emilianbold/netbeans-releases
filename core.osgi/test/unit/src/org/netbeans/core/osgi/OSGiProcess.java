@@ -113,6 +113,11 @@ class OSGiProcess {
             return this;
         }
 
+        public <T> NewModule namedservice(String path, Class<T> xface, Class<? extends T> impl) {
+            sources.put("META-INF/namedservices/" + path + "/" + xface.getName(), impl.getName() + "\n");
+            return this;
+        }
+
         public NewModule manifest(String... contents) {
             manifest = "Manifest-Version: 1.0\n" + join(contents) + "\n";
             return this;
@@ -245,6 +250,9 @@ class OSGiProcess {
         });
         for (Bundle bundle : installed) {
             bundle.start();
+        }
+        for (Bundle bundle : installed) {
+            bundle.stop();
         }
         if (f.getState() != Bundle.STOPPING) {
             f.stop();

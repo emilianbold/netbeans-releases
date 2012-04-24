@@ -39,31 +39,29 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.editor.lib.html4parser;
+package org.netbeans.modules.html.editor.lib.api.model;
 
-import java.util.Collections;
-import java.util.List;
-import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
-import org.netbeans.modules.html.editor.lib.dtd.DTD;
-import org.netbeans.modules.html.editor.lib.dtd.DTD.Element;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
 
 /**
  *
  * @author marekfukala
  */
-public class RootAstNode extends AstNode {
+public class HtmlModelFactoryTest extends NbTestCase {
+
+    public HtmlModelFactoryTest(String name) {
+        super(name);
+    }
+
+    public void testFactory() {
+        assertNotNull(HtmlModelFactory.getModel(HtmlVersion.HTML32));
+        assertNotNull(HtmlModelFactory.getModel(HtmlVersion.HTML41_TRANSATIONAL));
+        assertNotNull(HtmlModelFactory.getModel(HtmlVersion.XHTML10_TRANSATIONAL));
+        assertNotNull(HtmlModelFactory.getModel(HtmlVersion.HTML5));
+        assertNotNull(HtmlModelFactory.getModel(HtmlVersion.XHTML5));
+        
+    }
     
-    private static String ROOT_NODE_NAME = "root"; //NOI18N
-    private DTD dtd;
-
-    RootAstNode(int startOffset, int endOffset, DTD dtd) {
-        super(ROOT_NODE_NAME, ElementType.ROOT, startOffset, endOffset, false);
-        this.dtd = dtd;
-    }
-
-    @Override
-    public List<Element> getAllPossibleElements() {
-        return dtd == null ? Collections.emptyList() : dtd.getElementList(null);
-    }
     
 }
