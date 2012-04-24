@@ -47,12 +47,15 @@ import javax.swing.text.Document;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
+import org.netbeans.modules.cnd.api.model.CsmFunctionParameterList;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmCondition;
 import org.netbeans.modules.cnd.api.model.deep.CsmDeclarationStatement;
@@ -122,11 +125,25 @@ public class CsmCodeBlockProviderImpl extends CsmCodeBlockProvider {
                     return;
                 }
             }
-        } else if (CsmKindUtilities.isFunctionDefinition(parent)) {
-            CsmCompoundStatement body = ((CsmFunctionDefinition)parent).getBody();
-            if (body != null) {
-                list.add(body);
-                findInner(list, body, position);
+        } else if (CsmKindUtilities.isFunction(parent)) {
+            CsmFunction def = (CsmFunction) parent;
+            CsmFunctionParameterList parameterList = def.getParameterList();
+            if (parameterList != null && parameterList.getStartOffset() < position && position < parameterList.getEndOffset()) {
+                list.add(parameterList);
+                for (CsmParameter parameter : parameterList.getParameters()) {
+                    if (parameter != null && parameter.getStartOffset() < position && position < parameter.getEndOffset()) {
+                        list.add(parameter);
+                        return;
+                    }
+                }
+                return;
+            }
+            if (CsmKindUtilities.isFunctionDefinition(parent)) {
+                CsmCompoundStatement body = ((CsmFunctionDefinition)parent).getBody();
+                if (body != null) {
+                    list.add(body);
+                    findInner(list, body, position);
+                }
             }
         }
     }
@@ -252,20 +269,39 @@ public class CsmCodeBlockProviderImpl extends CsmCodeBlockProvider {
     }
 
     private void findInner(List<CsmObject> list, CsmForStatement stmt, int offset) {
+        List<CsmOffsetable> forList = new ArrayList<CsmOffsetable>();
         CsmStatement initStatement = stmt.getInitStatement();
+        if (initStatement != null) {
+            forList.add(initStatement);
+        }
+        CsmCondition condition = stmt.getCondition();
+        if (condition != null) {
+            forList.add(condition);
+        }
+        CsmExpression iterationExpression = stmt.getIterationExpression();
+        if (iterationExpression != null) {
+            forList.add(iterationExpression);
+        }
         if (initStatement != null && initStatement.getStartOffset() < offset && offset < initStatement.getEndOffset()) {
+            if (forList.size() > 1) {
+                list.add(new CompoundObject(forList));
+            }
             list.add(initStatement);
             findInner(list, initStatement, offset);
             return;
         }
-        CsmExpression iterationExpression = stmt.getIterationExpression();
-        if (iterationExpression != null && iterationExpression.getStartOffset() < offset && offset < iterationExpression.getEndOffset()) {
-            list.add(iterationExpression);
+        if (condition != null && condition.getStartOffset() < offset && offset < condition.getEndOffset()) {
+            if (forList.size() > 1) {
+                list.add(new CompoundObject(forList));
+            }
+            list.add(condition);
             return;
         }
-        CsmCondition condition = stmt.getCondition();
-        if (condition != null && condition.getStartOffset() < offset && offset < condition.getEndOffset()) {
-            list.add(condition);
+        if (iterationExpression != null && iterationExpression.getStartOffset() < offset && offset < iterationExpression.getEndOffset()) {
+            if (forList.size() > 1) {
+                list.add(new CompoundObject(forList));
+            }
+            list.add(iterationExpression);
             return;
         }
         CsmStatement body = stmt.getBody();
@@ -297,6 +333,44 @@ public class CsmCodeBlockProviderImpl extends CsmCodeBlockProvider {
                     findInner(list, lambda, offset);
                 }
             }            
+        }
+    }
+    
+    private static final class CompoundObject implements CsmOffsetable {
+        private final List<CsmOffsetable> delegate;
+        
+        private CompoundObject(List<CsmOffsetable> delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public CsmFile getContainingFile() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public int getStartOffset() {
+            return delegate.get(0).getStartOffset();
+        }
+
+        @Override
+        public int getEndOffset() {
+            return delegate.get(delegate.size()-1).getEndOffset();
+        }
+
+        @Override
+        public Position getStartPosition() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Position getEndPosition() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public CharSequence getText() {
+            throw new UnsupportedOperationException();
         }
     }
 
