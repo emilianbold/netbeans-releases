@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,49 +37,43 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.html.editor.lib.api.model;
 
-package org.netbeans.modules.html.editor.lib.api;
-
-import org.netbeans.modules.html.editor.lib.api.model.HtmlModel;
+import java.util.Collection;
+import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
 import org.openide.util.Lookup;
 
 /**
- *
+ * Creates a instance of {@link HtmlModel} for given {@link HtmlVersion}.
+ * 
+ * The factory gathers all instancies of {@link HtmlModelProvider} from global lookup and ask 
+ * each of them for {@link HtmlModel}. If the provider returns null it proceeds with another
+ * until a provider returns non-null {@link HtmlModel} 
+ * 
+ * @since 3.3
  * @author marekfukala
  */
-public interface HtmlParser {
+public final class HtmlModelFactory {
 
     /**
-     * Returns a name of the parser. 
+     * Creates a instance of {@link HtmlModel} for given {@link HtmlVersion}.
      * 
-     * @return An internal identifier of the parser. Doesn't need to be localized, not presented to user.
+     * @param version instance of {@link HtmlVersion}
+     * @return instance of {@link HtmlModel} or null if none of the {@link HtmlModelProvider} provides
+     * model for the given html version.
      */
-    public String getName();
-
-    /**
-     * Decides if the parser can parse parse html source of the given version.
-     * 
-     * @return true if the parser can parse given html version
-     */
-    public boolean canParse(HtmlVersion version);
-
-    /**
-     * Parses the given source.
-     * 
-     * @param source html source
-     * @param preferedVersion represents a preferred html version if the version cannot be determined from the source
-     * @param lookup contains some additional information necessary to the parser
-     * @return instance of {@link HtmlParseResult}
-     * @throws ParseException 
-     */
-    public HtmlParseResult parse(HtmlSource source, HtmlVersion preferedVersion, Lookup lookup) throws ParseException;
-
-    /**
-     * @deprecated Register an instance of {@link HtmlModelProvider} instead.
-     */
-    @Deprecated
-    public HtmlModel getModel(HtmlVersion version);
-
+    public static HtmlModel getModel(HtmlVersion version) {
+        Collection<? extends HtmlModelProvider> providers = Lookup.getDefault().lookupAll(HtmlModelProvider.class);
+        for(HtmlModelProvider provider : providers) {
+            HtmlModel model = provider.getModel(version);
+            if(model != null) {
+                return model;
+            }
+        }
+        return null;
+        
+    }
+    
 }

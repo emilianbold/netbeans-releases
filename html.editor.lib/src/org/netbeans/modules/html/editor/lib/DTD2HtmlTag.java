@@ -39,47 +39,20 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.html.editor.lib;
 
-package org.netbeans.modules.html.editor.lib.api;
-
-import org.netbeans.modules.html.editor.lib.api.model.HtmlModel;
-import org.openide.util.Lookup;
+import java.util.*;
+import java.util.logging.Logger;
+import org.netbeans.modules.html.editor.lib.api.HelpItem;
+import org.netbeans.modules.html.editor.lib.api.model.*;
+import org.netbeans.modules.html.editor.lib.dtd.*;
+import org.netbeans.modules.html.editor.lib.dtd.DTD.Attribute;
+import org.netbeans.modules.html.editor.lib.dtd.DTD.Element;
 
 /**
  *
+ * XXX Maybe the DTD.Element could implement HtmlTag directly instead of the wrapping
+ *
  * @author marekfukala
  */
-public interface HtmlParser {
 
-    /**
-     * Returns a name of the parser. 
-     * 
-     * @return An internal identifier of the parser. Doesn't need to be localized, not presented to user.
-     */
-    public String getName();
-
-    /**
-     * Decides if the parser can parse parse html source of the given version.
-     * 
-     * @return true if the parser can parse given html version
-     */
-    public boolean canParse(HtmlVersion version);
-
-    /**
-     * Parses the given source.
-     * 
-     * @param source html source
-     * @param preferedVersion represents a preferred html version if the version cannot be determined from the source
-     * @param lookup contains some additional information necessary to the parser
-     * @return instance of {@link HtmlParseResult}
-     * @throws ParseException 
-     */
-    public HtmlParseResult parse(HtmlSource source, HtmlVersion preferedVersion, Lookup lookup) throws ParseException;
-
-    /**
-     * @deprecated Register an instance of {@link HtmlModelProvider} instead.
-     */
-    @Deprecated
-    public HtmlModel getModel(HtmlVersion version);
-
-}

@@ -57,11 +57,9 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.html.editor.api.HtmlKit;
 import org.netbeans.modules.html.editor.api.Utils;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
-import org.netbeans.modules.html.editor.lib.api.HtmlParseResult;
-import org.netbeans.modules.html.editor.lib.api.elements.Element;
-import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
-import org.netbeans.modules.html.editor.lib.api.elements.CloseTag;
-import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
+import org.netbeans.modules.html.editor.lib.api.elements.*;
+import org.netbeans.modules.html.editor.lib.api.model.HtmlModel;
+import org.netbeans.modules.html.editor.lib.api.model.HtmlModelFactory;
 import org.netbeans.modules.html.editor.lib.api.model.HtmlTag;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -217,11 +215,12 @@ public class HtmlBracesMatching implements BracesMatcher, BracesMatcherFactory {
                     if (result == null) {
                         return;
                     }
-
-                    HtmlParseResult parseResult = result.getSyntaxAnalyzerResult().parseHtml();
-                    if (parseResult == null) {
-                        return;
+                    
+                    HtmlModel model = HtmlModelFactory.getModel(result.getHtmlVersion());
+                    if(model == null) {
+                        return ;
                     }
+                    
                     int searchOffsetLocal = searchOffset;
                     while (searchOffsetLocal != context.getLimitOffset()) {
                         int searched = result.getSnapshot().getEmbeddedOffset(searchOffsetLocal);
@@ -230,9 +229,9 @@ public class HtmlBracesMatching implements BracesMatcher, BracesMatcherFactory {
                             if (origin.type() == ElementType.OPEN_TAG) {
                                 OpenTag origin_tag = (OpenTag) origin;
                                 CloseTag match = origin_tag.matchingCloseTag();
-                                if (match == null) {
+                                if (match == null || ElementUtils.isVirtualNode(match)) {
                                     //no matched tag foud
-                                    HtmlTag tag = parseResult.model().getTag(origin_tag.unqualifiedName().toString().toLowerCase(Locale.ENGLISH));
+                                    HtmlTag tag = model.getTag(origin_tag.unqualifiedName().toString().toLowerCase(Locale.ENGLISH));
                                     if (tag != null) {
                                         if (tag.hasOptionalEndTag()) {
                                             //valid
@@ -250,9 +249,9 @@ public class HtmlBracesMatching implements BracesMatcher, BracesMatcherFactory {
                             } else if (origin.type() == ElementType.CLOSE_TAG) {
                                 CloseTag origin_tag = (CloseTag) origin;
                                 OpenTag match = origin_tag.matchingOpenTag();
-                                if (match == null) {
+                                if (match == null || ElementUtils.isVirtualNode(match)) {
                                     //no matched tag foud
-                                    HtmlTag tag = parseResult.model().getTag(origin_tag.unqualifiedName().toString().toLowerCase(Locale.ENGLISH));
+                                    HtmlTag tag = model.getTag(origin_tag.unqualifiedName().toString().toLowerCase(Locale.ENGLISH));
                                     if (tag != null) {
                                         if (tag.hasOptionalOpenTag()) {
                                             //valid

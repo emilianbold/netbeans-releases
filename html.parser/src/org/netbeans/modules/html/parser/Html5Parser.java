@@ -53,23 +53,21 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import nu.validator.htmlparser.impl.ErrorReportingTokenizer;
 import nu.validator.htmlparser.impl.Tokenizer;
 import nu.validator.htmlparser.io.Driver;
 import org.netbeans.modules.html.editor.lib.api.*;
-import org.netbeans.modules.html.editor.lib.api.elements.CloseTag;
 import org.netbeans.modules.html.editor.lib.api.elements.Element;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
 import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
 import org.netbeans.modules.html.editor.lib.api.model.HtmlModel;
 import org.netbeans.modules.html.editor.lib.api.elements.*;
-import org.netbeans.modules.html.editor.lib.api.model.HtmlTag;
-import org.netbeans.modules.html.editor.lib.api.model.NamedCharRef;
+import org.netbeans.modules.html.editor.lib.api.model.*;
 import org.netbeans.modules.html.parser.model.ElementDescriptor;
 import org.netbeans.modules.html.parser.model.NamedCharacterReference;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.lookup.ServiceProviders;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -79,8 +77,11 @@ import org.xml.sax.SAXParseException;
  *
  * @author marekfukala
  */
-@ServiceProvider(service = HtmlParser.class, position = 100)
-public class Html5Parser implements HtmlParser {
+@ServiceProviders(value={
+    @ServiceProvider(service = HtmlParser.class, position = 100),
+    @ServiceProvider(service = HtmlModelProvider.class, position = 10)
+})
+public class Html5Parser implements HtmlParser, HtmlModelProvider {
 
     private static final String PARSER_NAME = String.format("validator.nu html5 parser (%s).", Html5Parser.class); //NOI18N
     private static final HtmlModel HTML5MODEL = new Html5Model();
@@ -182,8 +183,13 @@ public class Html5Parser implements HtmlParser {
 
     @Override
     public HtmlModel getModel(HtmlVersion version) {
-        assert version == HtmlVersion.HTML5 || version == HtmlVersion.XHTML5;
-        return HTML5MODEL;
+        switch(version) {
+            case HTML5:
+            case XHTML5:
+                return HTML5MODEL;
+            default:
+                return null;
+        }
     }
 
     @Override
@@ -198,7 +204,7 @@ public class Html5Parser implements HtmlParser {
 
         @Override
         public HtmlModel model() {
-            return HTML5MODEL;
+            return HtmlModelFactory.getModel(version());
         }
 
         public void addPossibleTags(HtmlTag tag, Collection<HtmlTag> possible) {
