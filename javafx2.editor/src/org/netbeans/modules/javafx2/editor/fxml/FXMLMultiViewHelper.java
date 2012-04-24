@@ -61,7 +61,7 @@ public final class FXMLMultiViewHelper {
         iconBase="org/netbeans/modules/javafx2/editor/resources/fxmlObject.png", // NOI18N
         persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
         preferredID="xml.text", // NOI18N
-        mimeType=JavaFXEditorUtils.MIME_TYPE,
+        mimeType=JavaFXEditorUtils.FXML_MIME_TYPE,
         position=1
     )
     public static MultiViewEditorElement createMultiViewEditorElement(Lookup context) {
