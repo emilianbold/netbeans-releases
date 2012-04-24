@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,54 +37,86 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.html.editor.hints.css;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
+import java.io.IOException;
 import java.util.List;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.csl.api.Hint;
-import org.netbeans.modules.csl.api.HintFix;
-import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.Rule;
 import org.netbeans.modules.csl.api.RuleContext;
+import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
+import org.netbeans.modules.html.editor.hints.HtmlRule;
 import org.netbeans.modules.html.editor.hints.HtmlRuleContext;
-import org.netbeans.modules.web.common.api.WebUtils;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementUtils;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
  *
- * @author mfukala@netbeans.org
+ * @author marekfukala
  */
-public class MissingCssElement extends Hint {
+public class MissingClassRule extends HtmlRule {
 
-    public MissingCssElement(Rule rule, HtmlRuleContext context, OffsetRange range, Collection<FileObject> foundInFiles) {
-        super(rule,
-                rule.getDisplayName(),
-                context.getFile(),
-                range,
-                getFixes(foundInFiles, context),
-                10);
+    private static final String MSG_MISSING_CSS_CLASS = NbBundle.getMessage(MissingCssElement.class, "MSG_MissingCssClass");
+    private static final String MSG_MISSING_CSS_CLASS_DESC = NbBundle.getMessage(MissingCssElement.class, "MSG_MissingCssClass_Desc");
+
+    public MissingClassRule() {
     }
-    
-    private static List<HintFix> getFixes(Collection<FileObject> foundInFiles, HtmlRuleContext context) {
-        if (foundInFiles == null) {
-            //no id/class found in the stylesheets
-            return Collections.emptyList();
+
+    @Override
+    protected void run(HtmlRuleContext context, List<Hint> result) {
+        try {
+            HtmlParserResult parserResult = context.getHtmlParserResult();
+            CssIdsVisitor visitor = new CssIdsVisitor(this, context, result);
+            ElementUtils.visitChildren(parserResult.root(), visitor, ElementType.OPEN_TAG);
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
         }
-        FileObject sourceFile = context.getFile();
-        List<HintFix> fixes = new ArrayList<HintFix>();
-        for (FileObject file : foundInFiles) {
-            String path = WebUtils.getRelativePath(sourceFile, file);
-            fixes.add(new AddStylesheetLinkHintFix(
-                    NbBundle.getMessage(MissingCssElement.class, "MSG_AddStyleSheetLink", path),
-                    sourceFile,
-                    file));
-        }
-        return fixes;
     }
-    
+
+    @Override
+    public boolean appliesTo(RuleContext context) {
+        HtmlParserResult result = (HtmlParserResult) context.parserResult;
+        FileObject file = result.getSnapshot().getSource().getFileObject();
+        if (file == null) {
+            return false;
+        }
+        Project project = FileOwnerQuery.getOwner(file);
+        if (project == null) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public boolean getDefaultEnabled() {
+        return true;
+    }
+
+    @Override
+    public String getDisplayName() {
+        return MSG_MISSING_CSS_CLASS;
+    }
+
+    @Override
+    public String getDescription() {
+        return MSG_MISSING_CSS_CLASS_DESC;
+    }
+
+    @Override
+    public boolean showInTasklist() {
+        return false;
+    }
+
+    @Override
+    public HintSeverity getDefaultSeverity() {
+        return HintSeverity.WARNING;
+    }
 }
