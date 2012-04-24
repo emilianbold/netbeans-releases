@@ -50,9 +50,11 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
@@ -114,7 +116,6 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.Presenter;
@@ -136,11 +137,6 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
     POMModelVisitor(POMCutHolder parent, POMModelPanel.Configuration configuration) {
         this.parent = parent;
         this.configuration = configuration;
-    }
-
-    public void reset() {
-         childs = new LinkedHashMap<String, POMCutHolder>();
-         count = 0;
     }
 
     POMCutHolder[] getChildValues() {
@@ -884,20 +880,34 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
     }
 
     private void doVisit(List<POMExtensibilityElement> elems) {
+        //#211429
+        Set<String> shortvalues = new HashSet<String>();
+        Set<String> duplicateValues = new HashSet<String>();
+        for (POMExtensibilityElement el : elems) {
+            String shortKey = el.getQName().getLocalPart();
+            if (!shortvalues.add(shortKey)) {
+                duplicateValues.add(shortKey);
+            }
+        } 
+        
         for (POMExtensibilityElement el : elems) {
             List<POMExtensibilityElement> any = el.getAnyElements();
+            String key = el.getQName().getLocalPart();  
+            if (duplicateValues.contains(key)) {
+                key = el.getQName().getLocalPart() + "=" + el.getElementText();
+            }
             if (any != null && !any.isEmpty()) {
-                POMCutHolder nd = childs.get(el.getQName().getLocalPart());
+                POMCutHolder nd = childs.get(key);
                 if (nd == null) {
                     nd = new SingleObjectCH(parent, el.getQName(), el.getQName().getLocalPart(), POMExtensibilityElement.class, configuration);
-                    childs.put(el.getQName().getLocalPart(), nd);
+                    childs.put(key, nd);
                 }
                 fillValues(count, nd, el);
             } else {
-                POMCutHolder nd = childs.get(el.getQName().getLocalPart());
+                POMCutHolder nd = childs.get(key);
                 if (nd == null) {
                     nd = new SingleFieldCH(parent, el.getQName(), el.getQName().getLocalPart());
-                    childs.put(el.getQName().getLocalPart(), nd);
+                    childs.put(key, nd);
                 }
                 fillValues(count, nd, el.getElementText());
             }
@@ -1730,7 +1740,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         @Override
         public void actionPerformed(ActionEvent e) {
             if (layer != -1) {
-                POMModelPanel.selectByNode(node, null, layer);
+                POMModelPanel.selectByNode(node, layer);
             }
         }
 
