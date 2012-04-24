@@ -368,18 +368,15 @@ public final class SuiteActions implements ActionProvider, ExecProject {
     
     @Messages("Title_BrandingEditor={0} - Branding")
     @Override public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
+        if (!ModuleActions.canRunNoLock(command, project.getTestUserDirLockFile())) {
+            return;
+        }
         if (ActionProvider.COMMAND_DELETE.equals(command)) {
-            if (SuiteOperations.canRun(project)) {
-                DefaultProjectOperations.performDefaultDeleteOperation(project);
-            }
+            DefaultProjectOperations.performDefaultDeleteOperation(project);
         } else if (ActionProvider.COMMAND_RENAME.equals(command)) {
-            if (SuiteOperations.canRun(project)) {
-                DefaultProjectOperations.performDefaultRenameOperation(project, null);
-            }
+            DefaultProjectOperations.performDefaultRenameOperation(project, null);
         } else if (ActionProvider.COMMAND_MOVE.equals(command)) {
-            if (SuiteOperations.canRun(project)) {
-                DefaultProjectOperations.performDefaultMoveOperation(project);
-            }
+            DefaultProjectOperations.performDefaultMoveOperation(project);
         } else if (COMMAND_BRANDING.equals(command)) {
             SuiteProperties properties = new SuiteProperties(project, project.getHelper(), project.getEvaluator(), SuiteUtils.getSubProjects(project));
             BrandingModel model = properties.getBrandingModel();
@@ -453,7 +450,7 @@ public final class SuiteActions implements ActionProvider, ExecProject {
             targetNames = new String[] {command};
         }
 
-        ModuleActions.setRunArgsIde(project, new SuiteProperties(project, project.getHelper(), project.getEvaluator(), Collections.<NbModuleProject>emptySet()), command, p, project.getTestUserDirLockFile());
+        ModuleActions.setRunArgsIde(project, new SuiteProperties(project, project.getHelper(), project.getEvaluator(), Collections.<NbModuleProject>emptySet()), command, p);
         
         return ActionUtils.runTarget(findBuildXml(project), targetNames, p);
     }

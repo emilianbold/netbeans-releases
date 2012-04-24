@@ -140,7 +140,7 @@ public class ResultSetTableModel extends DefaultTableModel {
             return;
         }
         try {
-            if (!DataViewUtils.isSQLConstantString(value)) {
+            if (!DataViewUtils.isSQLConstantString(value, table.getDBColumn(col))) {
                 value = DBReadWriteHelper.validate(value, table.getDBColumn(col));
             }
             super.setValueAt(value, row, col);

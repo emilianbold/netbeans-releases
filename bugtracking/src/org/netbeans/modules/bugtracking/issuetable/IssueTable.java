@@ -92,7 +92,6 @@ import javax.swing.table.TableColumnModel;
 import org.netbeans.modules.bugtracking.*;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
-import org.netbeans.modules.bugtracking.ui.query.IssueTableSupport;
 import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.openide.awt.MouseUtils;
 import org.openide.explorer.view.TreeTableView;
@@ -130,6 +129,10 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
 
     private static final String CONFIG_DELIMITER = "<=>";                       // NOI18N
 
+    public interface IssueTableProvider {
+        public IssueTable getIssueTable();
+    }
+    
     private static final Comparator<IssueProperty> nodeComparator = new Comparator<IssueProperty>() {
         @Override
         public int compare(IssueProperty p1, IssueProperty p2) {
@@ -223,8 +226,6 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
         storeColumnsTask = BugtrackingManager.getInstance()
                                                 .getRequestProcessor()
                                                 .create(storeColumnsWidthHandler);
-
-        IssueTableSupport.getInstance().put(query, this);
     }
 
     /**

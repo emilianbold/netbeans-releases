@@ -259,7 +259,7 @@ public class NBTabbedPaneController {
         if( index > container.getTabCount() )
             index = -1;
         container.add( tabData.getComponent(), index );
-        index = container.indexOf( tabData.getComponent() );
+        index = container.indexOfComponent( tabData.getComponent() );
         container.setTabComponentAt( index, new CloseableTabComponent( tabData.getIcon(),
                 tabData.getText(), true, tabData.getTooltip(), container, controller ) );
     }
@@ -305,11 +305,6 @@ public class NBTabbedPaneController {
     protected class Controller extends MouseAdapter
             implements MouseMotionListener {
 
-        /**
-         * true when selection is changed as a result of mouse press
-         */
-        private boolean selectionChanged;
-
         protected boolean shouldReact( MouseEvent e ) {
             boolean isLeft = SwingUtilities.isLeftMouseButton( e );
             return isLeft;
@@ -320,24 +315,22 @@ public class NBTabbedPaneController {
 
             Point p = e.getPoint();
             p = SwingUtilities.convertPoint( e.getComponent(), p, container );
-            int i = container.indexAtLocation( p.x, p.y );
+            int tabIndex = container.indexAtLocation( p.x, p.y );
 
             SingleSelectionModel sel = container.getModel();
-            selectionChanged = i != sel.getSelectedIndex();
             //invoke possible selection change
-            if( (i != -1) || !selectionChanged ) {
-                if( i >= 0 ) {
-                    CloseableTabComponent tab = ( CloseableTabComponent ) container.getTabComponentAt( i );
-                    if( tab.isInCloseButton( e ) ) {
-                        return;
-                    }
+            if( tabIndex >= 0 && e.getComponent() != container ) {
+                CloseableTabComponent tab = ( CloseableTabComponent ) container.getTabComponentAt( tabIndex );
+                if( tab.isInCloseButton( e ) ) {
+                    return;
                 }
+                tabIndex = container.indexOf( container.getComponentAt( tabIndex ) );
                 boolean change = shouldPerformAction( TabDisplayer.COMMAND_SELECT,
-                        i, e );
+                        tabIndex, e );
                 if( change ) {
 
-                    sel.setSelectedIndex( i );
-                    Component tc = container.getDataModel().getTab( i ).getComponent();
+                    sel.setSelectedIndex( tabIndex );
+                    Component tc = container.getDataModel().getTab( tabIndex ).getComponent();
                     if( null != tc && tc instanceof TopComponent && !(( TopComponent ) tc).isAncestorOf( KeyboardFocusManager.getCurrentKeyboardFocusManager().getPermanentFocusOwner() ) ) {
                         (( TopComponent ) tc).requestActive();
                     }
@@ -346,7 +339,7 @@ public class NBTabbedPaneController {
             if( e.isPopupTrigger() ) {
                 //Post a popup menu show request
 
-                shouldPerformAction( TabDisplayer.COMMAND_POPUP_REQUEST, i, e );
+                shouldPerformAction( TabDisplayer.COMMAND_POPUP_REQUEST, tabIndex, e );
             }
         }
 
@@ -355,20 +348,22 @@ public class NBTabbedPaneController {
             Point p = e.getPoint();
             p = SwingUtilities.convertPoint( e.getComponent(), p, container );
             int i = container.indexAtLocation( p.x, p.y );
+            int tabIndex = i;
+            if( i >= 0 )
+                tabIndex = container.indexOf( container.getComponentAt( i ) );
             if( e.getClickCount() >= 2 && !e.isPopupTrigger() ) {
                 SingleSelectionModel sel = container.getModel();
-                selectionChanged = i != sel.getSelectedIndex();
                 // invoke possible selection change
-                if( (i != -1) || !selectionChanged ) {
+                if( i >= 0 ) {
                     boolean change = shouldPerformAction( TabDisplayer.COMMAND_SELECT,
-                            i, e );
+                            tabIndex, e );
                     if( change ) {
                         sel.setSelectedIndex( i );
                     }
                 }
                 if( i != -1 ) {
                     //Post a maximize request
-                    shouldPerformAction( TabDisplayer.COMMAND_MAXIMIZE, i, e );
+                    shouldPerformAction( TabDisplayer.COMMAND_MAXIMIZE, tabIndex, e );
                 }
             } else if( e.getClickCount() == 1 && e.getButton() == MouseEvent.BUTTON1 && i >= 0 ) {
                 CloseableTabComponent tab = ( CloseableTabComponent ) container.getTabComponentAt( i );
@@ -381,7 +376,7 @@ public class NBTabbedPaneController {
                             command = TabbedContainer.COMMAND_CLOSE_ALL_BUT_THIS;
                         }
                     }
-                    shouldPerformAction( command, i, e );
+                    shouldPerformAction( command, tabIndex, e );
                 }
             }
         }
@@ -395,6 +390,8 @@ public class NBTabbedPaneController {
             p = SwingUtilities.convertPoint( e.getComponent(), p, container );
             int i = container.indexAtLocation( p.x, p.y );
             if( e.isPopupTrigger() ) {
+                if( i >= 0 )
+                    i = container.indexOf( container.getComponentAt( i ) );
                 //Post a popup menu show request
                 shouldPerformAction( TabDisplayer.COMMAND_POPUP_REQUEST, i, e );
             }

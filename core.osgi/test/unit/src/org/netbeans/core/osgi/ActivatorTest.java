@@ -133,7 +133,7 @@ public class ActivatorTest extends NbTestCase {
         headers.put("OpenIDE-Module-Provides", "org.netbeans.modules.project.uiapi.ActionsFactory,   " +
                 "org.netbeans.modules.project.uiapi.OpenProjectsTrampoline,  org.netbeans.modules.project.uiapi.ProjectChooserFactory");
         assertEquals(new TreeSet<String>(Arrays.asList(
-                "org.netbeans.modules.projectui",
+                "cnb.org.netbeans.modules.projectui",
                 "org.netbeans.modules.project.uiapi.ActionsFactory",
                 "org.netbeans.modules.project.uiapi.OpenProjectsTrampoline",
                 "org.netbeans.modules.project.uiapi.ProjectChooserFactory"
@@ -146,8 +146,8 @@ public class ActivatorTest extends NbTestCase {
         headers.put("OpenIDE-Module-Requires", "org.openide.modules.InstalledFileLocator");
         assertEquals(Collections.emptySet(), Activator.provides(headers));
         assertEquals(new TreeSet<String>(Arrays.asList(
-                "org.netbeans.api.progress",
-                "org.netbeans.spi.quicksearch",
+                "cnb.org.netbeans.api.progress",
+                "cnb.org.netbeans.spi.quicksearch",
                 "org.openide.modules.InstalledFileLocator"
                 )), Activator.requires(headers));
         assertEquals(Collections.emptySet(), Activator.needs(headers));
@@ -162,7 +162,7 @@ public class ActivatorTest extends NbTestCase {
         try {
             headers.put("Bundle-SymbolicName", "org.openide.modules");
             assertEquals(new TreeSet<String>(Arrays.asList(
-                    "org.openide.modules",
+                    "cnb.org.openide.modules",
                     "org.openide.modules.os.Windows"
                     )), Activator.provides(headers));
             assertEquals(Collections.emptySet(), Activator.requires(headers));

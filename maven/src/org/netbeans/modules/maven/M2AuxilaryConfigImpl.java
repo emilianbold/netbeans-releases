@@ -137,7 +137,7 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
     private Document loadConfig(FileObject config) throws IOException, SAXException {
         synchronized (configIOLock) {
             //TODO shall be have some kind of caching here to prevent frequent IO?
-            return XMLUtil.parse(new InputSource(config.getURL().toString()), false, true, null, null);
+            return XMLUtil.parse(new InputSource(config.toURL().toString()), false, true, null, null);
         }
     }
 
@@ -225,9 +225,9 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                     doc = XMLUtil.parse(new InputSource(new StringReader(str)), false, true, null, null);
                     return XMLUtil.findElement(doc.getDocumentElement(), elementName, namespace);
                 } catch (SAXException ex) {
-                    ex.printStackTrace();
+                    LOG.log(Level.FINE, "cannot parse", ex);
                 } catch (IOException ex) {
-                    ex.printStackTrace();
+                    LOG.log(Level.FINE, "error reading private auxiliary configuration", ex);
                 }
             }
             return null;
@@ -263,9 +263,9 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                 try {
                     doc = XMLUtil.parse(new InputSource(new StringReader(str)), false, true, null, null);
                 } catch (SAXException ex) {
-                    ex.printStackTrace();
+                    LOG.log(Level.FINE, "cannot parse", ex);
                 } catch (IOException ex) {
-                    ex.printStackTrace();
+                    LOG.log(Level.FINE, "error reading private auxiliary configuration", ex);
                 }
             }
             if (doc == null) {
@@ -292,7 +292,7 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                     XMLUtil.write(doc, wr, "UTF-8"); //NOI18N
                     project.getProjectDirectory().setAttribute(AUX_CONFIG, wr.toString("UTF-8"));
                 } catch (IOException ex) {
-                    ex.printStackTrace();
+                    LOG.log(Level.FINE, "error writing private auxiliary configuration", ex);
                 }
             }
         }
@@ -381,7 +381,7 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                     EditCookie edit = dobj.getLookup().lookup(EditCookie.class);
                     edit.edit();
                 } catch (DataObjectNotFoundException ex) {
-                    ex.printStackTrace();
+                    LOG.log(Level.FINEST, "no dataobject for " + fo, ex);
                 }
             }
         }
