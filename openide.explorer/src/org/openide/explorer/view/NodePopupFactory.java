@@ -85,7 +85,7 @@ public class NodePopupFactory {
                 if (row >= 0) {
                     Object val = et.getValueAt(row, column);
                     val = et.transformValue(val);
-                    String s = NbBundle.getBundle(NodePopupFactory.class).getString("LBL_QuickFilter");
+                    String s = NbBundle.getMessage(NodePopupFactory.class, "LBL_QuickFilter");
                     res.add(et.getQuickFilterPopup(column, val, s));
                 } else if (et.getQuickFilterColumn() == column) {
                     addNoFilterItem(et, res);
@@ -97,7 +97,7 @@ public class NodePopupFactory {
 
     void addNoFilterItem(ETable et, JPopupMenu popup) {
         if (showQuickFilter && et.getQuickFilterColumn() != -1) {
-            String s = NbBundle.getBundle(NodePopupFactory.class).getString("LBL_QuickFilter");
+            String s = NbBundle.getMessage(NodePopupFactory.class, "LBL_QuickFilter");
             JMenu menu = new JMenu(s);
             JMenuItem noFilterItem = et.getQuickFilterNoFilterItem(et.getQuickFilterFormatStrings()[6]);
             menu.add(noFilterItem);

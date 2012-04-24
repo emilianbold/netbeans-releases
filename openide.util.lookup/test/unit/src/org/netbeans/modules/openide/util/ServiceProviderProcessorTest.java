@@ -202,6 +202,22 @@ public class ServiceProviderProcessorTest extends NbTestCase {
         baos = new ByteArrayOutputStream();
         assertFalse(AnnotationProcessorTestUtils.runJavac(src, "C7", dest, null, baos));
         assertTrue(baos.toString(), baos.toString().contains("not applicable"));
+
+        AnnotationProcessorTestUtils.makeSource(src, "p.C8",
+                "class C8 {",
+                "@org.openide.util.lookup.ServiceProvider(service=" + xfaceName + ".class)",
+                "public static class Inner implements " + xfaceName + " {}",
+                "}");
+        assertTrue(AnnotationProcessorTestUtils.runJavac(src, "C8", dest, null, baos));
+
+        AnnotationProcessorTestUtils.makeSource(src, "p.C9",
+                "class C9 {",
+                "@org.openide.util.lookup.ServiceProvider(service=" + xfaceName + ".class)",
+                "public class Inner implements " + xfaceName + " {}",
+                "}");
+        baos = new ByteArrayOutputStream();
+        assertFalse(AnnotationProcessorTestUtils.runJavac(src, "C9", dest, null, baos));
+        assertTrue(baos.toString(), baos.toString().contains("static"));
     }
 
     public void testInvalidInput() throws Exception { // #195983

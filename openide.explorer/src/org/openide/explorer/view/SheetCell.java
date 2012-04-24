@@ -661,7 +661,7 @@ abstract class SheetCell extends AbstractCellEditor implements TableModelListene
     }
     
     private static String getString(String key) {
-        return NbBundle.getBundle(SheetCell.class).getString(key);
+        return NbBundle.getMessage(SheetCell.class, key);
     }
     
     private static Color noFocusSelectionBackground=null;
