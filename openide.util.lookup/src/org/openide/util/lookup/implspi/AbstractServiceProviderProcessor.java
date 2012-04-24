@@ -281,6 +281,10 @@ public abstract class AbstractServiceProviderProcessor extends AbstractProcessor
             processingEnv.getMessager().printMessage(Kind.ERROR, clazz + " must not be abstract", clazz, ann);
             return false;
         }
+        if (clazz.getEnclosingElement().getKind() != ElementKind.PACKAGE && !clazz.getModifiers().contains(Modifier.STATIC)) {
+            processingEnv.getMessager().printMessage(Kind.ERROR, clazz + " must be static", clazz, ann);
+            return false;
+        }
         {
             boolean hasDefaultCtor = false;
             for (ExecutableElement constructor : ElementFilter.constructorsIn(clazz.getEnclosedElements())) {
