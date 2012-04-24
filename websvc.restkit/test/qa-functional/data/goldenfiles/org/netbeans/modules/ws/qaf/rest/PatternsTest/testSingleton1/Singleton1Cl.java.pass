@@ -12,6 +12,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.GET;
 import javax.ws.rs.Produces;
+import org.codehaus.jettison.json.JSONString;
 
 /**
  * REST Web Service
@@ -36,7 +37,7 @@ public class Singleton1Cl {
      */
     @GET
     @Produces("application/json")
-    public org.codehaus.jettison.json.JSONString getJson() {
+    public JSONString getJson() {
         //TODO return proper representation object
         throw new UnsupportedOperationException();
     }
@@ -48,6 +49,6 @@ public class Singleton1Cl {
      */
     @PUT
     @Consumes("application/json")
-    public void putJson(org.codehaus.jettison.json.JSONString content) {
+    public void putJson(JSONString content) {
     }
 }
