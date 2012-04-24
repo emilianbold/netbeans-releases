@@ -59,6 +59,7 @@ import java.beans.VetoableChangeListener;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Locale;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -742,7 +743,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         try {
             byte[] arr = new byte[4096];
             int len = stream.read (arr, 0, arr.length);
-            String txt = new String (arr, 0, (len>=0)?len:0).toUpperCase();
+            String txt = new String(arr, 0, (len >= 0 ) ? len : 0, "ISO-8859-1").toUpperCase(Locale.ENGLISH);
             // encoding
             return findEncoding (txt);
         } catch (IOException x) {
