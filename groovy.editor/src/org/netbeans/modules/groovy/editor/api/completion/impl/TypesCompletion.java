@@ -68,7 +68,7 @@ import org.netbeans.modules.groovy.editor.api.completion.CompletionItem;
 import org.netbeans.modules.groovy.editor.api.completion.util.CamelCaseUtil;
 import org.netbeans.modules.groovy.editor.api.completion.util.CompletionRequest;
 import org.netbeans.modules.groovy.editor.api.completion.util.ContextHelper;
-import org.netbeans.modules.groovy.editor.api.elements.IndexedClass;
+import org.netbeans.modules.groovy.editor.api.elements.index.IndexedClass;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.filesystems.FileObject;
@@ -199,7 +199,8 @@ public class TypesCompletion extends BaseCompletion {
             }
 
             if (index != null) {
-                Set<IndexedClass> classes = index.getClasses("", QuerySupport.Kind.PREFIX, true, false, false);
+                String camelCaseFirstWord = CamelCaseUtil.getCamelCaseFirstWord(request.prefix);
+                Set<IndexedClass> classes = index.getClasses(camelCaseFirstWord, QuerySupport.Kind.PREFIX, true, false, false);
 
                 if (classes.isEmpty()) {
                     LOG.log(Level.FINEST, "Nothing found in GroovyIndex");

@@ -44,6 +44,7 @@ package org.netbeans.modules.options.export;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.Enumeration;
@@ -295,6 +296,28 @@ public final class OptionsChooserPanel extends JPanel {
         outline.getAccessibleContext().setAccessibleName(NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.outline.AN"));
         outline.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.outline.AD"));
         lblHint.setLabelFor(outline);
+
+        final Outline out = outline;
+        outline.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent evt) {
+                if (evt.getKeyCode() == KeyEvent.VK_SPACE) {
+                    int[] rows = out.getSelectedRows();
+                    for (int row : rows) {
+                        if (row >= 0) {
+                            Object node = out.getValueAt(row, 0);
+                            Boolean isSelected = treeDataProvider.isSelected(node);
+                            if(isSelected == null) { // node is Category or Root and is partially selected
+                                treeDataProvider.setSelected(node, Boolean.FALSE);
+                            } else if (treeDataProvider.isCheckEnabled(node)) {
+                                treeDataProvider.setSelected(node, !isSelected);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
         return outline;
     }
 

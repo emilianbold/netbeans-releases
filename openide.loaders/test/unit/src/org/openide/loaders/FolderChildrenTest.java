@@ -81,7 +81,6 @@ import org.openide.nodes.NodeReorderEvent;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Enumerations;
 import org.openide.util.Exceptions;
-import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
@@ -454,6 +453,7 @@ public class FolderChildrenTest extends NbTestCase {
 
     }
 
+    @RandomlyFails // NB-Core-Build #8181
     public void testChildrenListenToFilesystemByABadea () throws Exception {
         doChildrenListenToFilesystem (false);
     }

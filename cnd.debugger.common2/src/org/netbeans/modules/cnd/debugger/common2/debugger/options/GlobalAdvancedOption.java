@@ -51,7 +51,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.netbeans.spi.options.*;
 import org.netbeans.modules.cnd.utils.ui.CndUIConstants;
-import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 
 /**
  * Panel for global native debugger options.
@@ -75,7 +75,7 @@ public final class GlobalAdvancedOption extends OptionsPanelController {
 
 	options.assign(clonedOptions);	// copy back cloned values
 	options.save();			// write to disk
-	DebuggerManager.get().applyGlobalOptions();
+	NativeDebuggerManager.get().applyGlobalOptions();
 					    // propagate to all sessions
     }
 
@@ -131,7 +131,7 @@ public final class GlobalAdvancedOption extends OptionsPanelController {
 
     // implement OptionsPanelController
     public void update() {
-	options = DebuggerManager.get().globalOptions();
+	options = NativeDebuggerManager.get().globalOptions();
 	clonedOptions = options.makeCopy();
 	clonedOptions.clearDirty();
 	preferencesDialog.setOptions(clonedOptions);

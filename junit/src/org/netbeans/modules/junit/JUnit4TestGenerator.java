@@ -116,7 +116,7 @@ final class JUnit4TestGenerator extends AbstractTestGenerator {
     /**
      */
     JUnit4TestGenerator(TestGeneratorSetup setup) {
-        super(setup);
+        super(setup, JUnitVersion.JUNIT4);
     }
     
     /**
@@ -125,7 +125,7 @@ final class JUnit4TestGenerator extends AbstractTestGenerator {
                         List<ElementHandle<TypeElement>> srcTopClassHandles,
                         List<String>suiteMembers,
                         boolean isNewTestClass) {
-        super(setup, srcTopClassHandles, suiteMembers, isNewTestClass);
+        super(setup, srcTopClassHandles, suiteMembers, isNewTestClass, JUnitVersion.JUNIT4);
     }
     
     

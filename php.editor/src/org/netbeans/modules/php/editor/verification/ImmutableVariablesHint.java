@@ -41,11 +41,7 @@
  */
 package org.netbeans.modules.php.editor.verification;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Stack;
+import java.util.*;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.text.BadLocationException;
@@ -54,25 +50,8 @@ import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
-import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
-import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
-import org.netbeans.modules.php.editor.parser.astnodes.ArrayCreation;
-import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment.Type;
-import org.netbeans.modules.php.editor.parser.astnodes.Block;
-import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
-import org.netbeans.modules.php.editor.parser.astnodes.ForEachStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.ForStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
-import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression;
-import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.Program;
-import org.netbeans.modules.php.editor.parser.astnodes.SwitchCase;
-import org.netbeans.modules.php.editor.parser.astnodes.Variable;
-import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.*;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.netbeans.modules.php.editor.verification.PHPHintsProvider.Kind;
 import org.openide.filesystems.FileObject;
@@ -122,9 +101,11 @@ public class ImmutableVariablesHint extends AbstractRule implements PHPRuleWithP
         private final Map<ASTNode, Map<String, List<Variable>>> assignments = new HashMap<ASTNode, Map<String, List<Variable>>>();
         private final List<Hint> hints = new LinkedList<Hint>();
         private boolean variableAssignment;
+        private final int numberOfAllowedAssignments;
 
         public CheckVisitor(FileObject fileObject) {
             this.fileObject = fileObject;
+            this.numberOfAllowedAssignments = getNumberOfAllowedAssignments(preferences);
         }
 
         public List<Hint> getHints() {
@@ -144,18 +125,23 @@ public class ImmutableVariablesHint extends AbstractRule implements PHPRuleWithP
 
         private void checkAllowedAssignments(List<Variable> variables) {
             int variablesSize = variables.size();
-            if (variablesSize > getNumberOfAllowedAssignments(preferences)) {
+            if (variablesSize > numberOfAllowedAssignments) {
                 createHints(variables);
             }
         }
 
-        @Messages("ImmutableVariablesHintCustom=Too many assignments ({0}) into variable ${1}")
+        @Messages({
+            "# {0} - Number of allowed assignments",
+            "# {1} - Number of assignments",
+            "# {2} - Variable name",
+            "ImmutableVariablesHintCustom=You should use only:\n{0} assignment(s) ({1} used)\nto a variable:\n${2}\nto avoid accidentally overwriting it and make your code easier to read."
+        })
         private void createHints(List<Variable> variables) {
             for (Variable variable : variables) {
                 int start = variable.getStartOffset() + 1;
                 int end = variable.getEndOffset();
                 OffsetRange offsetRange = new OffsetRange(start, end);
-                hints.add(new Hint(ImmutableVariablesHint.this, Bundle.ImmutableVariablesHintCustom(variables.size(), getIdentifier(variable).getName()), fileObject, offsetRange, null, 500));
+                hints.add(new Hint(ImmutableVariablesHint.this, Bundle.ImmutableVariablesHintCustom(numberOfAllowedAssignments, variables.size(), getIdentifier(variable).getName()), fileObject, offsetRange, null, 500));
             }
         }
 
@@ -181,7 +167,21 @@ public class ImmutableVariablesHint extends AbstractRule implements PHPRuleWithP
         }
 
         @Override
+        public void visit(LambdaFunctionDeclaration node) {
+            parentNodes.push(node);
+            super.visit(node);
+            parentNodes.pop();
+        }
+
+        @Override
         public void visit(IfStatement node) {
+            parentNodes.push(node);
+            super.visit(node);
+            parentNodes.pop();
+        }
+
+        @Override
+        public void visit(CatchClause node) {
             parentNodes.push(node);
             super.visit(node);
             parentNodes.pop();
@@ -201,7 +201,9 @@ public class ImmutableVariablesHint extends AbstractRule implements PHPRuleWithP
         @Override
         public void visit(ForStatement node) {
             parentNodes.push(node);
-            super.visit(node);
+            scan(node.getInitializers());
+            scan(node.getConditions());
+            scan(node.getBody());
             parentNodes.pop();
         }
 
@@ -231,6 +233,11 @@ public class ImmutableVariablesHint extends AbstractRule implements PHPRuleWithP
             parentNodes.push(node);
             super.visit(node);
             parentNodes.pop();
+        }
+
+        @Override
+        public void visit(StaticFieldAccess node) {
+            // intentionally
         }
 
         @Override

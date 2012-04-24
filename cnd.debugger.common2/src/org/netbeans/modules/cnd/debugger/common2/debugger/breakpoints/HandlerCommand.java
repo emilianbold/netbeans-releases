@@ -52,7 +52,7 @@ package org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints;
  * error stuff, so the String became a HandlerCommand.
  */
 
-public final class HandlerCommand {
+public class HandlerCommand {
     private final String data;
     private final boolean error;
 
@@ -70,20 +70,16 @@ public final class HandlerCommand {
 	return new HandlerCommand(error, true);
     }
 
-    private HandlerCommand(String data, boolean error) {
+    protected HandlerCommand(String data, boolean error) {
 	this.data = data;
 	this.error = error;
-    }
-
-    public boolean isOK() {
-	return !error;
     }
 
     public boolean isError() {
 	return error;
     }
 
-    public String toString() {
+    public String getData() {
 	return data;
     }
 }

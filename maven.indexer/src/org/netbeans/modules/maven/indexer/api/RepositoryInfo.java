@@ -65,6 +65,9 @@ public final class RepositoryInfo {
     private final String repositoryPath;
     private final String repositoryUrl;
     private final String indexUpdateUrl;
+    private final List<RepositoryInfo> mirrorOf = new ArrayList<RepositoryInfo>();
+    
+    private MirrorStrategy mirrorStrategy = MirrorStrategy.NON_WILDCARD;
 
     public RepositoryInfo(String id, @NullAllowed String name, String repositoryPath, String repositoryUrl) throws URISyntaxException {
         this(id, name, repositoryPath, repositoryUrl, null);
@@ -140,9 +143,110 @@ public final class RepositoryInfo {
             }
         }
     }
-
-    public @Override String toString() {
-        return id;
+    
+    
+    /**
+     * denotes if the current instance if mirroring one or more other urls.
+     * @return 
+     * @since 2.10
+     */
+    public boolean isMirror() {
+        synchronized (mirrorOf) {
+            return !mirrorOf.isEmpty();
+        }
     }
+    
+    /**
+     * list of repositories mirrored by this instance.
+     * @return 
+     * @since 2.10
+     */
+    public List<RepositoryInfo> getMirroredRepositories() {
+        synchronized (mirrorOf) {
+            return new ArrayList<RepositoryInfo>(mirrorOf);
+        }
+    }
+    
+    /**
+     * 
+     * @return 
+     * @since 2.10
+     */
+    void addMirrorOfRepository(RepositoryInfo info) {
+        assert isRemoteDownloadable();
+        synchronized (mirrorOf) {
+            mirrorOf.add(info);
+        }
+    }
+
+    
+    /**
+     * @since 2.11
+     */
+    public MirrorStrategy getMirrorStrategy() {
+        return mirrorStrategy;
+    }
+
+    /**
+     * @since 2.11
+     */
+    public void setMirrorStrategy(MirrorStrategy mirrorStrategy) {
+        this.mirrorStrategy = mirrorStrategy;
+    }
+    
+
+    /**
+     * strategy for resolving the repositoryUrl property
+     * @since 2.11
+     */
+    public enum MirrorStrategy {
+        /**
+         * no processing happens, repositoryUrl is used as is.
+         */
+        NONE, 
+        /**
+         * id and repositoryUrl properties are processed through the mirrors settings in ~/.m2/repository
+         */
+        ALL, 
+        /**
+         * only explicit mirrors matching the id are used, wildcard mirrors are ignored.
+         */
+        NON_WILDCARD
+    }
+    
+     public @Override String toString() {
+        return id;
+    }   
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final RepositoryInfo other = (RepositoryInfo) obj;
+        if ((this.id == null) ? (other.id != null) : !this.id.equals(other.id)) {
+            return false;
+        }
+        if ((this.repositoryPath == null) ? (other.repositoryPath != null) : !this.repositoryPath.equals(other.repositoryPath)) {
+            return false;
+        }
+        if ((this.repositoryUrl == null) ? (other.repositoryUrl != null) : !this.repositoryUrl.equals(other.repositoryUrl)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 53 * hash + (this.id != null ? this.id.hashCode() : 0);
+        hash = 53 * hash + (this.repositoryPath != null ? this.repositoryPath.hashCode() : 0);
+        hash = 53 * hash + (this.repositoryUrl != null ? this.repositoryUrl.hashCode() : 0);
+        return hash;
+    }
+    
     
 }

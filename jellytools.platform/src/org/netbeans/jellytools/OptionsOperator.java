@@ -353,6 +353,7 @@ public class OptionsOperator extends NbDialogOperator {
      * @param name name of category to be selected
      */
     public void selectCategory(final String name) {
+        new EventTool().waitNoEvent(300);  // prevent clicking on category button when panel not initialized
         final StringComparator comparator = this.getComparator();
         new JLabelOperator(this, new ComponentChooser() {
             public boolean checkComponent(Component comp) {
@@ -385,8 +386,8 @@ public class OptionsOperator extends NbDialogOperator {
     
     /** Selects Java category. */
     public void selectJava() {
-        selectCategory(Bundle.getStringTrimmed("org.netbeans.modules.options.java.resources.Bundle",
-                                               "OptionsCategory_Name_Java"));
+        selectCategory(Bundle.getStringTrimmed("org.netbeans.modules.options.java.Bundle",
+                                               "OpenIDE-Module-Display-Category"));
     }
 
     /** Selects Fonts & Colors category. */

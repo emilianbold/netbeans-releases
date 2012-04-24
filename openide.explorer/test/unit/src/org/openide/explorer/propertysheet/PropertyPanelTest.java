@@ -47,8 +47,11 @@ package org.openide.explorer.propertysheet;
 import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.FlowLayout;
+import java.awt.GraphicsEnvironment;
 import java.beans.*;
 import javax.swing.*;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
 
 
@@ -57,6 +60,11 @@ import org.netbeans.junit.*;
 /** A test of a property panel.
  */
 public final class PropertyPanelTest extends NbTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(PropertyPanelTest.class);
+    }
+
     static {
         //Added with property panel rewrite - the property model given the
         //variable name "replace" is a String property, and the default

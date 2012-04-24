@@ -421,12 +421,7 @@ public class Utils {
      * @throws MalformedURLException if the URL cannot be created
      */
     public static URL getRootURL (File root, String offset) throws MalformedURLException {
-        URL url = root.toURI().toURL();
-        if (FileUtil.isArchiveFile(url)) {
-            url = FileUtil.getArchiveRoot(url);
-        } else if (!root.exists()) {
-            url = new URL(url.toExternalForm() + "/"); // NOI18N
-        }
+        URL url = FileUtil.urlForArchiveOrDir(root);
         if (offset != null) {
             assert offset.endsWith("/");    //NOI18N
             url = new URL(url.toExternalForm() + offset); // NOI18N
@@ -448,7 +443,7 @@ public class Utils {
                     } catch (IllegalArgumentException ex) {
                         return false;
                     }
-                    return !library.getName().matches("jstl11|jaxrpc16|toplink|Spring|jaxws20|jaxb20|struts|jsf"); // NOI18N
+                    return !library.getName().matches("jstl11|jaxrpc16|Spring|jaxws20|jaxb20|struts|jsf"); // NOI18N
                 }
             };
         }

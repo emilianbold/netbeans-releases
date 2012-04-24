@@ -65,6 +65,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -934,6 +935,108 @@ public class FilesystemInterceptorTest extends AbstractGitTestCase {
 
         assertEquals(EnumSet.of(Status.UPTODATE), getCache().getStatus(fromFile).getStatus());
         assertEquals(EnumSet.of(Status.NEW_INDEX_WORKING_TREE, Status.NEW_HEAD_WORKING_TREE), getCache().getStatus(toFile).getStatus());
+    }
+    
+    public void testRenameFileChangeCase_DO () throws Exception {
+        // prepare
+        File fromFile = createFile(repositoryLocation, "file");
+        File toFile = new File(repositoryLocation, "FILE");
+        add(fromFile);
+        commit(fromFile);
+        
+        // move
+        h.setFilesToRefresh(new HashSet(Arrays.asList(fromFile, toFile)));
+        renameDO(fromFile, toFile);
+        
+        // test
+        if (Utilities.isWindows() || Utilities.isMac()) {
+            assertTrue(Arrays.asList(toFile.getParentFile().list()).contains(toFile.getName()));
+            assertFalse(Arrays.asList(fromFile.getParentFile().list()).contains(fromFile.getName()));
+        } else {
+            assertTrue(h.waitForFilesToRefresh());
+            assertFalse(fromFile.exists());
+            assertTrue(toFile.exists());
+            assertEquals(EnumSet.of(Status.REMOVED_HEAD_INDEX, Status.REMOVED_HEAD_WORKING_TREE), getCache().getStatus(fromFile).getStatus());
+            assertEquals(EnumSet.of(Status.NEW_HEAD_INDEX, Status.NEW_HEAD_WORKING_TREE), getCache().getStatus(toFile).getStatus());
+        }
+    }
+    
+    public void testRenameFileChangeCase_FO () throws Exception {
+        // prepare
+        File fromFile = createFile(repositoryLocation, "file");
+        File toFile = new File(repositoryLocation, "FILE");
+        add(fromFile);
+        commit(fromFile);
+        
+        // move
+        h.setFilesToRefresh(new HashSet(Arrays.asList(fromFile, toFile)));
+        renameFO(fromFile, toFile);
+        
+        // test
+        if (Utilities.isWindows() || Utilities.isMac()) {
+            assertTrue(Arrays.asList(toFile.getParentFile().list()).contains(toFile.getName()));
+            assertFalse(Arrays.asList(fromFile.getParentFile().list()).contains(fromFile.getName()));
+        } else {
+            assertTrue(h.waitForFilesToRefresh());
+            assertFalse(fromFile.exists());
+            assertTrue(toFile.exists());
+            assertEquals(EnumSet.of(Status.REMOVED_HEAD_INDEX, Status.REMOVED_HEAD_WORKING_TREE), getCache().getStatus(fromFile).getStatus());
+            assertEquals(EnumSet.of(Status.NEW_HEAD_INDEX, Status.NEW_HEAD_WORKING_TREE), getCache().getStatus(toFile).getStatus());
+        }
+    }
+    
+    public void testRenameFolderChangeCase_DO () throws Exception {
+        // prepare
+        File fromFolder = createFolder(repositoryLocation, "folder");
+        File fromFile = createFile(fromFolder, "file");
+        File toFolder = new File(repositoryLocation, "FOLDER");
+        File toFile = new File(toFolder, fromFile.getName());
+        add(fromFolder);
+        commit(fromFolder);
+        
+        // move
+        h.setFilesToRefresh(new HashSet(Arrays.asList(fromFolder, toFolder)));
+        renameDO(fromFolder, toFolder);
+        
+        // test
+        if (Utilities.isWindows() || Utilities.isMac()) {
+            assertTrue(Arrays.asList(toFolder.getParentFile().list()).contains(toFolder.getName()));
+            assertFalse(Arrays.asList(fromFolder.getParentFile().list()).contains(fromFolder.getName()));
+        } else {
+            assertTrue(h.waitForFilesToRefresh());
+            assertFalse(fromFolder.exists());
+            assertTrue(toFolder.exists());
+            assertTrue(toFile.exists());
+            assertEquals(EnumSet.of(Status.REMOVED_HEAD_INDEX, Status.REMOVED_HEAD_WORKING_TREE), getCache().getStatus(fromFile).getStatus());
+            assertEquals(EnumSet.of(Status.NEW_HEAD_INDEX, Status.NEW_HEAD_WORKING_TREE), getCache().getStatus(toFile).getStatus());
+        }
+    }
+    
+    public void testRenameFolderChangeCase_FO () throws Exception {
+        // prepare
+        File fromFolder = createFolder(repositoryLocation, "folder");
+        File fromFile = createFile(fromFolder, "file");
+        File toFolder = new File(repositoryLocation, "FOLDER");
+        File toFile = new File(toFolder, fromFile.getName());
+        add(fromFolder);
+        commit(fromFolder);
+        
+        // move
+        h.setFilesToRefresh(new HashSet(Arrays.asList(fromFolder, toFolder)));
+        renameFO(fromFolder, toFolder);
+        
+        // test
+        if (Utilities.isWindows() || Utilities.isMac()) {
+            assertTrue(Arrays.asList(toFolder.getParentFile().list()).contains(toFolder.getName()));
+            assertFalse(Arrays.asList(fromFolder.getParentFile().list()).contains(fromFolder.getName()));
+        } else {
+            assertTrue(h.waitForFilesToRefresh());
+            assertFalse(fromFolder.exists());
+            assertTrue(toFolder.exists());
+            assertTrue(toFile.exists());
+            assertEquals(EnumSet.of(Status.REMOVED_HEAD_INDEX, Status.REMOVED_HEAD_WORKING_TREE), getCache().getStatus(fromFile).getStatus());
+            assertEquals(EnumSet.of(Status.NEW_HEAD_INDEX, Status.NEW_HEAD_WORKING_TREE), getCache().getStatus(toFile).getStatus());
+        }
     }
 
     public void testCopyVersionedFile_DO() throws Exception {

@@ -42,13 +42,13 @@
 
 package org.netbeans.modules.php.editor.parser;
 
-import org.netbeans.modules.php.editor.PHPTestBase;
+import org.netbeans.modules.php.editor.PHPCodeCompletionTestBase;
 
 /**
  *
  * @author Petr Pisl
  */
-public class SemanticAnalyzerTest extends PHPTestBase {
+public class SemanticAnalyzerTest extends PHPCodeCompletionTestBase {
 
     public SemanticAnalyzerTest(String testName) {
         super(testName);

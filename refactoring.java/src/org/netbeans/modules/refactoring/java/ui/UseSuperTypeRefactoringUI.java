@@ -172,7 +172,7 @@ public class UseSuperTypeRefactoringUI implements RefactoringUI, JavaRefactoring
      */
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(UseSuperTypeRefactoringUI.class.getName());
+        return new HelpCtx("org.netbeans.modules.refactoring.java.ui.UseSuperTypeRefactoringUI"); // NOI18N
     }
     
     @Override

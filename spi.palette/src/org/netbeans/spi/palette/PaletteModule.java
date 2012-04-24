@@ -44,15 +44,21 @@
 
 package org.netbeans.spi.palette;
 
+import java.awt.EventQueue;
 import org.openide.modules.ModuleInstall;
+import org.openide.windows.OnShowing;
 import org.openide.windows.WindowManager;
 
-/**
+/** @deprecated Don't rely on presence of this class, its existence is
+ * a mere internal implementation detail, it should have never been part
+ * of the palette SPI.
  *
  * @author S. Aubrecht
  * @since 1.10
  */
-public class PaletteModule extends ModuleInstall {
+@OnShowing
+@Deprecated
+public class PaletteModule extends ModuleInstall implements Runnable {
     
     /** Creates a new instance of ModuleInstall */
     public PaletteModule() {
@@ -61,12 +67,15 @@ public class PaletteModule extends ModuleInstall {
     @Override
     public void restored() {
         super.restored();
-        WindowManager.getDefault().invokeWhenUIReady( new Runnable() {
-            public void run() {
-                //start listening to activated TopComponents and Nodes 
-                //to see if palette window should be displayed
-                PaletteSwitch.getDefault().startListening();
-            }
-        });
+        WindowManager.getDefault().invokeWhenUIReady(this);
+    }
+
+    @Override
+    public void run() {
+        assert EventQueue.isDispatchThread();
+        
+        //start listening to activated TopComponents and Nodes 
+        //to see if palette window should be displayed
+        PaletteSwitch.getDefault().startListening();
     }
 }

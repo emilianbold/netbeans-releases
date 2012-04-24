@@ -33,6 +33,7 @@ package org.netbeans.api.java.source;
 
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
+import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.code.Symbol;
@@ -336,7 +337,7 @@ class TranslateIdentifier implements TreeVisitor<Tree, Boolean> {
                     || (element.getKind().isField() && ((Symbol) element).isStatic())) {
                 boolean en = p == Boolean.TRUE && element.getKind() == ElementKind.ENUM_CONSTANT;
                 if ((path == null && element == rootElement)
-                        || (path != null && path.getCompilationUnit().getSourceFile() == ((Symbol) element).outermostClass().sourcefile)
+                        || (path != null && path.getCompilationUnit().getSourceFile() == ((Symbol) element).enclClass().sourcefile)
                         || en) {
                     return make.Identifier(element.getSimpleName());
                 } else {

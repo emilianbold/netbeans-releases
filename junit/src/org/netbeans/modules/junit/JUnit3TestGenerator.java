@@ -97,7 +97,7 @@ final class JUnit3TestGenerator extends AbstractTestGenerator {
     /**
      */
     JUnit3TestGenerator(TestGeneratorSetup setup, String sourceLevel) {
-        super(setup);
+        super(setup, JUnitVersion.JUNIT3);
         useAnnotations = TestUtil.areAnnotationsSupported(sourceLevel);
     }
     
@@ -108,7 +108,7 @@ final class JUnit3TestGenerator extends AbstractTestGenerator {
                         List<String>suiteMembers,
                         boolean isNewTestClass,
                         String sourceLevel) {
-        super(setup, srcTopClassHandles, suiteMembers, isNewTestClass);
+        super(setup, srcTopClassHandles, suiteMembers, isNewTestClass, JUnitVersion.JUNIT3);
         useAnnotations = TestUtil.areAnnotationsSupported(sourceLevel);
     }
     

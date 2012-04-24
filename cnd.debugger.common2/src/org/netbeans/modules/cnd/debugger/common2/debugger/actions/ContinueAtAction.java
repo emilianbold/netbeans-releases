@@ -52,7 +52,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.actions.CallableSystemAction;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebugger;
-import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.State;
 import org.netbeans.modules.cnd.debugger.common2.debugger.StateListener;
 import org.netbeans.modules.cnd.debugger.common2.debugger.EditorContextBridge;
@@ -76,7 +76,7 @@ public class ContinueAtAction extends CallableSystemAction implements StateListe
         if (lineNo < 0) {
             return;
         }
-        NativeDebugger debugger = DebuggerManager.get().currentDebugger();
+        NativeDebugger debugger = NativeDebuggerManager.get().currentDebugger();
         if (debugger == null) {
             return;
         }
@@ -123,7 +123,7 @@ public class ContinueAtAction extends CallableSystemAction implements StateListe
     // interface StateListener
     public void update(State state) {
         boolean enable = false;
-        NativeDebugger debugger = DebuggerManager.get().currentDebugger();
+        NativeDebugger debugger = NativeDebuggerManager.get().currentDebugger();
         if (debugger == null) {
             setEnabled(false);
             return;

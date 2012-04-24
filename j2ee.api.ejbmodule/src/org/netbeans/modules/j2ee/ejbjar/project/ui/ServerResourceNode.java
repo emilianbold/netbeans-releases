@@ -102,7 +102,8 @@ public class ServerResourceNode extends FilterNode {
     }
     
     private ServerResourceNode(DataFolder folderDo, Project project) throws DataObjectNotFoundException, FileStateInvalidException {
-        super(getDataFolderNode(folderDo, project), getDataFolderNodeChildren(folderDo), Lookups.singleton(DataFolder.find(project.getProjectDirectory())));
+        // if lookup would be needed uncomment and use getLookup() method
+        super(getDataFolderNode(folderDo, project), getDataFolderNodeChildren(folderDo));
         projectDirectoryListener = new ProjectDirectoryListener();
         if (LOG) {
             LOGGER.log(Level.FINE, "Adding file listener to " + project.getProjectDirectory()); // NOI18N
@@ -110,7 +111,7 @@ public class ServerResourceNode extends FilterNode {
         project.getProjectDirectory().addFileChangeListener(FileUtil.weakFileChangeListener(projectDirectoryListener, project.getProjectDirectory()));
         this.project = project;
     }
-    
+
     public Image getIcon(int type) {
         return badgeIcon(super.getIcon(type));
     }
@@ -200,7 +201,21 @@ public class ServerResourceNode extends FilterNode {
     private static org.openide.nodes.Children getDataFolderNodeChildren(DataFolder folderDo) {
         return (folderDo != null) ? folderDo.createNodeChildren(VISIBILITY_QUERY_FILTER) : Children.LEAF;
     }
-    
+
+//    private static Lookup getLookup(Project project) throws DataObjectNotFoundException, FileStateInvalidException {
+//        FileObject projectFolder = project.getProjectDirectory();
+//        if (!projectFolder.isValid()) {
+//            // #205581 - reread the folder if was replaced
+//            projectFolder.refresh();
+//            if (!projectFolder.isValid()) {
+//                // fo is still not valid (probably deleted), we can't provide suitable data to lookup, so we could
+//                // use empty one or don't create the node at all - the second solution prevent #126642 issue too
+//                throw new FileStateInvalidException();
+//            }
+//        }
+//        return Lookups.singleton(DataFolder.find(projectFolder));
+//    }
+
     final private class ProjectDirectoryListener extends FileChangeAdapter {
         
         public void fileDeleted(FileEvent fe) {

@@ -12,6 +12,11 @@ THIRDPARTY COMPONENT FILE                                                LICENSE
 (path in the installation)                   (see license text reproduced below)
 --------------------------------------------------------------------------------
 enterprise/docs/struts-1.3.10-javadoc.zip                             Apache-2.0
+enterprise/modules/ext/aws-sdk/aws-java-sdk-1.2.1.jar                 AWS-LICENSE
+enterprise/modules/ext/aws-sdk/commons-codec-1.3.jar                  Apache-2.0
+enterprise/modules/ext/aws-sdk/commons-logging-1.1.1.jar              Apache-2.0
+enterprise/modules/ext/aws-sdk/httpclient-4.1.1.jar                   Apache-2.0
+enterprise/modules/ext/aws-sdk/httpcore-4.1.jar                       Apache-2.0
 enterprise/modules/ext/commons-fileupload-1.0.jar                     Apache-1.1
 enterprise/modules/ext/jsf-1_2                                        CDDL-1.0 (see also enterprise/modules/ext/jsf-1_2/THIRDPARTYLICENSEREADME.txt)
 enterprise/modules/ext/jsf-1_2/commons-beanutils.jar                  Apache-2.0
@@ -22,11 +27,11 @@ enterprise/modules/ext/jsf-2_1                                        CDDL-1.0 (
 enterprise/modules/ext/jstl.jar                                       Apache-2.0
 enterprise/modules/ext/metro/webservices-rt.jar                       CDDL-1.0, incl. Apache-2.0
 enterprise/modules/ext/metro/webservices-tools.jar                    CDDL-1.0, incl. Apache-2.0
-enterprise/modules/ext/primefaces/primefaces-2.2.1.jar                Apache-2.0
+enterprise/modules/ext/primefaces/primefaces-3.2.jar                  Apache-2.0
 enterprise/modules/ext/rest/asm-3.1.jar                               BSD-ASM
 enterprise/modules/ext/rest/jackson-core-asl-1.7.1.jar                Apache-2.0
 enterprise/modules/ext/rest/jettison-1.1.jar                          Apache-2.0
-enterprise/modules/ext/spring/spring-webmvc-2.5.6.SEC01.jar           Apache-2.0
+enterprise/modules/ext/spring/spring-webmvc-2.5.6.SEC03.jar           Apache-2.0
 enterprise/modules/ext/standard.jar                                   Apache-2.0
 enterprise/modules/ext/struts/antlr-2.7.2.jar                         Apache-2.0
 enterprise/modules/ext/struts/bsf-2.3.0.jar                           Apache-2.0
@@ -83,9 +88,9 @@ ide/modules/ext/jvyamlb-0.2.3.jar                                     MIT-jvyaml
 ide/modules/com-jcraft-jzlib.jar                                      BSD-jzlib
 ide/modules/ext/libpam4j-1.1.jar                                      MIT
 ide/modules/ext/log4j-1.2.15.jar                                      Apache-2.0
-ide/modules/ext/lucene-core-3.0.3.jar                                 Apache-2.0
+ide/modules/ext/lucene-core-3.5.0.jar                                 Apache-2.0
 ide/modules/ext/non-schema.jar                                        MIT-non-schema
-ide/modules/org-eclipse-osgi.jar                                      OSGi-3.6.0-LICENSE
+ide/modules/org-eclipse-osgi.jar                                      OSGi-LICENSE
 ide/modules/org-eclipse-core-contenttype.jar                          EPL-v10
 ide/modules/org-eclipse-core-jobs.jar                                 EPL-v10
 ide/modules/org-eclipse-core-net.jar                                  EPL-v10
@@ -106,22 +111,21 @@ ide/modules/org-netbeans-modules-xml-catalog.jar!org/netbeans/modules/xml/catalo
 ide/modules/org-netbeans-modules-xml-catalog.jar!org/netbeans/modules/xml/catalog/resources/XMLSchema-instance.xsd  W3C (the original at http://www.w3.org/2001/XMLSchema-instance)
 ide/modules/org-netbeans-modules-xml-catalog.jar!org/netbeans/modules/xml/catalog/resources/schema-for-xslt20.xsd  W3C (the original at http://www.w3.org/2007/schema-for-xslt20.xsd)
 ide/modules/org-netbeans-modules-xml-catalog.jar!org/netbeans/modules/xml/catalog/resources/xml.xsd  W3C (the original at http://www.w3.org/2001/xml.xsd)
-ide/modules/ext/postgresql-8.3-603.jdbc3.jar                          BSD-postgresql
+ide/modules/ext/postgresql-9.1-901.jdbc4.jar                          BSD-postgresql
 ide/modules/ext/processtreekiller-1.0.1.jar                           MIT
 ide/modules/ext/resolver-1.2.jar                                      Apache-2.0
 ide/modules/ext/saxon9B.jar                                           MPL-1.0
 ide/modules/ext/servlet-2.2.jar                                       Apache-1.1
 ide/modules/ext/smack.jar                                             Apache-2.0
 ide/modules/ext/smackx.jar                                            Apache-2.0
-ide/modules/ext/sqljet-1.0.3.jar                                      TMate
-ide/modules/ext/svnClientAdapter-javahl-1.6.13.jar                    Apache-2.0
-ide/modules/ext/svnClientAdapter-main-1.6.13.jar                      Apache-2.0
-ide/modules/ext/svnClientAdapter-svnkit-1.6.13.jar                    Apache-2.0
-ide/modules/ext/svnjavahl-1.6.0.jar                                   Subversion
-ide/modules/ext/svnkit-1.3.4.jar                                      TMate
-ide/modules/ext/svnkit-javahl.jar                                     Subversion
+ide/modules/ext/sqljet-1.1.0.jar                                      TMate
+ide/modules/ext/svnClientAdapter-javahl-1.8.5.jar                     Apache-2.0
+ide/modules/ext/svnClientAdapter-main-1.8.5.jar                       Apache-2.0
+ide/modules/ext/svnClientAdapter-svnkit-1.8.5.jar                     Apache-2.0
+ide/modules/ext/svnjavahl-1.7.2.jar                                   Subversion
+ide/modules/ext/svnkit-1.7.4.jar                                      TMate
 ide/modules/ext/swingx-0.9.5.jar                                      LGPL-2.1
-ide/modules/ext/trilead.jar                                           TRILEAD-LICENSE
+ide/modules/ext/trilead.ssh2_1.0.0.jar                                TRILEAD-LICENSE
 ide/modules/ext/validator.jar                                         MIT-validator
 ide/modules/ext/webserver.jar                                         Apache-1.1
 ide/modules/ext/winp-1.14-patched.jar                                 MIT
@@ -137,38 +141,38 @@ java/maven                                                            Apache-2.0
 java/docs/beansbinding-1.2.1-doc.zip                                  LGPL-2.1
 java/modules/ext/beansbinding-1.2.1.jar                               LGPL-2.1
 java/modules/ext/cglib-2.2.jar                                        Apache-2.0
-java/modules/ext/eclipselink/eclipselink-2.3.0.jar                    EPL-v10 (see also about.html inside this JAR file)
-java/modules/ext/eclipselink/eclipselink-jpa-modelgen-2.3.0.jar       EPL-v10 (see also about.html inside this JAR file)
-java/modules/ext/eclipselink/javax.persistence-2.0.jar                EPL-v10 (see also about.html inside this JAR file)
-java/modules/ext/eclipselink/org.eclipse.persistence.jpa.jpql_1.0.0.jar  EPL-v10 (see also about.html inside this JAR file)
+java/modules/ext/eclipselink/eclipselink-2.3.2.jar                    EPL-v10 (see also about.html inside this JAR file)
+java/modules/ext/eclipselink/org.eclipse.persistence.jpa.modelgen.processor-2.3.2.jar  EPL-v10 (see also about.html inside this JAR file)
+java/modules/ext/eclipselink/javax.persistence-2.0.3.jar              EPL-v10 (see also about.html inside this JAR file)
+java/modules/ext/eclipselink/org.eclipse.persistence.jpa.jpql_1.0.1.jar  EPL-v10 (see also about.html inside this JAR file)
 java/modules/ext/hibernate                                            LGPL-2.1, incl. BSD, Apache-2.0 (see also Hibernate 3.2.5 at http://hibernate.org)
 java/modules/ext/jaxws22/woodstox.jar                                 Apache-2.0
 java/modules/ext/maven/indexer-artifact-4.1.2.jar                     Apache-2.0
 java/modules/ext/maven/indexer-core-4.1.2.jar                         Apache-2.0
 java/modules/ext/maven/jdom-1.0.jar                                   Apache-JDOM
+java/modules/ext/maven/lucene-core-3.0.3.jar                          Apache-2.0
 java/modules/ext/maven/maven-dependency-tree-1.2.jar                  Apache-2.0
-java/modules/ext/spring-3.0/spring-aop-3.0.6.RELEASE.jar              Apache-2.0
-java/modules/ext/spring-3.0/spring-asm-3.0.6.RELEASE.jar              Apache-2.0
-java/modules/ext/spring-3.0/spring-aspects-3.0.6.RELEASE.jar          Apache-2.0
-java/modules/ext/spring-3.0/spring-beans-3.0.6.RELEASE.jar            Apache-2.0
-java/modules/ext/spring-3.0/spring-context-3.0.6.RELEASE.jar          Apache-2.0
-java/modules/ext/spring-3.0/spring-context-support-3.0.6.RELEASE.jar  Apache-2.0
-java/modules/ext/spring-3.0/spring-core-3.0.6.RELEASE.jar             Apache-2.0
-java/modules/ext/spring-3.0/spring-expression-3.0.6.RELEASE.jar       Apache-2.0
-java/modules/ext/spring-3.0/spring-instrument-3.0.6.RELEASE.jar       Apache-2.0
-java/modules/ext/spring-3.0/spring-instrument-tomcat-3.0.6.RELEASE.jar  Apache-2.0
-java/modules/ext/spring-3.0/spring-jdbc-3.0.6.RELEASE.jar             Apache-2.0
-java/modules/ext/spring-3.0/spring-jms-3.0.6.RELEASE.jar              Apache-2.0
-java/modules/ext/spring-3.0/spring-orm-3.0.6.RELEASE.jar              Apache-2.0
-java/modules/ext/spring-3.0/spring-oxm-3.0.6.RELEASE.jar              Apache-2.0
-java/modules/ext/spring-3.0/spring-struts-3.0.6.RELEASE.jar           Apache-2.0
-java/modules/ext/spring-3.0/spring-test-3.0.6.RELEASE.jar             Apache-2.0
-java/modules/ext/spring-3.0/spring-tx-3.0.6.RELEASE.jar               Apache-2.0
-java/modules/ext/spring-3.0/spring-web-3.0.6.RELEASE.jar              Apache-2.0
-java/modules/ext/spring-3.0/spring-webmvc-3.0.6.RELEASE.jar           Apache-2.0
-java/modules/ext/spring-3.0/spring-webmvc-portlet-3.0.6.RELEASE.jar   Apache-2.0
-java/modules/ext/spring/spring-2.5.6.SEC01.jar                        Apache-2.0
-java/modules/ext/toplink/toplink-essentials.jar                       CDDL-1.0, incl. toplink-ASM and toplink-ANTLR
+java/modules/ext/spring-3.0/spring-aop-3.1.1.RELEASE.jar              Apache-2.0
+java/modules/ext/spring-3.0/spring-asm-3.1.1.RELEASE.jar              Apache-2.0
+java/modules/ext/spring-3.0/spring-aspects-3.1.1.RELEASE.jar          Apache-2.0
+java/modules/ext/spring-3.0/spring-beans-3.1.1.RELEASE.jar            Apache-2.0
+java/modules/ext/spring-3.0/spring-context-3.1.1.RELEASE.jar          Apache-2.0
+java/modules/ext/spring-3.0/spring-context-support-3.1.1.RELEASE.jar   Apache-2.0
+java/modules/ext/spring-3.0/spring-core-3.1.1.RELEASE.jar             Apache-2.0
+java/modules/ext/spring-3.0/spring-expression-3.1.1.RELEASE.jar       Apache-2.0
+java/modules/ext/spring-3.0/spring-instrument-3.1.1.RELEASE.jar       Apache-2.0
+java/modules/ext/spring-3.0/spring-instrument-tomcat-3.1.1.RELEASE.jar   Apache-2.0
+java/modules/ext/spring-3.0/spring-jdbc-3.1.1.RELEASE.jar             Apache-2.0
+java/modules/ext/spring-3.0/spring-jms-3.1.1.RELEASE.jar              Apache-2.0
+java/modules/ext/spring-3.0/spring-orm-3.1.1.RELEASE.jar              Apache-2.0
+java/modules/ext/spring-3.0/spring-oxm-3.1.1.RELEASE.jar              Apache-2.0
+java/modules/ext/spring-3.0/spring-struts-3.1.1.RELEASE.jar           Apache-2.0
+java/modules/ext/spring-3.0/spring-test-3.1.1.RELEASE.jar             Apache-2.0
+java/modules/ext/spring-3.0/spring-tx-3.1.1.RELEASE.jar               Apache-2.0
+java/modules/ext/spring-3.0/spring-web-3.1.1.RELEASE.jar              Apache-2.0
+java/modules/ext/spring-3.0/spring-webmvc-3.1.1.RELEASE.jar           Apache-2.0
+java/modules/ext/spring-3.0/spring-webmvc-portlet-3.1.1.RELEASE.jar   Apache-2.0
+java/modules/ext/spring/spring-2.5.6.SEC03.jar                        Apache-2.0
 mobility/modules/docs/jmunit-1.2.1-api.zip                            Apache-2.0
 mobility/modules/ext/ant-contrib-1.0b3.jar                            Apache-2.0
 mobility/modules/ext/commons-httpclient-3.0.1.jar                     Apache-2.0
@@ -181,13 +185,15 @@ php/docs/phpdocdesc.zip                                               LGPL-2.1
 php/modules/ext/java-cup-11a.jar                                      JavaCUP-LICENSE
 platform/docs/swing-layout-1.0.4-doc.zip                              LGPL-2.1
 platform/docs/swing-layout-1.0.4-src.zip                              LGPL-2.1
-platform/modules/ext/felix-3.2.2.jar                                  Apache-2.0
-platform/modules/ext/jna-3.2.7.jar                                    LGPL-2.1
+platform/docs/testng-6.5.1-javadoc.zip                                Apache-2.0
+platform/modules/ext/testng-6.5.1-dist.jar                            Apache-2.0
+platform/modules/ext/felix-4.0.2.jar                                  Apache-2.0
+platform/modules/ext/jna-3.4.0.jar                                    LGPL-2.1
 platform/modules/ext/nsProxyAutoConfig.js                             LGPL-2.1
-platform/modules/ext/org.eclipse.osgi_3.6.0.v20100517.jar             OSGi-3.6.0-LICENSE
+platform/modules/ext/org.eclipse.osgi_3.7.1.R37x_v20110808-1106.jar   OSGi-LICENSE
 platform/modules/ext/osgi.cmpn-4.2.jar                                Apache-2.0
-platform/modules/ext/osgi.core-4.2.jar                                Apache-2.0
-platform/modules/ext/platform-3.2.7.jar                               LGPL-2.1
+platform/modules/ext/osgi.core-4.3.jar                                Apache-2.0
+platform/modules/ext/platform-3.4.0.jar                               LGPL-2.1
 platform/modules/ext/swing-layout-1.0.4.jar                           LGPL-2.1
 
 
@@ -252,6 +258,22 @@ information on the Apache Software Foundation, please see
 ===
 ======
 ========================= Apache-2.0 =========================
+
+
+The following applies to all products licensed under the Apache 2.0 License:
+
+You may not use the identified files except in compliance with the Apache
+License, Version 2.0 (the "License.")
+ 
+You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0.
+A copy of the license is also reproduced below.
+
+Unless required by applicable law or agreed to in writing, software distributed
+under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+CONDITIONS OF ANY KIND, either express or implied.
+
+See the License for the specific language governing permissions and limitations
+under the License.
 
 
                                  Apache License
@@ -543,7 +565,6 @@ INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
 CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
-
 
 
 ===
@@ -1031,10 +1052,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ========================= LGPL-2.1 =========================
 
 ------------------------------------------------------------
-You are receiving a copy of the LGPL code in the source available at
+You are receiving a copy of the code in the source available at
 http://wiki.netbeans.org/DevFaqLgpl3rdPartySources
 
-The terms of the Oracle license do NOT apply to the LGPL component;
+The terms of the Oracle license do NOT apply to the component;
 it is licensed under the following license, separately from the Oracle
 programs you receive. If you do not wish to install this program,
 you may remove it from the installation location.
@@ -1838,6 +1859,35 @@ DEALINGS IN THE SOFTWARE.
 ======
 ========================= MPL-1.0 =========================
 
+------------------------------------------------------------
+The files are available in source code form under the Mozilla
+Public License 1.0 at
+http://wiki.netbeans.org/DevFaqMpl3rdPartySources
+(The MPL license is reproduced below).
+
+All past Contributors to the component disclaim all warranties
+and conditions, express and implied, including warranties or conditions
+of title and non-infringement, and implied warranties or conditions
+of merchantability and fitness for a particular purpose.  In addition,
+such Contributors are not liable for any damages, including direct,
+indirect, special, incidental and consequential damages, such as lost
+profits.  
+
+Any provisions of the Oracle license agreement that differ from the
+Mozilla Public License are offered by Oracle alone and not by any other
+party.
+------------------------------------------------------------
+
+The contents of this file are subject to the Mozilla Public License
+Version 1.0 (the "License"); you may not use this file except in
+compliance with the License. You may obtain a copy of the License at
+http://www.mozilla.org/MPL/ 
+
+Software distributed under the License is distributed on an "AS IS"
+basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
+License for the specific language governing rights and limitations
+under the License. 
+
 
 MOZILLA PUBLIC LICENSE
 Version 1.0
@@ -1951,6 +2001,27 @@ Contributor(s): ______________________________________.''
 ===
 ======
 ========================= MPL-1.1 =========================
+
+------------------------------------------------------------
+You are receiving a copy of the code in the source available at
+http://wiki.netbeans.org/DevFaqMpl3rdPartySources
+
+The terms of the Oracle license do NOT apply to the component;
+it is licensed under the following license, separately from the Oracle
+programs you receive. If you do not wish to install this program,
+you may remove it from the installation location.
+------------------------------------------------------------
+
+The contents of this file are subject to the Mozilla Public License
+Version 1.1 (the "License"); you may not use this file except in
+compliance with the License. You may obtain a copy of the License at
+http://www.mozilla.org/MPL/
+
+Software distributed under the License is distributed on an "AS IS"
+basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
+License for the specific language governing rights and limitations
+under the License.
+
 
                           MOZILLA PUBLIC LICENSE
                                 Version 1.1
@@ -2852,79 +2923,6 @@ THE POSSIBILITY OF SUCH DAMAGE.
 
 ===
 ======
-========================= toplink-ASM =========================
-
-
-/***
- * ASM: a very small and fast Java bytecode manipulation framework
- * Copyright (c) 2000,2002,2003 INRIA, France Telecom
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the copyright holders nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
- * THE POSSIBILITY OF SUCH DAMAGE.
- *
- * Contact: Eric.Bruneton@rd.francetelecom.com
- *
- * Author: Eric Bruneton
-
-
-===
-======
-========================= toplink-ANTLR =========================
-
-
-ANTLR 1989-2000 Developed by jGuru.com (MageLang Institute),
-http://www.ANTLR.org  and http://www.jGuru.com
-
-We reserve no legal rights to the ANTLR--it is fully in the
-public domain. An individual or company may do whatever
-they wish with source code distributed with ANTLR or the
-code generated by ANTLR, including the incorporation of
-ANTLR, or its output, into commerical software.
-
-We encourage users to develop software with ANTLR. However,
-we do ask that credit is given to us for developing
-ANTLR. By "credit", we mean that if you use ANTLR or
-incorporate any source code into one of your programs
-(commercial product, research project, or otherwise) that
-you acknowledge this fact somewhere in the documentation,
-research report, etc... If you like ANTLR and have
-developed a nice tool with the output, please mention that
-you developed it using ANTLR. In addition, we ask that the
-headers remain intact in our source code. As long as these
-guidelines are kept, we expect to continue enhancing this
-system and expect to make other tools available as they are
-completed.
-
-
-This product includes Perl.  Please refer to the following site for
-more information on how you can get that source code if available:
-http://public.ActiveState.com/gsar/APC/ .
-
-
-===
-======
 ========================= HTML5DOC =========================
 
 
@@ -3103,7 +3101,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ========================= BSD-postgresql =========================
 
 
-Copyright (c) 1997-2008, PostgreSQL Global Development Group
+Copyright (c) 1997-2010, PostgreSQL Global Development Group
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -3172,52 +3170,52 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ========================= TMate =========================
 
 
-The TMate Open Source License.
+The TMate License
 
-This license applies to all portions of TMate SVNKit library, which 
-are not externally-maintained libraries (e.g. Ganymed SSH library).
+This license applies to all portions of TMate SVNKit library, which
+are not externally-maintained libraries (e.g. Trilead SSH library).
 
 All the source code and compiled classes in package org.tigris.subversion.javahl
 except SvnClient class are covered by the license in JAVAHL-LICENSE file
 
-Copyright (c) 2004-2009 TMate Software. All rights reserved.
+Copyright (c) 2004-2012 TMate Software. All rights reserved.
 
-Redistribution and use in source and binary forms, with or without modification, 
+Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
 
-    * Redistributions of source code must retain the above copyright notice, 
+    * Redistributions of source code must retain the above copyright notice,
       this list of conditions and the following disclaimer.
-      
-    * Redistributions in binary form must reproduce the above copyright notice, 
-      this list of conditions and the following disclaimer in the documentation 
+
+    * Redistributions in binary form must reproduce the above copyright notice,
+      this list of conditions and the following disclaimer in the documentation
       and/or other materials provided with the distribution.
-      
-    * Redistributions in any form must be accompanied by information on how to 
-      obtain complete source code for the software that uses SVNKit and any 
-      accompanying software that uses the software that uses SVNKit. The source 
-      code must either be included in the distribution or be available for no 
-      more than the cost of distribution plus a nominal fee, and must be freely 
-      redistributable under reasonable conditions. For an executable file, complete 
-      source code means the source code for all modules it contains. It does not 
-      include source code for modules or files that typically accompany the major 
+
+    * Redistributions in any form must be accompanied by information on how to
+      obtain complete source code for the software that uses SVNKit and any
+      accompanying software that uses the software that uses SVNKit. The source
+      code must either be included in the distribution or be available for no
+      more than the cost of distribution plus a nominal fee, and must be freely
+      redistributable under reasonable conditions. For an executable file, complete
+      source code means the source code for all modules it contains. It does not
+      include source code for modules or files that typically accompany the major
       components of the operating system on which the executable file runs.
-      
-    * Redistribution in any form without redistributing source code for software 
-      that uses SVNKit is possible only when such redistribution is explictly permitted 
-      by TMate Software. Please, contact TMate Software at support@svnkit.com to 
+
+    * Redistribution in any form without redistributing source code for software
+      that uses SVNKit is possible only when such redistribution is explictly permitted
+      by TMate Software. Please, contact TMate Software at support@svnkit.com to
       get such permission.
 
 THIS SOFTWARE IS PROVIDED BY TMATE SOFTWARE ``AS IS'' AND ANY EXPRESS OR IMPLIED
-WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF 
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR NON-INFRINGEMENT, ARE 
-DISCLAIMED. 
+WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR NON-INFRINGEMENT, ARE
+DISCLAIMED.
 
-IN NO EVENT SHALL TMATE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, 
-INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
-LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR 
-PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
-LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
-OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF 
+IN NO EVENT SHALL TMATE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT,
+INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
@@ -3598,7 +3596,7 @@ parrt@antlr.org
 
 ===
 =====
-========================= OSGi-3.6.0-LICENSE =========================
+========================= OSGi-LICENSE =========================
 
 
 ------------------------------------------------------------
@@ -3711,4 +3709,100 @@ the CUP runtime code linked with the generated parser.
 Java is a trademark of Sun Microsystems, Inc. References to the Java
 programming language in relation to JLex are not meant to imply that Sun
 endorses this product. 
+
+
+===
+=====
+========================= AWS-LICENSE =========================
+
+
+LICENSE.TXT
+----------------
+
+Apache License
+Version 2.0, January 2004
+
+TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+
+1. Definitions.
+
+"License" shall mean the terms and conditions for use, reproduction, and distribution as defined by Sections 1 through 9 of this document.
+
+"Licensor" shall mean the copyright owner or entity authorized by the copyright owner that is granting the License.
+
+"Legal Entity" shall mean the union of the acting entity and all other entities that control, are controlled by, or are under common control with that entity. For the purposes of this definition, "control" means (i) the power, direct or indirect, to cause the direction or management of such entity, whether by contract or otherwise, or (ii) ownership of fifty percent (50%) or more of the outstanding shares, or (iii) beneficial ownership of such entity.
+
+"You" (or "Your") shall mean an individual or Legal Entity exercising permissions granted by this License.
+
+"Source" form shall mean the preferred form for making modifications, including but not limited to software source code, documentation source, and configuration files.
+
+"Object" form shall mean any form resulting from mechanical transformation or translation of a Source form, including but not limited to compiled object code, generated documentation, and conversions to other media types.
+
+"Work" shall mean the work of authorship, whether in Source or Object form, made available under the License, as indicated by a copyright notice that is included in or attached to the work (an example is provided in the Appendix below).
+
+"Derivative Works" shall mean any work, whether in Source or Object form, that is based on (or derived from) the Work and for which the editorial revisions, annotations, elaborations, or other modifications represent, as a whole, an original work of authorship. For the purposes of this License, Derivative Works shall not include works that remain separable from, or merely link (or bind by name) to the interfaces of, the Work and Derivative Works thereof.
+
+"Contribution" shall mean any work of authorship, including the original version of the Work and any modifications or additions to that Work or Derivative Works thereof, that is intentionally submitted to Licensor for inclusion in the Work by the copyright owner or by an individual or Legal Entity authorized to submit on behalf of the copyright owner. For the purposes of this definition, "submitted" means any form of electronic, verbal, or written communication sent to the Licensor or its representatives, including but not limited to communication on electronic mailing lists, source code control systems, and issue tracking systems that are managed by, or on behalf of, the Licensor for the purpose of discussing and improving the Work, but excluding communication that is conspicuously marked or otherwise designated in writing by the copyright owner as "Not a Contribution."
+
+"Contributor" shall mean Licensor and any individual or Legal Entity on behalf of whom a Contribution has been received by Licensor and subsequently incorporated within the Work.
+
+2. Grant of Copyright License. Subject to the terms and conditions of this License, each Contributor hereby grants to You a perpetual, worldwide, non-exclusive, no-charge, royalty-free, irrevocable copyright license to reproduce, prepare Derivative Works of, publicly display, publicly perform, sublicense, and distribute the Work and such Derivative Works in Source or Object form.
+
+3. Grant of Patent License. Subject to the terms and conditions of this License, each Contributor hereby grants to You a perpetual, worldwide, non-exclusive, no-charge, royalty-free, irrevocable (except as stated in this section) patent license to make, have made, use, offer to sell, sell, import, and otherwise transfer the Work, where such license applies only to those patent claims licensable by such Contributor that are necessarily infringed by their Contribution(s) alone or by combination of their Contribution(s) with the Work to which such Contribution(s) was submitted. If You institute patent litigation against any entity (including a cross-claim or counterclaim in a lawsuit) alleging that the Work or a Contribution incorporated within the Work constitutes direct or contributory patent infringement, then any patent licenses granted to You under this License for that Work shall terminate as of the date such litigation is filed.
+
+4. Redistribution. You may reproduce and distribute copies of the Work or Derivative Works thereof in any medium, with or without modifications, and in Source or Object form, provided that You meet the following conditions:
+
+   1.   You must give any other recipients of the Work or Derivative Works a copy of this License; and
+   2.   You must cause any modified files to carry prominent notices stating that You changed the files; and
+   3.   You must retain, in the Source form of any Derivative Works that You distribute, all copyright, patent, trademark, and attribution notices from the Source form of the Work, excluding those notices that do not pertain to any part of the Derivative Works; and
+   4.   If the Work includes a "NOTICE" text file as part of its distribution, then any Derivative Works that You distribute must include a readable copy of the attribution notices contained within such NOTICE file, excluding those notices that do not pertain to any part of the Derivative Works, in at least one of the following places: within a NOTICE text file distributed as part of the Derivative Works; within the Source form or documentation, if provided along with the Derivative Works; or, within a display generated by the Derivative Works, if and wherever such third-party notices normally appear. The contents of the NOTICE file are for informational purposes only and do not modify the License. You may add Your own attribution notices within Derivative Works that You distribute, alongside or as an addendum to the NOTICE text from the Work, provided that such additional attribution notices cannot be construed as modifying the License.
+
+You may add Your own copyright statement to Your modifications and may provide additional or different license terms and conditions for use, reproduction, or distribution of Your modifications, or for any such Derivative Works as a whole, provided Your use, reproduction, and distribution of the Work otherwise complies with the conditions stated in this License.
+
+5. Submission of Contributions. Unless You explicitly state otherwise, any Contribution intentionally submitted for inclusion in the Work by You to the Licensor shall be under the terms and conditions of this License, without any additional terms or conditions. Notwithstanding the above, nothing herein shall supersede or modify the terms of any separate license agreement you may have executed with Licensor regarding such Contributions.
+
+6. Trademarks. This License does not grant permission to use the trade names, trademarks, service marks, or product names of the Licensor, except as required for reasonable and customary use in describing the origin of the Work and reproducing the content of the NOTICE file.
+
+7. Disclaimer of Warranty. Unless required by applicable law or agreed to in writing, Licensor provides the Work (and each Contributor provides its Contributions) on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied, including, without limitation, any warranties or conditions of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE. You are solely responsible for determining the appropriateness of using or redistributing the Work and assume any risks associated with Your exercise of permissions under this License.
+
+8. Limitation of Liability. In no event and under no legal theory, whether in tort (including negligence), contract, or otherwise, unless required by applicable law (such as deliberate and grossly negligent acts) or agreed to in writing, shall any Contributor be liable to You for damages, including any direct, indirect, special, incidental, or consequential damages of any character arising as a result of this License or out of the use or inability to use the Work (including but not limited to damages for loss of goodwill, work stoppage, computer failure or malfunction, or any and all other commercial damages or losses), even if such Contributor has been advised of the possibility of such damages.
+
+9. Accepting Warranty or Additional Liability. While redistributing the Work or Derivative Works thereof, You may choose to offer, and charge a fee for, acceptance of support, warranty, indemnity, or other liability obligations and/or rights consistent with this License. However, in accepting such obligations, You may act only on Your own behalf and on Your sole responsibility, not on behalf of any other Contributor, and only if You agree to indemnify, defend, and hold each Contributor harmless for any liability incurred by, or claims asserted against, such Contributor by reason of your accepting any such warranty or additional liability.
+
+END OF TERMS AND CONDITIONS
+
+Note: Other license terms may apply to certain, identified software files contained within or distributed with the accompanying software if such terms are included in the directory containing the accompanying software. Such other license terms will then apply in lieu of the terms of the software license above.
+
+JSON processing code subject to the JSON License from JSON.org:
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+The Software shall be used for Good, not Evil.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+NOTICE.TXT
+---------------
+
+AWS SDK for Java
+Copyright 2010 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+
+This product includes software developed by
+Amazon Technologies, Inc (http://www.amazon.com/).
+
+**********************
+THIRD PARTY COMPONENTS
+**********************
+This software includes third party software subject to the following copyrights:
+- XML parsing and utility functions from JetS3t - Copyright 2006-2009 James Murty.
+- JSON parsing and utility functions from JSON.org - Copyright 2002 JSON.org.
+
+The licenses for these third party components are included in LICENSE.txt
+
+
+===
+=====
+===============================================================
 

@@ -85,21 +85,23 @@ public class MessageBeansNode extends ContainerNode {
             for (MetadataModel<EjbJarMetadata> mdModel : listAllMetadata(project)) {
                 try {
                     sessionBeans.addAll(mdModel.runReadAction(new MetadataModelAction<EjbJarMetadata, List<SelectorNode>>() {
-                            public List<SelectorNode> run(EjbJarMetadata metadata)
-                                                   throws Exception {
-                                final List<SelectorNode> beanList = new ArrayList<SelectorNode>();
-                                MessageDriven[] mdbs = metadata.getRoot().getEnterpriseBeans().getMessageDriven();
+                        public List<SelectorNode> run(EjbJarMetadata metadata)
+                                                throws Exception {
+                            final List<SelectorNode> beanList = new ArrayList<SelectorNode>();
+                            MessageDriven[] mdbs = metadata.getRoot().getEnterpriseBeans().getMessageDriven();
 
-                                for (MessageDriven mdb : mdbs) {
-                                    final MessageDriven mdbBean = mdb;
+                            for (MessageDriven mdb : mdbs) {
+                                final MessageDriven mdbBean = mdb;
 
-                                    SourceClassInfo mb = ProfilerTypeUtils.resolveClass(mdbBean.getEjbClass(), project);
+                                SourceClassInfo mb = ProfilerTypeUtils.resolveClass(mdbBean.getEjbClass(), project);
+                                if (mb != null) {
                                     beanList.add(new MessageBeanNode(mb, mdbBean.getDefaultDisplayName(), Icons.getIcon(JavaEEIcons.CLASS), parent));
                                 }
-
-                                return beanList;
                             }
-                        }));
+
+                            return beanList;
+                        }
+                    }));
                 } catch (MetadataModelException ex) {
                     ex.printStackTrace();
                 } catch (IOException ex) {

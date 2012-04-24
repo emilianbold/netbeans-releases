@@ -49,6 +49,21 @@ made subject to such option by the copyright holder.
     <apidef name="refactoring">Refactoring API</apidef>
 </apidefs>
 <changes>
+    <change id="ContextRemove">
+        <api name="refactoring"/>
+        <summary>Added method to remove value from Context.</summary>
+        <version major="1" minor="24"/>
+        <date day="11" month="4" year="2012"/>
+        <author login="ralphbenjamin"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                Added the method remove to the refactoring Context.
+            </p>    
+        </description>
+        <class package="org.netbeans.modules.refactoring.api" name="Context"/>
+        <issue number="210673"/>
+    </change>
     <change id="RefactoringCommit">
         <api name="refactoring"/>
         <summary>Added RefactoringCommit and ModificationResult SPI classes.</summary>

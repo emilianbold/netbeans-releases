@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -156,6 +156,7 @@ public final class ModuleUpdater extends Thread {
         File later = new File (cluster, UpdateTracking.FILE_SEPARATOR + DOWNLOAD_DIR + UpdateTracking.FILE_SEPARATOR + LATER_FILE_NAME);
         if ( later.exists() ) {
             later.delete();
+            XMLUtil.LOG.info("File " + later + " deleted.");
         }
         File f = later.getParentFile ();
         while (f != null && f.delete ()) { // remove empty dirs too
@@ -167,6 +168,7 @@ public final class ModuleUpdater extends Thread {
         File additional = new File (cluster, UpdateTracking.FILE_SEPARATOR + DOWNLOAD_DIR + UpdateTracking.FILE_SEPARATOR + UpdateTracking.ADDITIONAL_INFO_FILE_NAME);
         if (additional != null && additional.exists ()) {
             additional.delete ();
+            XMLUtil.LOG.info("File " + additional + " deleted.");
         }
         File f = additional == null ? null : additional.getParentFile ();
         while (f != null && f.delete ()) { // remove empty dirs too
@@ -333,10 +335,13 @@ public final class ModuleUpdater extends Thread {
                     mu = new ModuleUpdate (nbm);
                 } catch (RuntimeException re) {
                     if (nbm.exists ()) {
+                        XMLUtil.LOG.info("Deleteing file: " + nbm);
                         if (! nbm.delete ()) {
                             XMLUtil.LOG.log(Level.WARNING, "File " + nbm + " cannot be deleted. Propably file lock on the file."); // NOI18N
                             assert false : "Error: File " + nbm + " cannot be deleted. Propably file lock on the file.";
                             nbm.deleteOnExit ();
+                        } else {
+                            XMLUtil.LOG.info("File " + nbm + " deleted.");
                         }
                     }
                     continue;
@@ -375,16 +380,19 @@ public final class ModuleUpdater extends Thread {
                         if (destFile.exists()) {
                             File bckFile = new File(getBackupDirectory(cluster), osgiJar.getName());
                             bckFile.getParentFile().mkdirs();
-                            // XMLUtil.LOG.info("Backing up" ); // NOI18N
                             copyStreams(new FileInputStream(destFile), context.createOS(bckFile), -1);
+                            XMLUtil.LOG.info("Backup file " + destFile + " to " + bckFile);
                             if (!destFile.delete() && isWindows()) {
                                 trickyDeleteOnWindows(destFile);
+                            } else {
+                                XMLUtil.LOG.info("File " + destFile + " deleted.");
                             }
                         } else {
                             destFile.getParentFile().mkdirs();
                         }
 
                         bytesRead = copyStreams(new FileInputStream(osgiJar), context.createOS(destFile), bytesRead);
+                        XMLUtil.LOG.info("Copied file " + osgiJar + " to " + destFile);
                         long crc = UpdateTracking.getFileCRC(destFile);
                         version.addFileWithCrc("modules/" + osgiJar.getName(), Long.toString(crc));
                         //create config/Modules/cnb.xml
@@ -411,10 +419,12 @@ public final class ModuleUpdater extends Thread {
                                 if ( destFile.exists() ) {
                                     File bckFile = new File( getBackupDirectory (cluster), entry.getName() );
                                     bckFile.getParentFile ().mkdirs ();
-                                    // XMLUtil.LOG.info("Backing up" ); // NOI18N
                                     copyStreams( new FileInputStream( destFile ), context.createOS( bckFile ), -1 );
+                                    XMLUtil.LOG.info("Backup file " + destFile + " to " + bckFile);
                                     if (!destFile.delete() && isWindows()) {
                                         trickyDeleteOnWindows(destFile);
+                                    } else {
+                                        XMLUtil.LOG.info("File " + destFile + " deleted.");
                                     }
                                 } else {
                                     destFile.getParentFile ().mkdirs ();
@@ -433,20 +443,24 @@ public final class ModuleUpdater extends Thread {
                                         OutputStream os = context.createOS(downloaded);
                                         try {
                                             bytesRead = copyStreams(is, os, -1);
+                                            XMLUtil.LOG.info("Copied external file " + external + " to " + downloaded);
                                         } finally {
                                             os.close();
                                         }
                                     } finally {
                                         external.delete();
+                                        XMLUtil.LOG.info("File " + external + " deleted.");
                                         is.close();
                                     }
                                     crc = UpdateTracking.getFileCRC(downloaded);
                                     if (crc != expectedCRC) {
                                         downloaded.delete();
+                                        XMLUtil.LOG.info("File " + downloaded + " deleted.");
                                         throw new IOException("Wrong CRC for " + downloaded);
                                     }
                                 } else {
                                     bytesRead = copyStreams( jarFile.getInputStream( entry ), context.createOS( destFile ), bytesRead );
+                                    XMLUtil.LOG.info("Copied file " + entry + " to " + destFile);
                                     crc = entry.getCrc();
                                 }
                                 if(executableFiles.contains(pathTo)) {
@@ -458,6 +472,7 @@ public final class ModuleUpdater extends Thread {
                                     File unpacked = new File(destFile.getParentFile(), destFile.getName().substring(0, destFile.getName().lastIndexOf(".pack.gz")));
                                     unpack200(destFile, unpacked);
                                     destFile.delete();
+                                    XMLUtil.LOG.info("File " + destFile + " deleted.");
                                     pathTo = pathTo.substring(0, pathTo.length() - ".pack.gz".length());
                                     crc = UpdateTracking.getFileCRC(unpacked);
                                 }
@@ -480,6 +495,7 @@ public final class ModuleUpdater extends Thread {
                             destFile.getParentFile ().mkdirs ();
                             hasMainClass = true;
                             bytesRead = copyStreams( jarFile.getInputStream( entry ), context.createOS( destFile ), bytesRead );
+                            XMLUtil.LOG.info("Copied file " + entry + " to " + destFile);
                             context.setProgressValue( bytesRead );
                         }
                     }
@@ -516,6 +532,8 @@ public final class ModuleUpdater extends Thread {
                     if (! nbm.delete ()) {
                         XMLUtil.LOG.log(Level.WARNING, "Error: Cannot delete {0}", nbm); // NOI18N
                         nbm.deleteOnExit ();
+                    } else {
+                        XMLUtil.LOG.info("File " + nbm + " deleted.");
                     }
                 }
                 if (! mu.isL10n ()) {
@@ -559,6 +577,7 @@ public final class ModuleUpdater extends Thread {
             //https://netbeans.org/bugzilla/show_bug.cgi?id=119861
             result = process.waitFor();
             process.destroy();
+            XMLUtil.LOG.info("Unpack " + src + " to " + dest);
         } catch (IOException e) {
             XMLUtil.LOG.log(Level.WARNING, null, e);
         } catch (InterruptedException e) {
@@ -611,7 +630,11 @@ public final class ModuleUpdater extends Thread {
             File tmpFile = File.createTempFile(TEMP_FILE_NAME, null, f.getParentFile());
             if (tmpFile.delete()) {
                 f.renameTo(tmpFile);
+                XMLUtil.LOG.info("File " + f + " renamed to " + tmpFile);
                 tmpFile.deleteOnExit ();
+                XMLUtil.LOG.info("Locked file " + tmpFile + " will be deleted on exit.");
+            } else {
+                XMLUtil.LOG.info("File " + tmpFile + " was deleted.");
             }
         } catch (IOException ex) {
             //no special handling needed
@@ -761,7 +784,9 @@ public final class ModuleUpdater extends Thread {
             if (! files[j].delete()) {
                     XMLUtil.LOG.log(Level.WARNING, "Cannot delete {0}", files [j]); //NOI18N
                     assert false : "Cannot delete " + files [j];
-            }            
+            } else {
+                XMLUtil.LOG.info("File " + files[j] + " deleted.");
+            }
         }
     }
 

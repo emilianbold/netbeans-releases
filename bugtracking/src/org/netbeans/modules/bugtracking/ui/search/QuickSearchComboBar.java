@@ -297,13 +297,19 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
 
         private void setItem(Object anObject, boolean keepText) {
             IssueImpl oldIssue = issue;
+            IssueImpl newIssue = null;
             if(anObject == null) {
                 issue = null;
                 if(!keepText) {
                     editor.setText("");
                 }
             } else if(anObject instanceof IssueImpl) {
-                issue = (IssueImpl) anObject;
+                newIssue = (IssueImpl) anObject;
+            } else if (anObject instanceof Issue) {
+                newIssue = APIAccessor.IMPL.getImpl((Issue) anObject);
+            }
+            if(newIssue != null) {
+                issue = newIssue;
                 ignoreCommandChanges = true;
                 if(!keepText) {
                     editor.setText(IssueItem.getIssueDescription(issue));

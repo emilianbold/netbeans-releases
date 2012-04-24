@@ -46,6 +46,7 @@ package org.netbeans.modules.visual.basic;
 import org.netbeans.modules.visual.framework.VisualTestCase;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.GraphicsEnvironment;
 import java.awt.Point;
 import java.awt.Rectangle;
 
@@ -63,6 +64,10 @@ import org.netbeans.api.visual.widget.Widget;
  */
 public class BasicTest extends VisualTestCase {
     
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(BasicTest.class);
+    }
+
     public BasicTest(String testName) {
         super(testName);
     }

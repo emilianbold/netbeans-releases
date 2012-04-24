@@ -129,7 +129,7 @@ public class FormDesigner {
 
     // selection
     private List<RADComponent> selectedComponents = new ArrayList<RADComponent>();
-    private List<RADComponent> selectedLayoutComponents = new ArrayList<RADComponent>();
+    private List<RADVisualComponent> selectedLayoutComponents = new ArrayList<RADVisualComponent>();
     private ExplorerManager explorerManager;
     private boolean synchronizingSelection;
 
@@ -548,7 +548,6 @@ public class FormDesigner {
     
     public void setTopDesignComponent(RADVisualComponent component,
                                       boolean update) {
-        
         highlightTopDesignComponentName(false);
         // TODO need to remove bindings of the current cloned view (or clone bound components as well)
         Object old = topDesignComponent;
@@ -556,11 +555,21 @@ public class FormDesigner {
         designerSizeExplictlySet = false;
         highlightTopDesignComponentName(!isTopRADComponent());        
         if (update) {
+            selectedLayoutComponents.clear(); // so e.g. JScrollPane does not keep selected while its contained JPanel became root
             setSelectedComponent(topDesignComponent);
             updateWholeDesigner();
         }
         firePropertyChange(PROP_TOP_DESIGN_COMPONENT, old, component);
         updateTestAction();
+        // topDesignComponent could have been out of the design view so far,
+        // so not selected as a layout component
+        if (!selectedLayoutComponents.contains(topDesignComponent)) {
+            selectedLayoutComponents.add(topDesignComponent);
+            if (layoutDesigner != null && topDesignComponent instanceof RADVisualContainer
+                    && ((RADVisualContainer)topDesignComponent).getLayoutSupport() == null) {
+                layoutDesigner.setSelectedComponents(new String[] { topDesignComponent.getId() });
+            }
+        }
     }
 
     // Issue 200631. It would be much better if TestAction was observing
@@ -1014,7 +1023,7 @@ public class FormDesigner {
         return selectedComponents;
     }
 
-    java.util.List<RADComponent> getSelectedLayoutComponents() {
+    java.util.List<RADVisualComponent> getSelectedLayoutComponents() {
         return selectedLayoutComponents;
     }
 
@@ -1098,10 +1107,13 @@ public class FormDesigner {
             }
         }
     }
-    
+
     void removeComponentFromSelectionImpl(RADComponent metacomp) {
         selectedComponents.remove(metacomp);
-        selectedLayoutComponents.remove(metacomp);
+        RADVisualComponent layoutComponent = componentToLayoutComponent(metacomp);
+        if (layoutComponent != null) {
+            selectedLayoutComponents.remove(layoutComponent);
+        }
         selectionChanged();
     }
 
@@ -1204,17 +1216,32 @@ public class FormDesigner {
     }
 
     private void updateLayoutDesigner() {
-        Collection<String> selectedIds = selectedLayoutComponentIds();
         boolean enabled;
         if (layoutDesigner != null) {
-            layoutDesigner.setSelectedComponents(selectedIds.toArray(new String[selectedIds.size()]));
+            Collection<String> selectedIds = selectedLayoutComponentIds();
             enabled = layoutDesigner.canAlign(selectedIds);
+            selectedIds = getSelectedComponentsForLayoutDesigner(selectedIds);
+            layoutDesigner.setSelectedComponents(selectedIds.toArray(new String[selectedIds.size()]));
         } else {
             enabled = false;
         }
         for (Action action : getDesignerActions(true)) {
             action.setEnabled(enabled);
         }
+    }
+
+    private Collection<String> getSelectedComponentsForLayoutDesigner(Collection<String> selectedIds) {
+        for (RADComponent metacomp : getSelectedLayoutComponents()) {
+            RADVisualComponent subcomp = substituteWithSubComponent((RADVisualComponent)metacomp);
+            if (subcomp != metacomp && subcomp instanceof RADVisualContainer
+                    && ((RADVisualContainer)subcomp).getLayoutSupport() == null) {
+                // Reversed logic as in componentToLayoutComponent - while the scrollpane
+                // should be the selected component which is manipulated in outer layout,
+                // the contained component should also be selected as a container.
+                selectedIds.add(subcomp.getId());
+            }
+        }
+        return selectedIds;
     }
 
     public void updateResizabilityActions() {
@@ -1327,17 +1354,52 @@ public class FormDesigner {
         if (metacomp instanceof RADVisualComponent) {
             RADVisualComponent visualComp = (RADVisualComponent) metacomp;
             if (!visualComp.isMenuComponent()) {
-                RADVisualContainer metacont = visualComp.getParentContainer();
-                if ((metacont != null) && JScrollPane.class.isAssignableFrom(metacont.getBeanInstance().getClass())
-                     && isInDesigner(metacont))
-                {   // substitute with scroll pane...
-                    return metacont;
+                RADVisualComponent subst = substituteWithContainer(visualComp);
+                if (subst != null) {
+                    return subst;
                 }
                 // otherwise just check if it is visible in the designer
                 return isInDesigner(visualComp) ? visualComp : null;
             }
         }
         return null;
+    }
+
+    /**
+     * For some outwards-related operations the selected components may need to
+     * be substituted with the enclosing container, typically JScrollPane. This
+     * method returns the parent container for given component if such substition
+     * is possible, or just the component itself if not.
+     */
+    RADVisualComponent substituteWithContainer(RADVisualComponent metacomp) {
+        if (metacomp != null) {
+            RADVisualContainer metacont = metacomp.getParentContainer();
+            if (isTransparentContainer(metacont)
+                    && metacont.getParentContainer() != null
+                    && isInDesigner(metacont)) {
+                return metacont;
+            }
+        }
+        return metacomp;
+    }
+
+    /**
+     * For some inwards-related operations the selected parent container of certain
+     * type (like JScrollPane) may need to be substituted with the enclosed sub
+     * component. This method returns the subcomponent for given component if such
+     * substition is possible, or just the component itself if not.
+     */
+    static RADVisualComponent substituteWithSubComponent(RADVisualComponent metacont) {
+        if (isTransparentContainer(metacont)) {
+            return ((RADVisualContainer)metacont).getSubComponents()[0];
+        }
+        return metacont;
+    }
+
+    static boolean isTransparentContainer(RADVisualComponent metacont) {
+        return metacont instanceof RADVisualContainer
+                && metacont.getBeanClass().isAssignableFrom(JScrollPane.class)
+                && ((RADVisualContainer)metacont).hasVisualSubComponents();
     }
 
     /** Finds out what component follows after currently selected component
@@ -1946,6 +2008,10 @@ public class FormDesigner {
 //            return getTopDesignComponent().getId();
 //        }
 
+        /**
+         * @return actual bounds of given component, null if the component is not
+         *         currently visualized in the design area
+         */
         @Override
         public Rectangle getComponentBounds(String componentId) {
             Component visual = getVisualComponent(componentId, true, false);
@@ -2230,36 +2296,70 @@ public class FormDesigner {
         }
 
         @Override
-        public void repaintComponent(String componentId, Graphics g) {
-            Object comp = getComponent(componentId);
-            if (comp instanceof Component) {
-                Component component = ((Component)comp);
-                int cx = component.getX();
-                int cy = component.getY();
-                Component parent = component.getParent();
-                Component topComp = getTopDesignComponentView();
-                while (parent != null) {
-                    if (parent == topComp) {
-                        g.translate(cx, cy);
-                        component.paint(g);
-                        g.translate(-cx, -cy);
-                        break;
-                    } else {
-                        cx += parent.getX();
-                        cy += parent.getY();
-                        parent = parent.getParent();
-                    }
-                }
-            }            
-        }
-
-        @Override
         public void repaintDesigner(String forComponentId) {
             RADComponent metacomp = formModel != null ? formModel.getMetaComponent(forComponentId) : null;
             if (metacomp instanceof RADVisualComponent
                     && isInDesigner((RADVisualComponent)metacomp)) {
                 getHandleLayer().repaint();
             }
+        }
+
+        @Override
+        public Shape getComponentVisibilityClip(String componentId) {
+            Component component = getVisualComponent(componentId, true, false);
+            if (component == null) {
+                return null;
+            }
+            
+            int x1 = 0;
+            int x2 = component.getWidth();
+            int y1 = 0;
+            int y2 = component.getHeight();
+            int cutX1 = 0; // biggest cut of x1 position (negative)
+            int cutX2 = 0; // biggest cut of x2 position (positive)
+            int cutY1 = 0; // biggest cut of y1 position (negative)
+            int cutY2 = 0; // biggest cut of y2 position (positive)
+
+            Component top = getTopDesignComponentView();
+            if (component != top) {
+                Component comp = component;
+                Component parent = comp.getParent();
+                while (comp != top) {
+                    if (parent == null) {
+                        return null; // not under top design component, something wrong
+                    }
+                    x1 += comp.getX();
+                    if (x1 < cutX1) {
+                        cutX1 = x1;
+                    }
+                    x2 += comp.getX();
+                    int outX2 = x2 - parent.getWidth();
+                    if (outX2 > cutX2) {
+                        cutX2 = outX2;
+                    }
+                    y1 += comp.getY();
+                    if (y1 < cutY1) {
+                        cutY1 = y1;
+                    }
+                    y2 += comp.getY();
+                    int outY2 = y2 - parent.getHeight();
+                    if (outY2 > cutY2) {
+                        cutY2 = outY2;
+                    }
+                    comp = parent;
+                    parent = comp.getParent();
+                }
+            }
+
+            Rectangle bounds = new Rectangle(x1-cutX1, y1-cutY1,
+                    x2-cutX2-x1+cutX1, y2-cutY2-y1+cutY1);
+            if (bounds.width < 0) {
+                bounds.width = 0;
+            }
+            if (bounds.height < 0) {
+                bounds.height = 0;
+            }
+            return bounds;
         }
 
         // -------

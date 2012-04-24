@@ -49,6 +49,24 @@ made subject to such option by the copyright holder.
         <apidef name="filesystems">Filesystems API</apidef>
     </apidefs>
     <changes>
+        <change id="recursive-listener-with-filter">
+            <api name="filesystems"/>
+            <summary>addRecursiveListener with a filter</summary>
+            <version major="7" minor="61"/>
+            <date year="2012" month="4" day="11"/>
+            <author login="jtulach"/>
+            <compatibility addition="yes" deprecation="no"/>
+            <description>
+                <p>
+                    Added <a href="@TOP@org/openide/filesystems/FileUtil.html#addRecursiveListener(org.openide.filesystems.FileChangeListener,%20java.io.File,%20java.io.FileFilter,%20java.util.concurrent.Callable)">
+                    new method</a> variant to register recursive listener
+                    and control whether to recurse into a subtree or not via
+                    <code>FileFilter</code>.
+                </p>
+            </description>
+            <class package="org.openide.filesystems" name="FileUtil"/>
+            <issue number="207189"/>
+        </change>
         <change id="FileSystem.createTemporaryFO">
             <api name="filesystems"/>
             <summary>File System can create temporary file</summary>

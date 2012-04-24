@@ -46,11 +46,11 @@ import java.util.Map;
 import java.util.prefs.Preferences;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
 import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
-import org.netbeans.modules.php.editor.PHPTestBase;
+import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
+import org.netbeans.modules.php.editor.PHPCodeCompletionTestBase;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.openide.filesystems.FileObject;
 
@@ -58,7 +58,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class PHPFormatter2Test extends PHPTestBase {
+public class PHPFormatter2Test extends PHPCodeCompletionTestBase {
     private String FORMAT_START_MARK = "/*FORMAT_START*/"; //NOI18N
     private String FORMAT_END_MARK = "/*FORMAT_END*/"; //NOI18N
 
@@ -463,6 +463,12 @@ public class PHPFormatter2Test extends PHPTestBase {
 	options.put(FmtOptions.groupAlignmentAssignment, true);
 
         reformatFileContents("testfiles/formatting/alignment/groupAlignmentAssignment01.php", options);
+    }
+
+    public void testIssue209030() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+	options.put(FmtOptions.groupAlignmentAssignment, true);
+        reformatFileContents("testfiles/formatting/alignment/issue209030.php", options);
     }
 
     public void testGroupAlignmentArrayInit01() throws Exception {

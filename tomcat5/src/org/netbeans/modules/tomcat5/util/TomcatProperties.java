@@ -58,6 +58,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
+import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.tomcat5.TomcatFactory;
@@ -672,18 +673,18 @@ public class TomcatProperties {
                 File jspApiDoc = new File(homeDir, "webapps/tomcat-docs/jspapi"); // NOI18N
                 File servletApiDoc = new File(homeDir, "webapps/tomcat-docs/servletapi"); // NOI18N
                 if (jspApiDoc.exists() && servletApiDoc.exists()) {
-                    list.add(Utils.fileToUrl(jspApiDoc));
-                    list.add(Utils.fileToUrl(servletApiDoc));
+                    list.add(Util.fileToUrl(jspApiDoc));
+                    list.add(Util.fileToUrl(servletApiDoc));
                 } else {
                     File j2eeDoc = InstalledFileLocator.getDefault().locate("docs/javaee6-doc-api.zip", null, false); // NOI18N
                     if (j2eeDoc != null) {
-                        list.add(Utils.fileToUrl(j2eeDoc));
+                        list.add(Util.fileToUrl(j2eeDoc));
                     }
                 }
                 // jwsdp docs
                 File docs = new File(homeDir, "docs/api"); // NOI18N
                 if (docs.exists()) {
-                    list.add(Utils.fileToUrl(docs));
+                    list.add(Util.fileToUrl(docs));
                 }
             } catch (MalformedURLException e) {
                 Exceptions.printStackTrace(e);
@@ -793,7 +794,7 @@ public class TomcatProperties {
         List/*<URL>*/ urls = new ArrayList(jars.length);
         for (int i = 0; i < jars.length; i++) {
             try {
-                urls.add(Utils.fileToUrl(jars[i]));
+                urls.add(Util.fileToUrl(jars[i]));
             } catch (MalformedURLException e) {
                 Exceptions.printStackTrace(e);
             }

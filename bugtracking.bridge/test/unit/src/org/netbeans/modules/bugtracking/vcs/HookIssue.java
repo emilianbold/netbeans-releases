@@ -98,6 +98,11 @@ public class HookIssue extends TestIssue {
     public boolean isNew() {
         return false;
     }
+    
+    @Override
+    public boolean isFinished() {
+        return false;
+    }
 
     @Override
     public boolean refresh() {
@@ -142,9 +147,6 @@ public class HookIssue extends TestIssue {
     }
 
     @Override
-    public void setContext(Node[] nodes) { }
-
-    @Override
     public void removePropertyChangeListener(PropertyChangeListener listener) { }
 
     @Override
@@ -154,5 +156,10 @@ public class HookIssue extends TestIssue {
     public TestIssue createFor(String id) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
+    
+    @Override
+    public String[] getSubtasks() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }    
 
 }

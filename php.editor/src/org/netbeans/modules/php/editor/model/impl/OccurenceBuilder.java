@@ -276,11 +276,13 @@ class OccurenceBuilder {
 
     private void prepareNamespaceName(final Kind[] kinds, final NamespaceName namespaceName, final Scope scope) {
         QualifiedName qualifiedName = QualifiedName.create(CodeUtils.extractQualifiedName(namespaceName));
-        final boolean isAliased = VariousUtils.isAliased(qualifiedName, namespaceName.getStartOffset(), scope);
-        if (isAliased) {
-            prepareAliasedNamespaceName(kinds, namespaceName, scope);
-        } else {
-            prepareOccurences(kinds, namespaceName, scope);
+        if (!VariousUtils.isSpecialClassName(qualifiedName.toString())) {
+            final boolean isAliased = VariousUtils.isAliased(qualifiedName, namespaceName.getStartOffset(), scope);
+            if (isAliased) {
+                prepareAliasedNamespaceName(kinds, namespaceName, scope);
+            } else {
+                prepareOccurences(kinds, namespaceName, scope);
+            }
         }
     }
 
@@ -368,7 +370,14 @@ class OccurenceBuilder {
         if (canBePrepared(classDeclaration, scope)) {
             ClassDeclarationInfo node = ClassDeclarationInfo.create(classDeclaration);
             clasDeclarations.put(node, scope);
-            prepare(Kind.CLASS, classDeclaration.getSuperClass(), scope);
+            QualifiedName superClassName = QualifiedName.create(classDeclaration.getSuperClass());
+            if (superClassName != null) {
+                if (VariousUtils.isAlias(superClassName, classDeclaration.getStartOffset(), scope)) {
+                    prepare(Kind.USE_ALIAS, classDeclaration.getSuperClass(), scope);
+                } else {
+                    prepare(Kind.CLASS, classDeclaration.getSuperClass(), scope);
+                }
+            }
             List<Expression> interfaes = classDeclaration.getInterfaes();
             for (Expression iface : interfaes) {
                 prepare(Kind.IFACE, iface, scope);
@@ -674,14 +683,15 @@ class OccurenceBuilder {
         final Set<FieldElement> fields = new HashSet<FieldElement>();
         Scope scope = elementInfo.getScope().getInScope();
         if (clzName.getKind().isUnqualified() && scope instanceof TypeScope) {
-            if (clzName.getName().equalsIgnoreCase("self")) {
+            if (clzName.getName().equalsIgnoreCase("self") || clzName.getName().equalsIgnoreCase("static")) { //NOI18N
                 clzName = ((TypeScope) scope).getFullyQualifiedName();
             } else if (clzName.getName().equalsIgnoreCase("parent") && scope instanceof ClassScope) {
                 clzName = ((ClassScope) scope).getSuperClassName();
             }
         }
         if (clzName != null && clzName.toString().length() > 0) {
-            for (TypeElement typeElement : index.getTypes(NameKind.exact(clzName))) {
+            QualifiedName fullyQualified = VariousUtils.getFullyQualifiedName(clzName, elementInfo.getRange().getStart(), scope);
+            for (TypeElement typeElement : index.getTypes(NameKind.exact(fullyQualified))) {
                 fields.addAll(ElementFilter.forName(fieldName).filter(index.getAlllFields(typeElement)));
             }
         }
@@ -835,12 +845,13 @@ class OccurenceBuilder {
         if (clzName.getKind().isUnqualified() && scope instanceof TypeScope) {
             if (clzName.getName().equalsIgnoreCase("self")          //NOI18N
                     || clzName.getName().equalsIgnoreCase("static")) {//NOI18N
-                clzName = ((TypeScope) scope).getFullyQualifiedName();
-            } else if (clzName.getName().equalsIgnoreCase("parent") && scope instanceof ClassScope) {//NOI18N
+                clzName = QualifiedName.create(((TypeScope) scope).getName());
+            } else if (clzName.getName().equalsIgnoreCase("parent") && scope instanceof ClassScope) { //NOI18N
                 clzName = ((ClassScope) scope).getSuperClassName();
             }
         }
         if (clzName != null && clzName.toString().length() > 0) {
+            clzName = VariousUtils.getFullyQualifiedName(clzName, elementInfo.getRange().getStart(), scope);
             for (TypeElement typeElement : index.getTypes(NameKind.exact(clzName))) {
                 constants.addAll(ElementFilter.forName(methodName).filter(index.getAllTypeConstants(typeElement)));
             }
@@ -864,7 +875,8 @@ class OccurenceBuilder {
             }
         }
         if (clzName != null && clzName.toString().length() > 0) {
-            for (TypeElement typeElement : index.getTypes(NameKind.exact(clzName))) {
+            QualifiedName fullyQualified = VariousUtils.getFullyQualifiedName(clzName, elementInfo.getRange().getStart(), scope);
+            for (TypeElement typeElement : index.getTypes(NameKind.exact(fullyQualified))) {
                 methods.addAll(ElementFilter.forName(methodName).filter(index.getAllMethods(typeElement)));
             }
             if (elementInfo.setDeclarations(methods)) {
@@ -1190,17 +1202,18 @@ class OccurenceBuilder {
                     ASTNodeInfo<StaticFieldAccess> nodeInfo = entry.getKey();
                     QualifiedName clzName = QualifiedName.create(nodeInfo.getOriginalNode().getClassName());
                     final Scope scope = entry.getValue().getInScope();
-                    clzName = VariousUtils.getFullyQualifiedName(clzName, nodeInfo.getOriginalNode().getStartOffset(), scope);
                     if (clzName != null && clzName.getKind().isUnqualified() && scope instanceof TypeScope) {
-                        if (clzName.getName().equalsIgnoreCase("self")) {
-                            clzName = ((TypeScope) scope).getFullyQualifiedName();
+                        if (clzName.getName().equalsIgnoreCase("self") || clzName.getName().equalsIgnoreCase("static")) { //NOI18N
+                            clzName = QualifiedName.create(((TypeScope) scope).getName());
                         } else if (clzName.getName().equalsIgnoreCase("parent") && scope instanceof ClassScope) {
                             clzName = ((ClassScope) scope).getSuperClassName();
                         }
                     }
                     if (clzName != null && clzName.toString().length() > 0) {
+                        clzName = VariousUtils.getFullyQualifiedName(clzName, nodeInfo.getOriginalNode().getStartOffset(), scope);
                         if (fieldName.matchesName(PhpElementKind.FIELD, nodeInfo.getName())) {
-                            final Exact typeName = NameKind.exact(clzName);
+                            QualifiedName fullyQualified = VariousUtils.getFullyQualifiedName(clzName, elementInfo.getRange().getStart(), scope);
+                            final Exact typeName = NameKind.exact(fullyQualified);
                             boolean isTheSame = false;
                             //matches with other matching names
                             for (QualifiedName matchingName : matchingTypeNames) {
@@ -1253,18 +1266,18 @@ class OccurenceBuilder {
                 Exact methodName = NameKind.exact(phpElement.getName());
                 for (Entry<ASTNodeInfo<StaticMethodInvocation>, Scope> entry : staticMethodInvocations.entrySet()) {
                     ASTNodeInfo<StaticMethodInvocation> nodeInfo = entry.getKey();
-                    QualifiedName qualifiedClzName = QualifiedName.create(nodeInfo.getOriginalNode().getClassName());
+                    QualifiedName clzName = QualifiedName.create(nodeInfo.getOriginalNode().getClassName());
                     final Scope scope = entry.getValue().getInScope();
-                    if (qualifiedClzName != null) {
-                        QualifiedName clzName = VariousUtils.getFullyQualifiedName(qualifiedClzName, nodeInfo.getOriginalNode().getStartOffset(), scope);
+                    if (clzName != null) {
                         if (clzName.getKind().isUnqualified() && scope instanceof TypeScope) {
                             if (clzName.getName().equalsIgnoreCase("self") || clzName.getName().equals("static")) {  //NOI18N
-                                clzName = ((TypeScope) scope).getFullyQualifiedName();
+                                clzName = QualifiedName.create(((TypeScope) scope).getName());
                             } else if (clzName.getName().equalsIgnoreCase("parent") && scope instanceof ClassScope) {
                                 clzName = ((ClassScope) scope).getSuperClassName();
                             }
                         }
                         if (clzName != null && clzName.toString().length() > 0 && methodName.matchesName(PhpElementKind.METHOD, nodeInfo.getName())) {
+                            clzName = VariousUtils.getFullyQualifiedName(clzName, nodeInfo.getOriginalNode().getStartOffset(), scope);
                             final Exact typeName = NameKind.exact(clzName);
                             boolean isTheSame = false;
                             //matches with other matching names
@@ -1320,16 +1333,16 @@ class OccurenceBuilder {
                     ASTNodeInfo<StaticConstantAccess> nodeInfo = entry.getKey();
                     QualifiedName clzName = QualifiedName.create(nodeInfo.getOriginalNode().getClassName());
                     final Scope scope = entry.getValue() instanceof TypeScope ? entry.getValue() : entry.getValue().getInScope();
-                    clzName = VariousUtils.getFullyQualifiedName(clzName, nodeInfo.getOriginalNode().getStartOffset(), scope);
                     if (clzName != null && clzName.getKind().isUnqualified() && scope instanceof TypeScope) {
                         if (clzName.getName().equalsIgnoreCase("self")  //NOI18N
                                 || clzName.getName().equalsIgnoreCase("static")) { //NOI18N
-                            clzName = ((TypeScope) scope).getFullyQualifiedName();
+                            clzName = QualifiedName.create(((TypeScope) scope).getName());
                         } else if (clzName.getName().equalsIgnoreCase("parent") && scope instanceof ClassScope) {
                             clzName = ((ClassScope) scope).getSuperClassName();
                         }
                     }
                     if (clzName != null && clzName.toString().length() > 0) {
+                        clzName = VariousUtils.getFullyQualifiedName(clzName, nodeInfo.getOriginalNode().getStartOffset(), scope);
                         if (constantName.matchesName(PhpElementKind.TYPE_CONSTANT, nodeInfo.getName())) {
                             final Exact typeName = NameKind.exact(clzName);
                             boolean isTheSame = false;

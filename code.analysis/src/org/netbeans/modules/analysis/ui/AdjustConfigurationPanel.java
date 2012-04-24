@@ -70,6 +70,11 @@ import org.openide.util.Exceptions;
  */
 public class AdjustConfigurationPanel extends javax.swing.JPanel {
 
+    private static final String LBL_NEW = "New...";
+    private static final String LBL_DUPLICATE = "Duplicate...";
+    private static final String LBL_RENAME = "Rename...";
+    private static final String LBL_DELETE = "Delete";
+    
     private final Iterable<? extends AnalyzerFactory> analyzers;
     private CustomizerContext<Object, JComponent> currentContext;
     private final Map<AnalyzerFactory, CustomizerProvider> customizers = new IdentityHashMap<AnalyzerFactory, CustomizerProvider>();
@@ -78,27 +83,20 @@ public class AdjustConfigurationPanel extends javax.swing.JPanel {
     private ModifiedPreferences currentPreferencesOverlay;
     private final String preselected;
 
-    public AdjustConfigurationPanel(Iterable<? extends AnalyzerFactory> analyzers, String preselected) {
+    public AdjustConfigurationPanel(Iterable<? extends AnalyzerFactory> analyzers, AnalyzerFactory preselectedAnalyzer, String preselected) {
         this.preselected = preselected;
         initComponents();
 
         if (preselected == null) {
-            DefaultComboBoxModel configurationModel = new DefaultComboBoxModel();
-
-            for (Configuration c : RunAnalysis.readConfigurations()) {
-                configurationModel.addElement(c);
-            }
-
-            configurationModel.addElement("New...");
-            configurationModel.addElement("Duplicate");
-            configurationModel.addElement("Rename...");
-            configurationModel.addElement("Delete");
-
-            configurationCombo.setModel(configurationModel);
+            configurationCombo.setModel(new ConfigurationsComboModel(true));
             configurationCombo.setRenderer(new ConfigurationRenderer(false));
             configurationCombo.addActionListener(new ActionListener() {
                 @Override public void actionPerformed(ActionEvent e) {
-                    updateConfiguration();
+                    if (configurationCombo.getSelectedItem() instanceof ActionListener) {
+                        ((ActionListener) configurationCombo.getSelectedItem()).actionPerformed(e);
+                    } else {
+                        updateConfiguration();
+                    }
                 }
             });
         } else {
@@ -110,11 +108,18 @@ public class AdjustConfigurationPanel extends javax.swing.JPanel {
         DefaultComboBoxModel analyzerModel = new DefaultComboBoxModel();
 
         for (AnalyzerFactory a : analyzers) {
-            customizers.put(a, a.getCustomizerProvider());
+            CustomizerProvider<Object, JComponent> cp = a.getCustomizerProvider();
+
+            if (cp == null) continue;
+            
+            customizers.put(a, cp);
             analyzerModel.addElement(a);
         }
 
         analyzerCombo.setModel(analyzerModel);
+        if (preselectedAnalyzer != null) {
+            analyzerCombo.setSelectedItem(preselectedAnalyzer);
+        }
         analyzerCombo.addActionListener(new ActionListener() {
             @Override public void actionPerformed(ActionEvent e) {
                 updateAnalyzer();

@@ -353,7 +353,7 @@ public final class Stamps {
                     tmp.add(tok.nextToken());
                 }
             }
-            dirs = tmp.toArray(new String[0]);
+            dirs = tmp.toArray(new String[tmp.size()]);
         }
         return dirs;
     }
@@ -902,7 +902,11 @@ public final class Stamps {
             return relative;
         }
         int indx = Integer.parseInt(index);
-        return dirs()[indx].concat(relative); // NOI18N
+        String[] _dirs = dirs();
+        if (indx < 0 || indx >= _dirs.length) {
+            throw new IOException("Bad index " + indx + " for " + Arrays.toString(_dirs));
+        }
+        return _dirs[indx].concat(relative); // NOI18N
     }
 
     static void writeRelativePath(String path, DataOutput dos) throws IOException {

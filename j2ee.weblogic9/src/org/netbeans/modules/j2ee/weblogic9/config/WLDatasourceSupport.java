@@ -391,7 +391,7 @@ public class WLDatasourceSupport {
             // this should not occur, just log it if it happens
             Exceptions.printStackTrace(ble);
         } catch (IOException ioe) {
-            String msg = NbBundle.getMessage(WLDatasourceSupport.class, "MSG_CannotUpdateFile");
+            String msg = NbBundle.getMessage(WLDatasourceSupport.class, "MSG_CannotUpdate");
             throw new ConfigurationException(msg, ioe);
         }
 

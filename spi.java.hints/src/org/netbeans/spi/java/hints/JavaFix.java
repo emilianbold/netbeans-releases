@@ -48,6 +48,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -56,15 +57,23 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.type.TypeMirror;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.java.hints.spiimpl.JavaFixImpl;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 
 /**A base class for fixes that modify Java source code. Using this class
@@ -235,11 +244,35 @@ public abstract class JavaFix {
             Parameters.notNull("file", file);
             if ("text/x-java".equals(file.getMIMEType("text/x-java")))
                 throw new IllegalArgumentException("Cannot access Java files");
-            if (resourceContentChanges == null) return file.getInputStream();
 
-            byte[] newContent = resourceContentChanges.get(file);
+            byte[] newContent = resourceContentChanges != null ? resourceContentChanges.get(file) : null;
 
             if (newContent == null) {
+                final Document doc = getDocument(file);
+
+                if (doc != null) {
+                    final String[] result = new String[1];
+
+                    doc.render(new Runnable() {
+                        @Override public void run() {
+                            try {
+                                result[0] = doc.getText(0, doc.getLength());
+                            } catch (BadLocationException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+                    });
+
+                    if (result[0] != null) {
+                        ByteBuffer encoded = FileEncodingQuery.getEncoding(file).encode(result[0]);
+                        byte[] encodedBytes = new byte[encoded.remaining()];
+
+                        encoded.get(encodedBytes);
+
+                        return new ByteArrayInputStream(encodedBytes);
+                    }
+                }
+                
                 return file.getInputStream();
             } else {
                 return new ByteArrayInputStream(newContent);
@@ -274,6 +307,22 @@ public abstract class JavaFix {
             return fileChanges;
         }
 
+        private @CheckForNull Document getDocument(@NonNull FileObject file) {
+            try {
+                DataObject od = DataObject.find(file);
+                EditorCookie ec = od.getLookup().lookup(EditorCookie.class);
+
+                if (ec == null) return null;
+
+                return ec.getDocument();
+            } catch (DataObjectNotFoundException ex) {
+                LOG.log(Level.FINE, null, ex);
+                return null;
+            }
+        }
+
     }
+
+    private static final Logger LOG = Logger.getLogger(JavaFix.class.getName());
 
 }

@@ -469,8 +469,7 @@ public class LayoutModel implements LayoutConstants {
             }
             max = Short.MAX_VALUE;
         } else {
-            min = (size == 0 || size == NOT_EXPLICITLY_DEFINED)
-                    ? interval.getMinimumSize() : USE_PREFERRED_SIZE;
+            min = (size == 0 || size == NOT_EXPLICITLY_DEFINED) ? size : USE_PREFERRED_SIZE;
             max = USE_PREFERRED_SIZE;
         }
         if (resizeHandler != null) {

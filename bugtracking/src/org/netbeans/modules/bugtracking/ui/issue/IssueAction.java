@@ -48,15 +48,24 @@ import org.openide.util.HelpCtx;
 
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.util.Collection;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
+import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
 import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.UIUtils;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.WindowManager;
@@ -126,19 +135,25 @@ public class IssueAction extends SystemAction {
     }
 
     private static void createIssue(final RepositoryImpl repository, final Node[] context) {
-        final boolean repositoryGiven = repository != null;
-        SwingUtilities.invokeLater(new Runnable() {
+        BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
             @Override
             public void run() {
-                UIUtils.setWaitCursor(true);
-                try {
-                    IssueTopComponent tc = new IssueTopComponent();
-                    tc.initNewIssue(repository, !repositoryGiven, context);
-                    tc.open();
-                    tc.requestActive();
-                } finally {
-                    UIUtils.setWaitCursor(false);
-                }
+                final File file = BugtrackingUtil.getFile(context);
+                final boolean repositoryGiven = repository != null;
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        UIUtils.setWaitCursor(true);
+                        try {
+                            final IssueTopComponent tc = new IssueTopComponent();
+                            tc.initNewIssue(repository, !repositoryGiven, file);
+                            tc.open();
+                            tc.requestActive();
+                        } finally {
+                            UIUtils.setWaitCursor(false);
+                        }
+                    }
+                });
             }
         });
     }
@@ -161,9 +176,8 @@ public class IssueAction extends SystemAction {
                 UIUtils.setWaitCursor(true);
                 final IssueTopComponent tc = IssueTopComponent.find(issueId);
                 final boolean tcOpened = tc.isOpened();
-                final IssueImpl[] issue = new IssueImpl[1];
-                issue[0] = tc.getIssue();
-                if (issue[0] == null) {
+                final IssueImpl issue = tc.getIssue();
+                if (issue == null) {
                     tc.initNoIssue(issueId);
                 }
                 if(!tcOpened) {
@@ -175,10 +189,10 @@ public class IssueAction extends SystemAction {
                     public void run() {
                         ProgressHandle handle = null;
                         try {
-                            if (issue[0] != null) {
+                            if (issue != null) {
                                 handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(IssueAction.class, "LBL_REFRESING_ISSUE", new Object[]{issueId}));
                                 handle.start();
-                                issue[0].refresh();
+                                issue.refresh();
                             } else {
                                 handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(IssueAction.class, "LBL_OPENING_ISSUE", new Object[]{issueId}));
                                 handle.start();
@@ -198,22 +212,22 @@ public class IssueAction extends SystemAction {
                                 } else {
                                     repository = repositoryParam;
                                 }
-
-                                issue[0] = repository.getIssueImpl(issueId);
-                                if(issue[0] == null) {
+                                final Collection<IssueImpl> impls = repository.getIssueImpls(issueId);
+                                if(impls == null || impls.isEmpty()) {
                                     // lets hope the repository was able to handle this
                                     // because whatever happend, there is nothing else
                                     // we can do at this point
                                     handleTC();
                                     return;
                                 }
+                                final IssueImpl impl = impls.iterator().next();
                                 SwingUtilities.invokeLater(new Runnable() {
                                     @Override
                                     public void run() {
-                                        tc.setIssue(issue[0]);
+                                        tc.setIssue(impl);
                                     }
                                 });
-                                IssueCacheUtils.setSeen(issue[0], true);
+                                IssueCacheUtils.setSeen(impl, true);
                             }
                         } finally {
                             if(handle != null) handle.finish();
@@ -246,5 +260,5 @@ public class IssueAction extends SystemAction {
                 }
             }
         });
-    }
+    }    
 }

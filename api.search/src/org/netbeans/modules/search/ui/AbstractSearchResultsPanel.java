@@ -42,7 +42,6 @@
 package org.netbeans.modules.search.ui;
 
 import java.awt.Dimension;
-import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.HierarchyEvent;
@@ -52,30 +51,35 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
 import org.netbeans.api.search.SearchControl;
+import org.netbeans.modules.search.ResultView;
 import org.netbeans.spi.search.provider.SearchComposition;
 import org.netbeans.spi.search.provider.SearchProvider;
 import org.netbeans.spi.search.provider.SearchProvider.Presenter;
 import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.ExplorerUtils;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.Mutex;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author jhavlin
  */
 public abstract class AbstractSearchResultsPanel extends javax.swing.JPanel
-        implements ExplorerManager.Provider {
+        implements ExplorerManager.Provider, Lookup.Provider {
 
-    private static final String CUSTOMIZER_ICON =
+    private static final String REFRESH_ICON =
             "org/netbeans/modules/search/res/refresh.png";              //NOI18N
     private static final String STOP_ICON =
             "org/netbeans/modules/search/res/stop.png";                 //NOI18N
 
     private ExplorerManager explorerManager;
     private SearchComposition searchComposition;
-    private JButton btnModifySearch = new JButton();
-    private JButton btnStop = new JButton();
+    protected JButton btnStopRefresh = new JButton();
     private final Presenter searchProviderPresenter;
+    private Lookup lookup;
+    private volatile boolean btnStopRefreshInRefreshMode = false;
 
     /**
      * Creates new form AbstractSearchResultsPanel
@@ -86,6 +90,8 @@ public abstract class AbstractSearchResultsPanel extends javax.swing.JPanel
         this.searchProviderPresenter = searchProviderPresenter;
         initComponents();
         explorerManager = new ExplorerManager();
+        lookup = ExplorerUtils.createLookup(explorerManager,
+                ResultView.getInstance().getActionMap());
         this.addHierarchyListener(new HierarchyListener() {
             @Override
             public synchronized void hierarchyChanged(HierarchyEvent e) {
@@ -150,37 +156,30 @@ public abstract class AbstractSearchResultsPanel extends javax.swing.JPanel
         toolBar.setRollover(true);
         toolBar.setFloatable(false);
 
-        sizeButton(btnModifySearch);
-        btnModifySearch.addActionListener(new ActionListener() {
+        sizeButton(btnStopRefresh);
+        btnStopRefresh.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                modifyCriteria();
-            }
-        });
-        sizeButton(btnStop);
-        btnStop.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                getSearchComposition().terminate();
+                if (btnStopRefreshInRefreshMode) {
+                    modifyCriteria();
+                } else {
+                    getSearchComposition().terminate();
+                }
             }
         });
 
-        btnStop.setToolTipText(UiUtils.getText("TEXT_BUTTON_STOP"));    //NOI18N
-        btnModifySearch.setToolTipText(UiUtils.getText(
-                "TEXT_BUTTON_CUSTOMIZE"));                              //NOI18N
+        btnStopRefresh.setToolTipText(
+                UiUtils.getText("TEXT_BUTTON_STOP"));                   //NOI18N
+        btnStopRefresh.setIcon(ImageUtilities.loadImageIcon(STOP_ICON, true));
 
-        btnModifySearch.setIcon(
-                ImageUtilities.loadImageIcon(CUSTOMIZER_ICON, true));
-        btnStop.setIcon(ImageUtilities.loadImageIcon(STOP_ICON, true));
-
-        toolBar.add(btnModifySearch);
-
+        toolBar.add(btnStopRefresh);
         for (AbstractButton b : createButtons()) {
             sizeButton(b);
             toolBar.add(b);
         }
-
-        toolBar.add(btnStop);
+        btnStopRefresh.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(ResultView.class,
+                "ACS_TEXT_BUTTON_STOP"));                               //NOI18N
     }
 
     protected void sizeButton(AbstractButton button) {
@@ -199,18 +198,29 @@ public abstract class AbstractSearchResultsPanel extends javax.swing.JPanel
     }
 
     public void searchStarted() {
-        btnModifySearch.setEnabled(false);
-        btnStop.setEnabled(true);
     }
 
     public void searchFinished() {
         Mutex.EVENT.writeAccess(new Runnable() {
             @Override
             public void run() {
-                btnModifySearch.setEnabled(true);
-                btnStop.setEnabled(false);
+                showRefreshButton();
             }
         });
+    }
+
+    /**
+     * Set btnStopRefresh to show refresh icon.
+     */
+    protected void showRefreshButton() {
+        btnStopRefresh.setToolTipText(UiUtils.getText(
+                "TEXT_BUTTON_CUSTOMIZE"));                              //NOI18N
+        btnStopRefresh.setIcon(
+                ImageUtilities.loadImageIcon(REFRESH_ICON, true));
+        btnStopRefresh.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(ResultView.class,
+                "ACS_TEXT_BUTTON_CUSTOMIZE"));                          //NOI18N
+        btnStopRefreshInRefreshMode = true;
     }
 
     protected void modifyCriteria() {
@@ -229,5 +239,10 @@ public abstract class AbstractSearchResultsPanel extends javax.swing.JPanel
      */
     protected AbstractButton[] createButtons() {
         return new AbstractButton[] {};
+    }
+
+    @Override
+    public Lookup getLookup() {
+        return lookup;
     }
 }

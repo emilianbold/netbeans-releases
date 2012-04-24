@@ -70,12 +70,15 @@ import javax.swing.JPanel;
 import javax.swing.LayoutStyle;
 import javax.swing.SwingConstants;
 import org.netbeans.api.keyring.Keyring;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.bugtracking.*;
 import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.QueryImpl;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.ui.issue.IssueTopComponent;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
@@ -89,6 +92,9 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.nodes.Node;
 import org.openide.util.*;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.windows.TopComponent;
@@ -479,6 +485,9 @@ public class BugtrackingUtil {
      */
     public static String getNBUsername() {
         String user = BugtrackingConfig.getInstance().getPreferences().get(NB_BUGZILLA_USERNAME, ""); // NOI18N
+        if("".equals(user)) {
+            user = RepositoryRegistry.getBugzillaNBUsername();
+        }
         return user.equals("") ? null : user;                         // NOI18N
     }
 
@@ -520,5 +529,41 @@ public class BugtrackingUtil {
 
         }
     }
+    
+    public static File getFile(Node[] nodes) {
+        if(nodes == null || nodes.length == 0) {
+            return null;
+        }
+        final Lookup nodeLookup = nodes[0].getLookup();
+
+        Project project = nodeLookup.lookup(Project.class);
+        if (project != null) {
+            return getFile(project);
+        }
+
+        DataObject dataObj = nodeLookup.lookup(DataObject.class);
+        if (dataObj != null) {
+            return getFile(dataObj);
+        }
+        return null;
+    }
+    
+    private static File getFile(Project project) {
+        FileObject fileObject = project.getProjectDirectory();
+        return org.openide.filesystems.FileUtil.toFile(fileObject);
+    }
+
+    private static File getFile(DataObject dataObj) {
+        FileObject fileObj = dataObj.getPrimaryFile();
+        if (fileObj == null) {
+            return null;
+        }
+
+        Project project = FileOwnerQuery.getOwner(fileObj);
+        if (project != null) {
+            return getFile(project);
+        }
+        return org.openide.filesystems.FileUtil.toFile(fileObj);
+    }  
       
 }

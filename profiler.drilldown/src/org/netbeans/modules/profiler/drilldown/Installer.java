@@ -41,16 +41,16 @@
  */
 package org.netbeans.modules.profiler.drilldown;
 
-import org.openide.modules.ModuleInstall;
+import org.openide.modules.OnStop;
 
 /**
  * Manages a module's lifecycle. Remember that an installer is optional and
  * often not needed at all.
  */
-public class Installer extends ModuleInstall {
-
+@OnStop
+public class Installer implements Runnable {
     @Override
-    public void uninstalled() {
+    public void run() {
         DrillDownWindow.closeIfOpened();
     }
 }

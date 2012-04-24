@@ -31,6 +31,8 @@
  */
 package org.openide.text;
 
+import java.util.IdentityHashMap;
+import java.util.Map;
 import org.openide.util.Lookup;
 
 /**
@@ -45,6 +47,8 @@ import org.openide.util.Lookup;
  * @since 6.13
  */
 public abstract class CloneableEditorSupportRedirector {
+    private static final ThreadLocal<Map<Lookup,CloneableEditorSupport>> CHECKED = new ThreadLocal<Map<Lookup,CloneableEditorSupport>>();
+    
     /** Find a delegate for given {@link CloneableEditorSupport}'s {@link Lookup}.
      * The common code can be to extract for example a 
      * <a href="@org-openide-filesystems@/org/openide/filesystems/FileObject.html">
@@ -57,13 +61,30 @@ public abstract class CloneableEditorSupportRedirector {
     protected abstract CloneableEditorSupport redirect(Lookup env);
     
     static CloneableEditorSupport findRedirect(CloneableEditorSupport one) {
-        for (CloneableEditorSupportRedirector r : Lookup.getDefault().lookupAll(CloneableEditorSupportRedirector.class)) {
-            CloneableEditorSupport ces = r.redirect(one.getLookup());
-            if (ces != null && ces != one) {
-                return ces;
-            }
+        return findRedirect(one, false);
+    }
+    static CloneableEditorSupport findRedirect(CloneableEditorSupport one, boolean check) {
+        Map<Lookup,CloneableEditorSupport> all = CHECKED.get();
+        if (all == null) {
+            all = new IdentityHashMap<Lookup, CloneableEditorSupport>();
+            CHECKED.set(all);
         }
-        return null;
+        final Lookup lkp = one.getLookup();
+        try {
+            if (check && all.containsKey(lkp)) {
+                return null;
+            }
+            all.put(lkp, one);
+            for (CloneableEditorSupportRedirector r : Lookup.getDefault().lookupAll(CloneableEditorSupportRedirector.class)) {
+                CloneableEditorSupport ces = r.redirect(lkp);
+                if (ces != null && ces != one) {
+                    return ces;
+                }
+            }
+            return null;
+        } finally {
+            all.remove(lkp);
+        }
     }
 }
 

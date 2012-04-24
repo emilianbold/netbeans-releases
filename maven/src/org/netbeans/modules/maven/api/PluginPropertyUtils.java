@@ -387,7 +387,14 @@ public class PluginPropertyUtils {
     }
 
 
-
+    /**
+     * Loads name/value pairs from plugin configuration.
+     * Two syntaxes are supported:
+     * {@code <params><key>value</key><flag/></params>} produces {@code {key=value, flag=}}
+     * (last value is {@code ""} not {@code null} due to {@link Properties} limitation);
+     * {@code <params><param><name>key</name><value>value</value></param></params>} produces {@code {key=value}}.
+     * @return properties
+     */
     public static @CheckForNull Properties getPluginPropertyParameter(@NonNull Project prj, @NonNull String groupId, @NonNull String artifactId, @NonNull String propertyParameter, @NullAllowed String goal) {
         NbMavenProjectImpl project = prj.getLookup().lookup(NbMavenProjectImpl.class);
         assert project != null : "Requires a maven project instance"; //NOI18N
@@ -460,7 +467,8 @@ public class PluginPropertyUtils {
                                     }
                                 }
                             }
-                            //#153063
+                            // #153063, #187648
+                            toRet.put(ch.getName(), "");
                             continue;
                         }
                         Object evaluated = eval.evaluate(val.trim());

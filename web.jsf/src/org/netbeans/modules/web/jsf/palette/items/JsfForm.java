@@ -65,28 +65,29 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerUtil;
 import org.netbeans.modules.web.jsf.api.palette.PaletteItem;
 import org.netbeans.modules.web.jsf.wizards.JSFClientGenerator;
+import org.netbeans.modules.web.jsfapi.api.DefaultLibraryInfo;
 import org.openide.text.ActiveEditorDrop;
 import org.openide.util.NbBundle;
 
 public final class JsfForm extends EntityClass implements ActiveEditorDrop, PaletteItem {
     private static String [] BEGIN = {
-        "<h:form>\n",
-        "<h2>Detail</h2>\n <h:form>\n<h:panelGrid columns=\"2\">\n",
-        "<h2>Create</h2>\n <h:form>\n<h:panelGrid columns=\"2\">\n",
-        "<h2>Edit</h2>\n <h:form>\n<h:panelGrid columns=\"2\">\n",
+        "<$HTML$:form>\n",
+        "<h2>Detail</h2>\n <$HTML$:form>\n<$HTML$:panelGrid columns=\"2\">\n",
+        "<h2>Create</h2>\n <$HTML$:form>\n<$HTML$:panelGrid columns=\"2\">\n",
+        "<h2>Edit</h2>\n <$HTML$:form>\n<$HTML$:panelGrid columns=\"2\">\n",
     };
     private static String [] END = {
-        "</h:form>\n",
-        "</h:panelGrid>\n </h:form>\n",
-        "</h:panelGrid>\n </h:form>\n",
-        "</h:panelGrid>\n </h:form>\n",
+        "</$HTML$:form>\n",
+        "</$HTML$:panelGrid>\n </$HTML$:form>\n",
+        "</$HTML$:panelGrid>\n </$HTML$:form>\n",
+        "</$HTML$:panelGrid>\n </$HTML$:form>\n",
     };
-    
+
     public JsfForm() {
     }
-    
+
     protected String getName() {
-        return "Form"; // NOI18N
+        return "Form"; //NOI18N
     }
 
     public void insert(JTextComponent component) {
@@ -96,17 +97,19 @@ public final class JsfForm extends EntityClass implements ActiveEditorDrop, Pale
     public String getDisplayName() {
         return NbBundle.getMessage(JsfForm.class, "NAME_jsp-JsfForm");
     }
-    
+
     protected String createBody(JTextComponent target, boolean surroundWithFView) throws IOException {
         final StringBuffer stringBuffer = new StringBuffer();
         if (surroundWithFView) {
-            stringBuffer.append("<f:view>\n");
+            stringBuffer.append("<").append(jsfLibrariesSupport.getLibraryPrefix(DefaultLibraryInfo.JSF_CORE)).append(":view>\n"); //NOI18N
         }
-        stringBuffer.append(MessageFormat.format(BEGIN [formType], new Object [] {variable}));
+        stringBuffer.append(MessageFormat.format(
+                BEGIN[formType].replaceAll("\\$HTML\\$", jsfLibrariesSupport.getLibraryPrefix(DefaultLibraryInfo.HTML)), //NOI18N
+                new Object[] {variable}));
 
-        stringBuffer.append(END [formType]);
+        stringBuffer.append(END[formType].replaceAll("\\$HTML\\$", jsfLibrariesSupport.getLibraryPrefix(DefaultLibraryInfo.HTML))); //NOI18N
         if (surroundWithFView) {
-            stringBuffer.append("</f:view>\n");
+            stringBuffer.append("</").append(jsfLibrariesSupport.getLibraryPrefix(DefaultLibraryInfo.JSF_CORE)).append(":view>\n"); //NOI18N
         }
         return stringBuffer.toString();
     }

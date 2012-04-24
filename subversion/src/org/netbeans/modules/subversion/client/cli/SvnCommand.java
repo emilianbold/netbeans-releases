@@ -183,6 +183,10 @@ public abstract class SvnCommand implements CommandNotificationListener {
 
     @Override
     public void errorText(String line) {
+        if (line.toLowerCase().contains("killed by signal")) {
+            // commandline normal output on linux for ssh connections
+            return;
+        }
         cmdError.add(line);
         if (isErrorMessage(line)) hasFailed = true;
         notificationHandler.logError(line);

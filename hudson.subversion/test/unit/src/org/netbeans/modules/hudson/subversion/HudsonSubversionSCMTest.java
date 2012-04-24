@@ -45,10 +45,13 @@ package org.netbeans.modules.hudson.subversion;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Writer;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.hudson.spi.HudsonSCM;
+import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory.ConfigurationStatus;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 
@@ -56,6 +59,10 @@ public class HudsonSubversionSCMTest extends NbTestCase {
 
     public HudsonSubversionSCMTest(String n) {
         super(n);
+    }
+
+    @Override protected void setUp() throws Exception {
+        clearWorkDir();
     }
 
     public void testNonSVNDir() throws Exception {
@@ -100,6 +107,22 @@ public class HudsonSubversionSCMTest extends NbTestCase {
                 "</triggers>" +
                 "</root>",
                 baos.toString("UTF-8").replace('"', '\'').replaceAll("\n *", ""));
+    }
+
+    public void testSVN17Dir() throws Exception { // #210884
+        HudsonSCM scm = new HudsonSubversionSCM();
+        File dir = getWorkDir();
+        File dotSvn = new File(dir, ".svn");
+        dotSvn.mkdir();
+        Writer w = new FileWriter(new File(dotSvn, "entries"));
+        w.write("12\n");
+        w.flush();
+        w.close();
+        HudsonSCM.Configuration cfg = scm.forFolder(dir);
+        assertNotNull(cfg);
+        ConfigurationStatus problems = cfg.problems();
+        assertNotNull(problems);
+        assertEquals(Bundle.ERR_unsupported(), problems.getErrorMessage());
     }
 
 }

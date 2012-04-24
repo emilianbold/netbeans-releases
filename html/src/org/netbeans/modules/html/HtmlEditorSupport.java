@@ -57,6 +57,7 @@ import java.nio.charset.CharsetEncoder;
 import java.nio.charset.CodingErrorAction;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
 import javax.swing.text.BadLocationException;
@@ -93,8 +94,7 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
 
     private static final String DOCUMENT_SAVE_ENCODING = "Document_Save_Encoding";
     private static final String UTF_8_ENCODING = "UTF-8";
-    // only to be ever user from unit tests:
-    public static boolean showConfirmationDialog = true;
+    
     /** SaveCookie for this support instance. The cookie is adding/removing
      * data object's cookie set depending on if modification flag was set/unset.
      * It also invokes beforeSave() method on the HtmlDataObject to give it
@@ -175,46 +175,23 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
 
         //FEQ cannot be run in saveFromKitToStream since document is locked for writing,
         //so setting the FEQ result to document property
-        getDocument().putProperty(DOCUMENT_SAVE_ENCODING, finalEncoding);
-    }
-
-    @Override
-    public void open() {
-        String encoding = ((HtmlDataObject) getDataObject()).getFileEncoding();
-        String feqEncoding = FileEncodingQuery.getEncoding(getDataObject().getPrimaryFile()).name();
-        if (encoding != null && !isSupportedEncoding(encoding)) {
-            if(!showConfirmationDialog) {
-                return ; //simulate "No" pressed in the dialog if opened
-            }
-//            if(!canDecodeFile(getDataObject().getPrimaryFile(), feqEncoding)) {
-//                feqEncoding = UTF_8_ENCODING;
-//            }
-            NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
-                    NbBundle.getMessage(HtmlEditorSupport.class, "MSG_unsupportedEncodingLoad", //NOI18N
-                    new Object[]{getDataObject().getPrimaryFile().getNameExt(),
-                        encoding,
-                        feqEncoding}),
-                    NotifyDescriptor.YES_NO_OPTION,
-                    NotifyDescriptor.WARNING_MESSAGE);
-            DialogDisplayer.getDefault().notify(nd);
-            if (nd.getValue() != NotifyDescriptor.YES_OPTION) {
-                return; // do not open the file
-            }
+        Document doc = getDocument();
+        //the document is already loaded so getDocument() should normally return 
+        //no null value, but if a CES redirector returns null from the redirected
+        //CES.getDocument() then we are not able to set the found encoding
+        if(doc != null) {
+            doc.putProperty(DOCUMENT_SAVE_ENCODING, finalEncoding);
         }
-
-//        if(!canDecodeFile(getDataObject().getPrimaryFile(), feqEncoding)) {
-//            feqEncoding = UTF_8_ENCODING;
-//        }
-
-        super.open();
     }
 
-    /**
+     /**
      * @inheritDoc
      */
     @Override
     protected void saveFromKitToStream(StyledDocument doc, EditorKit kit, OutputStream stream) throws IOException, BadLocationException {
-        final Charset c = Charset.forName((String) doc.getProperty(DOCUMENT_SAVE_ENCODING));
+        String foundEncoding = (String) doc.getProperty(DOCUMENT_SAVE_ENCODING);
+        String usedEncoding = foundEncoding != null ? foundEncoding : UTF_8_ENCODING;
+        final Charset c = Charset.forName(usedEncoding);
         final Writer w = new OutputStreamWriter(stream, c);
         try {
             kit.write(w, doc, 0, doc.getLength());

@@ -210,7 +210,7 @@ public final class NbMavenProject {
                         MavenExecutionRequest req = online.createMavenExecutionRequest();
                         req.setPom(pomFile);
                         req.setTransferListener(ProgressTransferListener.activeListener());
-                        MavenExecutionResult res = online.readProjectWithDependencies(req); //NOI18N
+                        MavenExecutionResult res = online.readProjectWithDependencies(req, false); //NOI18N
                         if (res.hasExceptions()) {
                             ok = false;
                             Exception ex = (Exception)res.getExceptions().get(0);
@@ -253,6 +253,13 @@ public final class NbMavenProject {
      */ 
     public @NonNull MavenProject getMavenProject() {
         return project.getOriginalMavenProject();
+    }
+    
+    /**
+     * a marginally unreliable, non blocking method for figuring if the model is loaded or not.
+     */
+    public boolean isMavenProjectLoaded() {
+        return project.isMavenProjectLoaded();
     }
 
     public @NonNull MavenProject loadAlternateMavenProject(MavenEmbedder embedder, List<String> activeProfiles, Properties properties) {

@@ -71,6 +71,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.java.classpath.ClassPathAccessor;
 import org.netbeans.modules.java.classpath.SimplePathResourceImplementation;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
@@ -724,6 +725,14 @@ public final class ClassPath {
         return toString(PathConversionMode.PRINT);
     }
 
+    @Override public boolean equals(Object obj) {
+        return obj instanceof ClassPath && impl.equals(((ClassPath) obj).impl);
+    }
+
+    @Override public int hashCode() {
+        return impl.hashCode() ^ 22;
+    }
+
     /**
      * Represents an individual entry in the ClassPath. An entry is a description
      * of a folder, which is one of the ClassPath roots. Since the Entry does not
@@ -887,6 +896,10 @@ public final class ClassPath {
          * @since org.netbeans.api.java/1 1.13
          */
         public boolean includes(FileObject file) {
+            if (!file.isValid()) {
+                //Invalid FileObject is not included
+                return false;
+            }
             FileObject r = getRoot();
             if (r == null) {
                 throw new IllegalArgumentException("no root in " + url);
@@ -894,7 +907,7 @@ public final class ClassPath {
             String path = FileUtil.getRelativePath(r, file);
             if (path == null) {
                 if (!file.isValid()) {
-                    //#130998:IllegalArgumentException when switching tabs
+                    //Already tested above, but re-test if still valid
                     return false;
                 }
                 StringBuilder sb = new StringBuilder();
@@ -916,7 +929,10 @@ public final class ClassPath {
             return filter == null || filter.includes(url, path);
         }
 
-        Entry(URL url, FilteringPathResourceImplementation filter) {
+        Entry(
+                @NonNull final URL url,
+                @NullAllowed FilteringPathResourceImplementation filter) {
+            Parameters.notNull("url", url); //NOI18N
             this.url = url;
             this.filter = filter;
         }

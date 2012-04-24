@@ -161,7 +161,7 @@ public class InlineRefactoringUI implements RefactoringUI, JavaRefactoringUIFact
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(InlineRefactoringUI.class.getName());
+        return new HelpCtx("org.netbeans.modules.refactoring.java.ui.InlineRefactoringUI"); // NOI18N
     }
     
     public static JavaRefactoringUIFactory factory() {

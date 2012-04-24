@@ -48,7 +48,6 @@ import java.util.Map;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
-import org.netbeans.modules.cnd.apt.support.APTHandlersSupport.StateKey;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
@@ -63,7 +62,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
     private static final int MAX_KEY_SIZE = 1000;
     private static int stateCacheAttempt = 0;
     private static int stateCacheSuccessAttempt = 0;
-    private final Map<StateKey, Value> stateCache = new LinkedHashMap<StateKey, Value>();
+    private final Map<APTPreprocHandler.StateKey, Value> stateCache = new LinkedHashMap<APTPreprocHandler.StateKey, Value>();
     private final ReadWriteLock stateCacheLock = new ReentrantReadWriteLock();
     private final FileImpl file;
 
@@ -78,8 +77,8 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
                 if ((stateCache.isEmpty() || APTHandlersSupport.getIncludeStackDepth(inputState) == 1) && isCacheableState(inputState)) {
                     if (stateCache.size() == CACHE_SIZE) {
                         int min = Integer.MAX_VALUE;
-                        StateKey key = null;
-                        for (Map.Entry<StateKey, Value> entry : stateCache.entrySet()){
+                        APTPreprocHandler.StateKey key = null;
+                        for (Map.Entry<APTPreprocHandler.StateKey, Value> entry : stateCache.entrySet()){
                             if (entry.getValue().value.get() == null) {
                                 key = entry.getKey();
                                 break;
@@ -104,7 +103,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
         if (cacheStates && inputState.isCompileContext()) {
             if (TRACE) {stateCacheAttempt++;}
             stateCacheLock.readLock().lock();
-            StateKey key = null;
+            APTPreprocHandler.StateKey key = null;
             try {
                 if (isCacheableState(inputState)) {
                     key = createKey(inputState);
@@ -141,8 +140,8 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
         }
     }
 
-    private static StateKey createKey(APTPreprocHandler.State inputState){
-        return APTHandlersSupport.getMacroMapID(inputState);
+    private static APTPreprocHandler.StateKey createKey(APTPreprocHandler.State inputState){
+        return APTHandlersSupport.getStateKey(inputState);
     }
 
     private boolean isCacheableState(APTPreprocHandler.State inputState) {

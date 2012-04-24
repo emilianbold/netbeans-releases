@@ -45,19 +45,13 @@ package org.netbeans.modules.refactoring.spi;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.undo.CannotRedoException;
-import javax.swing.undo.CannotUndoException;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.refactoring.spi.BackupFacility2;
+import org.netbeans.modules.refactoring.api.impl.CannotRedoRefactoring;
+import org.netbeans.modules.refactoring.api.impl.CannotUndoRefactoring;
 import org.netbeans.modules.refactoring.spi.BackupFacility2.Handle;
-import org.netbeans.modules.refactoring.spi.Transaction;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -87,56 +81,6 @@ import org.openide.util.Exceptions;
          }
          return result;
      }
- 
-     private static class CannotUndoRefactoring extends CannotUndoException {
-
-         private Collection<String> files;
-
-         private CannotUndoRefactoring(Collection<String> checkChecksum) {
-             super();
-             this.files = checkChecksum;
-         }
-
-        @Override
-        public String getMessage() {
-            StringBuilder b = new StringBuilder("Cannot Undo.\nFollowing files were modified:\n");
-            for (String f:files) {
-                b.append(f);
-                b.append('\n');
-            }
-            return b.toString();
-        }
-         
-         
-
-         public Collection<String> getFiles() {
-             return files;
-         }
-     }
-
-     private static class CannotRedoRefactoring extends CannotRedoException {
-
-         private Collection<String> files;
-
-         private CannotRedoRefactoring(Collection<String> checkChecksum) {
-             this.files = checkChecksum;
-         }
-
-         public Collection<String> getFiles() {
-             return files;
-         }
-
-         @Override
-         public String getMessage() {
-            StringBuilder b = new StringBuilder("Cannot Redo.\nFollowing files were modified:\n");
-            for (String f:files) {
-                b.append(f);
-                b.append('\n');
-            }
-            return b.toString();
-        }
-         
-     }
      
  
     List<BackupFacility2.Handle> ids = new ArrayList<BackupFacility2.Handle>();
@@ -152,20 +96,42 @@ import org.openide.util.Exceptions;
         this.results = results;
     }
     
+     void check(boolean undo) {
+         if (!commited) {
+             return;
+         }
+         for (BackupFacility2.Handle id : ids) {
+             try {
+                 Collection<String> checkChecksum = id.checkChecksum(undo);
+                 if (!checkChecksum.isEmpty()) {
+                     throw undo ? new CannotUndoRefactoring(checkChecksum) : new CannotRedoRefactoring(checkChecksum);
+                 };
+             } catch (IOException ex) {
+                 Exceptions.printStackTrace(ex);
+             }
+         }
+     }
+     
+     void sum() {
+         if (!commited) {
+             return;
+         }
+         for (BackupFacility2.Handle id : ids) {
+            try {
+                id.storeChecksum();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+         }
+     }
+     
+    
     public void commit() {
         try {
             if (commited) {
-                 for (BackupFacility2.Handle id : ids) {
-                    Collection<String> checkChecksum = id.checkChecksum(false);
-                    if (!checkChecksum.isEmpty()) {
-                        throw new CannotRedoRefactoring(checkChecksum);
-                    }
-                 }
-                
                 for (BackupFacility2.Handle id:ids) {
                     try {
                         id.restore();
-                        id.storeChecksum();
                     } catch (IOException ex) {
                         throw new RuntimeException(ex);
                     }
@@ -194,16 +160,9 @@ import org.openide.util.Exceptions;
      private boolean newFilesStored = false;
 
      public void rollback() {
-         try {
              for (BackupFacility2.Handle id : ids) {
-                 Collection<String> checkChecksum = id.checkChecksum(true);
-                 if (!checkChecksum.isEmpty()) {
-                     throw new CannotUndoRefactoring(checkChecksum);
-                 }
-
                  try {
                      id.restore();
-                     id.storeChecksum();
                  } catch (IOException ex) {
                      throw new RuntimeException(ex);
                  }
@@ -224,9 +183,6 @@ import org.openide.util.Exceptions;
                  }
                  newFilesStored |= localStored;
              }
-         } catch (IOException ex) {
-             Exceptions.printStackTrace(ex);
-         }
 
      }
 

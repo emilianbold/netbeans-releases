@@ -72,8 +72,13 @@ public class PlatformMacOSX extends Platform {
     }
     
     @Override
-    public String getLibraryName(String baseName) {
-        return "lib" + baseName + LIBRARY_SUFFIX; // NOI18N
+    public String getLibraryNameWithoutExtension(String baseName) {
+        return "lib" + baseName; // NOI18N
+    }
+    
+    @Override
+    public String getLibraryExtension() {
+        return "dylib"; // NOI18N
     }
 
     @Override

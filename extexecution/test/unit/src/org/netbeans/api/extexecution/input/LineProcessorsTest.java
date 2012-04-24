@@ -57,6 +57,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.regex.Pattern;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 
 /**
  *
@@ -219,6 +220,7 @@ public class LineProcessorsTest extends NbTestCase {
         assertClosedConditions(lineProcessor);
     }
 
+    @RandomlyFails // NB-Core-Build #8029
     public void testWaitingThreadSafety() throws InterruptedException, BrokenBarrierException {
         final CountDownLatch latch = new CountDownLatch(1);
         final LineProcessor lineProcessor = LineProcessors.patternWaiting(

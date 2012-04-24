@@ -50,7 +50,7 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author lukas
  */
-@ServiceProvider(service=MavenActionsProvider.class, position=53)
+//@ServiceProvider(service=MavenActionsProvider.class, position=53)
 public class TestNGActionsProvider extends AbstractMavenActionsProvider {
 
     /** Creates a new instance of TestNGActionsProvider */

@@ -44,11 +44,7 @@
 
 package org.netbeans.core.windows.view.ui.slides;
 
-import java.awt.AWTEvent;
-import java.awt.Component;
-import java.awt.Cursor;
-import java.awt.Point;
-import java.awt.Toolkit;
+import java.awt.*;
 import java.awt.event.AWTEventListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -60,6 +56,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JRootPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.core.windows.Constants;
+import org.openide.windows.WindowManager;
 
 /**
  *
@@ -187,6 +184,10 @@ public class ResizeGestureRecognizer implements AWTEventListener {
         MouseEvent evt = (MouseEvent)aWTEvent;
         //#162118: When mouse is over main menu ignore event
         if ((evt.getSource() instanceof JPopupMenu) || (evt.getSource() instanceof JMenuItem)) {
+            return;
+        }
+        //#210162 - ignore when the mouse is over a dialog window
+        if( !WindowManager.getDefault().getMainWindow().equals( SwingUtilities.getWindowAncestor( evt.getComponent() ) ) ) {
             return;
         }
         if (evt.getID() == MouseEvent.MOUSE_MOVED) {

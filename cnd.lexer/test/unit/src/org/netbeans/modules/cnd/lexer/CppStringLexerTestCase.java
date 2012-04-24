@@ -110,7 +110,7 @@ public class CppStringLexerTestCase extends NbTestCase {
 
     public void testRawTokens() {
         // uR"*(This is a "raw UTF-16" string.)*)*"
-        String text = "uR\"*(This is a \"raw UTF-16\" string.)*)*\"";
+        String text = "uR\"*(This is a \"raw UTF-16\" \\string.)*)*\"";
         TokenHierarchy<?> hi = TokenHierarchy.create(text, CppStringTokenId.languageRawString());
         TokenSequence<?> ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppStringTokenId.PREFIX_uR, "uR");
@@ -121,7 +121,7 @@ public class CppStringLexerTestCase extends NbTestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppStringTokenId.DOUBLE_QUOTE, "\"");
         LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppStringTokenId.TEXT, "raw UTF-16");
         LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppStringTokenId.DOUBLE_QUOTE, "\"");
-        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppStringTokenId.TEXT, " string.");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppStringTokenId.TEXT, " \\string.");
         LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppStringTokenId.TEXT, ")*");
         LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppStringTokenId.END_DELIMETER_PAREN, ")");
         LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppStringTokenId.END_DELIMETER, "*");

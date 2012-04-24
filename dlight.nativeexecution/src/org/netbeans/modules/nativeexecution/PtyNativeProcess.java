@@ -70,7 +70,7 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
     private AbstractNativeProcess delegate = null;
 
     public PtyNativeProcess(NativeProcessInfo info) {
-        super(info);
+        super(new NativeProcessInfo(info));
     }
 
     public String getTTY() {
@@ -82,23 +82,12 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
         ExecutionEnvironment env = info.getExecutionEnvironment();
         Pty pty = info.getPty();
 
-        String executable = PtyUtility.getInstance().getPath(env);
         List<String> newArgs = new ArrayList<String>();
 
         if (pty != null) {
             newArgs.add("-p"); // NOI18N
             newArgs.add(pty.getSlaveName());
         }
-
-        String processExecutable = info.getExecutable();
-
-        if (hostInfo.getOSFamily() == OSFamily.WINDOWS) {
-            // pty requires Unix style executable path
-            processExecutable = WindowsSupport.getInstance().convertToShellPath(processExecutable);
-        }
-
-        // TODO: Clone Info!!!!
-        info.setExecutable(executable);
 
         final MacroMap envMap = info.getEnvironment();
 
@@ -125,10 +114,28 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
             }
         }
 
-        newArgs.add(processExecutable);
-        newArgs.addAll(info.getArguments());
+        String origCommand = info.getCommandLineForShell();
 
-        info.setArguments(newArgs.toArray(new String[0]));
+        if (origCommand != null) {
+            newArgs.add(hostInfo.getShell());
+            newArgs.add("-c"); // NOI18N
+            newArgs.add("exec " + origCommand); // NOI18N
+        } else {
+            // this means that there is no shell available
+            String processExecutable = info.getExecutable();
+
+            if (hostInfo.getOSFamily() == OSFamily.WINDOWS) {
+                // pty requires Unix style executable path
+                processExecutable = WindowsSupport.getInstance().convertToShellPath(processExecutable);
+            }
+
+            newArgs.add(processExecutable);
+            newArgs.addAll(info.getArguments());
+        }
+
+        info.setCommandLine(null);
+        info.setExecutable(PtyUtility.getInstance().getPath(env));
+        info.setArguments(newArgs.toArray(new String[newArgs.size()]));
 
         // no need to preload unbuffer in case of running in internal terminal
         info.setUnbuffer(false);
@@ -150,9 +157,6 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
         }
 
         delegate.createAndStart();
-
-        // Restroe environment map... Do we need this?
-        envMap.putAll(removedEntries);
 
         if (pty != null) {
             setInputStream(pty.getInputStream());
@@ -206,7 +210,7 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
     }
 
     private String readLine(final InputStream is) throws IOException {
-        int c = -1;
+        int c;
         StringBuilder sb = new StringBuilder(20);
 
         while (!isInterrupted()) {

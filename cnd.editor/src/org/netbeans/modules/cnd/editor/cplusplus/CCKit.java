@@ -53,15 +53,11 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.cnd.api.lexer.Filter;
-
-
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.ext.ExtKit.CommentAction;
 import org.netbeans.editor.ext.ExtKit.UncommentAction;
-import org.netbeans.modules.cnd.debug.CndTraceFlags;
-import org.netbeans.modules.editor.NbEditorKit;
-
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.editor.NbEditorKit;
 import org.openide.util.NbPreferences;
 
 /** C++ editor kit with appropriate document */
@@ -72,8 +68,8 @@ public class CCKit extends NbEditorKit {
     /* package */ static final String selectNextCamelCasePosition = "select-next-camel-case-position"; //NOI18N
     /* package */ static final String deletePreviousCamelCasePosition = "delete-previous-camel-case-position"; //NOI18N
     /* package */ static final String deleteNextCamelCasePosition = "delete-next-camel-case-position"; //NOI18N
-
-    private InputAttributes lexerAttrs = null;
+    /* package */ static final String selectNextElementAction = "select-element-next"; //NOI18N
+    /* package */ static final String selectPreviousElementAction = "select-element-previous"; //NOI18N
 
     public CCKit() {
         // default constructor needed to be created from services
@@ -102,22 +98,16 @@ public class CCKit extends NbEditorKit {
     protected Language<CppTokenId> getLanguage() {
         return CppTokenId.languageCpp();
     }
-
-    protected final synchronized InputAttributes getLexerAttributes(Language<?> language, BaseDocument doc) {
-        // for now use shared attributes for all documents to save memory
-        // in future we can make attributes per document based on used compiler info
-        if (lexerAttrs == null) {
-            lexerAttrs = new InputAttributes();
-            lexerAttrs.setValue(language, CndLexerUtilities.LEXER_FILTER, getFilter(language, doc), true);  // NOI18N
-            if(CndTraceFlags.LANGUAGE_FLAVOR_CPP11) {
-                lexerAttrs.setValue(getLanguage(), CndLexerUtilities.FLAVOR, "CPP11", true); // NOI18N
-            }
-        }
+    
+    protected final InputAttributes getLexerAttributes(Language<?> language, BaseDocument doc) {
+        // filter can be overwritten later on for real editors in CppEditorSupport.setupSlowDocumentProperties
+        InputAttributes lexerAttrs = new InputAttributes();
+        lexerAttrs.setValue(language, CndLexerUtilities.LEXER_FILTER, getFilter(language, doc), true);  // NOI18N
         return lexerAttrs;
     }
 
-    protected final Filter<CppTokenId> getFilter(Language<?> language, BaseDocument doc) {
-        return CndLexerUtilities.getFilter(language, doc);
+    protected Filter<?> getFilter(Language<?> language, BaseDocument doc) {
+        return CndLexerUtilities.getDefatultFilter(true);
     }
 
     protected Action getCommentAction() {
@@ -147,7 +137,8 @@ public class CCKit extends NbEditorKit {
             new CCPreviousWordAction(selectionPreviousWordAction),
             new DeleteToNextCamelCasePosition(findAction(superActions, removeNextWordAction)),
             new DeleteToPreviousCamelCasePosition(findAction(superActions, removePreviousWordAction)),
-
+            new SelectCodeElementAction(selectNextElementAction, true),
+            new SelectCodeElementAction(selectPreviousElementAction, false),
             new InsertSemicolonAction(true),
             new InsertSemicolonAction(false),};
         ccActions = TextAction.augmentList(superActions, ccActions);
@@ -190,6 +181,7 @@ public class CCKit extends NbEditorKit {
             super(name);
         }
 
+        @Override
         protected int getPreviousWordOffset(JTextComponent target) throws BadLocationException {
             return isUsingCamelCase()
                     ? CamelCaseOperations.previousCamelCasePosition(target)

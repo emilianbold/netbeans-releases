@@ -517,6 +517,8 @@ final class DnDSupport implements DragSourceListener, DragGestureListener, DropT
             int currentIndex = children.indexOf( objToMove );
             if( currentIndex < targetIndex )
                 targetIndex--;
+            targetIndex = Math.max( 0, targetIndex );
+            targetIndex = Math.min( children.size(), targetIndex );
             children.remove( objToMove );
             children.add( targetIndex, objToMove );
         }

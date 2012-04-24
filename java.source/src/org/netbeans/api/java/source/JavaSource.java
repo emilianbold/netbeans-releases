@@ -75,6 +75,7 @@ import org.netbeans.modules.java.source.parsing.ClasspathInfoTask;
 import org.netbeans.modules.java.source.parsing.CompilationInfoImpl;
 import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.parsing.JavacParserFactory;
+import org.netbeans.modules.java.source.parsing.MimeTask;
 import org.netbeans.modules.java.source.parsing.NewComilerTask;
 import org.netbeans.modules.java.source.save.ElementOverlay;
 import org.netbeans.modules.parsing.api.Embedding;
@@ -530,33 +531,6 @@ public final class JavaSource {
 
     }
 
-    private static class MimeTask extends ClasspathInfoTask {
-
-        private final Task<CompilationController> task;
-        private final JavaSource js;
-
-        public MimeTask (final JavaSource js,
-                         final Task<CompilationController> task,
-                         final ClasspathInfo cpInfo) {
-            super (cpInfo);
-            assert js != null;
-            assert task != null;
-            this.js = js;
-            this.task = task;
-        }
-
-        @Override
-        public void run(ResultIterator resultIterator) throws Exception {
-            Result result = resultIterator.getParserResult ();
-            final CompilationController cc = CompilationController.get(result);
-            assert cc != null;
-            cc.setJavaSource(this.js);
-            task.run (cc);
-        }
-    }
-
-    
-    
     long createTaggedController (final long timestamp, final Object[] controller) throws IOException {
         assert controller.length == 1;
         assert controller[0] == null || controller[0] instanceof CompilationController;
@@ -654,7 +628,7 @@ public final class JavaSource {
             throw new IllegalArgumentException ("Task cannot be null");     //NOI18N
         }        
         final ModificationResult result = new ModificationResult(this);
-        final ElementOverlay overlay = new ElementOverlay();
+        final ElementOverlay overlay = ElementOverlay.getOrCreateOverlay();
         long start = System.currentTimeMillis();
 
         Task<CompilationController> inner = new Task<CompilationController>() {
@@ -683,7 +657,7 @@ public final class JavaSource {
         if (sources.size() == 1) {
             Logger.getLogger("TIMER").log(Level.FINE, "Modification Task",  //NOI18N
                 new Object[] {sources.iterator().next().getFileObject(), System.currentTimeMillis() - start});
-        }            
+        }
         return result;
     }
 

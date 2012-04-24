@@ -488,6 +488,11 @@ public class MavenProjectRestSupport extends WebRestSupport {
         }
         return null;
     }
+    
+    @Override
+    public void setPrivateProjectProperty(String name, String value) {
+        setProjectProperty(name, value);
+    }
 
     @Override
     public void setProjectProperty(String name, String value) {

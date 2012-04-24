@@ -55,6 +55,7 @@ import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.status.ProgressEvent;
 import javax.enterprise.deploy.spi.status.ProgressListener;
 import javax.enterprise.deploy.spi.status.ProgressObject;
+import javax.management.MBeanAttributeInfo;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -69,6 +70,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment2;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
 import org.netbeans.modules.j2ee.weblogic9.WLConnectionSupport;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -87,7 +89,9 @@ public class WLIncrementalDeployment extends IncrementalDeployment implements In
     private static final int FAST_SWAP_TIMEOUT = 3000;
     
     private static final int FAST_SWAP_POLLING = 100;
-    
+
+    private static final String WLDEPLOY = "wldeploy"; // NOI18N
+
     private final WLDeploymentManager dm;
 
     public WLIncrementalDeployment(WLDeploymentManager dm) {
@@ -104,18 +108,115 @@ public class WLIncrementalDeployment extends IncrementalDeployment implements In
     }
 
     @Override
-    public File getDirectoryForModule(TargetModuleID module) {
-        return null;
+    public File getDirectoryForModule(final TargetModuleID module) {
+        if (module.getParentTargetModuleID() == null) {
+            return null;
+        }
+
+        File file = null;
+        // this won't happen currently just being defensive
+        if (module instanceof WLTargetModuleID) {
+            file = ((WLTargetModuleID) module).getDir();
+        }
+
+        // the following code should work even for standalone apps (not just in
+        // EAR) but the condition above prevents such call to be defensive
+        if (file == null) {
+            WLConnectionSupport support = dm.getConnectionSupport();
+            try {
+                file = support.executeAction(new WLConnectionSupport.JMXRuntimeAction<File>() {
+
+                    @Override
+                    public File call(MBeanServerConnection con, ObjectName service) throws Exception {
+                        Object uri = null;
+                        Object path = null;
+
+                        TargetModuleID parent = module.getParentTargetModuleID() == null ? module : module.getParentTargetModuleID();
+
+                        ObjectName testPattern = new ObjectName("com.bea:Name=" + parent.getModuleID() + ",Location="
+                                + parent.getTarget().getName() + ",Type=AppDeployment,*"); // NOI18N
+                        Set<ObjectName> deployments = con.queryNames(testPattern, null);
+                        if (!deployments.isEmpty()) {
+                            ObjectName appItem = (ObjectName) con.getAttribute(
+                                    deployments.iterator().next(), "AppMBean");
+                            if (appItem == null) {
+                                return null;
+                            }
+
+                            ObjectName[] comps = (ObjectName[]) con.getAttribute(appItem, "Components");
+                            for (ObjectName comp : comps) {
+                                String name = (String) con.getAttribute(comp, "Name");
+                                if (module.getModuleID().equals(name)) {
+                                    uri = (String) con.getAttribute(comp, "URI");
+                                    if (uri != null) {
+                                        break;
+                                    }
+                                }
+                            }
+                            // FullPath attribute is sometimes wrong :(
+                            // TODO resolve relative paths - is it possible ?
+                            path = con.getAttribute(appItem, "Path");
+                        }
+
+                        if (path == null || (uri == null && module.getParentTargetModuleID() != null)) {
+                            return null;
+                        }
+
+                        return (uri != null) ? new File(path.toString() + File.separator + uri.toString()) : new File(path.toString());
+                    }
+                });
+            } catch (Exception ex) {
+                // pass through
+            }
+        }
+
+        if (null != file && !file.isDirectory()) {
+            throw new IllegalStateException(NbBundle.getMessage(WLIncrementalDeployment.class,
+                    "ERR_UndeployAndRedeploy"));
+        }
+        return file;
     }
 
     @Override
     public File getDirectoryForNewApplication(Target target, J2eeModule app, ModuleConfiguration configuration) {
-        return null;
+        // FIXME more or less copied from GlassFish
+        // 1) should be in common place
+        // 2) the logic is inverted - this should be in project
+        File dest = null;
+        if (app.getType() == J2eeModule.Type.EAR) {
+            File tmp = getProjectDir(app);
+            if (null == tmp) {
+               return dest;
+            }
+            dest = new File(tmp, "target");  // NOI18N
+            if (!dest.exists()) {
+                // the app wasn't a maven project
+                dest = new File(tmp, "dist");  // NOI18N
+            }
+            if (dest.isFile() || (dest.isDirectory() && !dest.canWrite())) {
+               throw new IllegalStateException();
+            }
+            String moduleName = sanitizeName(computeModuleID(app));
+            String dirName = WLDEPLOY;
+            if (null != moduleName) {
+                dirName += "/"+moduleName; // NOI18N
+            }
+            dest = new File(dest, dirName);
+            boolean retval = true;
+            if (!dest.exists()) {
+                retval = dest.mkdirs();
+            }
+            if (!retval || !dest.isDirectory()) {
+               dest = null;
+            }
+        }
+        return dest;
     }
 
     @Override
     public File getDirectoryForNewModule(File appDir, String uri, J2eeModule module, ModuleConfiguration configuration) {
-        return null;
+        //return new File(appDir, transform(removeLeadSlash(uri)));
+        return new File(appDir, removeLeadSlash(uri));
     }
 
     @Override
@@ -217,7 +318,7 @@ public class WLIncrementalDeployment extends IncrementalDeployment implements In
     }
     
     @Override
-    public String getModuleUrl(TargetModuleID module) {
+    public String getModuleUrl(final TargetModuleID module) {
         assert module != null;
 
         if (module.getWebURL() == null) {
@@ -249,6 +350,16 @@ public class WLIncrementalDeployment extends IncrementalDeployment implements In
                             return (String) con.getAttribute(runtime, "ModuleURI"); // NOI18N
                         }
                     }
+
+                    TargetModuleID parent = module.getParentTargetModuleID();
+                    ObjectName testPattern = new ObjectName("com.bea:Name=" + module.getModuleID() + ",Location="
+                            + module.getTarget().getName() + ",Type=WebAppComponent"
+                            + (parent != null ? ",Application=" + parent.getModuleID() + ",*" : ",*")); // NOI18N
+                    Set<ObjectName> deployments = con.queryNames(testPattern, null);
+                    if (!deployments.isEmpty()) {
+                        return (String) con.getAttribute(deployments.iterator().next(), "URI"); // NOI18N
+                    }
+
                     return null;
                 }
             });
@@ -325,6 +436,98 @@ public class WLIncrementalDeployment extends IncrementalDeployment implements In
     
     private static boolean isRunning(String status) {
         return "RUNNING".equals(status) || "SCHEDULED".equals(status); // NOI18N
+    }
+
+    // FIXME copied from GF
+    // try to get the Project Directory as a File
+    // use a couple different stratgies, since the resource.dir is in a user-
+    // editable file -- but it is quicker to access, if it is there....
+    //
+    private File getProjectDir(J2eeModule app) {
+        try {
+            FileObject fo = app.getContentDirectory();
+            Project p = FileOwnerQuery.getOwner(fo);
+            if (null != p) {
+                fo = p.getProjectDirectory();
+                return FileUtil.toFile(fo);
+            }
+        } catch (IOException ex) {
+            Logger.getLogger("glassfish-javaee").log(Level.FINER,    // NOI18N
+                    null,ex);
+        }
+        java.io.File tmp = app.getResourceDirectory();
+
+        if (tmp != null) {
+            return tmp.getParentFile();
+        }
+        return null;
+    }
+
+    // FIXME copied from GF
+    public static String sanitizeName(String name) {
+        if (null == name || name.matches("[\\p{L}\\p{N}_][\\p{L}\\p{N}\\-_./;#:]*")) {
+            return name;
+        }
+        // the string is bad...
+        return "_" + name.replaceAll("[^\\p{L}\\p{N}\\-_./;#:]", "_");
+    }
+
+    // FIXME copied from GF
+    public static String computeModuleID(J2eeModule module) {
+        String moduleID = null;
+        FileObject fo = null;
+        try {
+            fo = module.getContentDirectory();
+            if (null != fo) {
+                moduleID = ProjectUtils.getInformation(FileOwnerQuery.getOwner(fo)).getName();
+            }
+        } catch (IOException ex) {
+            LOGGER.log(Level.FINER, null, ex);
+        }
+
+//        if (null == moduleID || moduleID.trim().length() < 1) {
+//            J2eeModuleHelper j2eeModuleHelper = J2eeModuleHelper.getSunDDModuleHelper(module.getType());
+//            if(j2eeModuleHelper != null) {
+//                RootInterface rootDD = j2eeModuleHelper.getStandardRootDD(module);
+//                if(rootDD != null) {
+//                    try {
+//                        moduleID = rootDD.getDisplayName(null);
+//                    } catch (VersionNotSupportedException ex) {
+//                        // ignore, handle as null below.
+//                    }
+//                }
+//            }
+//        }
+
+        return moduleID;
+    }
+
+    // FIXME copied from GF
+//    private static String transform(String s) {
+//        int len = s.length();
+//        if (len > 4) {
+//            StringBuilder sb = new StringBuilder(s);
+//            char tmp = sb.charAt(len - 4);
+//            if (tmp == '.') {
+//                sb.setCharAt(len-4, '_');
+//                return sb.toString();
+//            }
+//        }
+//        return s;
+//    }
+
+    // FIXME copied from GF
+    private static String removeLeadSlash(String s) {
+        if (null == s) {
+            return s;
+        }
+        if (s.length() < 1) {
+            return s;
+        }
+        if (!s.startsWith("/")) {
+            return s;
+        }
+        return s.substring(1);
     }
 
     private static class BridgingProgressObject extends WLProgressObject implements ProgressListener {

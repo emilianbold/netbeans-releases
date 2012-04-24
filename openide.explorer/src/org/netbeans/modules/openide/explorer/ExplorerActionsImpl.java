@@ -63,6 +63,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import static org.netbeans.modules.openide.explorer.Bundle.*;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.explorer.ExplorerManager;
@@ -71,7 +72,7 @@ import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.datatransfer.ExTransferable;
@@ -654,6 +655,13 @@ public final class ExplorerActionsImpl {
             setEnabled(false);
         }
 
+        // ExplorerActionsImpl and openide.compat/src/org/openide/explorer/ExplorerActions.java
+        @Messages({
+            "# {0} - name", "MSG_ConfirmDeleteObject=Are you sure you want to delete {0}?",
+            "MSG_ConfirmDeleteObjectTitle=Confirm Object Deletion",
+            "# {0} - number of objects", "MSG_ConfirmDeleteObjects=Are you sure you want to delete these {0} items?",
+            "MSG_ConfirmDeleteObjectsTitle=Confirm Multiple Object Deletion"
+        })
         private boolean doConfirm(Node[] sel) {
             String message;
             String title;
@@ -672,15 +680,15 @@ public final class ExplorerActionsImpl {
             }
 
             if (sel.length == 1) {
-                message = NbBundle.getMessage(
-                        ExplorerActionsImpl.class, "MSG_ConfirmDeleteObject", sel[0].getDisplayName()
+                message = MSG_ConfirmDeleteObject(
+                        sel[0].getDisplayName()
                     );
-                title = NbBundle.getMessage(ExplorerActionsImpl.class, "MSG_ConfirmDeleteObjectTitle");
+                title = MSG_ConfirmDeleteObjectTitle();
             } else {
-                message = NbBundle.getMessage(
-                        ExplorerActionsImpl.class, "MSG_ConfirmDeleteObjects", Integer.valueOf(sel.length)
+                message = MSG_ConfirmDeleteObjects(
+                        Integer.valueOf(sel.length)
                     );
-                title = NbBundle.getMessage(ExplorerActionsImpl.class, "MSG_ConfirmDeleteObjectsTitle");
+                title = MSG_ConfirmDeleteObjectsTitle();
             }
 
             NotifyDescriptor desc = new NotifyDescriptor.Confirmation(message, title, NotifyDescriptor.YES_NO_OPTION);

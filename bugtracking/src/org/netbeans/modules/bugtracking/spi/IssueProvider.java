@@ -43,10 +43,9 @@ package org.netbeans.modules.bugtracking.spi;
 
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import org.openide.nodes.Node;
 
 /**
- * Represents a bugtracking IssueProvider
+ * Provides access to a bugtracking Issue
  *
  * @author Tomas Stupka
  */
@@ -79,7 +78,20 @@ public abstract class IssueProvider<I> {
      * @return
      */
     public abstract String getID(I data);
+    
+    /**
+     * Returns the ID-s of all issues where this one could be consideret 
+     * being superordinated to them. 
+     * e.g. the blocks/depends relationship in Bugzilla, or subtask/parenttask in JIRA
+     * 
+     * 
+     * @param data
+     * @return 
+     */
+    public abstract String[] getSubtasks(I data);
 
+    
+    
     /**
      * Returns this issues summary
      * @return
@@ -91,6 +103,15 @@ public abstract class IssueProvider<I> {
      * @return
      */
     public abstract boolean isNew(I data);
+    
+    /**
+     * Determines if the issue has reached a status when is considered finished 
+     * in the means of the particular bugtracking.
+     * 
+     * @param data
+     * @return true if finished, otherwise false
+     */
+    public abstract boolean isFinished(I data);
 
     /**
      * Refreshes this Issues data from its bugtracking repository
@@ -126,7 +147,5 @@ public abstract class IssueProvider<I> {
     public abstract void removePropertyChangeListener(I data, PropertyChangeListener listener);
 
     public abstract void addPropertyChangeListener(I data, PropertyChangeListener listener);
-
-    public abstract void setContext(I data, Node[] nodes);
 
 }

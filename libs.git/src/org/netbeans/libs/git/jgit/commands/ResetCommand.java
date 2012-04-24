@@ -200,7 +200,7 @@ public class ResetCommand extends GitCommand {
                                     try {
                                         new CheckoutIndex(repository, cache, roots, true, listener, monitor, false).checkout();
                                     } finally {
-                                        // checkout also updates index entries and corrects timestamps, so write the cache after the checkout
+                                        // checkout also updates index entries and corrects timestamps (and entry lengths), so write the cache after the checkout
                                         builder.commit();
                                     }
                                 } else {

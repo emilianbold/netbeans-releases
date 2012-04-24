@@ -45,8 +45,13 @@
 
 package org.netbeans.modules.search;
 
+import java.awt.Image;
 import java.awt.Toolkit;
+import java.awt.datatransfer.Transferable;
+import java.awt.event.ActionEvent;
 import java.io.CharConversionException;
+import java.util.List;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
@@ -57,6 +62,7 @@ import org.netbeans.api.search.SearchHistory;
 import org.netbeans.api.search.SearchPattern;
 import org.netbeans.modules.search.ui.ReplaceCheckableNode;
 import org.netbeans.modules.search.ui.ResultsOutlineSupport;
+import org.netbeans.modules.search.ui.UiUtils;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.loaders.DataObject;
@@ -71,6 +77,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
@@ -113,6 +120,8 @@ public final class TextDetail implements Selectable {
     private String matchedText;
     /** Selected flag */
     private boolean selected = true;
+    /** Line number indent */
+    private String lineNumberIndent = "";                               //NOI18N
 
     private ChangeSupport changeSupport = new ChangeSupport(this);
     /** Constructor using data object. 
@@ -387,6 +396,8 @@ public final class TextDetail implements Selectable {
      */
     static final class DetailNode extends AbstractNode
                                           implements OutputListener {
+        private static final String ICON =
+                "org/netbeans/modules/search/res/textDetail.png";       //NOI18N
         
         /** Detail to represent. */
         private TextDetail txtDetail;
@@ -418,6 +429,7 @@ public final class TextDetail implements Selectable {
                     ResultsOutlineSupport.toggleParentSelected(DetailNode.this);
                 }
             });
+            setIconBaseWithExtension(ICON);
         }
         
         /** {@inheritDoc} */
@@ -435,7 +447,7 @@ public final class TextDetail implements Selectable {
          */
         @Override
         public Action getPreferredAction() {
-            return SystemAction.get(GotoDetailAction.class);
+            return new GotoDetailAction(this);
         }
 
         /** {@inheritDoc} */
@@ -464,6 +476,11 @@ public final class TextDetail implements Selectable {
         public String getHtmlDisplayName() {
             try {
                 StringBuffer text = new StringBuffer();
+                text.append("<font color='!controlShadow'>");           //NOI18N
+                text.append(txtDetail.lineNumberIndent);
+                text.append(txtDetail.getLine());
+                text.append(": ");                                      //NOI18N
+                text.append("</font>");                                 //NOI18N
                 if(canBeMarked()) {
                     appendMarkedText(text);
                 }
@@ -472,7 +489,7 @@ public final class TextDetail implements Selectable {
                 }
                 text.append("      ");  // NOI18N
                 text.append("<font color='!controlShadow'>[");  // NOI18N
-                text.append(escape(DetailNode.getName(txtDetail)));
+                text.append(escape(DetailNode.getLinePos(txtDetail)));
                 text.append("]");  // NOI18N
                 return text.toString();
             } catch (CharConversionException e) {
@@ -576,6 +593,18 @@ public final class TextDetail implements Selectable {
             }
         }
 
+        private static String getLinePos(TextDetail det) {
+            int col = det.getColumn();
+            if (col > 0) {
+                /* column <col> */
+                return NbBundle.getMessage(DetailNode.class,
+                                           "TEXT_DETAIL_FMT_NAME3",     //NOI18N
+                                           col);
+            } else {
+                return "";                                              //NOI18N
+            }
+        }
+
         /**
          * Returns short description of a visual representation of
          * a <code>TextDetail</code>. The description may be used e.g.
@@ -640,6 +669,10 @@ public final class TextDetail implements Selectable {
                                                         });
             }
         }
+
+        @Override
+        protected void createPasteTypes(Transferable t, List<PasteType> s) {
+        }
         
     } // End of DetailNode class.
 
@@ -648,30 +681,13 @@ public final class TextDetail implements Selectable {
      * This action is to be used in the window/dialog displaying a list of
      * found occurences of strings matching a search pattern.
      */
-    private static class GotoDetailAction extends NodeAction {
-        
-        /**  {@inheritDoc} */
-        @Override
-        public String getName() {
-            return NbBundle.getMessage(
-                    GotoDetailAction.class, "LBL_GotoDetailAction");
-        }
-        
-        /**  {@inheritDoc} */
-        @Override
-        public HelpCtx getHelpCtx() {
-            return new HelpCtx(GotoDetailAction.class);
-        }
+    private static class GotoDetailAction extends AbstractAction {
 
-        /**  {@inheritDoc}
-         * @return  <code>true</code> if at least one node is activated and
-         *          the first node is an instance of <code>DetailNode</code>
-         *          (or its subclass), <code>false</code> otherwise
-         */
-        @Override
-        protected boolean enable(Node[] activatedNodes) {
-            return activatedNodes != null && activatedNodes.length != 0
-                   && activatedNodes[0] instanceof DetailNode;
+        private DetailNode detailNode;
+
+        public GotoDetailAction(DetailNode detailNode) {
+            super(UiUtils.getText("LBL_GotoDetailAction"));             //NOI18N
+            this.detailNode = detailNode;
         }
 
         /**  {@inheritDoc}
@@ -680,18 +696,12 @@ public final class TextDetail implements Selectable {
          * otherwise does nothing.
          */
         @Override
-        protected void performAction(Node[] activatedNodes) {
-            if (enable(activatedNodes)) {
-                ((DetailNode) activatedNodes[0]).gotoDetail();
-            }
+        public void actionPerformed(ActionEvent e) {
+            detailNode.gotoDetail();
         }
-        
-        /**  {@inheritDoc} */
-        @Override
-        protected boolean asynchronous() {
-            return false;
-        }
-        
     } // End of GotoDetailAction class.
-        
+
+    void setLineNumberIndent(String lineNumberIndent) {
+        this.lineNumberIndent = lineNumberIndent;
+    }
 }

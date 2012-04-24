@@ -122,10 +122,10 @@ public class JFXProjectGenerator {
         dirFO.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
             @Override
             public void run() throws IOException {
-                h[0] = createProject(dirFO, name, "src", null, mainClass, manifestFile, //NOI18N
+                h[0] = createProject(dirFO, name, "src", "test", mainClass, manifestFile, //NOI18N
                         librariesDefinition, platformName, preloader, type);
                 final Project p = ProjectManager.getDefault().findProject(dirFO);
-                createJfxExtension(p, dirFO);
+                createJfxExtension(p, dirFO, type);
                 ProjectManager.getDefault().saveProject(p);
                 final ReferenceHelper refHelper = getReferenceHelper(p);
                 try {
@@ -244,7 +244,7 @@ public class JFXProjectGenerator {
                                 props.put(JFXProjectProperties.BUILD_SCRIPT, buildXmlName);
                                 h[0].putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
                             }
-                            createJfxExtension(p, dirFO);
+                            createJfxExtension(p, dirFO, type);
                             ProjectManager.getDefault().saveProject(p);
                             copyRequiredLibraries(h[0], refHelper);
                             ProjectUtils.getSources(p).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
@@ -273,12 +273,12 @@ public class JFXProjectGenerator {
 //                h[0] = createProject(dirFO, name, "src", "test", preloaderClassName, // NOI18N
 //                        JavaFXProjectWizardIterator.MANIFEST_FILE, librariesDefinition,
 //                        platformName, null, WizardType.PRELOADER);
-                h[0] = createProject(dirFO, name, "src", null, preloaderClassName, // NOI18N
+                h[0] = createProject(dirFO, name, "src", "test", preloaderClassName, // NOI18N
                         JavaFXProjectWizardIterator.MANIFEST_FILE, librariesDefinition,
                         platformName, null, WizardType.PRELOADER);
                 
                 final Project p = ProjectManager.getDefault().findProject(dirFO);
-                createJfxExtension(p, dirFO);
+                createJfxExtension(p, dirFO, WizardType.PRELOADER);
                 ProjectManager.getDefault().saveProject(p);
                 final ReferenceHelper refHelper = getReferenceHelper(p);
                 try {
@@ -303,11 +303,30 @@ public class JFXProjectGenerator {
         return h[0];
     }
     
-    private static void createJfxExtension(Project p, FileObject dirFO) throws IOException {
+    private static void createJfxExtension(Project p, FileObject dirFO, WizardType type) throws IOException {
         //adding JavaFX buildscript extension
         FileObject templateFO = FileUtil.getConfigFile("Templates/JFX/jfx-impl.xml"); //NOI18N
         if (templateFO != null) {
-            FileObject jfxBuildFile = FileUtil.copyFile(templateFO, dirFO.getFileObject("nbproject"), "jfx-impl"); // NOI18N
+            FileObject nbprojectFO = dirFO.getFileObject("nbproject");
+            FileObject jfxBuildFile = FileUtil.copyFile(templateFO, nbprojectFO, "jfx-impl"); // NOI18N
+            if(type == WizardType.SWING) {
+                FileObject templatesFO = nbprojectFO.getFileObject("templates"); // NOI18N
+                if(templatesFO == null) {
+                    templatesFO = nbprojectFO.createFolder("templates"); // NOI18N
+                }                
+                FileObject swingTemplateFO1 = FileUtil.getConfigFile("Templates/JFX/FXSwingTemplate.html"); //NOI18N
+                if(swingTemplateFO1 != null) {
+                    FileUtil.copyFile(swingTemplateFO1, templatesFO, "FXSwingTemplate"); // NOI18N
+                }
+                FileObject swingTemplateFO2 = FileUtil.getConfigFile("Templates/JFX/FXSwingTemplateApplet.jnlp"); //NOI18N
+                if(swingTemplateFO1 != null) {
+                    FileUtil.copyFile(swingTemplateFO2, templatesFO, "FXSwingTemplateApplet"); // NOI18N
+                }
+                FileObject swingTemplateFO3 = FileUtil.getConfigFile("Templates/JFX/FXSwingTemplateApplication.jnlp"); //NOI18N
+                if(swingTemplateFO1 != null) {
+                    FileUtil.copyFile(swingTemplateFO3, templatesFO, "FXSwingTemplateApplication"); // NOI18N
+                }
+            }
             AntBuildExtender extender = p.getLookup().lookup(AntBuildExtender.class);
             if (extender != null) {
                 assert jfxBuildFile != null;
@@ -379,8 +398,9 @@ public class JFXProjectGenerator {
         ep.setProperty(JFXProjectProperties.JAVAFX_REBASE_LIBS, "false"); // NOI18N
         ep.setComment(JFXProjectProperties.JAVAFX_REBASE_LIBS, new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_rebase_libs")}, false); // NOI18N
         
-        ep.setProperty(JFXProjectProperties.UPDATE_MODE_BACKGROUND, "true"); // NOI18N
-        ep.setComment(JFXProjectProperties.UPDATE_MODE_BACKGROUND, new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_updatemode")}, false); // NOI18N
+        // update mode set to false with signing on to prevent malfunction caused by so-far unresolved issues in JavaFX 2.1.x WebStart
+        ep.setProperty(JFXProjectProperties.UPDATE_MODE_BACKGROUND, "false"); // NOI18N
+        ep.setComment(JFXProjectProperties.UPDATE_MODE_BACKGROUND, new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, type == WizardType.SWING ? "COMMENT_updatemode_swing" : "COMMENT_updatemode")}, false); // NOI18N
         ep.setProperty(JFXProjectProperties.ALLOW_OFFLINE, "true"); // NOI18N
 
         ep.setProperty(JavaFXPlatformUtils.PROPERTY_JAVAFX_SDK, JavaFXPlatformUtils.getJavaFXSDKPathReference(platformName));
@@ -399,7 +419,7 @@ public class JFXProjectGenerator {
             // Disable J2SE JAR creation
             ep.setProperty("jar.archive.disabled", "true"); // NOI18N
             ep.setComment("jar.archive.disabled", new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_oldjar")}, false); // NOI18N
-            ep.setProperty(ProjectProperties.MAIN_CLASS, "com.javafx.main.Main"); // NOI18N
+            ep.setProperty(ProjectProperties.MAIN_CLASS, type == WizardType.SWING ? mainClass : "com.javafx.main.Main"); // NOI18N
             ep.setComment(ProjectProperties.MAIN_CLASS, new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_main.class")}, false); // NOI18N
 
             if (type != WizardType.LIBRARY) {
@@ -434,10 +454,11 @@ public class JFXProjectGenerator {
                 ep.setComment(JFXProjectProperties.JAVAFX_SWING, new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_use_swing")}, false); // NOI18N
             }
             
-            if (type == WizardType.FXML) {
+            if (type == WizardType.FXML || type == WizardType.SWING) {
                 // Workaround of JavaFX 2.0 issue causing FXML apps crash when signing is disabled
                 ep.setProperty(JFXProjectProperties.JAVAFX_SIGNING_ENABLED, "true"); // NOI18N
                 ep.setProperty(JFXProjectProperties.JAVAFX_SIGNING_TYPE, JFXProjectProperties.SigningType.SELF.getString());
+                ep.setProperty(JFXProjectProperties.PERMISSIONS_ELEVATED, "true"); // NOI18N
             }
         }
 

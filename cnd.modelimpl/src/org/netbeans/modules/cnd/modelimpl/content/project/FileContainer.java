@@ -62,6 +62,7 @@ import org.netbeans.modules.cnd.debug.DebugUtils;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler.State;
+import org.netbeans.modules.cnd.modelimpl.content.project.IncludedFileContainer.Storage;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FilePreprocessorConditionState;
 import org.netbeans.modules.cnd.modelimpl.csm.core.PreprocessorStatePair;
@@ -118,7 +119,7 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
 
     /** Creates a new instance of FileContainer */
     public FileContainer(ProjectBase project) {
-	super(new FileContainerKey(project.getUniqueName()), false);
+	super(new FileContainerKey(project.getUniqueName()));
         fileSystem = project.getFileSystem();
 	put();
     }
@@ -133,7 +134,7 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
 
     // only for creating EMPTY stub
     private FileContainer() {
-        super((org.netbeans.modules.cnd.repository.spi.Key) null, false);
+        super((org.netbeans.modules.cnd.repository.spi.Key) null);
         fileSystem = null;
     }
 
@@ -147,7 +148,7 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
 	    System.err.printf("%s ->\n%s\n\n", entry.getKey(), entry.getValue());
 	}
     }
-    
+
     public void putFile(FileImpl impl, APTPreprocHandler.State state) {
         CharSequence path = getFileKey(impl.getAbsolutePath(), true);
         CharSequence canonicalPath = getCanonicalKey(path);
@@ -234,22 +235,6 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
             CharSequence path = getFileKey(absPath, false);
             System.err.println("\nmarkAsParsingPreprocStates for file" + path + "\n");
         }
-    }
-    
-    public Collection<APTPreprocHandler.State> getPreprocStates(CharSequence absPath) {
-        FileEntry f = getFileEntry(absPath, false, false);
-        if (f == null){
-            return Collections.<APTPreprocHandler.State>emptyList();
-        }
-        return f.getPrerocStates();
-    }
-
-    public Collection<PreprocessorStatePair> getStatePairs(CharSequence absPath) {
-        FileEntry f = getFileEntry(absPath, false, false);
-        if (f == null) {
-            return Collections.<PreprocessorStatePair>emptyList();
-        }
-        return f.getStatePairs();
     }
 
     public FileEntry getEntry(CharSequence absPath) {
@@ -425,7 +410,7 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
         }
     }
     
-    private static void writeStringToFileEntryMap (
+    /*package*/ static void writeStringToFileEntryMap (
             final RepositoryDataOutput output, Map<CharSequence, FileEntry> aMap) throws IOException {
         assert output != null;
         assert aMap != null;
@@ -446,7 +431,7 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
         }
     }
     
-    private static void  readStringToFileEntryMap(
+    /*package*/ static void  readStringToFileEntryMap(
             FileSystem fs, RepositoryDataInput input, Map<CharSequence, FileEntry> aMap) throws IOException {
         
         assert input != null; 
@@ -548,6 +533,15 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
     //for unit test only
     public Map<CharSequence, Object/*CharSequence or CharSequence[]*/> getCanonicalNames(){
         return new TreeMap<CharSequence, Object>(canonicFiles);
+    }
+
+    public static FileEntry createFileEntryForMerge(CharSequence fileKey) {
+        return new FileEntry(null, null, fileKey, fileKey);
+    }
+
+    /*package*/ static FileEntry createFileEntry(FileImpl fileImpl) {
+        CharSequence path = getFileKey(fileImpl.getAbsolutePath(), false);
+        return new FileEntry(fileImpl.getUID(), null, path, path);
     }
 
     public static final class FileEntry {

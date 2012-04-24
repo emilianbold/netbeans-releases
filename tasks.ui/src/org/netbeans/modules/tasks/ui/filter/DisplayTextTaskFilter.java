@@ -47,16 +47,12 @@ import org.netbeans.modules.bugtracking.api.Issue;
  *
  * @author jpeska
  */
-public class DisplayTextTaskFilter implements TaskFilter {
+public class DisplayTextTaskFilter implements DashboardFilter<Issue> {
 
     private String summaryParam;
 
     public DisplayTextTaskFilter(String summaryParam) {
         this.summaryParam = summaryParam;
-    }
-
-    public String getSummaryParam() {
-        return summaryParam;
     }
 
     @Override
@@ -66,6 +62,11 @@ public class DisplayTextTaskFilter implements TaskFilter {
 
     @Override
     public boolean expandNodes() {
+        return true;
+    }
+
+    @Override
+    public boolean showHitCount() {
         return true;
     }
 }

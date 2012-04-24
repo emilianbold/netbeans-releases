@@ -73,6 +73,8 @@ made subject to such option by the copyright holder.
 -->
  <answer id="arch-overall">
   <p>
+      <b>IMPORTANT:</b> Since NB 7.2 the Tasks window has been renamed to Action Items window. Labels in UI now refer to "action items" but the code terms used in Task List API refer to "tasks".
+   <br/><br/>
    This is a framework for Task List window that shows tasks (errors, warnings, todos) generated
     by plugable modules for selected files/folders.<br/><br/><br/>
     <api type="export" name="TaskListSPI" group="java" category="official" url="@TOP@/org/netbeans/spi/tasklist/package-summary.html">

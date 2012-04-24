@@ -543,7 +543,7 @@
                 </if>
                 
                 <!-- remove the temporary directory -->
-                <delete dir="${current.temp.dir}"/>
+                <delete dir="${current.temp.dir}" deleteonexit="true"/>
             </if>
             
             <!-- if the data does not need to be packaged -->

@@ -67,9 +67,9 @@ public class RenameTest extends ModifyingRefactoring {
                 "testRenameClass",
                 "testRenamePackage",
                 "testRenameMethod",
-                //"testRenameGenerics",
-                //"testRenameVariable",
-                //"testRenameParameter",
+                "testRenameGenerics",
+                "testRenameVariable",
+                "testRenameParameter",
                 "testRenameCtor"
                 ).enableModules(".*").clusters(".*"));
     }

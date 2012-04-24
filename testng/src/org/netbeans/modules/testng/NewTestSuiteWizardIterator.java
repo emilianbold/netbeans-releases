@@ -59,13 +59,15 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.util.NbBundle;
 
-@TemplateRegistration(folder = "TestNG", position = 2000,
-        content = "resources/testng.xml.template",
+@TemplateRegistration(folder = "UnitTests", position = 1200,
+        content = "resources/TestNGSuite.xml.template",
         scriptEngine = "freemarker",
-        displayName = "#Templates/TestNG/TestNGTestSuite.xml",
+        displayName = "#TestNGSuite_displayName",
         description = "/org/netbeans/modules/testng/resources/newTestSuite.html",
         iconBase = "org/netbeans/modules/testng/resources/testng.gif")
+@NbBundle.Messages("TestNGSuite_displayName=TestNG Test Suite")
 public final class NewTestSuiteWizardIterator implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
 
     private transient int index;

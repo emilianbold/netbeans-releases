@@ -465,7 +465,11 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         }
     }
 
+    @Override
     public void valueChanged(ListSelectionEvent e) {
+        if (e.getValueIsAdjusting()) {
+            return;
+        }
         List selectedNodes = new ArrayList();
         ListSelectionModel selectionModel = table.getSelectionModel();
         TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class,  table);

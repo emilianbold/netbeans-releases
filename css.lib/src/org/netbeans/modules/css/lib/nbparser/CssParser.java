@@ -43,6 +43,8 @@ package org.netbeans.modules.css.lib.nbparser;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.css.lib.ExtCss3Lexer;
 import org.netbeans.modules.css.lib.ExtCss3Parser;
 import org.netbeans.modules.css.lib.api.CssParserResult;
@@ -60,16 +62,24 @@ import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author mfukala@netbeans.org
  */
 public class CssParser extends Parser {
+    
+    private static final Logger LOG = Logger.getLogger(CssParser.class.getSimpleName());
 
+    
     private CssParserResult result;
 
     public static CssParserResult parse(Snapshot snapshot) throws ParseException {
+        FileObject fo = snapshot.getSource().getFileObject();
+        String fileName = fo == null ? "no file" : fo.getPath();
+        LOG.log(Level.FINE, "Parsing {0} ", fileName);
+        long start = System.currentTimeMillis();
         try {
             CharSequence source = snapshot.getText();
             CharStream charstream = new ANTLRStringStream(source.toString());
@@ -90,6 +100,9 @@ public class CssParser extends Parser {
             return new CssParserResult(snapshot, tree, problems);
         } catch (RecognitionException ex) {
             throw new ParseException(String.format("Error parsing %s snapshot.", snapshot), ex);
+        } finally {
+            long end = System.currentTimeMillis();
+            LOG.log(Level.FINE, "Parsing of {0} took {1} ms.", new Object[]{fileName, (end - start)});
         }
     }
 

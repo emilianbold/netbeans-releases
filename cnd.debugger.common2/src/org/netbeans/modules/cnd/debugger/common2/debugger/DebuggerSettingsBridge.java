@@ -251,18 +251,16 @@ public abstract class DebuggerSettingsBridge implements PropertyChangeListener {
      * Extended version of DbgProfile.getArgsFlat() which appends redirection.
      */
     protected final String getArgsFlatEx() {
-        RunProfile mainRunProfile = mainSettings.runProfile();
-        DbgProfile mainDbgProfile = mainSettings.dbgProfile();
-	String args = mainRunProfile.getArgsFlat();
-	/*
-	if (mainDbgProfile.getRedirection() != null) {
-	    args += ' ';
-	    args += mainDbgProfile.getRedirection();
-	}
-	 */
-	return args;
+        DebuggerSettings currentSettings = getCurrentSettings();
+        String debugExecutable = currentSettings.dbgProfile().getExecutable();
+        // If debug command is specified - use arguments from there
+        if (!debugExecutable.isEmpty()) {
+            return currentSettings.dbgProfile().getArgsFlat();
+        } else {
+            return currentSettings.runProfile().getArgsFlat();
+        }
     }
-
+    
     // Hold between setup() and noteInitializationDone()
     private NativeDebuggerInfo info;
     /*
@@ -307,7 +305,7 @@ public abstract class DebuggerSettingsBridge implements PropertyChangeListener {
      *
      */
     public final void noteInitializationDone() {
-	OptionSet globalOptions = DebuggerManager.get().globalOptions();
+	OptionSet globalOptions = NativeDebuggerManager.get().globalOptions();
 	globalOptions.deltaWithRespectTo(defaultGlobalOptionSet);
 	globalOptions.applyTo(debugger.getOptionClient());
 	globalOptions.doneApplying();
@@ -368,7 +366,7 @@ public abstract class DebuggerSettingsBridge implements PropertyChangeListener {
      * Return true if some other session is using this profile.
      */
     private boolean isInUse(RunProfile profile, NativeDebugger myself) {
-	DebuggerManager manager = DebuggerManager.get();
+	NativeDebuggerManager manager = NativeDebuggerManager.get();
 	for (NativeDebugger aDebugger : manager.nativeDebuggers()) {
 	    if (aDebugger == myself)
 		continue;
@@ -625,13 +623,13 @@ public abstract class DebuggerSettingsBridge implements PropertyChangeListener {
             // Restore breakpoints from the mainRunProfile
 	    OptionLayers optionLayers = debugger.optionLayers();
             if (DebuggerOption.SAVE_BREAKPOINTS.isEnabled(optionLayers)) {
-		BreakpointBag bb = DebuggerManager.get().breakpointBag();
+		BreakpointBag bb = NativeDebuggerManager.get().breakpointBag();
 		debugger.bm().postRestoreBreakpoints(bb);
             }
         }
 
         if ((dirty & DIRTY_WATCHES) != 0) {
-	    WatchBag wb = DebuggerManager.get().watchBag();
+	    WatchBag wb = NativeDebuggerManager.get().watchBag();
 	    debugger.restoreWatches(wb);
         }
     }
@@ -643,6 +641,22 @@ public abstract class DebuggerSettingsBridge implements PropertyChangeListener {
 	} catch (Exception x) {
 	}
 	debugger.postRestoring(false);
+    }
+    
+    protected final String getRunDirectory() {
+        // NOTE: getRunDirectory() will attempt to cobble up something
+        // based on config baseDir if no rundirectory was gven.
+        DebuggerSettings currentSettings = getCurrentSettings();
+        return getRunDir(currentSettings.dbgProfile(), currentSettings.runProfile());
+    }
+    
+    public static String getRunDir(DbgProfile dbgProfile, RunProfile runProfile) {
+        String debugDir = dbgProfile.getDebugDir();
+        if (debugDir != null && !debugDir.isEmpty()) {
+            return debugDir;
+        } else {
+            return runProfile.getRunDirectory();
+        }
     }
 
     protected abstract void applyPathmap(Pathmap o, Pathmap n);

@@ -46,12 +46,15 @@ package org.openide.explorer.propertysheet;
 
 import java.awt.BorderLayout;
 import java.awt.Graphics;
+import java.awt.GraphicsEnvironment;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
 import java.lang.reflect.InvocationTargetException;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -61,6 +64,11 @@ import org.openide.nodes.Sheet;
  * Ensures that the proper property editor is used for indexed properties
  */
 public class IndexedPropertyTest extends ExtTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(IndexedPropertyTest.class);
+    }
+
     private PropertySheet ps = null;
     public IndexedPropertyTest(String name) {
         super(name);

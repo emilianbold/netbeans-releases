@@ -48,7 +48,9 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 import org.apache.maven.model.Build;
 import org.netbeans.modules.maven.spi.actions.MavenActionsProvider;
@@ -148,6 +150,9 @@ public final class ActionToGoalUtils {
             acts.addAll(rc.getActivatedProfiles());
             acts.addAll(configs.getActiveConfiguration().getActivatedProfiles());
             rc.setActivatedProfiles(acts);
+            Map<String, String> props = new HashMap<String, String>(rc.getProperties());
+            props.putAll(configs.getActiveConfiguration().getProperties());
+            rc.addProperties(props);
         }
         return rc;
     }
@@ -223,7 +228,7 @@ public final class ActionToGoalUtils {
 
     public static NetbeansActionMapping getDefaultMapping(String action, Project project) {
         NetbeansActionMapping na = null;
-        Lookup.Result<MavenActionsProvider> res = Lookup.getDefault().lookup(new Lookup.Template<MavenActionsProvider>(MavenActionsProvider.class));
+        Lookup.Result<MavenActionsProvider> res = Lookup.getDefault().lookupResult(MavenActionsProvider.class);
         for (MavenActionsProvider add : res.allInstances()) {
             na = add.getMappingForAction(action, project);
             if (na != null) {

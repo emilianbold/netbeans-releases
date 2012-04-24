@@ -116,7 +116,7 @@ public final class ProjectImpl implements ProjectProperties {
         }
         for (SourceFileProperties source : sources) {
             ItemProperties.LanguageKind lang = source.getLanguageKind();
-            ProjectImpl current = null;
+            ProjectImpl current;
             if (lang == ItemProperties.LanguageKind.C) {
                 if (cProp == null) {
                     cProp = new ProjectImpl(lang);
@@ -377,24 +377,16 @@ public final class ProjectImpl implements ProjectProperties {
         @Override
         public LanguageStandard getLanguageStandard() {
             switch (item.getLanguageFlavor()) {
-                case C:
-                    return LanguageStandard.C;
-                case C89:
-                    return LanguageStandard.C89;
-                case C99:
-                    return LanguageStandard.C99;
-                case CPP:
-                    return LanguageStandard.CPP;
-                case CPP11:
-                    return LanguageStandard.CPP11;
-                case F77:
-                    return LanguageStandard.F77;
-                case F90:
-                    return LanguageStandard.F90;
-                case F95:
-                    return LanguageStandard.F95;
-                default:
-                    return LanguageStandard.Unknown;
+                case C: return LanguageStandard.C;
+                case C89: return LanguageStandard.C89;
+                case C99: return LanguageStandard.C99;
+                case CPP: return LanguageStandard.CPP;
+                case CPP11: return LanguageStandard.CPP11;
+                case F77: return LanguageStandard.F77;
+                case F90: return LanguageStandard.F90;
+                case F95: return LanguageStandard.F95;
+                case DEFAULT: return LanguageStandard.Default;
+                default: return LanguageStandard.Unknown;
             }
         }
 

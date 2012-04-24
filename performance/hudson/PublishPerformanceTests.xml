@@ -11,14 +11,14 @@
     <property name="btd.dest.dir" value="${ide.dest.dir}"/>
     <property name="btd.dest.file" value="btd.zip"/>
     <property name="results.repository.password" value="guest"/> 
-    <property name="results.repository" value="guest@nbperf.czech.sun.com:/space/results"/>
+    <property name="results.repository" value="guest@nbperf.cz.oracle.com:/space/results"/>
     <property name="results.repository.password" value="guest"/>
     <property name="results.dir" value="results"/>
     <property name="results.file.unit" value="results-unit.zip"/>
     <property name="results.file.functional" value="results-functional.zip"/>
     <property name="netbeans.dir" value="netbeans"/>
-    <property name="testdistribution.dir" value="../../../../../ergonomics/performance"/>
-    <property name="othertests.dir" value="../../../../../ergonomics"/>
+    <property name="testdistribution.dir" value="../../../../../../ergonomics/performance"/>
+    <property name="othertests.dir" value="../../../../../../ergonomics"/>
 
     <loadfile srcFile="../../../../../build.number" property="perftestrun.buildnumber"/>
 
@@ -69,14 +69,14 @@
         <property name="results.string" value="xtr-netbeans_Dev-${perftestrun.buildnumber}-${host.name}-${java.version}-${perftestrun.buildnumber}"/>
 <!--        <property name="results.string" value="xtr-netbeans_Dev-${buildnumber}-${host.name}-${java.version}-${buildnumber}"/> -->
        <antcall target="move-results-functional"/>
-<!--        <antcall target="move-results-other"/> 
-        <antcall target="move-results-unit"/> -->
+<!--       <antcall target="move-results-other"/> -->
+       <antcall target="move-results-unit"/>
     </target>
     
     <target name="move-results-functional"  unless="testtype.unit">
         <zip destfile="${results.dir}/${results.string}-${results.file.functional}"
         basedir="${testdistribution.dir}"
-        includes="build/test/unit/results/*.xml, j2se/build/test/qa-functional/results/*.xml, j2ee/build/test/qa-functional/results/*.xml, web/build/test/qa-functional/results/*.xml,  enterprise/build/test/qa-functional/results/*.xml, languages/build/test/qa-functional/results/*.xml,  mobility/build/test/qa-functional/results/*.xml, j2se/build/test/qa-functional/work/allPerformance.xml, j2ee/build/test/qa-functional/work/allPerformance.xml, web/build/test/qa-functional/work/allPerformance.xml,  enterprise/build/test/qa-functional/work/allPerformance.xml, languages/build/test/qa-functional/work/allPerformance.xml,  mobility/build/test/qa-functional/work/allPerformance.xml, build/test/unit/work/allPerformance.xml" 
+        includes="build/test/qa-functional/results/*.xml, j2se/build/test/qa-functional/results/*.xml, j2ee/build/test/qa-functional/results/*.xml, web/build/test/qa-functional/results/*.xml,  enterprise/build/test/qa-functional/results/*.xml, languages/build/test/qa-functional/results/*.xml,  mobility/build/test/qa-functional/results/*.xml, j2se/build/test/qa-functional/work/allPerformance.xml, j2ee/build/test/qa-functional/work/allPerformance.xml, web/build/test/qa-functional/work/allPerformance.xml,  enterprise/build/test/qa-functional/work/allPerformance.xml, languages/build/test/qa-functional/work/allPerformance.xml,  mobility/build/test/qa-functional/work/allPerformance.xml, build/test/qa-functional/work/allPerformance.xml" 
          />
 <scp file="${results.dir}/${results.string}-${results.file.functional}"
 todir="${results.repository}"
@@ -88,7 +88,7 @@ password="${results.repository.password}"/>
     <target name="move-results-unit"  unless="testtype.functional">
         <zip destfile="${results.dir}/${results.string}-${results.file.unit}"
         basedir="${testdistribution.dir}"
- includes="build/test/unit/results/*.xml, j2se/build/test/unit/results/*.xml, j2ee/build/test/unit/results/*.xml, web/build/test/unit/results/*.xml,  enterprise/build/test/unit/results/*.xml, languages/build/test/unit/results/*.xml,  mobility/build/test/unit/results/*.xml, build/test/unit/work/allPerformance.xml,  j2se/build/test/unit/work/allPerformance.xml, j2ee/build/test/unit/work/allPerformance.xml, web/build/test/unit/work/allPerformance.xml,  enterprise/build/test/unit/work/allPerformance.xml, languages/build/test/unit/work/allPerformance.xml,  mobility/build/test/unit/work/allPerformance.xml"
+        includes="build/test/unit/results/*.xml, j2se/build/test/unit/results/*.xml, j2ee/build/test/unit/results/*.xml, web/build/test/unit/results/*.xml,  enterprise/build/test/unit/results/*.xml, languages/build/test/unit/results/*.xml,  mobility/build/test/unit/results/*.xml, j2se/build/test/unit/work/allPerformance.xml, j2ee/build/test/unit/work/allPerformance.xml, web/build/test/unit/work/allPerformance.xml,  enterprise/build/test/unit/work/allPerformance.xml, languages/build/test/unit/work/allPerformance.xml,  mobility/build/test/unit/work/allPerformance.xml, build/test/unit/work/allPerformance.xml" 
  />
 <scp file="${results.dir}/${results.string}-${results.file.unit}"
 todir="${results.repository}"

@@ -179,7 +179,7 @@ public class DelegateMethodGenerator implements CodeGenerator {
                                 ArrayList<ExecutableElement> methods = new ArrayList<ExecutableElement>();
                                 for (ElementHandle<? extends Element> elementHandle : panel.getDelegateMethods())
                                     methods.add((ExecutableElement)elementHandle.resolve(copy));
-                                generateDelegatingMethods(copy, path, delegate, methods);
+                                generateDelegatingMethods(copy, path, delegate, methods, caretOffset);
                             }
                         }
                     });
@@ -301,16 +301,15 @@ public class DelegateMethodGenerator implements CodeGenerator {
         return null;
     }
     
-    static void generateDelegatingMethods(WorkingCopy wc, TreePath path, VariableElement delegate, Iterable<? extends ExecutableElement> methods) {
+    static void generateDelegatingMethods(WorkingCopy wc, TreePath path, VariableElement delegate, Iterable<? extends ExecutableElement> methods, int offset) {
         assert TreeUtilities.CLASS_TREE_KINDS.contains(path.getLeaf().getKind());
         TypeElement te = (TypeElement)wc.getTrees().getElement(path);
         if (te != null) {
-            ClassTree nue = (ClassTree)path.getLeaf();
+            ClassTree clazz = (ClassTree)path.getLeaf();
             List<Tree> members = new ArrayList<Tree>();
             for (ExecutableElement executableElement : methods)
                 members.add(createDelegatingMethod(wc, delegate, executableElement, (DeclaredType)te.asType()));
-            nue = GeneratorUtilities.get(wc).insertClassMembers(nue, members);
-            wc.rewrite(path.getLeaf(), nue);
+            wc.rewrite(clazz, GeneratorUtils.insertClassMembers(wc, clazz, members, offset));
         }        
     }
     

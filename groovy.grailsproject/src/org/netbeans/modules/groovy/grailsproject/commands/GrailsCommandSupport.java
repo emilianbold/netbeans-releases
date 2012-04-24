@@ -78,12 +78,6 @@ import org.netbeans.modules.groovy.grailsproject.actions.RefreshProjectRunnable;
 import org.netbeans.modules.groovy.grailsproject.config.BuildConfig;
 import org.netbeans.modules.groovy.grailsproject.debug.GrailsDebugger;
 import org.netbeans.modules.groovy.support.api.GroovySettings;
-import org.netbeans.modules.web.client.tools.api.JSToNbJSLocationMapper;
-import org.netbeans.modules.web.client.tools.api.LocationMappersFactory;
-import org.netbeans.modules.web.client.tools.api.NbJSToJSLocationMapper;
-import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
-import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionException;
-import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -280,61 +274,13 @@ public final class GrailsCommandSupport {
     }
 
     public static final void showURL(URL url, boolean debug, GrailsProject project) {
-        boolean debuggerAvailable = WebClientToolsSessionStarterService.isAvailable();
-
-        if (!debug || !debuggerAvailable) {
+        if (!debug) {
             if (GrailsProjectConfig.forProject(project).getDisplayBrowser()) {
                 HtmlBrowser.URLDisplayer.getDefault().showURL(url);
             }
         } else {
-            FileObject webAppDir = project.getProjectDirectory().getFileObject(WEB_APP_DIR);
-            GrailsProjectConfig config = GrailsProjectConfig.forProject(project);
-
-            String port = config.getPort();
-            String prefix = url.getProtocol() + "://" + url.getHost() + ":" + port + "/" + project.getProjectDirectory().getName();
-            String actualURL = url.toExternalForm();
-
-            Lookup debugLookup;
-            if (!actualURL.startsWith(prefix)) {
-                LOGGER.warning("Could not construct URL mapper for JavaScript debugger.");
-                debugLookup = Lookups.fixed(project);
-            } else {
-                LocationMappersFactory factory = Lookup.getDefault().lookup(LocationMappersFactory.class);
-
-                if (factory == null) {
-                    debugLookup = Lookups.fixed(project);
-                } else {
-                    try {
-                        URI prefixURI = new URI(prefix);
-
-                        JSToNbJSLocationMapper forwardMapper = factory.getJSToNbJSLocationMapper(webAppDir, prefixURI, null);
-                        NbJSToJSLocationMapper reverseMapper = factory.getNbJSToJSLocationMapper(webAppDir, prefixURI, null);
-
-                        debugLookup = Lookups.fixed(forwardMapper, reverseMapper, project);
-                    } catch (URISyntaxException ex) {
-                        LOGGER.log(Level.WARNING, "Server URI could not be constructed from displayed URL", ex);
-                        debugLookup = Lookups.fixed(project);
-                    }
-                }
-            }
-
-            try {
-                URI launchURI = url.toURI();
-                HtmlBrowser.Factory browser = WebClientToolsProjectUtils.getFirefoxBrowser();
-
-                String browserString = config.getDebugBrowser();
-                if (browserString == null) {
-                    browserString = WebClientToolsProjectUtils.Browser.FIREFOX.name();
-                }
-                if (WebClientToolsProjectUtils.Browser.valueOf(browserString) == WebClientToolsProjectUtils.Browser.INTERNET_EXPLORER) {
-                     browser = WebClientToolsProjectUtils.getInternetExplorerBrowser();
-                }
-                WebClientToolsSessionStarterService.startSession(launchURI, browser, debugLookup);
-            } catch (URISyntaxException ex) {
-                LOGGER.log(Level.SEVERE, "Unable to obtain URI for URL", ex);
-            } catch (WebClientToolsSessionException ex) {
-                LOGGER.log(Level.SEVERE, "Unexpected exception launching javascript debugger", ex);
-            }
+            // there is no other debugger than JavaScript is there?
+            HtmlBrowser.URLDisplayer.getDefault().showURL(url);
         }
     }
 

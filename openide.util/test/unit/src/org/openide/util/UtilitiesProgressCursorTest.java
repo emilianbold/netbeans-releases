@@ -45,7 +45,10 @@
 package org.openide.util;
 
 import java.awt.Cursor;
+import java.awt.GraphicsEnvironment;
 import javax.swing.JComponent;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
 
 /**
@@ -53,6 +56,10 @@ import org.netbeans.junit.NbTestCase;
  * @author Dafe Simonek
  */
 public class UtilitiesProgressCursorTest extends NbTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(UtilitiesProgressCursorTest.class);
+    }
 
     /** Creates a new instance of UtilProgressCursorTest */
     public UtilitiesProgressCursorTest(String testName) {

@@ -93,7 +93,7 @@ public class QueryParameterTest extends NbTestCase implements TestConstants {
         ComboParameter cp = new QueryParameter.ComboParameter(combo, PARAMETER, "UTF-8");
         assertEquals(PARAMETER, cp.getParameter());
         assertNull(combo.getSelectedItem());
-        assertEquals(cp.get().toString(), "&" + PARAMETER + "=");
+        assertEquals(cp.get(false).toString(), "&" + PARAMETER + "=");
         cp.setParameterValues(VALUES);
         cp.setValues(new ParameterValue[] {PV2});
 
@@ -105,10 +105,10 @@ public class QueryParameterTest extends NbTestCase implements TestConstants {
         assertEquals(1, v.length);
         assertEquals(PV2, v[0]);
 
-        assertEquals(cp.get().toString(), "&" + PARAMETER + "=" + PV2.getValue());
+        assertEquals(cp.get(false).toString(), "&" + PARAMETER + "=" + PV2.getValue());
 
         combo.setSelectedItem(PV3);
-        assertEquals(cp.get().toString(), "&" + PARAMETER + "=" + PV3.getValue());
+        assertEquals(cp.get(false).toString(), "&" + PARAMETER + "=" + PV3.getValue());
     }
 
     public void testListParameters() {
@@ -116,7 +116,7 @@ public class QueryParameterTest extends NbTestCase implements TestConstants {
         ListParameter lp = new ListParameter(list, PARAMETER, "UTF-8");
         assertEquals(PARAMETER, lp.getParameter());
         assertEquals(-1, list.getSelectedIndex());
-        assertEquals(lp.get().toString(), "&" + PARAMETER + "=");
+        assertEquals(lp.get(false).toString(), "&" + PARAMETER + "=");
         lp.setParameterValues(VALUES);
         lp.setValues(new ParameterValue[] {PV2, PV3});
 
@@ -135,7 +135,7 @@ public class QueryParameterTest extends NbTestCase implements TestConstants {
         if(!s.contains(PV2)) fail("mising parameter [" + PV2 + "]");
         if(!s.contains(PV3)) fail("mising parameter [" + PV3 + "]");
 
-        String get = lp.get().toString();
+        String get = lp.get(false).toString();
         String[] returned = get.split("&");
         Set<String> ss = new HashSet<String>();
         for (int i = 1; i < returned.length; i++) ss.add(returned[i]);
@@ -144,7 +144,7 @@ public class QueryParameterTest extends NbTestCase implements TestConstants {
         if(!ss.contains(PARAMETER + "=" + PV3.getValue())) fail("mising parameter [" + PV3 + "]");
 
         list.setSelectedValue(PV4, false);
-        assertEquals(lp.get().toString(), "&" + PARAMETER + "=" + PV4.getValue());
+        assertEquals(lp.get(false).toString(), "&" + PARAMETER + "=" + PV4.getValue());
     }
 
     public void testTextFieldParameter() throws UnsupportedEncodingException {
@@ -152,33 +152,33 @@ public class QueryParameterTest extends NbTestCase implements TestConstants {
         TextFieldParameter tp = new TextFieldParameter(text, PARAMETER, "UTF-8");
         assertEquals(PARAMETER, tp.getParameter());
         assertEquals("", text.getText());
-        assertEquals(tp.get().toString(), "&" + PARAMETER + "=");
+        assertEquals(tp.get(false).toString(), "&" + PARAMETER + "=");
 
         tp.setValues(new ParameterValue[] {PV2});
         assertEquals(PV2.getValue(), text.getText());
         assertEquals(1, tp.getValues().length);
         assertEquals(PV2, tp.getValues()[0]);
-        assertEquals(tp.get().toString(), "&" + PARAMETER + "=" + PV2.getValue());
+        assertEquals(tp.get(false).toString(), "&" + PARAMETER + "=" + PV2.getValue());
 
         String parameterValue = "New+Value";
         tp.setValues(new ParameterValue[] {new ParameterValue(parameterValue)});
         assertEquals("New Value", text.getText());
         assertEquals(1, tp.getValues().length);
         assertEquals(new ParameterValue(parameterValue), tp.getValues()[0]);
-        assertEquals(tp.get().toString(), "&" + PARAMETER + "=" + URLEncoder.encode(parameterValue, "UTF-8"));
+        assertEquals(tp.get(true).toString(), "&" + PARAMETER + "=" + URLEncoder.encode(parameterValue, "UTF-8"));
 
         parameterValue = "NewValue";
         text.setText(parameterValue);
         assertEquals(1, tp.getValues().length);
         assertEquals(new ParameterValue(parameterValue), tp.getValues()[0]);
-        assertEquals(tp.get().toString(), "&" + PARAMETER + "=" + URLEncoder.encode(parameterValue, "UTF-8"));
+        assertEquals(tp.get(true).toString(), "&" + PARAMETER + "=" + URLEncoder.encode(parameterValue, "UTF-8"));
         assertEquals("NewValue", text.getText());
 
         text.setText("New Value1");
         assertEquals(1, tp.getValues().length);
         parameterValue = "New+Value1";
         assertEquals(new ParameterValue(parameterValue), tp.getValues()[0]);
-        assertEquals(tp.get().toString(), "&" + PARAMETER + "=" + URLEncoder.encode(parameterValue, "UTF-8"));
+        assertEquals(tp.get(true).toString(), "&" + PARAMETER + "=" + URLEncoder.encode(parameterValue, "UTF-8"));
 
     }
 
@@ -187,21 +187,21 @@ public class QueryParameterTest extends NbTestCase implements TestConstants {
         CheckBoxParameter cp = new CheckBoxParameter(checkbox, PARAMETER, "UTF-8");
         assertEquals(PARAMETER, cp.getParameter());
         assertFalse(checkbox.isSelected());
-        assertEquals(cp.get().toString(), "&" + PARAMETER + "=");
+        assertEquals(cp.get(false).toString(), "&" + PARAMETER + "=");
 
         ParameterValue pv = new ParameterValue("1");
         cp.setValues(new ParameterValue[] {pv});
         assertTrue(checkbox.isSelected());
         assertEquals(1, cp.getValues().length);
         assertEquals(pv, cp.getValues()[0]);
-        assertEquals(cp.get().toString(), "&" + PARAMETER + "=1");
+        assertEquals(cp.get(false).toString(), "&" + PARAMETER + "=1");
 
         pv = new ParameterValue("0");
         cp.setValues(new ParameterValue[] {pv});
         assertFalse(checkbox.isSelected());
         assertEquals(1, cp.getValues().length);
         assertEquals(QueryParameter.EMPTY_PARAMETER_VALUE[0], cp.getValues()[0]);
-        assertEquals(cp.get().toString(), "&" + PARAMETER + "=");
+        assertEquals(cp.get(false).toString(), "&" + PARAMETER + "=");
     }
 
 }

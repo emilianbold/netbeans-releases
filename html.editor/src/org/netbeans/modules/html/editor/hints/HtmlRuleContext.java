@@ -41,13 +41,20 @@
  */
 package org.netbeans.modules.html.editor.hints;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzerResult;
+import java.util.Map;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.css.indexing.api.CssIndex;
+import org.netbeans.modules.html.editor.lib.api.SyntaxAnalyzerResult;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.web.common.api.DependenciesGraph;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -55,11 +62,13 @@ import org.openide.filesystems.FileObject;
  * @author marekfukala
  */
 public class HtmlRuleContext {
-    
+
     private SyntaxAnalyzerResult syntaxAnalyzerResult;
     private HtmlParserResult parserResult;
     private List<HintFix> defaultFixes;
     private List<? extends Error> leftDiagnostics;
+    private CssIndex cssIndex;
+    private DependenciesGraph cssDependencies;
 
     public HtmlRuleContext(HtmlParserResult parserResult, SyntaxAnalyzerResult syntaxAnalyzerResult, List<HintFix> defaultFixes) {
         this.parserResult = parserResult;
@@ -67,11 +76,11 @@ public class HtmlRuleContext {
         this.defaultFixes = defaultFixes;
         this.leftDiagnostics = new ArrayList<Error>(parserResult.getDiagnostics());
     }
-    
+
     public HtmlParserResult getHtmlParserResult() {
         return parserResult;
     }
-    
+
     public SyntaxAnalyzerResult getSyntaxAnalyzerResult() {
         return syntaxAnalyzerResult;
     }
@@ -79,7 +88,7 @@ public class HtmlRuleContext {
     public FileObject getFile() {
         return getSnapshot().getSource().getFileObject();
     }
-    
+
     public Snapshot getSnapshot() {
         return getHtmlParserResult().getSnapshot();
     }
@@ -87,8 +96,29 @@ public class HtmlRuleContext {
     public List<HintFix> getDefaultFixes() {
         return defaultFixes;
     }
- 
+
     public List<? extends Error> getLeftDiagnostics() {
         return leftDiagnostics;
     }
+
+    public synchronized CssIndex getCssIndex() throws IOException {
+        if (cssIndex == null) {
+            Project project = FileOwnerQuery.getOwner(getFile());
+            if (project != null) {
+                cssIndex = CssIndex.create(project);
+            }
+        }
+        return cssIndex;
+    }
+    
+    public synchronized DependenciesGraph getCssDependenciesGraph() throws IOException {
+        if(cssDependencies == null) {
+            CssIndex cssIndex = getCssIndex();
+            if(cssIndex != null) {
+                cssDependencies = cssIndex.getDependencies(getFile());
+            }
+        }
+        return cssDependencies;
+    }
+    
 }

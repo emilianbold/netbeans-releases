@@ -77,10 +77,11 @@ public class FiltersNode extends AbstractWebContainerNode {
         Collection<SelectorNode> fNodes = new ArrayList<SelectorNode>();
         for(FilterInfo fi : md.getFilters()) {
             SourceClassInfo sType = ProfilerTypeUtils.resolveClass(fi.getFilterClass(), prj);
-            List<String> patterns = fi.getUrlPatterns();
-            if (patterns != null && !patterns.isEmpty()) {
-                
-                fNodes.add(new FilterNode(sType, fi.getName(), patterns.get(0) , this));
+            if (sType != null) {
+                List<String> patterns = fi.getUrlPatterns();
+                if (patterns != null && !patterns.isEmpty()) {
+                    fNodes.add(new FilterNode(sType, fi.getName(), patterns.get(0) , this));
+                }
             }
         }
         return fNodes;

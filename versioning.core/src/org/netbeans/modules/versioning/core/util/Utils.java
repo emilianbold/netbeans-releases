@@ -43,13 +43,17 @@ package org.netbeans.modules.versioning.core.util;
 
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.util.prefs.Preferences;
-import org.netbeans.modules.versioning.core.FlatFolder;
-import org.netbeans.modules.versioning.core.VcsVisibilityQueryImplementation;
-import org.netbeans.modules.versioning.core.VersioningConfig;
-import org.netbeans.modules.versioning.core.VersioningManager;
+import java.util.Date;
+import javax.swing.Action;
+import org.netbeans.modules.versioning.core.*;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.spi.VCSHistoryProvider;
+import org.netbeans.modules.versioning.core.spi.VCSHistoryProvider.HistoryEntry;
+import org.netbeans.modules.versioning.core.spi.VCSHistoryProvider.MessageEditProvider;
+import org.netbeans.modules.versioning.core.spi.VCSHistoryProvider.ParentProvider;
+import org.netbeans.modules.versioning.core.spi.VCSHistoryProvider.RevisionProvider;
 import org.netbeans.modules.versioning.core.util.VCSSystemProvider.VersioningSystem;
+import org.netbeans.spi.queries.VisibilityQueryImplementation;
 
 /**
  * Provides access to some versioning.core functionality needed by versioning.spi and versioning.ui.
@@ -190,5 +194,14 @@ public final class Utils {
         VersioningManager.getInstance().removePropertyChangeListener(l);
     }
     
+    public static Object[] getDelegateEntry(VCSHistoryProvider.HistoryEntry entry) {
+        return SPIAccessor.IMPL.getLookupObjects(entry);
+    }
+    
+    public static HistoryEntry createHistoryEntry(VCSFileProxy[] proxies, Date dateTime, String message, String username, String usernameShort, String revision, String revisionShort, Action[] actions, RevisionProvider rp, MessageEditProvider mep, ParentProvider pp, Object[] lookupObjects) {
+        HistoryEntry entry = new HistoryEntry(proxies, dateTime, message, username, usernameShort, revision, revisionShort, actions, rp, mep, pp);
+        SPIAccessor.IMPL.setLookupObjects(entry, lookupObjects);
+        return entry;
+    }
     
 }

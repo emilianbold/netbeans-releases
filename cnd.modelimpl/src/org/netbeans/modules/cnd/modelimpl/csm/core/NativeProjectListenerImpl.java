@@ -142,7 +142,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
             System.err.println("\t"+fileItem.getAbsolutePath()); // NOI18N
         }
         if (enabledEventsHandling) {
-            itemsPropertiesChangedImpl(Collections.singletonList(fileItem));
+            itemsPropertiesChangedImpl(Collections.singletonList(fileItem), false);
         } else {
             if (TraceFlags.TIMING) {
                 System.err.printf("\nskipped filePropertiesChanged(item) %s...\n",
@@ -161,7 +161,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
             }
         }
         if (enabledEventsHandling) {
-            itemsPropertiesChangedImpl(fileItems);
+            itemsPropertiesChangedImpl(fileItems, false);
         } else {
             if (TraceFlags.TIMING) {
                 System.err.printf("\nskipped filesPropertiesChanged(list) %s...\n",
@@ -194,7 +194,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
                     }
                 }
             }
-            itemsPropertiesChangedImpl(list);
+            itemsPropertiesChangedImpl(list, true);
         } else {
             if (TraceFlags.TIMING) {
                 System.err.printf("\nskipped filesPropertiesChanged %s...\n", nativeProject.getProjectDisplayName());
@@ -256,7 +256,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
         }, "Applying rename item"); // NOI18N          
     }
     
-    private void itemsPropertiesChangedImpl(final List<NativeFileItem> items) {
+    private void itemsPropertiesChangedImpl(final List<NativeFileItem> items, final boolean invalidateLibraries) {
         if (!items.isEmpty()) {
             ModelImpl.instance().enqueueModelTask(new Runnable() {
 
@@ -264,10 +264,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
                 public void run() {
                     try {
                         if (projectBase.isValid()) {
-                            if (projectBase instanceof ProjectImpl) {
-                                LibraryManager.getInstance().onProjectPropertyChanged(projectBase.getUID());
-                            }
-                            projectBase.onFilePropertyChanged(items);
+                            projectBase.onFilePropertyChanged(items, invalidateLibraries);
                         }
                     } catch (Exception e) {
                         e.printStackTrace(System.err);

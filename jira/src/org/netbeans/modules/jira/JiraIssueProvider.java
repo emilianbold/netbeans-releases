@@ -39,10 +39,10 @@ package org.netbeans.modules.jira;
 
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.util.List;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
-import org.openide.nodes.Node;
 
 /**
  *
@@ -66,6 +66,12 @@ public class JiraIssueProvider extends IssueProvider<NbJiraIssue> {
     }
 
     @Override
+    public String[] getSubtasks(NbJiraIssue data) {
+        List<String> l = data.getSubtaskID();
+        return l.toArray(new String[l.size()]);
+    }
+    
+    @Override
     public String getSummary(NbJiraIssue data) {
         return data.getSummary();
     }
@@ -75,6 +81,11 @@ public class JiraIssueProvider extends IssueProvider<NbJiraIssue> {
         return data.isNew();
     }
 
+    @Override
+    public boolean isFinished(NbJiraIssue data) {
+        return data.isFinished();
+    }
+    
     @Override
     public boolean refresh(NbJiraIssue data) {
         return data.refresh();
@@ -105,9 +116,4 @@ public class JiraIssueProvider extends IssueProvider<NbJiraIssue> {
         data.addPropertyChangeListener(listener);
     }
 
-    @Override
-    public void setContext(NbJiraIssue data, Node[] nodes) {
-        data.setContext(nodes);
-    }
-    
 }

@@ -178,6 +178,7 @@ public class FmtImports extends javax.swing.JPanel implements Runnable, ListSele
         separateGroupsCheckBox = new javax.swing.JCheckBox();
 
         setName(org.openide.util.NbBundle.getMessage(FmtImports.class, "LBL_Imports")); // NOI18N
+        setOpaque(false);
 
         org.openide.awt.Mnemonics.setLocalizedText(singleClassImportsRadioButton, org.openide.util.NbBundle.getMessage(FmtImports.class, "LBL_imp_useSingleClass")); // NOI18N
         singleClassImportsRadioButton.addActionListener(new java.awt.event.ActionListener() {
@@ -372,7 +373,7 @@ public class FmtImports extends javax.swing.JPanel implements Runnable, ListSele
                     .addComponent(jScrollPane2, 0, 0, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(separateGroupsCheckBox)
-                .addGap(49, 49, 49))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 

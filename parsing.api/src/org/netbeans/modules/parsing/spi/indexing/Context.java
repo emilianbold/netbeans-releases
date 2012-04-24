@@ -56,6 +56,7 @@ import org.netbeans.modules.parsing.impl.indexing.CancelRequest;
 import org.netbeans.modules.parsing.impl.indexing.IndexFactoryImpl;
 import org.netbeans.modules.parsing.impl.indexing.LogContext;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
+import org.netbeans.modules.parsing.impl.indexing.lucene.LayeredDocumentIndex;
 import org.netbeans.modules.parsing.impl.indexing.lucene.LuceneIndexFactory;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
 import org.openide.filesystems.FileObject;
@@ -292,6 +293,14 @@ public final class Context {
     void attachIndexingSupport(IndexingSupport support) {
         assert this.indexingSupport == null;
         this.indexingSupport = support;
+        try {
+            final LayeredDocumentIndex index = this.factory.getIndex(getIndexFolder());
+            if (index != null) {
+                index.begin();
+            }
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
+        }
     }
 
     IndexingSupport getAttachedIndexingSupport() {

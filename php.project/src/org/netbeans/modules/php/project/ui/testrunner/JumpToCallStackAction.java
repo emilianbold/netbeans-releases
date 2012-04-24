@@ -43,6 +43,7 @@
 package org.netbeans.modules.php.project.ui.testrunner;
 
 import java.awt.event.ActionEvent;
+import java.io.File;
 import java.util.regex.Matcher;
 import javax.swing.AbstractAction;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
@@ -69,7 +70,7 @@ public class JumpToCallStackAction extends AbstractAction {
         if (matcher.matches()) {
             String path = matcher.group(1);
             String line = matcher.group(2);
-            PhpProjectUtils.openFile(path, Integer.valueOf(line));
+            PhpProjectUtils.openFile(new File(path), Integer.valueOf(line));
         }
     }
 }

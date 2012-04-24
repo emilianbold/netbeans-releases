@@ -57,12 +57,13 @@ import org.netbeans.modules.maven.NbMavenProjectImpl;
  * @author  Milos Kleint 
  */
 class SourceClassPathImpl extends AbstractProjectClassPathImpl {
-    
+
     /**
      * Creates a new instance of SourceClassPathImpl
      */
     public SourceClassPathImpl(NbMavenProjectImpl proj) {
         super(proj);
+        proj.getProjectWatcher().addWatchedPath("target/generated-sources");
     }
     
     @Override

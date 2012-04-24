@@ -84,7 +84,7 @@ public class DummyRepository extends TestRepository {
     }
 
     @Override
-    public TestIssue getIssue(String id) {
+    public TestIssue[] getIssues(String[] id) {
         assert false : "This was assumed to be never called.";
         return null;
     }

@@ -89,6 +89,8 @@ public class TemplateWizard extends WizardDescriptor {
     /** prefered dimmension of the panels */
     static java.awt.Dimension PREF_DIM = new java.awt.Dimension (560, 350);
 
+    private static final Logger LOG = Logger.getLogger(TemplateWizard.class.getName());
+
     /** panel */
     private Panel<WizardDescriptor> templateChooser;
     /** panel */
@@ -258,6 +260,7 @@ public class TemplateWizard extends WizardDescriptor {
      * @throws IOException if the target folder has not been set
      */
     public DataFolder getTargetFolder () throws IOException {
+        LOG.log(Level.FINE, "targetFolder={0} for {1}", new Object[] {targetDataFolder, this});
         if (targetDataFolder == null) {
             throw new IOException(NbBundle.getMessage(TemplateWizard.class, "ERR_NoFilesystem"));
         }
@@ -281,6 +284,9 @@ public class TemplateWizard extends WizardDescriptor {
     * @param f the folder
     */
     public void setTargetFolder (DataFolder f) {
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "set targetFolder=" + f + " for " + this, new Throwable());
+        }
         targetDataFolder = f;
     }
 
@@ -519,9 +525,7 @@ public class TemplateWizard extends WizardDescriptor {
                                                              }
                                                          }
                                                          catch (java.lang.NullPointerException npe) {
-                                                             Logger.getLogger(TemplateWizard.class.getName()).log(Level.WARNING,
-                                                                               null,
-                                                                               npe);
+                                                             LOG.log(Level.WARNING, null, npe);
                                                          }
                                                      }
                                                  });
@@ -545,9 +549,7 @@ public class TemplateWizard extends WizardDescriptor {
                                                              }
                                                          }
                                                          catch (java.lang.NullPointerException npe) {
-                                                             Logger.getLogger(TemplateWizard.class.getName()).log(Level.WARNING,
-                                                                               null,
-                                                                               npe);
+                                                             LOG.log(Level.WARNING, null, npe);
                                                          }
                                                      }
                                                  });
@@ -635,7 +637,7 @@ public class TemplateWizard extends WizardDescriptor {
     @Deprecated
     public static void setDescriptionAsResource (DataObject obj, String rsrc) throws IOException {
         if (rsrc != null && rsrc.startsWith ("/")) { // NOI18N
-            Logger.getLogger(TemplateWizard.class.getName()).warning("auto-stripping leading slash from resource path in TemplateWizard.setDescriptionAsResource: " + rsrc);
+            LOG.log(Level.WARNING, "auto-stripping leading slash from resource path in TemplateWizard.setDescriptionAsResource: {0}", rsrc);
             rsrc = rsrc.substring (1);
         }
         obj.getPrimaryFile ().setAttribute (EA_DESC_RESOURCE, rsrc);
@@ -1022,9 +1024,7 @@ public class TemplateWizard extends WizardDescriptor {
                 workSet = instantiatingIterator.instantiate ();
             }
             if (workSet == null) {
-                Logger.getLogger(TemplateWizard.class.getName()).warning(
-                        "Wizard iterator of type " + instantiatingIterator.getClass().getName() +
-                        " illegally returned null from the instantiate method");
+                LOG.log(Level.WARNING, "Wizard iterator of type {0} illegally returned null from the instantiate method", instantiatingIterator.getClass().getName());
                 return Collections.emptySet ();
             }
             DataObject dobj;

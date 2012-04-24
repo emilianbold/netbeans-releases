@@ -74,4 +74,7 @@ public interface EJBAPIAnnotations {
     String WEB_SERVICE = "javax.jws.WebService"; //NOI18N
     // TODO: Add other ones here including enum types
     String LOCAL_BEAN = "javax.ejb.LocalBean";
+
+    String POST_CONSTRUCT = "javax.annotation.PostConstruct";
+    String AROUND_INVOKE = "javax.interceptor.AroundInvoke";
 }

@@ -72,7 +72,7 @@ public final class SimpleConverter implements PathConverter {
                 result = path.charAt(plen) + ":"; // NOI18N
                 result += path.substring(plen + 1);
             }
-            return result.replaceAll("/", "\\\\"); // NOI18N
+            return result.replace('/', '\\'); // NOI18N
         }
 
         String prefix = trgType == PathType.CYGWIN ? cygwinPrefix : "/"; // NOI18N
@@ -81,7 +81,7 @@ public final class SimpleConverter implements PathConverter {
             result = prefix + result.replaceFirst(":", ""); // NOI18N
         }
 
-        return result = result.replaceAll("\\\\", "/"); // NOI18N
+        return result.replace('\\', '/'); // NOI18N
     }
 
     @Override

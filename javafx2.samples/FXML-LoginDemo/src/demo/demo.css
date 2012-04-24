@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, 2011 Oracle and/or its affiliates.
+ * Copyright (c) 2008, 2012 Oracle and/or its affiliates.
  * All rights reserved. Use is subject to license terms.
  *
  * This file is available and licensed under the following license:
@@ -39,7 +39,8 @@
     -fx-font-size: 1.1em;
 }
 .profile #subscribed {
-    -fx-font-size: 0.8em;
+    -fx-font-size: 1.1em;
+    -fx-font-style: italic;
 }
 .profile #message {
     -fx-font-size: 1.2em;

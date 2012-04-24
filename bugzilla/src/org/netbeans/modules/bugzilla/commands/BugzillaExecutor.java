@@ -73,6 +73,7 @@ import org.openide.util.NbBundle;
 public class BugzillaExecutor {
 
     private static final String HTTP_ERROR_NOT_FOUND         = "http error: not found";         // NOI18N
+    private static final String EMPTY_PASSWORD               = "Empty password not allowed to login"; // NOI18N
     private static final String INVALID_USERNAME_OR_PASSWORD = "invalid username or password";  // NOI18N
     private static final String REPOSITORY_LOGIN_FAILURE     = "unable to login to";            // NOI18N
     private static final String KENAI_LOGIN_REDIRECT         = "/people/login?original_uri=";   // NOI18N
@@ -95,6 +96,14 @@ public class BugzillaExecutor {
     }
 
     public void execute(BugzillaCommand cmd, boolean handleExceptions, boolean checkVersion) {
+        execute(cmd, handleExceptions, checkVersion, true, true);
+    }
+
+    public void execute(BugzillaCommand cmd, boolean handleExceptions, boolean checkVersion, boolean ensureCredentials) {
+        execute(cmd, handleExceptions, checkVersion, ensureCredentials, true);
+    }
+    
+    public void execute(BugzillaCommand cmd, boolean handleExceptions, boolean checkVersion, boolean ensureCredentials, boolean reexecute) {
         try {
             cmd.setFailed(true);
 
@@ -102,7 +111,11 @@ public class BugzillaExecutor {
                 checkAutoupdate();
             }
 
-            Bugzilla.LOG.log(Level.FINE, "execute {0}", cmd);
+            if(ensureCredentials) {
+                repository.ensureCredentials();
+            }
+            
+            Bugzilla.LOG.log(Level.FINE, "execute {0}", cmd); // NOI18N
             cmd.execute();
 
             if(cmd instanceof PerformQueryCommand) {
@@ -118,7 +131,7 @@ public class BugzillaExecutor {
         } catch (CoreException ce) {
             Bugzilla.LOG.log(Level.FINE, null, ce);
 
-            ExceptionHandler handler = ExceptionHandler.createHandler(ce, this, repository);
+            ExceptionHandler handler = ExceptionHandler.createHandler(ce, this, repository, reexecute);
             assert handler != null;
 
             String msg = handler.getMessage();
@@ -129,7 +142,7 @@ public class BugzillaExecutor {
             if(handleExceptions) {
                 if(handler.handle()) {
                     // execute again
-                    execute(cmd);
+                    execute(cmd, handleExceptions, checkVersion, ensureCredentials, !handler.reexecuteOnce());
                 }
             }
             return;
@@ -213,7 +226,7 @@ public class BugzillaExecutor {
     }
 
     static void notifyErrorMessage(String msg) {
-        if("true".equals(System.getProperty("netbeans.t9y.throwOnClientError", "false"))) {
+        if("true".equals(System.getProperty("netbeans.t9y.throwOnClientError", "false"))) { // NOI18N
             Bugzilla.LOG.info(msg);
             throw new AssertionError(msg);
         }
@@ -312,7 +325,7 @@ public class BugzillaExecutor {
             this.repository = repository;
         }
 
-        static ExceptionHandler createHandler(CoreException ce, BugzillaExecutor executor, BugzillaRepository repository) {
+        static ExceptionHandler createHandler(CoreException ce, BugzillaExecutor executor, BugzillaRepository repository, boolean forRexecute) {
             String errormsg = getLoginError(ce);
             if(errormsg != null) {
                 return new LoginHandler(ce, errormsg, executor, repository);
@@ -327,20 +340,29 @@ public class BugzillaExecutor {
             }
             errormsg = getMidAirColisionError(ce);
             if(errormsg != null) {
-                errormsg = MessageFormat.format(errormsg, repository.getDisplayName());
-                return new DefaultHandler(ce, errormsg, executor, repository);
+                if(forRexecute) { 
+                    return new MidAirHandler(ce, errormsg, executor, repository);
+                } else {
+                    errormsg = MessageFormat.format(errormsg, repository.getDisplayName());
+                    return new DefaultHandler(ce, errormsg, executor, repository);
+                }
             }
             return new DefaultHandler(ce, null, executor, repository);
         }
 
         abstract boolean handle();
 
+        boolean reexecuteOnce() {
+            return false;
+        }
+        
         private static String getLoginError(CoreException ce) {
             String msg = getMessage(ce);
             if(msg != null) {
                 msg = msg.trim().toLowerCase();
                 if(INVALID_USERNAME_OR_PASSWORD.equals(msg) ||
-                   msg.contains(INVALID_USERNAME_OR_PASSWORD))
+                   msg.contains(INVALID_USERNAME_OR_PASSWORD) ||
+                   msg.contains(EMPTY_PASSWORD))
                 {
                     Bugzilla.LOG.log(Level.FINER, "returned error message [{0}]", msg);                     // NOI18N
                     return NbBundle.getMessage(BugzillaExecutor.class, "MSG_INVALID_USERNAME_OR_PASSWORD"); // NOI18N
@@ -443,6 +465,27 @@ public class BugzillaExecutor {
                 return ret;
             }
         }
+        
+        private static class MidAirHandler extends ExceptionHandler {
+            public MidAirHandler(CoreException ce, String msg, BugzillaExecutor executor, BugzillaRepository repository) {
+                super(ce, msg, executor, repository);
+            }
+            @Override
+            String getMessage() {
+                return errroMsg;
+            }
+            @Override
+            protected boolean handle() {
+                repository.refreshConfiguration();
+                BugzillaConfiguration bc = repository.getConfiguration();
+                return bc != null && bc.isValid();
+            }
+            @Override
+            boolean reexecuteOnce() {
+                return true;
+            }
+        }
+        
         private static class NotFoundHandler extends ExceptionHandler {
             public NotFoundHandler(CoreException ce, String msg, BugzillaExecutor executor, BugzillaRepository repository) {
                 super(ce, msg, executor, repository);

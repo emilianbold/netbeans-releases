@@ -44,6 +44,7 @@ package org.netbeans.modules.tasks.ui.actions;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.api.RepositoryManager;
 import org.netbeans.modules.bugtracking.api.Util;
 import org.netbeans.modules.tasks.ui.dashboard.DashboardViewer;
 
@@ -55,7 +56,7 @@ public class CreateRepositoryAction extends AbstractAction {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        Repository repository = Util.createRepository();
+        Repository repository = RepositoryManager.getInstance().createRepository();
         // TODO replace this with listener in TC
         if (repository != null) {
             DashboardViewer.getInstance().addRepository(repository);

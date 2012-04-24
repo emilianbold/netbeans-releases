@@ -43,27 +43,27 @@
  */
 package org.netbeans.modules.cnd.makeproject;
 
-import java.io.File;
+import java.net.URI;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.cnd.makeproject.api.configurations.Configurations;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.openide.util.Mutex;
-import org.netbeans.spi.queries.SharabilityQueryImplementation;
-import org.netbeans.api.queries.SharabilityQuery;
+import org.netbeans.api.queries.SharabilityQuery.Sharability;
 import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Configurations;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.spi.queries.SharabilityQueryImplementation2;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Mutex;
 
 /**
- * SharabilityQueryImplementation for j2seproject with multiple sources
+ * SharabilityQueryImplementation for make project with multiple sources
  */
-public class MakeSharabilityQuery implements SharabilityQueryImplementation {
+public class MakeSharabilityQuery implements SharabilityQueryImplementation2 {
 
     private final FileObject baseDirFile;
     private final String baseDir;
@@ -87,11 +87,11 @@ public class MakeSharabilityQuery implements SharabilityQueryImplementation {
      * If it is, it ought to be committed to a VCS if the user is using one.
      * If it is not, it is either a disposable build product, or a per-user
      * private file which is important but should not be shared.
-     * @param file a file to check for sharability (may or may not yet exist)
-     * @return one of {@link org.netbeans.api.queries.SharabilityQuery}'s constants
+     * @param uri a normalized URI to check for sharability (may or may not yet exist).
+     * @return one of the {@link org.netbeans.api.queries.SharabilityQuery.Sharability}'s constant
      */
     @Override
-    public int getSharability(final File file) {
+    public Sharability getSharability(final URI uri) {
         init();
         //if (projectDescriptorProvider.gotDescriptor()) {
         //    ConfigurationDescriptor configurationDescriptor = projectDescriptorProvider.getConfigurationDescriptor();
@@ -101,67 +101,56 @@ public class MakeSharabilityQuery implements SharabilityQueryImplementation {
         //        configurationDescriptor.save();
         //    }
         //}
-        Integer ret = ProjectManager.mutex().readAccess(new Mutex.Action<Integer>() {
+        Sharability ret = ProjectManager.mutex().readAccess(new Mutex.Action<Sharability>() {
 
             @Override
-            public Integer run() {
+            public Sharability run() {
                 synchronized (MakeSharabilityQuery.this) {
-                    if (IGNORE_BINARIES && CndFileVisibilityQuery.getDefault().isIgnored(file))  {
-                        return SharabilityQuery.NOT_SHARABLE;
+                    if (IGNORE_BINARIES && CndFileVisibilityQuery.getDefault().isIgnored(uri.getPath()))  {
+                        return Sharability.NOT_SHARABLE;
                     }
-                    if (skippedFiles.contains(file.getAbsolutePath())) {
-                        return SharabilityQuery.NOT_SHARABLE;
+                    if (skippedFiles.contains(uri.getPath())) {
+                        return Sharability.NOT_SHARABLE;
                     }
-                    boolean sub = file.getPath().startsWith(baseDir);
+                    boolean sub = uri.getPath().startsWith(baseDir);
                     if (!sub) {
-                        return Integer.valueOf(SharabilityQuery.UNKNOWN);
+                        return Sharability.UNKNOWN;
                     }
-                    if (file.getPath().equals(baseDir)) {
-                        return Integer.valueOf(SharabilityQuery.MIXED);
+                    if (uri.getPath().equals(baseDir)) {
+                        return Sharability.MIXED;
                     }
-                    if (file.getPath().length() <= baseDirLength + 1) {
-                        return Integer.valueOf(SharabilityQuery.UNKNOWN);
+                    if (uri.getPath().length() <= baseDirLength + 1) {
+                        return Sharability.UNKNOWN;
                     }
-                    String subString = file.getPath().substring(baseDirLength + 1);
-                    if (subString.equals(MakeConfiguration.NBPROJECT_FOLDER)) // NOI18N
-                    {
-                        return Integer.valueOf(SharabilityQuery.MIXED);
-                    } else if (subString.equals("Makefile")) // NOI18N
-                    {
-                        return Integer.valueOf(SharabilityQuery.SHARABLE);
-                    } else if (subString.equals(MakeConfiguration.NBPROJECT_FOLDER + File.separator + MakeConfiguration.CONFIGURATIONS_XML)) // NOI18N
-                    {
-                        return Integer.valueOf(SharabilityQuery.SHARABLE);
-                    } else if (subString.equals(MakeConfiguration.NBPROJECT_FOLDER + File.separator + "private")) // NOI18N
-                    {
-                        return Integer.valueOf(privateShared ? SharabilityQuery.SHARABLE : SharabilityQuery.NOT_SHARABLE); // see IZ 121796, IZ 109580 and IZ 109573
-                    } else if (subString.equals(MakeConfiguration.NBPROJECT_FOLDER + File.separator + "project.properties")) // NOI18N
-                    {
-                        return Integer.valueOf(SharabilityQuery.SHARABLE);
-                    } else if (subString.equals(MakeConfiguration.NBPROJECT_FOLDER + File.separator + MakeConfiguration.PROJECT_XML)) // NOI18N
-                    {
-                        return Integer.valueOf(SharabilityQuery.SHARABLE);
-                    } else if (subString.startsWith(MakeConfiguration.NBPROJECT_FOLDER + File.separator + "Makefile-")) // NOI18N
-                    {
-                        return Integer.valueOf(SharabilityQuery.SHARABLE);
-                    } else if (subString.startsWith(MakeConfiguration.NBPROJECT_FOLDER + File.separator + "Package-")) // NOI18N
-                    {
-                        return Integer.valueOf(SharabilityQuery.SHARABLE);
-                    } else if (subString.startsWith(MakeConfiguration.NBPROJECT_FOLDER + File.separator + "qt-")) // NOI18N
-                    {
-                        return Integer.valueOf(subString.endsWith(".pro")? SharabilityQuery.SHARABLE : SharabilityQuery.NOT_SHARABLE); // NOI18N
-                    } else if (subString.startsWith(MakeConfiguration.BUILD_FOLDER + File.separator)) // NOI18N
-                    {
-                        return Integer.valueOf(SharabilityQuery.NOT_SHARABLE);
-                    } else if (subString.startsWith(MakeConfiguration.DIST_FOLDER + File.separator)) // NOI18N
-                    {
-                        return Integer.valueOf(SharabilityQuery.NOT_SHARABLE);
+                    String subString = uri.getPath().substring(baseDirLength + 1).replace('\\', '/');
+                    if (subString.equals(MakeConfiguration.NBPROJECT_FOLDER)) {
+                        return Sharability.MIXED;
+                    } else if (subString.equals("Makefile")) { // NOI18N
+                        return Sharability.SHARABLE;
+                    } else if (subString.equals(MakeConfiguration.NBPROJECT_FOLDER + '/' + MakeConfiguration.CONFIGURATIONS_XML)) {
+                        return Sharability.SHARABLE;
+                    } else if (subString.equals(MakeConfiguration.NBPROJECT_FOLDER + '/' + "private")) { // NOI18N
+                        return privateShared ? Sharability.SHARABLE : Sharability.NOT_SHARABLE; // see IZ 121796, IZ 109580 and IZ 109573
+                    } else if (subString.equals(MakeConfiguration.NBPROJECT_FOLDER + '/' + "project.properties")) { // NOI18N
+                        return Sharability.SHARABLE;
+                    } else if (subString.equals(MakeConfiguration.NBPROJECT_FOLDER + '/' + MakeConfiguration.PROJECT_XML)) { // NOI18N
+                        return Sharability.SHARABLE;
+                    } else if (subString.startsWith(MakeConfiguration.NBPROJECT_FOLDER + '/' + "Makefile-")) { // NOI18N
+                        return Sharability.SHARABLE;
+                    } else if (subString.startsWith(MakeConfiguration.NBPROJECT_FOLDER + '/' + "Package-")) { // NOI18N
+                        return Sharability.SHARABLE;
+                    } else if (subString.startsWith(MakeConfiguration.NBPROJECT_FOLDER + '/' + "qt-")) { // NOI18N
+                        return subString.endsWith(".pro")? Sharability.SHARABLE : Sharability.NOT_SHARABLE; // NOI18N
+                    } else if (subString.startsWith(MakeConfiguration.BUILD_FOLDER + '/')) { // NOI18N
+                        return Sharability.NOT_SHARABLE;
+                    } else if (subString.startsWith(MakeConfiguration.DIST_FOLDER + '/')) { // NOI18N
+                        return Sharability.NOT_SHARABLE;
                     }
-                    return Integer.valueOf(SharabilityQuery.UNKNOWN);
+                    return Sharability.UNKNOWN;
                 }
             }
         });
-        return ret.intValue();
+        return ret;
     }
 
     public void setPrivateShared(boolean privateShared) {

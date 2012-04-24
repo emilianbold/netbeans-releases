@@ -57,6 +57,7 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
@@ -64,7 +65,10 @@ import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
 import javax.swing.text.Position;
 import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorNames;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.modules.editor.lib2.ComponentUtils;
 import org.netbeans.modules.editor.lib2.DocUtils;
 import org.netbeans.modules.editor.lib2.highlighting.BlockHighlighting;
@@ -354,8 +358,11 @@ public final class EditorFindSupport {
                                 false
                             );
                         }
-
-                        ensureVisible(comp, pos, pos);
+                        Preferences prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
+                        if (prefs.get(SimpleValueNames.EDITOR_SEARCH_TYPE, "default").equals("closing")) // NOI18N
+                            ensureVisible(comp, pos, pos);
+                        else
+                            selectText(comp, pos, pos + len, back);
                         return true;
                     }
                 }
@@ -452,7 +459,7 @@ public final class EditorFindSupport {
         }
     }
     
-    private FindReplaceResult findReplaceImpl(String replaceExp, 
+    FindReplaceResult findReplaceImpl(String replaceExp, 
             Map<String, Object> props, boolean oppositeDir, JTextComponent c) {
         incSearchReset();
         props = getValidFindProperties(props);

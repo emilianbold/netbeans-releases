@@ -20,6 +20,9 @@ tanh
 tbody
 tbreak
 td
+tendsto
+text
+textArea
 textarea
 tfoot
 th
@@ -33,13 +36,17 @@ transpose
 true
 tspan
 End cursor position = 49
-[h1, button > ba|, base, h1, button > base, 94]
+[h1, button > b|, base, h1, button > base, 93]
+b
 base
-End cursor position = 112
-[h1, button > ba|, base, h1, button > base, 145]
-base
-End cursor position = 163
-[E[foo~="warning"] + th|, thead, E[foo~="warning"] + thead, 212]
+bdo
+blockquote
+body
+br
+button
+bvar
+End cursor position = 111
+[E[foo~="warning"] + th|, thead, E[foo~="warning"] + thead, 160]
 th
 thead
-End cursor position = 238
+End cursor position = 186

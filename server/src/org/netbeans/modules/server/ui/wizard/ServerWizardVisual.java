@@ -62,13 +62,18 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.server.ServerRegistry;
 import org.netbeans.spi.server.ServerInstanceProvider;
 import org.netbeans.spi.server.ServerWizardProvider;
 import org.openide.awt.Mnemonics;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -95,7 +100,8 @@ public class ServerWizardVisual extends javax.swing.JPanel {
             Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getBundle(ServerWizardVisual.class).getString("LBL_SCV_Cloud")); // NOI18N
             setName(NbBundle.getBundle(ServerWizardVisual.class).getString("LBL_CCV_Name")); // NOI18N
         }
-        Queue<WizardAdapter> selected = new PriorityQueue<WizardAdapter>(5, new WizardPriority());
+        Queue<WizardAdapter> selected = new PriorityQueue<WizardAdapter>(5, 
+                registry.isCloud() ? new WizardPriority(CLOUD_PRIORITY_LIST) : new WizardPriority(PRIORITY_LIST));
         for (int i = 0; i < serverListBox.getModel().getSize(); i++) {
             selected.add((WizardAdapter) serverListBox.getModel().getElementAt(i));
         }
@@ -352,38 +358,62 @@ private void serverListBoxValueChanged(javax.swing.event.ListSelectionEvent evt)
     private javax.swing.JList serverListBox;
     // End of variables declaration//GEN-END:variables
 
-    private static class WizardListModel implements ListModel {
+    private static class WizardListModel implements ListModel, LookupListener {
 
-        private final List<WizardAdapter> serverWizards = new ArrayList<WizardAdapter>();
-        
-        private ServerRegistry registry;
+        private final List<WizardAdapter> serverWizards = Collections.synchronizedList(new ArrayList<WizardAdapter>());
+
+        private final List<ListDataListener> listeners = new CopyOnWriteArrayList<ListDataListener>();
+
+        private final Lookup.Result<ServerWizardProvider> result;
 
         public WizardListModel(ServerRegistry registry) {
-            for (ServerWizardProvider wizard
-                    : Lookups.forPath(registry.getPath()).lookupAll(ServerWizardProvider.class)) {
-
-                // safety precaution shouldn't ever happen - used because of bridging
-                if (wizard.getInstantiatingIterator() != null) {
-                    serverWizards.add(new WizardAdapter(wizard));
-                }
-            }
-            Collections.sort(serverWizards);
+            this.result = Lookups.forPath(registry.getPath()).lookupResult(ServerWizardProvider.class);
+            this.result.addLookupListener(WeakListeners.create(LookupListener.class, this, result));
+            resultChanged(null);
         }
 
+        @Override
         public Object getElementAt(int index) {
             return serverWizards.get(index);
         }
 
+        @Override
         public int getSize() {
             return serverWizards.size();
         }
 
+        @Override
         public void addListDataListener(ListDataListener l) {
-            // not changeable model
+            listeners.add(l);
         }
 
+        @Override
         public void removeListDataListener(ListDataListener l) {
-            // not changeable model
+            listeners.remove(l);
+        }
+
+        @Override
+        public final void resultChanged(LookupEvent ev) {
+            List<WizardAdapter> fresh = new ArrayList<WizardAdapter>();
+            for (ServerWizardProvider wizard : result.allInstances()) {
+
+                // safety precaution shouldn't ever happen - used because of bridging
+                if (wizard.getInstantiatingIterator() != null) {
+                    fresh.add(new WizardAdapter(wizard));
+                }
+            }
+            Collections.sort(fresh);
+
+            synchronized (serverWizards) {
+                serverWizards.clear();
+                serverWizards.addAll(fresh);
+            }
+
+            ListDataEvent event = new ListDataEvent(this,
+                        ListDataEvent.CONTENTS_CHANGED, 0, fresh.size() - 1);
+            for (ListDataListener l : listeners) {
+                l.contentsChanged(event);
+            }
         }
     }
 
@@ -410,20 +440,28 @@ private void serverListBoxValueChanged(javax.swing.event.ListSelectionEvent evt)
         }
     }
 
+    private static final List<Pattern> PRIORITY_LIST = new ArrayList<Pattern>(7);
+    private static final List<Pattern> CLOUD_PRIORITY_LIST = new ArrayList<Pattern>(1);
+
+    static {
+        PRIORITY_LIST.add(Pattern.compile(".*Sailfin.*")); // NOI18N
+        PRIORITY_LIST.add(Pattern.compile(".*Sun\\s*Java\\s*System.*")); // NOI18N
+        PRIORITY_LIST.add(Pattern.compile(".*GlassFish\\s*v1.*")); // NOI18N
+        PRIORITY_LIST.add(Pattern.compile(".*GlassFish\\s*v2.*")); // NOI18N
+        PRIORITY_LIST.add(Pattern.compile(".*GlassFish\\s*v3.*")); // NOI18N
+        PRIORITY_LIST.add(Pattern.compile(".*GlassFish\\s*v3")); // NOI18N
+        PRIORITY_LIST.add(Pattern.compile(".*GlassFish\\s*Server\\s*3.*")); // NOI18N
+        CLOUD_PRIORITY_LIST.add(Pattern.compile(".*Oracle\\sCloud.*")); // NOI18N
+    }
+    
     private static class WizardPriority implements Comparator<WizardAdapter>, Serializable {
 
-        private static final List<Pattern> PRIORITY_LIST = new ArrayList<Pattern>(4);
+        private List<Pattern> priorityList;
 
-        static {
-            PRIORITY_LIST.add(Pattern.compile(".*Sailfin.*")); // NOI18N
-            PRIORITY_LIST.add(Pattern.compile(".*Sun\\s*Java\\s*System.*")); // NOI18N
-            PRIORITY_LIST.add(Pattern.compile(".*GlassFish\\s*v1.*")); // NOI18N
-            PRIORITY_LIST.add(Pattern.compile(".*GlassFish\\s*v2.*")); // NOI18N
-            PRIORITY_LIST.add(Pattern.compile(".*GlassFish\\s*v3.*")); // NOI18N
-            PRIORITY_LIST.add(Pattern.compile(".*GlassFish\\s*v3")); // NOI18N
-            PRIORITY_LIST.add(Pattern.compile(".*GlassFish\\s*Server\\s*3.*")); // NOI18N
+        private WizardPriority(List<Pattern> priorityList) {
+            this.priorityList = priorityList;
         }
-
+        
         public int compare(WizardAdapter o1, WizardAdapter o2) {
             Integer priority1 = computePriority(o1.getServerInstanceWizard().getDisplayName());
             Integer priority2 = computePriority(o2.getServerInstanceWizard().getDisplayName());
@@ -433,9 +471,9 @@ private void serverListBoxValueChanged(javax.swing.event.ListSelectionEvent evt)
 
         private int computePriority(String name) {
             int priority = 0;
-            for (int i = 0; i < PRIORITY_LIST.size(); i++) {
-                if (PRIORITY_LIST.get(i).matcher(name).matches()) {
-                    priority = i;
+            for (int i = 0; i < priorityList.size(); i++) {
+                if (priorityList.get(i).matcher(name).matches()) {
+                    priority = i+1;
                 }
             }
             return priority;

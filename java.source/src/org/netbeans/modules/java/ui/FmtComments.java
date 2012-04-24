@@ -110,6 +110,7 @@ public class FmtComments extends javax.swing.JPanel implements Runnable {
         alignExceptionsCheckBox = new javax.swing.JCheckBox();
 
         setName(org.openide.util.NbBundle.getMessage(FmtComments.class, "LBL_Comments")); // NOI18N
+        setOpaque(false);
 
         enableCommentFormatCheckBox.setText(org.openide.util.NbBundle.getMessage(FmtComments.class, "LBL_doc_enableCommentFormat")); // NOI18N
         enableCommentFormatCheckBox.addActionListener(new java.awt.event.ActionListener() {

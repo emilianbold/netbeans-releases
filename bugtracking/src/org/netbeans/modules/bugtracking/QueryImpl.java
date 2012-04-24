@@ -43,18 +43,17 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Query;
-import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.issuetable.Filter;
+import org.netbeans.modules.bugtracking.issuetable.IssueTable;
+import org.netbeans.modules.bugtracking.issuetable.IssueTable.IssueTableProvider;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiQueryProvider;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
+import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.openide.nodes.Node;
 
 /**
  *
@@ -126,7 +125,17 @@ public final class QueryImpl<Q, I>  {
         QueryAction.openQuery(null, repository);
     }
     
-    public void open(final boolean suggestedSelectionOnly) {
+    public void open(final boolean suggestedSelectionOnly, Query.QueryMode mode) {
+        switch(mode) {
+            case SHOW_ALL:
+                queryProvider.getController(data).setMode(QueryController.QueryMode.SHOW_ALL);
+                break;
+            case SHOW_NEW_OR_CHANGED:
+                queryProvider.getController(data).setMode(QueryController.QueryMode.SHOW_NEW_OR_CHANGED);
+                break;
+            default:
+                throw new IllegalStateException("Unsupported mode " + mode);
+        }
         QueryAction.openQuery(this, repository, suggestedSelectionOnly);
     }
     
@@ -134,6 +143,10 @@ public final class QueryImpl<Q, I>  {
         return queryProvider.isSaved(data);
     }
 
+    public void remove() {
+        queryProvider.remove(data);
+    }
+    
     public String getTooltip() {
         return queryProvider.getTooltip(data);
     }
@@ -142,6 +155,10 @@ public final class QueryImpl<Q, I>  {
         return queryProvider.contains(data, id);
     }
 
+    public void refresh() {
+        queryProvider.refresh(data);
+    }
+    
     private Collection<IssueImpl> getIssuesIntern(int includeStatus) {
         Collection<I> issues = queryProvider.getIssues(data);
         List<IssueImpl> ret = new ArrayList<IssueImpl>(issues.size());
@@ -159,7 +176,7 @@ public final class QueryImpl<Q, I>  {
         return queryProvider.getDisplayName(data);
     }
 
-    public BugtrackingController getController() {
+    public QueryController getController() {
         return queryProvider.getController(data);
     }
 
@@ -171,22 +188,27 @@ public final class QueryImpl<Q, I>  {
         queryProvider.removePropertyChangeListener(data, listener);                   
     }
 
-    public void setContext(Node[] context) {
-        queryProvider.setContext(data, context);
-    }
-
-    public void setFilter(Filter filter) {
-        assert KenaiQueryProvider.class.isAssignableFrom(queryProvider.getClass());
-        ((KenaiQueryProvider<Q, I>)queryProvider).setFilter(data, filter);
+    public void setContext(OwnerInfo info) {
+        assert (queryProvider instanceof KenaiQueryProvider);
+        if((queryProvider instanceof KenaiQueryProvider)) {
+            ((KenaiQueryProvider<Q, I>)queryProvider).setOwnerInfo(data, info);
+        }
     }
 
     public boolean needsLogin() {
-        assert KenaiQueryProvider.class.isAssignableFrom(queryProvider.getClass());
-        return ((KenaiQueryProvider<Q, I>)queryProvider).needsLogin(data);
+        assert (queryProvider instanceof KenaiQueryProvider);
+        if((queryProvider instanceof KenaiQueryProvider)) {
+            return ((KenaiQueryProvider<Q, I>)queryProvider).needsLogin(data);
+        } 
+        return false;
     }
 
-    public void refresh(boolean synchronously) {
-        assert KenaiQueryProvider.class.isAssignableFrom(queryProvider.getClass());
-        ((KenaiQueryProvider<Q, I>)queryProvider).refresh(data, synchronously);
+    public IssueTable getIssueTable() {
+        QueryController controller = getController();
+        if((controller instanceof IssueTableProvider)) {
+            return ((IssueTableProvider)controller).getIssueTable();
+        } 
+        return null;
     }
+
 }

@@ -160,7 +160,7 @@ public class PushDownRefactoringUI implements RefactoringUI, JavaRefactoringUIFa
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(PushDownRefactoringUI.class.getName());
+        return new HelpCtx("org.netbeans.modules.refactoring.java.ui.PushDownRefactoringUI"); // NOI18N
     }
     
     // --- PRIVATE HELPER METHODS ----------------------------------------------

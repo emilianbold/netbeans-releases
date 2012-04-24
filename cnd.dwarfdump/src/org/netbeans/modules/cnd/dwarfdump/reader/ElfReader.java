@@ -44,21 +44,22 @@
 
 package org.netbeans.modules.cnd.dwarfdump.reader;
 
-import org.netbeans.modules.cnd.dwarfdump.FileMagic;
-import org.netbeans.modules.cnd.dwarfdump.Magic;
-import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.ElfConstants;
-import org.netbeans.modules.cnd.dwarfdump.elf.ElfHeader;
-import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
-import org.netbeans.modules.cnd.dwarfdump.section.ElfSection;
-import org.netbeans.modules.cnd.dwarfdump.elf.SectionHeader;
-import org.netbeans.modules.cnd.dwarfdump.section.StringTableSection;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Level;
+import org.netbeans.modules.cnd.dwarfdump.Dwarf;
+import org.netbeans.modules.cnd.dwarfdump.FileMagic;
+import org.netbeans.modules.cnd.dwarfdump.Magic;
+import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.ElfConstants;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.SECTIONS;
+import org.netbeans.modules.cnd.dwarfdump.elf.ElfHeader;
+import org.netbeans.modules.cnd.dwarfdump.elf.SectionHeader;
+import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
+import org.netbeans.modules.cnd.dwarfdump.section.ElfSection;
+import org.netbeans.modules.cnd.dwarfdump.section.StringTableSection;
 import org.netbeans.modules.cnd.dwarfdump.section.SymTabSection;
-import org.netbeans.modules.cnd.dwarfdump.trace.TraceDwarf;
 
 /**
  *
@@ -253,22 +254,60 @@ public class ElfReader extends ByteStreamReader {
     }
     
     private boolean readMachoHeader() throws IOException{
+        // 32  ce fa ed fe
+        // 64  cf fa ed fe 
+        // fat ca fe ba be
         isMachoFormat = true;
         elfHeader.elfData = LSB;
         elfHeader.elfClass = ElfConstants.ELFCLASS32;
         setDataEncoding(elfHeader.elfData);
         setFileClass(elfHeader.elfClass);
         seek(shiftIvArchive);
-        byte firstByte = readByte();
-        boolean is64 = firstByte == (byte)0xcf;
-        if (firstByte == (byte)0xfe) {
+        byte byte0 = readByte();
+        byte byte1 = readByte();
+        byte byte2 = readByte();
+        byte byte3 = readByte();
+        boolean is64 = byte0 == (byte)0xcf || byte0 == (byte)0xca;
+        boolean isFat = byte0 == (byte)0xca;
+        if (byte0 == (byte)0xfe) {
             elfHeader.elfData = MSB;
             setDataEncoding(elfHeader.elfData);
         }
+        if (isFat) {
+            elfHeader.elfData = MSB;
+            setDataEncoding(elfHeader.elfData);
+            seek(shiftIvArchive+4);
+            int archCount = readInt();
+            for(int j = 0; j < archCount; j++) {
+                int arch = readInt();
+                int i2 = readInt();
+                int offset = readInt();
+                int size = readInt();
+                int i4 = readInt();
+                if (arch == 0x01000007) { // 64 bit
+                    shiftIvArchive += offset; // shift to 64 binary
+                    break;
+                }
+            }
+            elfHeader.elfData = LSB;
+            elfHeader.elfClass = ElfConstants.ELFCLASS32;
+            setDataEncoding(elfHeader.elfData);
+            setFileClass(elfHeader.elfClass);
+            seek(shiftIvArchive);
+            byte0 = readByte();
+            byte1 = readByte();
+            byte2 = readByte();
+            byte3 = readByte();
+            is64 = byte0 == (byte)0xcf;
+            if (byte0 == (byte)0xfe) {
+                elfHeader.elfData = MSB;
+                setDataEncoding(elfHeader.elfData);
+            }
+        }
         seek(shiftIvArchive+16);
         int ncmds = readInt();
-        /*int sizeOfCmds =*/ readInt();
-        /*int flags =*/ readInt();
+        int sizeOfCmds = readInt();
+        int flags = readInt();
         if (is64){
             skipBytes(4);
         }
@@ -277,8 +316,8 @@ public class ElfReader extends ByteStreamReader {
         for (int j = 0; j < ncmds; j++){
             int cmd = readInt();
             int cmdSize = readInt();
-            if (TraceDwarf.TRACED) {
-                System.out.println("Load command: " + LoadCommand.valueOf(cmd) + " (" + cmd + ")"); //NOI18N
+            if (Dwarf.LOG.isLoggable(Level.FINE)) {
+                Dwarf.LOG.log(Level.FINE, "Load command: {0} ({1})", new Object[]{LoadCommand.valueOf(cmd), cmd}); //NOI18N
             }
             if (LoadCommand.LC_SEGMENT.is(cmd) || LoadCommand.LC_SEGMENT_64.is(cmd) ) { //LC_SEGMENT LC_SEGMENT64
                 skipBytes(16);
@@ -327,8 +366,10 @@ public class ElfReader extends ByteStreamReader {
                 skipBytes(cmdSize - 8);
             }
         }
-        if (TraceDwarf.TRACED && stringTableSection!=null ) {
-            stringTableSection.dump(System.out);
+        if (stringTableSection!=null ) {
+            if (Dwarf.LOG.isLoggable(Level.FINE)) {
+                stringTableSection.dump(System.out);
+            }
         }
         if (headers.isEmpty() || stringTableSection == null){
             if (isThereAnyLinkedObjectFiles(stringTableSection)) {
@@ -419,8 +460,8 @@ public class ElfReader extends ByteStreamReader {
             h.sh_offset = offset;
             h.sh_flags = segFlags;
             return h;
-        } else if (TraceDwarf.TRACED) {
-            System.out.println("Segment,Section: " + segment + "," + section); //NOI18N
+        } else if (Dwarf.LOG.isLoggable(Level.FINE)) {
+            Dwarf.LOG.log(Level.FINE, "Segment,Section: {0},{1}", new Object[]{segment, section}); //NOI18N
         }
         return null;
     }
@@ -540,7 +581,7 @@ public class ElfReader extends ByteStreamReader {
         
         byte[] bytes = new byte[8];
         read(bytes);
-        String name = null;
+        String name;
         if (bytes[0] == '/'){
             int length = 0;
             for (int j = 1; j < 8; j++){
@@ -569,7 +610,7 @@ public class ElfReader extends ByteStreamReader {
         return h;
     }
     
-    public ElfSection getSection(String sectionName) {
+    public ElfSection getSection(String sectionName) throws IOException {
         Integer sectionIdx = sectionsMap.get(sectionName);
         
         if (sectionIdx == null) {
@@ -587,7 +628,7 @@ public class ElfReader extends ByteStreamReader {
         return sectionsMap.get(sectionName);
     }
     
-    ElfSection initSection(Integer sectionIdx, String sectionName) {
+    ElfSection initSection(Integer sectionIdx, String sectionName) throws IOException {
         return null;
     }
     

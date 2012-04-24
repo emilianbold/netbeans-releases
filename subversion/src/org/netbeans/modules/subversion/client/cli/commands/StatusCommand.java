@@ -334,8 +334,8 @@ public class StatusCommand extends SvnCommand {
                         lockExpires = getDate(values.get(EXPIRES_ELEMENT_NAME));                    
                     }                 
 
-                    SVNStatusKind repoStatus = null;
-                    SVNStatusKind repoPropsStatus = null;
+                    SVNStatusKind repoStatus = SVNStatusKind.NONE;
+                    SVNStatusKind repoPropsStatus = SVNStatusKind.NONE;
                     if(values.get(REPO_ST_ELEMENT_NAME) != null) {
                         repoStatus = SVNStatusKind.fromString(values.get(REPO_ITEM_ATTR));
                         repoPropsStatus = SVNStatusKind.fromString(values.get(REPO_PROPS_ATTR));

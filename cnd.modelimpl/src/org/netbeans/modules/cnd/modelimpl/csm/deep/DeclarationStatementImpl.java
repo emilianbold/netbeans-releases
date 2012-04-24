@@ -151,7 +151,7 @@ public final class DeclarationStatementImpl extends StatementBase implements Csm
                 switch (token.getType()) {
                     case CPPTokenTypes.CSM_FOR_INIT_STATEMENT:
                     case CPPTokenTypes.CSM_DECLARATION_STATEMENT:
-                        if (!renderVariable(token, currentNamespace, container, false)) {
+                        if (!renderVariable(token, currentNamespace, container, currentNamespace, false)) {
                             render(token.getFirstChild(), currentNamespace, container);
                         }
                         break;
@@ -221,7 +221,7 @@ public final class DeclarationStatementImpl extends StatementBase implements Csm
         @Override
         protected CsmClassForwardDeclaration createForwardClassDeclaration(AST ast, MutableDeclarationsContainer container, FileImpl file, CsmScope scope) {
             ClassForwardDeclarationImpl cfdi = ClassForwardDeclarationImpl.create(ast, file, !isRenderingLocalContext());
-            ForwardClass fc = ForwardClass.create(cfdi.getName().toString(), getContainingFile(), ast, cfdi.getStartOffset(), cfdi.getEndOffset(), scope, !isRenderingLocalContext());
+            ForwardClass fc = ForwardClass.createIfNeeded(cfdi.getName().toString(), getContainingFile(), ast, cfdi.getStartOffset(), cfdi.getEndOffset(), scope, !isRenderingLocalContext());
             if(fc != null) {
                 declarators.add(fc);
             }

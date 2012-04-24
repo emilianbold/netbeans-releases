@@ -50,6 +50,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.core.windows.*;
+import org.openide.util.WeakSet;
 
 
 /**
@@ -66,8 +67,7 @@ class SplitSubModel {
     protected final Model parentModel;
     
     /** Maps modes to nodes of this n-branch tree model. */
-    private final Map<ModeImpl, ModeNode> modes2nodes = 
-            new WeakHashMap<ModeImpl, ModeNode>(20);
+    private final Set<ModeNode> nodes = new WeakSet<ModeNode>(20);
     
     /** Root <code>Node</code> which represents the split panes structure
      * with modes as leaves. */
@@ -84,14 +84,20 @@ class SplitSubModel {
 
     
     private ModeNode getModeNode(ModeImpl mode) {
-        synchronized(modes2nodes) {
-            ModeNode node = modes2nodes.get(mode);
-            if(node == null) {
-                node = new ModeNode(mode);
-                modes2nodes.put(mode, node);
+        ModeNode res = null;
+        synchronized(nodes) {
+            for( ModeNode node : nodes ) {
+                if( node.getMode().equals( mode ) ) {
+                    res = node;
+                    break;
+                }
+            }
+            if( null == res ) {
+                res = new ModeNode( mode );
+                nodes.add( res );
             }
         
-            return node;
+            return res;
         }
     }
     
@@ -1111,7 +1117,7 @@ class SplitSubModel {
 
 
     /** Class representing leaf node in SplitSubModel which corresponds to Mode. */
-    protected static class ModeNode extends Node {
+    private static class ModeNode extends Node {
 
         private final ModeImpl mode;
         

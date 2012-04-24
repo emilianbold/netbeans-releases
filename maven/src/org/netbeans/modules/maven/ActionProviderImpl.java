@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -42,10 +42,12 @@
 package org.netbeans.modules.maven;
 
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -132,7 +134,10 @@ public class ActionProviderImpl implements ActionProvider {
         COMMAND_DEBUG_SINGLE,
         COMMAND_DEBUG_TEST_SINGLE,
         "debug.fix", //NOI18N
-
+        COMMAND_PROFILE,
+        COMMAND_PROFILE_SINGLE,
+        COMMAND_PROFILE_TEST_SINGLE,
+        
         //operations
         COMMAND_DELETE,
         COMMAND_RENAME,
@@ -180,8 +185,17 @@ public class ActionProviderImpl implements ActionProvider {
         return false;
     }
 
+    private boolean usingTestNG() {
+        for (Artifact a : proj.getLookup().lookup(NbMavenProject.class).getMavenProject().getArtifacts()) {
+            if ("org.testng".equals(a.getGroupId()) && "testng".equals(a.getArtifactId())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     boolean runSingleMethodEnabled() {
-        return RunUtils.hasTestCompileOnSaveEnabled(proj) || (usingSurefire28() && usingJUnit4());
+        return RunUtils.hasTestCompileOnSaveEnabled(proj) || (usingSurefire28() && (usingJUnit4() || usingTestNG()));
     }
 
     @Messages("run_single_method_disabled=Surefire 2.8+ with JUnit 4 needed to run a single test method without Compile on Save.")
@@ -266,6 +280,7 @@ public class ActionProviderImpl implements ActionProvider {
     @Messages({
         "# {0} - artifactId", "TXT_Run=Run {0}",
         "# {0} - artifactId", "TXT_Debug=Debug {0}",
+        "# {0} - artifactId", "TXT_Profile=Profile {0}",
         "# {0} - artifactId", "TXT_Test=Test {0}",
         "# {0} - artifactId", "TXT_Build=Build {0}"
     })
@@ -282,12 +297,16 @@ public class ActionProviderImpl implements ActionProvider {
             title = TXT_Run(prj.getMavenProject().getArtifactId());
         } else if (ActionProvider.COMMAND_DEBUG.equals(action)) {
             title = TXT_Debug(prj.getMavenProject().getArtifactId());
+        } else if (ActionProvider.COMMAND_PROFILE.equals(action)) {
+            title = TXT_Profile(prj.getMavenProject().getArtifactId());
         } else if (ActionProvider.COMMAND_TEST.equals(action)) {
             title = TXT_Test(prj.getMavenProject().getArtifactId());
         } else if (action.startsWith(ActionProvider.COMMAND_RUN_SINGLE)) {
             title = TXT_Run(dobjName);
         } else if (action.startsWith(ActionProvider.COMMAND_DEBUG_SINGLE) || ActionProvider.COMMAND_DEBUG_TEST_SINGLE.equals(action)) {
             title = TXT_Debug(dobjName);
+        } else if (action.startsWith(ActionProvider.COMMAND_PROFILE_SINGLE) || ActionProvider.COMMAND_PROFILE_TEST_SINGLE.equals(action)) {
+            title = TXT_Profile(dobjName);
         } else if (ActionProvider.COMMAND_TEST_SINGLE.equals(action)) {
             title = TXT_Test(dobjName);
         } else {
@@ -346,11 +365,8 @@ public class ActionProviderImpl implements ActionProvider {
             }
 
             if (!showUI) {
-                ModelRunConfig rc = new ModelRunConfig(proj, mapping, mapping.getActionName(), null, Lookup.EMPTY);
-                rc.setShowDebug(MavenSettings.getDefault().isShowDebug());
-                rc.setTaskDisplayName(TXT_Build(proj.getLookup().lookup(NbMavenProject.class).getMavenProject().getArtifactId()));
-
-                setupTaskName("custom", rc, Lookup.EMPTY); //NOI18N
+                M2ConfigProvider conf = proj.getLookup().lookup(M2ConfigProvider.class);
+                ModelRunConfig rc = createCustomRunConfig(conf);
                 RunUtils.run(rc);
 
                 return;
@@ -369,10 +385,11 @@ public class ActionProviderImpl implements ActionProvider {
                     maps.getActions().remove(0);
                 }
                 maps.getActions().add(mapping);
+                M2ConfigProvider conf = proj.getLookup().lookup(M2ConfigProvider.class);
                 ActionToGoalUtils.writeMappingsToFileAttributes(proj.getProjectDirectory(), maps);
                 if (pnl.isRememberedAs() != null) {
                     try {
-                        M2ConfigProvider conf = proj.getLookup().lookup(M2ConfigProvider.class);
+
                         String tit = "CUSTOM-" + pnl.isRememberedAs(); //NOI18N
                         mapping.setActionName(tit);
                         mapping.setDisplayName(pnl.isRememberedAs());
@@ -382,17 +399,31 @@ public class ActionProviderImpl implements ActionProvider {
                         ex.printStackTrace();
                     }
                 }
-                ModelRunConfig rc = new ModelRunConfig(proj, mapping, mapping.getActionName(), null, Lookup.EMPTY);
+                ModelRunConfig rc = createCustomRunConfig(conf);
                 rc.setOffline(Boolean.valueOf(pnl.isOffline()));
                 rc.setShowDebug(pnl.isShowDebug());
                 rc.setRecursive(pnl.isRecursive());
                 rc.setUpdateSnapshots(pnl.isUpdateSnapshots());
-                rc.setTaskDisplayName(TXT_Build(proj.getLookup().lookup(NbMavenProject.class).getMavenProject().getArtifactId()));
-
+                
                 setupTaskName("custom", rc, Lookup.EMPTY); //NOI18N
                 RunUtils.run(rc);
 
             }
+        }
+
+        private ModelRunConfig createCustomRunConfig(M2ConfigProvider conf) {
+            ModelRunConfig rc = new ModelRunConfig(proj, mapping, mapping.getActionName(), null, Lookup.EMPTY);
+
+            //#171086 also inject profiles from currently selected configuratiin
+            List<String> acts = new ArrayList<String>();
+            acts.addAll(rc.getActivatedProfiles());
+            acts.addAll(conf.getActiveConfiguration().getActivatedProfiles());
+            rc.setActivatedProfiles(acts);
+            Map<String, String> props = new HashMap<String, String>(rc.getProperties());
+            props.putAll(conf.getActiveConfiguration().getProperties());
+            rc.addProperties(props);
+            rc.setTaskDisplayName(TXT_Build(proj.getLookup().lookup(NbMavenProject.class).getMavenProject().getArtifactId()));
+            return rc;
         }
     }
 

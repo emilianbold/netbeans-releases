@@ -45,6 +45,7 @@
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared;
 
 import java.io.IOException;
+
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.RootsEvent;
@@ -56,10 +57,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.*;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.swing.SwingUtilities;
@@ -71,8 +69,13 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.ElementUtilities.ElementAcceptor;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
+import org.netbeans.modules.j2ee.dd.api.ejb.Session;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.openide.util.Exceptions;
 
 public abstract class ComponentMethodModel extends Children.Keys<MethodModel> {
@@ -81,12 +84,14 @@ public abstract class ComponentMethodModel extends Children.Keys<MethodModel> {
     private final String homeInterface;
     private Collection<String> interfaces;
     private String implBean;
+    private EjbJar ejbModule;
     private final ClassIndexListener classIndexListener;
     
-    public ComponentMethodModel(ClasspathInfo cpInfo, String implBean, Collection<String> interfaces, String homeInterface) {
+    public ComponentMethodModel(ClasspathInfo cpInfo, EjbJar ejbModule, String implBean, Collection<String> interfaces, String homeInterface) {
         this.cpInfo = cpInfo;
         this.homeInterface = homeInterface;
         this.implBean = implBean;
+        this.ejbModule = ejbModule;
         this.interfaces = interfaces;
         this.classIndexListener = new ClassIndexListenerImpl();
     }
@@ -115,19 +120,21 @@ public abstract class ComponentMethodModel extends Children.Keys<MethodModel> {
                                     }
                                 }
                             } else if(intf.getKind() == ElementKind.CLASS) {
-                                Iterable<? extends Element> methods = elementUtilities.getMembers(intf.asType(), new ElementAcceptor() {
-                                    @Override
-                                    public boolean accept(Element e, TypeMirror type) {
-                                        TypeElement parent = elementUtilities.enclosingTypeElement(e);
-                                        return ElementKind.METHOD == e.getKind() && 
-                                               e.getEnclosingElement().equals(intf) &&
-                                               e.getModifiers().contains(Modifier.PUBLIC);
-                                    }
-                                });
-                                for (Element method : methods) {
-                                    MethodModel methodModel = MethodModelSupport.createMethodModel(controller, (ExecutableElement) method);
-                                    if (methodModel != null && !keys.contains(methodModel)){
-                                        keys.add(methodModel);
+                                if (hasNoInterfaceView(intf)) {
+                                    Iterable<? extends Element> methods = elementUtilities.getMembers(intf.asType(), new ElementAcceptor() {
+                                        @Override
+                                        public boolean accept(Element e, TypeMirror type) {
+                                            TypeElement parent = elementUtilities.enclosingTypeElement(e);
+                                            return ElementKind.METHOD == e.getKind() &&
+                                                e.getEnclosingElement().equals(intf) &&
+                                                e.getModifiers().contains(Modifier.PUBLIC);
+                                        }
+                                    });
+                                    for (Element method : methods) {
+                                        MethodModel methodModel = MethodModelSupport.createMethodModel(controller, (ExecutableElement) method);
+                                        if (methodModel != null && !keys.contains(methodModel)){
+                                            keys.add(methodModel);
+                                        }
                                     }
                                 }
                             } else {
@@ -161,7 +168,44 @@ public abstract class ComponentMethodModel extends Children.Keys<MethodModel> {
             }
         });
     }
-    
+
+    private boolean hasNoInterfaceView(final TypeElement intf) {
+        // see chapter 4.9.8 of the EJB 3.1 specification
+        try {
+            boolean hasNoInterfaceView = ejbModule.getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, Boolean>() {
+                @Override
+                public Boolean run(EjbJarMetadata metadata) throws Exception {
+                    Session session = (Session) metadata.findByEjbClass(implBean);
+                    if (session != null) {
+                        if (session.isLocalBean()) {
+                            return true;
+                        }
+
+                        if (session.getLocal() == null && session.getRemote()  == null
+                                && session.getLocalHome() == null && session.getHome() == null) {
+                            for (TypeMirror typeMirror : intf.getInterfaces()) {
+                                String ifaceFqn = typeMirror.toString();
+                                if (!ifaceFqn.equals("java.io.Serializable") //NOI18N
+                                        && !ifaceFqn.equals("java.io.Externalizable") //NOI18N
+                                        && !ifaceFqn.startsWith("javax.ejb.")) { //NOI18N
+                                    return false;
+                                }
+                            }
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+            });
+            return hasNoInterfaceView;
+        } catch (MetadataModelException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return false;
+    }
+
     @Override
     protected void addNotify() {
         if(interfaces == null){

@@ -62,7 +62,6 @@ import org.netbeans.modules.localhistory.store.LocalHistoryStore;
 import org.netbeans.modules.localhistory.store.LocalHistoryStoreFactory;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VCSHistoryProvider;
-import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.util.ListenersSupport;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.util.VersioningListener;
@@ -75,6 +74,8 @@ import org.openide.util.Lookup.Result;
 import org.openide.windows.TopComponent;
 import org.openide.windows.TopComponent.Registry;
 import org.openide.windows.WindowManager;
+import org.openide.windows.WindowSystemEvent;
+import org.openide.windows.WindowSystemListener;
 
 /** 
  * 
@@ -93,7 +94,7 @@ public class LocalHistory {
     private ListenersSupport listenerSupport = new ListenersSupport(this);
     
     private Set<File> userDefinedRoots;
-    private Set<File> roots = new HashSet<File>();
+    private final Set<File> roots = new HashSet<File>();
        
     private Pattern includeFiles = null;
     private Pattern excludeFiles = null;
@@ -139,7 +140,15 @@ public class LocalHistory {
             }            
         }
 
-        WindowManager.getDefault().getRegistry().addPropertyChangeListener(new OpenedFilesListener());
+        WindowManager.getDefault().addWindowSystemListener(new WindowSystemListener() {
+            @Override public void beforeLoad(WindowSystemEvent event) {}
+            @Override public void afterLoad(WindowSystemEvent event) {
+                WindowManager.getDefault().removeWindowSystemListener(this);
+                WindowManager.getDefault().getRegistry().addPropertyChangeListener(new OpenedFilesListener());
+            }
+            @Override public void beforeSave(WindowSystemEvent event) {}
+            @Override public void afterSave(WindowSystemEvent event) {}
+        });
     }
 
     private synchronized LocalHistoryVCS getLocalHistoryVCS() {
@@ -157,6 +166,7 @@ public class LocalHistory {
             }
         }
         getParallelRequestProcessor().post(new Runnable() {
+            @Override
             public void run() {                       
                 setRoots(OpenProjects.getDefault().getOpenProjects());                                
                 OpenProjects.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(openProjectsListener, null));                                  
@@ -173,20 +183,21 @@ public class LocalHistory {
                 FileObject fo = group.getRootFolder();
                 File root = FileUtil.toFile(fo); 
                 if( root == null ) {
-                    LOG.warning("source group" + group.getDisplayName() + " returned null root folder" );
+                    LOG.log(Level.WARNING, "source group{0} returned null root folder", group.getDisplayName());
                 } else {
                     addRootFile(newRoots, root);    
                 }                
             }
             File root = FileUtil.toFile(project.getProjectDirectory()); 
             if( root == null ) {
-                LOG.warning("project " + project.getProjectDirectory() + " returned null root folder" );
+                LOG.log(Level.WARNING, "project {0} returned null root folder", project.getProjectDirectory());
             } else {
                 addRootFile(newRoots, root);    
             }
         }                
         synchronized(roots) {
-            roots = newRoots;
+            roots.clear();
+            roots.addAll(newRoots);
         }        
         fireFileEvent(EVENT_PROJECTS_CHANGED, null);
     }
@@ -195,9 +206,8 @@ public class LocalHistory {
         if(file == null) {
             return;
         }
-        LOG.fine("adding root folder " + file);
+        LOG.log(Level.FINE, "adding root folder {0}", file);
         set.add(file);
-        return;        
     }
     
     public static synchronized LocalHistory getInstance() {
@@ -342,10 +352,12 @@ public class LocalHistory {
     }    
     
     PropertyChangeListener openProjectsListener = new PropertyChangeListener() {
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if(evt.getPropertyName().equals(OpenProjects.PROPERTY_OPEN_PROJECTS) ) {
                 final Project[] projects = (Project[]) evt.getNewValue();
                 getParallelRequestProcessor().post(new Runnable() {
+                    @Override
                     public void run() {               
                         setRoots(projects);
                     }
@@ -358,7 +370,7 @@ public class LocalHistory {
         if(!LOG.isLoggable(Level.FINE)) {
             return;
         }
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append("create");
         sb.append('\t');
         sb.append(file.getAbsolutePath());
@@ -377,7 +389,7 @@ public class LocalHistory {
         if(!LOG.isLoggable(Level.FINE)) {
             return;
         }        
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append("change");
         sb.append('\t');
         sb.append(file.getAbsolutePath());
@@ -392,7 +404,7 @@ public class LocalHistory {
         if(!LOG.isLoggable(Level.FINE)) {
             return;
         }  
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append("delete");
         sb.append('\t');
         sb.append(file.getAbsolutePath());
@@ -407,7 +419,7 @@ public class LocalHistory {
         if(!LOG.isLoggable(Level.FINE)) {
             return;
         }        
-        StringBuffer sb = new StringBuffer();        
+        StringBuilder sb = new StringBuilder();        
         sb.append(msg);
         sb.append('\t');
         sb.append(file.getAbsolutePath());            
@@ -418,7 +430,7 @@ public class LocalHistory {
         if(!LOG.isLoggable(Level.FINE)) {
             return;
         }        
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         SimpleDateFormat defaultFormat = new SimpleDateFormat("dd-MM-yyyy:HH-mm-ss.S");
         sb.append(defaultFormat.format(new Date(System.currentTimeMillis())));
         sb.append(":");

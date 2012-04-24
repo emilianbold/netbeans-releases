@@ -1535,6 +1535,14 @@ public final class VeryPretty extends JCTree.Visitor {
             print(origText.substring((int) start, (int) end));
             return ;
         }
+        if (   diffContext != null
+            && diffContext.mainUnit != null
+            && (start = diffContext.trees.getSourcePositions().getStartPosition(diffContext.mainUnit, tree)) >= 0 //#137564
+            && (end = diffContext.trees.getSourcePositions().getEndPosition(diffContext.mainUnit, tree)) >= 0
+            && diffContext.mainCode != null) {
+            print(diffContext.mainCode.substring((int) start, (int) end));
+            return ;
+        }
 	switch (tree.typetag) {
 	  case INT:
 	    print(tree.value.toString());
@@ -2339,7 +2347,9 @@ public final class VeryPretty extends JCTree.Visitor {
         }
         if ((onlyWhitespaces && !preventClosingWhitespace) || comment.style() == Style.LINE) {
             newline();
-            toLeftMargin();
+            if (!preventClosingWhitespace) {
+                toLeftMargin();
+            }
         } else {
             if (!preventClosingWhitespace) {
                 needSpace();

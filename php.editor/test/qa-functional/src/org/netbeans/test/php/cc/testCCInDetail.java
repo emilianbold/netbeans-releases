@@ -70,6 +70,7 @@ public class testCCInDetail extends cc {
                 "CreatePHPFile",
                 "testPhp54ArrayDereferencing",
                 "DetailedCodeCompletionTesting",
+                "testPhp54Callable",
                 "testPhp54AnonymousObject").enableModules(".*").clusters(".*") //.gui( true )
                 );
     }
@@ -172,26 +173,35 @@ public class testCCInDetail extends cc {
     }
 
     public void testPhp54ArrayDereferencing() {
-        CreatePHPFile(TEST_PHP_NAME, "PHP File", null);
+        CreatePHPFile(TEST_PHP_NAME, "PHP File", "ArrayDeref");
         startTest();
         CCompletionCase test = new CCompletionCase("*/", "class MyClass {\n public $v;\n/**  @return MyClass[]     */\n public function getArray() {\n return array(new MyClass());\n }\n}\n\n $aa = new MyClass();\n $aa->getArray()[0]->", "$aa->getArray()[0]->", CCompletionCase.COMPLETION_LIST, 0, "v|getArray", -1, 12);
-        boolean result = CheckCodeCompletion(test, "NewEmptyPHP.php");
+        boolean result = CheckCodeCompletion(test, "ArrayDeref.php");
         assertTrue("Failed Array Dereferencing test", result);
         endTest();
     }
 
     public void testPhp54AnonymousObject() {
-        CreatePHPFile(TEST_PHP_NAME, "PHP File", null);
+        CreatePHPFile(TEST_PHP_NAME, "PHP File", "Anonymous.php");
         startTest();
         CCompletionCase test = new CCompletionCase("*/", "class MyClass {\n public $v;\n public $f;\n}\n\n (new MyClass())->", "(new MyClass())->", CCompletionCase.COMPLETION_LIST, 0, "v|f", -1, 12);
-        boolean result = CheckCodeCompletion(test, "NewEmptyPHP2.php");
+        boolean result = CheckCodeCompletion(test, "Anonymous.php");
         assertTrue("Failed Array AnonymousObject test", result);
+        endTest();
+    }
+    
+    public void testPhp54Callable() {
+        CreatePHPFile(TEST_PHP_NAME, "PHP File", "Callable");
+        startTest();
+        CCompletionCase test = new CCompletionCase("*/", "function name(ca","(ca", CCompletionCase.COMPLETION_LIST, 0, "callable", -1,1);
+        boolean result = CheckCodeCompletion(test, "Callable.php");
+        assertTrue("Failed Callable test", result);
         endTest();
     }
 
     public void DetailedCodeCompletionTesting() {
         startTest();
-
+        CreatePHPFile(TEST_PHP_NAME, "PHP File", "Details");
         CCompletionCase[] accTests = {
             new CCompletionCase("*/", "$test=1;\n$test1=$tes;", "$test1=$tes", CCompletionCase.COMPLETION_LIST, 0, "$test|$test1", -1, 2),
             new CCompletionCase("*/", "$test=1;\n$test1=\"a\";\n$newvar=$tes;", "$newvar=$tes", CCompletionCase.COMPLETION_LIST, 0, "$test|$test1", -2, 3),
@@ -243,7 +253,7 @@ public class testCCInDetail extends cc {
         String sFailed = "";
         int iFailed = 0;
         for (CCompletionCase cc : accTests) {
-            if (!CheckCodeCompletion(cc, "NewEmptyPHP1.php")) {
+            if (!CheckCodeCompletion(cc, "Details.php")) {
                 iFailed++;
                 sFailed = sFailed + "|" + cc.sResult;
             }

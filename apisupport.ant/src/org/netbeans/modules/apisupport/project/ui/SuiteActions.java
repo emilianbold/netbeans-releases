@@ -112,7 +112,6 @@ public final class SuiteActions implements ActionProvider, ExecProject {
     private static final String COMMAND_DEBUG_JNLP = "debug-jnlp";
     private static final String COMMAND_DEBUG_OSGI = "debug-osgi";
     private static final String COMMAND_NBMS = "nbms";
-    private static final String COMMAND_PROFILE = "profile";
     private static final String COMMAND_PROFILE_OSGI = "profile-osgi";
     private static final String COMMAND_RUN_JNLP = "run-jnlp";
     private static final String COMMAND_RUN_OSGI = "run-osgi";
@@ -245,13 +244,14 @@ public final class SuiteActions implements ActionProvider, ExecProject {
         return ProjectSensitiveActions.projectCommandAction(COMMAND_DEBUG_OSGI, SUITE_ACTION_debug_osgi(), null);
     }
 
-    @ActionID(category="Project", id="org.netbeans.modules.apisupport.project.suite.profileOsgi")
-    @ActionRegistration(displayName="#SUITE_ACTION_profile_osgi", lazy=false)
-    @ActionReference(path=SUITE_OSGI_ACTIONS_PATH, position=500)
-    @Messages("SUITE_ACTION_profile_osgi=Profile in Felix")
-    public static Action profileOsgi() {
-        return ProjectSensitiveActions.projectCommandAction(COMMAND_PROFILE_OSGI, SUITE_ACTION_profile_osgi(), null);
-    }
+    // #203519: Action registration has been moved to org.netbeans.modules.profiler.nbimpl.actions.AntActions#profileOsgi()
+//    @ActionID(category="Project", id="org.netbeans.modules.apisupport.project.suite.profileOsgi")
+//    @ActionRegistration(displayName="#SUITE_ACTION_profile_osgi", lazy=false)
+//    @ActionReference(path=SUITE_OSGI_ACTIONS_PATH, position=500)
+//    @Messages("SUITE_ACTION_profile_osgi=Profile in Felix")
+//    public static Action profileOsgi() {
+//        return ProjectSensitiveActions.projectCommandAction(COMMAND_PROFILE_OSGI, SUITE_ACTION_profile_osgi(), null);
+//    }
 
     @ActionID(category="Project", id="org.netbeans.modules.apisupport.project.suite.branding")
     @ActionRegistration(displayName="#SUITE_ACTION_branding", lazy=false)
@@ -368,18 +368,15 @@ public final class SuiteActions implements ActionProvider, ExecProject {
     
     @Messages("Title_BrandingEditor={0} - Branding")
     @Override public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
+        if (!ModuleActions.canRunNoLock(command, project.getTestUserDirLockFile())) {
+            return;
+        }
         if (ActionProvider.COMMAND_DELETE.equals(command)) {
-            if (SuiteOperations.canRun(project)) {
-                DefaultProjectOperations.performDefaultDeleteOperation(project);
-            }
+            DefaultProjectOperations.performDefaultDeleteOperation(project);
         } else if (ActionProvider.COMMAND_RENAME.equals(command)) {
-            if (SuiteOperations.canRun(project)) {
-                DefaultProjectOperations.performDefaultRenameOperation(project, null);
-            }
+            DefaultProjectOperations.performDefaultRenameOperation(project, null);
         } else if (ActionProvider.COMMAND_MOVE.equals(command)) {
-            if (SuiteOperations.canRun(project)) {
-                DefaultProjectOperations.performDefaultMoveOperation(project);
-            }
+            DefaultProjectOperations.performDefaultMoveOperation(project);
         } else if (COMMAND_BRANDING.equals(command)) {
             SuiteProperties properties = new SuiteProperties(project, project.getHelper(), project.getEvaluator(), SuiteUtils.getSubProjects(project));
             BrandingModel model = properties.getBrandingModel();
@@ -453,7 +450,7 @@ public final class SuiteActions implements ActionProvider, ExecProject {
             targetNames = new String[] {command};
         }
 
-        ModuleActions.setRunArgsIde(project, new SuiteProperties(project, project.getHelper(), project.getEvaluator(), Collections.<NbModuleProject>emptySet()), command, p, project.getTestUserDirLockFile());
+        ModuleActions.setRunArgsIde(project, new SuiteProperties(project, project.getHelper(), project.getEvaluator(), Collections.<NbModuleProject>emptySet()), command, p);
         
         return ActionUtils.runTarget(findBuildXml(project), targetNames, p);
     }

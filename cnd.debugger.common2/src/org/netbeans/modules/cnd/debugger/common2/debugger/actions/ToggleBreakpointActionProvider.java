@@ -64,7 +64,7 @@ import org.netbeans.api.debugger.ActionsManager;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.State;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebugger;
-import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.EditorContextBridge;
 import org.netbeans.modules.cnd.debugger.common2.debugger.RoutingToken;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.Disassembly;
@@ -110,13 +110,13 @@ public class ToggleBreakpointActionProvider extends NativeActionsProvider implem
     }
 
     private boolean checkTarget() {
-	if (! DebuggerManager.isPerTargetBpts())
+	if (! NativeDebuggerManager.isPerTargetBpts())
 	    return true;	// we always accept them for global bpts
 
 	NativeDebugger debugger = getDebugger();
 
 	if (debugger == null || !debugger.state().isLoaded) {
-	    DebuggerManager.errorLoadBeforeBpt();
+	    NativeDebuggerManager.errorLoadBeforeBpt();
 	    return false;
 	} else {
 	    return true;
@@ -145,7 +145,7 @@ public class ToggleBreakpointActionProvider extends NativeActionsProvider implem
         String currentURL = EditorContextBridge.getCurrentURL();
         String address = null;
         NativeBreakpoint bpt = null;
-        BreakpointBag bb = DebuggerManager.get().breakpointBag();
+        BreakpointBag bb = NativeDebuggerManager.get().breakpointBag();
         NativeDebugger debugger = getDebugger();
         if (Disassembly.isDisasm(currentURL)) {
             address = DisassemblyUtils.getLineAddress(lineNo);

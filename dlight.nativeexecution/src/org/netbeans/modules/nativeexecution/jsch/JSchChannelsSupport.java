@@ -38,18 +38,12 @@
  */
 package org.netbeans.modules.nativeexecution.jsch;
 
-import com.jcraft.jsch.Channel;
-import com.jcraft.jsch.ChannelShell;
-import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.Session;
+import com.jcraft.jsch.*;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map.Entry;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
@@ -58,6 +52,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.PasswordManager;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.RemoteUserInfo;
+import org.openide.util.Cancellable;
 
 /**
  *
@@ -71,6 +66,7 @@ public final class JSchChannelsSupport {
     private static final int JSCH_CHANNELS_PER_SESSION = Integer.getInteger("jsch.channels.per.session", 10); // NOI18N
     private static final boolean UNIT_TEST_MODE = Boolean.getBoolean("nativeexecution.mode.unittest"); // NOI18N
     private static final boolean USE_JZLIB = Boolean.getBoolean("jzlib"); // NOI18N
+    private static final HashMap<String, String> jschSessionConfig = new HashMap<String, String>();
     private final JSch jsch;
     private final RemoteUserInfo userInfo;
     private final ExecutionEnvironment env;
@@ -80,6 +76,24 @@ public final class JSchChannelsSupport {
     // We use ConcurrentHashMap to be able fast isConnected() check; in most other cases sessions is guarded bu "this"
     private final ConcurrentHashMap<Session, AtomicInteger> sessions = new ConcurrentHashMap<Session, AtomicInteger>();
     private final Set<Channel> knownChannels = new HashSet<Channel>();
+
+    static {
+        Set<Entry<Object, Object>> data = new HashSet<Entry<Object, Object>>(System.getProperties().entrySet());
+
+        for (Entry<Object, Object> prop : data) {
+            String var = prop.getKey().toString();
+            String val = prop.getValue().toString();
+            if (var != null && val != null) {
+                if (var.startsWith("jsch.session.cfg.")) { // NOI18N
+                    jschSessionConfig.put(var.substring(17), val);
+                }
+                if (var.startsWith("jsch.cfg.")) { // NOI18N
+                    JSch.setConfig(var.substring(9), val);
+                    jschSessionConfig.put(var.substring(9), val);
+                }
+            }
+        }
+    }
 
     public JSchChannelsSupport(JSch jsch, ExecutionEnvironment env) {
         this.jsch = jsch;
@@ -92,15 +106,13 @@ public final class JSchChannelsSupport {
     }
 
     public synchronized Channel acquireChannel(String type, boolean waitIfNoAvailable) throws JSchException, IOException, InterruptedException {
-        Session session = null;
-
 //        if (SwingUtilities.isEventDispatchThread()) {
 //            Exception e = new Exception("O-la-la acquireChannel!!!");
 //            Exceptions.printStackTrace(e);
 //        }
 //
 
-        session = findFreeSession();
+        Session session = findFreeSession();
 
         if (session == null) {
             if (sessions.size() >= JSCH_SESSIONS_PER_ENV) {
@@ -143,7 +155,7 @@ public final class JSchChannelsSupport {
         return false;
     }
 
-    public synchronized void reconnect(ExecutionEnvironment env) throws IOException, JSchException {
+    public synchronized void reconnect(ExecutionEnvironment env) throws IOException, JSchException, InterruptedException {
         disconnect();
         connect();
     }
@@ -163,7 +175,7 @@ public final class JSchChannelsSupport {
         return null;
     }
 
-    public synchronized void connect() throws JSchException {
+    public synchronized void connect() throws JSchException, InterruptedException {
         if (isConnected()) {
             return;
         }
@@ -177,35 +189,56 @@ public final class JSchChannelsSupport {
         }
     }
 
-    private Session startNewSession(boolean acquireChannel) throws JSchException {
-        Session newSession;
-        
-        while (true) {
-            try {
-                newSession = jsch.getSession(env.getUser(), env.getHostAddress(), env.getSSHPort());
-                newSession.setUserInfo(userInfo);
+    private Session startNewSession(boolean acquireChannel) throws JSchException, InterruptedException {
+        Session newSession = null;
+        final AtomicBoolean cancelled = new AtomicBoolean(false);
 
-                if (USE_JZLIB) {
-                    newSession.setConfig("compression.s2c", "zlib@openssh.com,zlib,none"); // NOI18N
-                    newSession.setConfig("compression.c2s", "zlib@openssh.com,zlib,none"); // NOI18N
-                    newSession.setConfig("compression_level", "9"); // NOI18N
-                }
+        ConnectingProgressHandle.startHandle(env, new Cancellable() {
 
-                newSession.connect(JSCH_CONNECTION_TIMEOUT);
-                break;
-            } catch (JSchException ex) {
-                if (!UNIT_TEST_MODE && "Auth fail".equals(ex.getMessage())) { // NOI18N
-                    PasswordManager.getInstance().clearPassword(env);
-                } else {
-                    throw ex;
+            @Override
+            public boolean cancel() {
+                cancelled.set(true);
+                return true;
+            }
+        });
+
+        try {
+            while (!cancelled.get()) {
+                try {
+                    newSession = jsch.getSession(env.getUser(), env.getHostAddress(), env.getSSHPort());
+                    newSession.setUserInfo(userInfo);
+
+                    for (Entry<String, String> entry : jschSessionConfig.entrySet()) {
+                        newSession.setConfig(entry.getKey(), entry.getValue());
+                    }
+
+                    if (USE_JZLIB) {
+                        newSession.setConfig("compression.s2c", "zlib@openssh.com,zlib,none"); // NOI18N
+                        newSession.setConfig("compression.c2s", "zlib@openssh.com,zlib,none"); // NOI18N
+                        newSession.setConfig("compression_level", "9"); // NOI18N
+                    }
+
+                    newSession.connect(JSCH_CONNECTION_TIMEOUT);
+                    break;
+                } catch (JSchException ex) {
+                    if (!UNIT_TEST_MODE && "Auth fail".equals(ex.getMessage())) { // NOI18N
+                        PasswordManager.getInstance().clearPassword(env);
+                    } else {
+                        throw ex;
+                    }
                 }
             }
+
+            if (cancelled.get()) {
+                throw new InterruptedException("StartNewSession was cancelled ..."); // NOI18N
+            }
+
+            sessions.put(newSession, new AtomicInteger(JSCH_CHANNELS_PER_SESSION - (acquireChannel ? 1 : 0)));
+
+            log.log(Level.FINE, "New session [{0}] started.", new Object[]{System.identityHashCode(newSession)}); // NOI18N
+        } finally {
+            ConnectingProgressHandle.stopHandle(env);
         }
-
-        sessions.put(newSession, new AtomicInteger(JSCH_CHANNELS_PER_SESSION - (acquireChannel ? 1 : 0)));
-
-        log.log(Level.FINE, "New session [{0}] started.", new Object[]{System.identityHashCode(newSession)}); // NOI18N
-
         return newSession;
     }
 

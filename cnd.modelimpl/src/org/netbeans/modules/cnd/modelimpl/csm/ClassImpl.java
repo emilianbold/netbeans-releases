@@ -746,7 +746,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                                 DiagnosticExceptoins.register(e);
                             }
                         } else {
-                            if (renderVariable(token, null, null, false)) {
+                            if (renderVariable(token, null, null, ClassImpl.this.getContainingNamespaceImpl(), false)) {
                                 break;
                             }
                             typedefs = renderTypedef(token, (FileImpl) getContainingFile(), fileContent, ClassImpl.this, null);
@@ -1237,9 +1237,9 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         }
 
         @Override
-        protected CsmClass createForwardClassIfNeed(AST ast, CsmScope scope, boolean registerInProject) {
-            CsmClass cls = super.createForwardClassIfNeed(ast, scope, registerInProject);
-            classDefinition = UIDCsmConverter.declarationToUID(cls);
+        protected ForwardClass createForwardClassIfNeed(AST ast, CsmScope scope, boolean registerInProject) {
+            ForwardClass cls = super.createForwardClassIfNeed(ast, scope, registerInProject);
+            classDefinition = UIDCsmConverter.declarationToUID((CsmClass)cls);
             if (cls != null) {
                 RepositoryUtils.put(this);
             }

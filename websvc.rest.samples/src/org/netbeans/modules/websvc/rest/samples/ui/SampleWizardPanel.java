@@ -66,6 +66,7 @@ public class SampleWizardPanel implements WizardDescriptor.Panel, WizardDescript
     }
 
     
+    @Override
     public SampleWizardPanelVisual getComponent() {
         if (myComponent == null) {
             myComponent = new SampleWizardPanelVisual(this);
@@ -73,20 +74,26 @@ public class SampleWizardPanel implements WizardDescriptor.Panel, WizardDescript
         return myComponent;
     }
     
+    @Override
     public HelpCtx getHelp() {
-        return new HelpCtx(this.getClass());
+        return null;
     }
     
+    @Override
     public boolean isValid() {
         return getComponent().valid( myWizardDescriptor );
     }
     
     private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
+
+    @Override
     public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
         }
     }
+
+    @Override
     public final void removeChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.remove(l);
@@ -103,21 +110,25 @@ public class SampleWizardPanel implements WizardDescriptor.Panel, WizardDescript
         }
     }
     
+    @Override
     public void readSettings(Object settings) {
         myWizardDescriptor = (WizardDescriptor)settings;        
         getComponent().read (myWizardDescriptor);
         
     }
     
+    @Override
     public void storeSettings(Object settings) {
         WizardDescriptor d = (WizardDescriptor)settings;
         getComponent().store(d);
     }
 
+    @Override
     public boolean isFinishPanel() {
         return true;
     }
     
+    @Override
     public void validate () throws WizardValidationException {
         getComponent().validate (myWizardDescriptor);
     }

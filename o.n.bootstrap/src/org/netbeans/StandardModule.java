@@ -129,7 +129,7 @@ class StandardModule extends Module {
             try {
                 loadManifest();
             } catch (IOException x) {
-                Util.err.log(Level.WARNING, "While loading manifest for " + this, x);
+                Util.err.log(Level.WARNING, "While loading manifest for " + getJarFile(), x);
                 manifest = new Manifest();
             }
         }

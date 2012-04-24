@@ -89,8 +89,8 @@ public class APTHandlersSupport {
         return APTHandlersSupportImpl.extractMacroMapState(state);
     }
 
-    public static StateKey getMacroMapID(APTPreprocHandler.State state){
-        return APTHandlersSupportImpl.getMacroMapID(state);
+    public static APTPreprocHandler.StateKey getStateKey(APTPreprocHandler.State state){
+        return APTHandlersSupportImpl.getStateKey(state);
     }
 
     public static boolean isEmptyActiveMacroMap(APTPreprocHandler.State state) {
@@ -128,31 +128,5 @@ public class APTHandlersSupport {
 
     public static boolean equalsIgnoreInvalid(APTPreprocHandler.State state1, APTPreprocHandler.State state2) {
         return APTHandlersSupportImpl.equalsIgnoreInvalid(state1, state2);
-    }
-
-    public static final class StateKey {
-        private final int crc1,crc2;
-        public StateKey(int crc1, int crc2){
-            this.crc1 = crc1;
-            this.crc2 = crc2;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj instanceof StateKey) {
-                return crc1 == ((StateKey)obj).crc1 && crc2 == ((StateKey)obj).crc2;
-            }
-            return false;
-        }
-
-        @Override
-        public int hashCode() {
-            return crc1 ^ crc2;
-        }
-
-        @Override
-        public String toString() {
-            return "<"+crc1+","+crc2+">"; // NOI18N
-        }
     }
 }

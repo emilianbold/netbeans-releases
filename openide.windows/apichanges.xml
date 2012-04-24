@@ -50,6 +50,22 @@ made subject to such option by the copyright holder.
 <apidef name="winsys">Window System API</apidef>
 </apidefs>
 <changes>
+<change id="onshowing">
+    <api name="winsys"/>
+    <summary>Easy to use replacement for <code>invokeWhenUIReady</code></summary>
+    <version major="6" minor="54"/>
+    <date day="31" month="3" year="2012"/>
+    <author login="jtulach"/>
+    <compatibility addition="yes" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+    <description>
+        <p>In case you want to execute a code as soon as main window is
+        visible, consider using <a href="@TOP@org/openide/windows/OnShowing.html">
+        OnShowing</a> annotation.
+        </p>
+    </description>
+    <class package="org.openide.windows" name="OnShowing"/>
+    <issue number="200636"/>
+</change>
 <change id="ctrltab.switching.disable">
     <api name="winsys"/>
     <summary>New branding property to disable Ctrl+Tab window switching.</summary>

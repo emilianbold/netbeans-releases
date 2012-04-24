@@ -49,16 +49,14 @@ made subject to such option by the copyright holder.
     <localizing-bundle>org.netbeans.modules.testng.Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst://org.netbeans.libs.testng/modules/ext/testng-6.5beta-dist.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.libs.testng/modules/ext/testng-6.5.1-dist.jar!/</resource>
     </volume>
     <volume>
         <type>javadoc</type>
-        <resource>jar:nbinst://org.netbeans.libs.testng/docs/testng-6.5beta-javadoc.zip!/</resource>
+        <resource>jar:nbinst://org.netbeans.libs.testng/docs/testng-6.5.1-javadoc.zip!/</resource>
     </volume>
     <volume>
         <type>maven-pom</type>
-        <!-- snapshot versions are not available :-( -->
-<!--        <resource>http://repo1.maven.org/maven2/org/testng/testng/6.3.2/testng-6.3.2.pom</resource>-->
-        <resource>http://repo1.maven.org/maven2/org/testng/testng/6.4/testng-6.4.pom</resource>
+        <resource>http://repo1.maven.org/maven2/org/testng/testng/6.5.2/testng-6.5.2.pom</resource>
     </volume>
 </library>

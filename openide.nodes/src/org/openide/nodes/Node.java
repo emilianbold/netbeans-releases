@@ -1388,8 +1388,8 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
                 return false;
             }
             final String n1 = ((PropertySet) propertySet).getName();
-            if (n1 == null && getName() == null) {
-                return true;
+            if (n1 == null) {
+                return getName() == null;
             }
             return n1.equals(getName());
         }

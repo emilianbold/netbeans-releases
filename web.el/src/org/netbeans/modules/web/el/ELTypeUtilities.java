@@ -41,16 +41,7 @@
  */
 package org.netbeans.modules.web.el;
 
-import com.sun.el.parser.AstFalse;
-import com.sun.el.parser.AstFloatingPoint;
-import com.sun.el.parser.AstIdentifier;
-import com.sun.el.parser.AstInteger;
-import com.sun.el.parser.AstMethodSuffix;
-import com.sun.el.parser.AstPropertySuffix;
-import com.sun.el.parser.AstString;
-import com.sun.el.parser.AstTrue;
-import com.sun.el.parser.Node;
-import com.sun.el.parser.NodeVisitor;
+import com.sun.el.parser.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -234,17 +225,16 @@ public final class ELTypeUtilities {
             return false;
         }
         int methodParams = method.getParameters().size();
-        if (methodNode instanceof AstMethodSuffix
+        if (NodeUtil.isMethodCall(methodNode)
                 && (methodName.equals(image) || RefactoringUtil.getPropertyName(methodName).equals(image))) {
-            int methodNodeParams = ((AstMethodSuffix) methodNode).jjtGetNumChildren();
+            int methodNodeParams = ((Node) methodNode).jjtGetNumChildren();
             if (method.isVarArgs()) {
                 return methodParams == 1 ? true : methodNodeParams >= methodParams;
             }
-            return method.getParameters().size() == methodNodeParams
-                    && haveSameParameters(info, (AstMethodSuffix) methodNode, method);
+            return method.getParameters().size() == methodNodeParams && haveSameParameters(info, methodNode, method);
         }
 
-        if (methodNode instanceof AstPropertySuffix
+        if (methodNode instanceof AstDotSuffix
                 && (methodName.equals(image) || RefactoringUtil.getPropertyName(methodName).equals(image))) {
 
             // for validators params are passed automatically (they are not present in EL)
@@ -347,7 +337,7 @@ public final class ELTypeUtilities {
             return false;
         }
         String bundleVar = target.getImage();
-        return resourceBundles.isResourceBundleIdentifier(bundleVar);
+        return resourceBundles.isResourceBundleIdentifier(bundleVar, info.context());
     }
 
     private static TypeMirror getTypeMirrorFor(CompilationContext info, Element element) {
@@ -376,7 +366,7 @@ public final class ELTypeUtilities {
         return info.info().getTypeUtilities().getTypeName(type, TypeNameOptions.PRINT_FQN);
     }
 
-    private static boolean haveSameParameters(CompilationContext info, AstMethodSuffix methodNode, ExecutableElement method) {
+    private static boolean haveSameParameters(CompilationContext info, Node methodNode, ExecutableElement method) {
         for (int i = 0; i < methodNode.jjtGetNumChildren(); i++) {
             Node paramNode = methodNode.jjtGetChild(i);
             if (!isSameType(info, paramNode, method.getParameters().get(i))) {
@@ -531,7 +521,7 @@ public final class ELTypeUtilities {
                     Node current = parent;
                     for (int i = 0; i < parent.jjtGetNumChildren(); i++) {
                         current = parent.jjtGetChild(i);
-                        if (current instanceof AstPropertySuffix || current instanceof AstMethodSuffix) {
+                        if (current instanceof AstDotSuffix || NodeUtil.isMethodCall(current)) {
                             method = getElementForProperty(info, current, enclosing);
                             if (method == null) {
                                 continue;
@@ -615,7 +605,7 @@ public final class ELTypeUtilities {
                     Node parent = node.jjtGetParent();
                     for (int i = 0; i < parent.jjtGetNumChildren(); i++) {
                         Node child = parent.jjtGetChild(i);
-                        if (child instanceof AstPropertySuffix || child instanceof AstMethodSuffix) {
+                        if (child instanceof AstDotSuffix || NodeUtil.isMethodCall(child)) {
                             Element propertyType = getElementForProperty(info, child, enclosing);
                             if (propertyType == null) {
                                 // special case handling for scope objects; their types don't help

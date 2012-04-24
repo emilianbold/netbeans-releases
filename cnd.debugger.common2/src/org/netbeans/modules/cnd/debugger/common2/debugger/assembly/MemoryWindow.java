@@ -74,7 +74,7 @@ import org.openide.windows.WindowManager;
 import org.openide.util.HelpCtx;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebugger;
-import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 
 
 public final class MemoryWindow extends TopComponent
@@ -139,7 +139,7 @@ public final class MemoryWindow extends TopComponent
         needInitData=true;
         updateWindow();
         // 6661013, always connect to current debugger
-	connectToDebugger(DebuggerManager.get().currentDebugger());
+	connectToDebugger(NativeDebuggerManager.get().currentDebugger());
     }
 
     // interface TopComponent

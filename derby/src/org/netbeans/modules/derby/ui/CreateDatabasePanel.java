@@ -47,6 +47,7 @@ package org.netbeans.modules.derby.ui;
 import java.io.File;
 import java.util.Arrays;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.db.api.sql.SQLKeywords;
 import org.netbeans.modules.derby.DerbyOptions;
 import org.netbeans.modules.derby.api.DerbyDatabases;
 import org.openide.DialogDescriptor;
@@ -64,17 +65,17 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         
         @Override
         public void removeUpdate(javax.swing.event.DocumentEvent e) {
-            validateDatabaseName();
+            validateInput();
         }
 
         @Override
         public void insertUpdate(javax.swing.event.DocumentEvent e) {
-            validateDatabaseName();
+            validateInput();
         }
 
         @Override
         public void changedUpdate(javax.swing.event.DocumentEvent e) {
-            validateDatabaseName();
+            validateInput();
         }
     };
     
@@ -90,7 +91,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
     
     public void setDialogDescriptor(DialogDescriptor descriptor) {
         this.descriptor = descriptor;
-        validateDatabaseName();
+        validateInput();
     }
 
     public String getDatabaseName() {
@@ -122,7 +123,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         descriptor.setValid(false);
     }
 
-    private void validateDatabaseName() {
+    private void validateInput() {
         if (descriptor == null) {
             return;
         }
@@ -132,6 +133,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         String info = null;
         
         String databaseName = getDatabaseName();
+        String user = getUser();
         int illegalChar = DerbyDatabases.getFirstIllegalCharacter(databaseName);
         // workaround for issue 69265
         int unsupportedChar = getFirstUnsupportedCharacter(databaseName);
@@ -147,6 +149,10 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
             error = NbBundle.getMessage(CreateDatabasePanel.class, "ERR_DatabaseDirectoryExists", databaseName);
         } else if (unsupportedChar >= 0) {
             error = NbBundle.getMessage(CreateDatabasePanel.class, "ERR_DatabaseNameUnsupportedChar", new Character((char)unsupportedChar));
+        } else if (user != null && !isSql92Identifier(user)) { // NOI18N
+            error = NbBundle.getMessage(CreateDatabasePanel.class, "ERR_UserNameNotSqlIdentifier", user); // NOI18N
+        } else if (user != null && SQLKeywords.isSQL99ReservedKeyword(user)) {
+            error = NbBundle.getMessage(CreateDatabasePanel.class, "ERR_UserNameIsSqlKeyword", user); // NOI18N
         } else if (getUser() == null || getPassword() == null) {
             info = NbBundle.getMessage(CreateDatabasePanel.class, "ERR_UserNamePasswordRecommended");
         } else if (getUser() != null && getPassword() != null && getRetypePassword() == null) {
@@ -170,6 +176,32 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         }
     }
     
+    static boolean isSql92Identifier(String s) {
+        if (s == null || s.isEmpty()) {
+            // empty value
+            return false;
+        } else if (s.matches("[\\w&&[^\\d_]](_|\\d|\\w)*")) { //NOI18N
+            // ordinary identifier
+            return true;
+        } else if (s.matches("\\\".+\\\"")) { //NOI18N
+            boolean unpairedQuite = false;
+            // check all quotes are doubled
+            for (int i = 1; i < s.length() - 1; i++) {
+                if (s.charAt(i) == '"') {
+                    unpairedQuite = !unpairedQuite;
+                } else if (unpairedQuite) {
+                    // invalid delemited identifier
+                    return false;
+                }
+            }
+            // delemited identifier
+            return !unpairedQuite;
+        } else {
+            // other cases, not a identifier
+            return false;
+        }
+    }
+
     private void updateLocation() {
         databaseLocationValueLabel.setText(derbySystemHome.getAbsolutePath());
     }

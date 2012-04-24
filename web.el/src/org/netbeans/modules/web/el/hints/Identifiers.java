@@ -41,11 +41,7 @@
  */
 package org.netbeans.modules.web.el.hints;
 
-import com.sun.el.parser.AstIdentifier;
-import com.sun.el.parser.AstMethodSuffix;
-import com.sun.el.parser.AstPropertySuffix;
-import com.sun.el.parser.Node;
-import com.sun.el.parser.NodeVisitor;
+import com.sun.el.parser.*;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -55,10 +51,7 @@ import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.el.CompilationContext;
-import org.netbeans.modules.web.el.ELElement;
-import org.netbeans.modules.web.el.ELParserResult;
-import org.netbeans.modules.web.el.ELTypeUtilities;
+import org.netbeans.modules.web.el.*;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -116,7 +109,7 @@ public final class Identifiers extends ELRule {
                             finished = true;
                         }
                     }
-                    if (node instanceof AstPropertySuffix || node instanceof AstMethodSuffix) {
+                    if (node instanceof AstDotSuffix || NodeUtil.isMethodCall(node)) {
                         Element resolvedElement = ELTypeUtilities.resolveElement(info, each, node);
                         if (resolvedElement == null) {
                             Hint hint = new Hint(Identifiers.this,
@@ -138,10 +131,10 @@ public final class Identifiers extends ELRule {
         if (node instanceof AstIdentifier) {
             return NbBundle.getMessage(Identifiers.class, "Identifiers_Unknown_Identifier", node.getImage());
         }
-        if (node instanceof AstPropertySuffix) {
+        if (node instanceof AstDotSuffix) {
             return NbBundle.getMessage(Identifiers.class, "Identifiers_Unknown_Property", node.getImage());
         }
-        if (node instanceof AstMethodSuffix) {
+        if (NodeUtil.isMethodCall(node)) {
             return NbBundle.getMessage(Identifiers.class, "Identifiers_Unknown_Method", node.getImage());
         }
         assert false;

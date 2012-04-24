@@ -46,21 +46,22 @@ import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.UIManager;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
 import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
@@ -72,13 +73,16 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.embedder.exec.ProgressTransferListener;
 import static org.netbeans.modules.maven.nodes.Bundle.*;
 import org.openide.nodes.AbstractNode;
+import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.ChangeSupport;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -89,8 +93,7 @@ public class DependenciesNode extends AbstractNode {
     enum Type {COMPILE, TEST, RUNTIME, /** any scope */NONCP}
     public static final String PREF_DEPENDENCIES_UI = "org/netbeans/modules/maven/dependencies/ui"; //NOI18N
     
-    private NbMavenProjectImpl project;
-    private Type type;
+    private final DependenciesSet dependencies;
 
     @Messages({
         "LBL_Libraries=Dependencies",
@@ -98,17 +101,16 @@ public class DependenciesNode extends AbstractNode {
         "LBL_Runtime_Libraries=Runtime Dependencies",
         "LBL_non_cp_libraries=Non-classpath Dependencies"
     })
-    DependenciesNode(DependenciesChildren childs, NbMavenProjectImpl mavproject, Type type) {
-        super(childs, Lookups.fixed(mavproject));
-        setName("Dependencies" + type); //NOI18N
-        this.type = type;
-        switch (type) {
+    DependenciesNode(DependenciesSet dependencies) {
+        super(Children.create(new DependenciesChildren(dependencies), true), Lookups.fixed(dependencies.project));
+        this.dependencies = dependencies;
+        setName("Dependencies" + dependencies.type); //NOI18N
+        switch (dependencies.type) {
             case COMPILE : setDisplayName(LBL_Libraries()); break;
             case TEST : setDisplayName(LBL_Test_Libraries()); break;
             case RUNTIME : setDisplayName(LBL_Runtime_Libraries()); break;
             default : setDisplayName(LBL_non_cp_libraries()); break;
         }
-        project = mavproject;
         setIconBaseWithExtension("org/netbeans/modules/maven/defaultFolder.gif"); //NOI18N
     }
     
@@ -133,7 +135,7 @@ public class DependenciesNode extends AbstractNode {
         ArrayList<Action> toRet = new ArrayList<Action>();
         toRet.add(new AddDependencyAction());
         toRet.add(null);
-        toRet.add(new ResolveDepsAction(project));
+        toRet.add(new ResolveDepsAction(dependencies.project));
         toRet.add(new DownloadJavadocSrcAction(true));
         toRet.add(new DownloadJavadocSrcAction(false));
         toRet.addAll(Utilities.actionsForPath("Projects/org-netbeans-modules-maven/DependenciesActions")); //NOI18N
@@ -142,53 +144,53 @@ public class DependenciesNode extends AbstractNode {
         return toRet.toArray(new Action[toRet.size()]);
     }
     
-    static class DependenciesChildren extends Children.Keys<DependencyWrapper> implements PropertyChangeListener {
-        private NbMavenProjectImpl project;
-        final Type type;
+    private static class DependenciesChildren extends ChildFactory<DependencyWrapper> implements ChangeListener {
 
+        private final DependenciesSet dependencies;
 
-        public DependenciesChildren(NbMavenProjectImpl proj, Type type) {
-            super();
-            project = proj;
-            this.type = type;
+        @SuppressWarnings("LeakingThisInConstructor")
+        DependenciesChildren(DependenciesSet dependencies) {
+            this.dependencies = dependencies;
+            dependencies.addChangeListener(WeakListeners.change(this, dependencies));
         }
         
         @Override
-        protected Node[] createNodes(DependencyWrapper wr) {
+        protected Node createNodeForKey(DependencyWrapper wr) {
             Artifact art = wr.getArtifact();
             if (art.getFile() == null) { // #140253
                 Node n = new AbstractNode(Children.LEAF);
                 n.setName("No such artifact: " + art); // XXX I18N
-                return new Node[] {n};
+                return n;
             }
-            return new Node[] {new DependencyNode(project, art, true)};
+            return new DependencyNode(dependencies.project, art, true);
         }
 
-        Node getParentNode() {
-            return getNode();
+        @Override public void stateChanged(ChangeEvent e) {
+            refresh(false);
         }
         
-        @Override
-        public void propertyChange(PropertyChangeEvent evt) {
-            if (NbMavenProjectImpl.PROP_PROJECT.equals(evt.getPropertyName())) {
-                //was refreshed by the NodeList already..
-                regenerateKeys();
-                refresh();
-            }
+        @Override protected boolean createKeys(List<DependencyWrapper> toPopulate) {
+            toPopulate.addAll(dependencies.list());
+            return true;
         }
-        
-        @Override
-        protected void addNotify() {
-            NbMavenProject.addPropertyChangeListener(project, this);
+
+    }
+
+    static final class DependenciesSet implements PropertyChangeListener {
+
+        private NbMavenProjectImpl project;
+        private final Type type;
+        private final ChangeSupport cs = new ChangeSupport(this);
+
+        @SuppressWarnings("LeakingThisInConstructor")
+        DependenciesSet(NbMavenProjectImpl project, Type type) {
+            this.project = project;
+            this.type = type;
+            NbMavenProject nbmp = project.getProjectWatcher();
+            nbmp.addPropertyChangeListener(WeakListeners.propertyChange(this, nbmp));
         }
-        
-        @Override
-        protected void removeNotify() {
-            setKeys(Collections.<DependencyWrapper>emptyList());
-            NbMavenProject.removePropertyChangeListener(project, this);
-        }
-        
-        int regenerateKeys() {
+
+        Collection<DependencyWrapper> list() {
             TreeSet<DependencyWrapper> lst = new TreeSet<DependencyWrapper>(new DependenciesComparator());
             MavenProject mp = project.getOriginalMavenProject();
             Set<Artifact> arts = mp.getArtifacts();
@@ -204,26 +206,25 @@ public class DependenciesNode extends AbstractNode {
                 break;
             default:
                 for (Artifact a : arts) {
-                    fixFile(a);
                     if (!a.getArtifactHandler().isAddedToClasspath()) {
                         lst.add(new DependencyWrapper(a));
                     }
                 }
             }
-            setKeys(lst);
-            return lst.size();
+            return lst;
         }
-        
-        private void fixFile(Artifact a) {
-            if (a.getFile() == null) {
-                ArtifactRepository local = project.getEmbedder().getLocalRepository();
-                String path = local.pathOf(a);
-                if (!path.endsWith('.' + a.getType())) {
-                    // XXX why does this happen? just for fake artifacts
-                    path += '.' + a.getType();
-                }
-                File f = new File(local.getBasedir(), path);
-                a.setFile(f);
+
+        public void addChangeListener(ChangeListener listener) {
+            cs.addChangeListener(listener);
+        }
+
+        public void removeChangeListener(ChangeListener listener) {
+            cs.addChangeListener(listener);
+        }
+
+        @Override public void propertyChange(PropertyChangeEvent evt) {
+            if (NbMavenProjectImpl.PROP_PROJECT.equals(evt.getPropertyName())) {
+                cs.fireChange();
             }
         }
 
@@ -232,7 +233,6 @@ public class DependenciesNode extends AbstractNode {
                 if (!Arrays.asList(scopes).contains(a.getScope())) {
                     continue;
                 }
-                fixFile(a); // will be null if *any* dependency artifacts are missing, for some reason
                 if (a.getArtifactHandler().isAddedToClasspath()) {
                     lst.add(new DependencyWrapper(a));
                 }
@@ -268,13 +268,17 @@ public class DependenciesNode extends AbstractNode {
             if (!artifact.getDependencyTrail().equals(other.artifact.getDependencyTrail())) {
                 return false;
             }
+            if (!artifact.getFile().equals(other.artifact.getFile())) {
+                return false;
+            }
             return true;
         }
 
         @Override
         public int hashCode() {
             int hash = 7;
-            hash = 23 * hash + artifact.hashCode() + artifact.getDependencyTrail().hashCode();
+            hash = 31 * hash + artifact.hashCode() + artifact.getDependencyTrail().hashCode();
+            hash = 31 * hash + artifact.getFile().hashCode();
             return hash;
         }
         
@@ -289,15 +293,15 @@ public class DependenciesNode extends AbstractNode {
         }
 
         @Override public void actionPerformed(ActionEvent event) {
-            String typeString = type == Type.RUNTIME ? "runtime" : (type == Type.TEST ? "test" : "compile"); //NOI18N
-            final String[] data = AddDependencyPanel.show(project, true, typeString);
+            String typeString = dependencies.type == Type.RUNTIME ? "runtime" : (dependencies.type == Type.TEST ? "test" : "compile"); //NOI18N
+            final String[] data = AddDependencyPanel.show(dependencies.project, true, typeString);
             if (data != null) {
                 RP.post(new Runnable() {
                     @Override
                     public void run() {
-                        ModelUtils.addDependency(project.getProjectDirectory().getFileObject("pom.xml")/*NOI18N*/,
+                        ModelUtils.addDependency(dependencies.project.getProjectDirectory().getFileObject("pom.xml")/*NOI18N*/,
                                data[0], data[1], data[2], data[4], data[3], data[5], false);
-                        project.getLookup().lookup(NbMavenProject.class).downloadDependencyAndJavadocSource(false);
+                        dependencies.project.getLookup().lookup(NbMavenProject.class).downloadDependencyAndJavadocSource(false);
                     }
                 });
             }
@@ -338,19 +342,23 @@ public class DependenciesNode extends AbstractNode {
                             contribs, ProgressTransferListener.cancellable(), null);
                     handle.start();
                     try {
-                    ProgressTransferListener.setAggregateHandle(handle);
-                    for (int i = 0; i < nds.length; i++) {
-                        if (nds[i] instanceof DependencyNode) {
-                            DependencyNode nd = (DependencyNode)nds[i];
-                            if (javadoc && !nd.hasJavadocInRepository()) {
-                                nd.downloadJavadocSources(contribs[i], javadoc);
-                            } else if (!javadoc && !nd.hasSourceInRepository()) {
-                                nd.downloadJavadocSources(contribs[i], javadoc);
-                            } else {
-                                contribs[i].finish();
+                        ProgressTransferListener.setAggregateHandle(handle);
+                        for (int i = 0; i < nds.length; i++) {
+                            AtomicBoolean cancel = ProgressTransferListener.activeListener().cancel;
+                            if (cancel != null && cancel.get()) {
+                                return;
+                            }
+                            if (nds[i] instanceof DependencyNode) {
+                                DependencyNode nd = (DependencyNode)nds[i];
+                                if (javadoc && !nd.hasJavadocInRepository()) {
+                                    nd.downloadJavadocSources(contribs[i], javadoc);
+                                } else if (!javadoc && !nd.hasSourceInRepository()) {
+                                    nd.downloadJavadocSources(contribs[i], javadoc);
+                                } else {
+                                    contribs[i].finish();
+                                }
                             }
                         }
-                    }
                     } catch (ThreadDeath d) { // download interrupted
                     } finally {
                         handle.finish();
