@@ -684,6 +684,8 @@ public class RefactoringPanel extends JPanel {
             session = tempSession;
         }
         
+        final RefactoringPanelContainer cont = isQuery ? RefactoringPanelContainer.getUsagesComponent() : RefactoringPanelContainer.getRefactoringComponent();
+        cont.makeBusy(true);
         initialize();
 
         cancelRequest.set(false);
@@ -738,8 +740,6 @@ public class RefactoringPanel extends JPanel {
                     } else {
                         progressHandle.start(elements.size()/10);
                     }
-                    RefactoringPanelContainer cont = isQuery ? RefactoringPanelContainer.getUsagesComponent() : RefactoringPanelContainer.getRefactoringComponent();
-                    cont.makeBusy(true);
 
                     int i=0;
                     try {
@@ -856,7 +856,6 @@ public class RefactoringPanel extends JPanel {
         }
         if (!isVisible) {
             // dock it into output window area and display
-            RefactoringPanelContainer cont = isQuery ? RefactoringPanelContainer.getUsagesComponent() : RefactoringPanelContainer.getRefactoringComponent();
             cont.open();
             cont.requestActive();
             if (isQuery && parametersPanel!=null && !parametersPanel.isCreateNewTab()) {
