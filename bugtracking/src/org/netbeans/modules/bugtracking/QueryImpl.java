@@ -44,6 +44,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.bugtracking.api.Query;
+import org.netbeans.modules.bugtracking.issuetable.IssueTable;
+import org.netbeans.modules.bugtracking.issuetable.IssueTable.IssueTableProvider;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiQueryProvider;
 import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
@@ -199,6 +201,14 @@ public final class QueryImpl<Q, I>  {
             return ((KenaiQueryProvider<Q, I>)queryProvider).needsLogin(data);
         } 
         return false;
+    }
+
+    public IssueTable getIssueTable() {
+        QueryController controller = getController();
+        if((controller instanceof IssueTableProvider)) {
+            return ((IssueTableProvider)controller).getIssueTable();
+        } 
+        return null;
     }
 
 }
