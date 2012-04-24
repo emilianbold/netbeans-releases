@@ -1337,7 +1337,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     Collection<? extends Indexable> dirty = Collections.singleton(SPIAccessor.getInstance().create(new FileObjectIndexable(root.second, docFile)));
                     String mimeType = DocumentUtilities.getMimeType(document);
 
-                    Collection<? extends IndexerCache.IndexerInfo<CustomIndexerFactory>> cifInfos = IndexerCache.getCifCache().getIndexersFor(mimeType);
+                    Collection<? extends IndexerCache.IndexerInfo<CustomIndexerFactory>> cifInfos = IndexerCache.getCifCache().getIndexersFor(mimeType, true);
                     for(IndexerCache.IndexerInfo<CustomIndexerFactory> info : cifInfos) {
                         try {
                             CustomIndexerFactory factory = info.getIndexerFactory();
@@ -1359,7 +1359,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         }
                     }
 
-                    Collection<? extends IndexerCache.IndexerInfo<EmbeddingIndexerFactory>> eifInfos = IndexerCache.getEifCache().getIndexersFor(mimeType);
+                    Collection<? extends IndexerCache.IndexerInfo<EmbeddingIndexerFactory>> eifInfos = IndexerCache.getEifCache().getIndexersFor(mimeType, true);
                     for(IndexerCache.IndexerInfo<EmbeddingIndexerFactory> info : eifInfos) {
                         try {
                             EmbeddingIndexerFactory factory = info.getIndexerFactory();
