@@ -49,6 +49,7 @@ public class Constants {
     
     /**
      * A constant used in virtual sources for the foreign content representation.
+     * @since 1.12
      */
     public static final String LANGUAGE_SNIPPET_SEPARATOR = "@@@"; //NOI18N
 }

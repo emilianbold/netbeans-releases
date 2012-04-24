@@ -184,7 +184,7 @@ public class VersioningAnnotationProviderTest extends NbTestCase {
 
     private class StatusListener implements FileStatusListener {
 
-        private long lastEvent;
+        private volatile long lastEvent;
         private Exception ex;
         private HashMap<FileObject, String> annotationsLabels = new HashMap<FileObject, String>();
         private HashMap<FileObject, Image> annotationsIcons = new HashMap<FileObject, Image>();
@@ -212,6 +212,7 @@ public class VersioningAnnotationProviderTest extends NbTestCase {
         }
 
         private void startAnnotation(final Set<FileObject> files) {
+            lastEvent = 0;
             EventQueue.invokeLater(new Runnable() {
                 public void run() {
                     lastEvent = System.currentTimeMillis();
@@ -235,7 +236,7 @@ public class VersioningAnnotationProviderTest extends NbTestCase {
         }
 
         private void waitForSilence() throws Exception {
-            while (System.currentTimeMillis() - lastEvent < 10000) {
+            while (lastEvent == 0 || System.currentTimeMillis() - lastEvent < 10000) {
                 if (ex != null) {
                     throw ex;
                 }

@@ -165,7 +165,7 @@ public class Activator implements BundleActivator, SynchronousBundleListener {
         String name = (String) headers.get(Constants.BUNDLE_SYMBOLICNAME);
         if (name != null) {
             name = name.replaceFirst(";.+", "");
-            deps.add(name);
+            deps.add("cnb." + name);
             if (name.equals("org.openide.modules")) {
                 CoreBridge.defineOsTokens(deps);
             }
@@ -180,7 +180,7 @@ public class Activator implements BundleActivator, SynchronousBundleListener {
             // PackageAdmin.getRequiredBundles is not suitable for this - it is backwards.
             // XXX try to follow the spec more closely; this will work at least for headers created by MakeOSGi:
             for (String item : v.split(", ")) {
-                deps.add(item.replaceFirst(";.+", ""));
+                deps.add("cnb." + item.replaceFirst(";.+", ""));
             }
         }
         // XXX also check for BUNDLE_SYMBOLICNAME_ATTRIBUTE in IMPORT_PACKAGE (though not currently used by MakeOSGi)

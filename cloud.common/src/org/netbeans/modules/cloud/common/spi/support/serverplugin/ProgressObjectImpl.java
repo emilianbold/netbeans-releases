@@ -89,7 +89,9 @@ public class ProgressObjectImpl implements ProgressObject {
     
     @Override
     public TargetModuleID[] getResultTargetModuleIDs() {
-        return new TargetModuleID[]{new TargetModuleIDImpl(url, "some-id", TargetImpl.SOME)};
+        return new TargetModuleID[]{new TargetModuleIDImpl(url, "some-id", TargetImpl.SOME,
+                // this is hack: when EAR is deployed Deployment API asks EAR's child module for URL:
+                new TargetModuleIDImpl(url, "some-id-child", TargetImpl.SOME, null))};
     }
 
     @Override
@@ -167,11 +169,13 @@ public class ProgressObjectImpl implements ProgressObject {
         private String url;
         private String id;
         private Target target;
+        private TargetModuleID child;
 
-        public TargetModuleIDImpl(String url, String id, Target target) {
+        public TargetModuleIDImpl(String url, String id, Target target, TargetModuleID child) {
             this.url = url;
             this.id = id;
             this.target = target;
+            this.child = child;
         }
         
         @Override
@@ -196,7 +200,11 @@ public class ProgressObjectImpl implements ProgressObject {
 
         @Override
         public TargetModuleID[] getChildTargetModuleID() {
-            return null;
+            if (child == null) {
+                return null;
+            } else {
+                return new TargetModuleID[]{child};
+            }
         }
         
     }

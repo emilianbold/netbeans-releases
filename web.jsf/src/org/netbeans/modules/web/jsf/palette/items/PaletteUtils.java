@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,40 +37,29 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.web.jsf.palette.items;
 
-package org.netbeans.modules.bugtracking.ui.query;
-
-import java.util.Map;
-import java.util.WeakHashMap;
-import org.netbeans.modules.bugtracking.QueryImpl;
-import org.netbeans.modules.bugtracking.issuetable.IssueTable;
+import java.text.MessageFormat;
+import javax.swing.text.JTextComponent;
+import org.netbeans.modules.web.jsfapi.api.DefaultLibraryInfo;
 
 /**
  *
- * @author Tomas Stupka
+ * @author Martin Fousek <marfous@netbeans.org>
  */
-public class IssueTableSupport {
+public class PaletteUtils {
 
-    private static IssueTableSupport instance;
-    private Map<QueryImpl, IssueTable> tables = new WeakHashMap<QueryImpl, IssueTable>(5);
-
-    private IssueTableSupport() {}
-
-    public static IssueTableSupport getInstance() {
-        if(instance == null) {
-            instance = new IssueTableSupport();
-        }
-        return instance;
+    private PaletteUtils() {
     }
 
-    public void put(QueryImpl query, IssueTable table) {
-        tables.put(query, table);
-    }
-
-    public IssueTable find(QueryImpl query) {
-        return tables.get(query);
+    protected static String createViewTag(JTextComponent jtc, boolean ending) {
+        JsfLibrariesSupport jls = JsfLibrariesSupport.get(jtc);
+        StringBuilder sb =  new StringBuilder(ending ? "</" : "<"); //NOI18N
+        sb.append(jls.getLibraryPrefix(DefaultLibraryInfo.JSF_CORE));
+        sb.append(":view>"); //NOI18N
+        return sb.toString();
     }
 
 }

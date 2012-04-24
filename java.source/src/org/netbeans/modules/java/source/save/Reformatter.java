@@ -3481,7 +3481,7 @@ public class Reformatter implements ReformatTask {
                                 afterText = false;
                             } else if (PRE_TAG.equalsIgnoreCase(tokenText)
                                     || CODE_TAG.equalsIgnoreCase(tokenText)) {
-                                if (currWSOffset >= 0) {
+                                if (currWSOffset >= 0 && state == 0) {
                                     marks.add(Pair.of(currWSOffset, 1));
                                 }
                                 marks.add(Pair.of(javadocTokens.offset() - offset, 5));

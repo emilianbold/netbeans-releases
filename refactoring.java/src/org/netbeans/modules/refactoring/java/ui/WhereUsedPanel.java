@@ -70,6 +70,7 @@ import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.project.*;
 import org.netbeans.modules.refactoring.api.Scope;
+import org.netbeans.modules.refactoring.java.Pair;
 import org.netbeans.modules.refactoring.java.RefactoringModule;
 import org.netbeans.modules.refactoring.java.api.ui.JavaScopeBuilder;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
@@ -100,25 +101,46 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
     private Scope customScope;
     private boolean enableScope;
 
-    private WhereUsedInnerPanel panel;
-    private final WhereUsedPanelMethod methodPanel;
-    private final WhereUsedPanelClass classPanel;
-    private final WhereUsedPanelPackage packagePanel;
-    private final WhereUsedPanelVariable variablePanel;
+    private final WhereUsedInnerPanel panel;
     
     /** Creates new form WhereUsedPanel */
-    public WhereUsedPanel(String name, TreePathHandle e, ChangeListener parent) {
+    private WhereUsedPanel(String name, TreePathHandle e, WhereUsedInnerPanel panel, ChangeListener parent) {
         setName(NbBundle.getMessage(WhereUsedPanel.class,"LBL_WhereUsed")); // NOI18N
         this.element = e;
         this.parent = parent;
         this.enableScope = true;
+        this.panel = panel;
         initComponents();
-        methodPanel = new WhereUsedPanelMethod(parent, element);
-        classPanel = new WhereUsedPanelClass(parent);
-        packagePanel = new WhereUsedPanelPackage(parent);
-        variablePanel = new WhereUsedPanelVariable(parent);
-        panel = variablePanel;
         btnCustomScope.setAction(new ScopeAction(scope));
+    }
+    
+    public static WhereUsedPanel create(String name, TreePathHandle e, ElementKind kind, List<Pair<Pair<String, Icon>, TreePathHandle>> classes, ChangeListener parent) {
+        final WhereUsedInnerPanel panel;
+        switch (kind) {
+            case CONSTRUCTOR:
+            case METHOD: {
+                panel = new WhereUsedPanelMethod(parent, e, classes);
+                break;
+            }
+            case CLASS:
+            case ENUM:
+            case INTERFACE:
+            case ANNOTATION_TYPE: {
+                panel = new WhereUsedPanelClass(parent);
+                break;
+            }
+            case PACKAGE: {
+                panel = new WhereUsedPanelPackage(parent);
+                break;
+            }
+            case FIELD:
+            case ENUM_CONSTANT:
+            default: {
+                panel = new WhereUsedPanelVariable(parent);
+                break;
+            }
+        }
+        return new WhereUsedPanel(name, e, panel, parent);
     }
     
     public Scope getCustomScope() {
@@ -157,7 +179,11 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
     private FileObject[] projectSources = null;
     
     String getMethodDeclaringClass() {
-        return methodPanel.getMethodDeclaringClass();
+        if(panel instanceof WhereUsedPanelMethod) {
+            WhereUsedPanelMethod whereUsedPanelMethod = (WhereUsedPanelMethod) panel;
+            return whereUsedPanelMethod.getMethodDeclaringClass();
+        }
+        return null;
     }
     
     @Override
@@ -178,30 +204,6 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
                 info.toPhase(Phase.RESOLVED);
 
                 final Element element = WhereUsedPanel.this.element.resolveElement(info);
-                switch (element.getKind()) {
-                    case CONSTRUCTOR:
-                    case METHOD: {
-                        panel = methodPanel;
-                        break;
-                    }
-                    case CLASS:
-                    case ENUM:
-                    case INTERFACE:
-                    case ANNOTATION_TYPE: {
-                        panel = classPanel;
-                        break;
-                    }
-                    case PACKAGE: {
-                        panel = packagePanel;
-                        break;
-                    }
-                    case FIELD:
-                    case ENUM_CONSTANT:
-                    default: {
-                        panel = variablePanel;
-                        break;
-                    }
-                }
                 panel.initialize(element, info);
 
                 TreePath path = WhereUsedPanel.this.element.resolve(info);
@@ -429,7 +431,11 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
 //    }
     
     public TreePathHandle getMethodHandle() {
-        return methodPanel.getMethodHandle();
+        if(panel instanceof WhereUsedPanelMethod) {
+            WhereUsedPanelMethod whereUsedPanelMethod = (WhereUsedPanelMethod) panel;
+            return whereUsedPanelMethod.getMethodHandle();
+        }
+        return null;
     }
     
     @Override
@@ -525,27 +531,51 @@ private void scopeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:e
     // End of variables declaration//GEN-END:variables
 
     public boolean isMethodFromBaseClass() {
-        return methodPanel.isMethodFromBaseClass();
+        if(panel instanceof WhereUsedPanelMethod) {
+            WhereUsedPanelMethod methodPanel = (WhereUsedPanelMethod) panel;
+            return methodPanel.isMethodFromBaseClass();
+        }
+        return false;
     }
     
     public boolean isMethodOverriders() {
-        return methodPanel.isMethodOverriders();
+        if(panel instanceof WhereUsedPanelMethod) {
+            WhereUsedPanelMethod methodPanel = (WhereUsedPanelMethod) panel;
+            return methodPanel.isMethodOverriders();
+        }
+        return false;
     }
 
     public boolean isMethodFindUsages() {
-        return methodPanel.isMethodFindUsages();
+        if(panel instanceof WhereUsedPanelMethod) {
+            WhereUsedPanelMethod methodPanel = (WhereUsedPanelMethod) panel;
+            return methodPanel.isMethodFindUsages();
+        }
+        return false;
     }
 
     public boolean isClassSubTypes() {
-        return classPanel.isClassSubTypes();
+        if(panel instanceof WhereUsedPanelClass) {
+            WhereUsedPanelClass classPanel = (WhereUsedPanelClass) panel;
+            return classPanel.isClassSubTypes();
+        }
+        return false;
     }
     
     public boolean isClassSubTypesDirectOnly() {
-        return classPanel.isClassSubTypesDirectOnly();
+        if(panel instanceof WhereUsedPanelClass) {
+            WhereUsedPanelClass classPanel = (WhereUsedPanelClass) panel;
+            return classPanel.isClassSubTypesDirectOnly();
+        }
+        return false;
     }
 
     public boolean isClassFindUsages() {
-        return classPanel.isClassFindUsages();
+        if(panel instanceof WhereUsedPanelClass) {
+            WhereUsedPanelClass classPanel = (WhereUsedPanelClass) panel;
+            return classPanel.isClassFindUsages();
+        }
+        return false;
     }
     
     public boolean isSearchInComments() {

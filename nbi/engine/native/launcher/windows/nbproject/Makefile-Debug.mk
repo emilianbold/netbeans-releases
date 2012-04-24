@@ -46,7 +46,7 @@ OBJECTFILES= \
 
 
 # C Compiler Flags
-CFLAGS=
+CFLAGS=-mno-cygwin
 
 # CC Compiler Flags
 CCFLAGS=

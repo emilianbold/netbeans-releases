@@ -52,7 +52,7 @@ import org.netbeans.modules.groovy.grails.api.GrailsPlatform;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.netbeans.modules.groovy.grailsproject.GrailsServerState;
-import static org.netbeans.modules.groovy.grailsproject.actions.Bundle.CTL_GrailsCommandAction;
+import static org.netbeans.modules.groovy.grailsproject.actions.Bundle.*;
 import org.netbeans.modules.groovy.grailsproject.commands.GrailsCommandChooser;
 import org.netbeans.modules.groovy.grailsproject.commands.GrailsCommandSupport;
 import org.openide.awt.ActionID;

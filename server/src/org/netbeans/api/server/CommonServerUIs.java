@@ -100,7 +100,7 @@ public final class CommonServerUIs {
         close.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CommonServerUIs.class, "AD_Close"));
 
         DialogDescriptor descriptor = new DialogDescriptor(customizer,
-                NbBundle.getMessage(CommonServerUIs.class, "TXT_ServerManager"),
+                NbBundle.getMessage(CommonServerUIs.class, registry.isCloud() ? "TXT_CloudManager" : "TXT_ServerManager"),
                 true,
                 new Object[] {close},
                 close,
