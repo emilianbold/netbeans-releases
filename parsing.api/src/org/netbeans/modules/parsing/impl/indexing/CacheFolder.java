@@ -230,12 +230,16 @@ public final class CacheFolder {
      * same package, hence the public keyword.
      *
      */
-    public static synchronized void setCacheFolder (final FileObject folder) {
-        assert folder != null && folder.canRead() && folder.canWrite();
-        cacheFolder = folder;
-        segments = null;
-        invertedSegments = null;
-        index = 0;
+    public static void setCacheFolder (final FileObject folder) {
+        SAVER.schedule(0);
+        SAVER.waitFinished();
+        synchronized (CacheFolder.class) {
+            assert folder != null && folder.canRead() && folder.canWrite();
+            cacheFolder = folder;
+            segments = null;
+            invertedSegments = null;
+            index = 0;
+        }
     }
 
     private CacheFolder() {
@@ -252,6 +256,7 @@ public final class CacheFolder {
                     @Override
                     public void run() throws IOException {
                         synchronized (CacheFolder.class) {
+                            if (segments == null) return ;
                             storeSegments(cf);
                         }
                     }
