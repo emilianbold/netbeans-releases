@@ -691,6 +691,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
         pto.pressMouse(); // to get focus, otherwise performing popup action won't work
         ProjectRootNode node = pto.getProjectRootNode(projectName);
         node.performPopupAction(actionName);
+        new ActionNoBlock("Window|Output|Output", null).performMenu(); // open output window
         OutputTabOperator oto = new OutputTabOperator(projectName);
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", 600000); //NOI18N
         if (!getProjectType().isAntBasedProject()) {

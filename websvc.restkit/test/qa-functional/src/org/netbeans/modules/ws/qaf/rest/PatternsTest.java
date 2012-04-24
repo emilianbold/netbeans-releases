@@ -41,19 +41,17 @@
  */
 package org.netbeans.modules.ws.qaf.rest;
 
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
+import javax.swing.tree.TreePath;
 import junit.framework.Test;
-import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.WizardOperator;
+import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JComboBoxOperator;
-import org.netbeans.jemmy.operators.JRadioButtonOperator;
-import org.netbeans.jemmy.operators.JTextFieldOperator;
+import org.netbeans.jellytools.nodes.ProjectRootNode;
+import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.operators.*;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.ws.qaf.utilities.RestWizardOperator;
 import org.openide.filesystems.FileObject;
@@ -89,9 +87,9 @@ public class PatternsTest extends RestTestBase {
         }
 
         /**
-         * Method for getting correct index of the container resource class select
-         * button in the new RESTful web service from patterns wizard for given type
-         * of the resource
+         * Method for getting correct index of the container resource class
+         * select button in the new RESTful web service from patterns wizard for
+         * given type of the resource
          *
          * @return index of the container resource class select button
          */
@@ -107,11 +105,12 @@ public class PatternsTest extends RestTestBase {
         }
 
         /**
-         * Method for getting correct index of the container resource representation
-         * class select button in the new RESTful web service from patterns wizard
-         * for given type of the resource
+         * Method for getting correct index of the container resource
+         * representation class select button in the new RESTful web service
+         * from patterns wizard for given type of the resource
          *
-         * @return index of the container resource representation class select button
+         * @return index of the container resource representation class select
+         * button
          */
         public int getContainerRepresentationClassSelectIndex() {
             switch (this) {
@@ -124,6 +123,7 @@ public class PatternsTest extends RestTestBase {
             throw new AssertionError("Unknown type: " + this); //NOI18N
         }
     }
+    private static boolean jerseyAdded = false;
 
     /**
      * Def constructor.
@@ -132,6 +132,48 @@ public class PatternsTest extends RestTestBase {
      */
     public PatternsTest(String name) {
         super(name, Server.GLASSFISH);
+    }
+
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
+        // add Jersey library, otherwise package org.codehaus.jettison is not added from server libraries, see issue #206526
+        if (!PatternsTest.jerseyAdded) {
+            ProjectRootNode prn = ProjectsTabOperator.invoke().getProjectRootNode(getProjectName());
+            prn.select();
+            if (prn.isCollapsed()) {
+                prn.expand();
+            }
+
+            JemmyProperties.setCurrentTimeout("JTreeOperator.WaitNextNodeTimeout", 120000); //NOI18N
+            Node libNode = new Node(prn, "Libraries");
+            libNode.callPopup();
+            JPopupMenuOperator popup = new JPopupMenuOperator();
+            popup.pushMenuNoBlock("Add Library...");
+            NbDialogOperator libraries = new NbDialogOperator("Add Library");
+
+            JTreeOperator jto = new JTreeOperator(libraries);
+            Node gl = new Node(jto, jto.findPath("Global libraries")); //NOI18N
+            JTreeOperator jtolibs = gl.tree();
+
+
+            System.out.println("==== NULL");
+            TreePath[] tps = jtolibs.getChildPaths(jto.findPath("Global libraries"));
+            TreePath path=null;
+            for (int i = 0; i < tps.length; i++) {
+                if (tps[i].toString().contains("Jersey")) { // version independent
+                    path = tps[i];
+                    break;
+                }
+            }
+            assertNotNull("Jersey library not found", path);
+            new Node(jtolibs, path).select();
+            libraries.pushKey(KeyEvent.VK_ENTER);
+            waitScanFinished();
+            PatternsTest.jerseyAdded = true;
+        }
+
+
     }
 
     /**
@@ -224,7 +266,8 @@ public class PatternsTest extends RestTestBase {
     }
 
     /**
-     * Test application/json mime setting for Client Controlled Container Item pattern
+     * Test application/json mime setting for Client Controlled Container Item
+     * pattern
      */
     public void testCcContainerI1() {
         String name = "CcCI1"; //NOI18N
@@ -252,7 +295,7 @@ public class PatternsTest extends RestTestBase {
      */
     public void testNodes() {
         Node restNode = getRestNode();
-        assertEquals("missing nodes?", 20, restNode.getChildren().length); //NOI18N
+        assertEquals("missing nodes?", 22, restNode.getChildren().length); //NOI18N
         restNode.tree().clickOnPath(restNode.getTreePath(), 2);
         assertTrue("Node not collapsed", restNode.isCollapsed());
     }
@@ -402,7 +445,8 @@ public class PatternsTest extends RestTestBase {
     }
 
     /**
-     * Creates suite from particular test cases. You can define order of testcases here.
+     * Creates suite from particular test cases. You can define order of
+     * testcases here.
      */
     public static Test suite() {
         return NbModuleSuite.create(addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(PatternsTest.class),
