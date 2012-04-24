@@ -75,7 +75,7 @@ public class CssClassesVisitor implements ElementVisitor {
         this.rule = rule;
         
         referredFiles = context.getCssDependenciesGraph().getAllReferedFiles();
-        classes = context.getCssIndex().findAll(RefactoringElementType.ID);
+        classes = context.getCssIndex().findAll(RefactoringElementType.CLASS);
         classes2files = createReversedMap(classes);
     }
 
