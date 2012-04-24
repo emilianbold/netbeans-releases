@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.project.ui;
 
+import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -583,14 +584,20 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         public void selectFirst() {
             RP.post(new Runnable() {
                 @Override public void run() {
-                    Children ch = getRootNode().getChildren();
+                    final Children ch = getRootNode().getChildren();
                     // XXX what is the best way to wait for >0 node to appear without necessarily waiting for them all?
-                    if (/*blocks*/ch.getNodesCount(true) > 0 && /*last minute*/getSelectedNodes().length == 0) {
-                        try {
-                            getExplorerManager().setSelectedNodes(new Node[] {ch.getNodeAt(0)});
-                        } catch (PropertyVetoException ex) {
-                            // ignore, race condition
-                        }
+                    if (ch.getNodesCount(true) > 0) { // blocks
+                        EventQueue.invokeLater(new Runnable() { // #210326
+                            @Override public void run() {
+                                if (getSelectedNodes().length == 0) { // last minute
+                                    try {
+                                        getExplorerManager().setSelectedNodes(new Node[] {ch.getNodeAt(0)});
+                                    } catch (PropertyVetoException x) {
+                                        Logger.getLogger(TemplatesPanelGUI.class.getName()).log(Level.INFO, "race condition while selecting first of " + getRootNode(), x);
+                                    }
+                                }
+                            }
+                        });
                     }
                 }
             });
