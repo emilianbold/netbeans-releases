@@ -215,10 +215,11 @@ public class VersioningAnnotationProviderTest extends NbTestCase {
             lastEvent = 0;
             EventQueue.invokeLater(new Runnable() {
                 public void run() {
-                    lastEvent = System.currentTimeMillis();
                     org.netbeans.modules.versioning.core.VersioningAnnotationProvider provider = org.netbeans.modules.versioning.core.VersioningAnnotationProvider.getDefault();
                     long time = System.currentTimeMillis();
+                    lastEvent = System.currentTimeMillis();
                     for (FileObject fo : files) {
+                        lastEvent = System.currentTimeMillis();
                         String name = fo.getNameExt();
                         name = provider.annotateNameHtml(name, Collections.singleton(fo));
                         annotationsLabels.put(fo, name);
