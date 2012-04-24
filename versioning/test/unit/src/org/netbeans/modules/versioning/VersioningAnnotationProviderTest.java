@@ -185,7 +185,7 @@ public class VersioningAnnotationProviderTest extends NbTestCase {
     private class StatusListener implements FileStatusListener {
 
         private volatile long lastEvent;
-        private Exception ex;
+        private volatile boolean refreshDone = true;
         private HashMap<FileObject, String> annotationsLabels = new HashMap<FileObject, String>();
         private HashMap<FileObject, Image> annotationsIcons = new HashMap<FileObject, Image>();
         private final Set<FileObject> allFiles;
@@ -207,7 +207,6 @@ public class VersioningAnnotationProviderTest extends NbTestCase {
         private void clear () {
             annotationsLabels.clear();
             annotationsIcons.clear();
-            ex = null;
             lastEvent = 0;
         }
 
@@ -216,7 +215,7 @@ public class VersioningAnnotationProviderTest extends NbTestCase {
             EventQueue.invokeLater(new Runnable() {
                 public void run() {
                     org.netbeans.modules.versioning.core.VersioningAnnotationProvider provider = org.netbeans.modules.versioning.core.VersioningAnnotationProvider.getDefault();
-                    long time = System.currentTimeMillis();
+                    refreshDone = false;
                     lastEvent = System.currentTimeMillis();
                     for (FileObject fo : files) {
                         lastEvent = System.currentTimeMillis();
@@ -228,19 +227,13 @@ public class VersioningAnnotationProviderTest extends NbTestCase {
                         image = provider.annotateIcon(image, 0, Collections.singleton(fo));
                         annotationsIcons.put(fo, image);
                     }
-                    time = System.currentTimeMillis() - time;
-                    if (time > 2000) {
-                        ex = new Exception("Annotation takes more than 2000ms");
-                    }
+                    refreshDone = true;
                 }
             });
         }
 
         private void waitForSilence() throws Exception {
-            while (lastEvent == 0 || System.currentTimeMillis() - lastEvent < 10000) {
-                if (ex != null) {
-                    throw ex;
-                }
+            while (lastEvent == 0 || System.currentTimeMillis() - lastEvent < 10000 || !refreshDone) {
                 Thread.sleep(1000);
             }
         }
