@@ -48,7 +48,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -113,13 +116,16 @@ class OSGiInstalledFileLocator extends InstalledFileLocator {
                     continue;
                 }
                 // OK, this bundle seems to own the file. Unpack everything it contains at once.
+                String execFilesS = (String) owner.getHeaders().get("NetBeans-Executable-Files");
+                List<String> execFiles = execFilesS == null ? Collections.<String>emptyList() : Arrays.asList(execFilesS.split(","));
                 try {
                     for (URL resource : NbCollections.iterable(NbCollections.checkedEnumerationByFilter(owner.findEntries(FILES, null, true), URL.class, true))) {
                         String bundlepath = resource.getPath();
                         if (bundlepath.endsWith("/")) {
                             continue;
                         }
-                        File f2 = unpackedLocation(storage, bundlepath.substring(FILES.length()));
+                        String name = bundlepath.substring(("/" + FILES).length());
+                        File f2 = unpackedLocation(storage, name);
 //                        System.err.println("unpacking " + resource + " to " + f2);
                         File dir = f2.getParentFile();
                         if (!dir.isDirectory() && !dir.mkdirs()) {
@@ -139,6 +145,9 @@ class OSGiInstalledFileLocator extends InstalledFileLocator {
                             }
                         } finally {
                             is.close();
+                        }
+                        if (execFiles.contains(name)) {
+                            f2.setExecutable(true);
                         }
                     }
                     return f;

@@ -46,7 +46,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -95,9 +94,7 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
      */
     protected static FileObject[] extractFileObjectsfromLookup(Lookup lookup) {
         List<FileObject> files = new ArrayList<FileObject>();
-        Iterator<? extends DataObject> it = lookup.lookupAll(DataObject.class).iterator();
-        while (it.hasNext()) {
-            DataObject d = it.next();
+        for (DataObject d : lookup.lookupAll(DataObject.class)) {
             FileObject f = d.getPrimaryFile();
             files.add(f);
         }

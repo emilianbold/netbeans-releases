@@ -722,6 +722,7 @@ public class SvnClientExceptionHandler {
         return msg.indexOf("(not a versioned resource)") > -1 ||                            // NOI18N
                msg.indexOf("is not a working copy") > -1 ||                                 //NOI18N
                msg.contains("some targets are not versioned") ||                            //NOI18N
+               isNodeUnderVersionControl(msg) ||
                isNodeNotFound(msg);
     }
     
@@ -869,6 +870,11 @@ public class SvnClientExceptionHandler {
         return message.contains("is not under version control"); //NOI18N
     }
 
+    public static boolean isNodeUnderVersionControl (String message) {
+        message = message.toLowerCase();
+        return message.contains("is not under version control"); //NOI18N
+    }
+    
     public static boolean isNodeNotFound (String message) {
         message = message.toLowerCase();
         return (message.contains(": the node") && message.contains("not found")); //NOI18N
