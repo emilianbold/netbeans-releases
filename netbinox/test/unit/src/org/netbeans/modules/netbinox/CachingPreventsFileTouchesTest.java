@@ -262,7 +262,6 @@ public class CachingPreventsFileTouchesTest extends NbTestCase {
         Collections.shuffle(Arrays.asList(arr));
         for (File f : arr) {
             if (!f.isDirectory()) {
-                System.err.println("checking " + f);
                 cnt++;
                 assertFileDoesNotContain(f, install);
             }

@@ -438,23 +438,23 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
         if (prefix != null && !file.startsWith(prefix)) {
             return false;
         }
-        if (file.contains("/var/cache/netigso/org.eclipse.osgi/.")) {
+        if (containsPath(file, "/var/cache/netigso/org.eclipse.osgi/.")) {
             // Just finite number of files in a cache
             return false;
         }
-        if (file.contains("/var/cache/netigso/org.eclipse.equinox.app/.")) {
+        if (containsPath(file, "/var/cache/netigso/org.eclipse.equinox.app/.")) {
             // Just finite number of files in a cache
             return false;
         }
-        if (file.contains("/var/cache/netigso/org.eclipse.core.runtime/.")) {
+        if (containsPath(file, "/var/cache/netigso/org.eclipse.core.runtime/.")) {
             // Just finite number of files in a cache
             return false;
         }
-        if (file.contains("/var/cache/netigso/.settings")) {
+        if (containsPath(file, "/var/cache/netigso/.settings")) {
             // Just finite number of files among settings
             return false;
         }
-        if (file.endsWith(".eclipse/org.eclipse.equinox.security/secure_storage")) {
+        if (containsPath(file, ".eclipse/org.eclipse.equinox.security/secure_storage")) {
             // comes from org.eclipse.equinox.internal.security.storage.StorageUtils.getDefaultLocation
             // and does not seem to be preventable
             return false;
@@ -464,12 +464,11 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
             file.equals(System.getProperty("netbeans.home")) ||
             (file + File.separator + "platform").equals(System.getProperty("netbeans.home")) ||
             file.matches(".*/modules/ext/org\\.eclipse\\.osgi_[0-9\\.]*v[0-9]*\\.jar") ||
-            file.endsWith("modules/ext/org.eclipse.osgi_3.7.1.R37x_v20110808-1106.jar") ||
-            file.endsWith("modules/org-netbeans-modules-netbinox.jar") ||
-            file.endsWith("platform/lib/org-openide-util.jar") ||
-            file.endsWith("var/cache/netigso") ||
-            file.endsWith("var/cache/netigso/org.eclipse.osgi") ||
-            file.endsWith("sun/net/www/content/content/unknown.class")
+            containsPath(file, "modules/ext/org.eclipse.osgi_3.7.1.R37x_v20110808-1106.jar") ||
+            containsPath(file, "modules/org-netbeans-modules-netbinox.jar") ||
+            containsPath(file, "platform/lib/org-openide-util.jar") ||
+            containsPath(file, "var/cache/netigso") ||
+            containsPath(file, "sun/net/www/content/content/unknown.class")
         ) {
             // equinox just needs to touch some files, preferrably leave them
             // under our directory
@@ -549,6 +548,10 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
             }
         }
         return true;
+    }
+    
+    private boolean containsPath(String file, String pathWithSlash) {
+        return file.contains(pathWithSlash.replace('/', File.separatorChar));
     }
 
     @Override
