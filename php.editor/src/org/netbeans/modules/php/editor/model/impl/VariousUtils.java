@@ -112,6 +112,9 @@ import org.openide.util.Parameters;
  */
 public class VariousUtils {
 
+    public static final String PRE_OPERATION_TYPE_DELIMITER = "@"; //NOI18N
+    public static final String POST_OPERATION_TYPE_DELIMITER = ":"; //NOI18N
+    public static final String POST_OPERATION_TYPE_DELIMITER_SUBS = "_POTD_"; //NOI18N
     public static final String CONSTRUCTOR_TYPE_PREFIX = "constuct:"; //NOI18N
     public static final String FUNCTION_TYPE_PREFIX = "fn:"; //NOI18N
     public static final String METHOD_TYPE_PREFIX = "mtd:"; //NOI18N
@@ -157,6 +160,14 @@ public class VariousUtils {
             return super.toString();
         }
     };
+
+    public static String encodeVariableName(final String name) {
+        String result = name;
+        if (name != null) {
+            result = name.replace(POST_OPERATION_TYPE_DELIMITER, POST_OPERATION_TYPE_DELIMITER_SUBS);
+        }
+        return result;
+    }
 
     public static String extractTypeFroVariableBase(VariableBase varBase) {
         return extractTypeFroVariableBase(varBase, Collections.<String, AssignmentImpl>emptyMap());
@@ -778,7 +789,7 @@ public class VariousUtils {
             FieldAccess fieldAccess = (FieldAccess) varBase;
             String filedName = CodeUtils.extractVariableName(fieldAccess.getField());
             if (filedName != null) {
-                return "@" + FIELD_TYPE_PREFIX + filedName; //NOI18N
+                return "@" + FIELD_TYPE_PREFIX + encodeVariableName(filedName); //NOI18N
             }
         } else if (varBase instanceof StaticFieldAccess) {
             StaticFieldAccess fieldAccess = (StaticFieldAccess) varBase;
