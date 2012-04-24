@@ -131,7 +131,8 @@ implements Executor {
     
     private static boolean ssverbose = 
         System.getProperty ("netbeans.debugger.smartstepping") != null;
-    private static Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.jdievents"); // NOI18N
+    private static final Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.jdievents"); // NOI18N
+    private static final Logger loggerStep = Logger.getLogger("org.netbeans.modules.debugger.jpda.step"); // NOI18N
 
 
     private static int getJDIAction (Object action) {
@@ -419,6 +420,7 @@ implements Executor {
                     stepRequest = null;
                     removeBPListener();
                 }
+                loggerStep.fine("Further step in a synthetic location, depth = "+step);
                 return true;
             }
             if (depth == 1 && "main".equals(methodName) && !"java.lang.Thread".equals(this.className) &&
@@ -440,6 +442,7 @@ implements Executor {
                 ) {
                     // YES!
                     //S ystem.out.println("/nStepAction.exec end - do not resume");
+                    loggerStep.fine("Can stop here.");
                     return false; // do not resume
                 }
             }
@@ -450,11 +453,13 @@ implements Executor {
             boolean useStepFilters = p.getBoolean("UseStepFilters", true);
             boolean stepThrough = useStepFilters && p.getBoolean("StepThroughFilters", false);
             if (!stepThrough || smartSteppingStepOut) {
+                loggerStep.fine("Issuing step out, due to smart-stepping.");
                 // Assure that the action does not resume anything. Resume is done by Operator.
                 getStepIntoActionProvider ().runAction(ActionsManager.ACTION_STEP_OUT, false, lock);
             } else {
                 // Assure that the action does not resume anything. Resume is done by Operator.
                 int origDepth = StepRequestWrapper.depth(sr);
+                loggerStep.fine("Issuing step "+origDepth+", due to smart-stepping.");
                 if (origDepth == StepRequest.STEP_OVER) {
                     runAction(ActionsManager.ACTION_STEP_OVER, false, lock);
                     //getStepIntoActionProvider ().runAction(StepIntoActionProvider.ACTION_SMART_STEP_INTO, false);

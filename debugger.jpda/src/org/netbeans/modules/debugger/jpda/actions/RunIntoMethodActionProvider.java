@@ -363,9 +363,11 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
         try {
             topFramePtr = ct.getCallStack(0, 1);
         } catch (AbsentInformationException ex) {
+            logger.fine("doAction() = false, ex = "+ex);
             return false;
         }
         if (topFramePtr.length < 1) {
+            logger.fine("doAction() = false, no top frame.");
             return false;
         }
         CallStackFrameImpl csf = (CallStackFrameImpl) topFramePtr[0];
@@ -382,6 +384,7 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
             return false; // No stepping without the correct functionality.
         }
         final boolean doFinishWhenMethodNotFound = setBoundaryStep;
+        logger.fine("doAction() areWeOnTheLocation = "+areWeOnTheLocation+", methodName = "+methodName);
         if (areWeOnTheLocation) {
             // We're on the line from which the method is called
             traceLineForMethod(debugger, ct.getThreadReference(), methodName, line, doFinishWhenMethodNotFound);
@@ -526,6 +529,7 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
         final int depth = jtr.getStackDepth();
         final JPDAStep step = debugger.createJPDAStep(JPDAStep.STEP_LINE, JPDAStep.STEP_INTO);
         step.setHidden(true);
+        logger.fine("Will traceLineForMethod("+method+", "+methodLine+", "+finishWhenNotFound+")");
         step.addPropertyChangeListener(JPDAStep.PROP_STATE_EXEC, new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
@@ -553,17 +557,21 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
                         step.setHidden(false);
                     }
                 } else {
-                    if (jtr.getMethodName().equals(method)) {
+                    String threadMethod = jtr.getMethodName();
+                    logger.fine("  threadMethod = '"+threadMethod+"', tracing method = '"+method+"', equals = "+threadMethod.equals(method));
+                    if (threadMethod.equals(method)) {
                         // We've found it :-)
                         step.setHidden(false);
-                    } else if (jtr.getMethodName().equals("<init>") && (jtr.getClassName().endsWith("."+method) || jtr.getClassName().equals(method))) {
+                    } else if (threadMethod.equals("<init>") && (jtr.getClassName().endsWith("."+method) || jtr.getClassName().equals(method))) {
                         // The method can be a constructor
                         step.setHidden(false);
                     } else {
                         if (finishWhenNotFound) {
                             // We've missed the method, finish.
                             step.setHidden(false);
+                            logger.fine("  stepping finished.");
                         } else {
+                            logger.fine("  step out submitted.");
                             step.setDepth(JPDAStep.STEP_OUT);
                             step.addStep(debugger.getCurrentThread());
                         }

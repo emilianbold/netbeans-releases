@@ -177,10 +177,12 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
             }
             int size = getSize();
             boolean stepAdded = false;
-            logger.log(Level.FINE, "Step "+((size == JPDAStep.STEP_OPERATION) ? "operation" : "line")
-                       +" "+((getDepth() == JPDAStep.STEP_INTO) ? "into" :
-                           ((getDepth() == JPDAStep.STEP_OVER) ? "over" : "out"))
-                       +" in thread "+tr.getName());
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, "Step "+((size == JPDAStep.STEP_OPERATION) ? "operation" : "line")
+                        +" "+((getDepth() == JPDAStep.STEP_INTO) ? "into" :
+                            ((getDepth() == JPDAStep.STEP_OVER) ? "over" : "out"))
+                        +" in thread "+tr.getName()+", at: "+tr.getClassName()+"."+tr.getMethodName()+":"+tr.getLineNumber(null));
+            }
             if (size == JPDAStep.STEP_OPERATION) {
                 stepAdded = addOperationStep(trImpl, false, sourcePath,
                                              setStoppedStateNoContinue);
@@ -189,6 +191,7 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                     logger.log(Level.FINE, "Operation step changed to line step");
                 }
             }
+            logger.fine("  Operation step added = "+stepAdded);
             if (!stepAdded) {
                 StepRequest stepRequest = EventRequestManagerWrapper.createStepRequest(
                     VirtualMachineWrapper.eventRequestManager(vm),
@@ -219,6 +222,9 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                 } catch (InvalidRequestStateExceptionWrapper ex) {
                     debuggerImpl.getOperator().unregister(stepRequest);
                     stepRequest = null;
+                }
+                if (logger.isLoggable(Level.FINE)) {
+                    logger.fine("Step request submitted: "+stepRequest+", size = "+size+", depth = "+getDepth());
                 }
             }
         } catch (InternalExceptionWrapper ex) {
@@ -441,6 +447,9 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
             return false;
         }
 
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("JPDAStepImpl.exec("+event+")");
+        }
         // TODO: Check the location, follow the smart-stepping logic!
         SourcePath sourcePath = ((JPDADebuggerImpl) debugger).getEngineContext();
         boolean stepAdded = false;
@@ -490,6 +499,7 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                 }
                 this.currentOperations = null;
             }
+            logger.fine("Current operation = "+currentOperation+", addExprStep = "+addExprStep);
             tr.setCurrentOperation(currentOperation);
             try {
                 EventRequestManager erm = VirtualMachineWrapper.eventRequestManager(vm);
@@ -513,8 +523,10 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                         return false;
                     }
                 }
+                logger.fine("stepAdded = "+stepAdded);
                 if (!stepAdded) {
                     if ((eventRequest instanceof StepRequest) && shouldNotStopHere((StepEvent) event)) {
+                        logger.fine("We should not stop here => resuming");
                         return true; // Resume
                     }
                 }
@@ -679,6 +691,9 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                         
                         doStepAgain = true;
                         doStepDepth = StepRequest.STEP_OUT;
+                        if (logger.isLoggable(Level.FINE)) {
+                            logger.fine("Method"+m+" is a static initializer, or constructor - will step out.");
+                        }
                     }
 
                     if (doStepAgain) {
