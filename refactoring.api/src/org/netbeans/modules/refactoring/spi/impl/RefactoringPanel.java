@@ -973,6 +973,8 @@ public class RefactoringPanel extends JPanel {
             @Override
             public void run() {
                 createTree(root);
+                tree.setSelectionRow(0);
+                requestFocus();
             }
         });
     }    
