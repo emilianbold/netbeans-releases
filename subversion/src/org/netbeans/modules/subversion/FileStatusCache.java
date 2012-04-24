@@ -900,7 +900,7 @@ public class FileStatusCache {
             while (it.hasNext()) {
                 File localFile = (File) it.next();
                 FileInformation fi = createFileInformation(localFile, null, REPOSITORY_STATUS_UNKNOWN);
-                if (fi.isDirectory() || fi.getStatus() != FileInformation.STATUS_VERSIONED_UPTODATE) {
+                if (fi.isDirectory() || (fi.getStatus() != FileInformation.STATUS_VERSIONED_UPTODATE && !isSymlink(localFile))) {
                     folderFiles.put(localFile, fi);
                 }
             }
