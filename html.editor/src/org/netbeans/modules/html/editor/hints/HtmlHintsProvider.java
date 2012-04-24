@@ -41,42 +41,28 @@
  */
 package org.netbeans.modules.html.editor.hints;
 
-import org.netbeans.modules.html.editor.hints.css.HtmlCssHints;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
-import org.netbeans.modules.html.editor.lib.api.SyntaxAnalyzerResult;
 import org.netbeans.modules.csl.api.Error;
-import org.netbeans.modules.csl.api.Hint;
-import org.netbeans.modules.csl.api.HintFix;
-import org.netbeans.modules.csl.api.HintSeverity;
-import org.netbeans.modules.csl.api.HintsProvider;
-import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.api.Rule;
 import org.netbeans.modules.csl.api.Rule.AstRule;
 import org.netbeans.modules.csl.api.Rule.ErrorRule;
-import org.netbeans.modules.csl.api.RuleContext;
-import org.netbeans.modules.csl.api.Severity;
+import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.html.editor.HtmlErrorFilter;
-import org.netbeans.modules.html.editor.ProjectDefaultHtmlSourceVersionController;
+import static org.netbeans.modules.html.editor.HtmlErrorFilter.*;
 import org.netbeans.modules.html.editor.HtmlPreferences;
+import org.netbeans.modules.html.editor.ProjectDefaultHtmlSourceVersionController;
 import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
+import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
+import org.netbeans.modules.html.editor.lib.api.SyntaxAnalyzerResult;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.spi.lexer.MutableTextInput;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
-import static org.netbeans.modules.html.editor.HtmlErrorFilter.*;
 
 /**
  *
@@ -254,7 +240,7 @@ public class HtmlHintsProvider implements HintsProvider {
                     rule.run(htmlRuleContext, hints);
                 }
             }
-
+ 
         } else {
             //add a special hint for reenabling disabled error checks
             List<HintFix> fixes = new ArrayList<HintFix>(3);

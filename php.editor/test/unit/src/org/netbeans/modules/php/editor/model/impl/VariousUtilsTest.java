@@ -252,4 +252,11 @@ public class VariousUtilsTest extends ModelTestBase{
         assertEquals(1, fullyQualifiedName.getSegments().size());
     }
 
+    public void testIssue197024() throws Exception {
+        assertEquals("' " + VariousUtils.POST_OPERATION_TYPE_DELIMITER_SUBS + " '", VariousUtils.encodeVariableName("' : '"));
+        assertEquals("' " + VariousUtils.POST_OPERATION_TYPE_DELIMITER_SUBS + " " + VariousUtils.POST_OPERATION_TYPE_DELIMITER_SUBS + " '", VariousUtils.encodeVariableName("' : : '"));
+        assertEquals("\" " + VariousUtils.POST_OPERATION_TYPE_DELIMITER_SUBS + " \"", VariousUtils.encodeVariableName("\" : \""));
+        assertEquals("\" " + VariousUtils.POST_OPERATION_TYPE_DELIMITER_SUBS + " " + VariousUtils.POST_OPERATION_TYPE_DELIMITER_SUBS + " \"", VariousUtils.encodeVariableName("\" : : \""));
+    }
+
 }

@@ -45,8 +45,6 @@ import com.jcraft.jsch.JSchException;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import org.netbeans.modules.nativeexecution.JschSupport.ChannelStreams;
-import org.netbeans.modules.nativeexecution.support.hostinfo.HostInfoProvider;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -58,12 +56,14 @@ import java.util.Properties;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.ConnectionManagerAccessor;
 import org.netbeans.modules.nativeexecution.JschSupport;
+import org.netbeans.modules.nativeexecution.JschSupport.ChannelStreams;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.support.EnvReader;
 import org.netbeans.modules.nativeexecution.support.InstalledFileLocatorProvider;
 import org.netbeans.modules.nativeexecution.support.Logger;
+import org.netbeans.modules.nativeexecution.support.hostinfo.HostInfoProvider;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
@@ -148,12 +148,12 @@ public class UnixHostInfoProvider implements HostInfoProvider {
             for (String errLine : errorLines) {
                 log.log(Level.WARNING, "UnixHostInfoProvider: {0}", errLine); // NOI18N
             }
-            
+
             if (result != 0) {
                 throw new IOException(hostinfoScript + " rc == " + result); // NOI18N
             }
 
-            hostInfo.load(hostinfoProcess.getInputStream());
+            fillProperties(hostInfo, hostinfoProcess.getInputStream());
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
             throw new IOException("HostInfo receiving for localhost interrupted " + ex); // NOI18N
@@ -189,14 +189,14 @@ public class UnixHostInfoProvider implements HostInfoProvider {
             }
 
             scriptReader.close();
-            
+
             BufferedReader errReader = new BufferedReader(new InputStreamReader(err));
             String errLine;
             while ((errLine = errReader.readLine()) != null) {
                 log.log(Level.WARNING, "UnixHostInfoProvider: {0}", errLine); // NOI18N
             }
-            
-            hostInfo.load(in);
+
+            fillProperties(hostInfo, in);
 
             long localEndTime = System.currentTimeMillis();
 
@@ -241,5 +241,19 @@ public class UnixHostInfoProvider implements HostInfoProvider {
         }
 
         return hostInfo;
+    }
+
+    private void fillProperties(Properties hostInfo, InputStream inputStream) {
+        try {
+            BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
+            String s;
+            while ((s = br.readLine()) != null) {
+                String[] data = s.split("=", 2); // NOI18N
+                if (data.length == 2) {
+                    hostInfo.put(data[0], data[1]);
+                }
+            }
+        } catch (IOException ex) {
+        }
     }
 }

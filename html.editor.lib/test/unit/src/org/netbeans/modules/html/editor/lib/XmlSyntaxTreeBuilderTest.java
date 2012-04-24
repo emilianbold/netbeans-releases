@@ -39,8 +39,9 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.editor.lib.html4parser;
+package org.netbeans.modules.html.editor.lib;
 
+import org.netbeans.modules.html.editor.lib.XmlSyntaxTreeBuilder;
 import java.util.Iterator;
 import javax.swing.text.BadLocationException;
 import org.netbeans.modules.html.editor.lib.api.HtmlSource;

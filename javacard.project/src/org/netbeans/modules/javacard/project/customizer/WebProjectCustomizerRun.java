@@ -250,6 +250,9 @@ public class WebProjectCustomizerRun extends javax.swing.JPanel implements Actio
     }//GEN-LAST:event_pageRadioButtonActionPerformed
 
     private void pageComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_pageComboBoxItemStateChanged
+
+
+
     }//GEN-LAST:event_pageComboBoxItemStateChanged
 
 private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed

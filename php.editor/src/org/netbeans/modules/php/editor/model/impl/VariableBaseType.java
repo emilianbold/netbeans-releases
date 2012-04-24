@@ -143,24 +143,24 @@ class VariableBaseType {
                     }
                 }
             }
-            return "@" + VAR_TYPE_PREFIX + varName;
+            return VariousUtils.PRE_OPERATION_TYPE_DELIMITER + VAR_TYPE_PREFIX + varName;
         } else if (varBase instanceof FunctionInvocation) {
             FunctionInvocation functionInvocation = (FunctionInvocation) varBase;
             String fname = CodeUtils.extractFunctionName(functionInvocation);
-            return "@" + FUNCTION_TYPE_PREFIX + fname;
+            return VariousUtils.PRE_OPERATION_TYPE_DELIMITER + FUNCTION_TYPE_PREFIX + fname;
         } else if (varBase instanceof StaticMethodInvocation) {
             StaticMethodInvocation staticMethodInvocation = (StaticMethodInvocation) varBase;
             String className = CodeUtils.extractUnqualifiedClassName(staticMethodInvocation);
             String methodName = CodeUtils.extractFunctionName(staticMethodInvocation.getMethod());
 
             if (className != null && methodName != null) {
-                return "@" + STATIC_METHOD_TYPE_PREFIX + className + '.' + methodName;
+                return VariousUtils.PRE_OPERATION_TYPE_DELIMITER + STATIC_METHOD_TYPE_PREFIX + className + '.' + methodName;
             }
         } else if (varBase instanceof MethodInvocation) {
             MethodInvocation methodInvocation = (MethodInvocation) varBase;
             String methodName = CodeUtils.extractFunctionName(methodInvocation.getMethod());
             if (methodName != null) {
-                return "@" + METHOD_TYPE_PREFIX + methodName;
+                return VariousUtils.PRE_OPERATION_TYPE_DELIMITER + METHOD_TYPE_PREFIX + methodName;
             }
         }
 

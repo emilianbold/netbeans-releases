@@ -251,7 +251,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                     if (assignment != null) {
                         String typeName = assignment.typeNameFromUnion();
                         if (typeName != null) {
-                            if (!typeName.contains("@")) {//NOI18N
+                            if (!typeName.contains(VariousUtils.PRE_OPERATION_TYPE_DELIMITER)) {//NOI18N
                                 return typeName;
                             } else {
                                 String variableName = getName(typeName, VariousUtils.Kind.VAR, true);
@@ -286,16 +286,16 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
     public static String getName(String semiType, VariousUtils.Kind kind, boolean strict) {
         if (semiType != null) {
-            String prefix = "@" + kind.toString(); // NOI18N
+            String prefix = VariousUtils.PRE_OPERATION_TYPE_DELIMITER + kind.toString(); // NOI18N
             if (semiType.startsWith(prefix)) {
                 String[] split = semiType.split(prefix, 2);
                 if (split.length > 1) {
 
-                    if (split[1].contains("@")) {
+                    if (split[1].contains(VariousUtils.PRE_OPERATION_TYPE_DELIMITER)) {
                         if (strict) {
                             return null;
                         } else {
-                            split = split[1].split("@");
+                            split = split[1].split(VariousUtils.PRE_OPERATION_TYPE_DELIMITER);
                             if (split.length < 1) {
                                 return null;
                             }
