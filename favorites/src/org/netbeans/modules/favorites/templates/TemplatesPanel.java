@@ -55,6 +55,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -72,6 +73,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.DefaultEditorKit;
+import static org.netbeans.modules.favorites.templates.Bundle.*;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -107,7 +109,7 @@ import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.actions.SystemAction;
@@ -131,15 +133,15 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
     private static final String TEMPLATE_LOCALIZING_BUNDLE_ATTRIBUTE = "SystemFileSystem.localizingBundle"; // NOI18N
     private static final String TEMPLATE_SCRIPT_ENGINE_ATTRIBUTE = "javax.script.ScriptEngine"; // NOI18N
     private static final String TEMPLATE_CATEGORY_ATTRIBUTE = "templateCategory"; // NOI18N
+    /** @see org.netbeans.modules.maven.TemplateAttrProvider */
+    private static final String TEMPLATE_LICENSE_URL_ATTRIBUTE = "mavenLicenseURL"; // NOI18N
     
     /** The root templates folder. */
     private static final String TEMPLATES_FOLDER = "Templates"; // NOI18N
+    private static final String LICENSES_FOLDER = TEMPLATES_FOLDER + "/Licenses"; // NOI18N
     
     /** Paths of folders, where templates should not have the script engine set. */
-    private static final Set<String> FOLDERS_WITH_NO_SCRIPT_ENGINE = new HashSet<String>(
-            Arrays.asList(new String[] {
-                TEMPLATES_FOLDER+"/Licenses",       // NOI18N
-            }));
+    private static final Set<String> FOLDERS_WITH_NO_SCRIPT_ENGINE = Collections.singleton(LICENSES_FOLDER);
 
     /** Creates new form TemplatesPanel */
     public TemplatesPanel () {
@@ -802,9 +804,10 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
             return false;
         }
 
+        @Messages("Action_Rename=&Rename")
         @Override
         public String getName() {
-            return NbBundle.getMessage(RenameTemplateAction.class, "Action_Rename");
+            return Action_Rename();
         }
 
         @Override
@@ -830,14 +833,26 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
 
     }
 
+    @Messages({
+        "TemplatesPanel_TemplateNode_DisplayName=Display Name",
+        "TemplatesPanel_TemplateNode_DisplayName_Desc=Display name of this template. Shown in File|New wizard as well as in Tools|Templates.",
+        "TemplatesPanel_TemplateNode_FileName=File Name",
+        "TemplatesPanel_TemplateNode_FileName_Desc=File name of file represented by this template.",
+        "TemplatesPanel_TemplateNode_License=License URL",
+        "TemplatesPanel_TemplateNode_License_Desc=Authoritative web location of this license.",
+        "TemplatesPanel_TemplateNode_ScriptEngine=Script Engine",
+        "TemplatesPanel_TemplateNode_ScriptEngine_Desc=Script engine use for processing this template.",
+        "TemplatesPanel_TemplateNode_TemplateCategories=Template Categories",
+        "TemplatesPanel_TemplateNode_TemplateCategories_Desc=A list of template's categories appropriate for this template."
+    })
     private static Sheet.Set createTemplateProperties (final TemplateNode templateNode) {
         Sheet.Set properties = Sheet.createPropertiesSet ();
         // display name
         properties.put (new PropertySupport.ReadWrite<String> (
                     DataObject.PROP_NAME,
                     String.class,
-                    NbBundle.getMessage (TemplatesPanel.class, "TemplatesPanel_TemplateNode_DisplayName"), // NOI18N
-                    NbBundle.getMessage (TemplatesPanel.class, "TemplatesPanel_TemplateNode_DisplayName_Desc") // NOI18N
+                    TemplatesPanel_TemplateNode_DisplayName(),
+                    TemplatesPanel_TemplateNode_DisplayName_Desc()
                 ) {
                     @Override
                     public String getValue () throws IllegalAccessException, InvocationTargetException {
@@ -853,8 +868,8 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         properties.put (new PropertySupport.ReadWrite<String> (
                     DataObject.PROP_PRIMARY_FILE,
                     String.class,
-                    NbBundle.getMessage (TemplatesPanel.class, "TemplatesPanel_TemplateNode_FileName"), // NOI18N
-                    NbBundle.getMessage (TemplatesPanel.class, "TemplatesPanel_TemplateNode_FileName_Desc") // NOI18N
+                    TemplatesPanel_TemplateNode_FileName(),
+                    TemplatesPanel_TemplateNode_FileName_Desc()
                 ) {
                     @Override
                     public String getValue () throws IllegalAccessException, InvocationTargetException {
@@ -866,12 +881,27 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
                         templateNode.setFileName (val);
                     }
         });
+        if (getDOFromNode(templateNode).getPrimaryFile().getPath().startsWith(LICENSES_FOLDER + "/")) {
+            properties.put(new PropertySupport.ReadWrite<String>(TEMPLATE_LICENSE_URL_ATTRIBUTE, String.class, TemplatesPanel_TemplateNode_License(), TemplatesPanel_TemplateNode_License_Desc()) {
+                @Override public String getValue() {
+                    Object o = getDOFromNode(templateNode).getPrimaryFile().getAttribute(TEMPLATE_LICENSE_URL_ATTRIBUTE);
+                    return o == null ? "" : o.toString();
+                }
+                @Override public void setValue(String v) throws InvocationTargetException {
+                    try {
+                        getDOFromNode(templateNode).getPrimaryFile().setAttribute(TEMPLATE_LICENSE_URL_ATTRIBUTE, v.isEmpty() ? null : v);
+                    } catch (IOException x) {
+                        throw new InvocationTargetException(x);
+                    }
+                }
+            });
+        } else {
         // ScriptEngine
         properties.put (new PropertySupport.ReadWrite<String> (
                     TEMPLATE_SCRIPT_ENGINE_ATTRIBUTE,
                     String.class,
-                    NbBundle.getMessage (TemplatesPanel.class, "TemplatesPanel_TemplateNode_ScriptEngine"), // NOI18N
-                    NbBundle.getMessage (TemplatesPanel.class, "TemplatesPanel_TemplateNode_ScriptEngine_Desc") // NOI18N
+                    TemplatesPanel_TemplateNode_ScriptEngine(),
+                    TemplatesPanel_TemplateNode_ScriptEngine_Desc()
                 ) {
                     @Override
                     public String getValue () throws IllegalAccessException, InvocationTargetException {
@@ -893,8 +923,8 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         properties.put (new PropertySupport.ReadWrite<String []> (
                     TEMPLATE_CATEGORY_ATTRIBUTE,
                     String [].class,
-                    NbBundle.getMessage (TemplatesPanel.class, "TemplatesPanel_TemplateNode_TemplateCategories"), // NOI18N
-                    NbBundle.getMessage (TemplatesPanel.class, "TemplatesPanel_TemplateNode_TemplateCategories_Desc") // NOI18N
+                    TemplatesPanel_TemplateNode_TemplateCategories(),
+                    TemplatesPanel_TemplateNode_TemplateCategories_Desc()
                 ) {
                     @Override
                     public String [] getValue () throws IllegalAccessException, InvocationTargetException {
@@ -929,6 +959,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
                         }
                     }
         });
+        } // not in Licenses
 
         return properties;
     }
@@ -1082,10 +1113,15 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         return template;
     }
     
+    @Messages({
+        "LBL_TemplatesPanel_JFileChooser_Title=Add Existing Template",
+        "BTN_TemplatesPanel_JFileChooser_AddButtonName=Add",
+        "# {0} - file name", "MSG_TemplatesPanel_Nonexistent_File=File ''{0}''\ndoes not exist, please specify an existing file."
+    })
     private static void doAdd (final Node [] nodes) {
         JFileChooser chooser = new JFileChooser ();
-        chooser.setDialogTitle(NbBundle.getMessage(TemplatesPanel.class, "LBL_TemplatesPanel_JFileChooser_Title"));
-        chooser.setApproveButtonText(NbBundle.getMessage(TemplatesPanel.class, "BTN_TemplatesPanel_JFileChooser_AddButtonName"));
+        chooser.setDialogTitle(LBL_TemplatesPanel_JFileChooser_Title());
+        chooser.setApproveButtonText(BTN_TemplatesPanel_JFileChooser_AddButtonName());
         chooser.setFileHidingEnabled (false);
         chooser.setMultiSelectionEnabled (false);
         int result = chooser.showOpenDialog (null);
@@ -1093,7 +1129,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
             final File f = chooser.getSelectedFile ();
             assert f != null;
             if (! f.isFile()) {
-                NotifyDescriptor.Message msg = new NotifyDescriptor.Message(NbBundle.getMessage(TemplatesPanel.class, "MSG_TemplatesPanel_Nonexistent_File", f.toString()));
+                NotifyDescriptor.Message msg = new NotifyDescriptor.Message(MSG_TemplatesPanel_Nonexistent_File(f));
                 DialogDisplayer.getDefault().notify(msg);
             } else {
                 rp.post(new Runnable() {
@@ -1138,6 +1174,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         return null;
     }
     
+    @Messages("TXT_TemplatesPanel_NewFolderName=New Folder")
     private static DataFolder doNewFolder (Node [] nodes) {
         DataFolder df = null;
         
@@ -1149,7 +1186,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         }
 
         //#161963: Create new DataFolder if DataFolder with given name already exists
-        String baseName = NbBundle.getMessage(TemplatesPanel.class, "TXT_TemplatesPanel_NewFolderName");
+        String baseName = TXT_TemplatesPanel_NewFolderName();
         String name = baseName;
         DataObject [] arr = pref.getChildren();
         boolean exists = true;
@@ -1313,6 +1350,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         // assert origPos + 1 == getNodePosition (n) : "Node " + n + " has been moved from " + origPos + " to pos " + getNodePosition (n);
     }
 
+    @Messages("RenameTemplatePanel.title.text=Rename Template")
     private static void showRename(TemplateNode n) {
         String name = n.getFileName();
         String displayName = n.getDisplayName();
@@ -1320,7 +1358,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         RenameTemplatePanel editPanel = new RenameTemplatePanel(isUserFile(fo));
         editPanel.setFileName(name);
         editPanel.setFileDisplayName(displayName);
-        String title = org.openide.util.NbBundle.getMessage(TemplatesPanel.class, "RenameTemplatePanel.title.text");
+        String title = RenameTemplatePanel_title_text();
         DialogDescriptor dd = new DialogDescriptor(editPanel, title);
         Object res = DialogDisplayer.getDefault().notify(dd);
         if (DialogDescriptor.OK_OPTION.equals(res)) {
@@ -1358,8 +1396,9 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
             return activatedNodes != null && activatedNodes.length == 1;
         }
 
+        @Messages("BTN_TemplatesPanel_Add=&Add...")
         @Override public String getName() {
-            return NbBundle.getMessage(TemplatesPanel.class, "BTN_TemplatesPanel_Add");
+            return BTN_TemplatesPanel_Add();
         }
 
         @Override public HelpCtx getHelpCtx() {
@@ -1381,8 +1420,9 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
             return activatedNodes != null && activatedNodes.length == 1;
         }
 
+        @Messages("BTN_TemplatesPanel_NewFolder=&New Folder")
         @Override public String getName() {
-            return NbBundle.getMessage(TemplatesPanel.class, "BTN_TemplatesPanel_NewFolder");
+            return BTN_TemplatesPanel_NewFolder();
         }
 
         @Override public HelpCtx getHelpCtx() {
