@@ -360,10 +360,10 @@ public class ExtractSuperclassPanel extends JPanel implements CustomRefactoringP
                     continue;
                 }
                 
-                if (memberElm.getModifiers().contains(Modifier.PRIVATE)) {
-                    //ignore private members.
-                    continue;
-                }
+//                if (memberElm.getModifiers().contains(Modifier.PRIVATE)) {
+//                    //ignore private members.
+//                    continue;
+//                }
                 if (memberElm.getKind() == ElementKind.FIELD) {
                     result.add(MemberInfo.create(memberElm, javac));
                 } else if (memberElm.getKind() == ElementKind.METHOD) {
