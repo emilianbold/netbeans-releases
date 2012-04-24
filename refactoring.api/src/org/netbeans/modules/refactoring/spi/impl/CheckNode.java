@@ -73,7 +73,7 @@ public class CheckNode extends DefaultMutableTreeNode {
     private boolean needsRefresh = false;
     private static Icon found = ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/api/resources/found_item_orange.png", false);
     
-    public CheckNode(Object userObject, String nodeLabel, Icon icon) {
+    public CheckNode(Object userObject, String nodeLabel, Icon icon, boolean isQuery) {
         super(userObject, !(userObject instanceof RefactoringElement));
         this.isSelected = true;
         setSelectionMode(DIG_IN_SELECTION);
@@ -85,7 +85,7 @@ public class CheckNode extends DefaultMutableTreeNode {
                 int s = ree.getStatus();
                 
                 PositionBounds bounds = getPosition();
-                if (bounds != null) {
+                if (isQuery && bounds != null) {
                     int line = 0;
                     try {
                         line = bounds.getBegin().getLine() + 1;

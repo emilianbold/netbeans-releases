@@ -469,7 +469,7 @@ public class RefactoringPanel extends JPanel {
         String displayName = representedObject.getText(isLogical);
         Icon icon = representedObject.getIcon();
         
-        node = new CheckNode(representedObject, displayName, icon);
+        node = new CheckNode(representedObject, displayName, icon, isQuery);
         final CheckNode parentNode = parent == null ? root : createNode(parent, nodes, root);
  
         parentNode.add(node);
@@ -726,7 +726,7 @@ public class RefactoringPanel extends JPanel {
                         }
                     }
                     StringBuffer errorsDesc = getErrorDesc(errorsNum, isQuery?size:elements.size());
-                    final CheckNode root = new CheckNode(ui, description + errorsDesc.toString() + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;",ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/api/resources/" + (isQuery ? "findusages.png" : "refactoring.gif"), false));
+                    final CheckNode root = new CheckNode(ui, description + errorsDesc.toString() + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;",ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/api/resources/" + (isQuery ? "findusages.png" : "refactoring.gif"), false), isQuery);
                     final Map<Object, CheckNode> nodes = new HashMap<Object, CheckNode>();
                     
                     if (isQuery && showParametersPanel) {
