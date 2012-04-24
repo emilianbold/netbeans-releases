@@ -190,7 +190,8 @@ public class SearchResultsOperator extends TopComponentOperator {
 
             @Override
             public Object actionProduced(Object param) {
-                return btStopSearch().isEnabled() ? null : "";
+                // wait until stop button is replaced by Modify Criteria button
+                return btStopSearch().getToolTipText().equals("Modify Criteria") ? Boolean.TRUE : null;
             }
 
             @Override
