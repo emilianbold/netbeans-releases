@@ -52,6 +52,8 @@ import org.netbeans.modules.nativeexecution.support.ShellSession;
  */
 public final class SttySupport {
 
+    private static final boolean disableSTTY = Boolean.getBoolean("nativeexecution.nostty"); // NOI18N
+
     private SttySupport() {
     }
 
@@ -65,12 +67,14 @@ public final class SttySupport {
     public static String[] apply(final ExecutionEnvironment env, final String tty, final String args) {
         String[] result = null;
 
-        try {
-            result = ShellSession.execute(env, "/bin/stty " + args + " < " + tty + " 2>/dev/null"); // NOI18N
-        } catch (IOException ex) {
-            // bad luck.. still just ignore..
-        } catch (CancellationException ex) {
-            // TODO:CancellationException error processing
+        if (!disableSTTY) {
+            try {
+                result = ShellSession.execute(env, "/bin/stty " + args + " < " + tty + " 2>/dev/null"); // NOI18N
+            } catch (IOException ex) {
+                // bad luck.. still just ignore..
+            } catch (CancellationException ex) {
+                // TODO:CancellationException error processing
+            }
         }
 
         return result;
