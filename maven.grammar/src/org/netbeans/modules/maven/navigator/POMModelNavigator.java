@@ -45,12 +45,14 @@ package org.netbeans.modules.maven.navigator;
 import java.util.Collection;
 import javax.swing.JComponent;
 import org.netbeans.modules.maven.api.Constants;
+import static org.netbeans.modules.maven.navigator.Bundle.*;
 import org.netbeans.spi.navigator.NavigatorPanel;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
@@ -78,8 +80,9 @@ public class POMModelNavigator implements NavigatorPanel {
     }
 
     @Override
+    @Messages("POM_MODEL_HINT=View what values are inherited from parents or overriding parent values.")
     public String getDisplayHint() {
-        return NbBundle.getMessage(POMModelNavigator.class, "POM_MODEL_HINT");
+        return POM_MODEL_HINT();
     }
 
     @Override
@@ -97,7 +100,7 @@ public class POMModelNavigator implements NavigatorPanel {
     @Override
     public void panelActivated(Lookup context) {
         getNavigatorUI().showWaitNode();
-        selection = context.lookup(new Lookup.Template<DataObject>(DataObject.class));
+        selection = context.lookupResult(DataObject.class);
         selection.addLookupListener(selectionListener);
         selectionListener.resultChanged(null);
     }

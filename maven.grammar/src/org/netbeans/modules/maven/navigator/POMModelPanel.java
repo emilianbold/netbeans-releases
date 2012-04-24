@@ -157,8 +157,10 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
 
         add(filtersPanel, BorderLayout.SOUTH);
     }
-
-    static void selectByNode(Node nd, String elementName, int layer) {
+    static void selectByNode(Node nd, int layer) {
+        selectByNode(nd, null, layer, null);
+    }
+    private static void selectByNode(Node nd, String elementName, int layer, String elementValue) {
         if (nd == null) {
             return;
         }
@@ -175,7 +177,23 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
                     QName qn = POMQName.createQName(elementName, pc.getModel().getPOMQNames().isNSAware());
                     NodeList nl = pc.getPeer().getElementsByTagName(qn.getLocalPart());
                     if (nl != null && nl.getLength() > 0) {
-                        pos = pc.getModel().getAccess().findPosition(nl.item(0));
+                        if (nl.getLength() == 1) {
+                            pos = pc.getModel().getAccess().findPosition(nl.item(0));
+                        } else {
+                            //#211429
+                            pos = pc.getModel().getAccess().findPosition(nl.item(0));
+                            for (int i = 0; i < nl.getLength(); i++) {
+                                org.w3c.dom.Node candidate = nl.item(i);
+                                
+                                if (candidate instanceof org.w3c.dom.Element) {
+                                    org.w3c.dom.Element candidEl = (org.w3c.dom.Element)candidate;
+                                    if (elementValue != null && elementValue.equals(getText(candidEl))) {
+                                        pos = pc.getModel().getAccess().findPosition(candidate);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
                     } else {
                         pos = -1;
                     }
@@ -187,9 +205,29 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
                 }
             } else if (objs[layer] != null && elementName == null) {
                 String name = getElementNameFromNode(nd);
-                selectByNode(nd.getParentNode(), name, layer);
+                selectByNode(nd.getParentNode(), name, layer, objs[layer].toString());
             }
         }
+    }
+    
+    // a custom method for getting the text of the element getTextContent() doesn't work/not implemented.
+    private static String getText(org.w3c.dom.Element el) {
+        NodeList nl = el.getChildNodes();
+        if (nl.getLength() > 0) {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < nl.getLength(); i++) {
+                org.w3c.dom.Node nd = nl.item(i);
+                if (nd instanceof org.w3c.dom.Text) {
+                    org.w3c.dom.Text txt = (org.w3c.dom.Text)nd;
+                    String s = txt.getNodeValue();
+                    if (s != null) {
+                        sb.append(s);
+                    }
+                }
+            }
+            return sb.toString();
+        }
+        return null;
     }
 
 
