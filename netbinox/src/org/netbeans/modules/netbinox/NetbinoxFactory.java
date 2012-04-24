@@ -50,6 +50,7 @@ import org.eclipse.osgi.launch.EquinoxFactory;
 import org.netbeans.core.netigso.spi.NetigsoArchive;
 import org.openide.util.lookup.ServiceProvider;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.Constants;
 import org.osgi.framework.launch.Framework;
 import org.osgi.framework.launch.FrameworkFactory;
 
@@ -86,6 +87,9 @@ public class NetbinoxFactory implements FrameworkFactory {
         configMap.put("osgi.framework.properties", System.getProperty("netbeans.user")); // NOI18N
         // don't change classloader when getting XMLParsers
         configMap.put("eclipse.parsers.setTCCL", "false"); // NOI18N
+        configMap.put(Constants.FRAMEWORK_STORAGE, toFileURL(
+            (String)map.get(Constants.FRAMEWORK_STORAGE)
+        ));
 
         Object rawBundleMap = configMap.get("felix.bootdelegation.classloaders"); // NOI18N
 
@@ -140,6 +144,9 @@ public class NetbinoxFactory implements FrameworkFactory {
     private static String toFileURL(String file) {
         if (file == null) {
             return null;
+        }
+        if (file.startsWith("file:")) { // NOI18N
+            return file;
         }
         if (file.startsWith("/")) { // NOI18N
             return "file:" + file; // NOI18N
