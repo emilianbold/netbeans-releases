@@ -1380,13 +1380,10 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
             POMModel[] mdls = getLookup().lookup(POMCutHolder.class).getSource();
             StringBuilder buff = new StringBuilder();
             int index = 0;
-            buff.append("<html>" + //NOI18N
-                    TOOLTIP_Defined_in() +
-                    "<p><table><thead><tr><th>" + //NOI18N
-                    TOOLTIP_ArtifactId() +
-                    "</th><th>" + //NOI18N
-                    TOOLTIP_IS_DEFINED() +
-                    "</th></tr></thead><tbody>"); //NOI18N
+            buff.append("<html>").
+                    append(TOOLTIP_Defined_in()).append("<p><table><thead><tr><th>").
+                    append(TOOLTIP_ArtifactId()).append("</th><th>").
+                    append(TOOLTIP_IS_DEFINED()).append("</th></tr></thead><tbody>"); //NOI18N
             for (POMModel mdl : mdls) {
                 String artifact = mdl.getProject().getArtifactId();
                 buff.append("<tr><td>"); //NOI18N
@@ -1452,13 +1449,10 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
             POMModel[] mdls = getLookup().lookup(POMCutHolder.class).getSource();
             StringBuilder buff = new StringBuilder();
             int index = 0;
-            buff.append("<html>" + //NOI18N
-                    TOOLTIP_Defined_in() +
-                    "<p><table><thead><tr><th>" + //NOI18N
-                    TOOLTIP_ArtifactId() +
-                    "</th><th>" + //NOI18N
-                    TOOLTIP_IS_DEFINED() +
-                    "</th></tr></thead><tbody>"); //NOI18N
+            buff.append("<html>").
+                    append(TOOLTIP_Defined_in()).append("<p><table><thead><tr><th>").
+                    append(TOOLTIP_ArtifactId()).append("</th><th>").
+                    append(TOOLTIP_IS_DEFINED()).append("</th></tr></thead><tbody>"); //NOI18N
             for (POMModel mdl : mdls) {
                 String artifact = mdl.getProject().getArtifactId();
                 buff.append("<tr><td>"); //NOI18N
@@ -1746,9 +1740,9 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
 
         @Override
         @Messages({"ACT_Show=Show in POM", 
-            "#{0} - artifactid of a project",
+            "# {0} - artifactid of a project",
             "ACT_Current=Current: {0}",
-            "#{0} - artifactid of a project",
+            "# {0} - artifactid of a project",
             "ACT_PARENT=Parent: {0}"})
         public JMenuItem getPopupPresenter() {
             JMenu menu = new JMenu();
