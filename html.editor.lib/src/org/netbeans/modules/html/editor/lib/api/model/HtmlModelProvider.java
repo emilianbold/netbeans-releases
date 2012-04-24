@@ -39,25 +39,18 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.editor.lib.html4parser;
+package org.netbeans.modules.html.editor.lib.api.model;
 
-import java.util.Iterator;
-import org.netbeans.modules.html.editor.lib.api.elements.Element;
+import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
 
 /**
- *
+ * Provider of HtmlModel should be registered in the global lookup.
+ * 
+ * @since 3.3
  * @author marekfukala
  */
-public class IteratorOfElements {
+public interface HtmlModelProvider {
     
-    private Iterator<Element> iterator;
-
-    public IteratorOfElements(Iterator<Element> iterator) {
-        this.iterator = iterator;
-    }
-
-    public Iterator<Element> getIterator() {
-        return iterator;
-    }
+    public HtmlModel getModel(HtmlVersion version);
     
 }
