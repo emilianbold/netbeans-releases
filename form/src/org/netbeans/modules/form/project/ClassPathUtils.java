@@ -45,6 +45,8 @@
 package org.netbeans.modules.form.project;
 
 import java.io.*;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.net.*;
 import java.util.*;
 import java.util.logging.Level;
@@ -70,7 +72,7 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 
 public class ClassPathUtils {
 
-    private static Map<Project,FormClassLoader> loaders = new WeakHashMap<Project,FormClassLoader>();
+    private static Map<Project,Reference<FormClassLoader>> loaders = new WeakHashMap<Project,Reference<FormClassLoader>>();
 
     /**
      * Class loading type for a class to be always loaded by the IDE's system
@@ -117,13 +119,14 @@ public class ClassPathUtils {
 
     private static FormClassLoader getFormClassLoader(FileObject fileInProject) {
         Project p = FileOwnerQuery.getOwner(fileInProject);
-        FormClassLoader fcl = loaders.get(p);
+        Reference<FormClassLoader> ref = loaders.get(p);
+        FormClassLoader fcl = ref != null ? ref.get() : null;
         ClassLoader existingProjectCL = fcl != null ? fcl.getProjectClassLoader() : null;
         ClassLoader newProjectCL = ProjectClassLoader.getUpToDateClassLoader(
                                      fileInProject, existingProjectCL);
         if (fcl == null || newProjectCL != existingProjectCL) {
             fcl = new FormClassLoader(newProjectCL);
-            loaders.put(p, fcl);
+            loaders.put(p, new WeakReference<FormClassLoader>(fcl));
         }
         return fcl;
     }
