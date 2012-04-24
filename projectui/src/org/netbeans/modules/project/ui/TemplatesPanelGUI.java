@@ -59,6 +59,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
@@ -203,7 +205,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
     public FileObject getSelectedTemplate () {
         Node[] nodes = ((ExplorerProviderPanel) this.projectsPanel).getSelectedNodes();
         if (nodes != null && nodes.length == 1) {
-            DataObject dobj = nodes[0].getCookie(DataObject.class);
+            DataObject dobj = nodes[0].getLookup().lookup(DataObject.class);
             if (dobj != null) {
                 while (dobj instanceof DataShadow) {
                     dobj = ((DataShadow)dobj).getOriginal();
@@ -244,7 +246,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
                     } catch (PropertyVetoException e) {
                         /*Ignore it*/
                     }
-                    DataObject template = (DataObject) selectedNodes[0].getCookie(DataFolder.class);
+                    DataObject template = (DataObject) selectedNodes[0].getLookup().lookup(DataFolder.class);
                     if (template != null) {
                         FileObject fo = template.getPrimaryFile();
                         String templatePath = fo.getPath();
@@ -280,7 +282,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
             if (ExplorerManager.PROP_SELECTED_NODES.equals (event.getPropertyName())) {
                 Node[] selectedNodes = (Node[]) event.getNewValue ();
                 if (selectedNodes != null && selectedNodes.length == 1) {
-                    DataObject template = selectedNodes[0].getCookie(DataObject.class);
+                    DataObject template = selectedNodes[0].getLookup().lookup(DataObject.class);
                     if (template != null) {
                         URL descURL = getDescription (template);
                         if (descURL != null) {
@@ -736,8 +738,8 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
             String txt = new String (arr, 0, (len>=0)?len:0).toUpperCase();
             // encoding
             return findEncoding (txt);
-        } catch (Exception x) {
-            x.printStackTrace();
+        } catch (IOException x) {
+            Logger.getLogger(TemplatesPanelGUI.class.getName()).log(Level.INFO, null, x);
         }
         return null;
     }
