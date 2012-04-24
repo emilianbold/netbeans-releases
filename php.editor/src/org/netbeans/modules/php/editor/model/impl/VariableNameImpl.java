@@ -424,7 +424,7 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
         Set<String> typeNames = new HashSet<String>(getTypeNames(getNameRange().getEnd()+1));
         if (typeNames.size() == 1) {
             for (String typeName : typeNames) {
-                if (!typeName.contains("@")) {
+                if (!typeName.contains(VariousUtils.PRE_OPERATION_TYPE_DELIMITER)) {
                     sb.append(typeName);
                     break;
                 }
