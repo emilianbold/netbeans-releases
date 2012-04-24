@@ -62,6 +62,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -83,6 +84,7 @@ import org.apache.tools.ant.module.spi.AntLogger;
 import org.apache.tools.ant.module.spi.AntSession;
 import org.apache.tools.ant.module.spi.TaskStructure;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.modules.project.indexingbridge.IndexingBridge;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -119,9 +121,11 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
     private final Runnable interestingOutputCallback;
     private final ProgressHandle handle;
     private boolean insideRunTask = false; // #95201
+    private final AtomicBoolean protectedMode = new AtomicBoolean(); // #211005
     private final RequestProcessor.Task sleepTask = new RequestProcessor(NbBuildLogger.class.getName(), 1, false, false).create(new Runnable() {
         public @Override void run() {
             handle.suspend(insideRunTask ? NbBundle.getMessage(NbBuildLogger.class, "MSG_sleep_running") : "");
+            exitProtectedMode();
         }
     });
     private static final int SLEEP_DELAY = 5000;
@@ -189,6 +193,18 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         this.interestingOutputCallback = interestingOutputCallback;
         this.handle = handle;
         LOG.log(Level.FINE, "---- Initializing build of {0} \"{1}\" at verbosity {2} ----", new Object[] {origScript, displayName, verbosity});
+        enterProtectedMode();
+    }
+
+    private void enterProtectedMode() {
+        if (protectedMode.compareAndSet(false, true)) {
+            IndexingBridge.getDefault().enterProtectedMode();
+        }
+    }
+    private void exitProtectedMode() {
+        if (protectedMode.compareAndSet(true, false)) {
+            IndexingBridge.getDefault().exitProtectedMode();
+        }
     }
     
     /** Try to stop running at the next safe point. */
@@ -204,6 +220,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         }
         if (running) {
             handle.switchToIndeterminate();
+            enterProtectedMode();
             sleepTask.schedule(SLEEP_DELAY);
         }
     }
@@ -219,6 +236,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         err.close();
         handle.finish();
         sleepTask.cancel();
+        exitProtectedMode();
     }
 
     private void verifyRunning() {

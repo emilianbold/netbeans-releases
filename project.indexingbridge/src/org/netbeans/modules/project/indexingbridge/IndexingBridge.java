@@ -42,39 +42,37 @@
 
 package org.netbeans.modules.project.indexingbridge;
 
-import java.util.concurrent.Callable;
 import org.openide.util.Lookup;
 
 /**
- * @see org.netbeans.modules.parsing.api.indexing.IndexingManager
+ * Allows parser indexing to be temporarily suppressed.
+ * Unlike {@code org.netbeans.modules.parsing.api.indexing.IndexingManager}
+ * this is not block-scoped. Every call to {@link #enterProtectedMode} must
+ * eventually be matched by exactly one call to {@link #exitProtectedMode}.
+ * It is irrelevant which thread makes each call. It is permissible to make
+ * multiple enter calls so long as an equal number of exit calls are eventually
+ * made as well.
  */
 public abstract class IndexingBridge {
 
     protected IndexingBridge() {}
 
-    public abstract <T> T runProtected(Callable<T> operation) throws Exception;
+    /**
+     * Begin suppression of indexing.
+     */
+    public abstract void enterProtectedMode();
 
-    public final void runProtected(final Runnable operation) {
-        try {
-            runProtected(new Callable<Void>() {
-                @Override public Void call() throws Exception {
-                    operation.run();
-                    return null;
-                }
-            });
-        } catch (RuntimeException x) {
-            throw x;
-        } catch (Exception x) {
-            throw new AssertionError(x);
-        }
-    }
+    /**
+     * End suppression of indexing.
+     * Indexing may resume if this is the last matching call.
+     */
+    public abstract void exitProtectedMode();
 
     public static IndexingBridge getDefault() {
         IndexingBridge b = Lookup.getDefault().lookup(IndexingBridge.class);
         return b != null ? b : new IndexingBridge() {
-            @Override public <T> T runProtected(Callable<T> operation) throws Exception {
-                return operation.call();
-            }
+            @Override public void enterProtectedMode() {}
+            @Override public void exitProtectedMode() {}
         };
     }
 
