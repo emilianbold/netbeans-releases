@@ -91,6 +91,8 @@ import org.netbeans.spi.java.hints.HintContext;
 import org.netbeans.spi.java.hints.JavaFix;
 import org.netbeans.spi.java.hints.TriggerTreeKind;
 
+// XXX add new hint to supply documentation for undocumented format params
+
 @Hint(category="apisupport", displayName="#UseNbBundleMessages.displayName", description="#UseNbBundleMessages.description", severity=Severity.HINT)
 @Messages({
     "UseNbBundleMessages.displayName=Use @NbBundle.Messages",
@@ -199,6 +201,7 @@ public class UseNbBundleMessages {
             try {
                 if (DataObject.find(bundleProperties).isModified()) {
                     // Using EditorCookie.document is quite difficult here due to encoding issues. Keep it simple.
+                    // XXX consider proceeding anyway, since TransformationContext should load from modified content
                     return warning(UseNbBundleMessages_save_bundle(), span, compilationInfo);
                 }
                 InputStream is = bundleProperties.getInputStream();
