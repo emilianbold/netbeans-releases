@@ -145,21 +145,21 @@ class Netbinox extends Equinox {
 
         @Override
         public Bundle installBundle(String url, InputStream in) throws BundleException {
-            final String pref = "reference:file:";
+            final String pref = "reference:";
             if (url.startsWith(pref)) {
                 // workaround for problems with space in path
                 url = url.replaceAll("%20", " ");
                 String filePart = url.substring(pref.length());
-                if (filePart.startsWith(installArea)) {
+                if (installArea != null && filePart.startsWith(installArea)) {
                     String relPath = filePart.substring(installArea.length());
                     if (relPath.startsWith("/")) { // NOI18N
                         relPath = relPath.substring(1);
                     }
-                    url = pref + relPath;
+                    url = pref + "file:" + relPath;
+                    NetbinoxFactory.LOG.log(Level.FINE, "Converted to relative {0}", url);
+                } else {
+                    NetbinoxFactory.LOG.log(Level.FINE, "Kept absolute {0}", url);
                 }
-                NetbinoxFactory.LOG.log(Level.FINE, "Converted to relative {0}", url);
-            } else {
-                NetbinoxFactory.LOG.log(Level.FINE, "Kept absolute {0}", url);
             }
             return delegate.installBundle(url, in);
         }

@@ -127,7 +127,7 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
             readBundles();
             
             Map configMap = new HashMap();
-            final String cache = getNetigsoCache().getPath();
+            final String cache = toFileURL(getNetigsoCache().getPath());
             configMap.put(Constants.FRAMEWORK_STORAGE, cache);
             activator = new NetigsoActivator(this);
             configMap.put("netigso.archive", NetigsoArchiveFactory.DEFAULT.create(this)); // NOI18N
@@ -687,5 +687,12 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
     private boolean isEnabled(String cnd) {
         Module m = findModule(cnd);
         return m != null && m.isEnabled();
+    }
+    private static String toFileURL(String file) {
+        if (file.startsWith("/")) { // NOI18N
+            return "file:" + file; // NOI18N
+        } else {
+            return "file:/" + file.replace(File.separatorChar, '/'); // NOI18N
+        }
     }
 }

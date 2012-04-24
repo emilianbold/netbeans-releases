@@ -50,7 +50,6 @@ import org.eclipse.osgi.launch.EquinoxFactory;
 import org.netbeans.core.netigso.spi.NetigsoArchive;
 import org.openide.util.lookup.ServiceProvider;
 import org.osgi.framework.Bundle;
-import org.osgi.framework.Constants;
 import org.osgi.framework.launch.Framework;
 import org.osgi.framework.launch.FrameworkFactory;
 
@@ -66,6 +65,7 @@ import org.osgi.framework.launch.FrameworkFactory;
 public class NetbinoxFactory implements FrameworkFactory {
     static final Logger LOG = Logger.getLogger("org.netbeans.modules.netbinox"); // NOI18N
 
+    @Override
     @SuppressWarnings("unchecked")
     public Framework newFramework(Map map) {
         Map<String,Object> configMap = new HashMap<String,Object>();
@@ -75,9 +75,13 @@ public class NetbinoxFactory implements FrameworkFactory {
 //            + ",org.eclipse.core.runtime.internal.adaptor.EclipseClassLoadingHook" // NOI18N
         );
         configMap.put("osgi.hook.configurators.include", NetbinoxHooks.class.getName()); // NOI18N
-        configMap.put("osgi.user.area.default", configMap.get(Constants.FRAMEWORK_STORAGE)); // NOI18N
-        configMap.put("osgi.instance.area.default", System.getProperty("netbeans.user")); // NOI18N
-        configMap.put("osgi.install.area", findInstallArea()); // NOI18N
+        final String userArea = toFileURL(System.getProperty("netbeans.user"));
+        configMap.put("osgi.user.area.default", userArea); // NOI18N
+        configMap.put("osgi.user.area", userArea); // NOI18N
+        configMap.put("osgi.instance.area", "@none"); // NOI18N
+        configMap.put("osgi.instance.area.default", userArea); // NOI18N
+        final String installArea = toFileURL(findInstallArea());
+        configMap.put("osgi.install.area", installArea); // NOI18N
         // some useless value
         configMap.put("osgi.framework.properties", System.getProperty("netbeans.user")); // NOI18N
         // don't change classloader when getting XMLParsers
@@ -131,5 +135,16 @@ public class NetbinoxFactory implements FrameworkFactory {
             }
         }
         return len;
+    }
+    
+    private static String toFileURL(String file) {
+        if (file == null) {
+            return null;
+        }
+        if (file.startsWith("/")) { // NOI18N
+            return "file:" + file; // NOI18N
+        } else {
+            return "file:/" + file.replace(File.separatorChar, '/'); // NOI18N
+        }
     }
 }
