@@ -115,7 +115,7 @@ import org.openide.util.Exceptions;
 
 public class JPDAStepImpl extends JPDAStep implements Executor {
     
-    private static Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.step"); // NOI18N
+    private static final Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.step"); // NOI18N
 
     private static final String INIT = "<init>"; // NOI18N
 
@@ -138,6 +138,7 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
         p = Properties.getDefault().getProperties("debugger.options.JPDA"); // NOI18N
     }
     
+    @Override
     public void addStep(JPDAThread tr) {
         JPDADebuggerImpl debuggerImpl = (JPDADebuggerImpl) debugger;
         JPDAThreadImpl trImpl = (JPDAThreadImpl) tr;
@@ -429,6 +430,7 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
         return true;
     }
     
+    @Override
     public boolean exec (Event event) {
         try {
             EventRequest er = EventWrapper.request(event);
@@ -538,6 +540,7 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
         }
     }
     
+    @Override
     public void removed(EventRequest eventRequest) {
         try {
             stepDone(eventRequest);
@@ -821,6 +824,7 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
             this.mb = mb;
         }
         
+        @Override
         public void breakpointReached(JPDABreakpointEvent event) {
             returnValue = event.getVariable();
         }

@@ -56,7 +56,6 @@ import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
@@ -109,7 +108,7 @@ import org.openide.util.RequestProcessor.Task;
 
 /**
  * Implements non visual part of stepping through code in JPDA debugger.
- * It supports standart debugging actions StepInto, Over, Out, RunToCursor, 
+ * It supports standard debugging actions StepInto, Over, Out, RunToCursor, 
  * and Go. And advanced "smart tracing" action.
  *
  * @author  Jan Jancura
@@ -161,6 +160,7 @@ implements Executor {
 
     // ActionProviderSupport ...................................................
     
+    @Override
     public Set getActions () {
         return new HashSet<Object>(Arrays.asList (new Object[] {
             ActionsManager.ACTION_STEP_OUT,
@@ -168,13 +168,16 @@ implements Executor {
         }));
     }
     
+    @Override
     public void doAction (final Object action) {
         runAction(action);
     }
     
+    @Override
     public void postAction(final Object action,
                            final Runnable actionPerformedNotifier) {
         doLazyAction(action, new Runnable() {
+            @Override
             public void run() {
                 try {
                     runAction(action);
@@ -338,6 +341,7 @@ implements Executor {
         DebuggerManager.getDebuggerManager().addBreakpoint(mb);
     }
     
+    @Override
     protected void checkEnabled (int debuggerState) {
         Iterator i = getActions ().iterator ();
         while (i.hasNext ())
@@ -355,6 +359,7 @@ implements Executor {
      *
      * Should be called from Operator only.
      */
+    @Override
     public boolean exec (Event ev) {
         try {
         // TODO: fetch current engine from the Event
@@ -473,6 +478,7 @@ implements Executor {
         }
     }
 
+    @Override
     public void removed(EventRequest eventRequest) {
         StepRequest sr = (StepRequest) eventRequest;
         try {
