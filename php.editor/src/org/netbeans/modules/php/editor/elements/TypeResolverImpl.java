@@ -51,6 +51,7 @@ import java.util.logging.Logger;
 import org.netbeans.modules.php.editor.api.elements.*;
 import org.netbeans.modules.php.editor.elements.PhpElementImpl.SEPARATOR;
 import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 
 /**
  * This is simple immutable impl.
@@ -58,7 +59,6 @@ import org.netbeans.modules.php.editor.api.QualifiedName;
  */
 public final class TypeResolverImpl implements TypeResolver {
     private static final Logger LOG = Logger.getLogger(TypeResolverImpl.class.getName());
-    public static final String SEMI_TYPE_MARKER = "@";//NOI18N
 
     private final String typeName;
 
@@ -114,7 +114,7 @@ public final class TypeResolverImpl implements TypeResolver {
     }
 
     private static boolean isResolvedImpl(final String typeName) {
-        return typeName != null && typeName.indexOf(SEMI_TYPE_MARKER) == -1;
+        return typeName != null && typeName.indexOf(VariousUtils.PRE_OPERATION_TYPE_DELIMITER) == -1;
     }
 
     @Override
