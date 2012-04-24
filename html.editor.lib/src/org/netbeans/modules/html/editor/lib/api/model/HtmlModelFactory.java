@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,64 +37,43 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.editor.hints;
+package org.netbeans.modules.html.editor.lib.api.model;
 
-import java.util.regex.Pattern;
-import org.netbeans.modules.csl.api.HintSeverity;
+import java.util.Collection;
+import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
+import org.openide.util.Lookup;
 
 /**
- *
+ * Creates a instance of {@link HtmlModel} for given {@link HtmlVersion}.
+ * 
+ * The factory gathers all instancies of {@link HtmlModelProvider} from global lookup and ask 
+ * each of them for {@link HtmlModel}. If the provider returns null it proceeds with another
+ * until a provider returns non-null {@link HtmlModel} 
+ * 
+ * @since 3.3
  * @author marekfukala
  */
-public class Element extends PatternRule {
+public final class HtmlModelFactory {
 
-    private static final String[] PATTERNS_SOURCES = new String[]{
-        //ErrorReportingTokenizer
-        "The ./>. syntax on void elements is not allowed.  (This is an HTML4-only error.)",
-        "No space between attributes",
-        "Saw .<\\. when expecting an attribute name. Probable cause: Missing .>. immediately before.",
-        "Bad character ... after .<.. Probable cause: Unescaped .<\\.. Try escaping it as .&lt;..",
-        "Saw .<>.. Probable causes: Unescaped .<\\. (escape as .&lt;.) or mistyped start tag.",
-        "End tag had attributes.",
-        "Stray ./. at the end of an end tag.",
-        "Saw end of file without the previous tag ending",
-        "End of file seen when looking for tag name. Ignoring tag.",
-        "End of file inside end tag. Ignoring tag.",
-        "End of file after .<\\.",
-        "Duplicate attribute",
-        "Self-closing syntax (./>.) used on a non-void HTML element",
+    /**
+     * Creates a instance of {@link HtmlModel} for given {@link HtmlVersion}.
+     * 
+     * @param version instance of {@link HtmlVersion}
+     * @return instance of {@link HtmlModel} or null if none of the {@link HtmlModelProvider} provides
+     * model for the given html version.
+     */
+    public static HtmlModel getModel(HtmlVersion version) {
+        Collection<? extends HtmlModelProvider> providers = Lookup.getDefault().lookupAll(HtmlModelProvider.class);
+        for(HtmlModelProvider provider : providers) {
+            HtmlModel model = provider.getModel(version);
+            if(model != null) {
+                return model;
+            }
+        }
+        return null;
         
-        "Text not allowed in element .*? in this context",
-        
-        //attributes
-        "Attribute .*? not allowed on element .*? at this point",
-        "Required attributes missing on element",
-        
-        //xhtml
-        "XHTML element .*? not allowed as child of XHTML element .*? in this context.",
-        "Attribute .*? not allowed on XHTML element .*? at this point.",
-        
-        //???
-        "The end-tag for element type .*? must end with a '>' delimiter.",
-        
-            
-    }; //NOI18N
-    
-    private final static Pattern[] PATTERNS = buildPatterns(PATTERNS_SOURCES);
-
-    @Override
-    public Pattern[] getPatterns() {
-        return PATTERNS;
-    }
-
-    @Override
-    public HintSeverity getDefaultSeverity() {
-        return HintSeverity.ERROR;
     }
     
-    
-    
-
 }
