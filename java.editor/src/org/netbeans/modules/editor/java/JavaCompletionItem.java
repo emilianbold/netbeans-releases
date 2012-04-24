@@ -813,6 +813,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 }
             }
             final int finalLen = len;
+            final StringBuilder template = new StringBuilder();
             Source s = Source.create(doc);
             try {
                 ParserManager.parse(Collections.singletonList(s), new UserTask() {
@@ -824,94 +825,93 @@ public abstract class JavaCompletionItem implements CompletionItem {
                         DeclaredType type = typeHandle.resolve(controller);
                         final TypeElement elem = type != null ? (TypeElement)type.asElement() : null;
                         boolean asTemplate = false;
-                        StringBuilder sb = new StringBuilder();
                         if (elem != null) {
                             int cnt = 1;
                             if (addSimpleName) {
-                                sb.append(elem.getSimpleName());
+                                template.append(elem.getSimpleName());
                             } else {
-                                sb.append("${PAR"); //NOI18N
-                                sb.append(cnt++);
+                                template.append("${PAR"); //NOI18N
+                                template.append(cnt++);
                                 if ((type == null || type.getKind() != TypeKind.ERROR) &&
                                         EnumSet.range(ElementKind.PACKAGE, ElementKind.INTERFACE).contains(elem.getEnclosingElement().getKind())) {
-                                    sb.append(" type=\""); //NOI18N
-                                    sb.append(elem.getQualifiedName());
-                                    sb.append("\" default=\""); //NOI18N
-                                    sb.append(elem.getSimpleName());
+                                    template.append(" type=\""); //NOI18N
+                                    template.append(elem.getQualifiedName());
+                                    template.append("\" default=\""); //NOI18N
+                                    template.append(elem.getSimpleName());
                                 } else {
-                                    sb.append(" default=\""); //NOI18N
-                                    sb.append(elem.getQualifiedName());
+                                    template.append(" default=\""); //NOI18N
+                                    template.append(elem.getQualifiedName());
                                 }
-                                sb.append("\" editable=false}"); //NOI18N
+                                template.append("\" editable=false}"); //NOI18N
                             }
                             Iterator<? extends TypeMirror> tas = type != null ? type.getTypeArguments().iterator() : null;
                             if (tas != null && tas.hasNext()) {
-                                sb.append('<'); //NOI18N
+                                template.append('<'); //NOI18N
                                 if (!insideNew || elem.getModifiers().contains(Modifier.ABSTRACT) 
                                     || controller.getSourceVersion().compareTo(SourceVersion.RELEASE_7) < 0) {
                                     while (tas.hasNext()) {
                                         TypeMirror ta = tas.next();
-                                        sb.append("${PAR"); //NOI18N
-                                        sb.append(cnt++);
+                                        template.append("${PAR"); //NOI18N
+                                        template.append(cnt++);
                                         if (ta.getKind() == TypeKind.TYPEVAR) {
                                             TypeVariable tv = (TypeVariable)ta;
                                             if (smartType || elem != tv.asElement().getEnclosingElement()) {
-                                                sb.append(" editable=false default=\""); //NOI18N
-                                                sb.append(Utilities.getTypeName(controller, ta, true));
+                                                template.append(" editable=false default=\""); //NOI18N
+                                                template.append(Utilities.getTypeName(controller, ta, true));
                                                 asTemplate = true;
                                             } else {
-                                                sb.append(" typeVar=\""); //NOI18N
-                                                sb.append(tv.asElement().getSimpleName());
-                                                sb.append("\" type=\""); //NOI18N
+                                                template.append(" typeVar=\""); //NOI18N
+                                                template.append(tv.asElement().getSimpleName());
+                                                template.append("\" type=\""); //NOI18N
                                                 ta = tv.getUpperBound();
-                                                sb.append(Utilities.getTypeName(controller, ta, true));
-                                                sb.append("\" default=\""); //NOI18N
-                                                sb.append(Utilities.getTypeName(controller, ta, false));
+                                                template.append(Utilities.getTypeName(controller, ta, true));
+                                                template.append("\" default=\""); //NOI18N
+                                                template.append(Utilities.getTypeName(controller, ta, false));
                                                 if (addTypeVars && SourceVersion.RELEASE_5.compareTo(controller.getSourceVersion()) <= 0)
                                                     asTemplate = true;
                                             }
-                                            sb.append("\"}"); //NOI18N
+                                            template.append("\"}"); //NOI18N
                                         } else if (ta.getKind() == TypeKind.WILDCARD) {
-                                            sb.append(" type=\""); //NOI18N
+                                            template.append(" type=\""); //NOI18N
                                             TypeMirror bound = ((WildcardType)ta).getExtendsBound();
                                             if (bound == null)
                                                 bound = ((WildcardType)ta).getSuperBound();
-                                            sb.append(bound != null ? Utilities.getTypeName(controller, bound, true) : "Object"); //NOI18N
-                                            sb.append("\" default=\""); //NOI18N
-                                            sb.append(bound != null ? Utilities.getTypeName(controller, bound, false) : "Object"); //NOI18N
-                                            sb.append("\"}"); //NOI18N
+                                            template.append(bound != null ? Utilities.getTypeName(controller, bound, true) : "Object"); //NOI18N
+                                            template.append("\" default=\""); //NOI18N
+                                            template.append(bound != null ? Utilities.getTypeName(controller, bound, false) : "Object"); //NOI18N
+                                            template.append("\"}"); //NOI18N
                                             asTemplate = true;
                                         } else if (ta.getKind() == TypeKind.ERROR) {
-                                            sb.append(" default=\""); //NOI18N
-                                            sb.append(((ErrorType)ta).asElement().getSimpleName());
-                                            sb.append("\"}"); //NOI18N
+                                            template.append(" default=\""); //NOI18N
+                                            template.append(((ErrorType)ta).asElement().getSimpleName());
+                                            template.append("\"}"); //NOI18N
                                             asTemplate = true;
                                         } else {
-                                            sb.append(" type=\""); //NOI18N
-                                            sb.append(Utilities.getTypeName(controller, ta, true));
-                                            sb.append("\" default=\""); //NOI18N
-                                            sb.append(Utilities.getTypeName(controller, ta, false));
-                                            sb.append("\" editable=false}"); //NOI18N
+                                            template.append(" type=\""); //NOI18N
+                                            template.append(Utilities.getTypeName(controller, ta, true));
+                                            template.append("\" default=\""); //NOI18N
+                                            template.append(Utilities.getTypeName(controller, ta, false));
+                                            template.append("\" editable=false}"); //NOI18N
                                             asTemplate = true;
                                         }
                                         if (tas.hasNext())
-                                            sb.append(", "); //NOI18N
+                                            template.append(", "); //NOI18N
                                     }
                                 } else {
                                     asTemplate = true;
                                 }
-                                sb.append('>'); //NOI18N
+                                template.append('>'); //NOI18N
                             }
                             for(int i = 0; i < dim; i++) {
-                                sb.append("[${PAR"); //NOI18N
-                                sb.append(cnt++);
-                                sb.append(" instanceof=\"int\" default=\"\"}]"); //NOI18N
+                                template.append("[${PAR"); //NOI18N
+                                template.append(cnt++);
+                                template.append(" instanceof=\"int\" default=\"\"}]"); //NOI18N
                                 asTemplate = true;
                             }
                         }
                         if (asTemplate) {
                             if (insideNew)
-                                sb.append("${cursor completionInvoke}"); //NOI18N
+                                template.append("${cursor completionInvoke}"); //NOI18N
                             if (finalLen > 0) {
                                 doc.runAtomic (new Runnable () {
                                     public void run () {
@@ -925,9 +925,6 @@ public abstract class JavaCompletionItem implements CompletionItem {
                             }
                             if (autoImport && elem != null)
                                 AutoImport.resolveImport(controller, controller.getTreeUtilities().pathFor(embeddedOffset), elem.getEnclosingElement().asType());
-                            CodeTemplateManager ctm = CodeTemplateManager.get(doc);
-                            if (ctm != null)
-                                ctm.createTemporary(sb.append(text).toString()).insert(c);
                         } else {
                             // Update the text
                             doc.runAtomic (new Runnable () {
@@ -995,6 +992,10 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     }
                 });
             } catch (ParseException pe) {
+            }
+            CodeTemplateManager ctm = template.length() > 0 ? CodeTemplateManager.get(doc) : null;
+            if (ctm != null) {
+                ctm.createTemporary(template.append(text).toString()).insert(c);
             }
         }
         
@@ -3201,6 +3202,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 }
             }
             final int finalLen = len;
+            final StringBuilder template = new StringBuilder();
             Source s = Source.create(doc);
             try {
                 ParserManager.parse(Collections.singletonList(s), new UserTask() {
@@ -3209,74 +3211,73 @@ public abstract class JavaCompletionItem implements CompletionItem {
                         final CompilationController controller = CompilationController.get(resultIterator.getParserResult(offset));
                         controller.toPhase(Phase.RESOLVED);
                         DeclaredType type = typeHandle.resolve(controller);
-                        StringBuilder sb = new StringBuilder();
                         int cnt = 1;
-                        sb.append("${PAR#"); //NOI18N
-                        sb.append(cnt++);
-                        sb.append(" type=\""); //NOI18N
-                        sb.append(((TypeElement)type.asElement()).getQualifiedName());
-                        sb.append("\" default=\""); //NOI18N
-                        sb.append(((TypeElement)type.asElement()).getSimpleName());
-                        sb.append("\" editable=false}"); //NOI18N
+                        template.append("${PAR#"); //NOI18N
+                        template.append(cnt++);
+                        template.append(" type=\""); //NOI18N
+                        template.append(((TypeElement)type.asElement()).getQualifiedName());
+                        template.append("\" default=\""); //NOI18N
+                        template.append(((TypeElement)type.asElement()).getSimpleName());
+                        template.append("\" editable=false}"); //NOI18N
                         Iterator<? extends TypeMirror> tas = type.getTypeArguments().iterator();
                         if (tas.hasNext()) {
-                            sb.append('<'); //NOI18N
+                            template.append('<'); //NOI18N
                             while (tas.hasNext()) {
                                 TypeMirror ta = tas.next();
-                                sb.append("${PAR#"); //NOI18N
-                                sb.append(cnt++);
+                                template.append("${PAR#"); //NOI18N
+                                template.append(cnt++);
                                 if (ta.getKind() == TypeKind.TYPEVAR) {
-                                    sb.append(" type=\""); //NOI18N
+                                    template.append(" type=\""); //NOI18N
                                     ta = ((TypeVariable)ta).getUpperBound();
-                                    sb.append(Utilities.getTypeName(controller, ta, true));
-                                    sb.append("\" default=\""); //NOI18N
-                                    sb.append(Utilities.getTypeName(controller, ta, false));
-                                    sb.append("\"}"); //NOI18N
+                                    template.append(Utilities.getTypeName(controller, ta, true));
+                                    template.append("\" default=\""); //NOI18N
+                                    template.append(Utilities.getTypeName(controller, ta, false));
+                                    template.append("\"}"); //NOI18N
                                 } else if (ta.getKind() == TypeKind.WILDCARD) {
-                                    sb.append(" type=\""); //NOI18N
+                                    template.append(" type=\""); //NOI18N
                                     TypeMirror bound = ((WildcardType)ta).getExtendsBound();
                                     if (bound == null)
                                         bound = ((WildcardType)ta).getSuperBound();
-                                    sb.append(bound != null ? Utilities.getTypeName(controller, bound, true) : "Object"); //NOI18N
-                                    sb.append("\" default=\""); //NOI18N
-                                    sb.append(bound != null ? Utilities.getTypeName(controller, bound, false) : "Object"); //NOI18N
-                                    sb.append("\"}"); //NOI18N
+                                    template.append(bound != null ? Utilities.getTypeName(controller, bound, true) : "Object"); //NOI18N
+                                    template.append("\" default=\""); //NOI18N
+                                    template.append(bound != null ? Utilities.getTypeName(controller, bound, false) : "Object"); //NOI18N
+                                    template.append("\"}"); //NOI18N
                                 } else if (ta.getKind() == TypeKind.ERROR) {
-                                    sb.append(" default=\""); //NOI18N
-                                    sb.append(((ErrorType)ta).asElement().getSimpleName());
-                                    sb.append("\"}"); //NOI18N
+                                    template.append(" default=\""); //NOI18N
+                                    template.append(((ErrorType)ta).asElement().getSimpleName());
+                                    template.append("\"}"); //NOI18N
                                 } else {
-                                    sb.append(" type=\""); //NOI18N
-                                    sb.append(Utilities.getTypeName(controller, ta, true));
-                                    sb.append("\" default=\""); //NOI18N
-                                    sb.append(Utilities.getTypeName(controller, ta, false));
-                                    sb.append("\" editable=false}"); //NOI18N
+                                    template.append(" type=\""); //NOI18N
+                                    template.append(Utilities.getTypeName(controller, ta, true));
+                                    template.append("\" default=\""); //NOI18N
+                                    template.append(Utilities.getTypeName(controller, ta, false));
+                                    template.append("\" editable=false}"); //NOI18N
                                 }
                                 if (tas.hasNext())
-                                    sb.append(", "); //NOI18N
+                                    template.append(", "); //NOI18N
                             }
-                            sb.append('>'); //NOI18N
+                            template.append('>'); //NOI18N
                         }
-                        sb.append('.'); //NOI18N
-                        sb.append(memberName);
+                        template.append('.'); //NOI18N
+                        template.append(memberName);
                         if (params != null) {
                             boolean guessArgs = Utilities.guessMethodArguments();
-                            sb.append("("); //NOI18N
+                            template.append("("); //NOI18N
                             for (Iterator<ParamDesc> it = params.iterator(); it.hasNext();) {
                                 ParamDesc paramDesc = it.next();
-                                sb.append("${"); //NOI18N
-                                sb.append(paramDesc.name);
+                                template.append("${"); //NOI18N
+                                template.append(paramDesc.name);
                                 if (guessArgs) {
-                                    sb.append(" named instanceof="); //NOI18N
-                                    sb.append(paramDesc.fullTypeName);
+                                    template.append(" named instanceof="); //NOI18N
+                                    template.append(paramDesc.fullTypeName);
                                 }
-                                sb.append("}"); //NOI18N
+                                template.append("}"); //NOI18N
                                 if (it.hasNext())
-                                    sb.append(", "); //NOI18N
+                                    template.append(", "); //NOI18N
                             }
-                            sb.append(")");//NOI18N
+                            template.append(")");//NOI18N
                         }
-                        sb.append(text);
+                        template.append(text);
                         doc.runAtomic (new Runnable () {
                             public void run () {
                                 try {
@@ -3290,13 +3291,13 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                 }
                             }
                         });
-                        CodeTemplateManager ctm = CodeTemplateManager.get(doc);
-                        if (ctm != null) {
-                            ctm.createTemporary(sb.toString()).insert(c);
-                        }
                     }
                 });
             } catch (ParseException pe) {
+            }
+            CodeTemplateManager ctm = template.length() > 0 ? CodeTemplateManager.get(doc) : null;
+            if (ctm != null) {
+                ctm.createTemporary(template.toString()).insert(c);
             }
         }
 
