@@ -229,6 +229,9 @@ public class GridDesigner extends JPanel {
             } 
         });        
         Container container = metaContainer.getContainerDelegate(bean[0]);
+        if (container.isPreferredSizeSet()) { // Issue 211635
+            container.setPreferredSize(null);
+        }
         innerPane.removeAll();
         JPanel mainPanel = new JPanel();
         mainPanel.setBackground(Color.WHITE);
