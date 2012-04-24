@@ -465,6 +465,12 @@ public class PHPFormatter2Test extends PHPCodeCompletionTestBase {
         reformatFileContents("testfiles/formatting/alignment/groupAlignmentAssignment01.php", options);
     }
 
+    public void testIssue209030() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+	options.put(FmtOptions.groupAlignmentAssignment, true);
+        reformatFileContents("testfiles/formatting/alignment/issue209030.php", options);
+    }
+
     public void testGroupAlignmentArrayInit01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
 	options.put(FmtOptions.groupAlignmentArrayInit, true);

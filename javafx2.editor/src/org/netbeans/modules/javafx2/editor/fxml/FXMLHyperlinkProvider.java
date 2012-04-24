@@ -72,7 +72,7 @@ import org.openide.util.Exceptions;
 // TODO <Button text="Click Me!" onAction="java.lang.System.out.println('You clicked me!');"/> support
 // TODO <Button text="Click Me!" onAction="#handleButtonAction"/> support
  
-@MimeRegistration(mimeType=JavaFXEditorUtils.MIME_TYPE, service=HyperlinkProviderExt.class)
+@MimeRegistration(mimeType=JavaFXEditorUtils.FXML_MIME_TYPE, service=HyperlinkProviderExt.class)
 public class FXMLHyperlinkProvider implements HyperlinkProviderExt {
 
     @Override
@@ -109,7 +109,7 @@ public class FXMLHyperlinkProvider implements HyperlinkProviderExt {
     private EditCookie getEditorCookie(Document doc, int offset) {
         TokenHierarchy<?> th = TokenHierarchy.get(doc);
 
-        TokenSequence ts = th.tokenSequence(Language.find(JavaFXEditorUtils.MIME_TYPE));
+        TokenSequence ts = th.tokenSequence(Language.find(JavaFXEditorUtils.FXML_MIME_TYPE));
         if (ts == null) {
             return null;
         }
@@ -202,7 +202,7 @@ public class FXMLHyperlinkProvider implements HyperlinkProviderExt {
 //        }
 
         TokenHierarchy<?> th = TokenHierarchy.get(doc);
-        TokenSequence ts = th.tokenSequence(Language.find(JavaFXEditorUtils.MIME_TYPE));
+        TokenSequence ts = th.tokenSequence(Language.find(JavaFXEditorUtils.FXML_MIME_TYPE));
         if (ts == null) {
             return null;
         }

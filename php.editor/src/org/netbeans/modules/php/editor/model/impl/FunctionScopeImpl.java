@@ -130,7 +130,7 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
         if (returnType != null && returnType.length() > 0) {
             retval = new ArrayList<String>();
             for (String typeName : returnType.split("\\|")) {//NOI18N
-                if (!typeName.contains("@")) {//NOI18N
+                if (!typeName.contains(VariousUtils.PRE_OPERATION_TYPE_DELIMITER)) {//NOI18N
                     retval.add(typeName);
                 }
             }
@@ -148,7 +148,7 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
             types = returnType;
         }
         if (types != null && types.length() > 0) {
-            boolean evaluate = types.indexOf("@") != -1;//NOI18N
+            boolean evaluate = types.indexOf(VariousUtils.PRE_OPERATION_TYPE_DELIMITER) != -1;//NOI18N
             retval = new HashSet<TypeScope>();
             for (String typeName : types.split("\\|")) {//NOI18N
                 if (typeName.trim().length() > 0) {
@@ -156,7 +156,7 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
                     try {
                         added = recursionDetection.add(typeName);
                         if (added && recursionDetection.size() < 15) {
-                            if (resolve && typeName.contains("@")) {//NOI18N
+                            if (resolve && typeName.contains(VariousUtils.PRE_OPERATION_TYPE_DELIMITER)) {//NOI18N
                                 retval.addAll(VariousUtils.getType(this, typeName, getOffset(), false));
 
                             } else {

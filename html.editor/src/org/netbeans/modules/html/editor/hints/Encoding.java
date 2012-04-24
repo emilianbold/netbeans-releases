@@ -51,6 +51,7 @@ import org.netbeans.modules.csl.api.HintSeverity;
 public class Encoding extends PatternRule {
 
     private static final String[] PATTERNS_SOURCES = new String[]{
+        "Internal encoding declaration named an unsupported chararacter encoding .*?",
         "The internal character encoding declaration specified .*? which is not a rough superset of ASCII",
         "The encoding .*? is not",
         "Authors should not use the character encoding",

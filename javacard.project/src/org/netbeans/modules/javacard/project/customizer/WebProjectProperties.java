@@ -255,12 +255,11 @@ public class WebProjectProperties extends JCProjectProperties {
                 if (SELECT_SERVLET.isSelected()) {
                     fullUrl = assembleUrl (baseUrl, webContextPath, servletMapping);
                 } else {
-                    String page = (String) PAGES.getSelectedItem();
+                    String page = PAGES.getSelectedItem() != null ? (String) PAGES.getSelectedItem().toString() : "";
                     if (page.startsWith("/")) { //NOI18N
                         page = page.substring(1);
                     }
-                    String sel = PAGES.getSelectedItem() == null ? "" : PAGES.getSelectedItem().toString(); //NOI18N
-                    fullUrl = trimSlashes(baseUrl) + '/' + trimSlashes(sel); //NOI18N
+                    fullUrl = assembleUrl(baseUrl, webContextPath, page);
                 }
             }
             COMPLETE_URL.insertString(0, fullUrl, null);
