@@ -825,93 +825,94 @@ public abstract class JavaCompletionItem implements CompletionItem {
                         DeclaredType type = typeHandle.resolve(controller);
                         final TypeElement elem = type != null ? (TypeElement)type.asElement() : null;
                         boolean asTemplate = false;
+                        StringBuilder sb = new StringBuilder();
                         if (elem != null) {
                             int cnt = 1;
                             if (addSimpleName) {
-                                template.append(elem.getSimpleName());
+                                sb.append(elem.getSimpleName());
                             } else {
-                                template.append("${PAR"); //NOI18N
-                                template.append(cnt++);
+                                sb.append("${PAR"); //NOI18N
+                                sb.append(cnt++);
                                 if ((type == null || type.getKind() != TypeKind.ERROR) &&
                                         EnumSet.range(ElementKind.PACKAGE, ElementKind.INTERFACE).contains(elem.getEnclosingElement().getKind())) {
-                                    template.append(" type=\""); //NOI18N
-                                    template.append(elem.getQualifiedName());
-                                    template.append("\" default=\""); //NOI18N
-                                    template.append(elem.getSimpleName());
+                                    sb.append(" type=\""); //NOI18N
+                                    sb.append(elem.getQualifiedName());
+                                    sb.append("\" default=\""); //NOI18N
+                                    sb.append(elem.getSimpleName());
                                 } else {
-                                    template.append(" default=\""); //NOI18N
-                                    template.append(elem.getQualifiedName());
+                                    sb.append(" default=\""); //NOI18N
+                                    sb.append(elem.getQualifiedName());
                                 }
-                                template.append("\" editable=false}"); //NOI18N
+                                sb.append("\" editable=false}"); //NOI18N
                             }
                             Iterator<? extends TypeMirror> tas = type != null ? type.getTypeArguments().iterator() : null;
                             if (tas != null && tas.hasNext()) {
-                                template.append('<'); //NOI18N
+                                sb.append('<'); //NOI18N
                                 if (!insideNew || elem.getModifiers().contains(Modifier.ABSTRACT) 
                                     || controller.getSourceVersion().compareTo(SourceVersion.RELEASE_7) < 0) {
                                     while (tas.hasNext()) {
                                         TypeMirror ta = tas.next();
-                                        template.append("${PAR"); //NOI18N
-                                        template.append(cnt++);
+                                        sb.append("${PAR"); //NOI18N
+                                        sb.append(cnt++);
                                         if (ta.getKind() == TypeKind.TYPEVAR) {
                                             TypeVariable tv = (TypeVariable)ta;
                                             if (smartType || elem != tv.asElement().getEnclosingElement()) {
-                                                template.append(" editable=false default=\""); //NOI18N
-                                                template.append(Utilities.getTypeName(controller, ta, true));
+                                                sb.append(" editable=false default=\""); //NOI18N
+                                                sb.append(Utilities.getTypeName(controller, ta, true));
                                                 asTemplate = true;
                                             } else {
-                                                template.append(" typeVar=\""); //NOI18N
-                                                template.append(tv.asElement().getSimpleName());
-                                                template.append("\" type=\""); //NOI18N
+                                                sb.append(" typeVar=\""); //NOI18N
+                                                sb.append(tv.asElement().getSimpleName());
+                                                sb.append("\" type=\""); //NOI18N
                                                 ta = tv.getUpperBound();
-                                                template.append(Utilities.getTypeName(controller, ta, true));
-                                                template.append("\" default=\""); //NOI18N
-                                                template.append(Utilities.getTypeName(controller, ta, false));
+                                                sb.append(Utilities.getTypeName(controller, ta, true));
+                                                sb.append("\" default=\""); //NOI18N
+                                                sb.append(Utilities.getTypeName(controller, ta, false));
                                                 if (addTypeVars && SourceVersion.RELEASE_5.compareTo(controller.getSourceVersion()) <= 0)
                                                     asTemplate = true;
                                             }
-                                            template.append("\"}"); //NOI18N
+                                            sb.append("\"}"); //NOI18N
                                         } else if (ta.getKind() == TypeKind.WILDCARD) {
-                                            template.append(" type=\""); //NOI18N
+                                            sb.append(" type=\""); //NOI18N
                                             TypeMirror bound = ((WildcardType)ta).getExtendsBound();
                                             if (bound == null)
                                                 bound = ((WildcardType)ta).getSuperBound();
-                                            template.append(bound != null ? Utilities.getTypeName(controller, bound, true) : "Object"); //NOI18N
-                                            template.append("\" default=\""); //NOI18N
-                                            template.append(bound != null ? Utilities.getTypeName(controller, bound, false) : "Object"); //NOI18N
-                                            template.append("\"}"); //NOI18N
+                                            sb.append(bound != null ? Utilities.getTypeName(controller, bound, true) : "Object"); //NOI18N
+                                            sb.append("\" default=\""); //NOI18N
+                                            sb.append(bound != null ? Utilities.getTypeName(controller, bound, false) : "Object"); //NOI18N
+                                            sb.append("\"}"); //NOI18N
                                             asTemplate = true;
                                         } else if (ta.getKind() == TypeKind.ERROR) {
-                                            template.append(" default=\""); //NOI18N
-                                            template.append(((ErrorType)ta).asElement().getSimpleName());
-                                            template.append("\"}"); //NOI18N
+                                            sb.append(" default=\""); //NOI18N
+                                            sb.append(((ErrorType)ta).asElement().getSimpleName());
+                                            sb.append("\"}"); //NOI18N
                                             asTemplate = true;
                                         } else {
-                                            template.append(" type=\""); //NOI18N
-                                            template.append(Utilities.getTypeName(controller, ta, true));
-                                            template.append("\" default=\""); //NOI18N
-                                            template.append(Utilities.getTypeName(controller, ta, false));
-                                            template.append("\" editable=false}"); //NOI18N
+                                            sb.append(" type=\""); //NOI18N
+                                            sb.append(Utilities.getTypeName(controller, ta, true));
+                                            sb.append("\" default=\""); //NOI18N
+                                            sb.append(Utilities.getTypeName(controller, ta, false));
+                                            sb.append("\" editable=false}"); //NOI18N
                                             asTemplate = true;
                                         }
                                         if (tas.hasNext())
-                                            template.append(", "); //NOI18N
+                                            sb.append(", "); //NOI18N
                                     }
                                 } else {
                                     asTemplate = true;
                                 }
-                                template.append('>'); //NOI18N
+                                sb.append('>'); //NOI18N
                             }
                             for(int i = 0; i < dim; i++) {
-                                template.append("[${PAR"); //NOI18N
-                                template.append(cnt++);
-                                template.append(" instanceof=\"int\" default=\"\"}]"); //NOI18N
+                                sb.append("[${PAR"); //NOI18N
+                                sb.append(cnt++);
+                                sb.append(" instanceof=\"int\" default=\"\"}]"); //NOI18N
                                 asTemplate = true;
                             }
                         }
                         if (asTemplate) {
                             if (insideNew)
-                                template.append("${cursor completionInvoke}"); //NOI18N
+                                sb.append("${cursor completionInvoke}"); //NOI18N
                             if (finalLen > 0) {
                                 doc.runAtomic (new Runnable () {
                                     public void run () {
@@ -925,6 +926,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
                             }
                             if (autoImport && elem != null)
                                 AutoImport.resolveImport(controller, controller.getTreeUtilities().pathFor(embeddedOffset), elem.getEnclosingElement().asType());
+                            sb.append(text);
+                            template.append(sb);
                         } else {
                             // Update the text
                             doc.runAtomic (new Runnable () {
@@ -995,7 +998,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             }
             CodeTemplateManager ctm = template.length() > 0 ? CodeTemplateManager.get(doc) : null;
             if (ctm != null) {
-                ctm.createTemporary(template.append(text).toString()).insert(c);
+                ctm.createTemporary(template.toString()).insert(c);
             }
         }
         
