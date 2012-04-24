@@ -55,6 +55,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -132,15 +133,15 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
     private static final String TEMPLATE_LOCALIZING_BUNDLE_ATTRIBUTE = "SystemFileSystem.localizingBundle"; // NOI18N
     private static final String TEMPLATE_SCRIPT_ENGINE_ATTRIBUTE = "javax.script.ScriptEngine"; // NOI18N
     private static final String TEMPLATE_CATEGORY_ATTRIBUTE = "templateCategory"; // NOI18N
+    /** @see org.netbeans.modules.maven.TemplateAttrProvider */
+    private static final String TEMPLATE_LICENSE_URL_ATTRIBUTE = "mavenLicenseURL"; // NOI18N
     
     /** The root templates folder. */
     private static final String TEMPLATES_FOLDER = "Templates"; // NOI18N
+    private static final String LICENSES_FOLDER = TEMPLATES_FOLDER + "/Licenses"; // NOI18N
     
     /** Paths of folders, where templates should not have the script engine set. */
-    private static final Set<String> FOLDERS_WITH_NO_SCRIPT_ENGINE = new HashSet<String>(
-            Arrays.asList(new String[] {
-                TEMPLATES_FOLDER+"/Licenses",       // NOI18N
-            }));
+    private static final Set<String> FOLDERS_WITH_NO_SCRIPT_ENGINE = Collections.singleton(LICENSES_FOLDER);
 
     /** Creates new form TemplatesPanel */
     public TemplatesPanel () {
@@ -837,6 +838,8 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         "TemplatesPanel_TemplateNode_DisplayName_Desc=Display name of this template. Shown in File|New wizard as well as in Tools|Templates.",
         "TemplatesPanel_TemplateNode_FileName=File Name",
         "TemplatesPanel_TemplateNode_FileName_Desc=File name of file represented by this template.",
+        "TemplatesPanel_TemplateNode_License=License URL",
+        "TemplatesPanel_TemplateNode_License_Desc=Authoritative web location of this license.",
         "TemplatesPanel_TemplateNode_ScriptEngine=Script Engine",
         "TemplatesPanel_TemplateNode_ScriptEngine_Desc=Script engine use for processing this template.",
         "TemplatesPanel_TemplateNode_TemplateCategories=Template Categories",
@@ -878,6 +881,21 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
                         templateNode.setFileName (val);
                     }
         });
+        if (getDOFromNode(templateNode).getPrimaryFile().getPath().startsWith(LICENSES_FOLDER + "/")) {
+            properties.put(new PropertySupport.ReadWrite<String>(TEMPLATE_LICENSE_URL_ATTRIBUTE, String.class, TemplatesPanel_TemplateNode_License(), TemplatesPanel_TemplateNode_License_Desc()) {
+                @Override public String getValue() {
+                    Object o = getDOFromNode(templateNode).getPrimaryFile().getAttribute(TEMPLATE_LICENSE_URL_ATTRIBUTE);
+                    return o == null ? "" : o.toString();
+                }
+                @Override public void setValue(String v) throws InvocationTargetException {
+                    try {
+                        getDOFromNode(templateNode).getPrimaryFile().setAttribute(TEMPLATE_LICENSE_URL_ATTRIBUTE, v.isEmpty() ? null : v);
+                    } catch (IOException x) {
+                        throw new InvocationTargetException(x);
+                    }
+                }
+            });
+        } else {
         // ScriptEngine
         properties.put (new PropertySupport.ReadWrite<String> (
                     TEMPLATE_SCRIPT_ENGINE_ATTRIBUTE,
@@ -941,6 +959,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
                         }
                     }
         });
+        } // not in Licenses
 
         return properties;
     }
