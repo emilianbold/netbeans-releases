@@ -73,22 +73,22 @@ public class testCC extends cc {
                 NbModuleSuite.createConfiguration(testCC.class).addTest(
                 "CreateApplication",
                 "Create_a_PHP_source_file",
-                "Verify_automatic_code_completion_invocation",
-                "Verify_local_variable_code_completion",
-                "Verify_global_variable_code_completion",
-                "Verify_variable_from_included_file_code_completion",
-                "Verify_variable_from_required_file_code_completion",
-                "Verify_code_completion_inside_the_identifier",
+//                "Verify_automatic_code_completion_invocation",
+//                "Verify_local_variable_code_completion",
+//                "Verify_global_variable_code_completion",
+//                "Verify_variable_from_included_file_code_completion",
+//                "Verify_variable_from_required_file_code_completion",
+//                "Verify_code_completion_inside_the_identifier",
                 "Verify_documentation_hints_for_built_in_identifiers",
 //                "Verify_documentation_hints_for_keywords",
-                "Verify_keywords_code_completion",
-                "Verify_code_completion_after_extends_keyword",
-                "Verify_code_completion_with_a_single_option",
-                "Verify_JavaDoc_window",
-                "Verify_code_completion_after_EXTENDS",
+//                "Verify_keywords_code_completion",
+//                "Verify_code_completion_after_extends_keyword",
+//                "Verify_code_completion_with_a_single_option",
+//                "Verify_JavaDoc_window",
+//                "Verify_code_completion_after_EXTENDS",
 //                "Verify_that_require_directive_is_automatically_added", not supported #195851
-                "Verify_code_completion_in_slash_slash_comments",
-                "Verify_code_completion_in_slash_star_comments",
+//                "Verify_code_completion_in_slash_slash_comments",
+//                "Verify_code_completion_in_slash_star_comments",
                 "Verify_code_completion_in_slash_star_star_comments").enableModules(".*").clusters(".*") //.gui( true )
                 );
 
@@ -295,9 +295,8 @@ public class testCC extends cc {
 //        t.setTimeout("JScrollBarOperator.WholeScrollTimeout", 6000000);
 //        jCompl.listItself.setTimeouts(t);
         System.out.println("==== go to click on item ====");
-        jCompl.listItself.clickOnItem("$GLOBALS", new CFulltextStringComparator());
 
-        WindowOperator jdDoc = new WindowOperator(0);
+        WindowOperator jdDoc = new WindowOperator(1);
         JEditorPaneOperator jeEdit = new JEditorPaneOperator(jdDoc);
     
 //        try {
