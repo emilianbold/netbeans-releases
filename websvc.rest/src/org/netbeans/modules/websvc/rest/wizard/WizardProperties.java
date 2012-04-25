@@ -81,4 +81,8 @@ public class WizardProperties {
     public static final String STUB_ROOT_FOLDER = "StubRootFolder"; //NOI18N
     public static final String STUB_FOLDER_NAME = "StubFolderName"; //NOI18N
     public static final String OVERWRITE_EXISTING = "OverwriteExisting"; //NOI18N
+    
+    public static final String APPLICATION_PACKAGE = "restApplicationConfigPackage";// NOI18N
+    public static final String APPLICATION_CLASS = "restApplicatoin";               // NOI18N
+    public static final String USE_JERSEY = "useJersey";                            // NOI18N
 }
