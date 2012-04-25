@@ -51,9 +51,12 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import junit.framework.Test;
+import org.netbeans.ModuleManager;
 import org.netbeans.NetigsoFramework;
 import org.netbeans.SetupHid;
 import org.netbeans.core.netigso.Netigso;
+import org.netbeans.core.netigso.NetigsoUtil;
+import org.netbeans.core.startup.Main;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
@@ -298,13 +301,6 @@ public class CachingAndExternalPathsTest extends NbTestCase {
         public void setExtDirProperty(File value);
     }
     static Framework findFramework() throws Exception {
-        Object o = Lookup.getDefault().lookup(NetigsoFramework.class);
-        assertEquals("The right class", Netigso.class, o.getClass());
-        Netigso f = (Netigso)o;
-        final Method m = f.getClass().getDeclaredMethod("getFramework");
-        m.setAccessible(true);
-        Framework frame = (Framework) m.invoke(f);
-        assertNotNull("Framework found", frame);
-        return frame;
+        return NetigsoUtil.framework(Main.getModuleSystem().getManager());
     }
 }
