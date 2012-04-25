@@ -276,8 +276,9 @@ public class FormatVisitor extends DefaultVisitor {
         }
         if (ts.token().id() == PHPTokenId.PHP_TOKEN) {
             if (path.size() > 1 && !(path.get(1) instanceof ForStatement)) {
-                if (node.getLeftHandSide() instanceof Variable) {
-                    handleGroupAlignment(node.getLeftHandSide());
+                VariableBase leftHandSide = node.getLeftHandSide();
+                if (leftHandSide instanceof Variable || leftHandSide instanceof FieldAccess) {
+                    handleGroupAlignment(leftHandSide);
                 }
             }
             addFormatToken(formatTokens);
