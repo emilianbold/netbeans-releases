@@ -396,8 +396,8 @@ public abstract class Group {
         toOpen.removeAll(oldOpen);
         assert !toClose.contains(null) : toClose;
         assert !toOpen.contains(null) : toOpen;
-        IndexingBridge.getDefault().runProtected(new Runnable() {
-            @Override public void run() {
+        IndexingBridge.getDefault().enterProtectedMode();
+        try {
         h.progress(Group_progress_closing(toClose.size()), 110);
         opl.close(toClose.toArray(new Project[toClose.size()]), false);
         h.switchToIndeterminate();
@@ -406,8 +406,9 @@ public abstract class Group {
         if (g != null) {
             opl.setMainProject(g.getMainProject());
         }
-            }
-        });
+        } finally {
+                IndexingBridge.getDefault().exitProtectedMode();
+        }
         } finally {
             ProjectUtilities.WaitCursor.hide();
             h.finish();
