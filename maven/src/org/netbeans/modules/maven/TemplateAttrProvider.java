@@ -47,6 +47,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.maven.model.License;
 import org.apache.maven.model.Organization;
 import org.apache.maven.project.MavenProject;
@@ -91,7 +93,11 @@ public class TemplateAttrProvider implements CreateFromTemplateAttributesProvide
                     for (FileObject fo : licenses.getChildren()) {
                         String str = (String)fo.getAttribute("mavenLicenseURL"); //NOI18N
                         if (str != null && str.equalsIgnoreCase(url)) {
-                            license = fo.getName().substring("license-".length()); //NOI18N
+                            if (fo.getName().startsWith("license-")) { // NOI18N
+                                license = fo.getName().substring("license-".length()); //NOI18N
+                            } else {
+                                Logger.getLogger(TemplateAttrProvider.class.getName()).log(Level.WARNING, "Bad license file name {0} (expected to start with ''license-'' prefix)", fo.getName());
+                            }
                             break;
                         }
                     }

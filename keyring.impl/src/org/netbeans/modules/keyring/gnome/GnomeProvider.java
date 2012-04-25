@@ -47,6 +47,7 @@ import java.text.MessageFormat;
 import java.util.MissingResourceException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.SuppressWarnings;
 import static org.netbeans.modules.keyring.gnome.GnomeKeyringLibrary.*;
 import org.netbeans.spi.keyring.KeyringProvider;
 import org.openide.util.NbBundle;
@@ -98,6 +99,7 @@ public class GnomeProvider implements KeyringProvider {
         }
     }
 
+    @SuppressWarnings("PZLA_PREFER_ZERO_LENGTH_ARRAYS")
     public @Override char[] read(String key) {
         Pointer[] found = new Pointer[1];
         Pointer attributes = LIBRARY.g_array_new(0, 0, GnomeKeyringAttribute_SIZE);

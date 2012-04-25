@@ -213,9 +213,6 @@
     </Component>
     <Component class="javax.swing.JLabel" name="lblProperties">
       <Properties>
-        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="default"/>
-        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/maven/customizer/Bundle.properties" key="ActionMappings.lblProperties.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
@@ -293,9 +290,7 @@
       <SubComponents>
         <Component class="javax.swing.JEditorPane" name="epProperties">
           <Properties>
-            <Property name="contentType" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/maven/customizer/Bundle.properties" key="ActionMappings.epProperties.contentType" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-            </Property>
+            <Property name="contentType" type="java.lang.String" value="text/x-properties" noResource="true"/>
             <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
               <Insets value="[0, 6, 0, 6]"/>
             </Property>

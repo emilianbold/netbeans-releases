@@ -41,10 +41,14 @@
  */
 package org.netbeans.modules.maven.model.pom.impl;
 
-import java.util.*;
+
+import java.util.List;
+import org.netbeans.modules.maven.model.pom.Configuration;
+import org.netbeans.modules.maven.model.pom.POMComponentVisitor;
+import org.netbeans.modules.maven.model.pom.POMExtensibilityElement;
+import org.netbeans.modules.maven.model.pom.POMModel;
+import org.netbeans.modules.maven.model.pom.POMQName;
 import org.w3c.dom.Element;
-import org.netbeans.modules.maven.model.pom.*;	
-import org.netbeans.modules.maven.model.pom.POMComponentVisitor;	
 
 /**
  *
@@ -64,14 +68,17 @@ public class ConfigurationImpl extends POMComponentImpl implements Configuration
 
     // child elements
 
+    @Override
     public void accept(POMComponentVisitor visitor) {
         visitor.visit(this);
     }
 
+    @Override
     public List<POMExtensibilityElement> getConfigurationElements() {
         return getChildren(POMExtensibilityElement.class);
     }
 
+    @Override
     public void setSimpleParameter(String parameter, String value) {
         List<POMExtensibilityElement> list = getConfigurationElements();
         for (POMExtensibilityElement e : list) {
@@ -91,6 +98,7 @@ public class ConfigurationImpl extends POMComponentImpl implements Configuration
         }
     }
 
+    @Override
     public String getSimpleParameter(String parameter) {
         List<POMExtensibilityElement> list = getConfigurationElements();
         for (POMExtensibilityElement e : list) {

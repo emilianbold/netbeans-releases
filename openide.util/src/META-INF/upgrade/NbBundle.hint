@@ -2,3 +2,8 @@ org.openide.util.NbBundle.getBundle($c).getString($k) :: $c instanceof java.lang
 =>
 org.openide.util.NbBundle.getMessage($c, $k)
 ;;
+
+java.text.MessageFormat.format(org.openide.util.NbBundle.getMessage($c, $k), new Object[] {$params$})
+=>
+org.openide.util.NbBundle.getMessage($c, $k, $params$)
+;;

@@ -373,7 +373,7 @@ public class ActionMappings extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(cbBuildWithDeps, org.openide.util.NbBundle.getMessage(ActionMappings.class, "ActionMappings.cbBuildWithDeps.text")); // NOI18N
 
-        epProperties.setContentType(org.openide.util.NbBundle.getMessage(ActionMappings.class, "ActionMappings.epProperties.contentType")); // NOI18N
+        epProperties.setContentType("text/x-properties"); // NOI18N
         epProperties.setMargin(new java.awt.Insets(0, 6, 0, 6));
         jScrollPane5.setViewportView(epProperties);
 
