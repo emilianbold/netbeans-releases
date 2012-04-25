@@ -70,8 +70,7 @@ made subject to such option by the copyright holder.
     <bind actionName="collapse-fold" key="C-MINUS"/>
     <bind actionName="completion-show" key="C-SPACE"/>
     <bind actionName="completion-show" key="CS-SPACE"/>
-    <bind actionName="copy-selection-else-line-down" key="OS-DOWN"/>
-    <bind actionName="copy-selection-else-line-up" key="OS-UP"/>
+    <bind actionName="copy-selection-else-line-down" key="C-D"/>
     <bind actionName="copy-to-clipboard" key="C-INSERT"/>
     <bind actionName="copy-to-clipboard" key="COPY"/>
     <bind actionName="copy-to-clipboard" key="D-C"/>
