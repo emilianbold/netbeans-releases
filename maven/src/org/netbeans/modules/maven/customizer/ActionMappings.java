@@ -78,6 +78,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.codehaus.plexus.util.StringUtils;
+import org.jdom.Verifier;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.maven.ActionProviderImpl;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
@@ -711,7 +712,13 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
     // End of variables declaration//GEN-END:variables
     
     private void writeProperties(final NetbeansActionMapping mapp) {
-        String text = epProperties.getText();
+        mapp.setProperties(convertStringToActionProperties(epProperties.getText()));
+        if (handle != null) {
+            handle.markAsModified(getActionMappings());
+        }
+    }
+
+    public static Map<String, String> convertStringToActionProperties(String text) {
         PropertySplitter split = new PropertySplitter(text);
         String tok = split.nextPair();
         Map<String,String> props = new LinkedHashMap<String,String>();
@@ -729,16 +736,13 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
                 if (key.endsWith("=")) {
                     key = key.substring(0, key.length() - 1);
                 }
-                if (key.trim().length() > 0) {
-                    props.put(key, prp.length > 1 ? prp[1] : "");
+                if (key.trim().length() > 0 && Verifier.checkElementName(key.trim()) == null) {
+                    props.put(key.trim(), prp.length > 1 ? prp[1] : "");
                 }
             }
             tok = split.nextPair();
         }
-        mapp.setProperties(props);
-        if (handle != null) {
-            handle.markAsModified(getActionMappings());
-        }
+        return props;
     }
     
     private ActionToGoalMapping getActionMappings() {
