@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,78 +34,46 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.html.editor.lib.api.elements;
 
-import java.util.ArrayList;
-import java.util.List;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.html.editor.lib.api.HtmlSource;
+import org.netbeans.modules.html.editor.lib.api.ParseException;
+import org.netbeans.modules.html.editor.lib.api.SyntaxAnalyzer;
 
 /**
  *
- * @author mfukala@netbeans.org
+ * @author marekfukala
  */
-public class TreePath {
+public class ElementUtilsTest extends NbTestCase {
 
-    private Element first,  last;
-    
-    public TreePath(Element last) {
-        this(null, last);
-    }
-    
-    /** @param first may be null; in such case a path from the root is created */
-    public TreePath(Element first, Element last) {
-        this.first = first;
-        this.last = last;
+    public ElementUtilsTest(String name) {
+        super(name);
     }
 
-    public Element first() {
-        return first;
-    }
-    
-    public Element last() {
-        return last;
-    }
-     
-    /** returns a list of nodes from the first node to the last node including the boundaries. */
-    public List<Element> path() {
-        List<Element> path = new  ArrayList<Element>();
-        Element node = last;
-        while (node != null) {
-            path.add(node);
-            if(node == first) {
-                break;
-            }
-            node = node.parent();
-        }
-        return path;
-    }
+    public void testEncodeToString() throws ParseException {
+        String code = "<table><tr><td>a cell</td><td>another cell</td></tr></table>";
+        //             0123456789012345678901234567890123456789012345678901234567890
+        //             0         1         2         3         4         5         6
 
-    @Override
-    public String toString() {
-        return getElementPath();
+        SyntaxAnalyzer analyzer = SyntaxAnalyzer.create(new HtmlSource(code));
+        Node root = analyzer.analyze().parseHtml().root();
+
+        String path = "html/body/table/tbody/tr/td";
+
+        Element td1 = ElementUtils.query(root, path);
+        assertNotNull(td1);
+        assertEquals(11, td1.from());
+
+        String encoded = ElementUtils.encodeToString(new TreePath(td1));
+        assertNotNull(encoded);
+        
+        assertEquals(path, encoded);
+        
     }
-    
-    private String getElementPath() {
-        return ElementUtils.encodeToString(this);
-    }
-    
-    @Override
-    public boolean equals(Object o) {
-        if(!(o instanceof TreePath)) {
-            return false;
-        }
-        TreePath path = (TreePath)o;
-        return getElementPath().equals(path.getElementPath());
-    }
-    
-    @Override
-    public int hashCode() {
-        return getElementPath().hashCode();
-    }
-    
-    
 }
