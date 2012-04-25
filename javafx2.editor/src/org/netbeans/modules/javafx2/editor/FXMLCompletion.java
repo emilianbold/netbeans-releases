@@ -84,7 +84,7 @@ import org.openide.util.NbBundle;
  *
  * @author David Strupl
  */
-@MimeRegistration(mimeType=JavaFXEditorUtils.MIME_TYPE, service=CompletionProvider.class)
+@MimeRegistration(mimeType=JavaFXEditorUtils.FXML_MIME_TYPE, service=CompletionProvider.class)
 public class FXMLCompletion implements CompletionProvider {
     
     private static final String MIME_TYPE = "text/x-java"; // NOI18N
