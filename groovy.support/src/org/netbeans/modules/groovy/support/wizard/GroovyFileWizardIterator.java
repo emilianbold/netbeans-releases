@@ -99,7 +99,7 @@ public class GroovyFileWizardIterator implements WizardDescriptor.ProgressInstan
         if (groups.length == 0) {
             groups = sources.getSourceGroups(Sources.TYPE_GENERIC);
             return new WizardDescriptor.Panel[] {  
-                Templates.createSimpleTargetChooser(project, groups)
+                Templates.buildSimpleTargetChooser(project, groups).create()
             };
         } else {
             return new WizardDescriptor.Panel[] {

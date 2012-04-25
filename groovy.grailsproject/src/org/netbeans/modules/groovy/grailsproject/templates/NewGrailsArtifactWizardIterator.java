@@ -68,12 +68,7 @@ import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
+import org.netbeans.api.project.*;
 import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
@@ -130,7 +125,7 @@ public class NewGrailsArtifactWizardIterator implements WizardDescriptor.Progres
         if (group == null) {
             groups = sources.getSourceGroups(Sources.TYPE_GENERIC);
             return new WizardDescriptor.Panel[] {
-                Templates.createSimpleTargetChooser(project, groups)
+                Templates.buildSimpleTargetChooser(project, groups).create()
             };
         } else {
             return new WizardDescriptor.Panel[] {
@@ -159,11 +154,13 @@ public class NewGrailsArtifactWizardIterator implements WizardDescriptor.Progres
         return res;
     }
 
+    @Override
     public Set instantiate () throws IOException {
         assert false : "Cannot call this method if implements WizardDescriptor.ProgressInstantiatingIterator.";
         return null;
     }
 
+    @Override
     public Set instantiate(final ProgressHandle handle) throws IOException {
         // FIXME some target create multiple artifacts so we should
         // a) use non-interactive
@@ -180,7 +177,7 @@ public class NewGrailsArtifactWizardIterator implements WizardDescriptor.Progres
         try {
             String serverCommand = sourceCategory.getCommand();
 
-            ProjectInformation inf = project.getLookup().lookup(ProjectInformation.class);
+            ProjectInformation inf = ProjectUtils.getInformation(project);
             String displayName = inf.getDisplayName() + " (" + serverCommand + ")"; // NOI18N
 
             final Callable<Process> grailsCallable = ExecutionSupport.getInstance().createSimpleCommand(
@@ -191,6 +188,7 @@ public class NewGrailsArtifactWizardIterator implements WizardDescriptor.Progres
             // question - dialog needs to get OutputStream to put the answer to.
             // This could need a change if the wizard task could rerun.
             Callable<Process> callable = new Callable<Process>() {
+                @Override
                 public Process call() throws Exception {
                     Process process = grailsCallable.call();
                     dialogProcessor.setWriter(new OutputStreamWriter(process.getOutputStream()));
@@ -202,11 +200,13 @@ public class NewGrailsArtifactWizardIterator implements WizardDescriptor.Progres
             ExecutionDescriptor descriptor = new ExecutionDescriptor()
                     .frontWindow(true).inputVisible(true);
             descriptor = descriptor.outProcessorFactory(new InputProcessorFactory() {
+                @Override
                 public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
                     return InputProcessors.proxy(defaultProcessor, InputProcessors.bridge(new ProgressLineProcessor(handle, 100, 9)));
                 }
             });
             descriptor = descriptor.errProcessorFactory(new InputProcessorFactory() {
+                @Override
                 public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
                     return InputProcessors.proxy(defaultProcessor, InputProcessors.bridge(dialogProcessor));
                 }
@@ -253,6 +253,7 @@ public class NewGrailsArtifactWizardIterator implements WizardDescriptor.Progres
         return Collections.emptySet();
     }
 
+    @Override
     public void initialize(WizardDescriptor wiz) {
         this.wiz = wiz;
 
@@ -289,6 +290,7 @@ public class NewGrailsArtifactWizardIterator implements WizardDescriptor.Progres
             }
         }
     }
+    @Override
     public void uninitialize(WizardDescriptor wiz) {
         this.wiz = null;
         panels = null;
@@ -296,37 +298,45 @@ public class NewGrailsArtifactWizardIterator implements WizardDescriptor.Progres
         project = null;
     }
 
+    @Override
     public String name() {
         //return "" + (index + 1) + " of " + panels.length;
         return ""; // NOI18N
     }
 
+    @Override
     public boolean hasNext() {
         return index < panels.length - 1;
     }
+    @Override
     public boolean hasPrevious() {
         return index > 0;
     }
+    @Override
     public void nextPanel() {
         if (!hasNext()) {
             throw new NoSuchElementException();
         }
         index++;
     }
+    @Override
     public void previousPanel() {
         if (!hasPrevious()) {
             throw new NoSuchElementException();
         }
         index--;
     }
+    @Override
     public WizardDescriptor.Panel current() {
         return panels[index];
     }
 
+    @Override
     public final void addChangeListener(ChangeListener l) {
         changeSupport.addChangeListener(l);
     }
 
+    @Override
     public final void removeChangeListener(ChangeListener l) {
         changeSupport.removeChangeListener(l);
     }
@@ -360,6 +370,7 @@ public class NewGrailsArtifactWizardIterator implements WizardDescriptor.Progres
 
         private Writer writer;
 
+        @Override
         public void processLine(String line) {
             Writer answerWriter = null;
             synchronized (this) {
@@ -404,10 +415,12 @@ public class NewGrailsArtifactWizardIterator implements WizardDescriptor.Progres
             }
         }
 
+        @Override
         public void close() {
             // noop
         }
 
+        @Override
         public void reset() {
             // noop
         }
