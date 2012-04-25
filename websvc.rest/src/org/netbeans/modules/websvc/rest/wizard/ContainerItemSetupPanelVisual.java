@@ -85,7 +85,9 @@ import org.openide.util.Utilities;
  *
  * @author  Nam Nguyen
  */
-public class ContainerItemSetupPanelVisual extends javax.swing.JPanel implements AbstractPanel.Settings {
+public class ContainerItemSetupPanelVisual extends javax.swing.JPanel 
+    implements AbstractPanel.Settings, SourcePanel 
+{
     
     private Project project;
     private List<ChangeListener> listeners;
@@ -800,6 +802,11 @@ private void representationClassChanged(java.awt.event.KeyEvent evt) {//GEN-FIRS
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
+    }
+    
+    @Override
+    public SourceGroup getSourceGroup() {
+        return (SourceGroup) locationComboBox.getSelectedItem();
     }
 
     private void updateSourceGroupPackages() {
