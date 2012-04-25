@@ -53,10 +53,12 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.impl.IdentifierImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.JsFunctionImpl;
+import org.netbeans.modules.javascript2.editor.model.impl.JsObjectImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.TypeUsageImpl;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -346,30 +348,104 @@ public class SelectorsLoader extends DefaultHandler {
     private static class JQueryModelBuilder extends DefaultHandler {
         private final File file;
         private final JsObject jQuery;
+        private final List<Tag> tagPath;
+        
+        
+        boolean isMethod;
+        boolean isProperty;
+        private String name;
+        private String returns;
+        private String added;
+        // Todo the parametrs has to be js objects to assign type
+        private final List<Identifier> params;
         
         public JQueryModelBuilder(final File file, final JsObject jQuery) {
             this.file = file;
             this.jQuery = jQuery;
+            this.tagPath = new ArrayList();
+            this.params  = new ArrayList<Identifier>();
         }
 
         @Override
         public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-            if (qName.equals(Tag.entry.name())) {
-                String type = attributes.getValue(TYPE);
-                if (type.equals("method") || type.equals("property")) {
-                    String name = attributes.getValue("name");
-                    String returns = attributes.getValue("return");
-                    if(name.indexOf(".") == -1) {
-                        if(type.equals("method")) {
-                            JsFunctionImpl function = new JsFunctionImpl(null, jQuery, new IdentifierImpl(name, OffsetRange.NONE), Collections.<Identifier>emptyList(), OffsetRange.NONE);
-                            function.addReturnType(new TypeUsageImpl(returns, -1, true));
-                            jQuery.addProperty(name, function);
-                        }
+            Tag current;
+            try {
+                current = Tag.valueOf(qName);
+            } catch (IllegalArgumentException iae) {
+                current = Tag.notinterested;
+            }
+            tagPath.add(0, current);
+
+            switch (current) {
+                case entry:
+                    String type = attributes.getValue(TYPE);
+                    if (type.equals("method")) {
+                        isMethod = true;
+                    } else if (type.equals("property")) {
+                        isProperty = true;
+                    }
+                    if (isMethod || isProperty) {
+                        name = attributes.getValue(NAME);
+                        returns = attributes.getValue("return");
+//                        if (name.indexOf(".") == -1) {
+//                            if (type.equals("method")) {
+//                                lastFunction = new JsFunctionImpl(null, jQuery, new IdentifierImpl(name, OffsetRange.NONE), Collections.<Identifier>emptyList(), OffsetRange.NONE);
+//                                lastFunction.addReturnType(new TypeUsageImpl(returns, -1, true));
+//                                jQuery.addProperty(name, lastFunction);
+//                            }
+//                        }
+                    }
+                    break;
+                case argument : 
+                    if (isMethod) {
+                        String paramName = attributes.getValue(NAME);
+                        String paramType = attributes.getValue(TYPE);
+                        boolean isOptional = Boolean.parseBoolean(attributes.getValue("optional"));
+                        IdentifierImpl param = new IdentifierImpl(paramName, OffsetRange.NONE);
+                        params.add(param);
+                    }
+                    
+                    break;
+            }    
+        }
+        
+        @Override
+        public void endElement(String uri, String localName, String qName) throws SAXException {
+            if (tagPath.size() > 0) {
+                Tag current = tagPath.remove(0);
+                if (isMethod){
+                    switch (current) {
+                        case signature:
+                            if(name.indexOf('.') == -1) {
+                                JsFunctionImpl function = new JsFunctionImpl((DeclarationScope) jQuery, jQuery, new IdentifierImpl(name, OffsetRange.NONE), params, OffsetRange.NONE);
+                                function.addReturnType(new TypeUsageImpl(returns, -1, true));
+                                jQuery.addProperty(name + "#" + added, function);
+                                System.out.println(name + "#" + added);
+                                params.clear();
+                            }
+                            break;
+                        case entry:
+                            isMethod = false;
+                            params.clear();
+                            ;
+                            break;
                     }
                 }
             }
         }
 
+        @Override
+        public void characters(char[] ch, int start, int length) throws SAXException {
+            switch(tagPath.get(0)) {
+                case added:
+                    if (tagPath.size() > 1 && tagPath.get(1) == Tag.signature) {
+                        added = new String(ch, start, length);
+                    }
+                    break;
+            }
+        }
+        
+        
         private void addProperties(JsObject global) {
             try {
                 long start = System.currentTimeMillis();

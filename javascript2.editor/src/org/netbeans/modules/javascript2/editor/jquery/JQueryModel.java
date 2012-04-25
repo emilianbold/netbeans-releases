@@ -42,12 +42,12 @@
 package org.netbeans.modules.javascript2.editor.jquery;
 
 import java.io.File;
+import java.util.Collections;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
-import org.netbeans.modules.javascript2.editor.model.impl.IdentifierImpl;
-import org.netbeans.modules.javascript2.editor.model.impl.JsObjectImpl;
-import org.netbeans.modules.javascript2.editor.model.impl.JsObjectReference;
+import org.netbeans.modules.javascript2.editor.model.impl.*;
 import org.openide.modules.InstalledFileLocator;
 
 /**
@@ -57,9 +57,9 @@ import org.openide.modules.InstalledFileLocator;
 public class JQueryModel {
 
     public void getGlobalProperties(JsObject globalObject) {
-        JsObjectImpl jQuery =  new JsObjectImpl(globalObject, new IdentifierImpl("jQuery", OffsetRange.NONE), OffsetRange.NONE, false);
+        JsFunctionImpl jQuery =  new JsFunctionImpl((DeclarationScope)globalObject, globalObject, new IdentifierImpl("jQuery", OffsetRange.NONE), Collections.<Identifier>emptyList(), OffsetRange.NONE);
         globalObject.addProperty("jQuery", jQuery);
-        JsObject jQuery2 = new JsObjectReference(globalObject, new IdentifierImpl("$", OffsetRange.NONE), jQuery, true);
+        JsObject jQuery2 = new JsFunctionReference(globalObject, new IdentifierImpl("$", OffsetRange.NONE), jQuery, false);
         globalObject.addProperty("$", jQuery2);
         File apiFile = InstalledFileLocator.getDefault().locate(JQueryCodeCompletion.HELP_LOCATION, null, false); //NoI18N
         SelectorsLoader.addToModel(apiFile, jQuery);
