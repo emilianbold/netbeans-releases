@@ -330,7 +330,6 @@ final class NbInstaller extends ModuleInstaller {
     protected void classLoaderUp(ClassLoader cl) {
         MainLookup.systemClassLoaderChanged(cl);
         ev.log(Events.PERF_TICK, "META-INF/services/ additions registered"); // NOI18N
-        onStartStop.initialize();
     }
 
     final void waitOnStart() {
@@ -346,6 +345,9 @@ final class NbInstaller extends ModuleInstaller {
         loadLayers(modules, true);
         ev.log(Events.PERF_TICK, "layers loaded"); // NOI18N
 	
+        onStartStop.initialize();
+        ev.log(Events.PERF_TICK, "@OnStart"); // NOI18N
+
         ev.log(Events.PERF_START, "NbInstaller.load - sections"); // NOI18N
         ev.log(Events.LOAD_SECTION);
         CoreBridge.getDefault().loaderPoolTransaction(true);
@@ -394,6 +396,13 @@ final class NbInstaller extends ModuleInstaller {
         
         if (Boolean.getBoolean("netbeans.preresolve.classes")) {
             preresolveClasses(modules);
+        }
+    }
+    
+    final void preloadCache(Collection<Module> modules) {
+        for (Module m : modules) {
+            // initialize the cache
+            isShowInAutoUpdateClient(m);
         }
     }
     
@@ -1180,7 +1189,7 @@ final class NbInstaller extends ModuleInstaller {
     }
     
     /** Cache important attributes from module manifests */
-    private static class Cache implements Stamps.Updater {
+    static class Cache implements Stamps.Updater {
         private static final String CACHE = "all-installer.dat"; // NOI18N
         private final boolean modulePropertiesCached;
         private final Properties moduleProperties;
@@ -1207,17 +1216,29 @@ final class NbInstaller extends ModuleInstaller {
 
         final String findProperty(ModuleInfo m, String name, boolean localized) {
             final String fullName = m.getCodeNameBase() + '.' + name;
+            final String nullValue = "\u0000"; // NOI18N
             if (modulePropertiesCached) {
-                return moduleProperties.getProperty(fullName);
-            } else {
-                Object p = localized ? m.getLocalizedAttribute(name) : m.getAttribute(name);
-                String prop = p instanceof String ? (String)p : null;
-                if (prop != null) {
-                    moduleProperties.setProperty(fullName, prop);
-                    Stamps.getModulesJARs().scheduleSave(this, CACHE, false);
+                String val = moduleProperties.getProperty(fullName);
+                if (nullValue.equals(val)) { 
+                    return null;
                 }
-                return prop;
+                if (val != null) {
+                    return val;
+                }
+                LOG.log(Level.FINE, "not cached value: {0} for {1}", new Object[]{name, m});
+            } 
+            Object p = localized ? m.getLocalizedAttribute(name) : m.getAttribute(name);
+            if (p == null) {
+                moduleProperties.setProperty(fullName, nullValue);
+                Stamps.getModulesJARs().scheduleSave(this, CACHE, false);
+                return null;
             }
+            String prop = p instanceof String ? (String)p : null;
+            if (prop != null) {
+                moduleProperties.setProperty(fullName, prop);
+                Stamps.getModulesJARs().scheduleSave(this, CACHE, false);
+            }
+            return prop;
         }
 
         final String findGlobalProperty(String name, String expValue, String replaceValue) {
