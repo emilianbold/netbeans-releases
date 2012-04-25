@@ -717,6 +717,7 @@ public class RefactoringPanel extends JPanel {
             RP.post(new Runnable() {
                 @Override
                 public void run() {
+                    setTreeControlsEnabled(false);
                     Set<FileObject> fileObjects = new HashSet<FileObject>();
                     int errorsNum = 0;
                     if (!isQuery) {
@@ -801,6 +802,7 @@ public class RefactoringPanel extends JPanel {
                     } finally {
                         progressHandle.finish();
                         cont.makeBusy(false);
+                        setTreeControlsEnabled(true);
                     }
                     
                     if (!(isQuery && showParametersPanel)) {
@@ -832,7 +834,6 @@ public class RefactoringPanel extends JPanel {
                     return errorsDesc;
                 }
 
-
             });
         }
         if (!isVisible) {
@@ -848,6 +849,21 @@ public class RefactoringPanel extends JPanel {
         if (!isQuery)
             setRefactoringEnabled(false, true);
     }
+    
+    private void setTreeControlsEnabled(final boolean b) {
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                expandButton.setEnabled(b);
+                logicalViewButton.setEnabled(b);
+                physicalViewButton.setEnabled(b);
+                if (customViewButton != null)
+                    customViewButton.setEnabled(b);
+            }
+        });
+    }
+    
     
     private void setupTree(final CheckNode root, final boolean showParametersPanel, final int size) {
         SwingUtilities.invokeLater(new Runnable() {
