@@ -251,7 +251,8 @@ public class ProfilesPanel extends javax.swing.JPanel {
                 KeymapPanel.loc("CTL_Create_New_Profile_Message"), // NOI18N
                 KeymapPanel.loc("CTL_Create_New_Profile_Title") // NOI18N
                 );
-        il.setInputText((String) profilesList.getSelectedValue());
+        String profileToDuplicate =(String) profilesList.getSelectedValue();
+        il.setInputText(profileToDuplicate);
         DialogDisplayer.getDefault().notify(il);
         if (il.getValue() == NotifyDescriptor.OK_OPTION) {
             newName = il.getInputText();
@@ -264,7 +265,11 @@ public class ProfilesPanel extends javax.swing.JPanel {
                     return null;
                 }
             }
+            KeymapViewModel currentModel = getKeymapPanel().getModel();
+            String currrentProfile = currentModel.getCurrentProfile();
+            getKeymapPanel().getModel().setCurrentProfile(profileToDuplicate);
             getKeymapPanel().getModel().cloneProfile(newName);
+            currentModel.setCurrentProfile(currrentProfile);
             model.addItem(il.getInputText());
             profilesList.setSelectedValue(il.getInputText(), true);
         }

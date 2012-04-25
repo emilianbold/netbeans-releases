@@ -86,7 +86,6 @@ import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.editor.settings.SimpleValueNames;
-import org.netbeans.editor.CodeFoldingSideBar.PaintInfo;
 import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
 import org.netbeans.modules.editor.lib.SettingsConversions;
 import org.netbeans.modules.editor.lib2.view.ViewHierarchy;
@@ -146,11 +145,24 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
     
     protected List<Mark> visibleMarks = new ArrayList<Mark>();
     
-    /** Paint operations */
-    public static final int PAINT_NOOP             = 0;
+    /**
+     * Normal opening +- marker
+     */
     public static final int PAINT_MARK             = 1;
+    
+    /**
+     * Vertical line - typically at the end of the screen
+     */
     public static final int PAINT_LINE             = 2;
+    
+    /**
+     * End angled line, without a sign
+     */
     public static final int PAINT_END_MARK         = 3;
+    
+    /**
+     * Single-line marker, both start and end
+     */
     public static final int SINGLE_PAINT_MARK      = 4;
     
     private final Preferences prefs;
@@ -283,6 +295,11 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
     ) throws BadLocationException {
         //never called
     }
+    
+    /*
+     * Even collapsed fold MAY contain a continuation line, IF one of folds on the same line is NOT collapsed. Such a fold should
+     * then visually span multiple lines && be marked as collapsed.
+     */
 
     protected List<? extends PaintInfo> getPaintInfo(Rectangle clip) throws BadLocationException {
         javax.swing.plaf.TextUI textUI = component.getUI();
@@ -318,6 +335,13 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
                     List<? extends Fold> foldList = (List<? extends Fold>) arr[0];
                     int idxOfFirstFoldStartingInsideClip = (Integer) arr[1];
 
+                    /*
+                     * Note:
+                     * 
+                     * The Map is keyed by Y-VISUAL position of the fold mark, not the textual offset of line start.
+                     * This is because several folds may occupy the same line, while only one + sign is displayed,
+                     * and affect the last fold in the row.
+                     */
                     Map<Integer, PaintInfo> map = new TreeMap<Integer, PaintInfo>();
                     // search backwards
                     for(int i = idxOfFirstFoldStartingInsideClip - 1; i >= 0; i--) {
@@ -335,7 +359,7 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
                         }
                     }
 
-                    if (map.size() == 0 && foldList.size() > 0) {
+                    if (map.isEmpty() && foldList.size() > 0) {
                         assert foldList.size() == 1;
                         return Collections.singletonList(new PaintInfo(PAINT_LINE, 0, clip.y, clip.height, -1, -1));
                     } else {
@@ -350,6 +374,20 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
         } finally {
             bdoc.readUnlock();
         }
+    }
+    
+    /**
+     * Adds a paint info to the map. If a paintinfo already exists, it merges
+     * the structures, so the painting process can just follow the instructions.
+     * 
+     * @param infos
+     * @param yOffset
+     * @param nextInfo 
+     */
+    private void addPaintInfo(Map<Integer, PaintInfo> infos, int yOffset, PaintInfo nextInfo) {
+        PaintInfo prevInfo = infos.get(yOffset);
+        nextInfo.mergeWith(prevInfo);
+        infos.put(yOffset, nextInfo);
     }
 
     private boolean traverseForward(Fold f, BaseDocument doc, BaseTextUI btui, int lowerBoundary, int upperBoundary,int level,  Map<Integer, PaintInfo> infos) throws BadLocationException {
@@ -366,13 +404,23 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
         int lineStartOffset2 = Utilities.getRowStart(doc, f.getEndOffset());
         int y1 = btui.getYFromPos(lineStartOffset1);
         int h = btui.getEditorUI().getLineHeight();
+        int y2 = btui.getYFromPos(lineStartOffset2);
 
-        if (lineStartOffset1 == lineStartOffset2) {
+        if (y1 == y2) {
             // whole fold is on a single line
-            infos.put(lineStartOffset1, new PaintInfo(SINGLE_PAINT_MARK, level, y1, h, f.isCollapsed(), lineStartOffset1, lineStartOffset2));
+            addPaintInfo(infos, y1, new PaintInfo(SINGLE_PAINT_MARK, level, y1, h, f.isCollapsed(), lineStartOffset1, lineStartOffset2));
         } else {
             // fold spans multiple lines
-            infos.put(lineStartOffset1, new PaintInfo(PAINT_MARK, level, y1, h, f.isCollapsed(), lineStartOffset1, lineStartOffset2));
+            addPaintInfo(infos, y1, new PaintInfo(PAINT_MARK, level, y1, h, f.isCollapsed(), lineStartOffset1, lineStartOffset2));
+        }
+
+        // Handle end mark after possible inner folds were processed because
+        // otherwise if there would be two nested folds both ending at the same line
+        // then the end mark for outer one would be replaced by an end mark for inner one
+        // (same key in infos map) and the painting code would continue to paint line marking a fold
+        // until next fold is reached (or end of doc).
+        if (y1 != y2 && !f.isCollapsed() && f.getEndOffset() <= upperBoundary) {
+            addPaintInfo(infos, y2, new PaintInfo(PAINT_END_MARK, level, y2, h, lineStartOffset1, lineStartOffset2));
         }
 
         if (!f.isCollapsed()) {
@@ -397,20 +445,10 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
                 }
             }
         }
-
-        // Handle end mark after possible inner folds were processed because
-        // otherwise if there would be two nested folds both ending at the same line
-        // then the end mark for outer one would be replaced by an end mark for inner one
-        // (same key in infos map) and the painting code would continue to paint line marking a fold
-        // until next fold is reached (or end of doc).
-        if (lineStartOffset1 != lineStartOffset2 && !f.isCollapsed() && f.getEndOffset() <= upperBoundary) {
-            int y2 = btui.getYFromPos(lineStartOffset2);
-            infos.put(lineStartOffset2, new PaintInfo(PAINT_END_MARK, level, y2, h, lineStartOffset1, lineStartOffset2));
-        }
-
+        
         return true;
     }
-
+    
     private boolean traverseBackwards(Fold f, BaseDocument doc, BaseTextUI btui, int lowerBoundary, int upperBoundary, int level, Map<Integer, PaintInfo> infos) throws BadLocationException {
 //        System.out.println("~~~ traverseBackwards<" + lowerBoundary + ", " + upperBoundary
 //                + ">: fold=<" + f.getStartOffset() + ", " + f.getEndOffset() + "> "
@@ -428,17 +466,17 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
         if (lineStartOffset1 == lineStartOffset2) {
             // whole fold is on a single line
             int y1 = btui.getYFromPos(lineStartOffset1);
-            infos.put(lineStartOffset1, new PaintInfo(SINGLE_PAINT_MARK, level, y1, h, f.isCollapsed(), lineStartOffset1, lineStartOffset1));
+            addPaintInfo(infos, y1, new PaintInfo(SINGLE_PAINT_MARK, level, y1, h, f.isCollapsed(), lineStartOffset1, lineStartOffset1));
         } else {
             // fold spans multiple lines
             if (f.getStartOffset() >= upperBoundary) {
                 int y1 = btui.getYFromPos(lineStartOffset1);
-                infos.put(lineStartOffset1, new PaintInfo(PAINT_MARK, level, y1, h, f.isCollapsed(), lineStartOffset1, lineStartOffset2));
+                addPaintInfo(infos, y1, new PaintInfo(PAINT_MARK, level, y1, h, f.isCollapsed(), lineStartOffset1, lineStartOffset2));
             }
 
             if (!f.isCollapsed() && f.getEndOffset() <= upperBoundary) {
                 int y2 = btui.getYFromPos(lineStartOffset2);
-                infos.put(lineStartOffset2, new PaintInfo(PAINT_END_MARK, level, y2, h, lineStartOffset1, lineStartOffset2));
+                addPaintInfo(infos, y2, new PaintInfo(PAINT_END_MARK, level, y2, h, lineStartOffset1, lineStartOffset2));
             }
         }
 
@@ -477,21 +515,23 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
     }
 
 
-    private Fold getLastLineFold(FoldHierarchy hierarchy, int rowStart, int rowEnd){
+    private Fold getLastLineFold(FoldHierarchy hierarchy, int rowStart, int rowEnd, boolean shift){
         Fold fold = FoldUtilities.findNearestFold(hierarchy, rowStart);
+        Fold prevFold = fold;
         while (fold != null && fold.getStartOffset()<rowEnd){
             Fold nextFold = FoldUtilities.findNearestFold(hierarchy, (fold.isCollapsed()) ? fold.getEndOffset() : fold.getStartOffset()+1);
             if (nextFold == fold) return fold;
             if (nextFold!=null && nextFold.getStartOffset() < rowEnd){
+                prevFold = shift ? fold : nextFold;
                 fold = nextFold;
             }else{
-                return fold;
+                return prevFold;
             }
         }
-        return fold;
+        return prevFold;
     }
     
-    protected void performAction(Mark mark){
+    protected void performAction(Mark mark, boolean shiftFold){
         BaseTextUI textUI = (BaseTextUI)component.getUI();
         javax.swing.text.Element rootElem = textUI.getRootView(component).getElement();
 
@@ -513,7 +553,7 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
                     int viewStartOffset = view.getStartOffset();
                     int rowStart = javax.swing.text.Utilities.getRowStart(component, viewStartOffset);
                     int rowEnd = javax.swing.text.Utilities.getRowEnd(component, viewStartOffset);
-                    Fold clickedFold = getLastLineFold(foldHierarchy, rowStart, rowEnd);//FoldUtilities.findNearestFold(foldHierarchy, viewStartOffset);
+                    Fold clickedFold = getLastLineFold(foldHierarchy, rowStart, rowEnd, shiftFold);//FoldUtilities.findNearestFold(foldHierarchy, viewStartOffset);
                     if (clickedFold != null && clickedFold.getStartOffset() < view.getEndOffset()) {
                         foldHierarchy.toggle(clickedFold); 
                     }
@@ -539,7 +579,7 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
         }
         return -1;
     }
-
+    
     protected @Override void paintComponent(Graphics g) {
         if (!enabled) {
             return;
@@ -575,40 +615,24 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
                 int paintOperation = paintInfo.getPaintOperation();
 
                 if (previousInfo == null) {
-                    if (paintInfo.getInnerLevel() > 0 || paintOperation == PAINT_END_MARK) {
+                    if (paintInfo.hasLineIn()) {
                         if (LOG.isLoggable(Level.FINE)) {
                             LOG.fine("prevInfo=NULL; y=" + y + ", PI:" + paintInfo + "\n"); // NOI18N
                         }
                         g.drawLine(lineX, clip.y, lineX, y);
                     }
                 } else {
-                    if (previousInfo.getInnerLevel() > 0 ||
-                        (previousInfo.getPaintOperation() == PAINT_MARK && !previousInfo.isCollapsed()))
-                    {
+                    if (previousInfo.hasLineOut()) {
                         // Draw middle vertical line
                         int prevY = previousInfo.getPaintY();
-                        if (y == prevY) { // Draw vertical but skip mark
-                            g.drawLine(lineX, prevY, lineX, prevY + descent);
-                            if (paintInfo.getInnerLevel() > 0) {
-                                g.drawLine(lineX, prevY + descent + markSize, lineX, prevY + height);
-                            } else {
-                                // Need to explicitly clear the previously drawn line under the mark
-                                Color origColor = g.getColor();
-                                g.setColor(backColor);
-                                try {
-                                    // Add one extra pixel to not clear rectangle around '+' sign
-                                    g.drawLine(lineX, prevY + descent + markSize + 1, lineX, prevY + height);
-                                } finally {
-                                    g.setColor(origColor);
-                                }
-                            }
-                        } else {
-                            g.drawLine(lineX, prevY + previousInfo.getPaintHeight(), lineX, y);
+                        if (LOG.isLoggable(Level.FINE)) {
+                            LOG.log(Level.FINE, "prevInfo={0}; y=" + y + ", PI:" + paintInfo + "\n", previousInfo); // NOI18N
                         }
+                        g.drawLine(lineX, prevY + previousInfo.getPaintHeight(), lineX, y);
                     }
                 }
 
-                if (paintOperation == PAINT_MARK || paintOperation == SINGLE_PAINT_MARK) {
+                if (paintInfo.hasSign()) {
                     g.drawRect(markX, markY, markSize, markSize);
                     g.drawLine(plusGap + markX, markY + halfMarkSize, markSize + markX - plusGap, markY + halfMarkSize);
                     String opStr = (paintOperation == PAINT_MARK) ? "PAINT_MARK" : "SINGLE_PAINT_MARK"; // NOI18N
@@ -617,21 +641,19 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
                             LOG.fine(opStr + ": folded; y=" + y + ", PI:" + paintInfo + "\n"); // NOI18N
                         }
                         g.drawLine(lineX, markY + plusGap, lineX, markY + markSize - plusGap);
-                    } else {
-                        if (paintOperation != SINGLE_PAINT_MARK) {
-                            if (LOG.isLoggable(Level.FINE)) {
-                                LOG.fine(opStr + ": non-single; y=" + y + ", PI:" + paintInfo + "\n"); // NOI18N
-                            }
-                            g.drawLine(lineX, markY + markSize, lineX, y + height);
+                    }
+                    if (paintOperation != SINGLE_PAINT_MARK) {
+                        if (LOG.isLoggable(Level.FINE)) {
+                            LOG.fine(opStr + ": non-single; y=" + y + ", PI:" + paintInfo + "\n"); // NOI18N
                         }
                     }
-                    if (paintInfo.getInnerLevel() > 0) { //[PENDING]
+                    if (paintInfo.hasLineIn()) { //[PENDING]
                         g.drawLine(lineX, y, lineX, markY);
-                        if (paintOperation != CodeFoldingSideBar.SINGLE_PAINT_MARK) {
-                            // This is an error in case there's a next paint info at the same y which is an end mark
-                            // for this mark (it must be cleared explicitly).
-                            g.drawLine(lineX, markY + markSize, lineX, y + height);
-                        }
+                    }
+                    if (paintInfo.hasLineOut()) {
+                        // This is an error in case there's a next paint info at the same y which is an end mark
+                        // for this mark (it must be cleared explicitly).
+                        g.drawLine(lineX, markY + markSize, lineX, y + height);
                     }
                     visibleMarks.add(new Mark(markX, markY, markSize, isFolded));
 
@@ -697,24 +719,88 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
         return new Object [] { ret, idxOfFirstFoldStartingInside != -1 ? idxOfFirstFoldStartingInside : ret.size() };
     }
 
-    public class PaintInfo{
+    private static class PaintInfo {
         
         int paintOperation;
+        /**
+         * level of the 1st marker on the line
+         */
         int innerLevel;
+        
+        /**
+         * Y-coordinate of the cell
+         */
         int paintY;
+        
+        /**
+         * Height of the paint cell
+         */
         int paintHeight;
+        
+        /**
+         * State of the marker (+/-)
+         */
         boolean isCollapsed;
+        
+        /**
+         * all markers on the line are collapsed
+         */
+        boolean allCollapsed;
         int startOffset;
         int endOffset;
+        /**
+         * nesting level of the last marker on the line
+         */
+        int outgoingLevel;
+        
+        /**
+         * Force incoming line (from above) to be present
+         */
+        boolean lineIn;
+        
+        /**
+         * Force outgoing line (down from marker) to be present
+         */
+        boolean lineOut;
+        
         
         public PaintInfo(int paintOperation, int innerLevel, int paintY, int paintHeight, boolean isCollapsed, int startOffset, int endOffset){
             this.paintOperation = paintOperation;
-            this.innerLevel = innerLevel;
+            this.innerLevel = this.outgoingLevel = innerLevel;
             this.paintY = paintY;
             this.paintHeight = paintHeight;
-            this.isCollapsed = isCollapsed;
+            this.isCollapsed = this.allCollapsed = isCollapsed;
             this.startOffset = startOffset;
             this.endOffset = endOffset;
+
+            switch (paintOperation) {
+                case PAINT_MARK:
+                    lineIn = false;
+                    lineOut = true;
+                    outgoingLevel++;
+                    break;
+                case SINGLE_PAINT_MARK:
+                    lineIn = false;
+                    lineOut = false;
+                    break;
+                case PAINT_END_MARK:
+                    lineIn = true;
+                    lineOut = false;
+                    isCollapsed = true;
+                    allCollapsed = true;
+                    break;
+                case PAINT_LINE:
+                    lineIn = lineOut = true;
+                    break;
+            }
+        }
+        
+        public boolean hasLineIn() {
+            return lineIn || innerLevel > 0;
+        }
+        
+        public boolean hasLineOut() {
+            return lineOut || outgoingLevel > 0 || (paintOperation != SINGLE_PAINT_MARK && !isAllCollapsed());
         }
 
         public PaintInfo(int paintOperation, int innerLevel, int paintY, int paintHeight, int startOffset, int endOffset){
@@ -741,6 +827,10 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
             return isCollapsed;
         }
         
+        public boolean isAllCollapsed() {
+            return allCollapsed;
+        }
+        
         public void setPaintOperation(int paintOperation){
             this.paintOperation = paintOperation;
         }
@@ -751,19 +841,77 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
         
         public @Override String toString(){
             StringBuffer sb = new StringBuffer("");
-            if (paintOperation == PAINT_NOOP){
-                sb.append("PAINT_NOOP"); // NOI18N
-            }else if (paintOperation == PAINT_MARK){
+            if (paintOperation == PAINT_MARK){
                 sb.append("PAINT_MARK"); // NOI18N
             }else if (paintOperation == PAINT_LINE){
                 sb.append("PAINT_LINE"); // NOI18N
             }else if (paintOperation == PAINT_END_MARK) {
                 sb.append("PAINT_END_MARK"); // NOI18N
+            }else if (paintOperation == SINGLE_PAINT_MARK) {
+                sb.append("SINGLE_PAINT_MARK");
             }
-            sb.append(",L:").append(innerLevel); // NOI18N
+            sb.append(",L:").append(innerLevel).append("/").append(outgoingLevel); // NOI18N
             sb.append(',').append(isCollapsed ? "C" : "E"); // NOI18N
             sb.append(", start=").append(startOffset).append(", end=").append(endOffset);
+            sb.append(", lineIn=").append(lineIn).append(", lineOut=").append(lineOut);
             return sb.toString();
+        }
+        
+        public boolean hasSign() {
+            return paintOperation == PAINT_MARK || paintOperation == SINGLE_PAINT_MARK;
+        }
+        
+        
+        public void mergeWith(PaintInfo prevInfo) {
+            if (prevInfo == null) {
+                return;
+            }
+
+            int operation = this.paintOperation;
+            boolean lineIn = prevInfo.lineIn;
+            boolean lineOut = prevInfo.lineOut;
+            
+            LOG.log(Level.FINE, "Merging {0} with {1}: ", new Object[] { this, prevInfo });
+            if (prevInfo.getPaintOperation() == PAINT_END_MARK) {
+                // merge with start|single -> start mark + line-in
+                lineIn = true;
+            } else {
+                operation = PAINT_MARK;
+            }
+
+            int level1 = Math.min(prevInfo.innerLevel, innerLevel);
+            int level2 = prevInfo.outgoingLevel;
+
+            if (getPaintOperation() == PAINT_END_MARK 
+                && innerLevel == prevInfo.outgoingLevel) {
+                // if merging end marker at the last level, update to the new outgoing level
+                level2 = outgoingLevel;
+            } else if (!isCollapsed) {
+                level2 = Math.max(prevInfo.outgoingLevel, outgoingLevel);
+            }
+
+            if (prevInfo.getInnerLevel() < getInnerLevel()) {
+                int paintFrom = Math.min(prevInfo.paintY, paintY);
+                int paintTo = Math.max(prevInfo.paintY + prevInfo.paintHeight, paintY + paintHeight);
+                // at least one collapsed -> paint plus sign
+                boolean collapsed = prevInfo.isCollapsed() || isCollapsed();
+                int offsetFrom = Math.min(prevInfo.startOffset, startOffset);
+                int offsetTo = Math.max(prevInfo.endOffset, endOffset);
+                
+                this.paintY = paintFrom;
+                this.paintHeight = paintTo - paintFrom;
+                this.isCollapsed = collapsed;
+                this.startOffset = offsetFrom;
+                this.endOffset = offsetTo;
+            }
+            this.paintOperation = operation;
+            this.allCollapsed = prevInfo.allCollapsed && allCollapsed;
+            this.innerLevel = level1;
+            this.outgoingLevel = level2;
+            this.lineIn |= lineIn;
+            this.lineOut |= lineOut;
+            
+            LOG.log(Level.FINE, "Merged result: {0}", this);
         }
     }
     
@@ -829,7 +977,7 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
             Mark mark = getClickedMark(e);
             if (mark!=null){
                 e.consume();
-                performAction(mark);
+                performAction(mark, (e.getModifiersEx() & MouseEvent.CTRL_DOWN_MASK) > 0);
             }
         }
 
@@ -848,7 +996,7 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
             if (e == null || !SwingUtilities.isLeftMouseButton(e)) {
                 return null;
             }
-
+            
             int x = e.getX();
             int y = e.getY();
             for (Mark mark : visibleMarks) {
