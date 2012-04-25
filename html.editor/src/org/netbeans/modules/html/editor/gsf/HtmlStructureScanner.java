@@ -44,23 +44,20 @@ package org.netbeans.modules.html.editor.gsf;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
-import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.csl.api.*;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.StructureItem;
+import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.lib.api.elements.*;
-import org.netbeans.modules.parsing.api.*;
-import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.common.api.Pair;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -74,10 +71,9 @@ public class HtmlStructureScanner implements StructureScanner {
     private Reference<Pair<ParserResult, List<HtmlStructureItem>>> cache;
 
     private boolean isOfSupportedSize(ParserResult info) {
-        return true;
-//        Snapshot snapshot = info.getSnapshot();
-//        int slen = snapshot.getText().length();
-//        return slen < MAX_SNAPSHOT_SIZE;
+        Snapshot snapshot = info.getSnapshot();
+        int slen = snapshot.getText().length();
+        return slen < MAX_SNAPSHOT_SIZE;
     }
 
     @Override
@@ -204,201 +200,6 @@ public class HtmlStructureScanner implements StructureScanner {
     @Override
     public Configuration getConfiguration() {
         return new Configuration(false, false, 0);
-    }
-
-    private static final class HtmlStructureItem implements StructureItem {
-
-        private HtmlElementHandle handle;
-        private OffsetRange documentOffsetRange;
-        private String idAttributeValue, classAttributeValue;
-        private List<StructureItem> items;
-        //remember from what mime path the snapshot came from
-        private MimePath mimePath;
-
-        private HtmlStructureItem(OpenTag node, HtmlElementHandle handle, Snapshot snapshot) {
-            this.handle = handle;
-
-            int dfrom = snapshot.getOriginalOffset(node.from());
-            int dto = snapshot.getOriginalOffset(node.semanticEnd());
-
-            this.documentOffsetRange = dfrom != -1 && dto != -1
-                    ? new OffsetRange(dfrom, dto)
-                    : OffsetRange.NONE;
-
-            this.idAttributeValue = getAttributeValue(node, "id"); //NOI18N
-            this.classAttributeValue = getAttributeValue(node, "class"); //NOI18N
-
-            this.mimePath = snapshot.getMimePath();
-
-        }
-
-        @Override
-        public ElementHandle getElementHandle() {
-            return handle;
-        }
-
-        @Override
-        public String getName() {
-            return handle.getName();
-        }
-
-        @Override
-        public String getSortText() {
-            //return getName();
-            // Use position-based sorting text instead; alphabetical sorting in the
-            // outline (the default) doesn't really make sense for HTML tag names
-            return Integer.toHexString(10000 + (int) getPosition());
-        }
-
-        @Override
-        public String getHtml(HtmlFormatter formatter) {
-            formatter.appendHtml(getName());
-
-            if (idAttributeValue != null) {
-                formatter.appendHtml("&nbsp;<font color=808080>id=");
-                formatter.appendText(idAttributeValue);
-                formatter.appendHtml("</font>"); //NOI18N
-            }
-            if (classAttributeValue != null) {
-                formatter.appendHtml("&nbsp;<font color=808080>class=");
-                formatter.appendText(classAttributeValue);
-                formatter.appendHtml("</font>"); //NOI18N
-            }
-
-            return formatter.getText();
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (!(o instanceof HtmlStructureItem)) {
-                return false;
-            }
-            HtmlStructureItem item = (HtmlStructureItem) o;
-
-            return item.getElementHandle().equals(getElementHandle());
-        }
-
-        @Override
-        public int hashCode() {
-            return getElementHandle().hashCode();
-
-        }
-
-        @Override
-        public ElementKind getKind() {
-            return ElementKind.TAG;
-        }
-
-        @Override
-        public Set<Modifier> getModifiers() {
-            return Collections.emptySet();
-        }
-
-        @Override
-        public boolean isLeaf() {
-            //The child if empty if it hasn't any nested items. If it has only text it's empty.
-            return getNestedItems().isEmpty();
-        }
-
-        @Override
-        public synchronized List<? extends StructureItem> getNestedItems() {
-            if (items == null) {
-                try {
-                    //lazy load the nested items
-                    //we need a parser result to be able to find Element for the ElementHandle
-                    Source source = Source.create(getElementHandle().getFileObject());
-                    ParserManager.parse(Collections.singleton(source), new UserTask() {
-                        @Override
-                        public void run(ResultIterator resultIterator) throws Exception {
-                            HtmlParserResult result;
-                            if (mimePath.size() == 1) {
-                                result = (HtmlParserResult) resultIterator.getParserResult();
-                            } else {
-                                for (int i = 0; i < mimePath.size(); i++) {
-                                    String mimeType = mimePath.getMimeType(i);
-                                    Iterator<Embedding> embeddings = resultIterator.getEmbeddings().iterator();
-                                    while (embeddings.hasNext()) {
-                                        Embedding embedding = embeddings.next();
-                                        if (embedding.getMimeType().equals(mimeType)) {
-                                            resultIterator = resultIterator.getResultIterator(embedding);
-                                        }
-
-                                    }
-                                }
-                                result = (HtmlParserResult) resultIterator.getParserResult();
-                            }
-
-                            Node node = handle.resolve(result);
-                            if (node != null) {
-                                items = new ArrayList<StructureItem>();
-                                List<OpenTag> nonVirtualChildren = gatherNonVirtualChildren(node);
-                                for (OpenTag child : nonVirtualChildren) {
-                                    HtmlElementHandle childHandle = new HtmlElementHandle(child, handle.getFileObject());
-                                    items.add(new HtmlStructureItem(child, childHandle, result.getSnapshot()));
-                                }
-                            }
-                        }
-                    });
-
-
-                } catch (ParseException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-            return items;
-        }
-
-        @Override
-        public long getPosition() {
-            return documentOffsetRange.getStart();
-        }
-
-        @Override
-        public long getEndPosition() {
-            return documentOffsetRange.getEnd();
-        }
-
-        @Override
-        public ImageIcon getCustomIcon() {
-            return null;
-        }
-
-        //private
-        private String getAttributeValue(Element node, String key) {
-            String value = _getAttributeValue(node, key.toUpperCase(Locale.ENGLISH));
-            if (value == null) {
-                return _getAttributeValue(node, key.toLowerCase(Locale.ENGLISH));
-            } else {
-                return value;
-            }
-        }
-
-        private String _getAttributeValue(Element node, String key) {
-            if (node.type() != ElementType.OPEN_TAG) {
-                return null;
-            }
-            OpenTag t = (OpenTag) node;
-            Attribute attr = t.getAttribute(key); //try lowercase
-            if (attr == null) {
-                return null;
-            }
-            return attr.unquotedValue().toString();
-        }
-        
-        private List<OpenTag> gatherNonVirtualChildren(Node element) {
-            List<OpenTag> items = new LinkedList<OpenTag>();
-            for (OpenTag child : element.children(OpenTag.class)) {
-                if (child.type() == ElementType.OPEN_TAG) {
-                    if (!ElementUtils.isVirtualNode(child)) {
-                        items.add(child);
-                    } else {
-                        items.addAll(gatherNonVirtualChildren(child));
-                    }
-                }
-            }
-            return items;
-        }
-        
     }
 
 }
