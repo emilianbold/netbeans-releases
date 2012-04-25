@@ -215,11 +215,11 @@ public class HtmlStructureScanner implements StructureScanner {
         //remember from what mime path the snapshot came from
         private MimePath mimePath;
 
-        private HtmlStructureItem(Node node, HtmlElementHandle handle, Snapshot snapshot) {
+        private HtmlStructureItem(OpenTag node, HtmlElementHandle handle, Snapshot snapshot) {
             this.handle = handle;
 
             int dfrom = snapshot.getOriginalOffset(node.from());
-            int dto = snapshot.getOriginalOffset(node.to());
+            int dto = snapshot.getOriginalOffset(node.semanticEnd());
 
             this.documentOffsetRange = dfrom != -1 && dto != -1
                     ? new OffsetRange(dfrom, dto)
@@ -331,8 +331,8 @@ public class HtmlStructureScanner implements StructureScanner {
                             Node node = handle.resolve(result);
                             if (node != null) {
                                 items = new ArrayList<StructureItem>();
-                                List<Node> nonVirtualChildren = gatherNonVirtualChildren(node);
-                                for (Node child : nonVirtualChildren) {
+                                List<OpenTag> nonVirtualChildren = gatherNonVirtualChildren(node);
+                                for (OpenTag child : nonVirtualChildren) {
                                     HtmlElementHandle childHandle = new HtmlElementHandle(child, handle.getFileObject());
                                     items.add(new HtmlStructureItem(child, childHandle, result.getSnapshot()));
                                 }
@@ -385,9 +385,9 @@ public class HtmlStructureScanner implements StructureScanner {
             return attr.unquotedValue().toString();
         }
         
-        private List<Node> gatherNonVirtualChildren(Node element) {
-            List<Node> items = new LinkedList<Node>();
-            for (Node child : element.children(Node.class)) {
+        private List<OpenTag> gatherNonVirtualChildren(Node element) {
+            List<OpenTag> items = new LinkedList<OpenTag>();
+            for (OpenTag child : element.children(OpenTag.class)) {
                 if (child.type() == ElementType.OPEN_TAG) {
                     if (!ElementUtils.isVirtualNode(child)) {
                         items.add(child);
