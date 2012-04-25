@@ -91,7 +91,7 @@ public class PropertySplitter {
                     if (c == newline) {
                         //just continue.. equals to \ + newline
                     } else {
-                        buffer.append(c);
+                        buffer.append(escape).append(c);
                     }
                     escapeNext = false;
                 } else if (!inQuote && c == escape) {
