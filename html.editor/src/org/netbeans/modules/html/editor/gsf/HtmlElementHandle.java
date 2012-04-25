@@ -60,6 +60,10 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.filesystems.FileObject;
 
 /**
+ * Represents a handle for OpenTags obtained from HtmlParserResult. 
+ * 
+ * The handle may be held out of the parsing task and later resolved
+ * back to node by {@link #resolve(org.netbeans.modules.csl.spi.ParserResult) 
  *
  * @author mfukala@netbeans.org
  */
@@ -69,7 +73,7 @@ public class HtmlElementHandle implements ElementHandle {
     private String name;
     private String elementPath;
 
-    HtmlElementHandle(Element node, FileObject fo) {
+    public HtmlElementHandle(OpenTag node, FileObject fo) {
         this.fo = fo;
         this.name = node.id().toString();
         this.elementPath = ElementUtils.encodeToString(new TreePath(node));
@@ -115,11 +119,33 @@ public class HtmlElementHandle implements ElementHandle {
     }
 
     @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 41 * hash + (this.elementPath != null ? this.elementPath.hashCode() : 0);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final HtmlElementHandle other = (HtmlElementHandle) obj;
+        if ((this.elementPath == null) ? (other.elementPath != null) : !this.elementPath.equals(other.elementPath)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
     public String toString() {
         return elementPath;
     }
     
-    public Node resolve(ParserResult result) {
+    public OpenTag resolve(ParserResult result) {
         if(!(result instanceof HtmlParserResult)) {
             return null;
         }
@@ -132,14 +158,14 @@ public class HtmlElementHandle implements ElementHandle {
         
     @Override
     public OffsetRange getOffsetRange(ParserResult result) {
-        Node node = resolve(result);
+        OpenTag node = resolve(result);
         if(node == null) {
             return OffsetRange.NONE;
         }
         
         Snapshot snapshot = result.getSnapshot();
         int dfrom = snapshot.getOriginalOffset(node.from());
-        int dto = snapshot.getOriginalOffset(node.to());
+        int dto = snapshot.getOriginalOffset(node.semanticEnd());
         
         return dfrom != -1 && dto != -1 ? new OffsetRange(dfrom, dto) : OffsetRange.NONE;
     }
