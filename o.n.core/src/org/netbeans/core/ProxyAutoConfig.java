@@ -234,7 +234,7 @@ public class ProxyAutoConfig {
         if (protocol == null) {
             return null;
         } else {
-            if ("http".equals(protocol)) { // NOI18N
+            if (("http".equals(protocol)) || ("https".equals(protocol))) { // NOI18N
                 proxyType = Proxy.Type.HTTP;
             } else {
                 proxyType = Proxy.Type.SOCKS;
