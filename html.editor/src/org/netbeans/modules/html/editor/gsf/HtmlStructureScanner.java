@@ -59,6 +59,7 @@ import org.netbeans.modules.html.editor.lib.api.elements.*;
 import org.netbeans.modules.parsing.api.*;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.web.common.api.Pair;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
 /**
@@ -73,9 +74,10 @@ public class HtmlStructureScanner implements StructureScanner {
     private Reference<Pair<ParserResult, List<HtmlStructureItem>>> cache;
 
     private boolean isOfSupportedSize(ParserResult info) {
-        Snapshot snapshot = info.getSnapshot();
-        int slen = snapshot.getText().length();
-        return slen < MAX_SNAPSHOT_SIZE;
+        return true;
+//        Snapshot snapshot = info.getSnapshot();
+//        int slen = snapshot.getText().length();
+//        return slen < MAX_SNAPSHOT_SIZE;
     }
 
     @Override
@@ -104,11 +106,14 @@ public class HtmlStructureScanner implements StructureScanner {
             LOGGER.log(Level.FINE, root.toString());
         }
 
-
-        //return the root children
-        HtmlElementHandle rootHandle = new HtmlElementHandle(root, info.getSnapshot().getSource().getFileObject());
-        HtmlStructureItem rootSI = new HtmlStructureItem(root, rootHandle, info.getSnapshot());
-        List<StructureItem> elements = new ArrayList<StructureItem>(rootSI.getNestedItems());
+        Snapshot snapshot = info.getSnapshot();
+        FileObject file = snapshot.getSource().getFileObject();
+        List<StructureItem> elements = new ArrayList<StructureItem>();
+        for(OpenTag tag : root.children(OpenTag.class)) {
+            HtmlElementHandle handle = new HtmlElementHandle(tag, file);
+            StructureItem si = new HtmlStructureItem(tag, handle, snapshot);
+            elements.add(si);
+        }
 
         //cache
         Pair<ParserResult, List<HtmlStructureItem>> pair = new Pair(info, elements);
