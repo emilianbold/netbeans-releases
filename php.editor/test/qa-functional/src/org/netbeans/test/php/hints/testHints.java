@@ -145,7 +145,7 @@ public class testHints extends GeneralPHP {
         Object[] oo = file.getAnnotations();
         int numberOfErrors = 0;
         for (Object o : oo) {
-            if (EditorOperator.getAnnotationShortDescription(o).toString().contains("error")) {
+            if (EditorOperator.getAnnotationShortDescription(o).toString().contains("error") && !EditorOperator.getAnnotationShortDescription(o).toString().contains("HTML error checking")) {
                 numberOfErrors++;
             }
         }
