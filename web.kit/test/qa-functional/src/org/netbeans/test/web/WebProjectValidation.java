@@ -373,17 +373,18 @@ public class WebProjectValidation extends J2eeTestCase {
         String compileJSPLabel = "Test compile all JSP files during builds";
         new JCheckBoxOperator(properties, compileJSPLabel).changeSelection(true);
         properties.ok();
-
-        testCleanAndBuildProject();
-        logAndCloseOutputs();
-        testCleanAndBuildProject();
-        logAndCloseOutputs();
-
-        new Action(null, "Properties").perform(rootNode);
-        properties = new NbDialogOperator("Project Properties");
-        new Node(new JTreeOperator(properties), "Build|Compiling").select();
-        new JCheckBoxOperator(properties, compileJSPLabel).changeSelection(false);
-        properties.ok();
+        try {
+            testCleanAndBuildProject();
+            logAndCloseOutputs();
+            testCleanAndBuildProject();
+            logAndCloseOutputs();
+        } finally {
+            new Action(null, "Properties").perform(rootNode);
+            properties = new NbDialogOperator("Project Properties");
+            new Node(new JTreeOperator(properties), "Build|Compiling").select();
+            new JCheckBoxOperator(properties, compileJSPLabel).changeSelection(false);
+            properties.ok();
+        }
     }
 
     public void testCompileJSP() {
