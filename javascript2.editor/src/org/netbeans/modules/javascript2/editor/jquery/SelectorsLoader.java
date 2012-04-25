@@ -359,9 +359,7 @@ public class SelectorsLoader extends DefaultHandler {
                 if (type.equals("method") || type.equals("property")) {
                     String name = attributes.getValue("name");
                     String returns = attributes.getValue("return");
-                    System.out.println("entry type : " + type + ": " + name + " -> " + returns);
                     if(name.indexOf(".") == -1) {
-                        System.out.println("Vytvorim metodu pro jquery.");
                         if(type.equals("method")) {
                             JsFunctionImpl function = new JsFunctionImpl(null, jQuery, new IdentifierImpl(name, OffsetRange.NONE), Collections.<Identifier>emptyList(), OffsetRange.NONE);
                             function.addReturnType(new TypeUsageImpl(returns, -1, true));
