@@ -512,13 +512,8 @@ public class RefactoringUtils {
 
     public static boolean elementExistsIn(TypeElement target, Element member, CompilationInfo info) {
         for (Element currentMember : target.getEnclosedElements()) {
-            if (info.getElements().hides(member, currentMember) || info.getElements().hides(currentMember, member)) {
-                return true;
-            }
-            if (member instanceof ExecutableElement
-                    && currentMember instanceof ExecutableElement
-                    && (info.getElements().overrides((ExecutableElement) member, (ExecutableElement) currentMember, target)
-                    || (info.getElements().overrides((ExecutableElement) currentMember, (ExecutableElement) member, target)))) {
+            if(currentMember.getKind().equals(member.getKind())
+                    && currentMember.getSimpleName().equals(member.getSimpleName())) {
                 return true;
             }
         }
