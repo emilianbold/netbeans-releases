@@ -175,7 +175,7 @@ public class RunGoalsPanel extends javax.swing.JPanel {
             }
             buf.append(entry.getKey()).append('=').append(entry.getValue());// NOI18N
         }
-        epProperties.setText(buf.toString());
+        epProperties.setText(ActionMappings.createPropertiesList(config.getProperties()));
         epProperties.setCaretPosition(0);
         txtProfiles.setText(createSpaceSeparatedList(config.getActivatedProfiles()));
         
