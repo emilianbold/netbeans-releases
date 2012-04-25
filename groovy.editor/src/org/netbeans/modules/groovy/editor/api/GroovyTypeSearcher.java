@@ -85,6 +85,7 @@ public class GroovyTypeSearcher implements IndexSearcher {
 
     private static final Logger LOGGER = Logger.getLogger(GroovyTypeSearcher.class.getName());
 
+    @Override
     public Set<? extends Descriptor> getSymbols(Project project, String textForQuery, Kind kind, Helper helper) {
         // TODO - search for methods too!!
 
@@ -92,6 +93,7 @@ public class GroovyTypeSearcher implements IndexSearcher {
         return getTypes(project, textForQuery, kind, helper);
     }
 
+    @Override
     public Set<? extends Descriptor> getTypes(Project project, String textForQuery, Kind kind, Helper helper) {
         GroovyIndex index = GroovyIndex.get(QuerySupport.findRoots(project, Collections.singleton(ClassPath.SOURCE), Collections.<String>emptySet(), Collections.<String>emptySet()));
 
@@ -164,20 +166,20 @@ public class GroovyTypeSearcher implements IndexSearcher {
             this.helper = helper;
         }
 
+        @Override
         public Icon getIcon() {
             if (projectName == null) {
                 initProjectInfo();
             }
-            //if (isLibrary) {
-            //    return new ImageIcon(org.openide.util.Utilities.loadImage(Js_KEYWORD));
-            //}
             return helper.getIcon(element);
         }
 
+        @Override
         public String getTypeName() {
             return element.getName();
         }
 
+        @Override
         public String getProjectName() {
             if (projectName == null) {
                 initProjectInfo();
@@ -199,13 +201,14 @@ public class GroovyTypeSearcher implements IndexSearcher {
                 }
             } else {
                 isLibrary = true;
-                LOGGER.log(Level.FINE, "No fileobject for " + element.toString());
+                LOGGER.log(Level.FINE, "No fileobject for {0}", element.toString());
             }
             if (projectName == null) {
                 projectName = "";
             }
         }
         
+        @Override
         public Icon getProjectIcon() {
             if (projectName == null) {
                 initProjectInfo();
@@ -216,10 +219,12 @@ public class GroovyTypeSearcher implements IndexSearcher {
             return projectIcon;
         }
 
+        @Override
         public FileObject getFileObject() {
             return element.getFileObject();
         }
 
+        @Override
         public void open() {
             ASTNode node = AstUtilities.getForeignNode(element);
             
@@ -250,6 +255,7 @@ public class GroovyTypeSearcher implements IndexSearcher {
             helper.open(fileObject, element);
         }
 
+        @Override
         public String getContextName() {
             // XXX This is lame - move formatting logic to the goto action!
             StringBuilder sb = new StringBuilder();
@@ -277,18 +283,22 @@ public class GroovyTypeSearcher implements IndexSearcher {
             }
         }
 
+        @Override
         public ElementHandle getElement() {
             return element;
         }
 
+        @Override
         public int getOffset() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        @Override
         public String getSimpleName() {
             return element.getName();
         }
 
+        @Override
         public String getOuterName() {
             return null;
         }
