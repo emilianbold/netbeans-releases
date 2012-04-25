@@ -254,10 +254,13 @@ final class DefaultEMLookup extends ProxyLookup implements LookupListener, Prope
                 List<Item<T>> ret = new ArrayList<Item<T>>(c.size()); // upper bound
 
                 for (Lookup.Item<T> i : c) {
-
-                    if (!verboten.containsKey(i.getInstance())) {
-                        ret.add(i);
+                    if (Node.class.isAssignableFrom(i.getType())) 
+                    {
+                        if (verboten.containsKey(i.getInstance())) {
+                            continue;
+                        }
                     }
+                    ret.add(i);
                 }
 
                 return ret;

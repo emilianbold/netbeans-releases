@@ -48,6 +48,7 @@ import java.util.Collection;
 import java.util.Dictionary;
 import java.util.Map;
 import java.util.Properties;
+import java.util.logging.Level;
 import org.eclipse.osgi.framework.internal.core.FrameworkProperties;
 import org.eclipse.osgi.launch.Equinox;
 import org.osgi.framework.Bundle;
@@ -66,8 +67,16 @@ import org.osgi.framework.ServiceRegistration;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 class Netbinox extends Equinox {
+    private final String installArea;
+    
     public Netbinox(Map configuration) {
         super(configuration);
+        Object ia = configuration.get("osgi.install.area"); // NOI18N
+        if (ia instanceof String) {
+            installArea = (String)ia;
+        } else {
+            installArea = null;
+        }
     }
     
     @Override
@@ -92,18 +101,18 @@ class Netbinox extends Equinox {
         }
     }
     
-    
-
     @Override
     public BundleContext getBundleContext() {
-        return new Context(super.getBundleContext());
+        return new Context(super.getBundleContext(), installArea);
     }
     
     private static final class Context implements BundleContext {
         private final BundleContext delegate;
+        private final String installArea;
 
-        public Context(BundleContext delegate) {
+        public Context(BundleContext delegate, String installArea) {
             this.delegate = delegate;
+            this.installArea = installArea;
         }
         
         public boolean ungetService(ServiceReference sr) {
@@ -134,10 +143,23 @@ class Netbinox extends Equinox {
             return installBundle(string, null);
         }
 
+        @Override
         public Bundle installBundle(String url, InputStream in) throws BundleException {
-            if (url.startsWith("reference:")) {
+            final String pref = "reference:";
+            if (url.startsWith(pref)) {
                 // workaround for problems with space in path
                 url = url.replaceAll("%20", " ");
+                String filePart = url.substring(pref.length());
+                if (installArea != null && filePart.startsWith(installArea)) {
+                    String relPath = filePart.substring(installArea.length());
+                    if (relPath.startsWith("/")) { // NOI18N
+                        relPath = relPath.substring(1);
+                    }
+                    url = pref + "file:" + relPath;
+                    NetbinoxFactory.LOG.log(Level.FINE, "Converted to relative {0}", url);
+                } else {
+                    NetbinoxFactory.LOG.log(Level.FINE, "Kept absolute {0}", url);
+                }
             }
             return delegate.installBundle(url, in);
         }

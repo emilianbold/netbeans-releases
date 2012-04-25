@@ -220,8 +220,8 @@ public final class Watcher extends AnnotationProvider {
         }
         
         final void register(FileObject fo) {
-            if (fo.isValid()) {
-                assert fo.isFolder() : "Should be a folder: " + fo + " data: " + fo.isData();
+            if (fo.isValid() && !fo.isFolder()) {
+                LOG.log(Level.INFO, "Should be a folder: {0} data: {1} folder: {2} valid: {3}", new Object[]{fo, fo.isData(), fo.isFolder(), fo.isValid()});
             }
             try {
                 clearQueue();
