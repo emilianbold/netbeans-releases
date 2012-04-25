@@ -90,16 +90,20 @@ public class CopyFile extends SimpleRefactoringElementImplementation {
             FileObject Fo = fo;
             DataObject dob = DataObject.find(Fo);
             newOne = dob.copy(DataFolder.findFolder(targetFo));
-            newOne.rename(newName == null ? fo.getName() : newName);
+            if(newName != null) {
+                newOne.rename(newName);
+            }
             FileObject[] newFiles = context.lookup(FileObject[].class);
+            FileObject newFile = newOne.getPrimaryFile();
+            newFile.setAttribute("originalFile", fo.getNameExt()); //NOI18N
             if (newFiles == null) {
-                newFiles = new FileObject[]{newOne.getPrimaryFile()};
+                newFiles = new FileObject[]{newFile};
             } else {
                 newFiles = Arrays.copyOf(newFiles, newFiles.length + 1);
-                newFiles[newFiles.length - 1] = newOne.getPrimaryFile();
+                newFiles[newFiles.length - 1] = newFile;
             }
             context.add(newFiles);
-            context.add(newOne.getPrimaryFile());
+            context.add(newFile);
         } catch (IOException ex) {
             throw new IllegalStateException(ex);
         }
