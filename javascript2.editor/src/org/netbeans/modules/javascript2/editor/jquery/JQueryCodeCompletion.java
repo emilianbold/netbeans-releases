@@ -91,6 +91,10 @@ public class JQueryCodeCompletion {
                     addSelectors(result, parserResult, prefix, tsOffset);
                 }
                 break;
+            case OBJECT_PROPERTY:
+                if (isJQuery(parserResult, tsOffset)) {
+                    
+                }
         }
         long end = System.currentTimeMillis();
         LOGGER.log(Level.FINE, "Counting jQuery CC took {0}ms ", (end - start));
@@ -201,7 +205,7 @@ public class JQueryCodeCompletion {
         contextMap.put(":", Arrays.asList(SelectorKind.AFTER_COLON));
     }
     
-    private static String HELP_LOCATION = "docs/jquery-api.xml";
+    protected static String HELP_LOCATION = "docs/jquery-api.xml";
     private void fillAfterColonList() {
         SelectorItem item;
         File apiFile = InstalledFileLocator.getDefault().locate(HELP_LOCATION, null, false); //NoI18N

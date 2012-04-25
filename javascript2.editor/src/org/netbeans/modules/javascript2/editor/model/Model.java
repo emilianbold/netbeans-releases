@@ -47,6 +47,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.javascript2.editor.jquery.JQueryModel;
 import org.netbeans.modules.javascript2.editor.model.impl.JsFunctionImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.JsObjectImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
@@ -84,6 +85,8 @@ public final class Model {
         if (visitor == null) {
             long start = System.currentTimeMillis();
             visitor = new ModelVisitor(parserResult, docSupport);
+            JQueryModel jQuery = new JQueryModel();
+            jQuery.getGlobalProperties(getGlobalObject());
             FunctionNode root = parserResult.getRoot();
             if (root != null) {
                 root.accept(visitor);

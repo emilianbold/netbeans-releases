@@ -45,12 +45,19 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.model.Identifier;
+import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.model.impl.IdentifierImpl;
+import org.netbeans.modules.javascript2.editor.model.impl.JsFunctionImpl;
+import org.netbeans.modules.javascript2.editor.model.impl.TypeUsageImpl;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.xml.sax.Attributes;
@@ -100,6 +107,11 @@ public class SelectorsLoader extends DefaultHandler {
         return documentationBuilder.buildForSelector(selectorName);
     }
 
+    public static void addToModel(File apiFile, JsObject jQuery) {
+        JQueryModelBuilder propertiesBuilder = new JQueryModelBuilder(apiFile, jQuery);
+        propertiesBuilder.addProperties(jQuery);
+    }
+    
     private boolean inSelector = false;
     
     private enum Tag {
@@ -329,5 +341,54 @@ public class SelectorsLoader extends DefaultHandler {
                 }
             }
         }
-    }   
+    }
+    
+    private static class JQueryModelBuilder extends DefaultHandler {
+        private final File file;
+        private final JsObject jQuery;
+        
+        public JQueryModelBuilder(final File file, final JsObject jQuery) {
+            this.file = file;
+            this.jQuery = jQuery;
+        }
+
+        @Override
+        public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+            if (qName.equals(Tag.entry.name())) {
+                String type = attributes.getValue(TYPE);
+                if (type.equals("method") || type.equals("property")) {
+                    String name = attributes.getValue("name");
+                    String returns = attributes.getValue("return");
+                    System.out.println("entry type : " + type + ": " + name + " -> " + returns);
+                    if(name.indexOf(".") == -1) {
+                        System.out.println("Vytvorim metodu pro jquery.");
+                        if(type.equals("method")) {
+                            JsFunctionImpl function = new JsFunctionImpl(null, jQuery, new IdentifierImpl(name, OffsetRange.NONE), Collections.<Identifier>emptyList(), OffsetRange.NONE);
+                            function.addReturnType(new TypeUsageImpl(returns, -1, true));
+                            jQuery.addProperty(name, function);
+                        }
+                    }
+                }
+            }
+        }
+
+        private void addProperties(JsObject global) {
+            try {
+                long start = System.currentTimeMillis();
+                SAXParserFactory factory = SAXParserFactory.newInstance();
+                SAXParser parser = factory.newSAXParser();
+                parser.parse(file, this);
+                long end = System.currentTimeMillis();
+                LOGGER.log(Level.FINE, "Collecting properties from jQuery API file took {0}ms ", (end - start)); //NOI18N
+
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (ParserConfigurationException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (SAXException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    }
+
 }

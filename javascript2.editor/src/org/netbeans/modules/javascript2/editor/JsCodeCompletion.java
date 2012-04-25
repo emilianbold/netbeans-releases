@@ -66,6 +66,7 @@ import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Type;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
+import org.netbeans.modules.javascript2.editor.model.impl.JsObjectReference;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 import org.netbeans.modules.javascript2.editor.model.impl.TypeUsageImpl;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
@@ -427,6 +428,9 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     }
                     if(type == null || type.getAssignmentForOffset(request.anchor).isEmpty()) {
                         // also check, whether the same type is not in the index
+                        if (type instanceof JsObjectReference) {
+                            name = ((JsObjectReference)type).getOriginal().getDeclarationName().getName();
+                        }
                         lastResolvedTypes.add(new TypeUsageImpl(name, -1, true));
                     } 
                     
