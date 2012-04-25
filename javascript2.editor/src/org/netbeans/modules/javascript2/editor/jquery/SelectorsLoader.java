@@ -224,37 +224,37 @@ public class SelectorsLoader extends DefaultHandler {
         }
         
         @Override
-    public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-        if (inSelector){
-            
+        public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+            if (inSelector) {
+
                 Tag current;
                 try {
                     current = Tag.valueOf(qName);
-                } catch(IllegalArgumentException iae) {
+                } catch (IllegalArgumentException iae) {
                     current = Tag.notinterested;
                 }
                 tagPath.add(0, current);
                 if (current == Tag.argument) {
-                    argName = attributes.getValue(NAME);  
-                    argType = attributes.getValue(TYPE);  
+                    argName = attributes.getValue(NAME);
+                    argType = attributes.getValue(TYPE);
                 }
-        } else if(qName.equals(Tag.entry.name())) {
-            String type = attributes.getValue(TYPE); 
-            if (type.equals(SELECTOR)) {
-                String name = attributes.getValue(NAME);
-                if (name.equals(selectorName)) {
-                    inSelector = true;
-                    description = "";
-                    longDescription = "";
-                    sample = "";
-                    fromVersion = longDescription = "";
-                    notes = new ArrayList<String>();
-                    arguments = new ArrayList<Argument>();
+            } else if (qName.equals(Tag.entry.name())) {
+                String type = attributes.getValue(TYPE);
+                if (type.equals(SELECTOR)) {
+                    String name = attributes.getValue(NAME);
+                    if (name.equals(selectorName)) {
+                        inSelector = true;
+                        description = "";
+                        longDescription = "";
+                        sample = "";
+                        fromVersion = longDescription = "";
+                        notes = new ArrayList<String>();
+                        arguments = new ArrayList<Argument>();
+                    }
                 }
             }
+
         }
-        
-    }
 
         @Override
         public void endElement(String uri, String localName, String qName) throws SAXException {
