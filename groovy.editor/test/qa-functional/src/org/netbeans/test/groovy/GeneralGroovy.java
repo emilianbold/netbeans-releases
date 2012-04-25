@@ -115,7 +115,6 @@ public class GeneralGroovy extends JellyTestCase {
             jtName.setText(projectName);
         }
         opNewProjectWizard.finish();
-        new ProjectsTabOperator().getProjectRootNode(projectName);
         waitScanFinished();
     }
 
