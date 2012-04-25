@@ -85,7 +85,7 @@ public class JSFConfigurationPanel extends WebModuleExtender implements WebModul
     private Library jsfCoreLibrary;
     private ServerLibrary serverLibrary;
     private String newLibraryName;
-    private File installedFolder;
+    private File installedResource;
 
     // facelets configuratin
     private boolean enableFacelets;
@@ -267,12 +267,12 @@ public class JSFConfigurationPanel extends WebModuleExtender implements WebModul
         fireChangeEvent();
     }
 
-    public File getInstallFolder(){
-        return installedFolder;
+    public File getInstallResource(){
+        return installedResource;
     }
 
-    public void setInstallFolder(File folder){
-        installedFolder = folder;
+    public void setInstallResource(File folder){
+        installedResource = folder;
         fireChangeEvent();
     }
 

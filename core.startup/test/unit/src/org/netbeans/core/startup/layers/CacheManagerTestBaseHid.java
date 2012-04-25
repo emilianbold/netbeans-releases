@@ -55,6 +55,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -112,7 +114,7 @@ public abstract class CacheManagerTestBaseHid extends NbTestCase implements Imag
         return new URL(new URL(getDataDir().toURI().toURL(), "layers/"), name);
     }
     
-    public void testCacheManager() throws Exception {
+    public void tdestCacheManager() throws Exception {
         ManagerFactory mf = (ManagerFactory)this;
         
         clearWorkDir();
@@ -130,6 +132,23 @@ public abstract class CacheManagerTestBaseHid extends NbTestCase implements Imag
             checkLastModified (f, "baz/thingy", "data/layer1.xml");
             checkLastModified (f, "foo/test1", "data/layer1.xml");
             checkLastModified (f, "bug39210/inline.txt", "data/layer1.xml");
+        }
+    }
+    
+    public void testSameFolderAndFileName() throws Exception {
+        ManagerFactory mf = (ManagerFactory) this;
+
+        clearWorkDir();
+        LayerCacheManager m = mf.createManager();
+        // layer2.xml should override layer1.xml where necessary:
+        List<URL> urls = Arrays.asList(
+            loadResource("data/folder2.xml"),
+            loadResource("data/folder1.xml"));
+        try {
+            FileSystem f = BinaryCacheManagerTest.store(m, urls);
+            fail("Should throw an exception");
+        } catch (IOException ex) {
+            // OK, collision
         }
     }
     

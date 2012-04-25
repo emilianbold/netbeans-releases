@@ -60,6 +60,7 @@ import javax.swing.event.EventListenerList;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
+import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -192,7 +193,12 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
             if (pf2 != null) {
                 return pf2.findPath(rootNode, object);
             } else {
-                return null;
+                Node findedNode = PackageView.findPath(rootNode, object);
+                if (findedNode != null) {
+                    return findedNode;
+                } else {
+                    return null;
+                }
             }
         }
     }

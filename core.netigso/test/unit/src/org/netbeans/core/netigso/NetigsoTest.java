@@ -51,6 +51,7 @@ import org.netbeans.MockModuleInstaller;
 import org.netbeans.MockEvents;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
+import org.netbeans.core.startup.Main;
 import org.netbeans.junit.RandomlyFails;
 
 /**
@@ -59,6 +60,7 @@ import org.netbeans.junit.RandomlyFails;
  *
  * @author Jaroslav Tulach
  */
+@RandomlyFails // assert framework != null or OverlappingFileLockException in BundleCache.<init>
 public class NetigsoTest extends NetigsoHid {
 
     public NetigsoTest(String name) {
@@ -107,7 +109,6 @@ public class NetigsoTest extends NetigsoHid {
 
     }
 
-    @RandomlyFails // assert framework != null or OverlappingFileLockException in BundleCache.<init>
     public void testDashnames() throws Exception {
         MockModuleInstaller installer = new MockModuleInstaller();
         MockEvents ev = new MockEvents();

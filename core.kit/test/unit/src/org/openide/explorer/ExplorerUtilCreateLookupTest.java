@@ -60,12 +60,14 @@ public class ExplorerUtilCreateLookupTest extends org.openide.explorer.windows.T
         super(testName);
     }
     
+    @Override
     protected boolean runInEQ () {
         return true;
     }
     
     /** Setup component with lookup.
      */
+    @Override
     protected void setUp () {
         class ExTC extends org.openide.windows.TopComponent 
         implements java.beans.PropertyChangeListener {
@@ -75,6 +77,7 @@ public class ExplorerUtilCreateLookupTest extends org.openide.explorer.windows.T
                 em.setRootContext (new AbstractNode (new Children.Array ()));
             }
             
+            @Override
             public void propertyChange (java.beans.PropertyChangeEvent ev) {
                 if ("activatedNodes".equals (ev.getPropertyName())) {
                     try {
@@ -87,8 +90,7 @@ public class ExplorerUtilCreateLookupTest extends org.openide.explorer.windows.T
                         }
                         em.setSelectedNodes (getActivatedNodes ());
                     } catch (java.beans.PropertyVetoException ex) {
-                        ex.printStackTrace();
-                        fail (ex.getMessage());
+                        throw new AssertionError(ex);
                     }
                 }
             }
