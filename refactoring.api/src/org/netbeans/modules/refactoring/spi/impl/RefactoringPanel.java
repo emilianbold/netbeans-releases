@@ -692,7 +692,7 @@ public class RefactoringPanel extends JPanel {
 
         cancelRequest.set(false);
         stopButton.setVisible(isQuery);
-        stopButton.setEnabled(true);
+        stopButton.setEnabled(showParametersPanel);
         final String description = ui.getDescription();
         setToolTipText("<html>" + description + "</html>"); // NOI18N
         final Collection<RefactoringElement> elements = session.getRefactoringElements();
@@ -770,7 +770,6 @@ public class RefactoringPanel extends JPanel {
                                             public void run() {
                                                 root.setNodeLabel(description + getErrorDesc(0, occurrences));
                                                 if (last) {
-                                                    stopButton.setEnabled(false);
                                                     tree.repaint();
                                                 }
                                                 
@@ -803,6 +802,12 @@ public class RefactoringPanel extends JPanel {
                         progressHandle.finish();
                         cont.makeBusy(false);
                         setTreeControlsEnabled(true);
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                stopButton.setEnabled(false);
+                            }
+                        });
                     }
                     
                     if (!(isQuery && showParametersPanel)) {
