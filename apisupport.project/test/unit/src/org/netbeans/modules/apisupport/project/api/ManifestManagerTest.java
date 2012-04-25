@@ -137,6 +137,8 @@ public class ManifestManagerTest extends NbTestCase {
         TestUtil.createJar(jar, contents, mf);
         ManifestManager mm = ManifestManager.getInstanceFromJAR(jar, true);
         assertNull(mm.getGeneratedLayer());
+        assertEquals("One", 1, mm.getProvidedTokens().length);
+        assertEquals("cnb.platform.module", mm.getProvidedTokens()[0]);
 
         contents.put("META-INF/generated-layer.xml", "</filesystem>");
         jar = new File(getWorkDir(), "test2.jar");
