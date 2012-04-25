@@ -484,23 +484,7 @@ public class WebProjectValidation extends J2eeTestCase {
         editor.replace("try {",
                 "try {\nout.println(\"<title>Servlet with name=\"+request.getParameter(\"name\")+\"</title>\");");
         new ActionNoBlock(null, "Run File").perform(editor);
-        NbDialogOperator dialog;
-        try {
-            dialog = new NbDialogOperator("Set Servlet Execution URI");
-        } catch (TimeoutExpiredException e) {
-            // workaround bug 201668
-            System.out.println("Bug 201668");
-            e.printStackTrace(System.out);
-            // close all error and information dialogs
-            JDialog jDialog;
-            do {
-                jDialog = NbDialogOperator.findJDialog(ComponentSearcher.getTrueChooser("Any dialog"));
-                if (jDialog != null) {
-                    new NbDialogOperator(jDialog).close();
-                }
-            } while (jDialog != null);
-            return;
-        }
+        NbDialogOperator dialog = new NbDialogOperator("Set Servlet Execution URI");
         JComboBoxOperator combo = new JComboBoxOperator(dialog);
         combo.setSelectedItem(combo.getSelectedItem() + "?name=Servlet1");
         dialog.ok();
