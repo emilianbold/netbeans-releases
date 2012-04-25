@@ -674,10 +674,10 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
         lblProfiles.setFont(fnt);
     }
     
-    private String createPropertiesList(Map<String,String> properties) {
+    public static String createPropertiesList(Map<? extends String,? extends String> properties) {
         StringBuilder b = new StringBuilder();
         if (properties != null) {
-            for (Map.Entry<String,String> entry : properties.entrySet()) {
+            for (Map.Entry<? extends String,? extends String> entry : properties.entrySet()) {
                 if (b.length() > 0) {
                     b.append('\n');
                 }

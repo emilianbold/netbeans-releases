@@ -53,6 +53,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.customizer.ModelHandle2;
+import org.netbeans.modules.maven.customizer.ActionMappings;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
@@ -244,6 +245,7 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
         ModelHandle2.Configuration conf = ModelHandle2.createCustomConfiguration(pnl.getConfigurationId());
         conf.setShared(pnl.isShared());
         conf.setActivatedProfiles(pnl.getProfiles());
+        conf.setProperties(ActionMappings.convertStringToActionProperties(pnl.getProperties()));
         handle.addConfiguration(conf);
         handle.markConfigurationsAsModified();
         createListModel();
@@ -258,12 +260,14 @@ private void btnEditActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST
         pnl.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ConfigurationsPanel.class, "ACSD_Edit_Config"));
         pnl.setConfigurationId(conf.getId());
         pnl.setProfiles(conf.getActivatedProfiles());
+        pnl.setProperties(ActionMappings.createPropertiesList(conf.getProperties()));
         pnl.setShared(conf.isShared());
         DialogDescriptor dd = new DialogDescriptor(pnl, NbBundle.getMessage(ConfigurationsPanel.class, "TIT_Edit_Config"));
         Object ret = DialogDisplayer.getDefault().notify(dd);
         if (ret == DialogDescriptor.OK_OPTION) {
             conf.setShared(pnl.isShared());
             conf.setActivatedProfiles(pnl.getProfiles());
+            conf.setProperties(ActionMappings.convertStringToActionProperties(pnl.getProperties()));
             handle.markConfigurationsAsModified();
             createListModel();
             lstConfigurations.setSelectedValue(conf, true);
