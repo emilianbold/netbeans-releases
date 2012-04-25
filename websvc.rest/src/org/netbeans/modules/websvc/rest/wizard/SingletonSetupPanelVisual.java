@@ -79,7 +79,9 @@ import org.openide.util.Exceptions;
  *
  * @author  Nam Nguyen
  */
-public class SingletonSetupPanelVisual extends javax.swing.JPanel implements AbstractPanel.Settings {
+public class SingletonSetupPanelVisual extends javax.swing.JPanel 
+    implements AbstractPanel.Settings, SourcePanel 
+{
 
     private Project project;
     private List<ChangeListener> listeners;
@@ -520,8 +522,13 @@ private void uriTextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:e
         }
     }
 
+    @Override
+    public SourceGroup getSourceGroup() {
+        return (SourceGroup) locationComboBox.getSelectedItem();
+    }
+
     private void updateSourceGroupPackages() {
-        SourceGroup sourceGroup = (SourceGroup) locationComboBox.getSelectedItem();
+        SourceGroup sourceGroup = getSourceGroup();
         if (sourceGroup != null) {
             ComboBoxModel model = PackageView.createListView(sourceGroup);
             if (model.getSelectedItem() != null && model.getSelectedItem().toString().startsWith("META-INF") && model.getSize() > 1) { // NOI18N
