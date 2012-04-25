@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.groovy.editor.api;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Locale;
@@ -53,13 +52,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.Icon;
-import org.codehaus.groovy.ast.ASTNode;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.IndexSearcher;
 import org.netbeans.modules.csl.api.IndexSearcher.Descriptor;
@@ -73,7 +70,6 @@ import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport.Kind;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -226,33 +222,22 @@ public class GroovyTypeSearcher implements IndexSearcher {
 
         @Override
         public void open() {
-            ASTNode node = AstUtilities.getForeignNode(element);
-            
-            if (node != null) {
-                // TODO - embedding context?
-                try {
-                    int offset = AstUtilities.getRange(node, (BaseDocument) element.getDocument()).getStart();
-                    GsfUtilities.open(element.getFileObject(), offset, element.getName());
-                } catch (IOException ioe) {
-                    Exceptions.printStackTrace(ioe);
-                }
-                return;
-            }
-            
             FileObject fileObject = element.getFileObject();
             if (fileObject == null) {
                 NotifyDescriptor nd =
-                    new NotifyDescriptor.Message(NbBundle.getMessage(GroovyTypeSearcher.class, "FileDeleted"), 
+                    new NotifyDescriptor.Message(NbBundle.getMessage(GroovyTypeSearcher.class, "FileDeleted"),
                     NotifyDescriptor.Message.ERROR_MESSAGE);
                 DialogDisplayer.getDefault().notify(nd);
                 // TODO: Try to remove the item from the index? Can't fix yet because the url is wiped
                 // out by getFileObject (to avoid checking file existence multiple times; use a boolean
                 // flag for that instead)
-                
-                return;
+            } else {
+
+                // TODO: Would be good to change offset to the start of the class decalaration instead 
+                // of zero. Unfortunatelly we don't have such an information in the index so far and
+                // parsing whole AST for that is too expensive (see issue 183727 for background)
+                GsfUtilities.open(fileObject, 0, element.getName());
             }
-            
-            helper.open(fileObject, element);
         }
 
         @Override
