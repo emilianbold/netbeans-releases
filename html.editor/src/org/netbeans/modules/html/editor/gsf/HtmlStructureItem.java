@@ -57,14 +57,15 @@ import org.openide.util.Exceptions;
  */
 final class HtmlStructureItem implements StructureItem {
     
-    private HtmlElementHandle handle;
-    private OffsetRange documentOffsetRange;
-    private String idAttributeValue;
-    private String classAttributeValue;
+    private final HtmlElementHandle handle;
+    private final OffsetRange documentOffsetRange;
+    private final String idAttributeValue;
+    private final String classAttributeValue;
     private List<StructureItem> items;
     //remember from what mime path the snapshot came from
-    private MimePath mimePath;
-
+    private final MimePath mimePath;
+    private final boolean isLeaf;
+    
     public HtmlStructureItem(OpenTag node, HtmlElementHandle handle, Snapshot snapshot) {
         this.handle = handle;
         int dfrom = snapshot.getOriginalOffset(node.from());
@@ -73,6 +74,9 @@ final class HtmlStructureItem implements StructureItem {
         this.idAttributeValue = getAttributeValue(node, "id"); //NOI18N
         this.classAttributeValue = getAttributeValue(node, "class"); //NOI18N
         this.mimePath = snapshot.getMimePath();
+        //acceptable, not 100% correct - may say it is not leaf, but then there 
+        //won't be children if all children are virtual with no non-virtual ancestors
+        this.isLeaf = node.children(OpenTag.class).isEmpty(); 
     }
 
     @Override
@@ -135,8 +139,7 @@ final class HtmlStructureItem implements StructureItem {
 
     @Override
     public boolean isLeaf() {
-        //The child if empty if it hasn't any nested items. If it has only text it's empty.
-        return getNestedItems().isEmpty();
+        return isLeaf;
     }
 
     @Override
