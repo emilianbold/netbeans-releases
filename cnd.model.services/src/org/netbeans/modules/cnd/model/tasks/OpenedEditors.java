@@ -164,7 +164,7 @@ public final class OpenedEditors {
 
         for(JTextComponent editor : EditorRegistry.componentList()) {
             // skip non-editor components
-            if (isHandledEditor(editor)) { // NOI18N
+            if (isHandledEditor(editor)) {
                 FileObject fo = getFileObject(editor);
 
                 if (isSupported(fo)) {
@@ -308,6 +308,6 @@ public final class OpenedEditors {
         if (editor.getClientProperty(OpenedEditors.CND_EDITOR_COMPONENT) != null) {
             return true;
         }
-        return editor.getClass().getName().equals("org.openide.text.QuietEditorPane");
+        return editor.getClass().getName().equals("org.openide.text.QuietEditorPane"); // NOI18N
     }
 }
