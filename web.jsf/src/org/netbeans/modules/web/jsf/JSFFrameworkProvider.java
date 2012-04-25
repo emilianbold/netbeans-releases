@@ -159,10 +159,10 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
         if (libraryType == JSFConfigurationPanel.LibraryType.NEW) {
             // create new jsf library
             String libraryName = panel.getNewLibraryName();
-            File installFolder = panel.getInstallFolder();
-            if (installFolder != null && libraryName != null) {
+            File installResource = panel.getInstallResource();
+            if (installResource != null && libraryName != null) {
                 try {
-                    JSFUtils.createJSFUserLibrary(installFolder, libraryName);
+                    JSFUtils.createJSFUserLibrary(installResource, libraryName);
                     jsfLibrary = LibraryManager.getDefault().getLibrary(libraryName);
                 } catch (IOException exception) {
                     LOGGER.log(Level.WARNING, "Exception during extending an web project", exception); //NOI18N
