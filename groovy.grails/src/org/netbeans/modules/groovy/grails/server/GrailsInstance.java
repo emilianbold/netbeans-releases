@@ -49,13 +49,8 @@ import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.groovy.grails.api.GrailsConstants;
 import org.netbeans.modules.groovy.grails.api.GrailsPlatform;
-import org.netbeans.modules.groovy.grails.api.GrailsPlatform.Version;
 import org.netbeans.spi.server.ServerInstanceImplementation;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.ChildFactory;
-import org.openide.nodes.Children;
-import org.openide.nodes.FilterNode;
-import org.openide.nodes.Node;
+import org.openide.nodes.*;
 import org.openide.util.NbBundle;
 
 /**
@@ -65,10 +60,9 @@ import org.openide.util.NbBundle;
 public final class GrailsInstance implements ServerInstanceImplementation {
 
     private final GrailsChildFactory childFactory;
-
     private final GrailsPlatform runtime;
-
     private final Node node;
+    
 
     private GrailsInstance(GrailsInstanceProvider provider, GrailsPlatform runtime) {
         this.childFactory = new GrailsChildFactory(provider);
@@ -81,22 +75,26 @@ public final class GrailsInstance implements ServerInstanceImplementation {
         return new GrailsInstance(provider, GrailsPlatform.getDefault());
     }
 
+    @Override
     public Node getBasicNode() {
         synchronized (this) {
             return new FilterNode(node, Children.LEAF);
         }
     }
 
+    @Override
     public Node getFullNode() {
         synchronized (this) {
             return node;
         }
     }
 
+    @Override
     public JComponent getCustomizer() {
         return null;
     }
 
+    @Override
     public final String getDisplayName() {
         String version;
         if (!runtime.isConfigured()) {
@@ -107,6 +105,7 @@ public final class GrailsInstance implements ServerInstanceImplementation {
         return NbBundle.getMessage(GrailsInstance.class, "GrailsInstance.displayName", version);
     }
 
+    @Override
     public final String getServerDisplayName() {
         return NbBundle.getMessage(GrailsInstance.class, "GrailsInstance.serverDisplayName");
     }
@@ -121,10 +120,12 @@ public final class GrailsInstance implements ServerInstanceImplementation {
         }
     }
 
+    @Override
     public final boolean isRemovable() {
         return false;
     }
 
+    @Override
     public final void remove() {
         // noop
     }
