@@ -195,16 +195,7 @@ public final class ElementScanningTask extends IndexingAwareParserResultTask<Par
             }
         }
 
-        if (!isCancelled()) {
-            //do not run the nodes update under parsing lock!
-            RequestProcessor.getDefault().post(new Runnable() {
-
-                @Override
-                public void run() {
-                    ui.refresh(new RootStructureItem(items), fileObject);
-                }
-            });
-        }
+        ui.refresh(new RootStructureItem(items), fileObject);
     }
 
     public @Override int getPriority() {
