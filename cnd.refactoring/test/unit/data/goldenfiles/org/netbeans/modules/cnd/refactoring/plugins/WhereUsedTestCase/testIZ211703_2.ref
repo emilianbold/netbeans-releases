@@ -1,4 +1,4 @@
 References in file WhereUsedTestCase/iz211703_1.c
-[228-228] <b>get_execsect_fillbuf211703</b>(1, 2);
+[12:5-12:31] <b>get_execsect_fillbuf211703</b>(1, 2);
 References in file WhereUsedTestCase/iz211703_2.c
-[194-194] <b>get_execsect_fillbuf211703</b>(11, 21);
+[8:5-8:31] <b>get_execsect_fillbuf211703</b>(11, 21);
