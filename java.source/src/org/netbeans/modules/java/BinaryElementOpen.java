@@ -41,6 +41,8 @@
  */
 
 package org.netbeans.modules.java;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Element;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
@@ -51,6 +53,6 @@ import org.netbeans.api.java.source.ElementHandle;
  */
 public interface BinaryElementOpen {
     
-    public boolean open(ClasspathInfo cpInfo, ElementHandle<? extends Element> toOpen);
+    public boolean open(ClasspathInfo cpInfo, ElementHandle<? extends Element> toOpen, AtomicBoolean cancel);
 
 }

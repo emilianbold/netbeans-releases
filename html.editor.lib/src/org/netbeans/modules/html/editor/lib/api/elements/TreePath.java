@@ -86,19 +86,11 @@ public class TreePath {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        List<Element> p = path();
-        for(int i = p.size() - 1; i >= 0; i-- ) {
-            Element node = p.get(i);
-            Node parent = node.parent();
-            int myIndex = parent == null ? 0 : indexInSimilarNodes(node.parent(), node);
-            sb.append(node.id());
-            if(myIndex > 0) {
-                sb.append("(").append(myIndex).append(")");
-            }
-            sb.append('/');
-        }
-        return sb.toString();
+        return getElementPath();
+    }
+    
+    private String getElementPath() {
+        return ElementUtils.encodeToString(this);
     }
     
     @Override
@@ -107,69 +99,13 @@ public class TreePath {
             return false;
         }
         TreePath path = (TreePath)o;
-        
-        List<Element> p1 = path();
-        List<Element> p2 = path.path();
-        
-        if(p1.size() != p2.size()) {
-            return false;
-        }
-        
-        for(int i = 0; i < p1.size(); i++) {
-            Element n1 = p1.get(i);
-            Element n2 = p2.get(i);
-            
-            Node n1Parent = n1.parent();
-            Node n2Parent = n2.parent();
-            
-            if(n1Parent == null && n2Parent == null) {
-                continue;
-            }
-            
-            int n1Index = indexInSimilarNodes(n1Parent, n1);
-            int n2Index = indexInSimilarNodes(n2Parent, n2);
-            
-            if(n1Index != n2Index) {
-                return false;
-            }
-            
-            String sig1 = getSignature(n1);
-            String sig2 = getSignature(n2);
-            if(!sig1.equals(sig2)) {
-                return false;
-            }
-            
-        }
-        
-        return true;
+        return getElementPath().equals(path.getElementPath());
     }
-
-    private String getSignature(Element node) {
-        return new StringBuilder().append(node.id()).append("[").append(node.type()).append("]").toString();
-    }
-    
-    private static int indexInSimilarNodes(Node parent, Element node) {
-        int index = -1;
-        for(Element child : parent.children()) {
-            if(node.id().equals(child.id()) && node.type() == child.type()) {
-                index++;
-            }
-            if(child == node) {
-                break;
-            }
-        }
-        return index;
-    }
-    
     
     @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 47 * hash + (this.first != null ? this.first.hashCode() : 0);
-        hash = 47 * hash + (this.last != null ? this.last.hashCode() : 0);
-        return hash;
+        return getElementPath().hashCode();
     }
-    
     
     
 }

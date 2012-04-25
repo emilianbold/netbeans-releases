@@ -43,21 +43,15 @@
  */
 package org.netbeans.modules.java.hints;
 
-import com.sun.source.util.TreePath;
-import java.util.List;
 import java.util.Locale;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.SourceUtilsTestUtil;
-import org.netbeans.modules.java.hints.infrastructure.TreeRuleTestBase;
-import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.Fix;
-import org.openide.util.NbBundle;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.hints.test.api.HintTest;
 
 /**
  *
  * @author Jaroslav Tulach
  */
-public class UtilityClassTest extends TreeRuleTestBase {
+public class UtilityClassTest extends NbTestCase {
     
     public UtilityClassTest(String testName) {
         super(testName);
@@ -66,7 +60,6 @@ public class UtilityClassTest extends TreeRuleTestBase {
     @Override
     protected void setUp() throws Exception {
         Locale.setDefault(Locale.US);
-        SourceUtilsTestUtil.setLookup(new Object[0], getClass().getClassLoader());
     }
     
     
@@ -91,9 +84,8 @@ public class UtilityClassTest extends TreeRuleTestBase {
             ;
         
         String gold = before + after + " private Test() { } }";
-        performFixTest("test/Test.java", before + after + "}", before.length(), 
+        performFixTest(before + after + "}",
             "0:27-0:31:verifier:Utility class without constructor",
-            "MSG_PrivateConstructor",
             gold
         );
     }
@@ -128,14 +120,17 @@ public class UtilityClassTest extends TreeRuleTestBase {
             " public static String computeDiff(String x, String y) { return x + y; }" +
             "}";
         
-        performAnalysisTest("test/Test.java", before + after, before.length());
+        performAnalysisTest("test/Test.java", before + after, before.length(), "0:56-0:60:hint:Utility class with visible constructor");
     }
 
     public void testNoExceptionForVeryBrokenClass() throws Exception {
         String before = "package test; public class Test { private static final cla";
         String after = "ss private static final class A{} }";
         
-        performAnalysisTest("test/Test.java", before + after, before.length());
+        HintTest.create()
+                .input(before + after, false)
+                .run(UtilityClass.class)
+                .assertWarnings();
     }
     
     public void testDisabledOnEnums() throws Exception {
@@ -163,26 +158,82 @@ public class UtilityClassTest extends TreeRuleTestBase {
 
     public void testMultipleConstructors() throws Exception {
         performAnalysisTest("test/Test.java",
-                            "package test; public class Te|st {" +
+                            "package test; public class Test {" +
                             "    public Test() { }" +
                             "    public Test(int i) { }" +
                             "}");
     }
     
-    protected List<ErrorDescription> computeErrors(CompilationInfo info, TreePath path) {
-        SourceUtilsTestUtil.setSourceLevel(info.getFileObject(), sourceLevel);
-        return UtilityClass.withoutConstructor().run(info, path);
+    public void testDisabledWhenMain() throws Exception {
+        HintTest.create()
+                .input("package test; public class Test {" +
+                       " public static void main(String... args) { }" +
+                       "}")
+                .run(UtilityClass.class)
+                .assertWarnings();
+    }
+    
+    //public/protected constructor in UtilityClass:
+    public void testEnabledWhenConstructorIsThere() throws Exception {
+        String before = "package test; public class Test extends Object {" +
+            " public Te";
+        String after = "st() { }" +
+            " public static String computeDiff(String x, String y) { return x + y; }" +
+            "}";
+        
+        String golden = (before + after).replace("public Test()", "private Test()");
+        performFixTest(before + after, 
+            "0:56-0:60:hint:Utility class with visible constructor",
+            golden
+        );
+    }
+    public void testDisabledWhenPrivateConstructorIsThere() throws Exception {
+        String before = "package test; public class Test extends Object {" +
+            " private Te";
+        String after = "st() { }" +
+            " public static String computeDiff(String x, String y) { return x + y; }" +
+            "}";
+        
+        performAnalysisTest("test/Test.java", before + after, before.length());
+    }
+    public void testDisabledWhenPackagePrivateConstructorIsThere() throws Exception {
+        String before = "package test; public class Test extends Object {" +
+            " Te";
+        String after = "st() { }" +
+            " public static String computeDiff(String x, String y) { return x + y; }" +
+            "}";
+        
+        performAnalysisTest("test/Test.java", before + after, before.length());
+    }
+    
+    public void testException197721() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test; public class Test extends Exception {\n" +
+                            "    private static final long serialVersionUID = 1L;\n" +
+                            "    public Test() { }\n" +
+                            "    public Test(int i) { }\n" +
+                            "}");
+    }
+    
+    private void performAnalysisTest(String fileName, String code, int ignore, String... golden) throws Exception {
+        performAnalysisTest(fileName, code, golden);
+    }
+    
+    private void performAnalysisTest(String fileName, String code, String... golden) throws Exception {
+        HintTest.create()
+                .input(fileName, code)
+                .run(UtilityClass.class)
+                .assertWarnings(golden);
     }
 
-    @Override
-    protected String toDebugString(CompilationInfo info, Fix f) {
-        return f.getText();
-    }
-
-    private String sourceLevel = "1.5";
-
-    static {
-        NbBundle.setBranding("test");
+    private void performFixTest(String code, String warning, String result) throws Exception {
+        HintTest.create()
+                .input(code)
+                .run(UtilityClass.class)
+                .findWarning(warning)
+                .applyFix()
+                .assertCompilable()
+                .assertOutput(result);
     }
     
 }

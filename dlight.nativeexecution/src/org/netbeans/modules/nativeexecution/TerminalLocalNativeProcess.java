@@ -67,6 +67,7 @@ import org.netbeans.modules.nativeexecution.api.util.Signal;
 import org.netbeans.modules.nativeexecution.support.EnvWriter;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
+import org.netbeans.modules.nativeexecution.api.util.PathUtils;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.netbeans.modules.nativeexecution.support.InstalledFileLocatorProvider;
 import org.openide.modules.InstalledFileLocator;
@@ -138,7 +139,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
             FileOutputStream shfos = new FileOutputStream(shFileFile);
 
-            Charset scriptCharset = null;
+            Charset scriptCharset;
 
             if (info.getCharset() != null) {
                 scriptCharset = info.getCharset();
@@ -154,7 +155,13 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                     ExternalTerminalAccessor.getDefault();
 
             if (terminalInfo.getTitle(terminal) == null) {
-                terminal = terminal.setTitle(commandLine);
+                String title = getExecutableName();
+
+                if (title == null) {
+                    title = NbBundle.getMessage(TerminalLocalNativeProcess.class, "TerminalLocalNativeProcess.terminalTitle.text"); // NOI18N
+                }
+
+                terminal = terminal.setTitle(title);
             }
 
             List<String> terminalArgs = new ArrayList<String>();
@@ -391,5 +398,29 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
     private static String loc(String key, String... params) {
         return NbBundle.getMessage(TerminalLocalNativeProcess.class, key, params);
+    }
+
+    private String getExecutableName() {
+        String exec = info.getExecutable();
+
+        if (exec != null) {
+            if (new File(exec).exists()) {
+                return new File(exec).getName();
+            }
+
+            if (osFamily == OSFamily.WINDOWS && new File(exec + ".exe").exists()) { // NOI18N
+                return new File(exec).getName();
+            }
+        }
+
+        String[] params = Utilities.parseParameters(info.getCommandLineForShell());
+        if (params != null && params.length > 0) {
+            exec = params[0];
+            if (exec != null && new File(exec).exists()) {
+                return new File(exec).getName();
+            }
+        }
+
+        return null;
     }
 }

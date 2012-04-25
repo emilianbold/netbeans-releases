@@ -52,6 +52,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.websvc.api.support.LogUtils;
 import org.netbeans.modules.websvc.rest.RestUtils;
@@ -59,6 +60,8 @@ import org.netbeans.modules.websvc.rest.codegen.Constants.HttpMethodType;
 import org.netbeans.modules.websvc.rest.codegen.Constants.MimeType;
 import org.netbeans.modules.websvc.rest.codegen.GenericResourceGenerator;
 import org.netbeans.modules.websvc.rest.codegen.model.GenericResourceBean;
+import org.netbeans.modules.websvc.rest.spi.RestSupport;
+import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
 import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
 import org.netbeans.modules.websvc.rest.wizard.PatternResourcesSetupPanel.Pattern;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -81,16 +84,41 @@ public class PatternResourcesIterator implements WizardDescriptor.InstantiatingI
     private transient AbstractPanel[] panels;
     private RequestProcessor.Task generatorTask;
  
+    @Override
     public Set instantiate() throws IOException {
         final Set<FileObject> result = new HashSet<FileObject>();
         try {
             Project project = Templates.getProject(wizard);
-            RestUtils.ensureRestDevelopmentReady(project);
+            
+            final RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
+            String restAppPackage = null;
+            String restAppClass = null;
+            
+            if( restSupport instanceof WebRestSupport) {
+                Object useJersey = wizard.getProperty(WizardProperties.USE_JERSEY);
+                if ( useJersey != null && useJersey.toString().equals("true")){     // NOI18N 
+                    ((WebRestSupport)restSupport).enableRestSupport( WebRestSupport.RestConfig.DD);
+                }
+                else {
+                    restAppPackage = (String) wizard
+                            .getProperty(WizardProperties.APPLICATION_PACKAGE);
+                    restAppClass = (String) wizard
+                            .getProperty(WizardProperties.APPLICATION_CLASS);
+                    if (restAppPackage != null && restAppClass != null) {
+                        ((WebRestSupport) restSupport)
+                                .enableRestSupport(WebRestSupport.RestConfig.IDE);
+                    }
+                }
+            }
+            if ( restSupport!= null ){
+                restSupport.ensureRestDevelopmentReady();
+            }
+            
             FileObject tmpTargetFolder = Templates.getTargetFolder(wizard);
 
+            SourceGroup sourceGroup = (SourceGroup) wizard.getProperty(WizardProperties.SOURCE_GROUP);
             if (tmpTargetFolder == null) {
                 String targetPackage = (String) wizard.getProperty(WizardProperties.TARGET_PACKAGE);
-                SourceGroup sourceGroup = (SourceGroup) wizard.getProperty(WizardProperties.SOURCE_GROUP);
                 tmpTargetFolder = SourceGroupSupport.getFolderForPackage(sourceGroup, targetPackage, true);
             }
 
@@ -99,15 +127,25 @@ public class PatternResourcesIterator implements WizardDescriptor.InstantiatingI
             final ProgressDialog dialog = new ProgressDialog(NbBundle.getMessage(
                     PatternResourcesIterator.class, "LBL_RestServicesFromPatternsProgress"));
     
+            // create application config class if required
+            final FileObject restAppPack = restAppPackage == null ? null :  
+                SourceGroupSupport.getFolderForPackage(sourceGroup, restAppPackage, true);
+            final String appClassName = restAppClass;
+            
             generatorTask = RequestProcessor.getDefault().create(new Runnable() {
                 public void run() {
                     ProgressHandle pHandle = dialog.getProgressHandle();
                     pHandle.start();
                     try {
+                        if ( restAppPack != null && appClassName!= null ){
+                            RestUtils.createApplicationConfigClass( restAppPack, appClassName);
+                        }
                         for (GenericResourceBean bean : resourceBeans) {
                             result.addAll(new GenericResourceGenerator(targetFolder, bean).generate(pHandle));
                         }
-                        
+                        restSupport.configure(
+                                wizard.getProperty(
+                                        WizardProperties.RESOURCE_PACKAGE).toString());
                         for (FileObject fobj : result) {
                             DataObject dobj = DataObject.find(fobj);
                             EditorCookie cookie = dobj.getCookie(EditorCookie.class);
@@ -121,8 +159,6 @@ public class PatternResourcesIterator implements WizardDescriptor.InstantiatingI
                     }
                 }
             });
-            RestUtils.configRestPackages(project, 
-                    wizard.getProperty(WizardProperties.RESOURCE_PACKAGE).toString());
             generatorTask.schedule(50);
 
             // logging usage of wizard

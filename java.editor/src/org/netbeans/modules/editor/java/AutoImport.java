@@ -44,9 +44,12 @@
 
 package org.netbeans.modules.editor.java;
 
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
@@ -75,6 +78,7 @@ public class AutoImport extends SimpleTypeVisitor6<Void, Void> {
     private CompilationInfo info;
     private StringBuilder builder;
     private TreePath path;
+    private Set<String> importedTypes = new HashSet<String>();
 
     private AutoImport(CompilationInfo info) {
         this.info = info;
@@ -94,6 +98,10 @@ public class AutoImport extends SimpleTypeVisitor6<Void, Void> {
         this.path = treePath;
         visit(type, null);
         return builder;
+    }
+
+    public Set<String> getAutoImportedTypes() {
+        return importedTypes;
     }
     
     @Override
@@ -116,7 +124,14 @@ public class AutoImport extends SimpleTypeVisitor6<Void, Void> {
         ElementKind kind = element.getEnclosingElement().getKind();
         if (kind.isClass() || kind.isInterface() || kind == ElementKind.PACKAGE) {
             try {
-                name = SourceUtils.resolveImport(info, path, name);
+                String s = SourceUtils.resolveImport(info, path, name);
+                int idx = s.indexOf('.');
+                if (idx < 0) {
+                    importedTypes.add(name);
+                } else {
+                    importedTypes.add(name.substring(0, name.length() - s.length() + idx));
+                }
+                name = s;
             } catch (Exception e) {
                 Logger.getLogger("global").log(Level.INFO, null, e); //NOI18N
             }
