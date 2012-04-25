@@ -1077,7 +1077,7 @@ public class LuceneIndex implements Index.Transactional, Runnable {
                             txThread,
                             Thread.currentThread()));
                     LOGGER.log(
-                        Level.WARNING,
+                        Level.FINE,
                         "Using stale writer",   //NOI18N
                         t);
                 }
@@ -1092,7 +1092,7 @@ public class LuceneIndex implements Index.Transactional, Runnable {
                             txThread,
                             Thread.currentThread()));
                     LOGGER.log(
-                        Level.WARNING,
+                        Level.FINE,
                         "Multiple writers",   //NOI18N
                         t);
                 }
