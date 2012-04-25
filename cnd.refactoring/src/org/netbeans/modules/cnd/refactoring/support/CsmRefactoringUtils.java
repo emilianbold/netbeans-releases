@@ -528,9 +528,17 @@ public final class CsmRefactoringUtils {
     private static CsmObject findInnerFileObject(CsmOffsetable csmOffsetable) {
         final CsmFile containingFile = csmOffsetable.getContainingFile();
         if (containingFile != null) {
-            CsmObject obj = findInnerFileObject(containingFile, csmOffsetable.getStartOffset()-1);
-            if (obj != null) {
-                return obj;
+            int offset = csmOffsetable.getStartOffset();
+            if (offset > 0) {
+                // trying to find previous enclosing element => start with previous offset
+                CsmObject obj = findInnerFileObject(containingFile, offset-1);
+                if (obj != null) {
+                    // previous element can be just previous declaration on file level => it is not enclosing
+                    if (CsmKindUtilities.isOffsetable(obj) && (((CsmOffsetable)obj).getEndOffset() < offset)) {
+                        return containingFile;
+                    }
+                    return obj;
+                }
             }
         }
         return containingFile;

@@ -1,0 +1,4 @@
+References in file WhereUsedTestCase/iz211703_1.c
+[195-195] <b>exceeds_max_align211703</b>(11);
+References in file WhereUsedTestCase/iz211703_2.c
+[161-161] <b>exceeds_max_align211703</b>(10);
