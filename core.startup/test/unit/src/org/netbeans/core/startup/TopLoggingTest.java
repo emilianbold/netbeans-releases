@@ -300,6 +300,82 @@ public class TopLoggingTest extends NbTestCase {
 
     }
 
+    public void testFileRotationByDefault() throws Exception {
+        for (int i = 0; i < 5; i++) {
+            // simulate shutdown
+            TopLogging.flush(false);
+            TopLogging.close();
+            // simulate restart
+            TopLogging.flush(true);
+            TopLogging.initialize();
+        }
+
+        File log = new File(new File(new File(getWorkDir(), "var"), "log"), "messages.log");
+        assertTrue("Log file exists: " + log, log.canRead());
+
+        File log1 = new File(new File(new File(getWorkDir(), "var"), "log"), "messages.log.1");
+        assertTrue("Backup file exists: " + log1, log1.canRead());
+
+        File log2 = new File(new File(new File(getWorkDir(), "var"), "log"), "messages.log.2");
+        assertTrue("Backup file exists: " + log2, log2.canRead());
+
+        File log3 = new File(new File(new File(getWorkDir(), "var"), "log"), "messages.log.3");
+        assertFalse("Backup file does not exist: " + log3, log3.canRead());
+    }
+
+    public void testFileRotationWithSystemProperty() throws Exception {
+        for (int i = 0; i < 6; i++) {
+            // simulate shutdown
+            TopLogging.flush(false);
+            TopLogging.close();
+            // set system property
+            System.setProperty("org.netbeans.log.numberOfFiles", "4");
+            // simulate restart
+            TopLogging.flush(true);
+            TopLogging.initialize();
+        }
+
+        File log = new File(new File(new File(getWorkDir(), "var"), "log"), "messages.log");
+        assertTrue("Log file exists: " + log, log.canRead());
+
+        File log1 = new File(new File(new File(getWorkDir(), "var"), "log"), "messages.log.1");
+        assertTrue("Backup file exists: " + log1, log1.canRead());
+
+        File log2 = new File(new File(new File(getWorkDir(), "var"), "log"), "messages.log.2");
+        assertTrue("Backup file exists: " + log2, log2.canRead());
+
+        File log3 = new File(new File(new File(getWorkDir(), "var"), "log"), "messages.log.3");
+        assertTrue("Backup file exists: " + log3, log3.canRead());
+
+        File log4 = new File(new File(new File(getWorkDir(), "var"), "log"), "messages.log.4");
+        assertFalse("Backup file does not exist: " + log4, log4.canRead());
+    }
+
+    public void testFileRotationAtLeastThreeFiles() throws Exception {
+        for (int i = 0; i < 5; i++) {
+            // simulate shutdown
+            TopLogging.flush(false);
+            TopLogging.close();
+            // set system property
+            System.setProperty("org.netbeans.log.numberOfFiles", "2");
+            // simulate restart
+            TopLogging.flush(true);
+            TopLogging.initialize();
+        }
+
+        File log = new File(new File(new File(getWorkDir(), "var"), "log"), "messages.log");
+        assertTrue("Log file exists: " + log, log.canRead());
+
+        File log1 = new File(new File(new File(getWorkDir(), "var"), "log"), "messages.log.1");
+        assertTrue("Backup file exists: " + log1, log1.canRead());
+
+        File log2 = new File(new File(new File(getWorkDir(), "var"), "log"), "messages.log.2");
+        assertTrue("Backup file exists: " + log2, log2.canRead());
+
+        File log3 = new File(new File(new File(getWorkDir(), "var"), "log"), "messages.log.3");
+        assertFalse("Backup file does not exist: " + log3, log3.canRead());
+    }
+
     public void testCanInfluenceBehaviourBySettingALevelProperty() throws Exception {
         System.setProperty(TopLoggingTest.class.getName() + ".level", "100");
         LogManager.getLogManager().readConfiguration();

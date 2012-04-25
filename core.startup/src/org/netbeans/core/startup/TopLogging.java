@@ -417,21 +417,27 @@ public final class TopLogging {
             try {
                 File dir = new File(new File(home, "var"), "log");
                 dir.mkdirs ();
-                File f = new File(dir, "messages.log");
-                File f1 = new File(dir, "messages.log.1");
-                File f2 = new File(dir, "messages.log.2");
 
-                if (f2.exists()) {
-                    f2.delete();
+                int n = Integer.getInteger("org.netbeans.log.numberOfFiles", 3); // NOI18N
+                if (n < 3) {
+                    n = 3;
                 }
-                if (f1.exists()) {
-                    f1.renameTo(f2);
-                }
-                if (f.exists()) {
-                    f.renameTo(f1);
+                File[] f = new File[n];
+                f[0] = new File(dir, "messages.log");
+                for (int i = 1; i < n; i++) {
+                    f[i] = new File(dir, "messages.log." + i);
                 }
 
-                FileOutputStream fout = new FileOutputStream(f, false);
+                if (f[n - 1].exists()) {
+                    f[n - 1].delete();
+                }
+                for (int i = n - 2; i >= 0; i--) {
+                    if (f[i].exists()) {
+                        f[i].renameTo(f[i + 1]);
+                    }
+                }
+
+                FileOutputStream fout = new FileOutputStream(f[0], false);
                 Handler h = new StreamHandler(fout, NbFormatter.FORMATTER);
                 h.setLevel(Level.ALL);
                 h.setFormatter(NbFormatter.FORMATTER);

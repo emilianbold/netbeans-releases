@@ -147,10 +147,10 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
             framework = frameworkFactory.newFramework(configMap);
             try {
                 framework.init();
+                NetigsoServices ns = new NetigsoServices(this, framework);
             } catch (BundleException ex) {
                 LOG.log(Level.SEVERE, "Cannot start OSGi framework", ex); // NOI18N
             }
-            NetigsoServices ns = new NetigsoServices(this, framework);
             LOG.finer("OSGi Container initialized"); // NOI18N
         }
         for (Module mi : preregister) {
