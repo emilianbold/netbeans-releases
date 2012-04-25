@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,70 +37,34 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.j2ee.web;
+package org.netbeans.modules.maven.j2ee;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 import org.netbeans.modules.web.jsfapi.spi.JsfSupportHandle;
-import org.netbeans.spi.project.LookupProvider;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.InstanceContent;
+import org.netbeans.spi.project.ProjectServiceProvider;
 
 /**
- * This class should be removed when JsfSupportHandle class will be changed. After that there should be a subclass
- * annotated with @ProjectServiceProvider(projectType = "../WAR") instead of directly adding instance to project lookup.
- * 
- * @author  Milos Kleint
+ *
+ * @author Martin Janicek
  */
-@LookupProvider.Registration(projectType = {"org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR})
-public class WebLookupProvider implements LookupProvider, PropertyChangeListener {
+@ProjectServiceProvider(service = JsfSupportHandle.class, projectType = "org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR)
+public class JsfSupportHandleImpl extends JsfSupportHandle {
 
-    private Project project;
-    private InstanceContent ic;
+    private final Project project;
 
-    private JsfSupportHandle jsfSupport;
     
-    
+    public JsfSupportHandleImpl(Project project) {
+        this.project = project;
+    }
+
     @Override
-    public Lookup createAdditionalLookup(Lookup baseLookup) {
-        project = baseLookup.lookup(Project.class);
-        ic = new InstanceContent();
-        jsfSupport = new JsfSupportHandle();
-        
-        addLookupInstances();
-        NbMavenProject.addPropertyChangeListener(project, this);
-        
-        return new AbstractLookup(ic);
-    }
-    
-    @Override
-    public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
-        if (NbMavenProject.PROP_PROJECT.equals(propertyChangeEvent.getPropertyName())) {
-            changeAdditionalLookups();
-        }
-    }
-    
-    private void changeAdditionalLookups() {
-        removeLookupInstances();
-        addLookupInstances();
-    }
-    
-    private void addLookupInstances() {
+    protected boolean isEnabled() {
         String packaging = project.getLookup().lookup(NbMavenProject.class).getPackagingType();
-        
-        if (MavenProjectSupport.isWebSupported(project, packaging)) {
-            ic.add(jsfSupport);
-        }
-    }
-    
-    private void removeLookupInstances() {
-        ic.remove(jsfSupport);
+        return MavenProjectSupport.isWebSupported(project, packaging);
     }
 }
