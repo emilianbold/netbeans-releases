@@ -491,7 +491,16 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                     progressPanel.setText(progressMsg);
                 }
                 FileObject entityClassPackageFO = entityClass.getPackageFileObject();
-                final FileObject entityClassFO = entityClassPackageFO.getFileObject(entityClassName, "java"); // NOI18N
+                FileObject entityClassFO0 = entityClassPackageFO.getFileObject(entityClassName, "java"); // NOI18N
+                if(entityClassFO0 == null){
+                    //refresh parent
+                    entityClassPackageFO.refresh(true);
+                    entityClassFO0 = entityClassPackageFO.getFileObject(entityClassName, "java");
+                    if(entityClassFO0 == null){
+                        Logger.getLogger(JavaPersistenceGenerator.class.getName()).log(Level.INFO, "Can''t resolve fileobject in package {0} for entity {1}", new Object[]{entityClassPackageFO.getPath(), entityClassName});//NOI18N
+                    }
+                }
+                final FileObject entityClassFO = entityClassFO0;
                 final FileObject pkClassFO = entityClassPackageFO.getFileObject(createPKClassName(entityClassName), "java"); // NOI18N
                 try {
 

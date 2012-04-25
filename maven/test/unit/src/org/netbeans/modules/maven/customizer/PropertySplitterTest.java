@@ -82,6 +82,12 @@ public class PropertySplitterTest extends TestCase {
         assertEquals("\"-Dfoo bar=baz quux\"", instance.nextPair());
         assertEquals("whatever", instance.nextPair());
         assertEquals(null, instance.nextPair());
+        
+        instance = new PropertySplitter("foo=1\\\n2\\\n3\nbar=123");
+        assertEquals("foo=123", instance.nextPair());
+        assertEquals("bar=123", instance.nextPair());
+        assertEquals(null, instance.nextPair());
+        
     }
 
 }

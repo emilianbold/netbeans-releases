@@ -58,6 +58,7 @@ import org.netbeans.modules.php.editor.model.FunctionScope;
 import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.VariableName;
 import org.netbeans.modules.php.editor.model.VariableScope;
+import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
@@ -200,7 +201,7 @@ public class GeneratingBracketCompleter {
                 for (VariableName variable : ElementFilter.forName(NameKind.exact(name)).filter(declaredVariables)) {
                     final Collection<? extends String> typeNames = variable.getTypeNames(variable.getNameRange().getEnd());
                     String type = typeNames.isEmpty() ? null : typeNames.iterator().next();
-                    if (type != null && type.contains("@")) {
+                    if (type != null && type.contains(VariousUtils.PRE_OPERATION_TYPE_DELIMITER)) {
                         type = null;
                     }
                     params.add(new Pair<String, String>(variable.getName(), type));
@@ -219,7 +220,7 @@ public class GeneratingBracketCompleter {
                     for (VariableName variable : ElementFilter.forName(NameKind.exact(name)).filter(declaredVariables)) {
                         final Collection<? extends String> typeNames = variable.getTypeNames(variable.getNameRange().getEnd());
                         String type = typeNames.isEmpty() ? null : typeNames.iterator().next();
-                        if (type != null && type.contains("@")) {
+                        if (type != null && type.contains(VariousUtils.PRE_OPERATION_TYPE_DELIMITER)) {
                             type = null;
                         }
                         globals.add(new Pair<String, String>(variable.getName(), type));
@@ -238,7 +239,7 @@ public class GeneratingBracketCompleter {
             String item = null;
             for (Iterator<String> i = (Iterator<String>) typeNames.iterator(); i.hasNext(); ) {
                 item = i.next();
-                if (item != null && item.contains("@")) { // NOI18N
+                if (item != null && item.contains(VariousUtils.PRE_OPERATION_TYPE_DELIMITER)) { // NOI18N
                     break;
                 }
                 type = type == null ? item : type + "|" + item; //NOI18N
@@ -254,7 +255,7 @@ public class GeneratingBracketCompleter {
                     for (VariableName variable : ElementFilter.forName(NameKind.exact(name)).filter(declaredVariables)) {
                         final Collection<? extends String> typeNames = variable.getTypeNames(variable.getNameRange().getEnd());
                         String type = typeNames.isEmpty() ? null : typeNames.iterator().next();
-                        if (type != null && type.contains("@")) {
+                        if (type != null && type.contains(VariousUtils.PRE_OPERATION_TYPE_DELIMITER)) {
                             type = null;
                         }
                         staticvars.add(new Pair<String, String>(variable.getName(), type));

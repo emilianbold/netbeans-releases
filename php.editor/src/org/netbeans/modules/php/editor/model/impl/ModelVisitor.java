@@ -251,7 +251,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                     if (assignment != null) {
                         String typeName = assignment.typeNameFromUnion();
                         if (typeName != null) {
-                            if (!typeName.contains("@")) {//NOI18N
+                            if (!typeName.contains(VariousUtils.PRE_OPERATION_TYPE_DELIMITER)) {//NOI18N
                                 return typeName;
                             } else {
                                 String variableName = getName(typeName, VariousUtils.Kind.VAR, true);
@@ -286,16 +286,16 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
     public static String getName(String semiType, VariousUtils.Kind kind, boolean strict) {
         if (semiType != null) {
-            String prefix = "@" + kind.toString(); // NOI18N
+            String prefix = VariousUtils.PRE_OPERATION_TYPE_DELIMITER + kind.toString(); // NOI18N
             if (semiType.startsWith(prefix)) {
                 String[] split = semiType.split(prefix, 2);
                 if (split.length > 1) {
 
-                    if (split[1].contains("@")) {
+                    if (split[1].contains(VariousUtils.PRE_OPERATION_TYPE_DELIMITER)) {
                         if (strict) {
                             return null;
                         } else {
-                            split = split[1].split("@");
+                            split = split[1].split(VariousUtils.PRE_OPERATION_TYPE_DELIMITER);
                             if (split.length < 1) {
                                 return null;
                             }
@@ -483,7 +483,14 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
     @Override
     public void visit(MethodInvocation node) {
-        occurencesBuilder.prepare(node, modelBuilder.getCurrentScope());
+        FunctionInvocation method = node.getMethod();
+        if (method != null) {
+            if (hasCommonFunctionName(method)) {
+                occurencesBuilder.prepare(node, modelBuilder.getCurrentScope());
+            } else {
+                scan(method);
+            }
+        }
         scan(node.getDispatcher());
         scan(node.getMethod().getParameters());
     }
@@ -501,7 +508,14 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     @Override
     public void visit(StaticMethodInvocation node) {
         Scope scope = modelBuilder.getCurrentScope();
-        occurencesBuilder.prepare(node, scope);
+        FunctionInvocation method = node.getMethod();
+        if (method != null) {
+            if (hasCommonFunctionName(method)) {
+                occurencesBuilder.prepare(node, modelBuilder.getCurrentScope());
+            } else {
+                scan(method);
+            }
+        }
         Expression className = node.getClassName();
         if (className instanceof Variable) {
             scan(className);
@@ -509,6 +523,25 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             occurencesBuilder.prepare((NamespaceName) className, scope);
         }
         scan(node.getMethod().getParameters());
+    }
+
+    private boolean hasCommonFunctionName(final FunctionInvocation functionInvocation) {
+        boolean result = false;
+        FunctionName functionName = functionInvocation.getFunctionName();
+        if (functionName != null) {
+            Expression name = functionName.getName();
+            if (name instanceof Variable) {
+                Variable variable = (Variable) name;
+                if (variable.isDollared()) {
+                    result = false;
+                } else {
+                    result = true;
+                }
+            } else {
+                result = true;
+            }
+        }
+        return result;
     }
 
     @Override

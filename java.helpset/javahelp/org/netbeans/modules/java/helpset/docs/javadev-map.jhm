@@ -117,6 +117,7 @@
 <mapID target="refactor.refactorQuickRef" url="refactor/refactorQuickRef.html" />
 <mapID target="refactor.safeDelete" url="refactor/safeDelete.html" />
 <mapID target="refactor.useSupertype" url="refactor/useSupertype.html" />
+<mapID target="refactor.useHint" url="refactor/useHint.html" />
 
 
 <!--begin GUI Builder section-->

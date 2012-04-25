@@ -176,8 +176,8 @@ public class RunGoalsPanel extends javax.swing.JPanel {
             }
             buf.append(entry.getKey()).append('=').append(entry.getValue());// NOI18N
         }
-        taProperties.setText(buf.toString());
-        taProperties.setCaretPosition(0);
+        epProperties.setText(buf.toString());
+        epProperties.setCaretPosition(0);
         txtProfiles.setText(createSpaceSeparatedList(config.getActivatedProfiles()));
         
         setUpdateSnapshots(config.isUpdateSnapshots());
@@ -198,8 +198,8 @@ public class RunGoalsPanel extends javax.swing.JPanel {
             }
             buf.append(entry.getKey()).append('=').append(entry.getValue());// NOI18N
         }
-        taProperties.setText(buf.toString());
-        taProperties.setCaretPosition(0);
+        epProperties.setText(buf.toString());
+        epProperties.setCaretPosition(0);
         txtProfiles.setText(createSpaceSeparatedList(mapp.getActivatedProfiles()));
     }
 
@@ -211,7 +211,7 @@ public class RunGoalsPanel extends javax.swing.JPanel {
         }
         mapp.setGoals(lst.size() > 0 ? lst : null);
 
-        PropertySplitter split = new PropertySplitter(taProperties.getText());
+        PropertySplitter split = new PropertySplitter(epProperties.getText());
         String token = split.nextPair();
         Map<String,String> props = new LinkedHashMap<String,String>();
         while (token != null) {
@@ -255,7 +255,7 @@ public class RunGoalsPanel extends javax.swing.JPanel {
         }
         rc.setActivatedProfiles(lst);
 
-        PropertySplitter split = new PropertySplitter(taProperties.getText());
+        PropertySplitter split = new PropertySplitter(epProperties.getText());
         String token = split.nextPair();
         while (token != null) {
             String[] prp = StringUtils.split(token, "=", 2); //NOI18N
@@ -283,8 +283,6 @@ public class RunGoalsPanel extends javax.swing.JPanel {
         lblProfiles = new javax.swing.JLabel();
         txtProfiles = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        taProperties = new javax.swing.JTextArea();
         cbRecursive = new javax.swing.JCheckBox();
         cbOffline = new javax.swing.JCheckBox();
         cbDebug = new javax.swing.JCheckBox();
@@ -295,6 +293,8 @@ public class RunGoalsPanel extends javax.swing.JPanel {
         txtRemember = new javax.swing.JTextField();
         jSeparator1 = new javax.swing.JSeparator();
         btnAddProps = new javax.swing.JButton();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        epProperties = new javax.swing.JEditorPane();
 
         lblGoals.setLabelFor(txtGoals);
         org.openide.awt.Mnemonics.setLocalizedText(lblGoals, org.openide.util.NbBundle.getMessage(RunGoalsPanel.class, "LBL_Goals")); // NOI18N
@@ -302,12 +302,7 @@ public class RunGoalsPanel extends javax.swing.JPanel {
         lblProfiles.setLabelFor(txtProfiles);
         org.openide.awt.Mnemonics.setLocalizedText(lblProfiles, org.openide.util.NbBundle.getMessage(RunGoalsPanel.class, "LBL_Profiles")); // NOI18N
 
-        jLabel2.setLabelFor(taProperties);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(RunGoalsPanel.class, "LBL_Properties")); // NOI18N
-
-        taProperties.setColumns(20);
-        taProperties.setRows(5);
-        jScrollPane1.setViewportView(taProperties);
 
         org.openide.awt.Mnemonics.setLocalizedText(cbRecursive, org.openide.util.NbBundle.getMessage(RunGoalsPanel.class, "LBL_Recursive")); // NOI18N
         cbRecursive.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -352,6 +347,9 @@ public class RunGoalsPanel extends javax.swing.JPanel {
             }
         });
 
+        epProperties.setContentType("text/x-properties");
+        jScrollPane2.setViewportView(epProperties);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -375,9 +373,9 @@ public class RunGoalsPanel extends javax.swing.JPanel {
                             .addComponent(btnAddProps))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 504, Short.MAX_VALUE)
-                            .addComponent(txtGoals, javax.swing.GroupLayout.DEFAULT_SIZE, 504, Short.MAX_VALUE)
-                            .addComponent(txtProfiles, javax.swing.GroupLayout.DEFAULT_SIZE, 504, Short.MAX_VALUE)))
+                            .addComponent(txtGoals)
+                            .addComponent(txtProfiles)
+                            .addComponent(jScrollPane2)))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(btnPrev)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -386,7 +384,7 @@ public class RunGoalsPanel extends javax.swing.JPanel {
                         .addComponent(cbRemember)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(txtRemember, javax.swing.GroupLayout.DEFAULT_SIZE, 275, Short.MAX_VALUE))
-                    .addComponent(jSeparator1, javax.swing.GroupLayout.DEFAULT_SIZE, 477, Short.MAX_VALUE))
+                    .addComponent(jSeparator1))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -404,10 +402,10 @@ public class RunGoalsPanel extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel2)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGap(39, 39, 39)
                         .addComponent(btnAddProps))
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(jScrollPane2))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(cbRecursive)
                     .addComponent(cbUpdateSnapshots))
@@ -443,7 +441,7 @@ public class RunGoalsPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_btnPrevActionPerformed
 
     private void btnAddPropsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddPropsActionPerformed
-        ActionMappings.showAddPropertyPopupMenu(btnAddProps, taProperties, txtGoals, project);
+        ActionMappings.showAddPropertyPopupMenu(btnAddProps, epProperties, txtGoals, project);
     }//GEN-LAST:event_btnAddPropsActionPerformed
 
     public boolean isOffline() {
@@ -496,12 +494,12 @@ public class RunGoalsPanel extends javax.swing.JPanel {
     private javax.swing.JCheckBox cbRecursive;
     private javax.swing.JCheckBox cbRemember;
     private javax.swing.JCheckBox cbUpdateSnapshots;
+    private javax.swing.JEditorPane epProperties;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JLabel lblGoals;
     private javax.swing.JLabel lblProfiles;
-    private javax.swing.JTextArea taProperties;
     private javax.swing.JTextField txtGoals;
     private javax.swing.JTextField txtProfiles;
     private javax.swing.JTextField txtRemember;

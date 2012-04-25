@@ -134,9 +134,12 @@ public class ValidatorImpl implements Validator {
     }
 
     @Override
-    //XXX the validator can also validate html4, but for now such validation is done by the old SGML parser
     public boolean canValidate(HtmlVersion version) {
         switch(version) {
+            case HTML32:
+            case HTML40_FRAMESET:
+            case HTML40_STRICT:
+            case HTML40_TRANSATIONAL:
             case HTML41_FRAMESET:
             case HTML41_STRICT:
             case HTML41_TRANSATIONAL:

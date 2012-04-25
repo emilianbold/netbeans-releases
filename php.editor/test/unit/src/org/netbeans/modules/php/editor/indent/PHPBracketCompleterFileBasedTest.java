@@ -303,4 +303,16 @@ public class PHPBracketCompleterFileBasedTest extends PHPCodeCompletionTestBase 
     public void testIssue193118_02() throws Exception {
         testIndentInFile("testfiles/bracketCompleter/issue193118_02.php");
     }
+
+    public void testIssue211394_01() throws Exception {
+        testIndentInFile("testfiles/bracketCompleter/issue211394_01.php");
+    }
+
+    public void testIssue211394_02() throws Exception {
+        testIndentInFile("testfiles/bracketCompleter/issue211394_02.php");
+    }
+
+    public void testIssue211394_03() throws Exception {
+        testIndentInFile("testfiles/bracketCompleter/issue211394_03.php");
+    }
 }

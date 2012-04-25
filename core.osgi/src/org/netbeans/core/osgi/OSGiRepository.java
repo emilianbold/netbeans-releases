@@ -144,6 +144,7 @@ class OSGiRepository extends Repository {
             @SuppressWarnings("deprecation") Object _1 = FileSystem.Environment.class; // FELIX-2128
             @SuppressWarnings("deprecation") Object _2 = org.openide.filesystems.FileSystemCapability.class;
             Object _3 = FileStatusListener.class;
+            Object _4 = LookupEvent.class; // FELIX-3477
         }
 
         private static final class Layers extends MultiFileSystem {

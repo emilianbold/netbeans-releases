@@ -43,10 +43,6 @@
 package org.netbeans.modules.html.editor.lib.api;
 
 import org.netbeans.modules.html.editor.lib.api.model.HtmlModel;
-import org.netbeans.modules.html.editor.lib.api.HtmlParseResult;
-import org.netbeans.modules.html.editor.lib.api.HtmlSource;
-import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
-import org.netbeans.modules.html.editor.lib.api.ParseException;
 import org.openide.util.Lookup;
 
 /**
@@ -55,12 +51,35 @@ import org.openide.util.Lookup;
  */
 public interface HtmlParser {
 
+    /**
+     * Returns a name of the parser. 
+     * 
+     * @return An internal identifier of the parser. Doesn't need to be localized, not presented to user.
+     */
     public String getName();
 
+    /**
+     * Decides if the parser can parse parse html source of the given version.
+     * 
+     * @return true if the parser can parse given html version
+     */
     public boolean canParse(HtmlVersion version);
 
+    /**
+     * Parses the given source.
+     * 
+     * @param source html source
+     * @param preferedVersion represents a preferred html version if the version cannot be determined from the source
+     * @param lookup contains some additional information necessary to the parser
+     * @return instance of {@link HtmlParseResult}
+     * @throws ParseException 
+     */
     public HtmlParseResult parse(HtmlSource source, HtmlVersion preferedVersion, Lookup lookup) throws ParseException;
 
+    /**
+     * @deprecated Register an instance of {@link HtmlModelProvider} instead.
+     */
+    @Deprecated
     public HtmlModel getModel(HtmlVersion version);
 
 }

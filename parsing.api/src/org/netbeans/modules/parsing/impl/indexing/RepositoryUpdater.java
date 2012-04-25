@@ -111,6 +111,7 @@ import org.netbeans.modules.parsing.lucene.support.IndexManager;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.*;
+import org.netbeans.modules.project.indexingbridge.IndexingBridge;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -1337,7 +1338,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     Collection<? extends Indexable> dirty = Collections.singleton(SPIAccessor.getInstance().create(new FileObjectIndexable(root.second, docFile)));
                     String mimeType = DocumentUtilities.getMimeType(document);
 
-                    Collection<? extends IndexerCache.IndexerInfo<CustomIndexerFactory>> cifInfos = IndexerCache.getCifCache().getIndexersFor(mimeType);
+                    Collection<? extends IndexerCache.IndexerInfo<CustomIndexerFactory>> cifInfos = IndexerCache.getCifCache().getIndexersFor(mimeType, true);
                     for(IndexerCache.IndexerInfo<CustomIndexerFactory> info : cifInfos) {
                         try {
                             CustomIndexerFactory factory = info.getIndexerFactory();
@@ -1359,7 +1360,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         }
                     }
 
-                    Collection<? extends IndexerCache.IndexerInfo<EmbeddingIndexerFactory>> eifInfos = IndexerCache.getEifCache().getIndexersFor(mimeType);
+                    Collection<? extends IndexerCache.IndexerInfo<EmbeddingIndexerFactory>> eifInfos = IndexerCache.getEifCache().getIndexersFor(mimeType, true);
                     for(IndexerCache.IndexerInfo<EmbeddingIndexerFactory> info : eifInfos) {
                         try {
                             EmbeddingIndexerFactory factory = info.getIndexerFactory();
@@ -2039,7 +2040,10 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         private final String progressTitle;
         private final SuspendStatus suspendStatus;
         private LogContext logCtx;
+        private final Object progressLock = new Object();
+        //@GuardedBy("progressLock")
         private ProgressHandle progressHandle = null;
+        //@GuardedBy("progressLock")
         private int progress = -1;
         //Indexer statistics <IndexerName,{InvocationCount,CumulativeTime}>
         //threading: Has to be SynchronizedMap or ConcurrentMap to ensure propper
@@ -2099,32 +2103,38 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
 
         protected final void updateProgress(String message) {
             assert message != null;
-            if (progressHandle == null) {
-                return;
+            synchronized (progressLock) {
+                if (progressHandle == null) {
+                    return;
+                }
+                progressHandle.progress(message);
             }
-            progressHandle.progress(message);
         }
 
         protected final void updateProgress(URL currentlyScannedRoot, boolean increment) {
             assert currentlyScannedRoot != null;
-            if (progressHandle == null) {
-                return;
-            }
-            if (increment && progress != -1) {
-                progressHandle.progress(urlForMessage(currentlyScannedRoot), ++progress);
-            } else {
-                progressHandle.progress(urlForMessage(currentlyScannedRoot));
+            synchronized (progressLock) {
+                if (progressHandle == null) {
+                    return;
+                }
+                if (increment && progress != -1) {
+                    progressHandle.progress(urlForMessage(currentlyScannedRoot), ++progress);
+                } else {
+                    progressHandle.progress(urlForMessage(currentlyScannedRoot));
+                }
             }
         }
 
         protected final void switchProgressToDeterminate(final int workunits) {
-            if (progressHandle == null) {
-                return;
+            synchronized (progressLock) {
+                if (progressHandle == null) {
+                    return;
+                }
+                progress = 0;
+                progressHandle.switchToDeterminate(workunits);
             }
-            progress = 0;
-            progressHandle.switchToDeterminate(workunits);
         }
-
+        
         protected final void scanStarted(final URL root, final boolean sourceForBinaryRoot,
                                    final SourceIndexers indexers, final Map<SourceIndexerFactory,Boolean> votes,
                                    final Map<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>> ctxToFinish) throws IOException {
@@ -2943,7 +2953,9 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         }
 
         public final void setProgressHandle(ProgressHandle progressHandle) {
-            this.progressHandle = progressHandle;
+            synchronized (progressLock) {
+                this.progressHandle = progressHandle;
+            }
         }
 
         private String urlForMessage(URL currentlyScannedRoot) {
@@ -4033,7 +4045,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     newRoots.addAll(c);
                 } // else computing the deps from scratch and so will find the 'unknown' roots
                 // by following the dependencies (#166715)
-
+                
                 for (URL url : newRoots) {
                     if (!findDependencies(
                             url,
@@ -4128,7 +4140,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     
                 }
             }
-
+            
             if (LOGGER.isLoggable(Level.INFO)) {
                 LOGGER.log(Level.INFO, "Resolving dependencies took: {0} ms", System.currentTimeMillis() - tm1); //NOI18N
             }
@@ -4945,16 +4957,17 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
             }
         }
 
-        public void enterProtectedMode() {
+        public void enterProtectedMode(@NullAllowed Long id) {
             synchronized (todo) {
-                protectedOwners.add(Thread.currentThread().getId());
+                protectedOwners.add(id);
                 if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.log(Level.FINE, "Entering protected mode: {0}", protectedOwners.size()); //NOI18N
+                    // Call toString() now since exitProtectedMode might run before the log handler formats the record:
+                    LOGGER.log(Level.FINE, "Entering protected mode: {0}", protectedOwners.toString()); //NOI18N
                 }
             }
         }
 
-        public void exitProtectedMode(Runnable followupTask) {
+        public void exitProtectedMode(@NullAllowed Long id, @NullAllowed Runnable followupTask) {
             synchronized (todo) {
                 if (protectedOwners.isEmpty()) {
                     throw new IllegalStateException("Calling exitProtectedMode without enterProtectedMode"); //NOI18N
@@ -4967,9 +4980,9 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     }
                     followupTasks.add(followupTask);
                 }
-                protectedOwners.remove(Thread.currentThread().getId());
+                protectedOwners.remove(id);
                 if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.log(Level.FINE, "Exiting protected mode: {0}", protectedOwners.size()); //NOI18N
+                    LOGGER.log(Level.FINE, "Exiting protected mode: {0}", protectedOwners.toString()); //NOI18N
                 }
 
                 if (protectedOwners.isEmpty()) {
@@ -5194,6 +5207,17 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 return w;
             }
         }
+
+        @ServiceProvider(service=IndexingBridge.class)
+        public static class IndexingBridgeImpl extends IndexingBridge {
+            @Override public void enterProtectedMode() {
+                RepositoryUpdater.getDefault().getWorker().enterProtectedMode(null);
+            }
+            @Override public void exitProtectedMode() {
+                RepositoryUpdater.getDefault().getWorker().exitProtectedMode(null, null);
+            }
+        }
+
     } // End of Task class
 
     private static final class DependenciesContext {
@@ -5343,12 +5367,12 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
 
         @Override
         public void enterProtectedMode() {
-            getWorker().enterProtectedMode();
+            getWorker().enterProtectedMode(Thread.currentThread().getId());
         }
 
         @Override
         public void exitProtectedMode(Runnable followUpTask) {
-            getWorker().exitProtectedMode(followUpTask);
+            getWorker().exitProtectedMode(Thread.currentThread().getId(), followUpTask);
         }
 
         @Override

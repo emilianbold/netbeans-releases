@@ -91,7 +91,7 @@ public final class JsfELVariableResolver implements ELVariableResolver {
     @Override
     public String getBeanClass(String beanName, FileObject target, ResolverContext context) {
         for (FacesManagedBean bean : getJsfManagedBeans(target, context)) {
-            if (bean.getManagedBeanName().equals(beanName)) {
+            if (beanName.equals(bean.getManagedBeanName())) {
                 return bean.getManagedBeanClass();
             }
         }
@@ -101,7 +101,7 @@ public final class JsfELVariableResolver implements ELVariableResolver {
     @Override
     public String getBeanName(String clazz, FileObject target, ResolverContext context) {
         for (FacesManagedBean bean : getJsfManagedBeans(target, context)) {
-            if (bean.getManagedBeanClass().equals(clazz)) {
+            if (clazz.equals(bean.getManagedBeanClass())) {
                 return bean.getManagedBeanName();
             }
         }
@@ -119,7 +119,9 @@ public final class JsfELVariableResolver implements ELVariableResolver {
         List<FacesManagedBean> beans = getJsfManagedBeans(target, context);
         List<VariableInfo> result = new ArrayList<VariableInfo>(beans.size());
         for (FacesManagedBean bean : beans) {
-            result.add(VariableInfo.createResolvedVariable(bean.getManagedBeanName(), bean.getManagedBeanClass()));
+            if(bean.getManagedBeanClass() != null && bean.getManagedBeanName() == null) {
+                result.add(VariableInfo.createResolvedVariable(bean.getManagedBeanName(), bean.getManagedBeanClass()));
+            }
         }
         return result;
     }
@@ -193,8 +195,10 @@ public final class JsfELVariableResolver implements ELVariableResolver {
     public List<VariableInfo> getBeansInScope(String scope, Snapshot snapshot, ResolverContext context) {
         List<VariableInfo> result = new ArrayList<VariableInfo>();
         for (FacesManagedBean bean : getJsfManagedBeans(snapshot.getSource().getFileObject(), context)) {
-            if (scope.equals(bean.getManagedBeanScopeString())) {
-                result.add(VariableInfo.createResolvedVariable(bean.getManagedBeanName(), bean.getManagedBeanClass()));
+            if(bean.getManagedBeanClass() != null && bean.getManagedBeanName() == null) {
+                if (scope.equals(bean.getManagedBeanScopeString())) {
+                    result.add(VariableInfo.createResolvedVariable(bean.getManagedBeanName(), bean.getManagedBeanClass()));
+                }
             }
         }
         return result;

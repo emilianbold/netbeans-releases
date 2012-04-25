@@ -52,6 +52,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
 import java.util.*;
+import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -64,6 +65,7 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbCollections;
 import org.openide.util.SharedClassObject;
+import org.openide.util.lookup.Lookups;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
@@ -71,6 +73,7 @@ import org.osgi.framework.BundleEvent;
 import org.osgi.framework.Constants;
 import org.osgi.framework.FrameworkEvent;
 import org.osgi.framework.FrameworkListener;
+import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.SynchronousBundleListener;
 import org.osgi.framework.launch.Framework;
 import org.osgi.service.url.AbstractURLStreamHandlerService;
@@ -165,7 +168,7 @@ public class Activator implements BundleActivator, SynchronousBundleListener {
         String name = (String) headers.get(Constants.BUNDLE_SYMBOLICNAME);
         if (name != null) {
             name = name.replaceFirst(";.+", "");
-            deps.add(name);
+            deps.add("cnb." + name);
             if (name.equals("org.openide.modules")) {
                 CoreBridge.defineOsTokens(deps);
             }
@@ -180,7 +183,7 @@ public class Activator implements BundleActivator, SynchronousBundleListener {
             // PackageAdmin.getRequiredBundles is not suitable for this - it is backwards.
             // XXX try to follow the spec more closely; this will work at least for headers created by MakeOSGi:
             for (String item : v.split(", ")) {
-                deps.add(item.replaceFirst(";.+", ""));
+                deps.add("cnb." + item.replaceFirst(";.+", ""));
             }
         }
         // XXX also check for BUNDLE_SYMBOLICNAME_ATTRIBUTE in IMPORT_PACKAGE (though not currently used by MakeOSGi)
@@ -236,6 +239,13 @@ public class Activator implements BundleActivator, SynchronousBundleListener {
                 mi.restored();
             }
         }
+        // NbStartStop not quite appropriate here; will not properly handle multiple enable/disable cycles
+        // (but it does run them in parallel, which may be desirable)
+        for (Runnable r : Lookups.forPath("Modules/Start").lookupAll(Runnable.class)) {
+            if (bundles.contains(FrameworkUtil.getBundle(r.getClass()))) {
+                r.run();
+            }
+        }
         if (showWindowSystem) {
             // XXX set ${jdk.home}?
             List<String> bisp = new ArrayList<String>(Arrays.asList(Introspector.getBeanInfoSearchPath()));
@@ -254,6 +264,22 @@ public class Activator implements BundleActivator, SynchronousBundleListener {
             return;
         }
         LOG.log(Level.FINE, "unloading: {0}", bundles);
+        for (Callable<?> r : Lookups.forPath("Modules/Stop").lookupAll(Callable.class)) {
+            if (bundles.contains(FrameworkUtil.getBundle(r.getClass()))) {
+                try {
+                    if (!((Boolean) r.call())) {
+                        LOG.log(Level.WARNING, "ignoring false return value from {0}", r.getClass().getName());
+                    }
+                } catch (Exception x) {
+                    LOG.log(Level.WARNING, null, x);
+                }
+            }
+        }
+        for (Runnable r : Lookups.forPath("Modules/Stop").lookupAll(Runnable.class)) {
+            if (bundles.contains(FrameworkUtil.getBundle(r.getClass()))) {
+                r.run();
+            }
+        }
         for (Bundle bundle : bundles) {
             ModuleInstall mi = installers.remove(bundle);
             if (mi != null) {

@@ -75,7 +75,6 @@ import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.options.java.api.JavaOptions;
-import org.netbeans.modules.project.indexingbridge.IndexingBridge;
 import org.openide.ErrorManager;
 import org.openide.LifecycleManager;
 import org.openide.awt.Actions;
@@ -539,11 +538,7 @@ public final class TargetExecutor implements Runnable {
         for (RerunAction ra : ras) {
             setEnabledEQ(ra, false);
         }
-        IndexingBridge.getDefault().runProtected(new Runnable() {
-            @Override public void run() {
-                ok = AntBridge.getInterface().run(buildFile, targetNames, in.get(), out, err, properties, verbosity, displayName, interestingOutputCallback, handle, io);
-            }
-        });
+        ok = AntBridge.getInterface().run(buildFile, targetNames, in.get(), out, err, properties, verbosity, displayName, interestingOutputCallback, handle, io);
         
         } finally {
             if (io != null) {

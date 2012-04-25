@@ -45,21 +45,25 @@
 package org.netbeans.modules.editor.java;
 
 import com.sun.source.tree.Tree;
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
 
-import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -78,29 +82,33 @@ public class JavaCodeTemplateFilter implements CodeTemplateFilter {
     private JavaCodeTemplateFilter(JTextComponent component, int offset) {
         if (Utilities.isJavaContext(component, offset, false)) {
             this.startOffset = offset;
-            this.endOffset = component.getSelectionStart() == offset ? component.getSelectionEnd() : -1;            
-            final JavaSource js = JavaSource.forDocument(component.getDocument());
-            if (js != null) {
+            this.endOffset = component.getSelectionStart() == offset ? component.getSelectionEnd() : -1;
+            final Source source = Source.create(component.getDocument());
+            if (source != null) {
                 final AtomicBoolean cancel = new AtomicBoolean();
                 ProgressUtils.runOffEventDispatchThread(new Runnable() {
                     @Override
                     public void run() {
                         try {
-                            js.runUserActionTask(new Task<CompilationController>() {
+                            ParserManager.parse(Collections.singleton(source), new UserTask() {
                                 @Override
-                                public void run(CompilationController controller) throws Exception {
+                                public void run(ResultIterator resultIterator) throws Exception {
                                     if (cancel.get())
                                         return;
-                                    controller.toPhase(Phase.PARSED);
-                                    Tree tree = controller.getTreeUtilities().pathFor(startOffset).getLeaf();
-                                    if (endOffset >= 0 && startOffset != endOffset) {
-                                        if (controller.getTreeUtilities().pathFor(endOffset).getLeaf() != tree)
-                                            return;
+                                    Parser.Result result = resultIterator.getParserResult(startOffset);
+                                    CompilationController controller = result != null ? CompilationController.get(result) : null;
+                                    if (controller != null) {
+                                        controller.toPhase(Phase.PARSED);
+                                        Tree tree = controller.getTreeUtilities().pathFor(startOffset).getLeaf();
+                                        if (endOffset >= 0 && startOffset != endOffset) {
+                                            if (controller.getTreeUtilities().pathFor(endOffset).getLeaf() != tree)
+                                                return;
+                                        }
+                                        ctx = tree.getKind();
                                     }
-                                    ctx = tree.getKind();
                                 }
-                            }, true);
-                        } catch (IOException ex) {
+                            });
+                        } catch (ParseException ex) {
                             Exceptions.printStackTrace(ex);
                         }
                     }

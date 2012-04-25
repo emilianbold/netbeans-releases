@@ -54,6 +54,7 @@ import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.SystemUtils;
+import org.netbeans.installer.utils.exceptions.XMLException;
 import org.netbeans.installer.utils.helper.ExecutionMode;
 import org.netbeans.installer.utils.progress.CompositeProgress;
 import org.netbeans.installer.utils.progress.Progress;
@@ -236,13 +237,20 @@ public class NbMainSequence extends WizardSequence {
                 for (File f : populateCacheDir.listFiles()) {
                     nbBase.getInstalledFiles().add(f);
                 }
+                nbBase.getInstalledFiles().add(populateCacheDir);
             } catch (IOException ioe) {
                 LogManager.log("    .... exception " + ioe.getMessage());
             } finally {
                 LogManager.log("    .... done. ");
             }
-        }
-        
+            
+            // save installed files list
+            try {
+                nbBase.getInstalledFiles().saveXmlGz(nbBase.getInstalledFilesList());
+            } catch (XMLException xmle) {
+                LogManager.log("    .... exception " + xmle.getMessage());
+            }
+        }        
     }
 
     // a candidate to be placed somewhere in utils

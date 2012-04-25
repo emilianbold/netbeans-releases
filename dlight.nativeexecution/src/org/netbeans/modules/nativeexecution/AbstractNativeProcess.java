@@ -118,7 +118,7 @@ public abstract class AbstractNativeProcess extends NativeProcess {
             // no logging for interrupting
         } catch (IOException ex) {
 //            log.log(Level.INFO, "Exception while getting host info:", ex); //NOI18N
-            Exceptions.printStackTrace(ex);
+//            Exceptions.printStackTrace(ex);
         }
         hostInfo = hinfo;
 

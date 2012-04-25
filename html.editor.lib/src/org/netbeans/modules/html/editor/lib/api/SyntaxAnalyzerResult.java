@@ -53,8 +53,7 @@ import org.netbeans.modules.html.editor.lib.EmptyResult;
 import org.netbeans.modules.html.editor.lib.HtmlSourceVersionQuery;
 import org.netbeans.modules.html.editor.lib.api.elements.*;
 import org.netbeans.modules.html.editor.lib.api.model.HtmlModel;
-import org.netbeans.modules.html.editor.lib.html4parser.IteratorOfElements;
-import org.netbeans.modules.html.editor.lib.html4parser.XmlSyntaxTreeBuilder;
+import org.netbeans.modules.html.editor.lib.XmlSyntaxTreeBuilder;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.openide.filesystems.FileObject;
@@ -275,7 +274,6 @@ public class SyntaxAnalyzerResult {
 
             //add the syntax elements to the lookup since the old html4 parser needs them
             InstanceContent content = new InstanceContent();
-            content.add(new IteratorOfElements(filteredIterator));
             content.add(maskedAreas);
             Lookup lookup = new AbstractLookup(content);
 

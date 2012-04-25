@@ -373,10 +373,14 @@ public class OracleInstance {
                 if (JobStatus.COMPLETE.equals(jobStatus)) {
                     Application app2 = am.describeApplication(identityDomain, serviceName, appId);
                     List<String> urls = app2.getApplicationUrls();
-                    assert urls != null && !urls.isEmpty() : "deployed app must have a URL. "+app2;
-                    url[0] = app2.getApplicationUrls().get(0);
-                    ow.println();
-                    ow.println(NbBundle.getMessage(OracleInstance.class, "MSG_Deployment_OK", url[0]));
+                    if (urls != null && !urls.isEmpty()) {
+                        url[0] = app2.getApplicationUrls().get(0);
+                        ow.println();
+                        ow.println(NbBundle.getMessage(OracleInstance.class, "MSG_Deployment_OK", url[0]));
+                    } else {
+                        ow.println();
+                        ow.println(NbBundle.getMessage(OracleInstance.class, "MSG_Deployment_OK_EJB"));
+                    }
                     return DeploymentStatus.SUCCESS;
                 } else if (JobStatus.SUBMITTED.equals(jobStatus)) {
                     // let's wait longer

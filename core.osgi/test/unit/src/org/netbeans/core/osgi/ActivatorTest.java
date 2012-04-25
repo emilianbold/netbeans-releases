@@ -47,6 +47,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Hashtable;
 import java.util.TreeSet;
+import java.util.concurrent.Callable;
 import javax.swing.JOptionPane;
 import javax.swing.plaf.basic.BasicOptionPaneUI;
 import org.netbeans.junit.NbTestCase;
@@ -86,6 +87,35 @@ public class ActivatorTest extends NbTestCase {
     public static class ModuleInstallBackwardsInstall extends ModuleInstall {
         public @Override void restored() {
             System.setProperty("my.bundle.ran.again", "true");
+        }
+    }
+
+    public void testOnStartStop() throws Exception {
+        new OSGiProcess(getWorkDir()).newModule().
+                clazz(OnStartImpl.class).namedservice("Modules/Start", Runnable.class, OnStartImpl.class).
+                clazz(OnStopImpl1.class).namedservice("Modules/Stop", Callable.class, OnStopImpl1.class).
+                clazz(OnStopImpl2.class).namedservice("Modules/Stop", Runnable.class, OnStopImpl2.class).
+                manifest(
+                "OpenIDE-Module: custom",
+                "OpenIDE-Module-Module-Dependencies: org.openide.modules").done().run();
+        assertTrue(Boolean.getBoolean("my.bundle.started"));
+        assertTrue(Boolean.getBoolean("my.bundle.stopping"));
+        assertTrue(Boolean.getBoolean("my.bundle.stopped"));
+    }
+    public static class OnStartImpl implements Runnable {
+        @Override public void run() {
+            System.setProperty("my.bundle.started", "true");
+        }
+    }
+    public static class OnStopImpl1 implements Callable<Boolean> {
+        @Override public Boolean call() {
+            System.setProperty("my.bundle.stopping", "true");
+            return true; // Activator cannot do anything if we return false anyway!
+        }
+    }
+    public static class OnStopImpl2 implements Runnable {
+        @Override public void run() {
+            System.setProperty("my.bundle.stopped", "true");
         }
     }
 
@@ -133,7 +163,7 @@ public class ActivatorTest extends NbTestCase {
         headers.put("OpenIDE-Module-Provides", "org.netbeans.modules.project.uiapi.ActionsFactory,   " +
                 "org.netbeans.modules.project.uiapi.OpenProjectsTrampoline,  org.netbeans.modules.project.uiapi.ProjectChooserFactory");
         assertEquals(new TreeSet<String>(Arrays.asList(
-                "org.netbeans.modules.projectui",
+                "cnb.org.netbeans.modules.projectui",
                 "org.netbeans.modules.project.uiapi.ActionsFactory",
                 "org.netbeans.modules.project.uiapi.OpenProjectsTrampoline",
                 "org.netbeans.modules.project.uiapi.ProjectChooserFactory"
@@ -146,8 +176,8 @@ public class ActivatorTest extends NbTestCase {
         headers.put("OpenIDE-Module-Requires", "org.openide.modules.InstalledFileLocator");
         assertEquals(Collections.emptySet(), Activator.provides(headers));
         assertEquals(new TreeSet<String>(Arrays.asList(
-                "org.netbeans.api.progress",
-                "org.netbeans.spi.quicksearch",
+                "cnb.org.netbeans.api.progress",
+                "cnb.org.netbeans.spi.quicksearch",
                 "org.openide.modules.InstalledFileLocator"
                 )), Activator.requires(headers));
         assertEquals(Collections.emptySet(), Activator.needs(headers));
@@ -162,7 +192,7 @@ public class ActivatorTest extends NbTestCase {
         try {
             headers.put("Bundle-SymbolicName", "org.openide.modules");
             assertEquals(new TreeSet<String>(Arrays.asList(
-                    "org.openide.modules",
+                    "cnb.org.openide.modules",
                     "org.openide.modules.os.Windows"
                     )), Activator.provides(headers));
             assertEquals(Collections.emptySet(), Activator.requires(headers));

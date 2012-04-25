@@ -244,10 +244,11 @@ public class SyntaxAnalyzerResultTest extends TestBase {
         assertNotNull(ElementUtils.query(froot, "ui:composition/ui:define"));
 
         Node root = result.parseHtml().root();
+//        ElementUtils.dumpTree(root);
         assertNotNull(root);
         assertEquals(2, root.children().size());
         assertNotNull(ElementUtils.query(root, "html"));
-        assertNotNull(ElementUtils.query(root, "html/div"));
+        assertNotNull(ElementUtils.query(root, "html/body/div"));
 
     }
 
