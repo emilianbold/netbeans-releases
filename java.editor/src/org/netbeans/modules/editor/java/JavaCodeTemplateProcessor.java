@@ -61,9 +61,11 @@ import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.ui.ElementHeaders;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.lib.editor.codetemplates.spi.*;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.java.preprocessorbridge.api.JavaSourceUtil;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.UserTask;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -931,70 +933,66 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
             JTextComponent c = request.getComponent();
             caretOffset = c.getSelectionStart();
             final Document doc = c.getDocument();
-            final JavaSource js = JavaSource.forDocument(doc);
-            if (js != null) {
+            final FileObject fo = NbEditorUtilities.getFileObject(doc);
+            if (fo != null) {
                 final AtomicBoolean cancel = new AtomicBoolean();
                 ProgressUtils.runOffEventDispatchThread(new Runnable() {
                     public void run() {
                         try {
-                            js.runUserActionTask(new Task<CompilationController>() {
-                                public void run(final CompilationController c) throws IOException {
-                                    if (cInfo != null || cancel.get())
-                                        return;
-                                    CompilationController controller = (CompilationController) JavaSourceUtil.createControllerHandle(c.getSnapshot().getSource().getFileObject(), null).getCompilationController();
-                                    controller.toPhase(JavaSource.Phase.RESOLVED);
-                                    cInfo = controller;
-                                    final TreeUtilities tu = cInfo.getTreeUtilities();
-                                    treePath = tu.pathFor(caretOffset);
-                                    scope = tu.scopeFor(caretOffset);
-                                    enclClass = scope.getEnclosingClass();
-                                    final boolean isStatic = enclClass != null ? tu.isStaticContext(scope) : false;
-                                    if (enclClass == null) {
-                                        CompilationUnitTree cut = treePath.getCompilationUnit();
-                                        Iterator<? extends Tree> it = cut.getTypeDecls().iterator();
-                                        if (it.hasNext())
-                                            enclClass = (TypeElement)cInfo.getTrees().getElement(TreePath.getPath(cut, it.next()));
-                                    }
-                                    final Trees trees = controller.getTrees();
-                                    final SourcePositions sp = trees.getSourcePositions();
-                                    final Collection<? extends Element> illegalForwardRefs = Utilities.getForwardReferences(treePath, caretOffset, sp, trees);
-                                    final ExecutableElement method = scope.getEnclosingMethod();
-                                    ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
-                                        public boolean accept(Element e, TypeMirror t) {
-                                            switch (e.getKind()) {
-                                            case TYPE_PARAMETER:
-                                                return true;
-                                            case LOCAL_VARIABLE:
-                                            case RESOURCE_VARIABLE:
-                                            case EXCEPTION_PARAMETER:
-                                            case PARAMETER:
-                                                return (method == e.getEnclosingElement() || e.getModifiers().contains(Modifier.FINAL)) &&
-                                                        !illegalForwardRefs.contains(e);
-                                            case FIELD:
-                                                if (e.getSimpleName().contentEquals("this")) //NOI18N
-                                                    return !isStatic;
-                                                if (e.getSimpleName().contentEquals("super")) //NOI18N
-                                                    return false;
-                                                if (illegalForwardRefs.contains(e))
-                                                    return false;
-                                            default:
-                                                return (!isStatic || e.getModifiers().contains(Modifier.STATIC)) && tu.isAccessible(scope, e, t);
-                                            }
-                                        }
-                                    };
-                                    locals = new ArrayList<Element>();
-                                    typeVars = new ArrayList<Element>();
-                                    for (Element element : cInfo.getElementUtilities().getLocalMembersAndVars(scope, acceptor)) {
-                                        switch(element.getKind()) {
-                                            case TYPE_PARAMETER:
-                                                typeVars.add(element);
-                                                break;
-                                            default:
-                                                locals.add(element);
-                                        }
+                            if (cInfo != null || cancel.get())
+                                return;
+                            CompilationController controller = (CompilationController) JavaSourceUtil.createControllerHandle(fo, null).getCompilationController();
+                            controller.toPhase(JavaSource.Phase.RESOLVED);
+                            cInfo = controller;
+                            final TreeUtilities tu = cInfo.getTreeUtilities();
+                            treePath = tu.pathFor(caretOffset);
+                            scope = tu.scopeFor(caretOffset);
+                            enclClass = scope.getEnclosingClass();
+                            final boolean isStatic = enclClass != null ? tu.isStaticContext(scope) : false;
+                            if (enclClass == null) {
+                                CompilationUnitTree cut = treePath.getCompilationUnit();
+                                Iterator<? extends Tree> it = cut.getTypeDecls().iterator();
+                                if (it.hasNext())
+                                    enclClass = (TypeElement)cInfo.getTrees().getElement(TreePath.getPath(cut, it.next()));
+                            }
+                            final Trees trees = controller.getTrees();
+                            final SourcePositions sp = trees.getSourcePositions();
+                            final Collection<? extends Element> illegalForwardRefs = Utilities.getForwardReferences(treePath, caretOffset, sp, trees);
+                            final ExecutableElement method = scope.getEnclosingMethod();
+                            ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
+                                public boolean accept(Element e, TypeMirror t) {
+                                    switch (e.getKind()) {
+                                    case TYPE_PARAMETER:
+                                        return true;
+                                    case LOCAL_VARIABLE:
+                                    case RESOURCE_VARIABLE:
+                                    case EXCEPTION_PARAMETER:
+                                    case PARAMETER:
+                                        return (method == e.getEnclosingElement() || e.getModifiers().contains(Modifier.FINAL)) &&
+                                                !illegalForwardRefs.contains(e);
+                                    case FIELD:
+                                        if (e.getSimpleName().contentEquals("this")) //NOI18N
+                                            return !isStatic;
+                                        if (e.getSimpleName().contentEquals("super")) //NOI18N
+                                            return false;
+                                        if (illegalForwardRefs.contains(e))
+                                            return false;
+                                    default:
+                                        return (!isStatic || e.getModifiers().contains(Modifier.STATIC)) && tu.isAccessible(scope, e, t);
                                     }
                                 }
-                            },true);
+                            };
+                            locals = new ArrayList<Element>();
+                            typeVars = new ArrayList<Element>();
+                            for (Element element : cInfo.getElementUtilities().getLocalMembersAndVars(scope, acceptor)) {
+                                switch(element.getKind()) {
+                                    case TYPE_PARAMETER:
+                                        typeVars.add(element);
+                                        break;
+                                    default:
+                                        locals.add(element);
+                                }
+                            }
                         } catch(IOException ioe) {
                             Exceptions.printStackTrace(ioe);
                         }
