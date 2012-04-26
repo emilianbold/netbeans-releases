@@ -45,22 +45,14 @@
 package org.netbeans.modules.groovy.grailsproject.classpath;
 
 import java.beans.PropertyChangeEvent;
-import org.netbeans.spi.java.classpath.ClassPathImplementation;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.openide.filesystems.FileAttributeEvent;
-import org.openide.filesystems.FileEvent;
-import org.openide.filesystems.FileRenameEvent;
-import org.openide.filesystems.FileUtil;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.net.MalformedURLException;
 import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
@@ -71,8 +63,10 @@ import org.netbeans.modules.groovy.grailsproject.SourceCategory;
 import org.netbeans.modules.groovy.grailsproject.config.BuildConfig;
 import org.netbeans.modules.groovy.grailsproject.plugins.GrailsPlugin;
 import org.netbeans.modules.groovy.grailsproject.plugins.GrailsPluginSupport;
+import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
-import org.openide.filesystems.FileChangeListener;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.*;
 import org.openide.util.WeakListeners;
 
 final class ProjectClassPathImplementation implements ClassPathImplementation {
@@ -80,25 +74,18 @@ final class ProjectClassPathImplementation implements ClassPathImplementation {
     private static final Logger LOGGER = Logger.getLogger(ProjectClassPathImplementation.class.getName());
 
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
-
     private final ProjectConfigListener projectConfigListener = new ProjectConfigListener();
-
     private final BuildConfigListener buildConfigListener = new BuildConfigListener();
-
-    private List<PathResourceImplementation> resources;
-
     private final GrailsProjectConfig projectConfig;
-
-    private GrailsPlatform.Version version;
-
     private final File projectRoot;
 
+    private List<PathResourceImplementation> resources;
+    private GrailsPlatform.Version version;
     private File pluginsDir;
-
     private File globalPluginsDir;
-
     private PluginsLibListener listenerPluginsLib;
 
+    
     private ProjectClassPathImplementation(GrailsProjectConfig projectConfig) {
         this.projectConfig = projectConfig;
         this.projectRoot = FileUtil.toFile(projectConfig.getProject().getProjectDirectory());
@@ -117,6 +104,7 @@ final class ProjectClassPathImplementation implements ClassPathImplementation {
         return impl;
     }
 
+    @Override
     public synchronized List<PathResourceImplementation> getResources() {
         if (this.resources == null) {
             this.resources = this.getPath();
@@ -269,16 +257,19 @@ final class ProjectClassPathImplementation implements ClassPathImplementation {
         }
     }
 
+    @Override
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         support.addPropertyChangeListener(listener);
     }
 
+    @Override
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         support.removePropertyChangeListener(listener);
     }
 
     private class ProjectConfigListener implements PropertyChangeListener {
 
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (GrailsProjectConfig.GRAILS_PLATFORM_PROPERTY.equals(evt.getPropertyName())) {
                 GrailsPlatform platform = ((GrailsProjectConfig) evt.getSource()).getGrailsPlatform();
@@ -303,6 +294,7 @@ final class ProjectClassPathImplementation implements ClassPathImplementation {
 
     private class BuildConfigListener implements PropertyChangeListener {
 
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (BuildConfig.BUILD_CONFIG_PLUGINS.equals(evt.getPropertyName())) {
 
@@ -324,25 +316,31 @@ final class ProjectClassPathImplementation implements ClassPathImplementation {
             this.impl = impl;
         }
 
+        @Override
         public void fileAttributeChanged(FileAttributeEvent fe) {
         }
 
+        @Override
         public void fileChanged(FileEvent fe) {
             fireChange();
         }
 
+        @Override
         public void fileDataCreated(FileEvent fe) {
             fireChange();
         }
 
+        @Override
         public void fileDeleted(FileEvent fe) {
             fireChange();
         }
 
+        @Override
         public void fileFolderCreated(FileEvent fe) {
             fireChange();
         }
 
+        @Override
         public void fileRenamed(FileRenameEvent fe) {
             fireChange();
         }
@@ -354,5 +352,4 @@ final class ProjectClassPathImplementation implements ClassPathImplementation {
             impl.support.firePropertyChange(ClassPathImplementation.PROP_RESOURCES, null, null);
         }
     }
-
 }
