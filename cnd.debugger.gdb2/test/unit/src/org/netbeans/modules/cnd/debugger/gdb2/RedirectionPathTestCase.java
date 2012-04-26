@@ -110,4 +110,13 @@ public class RedirectionPathTestCase extends TestCase {
                 null,
                 "\"${OUTPUT_PATH}\" arg ");
     }
+    
+    @Test
+    public void testRedirectionPathUnclosedQuote() {
+        // should not fail
+        assertRedirPaths("\"${OUTPUT_PATH}\" <   \"/tmp/i n\" arg > \"/xxx",
+                "\"/tmp/i n\"",
+                "\"/xxx",
+                "\"${OUTPUT_PATH}\" arg ");
+    }
 }
