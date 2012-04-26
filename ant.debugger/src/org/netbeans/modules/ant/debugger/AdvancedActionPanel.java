@@ -342,7 +342,7 @@ final class AdvancedActionPanel extends javax.swing.JPanel {
         if (targets == null || (targets.length == 1 && targets[0].equals(defaultTarget)) || targets.length == 0) {
             script.setAttribute(ATTR_TARGETS, null);
         } else {
-            StringBuffer targetsSpaceSep = new StringBuffer();
+            StringBuilder targetsSpaceSep = new StringBuilder();
             for (int i = 0; i < targets.length; i++) {
                 if (i > 0) {
                     targetsSpaceSep.append(' ');

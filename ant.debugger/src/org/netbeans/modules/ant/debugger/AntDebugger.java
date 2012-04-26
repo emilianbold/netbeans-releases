@@ -136,6 +136,7 @@ public class AntDebugger extends ActionsProviderSupport {
         this.execTask = execTask;
         if (execTask != null) {
             execTask.addTaskListener(new TaskListener() {
+                @Override
                 public void taskFinished(org.openide.util.Task task) {
                     // The ANT task was finished
                     finish();
@@ -157,10 +158,12 @@ public class AntDebugger extends ActionsProviderSupport {
         actions.add (ActionsManager.ACTION_STEP_OUT);
     }
     
+    @Override
     public Set getActions () {
         return actions;
     }
         
+    @Override
     public void doAction (Object action) {
         synchronized (LOCK_ACTIONS) {
             actionRunning = true;
@@ -201,6 +204,7 @@ public class AntDebugger extends ActionsProviderSupport {
             }
         }
         actionsRequestProcessor.post(new Runnable() {
+            @Override
             public void run() {
                 try {
                     doAction(action);

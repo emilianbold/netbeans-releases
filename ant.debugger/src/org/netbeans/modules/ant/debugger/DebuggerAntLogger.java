@@ -84,9 +84,7 @@ public class DebuggerAntLogger extends AntLogger {
     
     
     static DebuggerAntLogger getDefault () {
-        Iterator it = Lookup.getDefault ().lookup (
-            new Lookup.Template (AntLogger.class)
-        ).allInstances ().iterator ();
+        Iterator it = Lookup.getDefault ().lookupAll (AntLogger.class).iterator ();
         while (it.hasNext ()) {
             AntLogger al = (AntLogger) it.next ();
             if (al instanceof DebuggerAntLogger) {
@@ -102,6 +100,7 @@ public class DebuggerAntLogger extends AntLogger {
      * The default implementation does nothing.
      * @param event the associated event object
      */
+    @Override
     public void buildInitializationFailed (AntEvent event) {
 //        File script = event.getScriptLocation ();
 //        int lineNumber = event.getLine ();
@@ -120,6 +119,7 @@ public class DebuggerAntLogger extends AntLogger {
      * The default implementation does nothing.
      * @param event the associated event object
      */
+    @Override
     public void buildStarted (AntEvent event) {
     }
     
@@ -129,6 +129,7 @@ public class DebuggerAntLogger extends AntLogger {
      * @param event the associated event object
      * @see AntEvent#getException
      */
+    @Override
     public void buildFinished (AntEvent event) {
         AntDebugger d = getDebugger (event.getSession (), event);
         if (d == null) return;
@@ -144,6 +145,7 @@ public class DebuggerAntLogger extends AntLogger {
      * The default implementation does nothing.
      * @param event the associated event object
      */
+    @Override
     public void targetStarted (AntEvent event) {
         AntDebugger d = getDebugger (event.getSession (), event);
         if (d == null) return;
@@ -157,6 +159,7 @@ public class DebuggerAntLogger extends AntLogger {
      * The default implementation does nothing.
      * @param event the associated event object
      */
+    @Override
     public void targetFinished (AntEvent event) {
         AntDebugger d = getDebugger (event.getSession (), event);
         if (d == null) return;
@@ -172,6 +175,7 @@ public class DebuggerAntLogger extends AntLogger {
      * The default implementation does nothing.
      * @param event the associated event object
      */
+    @Override
     public void taskStarted (AntEvent event) {
         AntDebugger d = getDebugger (event.getSession (), event);
         if (d == null) return;
@@ -186,6 +190,7 @@ public class DebuggerAntLogger extends AntLogger {
      * The default implementation does nothing.
      * @param event the associated event object
      */
+    @Override
     public void taskFinished (AntEvent event) {
         AntDebugger d = getDebugger (event.getSession (), event);
         if (d == null) return;
@@ -198,6 +203,7 @@ public class DebuggerAntLogger extends AntLogger {
      * The default implementation does nothing.
      * @param event the associated event object
      */
+    @Override
     public void messageLogged (AntEvent event) {
     }
 
@@ -206,6 +212,7 @@ public class DebuggerAntLogger extends AntLogger {
      * @param session a session which is about to be start
      * @return true to receive events about it; by default, false
      */
+    @Override
     public boolean interestedInSession (AntSession session) {
         return true;
     }
@@ -219,6 +226,7 @@ public class DebuggerAntLogger extends AntLogger {
      * @param session the relevant session
      * @return true to receive events for all scripts; by default, false
      */
+    @Override
     public boolean interestedInAllScripts (AntSession session) {
         return true;
     }
@@ -236,6 +244,7 @@ public class DebuggerAntLogger extends AntLogger {
      * @param session the relevant session
      * @return true to receive events sent from this script; by default, false
      */
+    @Override
     public boolean interestedInScript (File script, AntSession session) {
         return true;
     }
@@ -252,6 +261,7 @@ public class DebuggerAntLogger extends AntLogger {
      * @param session the relevant session
      * @return a nonempty (and non-null) list of target names; by default, {@link #NO_TARGETS}
      */
+    @Override
     public String[] interestedInTargets (AntSession session) {
         return ALL_TARGETS;
     }
@@ -268,6 +278,7 @@ public class DebuggerAntLogger extends AntLogger {
      * @param session the relevant session
      * @return a nonempty (and non-null) list of task names; by default, {@link #NO_TASKS}
      */
+    @Override
     public String[] interestedInTasks (AntSession session) {
         return ALL_TASKS;
     }
@@ -280,6 +291,7 @@ public class DebuggerAntLogger extends AntLogger {
      * @return a list of levels such as {@link AntEvent#LOG_INFO}; by default, an empty list
      * @see AntSession#getVerbosity
      */
+    @Override
     public int[] interestedInLogLevels (AntSession session) {
         return new int[] {
             AntEvent.LOG_INFO,
@@ -330,8 +342,7 @@ public class DebuggerAntLogger extends AntLogger {
         try {
             FileObject fo = FileUtil.toFileObject (s.getOriginatingScript ());
             DataObject dob = DataObject.find (fo);
-            AntProjectCookie antCookie = (AntProjectCookie) dob.getCookie 
-                (AntProjectCookie.class);
+            AntProjectCookie antCookie = dob.getLookup().lookup(AntProjectCookie.class);
             if (antCookie == null)
                 throw new NullPointerException ();
             d = startDebugging (antCookie, antEvent, execTask);
@@ -353,18 +364,22 @@ public class DebuggerAntLogger extends AntLogger {
             "AntDebuggerInfo",
             new Object[] {
                 new SessionProvider () {
+                    @Override
                     public String getSessionName () {
                         return antEvent.getSession ().getDisplayName ();
                     }
                     
+                    @Override
                     public String getLocationName () {
                         return "localhost";
                     }
                     
+                    @Override
                     public String getTypeID () {
                         return "AntSession";
                     }
 
+                    @Override
                     public Object[] getServices () {
                         return new Object[] {};
                     }
