@@ -100,4 +100,34 @@ public class OSGiMainLookupTest extends NbTestCase {
         }
     }
 
+    public void testUnloadedServices() throws Exception {
+        new OSGiProcess(getWorkDir()).newModule().
+                clazz(ServiceInterface.class).clazz(LoadedService.class).service(ServiceInterface.class, LoadedService.class).
+                manifest(
+                "OpenIDE-Module: core",
+                "OpenIDE-Module-Public-Packages: " + ServiceInterface.class.getPackage().getName() + ".*",
+                "OpenIDE-Module-Module-Dependencies: org.openide.modules, org.openide.util.lookup").done().
+                newModule().clazz(UnloadedService.class).service(ServiceInterface.class, UnloadedService.class).
+                manifest("OpenIDE-Module: other",
+                "OpenIDE-Module-Requires: org.openide.modules.os.Nonexistent",
+                "OpenIDE-Module-Module-Dependencies: core").done().newModule().
+                clazz(ServiceFinder.class).
+                manifest("OpenIDE-Module: runner",
+                "OpenIDE-Module-Install: " + ServiceFinder.class.getName(),
+                "OpenIDE-Module-Module-Dependencies: core").done().run();
+        assertEquals("[LoadedService]", System.getProperty("services"));
+    }
+    public static class ServiceFinder extends ModuleInstall {
+        public @Override void restored() {
+            System.setProperty("services", Lookup.getDefault().lookupAll(ServiceInterface.class).toString());
+        }
+    }
+    public interface ServiceInterface {}
+    public static class LoadedService implements ServiceInterface {
+        @Override public String toString() {return "LoadedService";}
+    }
+    public static class UnloadedService implements ServiceInterface {
+        @Override public String toString() {return "UnloadedService";}
+    }
+
 }

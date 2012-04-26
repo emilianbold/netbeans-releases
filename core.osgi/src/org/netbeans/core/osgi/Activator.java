@@ -207,7 +207,7 @@ public class Activator implements BundleActivator, SynchronousBundleListener {
     static final Map<Bundle,ModuleInstall> installers = new HashMap<Bundle,ModuleInstall>();
 
     private void load(List<Bundle> bundles) {
-        if (bundles.isEmpty()) {
+        if (bundles.isEmpty() || bundles.size() == 1 && bundles.iterator().next().getBundleId() == 0) {
             return;
         }
         LOG.log(Level.FINE, "loading: {0}", bundles);
