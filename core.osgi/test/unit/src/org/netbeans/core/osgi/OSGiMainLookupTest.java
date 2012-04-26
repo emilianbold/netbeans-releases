@@ -62,7 +62,7 @@ public class OSGiMainLookupTest extends NbTestCase {
         new OSGiProcess(getWorkDir()).newModule().clazz(ModuleInfoInstall.class).manifest(
                 "OpenIDE-Module: custom",
                 "OpenIDE-Module-Install: " + ModuleInfoInstall.class.getName(),
-                "OpenIDE-Module-Module-Dependencies: org.openide.modules, org.openide.util.lookup").done().run();
+                "OpenIDE-Module-Module-Dependencies: org.openide.modules, org.openide.util.lookup").done().run(false);
         String numberOfModules = System.getProperty("number.of.modules");
         assertNotNull(numberOfModules);
         assertTrue(numberOfModules, Integer.parseInt(numberOfModules) > 2);
@@ -87,7 +87,7 @@ public class OSGiMainLookupTest extends NbTestCase {
                 "OpenIDE-Module-Layer: custom/layer.xml",
                 "OpenIDE-Module-Module-Dependencies: org.openide.modules, org.openide.util.lookup, org.netbeans.core/2").done().
                 module("org.netbeans.core").
-                run();
+                run(false);
         assertEquals("[ok]", System.getProperty("custom.service.result"));
     }
     public interface Interface {}
@@ -114,7 +114,7 @@ public class OSGiMainLookupTest extends NbTestCase {
                 clazz(ServiceFinder.class).
                 manifest("OpenIDE-Module: runner",
                 "OpenIDE-Module-Install: " + ServiceFinder.class.getName(),
-                "OpenIDE-Module-Module-Dependencies: core").done().run();
+                "OpenIDE-Module-Module-Dependencies: core").done().run(false);
         assertEquals("[LoadedService]", System.getProperty("services"));
     }
     public static class ServiceFinder extends ModuleInstall {

@@ -166,7 +166,7 @@ class OSGiProcess {
         return this;
     }
 
-    public void run() throws Exception {
+    public void run(boolean fullShutDown) throws Exception {
         MakeOSGi makeosgi = new MakeOSGi();
         Project antprj = new Project();
         /* XXX does not work, why?
@@ -253,8 +253,10 @@ class OSGiProcess {
         for (Bundle bundle : installed) {
             bundle.start();
         }
-        for (Bundle bundle : installed) {
-            bundle.stop();
+        if (fullShutDown) {
+            for (Bundle bundle : installed) {
+                bundle.stop();
+            }
         }
         if (f.getState() != Bundle.STOPPING) {
             f.stop();
