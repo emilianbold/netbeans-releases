@@ -632,6 +632,16 @@ public class Html5ParserTest extends NbTestCase {
         assertFalse(div.isEmpty());
         
     }
+    
+    public void testAddChildToEmptyTag() throws ParseException {
+//        ParseTreeBuilder.setLoggerLevel(Level.ALL);
+        
+        String code = "<div align='center'/><a>text</a></div>";
+        HtmlParseResult result = parse(code);
+        Node root = result.root();
+        
+        ElementUtils.dumpTree(root);
+    }
 
     
     
