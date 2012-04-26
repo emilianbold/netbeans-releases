@@ -5,6 +5,7 @@ new File("something").c|
 METHOD     canExecute()                    [PUBLIC]   boolean
 METHOD     canRead()                       [PUBLIC]   boolean
 METHOD     canWrite()                      [PUBLIC]   boolean
+METHOD     collect()                                  Collection
 METHOD     collect(Closure)                           List
 METHOD     collect(Collection, Closure)               Collection
 METHOD     compareTo(File)                 [PUBLIC]   int
