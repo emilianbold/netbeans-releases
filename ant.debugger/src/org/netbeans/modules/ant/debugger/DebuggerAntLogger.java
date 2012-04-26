@@ -45,7 +45,6 @@
 package org.netbeans.modules.ant.debugger;
 
 import java.io.File;
-import java.lang.StringBuffer;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
