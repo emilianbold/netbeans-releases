@@ -217,6 +217,7 @@ class OSGiRepository extends Repository {
             List<FileSystem> delegates = new ArrayList<FileSystem>();
             delegates.add(userdir);
             Collection<? extends FileSystem> dyn = dynamic.allInstances();
+            LOG.log(Level.FINE, "dyn={0}", dyn);
             for (FileSystem fs : dyn) {
                 if (Boolean.TRUE.equals(fs.getRoot().getAttribute("fallback"))) { // NOI18N
                     continue;
