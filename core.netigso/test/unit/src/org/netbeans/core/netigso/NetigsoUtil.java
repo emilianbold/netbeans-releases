@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,52 +37,44 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.core.netigso;
 
-package org.netbeans.modules.groovy.editor.api.completion;
+import java.lang.reflect.Method;
+import junit.framework.Assert;
+import org.netbeans.Module;
+import org.netbeans.ModuleManager;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.launch.Framework;
 
-/**
+/** Some useful utilities to work with Netigso framework.
  *
- * @author schmidtm
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class CollectionsCCTest extends GroovyCCTestBase {
-
-    public CollectionsCCTest(String testName) {
-        super(testName);
+public final class NetigsoUtil {
+    private NetigsoUtil() {
     }
 
-    @Override
-    protected String getTestType() {
-        return "collections";
+    public static Framework framework(ModuleManager mgr) throws Exception {
+        final Method nm = mgr.getClass().getDeclaredMethod("netigso");
+        nm.setAccessible(true);
+        final Netigso netigso = (Netigso) nm.invoke(mgr);
+        Method m = Netigso.class.getDeclaredMethod("getFramework");
+        m.setAccessible(true);
+        Framework f = (Framework) m.invoke(netigso);
+        return f;
     }
-
-    // testing proper creation of constructor-call proposals
-
-    //     * groovy.lang.*
-    //     * groovy.util.*
-
-    public void testCollections1_1() throws Exception {
-        checkCompletion(BASE + "" + "Collections1.groovy", "[\"one\",\"two\"].listIter^", false);
+    
+    static Bundle bundle(Module module) throws Exception {
+        Framework f = framework(module.getManager());
+        for (Bundle b : f.getBundleContext().getBundles()) {
+            if (b.getSymbolicName().equals(module.getCodeNameBase())) {
+                return b;
+            }
+        }
+        Assert.fail("no bundle found for " + module);
+        return null;
     }
-
-    public void testCollections1_2() throws Exception {
-        checkCompletion(BASE + "" + "Collections1.groovy", "[1:\"one\", 2:\"two\"].ent^", false);
-    }
-
-    public void testCollections1_3() throws Exception {
-        checkCompletion(BASE + "" + "Collections1.groovy", "    (1..10).a^", false);
-    }
-
-    public void testCollections1_4() throws Exception {
-        checkCompletion(BASE + "" + "Collections1.groovy", "    1..10.d^", false);
-    }
-
-    public void testCollections1_5() throws Exception {
-        checkCompletion(BASE + "" + "Collections1.groovy", "    (1..10).^", false);
-    }
-
-    public void testCollections1_6() throws Exception {
-        checkCompletion(BASE + "" + "Collections1.groovy", "[\"one\",\"two\"].it^", false);
-    }
+    
 }

@@ -682,6 +682,11 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
                     b.append('\n');
                 }
                 b.append(entry.getKey()).append('=').append(entry.getValue());
+                if (entry.getValue().endsWith("\\")) {
+                    // we interpret \ at the end of the line as the properties file editor, as a continuation on the next line. This 
+                    //has a sideeffect on entries ending with \ naturally
+                    b.append(" ");
+                }
             }
         }
         return b.toString();

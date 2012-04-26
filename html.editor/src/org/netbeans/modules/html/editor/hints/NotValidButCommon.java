@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,52 +37,36 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.html.editor.hints;
 
-package org.netbeans.modules.groovy.editor.api.completion;
+import java.util.regex.Pattern;
+import org.netbeans.modules.csl.api.HintSeverity;
 
 /**
  *
- * @author schmidtm
+ * @author marekfukala
  */
-public class CollectionsCCTest extends GroovyCCTestBase {
+public class NotValidButCommon extends PatternRule {
 
-    public CollectionsCCTest(String testName) {
-        super(testName);
+    private static final String[] PATTERNS_SOURCES = new String[]{
+        
+        //Bug 211774 - Value of http-equiv attribute marked as invalid 
+        "Bad value \\\"X.*?\\\" for attribute \\\"http-equiv\\\" on element \\\"meta\\\"."
+        
+    }; //NOI18N
+    
+    private final static Pattern[] PATTERNS = buildPatterns(PATTERNS_SOURCES);
+
+    @Override
+    public Pattern[] getPatterns() {
+        return PATTERNS;
     }
 
     @Override
-    protected String getTestType() {
-        return "collections";
+    public HintSeverity getDefaultSeverity() {
+        return HintSeverity.INFO;
     }
-
-    // testing proper creation of constructor-call proposals
-
-    //     * groovy.lang.*
-    //     * groovy.util.*
-
-    public void testCollections1_1() throws Exception {
-        checkCompletion(BASE + "" + "Collections1.groovy", "[\"one\",\"two\"].listIter^", false);
-    }
-
-    public void testCollections1_2() throws Exception {
-        checkCompletion(BASE + "" + "Collections1.groovy", "[1:\"one\", 2:\"two\"].ent^", false);
-    }
-
-    public void testCollections1_3() throws Exception {
-        checkCompletion(BASE + "" + "Collections1.groovy", "    (1..10).a^", false);
-    }
-
-    public void testCollections1_4() throws Exception {
-        checkCompletion(BASE + "" + "Collections1.groovy", "    1..10.d^", false);
-    }
-
-    public void testCollections1_5() throws Exception {
-        checkCompletion(BASE + "" + "Collections1.groovy", "    (1..10).^", false);
-    }
-
-    public void testCollections1_6() throws Exception {
-        checkCompletion(BASE + "" + "Collections1.groovy", "[\"one\",\"two\"].it^", false);
-    }
+    
 }
