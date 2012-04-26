@@ -71,16 +71,16 @@ import org.openide.util.NbBundle;
 
 public final class JsfForm extends EntityClass implements ActiveEditorDrop, PaletteItem {
     private static String [] BEGIN = {
-        "<$HTML$:form>\n",
-        "<h2>Detail</h2>\n <$HTML$:form>\n<$HTML$:panelGrid columns=\"2\">\n",
-        "<h2>Create</h2>\n <$HTML$:form>\n<$HTML$:panelGrid columns=\"2\">\n",
-        "<h2>Edit</h2>\n <$HTML$:form>\n<$HTML$:panelGrid columns=\"2\">\n",
+        "<__HTML__:form>\n",
+        "<h2>Detail</h2>\n <__HTML__:form>\n<__HTML__:panelGrid columns=\"2\">\n",
+        "<h2>Create</h2>\n <__HTML__:form>\n<__HTML__:panelGrid columns=\"2\">\n",
+        "<h2>Edit</h2>\n <__HTML__:form>\n<__HTML__:panelGrid columns=\"2\">\n",
     };
     private static String [] END = {
-        "</$HTML$:form>\n",
-        "</$HTML$:panelGrid>\n </$HTML$:form>\n",
-        "</$HTML$:panelGrid>\n </$HTML$:form>\n",
-        "</$HTML$:panelGrid>\n </$HTML$:form>\n",
+        "</__HTML__:form>\n",
+        "</__HTML__:panelGrid>\n </__HTML__:form>\n",
+        "</__HTML__:panelGrid>\n </__HTML__:form>\n",
+        "</__HTML__:panelGrid>\n </__HTML__:form>\n",
     };
 
     public JsfForm() {
@@ -104,10 +104,10 @@ public final class JsfForm extends EntityClass implements ActiveEditorDrop, Pale
             stringBuffer.append("<").append(jsfLibrariesSupport.getLibraryPrefix(DefaultLibraryInfo.JSF_CORE)).append(":view>\n"); //NOI18N
         }
         stringBuffer.append(MessageFormat.format(
-                BEGIN[formType].replaceAll("\\$HTML\\$", jsfLibrariesSupport.getLibraryPrefix(DefaultLibraryInfo.HTML)), //NOI18N
+                BEGIN[formType].replaceAll("__HTML__", jsfLibrariesSupport.getLibraryPrefix(DefaultLibraryInfo.HTML)), //NOI18N
                 new Object[] {variable}));
 
-        stringBuffer.append(END[formType].replaceAll("\\$HTML\\$", jsfLibrariesSupport.getLibraryPrefix(DefaultLibraryInfo.HTML))); //NOI18N
+        stringBuffer.append(END[formType].replaceAll("__HTML__", jsfLibrariesSupport.getLibraryPrefix(DefaultLibraryInfo.HTML))); //NOI18N
         if (surroundWithFView) {
             stringBuffer.append("</").append(jsfLibrariesSupport.getLibraryPrefix(DefaultLibraryInfo.JSF_CORE)).append(":view>\n"); //NOI18N
         }

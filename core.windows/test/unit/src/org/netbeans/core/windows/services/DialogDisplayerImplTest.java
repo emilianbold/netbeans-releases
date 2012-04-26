@@ -129,25 +129,40 @@ public class DialogDisplayerImplTest extends NbTestCase {
         NotifyDescriptor nd = new NotifyDescriptor.Confirmation ("HowAreYou?");
         
         class BlockAWT implements Runnable {
-            public volatile int state;
+            volatile int state;
             @Override
             public synchronized void run () {
-                state = 1;
+                setState(1);
                 try {
                     notify ();
                     long t = System.currentTimeMillis ();
                     wait (15000);
                     if (System.currentTimeMillis () - t > 13000) {
                         // this is wrong
-                        state = 3;
+                        setState(3);
                         // wait for the dialog to finish
                         notify ();
                         return ;
                     }
                 } catch (Exception ex) {
                 }
-                state = 2;
+                setState(2);
                 notify ();
+            }
+
+            /**
+             * @return the state
+             */
+            int getState() {
+                return state;
+            }
+
+            /**
+             * @param state the state to set
+             */
+            void setState(int state) {
+                LOG.info("Changing state to " + state);
+                this.state = state;
             }
         }
         
@@ -155,12 +170,13 @@ public class DialogDisplayerImplTest extends NbTestCase {
         synchronized (b) {
             SwingUtilities.invokeLater (b);
             b.wait ();
-            assertEquals ("In state one", 1, b.state);
+            assertEquals ("In state one", 1, b.getState());
         }
-        
+        LOG.info("Before notify " + b.getState());
         Object res = dd.notify (nd);
+        LOG.info("After notify " + b.getState());
         
-        if (b.state == 3) {
+        if (b.getState() == 3) {
             fail ("This means that the AWT blocked timeouted - e.g. no time out implemented in the dd.notify at all");
         }
 
@@ -168,8 +184,9 @@ public class DialogDisplayerImplTest extends NbTestCase {
         
         synchronized (b) {
             b.notify ();
+            LOG.info("Before wait " + b.getState());
             b.wait ();
-            assertEquals ("Exited correctly", 2, b.state);
+            assertEquals ("Exited correctly", 2, b.getState());
         }
     }
     

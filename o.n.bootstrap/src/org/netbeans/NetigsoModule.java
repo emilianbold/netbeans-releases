@@ -110,13 +110,13 @@ final class NetigsoModule extends Module {
 
     @Override
     public void reload() throws IOException {
-        NetigsoFramework.getDefault().reload(this);
+        mgr.netigso().reload(this);
     }
 
     final void start() throws IOException {
         ProxyClassLoader pcl = (ProxyClassLoader)classloader;
         try {
-            Set<String> pkgs = NetigsoFramework.getDefault().createLoader(this, pcl, this.jar);
+            Set<String> pkgs = mgr.netigso().createLoader(this, pcl, this.jar);
             pcl.addCoveredPackages(pkgs);
         } catch (IOException ex) {
             classloader = null;
@@ -128,7 +128,7 @@ final class NetigsoModule extends Module {
     protected void classLoaderUp(Set<Module> parents) throws IOException {
         assert classloader == null;
         classloader = new DelegateCL();
-        NetigsoFramework.classLoaderUp(this);
+        mgr.netigsoLoaderUp(this);
     }
 
     @Override
@@ -137,10 +137,10 @@ final class NetigsoModule extends Module {
         ProxyClassLoader pcl = (ProxyClassLoader)classloader;
         ClassLoader l = pcl.firstParent();
         if (l == null) {
-            NetigsoFramework.classLoaderDown(this);
+            mgr.netigsoLoaderDown(this);
             return;
         }
-        NetigsoFramework.getDefault().stopLoader(this, l);
+        mgr.netigso().stopLoader(this, l);
         classloader = null;
     }
 
@@ -172,7 +172,7 @@ final class NetigsoModule extends Module {
 
     @Override
     public Enumeration<URL> findResources(String resources) {
-        return NetigsoFramework.getDefault().findResources(this, resources);
+        return mgr.netigso().findResources(this, resources);
     }
 
     @Override

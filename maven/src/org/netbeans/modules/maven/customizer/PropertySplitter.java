@@ -61,7 +61,7 @@ public class PropertySplitter {
         private boolean escapeNext = false;
         
         public PropertySplitter(String line) {
-            this(line, new char[] { '"' } , '\\', '\n', '\n'); //NOI18N
+            this(line, new char[] { '"', '\'' } , '\\', '\n', '\n'); //NOI18N
         }
 
         private PropertySplitter(String line, char[] quotes, char escape, char separator, char nl) {

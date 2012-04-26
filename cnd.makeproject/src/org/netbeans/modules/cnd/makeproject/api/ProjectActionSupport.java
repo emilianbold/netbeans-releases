@@ -675,7 +675,7 @@ public class ProjectActionSupport {
             // Check if something is specified
             String executable = pae.getExecutable();
             if (executable.length() == 0) {
-                SelectExecutablePanel panel = new SelectExecutablePanel(pae.getConfiguration());
+                SelectExecutablePanel panel = new SelectExecutablePanel(pae);
                 DialogDescriptor descriptor = new DialogDescriptor(panel, getString("SELECT_EXECUTABLE"));
                 panel.setDialogDescriptor(descriptor);
                 DialogDisplayer.getDefault().notify(descriptor);
@@ -779,6 +779,7 @@ public class ProjectActionSupport {
                     }
                 }
                 if (!ok) {
+                    String value = pae.getProfile().getRunCommand().getValue();
                     String errormsg = getString("EXECUTABLE_DOESNT_EXISTS", executable); // NOI18N
                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
                     return false;
