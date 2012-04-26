@@ -426,6 +426,10 @@ public class WatchesModel implements TreeModel {
             JPDAWatch jw = null;
             try {
                 EvaluatorExpression expr = getParsedExpression();
+                if (expr == null) {
+                    parseExpression(w.getExpression());
+                    expr = getParsedExpression();
+                }
                 Value v = debugger.evaluateIn (expr);
                 //if (v instanceof ObjectReference)
                 //    jw = new JPDAObjectWatchImpl (debugger, w, (ObjectReference) v);
