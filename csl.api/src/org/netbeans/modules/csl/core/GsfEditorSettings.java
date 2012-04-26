@@ -82,10 +82,6 @@ public class GsfEditorSettings extends StorageFilter<String, TypedValue> {
         if (mimePath.size() == 1) {
             if (null != LanguageRegistry.getInstance().getLanguageByMimeType(mimePath.getPath())) {
                 // this is a GSF language
-                
-                if (!map.containsKey(SimpleValueNames.CODE_FOLDING_ENABLE)) {
-                    map.put(SimpleValueNames.CODE_FOLDING_ENABLE, new TypedValue("true", Boolean.class.getName())); //NOI18N
-                }
                 if (!map.containsKey("word-match-match-case")) { //NOI18N
                     map.put("word-match-match-case", new TypedValue("true", Boolean.class.getName())); //NOI18N
                 }
