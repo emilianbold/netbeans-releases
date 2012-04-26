@@ -37,6 +37,8 @@
  */
 package org.netbeans.modules.java.hints.bugs;
 
+import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.NewArrayTree;
@@ -156,7 +158,31 @@ public class Unbalanced {
             TreePath tp = ctx.getPath();
             
             if (tp.getParentPath().getLeaf().getKind() == Kind.ARRAY_ACCESS) {
-                record(ctx.getInfo(), var, ARRAY_WRITE.contains(tp.getParentPath().getParentPath().getLeaf().getKind()) ? State.WRITE : State.READ);
+                State accessType = State.READ;
+                Tree access = tp.getParentPath().getLeaf();
+                Tree assign = tp.getParentPath().getParentPath().getLeaf();
+                
+                switch (assign.getKind()) {
+                    case ASSIGNMENT:
+                        if (((AssignmentTree) assign).getVariable() == access) {
+                            accessType = State.WRITE;
+                        }
+                        break;
+                    case AND_ASSIGNMENT: case DIVIDE_ASSIGNMENT: case LEFT_SHIFT_ASSIGNMENT:
+                    case MINUS_ASSIGNMENT: case MULTIPLY_ASSIGNMENT: case OR_ASSIGNMENT:
+                    case PLUS_ASSIGNMENT: case REMAINDER_ASSIGNMENT: case RIGHT_SHIFT_ASSIGNMENT:
+                    case UNSIGNED_RIGHT_SHIFT_ASSIGNMENT: case XOR_ASSIGNMENT:
+                        if (((CompoundAssignmentTree) assign).getVariable() == access) {
+                            accessType = State.WRITE;
+                        }
+                        break;
+                    case POSTFIX_DECREMENT: case POSTFIX_INCREMENT: case PREFIX_DECREMENT:
+                    case PREFIX_INCREMENT:
+                        accessType = State.WRITE;
+                        break;
+                }
+                
+                record(ctx.getInfo(), var, accessType);
             } else {
                 record(ctx.getInfo(), var, State.WRITE, State.READ);
             }
@@ -166,7 +192,9 @@ public class Unbalanced {
 
         @TriggerPattern(value="$mods$ $type[] $name = $init$;")
         public static ErrorDescription after(HintContext ctx) {
-            if (testElement(ctx) == null) return null;
+            VariableElement var = testElement(ctx);
+
+            if (var == null) return null;
 
             Tree parent = ctx.getPath().getParentPath().getLeaf();
 
@@ -177,10 +205,20 @@ public class Unbalanced {
             
             TreePath init = ctx.getVariables().get("$init$");
 
-            if (init != null && init.getLeaf().getKind() == Kind.NEW_ARRAY) {
-                NewArrayTree nat = (NewArrayTree) init.getLeaf();
+            if (init != null) {
+                boolean asWrite = true;
+                
+                if (init.getLeaf().getKind() == Kind.NEW_ARRAY) {
+                    NewArrayTree nat = (NewArrayTree) init.getLeaf();
 
-                if (nat.getInitializers() != null && !nat.getInitializers().isEmpty()) return null;
+                    if (nat.getInitializers() == null || nat.getInitializers().isEmpty()) {
+                        asWrite = false;
+                    }
+                }
+                
+                if (asWrite) {
+                    record(ctx.getInfo(), var, State.WRITE);
+                }
             }
 
             return produceWarning(ctx, "ERR_UnbalancedArray");

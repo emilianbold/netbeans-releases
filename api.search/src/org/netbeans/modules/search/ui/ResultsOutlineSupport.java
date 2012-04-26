@@ -71,6 +71,7 @@ import org.netbeans.modules.search.FindDialogMemory;
 import org.netbeans.modules.search.MatchingObject;
 import org.netbeans.modules.search.ResultModel;
 import org.netbeans.modules.search.Selectable;
+import org.netbeans.modules.search.ui.AbstractSearchResultsPanel.RootNode;
 import org.netbeans.swing.etable.ETableColumnModel;
 import org.netbeans.swing.outline.Outline;
 import org.openide.explorer.view.OutlineView;
@@ -83,9 +84,6 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
-import org.openide.nodes.NodeAdapter;
-import org.openide.nodes.NodeMemberEvent;
-import org.openide.nodes.NodeReorderEvent;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.datatransfer.PasteType;
@@ -124,7 +122,7 @@ public class ResultsOutlineSupport {
         this.rootFiles = rootFiles;
         this.resultsNode = new ResultsNode();
         this.infoNode = infoNode;
-        this.invisibleRoot = new RootNode();
+        this.invisibleRoot = new RootNode(resultsNode, infoNode);
         this.matchingObjectNodes = new LinkedList<MatchingObjectNode>();
         createOutlineView();
     }
@@ -294,72 +292,6 @@ public class ResultsOutlineSupport {
 
         @Override
         public void treeCollapsed(TreeExpansionEvent event) {
-        }
-    }
-
-    private class RootNode extends AbstractNode {
-
-        public RootNode() {
-            this(new RootNodeChildren());
-        }
-
-        private RootNode(final RootNodeChildren rootNodeChildren) {
-            super(rootNodeChildren);
-            if (infoNode != null) {
-                setInfoNodeListener(rootNodeChildren);
-            }
-        }
-    }
-
-    private void setInfoNodeListener(final RootNodeChildren rootNodeChildren) {
-
-        assert infoNode != null;
-
-        infoNode.getChildren().getNodes(true);
-        infoNode.addNodeListener(new NodeAdapter() {
-            private boolean added = false;
-
-            @Override
-            public synchronized void childrenAdded(NodeMemberEvent ev) {
-                if (!added) {
-                    rootNodeChildren.showInfoNode();
-                    infoNode.removeNodeListener(this);
-                    added = true;
-                }
-            }
-
-            @Override
-            public void propertyChange(PropertyChangeEvent ev) {
-                super.propertyChange(ev);
-            }
-
-            @Override
-            public void childrenReordered(NodeReorderEvent ev) {
-                super.childrenReordered(ev);
-            }
-        });
-    }
-
-    private class RootNodeChildren extends Children.Keys<Node> {
-
-        private Node[] standard = new Node[]{resultsNode};
-        private Node[] withInfo = new Node[]{resultsNode, infoNode};
-        private boolean infoNodeShown = false;
-
-        public RootNodeChildren() {
-            setKeys(standard);
-        }
-
-        private synchronized void showInfoNode() {
-            if (!infoNodeShown) {
-                setKeys(withInfo);
-                infoNodeShown = true;
-            }
-        }
-
-        @Override
-        protected Node[] createNodes(Node key) {
-            return new Node[]{key};
         }
     }
 

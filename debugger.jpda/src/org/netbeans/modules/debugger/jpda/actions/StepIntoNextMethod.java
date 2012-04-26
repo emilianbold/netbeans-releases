@@ -43,12 +43,10 @@
 package org.netbeans.modules.debugger.jpda.actions;
 
 import com.sun.jdi.ThreadReference;
-import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.StackFrame;
 import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.event.Event;
-import com.sun.jdi.event.LocatableEvent;
 import com.sun.jdi.request.EventRequest;
 import com.sun.jdi.request.InvalidRequestStateException;
 import com.sun.jdi.request.StepRequest;
@@ -83,16 +81,12 @@ import org.netbeans.modules.debugger.jpda.jdi.TypeComponentWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.event.EventWrapper;
-import org.netbeans.modules.debugger.jpda.jdi.event.LocatableEventWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestManagerWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.StepRequestWrapper;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.util.Executor;
 import org.netbeans.spi.debugger.jpda.SourcePathProvider;
-import org.openide.ErrorManager;
-import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
 
 /**
  * Extracted from StepIntoActionProvider and StepIntoNextMethodActionProvider
@@ -198,6 +192,7 @@ public class StepIntoNextMethod implements Executor, PropertyChangeListener {
         }
     }
 
+    @Override
     public void propertyChange (PropertyChangeEvent ev) {
         if (ev.getPropertyName () == SmartSteppingFilter.PROP_EXCLUSION_PATTERNS) {
             if (ev.getOldValue () != null) {
@@ -245,6 +240,7 @@ public class StepIntoNextMethod implements Executor, PropertyChangeListener {
      *
      * Should be called from Operator only.
      */
+    @Override
     public boolean exec (Event event) {
         ThreadReference tr;
         JPDAThreadImpl st;
@@ -369,6 +365,7 @@ public class StepIntoNextMethod implements Executor, PropertyChangeListener {
         }
     }
 
+    @Override
     public void removed(EventRequest eventRequest) {
         StepRequest sr = (StepRequest) eventRequest;
         try {

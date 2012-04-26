@@ -152,7 +152,6 @@ public abstract class RestSupport {
     public static final int PROJECT_TYPE_WEB = 1; //NOI18N
     public static final int PROJECT_TYPE_NB_MODULE = 2; //NOI18N
     
-
     private AntProjectHelper helper;
     protected RestServicesModel restServicesModel;
     protected RestApplicationModel restApplicationModel;
@@ -172,6 +171,7 @@ public abstract class RestSupport {
      * 
      */
     public abstract void upgrade();
+
 
     /**
      * Ensure the project is ready for REST development.
@@ -372,9 +372,6 @@ public abstract class RestSupport {
         }
         return ClassPathSupport.createResource(url);
     }
-
-    public abstract void extendBuildScripts() throws IOException;
-    
     
     public abstract FileObject generateTestClient(File testdir, String url) 
         throws IOException; 
@@ -771,7 +768,7 @@ public abstract class RestSupport {
     }
 
     public String getApplicationPath() throws IOException {
-        return "resources"; // default application path
+        return "webresources"; // default application path
     }
     
     public FileObject getApplicationContextXml() {
@@ -790,8 +787,6 @@ public abstract class RestSupport {
 
         return null;
     }
-    
-    public abstract void configRestPackages( String... packs ) throws IOException ;
     
     public abstract File getLocalTargetTestRest();
     
@@ -844,6 +839,9 @@ public abstract class RestSupport {
         return "http://"+host+":"+portNumber+"/"+ //NOI18N
                 (contextRoot.length()>0 ? contextRoot+"/" : ""); //NOI18N
     }
+
+
+    public abstract void configure(String... packages) throws IOException;
 
     protected static class JerseyFilter implements FileFilter {
         private Pattern pattern;

@@ -295,9 +295,8 @@ public class testCC extends cc {
 //        t.setTimeout("JScrollBarOperator.WholeScrollTimeout", 6000000);
 //        jCompl.listItself.setTimeouts(t);
         System.out.println("==== go to click on item ====");
-        jCompl.listItself.clickOnItem("$GLOBALS", new CFulltextStringComparator());
 
-        WindowOperator jdDoc = new WindowOperator(0);
+        WindowOperator jdDoc = new WindowOperator(1);
         JEditorPaneOperator jeEdit = new JEditorPaneOperator(jdDoc);
     
 //        try {

@@ -53,6 +53,9 @@ import org.netbeans.modules.web.common.api.LexerUtils;
  */
 public class ElementUtils {
 
+    private static final char ELEMENT_PATH_ELEMENTS_DELIMITER = '/';
+    private static final char ELEMENT_PATH_INDEX_DELIMITER = '|';
+    
     private static final String INDENT = "   "; //NOI18N
 
     private ElementUtils() {
@@ -227,6 +230,52 @@ public class ElementUtils {
             }
         }
     }
+    
+    /**
+     * Encodes the given {@link TreePath} into a string form. 
+     * 
+     * The encoded path can be later used as an argument of {@link #query(org.netbeans.modules.html.editor.lib.api.elements.Node, java.lang.String) }
+     * 
+     * The root node is not listed in the path.
+     * 
+     * Example: html/body/table/tbody/tr/td
+     * 
+     * @since 3.4
+     * @param element
+     * @return string representation of the {@link TreePath}
+     */
+    public static String encodeToString(TreePath treePath) {
+        StringBuilder sb = new StringBuilder();
+        List<Element> p = treePath.path();
+        for(int i = p.size() - 2; i >= 0; i-- ) { //do not include the root element
+            Element node = p.get(i);
+            Node parent = node.parent();
+            int myIndex = parent == null ? 0 : getIndexInSimilarNodes(node.parent(), node);
+            sb.append(node.id());
+            if(myIndex > 0) {
+                sb.append(ELEMENT_PATH_INDEX_DELIMITER);
+                sb.append(myIndex);
+            }
+            
+            if(i > 0) {
+                sb.append(ELEMENT_PATH_ELEMENTS_DELIMITER);
+            }
+        }
+        return sb.toString();
+    }
+    
+    private static int getIndexInSimilarNodes(Node parent, Element node) {
+        int index = -1;
+        for(Element child : parent.children()) {
+            if(node.id().equals(child.id()) && node.type() == child.type()) {
+                index++;
+            }
+            if(child == node) {
+                break;
+            }
+        }
+        return index;
+    }
 
     public static OpenTag query(Node base, String path) {
         return query(base, path, false);
@@ -239,11 +288,11 @@ public class ElementUtils {
      * note: queries OPEN TAGS ONLY!
      */
     public static OpenTag query(Node base, String path, boolean caseInsensitive) {
-        StringTokenizer st = new StringTokenizer(path, "/");
+        StringTokenizer st = new StringTokenizer(path, Character.toString(ELEMENT_PATH_ELEMENTS_DELIMITER));
         Node found = base;
         while (st.hasMoreTokens()) {
             String token = st.nextToken();
-            int indexDelim = token.indexOf('|');
+            int indexDelim = token.indexOf(ELEMENT_PATH_INDEX_DELIMITER);
 
             String nodeName = indexDelim >= 0 ? token.substring(0, indexDelim) : token;
             if (caseInsensitive) {

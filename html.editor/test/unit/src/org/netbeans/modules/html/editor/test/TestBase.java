@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.html.editor.test;
 
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -79,6 +80,23 @@ public class TestBase extends CslTestBase {
         MockServices.setServices(MockMimeLookup.class);
         super.setUp();
     }
+    
+    public FileObject createFile(String relative, String contents) throws IOException {
+        File workdir = getWorkDir();
+        FileObject fo = FileUtil.toFileObject(workdir);
+        assertNotNull(fo);
+        
+        FileObject datafile = FileUtil.createData(fo, relative);
+        assertNotNull(datafile);
+        
+        OutputStream os = datafile.getOutputStream();
+        Writer writer = new BufferedWriter(new OutputStreamWriter(os));
+        writer.write(contents);
+        writer.close();
+        
+        return datafile;
+    }
+    
 
     protected BaseDocument createDocument() {
         return getDocument(EMPTY_STRING); 

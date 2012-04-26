@@ -288,6 +288,10 @@ public class FormatToken {
          */
         private int maxLength;
         /**
+         * Indicates if this Token is in group with other AssignmentAnchorTokens or is alone.
+         */
+        private boolean isInGroup;
+        /**
          * Keeps previous instance in the group.
          */
         private AssignmentAnchorToken previous;
@@ -297,6 +301,7 @@ public class FormatToken {
             length = -1;
             maxLength = -1;
             previous = null;
+            isInGroup = false;
 	}
 
         public int getLenght() {
@@ -321,6 +326,14 @@ public class FormatToken {
 
         public void setPrevious(AssignmentAnchorToken previous) {
             this.previous = previous;
+        }
+
+        public void setIsInGroup(boolean isInGroup) {
+            this.isInGroup = isInGroup;
+        }
+
+        public boolean isInGroup() {
+            return isInGroup;
         }
 
     }

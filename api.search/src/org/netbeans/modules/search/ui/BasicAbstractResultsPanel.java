@@ -45,15 +45,10 @@ import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.ResourceBundle;
 import javax.accessibility.AccessibleContext;
-import javax.swing.AbstractButton;
-import javax.swing.ActionMap;
 import javax.swing.JButton;
 import javax.swing.JToggleButton;
 import javax.swing.UIManager;
@@ -66,15 +61,12 @@ import org.netbeans.modules.search.PrintDetailsTask;
 import org.netbeans.modules.search.ResultModel;
 import org.netbeans.modules.search.ResultView;
 import org.netbeans.modules.search.TextDetail;
-import org.netbeans.swing.outline.Outline;
 import org.openide.explorer.view.OutlineView;
-import org.openide.explorer.view.Visualizer;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeAdapter;
 import org.openide.nodes.NodeListener;
 import org.openide.nodes.NodeMemberEvent;
-import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -85,14 +77,6 @@ import org.openide.util.NbBundle;
 public abstract class BasicAbstractResultsPanel
         extends AbstractSearchResultsPanel {
 
-    private static final String NEXT_ICON =
-            "org/netbeans/modules/search/res/next.png";                 //NOI18N
-    private static final String PREV_ICON =
-            "org/netbeans/modules/search/res/prev.png";                 //NOI18N
-    private static final String EXPAND_ICON =
-            "org/netbeans/modules/search/res/expandTree.png";           //NOI18N
-    private static final String COLLAPSE_ICON =
-            "org/netbeans/modules/search/res/colapseTree.png";          //NOI18N
     private static final String SHOW_DETAILS_ICON =
             "org/netbeans/modules/search/res/search.gif";               //NOI18N
     private static final String FOLDER_VIEW_ICON =
@@ -102,11 +86,8 @@ public abstract class BasicAbstractResultsPanel
     private static final String MODE_FLAT = "flat";                     //NOI18N
     private static final String MODE_TREE = "tree";                     //NOI18N
     protected ResultModel resultModel;
-    protected JButton nextButton;
-    protected JButton prevButton;
-    protected JToggleButton expandButton;
-    protected JToggleButton treeViewButton;
-    protected JToggleButton flatViewButton;
+    protected JToggleButton btnTreeView;
+    protected JToggleButton btnFlatView;
     protected JButton showDetailsButton;
     protected boolean details;
     protected BasicComposition composition;
@@ -129,8 +110,7 @@ public abstract class BasicAbstractResultsPanel
         this.resultsOutlineSupport = resultsOutlineSupport;
         getExplorerManager().setRootContext(
                 resultsOutlineSupport.getRootNode());
-        initSelectionListeners();
-        initActions();
+        initButtons();
         initResultNodeAdditionListener();
         if (MODE_TREE.equals(
                 FindDialogMemory.getDefault().getResultsViewMode())) {
@@ -141,28 +121,10 @@ public abstract class BasicAbstractResultsPanel
         initAccessibility();
     }
 
-    private void initSelectionListeners() {
-        getExplorerManager().addPropertyChangeListener(
-                new PropertyChangeListener() {
-                    @Override
-                    public void propertyChange(PropertyChangeEvent evt) {
-                        if (evt.getPropertyName().equals(
-                                "selectedNodes")) {                     //NOI18N
-                            updateShiftButtons();
-                        }
-                    }
-                });
-    }
 
-    private void initActions() {
-        ActionMap map = getActionMap();
-
-        map.put("jumpNext", new PrevNextAction(1));                    // NOI18N
-        map.put("jumpPrev", new PrevNextAction(-1));                   // NOI18N
-    }
     public void update() {
-        if (details && expandButton != null && !expandButton.isEnabled()) {
-            expandButton.setEnabled(resultModel.size() > 0);
+        if (details && btnExpand.isVisible() && !btnExpand.isEnabled()) {
+            btnExpand.setEnabled(resultModel.size() > 0);
         }
         EventQueue.invokeLater(new Runnable() {
             @Override
@@ -173,82 +135,47 @@ public abstract class BasicAbstractResultsPanel
         resultsOutlineSupport.update();
     }
 
-    private void updateShiftButtons() {
-        if (details && prevButton != null && nextButton != null) {
-            prevButton.setEnabled(
-                    findShiftNode(-1, getOutlineView(), false) != null);
-            nextButton.setEnabled(
-                    findShiftNode(1, getOutlineView(), false) != null);
-        }
-    }
-
-    @Override
-    protected AbstractButton[] createButtons() {
+    protected void initButtons() {
         final FindDialogMemory memory = FindDialogMemory.getDefault();
-        treeViewButton = new JToggleButton();
-        treeViewButton.setEnabled(true);
-        treeViewButton.setIcon(ImageUtilities.loadImageIcon(FOLDER_VIEW_ICON,
+        btnTreeView = new JToggleButton();
+        btnTreeView.setEnabled(true);
+        btnTreeView.setIcon(ImageUtilities.loadImageIcon(FOLDER_VIEW_ICON,
                 true));
-        treeViewButton.setToolTipText(UiUtils.getText(
+        btnTreeView.setToolTipText(UiUtils.getText(
                 "TEXT_BUTTON_TREE_VIEW"));                              //NOI18N
-        treeViewButton.setSelected(
+        btnTreeView.setSelected(
                 MODE_TREE.equals(memory.getResultsViewMode()));
-        treeViewButton.addActionListener(new ActionListener() {
+        btnTreeView.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                toggleView(!treeViewButton.isSelected());
+                toggleView(!btnTreeView.isSelected());
             }
         });
-        flatViewButton = new JToggleButton();
-        flatViewButton.setEnabled(true);
-        flatViewButton.setIcon(ImageUtilities.loadImageIcon(FLAT_VIEW_ICON,
+        btnFlatView = new JToggleButton();
+        btnFlatView.setEnabled(true);
+        btnFlatView.setIcon(ImageUtilities.loadImageIcon(FLAT_VIEW_ICON,
                 true));
-        flatViewButton.setToolTipText(UiUtils.getText(
+        btnFlatView.setToolTipText(UiUtils.getText(
                 "TEXT_BUTTON_FLAT_VIEW"));                              //NOI18N
-        flatViewButton.setSelected(!treeViewButton.isSelected());
-        flatViewButton.addActionListener(new ActionListener() {
+        btnFlatView.setSelected(!btnTreeView.isSelected());
+        btnFlatView.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                toggleView(flatViewButton.isSelected());
+                toggleView(btnFlatView.isSelected());
             }
         });
+        addButton(btnTreeView);
+        addButton(btnFlatView);
         if (!details) {
-            return new AbstractButton[]{treeViewButton, flatViewButton};
+            btnPrev.setVisible(false);
+            btnNext.setVisible(false);
+            btnExpand.setVisible(false);
+            return;
         }
-        prevButton = new JButton();
-        prevButton.setEnabled(false);
-        prevButton.setIcon(ImageUtilities.loadImageIcon(PREV_ICON, true));
-        prevButton.setToolTipText(UiUtils.getText(
-                "TEXT_BUTTON_PREV_MATCH"));                             //NOI18N
-        prevButton.addActionListener(new ActionListener() {
+        btnExpand.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                shift(-1);
-            }
-        });
-        nextButton = new JButton();
-        nextButton.setEnabled(false);
-        nextButton.setIcon(ImageUtilities.loadImageIcon(NEXT_ICON, true));
-        nextButton.setToolTipText(UiUtils.getText(
-                "TEXT_BUTTON_NEXT_MATCH"));                             //NOI18N
-        nextButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                shift(1);
-            }
-        });
-        expandButton = new JToggleButton();
-        expandButton.setEnabled(false);
-        expandButton.setIcon(ImageUtilities.loadImageIcon(EXPAND_ICON, true));
-        expandButton.setSelectedIcon(ImageUtilities.loadImageIcon(
-                COLLAPSE_ICON, true));
-        expandButton.setToolTipText(UiUtils.getText(
-                "TEXT_BUTTON_EXPAND"));                                 //NOI18N
-        expandButton.setSelected(false);
-        expandButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                toggleExpandNodeChildren(expandButton.isSelected());
+                toggleExpandNodeChildren(btnExpand.isSelected());
             }
         });
         showDetailsButton = new JButton();
@@ -263,14 +190,10 @@ public abstract class BasicAbstractResultsPanel
                 fillOutput();
             }
         });
-        if (showDetailsButton != null) {
-            showDetailsButton.getAccessibleContext().setAccessibleDescription(
-                    NbBundle.getMessage(ResultView.class,
-                    "ACS_TEXT_BUTTON_FILL"));                           //NOI18N
-        }
-        return new AbstractButton[]{prevButton, nextButton,
-                    treeViewButton, flatViewButton, expandButton,
-                    showDetailsButton};
+        showDetailsButton.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(ResultView.class,
+                "ACS_TEXT_BUTTON_FILL"));                               //NOI18N
+        addButton(showDetailsButton);
     }
 
     private void toggleView(boolean flat) {
@@ -282,8 +205,8 @@ public abstract class BasicAbstractResultsPanel
             resultsOutlineSupport.setFolderTreeMode();
             memory.setResultsViewMode(MODE_TREE);
         }
-        treeViewButton.setSelected(!flat);
-        flatViewButton.setSelected(flat);
+        btnTreeView.setSelected(!flat);
+        btnFlatView.setSelected(flat);
         try {
             getExplorerManager().setSelectedNodes(new Node[]{
                         resultsOutlineSupport.getResultsNode()});
@@ -312,150 +235,10 @@ public abstract class BasicAbstractResultsPanel
                 bundle.getString("ACSD_ResultTree"));                   //NOI18N
     }
 
-    private void shift(int direction) {
-
-        Node next = findShiftNode(direction, getOutlineView(), true);
-        if (next == null) {
-            return;
-        }
-        try {
-            getExplorerManager().setSelectedNodes(new Node[]{next});
-            TextDetail textDetail = next.getLookup().lookup(
-                    TextDetail.class);
-            if (textDetail != null) {
-                textDetail.showDetail(TextDetail.DH_GOTO);
-            }
-        } catch (PropertyVetoException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-
-    private Node findShiftNode(int direction, OutlineView outlineView,
-            boolean canExpand) {
-        Node[] selected = getExplorerManager().getSelectedNodes();
-        Node n = null;
-        if ((selected == null || selected.length == 0)
-                && getExplorerManager().getRootContext()
-                == resultsOutlineSupport.getRootNode()) {
-            n = resultsOutlineSupport.getResultsNode();
-        } else if (selected.length == 1) {
-            n = selected[0];
-        }
-        return n == null ? null : findTextDetailNode(n, direction, outlineView,
-                canExpand);
-    }
-
-    static Node findTextDetailNode(Node fromNode, int direction,
-            OutlineView outlineView, boolean canExpand) {
-        return findUp(fromNode, direction,
-                isTextDetailNode(fromNode) || direction < 0 ? direction : 0,
-                outlineView, canExpand);
-    }
-
-    /**
-     * Start finding for next or previous occurance, from a node or its previous
-     * or next sibling of node {@code node}
-     *
-     * @param node reference node
-     * @param offset 0 to start from node {@code node}, 1 to start from its next
-     * sibling, -1 to start from its previous sibling.
-     * @param dir Direction: 1 for next, -1 for previous.
-     */
-    static Node findUp(Node node, int dir, int offset, OutlineView outlineView,
-            boolean canExpand) {
-        if (node == null) {
-            return null;
-        }
-        Node parent = node.getParentNode();
-        Node[] siblings;
-        if (parent == null) {
-            siblings = new Node[]{node};
-        } else {
-            siblings = getChildren(parent, outlineView, canExpand);
-        }
-        int nodeIndex = findChildIndex(node, siblings);
-        if (nodeIndex + offset < 0 || nodeIndex + offset >= siblings.length) {
-            return findUp(parent, dir, dir, outlineView, canExpand);
-        }
-        for (int i = nodeIndex + offset;
-                i >= 0 && i < siblings.length; i += dir) {
-            Node found = findDown(siblings[i], siblings, i, dir, outlineView,
-                    canExpand);
-            return found;
-        }
-        return findUp(parent, dir, offset, outlineView, canExpand);
-    }
-
-    /**
-     * Find Depth-first search to find TextDetail node in the subtree.
-     */
-    private static Node findDown(Node node, Node[] siblings, int nodeIndex,
-            int dir, OutlineView outlineView, boolean canExpand) {
-
-        Node[] children = getChildren(node, outlineView, canExpand);
-        for (int i = dir > 0 ? 0 : children.length - 1;
-                i >= 0 && i < children.length; i += dir) {
-            Node found = findDown(children[i], children, i, dir, outlineView,
-                    canExpand);
-            if (found != null) {
-                return found;
-            }
-        }
-        for (int i = nodeIndex; i >= 0 && i < siblings.length; i += dir) {
-            if (isTextDetailNode(siblings[i])) {
-                return siblings[i];
-            }
-        }
-        return null;
-    }
-
-    private static boolean isTextDetailNode(Node n) {
-        return n.getLookup().lookup(TextDetail.class) != null;
-    }
-
-    private static int findChildIndex(Node selectedNode, Node[] siblings) {
-        int pos = -1;
-        for (int i = 0; i < siblings.length; i++) {
-            if (siblings[i] == selectedNode) {
-                pos = i;
-                break;
-            }
-        }
-        return pos;
-    }
-
-    private static Node[] getChildren(Node n, OutlineView outlineView,
-            boolean canExpand) {
-        if (outlineView != null) {
-            if (!outlineView.isExpanded(n)) {
-                if (canExpand) {
-                    outlineView.expandNode(n);
-                } else {
-                    return n.getChildren().getNodes(true);
-                }
-            }
-            return getChildrenInDisplayedOrder(n, outlineView);
-        } else {
-            return n.getChildren().getNodes(true);
-        }
-    }
-
     private void toggleExpandNodeChildren(boolean expand) {
         Node resultsNode = resultsOutlineSupport.getResultsNode();
         for (Node n : resultsNode.getChildren().getNodes()) {
             toggleExpand(n, expand);
-        }
-    }
-
-    public void toggleExpand(Node root, boolean expand) {
-        if (expand) {
-            getOutlineView().expandNode(root);
-        }
-        for (Node n : root.getChildren().getNodes()) {
-            toggleExpand(n, expand);
-        }
-        if (!expand) {
-            getOutlineView().collapseNode(root);
         }
     }
 
@@ -480,6 +263,7 @@ public abstract class BasicAbstractResultsPanel
     public void addMatchingObject(MatchingObject mo) {
         resultsOutlineSupport.addMatchingObject(mo);
         updateRootNodeText();
+        afterMatchingNodeAdded();
     }
 
     public final OutlineView getOutlineView() {
@@ -552,73 +336,13 @@ public abstract class BasicAbstractResultsPanel
         }
     }
 
-    private static Node[] getChildrenInDisplayedOrder(Node parent,
-            OutlineView outlineView) {
-
-        Outline outline = outlineView.getOutline();
-        Node[] unsortedChildren = parent.getChildren().getNodes(true);
-        int rows = outlineView.getOutline().getRowCount();
-        int start = findRowIndexInOutline(parent, outline, rows);
-        if (start == -1) {
-            return unsortedChildren;
-        }
-        List<Node> children = new LinkedList<Node>();
-        for (int j = start + 1; j < rows; j++) {
-            int childModelIndex = outline.convertRowIndexToModel(j);
-            if (childModelIndex == -1) {
-                continue;
-            }
-            Object childObject = outline.getModel().getValueAt(
-                    childModelIndex, 0);
-            Node childNode = Visualizer.findNode(childObject);
-            if (childNode.getParentNode() == parent) {
-                children.add(childNode);
-            } else if (children.size() == unsortedChildren.length) {
-                break;
-            }
-        }
-        return children.toArray(new Node[children.size()]);
-    }
-
-    private static int findRowIndexInOutline(Node node, Outline outline,
-            int rows) {
-
-        int startRow = Math.max(outline.getSelectedRow(), 0);
-        int offset = 0;
-        while (startRow + offset < rows || startRow - offset >= 0) {
-            int up = startRow + offset + 1;
-            int down = startRow - offset;
-
-            if (up < rows && testNodeInRow(outline, node, up)) {
-                return up;
-            } else if (down >= 0 && testNodeInRow(outline, node, down)) {
-                return down;
-            } else {
-                offset++;
-            }
-        }
-        return -1;
-    }
-
-    private static boolean testNodeInRow(Outline outline, Node node, int i) {
-        int modelIndex = outline.convertRowIndexToModel(i);
-        if (modelIndex != -1) {
-            Object o = outline.getModel().getValueAt(modelIndex, 0);
-            Node n = Visualizer.findNode(o);
-            if (n == node) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     private void initResultNodeAdditionListener() {
         resultsNodeAdditionListener = new NodeAdapter() {
             @Override
             public void childrenAdded(NodeMemberEvent ev) {
-                if (expandButton != null) {
+                if (btnExpand != null) {
                     for (final Node n : ev.getDelta()) {
-                        if (expandButton.isSelected()) {
+                        if (btnExpand.isSelected()) {
                             EventQueue.invokeLater(new Runnable() {
                                 @Override
                                 public void run() {
@@ -633,7 +357,7 @@ public abstract class BasicAbstractResultsPanel
 
             @Override
             public void childrenRemoved(NodeMemberEvent ev) {
-                if (expandButton != null) {
+                if (btnExpand != null) {
                     for (Node removedChild : ev.getDelta()) {
                         removeChildAdditionListener(removedChild);
                     }
@@ -660,21 +384,22 @@ public abstract class BasicAbstractResultsPanel
         removedNode.removeNodeListener(resultsNodeAdditionListener);
     }
 
-    private final class PrevNextAction extends javax.swing.AbstractAction {
-
-        private int direction;
-
-        public PrevNextAction(int direction) {
-            this.direction = direction;
-        }
-
-        public void actionPerformed(java.awt.event.ActionEvent actionEvent) {
-            shift(direction);
-        }
-    }
-
     @Override
     public boolean requestFocusInWindow() {
         return getOutlineView().requestFocusInWindow();
+    }
+
+    @Override
+    protected boolean isDetailNode(Node n) {
+        return n.getLookup().lookup(TextDetail.class) != null;
+    }
+
+    @Override
+    protected void onDetailShift(Node next) {
+        TextDetail textDetail = next.getLookup().lookup(
+                TextDetail.class);
+        if (textDetail != null) {
+            textDetail.showDetail(TextDetail.DH_GOTO);
+        }
     }
 }

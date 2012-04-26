@@ -484,6 +484,15 @@ public class PHPFormatter2Test extends PHPCodeCompletionTestBase {
         reformatFileContents("testfiles/formatting/alignment/groupAlignmentArrayInit01.php", options);
     }
 
+    public void testIssue210617() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+	options.put(FmtOptions.groupAlignmentArrayInit, true);
+        options.put(FmtOptions.groupAlignmentAssignment, true);
+        options.put(FmtOptions.expandTabToSpaces, false);
+        options.put(FmtOptions.tabSize, 4);
+        reformatFileContents("testfiles/formatting/alignment/issue210617.php", options);
+    }
+
     public void testIssue181624_01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         reformatFileContents("testfiles/formatting/spaces/issue181624_01.php", options);
