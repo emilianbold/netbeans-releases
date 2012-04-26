@@ -377,7 +377,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
             DataObject created = null;
             for (int i = 0; i < 2; i++) {
                 created = DataObject.find (newFile);
-                if (createdIDOs instanceof InstanceDataObject) {
+                if (created instanceof InstanceDataObject) {
                     break;
                 }
                 final FileObject pf = created.getPrimaryFile();
