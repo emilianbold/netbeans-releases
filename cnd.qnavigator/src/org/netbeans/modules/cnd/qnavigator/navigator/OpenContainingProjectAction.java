@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,29 +37,33 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.qnavigator.navigator;
 
-package org.netbeans.modules.groovy.editor.api.completion;
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
+import org.openide.util.NbBundle;
 
 /**
  *
- * @author phejl
+ * @author Egor Ushakov
  */
-public class GrailsConfigsTest extends GroovyCCTestBase {
-
-    public GrailsConfigsTest(String testName) {
-        super(testName);
+public class OpenContainingProjectAction extends AbstractAction {
+    
+    private final Project project;
+    
+    public OpenContainingProjectAction(Project project) {
+        this.project = project;
+        putValue(Action.NAME, NbBundle.getMessage(GoToDeclarationAction.class, "LBL_OpenContainingProject")); //NOI18N
     }
-
+    
     @Override
-    protected String getTestType() {
-        return "grails";
+    public void actionPerformed(ActionEvent e) {
+        OpenProjects.getDefault().open(new Project[]{project}, false);
     }
-
-    // FIXME this does not provide accurate results, but we need to test
-    // at least basic closure completion
-    public void testDataSourceClosure1() throws Exception {
-        checkCompletion(BASE + "" + "DataSourceClosure1.groovy", "}.^", false);
-    }  
 }
+
