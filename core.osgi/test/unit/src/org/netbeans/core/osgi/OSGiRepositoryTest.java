@@ -204,7 +204,7 @@ public class OSGiRepositoryTest extends NbTestCase {
     public static class URLsInstall extends ModuleInstall {
         public @Override void restored() {
             try {
-                System.setProperty("hello.contents.length", Integer.toString(FileUtil.getConfigFile("hello").getURL().openConnection().getContentLength()));
+                System.setProperty("hello.contents.length", Integer.toString(FileUtil.getConfigFile("hello").toURL().openConnection().getContentLength()));
             } catch (IOException x) {
                 System.setProperty("hello.contents.length", x.toString());
             }

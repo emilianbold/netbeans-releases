@@ -83,7 +83,7 @@ class OSGiProcess {
     private final List<NewModule> newModules = new ArrayList<NewModule>();
     private int newModuleCount = 0;
 
-    public OSGiProcess(File workDir) {
+    OSGiProcess(File workDir) {
         this.workDir = workDir;
     }
 
@@ -228,7 +228,9 @@ class OSGiProcess {
             makeosgi.add(new FileResource(jar));
         }
         File bundles = new File(workDir, "bundles");
-        bundles.mkdir();
+        if (!bundles.mkdir()) {
+            throw new IOException("could not create " + bundles);
+        }
         makeosgi.setDestdir(bundles);
         makeosgi.execute();
         /* Would need to introspect manifestContents above:

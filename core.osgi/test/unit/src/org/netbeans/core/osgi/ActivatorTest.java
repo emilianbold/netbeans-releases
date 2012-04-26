@@ -42,6 +42,7 @@
 
 package org.netbeans.core.osgi;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
@@ -133,7 +134,7 @@ public class ActivatorTest extends NbTestCase {
             try {
                 System.setProperty("my.url.length",
                         Integer.toString(new URL("nbres:/custom/stuff").openConnection().getContentLength()));
-            } catch (Exception x) {
+            } catch (IOException x) {
                 x.printStackTrace();
             }
         }
