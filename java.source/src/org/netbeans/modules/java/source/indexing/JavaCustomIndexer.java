@@ -422,7 +422,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                         if (!binaryName.equals(className)) {
                             if (javaContext.getFQNs().remove(className, relURLPair.second)) {
                                 toDelete.add(Pair.<String, String>of(className, relURLPair.first));
-                                removedTypes.add(ElementHandleAccessor.INSTANCE.create(ElementKind.OTHER, className));
+                                removedTypes.add(ElementHandleAccessor.getInstance().create(ElementKind.OTHER, className));
                                 removedFiles.add(f);
                                 fmTx.delete(f);
                             }
@@ -459,7 +459,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                         for (File f : children) {
                             String className = FileObjects.getBinaryName(f, classFolder);
                             toDelete.add(Pair.<String, String>of(className, null));
-                            removedTypes.add(ElementHandleAccessor.INSTANCE.create(ElementKind.OTHER, className));
+                            removedTypes.add(ElementHandleAccessor.getInstance().create(ElementKind.OTHER, className));
                             removedFiles.add(f);
                             fmTx.delete(f);
                         }
@@ -501,7 +501,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                 String binaryName = FileObjects.getBinaryName(file, classFolder);
                 for (String className : readRSFile(file)) {
                     if (!binaryName.equals(className)) {
-                        result.add(ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, className));
+                        result.add(ElementHandleAccessor.getInstance().create(ElementKind.CLASS, className));
                     } else {
                         cont = !dieIfNoRefFile;
                     }
@@ -532,7 +532,7 @@ public class JavaCustomIndexer extends CustomIndexer {
             };
             for (File f : parent.listFiles(filter)) {
                 String className = FileObjects.getBinaryName (f, classFolder);
-                result.add(ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, className));
+                result.add(ElementHandleAccessor.getInstance().create(ElementKind.CLASS, className));
             }
         }
         return result;
