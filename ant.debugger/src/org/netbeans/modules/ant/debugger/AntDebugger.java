@@ -293,7 +293,11 @@ public class AntDebugger extends ActionsProviderSupport {
     
     void taskFinished (AntEvent event) {
         if (finished) return ;
-        callStackList.remove(0);//(callStackList.size() - 1);
+        if (callStackList.size() > 0) {
+            callStackList.remove(0);
+        } else {
+            logger.log(Level.CONFIG, "Empty call stack when task "+event.getTaskStructure().getName()+" finished.");
+        }
         if (taskEndToStopAt != null &&
             taskEndToStopAt.equals(event.getTaskStructure().getName()) &&
             event.getScriptLocation().equals(fileToStopAt)) {
@@ -400,7 +404,11 @@ public class AntDebugger extends ActionsProviderSupport {
     
     void targetFinished(AntEvent event) {
         if (finished) return ;
-        callStackList.remove(0);//(callStackList.size() - 1);
+        if (callStackList.size() > 0) {
+            callStackList.remove(0);
+        } else {
+            logger.log(Level.CONFIG, "Empty call stack when target "+event.getTargetName()+" finished.");
+        }
         if (targetEndToStopAt != null && targetEndToStopAt.equals(event.getTargetName()) &&
             fileToStopAt.equals(event.getScriptLocation())) {
                 targetEndToStopAt = null;
@@ -786,8 +794,7 @@ public class AntDebugger extends ActionsProviderSupport {
             } catch (DataObjectNotFoundException donfex) {
                 throw new IllegalStateException(donfex.getLocalizedMessage());
             }
-            AntProjectCookie ant = (AntProjectCookie) dob.getCookie 
-                (AntProjectCookie.class);
+            AntProjectCookie ant = dob.getLookup().lookup(AntProjectCookie.class);
             if (ant != null) {
                 Element proj = ant.getProjectElement();
                 if (proj != null) {
