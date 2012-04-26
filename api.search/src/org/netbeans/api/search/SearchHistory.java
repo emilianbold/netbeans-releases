@@ -50,6 +50,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.prefs.Preferences;
+import org.netbeans.modules.search.FindDialogMemory;
 import org.openide.util.NbPreferences;
 
 /**
@@ -207,4 +208,16 @@ public final class SearchHistory {
         }
     }
     
+    /**
+     * Store last used file name pattern.
+     */
+    public void storeFileNamePattern(String pattern) {
+        FindDialogMemory mem = FindDialogMemory.getDefault();
+        if (pattern == null) {
+            mem.setFileNamePatternSpecified(false);
+        } else {
+            mem.setFileNamePatternSpecified(true);
+            mem.storeFileNamePattern(pattern);
+        }
+    }
 }

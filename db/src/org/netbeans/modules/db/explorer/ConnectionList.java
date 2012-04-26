@@ -47,6 +47,7 @@ package org.netbeans.modules.db.explorer;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
+import java.util.WeakHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.netbeans.api.db.explorer.ConnectionListener;
 import org.netbeans.api.db.explorer.DatabaseException;
@@ -75,6 +76,13 @@ public class ConnectionList {
     private final List<ConnectionListener> listeners = new CopyOnWriteArrayList<ConnectionListener>();
 
     private Lookup.Result<DatabaseConnection> result = getLookupResult();
+
+    /**
+     * Set of connections that the listeners were notified about. Stored not to
+     * fire change events if the list has not been actually changed.
+     */
+    private WeakHashMap<DatabaseConnection, Boolean> lastKnownConnections =
+            new WeakHashMap<DatabaseConnection, Boolean>();
 
     public static ConnectionList getDefault(boolean initialize) {
         if (initialize) {
@@ -161,7 +169,35 @@ public class ConnectionList {
         listeners.remove(listener);
     }
 
+    /**
+     * Fire change event. Check whether the list of connections has changed
+     * since the last invocation of this method. If it has not changed,
+     * listeners are not notified.
+     */
     private void fireListeners() {
+        boolean theSame;
+        DatabaseConnection[] connections = getConnections();
+        synchronized (this) {
+            if (connections.length == lastKnownConnections.size()) {
+                theSame = true;
+                for (int i = 0; i < connections.length; i++) {
+                    if (!lastKnownConnections.containsKey(connections[i])) {
+                        theSame = false;
+                        break;
+                    }
+                }
+            } else {
+                theSame = false;
+            }
+            if (theSame) {
+                return;
+            } else {
+                lastKnownConnections.clear();
+                for (DatabaseConnection dc : connections) {
+                    lastKnownConnections.put(dc, Boolean.TRUE);
+                }
+            }
+        }
         for (ConnectionListener listener : listeners) {
             listener.connectionsChanged();
         }

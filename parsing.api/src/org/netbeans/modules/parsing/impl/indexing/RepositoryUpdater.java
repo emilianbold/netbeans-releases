@@ -5210,10 +5210,10 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
 
         @ServiceProvider(service=IndexingBridge.class)
         public static class IndexingBridgeImpl extends IndexingBridge {
-            @Override public void enterProtectedMode() {
+            @Override protected void enterProtectedMode() {
                 RepositoryUpdater.getDefault().getWorker().enterProtectedMode(null);
             }
-            @Override public void exitProtectedMode() {
+            @Override protected void exitProtectedMode() {
                 RepositoryUpdater.getDefault().getWorker().exitProtectedMode(null, null);
             }
         }

@@ -57,14 +57,12 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.search.MatchingObject.Def;
 import org.netbeans.modules.search.matcher.AbstractMatcher;
 import org.netbeans.modules.search.matcher.DefaultMatcher;
-import org.netbeans.modules.search.ui.BasicReplaceResultsPanel;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.netbeans.spi.search.SearchScopeDefinition;
 import org.netbeans.spi.search.provider.SearchComposition;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.nodes.Node;
 
 /**
  * @author jhavlin
@@ -170,7 +168,6 @@ public class MatchingObjectTest extends NbTestCase {
                 new DefaultMatcher(bsc.getSearchPattern()),
                 bsc, null);
         EventQueue.invokeAndWait(new Runnable() {
-
             @Override
             public void run() {
                 sc.getSearchResultsDisplayer().getVisualComponent(); // initialize model
@@ -216,7 +213,6 @@ public class MatchingObjectTest extends NbTestCase {
         @Override
         public SearchInfo getSearchInfo() {
             return new SearchInfo() {
-
                 @Override
                 public boolean canSearch() {
                     return true;

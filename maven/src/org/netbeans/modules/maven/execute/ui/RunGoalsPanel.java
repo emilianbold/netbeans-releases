@@ -43,7 +43,6 @@ package org.netbeans.modules.maven.execute.ui;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -176,7 +175,7 @@ public class RunGoalsPanel extends javax.swing.JPanel {
             }
             buf.append(entry.getKey()).append('=').append(entry.getValue());// NOI18N
         }
-        epProperties.setText(buf.toString());
+        epProperties.setText(ActionMappings.createPropertiesList(config.getProperties()));
         epProperties.setCaretPosition(0);
         txtProfiles.setText(createSpaceSeparatedList(config.getActivatedProfiles()));
         
@@ -211,25 +210,7 @@ public class RunGoalsPanel extends javax.swing.JPanel {
         }
         mapp.setGoals(lst.size() > 0 ? lst : null);
 
-        PropertySplitter split = new PropertySplitter(epProperties.getText());
-        String token = split.nextPair();
-        Map<String,String> props = new LinkedHashMap<String,String>();
-        while (token != null) {
-            String[] prp = StringUtils.split(token, "=", 2); //NOI18N
-            if (prp.length == 2) {
-                String key = prp[0];
-                //in case the user adds -D by mistake, remove it to get a parsable xml file.
-                if (key.startsWith("-D")) { //NOI18N
-                    key = key.substring("-D".length()); //NOI18N
-                }
-                if (key.startsWith("-")) { //NOI18N
-                    key = key.substring(1);
-                }
-                props.put(key, prp[1]);
-            }
-            token = split.nextPair();
-        }
-        mapp.setProperties(props);
+        mapp.setProperties(ActionMappings.convertStringToActionProperties(epProperties.getText()));
 
         tok = new StringTokenizer(txtProfiles.getText().trim());
         lst = new ArrayList<String>();
