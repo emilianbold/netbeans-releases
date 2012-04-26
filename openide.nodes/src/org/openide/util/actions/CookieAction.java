@@ -43,7 +43,6 @@
  */
 package org.openide.util.actions;
 
-import java.awt.EventQueue;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeAdapter;
 import org.openide.util.Lookup;
@@ -223,7 +222,6 @@ public abstract class CookieAction extends NodeAction {
 
         /** Sets the nodes to work on */
         void setNodes(Node[] newNodes) {
-            assert EventQueue.isDispatchThread();
             // detach old nodes
             List<Reference<Node>> nodes2 = this.nodes;
 
