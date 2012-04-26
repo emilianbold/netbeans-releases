@@ -256,7 +256,34 @@ public final class GdbDebuggerSettingsBridge extends DebuggerSettingsBridge {
     protected void applyInterceptList() {
 	// System.out.println("GdbDebuggerSettingsBridge.applyRunargs(): NOT IMPLEMENTED");
     }
+    
+    static String[] detectRedirect(String runargs, String type) {
+        String[] res = {null, null};
+        int argPos = runargs.indexOf(type);
+        if (argPos != -1) {
+            res[1] = runargs.substring(0, argPos);
 
+            try {
+                while (runargs.charAt(++argPos) == ' ');
+            } catch (IndexOutOfBoundsException e) {
+                argPos = -1;
+            }
+            
+            if (argPos!=-1) {
+                int endPos;
+                if (runargs.charAt(argPos) == '\"') {
+                    endPos = runargs.indexOf('\"', argPos + 1) + 1;
+                } else {
+                    endPos = (runargs.indexOf(' ', argPos) == -1 ? runargs.length() : runargs.indexOf(' ', argPos));
+                }
+
+                res[0] = runargs.substring(argPos, endPos);
+                res[1] += runargs.substring(Math.min(endPos+1, runargs.length()));
+            }
+        }
+        return res;
+    }
+    
     private String ioRedirect(String runargs) {
         // not Standard Output
         String[] files = gdbDebugger.getIOPack().getIOFiles();
@@ -264,21 +291,13 @@ public final class GdbDebuggerSettingsBridge extends DebuggerSettingsBridge {
             return runargs;
         }
             
-        String inArg = null, outArg = null;
+        String[] res = detectRedirect(runargs, "<"); // NOI18N
+        String inArg = res[0];
+        runargs = res[1];
         
-        int argPos = runargs.indexOf("<"), endPos; // NOI18N
-        if (argPos!=-1) {
-            endPos = runargs.indexOf(' ', argPos + 2);
-            inArg = runargs.substring(argPos + 1, (endPos == -1 ? runargs.length() : endPos) );
-            runargs = runargs.replace("<" + inArg, ""); // NOI18N
-        }
-        
-        argPos = runargs.indexOf(">"); // NOI18N
-        if (argPos!=-1) {
-            endPos = runargs.indexOf(' ', argPos + 2);
-            outArg = runargs.substring(argPos + 1, (endPos == -1 ? runargs.length() : endPos) );
-            runargs = runargs.replace(">" + outArg, ""); // NOI18N
-        }
+        res = detectRedirect(runargs, ">"); // NOI18N
+        String outArg = res[0];
+        runargs = res[1];
             
         OSFamily osFamily = OSFamily.UNKNOWN;
         try {
