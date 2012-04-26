@@ -96,7 +96,7 @@ public abstract class AbstractSearchResultsPanel extends javax.swing.JPanel
     private static final String EXPAND_ICON =
             "org/netbeans/modules/search/res/expandTree.png";           //NOI18N
     private static final String COLLAPSE_ICON =
-            "org/netbeans/modules/search/res/colapseTree.png";          //NOI18N
+            "org/netbeans/modules/search/res/collapseTree.png";         //NOI18N
 
     private ExplorerManager explorerManager;
     private SearchComposition searchComposition;
