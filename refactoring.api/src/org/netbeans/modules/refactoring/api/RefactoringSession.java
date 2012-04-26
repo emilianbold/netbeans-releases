@@ -44,12 +44,7 @@
 package org.netbeans.modules.refactoring.api;
 
 import java.io.IOException;
-import java.util.AbstractCollection;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.ListIterator;
+import java.util.*;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -92,6 +87,7 @@ public final class RefactoringSession {
     private UndoManager undoManager = UndoManager.getDefault();
     boolean realcommit = true;
     private AtomicBoolean finished = new AtomicBoolean(false);
+    private AtomicBoolean prepareStarted = new AtomicBoolean(false);
     
     private RefactoringSession(String description) {
         //internalList = new LinkedList();
@@ -249,7 +245,13 @@ public final class RefactoringSession {
      */
     @NonNull
     public Collection<RefactoringElement> getRefactoringElements() {
+        if (!prepareStarted.get())
+            return Collections.emptyList();
         return refactoringElements;
+    }
+    
+    void started() {
+        prepareStarted.set(true);
     }
     
     void finished() {

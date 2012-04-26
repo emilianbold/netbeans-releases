@@ -205,6 +205,7 @@ public abstract class AbstractRefactoring {
     @CheckForNull
     public final Problem prepare(@NonNull RefactoringSession session) {
         try {
+            session.started();
             Parameters.notNull("session", session); // NOI18N
             long time = System.currentTimeMillis();
 
