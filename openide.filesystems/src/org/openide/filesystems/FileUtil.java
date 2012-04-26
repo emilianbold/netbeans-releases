@@ -137,7 +137,8 @@ public final class FileUtil extends Object {
 
     private static boolean assertNormalized(File path) {
         if (path != null) {
-            assert path.equals(FileUtil.normalizeFileCached(path)) : "Need to normalize " + path + "!";  //NOI18N
+            File np;
+            assert path.equals(np = FileUtil.normalizeFileCached(path)) : "Need to normalize " + path + " was " + np;  //NOI18N
         }
         return true;
     }
