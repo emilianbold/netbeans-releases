@@ -124,6 +124,13 @@ public class PackageRename implements RefactoringPluginFactory{
             if ((fo = projectClassPath.findResource(newName.replace('.','/')))!=null) {
                 FileObject ownerRoot = projectClassPath.findOwnerRoot(folder);
                 if(ownerRoot != null && ownerRoot.equals(projectClassPath.findOwnerRoot(fo))) {
+                    if (fo.isFolder() && fo.getChildren().length == 1) {
+                        FileObject parent = fo.getChildren()[0];
+                        String relativePath = FileUtil.getRelativePath(parent, refactoring.getRefactoringSource().lookup(NonRecursiveFolder.class).getFolder());
+                        if (relativePath != null) {
+                            return null;
+                        }
+                    }
                     String msg = new MessageFormat(NbBundle.getMessage(RenameRefactoringPlugin.class,"ERR_PackageExists")).format(
                             new Object[] {newName}
                     );
