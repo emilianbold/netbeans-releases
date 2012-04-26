@@ -1580,90 +1580,36 @@ public class PHPBracketCompleter implements KeystrokeHandler {
 
         // Check whether character follows the bracket is the same bracket
         if ((token != null) && (LexUtilities.textEquals(token.text(), bracket))) {
-//            int bracketIntId = bracketId.ordinal();
-//            int leftBracketIntId =
-//                (bracketIntId == PHPTokenId.PHP_RPAREN.ordinal()) ? PHPTokenId.PHP_LPAREN.ordinal()
-//                                                               : PHPTokenId.PHP_LBRACKET.ordinal();
-
             char leftBracket = bracket == ')' ? '(' : (bracket == ']' ? '[' : '{');
-
-            // Skip all the brackets of the same type that follow the last one
-            ts.moveNext();
-
-            Token<?extends PHPTokenId> nextToken = ts.token();
-
-            while ((nextToken != null) && (LexUtilities.textEquals(nextToken.text(), bracket))) {
-                token = nextToken;
-
-                if (!ts.moveNext()) {
-                    break;
-                }
-
-                nextToken = ts.token();
-            }
-
             // token var points to the last bracket in a group of two or more right brackets
             // Attempt to find the left matching bracket for it
             // Search would stop on an extra opening left brace if found
-            int braceBalance = 0; // balance of '{' and '}'
-            int bracketBalance = -1; // balance of the brackets or parenthesis
-            Token<?extends PHPTokenId> lastRBracket = token;
-            ts.movePrevious();
+            int bracketBalanceWithNewBracket = 0;
+            ts.moveStart();
+            if (!ts.moveNext()) {
+                return false;
+            }
             token = ts.token();
-
-            boolean finished = false;
-
-            while (!finished && (token != null)) {
+            while (token != null) {
                 if ((LexUtilities.textEquals(token.text(), '(')) || (LexUtilities.textEquals(token.text(), '['))) {
                     if (LexUtilities.textEquals(token.text(), leftBracket)) {
-                        bracketBalance++;
-
-                        if (bracketBalance == 0) {
-                            if (braceBalance != 0) {
-                                // Here the bracket is matched but it is located
-                                // inside an unclosed brace block
-                                // e.g. ... ->( } a()|)
-                                // which is in fact illegal but it's a question
-                                // of what's best to do in this case.
-                                // We chose to leave the typed bracket
-                                // by setting bracketBalance to 1.
-                                // It can be revised in the future.
-                                bracketBalance = 1;
-                            }
-
-                            finished = true;
-                        }
+                        bracketBalanceWithNewBracket++;
                     }
                 } else if ((LexUtilities.textEquals(token.text(), ')')) || (LexUtilities.textEquals(token.text(), ']'))) {
                     if (LexUtilities.textEquals(token.text(), bracket)) {
-                        bracketBalance--;
+                        bracketBalanceWithNewBracket--;
                     }
-                } else if (token.id() == PHPTokenId.PHP_CURLY_OPEN) {
-                    braceBalance++;
-
-                    if (braceBalance > 0) { // stop on extra left brace
-                        finished = true;
-                    }
-                } else if (token.id() == PHPTokenId.PHP_CURLY_CLOSE) {
-                    braceBalance--;
                 }
-
-                if (!ts.movePrevious()) {
+                if (!ts.moveNext()) {
                     break;
                 }
-
                 token = ts.token();
             }
 
-            if (bracketBalance > 0) { // not found matching bracket
-                                       // Remove the typed bracket as it's unmatched
-                skipClosingBracket = true;
+            if (bracketBalanceWithNewBracket == 0) {
+                skipClosingBracket = false;
             } else {
-                if (bracketBalance + 1 == -1) {
-                    skipClosingBracket = true;
-                } else {
-                    skipClosingBracket = false;
-                }
+                skipClosingBracket = true;
             }
         }
 
