@@ -157,43 +157,22 @@ public class NewCustomConfiguration extends JPanel implements ChangeListener, Li
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
+    // --- Public interface ------------------------------------------------------
     public static ProfilingSettings createDuplicateConfiguration(ProfilingSettings originalConfiguration,
                                                                  ProfilingSettings[] availableConfigurations) {
         NewCustomConfiguration ncc = getDefault();
         ncc.setupDuplicateConfiguration(originalConfiguration, availableConfigurations);
-
-        final DialogDescriptor dd = new DialogDescriptor(ncc,
-                                                         Bundle.NewCustomConfiguration_DuplicateConfigDialogCaption(originalConfiguration.getSettingsName()));
-        final Dialog d = DialogDisplayer.getDefault().createDialog(dd);
-        d.pack();
-        d.setVisible(true);
-
-        ProfilingSettings newSettings = null;
-
-        if (dd.getValue() == DialogDescriptor.OK_OPTION) {
-            newSettings = ncc.getProfilingSettings();
-        }
-
-        return newSettings;
+        String title = Bundle.NewCustomConfiguration_DuplicateConfigDialogCaption(originalConfiguration.getSettingsName());
+        
+        return displayDialog(ncc, title);
     }
-
-    // --- Public interface ------------------------------------------------------
+    
     public static ProfilingSettings createNewConfiguration(ProfilingSettings[] availableConfigurations) {
         NewCustomConfiguration ncc = getDefault();
         ncc.setupUniversalConfiguration(availableConfigurations);
-
-        final DialogDescriptor dd = new DialogDescriptor(ncc, Bundle.NewCustomConfiguration_NewConfigDialogCaption());
-        final Dialog d = DialogDisplayer.getDefault().createDialog(dd);
-        d.pack();
-        d.setVisible(true);
-
-        ProfilingSettings newSettings = null;
-
-        if (dd.getValue() == DialogDescriptor.OK_OPTION) {
-            newSettings = ncc.getProfilingSettings();
-        }
-
-        return newSettings;
+        String title = Bundle.NewCustomConfiguration_NewConfigDialogCaption();
+        
+        return displayDialog(ncc, title);
     }
 
     public static ProfilingSettings createNewConfiguration(int type, ProfilingSettings[] availableConfigurations) { // Use ProfilingSettings.getProfilingType() value
@@ -212,45 +191,22 @@ public class NewCustomConfiguration extends JPanel implements ChangeListener, Li
         }
         
         // Remove mnemonics wildcard
-        typeString = typeString.replace("&", ""); // NOI18N
+        typeString = typeString.replace("&", ""); // NOI18N        
+        String title = Bundle.NewCustomConfiguration_NewConfigDialogCaption() + typeString;
 
-        final DialogDescriptor dd = new DialogDescriptor(ncc, Bundle.NewCustomConfiguration_NewConfigDialogCaption() + typeString, true,
-                                                         new Object[] { ncc.okButton, DialogDescriptor.CANCEL_OPTION },
-                                                         ncc.okButton, 0, null, null);
-        final Dialog d = DialogDisplayer.getDefault().createDialog(dd);
-        d.pack();
-        d.setVisible(true);
-
-        ProfilingSettings newSettings = null;
-
-        if (dd.getValue() == ncc.okButton) {
-            newSettings = ncc.getProfilingSettings();
-        }
-
-        return newSettings;
+        return displayDialog(ncc, title);
     }
 
     public static ProfilingSettings renameConfiguration(ProfilingSettings originalConfiguration,
                                                         ProfilingSettings[] availableConfigurations) {
         NewCustomConfiguration ncc = getDefault();
         ncc.setupRenameConfiguration(originalConfiguration, availableConfigurations);
+        String title = Bundle.NewCustomConfiguration_RenameConfigDialogCaption(originalConfiguration.getSettingsName());
 
-        final DialogDescriptor dd = new DialogDescriptor(ncc,
-                                                         Bundle.NewCustomConfiguration_RenameConfigDialogCaption(
-                                                            originalConfiguration.getSettingsName()));
-        final Dialog d = DialogDisplayer.getDefault().createDialog(dd);
-        d.pack();
-        d.setVisible(true);
-
-        ProfilingSettings newSettings = null;
-
-        if (dd.getValue() == DialogDescriptor.OK_OPTION) {
-            newSettings = ncc.getProfilingSettings();
-        }
-
-        return newSettings;
+        return displayDialog(ncc, title);
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         switch (mode) {
             case MODE_NEW_ANY:
@@ -265,10 +221,12 @@ public class NewCustomConfiguration extends JPanel implements ChangeListener, Li
         }
     }
 
+    @Override
     public void changedUpdate(DocumentEvent e) {
         updateOKButton();
     }
 
+    @Override
     public void insertUpdate(DocumentEvent e) {
         updateOKButton();
     }
@@ -321,6 +279,20 @@ public class NewCustomConfiguration extends JPanel implements ChangeListener, Li
         updateOKButton();
     }
 
+    private static ProfilingSettings displayDialog(NewCustomConfiguration ncc, String title) {
+        final DialogDescriptor dd = new DialogDescriptor(ncc, title, true,
+                new Object[]{ncc.okButton, DialogDescriptor.CANCEL_OPTION}, ncc.okButton, 
+                0, null, null);
+        final Dialog d = DialogDisplayer.getDefault().createDialog(dd);
+        d.pack();
+        d.setVisible(true);
+        ProfilingSettings settings = null;
+        if (dd.getValue() == ncc.okButton) {
+            settings = ncc.getProfilingSettings();
+        }
+        return settings;            
+    }
+    
     private static NewCustomConfiguration getDefault() {
         if (defaultInstance == null) {
             defaultInstance = new NewCustomConfiguration();
@@ -566,13 +538,14 @@ public class NewCustomConfiguration extends JPanel implements ChangeListener, Li
 
         // UI tweaks
         addHierarchyListener(new HierarchyListener() {
-                public void hierarchyChanged(HierarchyEvent e) {
-                    if (((e.getChangeFlags() & HierarchyEvent.SHOWING_CHANGED) != 0) && isShowing()) {
-                        nameTextfield.requestFocusInWindow();
-                        nameTextfield.selectAll();
-                    }
+            @Override
+            public void hierarchyChanged(HierarchyEvent e) {
+                if (((e.getChangeFlags() & HierarchyEvent.SHOWING_CHANGED) != 0) && isShowing()) {
+                    nameTextfield.requestFocusInWindow();
+                    nameTextfield.selectAll();
                 }
-            });
+            }
+        });
     }
 
     private void setupDuplicateConfiguration(ProfilingSettings originalConfiguration, ProfilingSettings[] availableConfigurations) {
@@ -700,7 +673,19 @@ public class NewCustomConfiguration extends JPanel implements ChangeListener, Li
     }
 
     private void updateOKButton() {
-        okButton.setEnabled((nameTextfield.getText().trim().length() > 0)
-                            && (defaultSettingsRadio.isSelected() || (existingSettingsList.getSelectedIndex() != -1)));
+        String name = nameTextfield.getText().trim();
+        boolean enabled = name.length() > 0
+                    && (mode == MODE_RENAME || 
+                        defaultSettingsRadio.isSelected() || 
+                        existingSettingsList.getSelectedIndex() != -1);
+        if (enabled) {        
+            for (ProfilingSettings settings : availableSettings) {
+                if (name.equals(settings.getSettingsName())) {
+                    enabled = false;
+                    break;
+                }
+            }
+        }
+        okButton.setEnabled(enabled);
     }
 }
