@@ -44,8 +44,10 @@ package org.netbeans.core.osgi;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.logging.Level;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MultiFileSystem;
@@ -55,6 +57,14 @@ public class OSGiRepositoryTest extends NbTestCase {
 
     public OSGiRepositoryTest(String n) {
         super(n);
+    }
+    
+    @Override protected Level logLevel() {
+        return Level.FINE;
+    }
+    
+    @Override protected String logRoot() {
+        return "org.netbeans.core.osgi";
     }
 
     protected @Override void setUp() throws Exception {
@@ -118,7 +128,8 @@ public class OSGiRepositoryTest extends NbTestCase {
     }
     public static class DynamicInstall extends ModuleInstall {
         public @Override void restored() {
-            System.setProperty("dyn.file.length", Long.toString(FileUtil.getConfigFile("whatever").getSize()));
+            FileObject f = FileUtil.getConfigFile("whatever");
+            System.setProperty("dyn.file.length", f != null ? Long.toString(f.getSize()) : "missing");
         }
     }
     public static class DynLayer extends MultiFileSystem {
