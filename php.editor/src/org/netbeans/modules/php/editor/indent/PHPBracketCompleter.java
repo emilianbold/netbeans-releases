@@ -1658,71 +1658,12 @@ public class PHPBracketCompleter implements KeystrokeHandler {
             if (bracketBalance > 0) { // not found matching bracket
                                        // Remove the typed bracket as it's unmatched
                 skipClosingBracket = true;
-            } else { // the bracket is matched
-                     // Now check whether the bracket would be matched
-                     // when the closing bracket would be removed
-                     // i.e. starting from the original lastRBracket token
-                     // and search for the same bracket to the right in the text
-                     // The search would stop on an extra right brace if found
-                braceBalance = 0;
-                bracketBalance = 0; // simulate one extra left bracket
-
-                //token = lastRBracket.getNext();
-                TokenHierarchy<BaseDocument> th = TokenHierarchy.get(doc);
-
-                int ofs = lastRBracket.offset(th);
-
-                ts.move(ofs);
-                ts.movePrevious();
-                token = ts.token();
-                finished = false;
-
-                while (!finished && (token != null)) {
-                    //int tokenIntId = token.getTokenID().getNumericID();
-                    if ((LexUtilities.textEquals(token.text(), '(')) || (LexUtilities.textEquals(token.text(), '['))) {
-                        if (LexUtilities.textEquals(token.text(), leftBracket)) {
-                            bracketBalance++;
-                        }
-                    } else if ((LexUtilities.textEquals(token.text(), ')')) || (LexUtilities.textEquals(token.text(), ']'))) {
-                        if (LexUtilities.textEquals(token.text(), bracket)) {
-                            bracketBalance--;
-
-                            if (bracketBalance == 0) {
-                                if (braceBalance != 0) {
-                                    // Here the bracket is matched but it is located
-                                    // inside an unclosed brace block
-                                    // which is in fact illegal but it's a question
-                                    // of what's best to do in this case.
-                                    // We chose to leave the typed bracket
-                                    // by setting bracketBalance to -1.
-                                    // It can be revised in the future.
-                                    bracketBalance = -1;
-                                }
-
-                                finished = true;
-                            }
-                        }
-                    } else if (token.id() == PHPTokenId.PHP_CURLY_OPEN) {
-                        braceBalance++;
-                    } else if (token.id() == PHPTokenId.PHP_CURLY_CLOSE) {
-                        braceBalance--;
-
-                        if (braceBalance < 0) { // stop on extra right brace
-                            finished = true;
-                        }
-                    }
-
-                    //token = token.getPrevious(); // done regardless of finished flag state
-                    if (!ts.movePrevious()) {
-                        break;
-                    }
-
-                    token = ts.token();
+            } else {
+                if (bracketBalance + 1 == -1) {
+                    skipClosingBracket = true;
+                } else {
+                    skipClosingBracket = false;
                 }
-
-                // If bracketBalance == 0 the bracket would be matched
-                // by the bracket that follows the last right bracket.
-                skipClosingBracket = (bracketBalance == 0);
             }
         }
 
