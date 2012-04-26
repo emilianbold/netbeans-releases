@@ -191,6 +191,80 @@ public class CommentsTest extends GeneratorTestBase {
         src.runModificationTask(task).commit();
     }
     
+    public void testAddJavaDocAndAnnotationToRemovedMethod() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    Test() {\n" +
+            "    }\n" +
+            "\n" +
+            "    public void nuevoMetodo(String s) {\n" +
+            "    }\n" +
+            "\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    Test() {\n" +
+            "    }\n" +
+            "\n" +
+            "    /**\n" +
+            "     * Comentario\n" +
+            "     */\n" +
+            "    @Deprecated\n" +
+            "    @Deprecated\n" +
+            "    public void nuevoMetodo(String s) {\n" +
+            "    }\n" +
+            "\n" +
+            "}\n";
+        JavaSource src = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            
+            public void run(final WorkingCopy copy) throws Exception {
+                copy.toPhase(Phase.RESOLVED);
+                
+                TreeMaker make = copy.getTreeMaker();
+                ClassTree node = (ClassTree) copy.getCompilationUnit().getTypeDecls().get(0);
+                ModifiersTree modifiers = make.Modifiers(EnumSet.of(Modifier.PUBLIC));
+                AnnotationTree annotation = make.Annotation(make.Identifier("Deprecated"), Collections.EMPTY_LIST); //NOI18N
+                modifiers = make.addModifiersAnnotation(modifiers, annotation);
+                modifiers = make.addModifiersAnnotation(modifiers, annotation);
+
+                MethodTree method = make.Method(
+                        modifiers,
+                        "nuevoMetodo",
+                        make.PrimitiveType(TypeKind.VOID),
+                        Collections.<TypeParameterTree>emptyList(),
+                        Collections.singletonList(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "s", make.Type("String"), null)),
+                        Collections.<ExpressionTree>emptyList(),
+                        make.Block(Collections.EMPTY_LIST, false),
+                        null
+                );
+                make.addComment(method, Comment.create(
+                        Comment.Style.JAVADOC, 
+                        NOPOS, 
+                        NOPOS, 
+                        1, // to ensure indentation
+                        "Comentario"), 
+                        true
+                );
+                ClassTree clazz = make.removeClassMember(node, 1);
+                clazz = make.insertClassMember(clazz, 1, method);
+//                ClassTree clazz = make.addClassMember(node, method);
+                copy.rewrite(node, clazz);
+            }
+            
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
     // #99329
     public void testAddJavaDocToMethod() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");

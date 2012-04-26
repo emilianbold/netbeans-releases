@@ -192,7 +192,7 @@ public final class MimePathLookup extends ProxyLookup implements LookupListener 
     // LookupListener implementation
     //-------------------------------------------------------------
 
-    public void resultChanged(LookupEvent ev) {
+    public synchronized void resultChanged(LookupEvent ev) {
         rebuild();
     }
 

@@ -541,7 +541,7 @@ public class Nodes {
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
-            setDisplayName((line != (-1) ? (line + ":") : "") + ed.getDescription());
+            setDisplayName((line != (-1) ? (line + 1 + ":") : "") + ed.getDescription());
             icon = ImageUtilities.loadImage(SPIAccessor.ACCESSOR.getAnalyzerIconPath(provider));
         }
 

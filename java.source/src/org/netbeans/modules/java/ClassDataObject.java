@@ -149,7 +149,7 @@ public final class ClassDataObject extends MultiDataObject {
                         } else {
                             BinaryElementOpen beo = Lookup.getDefault().lookup(BinaryElementOpen.class);
 
-                            if (beo == null || handle == null || cpInfo == null || !beo.open(cpInfo, handle)) {
+                            if (beo == null || handle == null || cpInfo == null || !beo.open(cpInfo, handle, new AtomicBoolean())) {
                                 if (resourceName == null) {
                                     resourceName = fo.getName();
                                 }

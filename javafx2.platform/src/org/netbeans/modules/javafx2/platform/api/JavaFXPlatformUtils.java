@@ -99,6 +99,11 @@ public final class JavaFXPlatformUtils {
      */
     private static final String MAC_JDK_SUBDIR = File.separatorChar + "Contents" + File.separatorChar + "Home"; // NOI18N
 
+    /**
+     * Default on-line location of FX2 JavaDoc
+     */
+    private static final String JAVADOC_ONLINE_URL = "http://docs.oracle.com/javafx/2.0/api/"; // NOI18N
+    
     private JavaFXPlatformUtils() {
     }
 
@@ -343,10 +348,10 @@ public final class JavaFXPlatformUtils {
 
     /**
      * Tries to predict JavaFX SDK Javadoc location for given path
-     * Can return null.
+     * If local JavaDoc is not found, a fallback online URL is returned.
      * 
      * @param folder where to look up
-     * @return JavaFX SDK Javadoc location absolute path, or null if not predicted
+     * @return JavaFX SDK Javadoc location absolute path, or fallback online URL if not predicted
      */
     @CheckForNull
     public static String predictJavadocLocation(@NonNull String path) {
@@ -357,17 +362,17 @@ public final class JavaFXPlatformUtils {
                 return null;
             }
             for (File child : children) {
-                File docs = new File(child.getAbsolutePath() + File.separatorChar + "docs"); // NOI18N
+                File docs = new File(child.getAbsolutePath() + File.separatorChar + "docs" + File.separatorChar + "api"); // NOI18N
                 if (docs.exists()) {
                     return docs.getAbsolutePath();
                 }
-                docs = new File(child.getAbsolutePath() + MAC_JDK_SUBDIR + File.separatorChar + "docs"); // NOI18N
+                docs = new File(child.getAbsolutePath() + MAC_JDK_SUBDIR + File.separatorChar + "docs" + File.separatorChar + "api"); // NOI18N
                 if (docs.exists()) {
                     return docs.getAbsolutePath();
                 }
             }
         }
-        return null;
+        return JAVADOC_ONLINE_URL;
     }
 
     /**

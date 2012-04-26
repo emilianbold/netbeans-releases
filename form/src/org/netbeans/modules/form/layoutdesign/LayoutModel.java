@@ -479,7 +479,7 @@ public class LayoutModel implements LayoutConstants {
         }
 
         if (sizeChange) {
-            interval.unsetAttribute(LayoutInterval.ATTR_FLEX_SIZEDEF);
+            changeIntervalAttribute(interval, LayoutInterval.ATTR_FLEX_SIZEDEF, false);
         }
     }
 

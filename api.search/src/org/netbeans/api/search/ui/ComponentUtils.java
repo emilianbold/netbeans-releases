@@ -136,4 +136,20 @@ public class ComponentUtils {
          return new ScopeOptionsController(jPanel, fileNameController,
                 searchAndReplace);
     }
+
+    /**
+     * Adjust a {@link JComboBox} to act as component for selecting search text
+     * pattern, and return a controller object for interacting with it.
+     *
+     * You can bind this combo box with some abstract buttons (usually check
+     * boxes) to set pattern options.
+     *
+     * @param jComboBox Freshly created component that will be adjusted.
+     * @return Controller for modified {@code jComboBox}.
+     * @since api.search/1.1
+     */
+    public static @NonNull SearchPatternController adjustComboForSearchPattern(
+            @NonNull JComboBox comboBox) {
+        return new SearchPatternController(comboBox);
+    }
 }

@@ -2151,8 +2151,8 @@ public class FormDesigner {
                      + (paddingType != null ? paddingType.ordinal() : 0);
         }
             
-            JComponent comp1 = (JComponent) getVisualComponent(comp1Id, true, true);
-            JComponent comp2 = (JComponent) getVisualComponent(comp2Id, true, true);
+            JComponent comp1 = (JComponent) getVisualComponent(comp1Id, false, true);
+            JComponent comp2 = (JComponent) getVisualComponent(comp2Id, false, true);
             if (comp1 == null || comp2 == null) { // not JComponents...
                 if (getLayoutDesigner().logTestCode()) {
                     getLayoutDesigner().testCode.add("  prefPadding.put(\"" + id +                  //NOI18N
@@ -2210,7 +2210,7 @@ public class FormDesigner {
                 RADVisualContainer metacont = (RADVisualContainer)
                                               getMetaComponent(parentId);
                 parent = metacont.getContainerDelegate(parent);
-                comp = (JComponent) getVisualComponent(compId, true, true);
+                comp = (JComponent) getVisualComponent(compId, false, true);
             }
             if (comp == null) {
                 if (getLayoutDesigner().logTestCode()) {

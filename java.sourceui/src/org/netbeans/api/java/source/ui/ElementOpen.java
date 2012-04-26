@@ -79,11 +79,30 @@ public final class ElementOpen {
      * @since 1.5
      */
     public static boolean open(final ClasspathInfo cpInfo, final ElementHandle<? extends Element> el) {
+        final AtomicBoolean cancel = new AtomicBoolean();
+        if (SwingUtilities.isEventDispatchThread() && !JavaSourceAccessor.holdsParserLock()) {
+            final boolean[] result = new boolean[1];
+            ProgressUtils.runOffEventDispatchThread(new Runnable() {
+                    public void run() {
+                        result[0] = open(cpInfo, el, cancel);
+                    }
+                },
+                NbBundle.getMessage(ElementOpen.class, "TXT_CalculatingDeclPos"),
+                cancel,
+                false);
+            return result[0];
+        } else {
+            return open(cpInfo, el, cancel);
+        }
+    }
+    
+    private static boolean open(final ClasspathInfo cpInfo, final ElementHandle<? extends Element> el, AtomicBoolean cancel) {
         FileObject fo = SourceUtils.getFile(el, cpInfo);
         if (fo != null && fo.isFolder()) {
             fo = fo.getFileObject("package-info.java"); // NOI18N
         }
-        Object[] openInfo = fo != null ? getOpenInfo(fo, el) : null;
+        Object[] openInfo = fo != null ? getOpenInfo(fo, el, cancel) : null;
+        if (cancel.get()) return false;
         if (openInfo != null) {
             assert openInfo[0] instanceof FileObject;
             assert openInfo[1] instanceof Integer;
@@ -93,7 +112,7 @@ public final class ElementOpen {
         BinaryElementOpen beo = Lookup.getDefault().lookup(BinaryElementOpen.class);
 
         if (beo != null) {
-            return beo.open(cpInfo, el);
+            return beo.open(cpInfo, el, cancel);
         } else {
             return false;
         }        
@@ -122,10 +141,32 @@ public final class ElementOpen {
     public static boolean open(
             @NonNull final FileObject toSearch,
             @NonNull final ElementHandle<? extends Element> toOpen) {
+        final AtomicBoolean cancel = new AtomicBoolean();
+        if (SwingUtilities.isEventDispatchThread() && !JavaSourceAccessor.holdsParserLock()) {
+            final boolean[] result = new boolean[1];
+            ProgressUtils.runOffEventDispatchThread(new Runnable() {
+                    public void run() {
+                        result[0] = open(toSearch, toOpen, cancel);
+                    }
+                },
+                NbBundle.getMessage(ElementOpen.class, "TXT_CalculatingDeclPos"),
+                cancel,
+                false);
+            return result[0];
+        } else {
+            return open(toSearch, toOpen, cancel);
+        }
+    }
+    
+    private static boolean open(
+            @NonNull final FileObject toSearch,
+            @NonNull final ElementHandle<? extends Element> toOpen,
+            @NonNull final AtomicBoolean cancel) {
         Parameters.notNull("toSearch", toSearch);   //NOI18N
         Parameters.notNull("toOpen", toOpen);       //NOI18N
 
-        Object[] openInfo = getOpenInfo (toSearch, toOpen);
+        Object[] openInfo = getOpenInfo (toSearch, toOpen, cancel);
+        if (cancel.get()) return false;
         if (openInfo != null) {
             assert openInfo[0] instanceof FileObject;
             assert openInfo[1] instanceof Integer;
@@ -135,7 +176,7 @@ public final class ElementOpen {
         BinaryElementOpen beo = Lookup.getDefault().lookup(BinaryElementOpen.class);
 
         if (beo != null) {
-            return beo.open(ClasspathInfo.create(toSearch), toOpen);
+            return beo.open(ClasspathInfo.create(toSearch), toOpen, cancel);
         } else {
             return false;
         }
@@ -144,11 +185,11 @@ public final class ElementOpen {
     
     // Private methods ---------------------------------------------------------
         
-    private static Object[] getOpenInfo(final FileObject fo, final ElementHandle<? extends Element> handle) {
+    private static Object[] getOpenInfo(final FileObject fo, final ElementHandle<? extends Element> handle, AtomicBoolean cancel) {
         assert fo != null;
         
         try {
-            int offset = getOffset(fo, handle);
+            int offset = getOffset(fo, handle, cancel);
             return new Object[] {fo, offset};
         } catch (IOException e) {
             Exceptions.printStackTrace(e);
@@ -170,12 +211,11 @@ public final class ElementOpen {
     private static final int AWT_TIMEOUT = 1000;
     private static final int NON_AWT_TIMEOUT = 2000;
 
-    private static int getOffset(final FileObject fo, final ElementHandle<? extends Element> handle) throws IOException {
+    private static int getOffset(final FileObject fo, final ElementHandle<? extends Element> handle, final AtomicBoolean cancel) throws IOException {
         final int[]  result = new int[] {-1};
         
         final JavaSource js = JavaSource.forFileObject(fo);
         if (js != null) {
-            final AtomicBoolean cancel = new AtomicBoolean();
             final Task<CompilationController> t = new Task<CompilationController>() {
                 public @Override void run(CompilationController info) throws IOException {
                     if (cancel.get()) {
@@ -216,22 +256,7 @@ public final class ElementOpen {
                     }
             };
 
-            if (SwingUtilities.isEventDispatchThread() && !JavaSourceAccessor.holdsParserLock()) {
-                ProgressUtils.runOffEventDispatchThread(new Runnable() {
-                        public void run() {
-                            try {
-                                js.runUserActionTask(t, true);
-                            } catch (IOException ex) {
-                                Exceptions.printStackTrace(ex);
-                            }
-                        }
-                    },
-                    NbBundle.getMessage(ElementOpen.class, "TXT_CalculatingDeclPos"),
-                    cancel,
-                    false);
-            } else {
-                js.runUserActionTask(t, true);
-            }
+            js.runUserActionTask(t, true);
         }
         return result[0];
     }

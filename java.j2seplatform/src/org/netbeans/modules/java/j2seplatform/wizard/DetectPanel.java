@@ -80,6 +80,7 @@ import org.openide.util.Task;
 import org.openide.util.TaskListener;
 import org.openide.util.HelpCtx;
 import org.openide.WizardDescriptor;
+import org.openide.WizardValidationException;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
@@ -102,7 +103,6 @@ public class DetectPanel extends javax.swing.JPanel {
     private static final int COLS = 30;
     private static final RequestProcessor RP = new RequestProcessor(DetectPanel.class.getName(), 1, false, false);
 
-    private NewJ2SEPlatform primaryPlatform;
     private final ChangeSupport cs = new ChangeSupport(this);
     
     private static final String HTTP = "http";              //NOI18N
@@ -114,16 +114,14 @@ public class DetectPanel extends javax.swing.JPanel {
     /**
      * Creates a detect panel
      * start the task and update on its completion
-     * @param primaryPlatform the platform being customized.
      */
-    public DetectPanel(NewJ2SEPlatform primaryPlatform) {
+    public DetectPanel() {
         initComponents();
         postInitComponents ();
         putClientProperty(WizardDescriptor.PROP_CONTENT_DATA,
             new String[] {
                 NbBundle.getMessage(DetectPanel.class,"TITLE_PlatformName"),
         });
-        this.primaryPlatform = primaryPlatform;
         this.setName (NbBundle.getMessage(DetectPanel.class,"TITLE_PlatformName"));
     }
 
@@ -329,133 +327,20 @@ public class DetectPanel extends javax.swing.JPanel {
 	    return jdkName.getText().trim();
     }
     
-    List<? extends PathResourceImplementation> getSources (boolean dieOnError) {
-        final String val = this.sources.getText();
-        final List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>();
-        if (val.trim().length()>0) {
-            final File f = new File (val);
-            if (f.exists()) {
-                try {
-                    URL url = f.toURI().toURL();
-                    if (FileUtil.isArchiveFile(url)) {
-                        url = FileUtil.getArchiveRoot(url);
-                        FileObject fo = URLMapper.findFileObject(url);
-                        if (fo != null) {
-                            fo = fo.getFileObject("src");   //NOI18N
-                            if (fo != null) {
-                                url = fo.getURL();
-                            }
-                        }
-                        result.add (ClassPathSupport.createResource(url));
-                    } else {
-                        result.add (ClassPathSupport.createResource(url));
-                    }
-                } catch (IllegalArgumentException mue) {
-                    if (dieOnError) {
-                        throw new IllegalStateException();
-                    }
-                } catch (MalformedURLException mue) {
-                    if (dieOnError) {
-                        throw new IllegalStateException();
-                    }
-                } catch (FileStateInvalidException e) {
-                    if (dieOnError) {
-                        throw new IllegalStateException();
-                    }
-                }
-            } else if (dieOnError) {
-                throw new IllegalStateException();
-            }
-        }
-        return result;
+    String getSources () {
+        return sources.getText();
     }
 
     void setSources (String sources) {
         this.sources.setText (sources == null ? "" : sources);      //NOI18N
     }
 
-    List<URL> getJavadoc (boolean dieOnError) {
-        final String val = this.javadoc.getText();
-        final List<URL> result = new ArrayList<URL>();
-        final StringTokenizer tk = new StringTokenizer(val,PATH_SEPARATOR);
-        while (tk.hasMoreTokens()) {
-            try {
-                final String token =  tk.nextToken().trim();
-                if (token.startsWith(HTTP) || token.startsWith(HTTPS)) {
-                    //Http(s) URL add directly
-                    result.add(new URI(token).toURL());
-                } else {
-                    //File or folder
-                    //1st) /jdk/docs/
-                    //2nd) /jdk/docs.zip
-                    //3rd) /jdk/docs.zip!/docs/api/
-                    int index = token.lastIndexOf(INNER_SEPARATOR);
-                    if (index > 0) {
-                        final String outherPath = token.substring(0, index);
-                        final String innerPath = index+2 == token.length() ? "" : token.substring(index+2);
-                        final File f = new File (outherPath);
-                        if (f.exists()) {
-                            result.add (new URL (FileUtil.getArchiveRoot(f.toURI().toURL()).toExternalForm() + innerPath));
-                        } else if (dieOnError) {
-                            throw new IllegalStateException();
-                        }
-                    } else {
-                        final File f = new File(token);
-                        final URL url = FileUtil.urlForArchiveOrDir(f);
-                        if (url != null) {
-                            result.add(url);
-                        } else if (dieOnError) {
-                            throw new IllegalStateException();
-                        }
-                    }
-                }
-            } catch (MalformedURLException e) {
-                if (dieOnError) {
-                    throw new IllegalStateException();
-                }
-            } catch (URISyntaxException e) {
-                if (dieOnError) {
-                    throw new IllegalStateException();
-                }
-            }
-        }
-        return result;
+    String getJavadoc () {
+        return this.javadoc.getText();
     }
 
-    void setJavadoc (final List<URL> jdoc) {
-        //Create "human" representation of URLs
-        final StringBuilder result = new StringBuilder();
-        for (final URL jdocRoot : jdoc) {
-            try {
-                final String extUrl = jdocRoot.toExternalForm(); 
-                URL url = FileUtil.getArchiveFile(jdocRoot);
-                String relative;
-                String userName;
-                if (url == null) {
-                    url = jdocRoot;
-                    relative = "";  //NOI18N
-                } else {                
-                    int index = extUrl.lastIndexOf(INNER_SEPARATOR);
-                    relative = index < 0 ? "" : extUrl.substring(index);    //NOI18N
-                }
-                final String protocol = url.getProtocol();
-                if (FILE.equals(protocol)){ //NOI18N
-                    userName = new File(url.toURI()).getAbsolutePath() + relative;
-                } else if (HTTP.equals(protocol) ||HTTPS.equals(protocol)) {
-                    userName = extUrl;
-                } else {
-                    //Other protocols are unsupported
-                    continue;
-                }
-                if (result.length() > 0) {
-                    result.append(PATH_SEPARATOR);
-                }
-                result.append(userName);
-            } catch (URISyntaxException e) {
-                Exceptions.printStackTrace(e);
-            }
-        }
-        this.javadoc.setText(result.toString());
+    void setJavadoc (@NonNull final String jdoc) {
+        this.javadoc.setText(jdoc);
     }
 
     /**
@@ -531,16 +416,22 @@ public class DetectPanel extends javax.swing.JPanel {
      * Controller for the outer class: manages wizard panel's valid state
      * according to the user's input and detection state.
      */
-    static class WizardPanel implements WizardDescriptor.Panel<WizardDescriptor>, TaskListener, ChangeListener {
+    static class WizardPanel implements WizardDescriptor.AsynchronousValidatingPanel<WizardDescriptor>, TaskListener, ChangeListener {
+
         private DetectPanel         component;
         private RequestProcessor.Task task;
         private final J2SEWizardIterator  iterator;
         private final ChangeSupport cs = new ChangeSupport(this);
-        private boolean             detected;
-        private boolean             valid;
+        private volatile boolean             detected;
+        private volatile boolean             valid;        
         private boolean             firstPass=true;
         private WizardDescriptor    wiz;
         private ProgressHandle      progressHandle;
+        
+        private volatile String sourcesString;
+        private volatile List<PathResourceImplementation> sources;
+        private volatile String javadocString;
+        private volatile List<URL> javadoc;
 
         WizardPanel(J2SEWizardIterator iterator) {            
 	    this.iterator = iterator;
@@ -556,7 +447,7 @@ public class DetectPanel extends javax.swing.JPanel {
             if (component == null) {
                 final NewJ2SEPlatform primaryPlatform = this.iterator.getPlatform();
                 final NewJ2SEPlatform secondaryPlatform = this.iterator.getSecondaryPlatform();
-                component = new DetectPanel(primaryPlatform);
+                component = new DetectPanel();
                 component.addChangeListener (this);
                 task = RP.create(
                     new Runnable() {
@@ -592,6 +483,10 @@ public class DetectPanel extends javax.swing.JPanel {
 
         @Override
         public void readSettings(WizardDescriptor settings) {           
+            sources = null;
+            sourcesString = null;
+            javadoc = null;
+            javadocString = null;
             this.wiz = settings;
             JavaPlatform platform = this.iterator.getPlatform();
             String srcPath = null;
@@ -651,10 +546,13 @@ public class DetectPanel extends javax.swing.JPanel {
 	 */
         @Override
         public void storeSettings(WizardDescriptor settings) {
-            if (isValid()) {                                
-                String name = component.getPlatformName();                
-                final List<? extends PathResourceImplementation> src = this.component.getSources(false);
-                final List<URL> jdoc = this.component.getJavadoc(false);
+            final List<? extends PathResourceImplementation> src = sources;
+            final List<URL> jdoc = javadoc;
+            if (isValid() && src != null && jdoc != null) {                                
+                String name = component.getPlatformName();
+                if (src == null || jdoc == null) {
+                    return;
+                }
                 NewJ2SEPlatform platform = this.iterator.getPlatform();
                 platform.setDisplayName (name);
                 platform.setAntName (createAntName (name));
@@ -675,27 +573,56 @@ public class DetectPanel extends javax.swing.JPanel {
                 }                                
             }
         }
+        
+        
+        @Override
+        public void prepareValidation() {
+            sourcesString = component.getSources();
+            javadocString = component.getJavadoc();
+        }
+
+        @Override
+        public void validate() throws WizardValidationException {
+            assert valid;
+            try {
+                sources = stringToSourcePath(sourcesString);
+            } catch (IllegalStateException ise) {
+                throw new WizardValidationException(
+                        component,
+                        "ERROR_Sources",    //NOI18N
+                        NbBundle.getMessage(DetectPanel.class,"ERROR_Sources"));
+            }
+            try {
+                javadoc = stringToJavadoc(javadocString);
+            } catch (IllegalStateException ise) {
+                throw new WizardValidationException(
+                        component,
+                        "ERROR_Javadoc",    //NOI18N
+                        NbBundle.getMessage(DetectPanel.class,"ERROR_Javadoc"));
+            }
+        }
 
         /**
          * Revalidates the Wizard Panel
          */
         @Override
         public void taskFinished(Task task) {
+            final NewJ2SEPlatform platform = iterator.getPlatform();
+            List<URL> jdoc = platform.getJavadocFolders();
+            if (jdoc.isEmpty()) {
+                jdoc = J2SEPlatformImpl.defaultJavadoc(platform);
+            }
+            final String jdocStr = javadocToString(jdoc);
+            detected = platform.isValid();            
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
-                public void run () {
-                    final NewJ2SEPlatform platform = iterator.getPlatform();
-                    List<URL> jdoc = platform.getJavadocFolders();
-                    if (jdoc.isEmpty()) {
-                        jdoc = J2SEPlatformImpl.defaultJavadoc(platform);
-                    }
-                    component.setJavadoc(jdoc);
+                public void run () {                                        
+                    component.setJavadoc(jdocStr);
                     component.updatePlatformName(platform);
                     assert progressHandle != null;
                     progressHandle.finish ();
                     component.progressPanel.setVisible (false);
                     component.progressLabel.setVisible (false);
-                    detected = iterator.getPlatform().isValid();
                     checkValid ();
                 }
             });            
@@ -725,22 +652,6 @@ public class DetectPanel extends javax.swing.JPanel {
                         this.wiz.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE,NbBundle.getMessage(DetectPanel.class,"ERROR_UsedDisplayName"));    //NOI18N
                         break;
                     }
-                }
-            }
-            if (vld) {
-                try {
-                    component.getSources(true);
-                } catch (IllegalStateException ise) {
-                    this.wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,NbBundle.getMessage(DetectPanel.class,"ERROR_Sources"));
-                    vld = false;
-                }
-            }
-            if (vld) {
-                try {
-                    component.getJavadoc(true);
-                } catch (IllegalStateException ise) {
-                    this.wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,NbBundle.getMessage(DetectPanel.class,"ERROR_Javadoc"));
-                    vld = false;
                 }
             }
             setValid(vld);
@@ -776,6 +687,121 @@ public class DetectPanel extends javax.swing.JPanel {
             }
             return false;
         }
+                
+        @NonNull
+        private static List<PathResourceImplementation> stringToSourcePath(@NonNull final String path) {
+            assert path != null;
+            final List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>();
+            if (path.trim().length()>0) {
+                final File f = new File (path);
+                if (f.exists()) {
+                    try {
+                        URL url = f.toURI().toURL();
+                        if (FileUtil.isArchiveFile(url)) {
+                            url = FileUtil.getArchiveRoot(url);
+                            FileObject fo = URLMapper.findFileObject(url);
+                            if (fo != null) {
+                                fo = fo.getFileObject("src");   //NOI18N
+                                if (fo != null) {
+                                    url = fo.toURL();
+                                }
+                            }
+                            result.add (ClassPathSupport.createResource(url));
+                        } else {
+                            result.add (ClassPathSupport.createResource(url));
+                        }
+                    } catch (IllegalArgumentException mue) {
+                        throw new IllegalStateException(mue);
+                    } catch (MalformedURLException mue) {
+                        throw new IllegalStateException(mue);
+                    }
+                } else {
+                    throw new IllegalStateException();
+                }
+            }
+            return result;
+        }
         
-    }    
+        @NonNull
+        private static List<URL> stringToJavadoc(@NonNull final String path) {
+            assert path != null;
+            final List<URL> result = new ArrayList<URL>();
+            final StringTokenizer tk = new StringTokenizer(path,PATH_SEPARATOR);
+            while (tk.hasMoreTokens()) {
+                try {
+                    final String token =  tk.nextToken().trim();
+                    if (token.startsWith(HTTP) || token.startsWith(HTTPS)) {
+                        //Http(s) URL add directly
+                        result.add(new URI(token).toURL());
+                    } else {
+                        //File or folder
+                        //1st) /jdk/docs/
+                        //2nd) /jdk/docs.zip
+                        //3rd) /jdk/docs.zip!/docs/api/
+                        int index = token.lastIndexOf(INNER_SEPARATOR);
+                        if (index > 0) {
+                            final String outherPath = token.substring(0, index);
+                            final String innerPath = index+2 == token.length() ? "" : token.substring(index+2);
+                            final File f = new File (outherPath);
+                            if (f.exists()) {
+                                result.add (new URL (FileUtil.getArchiveRoot(f.toURI().toURL()).toExternalForm() + innerPath));
+                            } else {
+                                throw new IllegalStateException();
+                            }
+                        } else {
+                            final File f = new File(token);
+                            final URL url = FileUtil.urlForArchiveOrDir(f);
+                            if (url != null) {
+                                result.add(url);
+                            } else {
+                                throw new IllegalStateException();
+                            }
+                        }
+                    }
+                } catch (MalformedURLException e) {
+                    throw new IllegalStateException(e);
+                } catch (URISyntaxException e) {
+                    throw new IllegalStateException(e);
+                }
+            }
+            return result;
+        }
+        
+        @NonNull
+        private static String javadocToString(@NonNull final List<URL> path) {
+            final StringBuilder result = new StringBuilder();
+            for (final URL jdocRoot : path) {
+                try {
+                    final String extUrl = jdocRoot.toExternalForm(); 
+                    URL url = FileUtil.getArchiveFile(jdocRoot);
+                    String relative;
+                    String userName;
+                    if (url == null) {
+                        url = jdocRoot;
+                        relative = "";  //NOI18N
+                    } else {                
+                        int index = extUrl.lastIndexOf(INNER_SEPARATOR);
+                        relative = index < 0 ? "" : extUrl.substring(index);    //NOI18N
+                    }
+                    final String protocol = url.getProtocol();
+                    if (FILE.equals(protocol)){ //NOI18N
+                        userName = new File(url.toURI()).getAbsolutePath() + relative;
+                    } else if (HTTP.equals(protocol) ||HTTPS.equals(protocol)) {
+                        userName = extUrl;
+                    } else {
+                        //Other protocols are unsupported
+                        continue;
+                    }
+                    if (result.length() > 0) {
+                        result.append(PATH_SEPARATOR);
+                    }
+                    result.append(userName);
+                } catch (URISyntaxException e) {
+                    Exceptions.printStackTrace(e);
+                }
+            }
+            return result.toString();
+        }
+        
+    }
 }
