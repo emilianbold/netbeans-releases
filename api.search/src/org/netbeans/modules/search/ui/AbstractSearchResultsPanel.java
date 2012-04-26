@@ -56,6 +56,7 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.search.SearchControl;
 import org.netbeans.modules.search.ResultView;
 import org.netbeans.spi.search.provider.SearchComposition;
@@ -85,16 +86,22 @@ import org.openide.util.NbBundle;
 public abstract class AbstractSearchResultsPanel extends javax.swing.JPanel
         implements ExplorerManager.Provider, Lookup.Provider {
 
+    @StaticResource
     private static final String REFRESH_ICON =
             "org/netbeans/modules/search/res/refresh.png";              //NOI18N
+    @StaticResource
     private static final String STOP_ICON =
             "org/netbeans/modules/search/res/stop.png";                 //NOI18N
+    @StaticResource
     private static final String NEXT_ICON =
             "org/netbeans/modules/search/res/next.png";                 //NOI18N
+    @StaticResource
     private static final String PREV_ICON =
             "org/netbeans/modules/search/res/prev.png";                 //NOI18N
+    @StaticResource
     private static final String EXPAND_ICON =
             "org/netbeans/modules/search/res/expandTree.png";           //NOI18N
+    @StaticResource
     private static final String COLLAPSE_ICON =
             "org/netbeans/modules/search/res/collapseTree.png";         //NOI18N
 
