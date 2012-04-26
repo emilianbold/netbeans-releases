@@ -836,8 +836,10 @@ public final class FoldHierarchyExecution implements DocumentListener {
         // no preferences in component; get from lookup:
         if (b == null && component.getDocument() != null) {
             String mime = DocumentUtilities.getMimeType(component.getDocument());
-            Preferences prefs = MimeLookup.getLookup(mime).lookup(Preferences.class);
-            b = prefs.getBoolean(PROPERTY_FOLDING_ENABLED, true);
+            if (mime != null) {
+                Preferences prefs = MimeLookup.getLookup(mime).lookup(Preferences.class);
+                b = prefs.getBoolean(PROPERTY_FOLDING_ENABLED, true);
+            }
         }
         return (b != null) ? b.booleanValue() : true;
     }
