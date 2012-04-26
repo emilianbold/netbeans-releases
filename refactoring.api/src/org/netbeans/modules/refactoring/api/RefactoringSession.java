@@ -364,7 +364,7 @@ public final class RefactoringSession {
                     }
                     while (!finished.get()) {
                         try {
-                            Thread.sleep(300);
+                            Thread.sleep(50);
                         } catch (InterruptedException ex) {
                             Exceptions.printStackTrace(ex);
                         }
