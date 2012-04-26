@@ -52,6 +52,7 @@ import junit.framework.Test;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
@@ -159,6 +160,7 @@ public class FodDataObjectFactoryTest extends NbTestCase {
 
 
 
+    @RandomlyFails // ergonomics #3485
     public void testCreateRecognize() throws Exception {
         assertFalse("Autoupdate is disabled", au.isEnabled());
         FileUtil.setMIMEType("huh", "text/x-huh");
