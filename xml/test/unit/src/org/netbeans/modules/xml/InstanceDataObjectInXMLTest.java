@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,52 +37,31 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.xml;
 
-package org.netbeans.modules.groovy.editor.api.completion;
+import java.util.ArrayList;
+import junit.framework.Test;
+import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.InstanceDataObject;
 
-/**
- *
- * @author schmidtm
- */
-public class CollectionsCCTest extends GroovyCCTestBase {
-
-    public CollectionsCCTest(String testName) {
-        super(testName);
+public class InstanceDataObjectInXMLTest extends NbTestCase {
+    public InstanceDataObjectInXMLTest(String name) {
+        super(name);
     }
-
-    @Override
-    protected String getTestType() {
-        return "collections";
+    public static Test suite() {
+        return NbModuleSuite.createConfiguration(InstanceDataObjectInXMLTest.class).gui(false).suite();
     }
-
-    // testing proper creation of constructor-call proposals
-
-    //     * groovy.lang.*
-    //     * groovy.util.*
-
-    public void testCollections1_1() throws Exception {
-        checkCompletion(BASE + "" + "Collections1.groovy", "[\"one\",\"two\"].listIter^", false);
-    }
-
-    public void testCollections1_2() throws Exception {
-        checkCompletion(BASE + "" + "Collections1.groovy", "[1:\"one\", 2:\"two\"].ent^", false);
-    }
-
-    public void testCollections1_3() throws Exception {
-        checkCompletion(BASE + "" + "Collections1.groovy", "    (1..10).a^", false);
-    }
-
-    public void testCollections1_4() throws Exception {
-        checkCompletion(BASE + "" + "Collections1.groovy", "    1..10.d^", false);
-    }
-
-    public void testCollections1_5() throws Exception {
-        checkCompletion(BASE + "" + "Collections1.groovy", "    (1..10).^", false);
-    }
-
-    public void testCollections1_6() throws Exception {
-        checkCompletion(BASE + "" + "Collections1.groovy", "[\"one\",\"two\"].it^", false);
+    public void testInstanceDataObjectCreate() throws Exception {
+        final FileObject fo = FileUtil.createMemoryFileSystem().getRoot();
+        final DataFolder folder = DataFolder.findFolder(fo);
+        final ArrayList<Object> obj = new ArrayList<Object>();
+        InstanceDataObject dataObj = InstanceDataObject.create(folder, null, obj, null);
+        assertSame("Instance is preserved", dataObj.instanceCreate(), obj);
     }
 }
