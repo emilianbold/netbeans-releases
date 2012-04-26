@@ -361,6 +361,9 @@ public final class Watcher extends AnnotationProvider {
             synchronized(lock) {
                 toRefresh = pending;
                 pending = null;
+                if (toRefresh == null) {
+                    return;
+                }
             }
             LOG.log(Level.FINE, "Refreshing {0} directories", toRefresh.size());
 

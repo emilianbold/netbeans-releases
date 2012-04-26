@@ -64,6 +64,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.ArchiveResources;
 import org.netbeans.Module;
+import org.netbeans.ModuleManager;
 import org.netbeans.NetigsoFramework;
 import org.netbeans.ProxyClassLoader;
 import org.netbeans.Stamps;
@@ -94,7 +95,8 @@ import org.osgi.service.startlevel.StartLevel;
     @ServiceProvider(service = NetigsoFramework.class),
     @ServiceProvider(service = Netigso.class)
 })
-public final class Netigso extends NetigsoFramework implements Stamps.Updater {
+public final class Netigso extends NetigsoFramework 
+implements Cloneable, Stamps.Updater {
     static final Logger LOG = Logger.getLogger(Netigso.class.getName());
     private static final AtomicBoolean SELF_QUERY = new AtomicBoolean();
     private static final String[] EMPTY = {};
@@ -104,6 +106,11 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
     private NetigsoActivator activator;
     private Integer defaultStartLevel;
     private String defaultCoveredPkgs;
+    
+    @Override
+    protected NetigsoFramework clone() {
+        return new Netigso();
+    }
 
     Framework getFramework() {
         return framework;

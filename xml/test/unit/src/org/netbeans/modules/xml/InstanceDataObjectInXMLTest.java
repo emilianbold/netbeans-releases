@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,29 +37,31 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.xml;
 
-package org.netbeans.modules.groovy.editor.api.completion;
+import java.util.ArrayList;
+import junit.framework.Test;
+import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.InstanceDataObject;
 
-/**
- *
- * @author phejl
- */
-public class GrailsConfigsTest extends GroovyCCTestBase {
-
-    public GrailsConfigsTest(String testName) {
-        super(testName);
+public class InstanceDataObjectInXMLTest extends NbTestCase {
+    public InstanceDataObjectInXMLTest(String name) {
+        super(name);
     }
-
-    @Override
-    protected String getTestType() {
-        return "grails";
+    public static Test suite() {
+        return NbModuleSuite.createConfiguration(InstanceDataObjectInXMLTest.class).gui(false).suite();
     }
-
-    // FIXME this does not provide accurate results, but we need to test
-    // at least basic closure completion
-    public void testDataSourceClosure1() throws Exception {
-        checkCompletion(BASE + "" + "DataSourceClosure1.groovy", "}.^", false);
-    }  
+    public void testInstanceDataObjectCreate() throws Exception {
+        final FileObject fo = FileUtil.createMemoryFileSystem().getRoot();
+        final DataFolder folder = DataFolder.findFolder(fo);
+        final ArrayList<Object> obj = new ArrayList<Object>();
+        InstanceDataObject dataObj = InstanceDataObject.create(folder, null, obj, null);
+        assertSame("Instance is preserved", dataObj.instanceCreate(), obj);
+    }
 }

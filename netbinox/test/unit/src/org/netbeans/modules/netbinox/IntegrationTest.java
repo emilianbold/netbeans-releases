@@ -50,6 +50,7 @@ import org.netbeans.Module;
 import org.netbeans.ModuleManager;
 import org.netbeans.NetigsoFramework;
 import org.netbeans.SetupHid;
+import org.netbeans.core.netigso.NetigsoUtil;
 import org.netbeans.core.startup.Main;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
@@ -117,10 +118,6 @@ public class IntegrationTest extends NbTestCase {
     }
 
     static Framework findFramework() throws Exception {
-        Object obj = Lookup.getDefault().lookup(NetigsoFramework.class);
-        final Method m = obj.getClass().getDeclaredMethod("getFramework");
-        m.setAccessible(true);
-        Framework w = (Framework) m.invoke(obj);
-        return w;
+        return NetigsoUtil.framework(Main.getModuleSystem().getManager());
     }
 }
