@@ -171,7 +171,7 @@ public final class LayeredDocumentIndex implements DocumentIndex {
     }
     
     public boolean begin() {
-        if (base instanceof Runnable) {
+        if (!isTransientUpdate() && base instanceof Runnable) {
             ((Runnable)base).run();
             return true;
         }
