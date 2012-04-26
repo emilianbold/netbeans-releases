@@ -55,34 +55,7 @@ import org.openide.filesystems.FileObject;
 @ProjectServiceProvider(service=org.netbeans.modules.profiler.spi.project.AntProjectSupportProvider.class, 
                         projectType="org-netbeans-modules-java-j2seproject" // NOI18N
 )
-public class J2SEAntProjectSupportProvider extends AbstractAntProjectSupportProvider {
-    
-    @Override
-    public String getProfilerTargetName(FileObject buildScript, int type, FileObject profiledClassFile) {
-        switch (type) {
-            case AntProjectSupport.TARGET_PROFILE:
-                return "profile"; // NOI18N
-            case AntProjectSupport.TARGET_PROFILE_SINGLE:
-                // FIXME
-                JavaProfilerSource src = JavaProfilerSource.createFrom(profiledClassFile);
-                if (src != null) {
-                    if (src.isApplet()) {
-                        return "profile-applet"; // NOI18N
-                    } else {
-                        return "profile-single"; // NOI18N
-                    }
-                }
-                break;
-            case AntProjectSupport.TARGET_PROFILE_TEST:
-                return null; // not currently supported // "profile-test"; // NOI18N
-            case AntProjectSupport.TARGET_PROFILE_TEST_SINGLE:
-                return "profile-test-single"; // NOI18N
-            default:
-                return null;
-        }
-        return null;
-    }
-    
+public class J2SEAntProjectSupportProvider extends AbstractAntProjectSupportProvider {    
     public J2SEAntProjectSupportProvider(Project project) {
         super(project);
     }
