@@ -1554,36 +1554,22 @@ public class PHPBracketCompleter implements KeystrokeHandler {
      */
     private boolean isSkipClosingBracket(BaseDocument doc, int caretOffset, char bracket)
         throws BadLocationException {
-        // First check whether the caret is not after the last char in the document
-        // because no bracket would follow then so it could not be skipped.
         if (caretOffset == doc.getLength()) {
-            return false; // no skip in this case
+            return false;
         }
-
-        boolean skipClosingBracket = false; // by default do not remove
-
         TokenSequence<?extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, caretOffset);
-
         if (ts == null) {
             return false;
         }
-
-        // XXX BEGIN TOR MODIFICATIONS
-        //ts.move(caretOffset+1);
         ts.move(caretOffset);
-
         if (!ts.moveNext()) {
             return false;
         }
-
         Token<?extends PHPTokenId> token = ts.token();
-
+        boolean skipClosingBracket = false;
         // Check whether character follows the bracket is the same bracket
         if ((token != null) && (LexUtilities.textEquals(token.text(), bracket))) {
             char leftBracket = bracket == ')' ? '(' : (bracket == ']' ? '[' : '{');
-            // token var points to the last bracket in a group of two or more right brackets
-            // Attempt to find the left matching bracket for it
-            // Search would stop on an extra opening left brace if found
             int bracketBalanceWithNewBracket = 0;
             ts.moveStart();
             if (!ts.moveNext()) {
@@ -1605,7 +1591,6 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                 }
                 token = ts.token();
             }
-
             if (bracketBalanceWithNewBracket == 0) {
                 skipClosingBracket = false;
             } else {
