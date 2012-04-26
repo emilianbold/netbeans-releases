@@ -610,6 +610,33 @@ public class Html5ParserTest extends NbTestCase {
     public void testParseFileTest5() throws ParseException {
         parse(getTestFile("testfiles/test5.html"));
     }
+    
+    //Bug 211776 - Self-closing element breaks code folding
+    public void testIssue211776() throws ParseException {
+//        ParseTreeBuilder.setLoggerLevel(Level.ALL);
+        
+        HtmlParseResult result = parse(getTestFile("testfiles/test6.html"));
+        Node root = result.root();
+//        ElementUtils.dumpTree(root);
+        
+        OpenTag body = ElementUtils.query(root, "html/body");
+        assertNotNull(body);
+        assertFalse(body.isEmpty());
+        
+        OpenTag link = ElementUtils.query(root, "html/head/link");
+        assertNotNull(link);
+        assertTrue(link.isEmpty());
+        
+        OpenTag div = ElementUtils.query(root, "html/body/div");
+        assertNotNull(div);
+        assertFalse(div.isEmpty());
+        
+    }
+
+    
+    
+    
+    //----------------------------------------------------------------
 
     protected FileObject getTestFile(String relFilePath) {
         File wholeInputFile = new File(getDataDir(), relFilePath);
@@ -969,7 +996,7 @@ public class Html5ParserTest extends NbTestCase {
         Node root = result.root();
         assertNotNull(root);
 
-        ElementUtils.dumpTree(root);
+//        ElementUtils.dumpTree(root);
         
         OpenTag a = ElementUtils.query(root, "html/body/a");
         assertNotNull(a);

@@ -326,13 +326,13 @@ public class ElementsFactory {
         @Override
         public void addChild(Element element) {
             //no-op
-//            throw new IllegalStateException();
+            throw new IllegalStateException();
         }
 
         @Override
         public void removeChild(Element element) {
             //no-op
-//            throw new IllegalStateException();
+            throw new IllegalStateException();
         }
 
         @Override
@@ -348,26 +348,32 @@ public class ElementsFactory {
         @Override
         public void removeChildren(Collection<Element> children) {
             //no-op
-//            throw new IllegalStateException();
+            throw new IllegalStateException();
         }
 
         @Override
         public void addChildren(Collection<Element> element) {
             //no-op
-//            throw new IllegalStateException();
+            throw new IllegalStateException();
         }
 
         @Override
         public void insertChildBefore(Element toInsert, Element element) {
             //no-op
-//            throw new IllegalStateException();
+            throw new IllegalStateException();
         }
 
         @Override
         public void setMatchingCloseTag(CloseTag closeTag) {
             //no-op
-//            throw new IllegalStateException();
+            throw new IllegalStateException();
         }
+
+        @Override
+        public String toString() {
+            return new StringBuilder(super.toString()).append(isEmpty() ? "(self close tag)" : "").toString();
+        }
+        
     }
 
     static class CommonOpenTag extends EmptyOpenTag {
