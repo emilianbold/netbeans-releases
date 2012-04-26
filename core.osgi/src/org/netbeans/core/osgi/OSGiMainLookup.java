@@ -104,8 +104,9 @@ public class OSGiMainLookup extends ProxyLookup {
     }
 
     static void loadServicesFolder() {
-        get().nonClassLoaderDelegates.add(CoreBridge.getDefault().lookupCacheLoad());
-        get().setDelegates();
+        OSGiMainLookup l = get();
+        l.nonClassLoaderDelegates.add(CoreBridge.getDefault().lookupCacheLoad());
+        l.setDelegates();
     }
 
     private ClassLoader classLoader;
