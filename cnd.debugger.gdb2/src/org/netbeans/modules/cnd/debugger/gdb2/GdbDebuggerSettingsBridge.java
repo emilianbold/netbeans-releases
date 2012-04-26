@@ -272,7 +272,7 @@ public final class GdbDebuggerSettingsBridge extends DebuggerSettingsBridge {
             if (argPos!=-1) {
                 int endPos;
                 if (runargs.charAt(argPos) == '\"') {
-                    endPos = runargs.indexOf('\"', argPos + 1) + 1;
+                    endPos = (runargs.indexOf('\"', argPos + 1) == -1 ? runargs.length() : runargs.indexOf('\"', argPos + 1) + 1); // NOI18N
                 } else {
                     endPos = (runargs.indexOf(' ', argPos) == -1 ? runargs.length() : runargs.indexOf(' ', argPos));
                 }

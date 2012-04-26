@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.modelui.switcher;
+package org.netbeans.modules.cnd.modelui.trace;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -94,7 +94,7 @@ public final class SwitchIndexAction extends NodeAction {
     private JMenuItem getPresenter() {
         presenter.setEnabled(true);
         presenter.setSelected(Boolean.getBoolean(CND_MODEL_INDEX_ENABLED_PROPERTY));
-        presenter.setVisible(true);
+        presenter.setVisible(TestProjectActionBase.TEST_XREF);
         return presenter;
     }
     
