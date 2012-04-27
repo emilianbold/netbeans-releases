@@ -1,9 +1,9 @@
-Name: Apache Jakarta Http client
-Version: 3.1.0
+Name: Apache Commons HttpClient
+Version: 3.1
 License: Apache-2.0
 OSR: 490
-Description: Http client
-Origin: http://hc.apache.org
+Description: HTTP client
+Origin: http://hc.apache.org/
 
                                  Apache License
                            Version 2.0, January 2004
