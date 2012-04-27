@@ -410,11 +410,15 @@ public class Folder implements FileChangeListener, ChangeListener {
         // This is dirty fix for #201152. Do not see other way to do this,
         // as Folders instances are always updated and it is impossible
         // to provide them with the right name.
-        if (!isDiskFolder() || getRoot() == null) {
+        if (isDiskFolder() && getRoot() != null) {
             return displayName;
         } else {
-            return getDiskName();
+            String diskName = getDiskName();
+            if (diskName != null) {
+                return diskName;
+            }
         }
+        return displayName;
     }
 
     public void setDisplayName(String displayName) {
