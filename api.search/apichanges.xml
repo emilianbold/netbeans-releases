@@ -7,7 +7,6 @@ Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
 Oracle and Java are registered trademarks of Oracle and/or its affiliates.
 Other names may be trademarks of their respective owners.
 
-
 The contents of this file are subject to the terms of either the GNU
 General Public License Version 2 only ("GPL") or the Common
 Development and Distribution License("CDDL") (collectively, the
@@ -29,7 +28,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -100,7 +99,6 @@ is the proper place.
 
     <!-- First, a list of API names you may use: -->
     <apidefs>
-        <!-- Probably should not be used much: -->
         <apidef name="api.search">Search in Projects API</apidef>
     </apidefs>
 
@@ -122,7 +120,7 @@ is the proper place.
                     <code>ComponentUtils.adjustComboForSearchPattern</code>
                     and class
                     <code>SearchPatternController</code>, that complements
-                    other controllers for search-related UI components/
+                    other controllers for search-related UI components.
                 </p>
             </description>
             <class package="org.netbeans.api.search.ui" name="SearchPatternController"/>
@@ -154,39 +152,26 @@ is the proper place.
     <!-- Now the surrounding HTML text and document structure: -->
 
     <htmlcontents>
-        <!--
-                            NO NO NO NO NO!
-         ==============>    DO NOT EDIT ME!  <======================
-          AUTOMATICALLY GENERATED FROM APICHANGES.XML, DO NOT EDIT
-                SEE openidex/api/apichanges.xml
-        -->
-        <head>
-            <title>Change History for the Search API</title>
-            <link rel="stylesheet" href="prose.css" type="text/css"/>
-        </head>
-        <body>
+<!-- Generated from apichanges.xml -->
+    <head>
+      <title>Change History for the Search in Projects API</title>
+      <link rel="stylesheet" href="prose.css" type="text/css"/>
+    </head>
+    <body>
 
-            <p class="overviewlink">
-                <a href="overview-summary.html">Overview</a>
-            </p>
+<p class="overviewlink"><a href="@TOP@/overview-summary.html">Overview</a></p>
 
-            <h1>Introduction</h1>
+<h1>Introduction</h1>
 
-            <p>
-                This document lists changes made to the
-                <code>Search API</code>.
-            </p>
+<p>This document lists changes made to the <a href="@TOP@/overview-summary.html">Search in Projects API</a>.</p>
 
-            <!-- The actual lists of changes, as summaries and details: -->
+<!-- The actual lists of changes, as summaries and details: -->
+      <hr/>
+      <standard-changelists module-code-name="org.netbeans.api.search/1"/>
 
-            <hr/>
+      <hr/><p>@FOOTER@</p>
 
-            <standard-changelists module-code-name="org.openidex.util/3"/>
+    </body>
+  </htmlcontents>
 
-            <hr/>
-
-            <p>@FOOTER@</p>
-
-        </body>
-    </htmlcontents>
 </apichanges>
