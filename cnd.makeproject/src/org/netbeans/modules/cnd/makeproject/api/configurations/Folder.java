@@ -411,8 +411,6 @@ public class Folder implements FileChangeListener, ChangeListener {
         // as Folders instances are always updated and it is impossible
         // to provide them with the right name.
         if (isDiskFolder() && getRoot() != null) {
-            return displayName;
-        } else {
             String diskName = getDiskName();
             if (diskName != null) {
                 return diskName;
