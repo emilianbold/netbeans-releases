@@ -54,7 +54,7 @@ public class CodeAssistanceConfiguration {
     private MakeConfiguration makeConfiguration;
     private BooleanConfiguration buildAnalyzer;
     private StringConfiguration tools;
-    private static final String DEFAULT_TOOLS = "gcc:c++:g++:gfortran:g77:g90:g95:cc:CC:ffortran:f77:f90:f95";
+    private static final String DEFAULT_TOOLS = "gcc:c++:g++:gfortran:g77:g90:g95:cc:CC:ffortran:f77:f90:f95"; //NOI18N
     
     // Constructors
     public CodeAssistanceConfiguration(MakeConfiguration makeConfiguration) {
