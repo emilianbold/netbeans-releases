@@ -578,7 +578,7 @@ public class Utilities {
                     skip.setEnabled (providers.size() > 1);
                     JButton tryAgain = new JButton ();
                     Mnemonics.setLocalizedText (tryAgain, getBundle ("Utilities_NetworkProblem_Continue")); // NOI18N
-                    NetworkProblemPanel problem = new NetworkProblemPanel (
+                    ProblemPanel problem = new ProblemPanel (
                             getBundle ("Utilities_NetworkProblem_Text", p.getDisplayName (), ioe.getLocalizedMessage ()), // NOI18N
                             new JButton [] { tryAgain, skip, cancel });
                     Object ret = problem.showNetworkProblemDialog ();

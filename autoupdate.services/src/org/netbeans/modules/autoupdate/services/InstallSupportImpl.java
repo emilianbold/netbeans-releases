@@ -1203,7 +1203,7 @@ public class InstallSupportImpl {
         LOG.log(Level.FINE, "Time stamp changed succcessfully {0}", f);
     }
 
-    private File getTargetCluster(UpdateElement installed, UpdateElementImpl update, boolean isGlobal) {
+    private File getTargetCluster(UpdateElement installed, UpdateElementImpl update, boolean isGlobal) throws OperationException {
         File cluster = getElement2Clusters ().get (update);
         if (cluster == null) {
             cluster = InstallManager.findTargetDirectory (installed, update, isGlobal);

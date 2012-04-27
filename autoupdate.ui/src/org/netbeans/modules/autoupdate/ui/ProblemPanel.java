@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -47,6 +47,7 @@ package org.netbeans.modules.autoupdate.ui;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JButton;
+import org.netbeans.api.autoupdate.OperationException;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -58,36 +59,38 @@ import org.openide.util.NbBundle;
  *
  * @author  Jiri Rechtacek
  */
-public class NetworkProblemPanel extends javax.swing.JPanel {
+public class ProblemPanel extends javax.swing.JPanel {
     private String problem;
     private JButton [] buttons = null;
     private boolean isWarning = false;
 
-    /** Creates new form NetworkProblemPanel */
-    public NetworkProblemPanel (String problemDescription) {
-        this (problemDescription, false);
+    public ProblemPanel(OperationException ex, boolean warning) {
+        this (ex, null, warning);
     }
     
-    public NetworkProblemPanel (String problemDescription, JButton... buttons) {
-        this (problemDescription, true, buttons);
+    public ProblemPanel (String problemDescription, JButton... buttons) {
+        this (null, problemDescription, true, buttons);
     }
     
-    private NetworkProblemPanel (String problemDescription, boolean warning, JButton... buttons) {
+    private ProblemPanel (OperationException ex, String problemDescription, boolean warning, JButton... buttons) {
         this.buttons = buttons;
         this.isWarning = warning;
+        if (ex != null) {
+            problemDescription = ex.getLocalizedMessage();
+        }
         problem = problemDescription == null ?
-            getBundle("NetworkProblemPanel_taTitle_Text") : // NOI18N
+            NbBundle.getMessage(ProblemPanel.class, "NetworkProblemPanel_taTitle_Text") : // NOI18N
             problemDescription;
         initComponents ();
         taTitle.setToolTipText (problem);
         if (isWarning) {
             if (buttons.length == 2) { // XXX: called from InstallStep
-                taMessage.setText (NbBundle.getMessage(NetworkProblemPanel.class, "NetworkProblemPanel_taMessage_WarningTextWithReload")); // NOI18N
+                taMessage.setText (NbBundle.getMessage(ProblemPanel.class, "NetworkProblemPanel_taMessage_WarningTextWithReload")); // NOI18N
             } else {
-                taMessage.setText(NbBundle.getMessage(NetworkProblemPanel.class, "NetworkProblemPanel_taMessage_WarningText")); // NOI18N
+                taMessage.setText(NbBundle.getMessage(ProblemPanel.class, "NetworkProblemPanel_taMessage_WarningText")); // NOI18N
             }
         } else {
-            taMessage.setText(NbBundle.getMessage(NetworkProblemPanel.class, "NetworkProblemPanel_taMessage_ErrorText")); // NOI18N
+            taMessage.setText(NbBundle.getMessage(ProblemPanel.class, "NetworkProblemPanel_taMessage_ErrorText")); // NOI18N
         }
         for (JButton b : buttons) {
             b.getAccessibleContext ().setAccessibleDescription (b.getText ());
@@ -118,7 +121,7 @@ public class NetworkProblemPanel extends javax.swing.JPanel {
         taTitle.setOpaque(false);
         taTitle.setPreferredSize(new java.awt.Dimension(100, 40));
         spTitle.setViewportView(taTitle);
-        taTitle.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NetworkProblemPanel.class, "NetworkProblemPanel_taTitle_ACN")); // NOI18N
+        taTitle.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ProblemPanel.class, "NetworkProblemPanel_taTitle_ACN")); // NOI18N
         taTitle.getAccessibleContext().setAccessibleDescription(problem);
 
         spMessage.setBorder(null);
@@ -130,14 +133,14 @@ public class NetworkProblemPanel extends javax.swing.JPanel {
         taMessage.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         taMessage.setOpaque(false);
         spMessage.setViewportView(taMessage);
-        taMessage.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NetworkProblemPanel.class, "NetworkProblemPanel_taMessage")); // NOI18N
+        taMessage.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ProblemPanel.class, "NetworkProblemPanel_taMessage")); // NOI18N
         taMessage.getAccessibleContext().setAccessibleDescription(problem);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(spTitle, javax.swing.GroupLayout.DEFAULT_SIZE, 347, Short.MAX_VALUE)
+            .addComponent(spTitle)
             .addComponent(spMessage)
         );
         layout.setVerticalGroup(
@@ -148,7 +151,7 @@ public class NetworkProblemPanel extends javax.swing.JPanel {
                 .addComponent(spMessage, javax.swing.GroupLayout.DEFAULT_SIZE, 160, Short.MAX_VALUE))
         );
 
-        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NetworkProblemPanel.class, "NetworkProblemPanel_ACD")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProblemPanel.class, "NetworkProblemPanel_ACD")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     
@@ -160,24 +163,30 @@ public class NetworkProblemPanel extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
     
     public Object showNetworkProblemDialog () {
-        DialogDescriptor dd = getDialogDescriptor ();
+        DialogDescriptor dd = getNetworkProblemDescriptor ();
         DialogDisplayer.getDefault ().createDialog (dd).setVisible (true);
         return dd.getValue ();
     }
     
-    private DialogDescriptor getDialogDescriptor () {
-        Object [] options = null;
+    public Object showWriteProblemDialog () {
+        DialogDescriptor dd = getWriteProblemDescriptor();
+        DialogDisplayer.getDefault().createDialog(dd).setVisible(true);
+        return dd.getValue();
+    }
+    
+    private DialogDescriptor getNetworkProblemDescriptor () {
+        Object [] options;
         if (buttons == null || buttons.length == 0) {
             options = new Object [] { DialogDescriptor.OK_OPTION };
         } else {
             options = buttons;
         }
         JButton showProxyOptions = new JButton ();
-        Mnemonics.setLocalizedText (showProxyOptions, getBundle ("CTL_ShowProxyOptions"));
+        Mnemonics.setLocalizedText (showProxyOptions, NbBundle.getMessage(ProblemPanel.class, "CTL_ShowProxyOptions"));
 
         DialogDescriptor descriptor = new DialogDescriptor(
              this,
-             isWarning ? getBundle ("CTL_Warning") : getBundle ("CTL_Error"),
+             isWarning ? NbBundle.getMessage(ProblemPanel.class, "CTL_Warning") : NbBundle.getMessage(ProblemPanel.class, "CTL_Error"),
              true,                                  // Modal
              options, // Option list
              null,                         // Default
@@ -186,8 +195,9 @@ public class NetworkProblemPanel extends javax.swing.JPanel {
              null
         );
 
-        showProxyOptions.getAccessibleContext ().setAccessibleDescription (getBundle ("ACSD_ShowProxyOptions"));
+        showProxyOptions.getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage(ProblemPanel.class, "ACSD_ShowProxyOptions"));
         showProxyOptions.addActionListener (new ActionListener () {
+            @Override
             public void actionPerformed (ActionEvent arg0) {
                 OptionsDisplayer.getDefault ().open ("General"); // NOI18N
             }
@@ -201,7 +211,21 @@ public class NetworkProblemPanel extends javax.swing.JPanel {
         return descriptor;
     }
     
-    private static String getBundle (String key) {
-        return NbBundle.getMessage (NetworkProblemPanel.class, key);
+    private DialogDescriptor getWriteProblemDescriptor () {
+        DialogDescriptor descriptor = new DialogDescriptor(
+             this,
+             NbBundle.getMessage(ProblemPanel.class, "CTL_Warning"),
+             true,                                  // Modal
+             new Object [] { DialogDescriptor.OK_OPTION, DialogDescriptor.CANCEL_OPTION }, // Option list
+             null,                         // Default
+             DialogDescriptor.DEFAULT_ALIGN,        // Align
+             null, // Help
+             null
+        );
+
+        descriptor.setMessageType (NotifyDescriptor.WARNING_MESSAGE);
+        descriptor.setClosingOptions(null);
+        return descriptor;
     }
+    
 }

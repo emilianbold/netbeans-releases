@@ -76,7 +76,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.netbeans.api.autoupdate.OperationException;
 import org.netbeans.api.autoupdate.UpdateElement;
-import org.netbeans.modules.autoupdate.ui.NetworkProblemPanel;
+import org.netbeans.modules.autoupdate.ui.ProblemPanel;
 import org.netbeans.modules.autoupdate.ui.PluginManagerUI;
 import org.netbeans.modules.autoupdate.ui.Utilities;
 import org.netbeans.modules.autoupdate.ui.actions.AutoupdateCheckScheduler;
@@ -346,7 +346,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
                 } else {
                     JButton tryAgain = new JButton ();
                     Mnemonics.setLocalizedText (tryAgain, getBundle ("InstallStep_NetworkProblem_Continue")); // NOI18N
-                    NetworkProblemPanel problem = new NetworkProblemPanel (
+                    ProblemPanel problem = new ProblemPanel (
                             getBundle ("InstallStep_NetworkProblem_Text", ex.getLocalizedMessage ()), // NOI18N
                             new JButton [] { tryAgain, model.getCancelButton (wd) });
                     Object ret = problem.showNetworkProblemDialog ();
@@ -354,6 +354,24 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
                         // try again
                         return false;
                     } else if (DialogDescriptor.CLOSED_OPTION.equals (ret)) {
+                        model.getCancelButton(wd).doClick();
+                    }
+                }
+            } else if (OperationException.ERROR_TYPE.WRITE_PERMISSION == ex.getErrorType()) {
+                if (true || runInBackground()) {
+                    handleCancel();
+                    notifyWritePermissionProblem(ex);
+                } else {
+                    JButton tryAgain = new JButton();
+                    Mnemonics.setLocalizedText(tryAgain, getBundle("InstallStep_NetworkProblem_Continue")); // NOI18N
+                    ProblemPanel problem = new ProblemPanel(
+                            getBundle("InstallStep_NetworkProblem_Text", ex.getLocalizedMessage()), // NOI18N
+                            new JButton[]{tryAgain, model.getCancelButton(wd)});
+                    Object ret = problem.showNetworkProblemDialog();
+                    if (tryAgain.equals(ret)) {
+                        // try again
+                        return false;
+                    } else if (DialogDescriptor.CLOSED_OPTION.equals(ret)) {
                         model.getCancelButton(wd).doClick();
                     }
                 }
@@ -440,7 +458,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
             if (tmpInst == null) return null;
         } catch (OperationException ex) {
             log.log (Level.INFO, ex.getMessage (), ex);
-            NetworkProblemPanel problem = new NetworkProblemPanel (ex.getLocalizedMessage ());
+            ProblemPanel problem = new ProblemPanel(ex, false);
             problem.showNetworkProblemDialog ();
             handleCancel ();
             return null;
@@ -674,12 +692,28 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
         ActionListener onMouseClickAction = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                NetworkProblemPanel problem = new NetworkProblemPanel (ex.getLocalizedMessage ());
+                ProblemPanel problem = new ProblemPanel(ex, false);
                 problem.showNetworkProblemDialog ();
             }
         };
         String title = getBundle ("InstallSupport_InBackground_NetworkError");
         String description = getBundle ("InstallSupport_InBackground_NetworkError_Details");
+        NotificationDisplayer.getDefault().notify(title, 
+                ImageUtilities.loadImageIcon("org/netbeans/modules/autoupdate/ui/resources/error.png", false), 
+                description, onMouseClickAction, NotificationDisplayer.Priority.HIGH);
+    }
+
+    private void notifyWritePermissionProblem (final OperationException ex) {
+        // lack of privileges for writing
+        ActionListener onMouseClickAction = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                ProblemPanel problem = new ProblemPanel(ex, true);
+                problem.showNetworkProblemDialog ();
+            }
+        };
+        String title = NbBundle.getMessage(InstallStep.class, "InstallSupport_InBackground_WritePermission");
+        String description = NbBundle.getMessage(InstallStep.class, "InstallSupport_InBackground_WritePermission_Details");
         NotificationDisplayer.getDefault().notify(title, 
                 ImageUtilities.loadImageIcon("org/netbeans/modules/autoupdate/ui/resources/error.png", false), 
                 description, onMouseClickAction, NotificationDisplayer.Priority.HIGH);
