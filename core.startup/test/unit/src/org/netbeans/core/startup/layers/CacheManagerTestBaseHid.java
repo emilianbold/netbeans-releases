@@ -114,7 +114,7 @@ public abstract class CacheManagerTestBaseHid extends NbTestCase implements Imag
         return new URL(new URL(getDataDir().toURI().toURL(), "layers/"), name);
     }
     
-    public void tdestCacheManager() throws Exception {
+    public void testCacheManager() throws Exception {
         ManagerFactory mf = (ManagerFactory)this;
         
         clearWorkDir();
