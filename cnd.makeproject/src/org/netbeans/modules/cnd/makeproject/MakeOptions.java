@@ -337,18 +337,18 @@ public class MakeOptions extends SharedClassObject implements PropertyChangeList
         }
     }
 
-    // Use smart build analyzer to configure code assistance
-    public boolean isUseBuildTrace() {
-        return getPreferences().getBoolean(USE_BUILD_TRACE, true);
-    }
-
-    public void setUseBuildTrace(boolean value) {
-        boolean oldValue = isUseBuildTrace();
-        getPreferences().putBoolean(USE_BUILD_TRACE, value);
-        if (oldValue != value) {
-            firePropertyChange(USE_BUILD_TRACE, oldValue, value);
-        }
-    }
+//    // Use smart build analyzer to configure code assistance
+//    public boolean isUseBuildTrace() {
+//        return getPreferences().getBoolean(USE_BUILD_TRACE, true);
+//    }
+//
+//    public void setUseBuildTrace(boolean value) {
+//        boolean oldValue = isUseBuildTrace();
+//        getPreferences().putBoolean(USE_BUILD_TRACE, value);
+//        if (oldValue != value) {
+//            firePropertyChange(USE_BUILD_TRACE, oldValue, value);
+//        }
+//    }
 
     @Override
     public void propertyChange(PropertyChangeEvent pce) {
