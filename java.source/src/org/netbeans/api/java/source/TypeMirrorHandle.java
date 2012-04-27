@@ -380,7 +380,7 @@ public final class TypeMirrorHandle<T extends TypeMirror> {
 
                 if (lub.tag != TypeTags.CLASS) return null;
 
-                return (T) new Type.UnionClassType(resolvedAlternatives, t);
+                return (T) new Type.UnionClassType((ClassType) lub, resolvedAlternatives);
             default:
                 throw new IllegalStateException("Internal error: unknown TypeHandle kind: " + kind);
         }

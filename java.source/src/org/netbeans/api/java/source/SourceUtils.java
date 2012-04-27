@@ -193,18 +193,18 @@ public class SourceUtils {
         return Collections.emptySet();
     }    
     
-    @Deprecated
     public static boolean checkTypesAssignable(CompilationInfo info, TypeMirror from, TypeMirror to) {
-        LOG.log(Level.SEVERE, "checkTypesAssignable called", new Exception());
-        return true;
-    }
-    
-    public static boolean checkTypesAssignable(@NonNull CompilationInfo info, @NonNull Scope scope, @NonNull TypeMirror from, @NonNull TypeMirror to) {
         Context c = ((JavacTaskImpl) info.impl.getJavacTask()).getContext();
         if (from.getKind() == TypeKind.WILDCARD) {
             from = Types.instance(c).upperBound((Type)from);
         }
-        return Check.instance(c).checkType(null, ((JavacScope) scope).getEnv(), (Type)from, (Type)to).getKind() != TypeKind.ERROR;
+        return Check.instance(c).checkType(null, (Type)from, (Type)to).getKind() != TypeKind.ERROR;
+    }
+    
+    @Deprecated
+    //XXX: probably not needed anymore, delete
+    public static boolean checkTypesAssignable(@NonNull CompilationInfo info, @NonNull Scope scope, @NonNull TypeMirror from, @NonNull TypeMirror to) {
+        return checkTypesAssignable(info, from, to);
     }
     
     public static TypeMirror getBound(WildcardType wildcardType) {

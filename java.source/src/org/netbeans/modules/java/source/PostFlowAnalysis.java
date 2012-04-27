@@ -187,7 +187,7 @@ public class PostFlowAnalysis extends TreeScanner {
                 Symbol c = meth.owner;
                 if (c.hasOuterInstance()) {
                     checkThis = false;
-                    if (tree.meth.getTag() != JCTree.SELECT && ((c.owner.kind & (Kinds.MTH | Kinds.VAR)) != 0 || methName == names._this)) {
+                    if (tree.meth.getTag() != JCTree.Tag.SELECT && ((c.owner.kind & (Kinds.MTH | Kinds.VAR)) != 0 || methName == names._this)) {
                         checkThis(tree.meth.pos(), c.type.getEnclosingType().tsym);
                     }
                 }

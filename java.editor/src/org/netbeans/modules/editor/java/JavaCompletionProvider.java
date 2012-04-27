@@ -2987,7 +2987,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 switch (e.getKind()) {
                     case METHOD:
                         ExecutableType et = (ExecutableType)(type.getKind() == TypeKind.DECLARED ? types.asMemberOf((DeclaredType)type, e) : e.asType());
-                        results.add(JavaCompletionItem.createExecutableItem(env.getController(), (ExecutableElement)e, et, anchorOffset, typeElem != e.getEnclosingElement(), elements.isDeprecated(e), false, env.addSemicolon(), isOfSmartType(env, et.getReturnType(), smartTypes), false, env.assignToVarPos(), true, env.getWhiteList()));
+                        results.add(JavaCompletionItem.createExecutableItem(env.getController(), (ExecutableElement)e, et, anchorOffset, null, typeElem != e.getEnclosingElement(), elements.isDeprecated(e), false, env.addSemicolon(), isOfSmartType(env, et.getReturnType(), smartTypes), env.assignToVarPos(), true, env.getWhiteList()));
                         break;
                 }
             }
@@ -3123,7 +3123,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                         break;
                     case METHOD:
                         et = (ExecutableType)(type.getKind() == TypeKind.DECLARED ? types.asMemberOf((DeclaredType)type, e) : e.asType());
-                        results.add(JavaCompletionItem.createExecutableItem(env.getController(), (ExecutableElement)e, et, anchorOffset, autoImport ? env.getReferencesCount() : null, typeElem != e.getEnclosingElement(), elements.isDeprecated(e), inImport, env.addSemicolon(), isOfSmartType(env, et.getReturnType(), smartTypes), false, env.assignToVarPos(), env.getWhiteList()));
+                        results.add(JavaCompletionItem.createExecutableItem(env.getController(), (ExecutableElement)e, et, anchorOffset, autoImport ? env.getReferencesCount() : null, typeElem != e.getEnclosingElement(), elements.isDeprecated(e), inImport, env.addSemicolon(), isOfSmartType(env, et.getReturnType(), smartTypes), env.assignToVarPos(), false, env.getWhiteList()));
                         break;
                     case CLASS:
                     case ENUM:

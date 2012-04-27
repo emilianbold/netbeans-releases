@@ -215,7 +215,7 @@ final class SuperOnePassCompileWorker extends CompileWorker {
                 }
                 List<TypeElement> activeTypes = new ArrayList<TypeElement>();
                 for (Tree tree : unit.first.getTypeDecls()) {
-                    if (tree instanceof JCTree && ((JCTree)tree).getTag() == JCTree.CLASSDEF) {
+                    if (tree instanceof JCTree && ((JCTree)tree).getTag() == JCTree.Tag.CLASSDEF) {
                         ClassSymbol sym = ((JCClassDecl)tree).sym;
                         if (sym != null)
                             activeTypes.add(sym);

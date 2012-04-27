@@ -101,7 +101,6 @@ import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Log;
 import com.sun.tools.javac.util.Names;
-import com.sun.tools.javac.util.Position.LineMap;
 import com.sun.tools.javadoc.Messager;
 import java.io.File;
 import java.io.IOException;
@@ -161,7 +160,7 @@ import org.netbeans.modules.java.hints.spiimpl.JackpotTrees.VariableWildcard;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.builder.TreeFactory;
 import org.netbeans.lib.nbjavac.services.CancelService;
-import org.netbeans.lib.nbjavac.services.NBParserFactory.NBEndPosParser;
+import org.netbeans.lib.nbjavac.services.NBParserFactory.NBJavacParser;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.pretty.ImportAnalysis2;
 import org.netbeans.modules.java.source.transform.ImmutableTreeTranslator;
@@ -1219,7 +1218,7 @@ public class Utilities {
         }
     }
 
-    private static class JackpotJavacParser extends NBEndPosParser {
+    private static class JackpotJavacParser extends NBJavacParser {
 
         private final Context ctx;
         private final com.sun.tools.javac.util.Name dollar;
@@ -1229,7 +1228,7 @@ public class Utilities {
                          boolean keepLineMap,
                          CancelService cancelService,
                          Names names) {
-            super(fac, S, keepDocComments, keepLineMap, cancelService);
+            super(fac, S, keepDocComments, keepLineMap, true, cancelService);
             this.ctx = ctx;
             this.dollar = names.fromString("$");
         }
@@ -1308,7 +1307,7 @@ public class Utilities {
         
         @Override
         protected JCExpression checkExprStat(JCExpression t) {
-            if (t.getTag() == JCTree.IDENT) {
+            if (t.getTag() == JCTree.Tag.IDENT) {
                 if (((IdentifierTree) t).getName().toString().startsWith("$")) {
                     return t;
                 }
@@ -1411,7 +1410,7 @@ public class Utilities {
                     IdentifierTree it = (IdentifierTree) mit.getMethodSelect();
 
                     if ("super".equals(it.getName().toString())) {
-                        return ((JCCompilationUnit) cut).endPositions.get(tree) == (-1);
+                        return ((JCCompilationUnit) cut).endPositions.getEndPos(tree) == (-1);
                     }
                 }
             }

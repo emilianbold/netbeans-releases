@@ -55,31 +55,30 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPatterns;
-import org.netbeans.modules.java.hints.jackpot.impl.pm.PatternCompiler;
-import org.netbeans.modules.java.hints.jackpot.impl.tm.Matcher;
-import org.netbeans.modules.java.hints.jackpot.impl.tm.Matcher.OccurrenceDescription;
-import org.netbeans.modules.java.hints.jackpot.impl.tm.Pattern;
-import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
-import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
+import org.netbeans.api.java.source.matching.Matcher;
+import org.netbeans.api.java.source.matching.Occurrence;
+import org.netbeans.api.java.source.matching.Pattern;
+import org.netbeans.modules.java.hints.spiimpl.pm.PatternCompiler;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.JavaFix;
+import org.netbeans.spi.java.hints.TriggerPattern;
+import org.netbeans.spi.java.hints.TriggerPatterns;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author lahvac
  */
-@Hint(id=ConvertToLambda.ID, category="rules15")
+@Hint(displayName="#DN_Javac_canUseLambda", description="#DESC_Javac_canUseLambda", id=ConvertToLambda.ID, category="rules15")
 public class ConvertToLambda {
 
     public static final String ID = "Javac_canUseLambda";
@@ -96,9 +95,9 @@ public class ConvertToLambda {
             if (start != d.getStartPosition()) continue;
             if (!CODES.contains(d.getCode())) continue;
 
-            List<Fix> fixes = Arrays.asList(JavaFix.toEditorFix(new FixImpl(ctx.getInfo(), ctx.getPath())));
+            List<Fix> fixes = Arrays.asList(new FixImpl(ctx.getInfo(), ctx.getPath()).toEditorFix());
 
-            return ErrorDescriptionFactory.createErrorDescription(ctx.getSeverity().toEditorSeverity(), d.getMessage(null), fixes, ctx.getInfo().getFileObject(), (int) d.getStartPosition(), (int) d.getEndPosition());
+            return ErrorDescriptionFactory.createErrorDescription(ctx.getSeverity(), d.getMessage(null), fixes, ctx.getInfo().getFileObject(), (int) d.getStartPosition(), (int) d.getEndPosition());
         }
 
         return null;
@@ -115,7 +114,10 @@ public class ConvertToLambda {
         }
 
         @Override
-        protected void performRewrite(WorkingCopy copy, TreePath tp, boolean canShowUI) {
+        protected void performRewrite(TransformationContext ctx) {
+            WorkingCopy copy = ctx.getWorkingCopy();
+            TreePath tp = ctx.getPath();
+            
             if (tp.getLeaf().getKind() != Kind.NEW_CLASS) {
                 //XXX: warning
                 return ;
@@ -125,7 +127,7 @@ public class ConvertToLambda {
             TreePath clazz = new TreePath(tp, ((NewClassTree) tp.getLeaf()).getClassBody());
             MethodTree method = (MethodTree) ((ClassTree) clazz.getLeaf()).getMembers().get(1);
             Pattern p = PatternCompiler.compile(copy, "{ return $expression; }", Collections.<String, TypeMirror>emptyMap(), Collections.<String>emptyList());
-            Collection<? extends OccurrenceDescription> found = Matcher.create(copy, new AtomicBoolean()).setSearchRoot(new TreePath(new TreePath(clazz, method), method.getBody())).setTreeTopSearch().match(p);
+            Collection<? extends Occurrence> found = Matcher.create(copy).setSearchRoot(new TreePath(new TreePath(clazz, method), method.getBody())).setTreeTopSearch().match(p);
             Tree lambdaBody;
 
             if (found.isEmpty()) {

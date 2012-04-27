@@ -42,39 +42,39 @@
 
 package org.netbeans.modules.java.hints.errors;
 
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
-import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.hints.test.api.HintTest;
 
 /**
  *
  * @author lahvac
  */
-public class ConvertToLambdaTest extends TestBase {
+public class ConvertToLambdaTest extends NbTestCase {
 
     public ConvertToLambdaTest(String name) {
-        super(name, ConvertToLambda.class);
+        super(name);
     }
 
     public void testSimple1() throws Exception {
-        setSourceLevel("1.8");
-        performFixTest("test/Test.java",
-                       "package test;\n" +
+        HintTest.create()
+                .sourceLevel("1.8")
+                .input("package test;\n" +
                        "import javax.swing.SwingUtilities;\n" +
                        "public class Test {\n" +
                        "    {\n" +
                        "        SwingUtilities.invokeLater(new Runnable() { public void run() { System.err.println(1); } } );" +
                        "    }\n" +
-                       "}\n",
-                       "4:50-4:98:verifier:This anonymous inner class creation can be turned into a lambda expression.",
-                       "FIX_ConvertToLambda",
-                       "package test; import javax.swing.SwingUtilities; public class Test { { SwingUtilities.invokeLater(() -> { System.err.println(1); }); } } ");
+                       "}\n")
+                .run(ConvertToLambda.class)
+                .findWarning("4:50-4:98:verifier:This anonymous inner class creation can be turned into a lambda expression.")
+                .applyFix()
+                .assertOutput("package test; import javax.swing.SwingUtilities; public class Test { { SwingUtilities.invokeLater(() -> { System.err.println(1); }); } } ");
     }
 
     public void testExpression() throws Exception {
-        setSourceLevel("1.8");
-        performFixTest("test/Test.java",
-                       "package test;\n" +
+        HintTest.create()
+                .sourceLevel("1.8")
+                .input("package test;\n" +
                        "import java.util.*;\n" +
                        "public class Test {\n" +
                        "    {\n" +
@@ -85,15 +85,11 @@ public class ConvertToLambdaTest extends TestBase {
                        "            }\n" +
                        "        });\n" +
                        "    }\n" +
-                       "}\n",
-                       "5:53-9:9:verifier:This anonymous inner class creation can be turned into a lambda expression.",
-                       "FIX_ConvertToLambda",
-                       "package test; import java.util.*; public class Test { { List<String> l = null; Collections.sort(l, (String o1, String o2) -> o1.compareToIgnoreCase(o2)); } } ");
-    }
-
-    @Override
-    protected String toDebugString(CompilationInfo info, Fix f) {
-        return f.getText();
+                       "}\n")
+                .run(ConvertToLambda.class)
+                .findWarning("5:53-9:9:verifier:This anonymous inner class creation can be turned into a lambda expression.")
+                .applyFix()
+                .assertOutput("package test; import java.util.*; public class Test { { List<String> l = null; Collections.sort(l, (String o1, String o2) -> o1.compareToIgnoreCase(o2)); } } ");
     }
 
 }

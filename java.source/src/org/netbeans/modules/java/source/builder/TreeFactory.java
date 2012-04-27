@@ -140,27 +140,27 @@ public class TreeFactory {
     }
     
     public BinaryTree Binary(Kind operator, ExpressionTree left, ExpressionTree right) {
-        final int op;
+        final Tag op;
         switch (operator) {
-            case MULTIPLY: op = JCTree.MUL; break;
-            case DIVIDE: op = JCTree.DIV; break;
-            case REMAINDER: op = JCTree.MOD; break;
-            case PLUS: op = JCTree.PLUS; break;
-            case MINUS: op = JCTree.MINUS; break;
-            case LEFT_SHIFT: op = JCTree.SL; break;
-            case RIGHT_SHIFT: op = JCTree.SR; break;
-            case UNSIGNED_RIGHT_SHIFT: op = JCTree.USR; break;
-            case LESS_THAN: op = JCTree.LT; break;
-            case GREATER_THAN: op = JCTree.GT; break;
-            case LESS_THAN_EQUAL: op = JCTree.LE; break;
-            case GREATER_THAN_EQUAL: op = JCTree.GE; break;
-            case EQUAL_TO: op = JCTree.EQ; break;
-            case NOT_EQUAL_TO: op = JCTree.NE; break;
-            case AND: op = JCTree.BITAND; break;
-            case XOR: op = JCTree.BITXOR; break;
-            case OR: op = JCTree.BITOR; break;
-            case CONDITIONAL_AND: op = JCTree.AND; break;
-            case CONDITIONAL_OR: op = JCTree.OR; break;
+            case MULTIPLY: op = JCTree.Tag.MUL; break;
+            case DIVIDE: op = JCTree.Tag.DIV; break;
+            case REMAINDER: op = JCTree.Tag.MOD; break;
+            case PLUS: op = JCTree.Tag.PLUS; break;
+            case MINUS: op = JCTree.Tag.MINUS; break;
+            case LEFT_SHIFT: op = JCTree.Tag.SL; break;
+            case RIGHT_SHIFT: op = JCTree.Tag.SR; break;
+            case UNSIGNED_RIGHT_SHIFT: op = JCTree.Tag.USR; break;
+            case LESS_THAN: op = JCTree.Tag.LT; break;
+            case GREATER_THAN: op = JCTree.Tag.GT; break;
+            case LESS_THAN_EQUAL: op = JCTree.Tag.LE; break;
+            case GREATER_THAN_EQUAL: op = JCTree.Tag.GE; break;
+            case EQUAL_TO: op = JCTree.Tag.EQ; break;
+            case NOT_EQUAL_TO: op = JCTree.Tag.NE; break;
+            case AND: op = JCTree.Tag.BITAND; break;
+            case XOR: op = JCTree.Tag.BITXOR; break;
+            case OR: op = JCTree.Tag.BITOR; break;
+            case CONDITIONAL_AND: op = JCTree.Tag.AND; break;
+            case CONDITIONAL_OR: op = JCTree.Tag.OR; break;
             default:
                 throw new IllegalArgumentException("Illegal binary operator: " + operator);
         }
@@ -266,19 +266,19 @@ public class TreeFactory {
     public CompoundAssignmentTree CompoundAssignment(Kind operator, 
                                                      ExpressionTree variable, 
                                                      ExpressionTree expression) {
-        final int op;
+        final Tag op;
         switch (operator) {
-            case MULTIPLY_ASSIGNMENT: op = JCTree.MUL_ASG; break;
-            case DIVIDE_ASSIGNMENT: op = JCTree.DIV_ASG; break;
-            case REMAINDER_ASSIGNMENT: op = JCTree.MOD_ASG; break;
-            case PLUS_ASSIGNMENT: op = JCTree.PLUS_ASG; break;
-            case MINUS_ASSIGNMENT: op = JCTree.MINUS_ASG; break;
-            case LEFT_SHIFT_ASSIGNMENT: op = JCTree.SL_ASG; break;
-            case RIGHT_SHIFT_ASSIGNMENT: op = JCTree.SR_ASG; break;
-            case UNSIGNED_RIGHT_SHIFT_ASSIGNMENT: op = JCTree.USR_ASG; break;
-            case AND_ASSIGNMENT: op = JCTree.BITAND_ASG; break;
-            case XOR_ASSIGNMENT: op = JCTree.BITXOR_ASG; break;
-            case OR_ASSIGNMENT: op = JCTree.BITOR_ASG; break;
+            case MULTIPLY_ASSIGNMENT: op = JCTree.Tag.MUL_ASG; break;
+            case DIVIDE_ASSIGNMENT: op = JCTree.Tag.DIV_ASG; break;
+            case REMAINDER_ASSIGNMENT: op = JCTree.Tag.MOD_ASG; break;
+            case PLUS_ASSIGNMENT: op = JCTree.Tag.PLUS_ASG; break;
+            case MINUS_ASSIGNMENT: op = JCTree.Tag.MINUS_ASG; break;
+            case LEFT_SHIFT_ASSIGNMENT: op = JCTree.Tag.SL_ASG; break;
+            case RIGHT_SHIFT_ASSIGNMENT: op = JCTree.Tag.SR_ASG; break;
+            case UNSIGNED_RIGHT_SHIFT_ASSIGNMENT: op = JCTree.Tag.USR_ASG; break;
+            case AND_ASSIGNMENT: op = JCTree.Tag.BITAND_ASG; break;
+            case XOR_ASSIGNMENT: op = JCTree.Tag.BITXOR_ASG; break;
+            case OR_ASSIGNMENT: op = JCTree.Tag.BITOR_ASG; break;
             default:
                 throw new IllegalArgumentException("Illegal binary operator: " + operator);
         }
@@ -713,16 +713,16 @@ public class TreeFactory {
     }
     
     public UnaryTree Unary(Kind operator, ExpressionTree arg) {
-        final int op;
+        final Tag op;
         switch (operator) {
-            case POSTFIX_INCREMENT: op = JCTree.POSTINC; break;
-            case POSTFIX_DECREMENT: op = JCTree.POSTDEC; break;
-            case PREFIX_INCREMENT: op = JCTree.PREINC; break;
-            case PREFIX_DECREMENT: op = JCTree.PREDEC; break;
-            case UNARY_PLUS: op = JCTree.POS; break;
-            case UNARY_MINUS: op = JCTree.NEG; break;
-            case BITWISE_COMPLEMENT: op = JCTree.COMPL; break;
-            case LOGICAL_COMPLEMENT: op = JCTree.NOT; break;
+            case POSTFIX_INCREMENT: op = JCTree.Tag.POSTINC; break;
+            case POSTFIX_DECREMENT: op = JCTree.Tag.POSTDEC; break;
+            case PREFIX_INCREMENT: op = JCTree.Tag.PREINC; break;
+            case PREFIX_DECREMENT: op = JCTree.Tag.PREDEC; break;
+            case UNARY_PLUS: op = JCTree.Tag.POS; break;
+            case UNARY_MINUS: op = JCTree.Tag.NEG; break;
+            case BITWISE_COMPLEMENT: op = JCTree.Tag.COMPL; break;
+            case LOGICAL_COMPLEMENT: op = JCTree.Tag.NOT; break;
             default:
                 throw new IllegalArgumentException("Illegal unary operator: " + operator);
         }

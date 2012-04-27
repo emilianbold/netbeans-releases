@@ -1612,7 +1612,7 @@ public class CasualDiff {
         return bounds[1];
     }
 
-    private String operatorName(int tag) {
+    private String operatorName(Tag tag) {
         // dummy instance, just to access a public method which should be static
         return new Pretty(null, false).operatorName(tag);
     }
@@ -1988,139 +1988,139 @@ public class CasualDiff {
 
         // don't use visitor, since we want fast-fail behavior
         switch (t1.getTag()) {
-          case JCTree.TOPLEVEL:
+          case TOPLEVEL:
               return ((JCCompilationUnit)t1).sourcefile.equals(((JCCompilationUnit)t2).sourcefile);
-          case JCTree.IMPORT:
+          case IMPORT:
               return matchImport((JCImport)t1, (JCImport)t2);
-          case JCTree.CLASSDEF:
+          case CLASSDEF:
               return ((JCClassDecl)t1).sym == ((JCClassDecl)t2).sym;
-          case JCTree.METHODDEF:
+          case METHODDEF:
               return ((JCMethodDecl)t1).sym == ((JCMethodDecl)t2).sym;
-          case JCTree.VARDEF:
+          case VARDEF:
               return ((JCVariableDecl)t1).sym == ((JCVariableDecl)t2).sym;
-          case JCTree.SKIP:
+          case SKIP:
               return true;
-          case JCTree.BLOCK:
+          case BLOCK:
               return matchBlock((JCBlock)t1, (JCBlock)t2);
-          case JCTree.DOLOOP:
+          case DOLOOP:
               return matchDoLoop((JCDoWhileLoop)t1, (JCDoWhileLoop)t2);
-          case JCTree.WHILELOOP:
+          case WHILELOOP:
               return matchWhileLoop((JCWhileLoop)t1, (JCWhileLoop)t2);
-          case JCTree.FORLOOP:
+          case FORLOOP:
               return matchForLoop((JCForLoop)t1, (JCForLoop)t2);
-          case JCTree.FOREACHLOOP:
+          case FOREACHLOOP:
               return matchForeachLoop((JCEnhancedForLoop)t1, (JCEnhancedForLoop)t2);
-          case JCTree.LABELLED:
+          case LABELLED:
               return matchLabelled((JCLabeledStatement)t1, (JCLabeledStatement)t2);
-          case JCTree.SWITCH:
+          case SWITCH:
               return matchSwitch((JCSwitch)t1, (JCSwitch)t2);
-          case JCTree.CASE:
+          case CASE:
               return matchCase((JCCase)t1, (JCCase)t2);
-          case JCTree.SYNCHRONIZED:
+          case SYNCHRONIZED:
               return matchSynchronized((JCSynchronized)t1, (JCSynchronized)t2);
-          case JCTree.TRY:
+          case TRY:
               return matchTry((JCTry)t1, (JCTry)t2);
-          case JCTree.CATCH:
+          case CATCH:
               return matchCatch((JCCatch)t1, (JCCatch)t2);
-          case JCTree.CONDEXPR:
+          case CONDEXPR:
               return matchConditional((JCConditional)t1, (JCConditional)t2);
-          case JCTree.IF:
+          case IF:
               return matchIf((JCIf)t1, (JCIf)t2);
-          case JCTree.EXEC:
+          case EXEC:
               return treesMatch(((JCExpressionStatement)t1).expr, ((JCExpressionStatement)t2).expr);
-          case JCTree.BREAK:
+          case BREAK:
               return matchBreak((JCBreak)t1, (JCBreak)t2);
-          case JCTree.CONTINUE:
+          case CONTINUE:
               return matchContinue((JCContinue)t1, (JCContinue)t2);
-          case JCTree.RETURN:
+          case RETURN:
               return treesMatch(((JCReturn)t1).expr, ((JCReturn)t2).expr);
-          case JCTree.THROW:
+          case THROW:
               return treesMatch(((JCThrow)t1).expr, ((JCThrow)t2).expr);
-          case JCTree.ASSERT:
+          case ASSERT:
               return matchAssert((JCAssert)t1, (JCAssert)t2);
-          case JCTree.APPLY:
+          case APPLY:
               return matchApply((JCMethodInvocation)t1, (JCMethodInvocation)t2);
-          case JCTree.NEWCLASS:
+          case NEWCLASS:
               // #97501: workaround. Not sure about comparing symbols and their
               // copying in ImmutableTreeTranslator, making workaround with
               // minimal impact - issue has to be fixed correctly in the future.
               if (((JCNewClass)t2).def != null) ((JCNewClass)t2).def.sym = null;
               return matchNewClass((JCNewClass)t1, (JCNewClass)t2);
-          case JCTree.NEWARRAY:
+          case NEWARRAY:
               return matchNewArray((JCNewArray)t1, (JCNewArray)t2);
-          case JCTree.PARENS:
+          case PARENS:
               return treesMatch(((JCParens)t1).expr, ((JCParens)t2).expr);
-          case JCTree.ASSIGN:
+          case ASSIGN:
               return matchAssign((JCAssign)t1, (JCAssign)t2);
-          case JCTree.TYPECAST:
+          case TYPECAST:
               return matchTypeCast((JCTypeCast)t1, (JCTypeCast)t2);
-          case JCTree.TYPETEST:
+          case TYPETEST:
               return matchTypeTest((JCInstanceOf)t1, (JCInstanceOf)t2);
-          case JCTree.INDEXED:
+          case INDEXED:
               return matchIndexed((JCArrayAccess)t1, (JCArrayAccess)t2);
-          case JCTree.SELECT:
+          case SELECT:
               return matchSelect((JCFieldAccess) t1, (JCFieldAccess) t2);
-          case JCTree.IDENT:
+          case IDENT:
               return ((JCIdent)t1).getName().contentEquals(((JCIdent)t2).getName());
-          case JCTree.LITERAL:
+          case LITERAL:
               return matchLiteral((JCLiteral)t1, (JCLiteral)t2);
-          case JCTree.TYPEIDENT:
+          case TYPEIDENT:
               return ((JCPrimitiveTypeTree)t1).typetag == ((JCPrimitiveTypeTree)t2).typetag;
-          case JCTree.TYPEARRAY:
+          case TYPEARRAY:
               return treesMatch(((JCArrayTypeTree)t1).elemtype, ((JCArrayTypeTree)t2).elemtype);
-          case JCTree.TYPEAPPLY:
+          case TYPEAPPLY:
               return matchTypeApply((JCTypeApply)t1, (JCTypeApply)t2);
-          case JCTree.TYPEPARAMETER:
+          case TYPEPARAMETER:
               return matchTypeParameter((JCTypeParameter)t1, (JCTypeParameter)t2);
-          case JCTree.WILDCARD:
+          case WILDCARD:
               return matchWildcard((JCWildcard)t1, (JCWildcard)t2);
-          case JCTree.TYPEBOUNDKIND:
+          case TYPEBOUNDKIND:
               return ((TypeBoundKind)t1).kind == ((TypeBoundKind)t2).kind;
-          case JCTree.ANNOTATION:
+          case ANNOTATION:
               return matchAnnotation((JCAnnotation)t1, (JCAnnotation)t2);
-          case JCTree.LETEXPR:
+          case LETEXPR:
               return matchLetExpr((LetExpr)t1, (LetExpr)t2);
-          case JCTree.POS:
-          case JCTree.NEG:
-          case JCTree.NOT:
-          case JCTree.COMPL:
-          case JCTree.PREINC:
-          case JCTree.PREDEC:
-          case JCTree.POSTINC:
-          case JCTree.POSTDEC:
-          case JCTree.NULLCHK:
+          case POS:
+          case NEG:
+          case NOT:
+          case COMPL:
+          case PREINC:
+          case PREDEC:
+          case POSTINC:
+          case POSTDEC:
+          case NULLCHK:
               return matchUnary((JCUnary)t1, (JCUnary)t2);
-          case JCTree.OR:
-          case JCTree.AND:
-          case JCTree.BITOR:
-          case JCTree.BITXOR:
-          case JCTree.BITAND:
-          case JCTree.EQ:
-          case JCTree.NE:
-          case JCTree.LT:
-          case JCTree.GT:
-          case JCTree.LE:
-          case JCTree.GE:
-          case JCTree.SL:
-          case JCTree.SR:
-          case JCTree.USR:
-          case JCTree.PLUS:
-          case JCTree.MINUS:
-          case JCTree.MUL:
-          case JCTree.DIV:
-          case JCTree.MOD:
+          case OR:
+          case AND:
+          case BITOR:
+          case BITXOR:
+          case BITAND:
+          case EQ:
+          case NE:
+          case LT:
+          case GT:
+          case LE:
+          case GE:
+          case SL:
+          case SR:
+          case USR:
+          case PLUS:
+          case MINUS:
+          case MUL:
+          case DIV:
+          case MOD:
               return matchBinary((JCBinary)t1, (JCBinary)t2);
-          case JCTree.BITOR_ASG:
-          case JCTree.BITXOR_ASG:
-          case JCTree.BITAND_ASG:
-          case JCTree.SL_ASG:
-          case JCTree.SR_ASG:
-          case JCTree.USR_ASG:
-          case JCTree.PLUS_ASG:
-          case JCTree.MINUS_ASG:
-          case JCTree.MUL_ASG:
-          case JCTree.DIV_ASG:
-          case JCTree.MOD_ASG:
+          case BITOR_ASG:
+          case BITXOR_ASG:
+          case BITAND_ASG:
+          case SL_ASG:
+          case SR_ASG:
+          case USR_ASG:
+          case PLUS_ASG:
+          case MINUS_ASG:
+          case MUL_ASG:
+          case DIV_ASG:
+          case MOD_ASG:
               return matchAssignop((JCAssignOp)t1, (JCAssignOp)t2);
           default:
               String msg = ((com.sun.source.tree.Tree)t1).getKind().toString() +
@@ -3109,36 +3109,36 @@ public class CasualDiff {
     // from TreesService
     private static JCTree leftMostTree(JCTree tree) {
         switch (tree.getTag()) {
-            case(JCTree.APPLY):
+            case APPLY:
                 return leftMostTree(((JCMethodInvocation)tree).meth);
-            case(JCTree.ASSIGN):
+            case ASSIGN:
                 return leftMostTree(((JCAssign)tree).lhs);
-            case(JCTree.BITOR_ASG): case(JCTree.BITXOR_ASG): case(JCTree.BITAND_ASG):
-            case(JCTree.SL_ASG): case(JCTree.SR_ASG): case(JCTree.USR_ASG):
-            case(JCTree.PLUS_ASG): case(JCTree.MINUS_ASG): case(JCTree.MUL_ASG):
-            case(JCTree.DIV_ASG): case(JCTree.MOD_ASG):
+            case BITOR_ASG: case BITXOR_ASG: case BITAND_ASG:
+            case SL_ASG: case SR_ASG: case USR_ASG:
+            case PLUS_ASG: case MINUS_ASG: case MUL_ASG:
+            case DIV_ASG: case MOD_ASG:
                 return leftMostTree(((JCAssignOp)tree).lhs);
-            case(JCTree.OR): case(JCTree.AND): case(JCTree.BITOR):
-            case(JCTree.BITXOR): case(JCTree.BITAND): case(JCTree.EQ):
-            case(JCTree.NE): case(JCTree.LT): case(JCTree.GT):
-            case(JCTree.LE): case(JCTree.GE): case(JCTree.SL):
-            case(JCTree.SR): case(JCTree.USR): case(JCTree.PLUS):
-            case(JCTree.MINUS): case(JCTree.MUL): case(JCTree.DIV):
-            case(JCTree.MOD):
+            case OR: case AND: case BITOR:
+            case BITXOR: case BITAND: case EQ:
+            case NE: case LT: case GT:
+            case LE: case GE: case SL:
+            case SR: case USR: case PLUS:
+            case MINUS: case MUL: case DIV:
+            case MOD:
                 return leftMostTree(((JCBinary)tree).lhs);
-            case(JCTree.CLASSDEF): {
+            case CLASSDEF: {
                 JCClassDecl node = (JCClassDecl)tree;
                 if (node.mods.pos != Position.NOPOS)
                     return node.mods;
                 break;
             }
-            case(JCTree.CONDEXPR):
+            case CONDEXPR:
                 return leftMostTree(((JCConditional)tree).cond);
-            case(JCTree.EXEC):
+            case EXEC:
                 return leftMostTree(((JCExpressionStatement)tree).expr);
-            case(JCTree.INDEXED):
+            case INDEXED:
                 return leftMostTree(((JCArrayAccess)tree).indexed);
-            case(JCTree.METHODDEF): {
+            case METHODDEF: {
                 JCMethodDecl node = (JCMethodDecl)tree;
                 if (node.mods.pos != Position.NOPOS)
                     return node.mods;
@@ -3146,24 +3146,24 @@ public class CasualDiff {
                     return leftMostTree(node.restype);
                 return node;
             }
-            case(JCTree.SELECT):
+            case SELECT:
                 return leftMostTree(((JCFieldAccess)tree).selected);
-            case(JCTree.TYPEAPPLY):
+            case TYPEAPPLY:
                 return leftMostTree(((JCTypeApply)tree).clazz);
-            case(JCTree.TYPEARRAY):
+            case TYPEARRAY:
                 return leftMostTree(((JCArrayTypeTree)tree).elemtype);
-            case(JCTree.TYPETEST):
+            case TYPETEST:
                 return leftMostTree(((JCInstanceOf)tree).expr);
-            case(JCTree.POSTINC):
-            case(JCTree.POSTDEC):
+            case POSTINC:
+            case POSTDEC:
                 return leftMostTree(((JCUnary)tree).arg);
-            case(JCTree.VARDEF): {
+            case VARDEF: {
                 JCVariableDecl node = (JCVariableDecl)tree;
                 if (node.mods.pos != Position.NOPOS)
                     return node.mods;
                 return leftMostTree(node.vartype);
             }
-            case(JCTree.TOPLEVEL): {
+            case TOPLEVEL: {
                 JCCompilationUnit node = (JCCompilationUnit)tree;
                 assert node.defs.size() > 0;
                 return node.pid != null ? node.pid : node.defs.head;
@@ -3253,192 +3253,192 @@ public class CasualDiff {
         }
 
         switch (oldT.getTag()) {
-          case JCTree.TOPLEVEL:
+          case TOPLEVEL:
               diffTopLevel((JCCompilationUnit)oldT, (JCCompilationUnit)newT);
               break;
-          case JCTree.IMPORT:
+          case IMPORT:
               retVal = diffImport((JCImport)oldT, (JCImport)newT, elementBounds);
               break;
-          case JCTree.CLASSDEF:
+          case CLASSDEF:
               retVal = diffClassDef((JCClassDecl)oldT, (JCClassDecl)newT, elementBounds);
               break;
-          case JCTree.METHODDEF:
+          case METHODDEF:
               retVal = diffMethodDef((JCMethodDecl)oldT, (JCMethodDecl)newT, elementBounds);
               break;
-          case JCTree.VARDEF:
+          case VARDEF:
               retVal = diffVarDef((JCVariableDecl)oldT, (JCVariableDecl)newT, elementBounds);
               break;
-          case JCTree.SKIP:
+          case SKIP:
               copyTo(elementBounds[0], elementBounds[1]);
               retVal = elementBounds[1];
               break;
-          case JCTree.BLOCK:
+          case BLOCK:
               retVal = diffBlock((JCBlock)oldT, (JCBlock)newT, elementBounds);
               break;
-          case JCTree.DOLOOP:
+          case DOLOOP:
               retVal = diffDoLoop((JCDoWhileLoop)oldT, (JCDoWhileLoop)newT, elementBounds);
               break;
-          case JCTree.WHILELOOP:
+          case WHILELOOP:
               retVal = diffWhileLoop((JCWhileLoop)oldT, (JCWhileLoop)newT, elementBounds);
               break;
-          case JCTree.FORLOOP:
+          case FORLOOP:
               retVal = diffForLoop((JCForLoop)oldT, (JCForLoop)newT, elementBounds);
               break;
-          case JCTree.FOREACHLOOP:
+          case FOREACHLOOP:
               retVal = diffForeachLoop((JCEnhancedForLoop)oldT, (JCEnhancedForLoop)newT, elementBounds);
               break;
-          case JCTree.LABELLED:
+          case LABELLED:
               retVal = diffLabelled((JCLabeledStatement)oldT, (JCLabeledStatement)newT, elementBounds);
               break;
-          case JCTree.SWITCH:
+          case SWITCH:
               retVal = diffSwitch((JCSwitch)oldT, (JCSwitch)newT, elementBounds);
               break;
-          case JCTree.CASE:
+          case CASE:
               retVal = diffCase((JCCase)oldT, (JCCase)newT, elementBounds);
               break;
-          case JCTree.SYNCHRONIZED:
+          case SYNCHRONIZED:
               retVal = diffSynchronized((JCSynchronized)oldT, (JCSynchronized)newT, elementBounds);
               break;
-          case JCTree.TRY:
+          case TRY:
               retVal = diffTry((JCTry)oldT, (JCTry)newT, elementBounds);
               break;
-          case JCTree.CATCH:
+          case CATCH:
               retVal = diffCatch((JCCatch)oldT, (JCCatch)newT, elementBounds);
               break;
-          case JCTree.CONDEXPR:
+          case CONDEXPR:
               retVal = diffConditional((JCConditional)oldT, (JCConditional)newT, elementBounds);
               break;
-          case JCTree.IF:
+          case IF:
               retVal = diffIf((JCIf)oldT, (JCIf)newT, elementBounds);
               break;
-          case JCTree.EXEC:
+          case EXEC:
               retVal = diffExec((JCExpressionStatement)oldT, (JCExpressionStatement)newT, elementBounds);
               break;
-          case JCTree.BREAK:
+          case BREAK:
               retVal = diffBreak((JCBreak)oldT, (JCBreak)newT, elementBounds);
               break;
-          case JCTree.CONTINUE:
+          case CONTINUE:
               retVal = diffContinue((JCContinue)oldT, (JCContinue)newT, elementBounds);
               break;
-          case JCTree.RETURN:
+          case RETURN:
               retVal = diffReturn((JCReturn)oldT, (JCReturn)newT, elementBounds);
               break;
-          case JCTree.THROW:
+          case THROW:
               retVal = diffThrow((JCThrow)oldT, (JCThrow)newT,elementBounds);
               break;
-          case JCTree.ASSERT:
+          case ASSERT:
               retVal = diffAssert((JCAssert)oldT, (JCAssert)newT, elementBounds);
               break;
-          case JCTree.APPLY:
+          case APPLY:
               retVal = diffApply((JCMethodInvocation)oldT, (JCMethodInvocation)newT, elementBounds);
               break;
-          case JCTree.NEWCLASS:
+          case NEWCLASS:
               retVal = diffNewClass((JCNewClass)oldT, (JCNewClass)newT, elementBounds);
               break;
-          case JCTree.NEWARRAY:
+          case NEWARRAY:
               retVal = diffNewArray((JCNewArray)oldT, (JCNewArray)newT, elementBounds);
               break;
-          case JCTree.PARENS:
+          case PARENS:
               retVal = diffParens((JCParens)oldT, (JCParens)newT, elementBounds);
               break;
-          case JCTree.ASSIGN:
+          case ASSIGN:
               retVal = diffAssign((JCAssign)oldT, (JCAssign)newT, parent, elementBounds);
               break;
-          case JCTree.TYPECAST:
+          case TYPECAST:
               retVal = diffTypeCast((JCTypeCast)oldT, (JCTypeCast)newT, elementBounds);
               break;
-          case JCTree.TYPETEST:
+          case TYPETEST:
               retVal = diffTypeTest((JCInstanceOf)oldT, (JCInstanceOf)newT, elementBounds);
               break;
-          case JCTree.INDEXED:
+          case INDEXED:
               retVal = diffIndexed((JCArrayAccess)oldT, (JCArrayAccess)newT, elementBounds);
               break;
-          case JCTree.SELECT:
+          case SELECT:
               retVal = diffSelect((JCFieldAccess)oldT, (JCFieldAccess)newT, elementBounds);
               break;
-          case JCTree.IDENT:
+          case IDENT:
               retVal = diffIdent((JCIdent)oldT, (JCIdent)newT, elementBounds);
               break;
-          case JCTree.LITERAL:
+          case LITERAL:
               retVal = diffLiteral((JCLiteral)oldT, (JCLiteral)newT, elementBounds);
               break;
-          case JCTree.TYPEIDENT:
+          case TYPEIDENT:
               retVal = diffTypeIdent((JCPrimitiveTypeTree)oldT, (JCPrimitiveTypeTree)newT, elementBounds);
               break;
-          case JCTree.TYPEARRAY:
+          case TYPEARRAY:
               retVal = diffTypeArray((JCArrayTypeTree)oldT, (JCArrayTypeTree)newT, elementBounds);
               break;
-          case JCTree.TYPEAPPLY:
+          case TYPEAPPLY:
               retVal = diffTypeApply((JCTypeApply)oldT, (JCTypeApply)newT, elementBounds);
               break;
-          case JCTree.TYPEPARAMETER:
+          case TYPEPARAMETER:
               retVal = diffTypeParameter((JCTypeParameter)oldT, (JCTypeParameter)newT, elementBounds);
               break;
-          case JCTree.WILDCARD:
+          case WILDCARD:
               retVal = diffWildcard((JCWildcard)oldT, (JCWildcard)newT, elementBounds);
               break;
-          case JCTree.TYPEBOUNDKIND:
+          case TYPEBOUNDKIND:
               retVal = diffTypeBoundKind((TypeBoundKind)oldT, (TypeBoundKind)newT, elementBounds);
               break;
-          case JCTree.ANNOTATION:
+          case ANNOTATION:
               retVal = diffAnnotation((JCAnnotation)oldT, (JCAnnotation)newT, elementBounds);
               break;
-          case JCTree.LETEXPR:
+          case LETEXPR:
               diffLetExpr((LetExpr)oldT, (LetExpr)newT);
               break;
-          case JCTree.POS:
-          case JCTree.NEG:
-          case JCTree.NOT:
-          case JCTree.COMPL:
-          case JCTree.PREINC:
-          case JCTree.PREDEC:
-          case JCTree.POSTINC:
-          case JCTree.POSTDEC:
-          case JCTree.NULLCHK:
+          case POS:
+          case NEG:
+          case NOT:
+          case COMPL:
+          case PREINC:
+          case PREDEC:
+          case POSTINC:
+          case POSTDEC:
+          case NULLCHK:
               retVal = diffUnary((JCUnary)oldT, (JCUnary)newT, elementBounds);
               break;
-          case JCTree.OR:
-          case JCTree.AND:
-          case JCTree.BITOR:
-          case JCTree.BITXOR:
-          case JCTree.BITAND:
-          case JCTree.EQ:
-          case JCTree.NE:
-          case JCTree.LT:
-          case JCTree.GT:
-          case JCTree.LE:
-          case JCTree.GE:
-          case JCTree.SL:
-          case JCTree.SR:
-          case JCTree.USR:
-          case JCTree.PLUS:
-          case JCTree.MINUS:
-          case JCTree.MUL:
-          case JCTree.DIV:
-          case JCTree.MOD:
+          case OR:
+          case AND:
+          case BITOR:
+          case BITXOR:
+          case BITAND:
+          case EQ:
+          case NE:
+          case LT:
+          case GT:
+          case LE:
+          case GE:
+          case SL:
+          case SR:
+          case USR:
+          case PLUS:
+          case MINUS:
+          case MUL:
+          case DIV:
+          case MOD:
               retVal = diffBinary((JCBinary)oldT, (JCBinary)newT, elementBounds);
               break;
-          case JCTree.BITOR_ASG:
-          case JCTree.BITXOR_ASG:
-          case JCTree.BITAND_ASG:
-          case JCTree.SL_ASG:
-          case JCTree.SR_ASG:
-          case JCTree.USR_ASG:
-          case JCTree.PLUS_ASG:
-          case JCTree.MINUS_ASG:
-          case JCTree.MUL_ASG:
-          case JCTree.DIV_ASG:
-          case JCTree.MOD_ASG:
+          case BITOR_ASG:
+          case BITXOR_ASG:
+          case BITAND_ASG:
+          case SL_ASG:
+          case SR_ASG:
+          case USR_ASG:
+          case PLUS_ASG:
+          case MINUS_ASG:
+          case MUL_ASG:
+          case DIV_ASG:
+          case MOD_ASG:
               retVal = diffAssignop((JCAssignOp)oldT, (JCAssignOp)newT, elementBounds);
               break;
-          case JCTree.ERRONEOUS:
+          case ERRONEOUS:
               diffErroneous((JCErroneous)oldT, (JCErroneous)newT, elementBounds);
               break;
-          case JCTree.MODIFIERS:
+          case MODIFIERS:
               retVal = diffModifiers((JCModifiers) oldT, (JCModifiers) newT, parent, elementBounds[0]);
               copyTo(retVal, elementBounds[1]);
               break;
-          case JCTree.TYPEUNION:
+          case TYPEUNION:
               retVal = diffUnionType((JCTypeUnion) oldT, (JCTypeUnion) newT, elementBounds);
               break;
           default:

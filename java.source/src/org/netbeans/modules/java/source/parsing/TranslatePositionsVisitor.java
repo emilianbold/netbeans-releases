@@ -46,8 +46,9 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreeScanner;
+import com.sun.tools.javac.parser.EndPosTable;
 import com.sun.tools.javac.tree.JCTree;
-import java.util.Map;
+import org.netbeans.lib.nbjavac.services.NBParserFactory.NBJavacParser.EndPosTableImpl;
 
 /**
  * Helper visitor for partial reparse.
@@ -57,12 +58,12 @@ import java.util.Map;
 class TranslatePositionsVisitor extends TreeScanner<Void,Void> {
 
     private final MethodTree changedMethod;
-    private final Map<JCTree,Integer> endPos;
+    private final EndPosTable endPos;
     private final int delta;
     boolean active;
     boolean inMethod;
 
-    public TranslatePositionsVisitor (final MethodTree changedMethod, final Map<JCTree, Integer> endPos, final int delta) {
+    public TranslatePositionsVisitor (final MethodTree changedMethod, final EndPosTable endPos, final int delta) {
         assert changedMethod != null;
         assert endPos != null;
         this.changedMethod = changedMethod;
@@ -80,10 +81,10 @@ class TranslatePositionsVisitor extends TreeScanner<Void,Void> {
         }
         Void result = super.scan(node, p);            
         if (inMethod && node != null) {
-            endPos.remove(node);
+            endPos.replaceTree((JCTree) node, null);//remove
         }
         if (active && node != null) {
-            Integer pos = endPos.remove(node);
+            Integer pos = endPos.replaceTree((JCTree) node, null);//remove
             if (pos != null) {
                 int newPos;
                 if (pos < 0) {
@@ -92,7 +93,7 @@ class TranslatePositionsVisitor extends TreeScanner<Void,Void> {
                 else {
                     newPos = pos+delta;
                 }
-                endPos.put ((JCTree)node,newPos);
+                ((EndPosTableImpl) endPos).storeEnd((JCTree)node,newPos);
             }                
         }
         return result;
@@ -128,4 +129,6 @@ class TranslatePositionsVisitor extends TreeScanner<Void,Void> {
         }
         return null;
     }
+    
+    
 }

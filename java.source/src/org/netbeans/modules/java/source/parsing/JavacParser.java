@@ -53,6 +53,7 @@ import com.sun.tools.javac.api.DuplicateClassChecker;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.api.JavacTool;
 import com.sun.tools.javac.api.JavacTrees;
+import com.sun.tools.javac.parser.EndPosTable;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
@@ -759,14 +760,16 @@ public class JavacParser extends Parser {
             options.add("-proc:none"); // NOI18N, Disable annotation processors
         }
 
-        JavaCompiler tool = JavacTool.create();
-        JavacTaskImpl task = (JavacTaskImpl)tool.getTask(null, 
+        Context context = new Context();
+        //need to preregister the Messages here, because the getTask below requires Log instance:
+        Messager.preRegister(context, null, DEV_NULL, DEV_NULL, DEV_NULL);
+        JavacTaskImpl task = (JavacTaskImpl)JavacTool.create().getTask(null, 
                 ClasspathInfoAccessor.getINSTANCE().getFileManager(cpInfo),
-                diagnosticListener, options, null, Collections.<JavaFileObject>emptySet());
+                diagnosticListener, options, null, Collections.<JavaFileObject>emptySet(),
+                context);
         if (aptEnabled) {
             task.setProcessors(processors);
         }
-        Context context = task.getContext();
         NBClassReader.preRegister(context, !backgroundCompilation);
         if (cnih != null) {
             context.put(ClassNamesForFileOraculum.class, cnih);
@@ -777,7 +780,6 @@ public class JavacParser extends Parser {
         if (cancelService != null) {
             DefaultCancelService.preRegister(context, cancelService);
         }
-        Messager.preRegister(context, null, DEV_NULL, DEV_NULL, DEV_NULL);
         NBAttr.preRegister(context);
         NBClassWriter.preRegister(context);
         NBParserFactory.preRegister(context);
@@ -995,7 +997,7 @@ public class JavacParser extends Parser {
                     }
                     final int newEndPos = (int) jt.getSourcePositions().getEndPosition(cu, block);
                     final int delta = newEndPos - origEndPos;
-                    final Map<JCTree,Integer> endPos = ((JCCompilationUnit)cu).endPositions;
+                    final EndPosTable endPos = ((JCCompilationUnit)cu).endPositions;
                     final TranslatePositionsVisitor tpv = new TranslatePositionsVisitor(orig, endPos, delta);
                     tpv.scan(cu, null);
                     ((JCMethodDecl)orig).body = block;

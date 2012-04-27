@@ -175,7 +175,7 @@ System.err.println("Need width calc for "+tree);
 	if (tree.elemtype != null) {
 	    width+=4;
 	    JCTree elemtype = tree.elemtype;
-	    while (elemtype.getTag() == JCTree.TYPEARRAY) {
+	    while (elemtype.getTag() == JCTree.Tag.TYPEARRAY) {
 		width+=2;
 		elemtype = ((JCArrayTypeTree) elemtype).elemtype;
 	    }
@@ -232,7 +232,7 @@ System.err.println("Need width calc for "+tree);
     public void visitAssignop(JCAssignOp tree) {
 	open(prec, TreeInfo.assignopPrec);
 	width+=3;
-	width(treeinfo.operatorName(tree.getTag() - JCTree.ASGOffset));
+	width(treeinfo.operatorName(tree.getTag()));
 	width(tree.lhs, TreeInfo.assignopPrec + 1);
 	width(tree.rhs, TreeInfo.assignopPrec);
     }

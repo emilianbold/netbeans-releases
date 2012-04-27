@@ -37,7 +37,7 @@
  */
 package org.netbeans.lib.nbjavac.services;
 
-import com.sun.tools.javac.parser.EndPosParser;
+import com.sun.tools.javac.parser.EndPosTable;
 import com.sun.tools.javac.parser.JavacParser;
 import com.sun.tools.javac.parser.Lexer;
 import com.sun.tools.javac.parser.Parser;
@@ -52,7 +52,6 @@ import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Name;
-import java.util.Map;
 
 /**
  *
@@ -83,32 +82,35 @@ public class NBParserFactory extends ParserFactory {
     }
 
     @Override
-    public Parser newParser(CharSequence input, int startPos, Map<JCTree,Integer> endPos) {
+    public Parser newParser(CharSequence input, int startPos, final EndPosTable endPos) {
         Lexer lexer = scannerFactory.newScanner(input, true);
         ((Scanner)lexer).seek(startPos);
-        JavacParser p = new NBEndPosParser(this, lexer, true, false, endPos, cancelService);
+        JavacParser p = new NBJavacParser(this, lexer, true, false, true, cancelService) {
+            @Override protected AbstractEndPosTable newEndPosTable(boolean keepEndPositions) {
+                return (AbstractEndPosTable) endPos;
+            }
+        };
         return p;
     }
 
     @Override
     public Parser newParser(CharSequence input, boolean keepDocComments, boolean keepEndPos, boolean keepLineMap, boolean partial) {
         Lexer lexer = scannerFactory.newScanner(input, keepDocComments);
-        JavacParser p;
-        if (keepEndPos) {
-            p = new NBEndPosParser(this, lexer, keepDocComments, keepLineMap, cancelService);
-        } else {
-            p = new NBJavacParser(this, lexer, keepDocComments, keepLineMap, cancelService);
-        }
-        return p;
+        return new NBJavacParser(this, lexer, keepDocComments, keepLineMap, keepEndPos, cancelService);
     }
 
-    protected static class NBJavacParser extends JavacParser {
+    public static class NBJavacParser extends JavacParser {
 
         private final CancelService cancelService;
 
-        public NBJavacParser(ParserFactory fac, Lexer S, boolean keepDocComments, boolean keepLineMap, CancelService cancelService) {
-            super(fac, S, keepDocComments, keepLineMap);
+        protected NBJavacParser(ParserFactory fac, Lexer S, boolean keepDocComments, boolean keepLineMap, boolean keepEndPos, CancelService cancelService) {
+            super(fac, S, keepDocComments, keepLineMap, keepEndPos);
             this.cancelService = cancelService;
+        }
+
+        @Override
+        protected AbstractEndPosTable newEndPosTable(boolean keepEndPositions) {
+            return new EndPosTableImpl();
         }
 
         @Override
@@ -143,55 +145,11 @@ public class NBParserFactory extends ParserFactory {
             return super.methodDeclaratorRest(pos, mods, type, name, typarams, isInterface, isAnno, isVoid, dc);
         }
 
+        public final class EndPosTableImpl extends SimpleEndPosTable {
+            @Override public void storeEnd(JCTree tree, int endpos) {
+                super.storeEnd(tree, endpos);
+            }
+        }
     }
-
-    public static class NBEndPosParser extends EndPosParser {
-
-        private final CancelService cancelService;
-
-        public NBEndPosParser(ParserFactory fac, Lexer S, boolean keepDocComments, boolean keepLineMap, CancelService cancelService) {
-            super(fac, S, keepDocComments, keepLineMap);
-            this.cancelService = cancelService;
-        }
-
-        public NBEndPosParser(ParserFactory fac, Lexer S, boolean keepDocComments, boolean keepLineMap, Map<JCTree, Integer> endPositions, CancelService cancelService) {
-            super(fac, S, keepDocComments, keepLineMap, endPositions);
-            this.cancelService = cancelService;
-        }
-
-        @Override
-        protected JCClassDecl classDeclaration(JCModifiers mods, String dc) {
-            if (cancelService != null) {
-                cancelService.abortIfCanceled();
-            }
-            return super.classDeclaration(mods, dc);
-        }
-
-        @Override
-        protected JCClassDecl interfaceDeclaration(JCModifiers mods, String dc) {
-            if (cancelService != null) {
-                cancelService.abortIfCanceled();
-            }
-            return super.interfaceDeclaration(mods, dc);
-        }
-
-        @Override
-        protected JCClassDecl enumDeclaration(JCModifiers mods, String dc) {
-            if (cancelService != null) {
-                cancelService.abortIfCanceled();
-            }
-            return super.enumDeclaration(mods, dc);
-        }
-
-        @Override
-        protected JCTree methodDeclaratorRest(int pos, JCModifiers mods, JCExpression type, Name name, List<JCTypeParameter> typarams, boolean isInterface, boolean isAnno, boolean isVoid, String dc) {
-            if (cancelService != null) {
-                cancelService.abortIfCanceled();
-            }
-            return super.methodDeclaratorRest(pos, mods, type, name, typarams, isInterface, isAnno, isVoid, dc);
-        }
-
-    }
-
 
 }
