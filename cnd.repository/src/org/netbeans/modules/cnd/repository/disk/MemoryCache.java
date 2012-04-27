@@ -66,11 +66,7 @@ import org.netbeans.modules.cnd.utils.CndUtils;
  * @author Nickolay Dalmatov
  * @author Vladimir Kvashin
  */
-public final class MemoryCache {
-    // marker to sign removed keys which can be in queue waiting for physical removal
-    // if we don't have such marker then previous object is read from storage
-    static final Persistent REMOVED = new Persistent() {};
-    
+public final class MemoryCache {    
     private static final boolean STATISTIC = false;
     private static final int DEFAULT_SLICE_CAPACITY;
     private static final int SLICE_SIZE;
@@ -167,7 +163,9 @@ public final class MemoryCache {
         try {
             // do not override existed value if any
             Object old = s.storage.get(key);
-            if (old instanceof Reference) {
+            if (old instanceof RemovedValue) {
+                prevPersistent = null;
+            } else if (old instanceof Reference) {
                 prevPersistent = (Persistent) ((Reference) old).get();
             } else if (old instanceof Persistent) {
                 prevPersistent = (Persistent) old;
@@ -197,7 +195,9 @@ public final class MemoryCache {
         } finally {
             s.r.unlock();
         }
-        if (value instanceof Persistent) {
+        if (value instanceof RemovedValue) {
+            return ((RemovedValue) value).value;
+        } else if (value instanceof Persistent) {
             if (STATISTIC) {readHitCnt++;}
             return (Persistent) value;
         } else if (value instanceof Reference) {
@@ -215,7 +215,7 @@ public final class MemoryCache {
         s.w.lock();
         try {
             Object prev = s.storage.get(key);
-            if (prev == REMOVED) {
+            if (prev instanceof RemovedValue) {
                 s.storage.remove(key);
             }
         } finally {
@@ -227,10 +227,11 @@ public final class MemoryCache {
         Slice s = cache.getSilce(key);
         s.w.lock();
         try {
-            s.storage.put(key, REMOVED);
+            Persistent old = get(key);
+            s.storage.put(key, new RemovedValue(old));
             // do not assert for now
-//            Object old = s.storage.put(key, REMOVED);
-//            assert old != null : " no value for removed key " + key;
+            //            Object old = s.storage.put(key, REMOVED);
+            //            assert old != null : " no value for removed key " + key;
         } finally {
             s.w.unlock();
         }
@@ -390,4 +391,28 @@ public final class MemoryCache {
             System.err.println("\t"+entry.getKey()+"="+entry.getValue());
         }
     }
+    
+    // removed values which can be in queue waiting for physical removal
+    // if we don't have such marker then previous object is read from storage
+    static final Persistent REMOVED = new Persistent() {
+
+        @Override
+        public String toString() {
+            return "MemoryCache.REMOVED"; // NOI18N
+        }
+    };
+    private static final class RemovedValue {
+
+        private final Persistent value;
+
+        public RemovedValue(Persistent value) {
+            this.value = value == null ? REMOVED : value;
+        }
+
+        @Override
+        public String toString() {
+            return "RemovedValue{" + "value=" + value + '}'; // NOI18N
+        }
+    };
+
 }
