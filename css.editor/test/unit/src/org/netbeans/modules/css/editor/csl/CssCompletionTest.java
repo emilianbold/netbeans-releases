@@ -252,4 +252,13 @@ public class CssCompletionTest extends CssModuleTestBase {
         checkCC("div { animation: cubic-bezier(20| }", arr(","), Match.EXACT);
     }
     
+    //Bug 204821 - Incorrect completion for vendor specific properties
+    public void testVendorSpecificProperties() throws ParseException, BadLocationException {
+        checkCC("div { -| }", arr("-moz-animation"), Match.CONTAINS);
+        
+        assertComplete("div { -| }", "div { -moz-animation: | }", "-moz-animation");
+        
+        
+    }
+    
 }
