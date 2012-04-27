@@ -388,7 +388,7 @@ public class MethodChooser {
         if (dobj == null) {
             return;
         }
-        final EditorCookie ec = (EditorCookie) dobj.getCookie(EditorCookie.class);
+        final EditorCookie ec = dobj.getLookup().lookup(EditorCookie.class);
         if (SwingUtilities.isEventDispatchThread()) {
             JEditorPane[] openedPanes = ec.getOpenedPanes();
             if (openedPanes != null) {
@@ -397,6 +397,7 @@ public class MethodChooser {
         } else {
             try {
                 SwingUtilities.invokeAndWait(new Runnable() {
+                    @Override
                     public void run() {
                         JEditorPane[] openedPanes = ec.getOpenedPanes();
                         if (openedPanes != null) {
