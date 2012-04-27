@@ -272,7 +272,7 @@ final class SuperOnePassCompileWorker extends CompileWorker {
                 JavaIndex.LOG.log(Level.FINEST, message, isp);
             }
         } catch (MissingPlatformError mpe) {
-            //No platform - log & ignore
+            //No platform - log & mark files as errornous
             if (JavaIndex.LOG.isLoggable(Level.FINEST)) {
                 final ClassPath bootPath   = javaContext.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.BOOT);
                 final ClassPath classPath  = javaContext.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.COMPILE);
@@ -285,6 +285,7 @@ final class SuperOnePassCompileWorker extends CompileWorker {
                             );
                 JavaIndex.LOG.log(Level.FINEST, message, mpe);
             }
+            JavaCustomIndexer.brokenPlatform(context, files, mpe.getDiagnostic());
         } catch (CancelAbort ca) {
             if (JavaIndex.LOG.isLoggable(Level.FINEST)) {
                 JavaIndex.LOG.log(Level.FINEST, "SuperOnePassCompileWorker was canceled in root: " + FileUtil.getFileDisplayName(context.getRoot()), ca);  //NOI18N

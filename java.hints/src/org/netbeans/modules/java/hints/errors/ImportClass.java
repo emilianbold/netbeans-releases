@@ -64,6 +64,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -71,11 +72,13 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.java.source.support.ReferencesCount;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.editor.java.Utilities;
@@ -190,6 +193,8 @@ public final class ImportClass implements ErrorRule<ImportCandidatesHolder> {
         List<Fix> fixes = new ArrayList<Fix>();
         
         if (unfiltered != null && filtered != null) {
+            ReferencesCount referencesCount = ReferencesCount.get(info.getClasspathInfo());
+        
             for (String fqn : unfiltered) {
                 StringBuilder sort = new StringBuilder();
                 
@@ -202,7 +207,7 @@ public final class ImportClass implements ErrorRule<ImportCandidatesHolder> {
                 else
                     sort.append("Z#");
                 
-                int order = Utilities.getImportanceLevel(fqn);
+                int order = Utilities.getImportanceLevel(referencesCount, ElementHandle.createTypeElementHandle(ElementKind.CLASS, fqn));
                 String orderString = Integer.toHexString(order);
                 
                 sort.append("00000000".substring(0, 8 - orderString.length()));

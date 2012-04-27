@@ -145,6 +145,8 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
     
     protected List<Mark> visibleMarks = new ArrayList<Mark>();
     
+    /** Paint operations */
+    public static final int PAINT_NOOP             = 0;
     /**
      * Normal opening +- marker
      */
@@ -531,7 +533,11 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
         return prevFold;
     }
     
-    protected void performAction(Mark mark, boolean shiftFold){
+    protected void performAction(Mark mark) {
+        performAction(mark, false);
+    }
+    
+    private void performAction(Mark mark, boolean shiftFold) {
         BaseTextUI textUI = (BaseTextUI)component.getUI();
         javax.swing.text.Element rootElem = textUI.getRootView(component).getElement();
 
@@ -719,7 +725,10 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
         return new Object [] { ret, idxOfFirstFoldStartingInside != -1 ? idxOfFirstFoldStartingInside : ret.size() };
     }
 
-    private static class PaintInfo {
+    /**
+     * This class should be never used by other code; will be made private
+     */
+    public class PaintInfo {
         
         int paintOperation;
         /**
@@ -795,11 +804,11 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
             }
         }
         
-        public boolean hasLineIn() {
+        boolean hasLineIn() {
             return lineIn || innerLevel > 0;
         }
         
-        public boolean hasLineOut() {
+        boolean hasLineOut() {
             return lineOut || outgoingLevel > 0 || (paintOperation != SINGLE_PAINT_MARK && !isAllCollapsed());
         }
 
@@ -827,7 +836,7 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
             return isCollapsed;
         }
         
-        public boolean isAllCollapsed() {
+         boolean isAllCollapsed() {
             return allCollapsed;
         }
         
@@ -857,12 +866,12 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
             return sb.toString();
         }
         
-        public boolean hasSign() {
+        boolean hasSign() {
             return paintOperation == PAINT_MARK || paintOperation == SINGLE_PAINT_MARK;
         }
         
         
-        public void mergeWith(PaintInfo prevInfo) {
+        void mergeWith(PaintInfo prevInfo) {
             if (prevInfo == null) {
                 return;
             }
