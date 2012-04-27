@@ -426,7 +426,11 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
             try {
                 dataObject = DataObject.find(fo);
             } catch (DataObjectNotFoundException ex) {
-                History.LOG.log(Level.WARNING, null, ex);
+                if(fo.isValid()) {
+                    History.LOG.log(Level.WARNING, fo.getPath(), ex);
+                } else {
+                    History.LOG.log(Level.INFO, "could''t find dataobject for file " + fo.getPath(), ex);
+                }
                 return CloseOperationState.STATE_OK;
             }
             if(dataObject != null && dataObject.isModified()) {
