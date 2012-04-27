@@ -394,7 +394,13 @@ public final class MemoryCache {
     
     // removed values which can be in queue waiting for physical removal
     // if we don't have such marker then previous object is read from storage
-    static final Persistent REMOVED = new Persistent() {};
+    static final Persistent REMOVED = new Persistent() {
+
+        @Override
+        public String toString() {
+            return "MemoryCache.REMOVED"; // NOI18N
+        }
+    };
     private static final class RemovedValue {
 
         private final Persistent value;
