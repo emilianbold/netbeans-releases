@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,45 +37,37 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.discovery.buildsupport;
+package org.netbeans.modules.cnd.makeproject.ui.customizer;
 
-import java.io.IOException;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.HostInfo;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
-import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
+import org.openide.nodes.Sheet;
+import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author Alexander Simon
  */
-public class BuildTraceSupport {
-    public static final String CND_TOOLS = "__CND_TOOLS__"; //NOI18N
-    public static final String CND_BUILD_LOG = "__CND_BUILD_LOG__"; //NOI18N
-    
-    public static boolean useBuildTrace(MakeConfiguration conf) {
-        return conf.getCodeAssistanceConfiguration().getBuildAnalyzer().getValue();
+public class CodeAssistanceCustomizerNode extends CustomizerNode {
+     public CodeAssistanceCustomizerNode(String name, String displayName, CustomizerNode[] children, Lookup lookup) {
+        super(name, displayName, children, lookup);
     }
-    
-    public static String getTools(MakeConfiguration conf) {
-        return conf.getCodeAssistanceConfiguration().getTools().getValue();
-    }
-    
-    public static boolean supportedPlatforms(ExecutionEnvironment execEnv) {
-        try {
-            HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
-            switch(hostInfo.getOSFamily()) {
-                case MACOSX:
-                case LINUX:
-                case SUNOS:
-                    return true;
-            }
-        } catch (IOException ex) {
-        } catch (CancellationException ex) {
+    @Override
+    public Sheet getSheet(Configuration configuration) {
+        switch (getContext().getKind()){
+            case Project:
+                return ((MakeConfiguration) configuration).getCodeAssistanceConfiguration().getGeneralSheet((MakeConfiguration) configuration);
         }
-        return false;
+        return null;
     }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("ProjectPropsParser"); // NOI18N
+    }
+
 }
