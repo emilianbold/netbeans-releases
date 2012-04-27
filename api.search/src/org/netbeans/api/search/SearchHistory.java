@@ -210,6 +210,8 @@ public final class SearchHistory {
     
     /**
      * Store last used file name pattern.
+     *
+     * @since api.search/1.1
      */
     public void storeFileNamePattern(String pattern) {
         FindDialogMemory mem = FindDialogMemory.getDefault();
