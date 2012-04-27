@@ -44,6 +44,7 @@
 package org.netbeans.spi.debugger.ui;
 
 import java.awt.Color;
+import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -85,6 +86,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.windows.TopComponent;
 
 /**
  * Support for Step Into action implementations. It allows the user to select
@@ -228,6 +230,7 @@ public class MethodChooser {
         if (editorPane == null) {
             return false; // cannot do anything without editor
         }
+        requestFocus(editorPane);
         doc = editorPane.getDocument();
         // compute start line and end line
         int minOffs = Integer.MAX_VALUE;
@@ -494,6 +497,26 @@ public class MethodChooser {
             }
         }
         return defaultHyperlinkHighlight;
+    }
+
+    private static void requestFocus(final JEditorPane editorPane) {
+        if (!SwingUtilities.isEventDispatchThread()) {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    requestFocus(editorPane);
+                }
+            });
+            return ;
+        }
+        Container p = editorPane;
+        while ((p = p.getParent()) != null) {
+            if (p instanceof TopComponent) {
+                ((TopComponent) p).requestActive();
+                break;
+            }
+        }
+        editorPane.requestFocusInWindow();
     }
     
     // **************************************************************************
