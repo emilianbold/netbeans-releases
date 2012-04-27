@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,32 +37,26 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.test.CndBaseTestSuite;
+import java.io.File;
 
 /**
  *
- * @author Vladimir Voskresensky
+ * @author Egor Ushakov
  */
-public class DocumentModificationTest extends CndBaseTestSuite {
-    public DocumentModificationTest() {
-        super("C/C++ Document modifications test");
-        this.addTest(ModifyUndoTestCase.class);
-        this.addTestSuite(InsertDeadBlockTestCase.class);
-        this.addTestSuite(RemoveDeadBlockTestCase.class);
-        this.addTestSuite(RemoveAndInsertDeadBlockTestCase.class);
-        this.addTestSuite(ModifyMultiIncludedHeaderTestCase.class);
-        this.addTestSuite(ModifyIncludedHeaderTestCase.class);
+public class ModifyIncludedHeaderTestCase extends ModifyDocumentTestCaseBase {
+    public ModifyIncludedHeaderTestCase(String testName) {
+        super(testName);
     }
 
-    public static Test suite() {
-        TestSuite suite = new DocumentModificationTest();
-        return suite;
+    public void test207091() throws Exception {
+        // #207091: Definitions in include file not reflected in .c file
+        final File sourceFile = getDataFile("headerForModification.h");
+        final File checkedFile = getDataFile("fileToBeChecked.cc");
+        super.insertTextThenSaveAndCheck(sourceFile, 1, "#define ABC\n", 
+                checkedFile, new DeadBlocksNumberChecker(1, 0), false);
     }
 }
