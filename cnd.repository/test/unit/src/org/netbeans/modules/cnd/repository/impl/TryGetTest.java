@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.cnd.repository.impl;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import junit.framework.*;
 import org.netbeans.junit.*;
 import org.netbeans.modules.cnd.repository.spi.Key;
@@ -76,6 +77,13 @@ public class TryGetTest extends GetPutTestBase {
         _test(new SmallKey("small_1"), new Value("small_obj_1"));
         _test(new LargeKey("large_1"), new Value("large_obj_1"));
 
+    }
+    
+    private final AtomicBoolean readFlag = new AtomicBoolean(false);
+
+    @Override
+    protected void onReadHook(Factory factory, Persistent obj) {
+        readFlag.set(true);
     }
 
     private void _test(Key key, Value value) {
