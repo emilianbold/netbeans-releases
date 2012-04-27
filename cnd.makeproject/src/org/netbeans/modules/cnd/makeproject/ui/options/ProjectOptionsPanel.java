@@ -129,7 +129,6 @@ public class ProjectOptionsPanel extends JPanel {
         showConfigurationWarningCheckBox.setSelected(makeOptions.getShowConfigurationWarning());
         fullFileIndexer.setSelected(makeOptions.isFullFileIndexer());
         fixUnresolvedInclude.setSelected(makeOptions.isFixUnresolvedInclude());
-        useBuildTrace.setSelected(makeOptions.isUseBuildTrace());
 
         listen = true;
         changed = false;
@@ -150,7 +149,6 @@ public class ProjectOptionsPanel extends JPanel {
         makeOptions.setShowConfigurationWarning(showConfigurationWarningCheckBox.isSelected());
         makeOptions.setFullFileIndexer(fullFileIndexer.isSelected());
         makeOptions.setFixUnresolvedInclude(fixUnresolvedInclude.isSelected());
-        makeOptions.setUseBuildTrace(useBuildTrace.isSelected());
 
         changed = false;
     }
@@ -220,7 +218,6 @@ public class ProjectOptionsPanel extends JPanel {
         fixUnresolvedInclude = new javax.swing.JCheckBox();
         rebuildPropsChangedCheckBox = new javax.swing.JCheckBox();
         jSeparator1 = new javax.swing.JSeparator();
-        useBuildTrace = new javax.swing.JCheckBox();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -393,16 +390,6 @@ public class ProjectOptionsPanel extends JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         add(jSeparator1, gridBagConstraints);
-
-        org.openide.awt.Mnemonics.setLocalizedText(useBuildTrace, org.openide.util.NbBundle.getMessage(ProjectOptionsPanel.class, "BuildTraceAvaliable")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 15;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 6);
-        add(useBuildTrace, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void dependencyCheckingCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dependencyCheckingCheckBoxActionPerformed
@@ -434,7 +421,6 @@ public class ProjectOptionsPanel extends JPanel {
     private javax.swing.JCheckBox saveCheckBox;
     private javax.swing.JCheckBox showConfigurationWarningCheckBox;
     private javax.swing.JCheckBox showProfilerCheckBox;
-    private javax.swing.JCheckBox useBuildTrace;
     private javax.swing.JCheckBox viewBinaryFilesCheckBox;
     // End of variables declaration//GEN-END:variables
 }

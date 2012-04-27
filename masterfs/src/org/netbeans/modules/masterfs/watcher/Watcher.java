@@ -417,8 +417,8 @@ public final class Watcher extends AnnotationProvider {
                 final Notifier notifier = item.getInstance();
                 if (notifier != null) {
                     NotifierAccessor.getDefault().start(notifier);
+                    return notifier;
                 }
-                return notifier;
             } catch (IOException ex) {
                 LOG.log(Level.INFO, "Notifier {0} refused to be initialized", item.getType()); // NOI18N
                 LOG.log(Level.FINE, null, ex);
