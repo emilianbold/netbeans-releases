@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,22 +34,28 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.cnd.repository.impl;
 
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
-import junit.framework.*;
-import org.netbeans.junit.*;
+import junit.framework.Test;
+import junit.framework.TestSuite;
+import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 
 /**
- * Tests Repository.tryGet()
- * @author Vladimir Kvashin
+ *
+ * @author Vladimir Voskresensky
  */
-public class TryGetTest extends GetPutTestBase {
+public class CheckGetAfterRemoveTest extends GetPutTestBase {
 
-    public TryGetTest(java.lang.String testName) {
+    public CheckGetAfterRemoveTest(java.lang.String testName) {
         super(testName);
     }
 
@@ -64,7 +64,7 @@ public class TryGetTest extends GetPutTestBase {
     }
 
     public static Test suite() {
-        TestSuite suite = new NbTestSuite(TryGetTest.class);
+        TestSuite suite = new NbTestSuite(CheckGetAfterRemoveTest.class);
         return suite;
     }
 
@@ -73,44 +73,48 @@ public class TryGetTest extends GetPutTestBase {
         super.tearDown();
     }
 
-    public void testTryGet() {
+    public void testGetAfterRemove() throws InterruptedException {
         _test(new SmallKey("small_1"), new Value("small_obj_1"));
         _test(new LargeKey("large_1"), new Value("large_obj_1"));
 
     }
-    
     private final AtomicBoolean readFlag = new AtomicBoolean(false);
+    private volatile CountDownLatch writeLatch;
 
     @Override
     protected void onReadHook(Factory factory, Persistent obj) {
         readFlag.set(true);
     }
 
-    private void _test(Key key, Value value) {
+    @Override
+    protected void onWriteHook(Factory factory, Persistent obj) {
+        sleep(1000);
+        writeLatch.countDown();
+    }
 
+    private void _test(Key key, Value value) throws InterruptedException {
+        writeLatch = new CountDownLatch(1);
         repository.startup(0);
         repository.put(key, value);
 
         Persistent v2 = repository.get(key);
+
         assertNotNull(v2);
         assertEquals(value, v2);
 
+        writeLatch.await();
+        long time = System.currentTimeMillis();
         readFlag.set(false);
-
-        v2 = _tryGet(key);
-        assertNotNull(v2);
-        assertEquals(value, v2);
-
+        repository.remove(key);
+        while ((v2 = repository.get(key)) != null) {
+            assertFalse("get shouldn't cause reading object from disk after remove", readFlag.get());
+            assertNotNull(v2);
+            assertEquals(value, v2);
+            if (System.currentTimeMillis() - time > 30000) {
+                break;
+            }
+        }
+        assertFalse("get shouldn't cause reading object from disk after remove", readFlag.get());
         repository.debugClear();
-
-    //v2 = _tryGet(key);
-    //assertNull(v2);
-    }
-    
-    private Persistent _tryGet(Key key) {
-        readFlag.set(false);
-        Persistent p = repository.tryGet(key);
-        assertFalse("tryGet shouldn't cause reading object from disk", readFlag.get());
-        return p;
     }
 }
