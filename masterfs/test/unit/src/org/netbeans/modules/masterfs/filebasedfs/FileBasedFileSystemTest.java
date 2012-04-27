@@ -83,6 +83,7 @@ public class FileBasedFileSystemTest extends FileSystemFactoryHid {
         suite.addTestSuite(FileUtilTestHidden.class);
         suite.addTestSuite(FileUtilJavaIOFileHidden.class);
         suite.addTestSuite(BaseFileObjectTestHid.class);
+        suite.addTestSuite(TempFileObjectTestHid.class);
         suite.addTest(new CheckProviders(created));
         return suite;
     }

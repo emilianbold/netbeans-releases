@@ -44,7 +44,7 @@ package org.netbeans.modules.bugzilla.kenai;
 
 import java.util.List;
 import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.util.LogUtils;
 import org.netbeans.modules.bugzilla.BugzillaConnector;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
@@ -77,16 +77,16 @@ public class KenaiQueryController extends QueryController {
     @Override
     public void populate(String urlParameters) {
         if(BugzillaUtil.isNbRepository(getRepository())) {
-            if(urlParameters == null) {
-                Node[] selection = query.getSelection();
-                if(selection == null) {
+            if(urlParameters == null) { // is new
+                OwnerInfo ownerInfo = query.getOwnerInfo();
+                if(ownerInfo == null) {
                     // XXX not sure why we need this - i'm going to keep it for now,
                     // doesn't seem to harm
-                    selection = WindowManager.getDefault().getRegistry().getActivatedNodes();
+                    Node[] selection = WindowManager.getDefault().getRegistry().getActivatedNodes();
+                    ownerInfo = getRepository().getOwnerInfo(selection);
                 }
-                OwnerInfo ownerInfo = getRepository().getOwnerInfo(selection);
                 if(ownerInfo != null) {
-                    StringBuffer sb = new StringBuffer();
+                    StringBuilder sb = new StringBuilder();
                     String owner = ownerInfo.getOwner();
                     if(owner == null || !owner.equals(product) ) {
                         // XXX is this even possible?
@@ -160,7 +160,7 @@ public class KenaiQueryController extends QueryController {
     }
 
     protected void logAutoRefreshEvent(boolean autoRefresh) {
-        BugtrackingUtil.logAutoRefreshEvent(
+        LogUtils.logAutoRefreshEvent(
             BugzillaConnector.getConnectorName(),
             query.getDisplayName(),
             true,

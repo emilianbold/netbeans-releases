@@ -47,6 +47,7 @@ import java.util.List;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.editor.hints.HintsControllerImpl;
 import org.netbeans.modules.editor.hints.StaticFixList;
 import org.openide.filesystems.FileObject;
@@ -88,6 +89,25 @@ public class ErrorDescriptionFactory {
      * Should be called inside document read lock to assure consistency
      */
     public static @NonNull ErrorDescription createErrorDescription(@NonNull Severity severity, @NonNull String description, @NonNull LazyFixList fixes, @NonNull Document doc, int lineNumber) {
+        return createErrorDescription(null, severity, description, null, fixes, doc, lineNumber);
+    }
+
+    /**Create a new {@link ErrorDescription} with the given parameters.
+     *
+     * Should be called inside document read lock to assure consistency
+     *
+     * @param id an optional ID of the {@link ErrorDescription}. Should represent a "type" of an error/warning.
+     *           It is recommended that providers prefix the ID with their unique prefix.
+     * @param severity the desired {@link Severity}
+     * @param description the text of the error/warning
+     * @param details optional "more details" describing the error/warning
+     * @param fixes a collection of {@link Fix}es that should be shown for the error/warning
+     * @param doc document for which the {@link ErrorDescription} should be created
+     * @param lineNumber line on which the error/warning should be shown
+     * @return a newly created {@link ErrorDescription} based on the given parameters
+     * @since 1.22
+     */
+    public static @NonNull ErrorDescription createErrorDescription(@NullAllowed String id, @NonNull Severity severity, @NonNull String description, @NullAllowed CharSequence details, @NonNull LazyFixList fixes, @NonNull Document doc, int lineNumber) {
         Parameters.notNull("severity", severity);
         Parameters.notNull("description", description);
         Parameters.notNull("fixes", fixes);
@@ -96,7 +116,7 @@ public class ErrorDescriptionFactory {
         DataObject od = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
         FileObject file = od != null ? od.getPrimaryFile() : null;
         
-        return new ErrorDescription(file, description, severity, fixes, HintsControllerImpl.fullLine(doc, lineNumber));
+        return new ErrorDescription(file, id, description, details, severity, fixes, HintsControllerImpl.fullLine(doc, lineNumber));
     }
     
     /**
@@ -130,6 +150,26 @@ public class ErrorDescriptionFactory {
      * Acquires read lock on the provided document to assure consistency
      */
     public static @NonNull ErrorDescription createErrorDescription(@NonNull Severity severity, @NonNull String description, @NonNull LazyFixList fixes, @NonNull Document doc, @NonNull Position start, @NonNull Position end) {
+        return createErrorDescription(null, severity, description, null, fixes, doc, start, end);
+    }
+
+    /**Create a new {@link ErrorDescription} with the given parameters.
+     *
+     * Acquires read lock on the provided document to assure consistency
+     *
+     * @param id an optional ID of the {@link ErrorDescription}. Should represent a "type" of an error/warning.
+     *           It is recommended that providers prefix the ID with their unique prefix.
+     * @param severity the desired {@link Severity}
+     * @param description the text of the error/warning
+     * @param details optional "more details" describing the error/warning
+     * @param fixes a collection of {@link Fix}es that should be shown for the error/warning
+     * @param doc document for which the {@link ErrorDescription} should be created
+     * @param start starting offset of the error/warning
+     * @param end ending offset of the error/warning
+     * @return a newly created {@link ErrorDescription} based on the given parameters
+     * @since 1.22
+     */
+    public static @NonNull ErrorDescription createErrorDescription(@NullAllowed String id, @NonNull Severity severity, @NonNull String description, @NullAllowed CharSequence details, @NonNull LazyFixList fixes, @NonNull Document doc, @NonNull Position start, @NonNull Position end) {
         Parameters.notNull("severity", severity);
         Parameters.notNull("description", description);
         Parameters.notNull("fixes", fixes);
@@ -140,7 +180,7 @@ public class ErrorDescriptionFactory {
         DataObject od = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
         FileObject file = od != null ? od.getPrimaryFile() : null;
         
-        return new ErrorDescription(file, description, severity, fixes, HintsControllerImpl.linePart(doc, start, end));
+        return new ErrorDescription(file, id, description, details, severity, fixes, HintsControllerImpl.linePart(doc, start, end));
     }
 
     /**
@@ -174,6 +214,26 @@ public class ErrorDescriptionFactory {
      * Should be called inside document read lock to assure consistency
      */
     public static @NonNull ErrorDescription createErrorDescription(@NonNull Severity severity, @NonNull String description, @NonNull LazyFixList fixes, @NonNull FileObject file, int start, int end) {
+        return createErrorDescription(null, severity, description, null, fixes, file, start, end);
+    }
+
+    /**Create a new {@link ErrorDescription} with the given parameters.
+     *
+     * Should be called inside document read lock to assure consistency
+     *
+     * @param id an optional ID of the {@link ErrorDescription}. Should represent a "type" of an error/warning.
+     *           It is recommended that providers prefix the ID with their unique prefix.
+     * @param severity the desired {@link Severity}
+     * @param description the text of the error/warning
+     * @param details optional "more details" describing the error/warning
+     * @param fixes a collection of {@link Fix}es that should be shown for the error/warning
+     * @param file for which the {@link ErrorDescription} should be created
+     * @param start starting offset of the error/warning
+     * @param end ending offset of the error/warning
+     * @return a newly created {@link ErrorDescription} based on the given parameters
+     * @since 1.22
+     */
+    public static @NonNull ErrorDescription createErrorDescription(@NullAllowed String id, @NonNull Severity severity, @NonNull String description, @NullAllowed CharSequence details, @NonNull LazyFixList fixes, @NonNull FileObject file, int start, int end) {
         Parameters.notNull("severity", severity);
         Parameters.notNull("description", description);
         Parameters.notNull("fixes", fixes);
@@ -181,7 +241,7 @@ public class ErrorDescriptionFactory {
         if (start < 0) throw new IndexOutOfBoundsException("start < 0 (" + start + " < 0)");
         if (end < start) throw new IndexOutOfBoundsException("end < start (" + end + " < " + start + ")");
         
-        return new ErrorDescription(file, description, severity, fixes, HintsControllerImpl.linePart(file, start, end));
+        return new ErrorDescription(file, id, description, details, severity, fixes, HintsControllerImpl.linePart(file, start, end));
     }
 
     /**

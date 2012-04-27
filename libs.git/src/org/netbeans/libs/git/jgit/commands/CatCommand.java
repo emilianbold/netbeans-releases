@@ -50,11 +50,14 @@ import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.dircache.DirCacheEntry;
 import org.eclipse.jgit.errors.MissingObjectException;
 import org.eclipse.jgit.errors.NoWorkTreeException;
+import org.eclipse.jgit.lib.CoreConfig;
 import org.eclipse.jgit.lib.ObjectLoader;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.treewalk.TreeWalk;
+import org.eclipse.jgit.treewalk.WorkingTreeOptions;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
+import org.eclipse.jgit.util.io.AutoCRLFOutputStream;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.jgit.GitClassFactory;
 import org.netbeans.libs.git.jgit.Utils;
@@ -119,6 +122,7 @@ public class CatCommand extends GitCommand {
 
     private void catFromRevision () throws GitException.MissingObjectException, GitException {
         Repository repository = getRepository();
+        OutputStream out = null;
         try {
             RevCommit commit = Utils.findCommit(repository, revision);
             TreeWalk walk = new TreeWalk(repository);
@@ -129,9 +133,14 @@ public class CatCommand extends GitCommand {
             found = false;
             while (!found && walk.next() && !monitor.isCanceled()) {
                 if (relativePath.equals(walk.getPathString())) {
+                    WorkingTreeOptions opt = repository.getConfig().get(WorkingTreeOptions.KEY);
                     ObjectLoader loader = repository.getObjectDatabase().open(walk.getObjectId(0));
+                    if (opt.getAutoCRLF() != CoreConfig.AutoCRLF.FALSE) {
+                        out = new AutoCRLFOutputStream(os);
+                    } else {
+                        out = os;
+                    }
                     loader.copyTo(os);
-                    os.close();
                     found = true;
                 }
             }
@@ -139,11 +148,22 @@ public class CatCommand extends GitCommand {
             throw new GitException(ex);
         } catch (IOException ex) {
             throw new GitException(ex);
+        } finally {
+            try {
+                if (out == null) {
+                    os.close();
+                } else {
+                    out.close();
+                }
+            } catch (IOException ex) {
+                //
+            }
         }
     }
 
     private void catIndexEntry () throws GitException {
         Repository repository = getRepository();
+        OutputStream out = null;
         try {
             DirCache cache = repository.readDirCache();
             int pos = cache.findEntry(relativePath);
@@ -159,15 +179,30 @@ public class CatCommand extends GitCommand {
             found = false;
             if (entry != null) {
                 found = true;
+                WorkingTreeOptions opt = repository.getConfig().get(WorkingTreeOptions.KEY);
                 ObjectLoader loader = repository.getObjectDatabase().open(entry.getObjectId());
+		if (opt.getAutoCRLF() != CoreConfig.AutoCRLF.FALSE) {
+                    out = new AutoCRLFOutputStream(os);
+                } else {
+                    out = os;
+                }
                 loader.copyTo(os);
-                os.close();
                 found = true;
             }
         } catch (NoWorkTreeException ex) {
             throw new GitException(ex);
         } catch (IOException ex) {
             throw new GitException(ex);
+        } finally {
+            try {
+                if (out == null) {
+                    os.close();
+                } else {
+                    out.close();
+                }
+            } catch (IOException ex) {
+                //
+            }
         }
     }
 

@@ -45,6 +45,7 @@ package org.netbeans.modules.java.source.ant;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import org.apache.tools.ant.BuildException;
@@ -131,38 +132,52 @@ public class TranslateClassPath extends Task {
     }
     
     private File[] translateEntry(String path, Boolean disableSources) throws BuildException {
-        File entryFile = new File(path);
+        final File entryFile = new File(path);
         try {
-            URL entry = FileUtil.urlForArchiveOrDir(entryFile);
-            
-            SourceForBinaryQuery.Result2 r = SourceForBinaryQuery.findSourceRoots2(entry);
+            final URL entry = FileUtil.urlForArchiveOrDir(entryFile);
+            final SourceForBinaryQuery.Result2 r = SourceForBinaryQuery.findSourceRoots2(entry);
+            boolean appendEntry = false;
 
             if (!disableSources && r.preferSources() && r.getRoots().length > 0) {
+                final List<File> translated = new ArrayList<File>();
                 for (FileObject source : r.getRoots()) {
-                    File sourceFile = FileUtil.toFile(source);
-
+                    final File sourceFile = FileUtil.toFile(source);
                     if (sourceFile == null) {
-                        log("Source URL: " + source.getURL().toExternalForm() + " cannot be translated to file, skipped", Project.MSG_WARN);
+                        log("Source URL: " + source.toURL().toExternalForm() + " cannot be translated to file, skipped", Project.MSG_WARN);
+                        appendEntry = true;
                         continue;
                     }
 
-                    Boolean bamiResult = clean ? BuildArtifactMapperImpl.clean(sourceFile.toURI().toURL())
+                    final Boolean bamiResult = clean ? BuildArtifactMapperImpl.clean(sourceFile.toURI().toURL())
                                                : BuildArtifactMapperImpl.ensureBuilt(sourceFile.toURI().toURL(), getProject(), true, true);
-
                     if (bamiResult == null) {
+                        appendEntry = true;
                         continue;
                     }
-
                     if (!bamiResult) {
                         throw new UserCancel();
                     }
+                    
+                    for (URL binary : BinaryForSourceQuery.findBinaryRoots(source.toURL()).getRoots()) {
+                        final FileObject binaryFO = URLMapper.findFileObject(binary);
+                        final File finaryFile = binaryFO != null ? FileUtil.toFile(binaryFO) : null;
+                        if (finaryFile != null) {
+                            translated.add(finaryFile);
+                        }
+                    }
+                    
                 }
+                
+                if (appendEntry) {
+                    translated.add(entryFile);
+                }
+                return translated.toArray(new File[translated.size()]);
+            } else {
+                return new File[] {entryFile};
             }
         } catch (IOException ex) {
             throw new BuildException(ex);
         }
-
-        return new File[] {entryFile};
     }
 
 }

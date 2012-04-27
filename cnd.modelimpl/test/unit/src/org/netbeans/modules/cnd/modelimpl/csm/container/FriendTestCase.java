@@ -160,17 +160,17 @@ public class FriendTestCase extends TraceModelTestBase {
         assertNotNull("Referenced function soo2 for friend not found", funSoo); // NOI18N
 
         Collection<CsmFriend> list = FriendResolverImpl.getDefault().findFriends(clsA2);
-        assertTrue("Should be 1 friend declaration for class A2", list.size() == 1); // NOI18N
-        assertTrue("Friend declaration for class A2 has wrong instance", list.iterator().next() == friendA2); // NOI18N
+        assertEquals("Should be 1 friend declaration for class A2", 1, list.size()); // NOI18N
+        assertEquals("Friend declaration for class A2 has wrong instance", friendA2, list.iterator().next()); // NOI18N
         list = FriendResolverImpl.getDefault().findFriends(funMoo2);
-        assertTrue("Should be 1 friend declaration for function moo2", list.size() == 1); // NOI18N
-        assertTrue("Friend declaration for function moo2 has wrong instance", list.iterator().next() == friendMoo2); // NOI18N
+        assertEquals("Should be 1 friend declaration for function moo2", 1, list.size()); // NOI18N
+        assertEquals("Friend declaration for function moo2 has wrong instance", friendMoo2, list.iterator().next()); // NOI18N
         list = FriendResolverImpl.getDefault().findFriends(funMoo);
-        assertTrue("Should be 1 friend declaration for function moo", list.size() == 1); // NOI18N
-        assertTrue("Friend declaration for function moo has wrong instance", list.iterator().next() == friendMoo); // NOI18N
+        assertEquals("Should be 1 friend declaration for function moo", 1, list.size()); // NOI18N
+        assertEquals("Friend declaration for function moo has wrong instance", friendMoo, list.iterator().next()); // NOI18N
         list = FriendResolverImpl.getDefault().findFriends(funSoo);
-        assertTrue("Should be 1 friend declaration for function moo", list.size() == 1); // NOI18N
-        assertTrue("Friend declaration for function soo has wrong instance", list.iterator().next() == friendSoo);
+        assertEquals("Should be 1 friend declaration for function soo", 1, list.size()); // NOI18N
+        assertEquals("Friend declaration for function soo has wrong instance", friendSoo, list.iterator().next());
 
         Collection<CsmOffsetableDeclaration> declarations = project.findDeclarationsByPrefix("");
         Set<String> set = new HashSet<String>();

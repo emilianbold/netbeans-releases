@@ -45,6 +45,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.dircache.DirCacheBuilder;
 import org.eclipse.jgit.dircache.DirCacheEntry;
@@ -465,6 +466,10 @@ public class StatusTest extends AbstractGitTestCase {
     }
     
     public void testIgnoreExecutable () throws Exception {
+        if (isWindows()) {
+            // no reason to test on win
+            return;
+        }
         File f = new File(workDir, "f");
         write(f, "hi, i am executable");
         f.setExecutable(true);
@@ -509,20 +514,68 @@ public class StatusTest extends AbstractGitTestCase {
         
         File nested = new File(workDir, "nested");
         nested.mkdirs();
-        File f2 = new File(nested, "f");
-        write(f2, "file");
+        new File(workDir, "emptyFolder").mkdirs();
+        Map<File, GitStatus> statuses = client.getStatus(new File[] { workDir }, NULL_PROGRESS_MONITOR);
+        assertEquals(1, statuses.size()); // commandline is silent about empty folders
+        assertStatus(statuses, workDir, f, true, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false);
         GitClient clientNested = getClient(nested);
         clientNested.init(NULL_PROGRESS_MONITOR);
+        File f2 = new File(nested, "f");
+        write(f2, "file");
         clientNested.add(new File[] { f2 }, NULL_PROGRESS_MONITOR);
         clientNested.commit(new File[] { f2 }, "init commit", null, null, NULL_PROGRESS_MONITOR);
         
-        Map<File, GitStatus> statuses = client.getStatus(new File[] { workDir }, NULL_PROGRESS_MONITOR);
-        assertEquals(1, statuses.size());
+        statuses = client.getStatus(new File[] { workDir }, NULL_PROGRESS_MONITOR);
+        assertEquals(2, statuses.size()); // on the other hand, nested repository parent should be listed as is on commandline
         assertStatus(statuses, workDir, f, true, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false);
+        assertStatus(statuses, workDir, nested, false, Status.STATUS_NORMAL, Status.STATUS_ADDED, Status.STATUS_ADDED, false);
         
         statuses = clientNested.getStatus(new File[] { nested }, NULL_PROGRESS_MONITOR);
         assertEquals(1, statuses.size());
         assertStatus(statuses, nested, f2, true, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false);
+    }
+    
+    public void testStatusMixedLineEndings () throws Exception {
+        if (isWindows()) {
+            // tested on linux
+            return;
+        }
+        StoredConfig cfg = repository.getConfig();
+        cfg.setString(ConfigConstants.CONFIG_CORE_SECTION, null, ConfigConstants.CONFIG_KEY_AUTOCRLF, "false");
+        cfg.save();
+        File f = new File(workDir, "f");
+        String content = "";
+        for (int i = 0; i < 10000; ++i) {
+            content += i + "\r\n";
+        }
+        write(f, content);
+        File[] files = new File[] { f };
+        GitClient client = getClient(workDir);
+        client.add(files, NULL_PROGRESS_MONITOR);
+        client.commit(files, "commit", null, null, NULL_PROGRESS_MONITOR);
+        
+        Map<File, GitStatus> statuses = client.getStatus(files, NULL_PROGRESS_MONITOR);
+        assertEquals(1, statuses.size());
+        assertStatus(statuses, workDir, f, true, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false);
+        org.eclipse.jgit.api.StatusCommand cmd = new Git(repository).status();
+        org.eclipse.jgit.api.Status status = cmd.call();
+        assertEquals(0, status.getModified().size());
+        
+        // lets turn autocrlf on
+        cfg = repository.getConfig();
+        cfg.setString(ConfigConstants.CONFIG_CORE_SECTION, null, ConfigConstants.CONFIG_KEY_AUTOCRLF, "true");
+        cfg.save();
+        
+        // it should be up to date again
+        // JGit does not work either:
+        cmd = new Git(repository).status();
+        status = cmd.call();
+        assertEquals(1, status.getModified().size());
+        
+        // what about us?
+        statuses = client.getStatus(files, NULL_PROGRESS_MONITOR);
+        assertEquals(1, statuses.size());
+        assertStatus(statuses, workDir, f, true, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false);
     }
 
     private void assertStatus(Map<File, GitStatus> statuses, File repository, File file, boolean tracked, Status headVsIndex, Status indexVsWorking, Status headVsWorking, boolean conflict, TestStatusListener monitor) {

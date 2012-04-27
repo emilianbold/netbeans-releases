@@ -108,10 +108,28 @@ public class RepositoryNode extends AbstractNode {
         return getIcon(arg0);
     }
 
+    @Override
+    public String getHtmlDisplayName() {
+        StringBuilder base = new StringBuilder().append(getDisplayName());
+        if (info.isMirror()) {
+            base.append(" <font color='!controlShadow'>[");
+            for (RepositoryInfo nf : info.getMirroredRepositories()) {
+                base.append(nf.getName()).append(",");
+            }
+            base.setLength(base.length() - 1);
+            base.append("]</font>");
+        }
+        return base.toString();
+    }
+
     @Messages({
+        "#{0} - repository id",
         "LBL_REPO_ID=Repository ID:<b> {0} </b><p>",
+        "#{0} - repository name",
         "LBL_REPO_Name=Repository Name: <b> {0} </b><p>",
-        "LBL_REPO_Url=Repository URL:<b> {0} </b><p>"
+        "#{0} - repository url",
+        "LBL_REPO_Url=Repository URL:<b> {0} </b><p>",
+        "LBL_Mirrors=Mirrors repositories: <b> {0} </b><p>"
     })
     @Override public String getShortDescription() {
         StringBuilder buffer = new StringBuilder();
@@ -126,6 +144,15 @@ public class RepositoryNode extends AbstractNode {
         if (info.getRepositoryUrl() != null) {
             buffer.append(LBL_REPO_Url(info.getRepositoryUrl()));
         }
+        if (info.isMirror()) {
+            StringBuilder s = new StringBuilder();
+            for (RepositoryInfo nf : info.getMirroredRepositories()) {
+                s.append(nf.getName()).append(",");
+            }
+            s.setLength(s.length() - 1);
+            buffer.append(LBL_Mirrors(s.toString()));
+        }
+        
         buffer.append("</html>");//NOI18N
 
         return buffer.toString();
@@ -157,7 +184,6 @@ public class RepositoryNode extends AbstractNode {
     @Messages({
         "LBL_Id=ID",
         "LBL_Name=Name",
-        "LBL_Repository_Type=Repository Manager Type",
         "LBL_Local=Local",
         "LBL_Local_repository_path=Local repository path",
         "LBL_Remote_Index=Remote Index Downloadable",
@@ -175,8 +201,6 @@ public class RepositoryNode extends AbstractNode {
             Node.Property<?> name = new PropertySupport.Reflection<String>(info, String.class, "getName", null); //NOI18N
             name.setDisplayName(LBL_Name());
             name.setShortDescription(""); //NOI18N
-            Node.Property<?> type = new PropertySupport.Reflection<String>(info, String.class, "getType", null); //NOI18N
-            type.setDisplayName(LBL_Repository_Type());
             Node.Property<?> local = new PropertySupport.Reflection<Boolean>(info, Boolean.TYPE, "isLocal", null); //NOI18N
             local.setName("local"); //NOI18N
             local.setDisplayName(LBL_Local());
@@ -195,7 +219,7 @@ public class RepositoryNode extends AbstractNode {
                 }
             };
             basicProps.put(new Node.Property<?>[] {
-                id, name, type, local, localRepoLocation, remoteDownloadable, repoURL, indexURL, lastIndexed
+                id, name, local, localRepoLocation, remoteDownloadable, repoURL, indexURL, lastIndexed
             });
         } catch (NoSuchMethodException exc) {
             exc.printStackTrace();
@@ -228,15 +252,14 @@ public class RepositoryNode extends AbstractNode {
         }
 
         @Override public boolean isEnabled() {
-            return RepositoryPreferences.getInstance().isPersistent(info.getId());
+            return RepositoryPreferences.getInstance().isPersistent(info.getId()) && info.isRemoteDownloadable();
         }
 
-        @Messages("LBL_Add_Repo=Add Repository")
+        @Messages("LBL_Edit_Repo=Edit Repository")
         @Override public void actionPerformed(ActionEvent e) {
-            final RepositoryRegisterUI rrui = new RepositoryRegisterUI();
-            rrui.getAccessibleContext().setAccessibleDescription(LBL_Add_Repo());
-            rrui.modify(RepositoryNode.this.info);
-            DialogDescriptor dd = new DialogDescriptor(rrui, LBL_Add_Repo());
+            final RepositoryRegisterUI rrui = new RepositoryRegisterUI(RepositoryNode.this.info);
+            rrui.getAccessibleContext().setAccessibleDescription(LBL_Edit_Repo());
+            DialogDescriptor dd = new DialogDescriptor(rrui, LBL_Edit_Repo());
             dd.setClosingOptions(new Object[]{
                         rrui.getButton(),
                         DialogDescriptor.CANCEL_OPTION

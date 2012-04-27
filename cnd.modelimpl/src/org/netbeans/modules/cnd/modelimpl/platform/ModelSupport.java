@@ -103,7 +103,7 @@ import org.openide.windows.WindowManager;
 public class ModelSupport implements PropertyChangeListener {
 
     private static final ModelSupport instance = new ModelSupport();
-    private ModelImpl theModel;
+    private volatile ModelImpl theModel;
     private final Set<Lookup.Provider> openedProjects = new HashSet<Lookup.Provider>();
     private final ModifiedObjectsChangeListener modifiedListener = new ModifiedObjectsChangeListener();
     private FileChangeListener fileChangeListener;
@@ -129,6 +129,10 @@ public class ModelSupport implements PropertyChangeListener {
         return 8;
     }
 
+    public ModelImpl getModel() {
+        return this.theModel;
+    }
+
     public void setModel(ModelImpl model) {
         this.theModel = model;
         synchronized (this) {
@@ -143,6 +147,14 @@ public class ModelSupport implements PropertyChangeListener {
         }
     }
 
+    /** copy pasted version from CndUtils to prevent load of CndUtils during startup */
+    public static boolean isStandalone() {
+        if ("true".equals(System.getProperty("cnd.command.line.utility"))) { // NOI18N
+            return true;
+        }
+        return !ModelSupport.class.getClassLoader().getClass().getName().startsWith("org.netbeans."); // NOI18N
+    }
+    
     public void startup() {
         modifiedListener.clean();
         DataObject.getRegistry().addChangeListener(modifiedListener);
@@ -150,7 +162,7 @@ public class ModelSupport implements PropertyChangeListener {
         synchronized (openedProjects) {
             closed = false;
         }
-        if (!CndUtils.isStandalone()) {
+        if (!isStandalone()) {
             openedProjects.clear();
             if (TRACE_STARTUP) {
                 System.out.println("Model support: Inited"); // NOI18N

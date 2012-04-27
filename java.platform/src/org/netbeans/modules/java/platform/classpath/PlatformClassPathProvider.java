@@ -45,7 +45,10 @@
 package org.netbeans.modules.java.platform.classpath;
 
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -58,6 +61,13 @@ import org.netbeans.spi.java.classpath.PathResourceImplementation;
 
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.classpath.ClassPathProvider.class, position=150)
 public class PlatformClassPathProvider implements ClassPathProvider {
+    
+    private static final Set<? extends String> SUPPORTED_CLASS_PATH_TYPES =
+            new HashSet<String>(Arrays.asList(new String[]{
+                ClassPath.SOURCE,
+                ClassPath.BOOT,
+                ClassPath.COMPILE
+            }));
 
 
 
@@ -67,6 +77,9 @@ public class PlatformClassPathProvider implements ClassPathProvider {
     
     
     public ClassPath findClassPath(FileObject fo, String type) {
+        if (!SUPPORTED_CLASS_PATH_TYPES.contains(type)) {
+            return null;
+        }
         if (fo == null || type == null) {
             throw new IllegalArgumentException();
         }

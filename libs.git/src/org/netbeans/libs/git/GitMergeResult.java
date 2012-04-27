@@ -53,8 +53,9 @@ import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.merge.ResolveMerger;
 
 /**
- *
- * @author ondra
+ * Returned by a git merge command, represents its result.
+ * 
+ * @author Ondra Vrabec
  */
 public final class GitMergeResult {
 
@@ -119,26 +120,51 @@ public final class GitMergeResult {
         this.failures = getFailures(result);
     }
     
+    /**
+     * @return result of the merge.
+     */
     public MergeStatus getMergeStatus () {
         return mergeStatus;
     }
     
+    /**
+     * @return the common base which was used to produce a content-merge.
+     *         May be <code>null</code> if the result was produced without
+     *         computing a common base
+     */
     public String getBase () {
         return base;
     }
     
+    /**
+     * @return ids of commits merged
+     */
     public String[] getMergedCommits () {
         return mergedCommits;
     }
     
+    /**
+     * @return current HEAD commit after the successful merge or <code>null</code> if the merge failed.
+     */
     public String getNewHead () {
         return newHead;
     }
     
+    /**
+     * If the merge started but was unable to finish because of unresolved conflicts then the method
+     * returns a collection of such files in conflict.
+     * To complete the merge you need to resolve the conflicts and commit the changes.
+     * @return files in conflict
+     */
     public Collection<File> getConflicts() {
         return conflicts;
     }
     
+    /**
+     * When the merge fails because of local modifications then this 
+     * method returns a collections of files causing the failure.
+     * @return files that cause the merge to fail.
+     */
     public Collection<File> getFailures () {
         return failures;
     }

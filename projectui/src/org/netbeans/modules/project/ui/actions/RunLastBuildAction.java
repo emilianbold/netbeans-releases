@@ -56,6 +56,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.spi.project.ui.support.BuildExecutionSupport;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
 import org.openide.awt.Actions;
 import org.openide.awt.DynamicMenuContent;
@@ -71,7 +72,10 @@ import org.openide.util.actions.Presenter;
  */
 @ActionID(id = "org.netbeans.modules.project.ui.Rerun", category = "Project")
 @ActionRegistration(displayName = "#LBL_RunLastBuildAction_general", lazy=false)
-@ActionReference(path = "Menu/BuildProject", position = 1000)
+@ActionReferences({
+    @ActionReference(path="Menu/BuildProject", position=1000),
+    @ActionReference(path="Shortcuts", name="D-F11")
+})
 public final class RunLastBuildAction extends AbstractAction implements ChangeListener, Presenter.Menu, Presenter.Toolbar {
     
     public RunLastBuildAction() {

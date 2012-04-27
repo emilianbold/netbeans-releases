@@ -67,6 +67,7 @@ import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.openide.util.NbBundle;
 
 /**
  * inner class does the matching of the JTextField's
@@ -94,6 +95,8 @@ public class TextValueCompleter implements DocumentListener {
     
     private boolean loading;
     private static final String LOADING = Bundle.LBL_Loading();
+    private boolean partial;
+    
     public TextValueCompleter(Collection<String> completions, JTextField fld) {
         this.completions = completions;
         this.field = fld;
@@ -105,6 +108,7 @@ public class TextValueCompleter implements DocumentListener {
             }
         });
         caretListener = new CaretListener() {
+            @Override
             public void caretUpdate(CaretEvent arg0) {
                 // only consider caret updates if the popup window is visible
                 if (completionList.isDisplayable() && completionList.isVisible()) {
@@ -142,6 +146,7 @@ public class TextValueCompleter implements DocumentListener {
         field.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_DOWN, 0),ACTION_LISTPAGEDOWN);
         field.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, KeyEvent.CTRL_DOWN_MASK),ACTION_SHOWPOPUP);
         field.getActionMap().put(ACTION_LISTDOWN, new AbstractAction() { //NOI18N
+            @Override
             public void actionPerformed(ActionEvent e) {
                 if (popup == null) {
                     buildAndShowPopup();
@@ -151,6 +156,7 @@ public class TextValueCompleter implements DocumentListener {
             }
         });
         field.getActionMap().put(ACTION_LISTUP,  new AbstractAction() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 if (popup == null) {
                     buildAndShowPopup();
@@ -160,18 +166,21 @@ public class TextValueCompleter implements DocumentListener {
             }
         });
         field.getActionMap().put(ACTION_LISTPAGEDOWN, new AbstractAction() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 completionList.setSelectedIndex(Math.min(completionList.getSelectedIndex() + completionList.getVisibleRowCount(), completionList.getModel().getSize()));
                 completionList.ensureIndexIsVisible(completionList.getSelectedIndex());
             }
         });
         field.getActionMap().put(ACTION_LISTPAGEUP, new AbstractAction() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 completionList.setSelectedIndex(Math.max(completionList.getSelectedIndex() - completionList.getVisibleRowCount(), 0));
                 completionList.ensureIndexIsVisible(completionList.getSelectedIndex());
             }
         });
         field.getActionMap().put(ACTION_FILLIN, new AbstractAction() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 Object selVal = completionList.getSelectedValue();
                 if (selVal != null && LOADING.endsWith(selVal.toString())) {
@@ -186,11 +195,13 @@ public class TextValueCompleter implements DocumentListener {
             }
         });
         field.getActionMap().put(ACTION_HIDEPOPUP, new AbstractAction() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 hidePopup();
             }
         });
         field.getActionMap().put(ACTION_SHOWPOPUP, new AbstractAction() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 buildAndShowPopup();
             }
@@ -216,6 +227,7 @@ public class TextValueCompleter implements DocumentListener {
         }
     }
 
+    @NbBundle.Messages("PARTIAL_RESULT=<Result is incomplete, some indices are processed>")
     private void buildPopup() {
         pattern = Pattern.compile(getCompletionPrefix() + ".+"); //NOI18N
         int entryindex = 0;
@@ -231,6 +243,11 @@ public class TextValueCompleter implements DocumentListener {
             } else {
                 completionListModel.removeElement(completion);
             }
+        }
+        if (partial) {
+            completionListModel.addElement(Bundle.PARTIAL_RESULT());
+        } else {
+            completionListModel.removeElement(Bundle.PARTIAL_RESULT());
         }
     }
     
@@ -336,26 +353,30 @@ public class TextValueCompleter implements DocumentListener {
     }
     
     // DocumentListener implementation
+    @Override
     public void insertUpdate(DocumentEvent e) { 
         if (field.isFocusOwner()) {
             buildAndShowPopup(); 
         }
     }
+    @Override
     public void removeUpdate(DocumentEvent e) { 
         if (field.isFocusOwner() && completionList.isDisplayable() && completionList.isVisible()) {
             buildAndShowPopup(); 
         }
     }
+    @Override
     public void changedUpdate(DocumentEvent e) { 
         if (field.isFocusOwner()) {
             buildAndShowPopup(); 
         }
     }
     
-    public void setValueList(Collection<String> values) {
+    public void setValueList(Collection<String> values, boolean partial) {
         assert SwingUtilities.isEventDispatchThread();
         completionListModel.removeAllElements();
         completions = values;
+        this.partial = partial;
         if (field.isFocusOwner() && completionList.isDisplayable() && completionList.isVisible()) {
             buildAndShowPopup(); 
         }

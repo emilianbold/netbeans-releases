@@ -97,7 +97,7 @@ public interface CsmMacroExpansionDocProvider {
     public String expand(Document doc, CsmFile file, int startOffset, int endOffset);
 
     /**
-     * Macro expands specified string in specified contest.
+     * Macro expands specified string in specified contest and excludes comments.
      *
      * @param doc - document for macro expansion
      * @param doc - file of the document

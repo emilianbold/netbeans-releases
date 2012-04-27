@@ -47,9 +47,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
-import org.netbeans.modules.maven.nodes.MavenProjectNode;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.nodes.MavenProjectNode;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
@@ -62,9 +62,6 @@ import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
-import org.openidex.search.FileObjectFilter;
-import org.openidex.search.SearchInfo;
-import org.openidex.search.SearchInfoFactory;
 
 /**
  * provider of logical view, meaning the top node in the projects tab.
@@ -82,6 +79,7 @@ public class LogicalViewProviderImpl implements LogicalViewProvider {
     /**
      * create the root node for maven projects..
      */
+    @Override
     public Node createLogicalView() {
         NbMavenProjectImpl project = proj.getLookup().lookup(NbMavenProjectImpl.class);
         return new MavenProjectNode(createLookup(project), project);
@@ -93,19 +91,16 @@ public class LogicalViewProviderImpl implements LogicalViewProvider {
             return Lookups.fixed(project);
         }
         DataFolder rootFolder = DataFolder.findFolder( project.getProjectDirectory() );
-        SearchInfo info = SearchInfoFactory.createSearchInfo( rootFolder.getPrimaryFile(), true,
-                new FileObjectFilter[] {
-                    SearchInfoFactory.VISIBILITY_FILTER,
-                    SearchInfoFactory.SHARABILITY_FILTER});
-        return Lookups.fixed(project, rootFolder, info);
+        return Lookups.fixed(project, rootFolder);
     }
     
     /**
      * TODO this is probably good for the Select in Project view action..
      */
+    @Override
     public Node findPath(Node node, Object target) {
-        NbMavenProjectImpl proj = node.getLookup().lookup(NbMavenProjectImpl.class );
-        if ( proj == null ) {
+        NbMavenProjectImpl prj = node.getLookup().lookup(NbMavenProjectImpl.class );
+        if ( prj == null ) {
             return null;
         }
         
@@ -113,7 +108,7 @@ public class LogicalViewProviderImpl implements LogicalViewProvider {
             FileObject fo = (FileObject)target;
             
             Project owner = FileOwnerQuery.getOwner( fo );
-            if ( !proj.equals( owner ) ) {
+            if ( !prj.equals( owner ) ) {
                 return null; // Don't waste time if project does not own the fo
             }
             Node[] nodes = node.getChildren().getNodes(true);

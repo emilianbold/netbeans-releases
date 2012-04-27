@@ -58,6 +58,8 @@ import org.netbeans.modules.php.project.ui.actions.DebugFileCommand;
 import org.netbeans.modules.php.project.ui.actions.DownloadCommand;
 import org.netbeans.modules.php.project.ui.actions.RunFileCommand;
 import org.netbeans.modules.php.project.ui.actions.RunTestCommand;
+import org.netbeans.modules.php.project.ui.actions.RunTestsCommand;
+import org.netbeans.modules.php.project.ui.actions.SyncCommand;
 import org.netbeans.modules.php.project.ui.actions.UploadCommand;
 import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
@@ -74,12 +76,8 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Lookup;
 import org.openide.util.actions.SystemAction;
-import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
-import org.openidex.search.FileObjectFilter;
-import org.openidex.search.SearchInfoFactory;
 
 /**
  *
@@ -102,8 +100,7 @@ public class SrcNode extends FilterNode {
     }
 
     private SrcNode(PhpProject project, DataFolder folder, FilterNode node, String name, boolean isTest) {
-        super(node, new FolderChildren(project, node, isTest), extendLookupWithSearchInfo(
-                folder.getNodeDelegate().getLookup(), project, folder.getPrimaryFile()));
+        super(node, new FolderChildren(project, node, isTest), new ProxyLookup(folder.getNodeDelegate().getLookup()));
 
         this.project = project;
         this.isTest = isTest;
@@ -150,6 +147,7 @@ public class SrcNode extends FilterNode {
         if (!isTest) {
             actions.add(FileSensitiveActions.fileCommandAction(DownloadCommand.ID, DownloadCommand.DISPLAY_NAME, null));
             actions.add(FileSensitiveActions.fileCommandAction(UploadCommand.ID, UploadCommand.DISPLAY_NAME, null));
+            actions.add(FileSensitiveActions.fileCommandAction(SyncCommand.ID, SyncCommand.DISPLAY_NAME, null));
             actions.add(null);
         }
         actions.add(SystemAction.get(FileSystemAction.class));
@@ -174,7 +172,8 @@ public class SrcNode extends FilterNode {
     static final Action[] COMMON_ACTIONS = new Action[]{
         null,
         FileSensitiveActions.fileCommandAction(DownloadCommand.ID, DownloadCommand.DISPLAY_NAME, null),
-        FileSensitiveActions.fileCommandAction(UploadCommand.ID, UploadCommand.DISPLAY_NAME, null)
+        FileSensitiveActions.fileCommandAction(UploadCommand.ID, UploadCommand.DISPLAY_NAME, null),
+        FileSensitiveActions.fileCommandAction(SyncCommand.ID, SyncCommand.DISPLAY_NAME, null),
     };
 
     public static Action createDownloadAction() {
@@ -183,11 +182,8 @@ public class SrcNode extends FilterNode {
     public static Action createUploadAction() {
         return COMMON_ACTIONS[2];
     }
-
-    public static Lookup extendLookupWithSearchInfo(Lookup originalLookup, PhpProject project, FileObject folder) {
-        return new ProxyLookup(
-                originalLookup,
-                Lookups.singleton(SearchInfoFactory.createSearchInfo(folder, true, new FileObjectFilter[] {project.getFileObjectFilter()})));
+    public static Action createSynchronizeAction() {
+        return COMMON_ACTIONS[3];
     }
 
     /**
@@ -245,7 +241,7 @@ public class SrcNode extends FilterNode {
 
         public PackageNode(PhpProject project, final Node originalNode, boolean isTest) {
             super(originalNode, new FolderChildren(project, originalNode, isTest),
-                    SrcNode.extendLookupWithSearchInfo(originalNode.getLookup(), project, originalNode.getLookup().lookup(FileObject.class)));
+                    new ProxyLookup(originalNode.getLookup()));
             this.project = project;
             this.isTest = isTest;
 
@@ -256,16 +252,15 @@ public class SrcNode extends FilterNode {
         public Action[] getActions(boolean context) {
             List<Action> actions = new ArrayList<Action>();
             actions.addAll(Arrays.asList(getOriginal().getActions(context)));
-            if (!isTest) {
-                int idx = actions.indexOf(SystemAction.get(PasteAction.class));
-                for (int i = 0; i < COMMON_ACTIONS.length; i++) {
-                    if (idx >= 0 && idx + COMMON_ACTIONS.length < actions.size()) {
-                        //put on the proper place after paste
-                        actions.add(idx + i + 1, COMMON_ACTIONS[i]);
-                    } else {
-                        //else put at the tail
-                        actions.add(COMMON_ACTIONS[i]);
-                    }
+            Action[] commonActions = getCommonActions();
+            int idx = actions.indexOf(SystemAction.get(PasteAction.class));
+            for (int i = 0; i < commonActions.length; i++) {
+                if (idx >= 0 && idx + commonActions.length < actions.size()) {
+                    //put on the proper place after paste
+                    actions.add(idx + i + 1, commonActions[i]);
+                } else {
+                    //else put at the tail
+                    actions.add(commonActions[i]);
                 }
             }
             return actions.toArray(new Action[actions.size()]);
@@ -290,6 +285,20 @@ public class SrcNode extends FilterNode {
             }
             return super.getOpenedIcon(type);
         }
+
+        private Action[] getCommonActions() {
+            if (isTest) {
+                return new Action[] {
+                    null,
+                    ProjectSensitiveActions.projectCommandAction(RunTestsCommand.ID, RunTestsCommand.DISPLAY_NAME, null)
+                };
+            }
+            // remove sync action
+            Action[] actions = new Action[COMMON_ACTIONS.length - 1];
+            System.arraycopy(COMMON_ACTIONS, 0, actions, 0, COMMON_ACTIONS.length - 1);
+            return actions;
+        }
+
     }
 
     private static final class ObjectNode extends FilterNode {

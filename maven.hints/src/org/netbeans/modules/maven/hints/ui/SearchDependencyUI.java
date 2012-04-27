@@ -51,8 +51,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Observable;
-import java.util.Observer;
 import java.util.Set;
 import javax.swing.JButton;
 import javax.swing.SwingUtilities;
@@ -60,24 +58,27 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.maven.model.Dependency;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.api.NbMavenProject;
+import static org.netbeans.modules.maven.hints.ui.Bundle.*;
 import org.netbeans.modules.maven.hints.ui.nodes.ArtifactNode;
 import org.netbeans.modules.maven.hints.ui.nodes.VersionNode;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
-import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
-import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.maven.indexer.api.QueryRequest;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
+import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
+import org.netbeans.modules.maven.indexer.api.RepositoryQueries.Result;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
@@ -85,18 +86,17 @@ import org.openide.util.lookup.InstanceContent;
  *
  * @author  Anuradha G
  */
-public class SearchDependencyUI extends javax.swing.JPanel implements ExplorerManager.Provider, Observer {
+@Messages("BTN_Add=Add")
+public class SearchDependencyUI extends javax.swing.JPanel implements ExplorerManager.Provider {
 
     private ExplorerManager explorerManager = new ExplorerManager();
-    private JButton addButton = new JButton(NbBundle.getMessage(SearchDependencyUI.class, "BTN_Add"));
+    private JButton addButton = new JButton(BTN_Add());
     private BeanTreeView beanTreeView;
     private NBVersionInfo nbvi;
-    private static RequestProcessor.Task task = null;
+    private Tsk task = null;
     private static final RequestProcessor RP = new RequestProcessor(SearchDependencyUI.class.getName(),10);
-    private boolean retrigger = false;
     private Project project;
     
-    private QueryRequest queryRequest;
     private ResultsRootNode resultsRootNode;
     
     /** Creates new form SearchDependencyUI */
@@ -144,20 +144,22 @@ public class SearchDependencyUI extends javax.swing.JPanel implements ExplorerMa
                 }
             }
         });
-        queryRequest = null;
         resultsRootNode = new ResultsRootNode();
         explorerManager.setRootContext(resultsRootNode);
         createSearchTask();
         load();
         txtClassName.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 load();
             }
 
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 load();
             }
 
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 load();
             }
@@ -174,16 +176,17 @@ public class SearchDependencyUI extends javax.swing.JPanel implements ExplorerMa
         return addButton;
     }
 
-    private void createSearchTask() {
-        if (task != null) {
-            task.cancel();
-        }
-        final Observer observer = this;
-        task = RP.create(new Runnable() {
-            public void run() {
+   private class Tsk implements Runnable, Cancellable {
+        private volatile boolean cancelled = false;
+
+        @Override
+        public void run() {
+                if (cancelled) return;
+                
                 final String[] search = new String[1];
                 try {
                     SwingUtilities.invokeAndWait(new Runnable() {
+                        @Override
                         public void run() {
                             lblSelected.setText(null);
                             search[0] = getClassSearchName();
@@ -195,6 +198,7 @@ public class SearchDependencyUI extends javax.swing.JPanel implements ExplorerMa
                 }
 
                 SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         resultsRootNode.setOneChild(getSearchingNode());
                     }
@@ -202,17 +206,25 @@ public class SearchDependencyUI extends javax.swing.JPanel implements ExplorerMa
 
                 if (search[0].length() > 0) {
                     
-                    queryRequest = new QueryRequest(search[0], RepositoryPreferences.getInstance().getRepositoryInfos(), observer);
-                
                     try {
-                        RepositoryQueries.findVersionsByClass(queryRequest);
+                        Result<NBVersionInfo> result = RepositoryQueries.findVersionsByClassResult(search[0], RepositoryPreferences.getInstance().getRepositoryInfos());
+                        if (cancelled) return;
+                        updateResult(result.getResults(), result.isPartial());
+                        if (result.isPartial()) {
+                            result.waitForSkipped();
+                            if (cancelled) return;
+                            updateResult(result.getResults(), false);
+                        }
                     } catch (BooleanQuery.TooManyClauses exc) {
+                        if (cancelled) return;
                         SwingUtilities.invokeLater(new Runnable() {
+                            @Override
                             public void run() {
                                 resultsRootNode.setOneChild(getTooGeneralNode());
                             }
                         });
                     } catch (OutOfMemoryError oome) {
+                        if (cancelled) return;
                         // running into OOME may still happen in Lucene despite the fact that
                         // we are trying hard to prevent it in NexusRepositoryIndexerImpl
                         // (see #190265)
@@ -220,45 +232,40 @@ public class SearchDependencyUI extends javax.swing.JPanel implements ExplorerMa
                         // but most probably this thread will be it
                         // trying to indicate the condition to the user here
                         SwingUtilities.invokeLater(new Runnable() {
+                            @Override
                             public void run() {
                                 resultsRootNode.setOneChild(getTooGeneralNode());
                             }
                         });
                     }
-                    //the actual lucene query takes much longer than our queue
-                    // timeout, we should not start new tasks until this one is
-                    //finished.. and this one should either finish with correct data
-                    // or immediately retrigger a new search.
-                    synchronized (SearchDependencyUI.this) {
-                        if (retrigger) {
-                            retrigger = false;
-                            task.schedule(20);
-                            return;
-                        }
-                    }
                 } else {
                     SwingUtilities.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
                             resultsRootNode.setOneChild(getNoResultsNode());
                         }
                     });
                 }
-            }
-        }, true);
+        }
+
+        @Override
+        public synchronized boolean cancel() {
+            cancelled = true;
+            return true;
+        }
+       
+   }
+
+    private Task createSearchTask() {
+        if (task != null) {
+            task.cancel();
+        }
+        task = new Tsk();
+        return RP.create(task, true);
     }
     
-    public synchronized void load() {
-        if (!task.isFinished() && task.getDelay() == 0) {
-            //if running, just flag the 'retrigger' variable,
-            //chances are the task is currently doing a lucene search..
-            retrigger = true;
-            // stop waiting for results of the previous search
-            if (null != queryRequest) {
-                queryRequest.deleteObserver(this);
-            }                
-        } else {
-            task.schedule(500);
-        }
+    public final synchronized void load() {
+        createSearchTask().schedule(500);
     }
 
     public String getClassSearchName() {
@@ -324,6 +331,7 @@ public class SearchDependencyUI extends javax.swing.JPanel implements ExplorerMa
     private javax.swing.JTextField txtClassName;
     // End of variables declaration//GEN-END:variables
 
+    @Override
     public ExplorerManager getExplorerManager() {
         return explorerManager;
     }
@@ -388,6 +396,7 @@ public class SearchDependencyUI extends javax.swing.JPanel implements ExplorerMa
 
     private static Node noResultsNode, searchingNode, tooGeneralNode;
     
+    @Messages("Node_Loading=Searching...")
     private static Node getSearchingNode() {
         if (searchingNode == null) {
             AbstractNode nd = new AbstractNode(Children.LEAF) {
@@ -404,13 +413,14 @@ public class SearchDependencyUI extends javax.swing.JPanel implements ExplorerMa
             };
             nd.setName("Searching"); //NOI18N
 
-            nd.setDisplayName(NbBundle.getMessage(SearchDependencyUI.class, "Node_Loading")); //NOI18N
+            nd.setDisplayName(Node_Loading()); //NOI18N
             
             searchingNode = nd;
         }
         return new FilterNode (searchingNode, Children.LEAF);
     }
 
+    @Messages("Node_Empty=No matching items")
     public static Node getNoResultsNode() {
         if (noResultsNode == null) {
             AbstractNode nd = new AbstractNode(Children.LEAF) {
@@ -427,13 +437,14 @@ public class SearchDependencyUI extends javax.swing.JPanel implements ExplorerMa
             };
             nd.setName("Empty"); //NOI18N
 
-            nd.setDisplayName(NbBundle.getMessage(SearchDependencyUI.class, "Node_Empty"));
+            nd.setDisplayName(Node_Empty());
             
             noResultsNode = nd;
         }
         return new FilterNode (noResultsNode, Children.LEAF);
     }
 
+    @Messages("Node_TooGeneral=Too general query")
     private static Node getTooGeneralNode() {
         if (tooGeneralNode == null) {
             AbstractNode nd = new AbstractNode(Children.LEAF) {
@@ -450,7 +461,7 @@ public class SearchDependencyUI extends javax.swing.JPanel implements ExplorerMa
             };
             nd.setName("Too General"); //NOI18N
 
-            nd.setDisplayName(NbBundle.getMessage(SearchDependencyUI.class, "Node_TooGeneral")); //NOI18N
+            nd.setDisplayName(Node_TooGeneral()); //NOI18N
 
             tooGeneralNode = nd;
         }
@@ -458,38 +469,32 @@ public class SearchDependencyUI extends javax.swing.JPanel implements ExplorerMa
         return new FilterNode (tooGeneralNode, Children.LEAF);
     }
     
-    @Override
-    public void update(Observable o, Object arg) {
-
-        if (null == o || !(o instanceof QueryRequest)) {
-            return;
-        }
-
-        List<NBVersionInfo> infos = ((QueryRequest) o).getResults();
-
+    
+    void updateResult(List<NBVersionInfo> infos, final boolean partial) {
         final Map<String, List<NBVersionInfo>> map = new HashMap<String, List<NBVersionInfo>>();
 
-        for (NBVersionInfo nbvi : infos) {
-            String key = nbvi.getGroupId() + " : " + nbvi.getArtifactId();
+        for (NBVersionInfo ver : infos) {
+            String key = ver.getGroupId() + " : " + ver.getArtifactId();
             List<NBVersionInfo> get = map.get(key);
             if (get == null) {
                 get = new ArrayList<NBVersionInfo>();
                 map.put(key, get);
             }
-            get.add(nbvi);
+            get.add(ver);
         }
         final List<String> keyList = new ArrayList<String>(map.keySet());
         // sort specially using our comparator, see compare method
         Collections.sort(keyList, new HeuristicsComparator());
 
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
-                updateResultNodes(keyList, map);
+                updateResultNodes(keyList, map, partial);
             }
         });
     }
-    
-    private void updateResultNodes(List<String> keyList, Map<String, List<NBVersionInfo>> map) {
+ 
+    private void updateResultNodes(List<String> keyList, Map<String, List<NBVersionInfo>> map, boolean partial) {
 
         if (keyList.size() > 0) { // some results available
 
@@ -498,11 +503,6 @@ public class SearchDependencyUI extends javax.swing.JPanel implements ExplorerMa
                 currentNodes.put(nd.getName(), nd);
             }
             List<Node> newNodes = new ArrayList<Node>(keyList.size());
-
-            // still searching?
-            if (null != queryRequest && !queryRequest.isFinished()) {
-                newNodes.add(getSearchingNode());
-            }
 
             for (String key : keyList) {
                 Node nd;
@@ -514,9 +514,14 @@ public class SearchDependencyUI extends javax.swing.JPanel implements ExplorerMa
                 }
                 newNodes.add(nd);
             }
+            
+            // still searching?
+            if (partial) {
+                newNodes.add(getSearchingNode());
+            }
 
             resultsRootNode.setNewChildren(newNodes);
-        } else if (null != queryRequest && !queryRequest.isFinished()) { // still searching, no results yet
+        } else if (partial) { // still searching, no results yet
             resultsRootNode.setOneChild(getSearchingNode());
         } else { // finished searching with no results
             resultsRootNode.setOneChild(getNoResultsNode());
@@ -565,6 +570,7 @@ public class SearchDependencyUI extends javax.swing.JPanel implements ExplorerMa
             }
         }
 
+        @Override
         public int compare(String s1, String s2) {
             String[] split1 = s1.split(":");
             String[] split2 = s2.split(":");

@@ -45,6 +45,7 @@ package org.netbeans.libs.git.jgit.commands;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import org.eclipse.jgit.lib.Config;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.RefComparator;
@@ -52,6 +53,7 @@ import org.eclipse.jgit.lib.Repository;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.jgit.GitClassFactory;
+import org.netbeans.libs.git.jgit.Utils;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 
 /**
@@ -60,7 +62,7 @@ import org.netbeans.libs.git.progress.ProgressMonitor;
  */
 public class ListBranchCommand extends GitCommand {
     private final boolean all;
-    private HashMap<String, GitBranch> allBranches;
+    private HashMap<String, GitBranch> branches;
 
     public ListBranchCommand (Repository repository, GitClassFactory gitFactory, boolean all, ProgressMonitor monitor) {
         super(repository, gitFactory, monitor);
@@ -72,21 +74,25 @@ public class ListBranchCommand extends GitCommand {
         Repository repository = getRepository();
         Map<String, Ref> refs = repository.getAllRefs();
         Ref head = refs.get(Constants.HEAD);
-        allBranches = new HashMap<String, GitBranch>();
+        branches = new HashMap<String, GitBranch>();
+        Config cfg = repository.getConfig();
         if (head != null) {
             String current = head.getLeaf().getName();
             if (current.equals(Constants.HEAD)) {
                 String name = GitBranch.NO_BRANCH;
-                allBranches.put(name, getClassFactory().createBranch(name, false, true, head.getLeaf().getObjectId()));
+                branches.put(name, getClassFactory().createBranch(name, false, true, head.getLeaf().getObjectId()));
             }
-            allBranches.putAll(getRefs(refs.values(), Constants.R_HEADS, false, current));
+            branches.putAll(getRefs(refs.values(), Constants.R_HEADS, false, current, cfg));
         }
+        Map<String, GitBranch> allBranches = getRefs(refs.values(), Constants.R_REMOTES, true, null, cfg);
+        allBranches.putAll(branches);
+        setupTracking(branches, allBranches, repository.getConfig());
         if (all) {
-            allBranches.putAll(getRefs(refs.values(), Constants.R_REMOTES, true, null));
+            branches.putAll(allBranches);
         }
     }
 
-    private Map<String, GitBranch> getRefs (Collection<Ref> allRefs, String prefix, boolean isRemote, String activeBranch) {
+    private Map<String, GitBranch> getRefs (Collection<Ref> allRefs, String prefix, boolean isRemote, String activeBranch, Config config) {
         Map<String, GitBranch> branches = new HashMap<String, GitBranch>();
         for (final Ref ref : RefComparator.sort(allRefs)) {
             String refName = ref.getLeaf().getName();
@@ -104,7 +110,13 @@ public class ListBranchCommand extends GitCommand {
     }
 
     public Map<String, GitBranch> getBranches () {
-        return allBranches;
+        return branches;
+    }
+
+    private void setupTracking (Map<String, GitBranch> branches, Map<String, GitBranch> allBranches, Config cfg) {
+        for (GitBranch b : branches.values()) {
+            getClassFactory().setBranchTracking(b, Utils.getTrackedBranch(cfg, b.getName(), allBranches));
+        }
     }
 
 }

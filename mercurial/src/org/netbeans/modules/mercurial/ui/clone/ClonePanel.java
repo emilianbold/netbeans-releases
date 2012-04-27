@@ -44,12 +44,6 @@
 package org.netbeans.modules.mercurial.ui.clone;
 
 import java.io.File;
-import java.util.Set;
-import java.util.Vector;
-import java.util.LinkedHashSet;
-import javax.swing.SwingUtilities;
-import javax.swing.ComboBoxModel;
-import javax.swing.DefaultComboBoxModel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JFileChooser;
@@ -57,7 +51,6 @@ import javax.swing.filechooser.FileFilter;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.versioning.util.AccessibleJFileChooser;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
-import org.netbeans.modules.mercurial.HgModuleConfig;
 
 /**
  *
@@ -72,11 +65,9 @@ public class ClonePanel extends javax.swing.JPanel implements ActionListener {
         repository = repo;
         initComponents();
         browseButton.addActionListener(this);
-        setMainCheckBox.addActionListener(this);
         fromTextField.setText(repo.getAbsolutePath());
         toTextField.setText(to.getParent());
         toCloneField.setText(to.getName());
-        setMainCheckBox.setSelected(HgModuleConfig.getDefault().getSetMainProject());
     }
 
     public File getTargetDir() {
@@ -98,7 +89,6 @@ public class ClonePanel extends javax.swing.JPanel implements ActionListener {
         toNameLabel = new javax.swing.JLabel();
         toCloneField = new javax.swing.JTextField();
         destinationLabel = new javax.swing.JLabel();
-        setMainCheckBox = new javax.swing.JCheckBox();
 
         fromLabel.setLabelFor(fromTextField);
         org.openide.awt.Mnemonics.setLocalizedText(fromLabel, org.openide.util.NbBundle.getMessage(ClonePanel.class, "ClonePanel.fromLabel.text")); // NOI18N
@@ -115,8 +105,6 @@ public class ClonePanel extends javax.swing.JPanel implements ActionListener {
 
         org.openide.awt.Mnemonics.setLocalizedText(destinationLabel, org.openide.util.NbBundle.getMessage(ClonePanel.class, "destinationLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(setMainCheckBox, org.openide.util.NbBundle.getMessage(ClonePanel.class, "openCheckbox.text")); // NOI18N
-
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -130,11 +118,8 @@ public class ClonePanel extends javax.swing.JPanel implements ActionListener {
                         .addGap(12, 12, 12)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(toNameLabel)
-                            .addComponent(setMainCheckBox)))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(12, 12, 12)
-                        .addComponent(toLabel)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(toLabel))))
+                .addGap(94, 94, 94)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(fromTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 272, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
@@ -163,24 +148,19 @@ public class ClonePanel extends javax.swing.JPanel implements ActionListener {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(toCloneField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(toNameLabel))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(setMainCheckBox, javax.swing.GroupLayout.PREFERRED_SIZE, 21, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                .addGap(31, 31, 31))
         );
 
         toTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ClonePanel.class, "ACSD_toTextField")); // NOI18N
         browseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ClonePanel.class, "ACSD_Browse")); // NOI18N
         fromTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ClonePanel.class, "ACSD_fromTextField")); // NOI18N
         toCloneField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ClonePanel.class, "ACSD_toCloneField")); // NOI18N
-        setMainCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ClonePanel.class, "ACSD_setMainCheckBox")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
 
     public void actionPerformed(ActionEvent evt) {
         if (evt.getSource() == browseButton) {
             onBrowseClick();
-        } else if (evt.getSource() == setMainCheckBox) {
-            HgModuleConfig.getDefault().setSetMainProject(setMainCheckBox.isSelected());
         }
     }
 
@@ -255,7 +235,6 @@ public class ClonePanel extends javax.swing.JPanel implements ActionListener {
     private javax.swing.JLabel destinationLabel;
     private javax.swing.JLabel fromLabel;
     private javax.swing.JTextField fromTextField;
-    private javax.swing.JCheckBox setMainCheckBox;
     private javax.swing.JTextField toCloneField;
     private javax.swing.JLabel toLabel;
     private javax.swing.JLabel toNameLabel;

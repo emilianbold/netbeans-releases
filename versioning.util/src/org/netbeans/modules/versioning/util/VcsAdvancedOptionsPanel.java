@@ -6,7 +6,8 @@
 
 package org.netbeans.modules.versioning.util;
 
-import java.awt.CardLayout;
+import java.awt.BorderLayout;
+import java.util.HashMap;
 import javax.swing.DefaultListModel;
 import javax.swing.JComponent;
 
@@ -15,6 +16,8 @@ import javax.swing.JComponent;
  * @author  pbuzek
  */
 public class VcsAdvancedOptionsPanel extends javax.swing.JPanel {
+
+    HashMap<String, JComponent> versioningPanels = new HashMap<String, JComponent>();
     
     /** Creates new form VcsAdvancedOptionsPanel */
     public VcsAdvancedOptionsPanel() {
@@ -22,10 +25,11 @@ public class VcsAdvancedOptionsPanel extends javax.swing.JPanel {
     }
     
     public void addPanel(String name, JComponent component) {
-        ((DefaultListModel)versioningSystemsList.getModel()).addElement(name);
-        containerPanel.add(name, component);
-        if (versioningSystemsList.getModel().getSize() == 1) {
-            versioningSystemsList.setSelectedIndex(0);
+        if (versioningPanels.containsKey(name)) {
+            versioningSystemsList.setSelectedValue(name, true);
+        } else {
+            ((DefaultListModel) versioningSystemsList.getModel()).addElement(name);
+            versioningPanels.put(name, component);
         }
     }
     
@@ -57,7 +61,7 @@ public class VcsAdvancedOptionsPanel extends javax.swing.JPanel {
         jLabel1.setLabelFor(versioningSystemsList);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getBundle(VcsAdvancedOptionsPanel.class).getString("LBL_VersioningSystems")); // NOI18N
 
-        containerPanel.setLayout(new java.awt.CardLayout());
+        containerPanel.setLayout(new java.awt.BorderLayout());
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -87,10 +91,11 @@ public class VcsAdvancedOptionsPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
 private void versioningSystemsListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_versioningSystemsListValueChanged
-    ((CardLayout) containerPanel.getLayout()).show(
-            containerPanel, (String) versioningSystemsList.getSelectedValue());
+    containerPanel.setVisible(false);
+    containerPanel.removeAll();
+    containerPanel.add(versioningPanels.get((String) versioningSystemsList.getSelectedValue()), BorderLayout.CENTER);
+    containerPanel.setVisible(true);
 }//GEN-LAST:event_versioningSystemsListValueChanged
-    
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel containerPanel;

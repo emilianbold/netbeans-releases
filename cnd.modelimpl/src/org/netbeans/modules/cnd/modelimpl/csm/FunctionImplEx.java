@@ -44,18 +44,35 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
-import org.netbeans.modules.cnd.modelimpl.csm.resolver.Resolver;
-import org.netbeans.modules.cnd.modelimpl.csm.resolver.ResolverFactory;
-import org.netbeans.modules.cnd.api.model.*;
-import java.util.*;
-import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import org.netbeans.modules.cnd.antlr.collections.AST;
+import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmClassifier;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmMember;
+import org.netbeans.modules.cnd.api.model.CsmNamespace;
+import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
+import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmQualifiedNamedElement;
+import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
-import org.netbeans.modules.cnd.modelimpl.csm.core.*;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
+import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
+import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
+import org.netbeans.modules.cnd.modelimpl.csm.resolver.Resolver;
+import org.netbeans.modules.cnd.modelimpl.csm.resolver.ResolverFactory;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
+import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
@@ -82,23 +99,19 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
         super(name, rawName, scope, _static, _const, file, startOffset, endOffset, global);
     }
 
-    public static<T> FunctionImplEx<T> create(AST ast, CsmFile file, CsmScope scope, boolean register, boolean global) throws AstRendererException {
-        return create(ast, file, scope, register, global, null);
-    }
-    
-    public static<T> FunctionImplEx<T> create(AST ast, CsmFile file, CsmScope scope, boolean register, boolean global, Map<Integer, CsmObject> objects) throws AstRendererException {
+    public static<T> FunctionImplEx<T> create(AST ast, CsmFile file, FileContent fileContent, CsmScope scope, boolean register, boolean global, Map<Integer, CsmObject> objects) throws AstRendererException {
         int startOffset = getStartOffset(ast);
         int endOffset = getEndOffset(ast);
         
         NameHolder nameHolder = NameHolder.createFunctionName(ast);
         CharSequence name = QualifiedNameCache.getManager().getString(nameHolder.getName());
         if (name.length() == 0) {
-            DiagnosticExceptoins.register(new AstRendererException((FileImpl) file, startOffset, "Empty function name.")); // NOI18N
+            DiagnosticExceptoins.register(AstRendererException.createAstRendererException((FileImpl) file, ast, startOffset, "Empty function name.")); // NOI18N
             return null;
         }
         CharSequence rawName = initRawName(ast);
         
-        boolean _static = AstRenderer.FunctionRenderer.isStatic(ast, file, name);
+        boolean _static = AstRenderer.FunctionRenderer.isStatic(ast, file, fileContent, name);
         boolean _const = AstRenderer.FunctionRenderer.isConst(ast);
 
         scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, false);
@@ -113,7 +126,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
         
         functionImplEx.setTemplateDescriptor(templateDescriptor, classTemplateSuffix);
         functionImplEx.setReturnType(AstRenderer.FunctionRenderer.createReturnType(ast, functionImplEx, file, objects));
-        functionImplEx.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, functionImplEx, file, global), 
+        functionImplEx.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, functionImplEx, file, fileContent), 
                 AstRenderer.FunctionRenderer.isVoidParameter(ast));        
         
         CharSequence[] classOrNspNames = CastUtils.isCast(ast) ?
@@ -126,7 +139,8 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
         } else {
             RepositoryUtils.put(functionImplEx);
         }
-        nameHolder.addReference(file, functionImplEx);
+        postFunctionImpExCreateRegistration(fileContent, register, functionImplEx);
+        nameHolder.addReference(fileContent, functionImplEx);
         return functionImplEx;
     }
 
@@ -168,7 +182,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
         }
         child = AstRenderer.getFirstSiblingSkipInline(child);
         child = AstRenderer.getFirstSiblingSkipQualifiers(child);
-	if( child != null && child.getType() == CPPTokenTypes.ID ) {
+	if( child != null && child.getType() == CPPTokenTypes.IDENT ) {
 	    AST next = child.getNextSibling();
 	    if( next != null && next.getType() == CPPTokenTypes.LESSTHAN ) {
                 next = AstRenderer.skipTemplateParameters(next);
@@ -180,7 +194,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
 		begin:
 		for( next = next.getNextSibling(); next != null; next = next.getNextSibling() ) {
 		    switch( next.getType() ) {
-			case CPPTokenTypes.ID:
+			case CPPTokenTypes.IDENT:
 			    l.add(manager.getString(AstUtil.getText(next)));
                             break;
 			case CPPTokenTypes.SCOPE:
@@ -210,7 +224,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
             for( AST token = qid.getFirstChild(); token != null; token = token.getNextSibling() ) {
                 int type2 = token.getType();
                 switch (type2) {
-                    case CPPTokenTypes.ID:
+                    case CPPTokenTypes.IDENT:
                         id = new StringBuilder(token.getText());
                         break;
                     case CPPTokenTypes.GREATERTHAN:
@@ -271,18 +285,26 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
         return sb.toString();
     }
 
-    @Override
-    protected boolean registerInProject() {
-        boolean out = super.registerInProject();
-        // if this funtion couldn't find it's FQN => register it as fake and
-        // come back later on for registration (see fixFakeRegistration with null ast)
-        if( hasFlags(FAKE_QUALIFIED_NAME) ) {
-            ((FileImpl) getContainingFile()).onFakeRegisration(this, null);
+    protected static <T> void postFunctionImpExCreateRegistration(FileContent fileContent, boolean global, FunctionImplEx<T> obj) {
+        if (global) {
+            if (obj.isFakeQualifiedName()) {
+                fileContent.onFakeRegisration(obj, null);
+            }
         }
-        return out;
     }
+//    
+//    @Override
+//    protected boolean registerInProject() {
+//        boolean out = super.registerInProject();
+//        // if this funtion couldn't find it's FQN => register it as fake and
+//        // come back later on for registration (see fixFakeRegistration with null ast)
+//        if (hasFlags(FAKE_QUALIFIED_NAME)) {
+//            int i = 0;
+//        }
+//        return out;
+//    }
     
-    public final boolean fixFakeRegistration(boolean projectParsedMode, AST fixFakeRegistrationAst) {
+    public final boolean fixFakeRegistration(FileContent fileContent, boolean projectParsedMode, AST fixFakeRegistrationAst) {
         boolean fixed = false;
         if (fixFakeRegistrationAst != null) {
             CsmObject owner = findOwner();
@@ -294,10 +316,10 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
                     if (member.isStatic() && member.getName().equals(getName())) {
                         FileImpl aFile = (FileImpl) getContainingFile();
                         aFile.getProjectImpl(true).unregisterDeclaration(this);
-                        aFile.removeDeclaration(this);
+                        fileContent.removeDeclaration(this);
                         NameHolder nameHolder = NameHolder.createFunctionName(fixFakeRegistrationAst);
                         VariableDefinitionImpl var = VariableDefinitionImpl.create(fixFakeRegistrationAst, getContainingFile(), getReturnType(), nameHolder, _static, _extern);
-                        aFile.addDeclaration(var);
+                        fileContent.addDeclaration(var);
                         fixFakeRegistrationAst = null;
                         return true;
                     }
@@ -314,10 +336,10 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
                     if (CsmKindUtilities.isExternVariable(decl) && decl.getName().equals(getName())) {
                         FileImpl aFile = (FileImpl) getContainingFile();
                         aFile.getProjectImpl(true).unregisterDeclaration(this);
-                        aFile.removeDeclaration(this);
+                        fileContent.removeDeclaration(this);
                         NameHolder nameHolder = NameHolder.createFunctionName(fixFakeRegistrationAst);
                         VariableDefinitionImpl var = VariableDefinitionImpl.create(fixFakeRegistrationAst, getContainingFile(), getReturnType(), nameHolder, _static, _extern);
-                        aFile.addDeclaration(var);
+                        fileContent.addDeclaration(var);
                         fixFakeRegistrationAst = null;
                         return true;
                     }
@@ -326,12 +348,12 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
             if (projectParsedMode) {
                 try {
                     FileImpl aFile = (FileImpl) getContainingFile();
-                    FunctionImpl<?> fi = FunctionImpl.create(fixFakeRegistrationAst, getContainingFile(), null, this.getScope(),true);
+                    FunctionImpl<?> fi = FunctionImpl.create(fixFakeRegistrationAst, getContainingFile(), null, null, this.getScope(),true,null);
                     fixFakeRegistrationAst = null;
                     aFile.getProjectImpl(true).unregisterDeclaration(this);
-                    aFile.removeDeclaration(this);
+                    fileContent.removeDeclaration(this);
                     fi.registerInProject();
-                    aFile.addDeclaration(fi);
+                    fileContent.addDeclaration(fi);
                     fixed = true;
                     if (NamespaceImpl.isNamespaceScope(fi)) {
                         if (CsmKindUtilities.isNamespace(this.getScope())) {
@@ -350,6 +372,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
                 this.cleanUID();
                 qualifiedName = newQname;
                 registerInProject();
+                postFunctionImpExCreateRegistration(fileContent, true, this);
                 fixed = true;
             }
         }
@@ -377,6 +400,10 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
         }
         return null;
     }    
+    
+    private boolean isFakeQualifiedName() {
+        return hasFlags(FAKE_QUALIFIED_NAME);
+    }
     
     public static boolean isFakeFunction(CsmObject declaration) {
         if (declaration instanceof FunctionImplEx<?>) {

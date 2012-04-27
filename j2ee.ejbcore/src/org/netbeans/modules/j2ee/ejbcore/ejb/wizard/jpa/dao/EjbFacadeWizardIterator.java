@@ -146,7 +146,7 @@ import org.openide.util.NbBundle;
     private static final String FACADE_LOCAL_SUFFIX = FACADE_SUFFIX + "Local"; //NOI18N
     private static final String EJB_LOCAL = "javax.ejb.Local"; //NOI18N
     private static final String EJB_REMOTE = "javax.ejb.Remote"; //NOI18N
-    private static final String EJB_STATELESS = "javax.ejb.Stateless"; //NOI18N
+    protected static final String EJB_STATELESS = "javax.ejb.Stateless"; //NOI18N
 
     private int index;
     private WizardDescriptor wizard;
@@ -175,6 +175,7 @@ import org.openide.util.NbBundle;
     @Override
     public Set instantiate(ProgressHandle handle) throws IOException {
         try {
+            EjbFacadeWizardPanel2.afterFinishAction.set(true);
             return instantiateWProgress(handle);
         } finally {
             handle.finish();
@@ -352,7 +353,7 @@ import org.openide.util.NbBundle;
             if (overrideExisting) {
                 existingFO.delete();
             } else {
-                throw new IOException("file alerady exists exception: "+existingFO);
+                throw new IOException("File already exists exception: " + existingFO.getPath());
             }
         }
         final FileObject facade = GenerationUtils.createClass(targetFolder, entitySimpleName + FACADE_SUFFIX, null);

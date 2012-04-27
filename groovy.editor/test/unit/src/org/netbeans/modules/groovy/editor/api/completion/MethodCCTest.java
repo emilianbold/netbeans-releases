@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.groovy.editor.api.completion;
 
+import org.netbeans.junit.RandomlyFails;
+
 /**
  *
  * @author schmidtm
@@ -61,10 +63,10 @@ public class MethodCCTest extends GroovyCCTestBase {
         checkCompletion(BASE + "CompletionInsideFor1.groovy", "for(new Date().get^", false);
     }
 
-    // Randomly fails
-    /*public void testCompletionInsideFor1_2() throws Exception {
-        checkCompletion(BASE + "CompletionInsideFor1.groovy", "for (String other in [1:\"Alice\", 2:\"Bob\"].^", false);
-    }*/
+    @RandomlyFails
+    public void testCompletionInsideFor1_2() throws Exception {
+        checkCompletion(BASE + "CompletionInsideFor1.groovy", "for (String other in [1:\"Alice\", 2:\"Bob\"].^) {", false);
+    }
 
     public void testMethods1_1() throws Exception {
         checkCompletion(BASE + "Methods1.groovy", "        new URL(\"http://google.com\").getPr^", false);
@@ -84,6 +86,10 @@ public class MethodCCTest extends GroovyCCTestBase {
 
     public void testMethods2_1() throws Exception {
         checkCompletion(BASE + "Methods2.groovy", "        new Byte().^", false);
+    }
+
+    public void testMethods2_2() throws Exception {
+        checkCompletion(BASE + "Methods2.groovy", "        new GroovyClass3().in^", false);
     }
 
     public void testCompletionInMethodCall1_1() throws Exception {
@@ -132,6 +138,10 @@ public class MethodCCTest extends GroovyCCTestBase {
 
     public void testCompletionGeneratedAccessors1_2() throws Exception {
         checkCompletion(BASE + "CompletionGeneratedAccessors1.groovy", "        new Test().set^", false);
+    }
+    
+    public void testCompletionGeneratedAccessors1_3() throws Exception {
+        checkCompletion(BASE + "CompletionGeneratedAccessors1.groovy", "        new Test().is^", false);
     }
 
     public void testCompletionGroovyClass1_1() throws Exception {

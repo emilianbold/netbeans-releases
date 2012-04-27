@@ -71,6 +71,7 @@ import org.netbeans.modules.cnd.utils.ui.DocumentAdapter;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -98,6 +99,9 @@ public class SelectModePanel extends javax.swing.JPanel {
             // the same dir is ised for both project metadata and existing sources;
             // but "existing sources" in more clear title
             projectFolderLabel.setText(sourceFolderLabel.getText());
+            if (controller.getExistingFolder() != null) {
+                projectFolder.setText(controller.getExistingFolder());
+            }
         }
         instructions.setEditorKit(new HTMLEditorKit());
         instructions.setBackground(instructionPanel.getBackground());
@@ -480,7 +484,6 @@ public class SelectModePanel extends javax.swing.JPanel {
     void store(WizardDescriptor wizardDescriptor) {
         if (simpleMode.isSelected()) {
             wizardDescriptor.putProperty(WizardConstants.PROPERTY_SIMPLE_MODE, Boolean.TRUE);
-            wizardDescriptor.putProperty(WizardConstants.PROPERTY_SET_AS_MAIN,  Boolean.TRUE);
         } else {
             wizardDescriptor.putProperty(WizardConstants.PROPERTY_SIMPLE_MODE, Boolean.FALSE);
         }

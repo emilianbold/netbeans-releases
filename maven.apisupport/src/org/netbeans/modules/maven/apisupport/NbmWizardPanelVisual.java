@@ -55,6 +55,7 @@ import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
+import org.netbeans.modules.maven.indexer.api.RepositoryQueries.Result;
 import org.netbeans.validation.api.ValidatorUtils;
 import org.netbeans.validation.api.builtin.stringvalidation.StringValidators;
 import org.netbeans.validation.api.ui.ValidationGroup;
@@ -80,6 +81,7 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
     boolean isSuite = false;
 
     @SuppressWarnings("unchecked") // SIMPLEVALIDATION-48
+    @Messages("ADD_Module_Name=NetBeans Module ArtifactId")
     public NbmWizardPanelVisual(NbmWizardPanel panel) {
         this.panel = panel;
         initComponents();
@@ -90,41 +92,72 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
                     MavenValidators.createArtifactIdValidators(),
                     StringValidators.REQUIRE_VALID_FILENAME
                     ));
-            SwingValidationGroup.setComponentName(txtAddModule, /* XXX I18N */"NetBeans Module ArtifactId");
+            SwingValidationGroup.setComponentName(txtAddModule, ADD_Module_Name());
         } else {
             cbAddModule.setVisible(false);
             txtAddModule.setVisible(false);
         }
-        RepositoryInfo info = MavenNbModuleImpl.netbeansRepo();
-        final Object key = this;
-        if (info == null) {
-            try {
-                RepositoryPreferences.getInstance().addTransientRepository(key, MavenNbModuleImpl.NETBEANS_REPO_ID, MavenNbModuleImpl.NETBEANS_REPO_ID, "http://bits.netbeans.org/maven2/");
-                info = MavenNbModuleImpl.netbeansRepo();
-            } catch (URISyntaxException x) {
-                assert false : x;
-            }
-        }
-        if (info != null) {
-            final List<RepositoryInfo> infos = Collections.singletonList(info);
-            versionCombo.setModel(new DefaultComboBoxModel(new Object[] {SEARCHING}));
-            RP.post(new Runnable() {
-                public @Override void run() {
+        RP.post(new Runnable() {
+            public @Override void run() {
+
+                RepositoryInfo info = MavenNbModuleImpl.netbeansRepo();
+                final Object key = this;
+                if (info == null) {
+                    try {
+                        RepositoryPreferences.getInstance().addTransientRepository(key, MavenNbModuleImpl.NETBEANS_REPO_ID, MavenNbModuleImpl.NETBEANS_REPO_ID, "http://bits.netbeans.org/maven2/", RepositoryInfo.MirrorStrategy.NON_WILDCARD);
+                        info = MavenNbModuleImpl.netbeansRepo();
+                    } catch (URISyntaxException x) {
+                        assert false : x;
+                    }
+                }
+                if (info != null) {
+                    EventQueue.invokeLater(new Runnable()  {
+                        public @Override void run() {
+                            versionCombo.setModel(new DefaultComboBoxModel(new Object[] {SEARCHING}));
+                        }
+                    });
+
                     final List<String> versions = new ArrayList<String>();
-                    for (NBVersionInfo version : RepositoryQueries.getVersions("org.netbeans.cluster", "platform", infos)) { // NOI18N
+                    final Result<NBVersionInfo> result = RepositoryQueries.getVersionsResult("org.netbeans.cluster", "platform", Collections.singletonList(info));
+                    for (NBVersionInfo version : result.getResults()) { // NOI18N
                         versions.add(version.getVersion());
                     }
                     versions.add("SNAPSHOT"); // NOI18N
-                    RepositoryPreferences.getInstance().removeTransientRepositories(key);
+                    if (result.isPartial()) {
+                        versions.add(SEARCHING);
+                        //we return the values we have and schedule retrieval of the rest.
+                        RP.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                final List<String> versions2 = new ArrayList<String>();
+                                result.waitForSkipped();
+                                RepositoryPreferences.getInstance().removeTransientRepositories(key);
+                                for (NBVersionInfo version : result.getResults()) { // NOI18N
+                                    versions2.add(version.getVersion());
+                                }
+                                versions2.add("SNAPSHOT"); // NOI18N
+
+                                EventQueue.invokeLater(new Runnable()  {
+                                            public @Override void run() {
+                                                versionCombo.setModel(new DefaultComboBoxModel(versions2.toArray()));
+                                                versionComboActionPerformed(null);
+                                            }
+                                        });
+                            }
+                        });
+                    } else {
+                        RepositoryPreferences.getInstance().removeTransientRepositories(key);
+                    }
                     EventQueue.invokeLater(new Runnable()  {
-                        public @Override void run() {
-                            versionCombo.setModel(new DefaultComboBoxModel(versions.toArray()));
-                            versionComboActionPerformed(null);
-                        }
-                    });
-                }
-            });
-        }
+                                            public @Override void run() {
+                                                versionCombo.setModel(new DefaultComboBoxModel(versions.toArray()));
+                                                versionComboActionPerformed(null);
+                                            }
+                                        });
+                    }
+            }
+        });
+        
     }
 
     /** This method is called from within the constructor to
@@ -145,7 +178,6 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
         versionLabel.setLabelFor(versionCombo);
         org.openide.awt.Mnemonics.setLocalizedText(versionLabel, NbBundle.getMessage(NbmWizardPanelVisual.class, "NbmWizardPanelVisual.versionLabel.text")); // NOI18N
 
-        versionCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "RELEASE123" }));
         versionCombo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 versionComboActionPerformed(evt);
@@ -175,7 +207,7 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(versionLabel)
                         .addGap(8, 8, 8)
-                        .addComponent(versionCombo, 0, 395, Short.MAX_VALUE))
+                        .addComponent(versionCombo, 0, 396, Short.MAX_VALUE))
                     .addComponent(cbOsgiDeps)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(cbAddModule)
@@ -249,7 +281,7 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
              }
          }
          String version = (String) versionCombo.getSelectedItem();
-         if (!version.equals(SEARCHING)) {
+         if (version != null && !version.equals(SEARCHING)) {
              d.putProperty(NbmWizardIterator.NB_VERSION, version);
          }
          if (isApp || isSuite) {

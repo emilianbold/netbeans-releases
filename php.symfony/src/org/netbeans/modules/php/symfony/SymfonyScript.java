@@ -138,13 +138,10 @@ public class SymfonyScript extends PhpProgram {
         return OPTIONS_SUB_PATH;
     }
 
+    @NbBundle.Messages("SymfonyScript.script.label=Symfony script")
     @Override
     public String validate() {
-        String error = FileUtils.validateFile(getProgram(), false);
-        if (error == null) {
-            return null;
-        }
-        return NbBundle.getMessage(SymfonyScript.class, "LBL_SymfonyScriptPrefix", error);
+        return FileUtils.validateFile(Bundle.SymfonyScript_script_label(), getProgram(), false);
     }
 
     public static String validate(String command) {

@@ -51,6 +51,7 @@ import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
+import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 
 /**
  *
@@ -58,21 +59,21 @@ import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
  */
 public class SubmitCommand extends BugzillaCommand {
 
-    private final TaskRepository taskRepository;
+    private final BugzillaRepository repository;
     private final TaskData data;
     private RepositoryResponse rr;
     private boolean wasNew;
     private String stringValue;
 
-    public SubmitCommand(TaskRepository taskRepository, TaskData data) {
-        this.taskRepository = taskRepository;
+    public SubmitCommand(BugzillaRepository repository, TaskData data) {
+        this.repository = repository;
         this.data = data;
         wasNew = data.isNew();
     }
 
     @Override
     public void execute() throws CoreException, IOException, MalformedURLException {
-        rr = Bugzilla.getInstance().getRepositoryConnector().getTaskDataHandler().postTaskData(taskRepository, data, null, new NullProgressMonitor());
+        rr = Bugzilla.getInstance().getRepositoryConnector().getTaskDataHandler().postTaskData(repository.getTaskRepository(), data, null, new NullProgressMonitor());
         // XXX evaluate rr
     }
 
@@ -86,13 +87,13 @@ public class SubmitCommand extends BugzillaCommand {
             StringBuilder sb = new StringBuilder();
             if(wasNew) {
                 sb.append("SubmitCommand new issue [repository=");              // NOI18N
-                sb.append(taskRepository.getUrl());
+                sb.append(repository.getTaskRepository().getUrl());
                 sb.append("]");                                                 // NOI18N
             } else {
                 sb.append("SubmitCommand [issue #");                            // NOI18N
                 sb.append(BugzillaIssue.getID(data));
                 sb.append(",repository=");                                      // NOI18N
-                sb.append(taskRepository.getUrl());
+                sb.append(repository.getTaskRepository().getUrl());
                 sb.append("]");                                                 // NOI18N
             }
             stringValue = sb.toString();

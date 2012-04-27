@@ -46,9 +46,9 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.modules.bugzilla.Bugzilla;
+import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 
 /**
  *
@@ -57,17 +57,17 @@ import org.netbeans.modules.bugzilla.Bugzilla;
 public class GetTaskDataCommand extends BugzillaCommand {
 
     private final String id;
-    private final TaskRepository taskRepository;
+    private final BugzillaRepository repository;
     private TaskData taskData;
 
-    public GetTaskDataCommand(String id, TaskRepository taskRepository) {
+    public GetTaskDataCommand(String id, BugzillaRepository repository) {
         this.id = id;
-        this.taskRepository = taskRepository;
+        this.repository = repository;
     }
 
     @Override
     public void execute() throws CoreException, IOException, MalformedURLException {
-        taskData = Bugzilla.getInstance().getRepositoryConnector().getTaskData(taskRepository, id, new NullProgressMonitor());
+        taskData = Bugzilla.getInstance().getRepositoryConnector().getTaskData(repository.getTaskRepository(), id, new NullProgressMonitor());
     }
 
     public TaskData getTaskData() {
@@ -78,7 +78,7 @@ public class GetTaskDataCommand extends BugzillaCommand {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("GetTaskDataCommand [repository=");                       // NOI18N
-        sb.append(taskRepository.getUrl());
+        sb.append(repository.getTaskRepository().getUrl());
         sb.append(",id=");                                                  // NOI18N
         sb.append(id);
         sb.append("]");                                                     // NOI18N

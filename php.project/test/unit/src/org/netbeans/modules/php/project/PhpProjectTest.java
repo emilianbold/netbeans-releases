@@ -45,6 +45,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.project.util.PhpTestCase;
 import org.netbeans.modules.php.project.util.TestUtils;
+import org.netbeans.spi.search.SearchInfoDefinition;
 
 public class PhpProjectTest extends PhpTestCase {
 
@@ -56,6 +57,7 @@ public class PhpProjectTest extends PhpTestCase {
         Project project = TestUtils.createPhpProject(getWorkDir());
         assertTrue("Not PhpProject but: " + project.getClass().getName(), project instanceof PhpProject);
         assertNotNull("PhpModule should be found", project.getLookup().lookup(PhpModule.class));
+        assertNotNull("SearchInfo should be found", project.getLookup().lookup(SearchInfoDefinition.class));
+        assertNotNull("SubTreeSearchOptions should be found", project.getLookup().lookup(SearchInfoDefinition.class));
     }
-
 }

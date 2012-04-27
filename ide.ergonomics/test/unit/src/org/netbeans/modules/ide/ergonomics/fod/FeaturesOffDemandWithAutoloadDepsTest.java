@@ -57,6 +57,7 @@ import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import junit.framework.Test;
 import org.netbeans.Module;
+import org.netbeans.ModuleManager;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -211,8 +212,14 @@ public class FeaturesOffDemandWithAutoloadDepsTest extends NbTestCase implements
         File jar = emptyJAR("org-depends-on-java-kit.jar", mf);
         Module module = Main.getModuleSystem().getManager().create(jar, jar, false, false, false);
         assertFalse("Not yet enabled", module.isEnabled());
-        Main.getModuleSystem().getManager().enable(module);
-        assertTrue("enabled now", module.isEnabled());
+        ModuleManager man = org.netbeans.core.startup.Main.getModuleSystem().getManager();
+        try {
+            man.mutexPrivileged().enterWriteAccess();
+            man.enable(module);
+            assertTrue("enabled now", module.isEnabled());
+        } finally {
+            man.mutexPrivileged().exitWriteAccess();
+        }
         FileObject dep = FileUtil.getConfigFile("Modules/org-depends-on-java-kit.xml");
         assertNotNull("Module config file found", dep);
 

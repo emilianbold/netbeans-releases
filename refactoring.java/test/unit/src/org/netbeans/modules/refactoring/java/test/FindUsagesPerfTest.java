@@ -58,6 +58,7 @@ import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.RefactoringElement;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.java.ui.WhereUsedQueryUI;
+import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 
 /**
  * Test find usages functionality. Measure the usages time.
@@ -112,7 +113,7 @@ public class FindUsagesPerfTest extends RefPerfTestCase {
                 public void run(CompilationController controller) throws Exception {
                     controller.toPhase(JavaSource.Phase.RESOLVED);
 
-                    final WhereUsedQueryUI ui = new WhereUsedQueryUI(element, controller);
+                    final RefactoringUI ui = WhereUsedQueryUI.factory().create(controller, new TreePathHandle[]{element}, null, null);
                     ui.getPanel(null);
                     try {
                         ui.setParameters();

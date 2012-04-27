@@ -111,7 +111,9 @@ public final class EvaluationWindow extends TopComponent {
     @Override
     public void requestActive() {
         super.requestActive();
-        exprList.requestFocusInWindow();
+        if (exprList != null) {
+            exprList.requestFocusInWindow();
+        }
     }
 
     @Override
@@ -126,7 +128,7 @@ public final class EvaluationWindow extends TopComponent {
     @Override
     public void componentShowing () {
         super.componentShowing ();
-	boolean update = connectToDebugger(DebuggerManager.get().currentDebugger());
+	boolean update = connectToDebugger(NativeDebuggerManager.get().currentDebugger());
         if (update) {
             updateWindow();
             updateFormats();
@@ -161,9 +163,9 @@ public final class EvaluationWindow extends TopComponent {
     }
     
     private void updateFormats() {
-        FormatOption[] evalFormats = debugger.getEvalFormats();
+        FormatOption[] evalFormats = (debugger != null) ? debugger.getEvalFormats() : null;
         if (evalFormats != null) {
-            format_jcb.setModel(new DefaultComboBoxModel(debugger.getEvalFormats()));
+            format_jcb.setModel(new DefaultComboBoxModel(evalFormats));
             format_jcb.setEnabled(true);
         } else {
             format_jcb.setModel(new DefaultComboBoxModel(new FormatOption[]{FormatOption.EMPTY}));

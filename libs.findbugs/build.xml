@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="netbeans" name="libs.findbugs">
+    <description>Builds, tests, and runs the project org.netbeans.libs.findbugs</description>
+    <property name="license.file" location="findbugs-license.txt"/>
+    <target name="-create-license.file"/>
+    <import file="../nbbuild/templates/projectized.xml"/>
+</project>

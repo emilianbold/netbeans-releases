@@ -130,7 +130,7 @@ public class MavenWizardIterator implements WizardDescriptor.BackgroundInstantia
         panels = null;
     }
     
-    @Messages("NameFormat={0} of {1}")
+    @Messages({"# {0} - index", "# {1} - length", "NameFormat={0} of {1}"})
     public @Override String name() {
         return NameFormat(index + 1, panels.size());
     }

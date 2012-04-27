@@ -61,10 +61,10 @@ import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.phpunit.PhpUnit;
 import org.netbeans.modules.php.project.phpunit.PhpUnitSkelGen;
 import org.netbeans.modules.php.project.ui.actions.Command;
+import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.XDebugUrlArguments;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
-import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
-import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
+import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -99,11 +99,25 @@ public final class CommandUtils {
     }
 
     /**
-     * Get valid {@link PhpUnit} instance (path from IDE options used) or {@code null}.
+     * Get valid {@link PhpUnit} instance (script for project if provided or from IDE options) or {@code null}.
+     * @param project project to get PhpUnit for
      * @param showCustomizer if @code true}, IDE options dialog is shown if the path of PHPUnit is not valid
      * @return valid {@link PhpUnit} instance or <code>null</code> if the path of PHP Unit is not valid
      */
-    public static PhpUnit getPhpUnit(boolean showCustomizer) {
+    public static PhpUnit getPhpUnit(PhpProject project, boolean showCustomizer) {
+        // project first
+        try {
+            PhpUnit phpUnit = PhpUnit.forProject(project);
+            if (phpUnit != null) {
+                return phpUnit;
+            }
+        } catch (InvalidPhpProgramException ex) {
+            if (showCustomizer) {
+                PhpProjectUtils.openCustomizer(project, CompositePanelProviderImpl.PHP_UNIT);
+            }
+            return null;
+        }
+        // then general
         try {
             return PhpUnit.getDefault();
         } catch (InvalidPhpProgramException ex) {
@@ -359,11 +373,8 @@ public final class CommandUtils {
      * @throws MalformedURLException if any error occurs.
      */
     public static URL urlForDebugProject(PhpProject project, XDebugUrlArguments xDebugArgument) throws MalformedURLException {
-        DebugInfo debugInfo = getDebugInfo(project);
         URL debugUrl = urlForProject(project);
-        if (debugInfo.debugServer) {
-            debugUrl = appendQuery(debugUrl, getDebugArguments(xDebugArgument));
-        }
+        debugUrl = appendQuery(debugUrl, getDebugArguments(xDebugArgument));
         return debugUrl;
     }
 
@@ -421,11 +432,8 @@ public final class CommandUtils {
      * @throws MalformedURLException if any error occurs.
      */
     public static URL urlForDebugContext(PhpProject project, Lookup context, XDebugUrlArguments xDebugArgument) throws MalformedURLException {
-        DebugInfo debugInfo = getDebugInfo(project);
         URL debugUrl = urlForContext(project, context);
-        if (debugInfo.debugServer) {
-            debugUrl = appendQuery(debugUrl, getDebugArguments(xDebugArgument));
-        }
+        debugUrl = appendQuery(debugUrl, getDebugArguments(xDebugArgument));
         return debugUrl;
     }
 
@@ -444,24 +452,6 @@ public final class CommandUtils {
             return baseDirectory.getFileObject(indexFile);
         }
         return baseDirectory;
-    }
-
-    /**
-     * Get {@link DebugInfo debug information} for a project (server side debugging,
-     * client side debugging).
-     * @param project a project to get information for.
-     * @return {@link DebugInfo debug information} for a project.
-     */
-    public static DebugInfo getDebugInfo(PhpProject project) {
-        boolean debugServer = WebClientToolsProjectUtils.getServerDebugProperty(project);
-        boolean debugClient = WebClientToolsProjectUtils.getClientDebugProperty(project);
-
-        if (!WebClientToolsSessionStarterService.isAvailable()) {
-            debugServer = true;
-            debugClient = false;
-        }
-        assert debugServer || debugClient;
-        return new DebugInfo(debugClient, debugServer);
     }
 
     public static URL getBaseURL(PhpProject project) throws MalformedURLException {
@@ -561,17 +551,4 @@ public final class CommandUtils {
         return (!retval.isEmpty()) ? retval.toArray(new FileObject[retval.size()]) : null;
     }
 
-    /**
-     * Holder class for debug information for a project (server side debugging,
-     * client side debugging).
-     */
-    public static final class DebugInfo {
-        public final boolean debugClient;
-        public final boolean debugServer;
-
-        public DebugInfo(boolean debugClient, boolean debugServer) {
-            this.debugClient = debugClient;
-            this.debugServer = debugServer;
-        }
-    }
 }

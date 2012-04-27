@@ -45,6 +45,9 @@
 package org.netbeans.core.windows;
 
 
+import java.awt.GraphicsEnvironment;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
@@ -58,6 +61,10 @@ import org.openide.windows.TopComponent;
  * 
  */
 public class ModeActivationTest extends NbTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(ModeActivationTest.class);
+    }
 
     public ModeActivationTest (String name) {
         super (name);

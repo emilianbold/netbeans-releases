@@ -47,10 +47,10 @@ import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
-import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.Rule;
 import org.netbeans.modules.csl.api.RuleContext;
+import org.netbeans.modules.html.editor.hints.HtmlRuleContext;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -60,73 +60,31 @@ import org.openide.util.NbBundle;
  * @author mfukala@netbeans.org
  */
 public class MissingCssElement extends Hint {
-    
-    private static final String MSG_MISSING_CSS_ID = NbBundle.getMessage(MissingCssElement.class, "MSG_MissingCssId");
-    private static final String MSG_MISSING_CSS_CLASS = NbBundle.getMessage(MissingCssElement.class, "MSG_MissingCssClass");
 
-    MissingCssElement(CssElementType type, RuleContext context, OffsetRange range, Collection<FileObject> foundInFiles) {
-        super(new MissingCssElementRule(type),
-                getMessage(type),
-                context.parserResult.getSnapshot().getSource().getFileObject(),
+    public MissingCssElement(Rule rule, HtmlRuleContext context, OffsetRange range, Collection<FileObject> foundInFiles) {
+        super(rule,
+                rule.getDisplayName(),
+                context.getFile(),
                 range,
                 getFixes(foundInFiles, context),
                 10);
     }
     
-    private static String getMessage(CssElementType type) {
-        switch(type) {
-            case ID:
-                return MSG_MISSING_CSS_ID;
-            case CLASS:
-                return MSG_MISSING_CSS_CLASS;
-        }
-        throw new IllegalStateException();
-    }
-    
-    private static List<HintFix> getFixes(Collection<FileObject> foundInFiles, RuleContext context) {
-        if(foundInFiles == null) {
+    private static List<HintFix> getFixes(Collection<FileObject> foundInFiles, HtmlRuleContext context) {
+        if (foundInFiles == null) {
             //no id/class found in the stylesheets
             return Collections.emptyList();
         }
-        FileObject sourceFile = context.parserResult.getSnapshot().getSource().getFileObject();
+        FileObject sourceFile = context.getFile();
         List<HintFix> fixes = new ArrayList<HintFix>();
-        for(FileObject file : foundInFiles) {
+        for (FileObject file : foundInFiles) {
             String path = WebUtils.getRelativePath(sourceFile, file);
             fixes.add(new AddStylesheetLinkHintFix(
-                    NbBundle.getMessage(MissingCssElement.class, "MSG_AddStyleSheetLink", path), 
+                    NbBundle.getMessage(MissingCssElement.class, "MSG_AddStyleSheetLink", path),
                     sourceFile,
-                    file,
-                    context));
+                    file));
         }
         return fixes;
     }
-
-    private static class MissingCssElementRule implements Rule {
-
-        private CssElementType type;
-        
-        public MissingCssElementRule(CssElementType type) {
-            this.type = type;
-        }
-
-        @Override
-        public boolean appliesTo(RuleContext context) {
-            return true;
-        }
-
-        @Override
-        public String getDisplayName() {
-            return getMessage(type);
-        }
-
-        @Override
-        public boolean showInTasklist() {
-            return false;
-        }
-
-        @Override
-        public HintSeverity getDefaultSeverity() {
-            return HintSeverity.WARNING;
-        }
-    }
+    
 }

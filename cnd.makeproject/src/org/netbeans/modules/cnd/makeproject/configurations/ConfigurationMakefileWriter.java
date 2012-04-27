@@ -59,15 +59,28 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
+import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
+import org.netbeans.modules.cnd.api.toolchain.Tool;
+import org.netbeans.modules.cnd.makeproject.MakeOptions;
+import org.netbeans.modules.cnd.makeproject.SmartOutputStream;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectCustomizer;
+import org.netbeans.modules.cnd.makeproject.api.PackagerDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.PackagerManager;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ArchiverConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CustomToolConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.DefaultMakefileWriter;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
@@ -78,25 +91,13 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.LinkerConfigurati
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakefileConfiguration;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
-import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
-import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
-import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
-import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
-import org.netbeans.modules.cnd.makeproject.MakeOptions;
-import org.netbeans.modules.cnd.makeproject.api.configurations.DefaultMakefileWriter;
-import org.netbeans.modules.cnd.makeproject.spi.configurations.MakefileWriter;
-import org.netbeans.modules.cnd.makeproject.api.PackagerDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.PackagerManager;
+import org.netbeans.modules.cnd.makeproject.packaging.DummyPackager;
 import org.netbeans.modules.cnd.makeproject.platform.Platform;
 import org.netbeans.modules.cnd.makeproject.platform.Platforms;
-import org.netbeans.modules.cnd.makeproject.packaging.DummyPackager;
-import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
-import org.netbeans.modules.cnd.api.toolchain.Tool;
-import org.netbeans.modules.cnd.makeproject.SmartOutputStream;
-import org.netbeans.modules.cnd.makeproject.api.MakeProjectCustomizer;
 import org.netbeans.modules.cnd.makeproject.spi.DatabaseProjectProvider;
+import org.netbeans.modules.cnd.makeproject.spi.configurations.MakefileWriter;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -106,7 +107,6 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -114,13 +114,13 @@ public class ConfigurationMakefileWriter {
 
     private MakeConfigurationDescriptor projectDescriptor;
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
-    
+
     public ConfigurationMakefileWriter(MakeConfigurationDescriptor projectDescriptor) {
         this.projectDescriptor = projectDescriptor;
     }
 
-    public void write() {
-        Collection<MakeConfiguration> okConfs = getOKConfigurations(true);
+    public void write() throws IOException {
+        Collection<MakeConfiguration> okConfs = getOKConfigurations(false);
         cleanup();
         if (isMakefileProject()) {
             for (MakeConfiguration conf : okConfs) {
@@ -235,10 +235,12 @@ public class ConfigurationMakefileWriter {
      *
      * @param protectedConfs
      */
-    private void cleanup() {
+    private void cleanup() throws IOException {
         FileObject folder = projectDescriptor.getBaseDirFileObject().getFileObject(MakeConfiguration.NBPROJECT_FOLDER);
-        
+
         if (folder != null && folder.isValid()) {
+            IOException lastException = null;
+
             FileObject[] children = folder.getChildren();
             if (children != null) {
                 for (int i = 0; i < children.length; i++) {
@@ -259,18 +261,22 @@ public class ConfigurationMakefileWriter {
                             try {
                                 children[i].delete();
                             } catch (IOException ex) {
-                                Exceptions.printStackTrace(ex);
+                                lastException = ex;
                             }
                         }
                     }
                 }
             }
+
+            if (lastException != null) {
+                throw lastException;
+            }
         }
     }
 
-    private void writeMakefileImpl() {
+    private void writeMakefileImpl() throws IOException {
         String resource = "/org/netbeans/modules/cnd/makeproject/resources/MasterMakefile-impl.mk"; // NOI18N
-        InputStream is = null;
+        InputStream is;
         OutputStream os = null;
         try {
             URL url = new URL("nbresloc:" + resource); // NOI18N
@@ -278,6 +284,12 @@ public class ConfigurationMakefileWriter {
         } catch (Exception e) {
             is = MakeConfigurationDescriptor.class.getResourceAsStream(resource);
         }
+
+        if (is == null) {
+            // FIXUP: ERROR
+            return;
+        }
+        
         try {
             FileObject nbprojectFileObject = projectDescriptor.getNbprojectFileObject();
             if (nbprojectFileObject == null) {
@@ -289,13 +301,8 @@ public class ConfigurationMakefileWriter {
             ioe.printStackTrace(System.err);
         }
 
-        if (is == null || os == null) {
-            if (is != null) {
-                try {
-                    is.close();
-                } catch (IOException ex) {
-                }
-            }
+        if (os == null) {
+            closeInputStream(is);
             // FIXUP: ERROR
             return;
         }
@@ -328,19 +335,13 @@ public class ConfigurationMakefileWriter {
                 }
                 bw.write(line + "\n"); // NOI18N
             }
-            br.close();
-            bw.flush();
-            bw.close();
-        } catch (Exception e) {
-            try {
-                br.close();
-                bw.close();
-            } catch (IOException ex) {
-            }
+        } finally {
+            closeReader(br);
+            closeWriter(bw);
         }
     }
 
-    private void writeMakefileConf(MakeConfiguration conf) {
+    private void writeMakefileConf(MakeConfiguration conf) throws IOException {
         // Find MakefileWriter in toolchain.
         MakefileWriter makefileWriter = null;
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
@@ -381,31 +382,26 @@ public class ConfigurationMakefileWriter {
             makefileWriter = new DefaultMakefileWriter();
         }
 
-        
+        FileObject nbProjFO = projectDescriptor.getNbprojectFileObject();
+        if (nbProjFO == null) {
+            LOGGER.info("Error writing makefiles: can not find nbproject");
+            return;
+        }
+        FileObject makefileFO = FileUtil.createData(nbProjFO, getMakefileName(conf)); // NOI18N;
+        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(SmartOutputStream.getSmartOutputStream(makefileFO)));
         try {
-            FileObject nbProjFO = projectDescriptor.getNbprojectFileObject();
-            if (nbProjFO == null) {
-                LOGGER.info("Error writing makefiles: can not find nbproject");
-                return;
-            }
-            FileObject makefileFO = FileUtil.createData(nbProjFO, getMakefileName(conf)); // NOI18N;
-            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(SmartOutputStream.getSmartOutputStream(makefileFO)));
-            try {
-                makefileWriter.writePrelude(projectDescriptor, conf, bw);
-                writeBuildTargets(makefileWriter, projectDescriptor, conf, bw);
-                writeBuildTestTargets(makefileWriter, projectDescriptor, conf, bw);
-                makefileWriter.writeRunTestTarget(projectDescriptor, conf, bw);
-                makefileWriter.writeCleanTarget(projectDescriptor, conf, bw);
-                makefileWriter.writeDependencyChecking(projectDescriptor, conf, bw);
-            } finally {
-                bw.close();
-            }
+            makefileWriter.writePrelude(projectDescriptor, conf, bw);
+            writeBuildTargets(makefileWriter, projectDescriptor, conf, bw);
+            writeBuildTestTargets(makefileWriter, projectDescriptor, conf, bw);
+            makefileWriter.writeRunTestTarget(projectDescriptor, conf, bw);
+            makefileWriter.writeCleanTarget(projectDescriptor, conf, bw);
+            makefileWriter.writeDependencyChecking(projectDescriptor, conf, bw);
+        } finally {
+            closeWriter(bw);
+        }
 
-            if (conf.isQmakeConfiguration()) {
-                new QmakeProjectWriter(projectDescriptor, conf).write();
-            }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+        if (conf.isQmakeConfiguration()) {
+            new QmakeProjectWriter(projectDescriptor, conf).write();
         }
     }
 
@@ -435,9 +431,11 @@ public class ConfigurationMakefileWriter {
                     return compiler.getName();
                 } else {
                     // Fake tool, get name from the descriptor (see IZ#174566).
-                    String[] names = compiler.getDescriptor().getNames();
-                    if (names != null && names.length > 0) {
-                        return names[0];
+                    if (compiler.getDescriptor() != null) {
+                        String[] names = compiler.getDescriptor().getNames();
+                        if (names != null && names.length > 0) {
+                            return names[0];
+                        }
                     }
                 }
             }
@@ -492,6 +490,7 @@ public class ConfigurationMakefileWriter {
 
         bw.write("# Macros\n"); // NOI18N
         bw.write("CND_PLATFORM=" + conf.getVariant() + "\n"); // NOI18N
+        bw.write("CND_DLIB_EXT=" + conf.getLibraryExtension() + "\n"); // NOI18N
         bw.write("CND_CONF=" + conf.getName() + "\n"); // NOI18N
         bw.write("CND_DISTDIR=" + MakeConfiguration.DIST_FOLDER + "\n"); // NOI18N
         bw.write("CND_BUILDDIR=" + MakeConfiguration.BUILD_FOLDER + "\n"); // NOI18N
@@ -876,11 +875,11 @@ public class ConfigurationMakefileWriter {
         Item[] items = projectDescriptor.getProjectItems();
         if (conf.isCompileConfiguration()) {
             String target = null;
-            String folders = null;
-            String file = null;
-            String command = null;
-            String comment = null;
-            String additionalDep = null;
+            String folders;
+            String file;
+            String command;
+            String comment;
+            String additionalDep;
             for (int i = 0; i < items.length; i++) {
                 final Folder folder = items[i].getFolder();
                 if (folder.isTest() || folder.isTestLogicalFolder() || folder.isTestRootFolder()) {
@@ -1009,11 +1008,11 @@ public class ConfigurationMakefileWriter {
                     Item[] items = folder.getAllItemsAsArray();
 
                     String target = null;
-                    String folders = null;
-                    String file = null;
-                    String command = null;
-                    String comment = null;
-                    String additionalDep = null;
+                    String folders;
+                    String file;
+                    String command;
+                    String comment;
+                    String additionalDep;
                     for (int i = 0; i < items.length; i++) {
                         ItemConfiguration itemConfiguration = items[i].getItemConfiguration(conf);
                         if (itemConfiguration == null) {
@@ -1131,11 +1130,11 @@ public class ConfigurationMakefileWriter {
         Item[] items = projectDescriptor.getProjectItems();
         if (conf.isCompileConfiguration()) {
             String target = null;
-            String folders = null;
-            String file = null;
-            String command = null;
-            String comment = null;
-            String additionalDep = null;
+            String folders;
+            String file;
+            String command;
+            String comment;
+            String additionalDep;
             for (int i = 0; i < items.length; i++) {
                 final Folder folder = items[i].getFolder();
                 if (folder.isTest() || folder.isTestLogicalFolder() || folder.isTestRootFolder()) {
@@ -1287,7 +1286,7 @@ public class ConfigurationMakefileWriter {
         bw.write("\n"); // NOI18N
         bw.write("# Subprojects\n"); // NOI18N
         bw.write(".build-subprojects:" + "\n"); // NOI18N
-        LibrariesConfiguration librariesConfiguration = null;
+        LibrariesConfiguration librariesConfiguration;
         if (conf.isLinkerConfiguration()) {
             librariesConfiguration = conf.getLinkerConfiguration().getLibrariesConfiguration();
 
@@ -1319,7 +1318,7 @@ public class ConfigurationMakefileWriter {
         bw.write("\n"); // NOI18N
         bw.write("# Subprojects\n"); // NOI18N
         bw.write(".clean-subprojects:" + "\n"); // NOI18N
-        LibrariesConfiguration librariesConfiguration = null;
+        LibrariesConfiguration librariesConfiguration;
         if (conf.isLinkerConfiguration()) {
             librariesConfiguration = conf.getLinkerConfiguration().getLibrariesConfiguration();
 
@@ -1423,13 +1422,15 @@ public class ConfigurationMakefileWriter {
 
     private static String getOutput(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, CompilerSet compilerSet) {
         String output = conf.getOutputValue();
-        if (!conf.getDevelopmentHost().isLocalhost()) {
+        if (!conf.getDevelopmentHost().isLocalhost() && ! output.startsWith("$") && ! CndPathUtilitities.isPathAbsolute(output)) { //NOI18N
             PathMap mapper = RemoteSyncSupport.getPathMap(projectDescriptor.getProject());
             if (mapper != null) {
                 output = mapper.getRemotePath(output, true);
                 if (output == null) {
                     output = conf.getOutputValue();
                 }
+            } else {
+                LOGGER.log(Level.SEVERE, "Path Mapper not found for project {0} - using local path {1}", new Object[]{projectDescriptor.getProject(), output}); // NOI18N
             }
         }
         switch (conf.getDevelopmentHost().getBuildPlatform()) {
@@ -1504,29 +1505,23 @@ public class ConfigurationMakefileWriter {
         return testTargets.toString();
     }
 
-    private void writeMakefileVariables(MakeConfigurationDescriptor conf, Collection<MakeConfiguration> okConfs) {
+    private void writeMakefileVariables(MakeConfigurationDescriptor conf, Collection<MakeConfiguration> okConfs) throws IOException {
         FileObject nbprojectFileObject = projectDescriptor.getNbprojectFileObject();
         if (nbprojectFileObject == null) {
             return;
         }
         OutputStream os = null;
+        BufferedWriter bw = null;
         try {
             Map<String, String> old = getOldVariables(nbprojectFileObject);
             FileObject vars = FileUtil.createData(nbprojectFileObject, MakeConfiguration.MAKEFILE_VARIABLES);
             os = SmartOutputStream.getSmartOutputStream(vars);
-            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(os));
+            bw = new BufferedWriter(new OutputStreamWriter(os));
             writeMakefileFixedVariablesBody(bw, okConfs, old);
             writeMakefileVariablesRedirector(bw);
-            bw.flush();
-            bw.close();
-        } catch (IOException ex) {
-            if (os != null) {
-                try {
-                    os.close();
-                } catch (IOException ex1) {
-                }
-            }
-            Exceptions.printStackTrace(ex);
+        } finally {
+            closeWriter(bw);
+            closeOutputStream(os);
         }
 
         FileObject nbPrivateProjectFileObject = projectDescriptor.getNbPrivateProjectFileObject();
@@ -1534,26 +1529,18 @@ public class ConfigurationMakefileWriter {
             return;
         }
         try {
-            os = null;
             Map<String, String> old = getOldVariables(nbPrivateProjectFileObject);
             FileObject vars = FileUtil.createData(nbPrivateProjectFileObject, MakeConfiguration.MAKEFILE_VARIABLES);
             os = SmartOutputStream.getSmartOutputStream(vars);
-            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(os));
+            bw = new BufferedWriter(new OutputStreamWriter(os));
             writeMakefilePrivateVariablesBody(bw, okConfs, old);
-            bw.flush();
-            bw.close();
-        } catch (IOException ex) {
-            if (os != null) {
-                try {
-                    os.close();
-                } catch (IOException ex1) {
-                }
-            }
-            Exceptions.printStackTrace(ex);
+        } finally {
+            closeWriter(bw);
+            closeOutputStream(os);
         }
     }
     
-    private Map<String, String> getOldVariables(FileObject nbprojectFileObject) {
+    private Map<String, String> getOldVariables(FileObject nbprojectFileObject) throws IOException {
         Map<String, String> old = new HashMap<String, String>();
         FileObject oldVars = nbprojectFileObject.getFileObject(MakeConfiguration.MAKEFILE_VARIABLES);
         BufferedReader reader = null;
@@ -1584,16 +1571,9 @@ public class ConfigurationMakefileWriter {
                 if (current != null) {
                     old.put(current, currentBuf.toString());
                 }
-                reader.close();
             }
-        } catch (IOException ex) {
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (IOException ex1) {
-                }
-            }
-            Exceptions.printStackTrace(ex);
+        } finally {
+            closeReader(reader);
         }
         
         return old;
@@ -1709,7 +1689,7 @@ public class ConfigurationMakefileWriter {
             return;
         }
 
-        OutputStream os = null;
+        OutputStream os;
         final String scriptName = getPackageScriptName(conf); // NOI18N
         FileObject projectBaseFO = projectDescriptor.getProject().getProjectDirectory();
         if (projectBaseFO == null) {
@@ -1861,5 +1841,43 @@ public class ConfigurationMakefileWriter {
 
     private static String getString(String s, String arg1, String arg2) {
         return NbBundle.getMessage(ConfigurationMakefileWriter.class, s, arg1, arg2);
+    }
+
+    private void closeReader(BufferedReader br) {
+        if (br != null) {
+            try {
+                br.close();
+            } catch (IOException ex) {
+            }
+        }
+    }
+
+    private void closeWriter(BufferedWriter bw) {
+        if (bw != null) {
+            try {
+                bw.flush();
+                bw.close();
+            } catch (IOException ex) {
+            }
+        }
+    }
+
+    private void closeOutputStream(OutputStream os) {
+        if (os != null) {
+            try {
+                os.flush();
+                os.close();
+            } catch (IOException ex) {
+            }
+        }
+    }
+
+    private void closeInputStream(InputStream is) {
+        if (is != null) {
+            try {
+                is.close();
+            } catch (IOException ex) {
+            }
+        }
     }
 }

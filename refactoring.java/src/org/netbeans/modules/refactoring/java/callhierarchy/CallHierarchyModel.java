@@ -46,6 +46,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.EnumSet;
 import java.util.Set;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.openide.util.Lookup;
 
@@ -70,9 +71,7 @@ final class CallHierarchyModel {
     private Set<Scope> scopes = EnumSet.of(Scope.ALL, Scope.TESTS);
     private PropertyChangeSupport support = new PropertyChangeSupport(this);
 
-    private CallHierarchyModel(Call root, HierarchyType type, Set<Scope> scopes) {
-        this.root = root;
-        root.model = this;
+    private CallHierarchyModel(HierarchyType type, Set<Scope> scopes) {
         if (type != null) {
             this.type = type;
         }
@@ -133,30 +132,45 @@ final class CallHierarchyModel {
         if (root == null) {
             return;
         }
-        Call oroot = root;
-        root = CallHierarchyTasks.resolveRoot(root.selection, type == HierarchyType.CALLER);
-        if (root != null) {
+        CallHierarchyTasks.resolveRoot(root.selection, type == HierarchyType.CALLER, new ReplaceRootTask(this));
+    }
+    
+    void replaceRoot(Call root) {
+        Call oroot = this.root;
+        
+        if (root != null && (oroot == null || !root.isIncomplete())) {
             root.model = this;
+        } else {
+            return;
         }
+        this.root = root;
         support.firePropertyChange(PROP_ROOT, oroot, root);
     }
     
     static CallHierarchyModel create(Lookup context, Set<Scope> scopes, HierarchyType type) {
         boolean isCallerGraph = type == null || type == HierarchyType.CALLER;
-        Call root = CallHierarchyTasks.resolveRoot(context, isCallerGraph);
-        if (root == null) {
-            return null;
-        }
-        return new CallHierarchyModel(root, type, scopes);
+        CallHierarchyModel m = new CallHierarchyModel(type, scopes);
+        CallHierarchyTasks.resolveRoot(context, isCallerGraph, m.new ReplaceRootTask(m));
+        return m;
     }
     
     static CallHierarchyModel create(TreePathHandle selection, Set<Scope> scopes, HierarchyType type) {
         boolean isCallerGraph = type == null || type == HierarchyType.CALLER;
-        Call root = CallHierarchyTasks.resolveRoot(selection, isCallerGraph);
-        if (root == null) {
-            return null;
-        }
-        return new CallHierarchyModel(root, type, scopes);
+        CallHierarchyModel m = new CallHierarchyModel(type, scopes);
+        CallHierarchyTasks.resolveRoot(selection, isCallerGraph, m.new ReplaceRootTask(m));
+        return m;
     }
     
+    private class ReplaceRootTask implements Task<Call> {
+        CallHierarchyModel model;
+
+        public ReplaceRootTask(CallHierarchyModel model) {
+            this.model = model;
+        }
+        
+        @Override
+        public void run(Call parameter) throws Exception {
+            model.replaceRoot(parameter);
+        }
+    }
 }

@@ -111,6 +111,35 @@ is the proper place.
         
         <change>
             <api name="versioning_spi"/>
+            <summary>Support ContextAwareActions</summary>
+            <version major="1" minor="31"/>
+            <date day="12" month="4" year="2012"/>
+            <author login="tstupka"/>
+            <compatibility addition="yes"/>
+            <description>
+                Ensure that <code>ContextAwareAction</code>-s provided via <code>VCSHistoryProvider.HistoryEntry.getActions()</code> 
+                are created with a context containing the selected nodes in a files editor history tab. Those nodes than will have 
+                the relevant <code>HistoryEntry</code> and files in their lookup.
+            </description>
+            <class package="org.netbeans.modules.versioning.spi" name="VCSHistoryProvider"/>
+            <issue number="210691"/>
+        </change>                
+        <change>
+            <api name="versioning_spi"/>
+            <summary>Added VCSHistoryProvider.HistoryEntry.getParent()</summary>
+            <version major="1" minor="30"/>
+            <date day="12" month="4" year="2012"/>
+            <author login="tstupka"/>
+            <compatibility addition="yes"/>
+            <description>
+                New method <code>VCSHistoryProvider.HistoryEntry.getParent()</code> to provide the 
+                <code>VCSHistoryProvider.HistoryEntry</code> representing the parent of the given revision.
+            </description>
+            <class package="org.netbeans.modules.versioning.spi" name="VCSHistoryProvider"/>
+            <issue number="209673"/>
+        </change>                
+        <change>
+            <api name="versioning_spi"/>
             <summary>Added VCSHistoryProvider</summary>
             <version major="1" minor="29"/>
             <date day="30" month="1" year="2012"/>

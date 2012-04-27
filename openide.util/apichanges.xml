@@ -51,6 +51,23 @@ made subject to such option by the copyright holder.
     <apidef name="actions">Actions API</apidef>
 </apidefs>
 <changes>
+    <change id="exit-code">
+        <api name="util"/>
+        <summary>Exit with status code</summary>
+        <version major="8" minor="23"/>
+        <date year="2012" month="3" day="8"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes" binary="compatible" source="compatible"/>
+        <description>
+            <p>
+                <a href="@TOP@/org/openide/LifecycleManager.html">LifecycleManager</a>
+                has new <code>exit</code> method allowing callers to specify
+                the exit code.
+            </p>
+        </description>
+        <class package="org.openide" name="LifecycleManager"/>
+        <issue number="209018"/>
+    </change>
     <change id="Messages.fields">
         <api name="util"/>
         <summary><code>@NbBundle.Messages</code> available on fields</summary>

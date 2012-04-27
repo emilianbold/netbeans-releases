@@ -47,19 +47,26 @@ import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.modules.bugtracking.spi.IssueFinder;
 import org.openide.ErrorManager;
-import org.openide.util.lookup.ServiceProvider;
-import org.openide.util.lookup.ServiceProviders;
 
 /**
  *
  * @author Tomas Stupka
  * @author Marian Petras
  */
-@ServiceProviders({@ServiceProvider(service=IssueFinder.class),
-                   @ServiceProvider(service=BugzillaIssueFinder.class)})
 public class BugzillaIssueFinder extends IssueFinder {
-
+    
+    private static BugzillaIssueFinder instance;
+    
     private static final int[] EMPTY_INT_ARR = new int[0];
+
+    private BugzillaIssueFinder() {}
+    
+    public synchronized static BugzillaIssueFinder getInstance() {
+        if(instance == null) {
+            instance = new BugzillaIssueFinder();
+        }
+        return instance;
+    }
 
     @Override
     public int[] getIssueSpans(CharSequence text) {
@@ -122,7 +129,7 @@ public class BugzillaIssueFinder extends IssueFinder {
         private static final String BUG_NUMBER_PREFIX = "duplicate of"; //NOI18N
         private static final String[] BUGNUM_PREFIX_PARTS;
 
-        private static final String PUNCT_CHARS = ".,:;()[]{}";         //NOI18N
+        private static final String PUNCT_CHARS = ".,:;()[]{}/*";         //NOI18N
 
         private static final int LOWER_A = 'a';     //automatic conversion to int
         private static final int LOWER_Z = 'z';     //automatic conversion to int

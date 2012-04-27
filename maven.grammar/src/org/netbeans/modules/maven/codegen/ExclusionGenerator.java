@@ -56,6 +56,7 @@ import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import static org.netbeans.modules.maven.codegen.Bundle.*;
 import org.netbeans.modules.maven.model.pom.DependencyContainer;
 import org.netbeans.modules.maven.model.pom.Exclusion;
 import org.netbeans.modules.maven.model.pom.POMModel;
@@ -69,16 +70,19 @@ import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
  * @author Milos Kleint
  */
+@Messages("NAME_Exclusion=Dependency Exclusion...")
 public class ExclusionGenerator implements CodeGenerator {
 
     @MimeRegistration(mimeType=Constants.POM_MIME_TYPE, service=CodeGenerator.Factory.class, position=150)
     public static class Factory implements CodeGenerator.Factory {
         
+        @Override
         public List<? extends CodeGenerator> create(Lookup context) {
             ArrayList<CodeGenerator> toRet = new ArrayList<CodeGenerator>();
             POMModel model = context.lookup(POMModel.class);
@@ -98,10 +102,12 @@ public class ExclusionGenerator implements CodeGenerator {
         this.component = component;
     }
 
+    @Override
     public String getDisplayName() {
-        return NbBundle.getMessage(ExclusionGenerator.class, "NAME_Exclusion");
+        return NAME_Exclusion();
     }
 
+    @Override
     public void invoke() {
         try {
             model.sync();

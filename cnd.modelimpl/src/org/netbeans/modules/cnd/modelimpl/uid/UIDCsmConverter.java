@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmUID;
@@ -75,7 +76,10 @@ public final class UIDCsmConverter {
     // UID -> Object
 //    private static int lastHash = 0;
     public static boolean isIdentifiable(Object obj) {
-        return obj instanceof CsmIdentifiable;
+        if (obj instanceof CsmIdentifiable) {
+            return !(obj instanceof CsmParameter);
+        }
+        return false;
     }
 
     public static CsmFile UIDtoFile(CsmUID<CsmFile> uid) {

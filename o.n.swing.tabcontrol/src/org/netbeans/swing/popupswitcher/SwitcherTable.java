@@ -131,17 +131,36 @@ public class SwitcherTable extends JTable {
     }
     
     private void init() {
-        setBorder(BorderFactory.createLineBorder(getForeground()));
+        Border b = UIManager.getBorder( "nb.popupswitcher.border" ); //NOI18N
+        if( null == b )
+            b = BorderFactory.createLineBorder(getForeground());
+        setBorder(b);
         setShowHorizontalLines(false);
         // Calc row height here so that TableModel can adjust number of columns.
         calcRowHeight(getOffscreenGraphics());
     }
+
+    /**
+     * Show new set of switcher items in this table.
+     * @param newItems
+     * @param y
+     *
+     * @since 1.35
+     */
+    public void setSwitcherItems( SwitcherTableItem[] newItems, int y ) {
+        int gap = (y == 0 ? 10 : 5);
+        int height = Utilities.getUsableScreenBounds().height - y - gap;
+        setModel(new SwitcherTableModel(newItems, getRowHeight(), height));
+        prefSize = null;
+    }
     
+    @Override
     public void updateUI() {
         needCalcRowHeight = true;
         super.updateUI();
     }
     
+    @Override
     public void setFont(Font f) {
         needCalcRowHeight = true;
         super.setFont(f);
@@ -149,6 +168,7 @@ public class SwitcherTable extends JTable {
     
     private static final boolean TABNAMES_HTML = Boolean.parseBoolean(System.getProperty("nb.tabnames.html", "true")); // #47290
 
+    @Override
     public Component prepareRenderer(
             TableCellRenderer renderer,
             int row,
@@ -167,6 +187,9 @@ public class SwitcherTable extends JTable {
             // #199007: Swing HTML renderer does a poor job of truncating long labels
             JLabel prototype = (JLabel) ren;
             lbl = HtmlRenderer.createLabel();
+            if( lbl instanceof HtmlRenderer.Renderer ) {
+                ((HtmlRenderer.Renderer)lbl).setRenderStyle( HtmlRenderer.STYLE_TRUNCATE );
+            }
             lbl.setForeground(prototype.getForeground());
             lbl.setBackground(prototype.getBackground());
             lbl.setFont(prototype.getFont());
@@ -226,35 +249,50 @@ public class SwitcherTable extends JTable {
     }
 
     private static class NullIcon implements Icon {
+        @Override
         public int getIconWidth() { return 16; }
+        @Override
         public int getIconHeight() { return 16; }
+        @Override
         public void paintIcon(Component c, Graphics g, int x, int y) {}
     }
     
+    @Override
     public Color getForeground() {
         if (foreground == null) {
-            foreground = UIManager.getColor("ComboBox.foreground");
+            foreground = UIManager.getColor( "nb.popupswitcher.foreground" ); //NOI18N
+            if (foreground == null)
+                foreground = UIManager.getColor("ComboBox.foreground"); //NOI18N
         }
         return foreground != null ? foreground : super.getForeground();
     }
     
+    @Override
     public Color getBackground() {
         if (background == null) {
-            background = UIManager.getColor("ComboBox.background");
+            background = UIManager.getColor( "nb.popupswitcher.background" ); //NOI18N
+            if (background == null)
+                background = UIManager.getColor("ComboBox.background"); //NOI18N
         }
         return background != null ? background : super.getBackground();
     }
     
+    @Override
     public Color getSelectionForeground() {
         if (selForeground == null) {
-            selForeground = UIManager.getColor("ComboBox.selectionForeground");
+            selForeground = UIManager.getColor( "nb.popupswitcher.selectionForeground" ); //NOI18N
+            if (selForeground == null)
+                selForeground = UIManager.getColor("ComboBox.selectionForeground"); //NOI18N
         }
         return selForeground != null ? selForeground : super.getSelectionForeground();
     }
     
+    @Override
     public Color getSelectionBackground() {
         if (selBackground == null) {
-            selBackground = UIManager.getColor("ComboBox.selectionBackground");
+            selBackground = UIManager.getColor( "nb.popupswitcher.selectionBackground" ); //NOI18N
+            if (selBackground == null)
+                selBackground = UIManager.getColor("ComboBox.selectionBackground"); //NOI18N
         }
         return selBackground != null ? selBackground : super.getSelectionBackground();
     }
@@ -300,6 +338,7 @@ public class SwitcherTable extends JTable {
      * number of columns, and set up the preferred width for each column based
      * on the maximum width item & icon displayed in it
      */
+    @Override
     public Dimension getPreferredSize() {
         if (prefSize == null) {
             int cols = getColumnCount();
@@ -335,6 +374,7 @@ public class SwitcherTable extends JTable {
         return (SwitcherTableItem) getValueAt(getSelectedRow(), getSelectedColumn());
     }
     
+    @Override
     public void paint(Graphics g) {
         if (needCalcRowHeight) {
             calcRowHeight(g);

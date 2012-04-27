@@ -93,6 +93,12 @@ made subject to such option by the copyright holder.
             </path>
             <mapper type="identity"/>
         </pathconvert>
+        <pathconvert property="cnd.modules.model.fullpath">
+            <path>
+                <dirset dir="${nbroot}" includes="cnd.apt, cnd.modelimpl, cnd.repository, cnd.completion, cnd.refactoring, cnd.navigation, cnd.highlight"/>
+            </path>
+            <mapper type="identity"/>
+        </pathconvert>
     </target>
 
     <target name="clean">
@@ -153,6 +159,12 @@ made subject to such option by the copyright holder.
 
     <target name="test-xref" depends="-init-modules" description="run xRef tests only">
         <subant buildpath="${cnd.modules.xref.fullpath}" target="test">
+            <property name="cluster.config" value="cnd"/>
+        </subant>
+    </target>
+
+    <target name="test-model" depends="-init-modules" description="run Model sensitive tests only">
+        <subant buildpath="${cnd.modules.model.fullpath}" target="test">
             <property name="cluster.config" value="cnd"/>
         </subant>
     </target>

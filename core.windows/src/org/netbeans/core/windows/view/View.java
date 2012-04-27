@@ -108,6 +108,10 @@ public interface View {
     public int TOPCOMPONENT_REQUEST_ATTENTION = 63;
     public int TOPCOMPONENT_CANCEL_REQUEST_ATTENTION = 64;
     public int CHANGE_MAXIMIZE_TOPCOMPONENT_SLIDE_IN = 65;
+
+    //toggle TopComponent busy
+    public int TOPCOMPONENT_SHOW_BUSY = 70;
+    public int TOPCOMPONENT_HIDE_BUSY = 71;
     
     /** Provides GUI changes to manifest model changes to user. */
     public void changeGUI(ViewEvent[] viewEvents, WindowSystemSnapshot snapshot);

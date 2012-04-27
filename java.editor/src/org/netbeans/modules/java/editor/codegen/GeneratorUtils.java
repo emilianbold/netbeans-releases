@@ -45,24 +45,19 @@ package org.netbeans.modules.java.editor.codegen;
 
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.IdentifierTree;
-import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
-import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -85,7 +80,10 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+
+import com.sun.source.util.SourcePositions;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.java.source.CodeStyle;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.GeneratorUtilities;
@@ -99,6 +97,7 @@ import org.netbeans.editor.GuardedException;
 import org.netbeans.editor.Utilities;
 import org.openide.DialogDescriptor;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 /**
@@ -113,35 +112,6 @@ public class GeneratorUtils {
     public static final int SETTERS_ONLY = 2;
 
     private GeneratorUtils() {
-    }
-    
-    public static ClassTree insertClassMember(WorkingCopy copy, TreePath path, Tree member) {
-        assert TreeUtilities.CLASS_TREE_KINDS.contains(path.getLeaf().getKind());
-        TreeUtilities tu = copy.getTreeUtilities();
-        int idx = 0;
-        for (Tree tree : ((ClassTree)path.getLeaf()).getMembers()) {
-            if (!tu.isSynthetic(new TreePath(path, tree)) && ClassMemberComparator.compare(member, tree) < 0)
-                break;
-            idx++;
-        }
-        return copy.getTreeMaker().insertClassMember((ClassTree)path.getLeaf(), idx, member);        
-    }
-
-    public static ClassTree insertMethodAfter(WorkingCopy copy, TreePath path, MethodTree member, MethodTree precedingMethod) {
-        assert TreeUtilities.CLASS_TREE_KINDS.contains(path.getLeaf().getKind());
-        TreeUtilities tu = copy.getTreeUtilities();
-        int idx = 0;
-        for (Tree tree : ((ClassTree)path.getLeaf()).getMembers()) {
-            if (tree == precedingMethod) {
-                idx++;
-                break;
-            }
-
-            if (!tu.isSynthetic(new TreePath(path, tree)) && ClassMemberComparator.compare(member, tree) < 0)
-                break;
-            idx++;
-        }
-        return copy.getTreeMaker().insertClassMember((ClassTree)path.getLeaf(), idx, member);
     }
     
     public static List<? extends ExecutableElement> findUndefs(CompilationInfo info, TypeElement impl) {
@@ -243,53 +213,38 @@ public class GeneratorUtils {
         assert TreeUtilities.CLASS_TREE_KINDS.contains(path.getLeaf().getKind());
         TypeElement te = (TypeElement)wc.getTrees().getElement(path);
         if (te != null) {
-            TreeMaker make = wc.getTreeMaker();
             ClassTree clazz = (ClassTree)path.getLeaf();
-            List<Tree> members = new ArrayList<Tree>();
             GeneratorUtilities gu = GeneratorUtilities.get(wc);
             ElementUtilities elemUtils = wc.getElementUtilities();
-            for(ExecutableElement element : elemUtils.findUnimplementedMethods(te))
-                members.add(gu.createAbstractMethodImplementation(te, element));
-            ClassTree nue = gu.insertClassMembers(clazz, members);
-            wc.rewrite(clazz, nue);
+            clazz = gu.insertClassMembers(clazz, gu.createAbstractMethodImplementations(te, elemUtils.findUnimplementedMethods(te)));
+            wc.rewrite(path.getLeaf(), clazz);
         }
     }
     
-    public static void generateAbstractMethodImplementations(WorkingCopy wc, TreePath path, List<? extends ExecutableElement> elements, int index) {
+    public static void generateAbstractMethodImplementations(WorkingCopy wc, TreePath path, List<? extends ExecutableElement> elements, int offset) {
         assert TreeUtilities.CLASS_TREE_KINDS.contains(path.getLeaf().getKind());
         TypeElement te = (TypeElement)wc.getTrees().getElement(path);
         if (te != null) {
-            TreeMaker make = wc.getTreeMaker();
             ClassTree clazz = (ClassTree)path.getLeaf();
-            List<Tree> members = new ArrayList<Tree>(clazz.getMembers());
-            GeneratorUtilities gu = GeneratorUtilities.get(wc);
-            members.addAll(index, gu.createAbstractMethodImplementations(te, elements));
-            ClassTree nue = make.Class(clazz.getModifiers(), clazz.getSimpleName(), clazz.getTypeParameters(), clazz.getExtendsClause(), (List<ExpressionTree>)clazz.getImplementsClause(), members);
-            wc.rewrite(clazz, nue);
+            wc.rewrite(clazz, insertClassMembers(wc, clazz, GeneratorUtilities.get(wc).createAbstractMethodImplementations(te, elements), offset));
         }
     }
-    
+
     public static void generateAbstractMethodImplementation(WorkingCopy wc, TreePath path, ExecutableElement element, int index) {
         assert TreeUtilities.CLASS_TREE_KINDS.contains(path.getLeaf().getKind());
         TypeElement te = (TypeElement)wc.getTrees().getElement(path);
         if (te != null) {
-            GeneratorUtilities gu = GeneratorUtilities.get(wc);
-            ClassTree decl = wc.getTreeMaker().insertClassMember((ClassTree)path.getLeaf(), index, gu.createAbstractMethodImplementation(te, element));
+            ClassTree decl = wc.getTreeMaker().insertClassMember((ClassTree)path.getLeaf(), index, GeneratorUtilities.get(wc).createAbstractMethodImplementation(te, element));
             wc.rewrite(path.getLeaf(), decl);
         }
     }
     
-    public static void generateMethodOverrides(WorkingCopy wc, TreePath path, List<? extends ExecutableElement> elements, int index) {
+    public static void generateMethodOverrides(WorkingCopy wc, TreePath path, List<? extends ExecutableElement> elements, int offset) {
         assert TreeUtilities.CLASS_TREE_KINDS.contains(path.getLeaf().getKind());
         TypeElement te = (TypeElement)wc.getTrees().getElement(path);
         if (te != null) {
-            TreeMaker make = wc.getTreeMaker();
             ClassTree clazz = (ClassTree)path.getLeaf();
-            List<Tree> members = new ArrayList<Tree>(clazz.getMembers());
-            GeneratorUtilities gu = GeneratorUtilities.get(wc);
-            members.addAll(index, gu.createOverridingMethods(te, elements));
-            ClassTree nue = make.Class(clazz.getModifiers(), clazz.getSimpleName(), clazz.getTypeParameters(), clazz.getExtendsClause(), (List<ExpressionTree>)clazz.getImplementsClause(), members);
-            wc.rewrite(clazz, nue);
+            wc.rewrite(clazz, insertClassMembers(wc, clazz, GeneratorUtilities.get(wc).createOverridingMethods(te, elements), offset));
         }
     }
     
@@ -297,51 +252,42 @@ public class GeneratorUtils {
         assert TreeUtilities.CLASS_TREE_KINDS.contains(path.getLeaf().getKind());
         TypeElement te = (TypeElement)wc.getTrees().getElement(path);
         if (te != null) {
-            GeneratorUtilities gu = GeneratorUtilities.get(wc);
-            ClassTree decl = wc.getTreeMaker().insertClassMember((ClassTree)path.getLeaf(), index, gu.createOverridingMethod(te, element));
+            ClassTree decl = wc.getTreeMaker().insertClassMember((ClassTree)path.getLeaf(), index, GeneratorUtilities.get(wc).createOverridingMethod(te, element));
             wc.rewrite(path.getLeaf(), decl);
         }
     }
 
-    public static void generateConstructor(WorkingCopy wc, TreePath path, Iterable<? extends VariableElement> initFields, ExecutableElement inheritedConstructor, int index) {
-        TreeMaker make = wc.getTreeMaker();
+    public static void generateConstructor(WorkingCopy wc, TreePath path, Iterable<? extends VariableElement> initFields, ExecutableElement inheritedConstructor, int offset) {
         ClassTree clazz = (ClassTree)path.getLeaf();
         TypeElement te = (TypeElement) wc.getTrees().getElement(path);
-        GeneratorUtilities gu = GeneratorUtilities.get(wc);
-        ClassTree decl = make.insertClassMember(clazz, index, gu.createConstructor(te, initFields, inheritedConstructor)); //NOI18N
-        wc.rewrite(path.getLeaf(), decl);
+        wc.rewrite(clazz, insertClassMembers(wc, clazz, Collections.singletonList(GeneratorUtilities.get(wc).createConstructor(te, initFields, inheritedConstructor)), offset));
     }
     
-    public static void generateConstructors(WorkingCopy wc, TreePath path, Iterable<? extends VariableElement> initFields, List<? extends ExecutableElement> inheritedConstructors, int index) {
-        TreeMaker make = wc.getTreeMaker();
+    public static void generateConstructors(WorkingCopy wc, TreePath path, Iterable<? extends VariableElement> initFields, List<? extends ExecutableElement> inheritedConstructors, int offset) {
         ClassTree clazz = (ClassTree)path.getLeaf();
         TypeElement te = (TypeElement) wc.getTrees().getElement(path);
         GeneratorUtilities gu = GeneratorUtilities.get(wc);
-        ClassTree decl = clazz;
+        List<Tree> members = new ArrayList<Tree>();
         for (ExecutableElement inheritedConstructor : inheritedConstructors) {
-            decl = make.insertClassMember(decl, index, gu.createConstructor(te, initFields, inheritedConstructor)); //NOI18N
+            members.add(gu.createConstructor(te, initFields, inheritedConstructor));
         }
-        wc.rewrite(clazz, decl);
+        wc.rewrite(clazz, insertClassMembers(wc, clazz, members, offset));
     }
     
-    public static void generateGettersAndSetters(WorkingCopy wc, TreePath path, Iterable<? extends VariableElement> fields, int type, int index) {
+    public static void generateGettersAndSetters(WorkingCopy wc, TreePath path, Iterable<? extends VariableElement> fields, int type, int offset) {
         assert TreeUtilities.CLASS_TREE_KINDS.contains(path.getLeaf().getKind());
         TypeElement te = (TypeElement)wc.getTrees().getElement(path);
         if (te != null) {
-            TreeMaker make = wc.getTreeMaker();
             GeneratorUtilities gu = GeneratorUtilities.get(wc);
             ClassTree clazz = (ClassTree)path.getLeaf();
-            List<Tree> members = new ArrayList<Tree>(clazz.getMembers());
-            List<Tree> methods = new ArrayList<Tree>();
+            List<Tree> members = new ArrayList<Tree>();
             for(VariableElement element : fields) {
                 if (type != SETTERS_ONLY)
-                    methods.add(gu.createGetter(te, element));
+                    members.add(gu.createGetter(te, element));
                 if (type != GETTERS_ONLY)
-                    methods.add(gu.createSetter(te, element));
+                    members.add(gu.createSetter(te, element));
             }
-            members.addAll(index, methods);
-            ClassTree nue = make.Class(clazz.getModifiers(), clazz.getSimpleName(), clazz.getTypeParameters(), clazz.getExtendsClause(), (List<ExpressionTree>)clazz.getImplementsClause(), members);
-            wc.rewrite(clazz, nue);
+            wc.rewrite(clazz, insertClassMembers(wc, clazz, members, offset));
         }
     }
     
@@ -384,7 +330,9 @@ public class GeneratorUtils {
         return false;
     }
     
-    public static int findClassMemberIndex(WorkingCopy wc, ClassTree clazz, int offset) {
+    public static ClassTree insertClassMembers(WorkingCopy wc, ClassTree clazz, List<? extends Tree> members, int offset) throws IllegalStateException {
+        if (offset < 0 || getCodeStyle(wc).getClassMemberInsertionPoint() != CodeStyle.InsertionPoint.CARET_LOCATION)
+            return GeneratorUtilities.get(wc).insertClassMembers(clazz, members);
         int index = 0;
         SourcePositions sp = wc.getTrees().getSourcePositions();
         GuardedDocument gdoc = null;
@@ -406,7 +354,32 @@ public class GeneratorUtils {
             index++;
             lastMember = tree;
         }
-        return index;
+        TreeMaker tm = wc.getTreeMaker();
+        for (int i = members.size() - 1; i >= 0; i--) {
+            clazz = tm.insertClassMember(clazz, index, members.get(i));
+        }
+        return clazz;
+    }
+    
+    private static CodeStyle getCodeStyle(CompilationInfo info) {
+        if (info != null) {
+            try {
+                Document doc = info.getDocument();
+                if (doc != null) {
+                    CodeStyle cs = (CodeStyle)doc.getProperty(CodeStyle.class);
+                    return cs != null ? cs : CodeStyle.getDefault(doc);
+                }
+            } catch (IOException ioe) {
+                // ignore
+            }
+            
+            FileObject file = info.getFileObject();
+            if (file != null) {
+                return CodeStyle.getDefault(file);
+            }
+        }
+        
+        return CodeStyle.getDefault((Document)null);
     }
     
     private static List<? extends VariableElement> findAllAccessibleFields(CompilationInfo info, TypeElement accessibleFrom, TypeElement toScan) {
@@ -588,91 +561,6 @@ public class GeneratorUtils {
         return sb;
     }
 
-    private static class ClassMemberComparator {
-        
-        public static int compare(Tree tree1, Tree tree2) {
-            if (tree1 == tree2)
-                return 0;
-            int importanceDiff = getSortPriority(tree1) - getSortPriority(tree2);
-            if (importanceDiff != 0)
-                return importanceDiff;
-            int alphabeticalDiff = getSortText(tree1).compareTo(getSortText(tree2));
-            if (alphabeticalDiff != 0)
-                return alphabeticalDiff;
-            return -1;
-        }
-        
-        private static int getSortPriority(Tree tree) {
-            int ret = 0;
-            ModifiersTree modifiers = null;
-            switch (tree.getKind()) {
-            case ANNOTATION_TYPE:
-            case CLASS:
-            case ENUM:
-            case INTERFACE:
-                ret = 400;
-                modifiers = ((ClassTree)tree).getModifiers();
-                break;
-            case METHOD:
-                MethodTree mt = (MethodTree)tree;
-                if (mt.getName().contentEquals("<init>"))
-                    ret = 200;
-                else
-                    ret = 300;
-                modifiers = mt.getModifiers();
-                break;
-            case VARIABLE:
-                ret = 100;
-                modifiers = ((VariableTree)tree).getModifiers();
-                break;
-            }
-            if (modifiers != null) {
-                if (!modifiers.getFlags().contains(Modifier.STATIC))
-                    ret += 1000;
-                if (modifiers.getFlags().contains(Modifier.PUBLIC))
-                    ret += 10;
-                else if (modifiers.getFlags().contains(Modifier.PROTECTED))
-                    ret += 20;
-                else if (modifiers.getFlags().contains(Modifier.PRIVATE))
-                    ret += 40;
-                else
-                    ret += 30;
-            }
-            return ret;
-        }
-        
-        private static String getSortText(Tree tree) {
-            switch (tree.getKind()) {
-            case ANNOTATION_TYPE:
-            case CLASS:
-            case ENUM:
-            case INTERFACE:
-                return ((ClassTree)tree).getSimpleName().toString();
-            case METHOD:
-                MethodTree mt = (MethodTree)tree;
-                StringBuilder sortParams = new StringBuilder();
-                sortParams.append('(');
-                int cnt = 0;
-                for(Iterator<? extends VariableTree> it = mt.getParameters().iterator(); it.hasNext();) {
-                    VariableTree param = it.next();
-                    if (param.getType().getKind() == Tree.Kind.IDENTIFIER)
-                        sortParams.append(((IdentifierTree)param.getType()).getName().toString());
-                    else if (param.getType().getKind() == Tree.Kind.MEMBER_SELECT)
-                        sortParams.append(((MemberSelectTree)param.getType()).getIdentifier().toString());
-                    if (it.hasNext()) {
-                        sortParams.append(',');
-                    }
-                    cnt++;
-                }
-                sortParams.append(')');
-                return mt.getName().toString() + "#" + ((cnt < 10 ? "0" : "") + cnt) + "#" + sortParams.toString(); //NOI18N
-            case VARIABLE:
-                return ((VariableTree)tree).getName().toString();
-            }
-            return ""; //NOI18N
-        }
-    }
-    
     public static void guardedCommit(JTextComponent component, ModificationResult mr) throws IOException {
         try {
             mr.commit();

@@ -56,13 +56,7 @@ import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Vector;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
@@ -72,6 +66,8 @@ import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbCollections;
 import org.openide.util.io.NbMarshalledObject;
+import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.lookup.ServiceProviders;
 
 /**
  * Holder for NetBeans default (system, configuration) filesystem, used for most
@@ -143,6 +139,98 @@ public class Repository implements Serializable {
 
         return repository;
     }
+    
+    /** Contributes to content of {@link #getDefaultFileSystem() system file system} 
+     * (which influences structure under {@link FileUtil#getConfigRoot()}). The
+     * method {@link #registerLayers(java.util.Collection)} 
+     * is called during initialization of {@link Repository} and 
+     * implementors (registered via {@link ServiceProvider} annotation) may
+     * add their <em>layers</em> (later processed via {@link XMLFileSystem}) into
+     * the general collection of existing providers.
+     * <p class="nonnormative">
+     * The list of <em>layers</em> as well as their content may be cached.
+     * In a typical NetBeans Platform application, the cache remains until
+     * list of <a href="@org-openide-modules@/org/openide/modules/ModuleInfo.html">modules</a>
+     * and their enabled state remain the same. While it does, the {@link LayerProvider}s
+     * are not queried again.
+     * </p>
+     * <p>You can show a dialog letting the user log in to some server, you can call
+     * {@code LoginProvider.injectLayer(...)} with the URL to an XML layer.
+     * The contents of the layer will become available only after login.
+     * <pre>
+     * {@code @}{@link ServiceProviders}({
+     *     {@code @}{@link ServiceProvider}(service=LoginProvider.class),
+     *     {@code @}{@link ServiceProvider}(service=LayerProvider.class)
+     * })
+     * public final class LoginProvider extends LayerProvider {
+     *     private URL layer;
+     * 
+     *     public void registerLayers(Collection{@code <? super URL>} arr) {
+     *         if (layer != null) {
+     *             arr.add(layer);
+     *         }
+     *     }
+     * 
+     *     public static void injectLayer(URL u) {
+     *         LoginProvider lp = {@link Lookup}.getDefault().lookup(LoginProvider.class);
+     *         lp.url = u;
+     *         lp.refresh();
+     *     }
+     * }
+     * </pre>
+     * The additional layers are inserted below traditional layers provided
+     * by modules in so called {@link FileSystem fallback mode} - e.g. modules 
+     * can override and redefine layers contributed by layer providers.
+     * 
+     * @since 7.59
+     */
+    public static abstract class LayerProvider {
+        /** Allows providers to add their additions to the structure
+         * beneath {@link FileUtil#getConfigRoot()}. The method is
+         * supposed to collect all additional layers and {@link Collection#add(java.lang.Object) add}
+         * them into the <code>context</code> collection. The provided
+         * layers will be processed by {@link XMLFileSystem}-like manner later.
+         * 
+         * @param context the context where to register the additions
+         */
+        protected abstract void registerLayers(Collection<? super URL> context);
+        
+        /** Method to call when set of URLs returned from the {@link #layers()}
+         * method changed and there is a need to refresh it. Refresh is very likely 
+         * a time consuming task - consider invoking it on a background thread and
+         * don't hold any locks while calling the method
+         */
+        protected final void refresh() {
+            Repository.getDefault().refreshAdditionalLayers();
+        }
+    }
+
+    /** Methods that tells {@link Repository} subclasses to refresh list of
+     * URLs provided by {@link LayerProvider}s.
+     * @since 7.59
+     */
+    protected void refreshAdditionalLayers() {
+        if (getDefaultFileSystem() instanceof MainFS) {
+            ((MainFS)getDefaultFileSystem()).refreshLayers();
+        }
+    }
+    
+    /** Allows subclasses registered as {@link Repository#getDefault()} to 
+     * find out list of URLs for a given provider. The method just calls
+     * {@link LayerProvider#registerLayers(java.util.Collection)}.
+     * 
+     * @param p the provider.
+     * @return ordered list of URLs
+     * @since 7.59
+     */
+    protected final List<? extends URL> findLayers(LayerProvider p) {
+        if (this != Repository.getDefault()) {
+            return Collections.emptyList();
+        }
+        List<URL> urls = new ArrayList<URL>();
+        p.registerLayers(urls);
+        return urls;
+    }
 
     private static final class MainFS extends MultiFileSystem implements LookupListener {
         private static final Lookup.Result<FileSystem> ALL = Lookup.getDefault().lookupResult(FileSystem.class);
@@ -151,35 +239,48 @@ public class Repository implements Serializable {
 
         public MainFS() {
             ALL.addLookupListener(this);
+            refreshLayers();
+        }
+        
+        final void refreshLayers() {
             List<URL> layerUrls = new ArrayList<URL>();
-            ClassLoader l = Thread.currentThread().getContextClassLoader();
             try {
-                for (URL manifest : NbCollections.iterable(l.getResources("META-INF/MANIFEST.MF"))) { // NOI18N
-                    InputStream is = manifest.openStream();
-                    try {
-                        Manifest mani = new Manifest(is);
-                        String layerLoc = mani.getMainAttributes().getValue("OpenIDE-Module-Layer"); // NOI18N
-                        if (layerLoc != null) {
-                            URL layer = l.getResource(layerLoc);
-                            if (layer != null) {
-                                layerUrls.add(layer);
-                            } else {
-                                LOG.warning("No such layer: " + layerLoc);
-                            }
-                        }
-                    } finally {
-                        is.close();
-                    }
-                }
-                for (URL generatedLayer : NbCollections.iterable(l.getResources("META-INF/generated-layer.xml"))) { // NOI18N
-                    layerUrls.add(generatedLayer);
-                }
+                provideLayer(layerUrls);
                 layers.setXmlUrls(layerUrls.toArray(new URL[layerUrls.size()]));
                 LOG.log(Level.FINE, "Loading classpath layers: {0}", layerUrls);
             } catch (Exception x) {
                 LOG.log(Level.WARNING, "Setting layer URLs: " + layerUrls, x);
             }
             resultChanged(null); // run after add listener - see PN1 in #26338
+        }
+
+        private void provideLayer(List<URL> layerUrls) throws IOException {
+            ClassLoader l = Thread.currentThread().getContextClassLoader();
+            for (URL manifest : NbCollections.iterable(l.getResources("META-INF/MANIFEST.MF"))) { // NOI18N
+                InputStream is = manifest.openStream();
+                try {
+                    Manifest mani = new Manifest(is);
+                    String layerLoc = mani.getMainAttributes().getValue("OpenIDE-Module-Layer"); // NOI18N
+                    if (layerLoc != null) {
+                        URL layer = l.getResource(layerLoc);
+                        if (layer != null) {
+                            layerUrls.add(layer);
+                        } else {
+                            LOG.warning("No such layer: " + layerLoc);
+                        }
+                    }
+                } finally {
+                    is.close();
+                }
+            }
+            for (URL generatedLayer : NbCollections.iterable(l.getResources("META-INF/generated-layer.xml"))) { // NOI18N
+                layerUrls.add(generatedLayer);
+            }
+            for (LayerProvider p : Lookup.getDefault().lookupAll(LayerProvider.class)) {
+                List<URL> newURLs = new ArrayList<URL>();
+                p.registerLayers(newURLs);
+                layerUrls.addAll(newURLs);
+            }
         }
 
         private static FileSystem[] computeDelegates() {

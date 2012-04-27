@@ -59,13 +59,13 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.java.editor.codegen.GeneratorUtils;
 import org.netbeans.modules.java.hints.infrastructure.ErrorHintsProvider;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
@@ -138,7 +138,7 @@ public abstract class CreateClassFix implements Fix {
             
             MethodTree constr = make.Method(make.Modifiers(EnumSet.of(Modifier.PUBLIC/*!!!*/)), "<init>", null, Collections.<TypeParameterTree>emptyList(), argTypes, Collections.<ExpressionTree>emptyList(), "{}" /*XXX*/, null); // NOI18N
             
-            targetTree = GeneratorUtils.insertClassMember(working, targetTreePath, constr);
+            targetTree = GeneratorUtilities.get(working).insertClassMember(targetTree, constr);
             
             removeDefaultConstructor = true;
         }
@@ -417,7 +417,7 @@ public abstract class CreateClassFix implements Fix {
                     
                     innerClass = createConstructor(working, new TreePath(targetTree, innerClass));
                     
-                    working.rewrite(targetTree.getLeaf(), GeneratorUtils.insertClassMember(working, targetTree, innerClass));
+                    working.rewrite(targetTree.getLeaf(), GeneratorUtilities.get(working).insertClassMember((ClassTree)targetTree.getLeaf(), innerClass));
                 }
             });
             

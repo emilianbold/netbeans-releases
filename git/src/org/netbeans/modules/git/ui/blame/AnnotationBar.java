@@ -1122,7 +1122,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     }
 
     private Color selectedColor() {
-        if (backgroundColor == backgroundColor()) {
+        if (backgroundColor.equals(backgroundColor())) {
             return selectedColor;
         }
         if (textComponent != null) {

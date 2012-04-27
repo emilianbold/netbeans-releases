@@ -61,5 +61,7 @@ abstract class WaitableResult<T> extends Lookup.Result<T> {
      * @param evAndListeners LookupEvent, LookupListener, LookupEvent, LookupListener, etc.
      */
     protected abstract void collectFires(Collection<Object> evAndListeners);
-     
+
+    protected abstract Collection<? extends Object> allInstances(boolean callBeforeLookup);
+    protected abstract Collection<? extends Lookup.Item<T>> allItems(boolean callBeforeLookup);
 }

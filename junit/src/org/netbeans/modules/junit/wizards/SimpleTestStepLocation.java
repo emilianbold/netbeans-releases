@@ -108,10 +108,9 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.modules.junit.GuiUtils;
-import org.netbeans.modules.junit.JUnitCfgOfCreate;
-import org.netbeans.modules.junit.NamedObject;
-import org.netbeans.modules.junit.SizeRestrictedPanel;
+import org.netbeans.modules.java.testrunner.GuiUtils;
+import org.netbeans.modules.gsf.testrunner.api.NamedObject;
+import org.netbeans.modules.gsf.testrunner.api.SizeRestrictedPanel;
 import org.netbeans.modules.junit.TestCreator;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.openide.DialogDescriptor;
@@ -157,6 +156,8 @@ public final class SimpleTestStepLocation implements WizardDescriptor.Panel<Wiza
     private JCheckBox chkPackagePrivate;
     private JCheckBox chkSetUp;
     private JCheckBox chkTearDown;
+    private JCheckBox chkBeforeClass;
+    private JCheckBox chkAfterClass;
     private JCheckBox chkMethodBodies;
     private JCheckBox chkJavadoc;
     private JCheckBox chkHints;
@@ -410,7 +411,7 @@ public final class SimpleTestStepLocation implements WizardDescriptor.Panel<Wiza
         JComponent accessLevels = GuiUtils.createChkBoxGroup(
                 NbBundle.getMessage(
                         GuiUtils.class,
-                        "JUnitCfgOfCreate.groupAccessLevels"),          //NOI18N
+                        "CommonTestsCfgOfCreate.groupAccessLevels"),          //NOI18N
                 chkBoxes = GuiUtils.createCheckBoxes(new String[] {
                         GuiUtils.CHK_PUBLIC,
                         GuiUtils.CHK_PROTECTED,
@@ -422,19 +423,23 @@ public final class SimpleTestStepLocation implements WizardDescriptor.Panel<Wiza
         JComponent optCode = GuiUtils.createChkBoxGroup(
                 NbBundle.getMessage(
                         GuiUtils.class,
-                        "JUnitCfgOfCreate.groupOptCode"),               //NOI18N
+                        "CommonTestsCfgOfCreate.groupOptCode"),               //NOI18N
                 chkBoxes = GuiUtils.createCheckBoxes(new String[] {
                         GuiUtils.CHK_SETUP,
                         GuiUtils.CHK_TEARDOWN,
+                        GuiUtils.CHK_BEFORE_CLASS,
+                        GuiUtils.CHK_AFTER_CLASS,
                         GuiUtils.CHK_METHOD_BODIES}));
         chkSetUp = chkBoxes[0];
         chkTearDown = chkBoxes[1];
-        chkMethodBodies = chkBoxes[2];
+        chkBeforeClass = chkBoxes[2];
+        chkAfterClass = chkBoxes[3];
+        chkMethodBodies = chkBoxes[4];
         
         JComponent optComments = GuiUtils.createChkBoxGroup(
                 NbBundle.getMessage(
                         GuiUtils.class,
-                        "JUnitCfgOfCreate.groupOptComments"),           //NOI18N
+                        "CommonTestsCfgOfCreate.groupOptComments"),           //NOI18N
                 chkBoxes = GuiUtils.createCheckBoxes(new String[] {
                         GuiUtils.CHK_JAVADOC,
                         GuiUtils.CHK_HINTS}));
@@ -1088,7 +1093,7 @@ public final class SimpleTestStepLocation implements WizardDescriptor.Panel<Wiza
         } else {
             if (msgClassNameInvalid == null) {
                 msgClassNameInvalid = NbBundle.getMessage(
-                        JUnitCfgOfCreate.class,
+                        GuiUtils.class,
                         "MSG_InvalidClassName");                        //NOI18N
             }
             errMsg = msgClassNameInvalid;
@@ -1362,6 +1367,10 @@ public final class SimpleTestStepLocation implements WizardDescriptor.Panel<Wiza
                Boolean.TRUE.equals(wizard.getProperty(GuiUtils.CHK_SETUP)));
         chkTearDown.setSelected(
                Boolean.TRUE.equals(wizard.getProperty(GuiUtils.CHK_TEARDOWN)));
+        chkBeforeClass.setSelected(
+                Boolean.TRUE.equals(settings.getProperty(GuiUtils.CHK_BEFORE_CLASS)));
+        chkAfterClass.setSelected(
+                Boolean.TRUE.equals(settings.getProperty(GuiUtils.CHK_AFTER_CLASS)));
         chkMethodBodies.setSelected(
            Boolean.TRUE.equals(wizard.getProperty(GuiUtils.CHK_METHOD_BODIES)));
         chkJavadoc.setSelected(
@@ -1387,6 +1396,10 @@ public final class SimpleTestStepLocation implements WizardDescriptor.Panel<Wiza
                            Boolean.valueOf(chkSetUp.isSelected()));
         wizard.putProperty(GuiUtils.CHK_TEARDOWN,
                            Boolean.valueOf(chkTearDown.isSelected()));
+        settings.putProperty(GuiUtils.CHK_BEFORE_CLASS,
+                           Boolean.valueOf(chkBeforeClass.isSelected()));
+        settings.putProperty(GuiUtils.CHK_AFTER_CLASS,
+                           Boolean.valueOf(chkAfterClass.isSelected()));
         wizard.putProperty(GuiUtils.CHK_METHOD_BODIES,
                            Boolean.valueOf(chkMethodBodies.isSelected()));
         wizard.putProperty(GuiUtils.CHK_JAVADOC,

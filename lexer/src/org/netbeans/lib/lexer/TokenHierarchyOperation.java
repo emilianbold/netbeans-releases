@@ -285,12 +285,14 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
         // Check whether the state has changed
         Activity newActivity = active ? Activity.ACTIVE : Activity.INACTIVE;
         if (activity != newActivity) {
+            boolean notInited = (activity == Activity.NOT_INITED);
             IncTokenList<T> incTokenList = (IncTokenList<T>)rootTokenList;
-            boolean doFire = (listenerList.getListenerCount() > 0);
-            TokenListChange<T> change;
-            TokenHierarchyEventInfo eventInfo = new TokenHierarchyEventInfo(
-                    this, TokenHierarchyEventType.ACTIVITY, 0, 0, "", 0);
-            if (activity != Activity.NOT_INITED) { // Increase modCount if not doing init
+            boolean doFire = (!notInited && listenerList.getListenerCount() > 0);
+            TokenListChange<T> change = null;
+            TokenHierarchyEventInfo eventInfo = notInited
+                    ? null
+                    : new TokenHierarchyEventInfo(this, TokenHierarchyEventType.ACTIVITY, 0, 0, "", 0);
+            if (!notInited) { // Increase modCount if not doing init
                 incTokenList.incrementModCount();
             }
             if (active) { // Wishing to be active
@@ -305,18 +307,25 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
                     Language<?> language = LexerSpiPackageAccessor.get().language(mutableTextInput());
                     if (language != null) {
                         incTokenList.setLanguagePath((language != null) ? LanguagePath.get(language) : null);
-                        change = TokenListChange.createEmptyChange(incTokenList);
+                        if (!notInited) {
+                            change = TokenListChange.createEmptyChange(incTokenList);
+                        }
                     } else { // No valid top language => no change in activity
-                        return;
+                        return; // It will continue to ask mutableTextInput.language() until it returns non-null result
                     }
                 }
                 incTokenList.reinit(); // Initialize lazy lexing
             } else { // Wishing to be inactive
-                change = TokenListChange.createEmptyChange(incTokenList);
+                if (!notInited) {
+                    change = TokenListChange.createEmptyChange(incTokenList);
+                }
             }
-            eventInfo.setTokenChangeInfo(change.tokenChangeInfo());
+            if (change != null) {
+                eventInfo.setTokenChangeInfo(change.tokenChangeInfo());
+            }
 
             activity = newActivity;
+
             if (doFire) { // Only if there are already listeners
                 if (LOG.isLoggable(Level.FINE)) {
                     LOG.fine("Firing ACTIVITY change to " + listenerList.getListenerCount() + " listeners: " + activity); // NOI18N

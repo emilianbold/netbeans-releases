@@ -157,7 +157,7 @@ abstract public class JavaComponentInfo implements ComponentInfo {
     }
     
     /** Provide the stack information about where this component was added into the hierarchy */
-    final public Stack getAddCallStack() {
+    public Stack getAddCallStack() {
         return VisualDebuggerListener.getStackOf(thread.getDebugger(), component);
     }
     
@@ -849,6 +849,48 @@ abstract public class JavaComponentInfo implements ComponentInfo {
                 this.lineNumber = lineNumber;
             }
 
+            /** Parse a stack trace frame line */
+            static Frame parseLine(String line) {
+                if (line.startsWith("at ")) {
+                    line = line.substring(3);
+                }
+                int p = line.indexOf('(');
+                if (p < 0) {
+                    return new Frame(line, "", "", 1);
+                }
+                int d = line.lastIndexOf('.', p);
+                int start = line.lastIndexOf(' ', p);
+                if (start < 0) start = 0;
+                String cn;
+                String mn;
+                if (d >= 0) {
+                    cn = line.substring(start, d);
+                    mn = line.substring(d + 1, p);
+                } else {
+                    cn = line.substring(start, p);
+                    mn = "";
+                }
+                p++;
+                int col = line.indexOf(':', p);
+                String fn;
+                int ln;
+                if (col > 0) {
+                    fn = line.substring(p, col);
+                    String lns = line.substring(col + 1);
+                    if (lns.endsWith(")")) lns = lns.substring(0, lns.length() - 1);
+                    try {
+                        ln = Integer.parseInt(lns);
+                    } catch (NumberFormatException nfex) {
+                        ln = 1;
+                    }
+                } else {
+                    fn = line.substring(p);
+                    if (fn.endsWith(")")) fn = fn.substring(0, fn.length() - 1);
+                    ln = 1;
+                }
+                return new Frame(cn, mn, fn, ln);
+            }
+            
             public String getClassName() {
                 return className;
             }

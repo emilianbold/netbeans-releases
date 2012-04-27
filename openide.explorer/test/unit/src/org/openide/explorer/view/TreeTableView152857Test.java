@@ -45,6 +45,7 @@ package org.openide.explorer.view;
 
 import java.awt.BorderLayout;
 import java.awt.Dialog;
+import java.awt.GraphicsEnvironment;
 import java.beans.PropertyVetoException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -53,6 +54,8 @@ import java.util.logging.Logger;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.tree.TreeNode;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.openide.DialogDescriptor;
@@ -70,6 +73,11 @@ import org.openide.util.Exceptions;
  * @author  Jiri Rechtacek
  */
 public class TreeTableView152857Test extends NbTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(TreeTableView152857Test.class);
+    }
+
     private static final Logger LOG = Logger.getLogger(TreeTableView152857Test.class.getName());
 
     private TTV view;
@@ -158,6 +166,7 @@ public class TreeTableView152857Test extends NbTestCase {
         d.setVisible (false);
     }
 
+    @RandomlyFails // NB-Core-Build #7921: expected:<[3]> but was:<[1]> @ view.getTableValueAt(1)
     public void testSorting() throws PropertyVetoException, InterruptedException, InvocationTargetException {
         StringKeys children = new StringKeys(true);
         children.doSetKeys(new String[]{"1", "3", "2", "2", "1"});

@@ -184,7 +184,7 @@ public class UtilTest {
 
             @Override
             public short getKindPresentation() {
-                return (short) kind;
+                return kind;
             }
 
             @Override

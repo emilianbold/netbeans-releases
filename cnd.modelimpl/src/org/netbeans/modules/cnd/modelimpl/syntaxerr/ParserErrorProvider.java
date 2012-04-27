@@ -49,6 +49,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
+import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 import org.netbeans.modules.cnd.modelimpl.syntaxerr.spi.ReadOnlyTokenBuffer;
 import org.netbeans.modules.cnd.utils.CndUtils;
 
@@ -69,13 +70,13 @@ public class ParserErrorProvider extends CsmErrorProvider {
     @Override
     protected  void doGetErrors(CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
         Collection<CsmErrorInfo> errorInfos = new ArrayList<CsmErrorInfo>();
-        Collection<RecognitionException> recognitionExceptions = new ArrayList<RecognitionException>();
+        Collection<CsmParserProvider.ParserError> errors = new ArrayList<CsmParserProvider.ParserError>();
         Thread currentThread = Thread.currentThread();
         FileImpl file = (FileImpl) request.getFile();
         currentThread.setName("Provider "+getName()+" prosess "+file.getAbsolutePath()); // NOI18N
-        ReadOnlyTokenBuffer buffer = file.getErrors(recognitionExceptions);
+        ReadOnlyTokenBuffer buffer = file.getErrors(errors);
         if (buffer != null) {
-            ParserErrorFilter.getDefault().filter(recognitionExceptions, errorInfos, buffer, request.getFile());
+            ParserErrorFilter.getDefault().filter(errors, errorInfos, buffer, request.getFile());
             for (Iterator<CsmErrorInfo> iter = errorInfos.iterator(); iter.hasNext() && ! request.isCancelled(); ) {
                 response.addError(iter.next());
             }

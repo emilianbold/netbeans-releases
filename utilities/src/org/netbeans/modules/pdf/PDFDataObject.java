@@ -48,6 +48,7 @@ import java.io.File;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
@@ -62,6 +63,12 @@ import org.openide.util.Lookup;
  * which lets you view it in e.g. Acrobat Reader or similar.
  * @author Jesse Glick
  */
+@MIMEResolver.ExtensionRegistration(
+    extension="pdf",
+    mimeType="application/pdf",
+    position=370,
+    displayName="#PDFResolver"
+)
 public class PDFDataObject extends MultiDataObject {
 
     private static final long serialVersionUID = -1073885636989804140L;

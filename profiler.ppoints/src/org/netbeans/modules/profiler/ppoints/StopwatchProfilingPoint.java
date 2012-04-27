@@ -67,6 +67,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.TitledBorder;
 import org.netbeans.lib.profiler.ui.UIUtils;
 import org.netbeans.modules.profiler.api.ProjectUtilities;
+import org.netbeans.modules.profiler.ppoints.ui.ProfilingPointReport;
 import org.openide.util.Lookup;
 
 
@@ -80,7 +81,6 @@ import org.openide.util.Lookup;
     "StopwatchProfilingPoint_NHitsString=<b>{0} hits</b>, last at {1}, <a href='#'>report</a>",
     "StopwatchProfilingPoint_NoResultsString=No results available",
     "StopwatchProfilingPoint_ReportAccessDescr=Report of {0}",
-    "StopwatchProfilingPoint_NoHitsString=no hits",
     "StopwatchProfilingPoint_HeaderTypeString=<b>Type:</b> {0}",
     "StopwatchProfilingPoint_HeaderEnabledString=<b>Enabled:</b> {0}",
     "StopwatchProfilingPoint_HeaderProjectString=<b>Project:</b> {0}",
@@ -135,7 +135,7 @@ public final class StopwatchProfilingPoint extends CodeProfilingPoint.Paired imp
         }
     }
 
-    private class Report extends TopComponent {
+    private class Report extends ProfilingPointReport {
         //~ Static fields/initializers -------------------------------------------------------------------------------------------
 
         private static final String START_LOCATION_URLMASK = "file:/1"; // NOI18N
@@ -151,20 +151,20 @@ public final class StopwatchProfilingPoint extends CodeProfilingPoint.Paired imp
         public Report() {
             initDefaults();
             initComponents();
-            refreshData();
+            refresh();
         }
 
         //~ Methods --------------------------------------------------------------------------------------------------------------
 
-        public int getPersistenceType() {
-            return TopComponent.PERSISTENCE_NEVER;
-        }
+//        public int getPersistenceType() {
+//            return TopComponent.PERSISTENCE_NEVER;
+//        }
+//
+//        protected String preferredID() {
+//            return this.getClass().getName();
+//        }
 
-        protected String preferredID() {
-            return this.getClass().getName();
-        }
-
-        void refreshData() {
+        protected void refresh() {
             StringBuilder headerAreaTextBuilder = new StringBuilder();
 
             headerAreaTextBuilder.append(getHeaderName());
@@ -199,14 +199,17 @@ public final class StopwatchProfilingPoint extends CodeProfilingPoint.Paired imp
             StringBuilder dataAreaTextBuilder = new StringBuilder();
 
             synchronized(resultsSync) {
-                if (results.size() == 0) {
-                    dataAreaTextBuilder.append("&nbsp;&nbsp;&lt;").append(Bundle.StopwatchProfilingPoint_NoHitsString()).append("&gt;"); // NOI18N
+                if (results.isEmpty()) {
+                    dataAreaTextBuilder.append(ProfilingPointReport.getNoDataHint(StopwatchProfilingPoint.this));
                 } else {
                     for (int i = 0; i < results.size(); i++) {
                         dataAreaTextBuilder.append("&nbsp;&nbsp;");
                         dataAreaTextBuilder.append(getDataResultItem(i));
                         dataAreaTextBuilder.append("<br>"); // NOI18N
                     }
+                    ProfilingPointsManager m = ProfilingPointsManager.getDefault();
+                    if (!m.belowMaxHits(results.size()))
+                        dataAreaTextBuilder.append(m.getTruncatedResultsText());
                 }
             }
 
@@ -433,7 +436,7 @@ public final class StopwatchProfilingPoint extends CodeProfilingPoint.Paired imp
                 report.refreshProperties();
             }
 
-            report.refreshData();
+            report.refresh();
         }
     }
 
@@ -513,7 +516,8 @@ public final class StopwatchProfilingPoint extends CodeProfilingPoint.Paired imp
         synchronized(resultsSync) {
             if (!usesEndLocation() || (index == 0)) {
                 // TODO: should endpoint hit before startpoint hit be processed somehow?
-                results.add(new Result(hitEvent.getTimestamp(), hitEvent.getThreadId()));
+                if (ProfilingPointsManager.getDefault().belowMaxHits(results.size()))
+                    results.add(new Result(hitEvent.getTimestamp(), hitEvent.getThreadId()));
 
                 //System.out.println("Time start  thread "+hitEvent.getThreadId()+" time "+Long.toHexString(hitEvent.getTimestamp()));
             } else {

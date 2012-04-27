@@ -99,13 +99,12 @@ public class Symfony2OptionsPanelController extends OptionsPanelController imple
     public void cancel() {
     }
 
-    @NbBundle.Messages("LBL_Symfony2Prefix=Symfony: {0}")
     @Override
     public boolean isValid() {
         // warnings
         String warning = validateSandbox(symfony2OptionsPanel.getSandbox());
         if (warning != null) {
-            symfony2OptionsPanel.setWarning(Bundle.LBL_Symfony2Prefix(warning));
+            symfony2OptionsPanel.setWarning(warning);
             return true;
         }
 
@@ -114,12 +113,15 @@ public class Symfony2OptionsPanelController extends OptionsPanelController imple
         return true;
     }
 
-    @NbBundle.Messages("MSG_FileNotZip=File is not Zip file.")
+    @NbBundle.Messages({
+        "Symfony2OptionsPanelController.symfony.sandbox=Symfony",
+        "Symfony2OptionsPanelController.symfony.notZip=Symfony is not Zip file."
+    })
     public static String validateSandbox(String sandbox) {
-        String warning = FileUtils.validateFile(sandbox, false);
+        String warning = FileUtils.validateFile(Bundle.Symfony2OptionsPanelController_symfony_sandbox(), sandbox, false);
         if (warning == null) {
             if (!new File(sandbox).getName().toLowerCase().endsWith(".zip")) { // NOI18N
-                warning = Bundle.MSG_FileNotZip();
+                warning = Bundle.Symfony2OptionsPanelController_symfony_notZip();
             }
         }
         return warning;

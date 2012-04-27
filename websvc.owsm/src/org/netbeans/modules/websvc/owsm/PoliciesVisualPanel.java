@@ -189,18 +189,6 @@ public class PoliciesVisualPanel extends javax.swing.JPanel {
                     controller.toPhase( Phase.ELEMENTS_RESOLVED);
                     List<? extends TypeElement> topLevelElements = 
                         controller.getTopLevelElements();
-                    //TODO : delete
-                    ClassTree clazz = controller.getTrees().getTree( 
-                            topLevelElements.get(0));
-                    ModifiersTree mods = clazz.getModifiers();
-                    List<? extends AnnotationTree> anns = mods.getAnnotations();
-                    for (AnnotationTree annotationTree : anns) {
-                        List<? extends ExpressionTree> exprs = annotationTree.getArguments();
-                        for (ExpressionTree expressionTree : exprs) {
-                            int a =0;
-                        }
-                    }
-                    
                     
                     if ( topLevelElements.size() == 1){
                         isWebService( topLevelElements.get( 0 ), controller , 
@@ -237,7 +225,11 @@ public class PoliciesVisualPanel extends javax.swing.JPanel {
         for (AnnotationMirror annotationMirror : allAnnotationMirrors) {
             Element annotationElement = annotationMirror.getAnnotationType().asElement();
             if ( annotationElement instanceof TypeElement ){
-                String fqn = ((TypeElement)annotationElement).getQualifiedName().toString();
+                String fqn = null ;
+                if ( annotationElement instanceof TypeElement ){
+                    fqn = ((TypeElement)annotationElement).getQualifiedName().
+                        toString();
+                }
                 if ( "javax.jws.WebService".equals( fqn )){
                     isWebService = true;
                 }

@@ -1,21 +1,3 @@
-#
-#  There exist several targets which are by default empty and which can be 
-#  used for execution of your targets. These targets are usually executed 
-#  before and after some main targets. They are: 
-#
-#     .build-pre:              called before 'build' target
-#     .build-post:             called after 'build' target
-#     .clean-pre:              called before 'clean' target
-#     .clean-post:             called after 'clean' target
-#     .clobber-pre:            called before 'clobber' target
-#     .clobber-post:           called after 'clobber' target
-#     .all-pre:                called before 'all' target
-#     .all-post:               called after 'all' target
-#     .help-pre:                called before 'help' target
-#     .help-post:               called after 'help' target
-#
-#  Targets beginning with '.' are not intended to be called on their own.
-#
 #  Main targets can be executed directly, and they are:
 #  
 #     build                    build a specific configuration
@@ -29,38 +11,46 @@
 #
 # NOCDDL
 
-
 # Environment 
 MKDIR=mkdir
 CP=cp
 CCADMIN=CCadmin
 RANLIB=ranlib
 
+
+
 # build
-build: .build-post
+build: .build-post-$(CONF)
 
 .build-pre:
 # Add your pre 'build' code here...
 
-.build-post: .build-impl nbexec.exe
-# Add your post 'build' code here...
+.build-post-nbexec: .build-impl nbexecexe.cpp nbexecloader.h utilsfuncs.cpp nbexec_exe.rc
+	windres.exe -Ocoff nbexec_exe.rc nbexec_exe.res
+	g++ -s -mno-cygwin -DNBEXEC_DLL=\"nbexec.dll\" nbexecexe.cpp utilsfuncs.cpp nbexec_exe.res -o nbexec.exe
 	cp nbexec.exe ../../../nbbuild/netbeans/platform/lib/
 	cp nbexec.dll ../../../nbbuild/netbeans/platform/lib/
+	
+.build-post-nbexec64: .build-impl nbexecexe.cpp nbexecloader.h utilsfuncs.cpp nbexec_exe.rc
+	x86_64-w64-mingw32-windres.exe -Ocoff nbexec_exe.rc nbexec_exe64.res 
+	x86_64-w64-mingw32-g++.exe -m64 -s -mno-cygwin -DNBEXEC_DLL=\"nbexec64.dll\" -static-libgcc -static-libstdc++ nbexecexe.cpp utilsfuncs.cpp nbexec_exe64.res -o nbexec64.exe 
+	cp nbexec64.exe ../../../nbbuild/netbeans/platform/lib/
+	cp nbexec64.dll ../../../nbbuild/netbeans/platform/lib/
 
-nbexec.exe: nbexecexe.cpp nbexecloader.h utilsfuncs.cpp nbexec_exe.rc
-	windres.exe -Ocoff nbexec_exe.rc nbexec_exe.res
-	g++ -s -mno-cygwin nbexecexe.cpp utilsfuncs.cpp nbexec_exe.res -o nbexec.exe
+
 
 # clean
-clean: .clean-post
+clean: .clean-post-$(CONF)
 
 .clean-pre:
 # Add your pre 'clean' code here...
-#	-rm -r build/*
 
-.clean-post: .clean-impl
-# Add your post 'clean' code here...
-	rm -f nbexec_exe.res nbexec.exe
+.clean-post-nbexec: .clean-impl
+	rm -f nbexec_exe32.res nbexec32.exe
+	
+.clean-post-nbexec64: .clean-impl
+	rm -f nbexec_exe64.res nbexec64.exe
+
 
 
 # clobber
@@ -73,6 +63,7 @@ clobber: .clobber-post
 # Add your post 'clobber' code here...
 
 
+
 # all
 all: .all-post
 
@@ -81,6 +72,7 @@ all: .all-post
 
 .all-post: .all-impl
 # Add your post 'all' code here...
+
 
 
 # help

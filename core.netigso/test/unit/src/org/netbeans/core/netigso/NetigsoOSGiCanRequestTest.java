@@ -45,10 +45,12 @@ package org.netbeans.core.netigso;
 import java.io.File;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import org.netbeans.MockEvents;
 import org.netbeans.MockModuleInstaller;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
+import org.openide.modules.Dependency;
 
 /**
  *
@@ -78,6 +80,9 @@ public class NetigsoOSGiCanRequestTest extends NetigsoHid {
             File j2 = changeManifest(new File(jars, "depends-on-simple-module.jar"), mfBar);
             Module m1 = mgr.create(j1, null, false, false, false);
             Module m2 = mgr.create(j2, null, false, false, false);
+            
+            assertProvidesRequires(m2, "org.bar", "org.foo");
+            
             HashSet<Module> b = new HashSet<Module>(Arrays.asList(m1, m2));
             mgr.enable(b);
             both = b;
@@ -92,6 +97,22 @@ public class NetigsoOSGiCanRequestTest extends NetigsoHid {
             }
             mgr.mutexPrivileged().exitWriteAccess();
         }
+    }
+    private static void assertProvidesRequires(Module m, String provides, String requires) {
+        List<String> p = Arrays.asList(m.getProvides());
+        assertTrue("Bundles provide their packages: " + p, p.contains(provides));
+
+        for (Dependency d : m.getDependencies()) {
+            if (d.getType() == Dependency.TYPE_RECOMMENDS) {
+                if (!d.getName().startsWith("cnb.")) {
+                    continue;
+                }
+                if (requires.equals(d.getName().substring(4))) {
+                    return;
+                }
+            }
+        }
+        fail("Module " + m + " does not require " + requires);
     }
 
 }

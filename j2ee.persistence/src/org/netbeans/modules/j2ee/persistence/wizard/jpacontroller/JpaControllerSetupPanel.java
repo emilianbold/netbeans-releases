@@ -84,7 +84,7 @@ final class JpaControllerSetupPanel implements WizardDescriptor.Panel, WizardDes
     }
     
     public HelpCtx getHelp() {
-        return new HelpCtx("org.netbeans.modules.j2ee.persistence.wizard.jpacontroller"); // NOI18N
+        return new HelpCtx("org.netbeans.modules.j2ee.persistence.wizard.jpacontroller."+JpaControllerSetupPanel.class.getSimpleName()); // NOI18N
     }
     
     public boolean isValid() {

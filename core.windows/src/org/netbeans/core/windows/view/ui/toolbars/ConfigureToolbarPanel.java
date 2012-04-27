@@ -54,18 +54,12 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.Icon;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Actions;
+import org.openide.awt.Mnemonics;
 import org.openide.awt.ToolbarPool;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
@@ -153,7 +147,7 @@ public class ConfigureToolbarPanel extends javax.swing.JPanel implements Runnabl
                 new Object[] { closeButton },
                 closeButton,
                 DialogDescriptor.DEFAULT_ALIGN,
-                null,
+                new HelpCtx( ConfigureToolbarPanel.class ),
                 null);
             dialog = DialogDisplayer.getDefault().createDialog(dd);
             dialogRef = new WeakReference<Dialog>(dialog);
@@ -288,15 +282,22 @@ public class ConfigureToolbarPanel extends javax.swing.JPanel implements Runnabl
     }//GEN-LAST:event_resetToolbars
 
     private void newToolbar(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newToolbar
-        NotifyDescriptor.InputLine il = new NotifyDescriptor.InputLine
-                                        (NbBundle.getMessage(ConfigureToolbarPanel.class, "PROP_newToolbarLabel"), //NOI18N
-                                         NbBundle.getMessage(ConfigureToolbarPanel.class, "PROP_newToolbarDialog")); //NOI18N
-        il.setInputText(NbBundle.getMessage(ConfigureToolbarPanel.class, "PROP_newToolbar")); //NOI18N
+        JPanel panel = new JPanel( new BorderLayout( 5, 5 ) );
+        JLabel lbl = new JLabel();
+        Mnemonics.setLocalizedText( lbl, NbBundle.getMessage(ConfigureToolbarPanel.class, "PROP_newToolbarLabel") );
+        panel.add( lbl, BorderLayout.WEST );
+        JTextField inputField = new JTextField( NbBundle.getMessage(ConfigureToolbarPanel.class, "PROP_newToolbar") );
+        inputField.setColumns( 25 );
+        panel.add( inputField, BorderLayout.CENTER );
+        panel.setBorder( BorderFactory.createEmptyBorder( 10, 10, 10, 10 ) );
+        DialogDescriptor dd = new DialogDescriptor( panel, NbBundle.getMessage(ConfigureToolbarPanel.class, "PROP_newToolbarDialog"), 
+                true, DialogDescriptor.OK_CANCEL_OPTION, null, DialogDescriptor.DEFAULT_ALIGN, new HelpCtx( ConfigureToolbarPanel.class), null );
 
-        Object ok = org.openide.DialogDisplayer.getDefault ().notify (il);
-        if (ok != NotifyDescriptor.OK_OPTION)
+        Dialog dlg = org.openide.DialogDisplayer.getDefault ().createDialog( dd );
+        dlg.setVisible( true );
+        if (dd.getValue() != NotifyDescriptor.OK_OPTION)
             return;
-        String s = il.getInputText().trim();
+        String s = inputField.getText().trim();
         if( s.length() == 0 )
             return;
 

@@ -44,9 +44,14 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
-import org.netbeans.modules.cnd.api.model.*;
-import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.IOException;
+import org.netbeans.modules.cnd.antlr.collections.AST;
+import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmMethod;
+import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.CsmVisibility;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
@@ -76,7 +81,7 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
         setExplicit(_explicit);
     }
 
-    public static<T> MethodImpl<T> create(AST ast, final CsmFile file, ClassImpl cls, CsmVisibility visibility, boolean global) throws AstRendererException {
+    public static <T> MethodImpl<T> create(AST ast, final CsmFile file, FileContent fileContent, ClassImpl cls, CsmVisibility visibility, boolean global) throws AstRendererException {
         CsmScope scope = cls;
         
         int startOffset = getStartOffset(ast);
@@ -85,12 +90,12 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
         NameHolder nameHolder = NameHolder.createFunctionName(ast);
         CharSequence name = QualifiedNameCache.getManager().getString(nameHolder.getName());
         if (name.length() == 0) {
-            DiagnosticExceptoins.register(new AstRendererException((FileImpl) file, startOffset, "Empty function name.")); // NOI18N
+            DiagnosticExceptoins.register(AstRendererException.createAstRendererException((FileImpl) file, ast, startOffset, "Empty function name.")); // NOI18N
             return null;
         }
         CharSequence rawName = initRawName(ast);
         
-        boolean _static = AstRenderer.FunctionRenderer.isStatic(ast, file, name);
+        boolean _static = AstRenderer.FunctionRenderer.isStatic(ast, file, fileContent, name);
         boolean _const = AstRenderer.FunctionRenderer.isConst(ast);
         boolean _virtual = false;
         boolean _explicit = false;
@@ -110,7 +115,7 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
         
         scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, false);
 
-        MethodImpl methodImpl = new MethodImpl(name, rawName, cls, visibility, _virtual, _explicit, _static, _const, file, startOffset, endOffset, global);        
+        MethodImpl<T> methodImpl = new MethodImpl<T>(name, rawName, cls, visibility, _virtual, _explicit, _static, _const, file, startOffset, endOffset, global);
         temporaryRepositoryRegistration(global, methodImpl);
         
         StringBuilder clsTemplateSuffix = new StringBuilder();
@@ -119,11 +124,11 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
         
         methodImpl.setTemplateDescriptor(templateDescriptor, classTemplateSuffix);
         methodImpl.setReturnType(AstRenderer.FunctionRenderer.createReturnType(ast, methodImpl, file));
-        methodImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, methodImpl, file, global), 
+        methodImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, methodImpl, file, fileContent), 
                 AstRenderer.FunctionRenderer.isVoidParameter(ast));
         
         postObjectCreateRegistration(global, methodImpl);
-        nameHolder.addReference(file, methodImpl);
+        nameHolder.addReference(fileContent, methodImpl);
         return methodImpl;
     }
 

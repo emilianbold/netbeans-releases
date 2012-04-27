@@ -216,7 +216,7 @@ public class RemoteServerRecord implements ServerRecord {
             }
         }
         if (initPathMap) {
-            RemotePathMap.getPathMap(getExecutionEnvironment()).init();
+            RemotePathMap.getPathMap(getExecutionEnvironment()).initIfNeeded();
         }
         if (pcs != null) {
             pcs.firePropertyChange(RemoteServerRecord.PROP_STATE_CHANGED, ostate, state);

@@ -44,6 +44,7 @@
 package org.netbeans.api.java.source.gen;
 
 import com.sun.source.tree.*;
+import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.TreeScanner;
@@ -62,6 +63,10 @@ import static org.netbeans.modules.java.source.save.PositionEstimator.*;
 import org.netbeans.api.java.source.*;
 import static org.netbeans.api.java.source.JavaSource.*;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.java.source.JavaSourceAccessor;
+import org.netbeans.modules.java.source.builder.CommentHandlerService;
+import org.netbeans.modules.java.source.query.CommentSet;
+import org.netbeans.modules.java.source.query.CommentSet.RelativePosition;
 import org.netbeans.modules.java.source.save.CasualDiff;
 import org.netbeans.modules.java.source.save.PositionEstimator;
 import org.openide.cookies.EditorCookie;
@@ -184,6 +189,80 @@ public class CommentsTest extends GeneratorTestBase {
 
         };
         src.runModificationTask(task).commit();
+    }
+    
+    public void testAddJavaDocAndAnnotationToRemovedMethod() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    Test() {\n" +
+            "    }\n" +
+            "\n" +
+            "    public void nuevoMetodo(String s) {\n" +
+            "    }\n" +
+            "\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    Test() {\n" +
+            "    }\n" +
+            "\n" +
+            "    /**\n" +
+            "     * Comentario\n" +
+            "     */\n" +
+            "    @Deprecated\n" +
+            "    @Deprecated\n" +
+            "    public void nuevoMetodo(String s) {\n" +
+            "    }\n" +
+            "\n" +
+            "}\n";
+        JavaSource src = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            
+            public void run(final WorkingCopy copy) throws Exception {
+                copy.toPhase(Phase.RESOLVED);
+                
+                TreeMaker make = copy.getTreeMaker();
+                ClassTree node = (ClassTree) copy.getCompilationUnit().getTypeDecls().get(0);
+                ModifiersTree modifiers = make.Modifiers(EnumSet.of(Modifier.PUBLIC));
+                AnnotationTree annotation = make.Annotation(make.Identifier("Deprecated"), Collections.EMPTY_LIST); //NOI18N
+                modifiers = make.addModifiersAnnotation(modifiers, annotation);
+                modifiers = make.addModifiersAnnotation(modifiers, annotation);
+
+                MethodTree method = make.Method(
+                        modifiers,
+                        "nuevoMetodo",
+                        make.PrimitiveType(TypeKind.VOID),
+                        Collections.<TypeParameterTree>emptyList(),
+                        Collections.singletonList(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "s", make.Type("String"), null)),
+                        Collections.<ExpressionTree>emptyList(),
+                        make.Block(Collections.EMPTY_LIST, false),
+                        null
+                );
+                make.addComment(method, Comment.create(
+                        Comment.Style.JAVADOC, 
+                        NOPOS, 
+                        NOPOS, 
+                        1, // to ensure indentation
+                        "Comentario"), 
+                        true
+                );
+                ClassTree clazz = make.removeClassMember(node, 1);
+                clazz = make.insertClassMember(clazz, 1, method);
+//                ClassTree clazz = make.addClassMember(node, method);
+                copy.rewrite(node, clazz);
+            }
+            
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
     }
     
     // #99329
@@ -364,7 +443,7 @@ public class CommentsTest extends GeneratorTestBase {
     }
     
     // issue #100829
-    public void DISABLEtestCopyMethodWithCommments() throws Exception {
+    public void testCopyMethodWithCommments() throws Exception {
         testFile = new File(getWorkDir(), "Origin.java");
         TestUtilities.copyStringToFile(testFile, 
             "public class Origin {\n" +
@@ -423,7 +502,6 @@ public class CommentsTest extends GeneratorTestBase {
         };
         src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
-        System.err.println(res);
         assertEquals(golden, res);
     }
     
@@ -1795,6 +1873,169 @@ public class CommentsTest extends GeneratorTestBase {
 
         };
         src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void test209357a() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        final String content = "package org.netbeans.modules.php.apigen.ui.customizer;\n" +
+                               "\n" +
+                               "final class ApiGenPanel {\n" +
+                               "    private void initComponents() {\n" +
+                               "        targetButton.addActionListener(new java.awt.event.ActionListener() {\n" +
+                               "            public void actionPerformed(java.awt.event.ActionEvent evt) {\n" +
+                               "            }\n" +
+                               "        });\n" +
+                               "        configButton.addActionListener(new java.awt.event.ActionListener() {\n" +
+                               "            public void actionPerformed(java.awt.event.ActionEvent evt) {\n" +
+                               "            }\n" +
+                               "        });\n" +
+                               "\n" +
+                               "    }\n" +
+                               "\n" +
+                               "    private javax.swing.JButton configButton;\n" +
+                               "    private javax.swing.JButton targetButton;\n" +
+                               "\n" +
+                               "}\n";
+        final String golden  = "package org.netbeans.modules.php.apigen.ui.customizer;\n" +
+                               "\n" +
+                               "final class ApiGenPanel {\n" +
+                               "    private void initComponents() {\n" +
+                               "        System.err.println(1); //NOI18n\n" +
+                               "        configButton.addActionListener(new java.awt.event.ActionListener() {\n" +
+                               "            public void actionPerformed(java.awt.event.ActionEvent evt) {\n" +
+                               "            }\n" +
+                               "        });\n" +
+                               "\n" +
+                               "    }\n" +
+                               "\n" +
+                               "    private javax.swing.JButton configButton;\n" +
+                               "    private javax.swing.JButton targetButton;\n" +
+                               "\n" +
+                               "}\n";
+
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, content);
+
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+
+                MethodTree m = (MethodTree) clazz.getMembers().get(1);
+                StatementTree se = workingCopy.getTreeUtilities().parseStatement("System.err.println(1);", new SourcePositions[1]);
+
+                //XXX: need to set the comment with RelativePosition.INLINE, which cannot currently be done through API:
+                CommentHandlerService commentHandler = CommentHandlerService.instance(JavaSourceAccessor.getINSTANCE().getJavacTask(workingCopy).getContext());
+                CommentSet set = commentHandler.getComments(se);
+
+                assertNotNull(set);
+                set.addComment(RelativePosition.INLINE, Comment.create(Style.LINE, "NOI18N"));
+
+                workingCopy.rewrite(m.getBody().getStatements().get(0), se);
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        DataObject d = DataObject.find(FileUtil.toFileObject(testFile));
+        EditorCookie ec = d.getLookup().lookup(EditorCookie.class);
+        ec.saveDocument();
+
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(res, 2, res.split("new").length);
+    }
+
+    public void test209357b() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        final String content = "package org.netbeans.modules.php.apigen.ui.customizer;\n" +
+                               "\n" +
+                               "final class ApiGenPanel {\n" +
+                               "    private void initComponents() {\n" +
+                               "        java.lang.System.err.println(\"a\"); //NOI18N\n" +
+                               "        java.lang.System.err.println(\"b\"); //NOI18N\n" +
+                               "        java.lang.System.err.println(\"c\"); //NOI18N\n" +
+                               "        java.lang.System.err.println(\"d\"); //NOI18N\n" +
+                               "    }\n" +
+                               "}\n";
+        final String golden  = "package org.netbeans.modules.php.apigen.ui.customizer;\n" +
+                               "\n" +
+                               "final class ApiGenPanel {\n" +
+                               "    private void initComponents() {\n" +
+                               "        System.err.println(\"a\"); //NOI18N\n" +
+                               "        System.err.println(\"b\"); //NOI18N\n" +
+                               "        System.err.println(\"c\"); //NOI18N\n" +
+                               "        System.err.println(\"d\"); //NOI18N\n" +
+                               "    }\n" +
+                               "}\n";
+
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, content);
+
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                GeneratorUtilities gu = GeneratorUtilities.get(workingCopy);
+                workingCopy.rewrite(clazz, gu.importFQNs(gu.importComments(clazz, workingCopy.getCompilationUnit())));
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        DataObject d = DataObject.find(FileUtil.toFileObject(testFile));
+        EditorCookie ec = d.getLookup().lookup(EditorCookie.class);
+        ec.saveDocument();
+
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void test210760() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        final String content =  "package test;\n" +
+                                "import javax.swing.*;\n" +
+                                "public class Test {\n" +
+                                "    private void initComponents() {\n" +
+                                "        jButton1.getAccessibleContext().setAccessibleName(test.Test.getMessage(Test.class, \"NewJPanel1.jButton1.AccessibleContext.accessibleName\")); // NOI18N\n" +
+                                "        jButton1.getAccessibleContext().setAccessibleDescription(test.Test.NbBundle.getMessage(Test.class, \"NewJPanel1.jButton1.AccessibleContext.accessibleDescription\")); // NOI18N\n" +
+                                "    }\n" +
+                                "    private javax.swing.JButton jButton1;\n" +
+                                "    private String getMessage(Class c, String k) { return k; } \n" +
+                                "}\n";
+        final String golden =  "package test;\n" +
+                                "import javax.swing.*;\n" +
+                                "public class Test {\n" +
+                                "    private void initComponents() {\n" +
+                                "        jButton1.getAccessibleContext().setAccessibleName(Test.getMessage(Test.class, \"NewJPanel1.jButton1.AccessibleContext.accessibleName\")); // NOI18N\n" +
+                                "        jButton1.getAccessibleContext().setAccessibleDescription(Test.NbBundle.getMessage(Test.class, \"NewJPanel1.jButton1.AccessibleContext.accessibleDescription\")); // NOI18N\n" +
+                                "    }\n" +
+                                "    private JButton jButton1;\n" +
+                                "    private String getMessage(Class c, String k) { return k; } \n" +
+                                "}\n";
+
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, content);
+
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                GeneratorUtilities gu = GeneratorUtilities.get(workingCopy);
+                workingCopy.rewrite(clazz, gu.importFQNs(gu.importComments(clazz, workingCopy.getCompilationUnit())));
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        DataObject d = DataObject.find(FileUtil.toFileObject(testFile));
+        EditorCookie ec = d.getLookup().lookup(EditorCookie.class);
+        ec.saveDocument();
+
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertEquals(golden, res);

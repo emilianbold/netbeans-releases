@@ -58,6 +58,7 @@ import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.api.support.AddOperationCookie;
 import org.netbeans.modules.websvc.api.support.java.SourceUtils;
 import org.netbeans.modules.websvc.core.AddWsOperationHelper;
+import org.netbeans.modules.websvc.design.javamodel.ProjectService;
 import org.openide.ErrorManager;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
@@ -73,13 +74,13 @@ import org.openide.util.NbBundle;
  */
 public class AddOperationAction extends AbstractAction implements AddOperationCookie {
     
-    private Service service;
+    private ProjectService service;
     private DataObject dataObject;
     /**
      * Creates a new instance of AddOperationAction
      * @param implementationClass fileobject of service implementation class
      */
-    public AddOperationAction(Service service, FileObject implementationClass) {
+    public AddOperationAction(ProjectService service, FileObject implementationClass) {
         super(getName());
         putValue(SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/websvc/design/view/resources/operation.png", false));
         putValue(SHORT_DESCRIPTION, NbBundle.getMessage(AddOperationAction.class, "Hint_AddOperation"));

@@ -153,15 +153,6 @@
         </folder>
     </folder>
     
-    <folder name="Services">
-        <folder name="MIMEResolver">
-            <file name="cssResolver.xml" url="cssResolver.xml">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.css.resources.Bundle"/>
-                <attr name="position" intvalue="169"/>
-            </file>
-        </folder>
-    </folder>
-    
     <folder name="OptionsDialog">
         <folder name="PreviewExamples">
             <folder name="text">

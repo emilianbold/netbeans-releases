@@ -161,7 +161,7 @@ public final class FileUtilities {
         File rootF = FileUtil.toFile(root);
         if (rootF == null) {
             try {
-                return root.getURL().toURI().resolve(path);
+                return root.toURI().resolve(path);
             } catch (Exception x) { // FileStateInvalidException, URISyntaxException
                 return URI.create("file:/invalid/"); // NOI18N
             }

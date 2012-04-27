@@ -45,10 +45,12 @@
 package org.netbeans.modules.editor.java;
 
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Scope;
 import com.sun.source.tree.Tree;
@@ -56,6 +58,7 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
 
 import java.util.*;
@@ -77,9 +80,11 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.TypeUtilities.TypeNameOptions;
+import org.netbeans.api.java.source.support.ReferencesCount;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
@@ -87,10 +92,9 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.ext.java.JavaTokenContext;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.java.editor.javadoc.JavadocImports;
 import org.netbeans.modules.java.editor.options.CodeCompletionPanel;
-import org.netbeans.spi.editor.hints.Severity;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.WeakListeners;
 
 /**
@@ -308,6 +312,18 @@ public final class Utilities {
         }
     }
 
+    public static int getImportanceLevel(ReferencesCount referencesCount, ElementHandle<TypeElement> handle) {
+        int typeRefCount = 999 - Math.min(referencesCount.getTypeReferenceCount(handle), 999);
+        int pkgRefCount = 999;
+        String binaryName = SourceUtils.getJVMSignature(handle)[0];
+        int idx = binaryName.lastIndexOf('.');
+        if (idx > 0) {
+            ElementHandle<PackageElement> pkgElement = ElementHandle.createPackageElementHandle(binaryName.substring(0, idx));
+            pkgRefCount -= Math.min(referencesCount.getPackageReferenceCount(pkgElement), 999);
+        }
+        return typeRefCount * 100000 + pkgRefCount * 100 + getImportanceLevel(binaryName);
+    }
+    
     public static int getImportanceLevel(String fqn) {
         int weight = 50;
         if (fqn.startsWith("java.lang") || fqn.startsWith("java.util")) // NOI18N
@@ -503,7 +519,54 @@ public final class Utilities {
             return true;
         return inAnonymousOrLocalClass(parentPath);
     }
-        
+
+    public static Set<Element> getUsedElements(final CompilationInfo info) {
+        final Set<Element> ret = new HashSet<Element>();
+        final Trees trees = info.getTrees();
+        new TreePathScanner<Void, Void>() {
+
+            @Override
+            public Void visitIdentifier(IdentifierTree node, Void p) {
+                addElement(trees.getElement(getCurrentPath()));
+                return null;
+            }
+
+            @Override
+            public Void visitClass(ClassTree node, Void p) {
+                for (Element element : JavadocImports.computeReferencedElements(info, getCurrentPath()))
+                    addElement(element);
+                return super.visitClass(node, p);
+            }
+
+            @Override
+            public Void visitMethod(MethodTree node, Void p) {
+                for (Element element : JavadocImports.computeReferencedElements(info, getCurrentPath()))
+                    addElement(element);
+                return super.visitMethod(node, p);
+            }
+
+            @Override
+            public Void visitVariable(VariableTree node, Void p) {
+                for (Element element : JavadocImports.computeReferencedElements(info, getCurrentPath()))
+                    addElement(element);
+                return super.visitVariable(node, p);
+            }
+
+            @Override
+            public Void visitCompilationUnit(CompilationUnitTree node, Void p) {
+                scan(node.getPackageAnnotations(), p);
+                return scan(node.getTypeDecls(), p);
+            }
+            
+            private void addElement(Element element) {
+                if (element != null) {
+                    ret.add(element);
+                }
+            }
+        }.scan(info.getCompilationUnit(), null);
+        return ret;                
+    }
+
     private static List<String> varNamesForType(TypeMirror type, Types types, Elements elements, String prefix) {
         switch (type.getKind()) {
             case ARRAY:
@@ -835,18 +898,6 @@ public final class Utilities {
         return found;
     }
 
-    public static Set<Severity> disableErrors(FileObject file) {
-        if (file.getAttribute(DISABLE_ERRORS) != null) {
-            return EnumSet.allOf(Severity.class);
-        }
-        if (!file.canWrite() && FileUtil.getArchiveFile(file) != null) {
-            return EnumSet.allOf(Severity.class);
-        }
-
-        return EnumSet.noneOf(Severity.class);
-    }
-
-    private static final String DISABLE_ERRORS = "disable-java-errors";
 
     private Utilities() {
     }

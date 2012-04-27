@@ -69,20 +69,19 @@ import org.netbeans.api.extexecution.ExternalProcessSupport;
 import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.extexecution.input.InputReaderTask;
 import org.netbeans.api.extexecution.input.InputReaders;
-import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.extexecution.startup.StartupExtender;
+import org.netbeans.modules.j2ee.deployment.plugins.api.CommonServerBridge;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
-import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerServerSettings;
 import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerSupport;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.util.lookup.Lookups;
 import org.openide.windows.InputOutput;
 
 /**
@@ -202,8 +201,7 @@ public final class WLStartServer extends StartServer {
      * @see org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer#startProfiling(javax.enterprise.deploy.spi.Target, org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerServerSettings)
      */
     @Override
-    public ProgressObject startProfiling( Target target,
-            ProfilerServerSettings settings )
+    public ProgressObject startProfiling( Target target )
     {
         LOGGER.log(Level.FINER, "Starting server in profiling mode"); // NOI18N
 
@@ -215,7 +213,7 @@ public final class WLStartServer extends StartServer {
                 NbBundle.getMessage(WLStartServer.class, "MSG_START_SERVER_IN_PROGRESS", serverName));
 
         String uri = dm.getUri();
-        service.submit(new WLProfilingStartTask(uri, serverProgress, dm, settings));
+        service.submit(new WLProfilingStartTask(uri, serverProgress, dm));
 
         removeServerInDebug(uri);
         return serverProgress;
@@ -253,6 +251,11 @@ public final class WLStartServer extends StartServer {
     public boolean supportsStartDebugging(Target target) {
         //if we can start it we can debug it
         return supportsStartDeploymentManager();
+    }
+
+    @Override
+    public boolean needsRestart(Target target) {
+        return dm.isRestartNeeded();
     }
 
     private static boolean ping(String host, int port, int timeout) {
@@ -362,15 +365,26 @@ public final class WLStartServer extends StartServer {
         return true;
     }
 
+    private static StringBuilder appendNonProxyHosts(StringBuilder sb) {
+        if (sb.indexOf("http.nonProxyHosts") < 0) { // NOI18N
+            String nonProxyHosts = NonProxyHostsHelper.getNonProxyHosts();
+            if (!nonProxyHosts.isEmpty()) {
+                if (sb.length() > 0) {
+                    sb.append(' ');
+                }
+                sb.append("-Dhttp.nonProxyHosts="); // NOI18N
+                sb.append('"').append(nonProxyHosts).append('"');
+            }
+        }
+        return sb;
+    }
+
     private class WLProfilingStartTask extends WLStartTask {
 
-        private final ProfilerServerSettings mySettings;
-
         public WLProfilingStartTask(String uri, WLServerProgress serverProgress,
-                WLDeploymentManager dm, ProfilerServerSettings settings) {
+                WLDeploymentManager dm) {
 
             super( uri , serverProgress, dm );
-            mySettings = settings;
         }
 
         /* (non-Javadoc)
@@ -398,31 +412,27 @@ public final class WLStartServer extends StartServer {
         @Override
         protected ExternalProcessBuilder setJavaOptionsEnv(ExternalProcessBuilder builder) {
             ExternalProcessBuilder result = builder;
-            /*JavaPlatform javaPlatform = getSettings().getJavaPlatform();
-            vendor = javaPlatform.getVendor();
-
-            String javaHome = getJavaHome(javaPlatform);
-            result = result.addEnvironmentVariable("JAVA_HOME", javaHome); // NOI18N
-            if (SUN.equals(vendor)) {
-                result = result.addEnvironmentVariable("SUN_JAVA_HOME", // NOI18N
-                        javaHome);
-            }*/
 
             StringBuilder javaOptsBuilder = new StringBuilder();
-            String[] profJvmArgs = getSettings().getJvmArgs();
-            for (int i = 0; i < profJvmArgs.length; i++) {
-                javaOptsBuilder.append(" ").append(profJvmArgs[i]);         // NOI18N
-            }
             String javaOpts = dm.getInstanceProperties().getProperty(
                     WLPluginProperties.JAVA_OPTS);
             if ( javaOpts!= null && javaOpts.trim().length() >0 ){
                 javaOptsBuilder.append( " " );                              // NOI18N
                 javaOptsBuilder.append( javaOpts.trim() );
             }
-            
-            if ( profJvmArgs.length >0 ){
+
+            for (StartupExtender args : StartupExtender.getExtenders(
+                        Lookups.singleton(CommonServerBridge.getCommonInstance(dm.getUri())), StartupExtender.StartMode.PROFILE)) {
+                for (String singleArg : args.getArguments()) {
+                    javaOptsBuilder.append(' ').append(singleArg);
+                }
+            }
+
+            appendNonProxyHosts(javaOptsBuilder);
+            String toAdd = javaOptsBuilder.toString().trim();
+            if (!toAdd.isEmpty()){
                 result = result.addEnvironmentVariable(JAVA_OPTIONS_VARIABLE, 
-                    javaOptsBuilder.toString());
+                    toAdd);
             }
             return result;
         }
@@ -438,15 +448,6 @@ public final class WLStartServer extends StartServer {
             }
             return super.isRunning();
         }
-
-        private String getJavaHome(JavaPlatform platform) {
-            FileObject fo = (FileObject)platform.getInstallFolders().iterator().next();
-            return FileUtil.toFile(fo).getAbsolutePath();
-        }
-
-        private ProfilerServerSettings getSettings() {
-            return mySettings;
-        }
     }
 
     private class WLDebugStartTask extends WLStartTask {
@@ -457,9 +458,7 @@ public final class WLStartServer extends StartServer {
         }
 
         @Override
-        protected ExternalProcessBuilder setJavaOptionsEnv(
-                ExternalProcessBuilder builder )
-        {
+        protected ExternalProcessBuilder setJavaOptionsEnv(ExternalProcessBuilder builder) {
             int debugPort = 4000;
             debugPort = Integer.parseInt(dm.getInstanceProperties().getProperty(
                     WLPluginProperties.DEBUGGER_PORT_ATTR));
@@ -476,6 +475,14 @@ public final class WLStartServer extends StartServer {
             javaOptsBuilder.append("-Xdebug -Xnoagent -Djava.compiler=none ");  // NOI18N
             javaOptsBuilder.append("-Xrunjdwp:server=y,suspend=n,transport=dt_socket,address=");// NOI18N
             javaOptsBuilder.append( debugPort );
+            for (StartupExtender args : StartupExtender.getExtenders(
+                        Lookups.singleton(CommonServerBridge.getCommonInstance(dm.getUri())), StartupExtender.StartMode.DEBUG)) {
+                for (String singleArg : args.getArguments()) {
+                    javaOptsBuilder.append(' ').append(singleArg);
+                }
+            }
+
+            appendNonProxyHosts(javaOptsBuilder);
             ExternalProcessBuilder result = builder.addEnvironmentVariable(
                     JAVA_OPTIONS_VARIABLE,
                     javaOptsBuilder.toString());   
@@ -634,7 +641,7 @@ public final class WLStartServer extends StartServer {
             }
         }
 
-        protected ExternalProcessBuilder initBuilder(ExternalProcessBuilder builder){
+        protected ExternalProcessBuilder initBuilder(ExternalProcessBuilder builder) {
             ExternalProcessBuilder result = builder;
             
             result = setJavaOptionsEnv( result );
@@ -652,14 +659,22 @@ public final class WLStartServer extends StartServer {
             return result;
         }
         
-        protected ExternalProcessBuilder setJavaOptionsEnv( 
-                ExternalProcessBuilder builder)
-        {
+        protected ExternalProcessBuilder setJavaOptionsEnv(ExternalProcessBuilder builder) {
             ExternalProcessBuilder result = builder;
             String javaOpts = dm.getInstanceProperties().getProperty(WLPluginProperties.JAVA_OPTS);
-            if ( javaOpts!= null && javaOpts.trim().length() >0 ){
-                result = builder.addEnvironmentVariable(JAVA_OPTIONS_VARIABLE,          
-                        javaOpts.trim());
+            StringBuilder sb = new StringBuilder((javaOpts!= null && javaOpts.trim().length() > 0)
+                    ? javaOpts.trim() : "");
+            for (StartupExtender args : StartupExtender.getExtenders(
+                        Lookups.singleton(CommonServerBridge.getCommonInstance(dm.getUri())), StartupExtender.StartMode.NORMAL)) {
+                for (String singleArg : args.getArguments()) {
+                    sb.append(' ').append(singleArg);
+                }
+            }
+
+            appendNonProxyHosts(sb);
+            if (sb.length() > 0) {
+                result = builder.addEnvironmentVariable(JAVA_OPTIONS_VARIABLE,
+                        sb.toString());
             }
             return result;
         }
@@ -828,10 +843,5 @@ public final class WLStartServer extends StartServer {
                 LOGGER.log(Level.WARNING, null, e);
             }
         }
-    }
-
-    @Override
-    public boolean needsRestart(Target target) {
-        return dm.isRestartNeeded();
     }
 }

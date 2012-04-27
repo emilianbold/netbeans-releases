@@ -107,14 +107,11 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel<Wiza
         return gui;
     }
 
+    @Override
     public HelpCtx getHelp() {
-        if ( bottomPanel != null ) {
-            HelpCtx bottomHelp = bottomPanel.getHelp();
-            if ( bottomHelp != null ) {
-                return bottomHelp;
-            }
-        }
-        return new HelpCtx(JavaTargetChooserPanel.class);
+        return bottomPanel != null ?
+                bottomPanel.getHelp() :
+                null;
     }
 
     @Messages("ERR_JavaTargetChooser_WrongPlatform=Wrong source level of the project. You will NOT be able to compile this file since it contains JDK 1.5 features.")

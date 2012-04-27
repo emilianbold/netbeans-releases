@@ -59,8 +59,11 @@ import org.netbeans.modules.cnd.api.model.CsmModelListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.navigation.classhierarchy.ClassHierarchyPanel;
 import org.netbeans.modules.cnd.navigation.includeview.IncludeHierarchyPanel;
+import org.openide.awt.StatusDisplayer;
+import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -74,6 +77,7 @@ final class HierarchyTopComponent extends TopComponent implements CsmModelListen
     static final String ICON_PATH = "org/netbeans/modules/cnd/navigation/classhierarchy/resources/subtypehierarchy.gif"; // NOI18N
     private static final String PREFERRED_ID = "HierarchyTopComponent"; // NOI18N
     private JComponent last = null;
+    private static final RequestProcessor RP = new RequestProcessor("HierarchyWorker", 1); // NOI18N
 
     private HierarchyTopComponent() {
         initComponents();
@@ -83,27 +87,103 @@ final class HierarchyTopComponent extends TopComponent implements CsmModelListen
         putClientProperty("KeepNonPersistentTCInModelWhenClosed", Boolean.TRUE); // NOI18N
     }
 
-    void setClass(CsmClass decl, boolean setClose) {
-        setName(decl.getName()+" - "+NbBundle.getMessage(getClass(), "CTL_HierarchyTopComponent")); // NOI18N
+    
+    void setClass(final TypeContextFinder context, final boolean setClose) {
+        setName(NbBundle.getMessage(getClass(), "CTL_HierarchyTopComponent")); // NOI18N
         setToolTipText(NbBundle.getMessage(getClass(), "HINT_TypeHierarchyTopComponent")); // NOI18N
-        if (!(last instanceof ClassHierarchyPanel)) {
+        ClassHierarchyPanel panel;
+        if (last instanceof ClassHierarchyPanel) {
+            panel = (ClassHierarchyPanel) last;
+        } else {
             removeAll();
-            ClassHierarchyPanel panel = new ClassHierarchyPanel(true);
+            panel = new ClassHierarchyPanel(true);
+            add(panel, BorderLayout.CENTER);
+            validate();
+            last = panel;
+        }
+        panel.setWaiting();
+        Runnable worker = new Runnable() {
+            private CsmClass cls;
+
+            @Override
+            public void run() {
+                if (SwingUtilities.isEventDispatchThread()) {
+                    if (cls == null) {
+                        String msg = NbBundle.getMessage(getClass(), "MESSAGE_NoContextClass"); // NOI18N
+                        StatusDisplayer.getDefault().setStatusText(msg);
+                    }
+                    setClass(cls, setClose);
+                } else {
+                    cls = context.getCsmClass();
+                    SwingUtilities.invokeLater(this);
+                }
+            }
+        };
+        RP.post(worker);
+    }
+    
+    void setClass(CsmClass decl, boolean setClose) {
+        if (decl == null) {
+            setName(NbBundle.getMessage(getClass(), "CTL_HierarchyTopComponent")); // NOI18N
+        } else {
+            setName(decl.getName()+" - "+NbBundle.getMessage(getClass(), "CTL_HierarchyTopComponent")); // NOI18N
+        }
+        setToolTipText(NbBundle.getMessage(getClass(), "HINT_TypeHierarchyTopComponent")); // NOI18N
+        ClassHierarchyPanel panel;
+        if (last instanceof ClassHierarchyPanel) {
+            panel = (ClassHierarchyPanel) last;
+        } else {
+            removeAll();
+            panel = new ClassHierarchyPanel(true);
             add(panel, BorderLayout.CENTER);
             validate();
             last = panel;
         }
         if (setClose) {
-            ((ClassHierarchyPanel)last).setClose();
+            panel.setClose();
         } else {
-            ((ClassHierarchyPanel)last).clearClose();
+            panel.clearClose();
         }
-        ((ClassHierarchyPanel)last).setClass(decl);
+        panel.setClass(decl);
         last.requestFocusInWindow();
     }
 
+    void setFile(final InclideContextFinder context, final boolean setClose) {
+        setName(NbBundle.getMessage(getClass(), "CTL_HierarchyTopComponent")); // NOI18N
+        setToolTipText(NbBundle.getMessage(getClass(), "HINT_IncludeHierarchyTopComponent")); // NOI18N
+        IncludeHierarchyPanel panel;
+        if (last instanceof IncludeHierarchyPanel) {
+            panel = (IncludeHierarchyPanel) last;
+        } else {
+            removeAll();
+            panel = new IncludeHierarchyPanel(true);
+            add(panel, BorderLayout.CENTER);
+            validate();
+            last = panel;
+        }
+        panel.setWaiting();
+        Runnable worker = new Runnable() {
+            private CsmFile file;
+
+            @Override
+            public void run() {
+                if (SwingUtilities.isEventDispatchThread()) {
+                    setFile(file, setClose);
+                } else {
+                    file = context.getFile();
+                    SwingUtilities.invokeLater(this);
+                }
+            }
+        };
+        RP.post(worker);
+    }
+    
     void setFile(CsmFile file, boolean setClose) {
-        setName(file.getName()+" - "+NbBundle.getMessage(getClass(), "CTL_HierarchyTopComponent")); // NOI18N
+        if (file != null) {
+            setName(file.getName()+" - "+NbBundle.getMessage(getClass(), "CTL_HierarchyTopComponent")); // NOI18N
+        } else {
+            setName(NbBundle.getMessage(getClass(), "CTL_HierarchyTopComponent")); // NOI18N
+        }
         setToolTipText(NbBundle.getMessage(getClass(), "HINT_IncludeHierarchyTopComponent")); // NOI18N
         if (!(last instanceof IncludeHierarchyPanel)) {
             removeAll();
@@ -236,5 +316,27 @@ final class HierarchyTopComponent extends TopComponent implements CsmModelListen
 
     @Override
     public void modelChanged(CsmChangeEvent e) {
+    }
+    
+    final static class InclideContextFinder {
+        private final Node[] activatedNodes;
+        InclideContextFinder(Node[] activatedNodes) {
+            this.activatedNodes = activatedNodes;
+        }
+        
+        private CsmFile getFile() {
+            return ContextUtils.findFile(activatedNodes);
+        }
+    }
+
+    final static class TypeContextFinder {
+        private final Node[] activatedNodes;
+        TypeContextFinder(Node[] activatedNodes) {
+            this.activatedNodes = activatedNodes;
+        }
+        
+        private CsmClass getCsmClass() {
+            return ContextUtils.getContextClass(activatedNodes);
+        }
     }
 }

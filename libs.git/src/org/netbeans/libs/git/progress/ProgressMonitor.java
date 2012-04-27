@@ -43,26 +43,74 @@
 package org.netbeans.libs.git.progress;
 
 /**
- *
- * @author ondra
+ * Used to follow progress and control flow of git commands.
+ * An instance of <code>GitClient</code> provides methods to start proper git 
+ * commands and such a method accepts an instance if <code>ProgressMonitor</code>
+ * as its argument.
+ * Clients of the git API may extend this class and through its methods catch
+ * error and warning messages produced by a git command, changes in the state 
+ * of a command (when the command is started and when it's finished) and they may
+ * cancel a running command by implementing the <code>isCanceled</code> method.
  */
 public abstract class ProgressMonitor {
     
+    /**
+     * Returns <code>true</code> if the progress should be canceled.
+     * Git commands periodically check the result of the method and end their
+     * progress immediately when the method returns <code>true</code>
+     */
     public abstract boolean isCanceled ();
 
+    /**
+     * Called when a git command is started.
+     * Implement this method to catch the event.
+     * @param command a string representing a commandline version of the started command
+     */
     public abstract void started (String command);
 
+    /**
+     * Called by a git command when it finishes its progress.
+     */
     public abstract void finished();
 
+    /**
+     * Called when a git command fails to start.
+     * Implement this method to catch a description of an error occurred during
+     * a git command initialization that prevents it from start running.
+     * @param message error description
+     */
     public abstract void preparationsFailed (String message);
 
+    /**
+     * Called when an error occurs during a git command's execution that however
+     * does not prevent it from further actions.
+     * Some commands for example operate with many files and if an error occurs 
+     * while working (e.g. checkout) with one of them, this method is called and 
+     * the command continues with other files.
+     * @param message description of the error
+     */
     public abstract void notifyError (String message);
 
+    /**
+     * Called when a non-fatal warning should be delivered to a git command's
+     * caller.
+     * @param message description of the warning 
+     */
     public abstract void notifyWarning (String message);
 
+    /**
+     * Basic implementation of the <code>ProgressMonitor</code> abstract class.
+     * Provides no functionality except for canceling a running command.
+     * To cancel a running command invoke the <code>cancel</code> method.
+     */
     public static class DefaultProgressMonitor extends ProgressMonitor {
         private boolean canceled;
 
+        /**
+         * Cancels a currently running command.
+         * @return <code>false</code> if the command has already been canceled
+         * before. Otherwise returns <code>true</code>
+         */
         public final synchronized boolean cancel () {
             boolean alreadyCanceled = canceled;
             canceled = true;

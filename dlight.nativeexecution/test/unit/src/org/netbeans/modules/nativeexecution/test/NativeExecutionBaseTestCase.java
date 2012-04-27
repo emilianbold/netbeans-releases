@@ -69,10 +69,8 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
-import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
-import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
@@ -508,19 +506,10 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
         }
     }
 
-    protected String mkTemp(ExecutionEnvironment execEnv, boolean directory) throws Exception {        
-        String[] mkTempArgs;
-        if (HostInfoUtils.getHostInfo(execEnv).getOSFamily() == OSFamily.MACOSX) {
-            mkTempArgs = directory ? new String[] { "-t", "tmp", "-d" } : new String[] { "-t", "tmp" };
-        } else {
-            mkTempArgs = directory ? new String[] { "-d" } : new String[0];
-        }        
-        ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "mktemp", mkTempArgs);
-        assertEquals("mktemp failed: " + res.error, 0, res.exitCode);
-        return res.output;
+    protected String mkTemp(ExecutionEnvironment execEnv, boolean directory) throws Exception {
+        return NativeExecutionTestSupport.mkTemp(execEnv, directory);
     }
-    
-    
+
     protected String createRemoteTmpDir() throws Exception {
         String dir = getRemoteTmpDir();
         int rc = CommonTasksSupport.mkDir(getTestExecutionEnvironment(), dir, new PrintWriter(System.err)).get().intValue();

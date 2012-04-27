@@ -45,14 +45,13 @@ import java.awt.event.ActionEvent;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Observable;
-import java.util.Observer;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.apache.maven.cli.MavenCli;
 import org.netbeans.api.core.ide.ServicesTabNodeRegistration;
-import org.netbeans.modules.maven.indexer.api.QueryRequest;
+import org.netbeans.modules.maven.indexer.api.QueryField;
 import org.netbeans.modules.maven.indexer.api.RepositoryIndexer;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
@@ -61,6 +60,7 @@ import org.netbeans.modules.maven.repository.register.RepositoryRegisterUI;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.*;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
@@ -73,6 +73,8 @@ import org.openide.util.Union2;
 @ServicesTabNodeRegistration(name=M2RepositoryBrowser.NAME, displayName="#CTL_M2RepositoryBrowserTopComponent", shortDescription="#HINT_M2RepositoryBrowserTopComponent", iconResource=M2RepositoryBrowser.ICON_PATH, position=431)
 @Messages({
     "CTL_M2RepositoryBrowserTopComponent=Maven Repositories",
+    "LBL_Add_Repo=Add Repository",
+    "ACT_Add_Repo=Add Repository...",
     "HINT_M2RepositoryBrowserTopComponent=Displays contents of local and remote Apache Maven repositories and permits them to be searched and indexed."
 })
 public final class M2RepositoryBrowser extends AbstractNode {
@@ -94,10 +96,12 @@ public final class M2RepositoryBrowser extends AbstractNode {
             new AddAction()
         };
     }
+    
+    
 
     private static class AddAction extends AbstractAction {
         AddAction() {
-            super(LBL_Add_Repo());
+            super(ACT_Add_Repo());
         }
         @Override public void actionPerformed(ActionEvent e) {
     final RepositoryRegisterUI rrui = new RepositoryRegisterUI();
@@ -131,7 +135,7 @@ public final class M2RepositoryBrowser extends AbstractNode {
     }
 
     private static class SearchAction extends AbstractAction {
-        @Messages("LBL_REPO_Find=Find")
+        @Messages("LBL_REPO_Find=Find...")
         SearchAction() {
             super(LBL_REPO_Find());
         }
@@ -144,9 +148,7 @@ public final class M2RepositoryBrowser extends AbstractNode {
     Object ret = DialogDisplayer.getDefault().notify(dd);
     if (ret == DialogDescriptor.OK_OPTION) {
         synchronized (searches) {
-            searches.add(new QueryRequest(pnl.getQuery(), RepositoryPreferences.getInstance().getRepositoryInfos(), new Observer() {
-                @Override public void update(Observable o, Object arg) {/* unused, real observer added later */}
-            }));
+            searches.add(new QueryRequest(pnl.getQuery(), RepositoryPreferences.getInstance().getRepositoryInfos()));
         }
         cs.fireChange();
     }
@@ -168,7 +170,7 @@ public final class M2RepositoryBrowser extends AbstractNode {
         cs.removeChangeListener(l);
     }
 
-    private static class RootNodes extends ChildFactory.Detachable<Union2<RepositoryInfo,QueryRequest>> implements ChangeListener {
+    private static class RootNodes extends ChildFactory.Detachable<Union2<RepositoryInfo,QueryRequest>> implements ChangeListener, FileChangeListener {
         @Override protected boolean createKeys(List<Union2<RepositoryInfo,QueryRequest>> toPopulate) {
             for (RepositoryInfo info : RepositoryPreferences.getInstance().getRepositoryInfos()) {
                 toPopulate.add(Union2.<RepositoryInfo,QueryRequest>createFirst(info));
@@ -189,15 +191,50 @@ public final class M2RepositoryBrowser extends AbstractNode {
         }
         @Override protected void addNotify() {
             RepositoryPreferences.getInstance().addChangeListener(this);
+            FileUtil.addFileChangeListener(this, MavenCli.DEFAULT_USER_SETTINGS_FILE);
             addChangeListener(this);
         }
         @Override protected void removeNotify() {
             RepositoryPreferences.getInstance().removeChangeListener(this);
             removeChangeListener(this);
+            FileUtil.removeFileChangeListener(this, MavenCli.DEFAULT_USER_SETTINGS_FILE);
         }
         @Override public void stateChanged(ChangeEvent e) {
             refresh(false);
         }
+
+        @Override public void fileFolderCreated(FileEvent fe) {
+        }
+
+        @Override public void fileDataCreated(FileEvent fe) {
+            refresh(false);
+        }
+
+        @Override public void fileChanged(FileEvent fe) {
+            refresh(false);
+        }
+
+        @Override public void fileDeleted(FileEvent fe) {
+            refresh(false);
+        }
+
+        @Override public void fileRenamed(FileRenameEvent fe) {
+            refresh(false);
+        }
+
+        @Override public void fileAttributeChanged(FileAttributeEvent fe) {
+        }
+
+    }
+    
+    static class QueryRequest {
+        final List<QueryField> fields;
+        final List<RepositoryInfo> infos;
+        QueryRequest(List<QueryField> fields, List<RepositoryInfo> infos) {
+            this.fields = fields;
+            this.infos = infos;
+        }
+        
     }
 
 }

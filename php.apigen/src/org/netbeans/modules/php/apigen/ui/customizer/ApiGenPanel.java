@@ -42,24 +42,26 @@
 
 package org.netbeans.modules.php.apigen.ui.customizer;
 
-import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import javax.swing.ButtonGroup;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.LayoutStyle.ComponentPlacement;
-import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
@@ -103,13 +105,32 @@ final class ApiGenPanel extends JPanel implements HelpCtx.Provider {
         init();
     }
 
-    @NbBundle.Messages("ApiGenPanel.info.csv=Comma (\",\") separated values.")
+    @NbBundle.Messages({
+        "ApiGenPanel.internal.toolTip=Generate documentation for elements marked as internal and display internal documentation parts.",
+        "ApiGenPanel.php.toolTip=Generate documentation for PHP internal classes.",
+        "ApiGenPanel.tree.toolTip=Generate tree view of classes, interfaces, traits and exceptions.",
+        "ApiGenPanel.deprecated.toolTip=Generate documentation for deprecated elements.",
+        "ApiGenPanel.todo.toolTip=Generate documentation of tasks.",
+        "ApiGenPanel.download.toolTip=Add a link to download documentation as a ZIP archive.",
+        "ApiGenPanel.sourceCode.toolTip=Generate highlighted source code files.",
+        "ApiGenPanel.info.csv=Comma (\",\") separated values."
+    })
     private void init() {
         // info
         charsetsInfoLabel.setText(Bundle.ApiGenPanel_info_csv());
         excludesInfoLabel.setText(Bundle.ApiGenPanel_info_csv());
 
+        // tool tips
+        internalCheckBox.setToolTipText(Bundle.ApiGenPanel_internal_toolTip());
+        phpCheckBox.setToolTipText(Bundle.ApiGenPanel_php_toolTip());
+        treeCheckBox.setToolTipText(Bundle.ApiGenPanel_tree_toolTip());
+        deprecatedCheckBox.setToolTipText(Bundle.ApiGenPanel_deprecated_toolTip());
+        todoCheckBox.setToolTipText(Bundle.ApiGenPanel_todo_toolTip());
+        downloadCheckBox.setToolTipText(Bundle.ApiGenPanel_download_toolTip());
+        sourceCodeCheckBox.setToolTipText(Bundle.ApiGenPanel_sourceCode_toolTip());
+
         // values
+        configRadioButton.setSelected(ApiGenPreferences.getBoolean(phpModule, ApiGenPreferences.HAS_CONFIG));
         targetTextField.setText(ApiGenPreferences.getTarget(phpModule, false));
         titleTextField.setText(ApiGenPreferences.get(phpModule, ApiGenPreferences.TITLE));
         configTextField.setText(ApiGenPreferences.get(phpModule, ApiGenPreferences.CONFIG));
@@ -130,6 +151,7 @@ final class ApiGenPanel extends JPanel implements HelpCtx.Provider {
         // listeners
         DocumentListener defaultDocumentListener = new DefaultDocumentListener();
         ActionListener defaultActionListener = new DefaultActionListener();
+        configRadioButton.addItemListener(new ConfigItemListener());
         targetTextField.getDocument().addDocumentListener(defaultDocumentListener);
         titleTextField.getDocument().addDocumentListener(defaultDocumentListener);
         configTextField.getDocument().addDocumentListener(defaultDocumentListener);
@@ -139,6 +161,9 @@ final class ApiGenPanel extends JPanel implements HelpCtx.Provider {
         accessLevelProtectedCheckBox.addActionListener(defaultActionListener);
         accessLevelPrivateCheckBox.addActionListener(defaultActionListener);
 
+        // enable/disable fields
+        configEnabled(configRadioButton.isSelected());
+
         // validate
         validateData();
     }
@@ -146,6 +171,10 @@ final class ApiGenPanel extends JPanel implements HelpCtx.Provider {
     @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx("org.netbeans.modules.php.apigen.ui.customizer.ApiGen"); // NOI18N
+    }
+
+    private boolean hasConfig() {
+        return configRadioButton.isSelected();
     }
 
     private String getTarget() {
@@ -218,6 +247,68 @@ final class ApiGenPanel extends JPanel implements HelpCtx.Provider {
         return sourceCodeCheckBox.isSelected();
     }
 
+    void configEnabled(boolean enabled) {
+        // manual config fields
+        targetLabel.setEnabled(!enabled);
+        targetTextField.setEnabled(!enabled);
+        targetButton.setEnabled(!enabled);
+        titleLabel.setEnabled(!enabled);
+        titleTextField.setEnabled(!enabled);
+        charsetsLabel.setEnabled(!enabled);
+        charsetsTextField.setEnabled(!enabled);
+        charsetsInfoLabel.setEnabled(!enabled);
+        excludesLabel.setEnabled(!enabled);
+        excludesTextField.setEnabled(!enabled);
+        excludesInfoLabel.setEnabled(!enabled);
+        accessLevelLabel.setEnabled(!enabled);
+        accessLevelPublicCheckBox.setEnabled(!enabled);
+        accessLevelProtectedCheckBox.setEnabled(!enabled);
+        accessLevelPrivateCheckBox.setEnabled(!enabled);
+        internalCheckBox.setEnabled(!enabled);
+        phpCheckBox.setEnabled(!enabled);
+        treeCheckBox.setEnabled(!enabled);
+        deprecatedCheckBox.setEnabled(!enabled);
+        todoCheckBox.setEnabled(!enabled);
+        downloadCheckBox.setEnabled(!enabled);
+        sourceCodeCheckBox.setEnabled(!enabled);
+        // config file fields
+        configLabel.setEnabled(enabled);
+        configTextField.setEnabled(enabled);
+        configButton.setEnabled(enabled);
+    }
+
+    void validateData() {
+        if (hasConfig()) {
+            validateConfigFile();
+        } else {
+            validateManualConfig();
+        }
+    }
+
+    @NbBundle.Messages("ApiGenPanel.warn.configNotNeon=Neon file is expected for configuration.")
+    private void validateConfigFile() {
+        // errors
+        String config = getConfig();
+        String error = FileUtils.validateFile(config, false);
+        if (error != null) {
+            category.setErrorMessage(error);
+            category.setValid(false);
+            return;
+        }
+
+        // warnings
+        File configFile = new File(config);
+        if (!configFile.getName().endsWith(".neon")) { // NOI18N
+            category.setErrorMessage(Bundle.ApiGenPanel_warn_configNotNeon());
+            category.setValid(true);
+            return;
+        }
+
+        // everything ok
+        category.setErrorMessage(null);
+        category.setValid(true);
+    }
+
     @NbBundle.Messages({
         "ApiGenPanel.error.relativeTarget=Absolute path for target directory must be provided.",
         "ApiGenPanel.error.invalidTitle=Title must be provided.",
@@ -225,10 +316,10 @@ final class ApiGenPanel extends JPanel implements HelpCtx.Provider {
         "ApiGenPanel.error.invalidAccessLevels=Access levels must be provided.",
         "ApiGenPanel.warn.nbWillAskForDir=NetBeans will ask for the directory before generating documentation.",
         "ApiGenPanel.warn.targetDirWillBeCreated=Target directory will be created.",
-        "ApiGenPanel.warn.missingCharset=Project encoding ''{0}'' nout found within specified charsets.",
-        "ApiGenPanel.warn.configNotNeon=Neon file is expected for configuration."
+        "# {0} - encoding",
+        "ApiGenPanel.warn.missingCharset=Project encoding ''{0}'' nout found within specified charsets."
     })
-    void validateData() {
+    private void validateManualConfig() {
         // errors
         // target
         String target = getTarget();
@@ -254,16 +345,6 @@ final class ApiGenPanel extends JPanel implements HelpCtx.Provider {
             category.setErrorMessage(Bundle.ApiGenPanel_error_invalidTitle());
             category.setValid(false);
             return;
-        }
-        // config
-        String config = getConfig();
-        if (StringUtils.hasText(config)) {
-            String error = FileUtils.validateFile(config, false);
-            if (error != null) {
-                category.setErrorMessage(error);
-                category.setValid(false);
-                return;
-            }
         }
         // charsets
         if (getCharsets().isEmpty()) {
@@ -299,15 +380,6 @@ final class ApiGenPanel extends JPanel implements HelpCtx.Provider {
             category.setValid(true);
             return;
         }
-        // config
-        if (StringUtils.hasText(config)) {
-            File configFile = new File(config);
-            if (!configFile.getName().endsWith(".neon")) { // NOI18N
-                category.setErrorMessage(Bundle.ApiGenPanel_warn_configNotNeon());
-                category.setValid(true);
-                return;
-            }
-        }
 
         // everything ok
         category.setErrorMessage(null);
@@ -315,6 +387,7 @@ final class ApiGenPanel extends JPanel implements HelpCtx.Provider {
     }
 
     void storeData() {
+        ApiGenPreferences.putBoolean(phpModule, ApiGenPreferences.HAS_CONFIG, hasConfig());
         ApiGenPreferences.putTarget(phpModule, getTarget());
         ApiGenPreferences.put(phpModule, ApiGenPreferences.TITLE, getTitle());
         ApiGenPreferences.put(phpModule, ApiGenPreferences.CONFIG, getConfig());
@@ -339,14 +412,13 @@ final class ApiGenPanel extends JPanel implements HelpCtx.Provider {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        configButtonGroup = new ButtonGroup();
+        noConfigRadioButton = new JRadioButton();
         targetLabel = new JLabel();
         targetTextField = new JTextField();
         targetButton = new JButton();
         titleLabel = new JLabel();
         titleTextField = new JTextField();
-        configLabel = new JLabel();
-        configTextField = new JTextField();
-        configButton = new JButton();
         charsetsLabel = new JLabel();
         charsetsTextField = new JTextField();
         charsetsInfoLabel = new JLabel();
@@ -364,14 +436,17 @@ final class ApiGenPanel extends JPanel implements HelpCtx.Provider {
         todoCheckBox = new JCheckBox();
         downloadCheckBox = new JCheckBox();
         sourceCodeCheckBox = new JCheckBox();
+        configRadioButton = new JRadioButton();
+        configLabel = new JLabel();
+        configTextField = new JTextField();
+        configButton = new JButton();
+
+        configButtonGroup.add(noConfigRadioButton);
+        noConfigRadioButton.setSelected(true);
+        Mnemonics.setLocalizedText(noConfigRadioButton, NbBundle.getMessage(ApiGenPanel.class, "ApiGenPanel.noConfigRadioButton.text")); // NOI18N
 
         targetLabel.setLabelFor(targetTextField);
         Mnemonics.setLocalizedText(targetLabel, NbBundle.getMessage(ApiGenPanel.class, "ApiGenPanel.targetLabel.text")); // NOI18N
-        targetButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                targetButtonActionPerformed(evt);
-            }
-        });
         Mnemonics.setLocalizedText(targetButton, NbBundle.getMessage(ApiGenPanel.class, "ApiGenPanel.targetButton.text")); // NOI18N
         targetButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -382,20 +457,6 @@ final class ApiGenPanel extends JPanel implements HelpCtx.Provider {
         titleLabel.setLabelFor(titleTextField);
         Mnemonics.setLocalizedText(titleLabel, NbBundle.getMessage(ApiGenPanel.class, "ApiGenPanel.titleLabel.text")); // NOI18N
 
-        configLabel.setLabelFor(configTextField);
-        Mnemonics.setLocalizedText(configLabel, NbBundle.getMessage(ApiGenPanel.class, "ApiGenPanel.configLabel.text")); // NOI18N
-        configButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                configButtonActionPerformed(evt);
-            }
-        });
-        Mnemonics.setLocalizedText(configButton, NbBundle.getMessage(ApiGenPanel.class, "ApiGenPanel.configButton.text")); // NOI18N
-        configButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                configButtonActionPerformed(evt);
-            }
-        });
-
         charsetsLabel.setLabelFor(charsetsTextField);
 
         Mnemonics.setLocalizedText(charsetsLabel, NbBundle.getMessage(ApiGenPanel.class, "ApiGenPanel.charsetsLabel.text")); // NOI18N
@@ -404,6 +465,7 @@ final class ApiGenPanel extends JPanel implements HelpCtx.Provider {
         Mnemonics.setLocalizedText(excludesInfoLabel, "INFO"); // NOI18N
 
         accessLevelLabel.setLabelFor(accessLevelPublicCheckBox);
+
         Mnemonics.setLocalizedText(accessLevelLabel, NbBundle.getMessage(ApiGenPanel.class, "ApiGenPanel.accessLevelLabel.text")); // NOI18N
         Mnemonics.setLocalizedText(accessLevelPublicCheckBox, NbBundle.getMessage(ApiGenPanel.class, "ApiGenPanel.accessLevelPublicCheckBox.text")); // NOI18N
         Mnemonics.setLocalizedText(accessLevelProtectedCheckBox, NbBundle.getMessage(ApiGenPanel.class, "ApiGenPanel.accessLevelProtectedCheckBox.text")); // NOI18N
@@ -416,104 +478,56 @@ final class ApiGenPanel extends JPanel implements HelpCtx.Provider {
         Mnemonics.setLocalizedText(downloadCheckBox, NbBundle.getMessage(ApiGenPanel.class, "ApiGenPanel.downloadCheckBox.text")); // NOI18N
         Mnemonics.setLocalizedText(sourceCodeCheckBox, NbBundle.getMessage(ApiGenPanel.class, "ApiGenPanel.sourceCodeCheckBox.text")); // NOI18N
 
+        configButtonGroup.add(configRadioButton);
+        Mnemonics.setLocalizedText(configRadioButton, NbBundle.getMessage(ApiGenPanel.class, "ApiGenPanel.configRadioButton.text")); // NOI18N
+
+        configLabel.setLabelFor(configTextField);
+        Mnemonics.setLocalizedText(configLabel, NbBundle.getMessage(ApiGenPanel.class, "ApiGenPanel.configLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(configButton, NbBundle.getMessage(ApiGenPanel.class, "ApiGenPanel.configButton.text")); // NOI18N
+        configButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                configButtonActionPerformed(evt);
+            }
+        });
+
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                    .addComponent(targetLabel)
-                    .addComponent(titleLabel)
-                    .addComponent(configLabel)
-                    .addComponent(charsetsLabel)
-                    .addComponent(excludesLabel)
-                    .addComponent(accessLevelLabel))
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(configTextField)
-                        .addPreferredGap(ComponentPlacement.RELATED)
-                        .addComponent(configButton))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(targetTextField)
-                        .addPreferredGap(ComponentPlacement.RELATED)
-                        .addComponent(targetButton))
-                    .addComponent(titleTextField)
-                    .addComponent(charsetsTextField)
-                    .addComponent(excludesTextField)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(accessLevelPublicCheckBox)
+            layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
+
+                .addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(noConfigRadioButton).addComponent(configRadioButton)).addContainerGap()).addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+
+                .addGroup(layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
+
+                        .addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(targetLabel).addComponent(titleLabel).addComponent(charsetsLabel).addComponent(excludesLabel).addComponent(accessLevelLabel)).addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
+                                .addComponent(targetTextField)
+
+                                .addPreferredGap(ComponentPlacement.RELATED).addComponent(targetButton)).addComponent(titleTextField).addComponent(charsetsTextField).addComponent(excludesTextField).addGroup(layout.createSequentialGroup()
+
+                                .addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(excludesInfoLabel).addComponent(charsetsInfoLabel).addGroup(layout.createSequentialGroup()
+                                        .addComponent(accessLevelPublicCheckBox)
+                                        .addGap(18, 18, 18)
+                                        .addComponent(accessLevelProtectedCheckBox)
+                                        .addGap(18, 18, 18)
+                                        .addComponent(accessLevelPrivateCheckBox))).addContainerGap()))).addGroup(layout.createSequentialGroup()
+                        .addComponent(configLabel)
+
+                        .addPreferredGap(ComponentPlacement.RELATED).addComponent(configTextField).addPreferredGap(ComponentPlacement.RELATED).addComponent(configButton)).addGroup(layout.createSequentialGroup()
+
+                        .addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(internalCheckBox).addComponent(phpCheckBox)).addGap(18, 18, 18).addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(downloadCheckBox).addGroup(layout.createSequentialGroup()
+                                .addComponent(deprecatedCheckBox)
                                 .addGap(18, 18, 18)
-                                .addComponent(accessLevelProtectedCheckBox)
-                                .addGap(18, 18, 18)
-                                .addComponent(accessLevelPrivateCheckBox))
-                            .addComponent(excludesInfoLabel)
-                            .addComponent(charsetsInfoLabel))
+                                .addComponent(sourceCodeCheckBox)).addComponent(todoCheckBox)).addContainerGap()).addGroup(layout.createSequentialGroup()
+                        .addComponent(treeCheckBox)
+
                         .addGap(0, 0, Short.MAX_VALUE))))
-            .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                    .addComponent(internalCheckBox)
-                    .addComponent(phpCheckBox)
-                    .addComponent(treeCheckBox)
-                    .addComponent(deprecatedCheckBox)
-                    .addComponent(todoCheckBox)
-                    .addComponent(downloadCheckBox)
-                    .addComponent(sourceCodeCheckBox))
-                .addGap(0, 0, Short.MAX_VALUE))
         );
-
-        layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {configButton, targetButton});
-
         layout.setVerticalGroup(
-            layout.createParallelGroup(Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
-                    .addComponent(targetLabel)
-                    .addComponent(targetTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .addComponent(targetButton))
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
-                    .addComponent(titleLabel)
-                    .addComponent(titleTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
-                    .addComponent(configLabel)
-                    .addComponent(configTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .addComponent(configButton))
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
-                    .addComponent(charsetsLabel)
-                    .addComponent(charsetsTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(charsetsInfoLabel)
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
-                    .addComponent(excludesLabel)
-                    .addComponent(excludesTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(excludesInfoLabel)
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
-                    .addComponent(accessLevelLabel)
-                    .addComponent(accessLevelPublicCheckBox)
-                    .addComponent(accessLevelProtectedCheckBox)
-                    .addComponent(accessLevelPrivateCheckBox))
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(internalCheckBox)
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(phpCheckBox)
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(treeCheckBox)
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(deprecatedCheckBox)
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(todoCheckBox)
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(downloadCheckBox)
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(sourceCodeCheckBox))
+            layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
+                .addComponent(noConfigRadioButton)
+
+                .addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(targetLabel).addComponent(targetTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addComponent(targetButton)).addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(titleLabel).addComponent(titleTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)).addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(charsetsLabel).addComponent(charsetsTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)).addPreferredGap(ComponentPlacement.RELATED).addComponent(charsetsInfoLabel).addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(excludesTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addComponent(excludesLabel)).addPreferredGap(ComponentPlacement.RELATED).addComponent(excludesInfoLabel).addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(accessLevelPublicCheckBox).addComponent(accessLevelProtectedCheckBox).addComponent(accessLevelPrivateCheckBox).addComponent(accessLevelLabel)).addPreferredGap(ComponentPlacement.UNRELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(internalCheckBox).addComponent(deprecatedCheckBox).addComponent(sourceCodeCheckBox)).addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(phpCheckBox).addComponent(todoCheckBox)).addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(treeCheckBox).addComponent(downloadCheckBox)).addGap(18, 18, 18).addComponent(configRadioButton).addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(configLabel).addComponent(configTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addComponent(configButton)))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -554,7 +568,9 @@ final class ApiGenPanel extends JPanel implements HelpCtx.Provider {
     private JLabel charsetsLabel;
     private JTextField charsetsTextField;
     private JButton configButton;
+    private ButtonGroup configButtonGroup;
     private JLabel configLabel;
+    private JRadioButton configRadioButton;
     private JTextField configTextField;
     private JCheckBox deprecatedCheckBox;
     private JCheckBox downloadCheckBox;
@@ -562,6 +578,7 @@ final class ApiGenPanel extends JPanel implements HelpCtx.Provider {
     private JLabel excludesLabel;
     private JTextField excludesTextField;
     private JCheckBox internalCheckBox;
+    private JRadioButton noConfigRadioButton;
     private JCheckBox phpCheckBox;
     private JCheckBox sourceCodeCheckBox;
     private JButton targetButton;
@@ -602,6 +619,16 @@ final class ApiGenPanel extends JPanel implements HelpCtx.Provider {
 
         @Override
         public void actionPerformed(ActionEvent e) {
+            validateData();
+        }
+
+    }
+
+    private final class ConfigItemListener implements ItemListener {
+
+        @Override
+        public void itemStateChanged(ItemEvent e) {
+            configEnabled(e.getStateChange() == ItemEvent.SELECTED);
             validateData();
         }
 

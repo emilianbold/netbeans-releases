@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.cnd.makeproject.api.support;
 
-import java.io.File;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.cnd.api.project.NativeProjectType;
@@ -49,7 +48,7 @@ import org.netbeans.modules.cnd.makeproject.MakeBasedProjectFactorySingleton;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.CacheDirectoryProvider;
 import org.netbeans.spi.project.ProjectState;
-import org.netbeans.spi.queries.SharabilityQueryImplementation;
+import org.netbeans.spi.queries.SharabilityQueryImplementation2;
 import org.openide.filesystems.FileObject;
 import org.w3c.dom.Element;
 
@@ -226,7 +225,7 @@ public interface MakeProjectHelper {
      * @return a sharability query implementation suitable for the project lookup
      * @see Project#getLookup
      */
-    SharabilityQueryImplementation createSharabilityQuery(String[] sourceRoots, String[] buildDirectories);
+    SharabilityQueryImplementation2 createSharabilityQuery(String[] sourceRoots, String[] buildDirectories);
     
     FileObject resolveFileObject(String filename);
 }

@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.cnd.debugger.gdb2;
 
+import org.netbeans.modules.cnd.debugger.gdb2.mi.MITList;
 import org.netbeans.modules.cnd.debugger.gdb2.mi.MIValue;
 
 public final class GdbLocal {
@@ -54,17 +55,10 @@ public final class GdbLocal {
     private boolean simple;
 
     public GdbLocal(MIValue localvar) {
-	MIValue namev = localvar.asTuple().valueOf("name"); // NOI18N
-	if (namev != null)
-	    name = namev.asConst().value();
-	else
-	    name = "";
-	MIValue typev = localvar.asTuple().valueOf("type"); // NOI18N
-	if (typev != null)
-	    type = typev.asConst().value();
-	else
-	    type = "";
-	MIValue valuev = localvar.asTuple().valueOf("value"); // NOI18N
+        final MITList varlist = localvar.asTuple();
+        name = varlist.getConstValue("name"); // NOI18N
+        type = varlist.getConstValue("type"); // NOI18N
+	MIValue valuev = varlist.valueOf("value"); // NOI18N
 	if (valuev != null) {
 	    value = valuev.asConst().value();
 	    simple = true;

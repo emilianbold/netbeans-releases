@@ -577,7 +577,7 @@ public class XMLWizardIterator implements TemplateWizard.Iterator {
                 root = "root"; // NOI18N
             }
             rootTagNS = rootLocalName = root;
-            if (model.getType() == DocumentModel.SCHEMA) {
+            if (model.getType() == DocumentModel.SCHEMA && null != model.getNamespace()) {
                 String prefix = model.getPrefix();
                 if (prefix != null && !"".equals(prefix)) {
                     rootTagNS = prefix + ":" + root;
@@ -627,11 +627,19 @@ public class XMLWizardIterator implements TemplateWizard.Iterator {
         List nodes = model.getSchemaNodes();
         
         nsToPrefix = new HashMap<String, String>();
+        
+        SchemaObject noNamespaceSchema = null;
+        
         if (nodes != null) {
             for (int i = 0; i < nodes.size(); i++) {
                 SchemaObject erdn = (SchemaObject) nodes.get(i);
+                
+                // do not generate xmlns, if the schema's namespace is undefined (no namespace):
+                if (null == erdn.getNamespace()) {
+                    noNamespaceSchema = erdn;
+                    continue;
+                }
                 nsToPrefix.put(erdn.getNamespace(), erdn.getPrefix());
-
                 if (erdn.getPrefix() == null || "".equals(erdn.getPrefix())) {
                     sb.append("\n   xmlns='" + erdn.getNamespace() + "'"); // NOI18N
                 } else {
@@ -641,7 +649,7 @@ public class XMLWizardIterator implements TemplateWizard.Iterator {
             int written = 0;
             for (int i = 0; i < nodes.size(); i++) {
                 SchemaObject erdn = (SchemaObject) nodes.get(i);
-                if (erdn.isFromCatalog()) {
+                if (erdn.isFromCatalog() || null == erdn.getNamespace()) {
                     continue;
                 }
                 String relativePath = null;
@@ -659,6 +667,16 @@ public class XMLWizardIterator implements TemplateWizard.Iterator {
             }
             if (written > 0) {
                 locations.append("'"); // NOI18N
+            }
+            
+            if (noNamespaceSchema != null && !noNamespaceSchema.isFromCatalog()) {
+                String relativePath = null;
+                if (noNamespaceSchema.toString().startsWith("http")) { // NOI18N
+                    relativePath = noNamespaceSchema.toString();
+                } else {
+                    relativePath = Util.getRelativePath((new File(noNamespaceSchema.getSchemaFileName())), pobj);
+                }
+                locations.append("\n    xsi:noNamespaceSchemaLocation='" + relativePath + "'");
             }
             return sb.append(locations).toString();
         } else {

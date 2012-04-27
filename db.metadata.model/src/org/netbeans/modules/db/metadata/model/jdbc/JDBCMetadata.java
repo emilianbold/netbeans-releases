@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.db.metadata.model.jdbc;
 
 import java.sql.Connection;
@@ -66,11 +65,9 @@ import org.netbeans.modules.db.metadata.model.spi.MetadataImplementation;
 public class JDBCMetadata extends MetadataImplementation {
 
     private static final Logger LOGGER = Logger.getLogger(JDBCMetadata.class.getName());
-
     private final Connection conn;
     private final String defaultSchemaName;
     private final DatabaseMetaData dmd;
-
     protected Catalog defaultCatalog;
     protected Map<String, Catalog> catalogs;
 
@@ -85,12 +82,12 @@ public class JDBCMetadata extends MetadataImplementation {
         }
         if (LOGGER.isLoggable(Level.FINE)) {
             try {
-                LOGGER.log(Level.FINE, "Retrieved DMD for product ''{0}'' version ''{1}'', driver ''{2}'' version ''{3}''", new Object[] {
-                        dmd.getDatabaseProductName(),
-                        dmd.getDatabaseProductVersion(),
-                        dmd.getDriverName(),
-                        dmd.getDriverVersion()
-                });
+                LOGGER.log(Level.FINE, "Retrieved DMD for product ''{0}'' version ''{1}'', driver ''{2}'' version ''{3}''", new Object[]{
+                            dmd.getDatabaseProductName(),
+                            dmd.getDatabaseProductVersion(),
+                            dmd.getDriverName(),
+                            dmd.getDriverVersion()
+                        });
             } catch (SQLException e) {
                 LOGGER.log(Level.FINE, "Exception while logging metadata information", e);
             }
@@ -147,41 +144,38 @@ public class JDBCMetadata extends MetadataImplementation {
         Map<String, Catalog> newCatalogs = new LinkedHashMap<String, Catalog>();
         try {
             String defaultCatalogName = conn.getCatalog();
-            LOGGER.log(Level.FINE, "Default catalog is ''{0}'', supportsCatalogsInTableDefinitions()? {1}", new Object[] { defaultCatalogName, dmd.supportsCatalogsInTableDefinitions()});
-            if (dmd.supportsCatalogsInTableDefinitions()) {
-                ResultSet rs = dmd.getCatalogs();
-                try {
-                    while (rs.next()) {
-                        String catalogName = rs.getString("TABLE_CAT"); // NOI18N
-                        LOGGER.log(Level.FINE, "Read catalog ''{0}''", catalogName);
-                        if (MetadataUtilities.equals(catalogName, defaultCatalogName)) {
-                            defaultCatalog = createJDBCCatalog(catalogName, true, defaultSchemaName).getCatalog();
-                            newCatalogs.put(defaultCatalog.getName(), defaultCatalog);
-                            LOGGER.log(Level.FINE, "Created default catalog {0}", defaultCatalog);
-                        } else {
-                            Catalog catalog = createJDBCCatalog(catalogName, false, null).getCatalog();
-                            newCatalogs.put(catalogName, catalog);
-                            LOGGER.log(Level.FINE, "Created catalog {0}", catalog);
-                        }
+            ResultSet rs = dmd.getCatalogs();
+            try {
+                while (rs.next()) {
+                    String catalogName = MetadataUtilities.trimmed(rs.getString("TABLE_CAT")); // NOI18N
+                    LOGGER.log(Level.FINE, "Read catalog ''{0}''", catalogName);
+                    if (MetadataUtilities.equals(catalogName, defaultCatalogName)) {
+                        defaultCatalog = createJDBCCatalog(catalogName, true, defaultSchemaName).getCatalog();
+                        newCatalogs.put(defaultCatalog.getName(), defaultCatalog);
+                        LOGGER.log(Level.FINE, "Created default catalog {0}", defaultCatalog);
+                    } else {
+                        Catalog catalog = createJDBCCatalog(catalogName, false, null).getCatalog();
+                        newCatalogs.put(catalogName, catalog);
+                        LOGGER.log(Level.FINE, "Created catalog {0}", catalog);
                     }
-                } finally {
-                    if (rs != null) {
-                        rs.close();
-                    }
+                }
+            } finally {
+                if (rs != null) {
+                    rs.close();
                 }
             }
         } catch (SQLException e) {
-            throw new MetadataException(e);
+            LOGGER.log(Level.INFO, "Could not load catalogs list from database (getCatalogs failed).");
         }
         if (defaultCatalog == null) {
             defaultCatalog = createJDBCCatalog(null, true, defaultSchemaName).getCatalog();
-            
+
             // Issue 154407 - Don't put the default catalog in the list of catalogs if its name is null,
             // unless it's the *only* catalog (e.g. with Derby, where it doesn't have a concept of catalogs)
             if (newCatalogs.isEmpty()) {
                 newCatalogs.put(null, defaultCatalog);
             }
-            
+
             LOGGER.log(Level.FINE, "Created fallback default catalog {0}", defaultCatalog);
         }
         catalogs = Collections.unmodifiableMap(newCatalogs);

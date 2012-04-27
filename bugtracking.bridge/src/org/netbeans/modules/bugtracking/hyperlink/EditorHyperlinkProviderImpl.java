@@ -59,6 +59,7 @@ import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
 import org.netbeans.modules.bugtracking.spi.IssueFinder;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.util.IssueFinderUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -79,24 +80,23 @@ import static org.netbeans.modules.bugtracking.util.IssueFinderUtils.HyperlinkSp
  */
 public class EditorHyperlinkProviderImpl implements HyperlinkProviderExt, LookupListener {
 
-    private static Logger LOG = Logger.getLogger(EditorHyperlinkProviderImpl.class.getName());
+    private static final Logger LOG = Logger.getLogger(EditorHyperlinkProviderImpl.class.getName());
 
     //--------------------------------------------------------------------------
 
-    private final Result<IssueFinder> lookupResult = Lookup.getDefault().lookupResult(IssueFinder.class);
     private IssueFinder[] issueFinders;
 
     {
-        lookupResult.addLookupListener(this);
         refreshIssueFinders();
     }
 
+    @Override
     public void resultChanged(LookupEvent ev) {
         refreshIssueFinders();
     }
 
     private void refreshIssueFinders() {
-        Collection<? extends IssueFinder> allInstances = lookupResult.allInstances();
+        Collection<IssueFinder> allInstances = IssueFinderUtils.getIssueFinders();
         IssueFinder[] newResult = new IssueFinder[allInstances.size()];
         allInstances.toArray(newResult);
         issueFinders = newResult;
@@ -104,14 +104,17 @@ public class EditorHyperlinkProviderImpl implements HyperlinkProviderExt, Lookup
 
     //--------------------------------------------------------------------------
 
+    @Override
     public Set<HyperlinkType> getSupportedHyperlinkTypes() {
         return EnumSet.of(HyperlinkType.GO_TO_DECLARATION); 
     }
 
+    @Override
     public boolean isHyperlinkPoint(Document doc, int offset, HyperlinkType type) {
         return getIssueSpan(doc, offset, type) != null;
     }
 
+    @Override
     public int[] getHyperlinkSpan(Document doc, int offset, HyperlinkType type) {
         HyperlinkSpanInfo spanInfo = getIssueSpan(doc, offset, type);
         return (spanInfo != null) ? new int[] {spanInfo.startOffset,
@@ -119,6 +122,7 @@ public class EditorHyperlinkProviderImpl implements HyperlinkProviderExt, Lookup
                                   : null;
     }
 
+    @Override
     public void performClickAction(final Document doc, final int offset, final HyperlinkType type) {
         final String issueId = getIssueId(doc, offset, type);
         if(issueId == null) {
@@ -126,6 +130,7 @@ public class EditorHyperlinkProviderImpl implements HyperlinkProviderExt, Lookup
         }
 
         class IssueDisplayer implements Runnable {
+            @Override
             public void run() {
                 DataObject dobj = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
                 File file = null;
@@ -145,6 +150,7 @@ public class EditorHyperlinkProviderImpl implements HyperlinkProviderExt, Lookup
         RequestProcessor.getDefault().post(new IssueDisplayer());
     }
 
+    @Override
     public String getTooltipText(Document doc, int offset, HyperlinkType type) {
         return NbBundle.getMessage(EditorHyperlinkProviderImpl.class, "LBL_OpenIssue", new Object[] { getIssueId(doc, offset, type) });
     }

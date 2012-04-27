@@ -90,8 +90,9 @@ import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.junit.TestabilityResult.SkippedClass;
 import org.netbeans.modules.junit.plugin.JUnitPlugin;
-import org.netbeans.modules.junit.plugin.JUnitPlugin.CreateTestParam;
-import org.netbeans.modules.junit.plugin.JUnitPlugin.Location;
+import org.netbeans.modules.gsf.testrunner.api.SelfResizingPanel;
+import org.netbeans.modules.gsf.testrunner.plugin.CommonPlugin.CreateTestParam;
+import org.netbeans.modules.gsf.testrunner.plugin.CommonPlugin.Location;
 import org.netbeans.modules.junit.wizards.Utils;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -118,6 +119,7 @@ import static java.util.logging.Level.FINEST;
 import static org.netbeans.api.java.classpath.ClassPath.SOURCE;
 import static org.netbeans.api.java.classpath.ClassPath.COMPILE;
 import static org.netbeans.api.java.project.JavaProjectConstants.SOURCES_TYPE_JAVA;
+import org.netbeans.modules.java.testrunner.GuiUtils;
 import static org.openide.ErrorManager.ERROR;
 import static org.openide.ErrorManager.WARNING;
 import static org.openide.NotifyDescriptor.CANCEL_OPTION;
@@ -250,6 +252,9 @@ public final class DefaultPlugin extends JUnitPlugin {
         }
         
         String baseResName = srcCp.getResourceName(fileObj, '/', false);
+        if(baseResName == null) {
+            return null;
+        }
         String testResName = !fileObj.isFolder()
                              ? getTestResName(baseResName, fileObj.getExt())
                              : getSuiteResName(baseResName);
@@ -810,7 +815,7 @@ public final class DefaultPlugin extends JUnitPlugin {
         progress.show();
 
         String msg = NbBundle.getMessage(
-                    CreateTestAction.class,
+                    JUnitTestCreatorProvider.class,
                     "MSG_StatusBar_CreateTest_Begin");                  //NOI18N
         progress.displayStatusText(msg);
 
@@ -929,9 +934,9 @@ public final class DefaultPlugin extends JUnitPlugin {
 
         final Set<SkippedClass> skipped = results.getSkipped();
         final Set<DataObject> created = results.getCreated();
-        if (!skipped.isEmpty()) {
+        if (!skipped.isEmpty() || created.isEmpty()) {
             // something was skipped
-            String message;
+            String message = "";
             if (skipped.size() == 1) {
                 // one class? report it
                 SkippedClass skippedClass = skipped.iterator().next();
@@ -954,20 +959,24 @@ public final class DefaultPlugin extends JUnitPlugin {
                         "MSG_skipped_classes",                          //NOI18N
                         strReason(reason, "COMMA", "OR"));              //NOI18N
             }
-            TestUtil.notifyUser(message, NotifyDescriptor.INFORMATION_MESSAGE);
 
-        }
-        
-        if (created.isEmpty()) {
-            Mutex.EVENT.writeAccess(new Runnable() {
-                public void run() {
-                    TestUtil.notifyUser(
-                            NbBundle.getMessage(
-                                    DefaultPlugin.class,
-                                    "MSG_No_test_created"),     //NOI18N
-                            NotifyDescriptor.INFORMATION_MESSAGE);
-                }
-            });
+            String noMessage = "";
+            if (created.isEmpty()) {
+                // nothing was created
+                noMessage = NbBundle.getMessage(
+                        DefaultPlugin.class,
+                        "MSG_No_test_created");     //NOI18N
+            }
+            final String finalMessage = (message.isEmpty()) ? noMessage : message.concat("\n\n").concat(noMessage);     //NOI18N
+
+            if (!finalMessage.isEmpty()) {
+                Mutex.EVENT.writeAccess(new Runnable() {
+
+                    public void run() {
+                        TestUtil.notifyUser(finalMessage, NotifyDescriptor.INFORMATION_MESSAGE);
+                    }
+                });
+            }
         }
         
         FileObject[] createdFiles;
@@ -2182,7 +2191,7 @@ public final class DefaultPlugin extends JUnitPlugin {
      */
     private static void noTemplateMessage(String temp) {
         String msg = NbBundle.getMessage(
-                CreateTestAction.class,
+                JUnitTestCreatorProvider.class,
                 "MSG_template_not_found",                           //NOI18N
                 temp);
         NotifyDescriptor descr = new NotifyDescriptor.Message(
@@ -2209,8 +2218,8 @@ public final class DefaultPlugin extends JUnitPlugin {
      *         andKey.
      */
     private static String strReason(TestabilityResult reason, String commaKey, String andKey) {
-        String strComma = NbBundle.getMessage(CreateTestAction.class,commaKey);
-        String strAnd = NbBundle.getMessage(CreateTestAction.class,andKey);
+        String strComma = NbBundle.getMessage(JUnitTestCreatorProvider.class,commaKey);
+        String strAnd = NbBundle.getMessage(JUnitTestCreatorProvider.class,andKey);
         String strReason = reason.getReason( // string representation of the reasons
                         strComma.substring(1, strComma.length()-1),
                         strAnd.substring(1, strAnd.length()-1));

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, 2011 Oracle and/or its affiliates.
+ * Copyright (c) 2008, 2012 Oracle and/or its affiliates.
  * All rights reserved. Use is subject to license terms.
  *
  * This file is available and licensed under the following license:
@@ -112,7 +112,7 @@ public class SwingInterop extends JApplet {
         JTable table = new JTable(tableModel);
         table.setAutoCreateRowSorter(true);
         table.setGridColor(Color.DARK_GRAY);
-        DecimalFormatRenderer renderer = new DecimalFormatRenderer();
+        SwingInterop.DecimalFormatRenderer renderer = new SwingInterop.DecimalFormatRenderer();
         renderer.setHorizontalAlignment(JLabel.RIGHT);
         for (int i = 0; i < table.getColumnCount(); i++) {
             table.getColumnModel().getColumn(i).setCellRenderer(renderer);

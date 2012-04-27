@@ -41,7 +41,7 @@
     categoryName = "#OptionsCategory_Name_Java",
     iconBase = "org/netbeans/modules/options/java/resources/java_logo.png",
     keywords = "#OptionsCategory_Keywords_Java",
-    keywordsCategory = "Java")
+    keywordsCategory = JavaOptions.JAVA)
 @Messages({"OptionsCategory_Keywords_Java=Java Options","OptionsCategory_Name_Java=Java"})
 package org.netbeans.modules.options.java.resources;
 

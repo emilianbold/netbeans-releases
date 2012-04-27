@@ -100,7 +100,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
-import java.util.logging.Logger;
+import javax.swing.plaf.TextUI;
+import javax.swing.plaf.basic.BasicEditorPaneUI;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.util.Mutex;
@@ -114,7 +115,7 @@ import org.openide.util.UserQuestionException;
 class DiffSidebar extends JPanel implements DocumentListener, ComponentListener, FoldHierarchyListener, FileChangeListener {
     
     private static final int BAR_WIDTH = 9;
-    private static final java.util.logging.Logger LOG = java.util.logging.Logger.getLogger(DiffSidebar.class.getName());
+    private static final java.util.logging.Logger LOG = DiffSidebarManager.LOG;
     
     private final JTextComponent  textComponent;
     /**
@@ -145,6 +146,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
     private VersioningSystem ownerVersioningSystem;
 
     public DiffSidebar(JTextComponent target, FileObject file) {
+        LOG.log(Level.FINE, "creating DiffSideBar for {0}", file != null ? file.getPath() : null);
         this.textComponent = target;
         this.fileObject = file;
         this.foldHierarchy = FoldHierarchy.get(target);
@@ -160,10 +162,9 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
     }
 
     private void refreshOriginalContent() {
-        VCSFileProxy file = fileObject != null ? VCSFileProxy.createFileProxy(fileObject) : null;
-        ownerVersioningSystem = file != null ? Utils.getOwner(file) : null;
         originalContentSerial++;
         sidebarTemporarilyDisabled = false;
+        LOG.log(Level.FINE, "refreshOriginalContent(): {0}", fileObject != null ? fileObject.getPath() : null);
         refreshDiff();
     }
     
@@ -263,7 +264,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
         Difference returnedDiff = next;
         JTextComponent component = textComponent;
         if (component != null) {
-            BaseTextUI textUI = (BaseTextUI) component.getUI();
+            TextUI textUI = component.getUI();
             try {
                 Rectangle rec = textUI.modelToView(component, textUI.viewToModel(component, new Point(0, event.getY())));
                 if (rec != null && event.getY() < rec.getY() + rec.getHeight() / 2) {
@@ -341,6 +342,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
                 String newline = Utilities.getRowStartFromLineOffset(document, diff.getSecondStart()) == -1 ? "\n" : "";
                 document.insertString(start, newline + diff.getFirstText(), null);
             }
+            LOG.finer("refreshing diff in onRollback");
             refreshDiff();
         } catch (BadLocationException e) {
             ErrorManager.getDefault().notify(e);
@@ -466,6 +468,15 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
         // not interested
     }
 
+    private int getPosFromY(JTextComponent component, TextUI textUI, int y) throws BadLocationException {
+        if(textUI instanceof BaseTextUI) {
+            return ((BaseTextUI) textUI).getPosFromY(y);
+        } else {
+            // fallback to ( less otimized than ((BaseTextUI) textUI).getPosFromY(y) )
+            return textUI.modelToView(component, textUI.viewToModel(component, new Point(0, y))).y;
+        }
+    }
+
     private static class DiffTopComponent extends TopComponent {
         
         private JComponent diffView;
@@ -514,7 +525,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
             try{
                 JTextComponent component = editorUI.getComponent();
                 if (component != null) {
-                    BaseTextUI textUI = (BaseTextUI)component.getUI();
+                    TextUI textUI = component.getUI();
                     int clickOffset = textUI.viewToModel(component, new Point(0, e.getY()));
                     line = Utilities.getLineOffset(document, clickOffset);
                 }
@@ -530,7 +541,9 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
             return;
         }
         shutdown();
+        ownerVersioningSystem = null;
         initialize();
+        LOG.finer("refreshing diff in refresh");
         refreshDiff();
         revalidate();  // resize the component
     }
@@ -540,6 +553,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
             return;
         }
         sidebarVisible = visible;
+        LOG.finer("refreshing diff in setSidebarVisible");
         refreshDiff();
         revalidate();  // resize the component
     }
@@ -631,24 +645,24 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
             clip.height += 16;
         }
 
+        g.setColor(backgroundColor());
+        g.fillRect(clip.x, clip.y, clip.width, clip.height);
+
         JTextComponent component = textComponent;
-        BaseTextUI textUI = (BaseTextUI)component.getUI();
+        TextUI textUI = component.getUI();
         EditorUI editorUI = Utilities.getEditorUI(textComponent);
         View rootView = Utilities.getDocumentView(component);
         if (rootView == null) {
             return;
         }
-
-        g.setColor(backgroundColor());
-        g.fillRect(clip.x, clip.y, clip.width, clip.height);
-
+        
         Difference [] paintDiff = currentDiff;
         if (paintDiff == null || paintDiff.length == 0) {
             return;
         }
 
         try{
-            int startPos = textUI.getPosFromY(clip.y);
+            int startPos = getPosFromY(component, textUI, clip.y);
             int startViewIndex = rootView.getViewIndex(startPos,Position.Bias.Forward);
             int rootViewCount = rootView.getViewCount();
 
@@ -683,6 +697,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
                     y = rec1.y;
                     double height = (rec2.getY() + rec2.getHeight() - rec1.getY());
                     if (ad != null) {
+                        LOG.log(Level.FINEST, "painting difference {0} on line {1}", new Object[]{ad.getType(), line});      
                         g.setColor(getColor(ad));
                         if (ad.getType() == Difference.DELETE) {
                             yCoords[0] = (int) rec2.getY() + editorUI.getLineAscent();
@@ -752,16 +767,19 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
 
     @Override
     public void insertUpdate(DocumentEvent e) {
+        LOG.finer("refreshing diff in insertUpdate");
         refreshDiff();
     }
 
     @Override
     public void removeUpdate(DocumentEvent e) {
+        LOG.finer("refreshing diff in removeUpdate");
         refreshDiff();
     }
 
     @Override
     public void changedUpdate(DocumentEvent e) {
+        LOG.finer("refreshing diff in changedUpdate");
         refreshDiff();
     }
 
@@ -816,6 +834,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
         void refresh() {
             List<DiffMark> oldMarks = marks;
             marks = getMarksForDifferences();
+            LOG.log(Level.FINER, "refreshing marks for {0}", fileObject != null ? fileObject.getPath() : null);
             firePropertyChange(PROP_MARKS, oldMarks, marks);
         }
 
@@ -840,6 +859,18 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
 
         @Override
         public void run() {
+            if(ownerVersioningSystem == null) {
+                VCSFileProxy file = fileObject != null ? VCSFileProxy.createFileProxy(fileObject) : null;
+                ownerVersioningSystem = file != null ? Utils.getOwner(file) : null;
+
+                LOG.log(
+                    Level.FINE, 
+                    "owner for file {0} is {1}", 
+                    new Object[]{
+                        fileObject != null ? fileObject.getPath() : null, 
+                        ownerVersioningSystem != null ? ownerVersioningSystem.getDisplayName() : "null"});
+            }
+            
             computeDiff();
             EventQueue.invokeLater(new Runnable() {
                 @Override
@@ -867,6 +898,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
             }
             DiffProvider diff = Lookup.getDefault().lookup(DiffProvider.class);
             if (diff == null) {
+                LOG.log(Level.WARNING, "no diff provider found for {0}", fileObject != null ? fileObject.getPath() : null);
                 currentDiff = null;
                 return;
             }
@@ -884,12 +916,13 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
             }
             originalContentBufferSerial = serial;
 
+            LOG.log(Level.FINER, "fetching original contet for {0}", fileObject != null ? fileObject.getPath() : null);
             originalContentBuffer = getText(ownerVersioningSystem);
             if (originalContentBuffer == null) {
                 // no content for the file, setting sidebar visibility to false eliminates repeated asking for the content
                 // file can be deleted, or new?
                 sidebarTemporarilyDisabled = true;
-                LOG.log(Level.FINE, "Disabling diffsidebar for {0}, no content available", fileObject.getPath()); //NOI18N
+                LOG.log(Level.FINE, "Disabling diffsidebar for {0}, no content available", fileObject != null ? fileObject.getPath() : null); //NOI18N
             }
         }
     }
@@ -985,6 +1018,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
         Collection<File> originalFiles = new ArrayList<File>(filesToCheckout.size());
 
         for (FileObject fo : filesToCheckout) {
+            LOG.log(Level.FINE, "checking out original file {0}", fo != null ? fo.getPath() : null);
             File originalFile = new File(targetTempFolder, fo.getNameExt());
             vs.getOriginalFile(VCSFileProxy.createFileProxy(fo), VCSFileProxy.createFileProxy(originalFile)); // XXX refactor the whole diff
             originalFiles.add(originalFile);

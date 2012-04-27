@@ -44,12 +44,22 @@
 
 package org.netbeans.modules.project.ui.actions;
 
+import java.awt.Toolkit;
+import java.io.CharConversionException;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import javax.swing.Action;
 import javax.swing.Icon;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.project.ui.OpenProjectList;
+import org.netbeans.spi.project.ActionProgress;
 import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.ProjectConfiguration;
+import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
 import org.openide.awt.Actions;
 import org.openide.awt.DynamicMenuContent;
@@ -58,6 +68,8 @@ import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
+import org.openide.xml.XMLUtil;
 
 /** Action sensitive to current project
  * 
@@ -76,7 +88,7 @@ public class ProjectAction extends LookupSensitiveAction implements ContextAware
      *
      */
     public ProjectAction(String command, String namePattern, Icon icon, Lookup lookup) {
-        this( command, null, namePattern, null, icon, lookup );
+        this( command, null, namePattern, namePattern, icon, lookup );
     }
 
     public ProjectAction(String command, String namePattern, String popupPattern, Icon icon, Lookup lookup) {
@@ -84,7 +96,7 @@ public class ProjectAction extends LookupSensitiveAction implements ContextAware
     }
     
     public ProjectAction( ProjectActionPerformer performer, String namePattern, Icon icon, Lookup lookup) {
-        this( null, performer, namePattern, null, icon, lookup );
+        this( null, performer, namePattern, namePattern, icon, lookup );
     }
 
     private ProjectAction( ProjectActionPerformer performer, String namePattern, String popupPattern, Icon icon, Lookup lookup) {
@@ -118,26 +130,56 @@ public class ProjectAction extends LookupSensitiveAction implements ContextAware
     @Override
     protected void actionPerformed( Lookup context ) {
         Project[] projects = ActionsUtil.getProjectsFromLookup( context, command );
-        
-        if ( projects.length == 1 ) {
-            if ( command != null ) {
-                ActionProvider ap = projects[0].getLookup().lookup(ActionProvider.class);
-                LogRecord r = new LogRecord(Level.FINE, "PROJECT_ACTION"); // NOI18N
-                r.setResourceBundle(NbBundle.getBundle(ProjectAction.class));
-                r.setParameters(new Object[] {
-                    getClass().getName(),
-                    projects[0].getClass().getName(),
-                    getValue(NAME)
-                });
-                r.setLoggerName(UILOG.getName());
-                UILOG.log(r);
-                ap.invokeAction( command, Lookup.EMPTY );        
-            }
-            else if ( performer != null ) {
-                performer.perform( projects[0] );
-            }
+        if (command != null && projects.length > 0) {
+            runSequentially(new LinkedList<Project>(Arrays.asList(projects)), this, command);
+        } else if (performer != null && projects.length == 1) {
+            performer.perform(projects[0]);
         }
-        
+    }
+    static void runSequentially(final Queue<Project> queue, final LookupSensitiveAction a, final String command) {
+        Project p = queue.remove();
+        final ActionProvider ap = p.getLookup().lookup(ActionProvider.class);
+        if (ap == null) {
+            return;
+        }
+        if (!Arrays.asList(ap.getSupportedActions()).contains(command)) {
+            // #47160: was a supported command (e.g. on a freeform project) but was then removed.
+            Toolkit.getDefaultToolkit().beep();
+            a.resultChanged(null);
+            return;
+        }
+        LogRecord r = new LogRecord(Level.FINE, "PROJECT_ACTION"); // NOI18N
+        r.setResourceBundle(NbBundle.getBundle(ProjectAction.class));
+        r.setParameters(new Object[] {
+            a.getClass().getName(),
+            p.getClass().getName(),
+            a.getValue(NAME)
+        });
+        r.setLoggerName(UILOG.getName());
+        UILOG.log(r);
+        Mutex.EVENT.writeAccess(new Runnable() {
+            @Override public void run() {
+                final AtomicBoolean started = new AtomicBoolean();
+                ap.invokeAction(command, Lookups.singleton(new ActionProgress() {
+                    @Override protected void started() {
+                        started.set(true);
+                    }
+                    @Override public void finished(boolean success) {
+                        if (success && !queue.isEmpty()) { // OK, next...
+                            runSequentially(queue, a, command);
+                        } else { // stopping now; restore natural action enablement state
+                            a.resultChanged(null);
+                        }
+                    }
+                }));
+                if (started.get()) {
+                    a.setEnabled(false);
+                } else if (!queue.isEmpty()) {
+                    // Did not run action for some reason; try others?
+                    runSequentially(queue, a, command);
+                }
+            }
+        });
     }
     
     @Override
@@ -147,7 +189,7 @@ public class ProjectAction extends LookupSensitiveAction implements ContextAware
         Project[] projects = ActionsUtil.getProjectsFromLookup( context, command );
         final boolean enable;
         if ( command != null ) {
-            enable = projects.length == 1;
+            enable = projects.length > 0;
         } else if ( performer != null && projects.length == 1 ) {
             enable = performer.enable(projects[0]);
         } else {
@@ -157,7 +199,34 @@ public class ProjectAction extends LookupSensitiveAction implements ContextAware
         final String presenterName = ActionsUtil.formatProjectSensitiveName( namePattern, projects );
         final String popupName;
         if (popupPattern != null) {
-            popupName = ActionsUtil.formatProjectSensitiveName(popupPattern, projects);
+            String n = ActionsUtil.formatProjectSensitiveName(popupPattern, projects);
+            if (command != null && !command.equals(ActionProvider.COMMAND_DELETE) && !command.equals(ActionProvider.COMMAND_RENAME) && !command.equals(ActionProvider.COMMAND_MOVE) && !command.equals(ActionProvider.COMMAND_COPY)) { // otherwise enabled on CloseProject, Delete, etc.; TBD if wanted on performer-based actions
+                if (projects.length == 1) { // ignore multiselections for now
+                    Project main = OpenProjectList.getDefault().getMainProject();
+                    if (main != null && main != projects[0]) { // otherwise pointless since ActiveConfigAction combo already showing config
+                        ProjectConfigurationProvider<?> actualProvider = projects[0].getLookup().lookup(ProjectConfigurationProvider.class);
+                        if (actualProvider != null) {
+                            ProjectConfigurationProvider<?> mainProvider = main.getLookup().lookup(ProjectConfigurationProvider.class);
+                            if (mainProvider != null) {
+                                ProjectConfiguration actualConfig = actualProvider.getActiveConfiguration(); // XXX PM.mutex?
+                                ProjectConfiguration mainConfig = mainProvider.getActiveConfiguration(); // ditto
+                                String labelActual = actualConfig.getDisplayName();
+                                if (!labelActual.equals(mainConfig.getDisplayName())) {
+                                    try {
+                                        if (!n.startsWith("<html>")) {
+                                            n = "<html>" + XMLUtil.toElementContent(n);
+                                        }
+                                        n += " <i><font color='!controlShadow'>@" + XMLUtil.toElementContent(labelActual);
+                                    } catch (CharConversionException x) {
+                                        // ignore
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            popupName = n;
         } else {
             popupName = null;
         }

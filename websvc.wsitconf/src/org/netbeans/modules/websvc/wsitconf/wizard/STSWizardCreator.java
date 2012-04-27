@@ -53,6 +53,7 @@ import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import java.io.File;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URL;
 import java.util.ArrayList;
@@ -60,6 +61,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -67,6 +70,7 @@ import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -94,6 +98,8 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -106,6 +112,8 @@ public class STSWizardCreator {
     protected static final int JSE_PROJECT_TYPE = 0;
     protected static final int WEB_PROJECT_TYPE = 1;
     protected static final int EJB_PROJECT_TYPE = 2;
+    
+    public static final String STS_WEBSERVICE = "sts-webservice";   // NOI18N
     
     private int projectType;
 
@@ -221,12 +229,14 @@ public class STSWizardCreator {
     }
     
     public void generateProviderImplClass(Project project, FileObject targetFolder,
-            String targetName, final WsdlService service, final WsdlPort port, URL wsdlURL) throws Exception {
+            final String targetName, final WsdlService service, final WsdlPort port, 
+            URL wsdlURL) throws Exception 
+    {
         initProjectInfo(project);
         
         String serviceID = service.getName();
         
-        JAXWSSupport jaxWsSupport = JAXWSSupport.getJAXWSSupport(project.getProjectDirectory());
+        final JAXWSSupport jaxWsSupport = JAXWSSupport.getJAXWSSupport(project.getProjectDirectory());
             
         FileObject implClassFo = GenerationUtils.createClass(targetFolder, targetName, null);
         ClassPath classPath = ClassPath.getClassPath(implClassFo, ClassPath.SOURCE);            
@@ -234,35 +244,37 @@ public class STSWizardCreator {
         String portJavaName = port.getJavaName();
         String artifactsPckg = portJavaName.substring(0, portJavaName.lastIndexOf('.'));
 
-        serviceID = jaxWsSupport.addService(targetName, serviceImplPath, wsdlURL.toString(), service.getName(), port.getName(), artifactsPckg, jsr109Supported && Util.isJavaEE5orHigher(project), true);
+        serviceID = jaxWsSupport.addService(targetName, serviceImplPath, 
+                wsdlURL.toString(), service.getName(), port.getName(), artifactsPckg, 
+                jsr109Supported && Util.isJavaEE5orHigher(project), true);
         final String wsdlLocation = jaxWsSupport.getWsdlLocation(serviceID);
                        
+        final String[] fqn = new String[1];
         JavaSource targetSource = JavaSource.forFileObject(implClassFo);
         CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
 
+            @Override
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
                 GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
                 if (genUtils!=null) {     
                     TreeMaker make = workingCopy.getTreeMaker();
                     ClassTree javaClass = genUtils.getClassTree();
+                    Element element = workingCopy.getTrees().getElement( 
+                            workingCopy.getTrees().getPath(
+                                    workingCopy.getCompilationUnit(), javaClass));
+                    if ( element instanceof TypeElement ){
+                        fqn[0] = ((TypeElement)element).getQualifiedName().toString();
+                    }
                     ClassTree modifiedClass;
                     
-                    // add implementation clause
-                    TypeElement provider = workingCopy.getElements().getTypeElement("javax.xml.ws.Provider"); //NOI18N
-                    TypeElement source = workingCopy.getElements().getTypeElement("javax.xml.transform.Source"); //NOI18N
-                    TypeElement msgContext = workingCopy.getElements().getTypeElement("javax.xml.ws.handler.MessageContext"); //NOI18N
-                    TypeElement resource = workingCopy.getElements().getTypeElement("javax.annotation.Resource"); //NOI18N
-                    TypeElement wsContext = workingCopy.getElements().getTypeElement("javax.xml.ws.WebServiceContext"); //NOI18N
-                    TypeElement wsProvider = workingCopy.getElements().getTypeElement("javax.xml.ws.WebServiceProvider"); //NOI18N
-
                     // not found on classpath, because the runtime jar is not on classpath by default
                     String baseStsImpl = "com.sun.xml.ws.security.trust.sts.BaseSTSImpl"; //NOI18N
 
                     // create parameters
                     List<AnnotationTree> annotations = new ArrayList<AnnotationTree>();
                     AnnotationTree resourceAnnotation = make.Annotation(
-                        make.QualIdent(resource), 
+                        make.QualIdent("javax.annotation.Resource"), //NOI18N
                         Collections.<ExpressionTree>emptyList()
                     );
                     annotations.add(resourceAnnotation);
@@ -275,14 +287,16 @@ public class STSWizardCreator {
                                 annotations
                             ),
                             "context", // name
-                            make.QualIdent(wsContext), // parameter type
+                            make.QualIdent("javax.xml.ws.WebServiceContext"), //NOI18N parameter type
                             null // initializer - does not make sense in parameters.
                     ));
                     
                     modifiedClass = genUtils.addClassFields(javaClass, classField);
                     
-                    ParameterizedTypeTree t = make.ParameterizedType(make.QualIdent(provider), 
-                            Collections.singletonList(make.QualIdent(source)) );
+                    ParameterizedTypeTree t = make.ParameterizedType(
+                            make.QualIdent("javax.xml.ws.Provider"), //NOI18N
+                            Collections.singletonList(
+                                    make.QualIdent("javax.xml.transform.Source"))); //NOI18N
                     modifiedClass = make.addClassImplementsClause(modifiedClass, t);
                     modifiedClass = make.setExtends(modifiedClass, make.Identifier(baseStsImpl));
                     
@@ -297,7 +311,7 @@ public class STSWizardCreator {
                     attrs.add(
                         make.Assignment(make.Identifier("wsdlLocation"), make.Literal(wsdlLocation))); //NOI18N
                     AnnotationTree WSAnnotation = make.Annotation(
-                        make.QualIdent(wsProvider),
+                        make.QualIdent("javax.xml.ws.WebServiceProvider"), //NOI18N
                         attrs
                     );
                     modifiedClass = genUtils.addAnnotation(modifiedClass, WSAnnotation);
@@ -306,9 +320,8 @@ public class STSWizardCreator {
                     TypeElement modeAn = workingCopy.getElements().getTypeElement("javax.xml.ws.ServiceMode"); //NOI18N
                     List<ExpressionTree> attrsM = new ArrayList<ExpressionTree>();
 
-                    TypeElement te = workingCopy.getElements().getTypeElement("javax.xml.ws.Service.Mode");
-                    
-                    ExpressionTree mstree = make.MemberSelect(make.QualIdent(te), "PAYLOAD");
+                    ExpressionTree mstree = make.MemberSelect(
+                            make.QualIdent("javax.xml.ws.Service.Mode"), "PAYLOAD");    // NOI18N
                     
                     attrsM.add(
                         make.Assignment(make.Identifier("value"), mstree)); //NOI18N
@@ -320,12 +333,12 @@ public class STSWizardCreator {
 
                     // add @Stateless annotation
                     if (projectType == EJB_PROJECT_TYPE) {//EJB project
-                        TypeElement StatelessAn = workingCopy.getElements().getTypeElement("javax.ejb.Stateless"); //NOI18N                   
-                        AnnotationTree StatelessAnnotation = make.Annotation(
-                            make.QualIdent(StatelessAn), 
+                        AnnotationTree statelessAnnotation = make.Annotation(
+                                make.QualIdent("javax.ejb.Stateless"),  // NOI18N
                             Collections.<ExpressionTree>emptyList()
                         );
-                        modifiedClass = genUtils.addAnnotation(modifiedClass, StatelessAnnotation);
+                        modifiedClass = genUtils.addAnnotation(modifiedClass, 
+                                statelessAnnotation);
                     }
 
                     // create parameters
@@ -337,7 +350,7 @@ public class STSWizardCreator {
                                 Collections.<AnnotationTree>emptyList()
                             ),
                             "rstElement", // name
-                            make.QualIdent(source), // parameter type
+                            make.QualIdent("javax.xml.transform.Source"), //NOI18N parameter type
                             null // initializer - does not make sense in parameters.
                     ));
 
@@ -352,7 +365,7 @@ public class STSWizardCreator {
                     MethodTree method = make.Method(
                             methodModifiers, // public
                             "invoke", // operation name
-                            make.QualIdent(source), // return type 
+                            make.QualIdent("javax.xml.transform.Source"), //NOI18N return type 
                             Collections.<TypeParameterTree>emptyList(), // type parameters - none
                             params,
                             exc, // throws 
@@ -372,7 +385,7 @@ public class STSWizardCreator {
                     MethodTree methodMsgContext = make.Method(
                             msgContextModifiers, // public
                             "getMessageContext", // operation name
-                            make.QualIdent(msgContext), // return type 
+                            make.QualIdent("javax.xml.ws.handler.MessageContext"), //NOI18N return type 
                             Collections.<TypeParameterTree>emptyList(), // type parameters - none
                             Collections.<VariableTree>emptyList(),
                             excMsg, // throws 
@@ -385,13 +398,15 @@ public class STSWizardCreator {
                 }
             }
 
+            @Override
             public void cancel() { 
             }
         };
         
         targetSource.runModificationTask(task).commit();
 
-        String mexUrl = "/" + targetName + "Service/mex";
+        String url = "/" + targetName + "Service";
+        String mexUrl = url +"/mex";
 
         WsitProvider wsitProvider = project.getLookup().lookup(WsitProvider.class);
         if (wsitProvider != null) {
@@ -410,6 +425,15 @@ public class STSWizardCreator {
         endpoint.setImplementation(Util.MEX_CLASS_NAME);
         endpoint.setUrlPattern(mexUrl);
         endpoints.addEnpoint(endpoint);
+        
+        if ( fqn[0]!= null ){
+            endpoint = endpoints.newEndpoint();
+            endpoint.setEndpointName(targetName);
+            endpoint.setImplementation(fqn[0]);
+            endpoint.setUrlPattern(url);
+            endpoints.addEnpoint(endpoint);
+        }
+        
         FileLock lock = null;
         OutputStream os = null;
         synchronized (this) {
@@ -428,6 +452,23 @@ public class STSWizardCreator {
         
         //open in the editor
         DataObject dobj = DataObject.find(implClassFo);
+        implClassFo.setAttribute(STS_WEBSERVICE, Boolean.TRUE);
+        implClassFo.addFileChangeListener( new FileChangeAdapter(){
+           /* (non-Javadoc)
+            * @see org.openide.filesystems.FileChangeAdapter#fileDeleted(org.openide.filesystems.FileEvent)
+            */
+            @Override
+            public void fileDeleted( FileEvent fe ) {
+                try {
+                    jaxWsSupport.removeNonJsr109Entries(Util.MEX_NAME);
+                    jaxWsSupport.removeNonJsr109Entries(fqn[0]);
+                    jaxWsSupport.removeNonJsr109Entries(targetName);
+                }
+                catch(IOException e ){
+                    logger.log( Level.WARNING, null , e);
+                }
+            } 
+        });
         openFileInEditor(dobj);
     }
 

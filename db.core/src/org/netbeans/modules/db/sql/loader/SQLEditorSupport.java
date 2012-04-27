@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -59,43 +59,31 @@ import java.util.logging.Logger;
 import javax.swing.JPanel;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.modules.db.api.sql.execute.SQLExecuteCookie;
 import org.netbeans.modules.db.api.sql.execute.SQLExecution;
 import org.netbeans.modules.db.core.SQLCoreUILogger;
 import org.netbeans.modules.db.dataview.api.DataViewPageContext;
-import org.openide.awt.StatusDisplayer;
-import org.openide.cookies.EditCookie;
-import org.openide.cookies.EditorCookie;
-import org.openide.cookies.OpenCookie;
-import org.openide.cookies.PrintCookie;
-import org.openide.cookies.SaveCookie;
-import org.openide.filesystems.FileObject;
-import org.openide.nodes.Node.Cookie;
-import org.openide.text.CloneableEditor;
-import org.openide.text.DataEditorSupport;
-import org.openide.util.Cancellable;
-import org.openide.util.MutexException;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.netbeans.modules.db.sql.execute.SQLExecuteHelper;
 import org.netbeans.modules.db.sql.execute.SQLExecutionResult;
 import org.netbeans.modules.db.sql.execute.SQLExecutionResults;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.cookies.CloseCookie;
+import org.openide.awt.StatusDisplayer;
+import org.openide.cookies.*;
 import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.MultiDataObject;
+import org.openide.nodes.Node.Cookie;
+import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
-import org.openide.util.Exceptions;
-import org.openide.util.Mutex;
-import org.openide.util.Task;
-import org.openide.util.TaskListener;
+import org.openide.text.DataEditorSupport;
+import org.openide.util.*;
 import org.openide.windows.CloneableOpenSupport;
 import org.openide.windows.CloneableTopComponent;
 
@@ -156,10 +144,9 @@ public class SQLEditorSupport extends DataEditorSupport
             return false;
         
         if (!isConsole()) {
-            FileObject fo = getDataObject().getPrimaryFile();
             // Add the save cookie to the data object
             SQLDataObject obj = (SQLDataObject)getDataObject();
-            if (obj.getCookie(SaveCookie.class) == null) {
+            if (obj.getLookup().lookup(SaveCookie.class) == null) {
                 obj.addCookie(saveCookie);
                 obj.setModified(true);
             }
@@ -170,13 +157,13 @@ public class SQLEditorSupport extends DataEditorSupport
 
     @Override
     protected void initializeCloneableEditor(CloneableEditor editor) {
+        super.initializeCloneableEditor(editor);
         ((SQLCloneableEditor) editor).initialize();
     }
     
     @Override
     protected Pane createPane() {
         Pane pane = (CloneableEditorSupport.Pane) MultiViews.createCloneableMultiView(SQLDataLoader.SQL_MIME_TYPE, getDataObject());
-        CloneableTopComponent tc = pane.getComponent();
         return pane;
     }
     
@@ -191,7 +178,7 @@ public class SQLEditorSupport extends DataEditorSupport
 
         // Remove the save cookie from the data object
         SQLDataObject obj = (SQLDataObject)getDataObject();
-        Cookie cookie = obj.getCookie(SaveCookie.class);
+        Cookie cookie = obj.getLookup().lookup(SaveCookie.class);
         if (cookie != null && cookie.equals(saveCookie)) {
             obj.removeCookie(saveCookie);
             obj.setModified(false);
@@ -319,7 +306,7 @@ public class SQLEditorSupport extends DataEditorSupport
         if (doc == null) {
             return;
         }
-        String sql = null;
+        String sql;
         try {
             sql = doc.getText(0, doc.getLength());
         } catch (BadLocationException e) {
@@ -460,7 +447,7 @@ public class SQLEditorSupport extends DataEditorSupport
     private SQLExecutionLoggerImpl createLogger() {
         closeLogger();
         
-        String loggerDisplayName = null;
+        String loggerDisplayName;
         if (isConsole()) {
             loggerDisplayName = getDataObject().getName();
         } else {
@@ -683,7 +670,7 @@ public class SQLEditorSupport extends DataEditorSupport
         }
 
         private SQLEditorSupport findSQLEditorSupport() {
-            return getDataObject().getCookie(SQLEditorSupport.class);
+            return getDataObject().getLookup().lookup(SQLEditorSupport.class);
         }
     }
 }

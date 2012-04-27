@@ -68,6 +68,7 @@ import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring.ParameterInfo;
 import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
+import org.netbeans.modules.refactoring.java.spi.ToPhaseException;
 import org.netbeans.modules.refactoring.java.ui.ChangeParametersPanel.Javadoc;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -94,19 +95,23 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
     private String returnType;
     private boolean compatible;
     private final Javadoc javaDoc;
+    private final TreePathHandle refactoringSource;
+    private MethodTree origMethod;
 
     public ChangeParamsTransformer(ParameterInfo[] paramInfo,
             Collection<? extends Modifier> newModifiers,
             String returnType,
             boolean compatible,
             Javadoc javaDoc,
-            Set<ElementHandle<ExecutableElement>> am) {
+            Set<ElementHandle<ExecutableElement>> am,
+            TreePathHandle refactoringSource) {
         this.paramInfos = paramInfo;
         this.newModifiers = newModifiers;
         this.returnType = returnType;
         this.compatible = compatible;
         this.javaDoc = javaDoc;
         this.allMethods = am;
+        this.refactoringSource = refactoringSource;
     }
     
     private Problem problem;
@@ -114,6 +119,17 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
 
     public Problem getProblem() {
         return problem;
+    }
+
+    @Override
+    public void setWorkingCopy(WorkingCopy workingCopy) throws ToPhaseException {
+        super.setWorkingCopy(workingCopy);
+        if(origMethod == null
+                && workingCopy.getFileObject().equals(refactoringSource.getFileObject())) {
+            TreePath resolvedPath = refactoringSource.resolve(workingCopy);
+            TreePath meth = JavaPluginUtils.findMethod(resolvedPath);
+            origMethod = (MethodTree) meth.getLeaf();
+        }
     }
 
     private void checkNewModifier(TreePath tree, Element p) throws MissingResourceException {
@@ -187,8 +203,17 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
                         } else {
                             statement = make.ExpressionStatement(methodInvocation);
                         }
-                        MethodTree newMethod = make.Method(element,
-                                make.Block(Collections.singletonList(statement), false));
+                        final GeneratorUtilities genutils = GeneratorUtilities.get(workingCopy);
+                        tree = genutils.importComments(tree, workingCopy.getCompilationUnit());
+                        
+                        BlockTree body = make.Block(Collections.singletonList(statement), false);
+                        final BlockTree oldBody = ((MethodTree)tree).getBody();
+                        genutils.copyComments(oldBody, body, true);
+                        genutils.copyComments(oldBody, body, false);
+                        MethodTree newMethod = make.Method(element, body);
+                        genutils.copyComments(tree, newMethod, true);
+                        genutils.copyComments(tree, newMethod, false);
+
                         ClassTree addMember = make.insertClassMember(node, i, newMethod);
                         rewrite(node, addMember);
                     }
@@ -272,7 +297,16 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
                     vt = workingCopy.getTreeUtilities().parseExpression(value, pos);
                 } else {
                     String value = pi[i].getDefaultValue();
-                    vt = translateExpression(workingCopy.getTreeUtilities().parseExpression(value, pos), currentArguments, method);
+                    if (i == pi.length - 1 && pi[i].getType().endsWith("...")) { // NOI18N
+                        // last param is vararg, so split the default value for the remaining arguments
+                        MethodInvocationTree parsedExpression = (MethodInvocationTree) workingCopy.getTreeUtilities().parseExpression("method("+value+")", pos); //NOI18N
+                        for (ExpressionTree expressionTree : parsedExpression.getArguments()) {
+                            arguments.add(translateExpression(expressionTree, currentArguments, method));
+                        }
+                        break;
+                    } else {
+                        vt = translateExpression(workingCopy.getTreeUtilities().parseExpression(value, pos), currentArguments, method);
+                    }
                 }
             } else {
                 if (i == pi.length - 1 && pi[i].getType().endsWith("...") && method.isVarArgs() && method.getParameters().size()-1 == originalIndex) { // NOI18N
@@ -366,27 +400,50 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
     }
 
     private void renameDeclIfMatch(TreePath path, Tree tree, Element elementToFind) {
-        if (!synthConstructor && workingCopy.getTreeUtilities().isSynthetic(path))
+        if (!synthConstructor && workingCopy.getTreeUtilities().isSynthetic(path)) {
             return;
-        MethodTree current = (MethodTree) tree;
+        }
+        final GeneratorUtilities genutils = GeneratorUtilities.get(workingCopy);
+        final MethodTree current;
+        if(!compatible) { // Do not import comments twice.
+            current = genutils.importComments((MethodTree)tree, workingCopy.getCompilationUnit());
+        } else {
+            current = (MethodTree) tree;
+        }
         Element el = workingCopy.getTrees().getElement(path);
         if (isMethodMatch(el, elementToFind)) {
             
             List<? extends VariableTree> currentParameters = current.getParameters();
-            List<VariableTree> newParameters = new ArrayList<VariableTree>();
+            List<VariableTree> newParameters = new ArrayList<VariableTree>(paramInfos.length);
             
             ParameterInfo[] p = paramInfos;
             for (int i=0; i<p.length; i++) {
                 int originalIndex = p[i].getOriginalIndex();
                 VariableTree vt;
                 if (originalIndex <0) {
-                    vt = make.Variable(make.Modifiers(Collections.<Modifier>emptySet()), p[i].getName(),make.Identifier(p[i].getType()), null);
-                } else {
-                    VariableTree originalVt = currentParameters.get(p[i].getOriginalIndex());
                     boolean isVarArgs = i == p.length -1 && p[i].getType().endsWith("..."); // NOI18N
+                    vt = make.Variable(make.Modifiers(Collections.<Modifier>emptySet()),
+                            p[i].getName(),
+                            make.Identifier(isVarArgs? p[i].getType().replace("...", "") : p[i].getType()), // NOI18N
+                            null);
+                } else {
+                    VariableTree originalVt = currentParameters.get(originalIndex);
+                    boolean isVarArgs = i == p.length -1 && p[i].getType().endsWith("..."); // NOI18N
+                    String newType = isVarArgs? p[i].getType().replace("...", "") : p[i].getType();
+                    
+                    final Tree typeTree;
+                    if (origMethod != null) {
+                        if (p[i].getType().equals(origMethod.getParameters().get(originalIndex).getType().toString())) { // Type has not changed
+                            typeTree = originalVt.getType();
+                        } else {
+                            typeTree = make.Identifier(newType); // NOI18N
+                        }
+                    } else {
+                        typeTree = make.Identifier(newType); // NOI18N
+                    }
                     vt = make.Variable(originalVt.getModifiers(),
                             originalVt.getName(),
-                            make.Identifier(isVarArgs? p[i].getType().replace("...", "") : p[i].getType()), // NOI18N
+                            typeTree,
                             originalVt.getInitializer());
                 }
                 newParameters.add(vt);
@@ -421,7 +478,7 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
                     TypeElement te = workingCopy.getElements().getTypeElement(typeName.getQualifiedName());
 
                     if (te == null) {
-                        Logger.getLogger(ChangeParamsTransformer.class.getName()).log(Level.INFO, "Cannot resolve type element \"" + typeName + "\".");
+                        Logger.getLogger(ChangeParamsTransformer.class.getName()).log(Level.INFO, "Cannot resolve type element \"{0}\".", typeName);
                         continue;
                     }
                     if (te.getModifiers().contains(Modifier.PRIVATE)) {
@@ -435,7 +492,7 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
                     TypeElement te = workingCopy.getElements().getTypeElement(typeName.getQualifiedName());
 
                     if (te == null) {
-                        Logger.getLogger(ChangeParamsTransformer.class.getName()).log(Level.INFO, "Cannot resolve type element \"" + typeName + "\".");
+                        Logger.getLogger(ChangeParamsTransformer.class.getName()).log(Level.INFO, "Cannot resolve type element \"{0}\".", typeName);
                         continue;
                     }
                     type = te;
@@ -468,19 +525,19 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
                     (ExpressionTree) current.getDefaultValue(),
                     p.length > 0 && p[p.length-1].getType().endsWith("...")); //NOI18N
 
-            if (javaDoc != null) {
+            genutils.copyComments(current, nju, true);
+            genutils.copyComments(current, nju, false);
+            
+            if(synthConstructor) {
                 Comment comment = null;
                 switch (javaDoc) {
                     case UPDATE:
-                        ArrayList removed = new ArrayList(currentParameters);
-                        removed.removeAll(newParameters);
-                        comment = updateJavadoc((ExecutableElement) el, removed, paramInfos);
-                        GeneratorUtilities.get(workingCopy).copyComments(current, nju, true);
+                        comment = ChangeParamsJavaDocTransformer.updateJavadoc((ExecutableElement) el, paramInfos, workingCopy);
                         List<Comment> comments = workingCopy.getTreeUtilities().getComments(nju, true);
-                        if(comments.isEmpty()) {
+                        if (comments.isEmpty()) {
                             comment = null;
                         } else {
-                            if(comments.get(0).isDocComment()) {
+                            if (comments.get(0).isDocComment()) {
                                 make.removeComment(nju, 0, true);
                             } else {
                                 comment = null;
@@ -488,78 +545,37 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
                         }
                         break;
                     case GENERATE:
-                        comment = generateJavadoc(newParameters, current);
+                        String returnTypeString;
+                        Tree returnType = nju.getReturnType();
+                        if (this.returnType == null) {
+                            boolean hasReturn = false;
+                            if (returnType != null && returnType.getKind().equals(Tree.Kind.PRIMITIVE_TYPE)) {
+                                if (!((PrimitiveTypeTree) returnType).getPrimitiveTypeKind().equals(TypeKind.VOID)) {
+                                    hasReturn = true;
+                                }
+                            }
+                            if (hasReturn) {
+                                returnTypeString = returnType.toString();
+                            } else {
+                                returnTypeString = null;
+                            }
+                        } else {
+                            if(this.returnType.equals("void")) {
+                                returnTypeString = null;
+                            } else {
+                                returnTypeString = this.returnType;
+                            }
+                        }
+                        comment = ChangeParamsJavaDocTransformer.generateJavadoc(newParameters, returnTypeString, current);
                         break;
                 }
-                if(comment != null) {
+                if (comment != null) {
                     make.addComment(nju, comment, true);
                 }
             }
-            
+
             rewrite(tree, nju);
         }
-    }
-
-    private Comment updateJavadoc(ExecutableElement method, List<? extends VariableTree> removed, ParameterInfo[] parameters) {
-        Doc javadoc = workingCopy.getElementUtilities().javaDocFor(method);
-        List<Tag> paramTags = new LinkedList<Tag>();
-        List<Tag> otherTags = new LinkedList<Tag>(Arrays.asList(javadoc.tags()));
-        List<Tag> returnTags = new LinkedList<Tag>(Arrays.asList(javadoc.tags("@return"))); // NOI18N
-        List<Tag> throwsTags = new LinkedList<Tag>(Arrays.asList(javadoc.tags("@throws"))); // NOI18N
-        List<Tag> oldParamTags = new LinkedList<Tag>(Arrays.asList(javadoc.tags("@param"))); // NOI18N
-
-        otherTags.removeAll(returnTags);
-        otherTags.removeAll(throwsTags);
-        otherTags.removeAll(oldParamTags);
-        
-        params: for (ParameterInfo parameter : parameters) {
-            if(parameter.getOriginalIndex() == -1) {
-                Tag newTag = new ParamTagImpl(parameter.getName(), "the value of " + parameter.getName(), javadoc); // NOI18N
-                paramTags.add(newTag);
-            } else {
-                for (Tag tag : oldParamTags) {
-                    ParamTag paramTag = (ParamTag) tag;
-                    if (parameter.getName().toString().equals(paramTag.parameterName())) {
-                        paramTags.add(tag);
-                        continue params;
-                    }
-                }
-            }
-        }
-        
-        StringBuilder text = new StringBuilder(javadoc.commentText()).append("\n\n"); // NOI18N
-        text.append(tagsToString(paramTags));
-        text.append(tagsToString(returnTags));
-        text.append(tagsToString(throwsTags));
-        text.append(tagsToString(otherTags));
-        
-        Comment comment = Comment.create(Comment.Style.JAVADOC, NOPOS, NOPOS, NOPOS, text.toString());
-        return comment;
-    }
-        
-    private Comment generateJavadoc(List<VariableTree> newParameters, MethodTree current) {
-        Tree returnType = current.getReturnType();
-        StringBuilder builder = new StringBuilder("\n"); // NOI18N
-        for (VariableTree variableTree : newParameters) {
-            builder.append(String.format("@param %s the value of %s", variableTree.getName(), variableTree.getName())); // NOI18N
-            builder.append("\n"); // NOI18N
-        }
-        boolean hasReturn = false;
-        if (returnType != null && returnType.getKind().equals(Tree.Kind.PRIMITIVE_TYPE)) {
-            if (!((PrimitiveTypeTree) returnType).getPrimitiveTypeKind().equals(TypeKind.VOID)) {
-                hasReturn = true;
-            }
-        }
-        if(hasReturn) {
-            builder.append("@return the ").append(returnType).append("\n"); // NOI18N
-        }
-        for (ExpressionTree expressionTree : current.getThrows()) {
-            builder.append("@throws ").append(expressionTree).append("\n"); // NOI18N
-        }
-        Comment comment = Comment.create(
-                Comment.Style.JAVADOC, NOPOS, NOPOS, NOPOS,
-                builder.toString());
-        return comment;
     }
 
     private boolean isMethodMatch(Element method, Element p) {

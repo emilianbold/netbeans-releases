@@ -161,9 +161,15 @@ public class getTopmostTest extends NbTestCase {
         File r2fo1 = createFolder(r2,       "f01");
         File r2fo1fo2 = createFolder(r2,       "f02");
         File r2fo1fo2f1 = createFile(r2fo1,       "f1");
+        File r2fo1fo3 = createFolder(r2fo1,       "f03");
+        createFile(r2fo1fo3, ".git"); //submodules, .git can also be a file
+        File r3   = createFolder("r3");
+        createFile(r3, ".git"); //submodules, .git can also be a file
 
         // test
-        File rr = Git.getInstance().getRepositoryRoot(r2);
+        File rr = Git.getInstance().getRepositoryRoot(r1);
+        assertEquals(r1, rr);
+        rr = Git.getInstance().getRepositoryRoot(r2);
         assertEquals(r2, rr);
         rr = Git.getInstance().getRepositoryRoot(r2fo1fo2);
         assertEquals(r2, rr);
@@ -180,6 +186,10 @@ public class getTopmostTest extends NbTestCase {
         assertEquals(r2, rr);
         rr = Git.getInstance().getRepositoryRoot(r2fo1fo2f1);
         assertEquals(r2, rr);                      
+        rr = Git.getInstance().getRepositoryRoot(r2fo1fo3);
+        assertEquals(r2fo1fo3, rr);
+        rr = Git.getInstance().getRepositoryRoot(r3);
+        assertEquals(r3, rr);
     }
 
     public void testFoldersToRootOverflow() throws Exception {
@@ -197,12 +207,12 @@ public class getTopmostTest extends NbTestCase {
         r1f1 = getFile(r1, "file", "s2", 1500);
         tm1 = Git.getInstance().getRepositoryRoot(r1f1);
         assertEquals(r1, tm1);
-        assertEquals(1466, m.size());
+        assertEquals(1472, m.size());
 
         r1f1 = getFile(r1, "file", "s3", 10);
         tm1 = Git.getInstance().getRepositoryRoot(r1f1);
         assertEquals(r1, tm1);
-        assertEquals(1476, m.size());
+        assertEquals(1482, m.size());
     }
 
     public void testGetRepositoryRootUnversioned() throws Exception {

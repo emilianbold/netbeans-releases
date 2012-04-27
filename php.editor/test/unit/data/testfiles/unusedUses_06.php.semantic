@@ -1,0 +1,15 @@
+<?php
+
+namespace Datagrid {
+    interface |>CLASS:IFace<| {}
+    interface |>CLASS:ISux<| {}
+}
+
+namespace AdminModule {
+    use \DataGrid\IFace,
+        |>UNUSED:\DataGrid\ISux<|;
+    interface |>CLASS:Moo<| extends IFace {}
+
+}
+
+?>

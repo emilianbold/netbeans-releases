@@ -131,7 +131,7 @@ public final class DeclarationStatementImpl extends StatementBase implements Csm
         protected FunctionImpl<?> createFunction(AST ast, CsmFile file, CsmType type, CsmScope scope) {
             FunctionImpl<?> fun = null;
             try {
-                fun = FunctionImpl.create(ast, file, type, getScope(), !isRenderingLocalContext());
+                fun = FunctionImpl.create(ast, file, null, type, getScope(), !isRenderingLocalContext(),objects);
                 declarators.add(fun);
             } catch (AstRendererException ex) {
                 DiagnosticExceptoins.register(ex);
@@ -151,8 +151,16 @@ public final class DeclarationStatementImpl extends StatementBase implements Csm
                 switch (token.getType()) {
                     case CPPTokenTypes.CSM_FOR_INIT_STATEMENT:
                     case CPPTokenTypes.CSM_DECLARATION_STATEMENT:
-                        if (!renderVariable(token, currentNamespace, container, false)) {
+                        if (!renderVariable(token, currentNamespace, container, currentNamespace, false)) {
                             render(token.getFirstChild(), currentNamespace, container);
+                        }
+                        break;
+                case CPPTokenTypes.CSM_FUNCTION_DEFINITION:
+                        try {
+                            FunctionDDImpl<?> fddi = FunctionDDImpl.create(token, getContainingFile(), null, currentNamespace, !isRenderingLocalContext());
+                            declarators.add(fddi);
+                        } catch (AstRendererException e) {
+                            DiagnosticExceptoins.register(e);
                         }
                         break;
                     case CPPTokenTypes.CSM_NAMESPACE_ALIAS:
@@ -169,8 +177,8 @@ public final class DeclarationStatementImpl extends StatementBase implements Csm
                     case CPPTokenTypes.CSM_TEMPLATE_CLASS_DECLARATION:
                     {
                         ClassImpl cls = TemplateUtils.isPartialClassSpecialization(token) ?
-                                        ClassImplSpecialization.create(token, null, getContainingFile(), !isRenderingLocalContext(), null) :
-                                        ClassImpl.create(token, null, getContainingFile(), !isRenderingLocalContext(), null);
+                                        ClassImplSpecialization.create(token, null, getContainingFile(), getFileContent(), !isRenderingLocalContext(), null) :
+                                        ClassImpl.create(token, null, getContainingFile(), getFileContent(), !isRenderingLocalContext(), null);
                         declarators.add(cls);
                         Pair typedefs = renderTypedef(token, cls, currentNamespace);
                         if (!typedefs.getTypesefs().isEmpty()) {
@@ -188,7 +196,7 @@ public final class DeclarationStatementImpl extends StatementBase implements Csm
                     }
                     case CPPTokenTypes.CSM_ENUM_DECLARATION:
                     {
-                        EnumImpl csmEnum = EnumImpl.create(token, currentNamespace, getContainingFile(), !isRenderingLocalContext());
+                        EnumImpl csmEnum = EnumImpl.create(token, currentNamespace, getContainingFile(), fileContent, !isRenderingLocalContext());
                         declarators.add(csmEnum);
                         renderVariableInClassifier(token, csmEnum, currentNamespace, container);
                         break;
@@ -198,7 +206,7 @@ public final class DeclarationStatementImpl extends StatementBase implements Csm
                         if (renderForwardClassDeclaration(token, currentNamespace, container, (FileImpl) getContainingFile(), isRenderingLocalContext())) {
                             break;
                         }
-                        Pair typedefs = renderTypedef(token, (FileImpl) getContainingFile(), getScope(), currentNamespace);
+                        Pair typedefs = renderTypedef(token, (FileImpl) getContainingFile(), fileContent, getScope(), currentNamespace);
                         if (!typedefs.getTypesefs().isEmpty()) {
                             for (CsmTypedef typedef : typedefs.getTypesefs()) {
                                 declarators.add(typedef);
@@ -213,7 +221,7 @@ public final class DeclarationStatementImpl extends StatementBase implements Csm
         @Override
         protected CsmClassForwardDeclaration createForwardClassDeclaration(AST ast, MutableDeclarationsContainer container, FileImpl file, CsmScope scope) {
             ClassForwardDeclarationImpl cfdi = ClassForwardDeclarationImpl.create(ast, file, !isRenderingLocalContext());
-            ForwardClass fc = ForwardClass.create(cfdi.getName().toString(), getContainingFile(), ast, cfdi.getStartOffset(), cfdi.getEndOffset(), scope, !isRenderingLocalContext());
+            ForwardClass fc = ForwardClass.createIfNeeded(cfdi.getName().toString(), getContainingFile(), ast, cfdi.getStartOffset(), cfdi.getEndOffset(), scope, !isRenderingLocalContext());
             if(fc != null) {
                 declarators.add(fc);
             }

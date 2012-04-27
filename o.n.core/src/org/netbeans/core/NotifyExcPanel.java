@@ -547,7 +547,8 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
             //log changes in NotifyPanel - dialog is closed - forget previous params
             Logger.getLogger("org.netbeans.ui.NotifyExcPanel").log(rec);// NOI18N
             try {
-                exceptions.removeAll();
+                if( null != exceptions )
+                    exceptions.removeAll();
             //Fixed bug #9435, call of setVisible(false) replaced by call of dispose()
             //It did not work on Linux when JDialog is reused.
             //dialog.setVisible (false);

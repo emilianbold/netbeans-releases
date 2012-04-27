@@ -74,6 +74,7 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 
 import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.Task;
@@ -159,15 +160,9 @@ public class LoggerGenerator implements CodeGenerator {
                             org.netbeans.editor.Utilities.setStatusBoldText(component, message);
                         } else {
                             ClassTree cls = (ClassTree) path.getLeaf();
-                            int idx = GeneratorUtils.findClassMemberIndex(copy, cls, caretOffset);
                             List<String> names = Utilities.varNamesSuggestions(null, "LOG", null, copy.getTypes(), copy.getElements(), e.getEnclosedElements(), true);
                             VariableTree var = createLoggerField(copy.getTreeMaker(), cls, names.size() > 0 ? names.get(0) : "LOG"); //NOI18N
-                            if (idx >= 0) {
-                                cls = copy.getTreeMaker().insertClassMember(cls, idx, var);
-                            } else {
-                                cls = copy.getTreeMaker().insertClassMember(cls, 0, var);
-                            }
-                            copy.rewrite(path.getLeaf(), cls);
+                            copy.rewrite(cls, GeneratorUtils.insertClassMembers(copy, cls, Collections.singletonList(var), caretOffset));
                         }
                     }
                 });

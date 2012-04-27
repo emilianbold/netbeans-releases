@@ -60,6 +60,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.javaee.specs.support.api.JaxWs;
+import org.netbeans.modules.javaee.specs.support.api.JaxWsStackSupport;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
@@ -72,8 +74,6 @@ import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityPolicyModelHelp
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.WSITModelSupport;
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
 import org.netbeans.modules.websvc.wsstack.api.WSStackVersion;
-import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
-import org.netbeans.modules.websvc.wsstack.jaxws.JaxWsStackProvider;
 import org.netbeans.modules.websvc.wsstack.spi.WSStackFactory;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
@@ -204,7 +204,7 @@ public final class WSITConfigProvider extends Object {
         J2eePlatform platform = ServerUtils.getJ2eePlatform(project);
 
         WSStackVersion version = null;
-        WSStack<JaxWs> wsStack = platform == null ? null : JaxWsStackProvider.getJaxWsStack(platform);
+        WSStack<JaxWs> wsStack = platform == null ? null : JaxWsStackSupport.getJaxWsStack(platform);
 
         if (wsStack != null) {
             version = wsStack.getVersion();

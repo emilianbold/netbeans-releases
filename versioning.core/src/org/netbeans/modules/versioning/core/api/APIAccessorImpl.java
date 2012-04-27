@@ -54,7 +54,9 @@ class APIAccessorImpl extends APIAccessor {
     @Override
     public VCSFileProxy createFlatFileProxy(FileObject fo) {
         VCSFileProxy proxy = VCSFileProxy.createFileProxy(fo);
-        proxy.setFlat(true);
+        if(proxy != null) {
+            proxy.setFlat(true);
+        }
         return proxy;
     }
 
@@ -71,5 +73,15 @@ class APIAccessorImpl extends APIAccessor {
     @Override
     public VCSFileProxy createFileProxy(VCSFileProxy parent, String name, boolean isDirectory) {
         return VCSFileProxy.createFileProxy(parent, name, isDirectory);
+    }
+
+    @Override
+    public boolean isLocalFile(VCSFileProxy file) {
+        return file.getFileProxyOperations() == null;
+    }
+
+    @Override
+    public VCSFileProxy createFileProxy(String path) {
+        return VCSFileProxy.createFileProxy(path);
     }
 }

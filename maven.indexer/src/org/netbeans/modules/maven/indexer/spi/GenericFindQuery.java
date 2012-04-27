@@ -43,9 +43,10 @@
 package org.netbeans.modules.maven.indexer.spi;
 
 import java.util.List;
-import org.netbeans.modules.maven.indexer.api.QueryField;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
+import org.netbeans.modules.maven.indexer.api.QueryField;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
+import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 
 /**
  * non mandatory query to for generic searching within the repository.
@@ -62,6 +63,6 @@ public interface  GenericFindQuery {
      * accordingly, for example by telling user that entered text for
      * search is too general.
      */
-    public List<NBVersionInfo> find(List<QueryField> fields, List<RepositoryInfo> repos);
+    public RepositoryQueries.Result<NBVersionInfo> find(List<QueryField> fields, List<RepositoryInfo> repos);
     
 }

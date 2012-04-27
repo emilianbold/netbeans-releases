@@ -60,6 +60,7 @@ import org.netbeans.modules.editor.settings.storage.spi.StorageReader;
 import org.netbeans.modules.editor.settings.storage.spi.StorageWriter;
 import org.netbeans.modules.editor.settings.storage.spi.support.StorageSupport;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -71,6 +72,13 @@ import org.xml.sax.SAXException;
  *
  * @author Vita Stejskal
  */
+@MIMEResolver.NamespaceRegistration(
+    displayName="org.netbeans.modules.editor.macros.Bundle#MacrosResolver",
+    position=530,
+    doctypePublicId="-//NetBeans//DTD Editor Macros settings 1.1//EN",
+    mimeType="text/x-nbeditor-macrosettings",
+    elementName="editor-macros"
+)
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.editor.settings.storage.spi.StorageDescription.class)
 public final class MacrosStorage implements StorageDescription<String, MacroDescription> {
 

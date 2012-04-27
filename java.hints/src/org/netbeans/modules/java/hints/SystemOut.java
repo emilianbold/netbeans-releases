@@ -51,13 +51,14 @@ import java.util.List;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPatterns;
-import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
-import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
-import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.TriggerPattern;
+import org.netbeans.spi.java.hints.TriggerPatterns;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.JavaFix;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.java.hints.JavaFixUtilities;
 import org.openide.util.NbBundle;
 
 
@@ -65,7 +66,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Jancura
  */
-@Hint(category="code_maturity", enabled = false, suppressWarnings="UseOfSystemOutOrSystemErr")
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.SystemOut", description = "#DESC_org.netbeans.modules.java.hints.SystemOut", category="code_maturity", enabled = false, suppressWarnings="UseOfSystemOutOrSystemErr")
 public class SystemOut {
 
     @TriggerPatterns ({
@@ -79,13 +80,13 @@ public class SystemOut {
             ctx,
             treePath,
             NbBundle.getMessage (SystemOut.class, "MSG_SystemOut"),
-            JavaFix.toEditorFix(new FixImpl (
-                NbBundle.getMessage (
-                    LoggerNotStaticFinal.class,
-                    "MSG_SystemOut_fix"
-                ),
-                TreePathHandle.create (treePath, compilationInfo)
-            ))
+        new FixImpl (
+NbBundle.getMessage (
+LoggerNotStaticFinal.class,
+"MSG_SystemOut_fix"
+),
+TreePathHandle.create (treePath, compilationInfo)
+).toEditorFix()
         );
     }
 
@@ -107,7 +108,9 @@ public class SystemOut {
         }
 
         @Override
-        protected void performRewrite(WorkingCopy wc, TreePath statementPath, boolean canShowUI) {
+        protected void performRewrite(TransformationContext ctx) {
+            WorkingCopy wc = ctx.getWorkingCopy();
+            TreePath statementPath = ctx.getPath();
             TreePath blockPath = statementPath.getParentPath ();
             while (!(blockPath.getLeaf () instanceof BlockTree)) {
                 statementPath = blockPath;

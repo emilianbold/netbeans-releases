@@ -54,6 +54,7 @@ import org.netbeans.modules.parsing.impl.indexing.IndexableImpl;
 import org.netbeans.modules.parsing.impl.indexing.LogContext;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
+import org.netbeans.modules.parsing.impl.indexing.SuspendSupport.SuspendStatusImpl;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
 import org.openide.filesystems.FileObject;
@@ -169,7 +170,8 @@ public final class Indexable {
                 boolean followUpJob,
                 boolean checkForEditorModifications,
                 boolean sourceForBinaryRoot,
-                CancelRequest cancelRequest,
+                @NonNull SuspendStatus suspendedStatus,
+                @NullAllowed CancelRequest cancelRequest,
                 @NullAllowed final LogContext logContext) throws IOException {
             return new Context(
                     indexFolder,
@@ -180,8 +182,15 @@ public final class Indexable {
                     followUpJob,
                     checkForEditorModifications,
                     sourceForBinaryRoot,
+                    suspendedStatus,
                     cancelRequest,
                     logContext);
+        }
+
+        @NonNull
+        @Override
+        public SuspendStatus createSuspendStatus(@NonNull final SuspendStatusImpl impl) {
+            return new SuspendStatus(impl);
         }
 
         @Override

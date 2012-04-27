@@ -129,6 +129,8 @@ public class ViewEvent {
             case View.CHANGE_VISIBILITY_CHANGED : typeStr = "CHANGE_VISIBILITY_CHANGED"; break; //NOI18N
             case View.TOPCOMPONENT_REQUEST_ATTENTION : typeStr = "TOPCOMPONENT_REQUEST_ATTENTION"; break; //NOI18N
             case View.TOPCOMPONENT_CANCEL_REQUEST_ATTENTION : typeStr = "TOPCOMPONENT_CANCEL_REQUEST_ATTENTION"; break; //NOI18N
+            case View.TOPCOMPONENT_SHOW_BUSY : typeStr = "TOPCOMPONENT_SHOW_BUSY"; break; //NOI18N
+            case View.TOPCOMPONENT_HIDE_BUSY : typeStr = "TOPCOMPONENT_HIDE_BUSY"; break; //NOI18N
         }
         buf.append(typeStr);
         buf.append("\nnewValue="); //NOI18N

@@ -47,8 +47,6 @@ package org.netbeans.nbbuild;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.StringReader;
 import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;
@@ -70,9 +68,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.NodeList;
-import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
 /**
  * Task which checks content of an update center to make sure module dependencies
@@ -185,15 +181,7 @@ public final class VerifyUpdateCenter extends Task {
 
     private Set<Manifest> loadManifests(URI u) throws BuildException {
         try {
-            Document doc = XMLUtil.parse(new InputSource(u.toString()), false, false, null, new EntityResolver() {
-                public InputSource resolveEntity(String pub, String sys) throws SAXException, IOException {
-                    if (pub.contains("DTD Autoupdate Catalog")) {
-                        return new InputSource(new StringReader(""));
-                    } else {
-                        return null;
-                    }
-                }
-            });
+            Document doc = XMLUtil.parse(new InputSource(u.toString()), false, false, XMLUtil.rethrowHandler(), XMLUtil.nullResolver());
             Set<Manifest> manifests = new HashSet<Manifest>();
             boolean foundJUnit = false;
             NodeList nl = doc.getElementsByTagName("manifest");

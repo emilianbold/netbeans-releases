@@ -6,6 +6,8 @@
   is performed using FreeMaker (http://freemarker.org/) - see its documentation
   for full syntax. Variables available for templating are:
 
+    htmlTagPrefix - prefix of facelet's html tags
+    coreTagPrefix - prefix of facelet's core tags
     entityName - name of entity being modified (type: String)
     managedBean - name of managed choosen in UI (type: String)
     managedBeanProperty - name of managed bean property choosen in UI (type: String)
@@ -27,30 +29,30 @@
   be found in category JavaServer Faces->JSF Data/Form from Entity.
 
 </#if>
-<h:form>
-    <h1><h:outputText value="Create/Edit"/></h1>
-    <h:panelGrid columns="2">
+<${htmlTagPrefix}:form>
+    <h1><${htmlTagPrefix}:outputText value="Create/Edit"/></h1>
+    <${htmlTagPrefix}:panelGrid columns="2">
 <#list entityDescriptors as entityDescriptor>
-        <h:outputLabel value="${entityDescriptor.label}:" for="${entityDescriptor.id}" />
+        <${htmlTagPrefix}:outputLabel value="${entityDescriptor.label}:" for="${entityDescriptor.id}" />
 <#if entityDescriptor.dateTimeFormat?? && entityDescriptor.dateTimeFormat != "">
-        <h:inputText id="${entityDescriptor.id}" value="${r"#{"}${entityDescriptor.name}${r"}"}" title="${entityDescriptor.label}" <#if entityDescriptor.required>required="true" requiredMessage="The ${entityDescriptor.label} field is required."</#if>>
-            <f:convertDateTime pattern="${entityDescriptor.dateTimeFormat}" />
-        </h:inputText>
+        <${htmlTagPrefix}:inputText id="${entityDescriptor.id}" value="${r"#{"}${entityDescriptor.name}${r"}"}" title="${entityDescriptor.label}" <#if entityDescriptor.required>required="true" requiredMessage="The ${entityDescriptor.label} field is required."</#if>>
+            <${coreTagPrefix}:convertDateTime pattern="${entityDescriptor.dateTimeFormat}" />
+        </${htmlTagPrefix}:inputText>
 <#elseif entityDescriptor.blob>
-        <h:inputTextarea rows="4" cols="30" id="${entityDescriptor.id}" value="${r"#{"}${entityDescriptor.name}${r"}"}" title="${entityDescriptor.label}" <#if entityDescriptor.required>required="true" requiredMessage="The ${entityDescriptor.label} field is required."</#if>/>
+        <${htmlTagPrefix}:inputTextarea rows="4" cols="30" id="${entityDescriptor.id}" value="${r"#{"}${entityDescriptor.name}${r"}"}" title="${entityDescriptor.label}" <#if entityDescriptor.required>required="true" requiredMessage="The ${entityDescriptor.label} field is required."</#if>/>
 <#elseif entityDescriptor.relationshipOne>
-        <h:selectOneMenu id="${entityDescriptor.id}" value="${r"#{"}${entityDescriptor.name}${r"}"}" title="${entityDescriptor.label}" <#if entityDescriptor.required>required="true" requiredMessage="The ${entityDescriptor.label} field is required."</#if>>
+        <${htmlTagPrefix}:selectOneMenu id="${entityDescriptor.id}" value="${r"#{"}${entityDescriptor.name}${r"}"}" title="${entityDescriptor.label}" <#if entityDescriptor.required>required="true" requiredMessage="The ${entityDescriptor.label} field is required."</#if>>
             <!-- TODO: update below reference to list of available items-->
-            <f:selectItems value="${r"#{"}fixme${r"}"}"/>
-        </h:selectOneMenu>
+            <${coreTagPrefix}:selectItems value="${r"#{"}fixme${r"}"}"/>
+        </${htmlTagPrefix}:selectOneMenu>
 <#elseif entityDescriptor.relationshipMany>
-        <h:selectManyMenu id="${entityDescriptor.id}" value="${r"#{"}${entityDescriptor.name}${r"}"}" title="${entityDescriptor.label}" <#if entityDescriptor.required>required="true" requiredMessage="The ${entityDescriptor.label} field is required."</#if>>
+        <${htmlTagPrefix}:selectManyMenu id="${entityDescriptor.id}" value="${r"#{"}${entityDescriptor.name}${r"}"}" title="${entityDescriptor.label}" <#if entityDescriptor.required>required="true" requiredMessage="The ${entityDescriptor.label} field is required."</#if>>
             <!-- TODO: update below reference to list of available items-->
-            <f:selectItems value="${r"#{"}fixme${r"}"}"/>
-        </h:selectManyMenu>
+            <${coreTagPrefix}:selectItems value="${r"#{"}fixme${r"}"}"/>
+        </${htmlTagPrefix}:selectManyMenu>
 <#else>
-        <h:inputText id="${entityDescriptor.id}" value="${r"#{"}${entityDescriptor.name}${r"}"}" title="${entityDescriptor.label}" <#if entityDescriptor.required>required="true" requiredMessage="The ${entityDescriptor.label} field is required."</#if>/>
+        <${htmlTagPrefix}:inputText id="${entityDescriptor.id}" value="${r"#{"}${entityDescriptor.name}${r"}"}" title="${entityDescriptor.label}" <#if entityDescriptor.required>required="true" requiredMessage="The ${entityDescriptor.label} field is required."</#if>/>
 </#if>
 </#list>
-    </h:panelGrid>
-</h:form>
+    </${htmlTagPrefix}:panelGrid>
+</${htmlTagPrefix}:form>

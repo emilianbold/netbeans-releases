@@ -39,7 +39,11 @@
 package org.netbeans.modules.java.hints.declarative;
 
 import java.io.IOException;
+import javax.swing.text.EditorKit;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
+import org.netbeans.modules.editor.NbEditorKit;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
@@ -50,6 +54,9 @@ import org.openide.nodes.Children;
 import org.openide.util.Lookup;
 import org.openide.text.DataEditorSupport;
 
+@MIMEResolver.ExtensionRegistration(
+    mimeType="text/x-javahints", displayName="", extension="hint", position=2133
+)
 public class HintDataObject extends MultiDataObject {
 
     public HintDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
@@ -66,5 +73,14 @@ public class HintDataObject extends MultiDataObject {
     @Override
     public Lookup getLookup() {
         return getCookieSet().getLookup();
+    }
+    
+    @MimeRegistration(mimeType=DeclarativeHintTokenId.MIME_TYPE, service=EditorKit.class)
+    public static NbEditorKit createEditorKit() {
+        return new NbEditorKit() {
+            @Override public String getContentType() {
+                return DeclarativeHintTokenId.MIME_TYPE;
+            }
+        };
     }
 }

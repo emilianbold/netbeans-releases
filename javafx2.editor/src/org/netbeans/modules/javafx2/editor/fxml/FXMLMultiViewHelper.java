@@ -43,6 +43,7 @@ package org.netbeans.modules.javafx2.editor.fxml;
 
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
+import org.netbeans.modules.javafx2.editor.JavaFXEditorUtils;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
 
@@ -52,17 +53,15 @@ import org.openide.windows.TopComponent;
  */
 public final class FXMLMultiViewHelper {
     
-    public static final String MIME_TYPE = "text/x-fxml+xml"; // NOI18N
-
     private FXMLMultiViewHelper() {
     }
     
     @MultiViewElement.Registration(
         displayName="org.netbeans.modules.javafx2.editor.Bundle#CTL_SourceTabCaption", // NOI18N
-        iconBase="org/netbeans/modules/javafx2/editor/resources/fxmlObject.gif", // NOI18N
+        iconBase="org/netbeans/modules/javafx2/editor/resources/fxmlObject.png", // NOI18N
         persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
         preferredID="xml.text", // NOI18N
-        mimeType=MIME_TYPE,
+        mimeType=JavaFXEditorUtils.FXML_MIME_TYPE,
         position=1
     )
     public static MultiViewEditorElement createMultiViewEditorElement(Lookup context) {

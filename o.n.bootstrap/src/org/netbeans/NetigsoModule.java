@@ -46,6 +46,7 @@ package org.netbeans;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.ObjectInput;
 import java.net.URL;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -54,7 +55,6 @@ import java.util.Set;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 
 /** Special module for representing OSGi bundles 
@@ -66,57 +66,26 @@ final class NetigsoModule extends Module {
     private final File jar;
     private final Manifest manifest;
     private int startLevel = -1;
+    private InvalidException problem;
 
     public NetigsoModule(Manifest mani, File jar, ModuleManager mgr, Events ev, Object history, boolean reloadable, boolean autoload, boolean eager) throws IOException {
         super(mgr, ev, history, reloadable, autoload, eager);
         this.jar = jar;
         this.manifest = mani;
-        
-        computeProvides(mani.getMainAttributes(), false);
     }
 
     @Override
-    public String getCodeName() {
-        return getCodeNameBase();
-    }
-
-    @Override
-    public String getCodeNameBase() {
-        String version = getMainAttribute("Bundle-SymbolicName"); // NOI18N
-        return version.replace('-', '_');
-    }
-
-    @Override
-    public int getCodeNameRelease() {
-        String version = getMainAttribute("Bundle-SymbolicName"); // NOI18N
-        int slash = version.lastIndexOf('/');
-        if (slash != -1) {
-            return Integer.parseInt(version.substring(slash + 1));
+    ModuleData createData(ObjectInput in, Manifest mf) throws IOException {
+        if (in != null) {
+            return new ModuleData(in);
+        } else {
+            return new ModuleData(mf, this);
         }
-        return -1;
     }
 
     @Override
-    public SpecificationVersion getSpecificationVersion() {
-        String version = getMainAttribute("Bundle-Version"); // NOI18N
-        if (version == null) {
-            NetigsoModule.LOG.log(Level.WARNING, "No Bundle-Version for {0}", jar);
-            return new SpecificationVersion("0.0");
-        }
-        int pos = -1;
-        for (int i = 0; i < 3; i++) {
-            pos = version.indexOf('.', pos + 1);
-            if (pos == -1) {
-                return new SpecificationVersion(version);
-            }
-        }
-        return new SpecificationVersion(version.substring(0, pos));
-    }
-
-    @Override
-    public String getImplementationVersion() {
-        String explicit = super.getImplementationVersion(); // OIDE-M-I-V/-B-V added by NB build harness
-        return explicit != null ? explicit : getMainAttribute("Bundle-Version"); // NOI18N
+    boolean isNetigsoImpl() {
+        return true;
     }
 
     @Override
@@ -141,13 +110,13 @@ final class NetigsoModule extends Module {
 
     @Override
     public void reload() throws IOException {
-        NetigsoFramework.getDefault().reload(this);
+        mgr.netigso().reload(this);
     }
 
     final void start() throws IOException {
         ProxyClassLoader pcl = (ProxyClassLoader)classloader;
         try {
-            Set<String> pkgs = NetigsoFramework.getDefault().createLoader(this, pcl, this.jar);
+            Set<String> pkgs = mgr.netigso().createLoader(this, pcl, this.jar);
             pcl.addCoveredPackages(pkgs);
         } catch (IOException ex) {
             classloader = null;
@@ -159,7 +128,7 @@ final class NetigsoModule extends Module {
     protected void classLoaderUp(Set<Module> parents) throws IOException {
         assert classloader == null;
         classloader = new DelegateCL();
-        NetigsoFramework.classLoaderUp(this);
+        mgr.netigsoLoaderUp(this);
     }
 
     @Override
@@ -168,10 +137,10 @@ final class NetigsoModule extends Module {
         ProxyClassLoader pcl = (ProxyClassLoader)classloader;
         ClassLoader l = pcl.firstParent();
         if (l == null) {
-            NetigsoFramework.classLoaderDown(this);
+            mgr.netigsoLoaderDown(this);
             return;
         }
-        NetigsoFramework.getDefault().stopLoader(this, l);
+        mgr.netigso().stopLoader(this, l);
         classloader = null;
     }
 
@@ -191,8 +160,19 @@ final class NetigsoModule extends Module {
     }
 
     @Override
+    public Set<Object> getProblems() {
+        InvalidException ie = problem;
+        return ie == null ? Collections.emptySet() :
+            Collections.<Object>singleton(ie);
+    }
+    
+    final void setProblem(InvalidException ie) {
+        problem = ie;
+    }
+
+    @Override
     public Enumeration<URL> findResources(String resources) {
-        return NetigsoFramework.getDefault().findResources(this, resources);
+        return mgr.netigso().findResources(this, resources);
     }
 
     @Override
@@ -210,7 +190,16 @@ final class NetigsoModule extends Module {
 
     @Override
     public Manifest getManifest() {
-        return manifest;
+        if (manifest != null) {
+            return manifest;
+        }
+        // XXX #210310: is anyone actually getting here?
+        try {
+            return getManager().loadManifest(jar);
+        } catch (IOException x) {
+            Util.err.log(Level.WARNING, "While loading manifest for " + this, x);
+            return new Manifest();
+        }
     }
 
     @Override
@@ -224,14 +213,6 @@ final class NetigsoModule extends Module {
         return "Netigso: " + jar;
     }
 
-    private String getMainAttribute(String attr) {
-        String s = manifest.getMainAttributes().getValue(attr);
-        if (s == null) {
-            return null;
-        }
-        return s.replaceFirst(";.*$", "");
-    }
-
     @Override
     final int getStartLevelImpl() {
         return startLevel;
@@ -240,7 +221,7 @@ final class NetigsoModule extends Module {
     final void setStartLevel(int startLevel) {
         this.startLevel = startLevel;
     }
-
+    
     private final class DelegateCL extends ProxyClassLoader 
     implements Util.ModuleProvider {
         public DelegateCL() {

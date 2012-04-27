@@ -45,8 +45,6 @@
 package org.netbeans.modules.ant.debugger;
 
 import java.util.Vector;
-import org.apache.tools.ant.module.api.support.TargetLister;
-import org.apache.tools.ant.module.spi.TaskStructure;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.NodeModel;
@@ -82,6 +80,7 @@ public class VariablesModel implements TreeModel, NodeModel, TableModel {
      *
      * @return the root node of the tree or null
      */
+    @Override
     public Object getRoot () {
         return ROOT;
     }
@@ -102,6 +101,7 @@ public class VariablesModel implements TreeModel, NodeModel, TableModel {
      *
      * @return  children for given parent on given indexes
      */
+    @Override
     public Object[] getChildren (Object parent, int from, int to) 
         throws UnknownTypeException {
         if (parent == ROOT)
@@ -116,6 +116,7 @@ public class VariablesModel implements TreeModel, NodeModel, TableModel {
      *          able to resolve dchildren for given node type
      * @return  true if node is leaf
      */
+    @Override
     public boolean isLeaf (Object node) throws UnknownTypeException {
         if (node == ROOT)
             return false;
@@ -138,6 +139,7 @@ public class VariablesModel implements TreeModel, NodeModel, TableModel {
      * @return  true if node is leaf
      * @since 1.1
      */
+    @Override
     public int getChildrenCount (Object node) throws UnknownTypeException {
         if (node == ROOT)
             return debugger.getVariables ().length;
@@ -149,6 +151,7 @@ public class VariablesModel implements TreeModel, NodeModel, TableModel {
      * 
      * @param l the listener to add
      */
+    @Override
     public void addModelListener (ModelListener l) {
         listeners.add (l);
     }
@@ -158,6 +161,7 @@ public class VariablesModel implements TreeModel, NodeModel, TableModel {
      *
      * @param l the listener to remove
      */
+    @Override
     public void removeModelListener (ModelListener l) {
         listeners.remove (l);
     }
@@ -174,6 +178,7 @@ public class VariablesModel implements TreeModel, NodeModel, TableModel {
      *          able to resolve display name for given node type
      * @return  display name for given node
      */
+    @Override
     public String getDisplayName (Object node) throws UnknownTypeException {
         if (node instanceof String) 
             return (String) node;
@@ -189,6 +194,7 @@ public class VariablesModel implements TreeModel, NodeModel, TableModel {
      *          able to resolve icon for given node type
      * @return  icon for given node
      */
+    @Override
     public String getIconBase (Object node) throws UnknownTypeException {
         if (node instanceof String) 
             return LOCAL;
@@ -204,6 +210,7 @@ public class VariablesModel implements TreeModel, NodeModel, TableModel {
      *          able to resolve tooltip for given node type
      * @return  tooltip for given node
      */
+    @Override
     public String getShortDescription (Object node) 
     throws UnknownTypeException {
         if (node instanceof String) 
@@ -230,6 +237,7 @@ public class VariablesModel implements TreeModel, NodeModel, TableModel {
      *
      * @return value of variable representing given position in tree table.
      */
+    @Override
     public Object getValueAt (Object node, String columnID) throws 
     UnknownTypeException {
         if ( (node instanceof String) &&
@@ -251,6 +259,7 @@ public class VariablesModel implements TreeModel, NodeModel, TableModel {
      *
      * @return true if variable on given position is read only
      */
+    @Override
     public boolean isReadOnly (Object node, String columnID) throws 
     UnknownTypeException {
         if ( (node instanceof String) &&
@@ -271,6 +280,7 @@ public class VariablesModel implements TreeModel, NodeModel, TableModel {
      * @throws UnknownTypeException if there is no TableModel defined for given
      *         parameter type
      */
+    @Override
     public void setValueAt (Object node, String columnID, Object value) 
     throws UnknownTypeException {
         throw new UnknownTypeException (node);

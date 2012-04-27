@@ -45,7 +45,7 @@ package org.netbeans.modules.beans.addproperty;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import java.io.IOException;
@@ -143,26 +143,49 @@ public class AddPropertyCodeGenerator implements CodeGenerator {
             final Reformat r = Reformat.get(pane.getDocument());
             final String code = new AddPropertyGenerator().generate(config);
             final Position[] bounds = new Position[2];
-
+            
+            final int offset[] = new int[1];
+            
+        try {
+            JavaSource.forFileObject(file).runUserActionTask(new Task<CompilationController>() {
+                @Override
+                public void run(CompilationController parameter) throws Exception {
+                    parameter.toPhase(Phase.PARSED);
+                    offset[0] = pane.getCaretPosition();
+                    TreePath path = parameter.getTreeUtilities().pathFor(offset[0]);
+                    
+                    if (path==null || path.getLeaf().getKind() == Tree.Kind.CLASS)
+                        return;
+                    while (path!=null && path.getParentPath()!=null && path.getParentPath().getLeaf().getKind() == Tree.Kind.CLASS) {
+                        path = path.getParentPath();
+                    }
+                    
+                    Tree current = path.getLeaf();
+                    offset[0] = (int) parameter.getTrees().getSourcePositions().getEndPosition(path.getCompilationUnit(), current);
+                }
+            }, true);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+            
             r.lock();
             try {
                 NbDocument.runAtomicAsUser((StyledDocument) doc, new Runnable() {
                     public void run() {
                         try {
-                            int startOffset = pane.getCaretPosition();
                             GuardedSectionManager manager = GuardedSectionManager.getInstance((StyledDocument) doc);
                             if (manager != null) {
                                 for (GuardedSection guard : manager.getGuardedSections()) {
-                                    if (guard.contains(doc.createPosition(startOffset), true)) {
-                                        startOffset = guard.getEndPosition().getOffset() + 1;
+                                    if (guard.contains(doc.createPosition(offset[0]), true)) {
+                                        offset[0] = guard.getEndPosition().getOffset() + 1;
                                         break;
                                     }
                                 }
                             }
                             
-                            doc.insertString(startOffset, code, null);
-                            Position start = doc.createPosition(startOffset);
-                            Position end = doc.createPosition(startOffset + code.length());
+                            doc.insertString(offset[0], code, null);
+                            Position start = doc.createPosition(offset[0]);
+                            Position end = doc.createPosition(offset[0] + code.length());
                             r.reformat(Utilities.getRowStart(pane, start.getOffset()), Utilities.getRowEnd(pane, end.getOffset()));
                             bounds[0] = start;
                             bounds[1] = end;
@@ -361,4 +384,4 @@ public class AddPropertyCodeGenerator implements CodeGenerator {
             return te.asType();
         }
     }
-}
+};

@@ -47,6 +47,7 @@ import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.netbeans.modules.php.twig.editor.gsf.TwigLanguage;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
@@ -57,6 +58,13 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.windows.TopComponent;
 
+@Messages("TwigResolver=Twig Files")
+@MIMEResolver.ExtensionRegistration(
+    displayName="#TwigResolver",
+    position=125,
+    extension="twig",
+    mimeType="text/x-twig"
+)
 public class TwigDataObject extends MultiDataObject {
 
     public TwigDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {

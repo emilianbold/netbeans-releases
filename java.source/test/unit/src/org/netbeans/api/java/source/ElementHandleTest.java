@@ -51,13 +51,17 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import junit.framework.*;
 import java.util.List;
+import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
@@ -418,6 +422,34 @@ public class ElementHandleTest extends NbTestCase {
         
     }
     
+    
+    public void testCreatePackageElementHandle() {
+        final ElementHandle<PackageElement> eh = ElementHandle.createPackageElementHandle("org.me");    //NOI18N
+        assertEquals(ElementKind.PACKAGE, eh.getKind());
+    }
+    
+    
+    public void testCreateTypeElementHandle() {
+        final Set<ElementKind> allowed = new HashSet<ElementKind>(Arrays.asList(new ElementKind[]{
+            ElementKind.CLASS,
+            ElementKind.INTERFACE,
+            ElementKind.ENUM,
+            ElementKind.ANNOTATION_TYPE
+        }));
+        for (ElementKind aek : allowed) {
+            ElementHandle<TypeElement> eh = ElementHandle.createTypeElementHandle(aek, "org.me.Foo");    //NOI18N
+            assertEquals(aek, eh.getKind());
+        }
+        for (ElementKind aek : ElementKind.values()) {
+            if (!allowed.contains(aek)) {
+                try {
+                    ElementHandle<TypeElement> eh = ElementHandle.createTypeElementHandle(aek, "org.me.Foo");    //NOI18N
+                    assertTrue(false);
+                }catch (IllegalArgumentException e) {
+                }
+            }
+        }
+    }
     
     public void testEquals() throws Exception {
         final JavaSource js = JavaSource.create(ClasspathInfo.create(ClassPathProviderImpl.getDefault().findClassPath(data,ClassPath.BOOT), ClassPathProviderImpl.getDefault().findClassPath(data, ClassPath.COMPILE), null));

@@ -50,6 +50,7 @@ import java.util.Collection;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import junit.framework.Test;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
@@ -61,6 +62,7 @@ import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.api.Scope;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
+import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.WhereUsedQueryConstants;
 import org.openide.filesystems.FileObject;
 import org.openide.util.lookup.Lookups;
@@ -252,7 +254,10 @@ public class FindUsagesTest extends NbTestCase {
                 MethodTree runTree = (MethodTree) klass.getMembers().get(1);
                 TreePath path = controller.getTrees().getPath(controller.getCompilationUnit(), runTree);
                 TreePathHandle element = TreePathHandle.create(path, controller);
-                wuq[0] = new WhereUsedQuery(Lookups.singleton(element));
+                Element method = controller.getTrees().getElement(path);
+                Collection<ExecutableElement> overridens = JavaRefactoringUtils.getOverriddenMethods((ExecutableElement)method, controller);
+                wuq[0] = new WhereUsedQuery(Lookups.singleton(TreePathHandle.create(overridens.iterator().next(), controller)));
+                wuq[0].getContext().add(element);
             }
         }, false).get();
         setParameters(wuq, true, false, false, false, false, true);
@@ -275,7 +280,10 @@ public class FindUsagesTest extends NbTestCase {
                 MethodTree runTree = (MethodTree) klass.getMembers().get(1);
                 TreePath path = controller.getTrees().getPath(controller.getCompilationUnit(), runTree);
                 TreePathHandle element = TreePathHandle.create(path, controller);
-                wuq[0] = new WhereUsedQuery(Lookups.singleton(element));
+                Element method = controller.getTrees().getElement(path);
+                Collection<ExecutableElement> overridens = JavaRefactoringUtils.getOverriddenMethods((ExecutableElement)method, controller);
+                wuq[0] = new WhereUsedQuery(Lookups.singleton(TreePathHandle.create(overridens.iterator().next(), controller)));
+                wuq[0].getContext().add(element);
             }
         }, false).get();
         setParameters(wuq, true, false, false, false, false, true);
@@ -319,7 +327,10 @@ public class FindUsagesTest extends NbTestCase {
                 MethodTree runTree = (MethodTree) klass.getMembers().get(2);
                 TreePath path = controller.getTrees().getPath(controller.getCompilationUnit(), runTree);
                 TreePathHandle element = TreePathHandle.create(path, controller);
-                wuq[0] = new WhereUsedQuery(Lookups.singleton(element));
+                Element method = controller.getTrees().getElement(path);
+                Collection<ExecutableElement> overridens = JavaRefactoringUtils.getOverriddenMethods((ExecutableElement)method, controller);
+                wuq[0] = new WhereUsedQuery(Lookups.singleton(TreePathHandle.create(overridens.iterator().next(), controller)));
+                wuq[0].getContext().add(element);
             }
         }, false).get();
         setParameters(wuq, false, false, false, false, true, true);
@@ -367,12 +378,12 @@ public class FindUsagesTest extends NbTestCase {
                 wuq[0] = new WhereUsedQuery(Lookups.singleton(element));
             }
         }, false).get();
-        setParameters(wuq, true, false, false, false, false, true);
+        setParameters(wuq, true, false, false, false, false, false);
 
-        doRefactoring("test200843", wuq, 1);
+        doRefactoring("test202412", wuq, 1);
     }
     
-    private void doRefactoring(final String name, final WhereUsedQuery[] wuq, final int amount) {
+    private void doRefactoring(final String name, final WhereUsedQuery[] wuq, final int amount) throws InterruptedException {
         RefactoringSession rs = RefactoringSession.create("Session");
 
         wuq[0].preCheck();

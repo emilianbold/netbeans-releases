@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.ant.freeform.ui;
 
+import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.util.HashSet;
@@ -54,6 +55,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
+import org.netbeans.modules.ant.freeform.FreeformProject;
 import org.netbeans.modules.ant.freeform.FreeformProjectGenerator;
 import org.netbeans.modules.ant.freeform.FreeformProjectType;
 import org.netbeans.modules.ant.freeform.TestBase;
@@ -64,7 +66,6 @@ import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.modules.ModuleInfo;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeEvent;
@@ -72,7 +73,6 @@ import org.openide.nodes.NodeListener;
 import org.openide.nodes.NodeMemberEvent;
 import org.openide.nodes.NodeReorderEvent;
 import org.w3c.dom.Document;
-import org.openide.util.Lookup;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -89,18 +89,8 @@ public class ViewTest extends TestBase {
         super(name);
     }
     
-    private LogicalViewProvider lvp;
-    
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        ModuleInfo info = Lookup.getDefault().lookup(ModuleInfo.class);
-        lvp = extsrcroot.getLookup().lookup(LogicalViewProvider.class);
-        assertNotNull("found a LogicalViewProvider", lvp);
-    }
-    
     public void testViewItemBasic() throws Exception {
-        Node root = lvp.createLogicalView();
+        Node root = extsrcroot.getLookup().lookup(LogicalViewProvider.class).createLogicalView();
         assertEquals("lookup has project", extsrcroot, root.getLookup().lookup(Project.class));
         Children ch = root.getChildren();
         Node[] kids = ch.getNodes(true);
@@ -115,7 +105,9 @@ public class ViewTest extends TestBase {
 
     @RandomlyFails // NB-Core-Build #1012
     public void testViewItemChanges() throws Exception {
-        Node root = lvp.createLogicalView();
+        FileObject top = FileUtil.toFileObject(copyFolder(FileUtil.toFile(egdirFO.getFileObject("extsrcroot"))));
+        FreeformProject extsrcroot_ = (FreeformProject) ProjectManager.getDefault().findProject(top.getFileObject("proj"));
+        Node root = extsrcroot_.getLookup().lookup(LogicalViewProvider.class).createLogicalView();
         Children ch = root.getChildren();
         Node[] kids = ch.getNodes(true);
         assertEquals("two child nodes", 2, kids.length);
@@ -123,7 +115,7 @@ public class ViewTest extends TestBase {
         assertEquals("correct code name #2", "nbproject/project.xml", kids[1].getName());
         TestNL l = new TestNL();
         root.addNodeListener(l);
-        Element data = extsrcroot.getPrimaryConfigurationData();
+        Element data = extsrcroot_.getPrimaryConfigurationData();
         Element view = XMLUtil.findElement(data, "view", FreeformProjectType.NS_GENERAL);
         assertNotNull("have <view>", view);
         Element items = XMLUtil.findElement(view, "items", FreeformProjectType.NS_GENERAL);
@@ -139,7 +131,7 @@ public class ViewTest extends TestBase {
         Element sourceFile =  XMLUtil.findElement(items, "source-file", FreeformProjectType.NS_GENERAL);
         assertNotNull("have <source-file>", sourceFile);
         items.removeChild(sourceFile);
-        extsrcroot.putPrimaryConfigurationData(data);
+        extsrcroot_.putPrimaryConfigurationData(data);
         // children keys are updated asynchronously. give them a time
         Thread.sleep(500);
         assertFalse("got some changes in children", l.probeChanges().isEmpty());
@@ -148,7 +140,7 @@ public class ViewTest extends TestBase {
         assertEquals("correct code name #1", "../src2", kids[0].getName());
         assertEquals("correct display name #1", "External Sources", kids[0].getDisplayName());
         assertEquals("correct cookie #1",
-                DataObject.find(egdirFO.getFileObject("extsrcroot/src2")),
+                DataObject.find(top.getFileObject("src2")),
                 kids[0].getLookup().lookup(DataObject.class));
     }
     
@@ -204,7 +196,7 @@ public class ViewTest extends TestBase {
         sf.appendChild(doc.createElementNS(Util.NAMESPACE, "location")).appendChild(doc.createTextNode("s"));
         Util.putPrimaryConfigurationData(helper, data);
         ProjectManager.getDefault().saveProject(p);
-        new java.awt.Robot().waitForIdle();
+        EventQueue.invokeAndWait(new Runnable() {public void run() {}});
         Node r = p.getLookup().lookup(LogicalViewProvider.class).createLogicalView();
         assertEquals(appearanceEverything, expand(r));
         // Now configure includes and excludes.
@@ -219,7 +211,7 @@ public class ViewTest extends TestBase {
                 appendChild(doc.createTextNode("config.properties"));
         Util.putPrimaryConfigurationData(helper, data);
         ProjectManager.getDefault().saveProject(p);
-        new java.awt.Robot().waitForIdle();
+        EventQueue.invokeAndWait(new Runnable() {public void run() {}});
         data = Util.getPrimaryConfigurationData(helper);
         doc = data.getOwnerDocument();
         sf = (Element) data.getElementsByTagName("source-folder").item(0);
@@ -229,21 +221,21 @@ public class ViewTest extends TestBase {
                 appendChild(doc.createTextNode("${excludes}"));
         Util.putPrimaryConfigurationData(helper, data);
         ProjectManager.getDefault().saveProject(p);
-        new java.awt.Robot().waitForIdle();
+        EventQueue.invokeAndWait(new Runnable() {public void run() {}});
         assertEquals(appearanceIncludesExcludes, expand(r));
         // Now change them.
         ep = helper.getProperties("config.properties");
         ep.remove("includes");
         helper.putProperties("config.properties", ep);
         ProjectManager.getDefault().saveProject(p);
-        new java.awt.Robot().waitForIdle();
+        EventQueue.invokeAndWait(new Runnable() {public void run() {}});
         assertEquals(appearanceExcludes, expand(r));
         // Also check floating includes.
         ep = helper.getProperties("config.properties");
         ep.put("includes", "relevant/included/");
         helper.putProperties("config.properties", ep);
         ProjectManager.getDefault().saveProject(p);
-        new java.awt.Robot().waitForIdle();
+        EventQueue.invokeAndWait(new Runnable() {public void run() {}});
         assertEquals(appearanceFloating, expand(r));
     }
     public void testIncludesExcludes() throws Exception {

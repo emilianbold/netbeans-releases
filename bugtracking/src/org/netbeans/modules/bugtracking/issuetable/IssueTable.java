@@ -87,16 +87,11 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.TableColumnModelListener;
-import javax.swing.event.TableModelListener;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
-import org.netbeans.modules.bugtracking.BugtrackingConfig;
-import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.Query;
-import org.netbeans.modules.bugtracking.spi.QueryNotifyListener;
-import org.netbeans.modules.bugtracking.ui.query.IssueTableSupport;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.*;
+import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.openide.awt.MouseUtils;
 import org.openide.explorer.view.TreeTableView;
@@ -107,7 +102,7 @@ import org.openide.util.RequestProcessor.Task;
 /**
  * @author Tomas Stupka
  */
-public class IssueTable implements MouseListener, AncestorListener, KeyListener, PropertyChangeListener {
+public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListener, PropertyChangeListener {
 
     private NodeTableModel  tableModel;
     private JTable          table;
@@ -115,12 +110,14 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
 
     private TableSorter     sorter;
 
-    private Query query;
+    private QueryImpl query;
     private ColumnDescriptor[] descriptors;
 
+    private Filter allFilter;
+    private Filter newOrChangedFilter;
     private Filter filter;
     private Filter[] filters;
-    private Set<Issue> issues = new HashSet<Issue>();
+    private Set<IssueNode> nodes = new HashSet<IssueNode>();
 
     private QueryTableHeaderRenderer queryTableHeaderRenderer;
 
@@ -132,14 +129,11 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
 
     private static final String CONFIG_DELIMITER = "<=>";                       // NOI18N
 
-    /**
-     * Implement in an issue to provide access to its IssueNode
-     */
-    public static interface NodeProvider {
-        IssueNode getNode();
+    public interface IssueTableProvider {
+        public IssueTable getIssueTable();
     }
-
-    private static final Comparator<IssueProperty> NodeComparator = new Comparator<IssueProperty>() {
+    
+    private static final Comparator<IssueProperty> nodeComparator = new Comparator<IssueProperty>() {
         @Override
         public int compare(IssueProperty p1, IssueProperty p2) {
             Integer sk1 = (Integer) p1.getValue("sortkey"); // NOI18N
@@ -157,23 +151,22 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
         }
     };
 
-    public IssueTable(Query query, ColumnDescriptor[] descriptors) {
-        assert query != null;
+    public IssueTable(Repository repository, Q q, ColumnDescriptor[] descriptors) {
+        assert q != null;
         assert descriptors != null;
         assert descriptors.length > 0;
 
-        this.query = query;
+        this.query = APIAccessor.IMPL.getImpl(repository).getQuery(q);
 
         this.descriptors = descriptors;
-        query.addNotifyListener(new NotifyListener());
-        query.addPropertyChangeListener(this);
+        this.query.addPropertyChangeListener(this);
 
         tableModel = new NodeTableModel();
         sorter = new TableSorter(tableModel, this);
         
         initFilters();
 
-        sorter.setColumnComparator(Node.Property.class, NodeComparator);
+        sorter.setColumnComparator(Node.Property.class, nodeComparator);
         table = new JTable(sorter);
         sorter.setTableHeader(table.getTableHeader());
         table.setRowHeight(table.getRowHeight() * 6 / 5);
@@ -200,7 +193,7 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
 
         table.addMouseListener(this);
         table.addKeyListener(this);
-        table.setDefaultRenderer(Node.Property.class, new QueryTableCellRenderer(query, this));
+        table.setDefaultRenderer(Node.Property.class, new QueryTableCellRenderer(query.getQuery(), this));
         queryTableHeaderRenderer = new QueryTableHeaderRenderer(table.getTableHeader().getDefaultRenderer(), this, query);
         table.getTableHeader().setDefaultRenderer(queryTableHeaderRenderer);
         table.addAncestorListener(this);
@@ -233,8 +226,6 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
         storeColumnsTask = BugtrackingManager.getInstance()
                                                 .getRequestProcessor()
                                                 .create(storeColumnsWidthHandler);
-
-        IssueTableSupport.getInstance().put(query, this);
     }
 
     /**
@@ -245,6 +236,14 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
         return filters;
     }
 
+    public Filter getAllFilter() {
+        return allFilter;
+    }
+    
+    public Filter getNewOrChangedFilter() {
+        return newOrChangedFilter;
+    }
+    
     /**
      * Reset the filter criteria set in
      * {@link #setFilterBySummary(java.lang.String, boolean, boolean, boolean) }
@@ -310,7 +309,7 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if(evt.getPropertyName().equals(Query.EVENT_QUERY_SAVED)) {
+        if(evt.getPropertyName().equals(QueryProvider.EVENT_QUERY_SAVED)) {
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
@@ -337,7 +336,7 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
         if(savedQueryInitialized) {
             return;
         }
-        setModelProperties(query);
+        setModelProperties(query.isSaved());
         if(descriptors.length > 0) {
             Map<Integer, Integer> sorting = getColumnSorting();
             if(descriptors.length > 1) {
@@ -401,8 +400,10 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
     }
 
     private void initFilters() {
-        filters = new Filter[]{Filter.getAllFilter(query), Filter.getNotSeenFilter(query), Filter.getObsoleteDateFilter(query), Filter.getAllButObsoleteDateFilter(query)};
-        filter = filters[0]; // preset the first filter as default
+        allFilter = Filter.getAllFilter(query);
+        newOrChangedFilter = Filter.getNotSeenFilter(query);
+        filters = new Filter[]{allFilter, newOrChangedFilter, Filter.getObsoleteDateFilter(query), Filter.getAllButObsoleteDateFilter(query)};
+        filter = allFilter;
     }
     
     int getSeenColumnIdx() {
@@ -414,20 +415,20 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
     }
 
     private void setFilterIntern(Filter filter) {
-        List<IssueNode> issueNodes = new ArrayList<IssueNode>(issues.size());
-        for (Issue issue : issues) {
-            if (filter == null || filter.accept(issue)) {
-                issueNodes.add(((NodeProvider) issue).getNode());
+        List<IssueNode> filteredNodes = new ArrayList<IssueNode>(nodes.size());
+        for (IssueNode node : nodes) {
+            if (filter == null || filter.accept(node)) {
+                filteredNodes.add(node);
             }
         }
-        setTableModel(issueNodes.toArray(new IssueNode[issueNodes.size()]));
+        setTableModel(filteredNodes.toArray(new IssueNode[filteredNodes.size()]));
     }
 
     SummaryTextFilter getSummaryFilter() {
         return textFilter;
     }
 
-    private class CellAction implements ActionListener {
+    private static class CellAction implements ActionListener {
         private final Rectangle bounds;
         private final ActionListener listener;
         public CellAction(Rectangle bounds, ActionListener listener) {
@@ -618,7 +619,7 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
     @Override
     public void ancestorRemoved(AncestorEvent event) { }
 
-    private void setModelProperties(Query query) {
+    private void setModelProperties(boolean isSaved) {
         List<ColumnDescriptor> properties = new ArrayList<ColumnDescriptor>(descriptors.length + (query.isSaved() ? 2 : 0));
         int i = 0;
         for (; i < descriptors.length; i++) {
@@ -693,7 +694,7 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
                 // seen column
                 if(column == getSeenColumnIdx()) {
                     IssueNode in = (IssueNode) tableModel.getNodes()[row];
-                    final Issue issue = in.getLookup().lookup(Issue.class);
+                    final IssueImpl issue = in.getLookup().lookup(IssueImpl.class);
                     BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
                         @Override
                         public void run() {
@@ -745,39 +746,31 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
     @Override
     public void keyReleased(KeyEvent e) { }
 
-    private class NotifyListener implements QueryNotifyListener {
-        @Override
-        public void notifyData(final Issue issue) {
-            assert issue instanceof NodeProvider;
-            issues.add(issue);
-            if(filter == null || filter.accept(issue)) {
-                final IssueNode node = ((NodeProvider)issue).getNode();
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        tableModel.insertNode(node);
-                    }
-                });
-            }
+    public void addNode(final IssueNode node) {
+        nodes.add(node);
+        if(filter == null || filter.accept(node)) {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    tableModel.insertNode(node);
+                }
+            });
         }
-        @Override
-        public void started() {
-            issues.clear();
-            IssueTable.this.setTableModel(new IssueNode[0]);
-        }
-        @Override
-        public void finished() { }
+    }
+    public void started() {
+        nodes.clear();
+        IssueTable.this.setTableModel(new IssueNode[0]);
     }
 
     private class SeenDescriptor extends ColumnDescriptor<Boolean> {
         public SeenDescriptor() {
-            super(IssueNode.LABEL_NAME_SEEN, Boolean.class, "", NbBundle.getBundle(Issue.class).getString("CTL_Issue_Seen_Desc"), -1, true, true); // NOI18N
+            super(IssueNode.LABEL_NAME_SEEN, Boolean.class, "", NbBundle.getBundle(IssueTable.class).getString("CTL_Issue_Seen_Desc"), -1, true, true); // NOI18N
         }
     }
 
     private class RecentChangesDescriptor extends ColumnDescriptor<String> {
         public RecentChangesDescriptor() {
-            super(IssueNode.LABEL_RECENT_CHANGES, String.class, NbBundle.getBundle(Issue.class).getString("CTL_Issue_Recent"), NbBundle.getBundle(Issue.class).getString("CTL_Issue_Recent_Desc"), -1, true, true); // NOI18N
+            super(IssueNode.LABEL_RECENT_CHANGES, String.class, NbBundle.getBundle(IssueTable.class).getString("CTL_Issue_Recent"), NbBundle.getBundle(IssueTable.class).getString("CTL_Issue_Recent_Desc"), -1, true, true); // NOI18N
         }
     }
 
@@ -786,7 +779,7 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
         if(name == null) {
             name = "#find#issues#hitlist#table#";               // NOI18N
         }
-        return query.getRepository().getID() + ":" + name;      // NOI18N
+        return query.getRepositoryImpl().getId() + ":" + name;      // NOI18N
     }
 
     private class StoreColumnsHandler implements Runnable {

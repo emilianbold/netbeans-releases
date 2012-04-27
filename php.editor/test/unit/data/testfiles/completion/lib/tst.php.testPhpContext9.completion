@@ -3,3 +3,4 @@ print $GL|;
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 VARIABLE   $GLOBALS                                   PHP Platform
+VARIABLE   ? $global_var                   [PUBLIC]   var_scope.php

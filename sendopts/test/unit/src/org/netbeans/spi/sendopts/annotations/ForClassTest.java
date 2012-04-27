@@ -42,11 +42,13 @@
 
 package org.netbeans.spi.sendopts.annotations;
 
+import java.io.ByteArrayOutputStream;
 import org.netbeans.spi.sendopts.ArgsProcessor;
 import org.netbeans.spi.sendopts.Description;
 import org.netbeans.spi.sendopts.Arg;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import org.netbeans.api.sendopts.CommandException;
 import org.netbeans.api.sendopts.CommandLine;
 import org.netbeans.junit.NbTestCase;
@@ -127,6 +129,13 @@ public class ForClassTest extends NbTestCase {
         assertTrue("contains additionalParams:\n" + w, w.toString().contains(("MyParams")));
         assertTrue("contains short help:\n" + w, w.toString().contains(("ShorterHelp")));
     }
+    public void testHelpOnEnv() throws CommandException, UnsupportedEncodingException {
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        cmd.process(new String[] { "--tellmehow" }, System.in, os, System.err, null);
+        String out = new String(os.toByteArray(), "UTF-8");
+        assertTrue("contains additionalParams:\n" + out, out.contains(("MyParams")));
+        assertTrue("contains short help:\n" + out, out.contains(("ShorterHelp")));
+    }
     public void testDefaultValueNotProvided() throws CommandException {
         cmd.process("--optional");
         assertNotNull("Options created", methodCalled);
@@ -156,8 +165,14 @@ public class ForClassTest extends NbTestCase {
         @Arg(longName = "optional", defaultValue = "")
         public String defaultValue;
         
+        @Arg(longName = "tellmehow")
+        public boolean tellMeHow;
+        
         @Override
         public void process(Env env) {
+            if (tellMeHow) {
+                env.usage();
+            }
             methodEnv = env;
             methodCalled = this;
         }

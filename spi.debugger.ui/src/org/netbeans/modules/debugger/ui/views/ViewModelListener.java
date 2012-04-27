@@ -53,8 +53,10 @@ import java.awt.event.ActionListener;
 import java.beans.Customizer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
@@ -123,6 +125,12 @@ public class ViewModelListener extends DebuggerManagerAdapter {
 
     private static final Class[] NODE_MODELS = { NodeModel.class, CheckNodeModel.class, DnDNodeModel.class, ExtendedNodeModel.class };
     private static final Class[] NODE_MODEL_FILTERS = { NodeModelFilter.class, CheckNodeModelFilter.class, DnDNodeModelFilter.class, ExtendedNodeModelFilter.class };
+    
+    private static final String VIEW_PREFERENCES_NAME = "view_preferences"; // NOI18N
+    private static final String VIEW_TYPE = "view_type";                    // NOI18N
+    private static final String VIEW_TREE_DISPLAY_FORMAT = "view_tree_display_format"; // NOI18N
+    private static final String VIEW_TYPE_TABLE = "table";                  // NOI18N
+    private static final String VIEW_TYPE_TREE = "tree";                    // NOI18N
 
     private String          viewType;
     private JComponent      view;
@@ -159,6 +167,8 @@ public class ViewModelListener extends DebuggerManagerAdapter {
     private boolean isUp;
 
     private Preferences preferences = NbPreferences.forModule(ContextProvider.class).node(VariablesViewButtons.PREFERENCES_NAME);
+    private Preferences viewPreferences;
+    private MessageFormat viewTreeDisplayFormat;
     private ViewPreferenceChangeListener prefListener = new ViewPreferenceChangeListener();
 
     private static final RequestProcessor RP = new RequestProcessor(ViewModelListener.class.getName(), 1);
@@ -181,6 +191,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         buttonsPane.setLayout(new GridBagLayout());
         this.propertiesHelpID = propertiesHelpID;
         this.viewIcon = viewIcon;
+        viewPreferences = NbPreferences.forModule(ContextProvider.class).node(VIEW_PREFERENCES_NAME).node(viewType);
         setUp();
     }
     // </RAVE>
@@ -199,6 +210,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
             this
         );
         preferences.addPreferenceChangeListener(prefListener);
+        viewPreferences.addPreferenceChangeListener(prefListener);
         synchronized (this) {
             isUp = true;
             notifyAll();
@@ -228,6 +240,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
                 this
             );
             preferences.removePreferenceChangeListener(prefListener);
+            viewPreferences.removePreferenceChangeListener(prefListener);
             boolean haveTreeModels = false;
             for (List tms : treeModels) {
                 if (tms != null && tms.size() > 0) {
@@ -343,7 +356,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
             cp = e != null ? DebuggerManager.join(e, dm) : dm;
             viewPath = viewType;
         }
-
+        
         currentSession =        dm.getCurrentSession();
 
         getMultiModels(cp, viewPath, treeModels, TREE_MODELS);
@@ -582,7 +595,15 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         if (hyperModels != null) {
             newModel = Models.createCompoundModel (hyperModels, propertiesHelpID);
         } else if (haveModels) {
-            newModel = Models.createCompoundModel (models, propertiesHelpID);
+            List theModels;
+            viewTreeDisplayFormat = createTreeDisplayFormat(viewPreferences, columnModels);
+            if (viewTreeDisplayFormat != null) {
+                theModels = new ArrayList(models);
+                theModels.add(viewTreeDisplayFormat);
+            } else {
+                theModels = models;
+            }
+            newModel = Models.createCompoundModel (theModels, propertiesHelpID);
         } else {
             newModel = null;
         }
@@ -822,6 +843,11 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         treeNodeModelsCompound.add(asynchModelFilters); // AsynchronousModelFilter
         treeNodeModelsCompound.add(tableRenderers);
         treeNodeModelsCompound.add(tableRendererFilters);
+        Preferences viewPref = NbPreferences.forModule(ContextProvider.class).node(VIEW_PREFERENCES_NAME).node(viewName);
+        MessageFormat treeFormat = createTreeDisplayFormat(viewPref, columnModels);
+        if (treeFormat != null) {
+            treeNodeModelsCompound.add(treeFormat);
+        }
         /*if (rp != null) {
             treeNodeModelsCompound.add(rp);
         }*/
@@ -829,6 +855,16 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         CompoundModel treeNodeModel = Models.createCompoundModel(treeNodeModelsCompound);
 
         return treeNodeModel;
+    }
+
+    private List findTreeColumn(List columnModels) {
+        for (Object cmo : columnModels) {
+            ColumnModel cm = (ColumnModel) cmo;
+            if (cm.getType() == null) {
+                return Collections.singletonList(cm);
+            }
+        }
+        return Collections.emptyList();
     }
 
     // innerclasses .............................................................
@@ -849,6 +885,25 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         }
         
     }
+    
+    private static MessageFormat createTreeDisplayFormat(Preferences viewPreferences, List columnModels) {
+        String displayFormat = viewPreferences.get(VIEW_TREE_DISPLAY_FORMAT, null);
+        MessageFormat format = null;
+        if (displayFormat != null) {
+            for (int i = 0; i < columnModels.size(); i++) {
+                ColumnModel cm = (ColumnModel) columnModels.get(i);
+                String name = cm.getID();
+                displayFormat = displayFormat.replace("{"+name, "{"+Integer.toString(i));
+            }
+            try {
+                format = new MessageFormat(displayFormat);
+            } catch (IllegalArgumentException iaex) {
+                Exceptions.printStackTrace(iaex);
+            }
+        }
+        return format;
+    }
+
 
     private class ViewPreferenceChangeListener implements PreferenceChangeListener {
 
@@ -856,6 +911,9 @@ public class ViewModelListener extends DebuggerManagerAdapter {
             String key = evt.getKey();
             if (VariablesViewButtons.SHOW_WATCHES.equals(key) ||
                     VariablesViewButtons.SHOW_EVALUTOR_RESULT.equals(key)) {
+                updateModel();
+            }
+            if (VIEW_TYPE.equals(key)) {
                 updateModel();
             }
         }

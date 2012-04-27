@@ -19,13 +19,14 @@
         <p>When analyzing application performance, you specify one of the following options:</p>
         <ul>
             
-            <li><b>Sample Application.</b> 
+            <li><b>Quick.</b> 
             When selected, the IDE samples the application and takes a stack trace periodically.
             This option is less precise than instrumenting methods, but the overhead is lower.
             This option can help you locate methods that you might want to instrument.
             </li>
-            <li><b>Profile Application.</b> 
-            When selected, all of the methods of the profiled application are instrumented. 
+            <li><b>Advanced.</b> 
+            When selected, all of the methods of the profiled application are instrumented if
+            you do not specify any root methods. 
             <p>When entering a method, threads generate a "method entry" event. 
             Threads generate a corresponding "method exit" event when exiting the method. 
             The timestamps for both of these events are recorded. 
@@ -51,10 +52,17 @@
             <li>Quick filter</li>
             <li>Exclude Java Core Classes.</li>
         </ul>
-        If you select Profile Only Project Classes or Profile Project &amp; Subprojects Classes
+        <p>If you select Profile Only Project Classes or Profile Project &amp; Subprojects Classes
         you can click Show Filter Value to see the the classes that will be profiled.
         If you select Quick Filter, you can click Edit Filter Value to see and modify the filter criteria.
-        You can create your own filter by clicking Edit Filter Sets.</li>
+        You can create your own filter by clicking Edit Filter Sets.</p>
+        
+        <ul class="note">
+            <li>Profile project &amp; subprojects classes is only available if the project
+            contains subprojects.</li>
+        </ul>
+        
+        </li>
         
         <li><b>Use Defined Profiling Points.</b> When selected, any actions that are initiated by enabled profiling points 
             in the project are performed. Disabled profiling points are ignored. When deselected, all profiling points in the project

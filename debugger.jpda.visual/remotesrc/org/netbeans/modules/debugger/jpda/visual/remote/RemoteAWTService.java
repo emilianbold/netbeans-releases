@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.debugger.jpda.visual.remote;
 
+import java.awt.AWTEvent;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dialog;
@@ -48,6 +49,7 @@ import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.image.BufferedImage;
 import java.awt.image.Raster;
@@ -70,8 +72,10 @@ public class RemoteAWTService {
     private static final String AWTAccessThreadName = "org.netbeans.modules.debugger.jpda.visual AWT Access Loop";   // NOI18N
     private static volatile boolean awtAccess = false;
     private static volatile boolean awtAccessLoop = false;
+    private static volatile RemoteAWTHierarchyListener hierarchyListener;
     
-    private static final Map eventData = new HashMap();
+    //private static final Map eventData = new HashMap();
+    private static final List eventData = new ArrayList();
     
     public RemoteAWTService() {
     }
@@ -90,6 +94,28 @@ public class RemoteAWTService {
         awtAccessLoop = false;
     }
     
+    static void startHierarchyListener() {
+        if (hierarchyListener == null) {
+            hierarchyListener = new RemoteAWTHierarchyListener();
+            Toolkit.getDefaultToolkit().addAWTEventListener(hierarchyListener, AWTEvent.HIERARCHY_EVENT_MASK);
+        }
+    }
+    
+    static void stopHierarchyListener() {
+        if (hierarchyListener != null) {
+            Toolkit.getDefaultToolkit().removeAWTEventListener(hierarchyListener);
+            hierarchyListener = null;
+        }
+    }
+    
+    static String getHierarchyChangeStackFor(Component c) {
+        if (hierarchyListener == null) {
+            return null;
+        } else {
+            return hierarchyListener.getStackFromComponent(c);
+        }
+    }
+    
     static void calledInAWT() {
         // A breakpoint is submitted on this method.
         // When awtAccess field is set to true, this breakpoint is hit in AWT thread
@@ -104,19 +130,26 @@ public class RemoteAWTService {
         return RemoteAWTServiceListener.remove(c, listenerClass, listener);
     }
     
-    static void pushEventData(Component c, String[] data, String[] stack) {
+    static void pushEventData(Component c, Class listenerClass, String[] data, String[] stack) {
         synchronized (eventData) {
-            List ld = (List) eventData.get(c);
+            List ld = null;
+            if (!eventData.isEmpty()) {
+                ListenerEvent le = (ListenerEvent) eventData.get(eventData.size() - 1);
+                if (le.c == c && le.listenerClass == listenerClass) {
+                    ld = le.data;
+                }
+            }
             if (ld == null) {
-                ld = new ArrayList();
-                eventData.put(c, ld);
+                ListenerEvent le = new ListenerEvent(c, listenerClass);
+                eventData.add(le);
+                ld = le.data;
             }
             ld.add(data);
             ld.add(stack);
         }
     }
     
-    static void calledWithEventsData(Component c, String[] data) {
+    static void calledWithEventsData(Component c, Class listenerClass, String[] data) {
         // A breakpoint is submitted on this method.
         // When breakpoint is hit, data can be retrieved
     }
@@ -130,6 +163,9 @@ public class RemoteAWTService {
                 continue;
             }
             Dimension d = w.getSize();
+            if (d.width == 0 || d.height == 0) {
+                continue;
+            }
             BufferedImage bi = new BufferedImage(d.width, d.height, BufferedImage.TYPE_INT_ARGB);
             Graphics g = bi.createGraphics();
             w.paint(g);
@@ -177,17 +213,19 @@ public class RemoteAWTService {
                 } catch (InterruptedException ex) {
                     return ;
                 }
-                Map eventDataCopy = null;
+                List eventDataCopy = null;
                 synchronized (eventData) {
                     if (eventData.size() > 0) {
-                        eventDataCopy = new HashMap(eventData);
+                        eventDataCopy = new ArrayList(eventData);
                         eventData.clear();
                     }
                 }
                 if (eventDataCopy != null) {
-                    for (Iterator ic = eventDataCopy.keySet().iterator(); ic.hasNext(); ) {
-                        Component c = (Component) ic.next();
-                        List dataList = (List) eventDataCopy.get(c);
+                    for (Iterator ile = eventDataCopy.iterator(); ile.hasNext(); ) {
+                        ListenerEvent le = (ListenerEvent) ile.next();
+                        Component c = le.c;
+                        Class listenerClass = le.listenerClass;
+                        List dataList = le.data;
                         int totalLength = 0;
                         int l = dataList.size();
                         for (int i = 0; i < l; i++) {
@@ -202,10 +240,12 @@ public class RemoteAWTService {
                                 allData[ii++] = data[j];
                             }
                         }
-                        calledWithEventsData(c, allData);
+                        calledWithEventsData(c, listenerClass, allData);
                     }
                 }
             }
+            // Stopped
+            stopHierarchyListener();
         }
     }
     
@@ -219,6 +259,7 @@ public class RemoteAWTService {
         private String allIntDataString;
         private String allNamesString;
         private Component[] allComponentsArray;
+        private String componentsAddAt;
         private ComponentInfo component;
         private final Rectangle rectangle = new Rectangle();
         private static final char STRING_DELIMITER = (char) 3;   // ETX (end of text)
@@ -235,6 +276,7 @@ public class RemoteAWTService {
             allIntDataString = intArraytoString(allIntDataArray);
             allNamesString = createAllNamesString();
             allComponentsArray = createAllComponentsArray(componentCount);
+            componentsAddAt = createComponentsAddAt(allComponentsArray);
         }
         
         private ComponentInfo retrieveComponentInfo(Component c, int shiftx, int shifty) {
@@ -313,6 +355,16 @@ public class RemoteAWTService {
             Component[] components = new Component[componentCount];
             component.putComponentsTo(components, 0);
             return components;
+        }
+        
+        private String createComponentsAddAt(Component[] components) {
+            StringBuffer sb = new StringBuffer();
+            for (int i = 0; i < components.length; i++) {
+                String stack = getHierarchyChangeStackFor(components[i]);
+                sb.append(stack);  // The stack or "null"
+                sb.append(STRING_DELIMITER);
+            }
+            return sb.toString();
         }
         
         private static class ComponentInfo {
@@ -395,6 +447,19 @@ public class RemoteAWTService {
                     subComponents[i].putNamesTo(sb);
                 }
             }
+        }
+    }
+    
+    private static class ListenerEvent {
+        
+        Component c;
+        Class listenerClass;
+        List data;
+        
+        ListenerEvent(Component c, Class listenerClass) {
+            this.c = c;
+            this.listenerClass = listenerClass;
+            this.data = new ArrayList();
         }
     }
     

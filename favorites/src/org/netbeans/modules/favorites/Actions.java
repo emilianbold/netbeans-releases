@@ -57,6 +57,7 @@ import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.queries.VisibilityQuery;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.ActionID;
@@ -311,7 +312,7 @@ public final class Actions extends Object {
                 if (activatedNodes.length == 1 && activatedNodes[0] instanceof FavoritesNode) {
                     // show JFileChooser
                     FileObject fo = chooseFileObject();
-                    if (fo == null) return;
+                    if (fo == null || !VisibilityQuery.getDefault().isVisible(fo)) return;
                     toShadows = Collections.singletonList(DataObject.find(fo));
                 } else {
                     toShadows = new ArrayList<DataObject>();
@@ -328,7 +329,7 @@ public final class Actions extends Object {
                     }
                 });
             } catch (DataObjectNotFoundException e) {
-                LOG.log(Level.WARNING, null, e);
+                LOG.log(Level.INFO, null, e);
             }
         }
         
@@ -515,12 +516,9 @@ public final class Actions extends Object {
                     return false;
                 }
                 //Check if it is root.
-                File file = FileUtil.toFile(fo);
-                if (file != null) {
-                    if (file.getParent() == null) {
-                        //It is root: disable.
-                        return false;
-                    }
+                if (fo.isRoot()) {
+                    //It is root: disable.
+                    return false;
                 }
             }
 

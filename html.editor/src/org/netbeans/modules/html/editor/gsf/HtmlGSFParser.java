@@ -41,25 +41,17 @@
  */
 package org.netbeans.modules.html.editor.gsf;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
-import org.netbeans.editor.ext.html.parser.api.AstNode;
-import org.netbeans.editor.ext.html.parser.api.AstNodeUtils;
-import org.netbeans.editor.ext.html.parser.SyntaxAnalyzer;
-import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzerResult;
-import org.netbeans.editor.ext.html.parser.api.HtmlSource;
-import org.netbeans.editor.ext.html.parser.spi.UndeclaredContentResolver;
-import org.netbeans.modules.csl.api.ElementHandle;
-import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
+import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
+import org.netbeans.modules.html.editor.lib.api.HtmlSource;
+import org.netbeans.modules.html.editor.lib.api.SyntaxAnalyzer;
+import org.netbeans.modules.html.editor.lib.api.SyntaxAnalyzerResult;
+import org.netbeans.modules.html.editor.lib.api.UndeclaredContentResolver;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -75,7 +67,7 @@ public class HtmlGSFParser extends Parser {
     private static class AggregatedUndeclaredContentResolver extends UndeclaredContentResolver {
 
         private Collection<UndeclaredContentResolver> resolvers;
-        
+
         public AggregatedUndeclaredContentResolver(Collection<UndeclaredContentResolver> resolvers) {
             this.resolvers = resolvers;
         }
@@ -83,66 +75,61 @@ public class HtmlGSFParser extends Parser {
         @Override
         public Map<String, List<String>> getUndeclaredNamespaces(HtmlSource source) {
             Map<String, List<String>> aggregated = new HashMap<String, List<String>>();
-            for(UndeclaredContentResolver resolver : resolvers) {
+            for (UndeclaredContentResolver resolver : resolvers) {
                 aggregated.putAll(resolver.getUndeclaredNamespaces(source));
             }
             return aggregated;
         }
     }
-
     private HtmlParserResult lastResult;
 
     // ------------------------------------------------------------------------
     // o.n.m.p.spi.Parser implementation
     // ------------------------------------------------------------------------
-    public
-    @Override
+    public @Override
     void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
         lastResult = parse(snapshot, event);
     }
 
-    public
-    @Override
+    public @Override
     Result getResult(Task task) throws ParseException {
         assert lastResult != null : "getResult() called prior parse()"; //NOI18N
         return lastResult;
     }
 
-    public
-    @Override
+    public @Override
     void cancel() {
         //todo
     }
 
-    public
-    @Override
+    public @Override
     void addChangeListener(ChangeListener changeListener) {
         // no-op, we don't support state changes
     }
 
-    public
-    @Override
+    public @Override
     void removeChangeListener(ChangeListener changeListener) {
         // no-op, we don't support state changes
     }
-
-    /** logger for timers/counters */
+    /**
+     * logger for timers/counters
+     */
     private static final Logger TIMERS = Logger.getLogger("TIMER.j2ee.parser"); // NOI18N
 
     private HtmlParserResult parse(Snapshot snapshot, SourceModificationEvent event) {
         HtmlSource source = new HtmlSource(snapshot);
-        
+
         String sourceMimetype = snapshot.getSource().getMimeType();
         Collection<HtmlExtension> exts = HtmlExtension.getRegisteredExtensions(sourceMimetype);
         Collection<UndeclaredContentResolver> resolvers = new ArrayList<UndeclaredContentResolver>();
-        for(HtmlExtension ex : exts) {
+        for (HtmlExtension ex : exts) {
             UndeclaredContentResolver resolver = ex.getUndeclaredContentResolver();
-            if(resolver != null) {
+            if (resolver != null) {
                 resolvers.add(resolver);
             }
         }
-        
-        SyntaxAnalyzerResult spresult = SyntaxAnalyzer.create(source).analyze(new AggregatedUndeclaredContentResolver(resolvers));        
+
+        SyntaxAnalyzerResult spresult = SyntaxAnalyzer.create(source).analyze(new AggregatedUndeclaredContentResolver(resolvers));
         HtmlParserResult result = HtmlParserResultAccessor.get().createInstance(spresult);
 
         if (TIMERS.isLoggable(Level.FINE)) {
@@ -152,70 +139,6 @@ public class HtmlGSFParser extends Parser {
         }
 
         return result;
-    }
-
-
-    public static ElementHandle resolveHandle(ParserResult info, ElementHandle oldElementHandle) {
-        if (oldElementHandle instanceof HtmlElementHandle) {
-           HtmlElementHandle element = (HtmlElementHandle)oldElementHandle;
-            AstNode oldNode = element.node();
-
-            AstNode oldRoot = AstNodeUtils.getRoot(oldNode);
-
-            HtmlParserResult newResult = (HtmlParserResult)info;
-
-            AstNode newRoot = newResult.root();
-
-            if (newRoot == null) {
-                return null;
-            }
-
-            // Find newNode
-            AstNode newNode = find(oldRoot, oldNode, newRoot);
-
-            if (newNode != null) {
-                return new HtmlElementHandle(newNode, info.getSnapshot().getSource().getFileObject());
-            }
-        }
-
-        return null;
-    }
-
-    private static AstNode find(AstNode oldRoot, AstNode oldObject, AstNode newRoot) {
-        // Walk down the tree to locate oldObject, and in the process, pick the same child for newRoot
-        if (oldRoot == oldObject) {
-            // Found it!
-            return newRoot;
-        }
-
-        List<AstNode> oChildren = oldRoot.children();
-        List<AstNode> nChildren = newRoot.children();
-
-        for(int i = 0; i < oChildren.size(); i++) {
-
-            AstNode oCh = oChildren.get(i);
-
-            if(i == nChildren.size()) {
-                //no more new children
-                return null;
-            }
-            AstNode nCh = nChildren.get(i);
-
-            if (oCh == oldObject) {
-                // Found it!
-                return nCh;
-            }
-
-            // Recurse
-            AstNode match = find(oCh, oldObject, nCh);
-
-            if (match != null) {
-                return match;
-            }
-
-        }
-
-        return null;
     }
 
 }

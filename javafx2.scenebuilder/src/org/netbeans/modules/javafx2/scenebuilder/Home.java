@@ -49,21 +49,68 @@ import java.io.File;
  */
 public class Home {
     private String path;
+    private String launcherPath;
+    private String propertiesPath;
     private String version;
 
-    public Home(String path, String version) {
+    /**
+     * 
+     * @param path The home directory absolute path
+     * @param launcherPath The launcher path relative to the home path
+     * @param propertiesPath The properties path relative to the home path
+     * @param version The SB version
+     */
+    public Home(String path, String launcherPath, String propertiesPath, String version) {
         this.path = path;
         this.version = version;
+        this.launcherPath = launcherPath;
+        this.propertiesPath = propertiesPath;
     }
 
+    /**
+     * 
+     * @return The absolute SB home path
+     */
     public String getPath() {
         return path;
     }
 
+    /**
+     * 
+     * @return The absolute SB launcher path
+     */
+    public String getLauncherPath() {
+        return getLauncherPath(false);
+    }
+
+    public String getLauncherPath(boolean relative) {
+        return (relative ? "" : getPath() + File.separator) + launcherPath;
+    }
+    
+    /**
+     * 
+     * @return The absolute SB properties path
+     */
+    public String getPropertiesPath() {
+        return getPropertiesPath(false);
+    }
+    
+    public String getPropertiesPath(boolean relative) {
+        return (relative ? "" : getPath() + File.separator) + propertiesPath;
+    }
+
+    /**
+     * 
+     * @return The SB version
+     */
     public String getVersion() {
         return version;
     }
 
+    /**
+     * 
+     * @return TRUE if the path property represents a valid SB installation folder
+     */
     public boolean isValid() {
         if (path == null) return false;
         File f = new File(path);

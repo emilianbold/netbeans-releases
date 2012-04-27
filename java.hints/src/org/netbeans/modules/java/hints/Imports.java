@@ -46,14 +46,15 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.editor.java.Utilities;
 import org.netbeans.modules.java.editor.semantic.SemanticHighlighter;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
-import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
-import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Options;
-import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
-import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.TriggerTreeKind;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.JavaFix;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.java.hints.Hint.Options;
+import org.netbeans.spi.java.hints.JavaFixUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -68,7 +69,7 @@ public class Imports {
     private String IMPORTS_ID = "Imports_"; // NOI18N
     
 
-    @Hint(category="imports", id="Imports_STAR", enabled=false, options=Options.QUERY)
+    @Hint(displayName = "#DN_Imports_STAR", description = "#DESC_Imports_STAR", category="imports", id="Imports_STAR", enabled=false, options=Options.QUERY)
     @TriggerTreeKind(Kind.IMPORT)
     public static ErrorDescription starImport(HintContext ctx) {
         ImportTree it = (ImportTree) ctx.getPath().getLeaf();
@@ -84,19 +85,19 @@ public class Imports {
         return ErrorDescriptionFactory.forTree(ctx, ctx.getPath(), NbBundle.getMessage(Imports.class, "DN_Imports_STAR"));
     }
 
-    @Hint(category="imports", id="Imports_DEFAULT_PACKAGE")
+    @Hint(displayName = "#DN_Imports_DEFAULT_PACKAGE", description = "#DESC_Imports_DEFAULT_PACKAGE", category="imports", id="Imports_DEFAULT_PACKAGE")
     @TriggerTreeKind(Kind.COMPILATION_UNIT)
     public static List<ErrorDescription> defaultImport(HintContext ctx) {
         return importMultiHint(ctx, ImportHintKind.DEFAULT_PACKAGE, getAllImportsOfKind(ctx.getInfo(), ImportHintKind.DEFAULT_PACKAGE));
     }
     
-    @Hint(category="imports", id="Imports_UNUSED")
+    @Hint(displayName = "#DN_Imports_UNUSED", description = "#DESC_Imports_UNUSED", category="imports", id="Imports_UNUSED")
     @TriggerTreeKind(Kind.COMPILATION_UNIT)
     public static List<ErrorDescription> unusedImport(HintContext ctx) throws IOException {
         return importMultiHint(ctx, ImportHintKind.UNUSED, SemanticHighlighter.computeUnusedImports(ctx.getInfo()));
     }
 
-    @Hint(category="imports", id="Imports_SAME_PACKAGE")
+    @Hint(displayName = "#DN_Imports_SAME_PACKAGE", description = "#DESC_Imports_SAME_PACKAGE", category="imports", id="Imports_SAME_PACKAGE")
     @TriggerTreeKind(Kind.COMPILATION_UNIT)
     public static List<ErrorDescription> samePackage(HintContext ctx) throws IOException {
         return importMultiHint(ctx, ImportHintKind.SAME_PACKAGE, getAllImportsOfKind(ctx.getInfo(), ImportHintKind.SAME_PACKAGE));
@@ -106,18 +107,18 @@ public class Imports {
         // Has to be done in order to provide 'remove all' fix
         Fix allFix = null;
         if (ctx.isBulkMode() && !violatingImports.isEmpty()) {
-            Fix af = JavaFix.toEditorFix(new ImportsFix(violatingImports, kind));
+            Fix af = new ImportsFix(violatingImports, kind).toEditorFix();
             return Collections.singletonList(ErrorDescriptionFactory.forTree(ctx, ctx.getPath(), NbBundle.getMessage(Imports.class, "DN_Imports_" + kind.toString()), af));
         }
         if (violatingImports.size() > 1) {
-            allFix = JavaFix.toEditorFix(new ImportsFix(violatingImports, kind));
+            allFix = new ImportsFix(violatingImports, kind).toEditorFix();
         }
         List<ErrorDescription> result = new ArrayList<ErrorDescription>(violatingImports.size());
         for (TreePathHandle it : violatingImports) {
             TreePath resolvedIt = it.resolve(ctx.getInfo());
             if (resolvedIt == null) continue; //#204580
             List<Fix> fixes = new ArrayList<Fix>();
-            fixes.add(JavaFix.toEditorFix(new ImportsFix(Collections.singletonList(it), kind)));
+            fixes.add(new ImportsFix(Collections.singletonList(it), kind).toEditorFix());
             if (allFix != null) {
                 fixes.add(allFix);
             }
@@ -127,7 +128,7 @@ public class Imports {
         return result;
     }
 
-    @Hint(category="imports", id="Imports_EXCLUDED", options=Options.QUERY)
+    @Hint(displayName = "#DN_Imports_EXCLUDED", description = "#DESC_Imports_EXCLUDED", category="imports", id="Imports_EXCLUDED", options=Options.QUERY)
     @TriggerTreeKind(Kind.IMPORT)
     public static ErrorDescription exlucded(HintContext ctx) throws IOException {
         ImportTree it = (ImportTree) ctx.getPath().getLeaf();
@@ -227,7 +228,9 @@ public class Imports {
         }
 
         @Override
-        protected void performRewrite(WorkingCopy copy, TreePath tp, boolean canShowUI) {
+        protected void performRewrite(TransformationContext ctx) {
+            WorkingCopy copy = ctx.getWorkingCopy();
+            TreePath tp = ctx.getPath();
             CompilationUnitTree cut = copy.getCompilationUnit();
             
             TreeMaker make = copy.getTreeMaker();

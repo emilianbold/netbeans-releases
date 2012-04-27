@@ -53,7 +53,7 @@ public final class PHPPaletteCustomizerAction implements ActionListener {
         try {
             PHPPaletteFactory.getPalette().showCustomizer();
         } catch (IOException ioe) {
-            Logger.global.log(Level.INFO, null, ioe);
+            Logger.getLogger(Logger.GLOBAL_LOGGER_NAME).log(Level.INFO, null, ioe);
         }
     }
 }

@@ -62,9 +62,9 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
+import org.netbeans.modules.javaee.specs.support.api.JaxWs;
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
 import org.netbeans.modules.websvc.wsstack.api.WSTool;
-import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -492,10 +492,13 @@ public final class J2EEProjectProperties {
         }
         File rootFile = FileUtil.normalizeFile(j2eePlatform.getPlatformRoots()[0]);
         FileObject root = FileUtil.toFileObject(rootFile);
+        if (root == null) {
+            return null;
+        }
         boolean ok = true;
         for (File file : j2eePlatform.getClasspathEntries()) {
             FileObject fo = FileUtil.toFileObject(file);
-            if (!FileUtil.isParentOf(root, fo)) {
+            if (fo != null && !FileUtil.isParentOf(root, fo)) {
                 ok = false;
                 break;
             }

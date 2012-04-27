@@ -44,6 +44,7 @@ package org.netbeans.modules.subversion.client.commands;
 
 import org.netbeans.modules.subversion.client.AbstractCommandTestCase;
 import java.io.File;
+import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.ISVNInfo;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
@@ -99,9 +100,6 @@ public class InfoTestHidden extends AbstractCommandTestCase {
     }
 
     public void testInfoWrongUrlWithAtSign() throws Exception {
-        if(!shouldBeTestedWithCurrentClient(true, false)) {
-            return;
-        }
         testInfoWrongUrl("@bancha");
         testInfoWrongUrl("ban@cha");
         testInfoWrongUrl("bancha@");
@@ -125,7 +123,8 @@ public class InfoTestHidden extends AbstractCommandTestCase {
 
         assertNotNull(e1);
         assertNotNull(e2);
-        assertTrue(e2.getMessage().indexOf(e1.getMessage()) > -1);
+        assertTrue(SvnClientExceptionHandler.isWrongUrl(e1.getMessage()));
+        assertTrue(SvnClientExceptionHandler.isWrongUrl(e2.getMessage()));
     }
 
     public void testInfoNotManaged() throws Exception {
@@ -133,27 +132,18 @@ public class InfoTestHidden extends AbstractCommandTestCase {
     }
 
     public void testInfoNotManagedFileWithAtSign() throws Exception {
-        if(!shouldBeTestedWithCurrentClient(true, false)) {
-            return;
-        }
         testInfoNotManaged("folder", "@file");
         testInfoNotManaged("folder", "fi@le");
         testInfoNotManaged("folder", "file@");
     }
 
     public void testInfoNotManagedFolderWithAtSign() throws Exception {
-        if(!shouldBeTestedWithCurrentClient(true, false)) {
-            return;
-        }
         testInfoNotManaged("@folder", "file");
         testInfoNotManaged("fol@der", "file");
         testInfoNotManaged("folder@", "file");
     }
 
     public void testInfoNotManagedFolderAndFileWithAtSigns() throws Exception {
-        if(!shouldBeTestedWithCurrentClient(true, false)) {
-            return;
-        }
         testInfoNotManaged("@folder", "@file");
         testInfoNotManaged("@folder", "fi@le");
         testInfoNotManaged("@folder", "file@");
@@ -189,9 +179,6 @@ public class InfoTestHidden extends AbstractCommandTestCase {
     }
 
     public void testInfoFileWithAtSign() throws Exception {
-        if(!shouldBeTestedWithCurrentClient(true, false)) {
-            return;
-        }
         testInfoFile("@file");
         testInfoFile("fi@le");
         testInfoFile("file@");
@@ -202,9 +189,6 @@ public class InfoTestHidden extends AbstractCommandTestCase {
     }
 
     public void testInfoFileWithAtSignInDir() throws Exception {
-        if(!shouldBeTestedWithCurrentClient(true, false)) {
-            return;
-        }
         testInfoFile("folder/@file");
         testInfoFile("folder/fi@le");
         testInfoFile("folder/file@");
@@ -308,9 +292,6 @@ public class InfoTestHidden extends AbstractCommandTestCase {
     }
 
     public void testInfoDeletedWithAtSign() throws Exception {
-        if(!shouldBeTestedWithCurrentClient(true, false)) {
-            return;
-        }
         testInfoDeleted("@file");
         testInfoDeleted("fi@le");
         testInfoDeleted("file@");
@@ -429,7 +410,8 @@ public class InfoTestHidden extends AbstractCommandTestCase {
 
         assertNotNull(e1);
         assertNotNull(e2);
-        assertTrue(e2.getMessage().indexOf(e1.getMessage()) > -1);
+        assertTrue(SvnClientExceptionHandler.isWrongUrl(e1.getMessage()));
+        assertTrue(SvnClientExceptionHandler.isWrongUrl(e2.getMessage()));
     }
 
 }

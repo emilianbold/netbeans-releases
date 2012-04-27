@@ -49,26 +49,28 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
-import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
-import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
-import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
-import org.netbeans.modules.java.hints.jackpot.spi.support.OneCheckboxCustomizerProvider;
-import org.netbeans.modules.java.hints.perf.SizeEqualsZero.CustomizerProviderImpl;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.JavaFix;
+import org.netbeans.spi.java.hints.BooleanOption;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.TriggerPattern;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.JavaFixUtilities;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author lahvac
  */
-@Hint(category="performance", customizerProvider=CustomizerProviderImpl.class, suppressWarnings="SizeReplaceableByIsEmpty")
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.perf.SizeEqualsZero", description = "#DESC_org.netbeans.modules.java.hints.perf.SizeEqualsZero", category="performance", suppressWarnings="SizeReplaceableByIsEmpty")
 public class SizeEqualsZero {
 
-    static final String CHECK_NOT_EQUALS = "check.not.equals";
     static final boolean CHECK_NOT_EQUALS_DEFAULT = true;
+    
+    @BooleanOption(displayName = "#LBL_org.netbeans.modules.java.hints.perf.SizeEqualsZero.CHECK_NOT_EQUALS", tooltip = "#TP_org.netbeans.modules.java.hints.perf.SizeEqualsZero.CHECK_NOT_EQUALS", defaultValue=CHECK_NOT_EQUALS_DEFAULT)
+    public static final String CHECK_NOT_EQUALS = "check.not.equals";
 
     @TriggerPattern(value="$subj.size() == 0")
     public static ErrorDescription sizeEqualsZero(HintContext ctx) {
@@ -111,19 +113,9 @@ public class SizeEqualsZero {
         }
 
         String fixDisplayName = NbBundle.getMessage(SizeEqualsZero.class, not ? "FIX_UseIsEmptyNeg" : "FIX_UseIsEmpty");
-        Fix f = JavaFix.rewriteFix(ctx, fixDisplayName, ctx.getPath(), not ? "!$subj.isEmpty()" : "$subj.isEmpty()");
+        Fix f = JavaFixUtilities.rewriteFix(ctx, fixDisplayName, ctx.getPath(), not ? "!$subj.isEmpty()" : "$subj.isEmpty()");
         String displayName = NbBundle.getMessage(SizeEqualsZero.class, not ? "ERR_SizeEqualsZeroNeg" : "ERR_SizeEqualsZero");
         return ErrorDescriptionFactory.forTree(ctx, ctx.getPath(), displayName, f);
     }
 
-    private static final String CONF_CHECKBOX_LABEL = NbBundle.getMessage(SizeEqualsZero.class, "CONF_LBL_SizeEqualsZero");
-    private static final String CONF_CHECKBOX_TP = NbBundle.getMessage(SizeEqualsZero.class, "CONF_TP_SizeEqualsZero");
-
-    public static final class CustomizerProviderImpl extends OneCheckboxCustomizerProvider {
-
-        public CustomizerProviderImpl() {
-            super(CONF_CHECKBOX_LABEL, CONF_CHECKBOX_TP, CHECK_NOT_EQUALS, CHECK_NOT_EQUALS_DEFAULT);
-        }
-
-    }
 }

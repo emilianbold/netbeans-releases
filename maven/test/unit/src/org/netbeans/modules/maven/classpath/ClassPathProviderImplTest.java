@@ -44,24 +44,24 @@ package org.netbeans.modules.maven.classpath;
 
 import java.net.URL;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import org.apache.maven.artifact.Artifact;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
+import org.netbeans.modules.maven.indexer.NexusRepositoryIndexerImpl;
+import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
-import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
-import org.netbeans.modules.maven.indexer.spi.RepositoryIndexerImplementation;
+import org.netbeans.modules.maven.indexer.api.RepositoryQueries.Result;
+import org.netbeans.modules.maven.indexer.spi.ChecksumQueries;
+import org.netbeans.modules.maven.indexer.spi.Redo;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.test.TestFileUtils;
-import org.openide.util.Lookup;
 import org.openide.util.test.MockLookup;
 import org.openide.util.test.MockPropertyChangeListener;
 
@@ -132,16 +132,17 @@ public class ClassPathProviderImplTest extends NbTestCase {
     }
 
     public void testEndorsedClassPath() throws Exception {
-        MockLookup.setInstances(new RepositoryIndexerImplementation() { // need to suppress RepositoryQueries.findBySHA1 for test
-            public @Override String getType() {
-                return RepositoryPreferences.TYPE_NEXUS;
+        MockLookup.setInstances(new ChecksumQueries() {
+
+            @Override
+            public Result<NBVersionInfo> findBySHA1(String sha1, List<RepositoryInfo> repos) {
+                return NexusRepositoryIndexerImpl.ACCESSOR.createVersionResult(new Redo<NBVersionInfo>() {
+
+                    @Override
+                    public void run(Result<NBVersionInfo> result) {
+                    }
+                });
             }
-            public @Override Lookup getCapabilityLookup() {
-                return Lookup.EMPTY;
-            }
-            public @Override void indexRepo(RepositoryInfo repo) {}
-            public @Override void updateIndexWithArtifacts(RepositoryInfo repo, Collection<Artifact> artifacts) {}
-            public @Override void deleteArtifactFromIndex(RepositoryInfo repo, Artifact artifact) {}
         });
         TestFileUtils.writeFile(d,
                 "pom.xml",
@@ -201,10 +202,44 @@ public class ClassPathProviderImplTest extends NbTestCase {
         FileObject tsrc = FileUtil.createFolder(d, "src/test/java");
         FileObject gtsrc = FileUtil.createFolder(d, "target/generated-test-sources/jaxb");
         gtsrc.createData("Whatever.class");
+        FileObject gtsrc2 = FileUtil.createFolder(d, "target/generated-sources/test-annotations"); // MCOMPILER-167
+        gtsrc2.createData("Whatever.class");
         assertRoots(ClassPath.getClassPath(src, ClassPath.SOURCE), src, gsrc);
         assertRoots(ClassPath.getClassPath(gsrc, ClassPath.SOURCE), src, gsrc);
-        assertRoots(ClassPath.getClassPath(tsrc, ClassPath.SOURCE), tsrc, gtsrc);
-        assertRoots(ClassPath.getClassPath(gtsrc, ClassPath.SOURCE), tsrc, gtsrc);
+        assertRoots(ClassPath.getClassPath(tsrc, ClassPath.SOURCE), tsrc, gtsrc, gtsrc2);
+        assertRoots(ClassPath.getClassPath(gtsrc, ClassPath.SOURCE), tsrc, gtsrc, gtsrc2);
+        assertRoots(ClassPath.getClassPath(gtsrc2, ClassPath.SOURCE), tsrc, gtsrc, gtsrc2);
+    }
+
+    public void testNewlyCreatedSourceGroup() throws Exception { // #190852
+        TestFileUtils.writeFile(d,
+                "pom.xml",
+                "<project xmlns='http://maven.apache.org/POM/4.0.0'>" +
+                "<modelVersion>4.0.0</modelVersion>" +
+                "<groupId>grp</groupId>" +
+                "<artifactId>art</artifactId>" +
+                "<packaging>jar</packaging>" +
+                "<version>0</version>" +
+                "</project>");
+        FileObject src = FileUtil.createFolder(d, "src/main/java");
+        FileObject tsrc = FileUtil.createFolder(d, "src/test/java");
+        ClassPath sourcepath = ClassPath.getClassPath(src, ClassPath.SOURCE);
+        ClassPath tsourcepath = ClassPath.getClassPath(tsrc, ClassPath.SOURCE);
+        assertRoots(sourcepath, src);
+        assertRoots(tsourcepath, tsrc);
+        MockPropertyChangeListener l = new MockPropertyChangeListener();
+        sourcepath.addPropertyChangeListener(l);
+        FileObject gsrc = FileUtil.createFolder(d, "target/generated-sources/xjc");
+        gsrc.createData("Whatever.class");
+        l.assertEvents(ClassPath.PROP_ENTRIES, ClassPath.PROP_ROOTS);
+        assertRoots(sourcepath, src, gsrc);
+        assertSame(sourcepath, ClassPath.getClassPath(gsrc, ClassPath.SOURCE));
+        tsourcepath.addPropertyChangeListener(l);
+        FileObject gtsrc = FileUtil.createFolder(d, "target/generated-test-sources/jaxb");
+        gtsrc.createData("Whatever.class");
+        l.assertEvents(ClassPath.PROP_ENTRIES, ClassPath.PROP_ROOTS);
+        assertRoots(tsourcepath, tsrc, gtsrc);
+        assertSame(tsourcepath, ClassPath.getClassPath(gtsrc, ClassPath.SOURCE));
     }
 
     public void testArchetypeResources() throws Exception { // #189037

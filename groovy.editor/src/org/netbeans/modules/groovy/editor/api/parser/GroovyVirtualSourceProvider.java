@@ -76,7 +76,7 @@ import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.control.ResolveVisitor;
 import org.netbeans.modules.groovy.editor.api.AstUtilities;
-import org.netbeans.modules.groovy.editor.api.elements.AstRootElement;
+import org.netbeans.modules.groovy.editor.api.elements.ast.ASTRoot;
 import org.netbeans.modules.java.preprocessorbridge.spi.VirtualSourceProvider;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -171,7 +171,7 @@ public class GroovyVirtualSourceProvider implements VirtualSourceProvider {
                     public void run(ResultIterator resultIterator) throws Exception {
                         GroovyParserResult result = AstUtilities.getParseResult(resultIterator.getParserResult());
 
-                        AstRootElement astRootElement = result.getRootElement();
+                        ASTRoot astRootElement = result.getRootElement();
                         if (astRootElement != null) {
                             ModuleNode moduleNode = astRootElement.getModuleNode();
                             if (moduleNode != null) {
@@ -320,6 +320,10 @@ public class GroovyVirtualSourceProvider implements VirtualSourceProvider {
                     MethodNode setter = classNode.getSetterMethod("set" + name); // NOI18N
                     if (setter != null) {
                         genMethod(classNode, setter, out, false);
+                    }
+                    MethodNode isMethod = classNode.getDeclaredMethod("is" + name, new Parameter[0]); // NOI18N
+                    if (isMethod != null) {
+                        genMethod(classNode, isMethod, out, false);
                     }
                 }
             }

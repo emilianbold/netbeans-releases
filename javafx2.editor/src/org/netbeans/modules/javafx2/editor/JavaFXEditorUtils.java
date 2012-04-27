@@ -56,6 +56,9 @@ import org.netbeans.modules.csl.api.CompletionProposal;
  */
 public final class JavaFXEditorUtils {
 
+    public static final String FXML_MIME_TYPE = "text/x-fxml+xml"; // NOI18N
+    public static final String FXML_FILE_EXTENSION = "fxml"; // NOI18N
+
     private JavaFXEditorUtils() {
     }
 

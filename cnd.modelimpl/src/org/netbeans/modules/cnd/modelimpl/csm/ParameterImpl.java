@@ -61,14 +61,24 @@ public class ParameterImpl extends VariableImpl<CsmParameter> implements CsmPara
         super(ast, file, type, name, scope, false, false);
     }
 
-    public static ParameterImpl create(AST ast, CsmFile file, CsmType type, NameHolder name, CsmScope scope, boolean global) {
+    public static ParameterImpl create(AST ast, CsmFile file, CsmType type, NameHolder name, CsmScope scope) {
         ParameterImpl parameterImpl = new ParameterImpl(ast, file, type, name, scope);
-        postObjectCreateRegistration(global, parameterImpl);
         return parameterImpl;
     }
 
     @Override
+    protected CsmUID<? extends CsmOffsetableDeclaration> createUID() {
+        assert false;
+        return super.createUID();
+    }
+
+    @Override
     protected boolean registerInProject() {
+        return false;
+    }
+
+    @Override
+    protected boolean unregisterInProject() {
         return false;
     }
 
@@ -83,17 +93,9 @@ public class ParameterImpl extends VariableImpl<CsmParameter> implements CsmPara
     @Override
     public void write(RepositoryDataOutput output) throws IOException {
         super.write(output);      
-        // write UID for unnamed parameter
-        if (getName().length() == 0) {
-            super.writeUID(output);
-        }
     }  
     
     public ParameterImpl(RepositoryDataInput input) throws IOException {
         super(input);
-        // restore UID for unnamed parameter
-        if (getName().length() == 0) {
-            super.readUID(input);
-        }
     } 
 }

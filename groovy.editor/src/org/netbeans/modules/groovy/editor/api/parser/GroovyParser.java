@@ -59,6 +59,8 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
 import org.codehaus.groovy.ast.CompileUnit;
@@ -71,18 +73,7 @@ import org.codehaus.groovy.control.messages.SimpleMessage;
 import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
 import org.codehaus.groovy.syntax.SyntaxException;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.groovy.editor.api.AstUtilities;
-import org.netbeans.modules.groovy.editor.api.GroovyUtils;
-import org.netbeans.modules.groovy.editor.api.GroovyCompilerErrorID;
-import org.netbeans.modules.parsing.api.Task;
-import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
-import java.util.logging.Logger;
-import java.util.logging.Level;
 import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
@@ -90,12 +81,20 @@ import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.csl.spi.GsfUtilities;
+import org.netbeans.modules.groovy.editor.api.AstUtilities;
+import org.netbeans.modules.groovy.editor.api.GroovyCompilerErrorID;
+import org.netbeans.modules.groovy.editor.api.GroovyUtils;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.api.Task;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -109,10 +108,8 @@ public class GroovyParser extends Parser {
 
     private static final AtomicInteger PARSING_COUNT = new AtomicInteger(0);
 
-    private static final ClassPath EMPTY_CLASSPATH = ClassPathSupport.createClassPath(new URL[] {});
-
     private static long maximumParsingTime;
-
+    
     private GroovyParserResult lastResult;
 
     private AtomicBoolean cancelled = new AtomicBoolean();
@@ -154,6 +151,8 @@ public class GroovyParser extends Parser {
         Context context = new Context(snapshot, event);
         final Set<Error> errors = new HashSet<Error>();
         context.errorHandler = new ParseErrorHandler() {
+
+            @Override
             public void error(Error error) {
                 errors.add(error);
             }
@@ -171,7 +170,7 @@ public class GroovyParser extends Parser {
         GroovyParserResult parserResult = new GroovyParserResult(this, snapshot, rootNode, errorCollector);
         return parserResult;
     }
-
+    
     private boolean sanitizeSource(Context context, Sanitize sanitizing) {
 
         if (sanitizing == Sanitize.MISSING_END) {
@@ -437,28 +436,25 @@ public class GroovyParser extends Parser {
         }
 
         FileObject fo = context.snapshot.getSource().getFileObject();
-        ClassPath bootPath = fo == null ? EMPTY_CLASSPATH : ClassPath.getClassPath(fo, ClassPath.BOOT);
-        ClassPath compilePath = fo == null ? EMPTY_CLASSPATH : ClassPath.getClassPath(fo, ClassPath.COMPILE);
-        ClassPath sourcePath = fo == null ? EMPTY_CLASSPATH : ClassPath.getClassPath(fo, ClassPath.SOURCE);
+        ClassPath bootPath = fo == null ? ClassPath.EMPTY : ClassPath.getClassPath(fo, ClassPath.BOOT);
+        ClassPath compilePath = fo == null ? ClassPath.EMPTY : ClassPath.getClassPath(fo, ClassPath.COMPILE);
+        ClassPath sourcePath = fo == null ? ClassPath.EMPTY : ClassPath.getClassPath(fo, ClassPath.SOURCE);
         ClassPath cp = ClassPathSupport.createProxyClassPath(bootPath, compilePath, sourcePath);
 
         CompilerConfiguration configuration = new CompilerConfiguration();
         GroovyClassLoader classLoader = new ParsingClassLoader(cp, configuration);
-        GroovyClassLoader transformationLoader = new TransformationClassLoader(CompilationUnit.class.getClassLoader(),
-                cp, configuration);
-
+        final ClassNodeCache classNodeCache = ClassNodeCache.get();
+        final GroovyClassLoader transformationLoader = classNodeCache.createTransformationLoader(cp,configuration);        
         ClasspathInfo cpInfo = ClasspathInfo.create(
                 // we should try to load everything by javac instead of classloader,
-                // but for now it is faster to use javac only for sources
+                // but for now it is faster to use javac only for sources - not true
 
                 // null happens in GSP
-                bootPath == null ? EMPTY_CLASSPATH : bootPath,
-                compilePath == null ? EMPTY_CLASSPATH : compilePath,
-                sourcePath);
-        JavaSource javaSource = JavaSource.create(cpInfo);
-
+                bootPath == null ? ClassPath.EMPTY : bootPath,
+                compilePath == null ? ClassPath.EMPTY : compilePath,
+                sourcePath);        
         CompilationUnit compilationUnit = new CompilationUnit(this, configuration,
-                null, classLoader, transformationLoader, javaSource);
+                null, classLoader, transformationLoader, cpInfo, classNodeCache);
         InputStream inputStream = new ByteArrayInputStream(source.getBytes());
         compilationUnit.addSource(fileName, inputStream);
 
@@ -797,7 +793,7 @@ public class GroovyParser extends Parser {
 
     }
 
-    private static class TransformationClassLoader extends GroovyClassLoader {
+    static class TransformationClassLoader extends GroovyClassLoader {
 
         public TransformationClassLoader(ClassLoader parent, ClassPath cp, CompilerConfiguration config) {
             super(parent, config);
@@ -815,8 +811,12 @@ public class GroovyParser extends Parser {
         private final ClassPath path;
 
         private final GroovyResourceLoader resourceLoader = new GroovyResourceLoader() {
+
+            @Override
             public URL loadGroovySource(final String filename) throws MalformedURLException {
                 URL file = (URL) AccessController.doPrivileged(new PrivilegedAction() {
+
+                    @Override
                     public Object run() {
                         return getSourceFile(filename);
                     }

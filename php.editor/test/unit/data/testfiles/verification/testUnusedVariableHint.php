@@ -88,7 +88,24 @@ function($param1) use ($field1) {return $field1;};
 
 function($param11) use ($field11) {return $param11;};
 
-//END
+$instanceOf = "\Foo";
+if ($ins instanceof $instanceOf) {
+
+}
+
+$omg = 60;
+$gom = 60;
+switch ($omg) {
+    case $gom: break;
+}
+
+$variableCompact = 'test';
+compact('variableCompact');
+
 ?>
 
 <?= $usedShortEcho; ?>
+
+<?php
+//END
+?>

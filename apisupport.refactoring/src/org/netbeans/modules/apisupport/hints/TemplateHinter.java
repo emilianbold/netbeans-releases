@@ -66,7 +66,7 @@ import static org.netbeans.modules.apisupport.hints.Bundle.*;
 public class TemplateHinter implements Hinter {
 
     @Messages({
-        "TemplateHinter_content_file=Replace with @Template",
+        "TemplateHinter_content_file=Replace with @TemplateRegistration",
         "# {0} - file attribute name", "TemplateHinter_unrecognized_attr=Unrecognized template attribute: {0}",
         "# {0} - current name and extension", "# {1} - inferred name and extension", "TemplateHinter_basename_mismatch=Current url attribute would make template be named {1} rather than {0}"
     })

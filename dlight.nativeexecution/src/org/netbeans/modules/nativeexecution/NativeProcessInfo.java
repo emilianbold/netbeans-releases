@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.nativeexecution;
 
+import java.io.File;
 import java.nio.charset.Charset;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -48,11 +49,11 @@ import java.util.Collection;
 import java.util.List;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.pty.Pty;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
-import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
-import org.netbeans.modules.nativeexecution.api.pty.Pty;
+import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.openide.util.Utilities;
 
 /**
@@ -90,6 +91,36 @@ public final class NativeProcessInfo {
         redirectError = false;
     }
 
+    /**
+     * NB! listeners are copied.
+     *
+     * @param info
+     */
+    NativeProcessInfo(NativeProcessInfo info) {
+        this.macroExpander = info.macroExpander;
+        this.execEnv = info.execEnv;
+        this.isWindows = info.isWindows;
+        this.environment = info.environment.clone();
+        this.arguments.addAll(info.arguments);
+        this.executable = info.executable;
+        this.commandLine = info.commandLine;
+        this.workingDirectory = info.workingDirectory;
+        this.unbuffer = info.unbuffer;
+        this.redirectError = info.redirectError;
+        this.x11forwarding = info.x11forwarding;
+        this.suspend = info.suspend;
+
+        Collection<ChangeListener> l = info.getListeners();
+        if (l != null) {
+            this.listeners = new ArrayList<ChangeListener>(l);
+        }
+
+        this.pty = info.pty;
+        this.runInPty = info.runInPty;
+        this.expandMacros = info.expandMacros;
+        this.charset = info.charset;
+    }
+
     public void addNativeProcessListener(ChangeListener listener) {
         if (listeners == null) {
             listeners = new ArrayList<ChangeListener>();
@@ -108,7 +139,7 @@ public final class NativeProcessInfo {
 
     @Deprecated
     public void setCommandLine(String commandLine) {
-        if (isWindows) {
+        if (isWindows && commandLine != null) {
             // Until we use java ProcessBuilder on Windows,
             // we cannot pass a single line to it [IZ#170748]
             String[] cmdAndArgs = Utilities.parseParameters(commandLine);
@@ -213,6 +244,10 @@ public final class NativeProcessInfo {
                 }
             } catch (Exception ex) {
                 cmd = executable;
+            }
+
+            if (execEnv.isLocal()) {
+                cmd = findFullPathToExceutable(cmd);
             }
 
             result.add(cmd);
@@ -384,5 +419,46 @@ public final class NativeProcessInfo {
 
     public Charset getCharset() {
         return charset;
+    }
+
+    private String findFullPathToExceutable(String cmd) {
+        if (execEnv.isRemote()) {
+            // Not going to search on remote ...
+            return cmd;
+        }
+        File f;
+        if ((!isWindows && cmd.startsWith("/"))) { // NOI18N
+            f = new File(cmd);
+            if (f.exists()) {
+                return f.getAbsolutePath();
+            }
+        }
+
+        if ((isWindows && cmd.length() > 2 && cmd.charAt(1) == ':')) {
+            f = new File(cmd);
+            if (f.exists()) {
+                return f.getAbsolutePath();
+            }
+            f = new File(cmd + ".exe"); // NOI18N
+            if (f.exists()) {
+                return f.getAbsolutePath();
+            }
+        }
+
+        f = new File(workingDirectory, cmd);
+
+        if (f.exists()) {
+            return f.getAbsolutePath();
+        }
+
+        if (isWindows) {
+            f = new File(workingDirectory, cmd + ".exe"); // NOI18N
+
+            if (f.exists()) {
+                return f.getAbsolutePath();
+            }
+        }
+
+        return cmd;
     }
 }

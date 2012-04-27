@@ -446,13 +446,13 @@ public abstract class CsmResultItem implements CompletionItem {
                     return false;
                 }
             }
-            if (lastID instanceof CppTokenId) {
-                switch ((CppTokenId) lastID) {
-                    case CLASS:
-                    case STRUCT:
-                    case UNION:
-                        return true;
-                }
+        }
+        if (lastID instanceof CppTokenId) {
+            switch ((CppTokenId) lastID) {
+                case CLASS:
+                case STRUCT:
+                case UNION:
+                    return true;
             }
         }
         return false;
@@ -496,6 +496,9 @@ public abstract class CsmResultItem implements CompletionItem {
                             ts = CndLexerUtilities.getCppTokenSequence(component, guardOffset.getStartOffset(), false, false);
                         } else {
                             ts = CndLexerUtilities.getCppTokenSequence(component, 0, false, false);
+                            if (ts != null) {
+                                ts.moveStart();
+                            }
                         }
                         if (ts != null) {
                             int offset = getIncludeOffsetFromTokenSequence(ts);
@@ -972,7 +975,7 @@ public abstract class CsmResultItem implements CompletionItem {
                 CsmType type = ((CsmParameter) prm).getType();
                 if (type == null) {
                     // only var args parameters could have null types
-                    assert (((CsmParameter) prm).isVarArgs());
+                    assert (((CsmParameter) prm).isVarArgs()) : " non var arg " + prm + " of class " + prm.getClass().getName();
                     params.add(new ParamStr("", "", ((CsmParameter) prm).getName().toString(), true, KEYWORD_COLOR)); //NOI18N
                     varArgIndex = i;
                 } else {

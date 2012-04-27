@@ -47,6 +47,8 @@ import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.*;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionBase;
@@ -83,7 +85,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
 
     protected VariableImpl(AST ast, CsmFile file, CsmType type, NameHolder name, CsmScope scope,  boolean _static, boolean _extern) {
         super(file, getStartOffset(ast), getEndOffset(ast));
-        initInitialValue(ast);
+        initInitialValue(ast, scope);
         this._static = _static;
         this._extern = _extern;
         this.name = NameCache.getManager().getString(name.getName());
@@ -170,12 +172,14 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         return false;
     }
 
-    private void unregisterInProject() {
+    protected boolean unregisterInProject() {
         CsmProject project = getContainingFile().getProject();
         if (project instanceof ProjectBase) {
             ((ProjectBase) project).unregisterDeclaration(this);
             this.cleanUID();
+            return true;
         }
+        return false;
     }
 
     /** Gets this element name 
@@ -213,7 +217,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         return type;
     }
 
-    private void initInitialValue(AST node) {
+    private void initInitialValue(AST node, CsmScope scope) {
         if (node != null) {
             int start = 0;
             int end = 0;
@@ -238,6 +242,9 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
             int curlyLevel = 0;
             int templateLevel = 0;
             int parenLevel = 0;
+            
+            List<CsmStatement> lambdas = new ArrayList<CsmStatement>();
+            
             while (tok != null) {
                 if ((curlyLevel == 0 && templateLevel == 0 && parenLevel == 0 && tok.getType() == CPPTokenTypes.COMMA) || tok.getType() == CPPTokenTypes.SEMICOLON) {
                     break;
@@ -261,6 +268,11 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
                     parenLevel--;
                 }
                 lastInitAst = tok;
+                
+                if(tok.getType() == CPPTokenTypes.CSM_DECLARATION_STATEMENT) {
+                    lambdas.add(AstRenderer.renderStatement(tok, getContainingFile(), scope));
+                }
+                
                 tok = tok.getNextSibling();
             }
             if (lastInitAst != null) {
@@ -268,6 +280,9 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
                 if ((lastChild != null) && (lastChild instanceof CsmAST)) {
                     end = ((CsmAST) lastChild).getEndOffset();
                     initExpr = ExpressionBase.create(start, end, getContainingFile(),/* null,*/ _getScope());
+                    if(!lambdas.isEmpty()) {
+                        initExpr.setLambdas(lambdas);
+                    }
                 }
             }
         }

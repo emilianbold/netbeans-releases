@@ -1,20 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
-
-    <folder name="Services">
-        <folder name="MIMEResolver">
-            <file name="cnd-source-resolver-ext-based.xml" url="mime-resolver-ext-based.xml">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.source.resources.Bundle"/>
-                <attr name="position" intvalue="214"/>
-            </file>
-            <file name="cnd-source-resolver-content-based.xml" url="mime-resolver-content-based.xml">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.source.resources.Bundle"/>
-                <attr name="position" intvalue="470"/>
-            </file>
-        </folder>
-    </folder>
-
     <folder name="Loaders">
         <folder name="text">
             <folder name="x-cnd+sourcefile">

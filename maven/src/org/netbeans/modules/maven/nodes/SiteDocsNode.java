@@ -43,9 +43,9 @@ package org.netbeans.modules.maven.nodes;
 
 import java.util.Collections;
 import javax.swing.Action;
+import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.maven.ActionProviderImpl;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
-import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.openide.ErrorManager;
@@ -57,7 +57,6 @@ import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 
 /**
@@ -125,6 +124,7 @@ class SiteDocsNode extends FilterNode {
          return super.getHtmlDisplayName();
     }        
     
+    @Override
     public javax.swing.Action[] getActions(boolean param) {
         if (isTopLevelNode) {
             ActionProviderImpl impl = project.getLookup().lookup(ActionProviderImpl.class);

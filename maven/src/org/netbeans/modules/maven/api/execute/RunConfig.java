@@ -109,6 +109,8 @@ public interface RunConfig {
 
     void setProperty(@NonNull String key, @NullAllowed String value);
     
+    void addProperties(@NonNull Map<String, String> properties);  
+    
     boolean isShowDebug();
     
     boolean isShowError();

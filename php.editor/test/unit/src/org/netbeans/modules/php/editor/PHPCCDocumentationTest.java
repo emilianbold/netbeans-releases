@@ -55,7 +55,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Petr Pisl
  */
-public class PHPCCDocumentationTest extends PHPTestBase {
+public class PHPCCDocumentationTest extends PHPCodeCompletionTestBase {
 
     public PHPCCDocumentationTest(String testName) {
         super(testName);
@@ -95,6 +95,22 @@ public class PHPCCDocumentationTest extends PHPTestBase {
 
     public void testFunctionWithArrayReturnWithoutDesc() throws Exception {
         checkCompletionDocumentation("testfiles/completion/documentation/functionWithArrayReturnWithoutDesc.php", "bFunctionNam^e(null);", false, "");
+    }
+
+    public void testIssue207952_01() throws Exception {
+        checkCompletionDocumentation("testfiles/completion/documentation/issue207952.php", "$my->aMagic^Method($paramName);", false, "");
+    }
+
+    public void testIssue207952_02() throws Exception {
+        checkCompletionDocumentation("testfiles/completion/documentation/issue207952.php", "$my->nonMagic^Method($paramName);", false, "");
+    }
+
+    public void testIssue207952_03() throws Exception {
+        checkCompletionDocumentation("testfiles/completion/documentation/issue207952_nonNs.php", "$my->aMagic^Method($paramName);", false, "");
+    }
+
+    public void testIssue207952_04() throws Exception {
+        checkCompletionDocumentation("testfiles/completion/documentation/issue207952_nonNs.php", "$my->nonMagic^Method($paramName);", false, "");
     }
 
     @Override

@@ -63,7 +63,7 @@ public class LocalRepoProvider implements ArchetypeProvider {
     
     public @Override List<Archetype> getArchetypes() {
         List<Archetype> lst = new ArrayList<Archetype>();
-            List<NBVersionInfo> archs = RepositoryQueries.findArchetypes(Collections.singletonList(RepositoryPreferences.getInstance().getLocalRepository()));
+            List<NBVersionInfo> archs = RepositoryQueries.findArchetypesResult(Collections.singletonList(RepositoryPreferences.getInstance().getLocalRepository())).getResults();
             if (archs == null) {
                 return lst;
             }

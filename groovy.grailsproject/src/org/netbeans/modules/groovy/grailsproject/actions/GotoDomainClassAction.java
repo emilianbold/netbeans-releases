@@ -45,12 +45,18 @@ import java.awt.event.ActionEvent;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.modules.groovy.grailsproject.NavigationSupport;
-import org.openide.util.NbBundle;
+import static org.netbeans.modules.groovy.grailsproject.actions.Bundle.*;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionRegistration;
+import org.openide.util.NbBundle.Messages;
 
+@Messages("CTL_GotoDomainClassAction=Go to Grails Domain class")
+@ActionID(id = "org.netbeans.modules.groovy.grailsproject.actions.GotoDomainClassAction", category = "Groovy")
+@ActionRegistration(lazy = false, displayName = "#CTL_GotoDomainClassAction")
 public final class GotoDomainClassAction extends BaseAction {
 
     public GotoDomainClassAction() {
-        super(NbBundle.getMessage(GotoViewAction.class, "CTL_GotoDomainClassAction")); // NOI18N
+        super(CTL_GotoControllerAction()); // NOI18N
     }
 
     @Override

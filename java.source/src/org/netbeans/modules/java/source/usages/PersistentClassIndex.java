@@ -53,6 +53,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.ElementKind;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.Query;
@@ -70,8 +71,10 @@ import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.parsing.lucene.support.Convertor;
 import org.netbeans.modules.parsing.lucene.support.Index;
 import org.netbeans.modules.parsing.lucene.support.IndexManager;
+import org.netbeans.modules.parsing.lucene.support.IndexReaderInjection;
 import org.netbeans.modules.parsing.lucene.support.Queries;
 import org.netbeans.modules.parsing.lucene.support.StoppableConvertor;
+import org.netbeans.modules.parsing.lucene.support.StoppableConvertor.Stop;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -112,19 +115,24 @@ public final class PersistentClassIndex extends ClassIndexImpl {
     }
     
     @Override
+    @NonNull
     public BinaryAnalyser getBinaryAnalyser () {
-        // TODO - run in tx ?
         return new BinaryAnalyser (new PIWriter(), this.cacheRoot);
     }
     
     @Override
-    public SourceAnalyzerFactory.StorableAnalyzer getSourceAnalyser () {        
-        Writer writer = new PIWriter();
+    @NonNull
+    public SourceAnalyzerFactory.StorableAnalyzer getSourceAnalyser () {                
         final TransactionContext txCtx = TransactionContext.get();
-        assert  txCtx != null;
+        assert  txCtx != null;        
+        final PersistentIndexTransaction pit = txCtx.get(PersistentIndexTransaction.class);
+        assert pit != null;
         
-        PersistentIndexTransaction pit = txCtx.get(PersistentIndexTransaction.class);
-        pit.addIndexWriter(writer);
+        Writer writer = pit.getIndexWriter();
+        if (writer == null) {        
+            writer = new PIWriter();
+            pit.setIndexWriter(writer);
+        }
         return SourceAnalyzerFactory.createStorableAnalyzer(writer);        
     }
 
@@ -164,7 +172,7 @@ public final class PersistentClassIndex extends ClassIndexImpl {
             index.query(names, DocumentUtil.sourceNameConvertor(), DocumentUtil.sourceNameFieldSelector(), cancel.get(), q);
             return names.isEmpty() ? null : names.iterator().next();
         } catch (IOException e) {
-            return this.<String,IOException>handleException(null,e);
+            return this.<String,IOException>handleException(null ,e, root);
         }
     }
     
@@ -198,7 +206,7 @@ public final class PersistentClassIndex extends ClassIndexImpl {
             final String binaryName = SourceUtils.getJVMSignature(element)[0];
             final ElementKind kind = element.getKind();
             if (kind == ElementKind.PACKAGE) {
-                IndexManager.readAccess(new IndexManager.Action<Void> () {
+                IndexManager.priorityAccess(new IndexManager.Action<Void> () {
                     @Override
                     public Void run () throws IOException, InterruptedException {
                         final Query q = QueryUtil.scopeFilter(
@@ -224,7 +232,7 @@ public final class PersistentClassIndex extends ClassIndexImpl {
                         convertor,
                         result);
                 } else {
-                    IndexManager.readAccess(new IndexManager.Action<Void> () {
+                    IndexManager.priorityAccess(new IndexManager.Action<Void> () {
                         @Override
                         public Void run () throws IOException, InterruptedException {
                             final Query usagesQuery = QueryUtil.scopeFilter(
@@ -244,7 +252,7 @@ public final class PersistentClassIndex extends ClassIndexImpl {
                 throw new IllegalArgumentException(element.toString());
             }
         } catch (IOException ioe) {
-            this.<Void,IOException>handleException(null, ioe);
+            this.<Void,IOException>handleException(null, ioe, root);
         }
     }
     
@@ -258,7 +266,7 @@ public final class PersistentClassIndex extends ClassIndexImpl {
             @NonNull final Set<? super T> result) throws InterruptedException, IOException {
         final Pair<Convertor<? super Document, T>,Index> ctu = indexPath.getPatch(convertor);
         try {
-            IndexManager.readAccess(new IndexManager.Action<Void> () {
+            IndexManager.priorityAccess(new IndexManager.Action<Void> () {
                 @Override
                 public Void run () throws IOException, InterruptedException {
                     final Query query =  QueryUtil.scopeFilter(
@@ -278,7 +286,7 @@ public final class PersistentClassIndex extends ClassIndexImpl {
                 }
             });
         } catch (IOException ioe) {
-            this.<Void,IOException>handleException(null,ioe);
+            this.<Void,IOException>handleException(null, ioe, root);
         }
     }
     
@@ -290,7 +298,7 @@ public final class PersistentClassIndex extends ClassIndexImpl {
             final Map<T,Set<String>> result) throws InterruptedException, IOException {
         final Pair<Convertor<? super Document, T>,Index> ctu = indexPath.getPatch(convertor);
         try {
-            IndexManager.readAccess(new IndexManager.Action<Void>() {
+            IndexManager.priorityAccess(new IndexManager.Action<Void>() {
                 @Override
                 public Void run () throws IOException, InterruptedException {
                     final Query query = Queries.createTermCollectingQuery(
@@ -325,7 +333,7 @@ public final class PersistentClassIndex extends ClassIndexImpl {
                 }
             });
         } catch (IOException ioe) {
-            this.<Void,IOException>handleException(null, ioe);
+            this.<Void,IOException>handleException(null, ioe, root);
         }
     }
     
@@ -333,7 +341,7 @@ public final class PersistentClassIndex extends ClassIndexImpl {
     @Override
     public void getPackageNames (final String prefix, final boolean directOnly, final Set<String> result) throws InterruptedException, IOException {
         try {
-            IndexManager.readAccess(new IndexManager.Action<Void>() {
+            IndexManager.priorityAccess(new IndexManager.Action<Void>() {
                 @Override
                 public Void run () throws IOException, InterruptedException {
                     final boolean cacheOp = directOnly && prefix.length() == 0;
@@ -365,7 +373,33 @@ public final class PersistentClassIndex extends ClassIndexImpl {
                 }
             });
         } catch (IOException ioe) {
-            this.<Void,IOException>handleException(null, ioe);
+            this.<Void,IOException>handleException(null, ioe, root);
+        }
+    }
+    
+    @Override
+    public void getReferencesFrequences (
+            @NonNull final Map<String,Integer> typeFreq,
+            @NonNull final Map<String,Integer> pkgFreq) throws IOException, InterruptedException {
+        assert typeFreq != null;
+        assert pkgFreq != null;
+        try {
+            IndexManager.priorityAccess(new IndexManager.Action<Void>() {
+                @Override
+                public Void run() throws IOException, InterruptedException {
+                    final Term startTerm = DocumentUtil.referencesTerm("", null, true);    //NOI18N
+                    final StoppableConvertor<Term,Void> convertor = new FreqCollector(
+                            startTerm, typeFreq, pkgFreq);
+                    index.queryTerms(
+                        Collections.<Void>emptyList(),
+                        startTerm,
+                        convertor,
+                        cancel.get());
+                    return null;
+                }
+            });
+        } catch (IOException ioe) {
+            this.<Void,IOException>handleException(null, ioe, root);
         }
     }
         
@@ -406,15 +440,17 @@ public final class PersistentClassIndex extends ClassIndexImpl {
     }
     
     private class PIWriter implements Writer {
+        
+        PIWriter() {
+            if (index instanceof Runnable) {
+                ((Runnable)index).run();
+            }
+        }
+        
         @Override
         public void clear() throws IOException {
             resetPkgCache();
             index.clear();
-        }
-        @Override
-        public void deleteEnclosedAndStore(List<Pair<Pair<String,String>, Object[]>> refs, Set<Pair<String, String>> topLevels) throws IOException {
-            resetPkgCache();
-            index.store(refs, topLevels, DocumentUtil.documentConvertor(), DocumentUtil.queryClassWithEncConvertor(true), false);
         }
 
         @Override
@@ -656,5 +692,54 @@ public final class PersistentClassIndex extends ClassIndexImpl {
                 throw new IllegalStateException();
             }
         }
+    }
+    
+    private static final class FreqCollector implements StoppableConvertor<Term, Void>, IndexReaderInjection {
+        
+        private final String fieldName;
+        private final Map<String,Integer> typeFreq;
+        private final Map<String,Integer> pkgFreq;
+        private IndexReader in;
+        
+        
+        FreqCollector(
+                @NonNull final Term startTerm,
+                @NonNull final Map<String,Integer> typeFreqs,
+                @NonNull final Map<String,Integer> pkgFreq) {
+            this.fieldName = startTerm.field();
+            this.typeFreq = typeFreqs;
+            this.pkgFreq = pkgFreq;
+        }
+
+        @CheckForNull
+        @Override
+        public Void convert(@NonNull final Term param) throws Stop {
+            if (fieldName != param.field()) {
+                throw new Stop();
+            }
+            try {
+                final String encBinName = param.text();
+                final String binName = encBinName.substring(
+                    0,
+                    encBinName.length() - ClassIndexImpl.UsageType.values().length);
+                final int dotIndex = binName.lastIndexOf('.');  //NOI18N
+                final String pkgName = dotIndex == -1 ? "" : binName.substring(0, dotIndex);    //NOI18N
+                final int docCount = in.docFreq(param);
+                final Integer typeCount = typeFreq.get(binName);
+                final Integer pkgCount = pkgFreq.get(pkgName);
+                typeFreq.put(binName, typeCount == null ? docCount : docCount + typeCount);
+                pkgFreq.put(pkgName, pkgCount == null ? docCount : docCount + pkgCount);                
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
+                throw new Stop();
+            }
+            return null;
+        }
+
+        @Override
+        public void setIndexReader(IndexReader indexReader) {
+            in = indexReader;
+        }
+        
     }
 }

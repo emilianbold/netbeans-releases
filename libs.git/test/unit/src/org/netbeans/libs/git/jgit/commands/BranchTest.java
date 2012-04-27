@@ -45,6 +45,7 @@ package org.netbeans.libs.git.jgit.commands;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import org.eclipse.jgit.api.Git;
@@ -52,6 +53,7 @@ import org.eclipse.jgit.errors.NotSupportedException;
 import org.eclipse.jgit.lib.ConfigConstants;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.lib.StoredConfig;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.transport.Transport;
 import org.eclipse.jgit.transport.URIish;
@@ -62,7 +64,6 @@ import org.netbeans.libs.git.GitRemoteConfig;
 import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.SearchCriteria;
 import org.netbeans.libs.git.jgit.AbstractGitTestCase;
-import org.netbeans.libs.git.progress.ProgressMonitor;
 
 /**
  *
@@ -348,5 +349,44 @@ public class BranchTest extends AbstractGitTestCase {
         client.deleteBranch("origin/master", false, NULL_PROGRESS_MONITOR);
         branches = client.getBranches(false, NULL_PROGRESS_MONITOR);
         assertEquals(0, branches.size());
+    }
+    
+    public void testBranchTracking () throws Exception {
+        final File otherWT = new File(workDir.getParentFile(), "repo2");
+        GitClient client = getClient(otherWT);
+        client.init(NULL_PROGRESS_MONITOR);
+        File f = new File(otherWT, "f");
+        write(f, "init");
+        client.add(new File[] { f }, NULL_PROGRESS_MONITOR);
+        client.commit(new File[] { f }, "init commit", null, null, NULL_PROGRESS_MONITOR);
+        
+        client = getClient(workDir);
+        client.setRemote(new GitRemoteConfig("origin", 
+                Arrays.asList(otherWT.getAbsolutePath()),
+                Arrays.asList(otherWT.getAbsolutePath()),
+                Arrays.asList("+refs/heads/*:refs/remotes/origin/*"), Collections.<String>emptyList()), NULL_PROGRESS_MONITOR);
+        client.fetch("origin", NULL_PROGRESS_MONITOR);
+        GitBranch b = client.createBranch(Constants.MASTER, "origin/master", NULL_PROGRESS_MONITOR);
+        assertEquals("origin/master", b.getTrackedBranch().getName());
+        assertTrue(b.getTrackedBranch().isRemote());
+        client.checkoutRevision(Constants.MASTER, true, NULL_PROGRESS_MONITOR);
+        
+        b = client.createBranch("nova1", Constants.MASTER, NULL_PROGRESS_MONITOR);
+        assertNull(b.getTrackedBranch());
+        
+        StoredConfig cfg = repository.getConfig();
+        cfg.setString(ConfigConstants.CONFIG_BRANCH_SECTION, null, ConfigConstants.CONFIG_KEY_AUTOSETUPMERGE, "always");
+        cfg.save();
+        b = client.createBranch("nova2", Constants.MASTER, NULL_PROGRESS_MONITOR);
+        assertEquals("master", b.getTrackedBranch().getName());
+        assertFalse(b.getTrackedBranch().isRemote());
+        
+        // list branches
+        Map<String, GitBranch> branches = client.getBranches(true, NULL_PROGRESS_MONITOR);
+        b = branches.get(Constants.MASTER);
+        assertEquals("origin/master", b.getTrackedBranch().getName());
+        assertTrue(b.getTrackedBranch().isRemote());
+        b = branches.get("origin/master");
+        assertNull(b.getTrackedBranch());
     }
 }

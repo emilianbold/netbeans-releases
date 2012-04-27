@@ -46,13 +46,13 @@ import com.sun.source.util.TreePath;
 import java.text.MessageFormat;
 import java.util.Map;
 
-import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPatterns;
-import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
-import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Options;
-import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.TriggerPattern;
+import org.netbeans.spi.java.hints.TriggerPatterns;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.java.hints.Hint.Options;
 import org.openide.util.NbBundle;
 
 
@@ -60,7 +60,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Jancura
  */
-@Hint(category="bitwise_operations", suppressWarnings="IncompatibleBitwiseMaskOperation", options=Options.QUERY)
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.IncompatibleMask", description = "#DESC_org.netbeans.modules.java.hints.IncompatibleMask", category="bitwise_operations", suppressWarnings="IncompatibleBitwiseMaskOperation", options=Options.QUERY)
 public class IncompatibleMask {
 
     @TriggerPatterns ({

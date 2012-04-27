@@ -48,13 +48,13 @@ import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.queries.CollocationQuery;
+import static org.netbeans.spi.java.project.support.ui.Bundle.*;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
-import org.openide.util.NbBundle;
-
+import org.openide.util.NbBundle.Messages;
 
 final class MakeSharableVisualPanel1 extends JPanel {
 
@@ -84,24 +84,27 @@ final class MakeSharableVisualPanel1 extends JPanel {
         txtDefinition.getDocument().addDocumentListener(docListener);
     }
 
+    @Messages("TIT_LibraryDefinitionSelection=Library Folder")
     @Override
     public String getName() {
-        return NbBundle.getMessage(MakeSharableVisualPanel1.class, "TIT_LibraryDefinitionSelection"); //NOI18N
+        return TIT_LibraryDefinitionSelection();
     }
 
+    @Messages({
+        "WARN_MakeSharable.absolutePath=<html>Please make sure that the absolute path in the Libraries Folder field is valid for all users.<html>",
+        "WARN_makeSharable.relativePath=<html>Please make sure that the relative path in the Libraries Folder field is valid for all users.<html>"
+    })
     boolean isValidPanel() {
         String location = getLibraryLocation();
         boolean wrong = false;
         if (new File(location).isAbsolute()) {
-            settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                    org.openide.util.NbBundle.getMessage(MakeSharableVisualPanel1.class, "WARN_MakeSharable.absolutePath"));
+            settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, WARN_MakeSharable_absolutePath());
             wrong = true;
         } else {
             File projectLoc = FileUtil.toFile(helper.getProjectDirectory());
             File libLoc = PropertyUtils.resolveFile(projectLoc, location);
             if (!CollocationQuery.areCollocated(projectLoc, libLoc)) {
-                settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                        org.openide.util.NbBundle.getMessage(MakeSharableVisualPanel1.class, "WARN_makeSharable.relativePath"));
+                settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, WARN_makeSharable_relativePath());
                 wrong = true;
             }
         }

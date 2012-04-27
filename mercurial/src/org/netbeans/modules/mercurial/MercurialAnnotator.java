@@ -63,6 +63,7 @@ import java.io.File;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.netbeans.modules.mercurial.options.AnnotationColorProvider;
 import org.netbeans.modules.mercurial.ui.add.AddAction;
@@ -142,6 +143,7 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
             + NbBundle.getMessage(MercurialAnnotator.class, "MSG_Contains_Modified_Locally");
     private static final String toolTipConflict = "<img src=\"" + MercurialAnnotator.class.getClassLoader().getResource(badgeConflicts) + "\">&nbsp;"
             + NbBundle.getMessage(MercurialAnnotator.class, "MSG_Contains_Conflicts");
+    private static final Logger LOG = Logger.getLogger(MercurialAnnotator.class.getName());
 
     MercurialAnnotator(FileStatusCache cache) {
         this.cache = cache;
@@ -202,6 +204,9 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
     @Override
     public Image annotateIcon(Image icon, VCSContext context) {
         boolean folderAnnotation = false;
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "annotateIcon(): for {0}", new Object[] { context.getRootFiles() });
+        }
         for (File file : context.getRootFiles()) {
             if (file.isDirectory()) {
                 folderAnnotation = true;
@@ -287,12 +292,21 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
             return icon;
         }
         Image badge = null;
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "annotateFolderIcon(): for {0}", new Object[] { context.getRootFiles() });
+        }
         if (cache.containsFileOfStatus(context, FileInformation.STATUS_VERSIONED_CONFLICT, true)) {
             badge = ImageUtilities.assignToolTipToImage(
                     ImageUtilities.loadImage(badgeConflicts, true), toolTipConflict);
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "annotateFolderIcon(): contains conflict");
+            }
         } else if (cache.containsFileOfStatus(context, FileInformation.STATUS_LOCAL_CHANGE, true)) {
             badge = ImageUtilities.assignToolTipToImage(
                     ImageUtilities.loadImage(badgeModified, true), toolTipModified);
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "annotateFolderIcon(): contains local change");
+            }
         }
         if (badge != null) {
             return ImageUtilities.mergeImages(icon, badge, 16, 9);

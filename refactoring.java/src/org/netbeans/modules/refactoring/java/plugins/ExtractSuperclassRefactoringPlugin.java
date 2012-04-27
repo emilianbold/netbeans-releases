@@ -46,7 +46,6 @@ package org.netbeans.modules.refactoring.java.plugins;
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
-import java.net.URL;
 import java.util.*;
 import javax.lang.model.element.*;
 import javax.lang.model.type.DeclaredType;
@@ -54,6 +53,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Types;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.*;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
@@ -64,19 +64,10 @@ import org.netbeans.modules.refactoring.java.api.MemberInfo;
 import org.netbeans.modules.refactoring.java.spi.DiffElement;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
-import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.URLMapper;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.text.PositionBounds;
-import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
-import org.openide.util.lookup.Lookups;
 
 /** Plugin that implements the core functionality of Extract Super Class refactoring.
  *
@@ -273,7 +264,6 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
     public Problem prepare(RefactoringElementsBag bag) {
         FileObject primFile = refactoring.getSourceType().getFileObject();
         try {
-            bag.add(refactoring, new CreateSuperclassElement(refactoring, primFile.getParent(), classHandle));
             UpdateClassTask.create(bag, primFile, refactoring, classHandle);
         } catch (IOException ex) {
             throw new RuntimeException(ex);
@@ -283,8 +273,9 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
     
     private static List<TypeMirror> findUsedGenericTypes(CompilationInfo javac, TypeElement javaClass,ExtractSuperclassRefactoring refactoring) {
         List<TypeMirror> typeArgs = JavaRefactoringUtils.elementsToTypes(javaClass.getTypeParameters());
-        if (typeArgs.isEmpty())
+        if (typeArgs.isEmpty()) {
             return typeArgs;
+        }
         
         Types typeUtils = javac.getTypes();
         Set<TypeMirror> used = Collections.newSetFromMap(new IdentityHashMap<TypeMirror, Boolean>());
@@ -329,307 +320,6 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
         return RefactoringUtils.filterTypes(typeArgs, used);
     }
     
-    // --- REFACTORING ELEMENTS ------------------------------------------------
-    
-    private static final class CreateSuperclassElement extends SimpleRefactoringElementImplementation implements CancellableTask<WorkingCopy> {
-        private final URL folderURL;
-        private URL superClassURL;
-        private final String superClassName;
-        private final ExtractSuperclassRefactoring refactoring;
-        private final ElementHandle<TypeElement> sourceType;
-        
-        private CreateSuperclassElement(ExtractSuperclassRefactoring refactoring, FileObject folder, ElementHandle<TypeElement> sourceType) {
-            this.refactoring = refactoring;
-            this.folderURL = URLMapper.findURL(folder, URLMapper.INTERNAL);
-            this.superClassName = refactoring.getSuperClassName();
-            this.sourceType = sourceType;
-        }
-
-        // --- SimpleRefactoringElementImpl methods ----------------------------------
-        
-        @Override
-        public void performChange() {
-            try {
-                FileObject folderFO = URLMapper.findFileObject(folderURL);
-                if (folderFO == null)
-                    return;
-                
-                // create new file
-                
-                // XXX not nice; user might modify the template to something entirely different from the standard template.
-                FileObject tempFO = FileUtil.getConfigFile("Templates/Classes/Class.java"); // NOI18N
-                
-                DataFolder folder = (DataFolder) DataObject.find(folderFO);
-                DataObject template = DataObject.find(tempFO);
-                DataObject newSuperClassDO = template.createFromTemplate(folder, superClassName);
-                this.superClassURL = URLMapper.findURL(newSuperClassDO.getPrimaryFile(), URLMapper.INTERNAL);
-                refactoring.getContext().add(newSuperClassDO.getPrimaryFile());
-                
-                // add type params and members
-                JavaSource js = JavaSource.forFileObject(newSuperClassDO.getPrimaryFile());
-                js.runModificationTask(this).commit();
-            } catch (DataObjectNotFoundException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-        
-        @Override
-        public void undoChange() {
-            FileObject ifcFO = null;
-            if (superClassURL != null) {
-                ifcFO = URLMapper.findFileObject(superClassURL);
-            }
-            if (ifcFO != null) {
-                try {
-                    ifcFO.delete();
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-        }
-        
-        @Override
-        public String getText() {
-            return NbBundle.getMessage(ExtractInterfaceRefactoringPlugin.class, "TXT_ExtractSC_CreateSC", superClassName); // NOI18N
-        }
-
-        @Override
-        public String getDisplayText() {
-            return getText();
-        }
-
-        @Override
-        public FileObject getParentFile() {
-            return URLMapper.findFileObject(folderURL);
-        }
-
-        @Override
-        public PositionBounds getPosition() {
-            return null;
-        }
-    
-        @Override
-        public Lookup getLookup() {
-            FileObject fo = superClassURL == null? null: URLMapper.findFileObject(superClassURL);
-            return fo != null? Lookups.singleton(fo): Lookup.EMPTY;
-        }
-        
-        // --- CancellableTask methods ----------------------------------
-        
-        @Override
-        public void cancel() {
-            
-        }
-
-        @Override
-        public void run(WorkingCopy wc) throws Exception {
-            wc.toPhase(JavaSource.Phase.RESOLVED);
-            ClassTree classTree = findClass(wc, superClassName);
-            boolean makeAbstract = false;
-            TreeMaker make = wc.getTreeMaker();
-            GeneratorUtilities genUtils = GeneratorUtilities.get(wc);
-            
-            // add type parameters
-            List<TypeMirror> typeParams = findUsedGenericTypes(wc, sourceType.resolve(wc), refactoring);
-            List<TypeParameterTree> newTypeParams = new ArrayList<TypeParameterTree>(typeParams.size());
-            // lets retrieve param type trees from origin class since it is
-            // almost impossible to create them via TreeMaker
-            TypeElement sourceTypeElm = sourceType.resolve(wc);
-            for (TypeParameterElement typeParam : sourceTypeElm.getTypeParameters()) {
-                TypeMirror origParam = typeParam.asType();
-                for (TypeMirror newParam : typeParams) {
-                    if (wc.getTypes().isSameType(origParam, newParam)) {
-                        Tree t = wc.getTrees().getTree(typeParam);
-                        if (t.getKind() == Tree.Kind.TYPE_PARAMETER) {
-                            TypeParameterTree typeParamTree = (TypeParameterTree) t;
-                            if (!typeParamTree.getBounds().isEmpty()) {
-                                typeParamTree = (TypeParameterTree) genUtils.importFQNs(t);
-                            }
-                            newTypeParams.add(typeParamTree);
-                        }
-                    }
-                }
-            }
-
-            // add fields, methods and implements
-            List<Tree> members = new ArrayList<Tree>();
-            List <Tree> implementsList = new ArrayList<Tree>();
-            
-            addConstructors(wc, sourceTypeElm, members);
-            
-            for (MemberInfo member : refactoring.getMembers()) {
-                if (member.getGroup() == MemberInfo.Group.FIELD) {
-                    @SuppressWarnings("unchecked")
-                    ElementHandle<VariableElement> handle = (ElementHandle<VariableElement>) member.getElementHandle();
-                    VariableElement elm = handle.resolve(wc);
-                    VariableTree tree = (VariableTree) wc.getTrees().getTree(elm);
-                    VariableTree copy = genUtils.importComments(tree, wc.getTrees().getPath(elm).getCompilationUnit());
-                    copy = genUtils.importFQNs(copy);
-                    members.add(copy);
-                } else if (member.getGroup() == MemberInfo.Group.METHOD) {
-                    @SuppressWarnings("unchecked")
-                    ElementHandle<ExecutableElement> handle = (ElementHandle<ExecutableElement>) member.getElementHandle();
-                    ExecutableElement elm = handle.resolve(wc);
-                    MethodTree methodTree = wc.getTrees().getTree(elm);
-                    if (member.isMakeAbstract() && !elm.getModifiers().contains(Modifier.ABSTRACT)) {
-                        methodTree = make.Method(
-                                RefactoringUtils.makeAbstract(make, methodTree.getModifiers()),
-                                methodTree.getName(),
-                                methodTree.getReturnType(),
-                                methodTree.getTypeParameters(),
-                                methodTree.getParameters(),
-                                methodTree.getThrows(),
-                                (BlockTree) null,
-                                null);
-                        methodTree = genUtils.importFQNs(methodTree);
-                        RefactoringUtils.copyJavadoc(elm, methodTree, wc);
-                    } else {
-                        methodTree = genUtils.importComments(methodTree, wc.getTrees().getPath(elm).getCompilationUnit());
-                        methodTree = genUtils.importFQNs(methodTree);
-                    }
-                    makeAbstract |= methodTree.getModifiers().getFlags().contains(Modifier.ABSTRACT);
-                    members.add(methodTree);
-                } else if (member.getGroup() == MemberInfo.Group.IMPLEMENTS) {
-                    TypeMirrorHandle handle = (TypeMirrorHandle) member.getElementHandle();
-                    // XXX check if interface is not aready there; the templates might be changed by user :-(
-                    TypeMirror implMirror = handle.resolve(wc);
-                    implementsList.add(make.Type(implMirror));
-                    // XXX needs more granular check
-                    makeAbstract |= true;
-                }
-            }
-
-            // create superclass
-            Tree superClass = makeSuperclass(make, sourceTypeElm);
-
-            makeAbstract |= ((DeclaredType) sourceTypeElm.getSuperclass()).asElement().getModifiers().contains(Modifier.ABSTRACT);
-            
-            ModifiersTree classModifiersTree = makeAbstract
-                    ? RefactoringUtils.makeAbstract(make, classTree.getModifiers())
-                    : classTree.getModifiers();
-            classModifiersTree = genUtils.importFQNs(classModifiersTree);
-            
-            // create new class
-            ClassTree newClassTree = make.Class(
-                    classModifiersTree,
-                    classTree.getSimpleName(),
-                    newTypeParams,
-                    superClass,
-                    implementsList,
-                    Collections.<Tree>emptyList());
-            
-            newClassTree = GeneratorUtilities.get(wc).insertClassMembers(newClassTree, members);
-            wc.rewrite(classTree, newClassTree);
-        }
-        
-        // --- helper methods ----------------------------------
-        
-        private static ClassTree findClass(CompilationInfo javac, String name) {
-            for (Tree tree : javac.getCompilationUnit().getTypeDecls()) {
-                if (TreeUtilities.CLASS_TREE_KINDS.contains(tree.getKind())
-                        && tree.getKind() != Tree.Kind.INTERFACE
-                        && tree.getKind() != Tree.Kind.ANNOTATION
-                        && tree.getKind() != Tree.Kind.ENUM
-                        && name.contentEquals(((ClassTree) tree).getSimpleName())) {
-                    return (ClassTree) tree;
-                }
-            }
-            throw new IllegalStateException("wrong template, cannot find the class in " + javac.getFileObject()); // NOI18N
-        }
-        
-        private static Tree makeSuperclass(TreeMaker make, TypeElement clazz) {
-            DeclaredType supType = (DeclaredType) clazz.getSuperclass();
-            TypeElement supEl = (TypeElement) supType.asElement();
-            return supEl.getSuperclass().getKind() == TypeKind.NONE
-                    ? null
-                    : make.Type(supType);
-        }
-        
-        /* in case there are constructors delegating to old superclass it is necessery to create delegates in new superclass */
-        private static void addConstructors(final WorkingCopy javac, final TypeElement origClass, final List<Tree> members) {
-            final TreeMaker make = javac.getTreeMaker();
-            final GeneratorUtilities genUtils = GeneratorUtilities.get(javac);
-            
-            // cache of already resolved constructors
-            final Set<Element> added = new HashSet<Element>();
-            for (ExecutableElement constr : ElementFilter.constructorsIn(origClass.getEnclosedElements())) {
-                if (javac.getElementUtilities().isSynthetic(constr)) {
-                    continue;
-                }
-                
-                TreePath path = javac.getTrees().getPath(constr);
-                MethodTree mc = (MethodTree) (path != null? path.getLeaf(): null);
-                if (mc != null) {
-                    for (StatementTree stmt : mc.getBody().getStatements()) {
-                        // search super(...); statement
-                        if (stmt.getKind() == Tree.Kind.EXPRESSION_STATEMENT) {
-                            ExpressionStatementTree estmt = (ExpressionStatementTree) stmt;
-                            boolean isSyntheticSuper = javac.getTreeUtilities().isSynthetic(javac.getTrees().getPath(path.getCompilationUnit(), estmt));
-                            ExpressionTree expr = estmt.getExpression();
-                            TreePath expath = javac.getTrees().getPath(path.getCompilationUnit(), expr);
-                            Element el = javac.getTrees().getElement(expath);
-                            if (el != null && el.getKind() == ElementKind.CONSTRUCTOR && added.add(el)) {
-                                ExecutableElement superclassConstr = (ExecutableElement) el;
-                                MethodInvocationTree invk = (MethodInvocationTree) expr;
-                                // create constructor block with super call
-                                BlockTree block = isSyntheticSuper
-                                        ? make.Block(Collections.<StatementTree>emptyList(), false)
-                                        : make.Block(Collections.<StatementTree>singletonList(
-                                            make.ExpressionStatement(
-                                                make.MethodInvocation(
-                                                    Collections.<ExpressionTree>emptyList(),
-                                                    invk.getMethodSelect(),
-                                                    params2Arguments(make, superclassConstr.getParameters())
-                                                ))), false);
-                                // create constructor
-                                MethodTree newConstr = make.Method(superclassConstr, block);
-
-                                newConstr = removeRuntimeExceptions(javac, superclassConstr, make, newConstr);
-
-                                newConstr = genUtils.importFQNs(newConstr);
-                                members.add(newConstr);
-                            }
-                            
-                        }
-                        // take just first statement super(...)
-                        break;
-                    }
-                }
-            }
-        }
-
-        private static MethodTree removeRuntimeExceptions(final WorkingCopy javac, ExecutableElement superclassConstr, final TreeMaker make, MethodTree newConstr) {
-            int i = 0;
-            TypeMirror rte = javac.getElements().getTypeElement("java.lang.RuntimeException").asType(); //NOI18N
-            ArrayList<Integer> rtes = new ArrayList<Integer>();
-            for (TypeMirror throwz : superclassConstr.getThrownTypes()) {
-                if (javac.getTypes().isSubtype(throwz, rte)) {
-                    rtes.add(i);
-                }
-                i++;
-            }
-            for (int j = rtes.size()-1; j >= 0; j--) {
-                newConstr = make.removeMethodThrows(newConstr, rtes.get(j));
-            }
-            return newConstr;
-        }
-
-        
-        private static List<? extends ExpressionTree> params2Arguments(TreeMaker make, List<? extends VariableElement> params) {
-            if (params.isEmpty()) {
-                return Collections.<ExpressionTree>emptyList();
-            }
-            List<ExpressionTree> args = new ArrayList<ExpressionTree>(params.size());
-            for (VariableElement param : params) {
-                args.add(make.Identifier(param.getSimpleName()));
-            }
-            return args;
-        }
-        
-    }
-    
     private final static class UpdateClassTask implements CancellableTask<WorkingCopy> {
         private final ExtractSuperclassRefactoring refactoring;
         private final ElementHandle<TypeElement> sourceType;
@@ -656,6 +346,7 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
         @Override
         public void run(WorkingCopy wc) throws Exception {
             wc.toPhase(JavaSource.Phase.RESOLVED);
+            createCU(wc);
             TypeElement clazz = this.sourceType.resolve(wc);
             assert clazz != null;
             ClassTree classTree = wc.getTrees().getTree(clazz);
@@ -784,5 +475,218 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
             }
             return ret;
         }
+        
+        
+        private void createCU(WorkingCopy wc) throws Exception {
+            wc.toPhase(JavaSource.Phase.RESOLVED);
+            boolean makeAbstract = false;
+            TreeMaker make = wc.getTreeMaker();
+            GeneratorUtilities genUtils = GeneratorUtilities.get(wc);
+            
+            // add type parameters
+            List<TypeMirror> typeParams = findUsedGenericTypes(wc, sourceType.resolve(wc), refactoring);
+            List<TypeParameterTree> newTypeParams = new ArrayList<TypeParameterTree>(typeParams.size());
+            // lets retrieve param type trees from origin class since it is
+            // almost impossible to create them via TreeMaker
+            TypeElement sourceTypeElm = sourceType.resolve(wc);
+            for (TypeParameterElement typeParam : sourceTypeElm.getTypeParameters()) {
+                TypeMirror origParam = typeParam.asType();
+                for (TypeMirror newParam : typeParams) {
+                    if (wc.getTypes().isSameType(origParam, newParam)) {
+                        Tree t = wc.getTrees().getTree(typeParam);
+                        if (t.getKind() == Tree.Kind.TYPE_PARAMETER) {
+                            TypeParameterTree typeParamTree = (TypeParameterTree) t;
+                            if (!typeParamTree.getBounds().isEmpty()) {
+                                typeParamTree = (TypeParameterTree) genUtils.importFQNs(t);
+                            }
+                            newTypeParams.add(typeParamTree);
+                        }
+                    }
+                }
+            }
+
+            // add fields, methods and implements
+            List<Tree> members = new ArrayList<Tree>();
+            List <Tree> implementsList = new ArrayList<Tree>();
+            
+            addConstructors(wc, sourceTypeElm, members);
+            
+            for (MemberInfo member : refactoring.getMembers()) {
+                if (member.getGroup() == MemberInfo.Group.FIELD) {
+                    @SuppressWarnings("unchecked")
+                    ElementHandle<VariableElement> handle = (ElementHandle<VariableElement>) member.getElementHandle();
+                    VariableElement elm = handle.resolve(wc);
+                    VariableTree tree = (VariableTree) wc.getTrees().getTree(elm);
+                    VariableTree copy = genUtils.importComments(tree, wc.getTrees().getPath(elm).getCompilationUnit());
+                    copy = genUtils.importFQNs(copy);
+                    ModifiersTree modifiers = copy.getModifiers();
+                    if(modifiers.getFlags().contains(Modifier.PRIVATE)) {
+                        modifiers = make.removeModifiersModifier(modifiers, Modifier.PRIVATE);
+                        modifiers = make.addModifiersModifier(modifiers, Modifier.PROTECTED);
+                        copy = make.Variable(modifiers, copy.getName(), copy.getType(), copy.getInitializer());
+                    }
+                    members.add(copy);
+                } else if (member.getGroup() == MemberInfo.Group.METHOD) {
+                    @SuppressWarnings("unchecked")
+                    ElementHandle<ExecutableElement> handle = (ElementHandle<ExecutableElement>) member.getElementHandle();
+                    ExecutableElement elm = handle.resolve(wc);
+                    MethodTree methodTree = wc.getTrees().getTree(elm);
+                    ModifiersTree modifiers = methodTree.getModifiers();
+                        if(modifiers.getFlags().contains(Modifier.PRIVATE)) {
+                            modifiers = make.removeModifiersModifier(modifiers, Modifier.PRIVATE);
+                            modifiers = make.addModifiersModifier(modifiers, Modifier.PROTECTED);
+                        }
+                    if (member.isMakeAbstract() && !elm.getModifiers().contains(Modifier.ABSTRACT)) {
+                        methodTree = make.Method(
+                                RefactoringUtils.makeAbstract(make, modifiers),
+                                methodTree.getName(),
+                                methodTree.getReturnType(),
+                                methodTree.getTypeParameters(),
+                                methodTree.getParameters(),
+                                methodTree.getThrows(),
+                                (BlockTree) null,
+                                null);
+                        methodTree = genUtils.importFQNs(methodTree);
+                        RefactoringUtils.copyJavadoc(elm, methodTree, wc);
+                    } else {
+                        methodTree = genUtils.importComments(methodTree, wc.getTrees().getPath(elm).getCompilationUnit());
+                        methodTree = genUtils.importFQNs(methodTree);
+                        methodTree = make.Method(modifiers,
+                                methodTree.getName(),
+                                methodTree.getReturnType(),
+                                methodTree.getTypeParameters(),
+                                methodTree.getParameters(),
+                                methodTree.getThrows(),
+                                methodTree.getBody(),
+                                (ExpressionTree) methodTree.getDefaultValue());
+                    }
+                    makeAbstract |= methodTree.getModifiers().getFlags().contains(Modifier.ABSTRACT);
+                    members.add(methodTree);
+                } else if (member.getGroup() == MemberInfo.Group.IMPLEMENTS) {
+                    TypeMirrorHandle handle = (TypeMirrorHandle) member.getElementHandle();
+                    // XXX check if interface is not aready there; the templates might be changed by user :-(
+                    TypeMirror implMirror = handle.resolve(wc);
+                    implementsList.add(make.Type(implMirror));
+                    // XXX needs more granular check
+                    makeAbstract |= true;
+                }
+            }
+
+            // create superclass
+            Tree superClass = makeSuperclass(make, sourceTypeElm);
+
+            makeAbstract |= ((DeclaredType) sourceTypeElm.getSuperclass()).asElement().getModifiers().contains(Modifier.ABSTRACT);
+            
+            ModifiersTree classModifiersTree = make.Modifiers(makeAbstract?EnumSet.of(Modifier.PUBLIC, Modifier.ABSTRACT):EnumSet.of(Modifier.PUBLIC));
+            
+            // create new class
+            ClassTree newClassTree = make.Class(
+                    classModifiersTree,
+                    refactoring.getSuperClassName(),
+                    newTypeParams,
+                    superClass,
+                    implementsList,
+                    Collections.<Tree>emptyList());
+            
+            newClassTree = GeneratorUtilities.get(wc).insertClassMembers(newClassTree, members);
+            
+            FileObject fileObject = refactoring.getSourceType().getFileObject();
+            FileObject sourceRoot = ClassPath.getClassPath(fileObject, ClassPath.SOURCE).findOwnerRoot(fileObject);
+            String relativePath = FileUtil.getRelativePath(sourceRoot, fileObject.getParent()) + "/" + refactoring.getSuperClassName() + ".java";
+            CompilationUnitTree cu = JavaPluginUtils.createCompilationUnit(sourceRoot, relativePath, newClassTree, wc, make);
+            wc.rewrite(null, cu);
+            
+        }
+        
+        // --- helper methods ----------------------------------
+        
+        private static Tree makeSuperclass(TreeMaker make, TypeElement clazz) {
+            DeclaredType supType = (DeclaredType) clazz.getSuperclass();
+            TypeElement supEl = (TypeElement) supType.asElement();
+            return supEl.getSuperclass().getKind() == TypeKind.NONE
+                    ? null
+                    : make.Type(supType);
+        }
+        
+        /* in case there are constructors delegating to old superclass it is necessery to create delegates in new superclass */
+        private static void addConstructors(final WorkingCopy javac, final TypeElement origClass, final List<Tree> members) {
+            final TreeMaker make = javac.getTreeMaker();
+            final GeneratorUtilities genUtils = GeneratorUtilities.get(javac);
+            
+            // cache of already resolved constructors
+            final Set<Element> added = new HashSet<Element>();
+            for (ExecutableElement constr : ElementFilter.constructorsIn(origClass.getEnclosedElements())) {
+                if (javac.getElementUtilities().isSynthetic(constr)) {
+                    continue;
+                }
+                
+                TreePath path = javac.getTrees().getPath(constr);
+                MethodTree mc = (MethodTree) (path != null? path.getLeaf(): null);
+                if (mc != null) {
+                    for (StatementTree stmt : mc.getBody().getStatements()) {
+                        // search super(...); statement
+                        if (stmt.getKind() == Tree.Kind.EXPRESSION_STATEMENT) {
+                            ExpressionStatementTree estmt = (ExpressionStatementTree) stmt;
+                            boolean isSyntheticSuper = javac.getTreeUtilities().isSynthetic(javac.getTrees().getPath(path.getCompilationUnit(), estmt));
+                            ExpressionTree expr = estmt.getExpression();
+                            TreePath expath = javac.getTrees().getPath(path.getCompilationUnit(), expr);
+                            Element el = javac.getTrees().getElement(expath);
+                            if (el != null && el.getKind() == ElementKind.CONSTRUCTOR && added.add(el)) {
+                                ExecutableElement superclassConstr = (ExecutableElement) el;
+                                MethodInvocationTree invk = (MethodInvocationTree) expr;
+                                // create constructor block with super call
+                                BlockTree block = isSyntheticSuper
+                                        ? make.Block(Collections.<StatementTree>emptyList(), false)
+                                        : make.Block(Collections.<StatementTree>singletonList(
+                                            make.ExpressionStatement(
+                                                make.MethodInvocation(
+                                                    Collections.<ExpressionTree>emptyList(),
+                                                    invk.getMethodSelect(),
+                                                    params2Arguments(make, superclassConstr.getParameters())
+                                                ))), false);
+                                // create constructor
+                                MethodTree newConstr = make.Method(superclassConstr, block);
+
+                                newConstr = removeRuntimeExceptions(javac, superclassConstr, make, newConstr);
+
+                                newConstr = genUtils.importFQNs(newConstr);
+                                members.add(newConstr);
+                            }
+                            
+                        }
+                        // take just first statement super(...)
+                        break;
+                    }
+                }
+            }
+        }
+
+        private static MethodTree removeRuntimeExceptions(final WorkingCopy javac, ExecutableElement superclassConstr, final TreeMaker make, MethodTree newConstr) {
+            int i = 0;
+            TypeMirror rte = javac.getElements().getTypeElement("java.lang.RuntimeException").asType(); //NOI18N
+            ArrayList<Integer> rtes = new ArrayList<Integer>();
+            for (TypeMirror throwz : superclassConstr.getThrownTypes()) {
+                if (javac.getTypes().isSubtype(throwz, rte)) {
+                    rtes.add(i);
+                }
+                i++;
+            }
+            for (int j = rtes.size()-1; j >= 0; j--) {
+                newConstr = make.removeMethodThrows(newConstr, rtes.get(j));
+            }
+            return newConstr;
+        }
+
+        
+        private static List<? extends ExpressionTree> params2Arguments(TreeMaker make, List<? extends VariableElement> params) {
+            if (params.isEmpty()) {
+                return Collections.<ExpressionTree>emptyList();
+            }
+            List<ExpressionTree> args = new ArrayList<ExpressionTree>(params.size());
+            for (VariableElement param : params) {
+                args.add(make.Identifier(param.getSimpleName()));
+            }
+            return args;
+        }        
     }
 }

@@ -82,7 +82,7 @@ public class TypeDeclaration implements ITypeDeclaration {
     private int dimensionality=-1;
 
     /**
-     * Creates a new <code>JavaTypeDeclaration</code>.
+     * Creates a new <code>TypeDeclaration</code>.
      *
      * @param typeRepository The repository of {@link IType ITypes}
      * @param type The external form of the Java type
@@ -209,29 +209,14 @@ public class TypeDeclaration implements ITypeDeclaration {
 
     private String elementType(String typeName) {
 
-        if (typeName.equals("boolean")) {
+        if (typeName.equals("boolean")) {//NOI18N
             return "Z";
         }
-        if (typeName.equals("byte")) {
-            return "B";
+        if (typeName.equals("byte") || typeName.equals("char") || typeName.equals("double") || typeName.equals("float") || typeName.equals("int") || typeName.equals("short")) {//NOI18N
+            return (Character.toString(typeName.charAt(0))).toUpperCase();//just first char in upper case
         }
-        if (typeName.equals("char")) {
-            return "C";
-        }
-        if (typeName.equals("double")) {
-            return "D";
-        }
-        if (typeName.equals("float")) {
-            return "F";
-        }
-        if (typeName.equals("int")) {
-            return "I";
-        }
-        if (typeName.equals("long")) {
+        if (typeName.equals("long")) {//NOI18N
             return "J";
-        }
-        if (typeName.equals("short")) {
-            return "S";
         }
 
         return "L";

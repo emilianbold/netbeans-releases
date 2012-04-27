@@ -85,7 +85,13 @@ public class PHPDocCommentLexerTest extends NbTestCase {
 
     public void testNotMatchInput1() throws Exception {
         TokenSequence<?> ts = PHPLexerUtils.seqForText("*   <dd> \"*word\"  => ENDS_WITH(word)\n *   <dd> \"/^word.* /\" => REGEX(^word.*)\n *   <dd> \"word*word\" => REGEX(word.*word)", PHPDocCommentTokenId.language());
-        PHPLexerUtils.next(ts, PHPDocCommentTokenId.PHPDOC_COMMENT, "*   <dd> \"*word\"  => ENDS_WITH(word)\n *   <dd> \"/^word.* /\" => REGEX(^word.*)\n *   <dd> \"word*word\" => REGEX(word.*word)");
+        PHPLexerUtils.next(ts, PHPDocCommentTokenId.PHPDOC_COMMENT, "*   ");
+        PHPLexerUtils.next(ts, PHPDocCommentTokenId.PHPDOC_HTML_TAG, "<dd>");
+        PHPLexerUtils.next(ts, PHPDocCommentTokenId.PHPDOC_COMMENT, " \"*word\"  => ENDS_WITH(word)\n *   ");
+        PHPLexerUtils.next(ts, PHPDocCommentTokenId.PHPDOC_HTML_TAG, "<dd>");
+        PHPLexerUtils.next(ts, PHPDocCommentTokenId.PHPDOC_COMMENT, " \"/^word.* /\" => REGEX(^word.*)\n *   ");
+        PHPLexerUtils.next(ts, PHPDocCommentTokenId.PHPDOC_HTML_TAG, "<dd>");
+        PHPLexerUtils.next(ts, PHPDocCommentTokenId.PHPDOC_COMMENT, " \"word*word\" => REGEX(word.*word)");
     }
 
     public void testPropertyTagTags() throws Exception {
@@ -109,4 +115,16 @@ public class PHPDocCommentLexerTest extends NbTestCase {
         PHPLexerUtils.next(ts, PHPDocCommentTokenId.PHPDOC_COMMENT, " ");
         PHPLexerUtils.next(ts, PHPDocCommentTokenId.PHPDOC_COMMENT, "@");
     }
+
+    public void testHtmlInComment() throws Exception {
+        TokenSequence<?> ts = PHPLexerUtils.seqForText(" Some <b>bold</b> text.\n *\n * @param type $param", PHPDocCommentTokenId.language());
+        PHPLexerUtils.next(ts, PHPDocCommentTokenId.PHPDOC_COMMENT, " Some ");
+        PHPLexerUtils.next(ts, PHPDocCommentTokenId.PHPDOC_HTML_TAG, "<b>");
+        PHPLexerUtils.next(ts, PHPDocCommentTokenId.PHPDOC_COMMENT, "bold");
+        PHPLexerUtils.next(ts, PHPDocCommentTokenId.PHPDOC_HTML_TAG, "</b>");
+        PHPLexerUtils.next(ts, PHPDocCommentTokenId.PHPDOC_COMMENT, " text.\n *\n * ");
+        PHPLexerUtils.next(ts, PHPDocCommentTokenId.PHPDOC_ANNOTATION, "@param");
+        PHPLexerUtils.next(ts, PHPDocCommentTokenId.PHPDOC_COMMENT, " type $param");
+    }
+
 }

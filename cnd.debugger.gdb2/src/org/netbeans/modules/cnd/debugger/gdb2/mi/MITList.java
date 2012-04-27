@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.debugger.gdb2.mi;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -180,6 +181,49 @@ public class MITList extends MIValue implements Iterable<MITListItem> {
 	sawValues = true;
 	list.add(value);
     }
+    
+    public <Type> Iterable<Type> getOnly(final Class<Type> cls) {
+        final Iterator<MITListItem> iterator = iterator();
+        
+        return new Iterable<Type>() {
+            @Override
+            public Iterator<Type> iterator() {
+                return new Iterator<Type>() {
+                    private Type item = nextImpl();
+                    
+                    private Type nextImpl() {
+                        while (iterator.hasNext()) {
+                            MITListItem next = iterator.next();
+                            if (cls.isInstance(next)) {
+                                return cls.cast(next);
+                            }
+                        }
+                        return null;
+                    }
+
+                    @Override
+                    public boolean hasNext() {
+                        return item != null;
+                    }
+
+                    @Override
+                    public Type next() {
+                        if (item == null) {
+                            throw new NoSuchElementException();
+                        }
+                        Type res = item;
+                        item = nextImpl();
+                        return res;
+                    }
+
+                    @Override
+                    public void remove() {
+                        throw new UnsupportedOperationException("Not supported."); //NOI18N
+                    }
+                };
+            }
+        };
+    }
 
     /**
      * Retrieve the value of the given variable in this tuple.
@@ -200,5 +244,28 @@ public class MITList extends MIValue implements Iterable<MITListItem> {
             }
 	}
 	return null;
+    }
+    
+    /**
+     * Get const value directly
+     * @param variable - name of the const variable in the list
+     * @return value of the const or the empty string if no such const is in the list
+     */
+    public String getConstValue(String variable) {
+        return getConstValue(variable, "");
+    }
+    
+    /**
+     * Get const value directly
+     * @param variable - name of the const variable in the list
+     * @param defaultValue  - value to return if there is no such const is in the list
+     * @return value of the const or the defaultvalue
+     */
+    public String getConstValue(String variable, String defaultValue) {
+        MIValue val = valueOf(variable);
+        if (val != null) {
+            return val.asConst().value();
+        }
+        return defaultValue;
     }
 }

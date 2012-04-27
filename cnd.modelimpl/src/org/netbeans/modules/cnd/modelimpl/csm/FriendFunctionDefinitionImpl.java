@@ -44,8 +44,8 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
-import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.IOException;
+import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFriendFunction;
@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
@@ -77,7 +78,7 @@ public final class FriendFunctionDefinitionImpl extends FunctionDefinitionImpl<C
         friendClassUID = UIDs.get(cls);
     }
 
-    public static FriendFunctionDefinitionImpl create(AST ast, final CsmFile file, CsmClass cls, CsmScope scope, boolean global) throws AstRendererException {
+    public static FriendFunctionDefinitionImpl create(AST ast, final CsmFile file, FileContent fileContent, CsmClass cls, CsmScope scope, boolean global) throws AstRendererException {
 
         int startOffset = getStartOffset(ast);
         int endOffset = getEndOffset(ast);
@@ -85,12 +86,12 @@ public final class FriendFunctionDefinitionImpl extends FunctionDefinitionImpl<C
         NameHolder nameHolder = NameHolder.createFunctionName(ast);
         CharSequence name = QualifiedNameCache.getManager().getString(nameHolder.getName());
         if (name.length() == 0) {
-            DiagnosticExceptoins.register(new AstRendererException((FileImpl) file, startOffset, "Empty function name.")); // NOI18N
+            DiagnosticExceptoins.register(AstRendererException.createAstRendererException((FileImpl) file, ast, startOffset, "Empty function name.")); // NOI18N
             return null;
         }
         CharSequence rawName = initRawName(ast);
         
-        boolean _static = AstRenderer.FunctionRenderer.isStatic(ast, file, name);
+        boolean _static = AstRenderer.FunctionRenderer.isStatic(ast, file, fileContent, name);
         boolean _const = AstRenderer.FunctionRenderer.isConst(ast);
 
         scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, true);
@@ -105,7 +106,7 @@ public final class FriendFunctionDefinitionImpl extends FunctionDefinitionImpl<C
         
         friendFunctionDefinitionImpl.setTemplateDescriptor(templateDescriptor, classTemplateSuffix);
         friendFunctionDefinitionImpl.setReturnType(AstRenderer.FunctionRenderer.createReturnType(ast, friendFunctionDefinitionImpl, file));
-        friendFunctionDefinitionImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, friendFunctionDefinitionImpl, file, global), 
+        friendFunctionDefinitionImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, friendFunctionDefinitionImpl, file, fileContent), 
                 AstRenderer.FunctionRenderer.isVoidParameter(ast));        
         
         CharSequence[] classOrNspNames = CastUtils.isCast(ast) ?
@@ -115,13 +116,14 @@ public final class FriendFunctionDefinitionImpl extends FunctionDefinitionImpl<C
 
         CsmCompoundStatement body = AstRenderer.findCompoundStatement(ast, file, friendFunctionDefinitionImpl);
         if (body == null) {
-            throw new AstRendererException((FileImpl)file, startOffset,
+            throw AstRendererException.createAstRendererException((FileImpl)file, ast, startOffset,
                     "Null body in method definition."); // NOI18N
         }        
         friendFunctionDefinitionImpl.setCompoundStatement(body);
         
         postObjectCreateRegistration(global, friendFunctionDefinitionImpl);
-        nameHolder.addReference(file, friendFunctionDefinitionImpl);
+        postFunctionImpExCreateRegistration(fileContent, global, friendFunctionDefinitionImpl);
+        nameHolder.addReference(fileContent, friendFunctionDefinitionImpl);
         return friendFunctionDefinitionImpl;
     }
     

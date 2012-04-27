@@ -44,6 +44,7 @@ package org.netbeans.modules.xml.multiview.ui;
 
 import javax.swing.JLabel;
 import junit.framework.TestCase;
+import org.openide.util.Utilities;
 
 /**
  * This set of tests do test labels menominics.
@@ -75,7 +76,7 @@ public class SimpleDialogPanelTest extends TestCase {
         SimpleDialogPanel sdp = new SimpleDialogPanel(dd);
         JLabel[] labels = sdp.getLabels();
         for (int i=0,maxi=LABELS1.length; i<maxi; i++) {
-            assertEquals(labels[i].getDisplayedMnemonic(), 0);
+            assertEquals(0, labels[i].getDisplayedMnemonic());
         }
     }
 
@@ -85,7 +86,8 @@ public class SimpleDialogPanelTest extends TestCase {
         SimpleDialogPanel sdp = new SimpleDialogPanel(dd);
         JLabel[] labels = sdp.getLabels();
         for (int i=0,maxi=LABELS1.length; i<maxi; i++) {
-            assertEquals(labels[i].getDisplayedMnemonic(), MNEMONICS1[i]);
+            int expectedMnemonic = Utilities.isMac() ? 0 : MNEMONICS1[i];
+            assertEquals(expectedMnemonic, labels[i].getDisplayedMnemonic());
         }
     }
 
@@ -94,7 +96,8 @@ public class SimpleDialogPanelTest extends TestCase {
         SimpleDialogPanel sdp = new SimpleDialogPanel(dd);
         JLabel[] labels = sdp.getLabels();
         for (int i=0,maxi=LABELS1.length; i<maxi; i++) {
-            assertEquals(labels[i].getDisplayedMnemonic(), MNEMONICS1[i]);
+            int expectedMnemonic = Utilities.isMac() ? 0 : MNEMONICS1[i];
+            assertEquals(expectedMnemonic, labels[i].getDisplayedMnemonic());
         }
     }
 

@@ -404,8 +404,13 @@ public class TransformPerformer {
             } catch (FileAlreadyLockedException exc) {
                 throw (FileAlreadyLockedException) ErrorManager.getDefault().annotate(exc, NbBundle.getMessage(TransformPerformer.class, "ERR_FileAlreadyLockedException_output"));
             } finally {
-                if ( outputStream != null ) {
-                    outputStream.close();
+                try {
+                    if ( outputStream != null ) {
+                        outputStream.close();
+                    }
+                } catch (IOException ex) {
+                    // ignore, but log:
+                    ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Could not close output stream for: " + resultFO);
                 }
                 if ( fileLock != null ) {
                     fileLock.releaseLock();

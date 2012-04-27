@@ -73,8 +73,14 @@ public abstract class Platform {
     
     public abstract LibraryItem.StdLibItem[] getStandardLibraries();
     
-    public abstract String getLibraryName(String baseName);
-
+    public String getLibraryName(String baseName) {
+        return getLibraryNameWithoutExtension(baseName) + "." + getLibraryExtension(); // NOI18N
+    }    
+    
+    public abstract String getLibraryNameWithoutExtension(String baseName);
+    
+    public abstract String getLibraryExtension();
+       
     /**
      * File name that qmake would generate on current platform
      * given <code>TARGET=baseName</code> and <code>VERSION=version</code>.

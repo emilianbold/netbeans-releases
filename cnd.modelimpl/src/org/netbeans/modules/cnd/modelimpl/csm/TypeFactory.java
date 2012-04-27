@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionStatementImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
@@ -254,7 +255,7 @@ public class TypeFactory {
                         int templateDepth = 0;
                         StringBuilder sb = new StringBuilder();
                         for( AST namePart = tokFirstId; namePart != null; namePart = namePart.getNextSibling() ) {
-                            if( templateDepth == 0 && namePart.getType() == CPPTokenTypes.ID ) {
+                            if( templateDepth == 0 && namePart.getType() == CPPTokenTypes.IDENT ) {
                                 sb.append(namePart.getText());
                                 l.add(NameCache.getManager().getString(AstUtil.getText(namePart)));
                                 //l.add(namePart.getText());
@@ -321,6 +322,77 @@ public class TypeFactory {
         return type;
     }
 
+    public static class TypeBuilder implements CsmObjectBuilder {
+        
+        private CharSequence name;// = CharSequences.empty();
+        private int nameStartOffset;
+        private int nameEndOffset;
+        
+        private int pointerDepth = 0;
+        private int arrayDepth = 0;
+
+        private boolean reference;
+        private boolean _const;
+        
+        private CsmClassifier cls;
+        
+        private CsmFile file;
+        private int startOffset;
+        private int endOffset;
+        
+        private TypeBuilder child;
+
+        final ArrayList<CsmSpecializationParameter> instantiationParams = new ArrayList<CsmSpecializationParameter>();
+        
+        public void setName(CharSequence name, int startOffset, int endOffset) {
+            if(this.name == null) {
+                this.name = name;
+                this.nameStartOffset = startOffset;
+                this.nameEndOffset = endOffset;
+            }
+        }
+
+        public void setFile(CsmFile file) {
+            this.file = file;
+        }
+        
+        public void setEndOffset(int endOffset) {
+            this.endOffset = endOffset;
+        }
+
+        public void setStartOffset(int startOffset) {
+            this.startOffset = startOffset;
+        }
+
+        public void setChild(TypeBuilder child) {
+            this.child = child;
+        }
+        
+        public void setClassifier(CsmClassifier cls) {
+            this.cls = cls;
+        }
+        
+        public CsmType create(CsmType parent) {
+            TypeImpl type;
+            if(parent != null) {
+                type = NestedType.create(parent, file, parent.getPointerDepth(), parent.isReference(), parent.getArrayDepth(), parent.isConst(), parent.getStartOffset(), parent.getEndOffset());
+            } else {
+                type = new TypeImpl(file, pointerDepth, reference, arrayDepth, _const, startOffset, endOffset);
+            }
+            type.setClassifierText(name);
+            List<CharSequence> l = new ArrayList<CharSequence>();
+            l.add(name);
+            type.setQName(l.toArray(new CharSequence[l.size()]));
+            type.initClassifier(cls);
+            type.instantiationParams.addAll(instantiationParams);
+            
+            if(child != null) {
+                return child.create(type);
+            }
+            return type;
+        }
+    }
+   
     public static CsmType createType(CsmType type, int pointerDepth, boolean reference, int arrayDepth, boolean _const) {
         if(type.getPointerDepth() == pointerDepth &&
             type.isReference() == reference &&

@@ -44,44 +44,43 @@
 
 package org.netbeans.modules.groovy.grailsproject;
 
-import org.netbeans.modules.groovy.grailsproject.ui.GrailsLogicalViewProvider;
-import org.netbeans.modules.groovy.grailsproject.ui.customizer.GrailsProjectCustomizerProvider;
 import java.awt.Image;
 import java.beans.PropertyChangeListener;
+import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.modules.groovy.grailsproject.classpath.ClassPathProviderImpl;
-import org.netbeans.modules.groovy.grailsproject.classpath.SourceRoots;
-import org.netbeans.modules.groovy.grailsproject.queries.GrailsProjectEncodingQueryImpl;
-import org.netbeans.spi.project.ProjectState;
-import org.netbeans.spi.project.ui.LogicalViewProvider;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.ImageUtilities;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
-import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.groovy.grails.api.GrailsConstants;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
+import org.netbeans.modules.groovy.grailsproject.classpath.ClassPathProviderImpl;
+import org.netbeans.modules.groovy.grailsproject.classpath.SourceRoots;
 import org.netbeans.modules.groovy.grailsproject.commands.GrailsCommandSupport;
 import org.netbeans.modules.groovy.grailsproject.completion.ControllerCompletionProvider;
 import org.netbeans.modules.groovy.grailsproject.completion.DomainCompletionProvider;
 import org.netbeans.modules.groovy.grailsproject.config.BuildConfig;
 import org.netbeans.modules.groovy.grailsproject.debug.GrailsDebugger;
+import org.netbeans.modules.groovy.grailsproject.queries.GrailsProjectEncodingQueryImpl;
+import org.netbeans.modules.groovy.grailsproject.ui.GrailsLogicalViewProvider;
 import org.netbeans.modules.groovy.grailsproject.ui.TemplatesImpl;
+import org.netbeans.modules.groovy.grailsproject.ui.customizer.GrailsProjectCustomizerProvider;
 import org.netbeans.modules.groovy.support.spi.GroovyFeature;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
+import org.netbeans.spi.project.ProjectState;
+import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
+import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.Utilities;
+import org.openide.util.lookup.Lookups;
 import org.openide.windows.WindowManager;
 import org.w3c.dom.Element;
 
@@ -93,30 +92,22 @@ import org.w3c.dom.Element;
 public final class GrailsProject implements Project {
 
     private static final Logger LOG = Logger.getLogger(GrailsProject.class.getName());
-
     private final FileObject projectDir;
-
     private final ProjectState projectState;
-
     private final LogicalViewProvider logicalView;
-
     private final ClassPathProviderImpl cpProvider;
-
     private final GrailsCommandSupport commandSupport;
-
     private final BuildConfig buildConfig;
-    
     private SourceRoots sourceRoots;
-
     private SourceRoots testRoots;
-
     private Lookup lookup;
+    
 
     public GrailsProject(FileObject projectDir, ProjectState projectState) {
         this.projectDir = projectDir;
         this.projectState = projectState;
         this.logicalView = new GrailsLogicalViewProvider(this);
-        this.cpProvider = new ClassPathProviderImpl(getSourceRoots(), getTestSourceRoots(), FileUtil.toFile(projectDir), this);
+        this.cpProvider = new ClassPathProviderImpl(getSourceRoots(), getTestSourceRoots(), this);
         this.commandSupport = new GrailsCommandSupport(this);
         this.buildConfig = new BuildConfig(this);
     }
@@ -189,6 +180,7 @@ public final class GrailsProject implements Project {
         return null;
     }
 
+    @Override
     public FileObject getProjectDirectory() {
         return projectDir;
     }
@@ -205,6 +197,7 @@ public final class GrailsProject implements Project {
         return buildConfig;
     }
 
+    @Override
     public Lookup getLookup() {
         if (lookup == null) {
             GrailsProjectConfig config = new GrailsProjectConfig(this);
@@ -252,35 +245,39 @@ public final class GrailsProject implements Project {
 
     private final class Info implements ProjectInformation {
 
+        @Override
         public Icon getIcon() {
             Image image = ImageUtilities.loadImage(GrailsConstants.GRAILS_ICON_16x16);
             return image == null ? null : new ImageIcon(image);
         }
 
+        @Override
         public String getName() {
             return getProjectDirectory().getName();
         }
 
+        @Override
         public String getDisplayName() {
             return getName();
         }
 
+        @Override
         public void addPropertyChangeListener(PropertyChangeListener pcl) {
             //do nothing, won't change
         }
 
+        @Override
         public void removePropertyChangeListener(PropertyChangeListener pcl) {
             //do nothing, won't change
         }
 
+        @Override
         public Project getProject() {
             return GrailsProject.this;
         }
     }
 
     private class OpenHook extends ProjectOpenedHook {
-
-        //private org.netbeans.modules.gsfpath.api.classpath.ClassPath cp;
 
         @Override
         protected void projectOpened() {
@@ -289,16 +286,6 @@ public final class GrailsProject implements Project {
             GlobalPathRegistry.getDefault().register(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
             GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
             GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, sourceClasspaths);
-
-//            // GSF classpath
-//            List<FileObject> roots = new ArrayList<FileObject>();
-//            for (ClassPath classPath : sourceClasspaths) {
-//                roots.addAll(Arrays.asList(classPath.getRoots()));
-//            }
-//            cp = ClassPathSupport.createClassPath(roots.toArray(new FileObject[roots.size()]));
-//            org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry.getDefault().register(
-//                    org.netbeans.modules.gsfpath.api.classpath.ClassPath.SOURCE,
-//                    new org.netbeans.modules.gsfpath.api.classpath.ClassPath[] { cp });
         }
 
         @Override
@@ -306,30 +293,24 @@ public final class GrailsProject implements Project {
             GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
             GlobalPathRegistry.getDefault().unregister(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
             GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
-
-//            // GSF classpath
-//            if (cp != null) {
-//                org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry.getDefault().unregister(
-//                        org.netbeans.modules.gsfpath.api.classpath.ClassPath.SOURCE,
-//                        new org.netbeans.modules.gsfpath.api.classpath.ClassPath[] { cp });
-//            }
         }
-
     }
 
     private static class AuxiliaryConfigurationImpl implements AuxiliaryConfiguration {
 
+        @Override
         public Element getConfigurationFragment(String elementName, String namespace, boolean shared) {
             return null;
         }
 
+        @Override
         public void putConfigurationFragment(Element fragment, boolean shared) throws IllegalArgumentException {
         }
 
+        @Override
         public boolean removeConfigurationFragment(String elementName, String namespace, boolean shared) throws IllegalArgumentException {
             return false;
         }
-
     }
 
     private static final class RecommendedTemplatesImpl implements RecommendedTemplates, PrivilegedTemplates {
@@ -356,22 +337,22 @@ public final class GrailsProject implements Project {
             "simple-files"
         };
 
+        @Override
         public String[] getRecommendedTypes() {
             return RECOMMENDED_TYPES;
         }
 
+        @Override
         public String[] getPrivilegedTemplates() {
             return PRIVILEGED_NAMES;
         }
-
     }
 
     private static final class GroovyFeatureImpl implements GroovyFeature {
 
+        @Override
         public boolean isGroovyEnabled() {
             return true;
         }
-
     }
-
 }

@@ -6,7 +6,7 @@
     <localizing-bundle>org.netbeans.modules.db.drivers.Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst://org.netbeans.modules.db.drivers/modules/ext/mysql-connector-java-5.1.13-bin.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.db.drivers/modules/ext/mysql-connector-java-5.1.18-bin.jar!/</resource>
     </volume>
     <volume>
         <type>src</type>
@@ -20,7 +20,7 @@
     <volume>
         <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
         <type>maven-pom</type>
-        <resource>http://repo1.maven.org/maven2/mysql/mysql-connector-java/5.1.13/mysql-connector-java-5.1.13.pom</resource>
+        <resource>http://repo1.maven.org/maven2/mysql/mysql-connector-java/5.1.18/mysql-connector-java-5.1.18.pom</resource>
     </volume>
 
 </library>

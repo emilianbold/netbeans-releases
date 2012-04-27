@@ -2083,7 +2083,7 @@ public final class TreeMaker {
     }
     
     public ModifiersTree addModifiersModifier(ModifiersTree modifiers, Modifier modifier) {
-        long c = ((JCModifiers) modifiers).flags;
+        long c = ((JCModifiers) modifiers).flags & ~Flags.GENERATEDCONSTR;
         switch (modifier) {
             case ABSTRACT: c = c | Flags.ABSTRACT; break;
             case FINAL: c = c | Flags.FINAL; break;
@@ -2103,7 +2103,7 @@ public final class TreeMaker {
     }
     
     public ModifiersTree removeModifiersModifier(ModifiersTree modifiers, Modifier modifier) {
-        long c = ((JCModifiers) modifiers).flags;
+        long c = ((JCModifiers) modifiers).flags & ~Flags.GENERATEDCONSTR;
         switch (modifier) {
             case ABSTRACT: c = c & ~Flags.ABSTRACT; break;
             case FINAL: c = c & ~Flags.FINAL; break;

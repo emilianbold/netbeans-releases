@@ -168,11 +168,4 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
-    <folder name="Services">    
-        <folder name="MIMEResolver">
-            <file name="org-netbeans-modules-mobility-end2end-mime-resolver.xml" url="e2e-mime-resolver.xml">
-                <attr name="position" intvalue="1000"/>
-            </file>
-        </folder>
-    </folder>    
 </filesystem>

@@ -46,7 +46,6 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.ProxySelector;
 import java.net.SocketAddress;
@@ -57,10 +56,15 @@ import org.netbeans.modules.bugzilla.*;
 import java.util.logging.Level;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.commons.net.WebUtil;
-import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
 import org.eclipse.mylyn.internal.tasks.core.TaskRepositoryManager;
+import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
+import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
+import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
+import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
+import org.netbeans.modules.bugzilla.issue.IssueTestUtils;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 
 /**
@@ -105,17 +109,33 @@ public class ExceptionHandlerTest extends NbTestCase implements TestConstants {
         ProxySelector.setDefault(defaultPS);         
     }
     
+    @RandomlyFails
     public void testIsLoginHandler() throws Throwable {
-        BugzillaRepository repository = new BugzillaRepository("bgzll", "bgzll", REPO_URL, "XXX", "XXX", null, null);
+        RepositoryInfo info = new RepositoryInfo("bgzll", BugzillaConnector.ID, REPO_URL, "bgzll", "bgzll", "XXX", null , "XXX".toCharArray(), null);
+        BugzillaRepository repository = new BugzillaRepository(info);
         assertHandler(repository, "LoginHandler");
 
-        repository = new BugzillaRepository("bgzll", "bgzll", REPO_URL, REPO_USER, "XXX", null, null);
+        info = new RepositoryInfo("bgzll", BugzillaConnector.ID, REPO_URL, "bgzll", "bgzll", REPO_USER, null , "XXX".toCharArray(), null);
+        repository = new BugzillaRepository(info);
         assertHandler(repository, "LoginHandler");
         
     }
 
     public void testIsNotFoundHandler() throws Throwable {
-        BugzillaRepository repository = new BugzillaRepository("bgzll", "bgzll", "http://crap", null, null, null, null);
+        ProxySelector ps = new ProxySelector() {
+            @Override
+            public List<Proxy> select(URI uri) {
+                return Collections.singletonList(Proxy.NO_PROXY);
+            }
+            @Override
+            public void connectFailed(URI uri, SocketAddress sa, IOException ioe) {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+        };
+        ProxySelector.setDefault(ps); 
+        
+        RepositoryInfo info = new RepositoryInfo("bgzll", BugzillaConnector.ID, "http://crap", "bgzll", "bgzll", null, null, null , null);
+        BugzillaRepository repository = new BugzillaRepository(info);
         assertHandler(repository, "NotFoundHandler");
     }
 
@@ -132,13 +152,71 @@ public class ExceptionHandlerTest extends NbTestCase implements TestConstants {
         };
         ProxySelector.setDefault(ps); 
         
-        BugzillaRepository repository = new BugzillaRepository("bgzll", "bgzll", "dil://dil.com", null, null, null, null);
+        RepositoryInfo info = new RepositoryInfo("bgzll", BugzillaConnector.ID, "dil://dil.com", "bgzll", "bgzll", null, null, null , null);
+        BugzillaRepository repository = new BugzillaRepository(info);
         assertHandler(repository, "DefaultHandler");
 
-        repository = new BugzillaRepository("bgzll", "bgzll", "crap", null, null, null, null);
+        info = new RepositoryInfo("bgzll", BugzillaConnector.ID, "crap", "bgzll", "bgzll", null, null, null , null);
+        repository = new BugzillaRepository(info);
         assertHandler(repository, "DefaultHandler");
 
         // XXX need more tests
+    }
+    
+    public void testIsMidAirHandler() throws Throwable {
+        BugzillaRepository repository = TestUtil.getRepository("test", REPO_URL, REPO_USER, REPO_PASSWD);
+        
+        String id = TestUtil.createIssue(repository, "testIsMidairHandler");
+        
+        TaskData data1 = TestUtil.getTaskData(repository.getTaskRepository(), id);
+        TaskAttribute ta1 = data1.getRoot().createMappedAttribute(TaskAttribute.COMMENT_NEW);
+        ta1.setValue("comment1");
+        
+        // add comment bypassing data1 to cause a midair collision
+        TaskData data2 = TestUtil.getTaskData(repository.getTaskRepository(), id);
+        TaskAttribute ta2 = data2.getRoot().createMappedAttribute(TaskAttribute.COMMENT_NEW);
+        ta2.setValue("midairingcomment");
+        TestUtil.postTaskData(brc, repository.getTaskRepository(), data2);
+        
+        try {
+            TestUtil.postTaskData(brc, repository.getTaskRepository(), data1);
+        } catch (CoreException ex) {
+            assertEquals(EXCEPTION_HANDLER_CLASS_NAME + "$" + "MidAirHandler", getHandler(repository, ex).getClass().getName());
+        } catch (Exception ex) {
+            TestUtil.handleException(ex);
+        }
+    }
+    
+    public void testRefreshConfigOnMidAir() throws Throwable {
+        BugzillaRepository repository = TestUtil.getRepository("test", REPO_URL, REPO_USER, REPO_PASSWD);
+        
+        String id = TestUtil.createIssue(repository, "testRefreshConfigOnMidAir");
+        
+        BugzillaIssue issue = repository.getIssue(id);
+        issue.addComment("comment1");
+        
+        // add comment bypassing the issue to cause a midair collision
+        TaskData data2 = TestUtil.getTaskData(repository.getTaskRepository(), id);
+        TaskAttribute ta2 = data2.getRoot().createMappedAttribute(TaskAttribute.COMMENT_NEW);
+        ta2.setValue("midairingcomment");
+        TestUtil.postTaskData(brc, repository.getTaskRepository(), data2);
+        
+        // try to submit
+        LogHandler lhExecute = new LogHandler("execute SubmitCommand [issue #"+id, LogHandler.Compare.STARTS_WITH, LogHandler.DEFAULT_TIMEOUT, 2);
+        LogHandler lhRefresh = new LogHandler(" Refresh bugzilla configuration", LogHandler.Compare.STARTS_WITH, LogHandler.DEFAULT_TIMEOUT, 1);
+        System.setProperty("netbeans.t9y.throwOnClientError", "true");
+        
+        Throwable st = null;
+        try {
+            IssueTestUtils.submit(issue);
+        } catch (Throwable t) {
+            st = t;
+        }
+        lhExecute.waitUntilDone();
+        lhRefresh.waitUntilDone();
+        assertEquals(2, lhExecute.getInterceptedCount());
+        assertTrue(lhRefresh.isDone());
+        assertTrue(st.getMessage().contains("Mid-air collision occurred while submitting"));
     }
 
     private void assertHandler(BugzillaRepository repository, String name) throws Throwable {
@@ -154,8 +232,8 @@ public class ExceptionHandlerTest extends NbTestCase implements TestConstants {
     private Object getHandler(BugzillaRepository repository, CoreException ce) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, ClassNotFoundException {
         BugzillaExecutor executor = repository.getExecutor();
         Class c = Class.forName(EXCEPTION_HANDLER_CLASS_NAME);
-        Method m = c.getDeclaredMethod("createHandler", CoreException.class, BugzillaExecutor.class, BugzillaRepository.class);
+        Method m = c.getDeclaredMethod("createHandler", CoreException.class, BugzillaExecutor.class, BugzillaRepository.class, boolean.class);
         m.setAccessible(true);
-        return  m.invoke(executor, new Object[]{ce, executor, repository});
+        return  m.invoke(executor, new Object[]{ce, executor, repository, true});
     }
 }

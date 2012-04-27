@@ -45,6 +45,7 @@
                         <code-name-base>org.netbeans.core.netigso</code-name-base>
                         <recursive/>
                         <compile-dependency/>
+                        <test/>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.libs.junit4</code-name-base>
@@ -85,8 +86,8 @@
                 <package>org.eclipse.osgi.util</package>
             </public-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/org.eclipse.osgi_3.6.0.v20100517.jar</runtime-relative-path>
-                <binary-origin>external/org.eclipse.osgi_3.6.0.v20100517.jar</binary-origin>
+                <runtime-relative-path>ext/org.eclipse.osgi_3.7.1.R37x_v20110808-1106.jar</runtime-relative-path>
+                <binary-origin>external/org.eclipse.osgi_3.7.1.R37x_v20110808-1106.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

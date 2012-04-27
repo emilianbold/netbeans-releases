@@ -210,6 +210,14 @@ final class WinXPEditorTabCellRenderer extends AbstractTabCellRenderer {
         return result;
     }
 
+    @Override
+    protected void paintIconAndText( Graphics g ) {
+        if( isBusy() ) {
+            setIcon( BusyTabsSupport.getDefault().getBusyIcon( isSelected() ) );
+        }
+        super.paintIconAndText( g );
+    }
+
     private static final Color getRightEdgeSelectedShadow() {
         Color result = UIManager.getColor("close_button_border_focus"); //NOI18N
         if (result == null) {

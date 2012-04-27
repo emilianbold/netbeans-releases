@@ -44,6 +44,7 @@ package org.netbeans.modules.git.client;
 
 import java.io.File;
 import java.text.DateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -307,7 +308,16 @@ public abstract class GitProgressSupport implements Runnable, Cancellable {
                 }
                 if (directChild == null) {
                     file = file.getParentFile();
-                    directChildPath = directChildPath.substring(0, directChildPath.lastIndexOf("/")); //NOI18N
+                    int pos = directChildPath.lastIndexOf("/"); //NOI18N
+                    if (pos == -1) {
+                        if (LOG.isLoggable(Level.INFO)) {
+                            LOG.log(Level.WARNING, "Suspicious notified file: {0} - {1} for {2}", new Object[] { file, relativePath, Arrays.asList(roots) } ); //NOI18N
+                            LOG.log(Level.INFO, null, new Exception("Suspicious notify call") ); //NOI18N
+                        }
+                        directChildPath = ""; //NOI18N
+                    } else {
+                        directChildPath = directChildPath.substring(0, pos);
+                    }
                 }
             }
             return directChildPath;

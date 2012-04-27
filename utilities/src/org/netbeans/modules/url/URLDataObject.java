@@ -65,6 +65,7 @@ import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.NotifyDescriptor;
 import org.openide.ErrorManager;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -77,6 +78,12 @@ import org.openide.util.lookup.Lookups;
  * @author Ian Formanek
  * @see org.openide.Places.Folders#bookmarks
  */
+@MIMEResolver.ExtensionRegistration(
+    extension="url",
+    mimeType="text/url",
+    position=360,
+    displayName="#URLResolver"
+)
 public class URLDataObject extends MultiDataObject
                            implements OpenCookie, InstanceCookie {
 

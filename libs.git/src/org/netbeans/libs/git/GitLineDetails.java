@@ -44,8 +44,9 @@ package org.netbeans.libs.git;
 import java.io.File;
 
 /**
- *
- * @author ondra
+ * Contains information needed to construct a file's line annotation.
+ * 
+ * @author Ondra Vrabec
  */
 public final class GitLineDetails {
     private final GitRevisionInfo revision;
@@ -64,26 +65,46 @@ public final class GitLineDetails {
         this.content = content;
     }
     
+    /**
+     * @return line's last modification's author
+     */
     public GitUser getAuthor () {
         return author;
     }
     
+    /**
+     * @return line's last modification's committer
+     */
     public GitUser getCommitter () {
         return committer;
     }
 
+    /**
+     * @return information about the commit that modified the line
+     */
     public GitRevisionInfo getRevisionInfo () {
         return revision;
     }
 
+    /**
+     * @return the file that provided the line of the result.
+     *         Can be different from the current file if the file was renamed.
+     */
     public File getSourceFile () {
         return sourceFile;
     }
 
+    /**
+     * @return the original line number in the original file returned by <code>getSourceFile</code>
+     *         in the revision returned by <code>getRevisionInfo</code>.
+     */
     public int getSourceLine () {
         return sourceLine;
     }
 
+    /**
+     * @return current content of the file's line
+     */
     public String getContent () {
         return content;
     }

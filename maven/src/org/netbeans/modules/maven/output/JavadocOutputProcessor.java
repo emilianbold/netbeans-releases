@@ -73,10 +73,12 @@ public class JavadocOutputProcessor implements OutputProcessor {
         index = Pattern.compile("Generating (.*)index\\.html.*", Pattern.DOTALL); //NOI18N
     }
     
+    @Override
     public String[] getRegisteredOutputSequences() {
         return JAVADOCGOALS;
     }
     
+    @Override
     public void processLine(String line, OutputVisitor visitor) {
         Matcher match = index.matcher(line);
         if (match.matches()) {
@@ -84,10 +86,12 @@ public class JavadocOutputProcessor implements OutputProcessor {
         }
     }
     
+    @Override
     public void sequenceStart(String sequenceId, OutputVisitor visitor) {
         path = null;
     }
     
+    @Override
     public void sequenceEnd(String sequenceId, OutputVisitor visitor) {
         if (path != null) {
             visitor.setLine("View Generated javadoc at " + path); //NOI18N - shows up in maven output.
@@ -95,6 +99,7 @@ public class JavadocOutputProcessor implements OutputProcessor {
         }
     }
     
+    @Override
     public void sequenceFail(String sequenceId, OutputVisitor visitor) {
     }
     
@@ -103,11 +108,13 @@ public class JavadocOutputProcessor implements OutputProcessor {
         private Listener(String path) {
             root = path;
         }
+        @Override
         public void outputLineSelected(OutputEvent arg0) {
             
         }
         
-        public void outputLineAction(OutputEvent arg0) {
+       @Override
+       public void outputLineAction(OutputEvent arg0) {
             File javadoc = FileUtil.normalizeFile(new File(root));
             FileUtil.refreshFor(javadoc);
             FileObject fo = FileUtil.toFileObject(javadoc);
@@ -120,6 +127,7 @@ public class JavadocOutputProcessor implements OutputProcessor {
             }
         }
         
+        @Override
         public void outputLineCleared(OutputEvent arg0) {
         }
     }

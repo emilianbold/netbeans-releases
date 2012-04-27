@@ -45,10 +45,7 @@
 package org.netbeans.modules.csl.navigation;
 
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent;
-import org.netbeans.modules.parsing.spi.ParserResultTask;
-import org.netbeans.modules.parsing.spi.Scheduler;
-import org.netbeans.modules.parsing.spi.SchedulerEvent;
+import org.netbeans.modules.parsing.spi.*;
 
 /**
  * This file is originally from Retouche, the Java Support
@@ -59,11 +56,12 @@ import org.netbeans.modules.parsing.spi.SchedulerEvent;
  * This task is called every time the caret position changes in a GSF editor.
  * It delegates to the navigator to show the current selection.
  */
-public class CaretListeningTask extends ParserResultTask<ParserResult> {
+public class CaretListeningTask extends IndexingAwareParserResultTask<ParserResult> {
     
     private boolean canceled;
     
     CaretListeningTask() {
+        super(TaskIndexingMode.ALLOWED_DURING_SCAN);
     }
     
     public @Override void run(ParserResult result, SchedulerEvent event) {

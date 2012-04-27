@@ -85,8 +85,6 @@ public class ModuleFormatSatisfiedTest extends SetupHid {
     }
     
     public void testTryToInstallTheModule () throws Exception {
-        Main.getModuleSystem (); // init module system
-        
         final MockEvents ev = new MockEvents();
         NbInstaller installer = new NbInstaller(ev);
         ModuleManager mgr = new ModuleManager(installer, ev);

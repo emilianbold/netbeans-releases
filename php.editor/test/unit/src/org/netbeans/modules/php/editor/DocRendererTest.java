@@ -44,9 +44,9 @@ package org.netbeans.modules.php.editor;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
-import org.netbeans.modules.php.editor.nav.TestBase;
+import org.netbeans.modules.php.editor.nav.PHPNavTestBase;
 
-public class DocRendererTest extends TestBase {
+public class DocRendererTest extends PHPNavTestBase {
 
     public DocRendererTest(String name) {
         super(name);

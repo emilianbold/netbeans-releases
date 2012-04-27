@@ -75,9 +75,9 @@ public class NetigsoOSGiIsNotFriendTest extends NetigsoHid {
             File j2 = changeManifest(new File(jars, "depends-on-simple-module.jar"), mfBar);
             Module m1 = mgr.create(j1, null, false, false, false);
             Module m2 = mgr.create(j2, null, false, false, false);
-            HashSet<Module> b = new HashSet<Module>(Arrays.asList(m1, m2));
             try {
-                mgr.enable(b);
+                mgr.enable(m1);
+                mgr.enable(m2);
                 fail("InvalidException should be raised!");
             } catch (InvalidException ex) {
                 // OK

@@ -50,8 +50,11 @@ import java.util.Set;
 import org.eclipse.jgit.transport.RemoteConfig;
 
 /**
- *
- * @author ondra
+ * Represents the <code>[remote]</code> area of a gitconfig file.
+ * Contains and provides information about a remote git repository, its push and fetch URIs
+ * and fetch and push reference specifications. See the help pages for git config for more information.
+ * 
+ * @author Ondra Vrabec
  */
 public final class GitRemoteConfig {
     
@@ -61,6 +64,13 @@ public final class GitRemoteConfig {
     private final List<String> pushSpecs;
     private final String remoteName;
 
+    /**
+     * @param remoteName alias for the remote repository
+     * @param uris list of URIs the remote repository is represented by
+     * @param pushUris list of URIs that should be used when pushing to the repository
+     * @param fetchSpecs list of fetch reference specifications that come in question when fetching from the repository
+     * @param pushSpecs list of push reference specifications that come in question when pushing to the repository
+     */
     public GitRemoteConfig (String remoteName, List<String> uris, List<String> pushUris, List<String> fetchSpecs, List<String> pushSpecs) {
         this.remoteName = remoteName;
         this.uris = uris;
@@ -69,22 +79,37 @@ public final class GitRemoteConfig {
         this.pushSpecs = pushSpecs;
     }
 
+    /**
+     * @return remote's name
+     */
     public String getRemoteName () {
         return remoteName;
     }
 
+    /**
+     * @return list of URIs known to this remote.
+     */
     public List<String> getUris () {
         return Collections.unmodifiableList(uris);
     }
 
+    /**
+     * @return list of push-only URIs known to this remote.
+     */
     public List<String> getPushUris () {
         return Collections.unmodifiableList(pushUris);
     }
 
+    /**
+     * @return list of specs used when fetching.
+     */
     public List<String> getFetchRefSpecs () {
         return Collections.unmodifiableList(fetchSpecs);
     }
 
+    /**
+     * @return list of specs used when pushing.
+     */
     public List<String> getPushRefSpecs () {
         return Collections.unmodifiableList(pushSpecs);
     }

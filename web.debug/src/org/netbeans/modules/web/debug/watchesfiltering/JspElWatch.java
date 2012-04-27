@@ -52,6 +52,7 @@ import org.openide.util.WeakListeners;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import org.openide.util.NbBundle;
 
 /**
  * Represents a JSP EL watch.
@@ -78,6 +79,9 @@ public class JspElWatch implements PropertyChangeListener {
     }
 
     public String getType() {
+        if (!watch.isEnabled()) {
+            return "";
+        }
         if (!evaluated) {
             evaluate();
         }
@@ -85,6 +89,9 @@ public class JspElWatch implements PropertyChangeListener {
     }
 
     public String getValue() {
+        if (!watch.isEnabled()) {
+            return NbBundle.getMessage(JspElWatch.class, "CTL_WatchDisabled");
+        }
         if (!evaluated) {
             evaluate();
         }
@@ -92,6 +99,9 @@ public class JspElWatch implements PropertyChangeListener {
     }
 
     public String getExceptionDescription() {
+        if (!watch.isEnabled()) {
+            return null;
+        }
         if (!evaluated) {
             evaluate();
         }
@@ -130,4 +140,5 @@ public class JspElWatch implements PropertyChangeListener {
     public void setUnevaluated() {
         evaluated = false;
     }
+    
 }

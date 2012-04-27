@@ -51,6 +51,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -80,14 +82,19 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
+import javax.swing.filechooser.FileFilter;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
 import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
@@ -103,23 +110,21 @@ import org.netbeans.modules.web.jsf.spi.components.JsfComponentCustomizer;
 import org.netbeans.modules.web.jsf.spi.components.JsfComponentProvider;
 import org.netbeans.modules.web.jsf.wizards.JSFConfigurationPanel.LibraryType;
 import org.netbeans.modules.web.jsf.wizards.JSFConfigurationPanel.PreferredLanguage;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
-import org.openide.util.ChangeSupport;
-import org.openide.util.Exceptions;
-import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
+import org.openide.filesystems.URLMapper;
+import org.openide.util.*;
 import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author  Petr Pisl, Radko Najman, alexeybutenko
+ * @author  Petr Pisl, Radko Najman, alexeybutenko, Martin Fousek
  */
 public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements HelpCtx.Provider, DocumentListener  {
 
+    private static final RequestProcessor RP = new RequestProcessor("JSF worker", 1);
     private static final Logger LOG = Logger.getLogger(JSFConfigurationPanelVisual.class.getName());
 
     private static final String JSF_SERVLET_NAME="Faces Servlet";   //NOI18N
@@ -140,15 +145,16 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
     private String serverInstanceID;
     private final List<PreferredLanguage> preferredLanguages = new ArrayList<PreferredLanguage>();
     private String currentServerInstanceID;
-    private final List<String> excludeLibs = Arrays.asList("javaee-web-api-6.0", "javaee-api-6.0", "jsp-compilation"); //NOI18N
+    private final List<String> excludeLibs = Arrays.asList("javaee-web-api-6.0", "javaee-api-6.0", "jsp-compilation", "javaee-api-5.0"); //NOI18N
     private boolean isWebLogicServer = false;
 
     // Jsf component libraries related
     private JSFComponentsTableModel jsfComponentsTableModel;
     private TreeMap<String, JsfComponentCustomizer> jsfComponentCustomizers = new TreeMap<String, JsfComponentCustomizer>();
 
-    private static final Lookup.Result<? extends JsfComponentProvider> jsfComponentProviders =
-            Lookups.forPath(JsfComponentProvider.COMPONENTS_PATH).lookupResult(JsfComponentProvider.class);
+    private static final Collection<? extends JsfComponentProvider> jsfComponentProviders =
+            new ArrayList<JsfComponentProvider>(Lookups.forPath(JsfComponentProvider.COMPONENTS_PATH).
+            lookupResult(JsfComponentProvider.class).allInstances());
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
@@ -191,11 +197,53 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         initLibraries();
         initJsfComponentsLibraries();
 
+        // in customizer preselected included JSF library
+        if (customizer) {
+            preselectJsfLibrary();
+        }
+
         if (customizer) {
             enableComponents(false);
         } else {
             updateLibrary();
         }
+    }
+
+    private void preselectJsfLibrary() {
+        Runnable jsfLibararyUiSwitcher = new Runnable() {
+            @Override
+            public void run() {
+                Project project = FileOwnerQuery.getOwner(panel.getWebModule().getDocumentBase());
+                ClassPathProvider cpp = project.getLookup().lookup(ClassPathProvider.class);
+                ClassPath compileClassPath = cpp.findClassPath(panel.getWebModule().getDocumentBase(), ClassPath.COMPILE);
+                compileClassPath.entries();
+                for (ClassPath.Entry entry : compileClassPath.entries()) {
+                    for (final LibraryItem jsfLibrary : jsfLibraries) {
+                        try {
+                            List<URI> cps = jsfLibrary.getLibrary().getURIContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH);
+                            for (URI uri : cps) {
+                                if (entry.getRoot() != null
+                                        && entry.getRoot().equals(URLMapper.findFileObject(uri.toURL()))) {
+                                    Mutex.EVENT.readAccess(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            rbRegisteredLibrary.setSelected(true);
+                                            enableComponents(false);
+                                            cbLibraries.setSelectedItem(jsfLibrary.getLibrary().getDisplayName());
+                                        }
+                                    });
+                                    return;
+                                }
+                            }
+                        } catch (MalformedURLException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                }
+            }
+        };
+
+        RP.post(jsfLibararyUiSwitcher);
     }
 
     public void addChangeListener(ChangeListener listener) {
@@ -278,7 +326,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
                 }
             }
         };
-        RequestProcessor.getDefault().post(libraryFinder);
+        RP.post(libraryFinder);
 
         libsInitialized = true;
 //        repaint();
@@ -290,7 +338,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
             return;
 
         List<JsfComponentImplementation> jsfComponentDescriptors = new ArrayList<JsfComponentImplementation>();
-        for (JsfComponentProvider provider: jsfComponentProviders.allInstances()) {
+        for (JsfComponentProvider provider: jsfComponentProviders) {
             jsfComponentDescriptors.addAll(provider.getJsfComponents());
         }
 
@@ -544,7 +592,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         cbLibraries = new javax.swing.JComboBox();
         rbNewLibrary = new javax.swing.JRadioButton();
         lDirectory = new javax.swing.JLabel();
-        jtFolder = new javax.swing.JTextField();
+        customBundleTextField = new javax.swing.JTextField();
         jbBrowse = new javax.swing.JButton();
         lVersion = new javax.swing.JLabel();
         jtNewLibraryName = new javax.swing.JTextField();
@@ -606,14 +654,14 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         });
 
         lDirectory.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/wizards/Bundle").getString("MNE_lJSFDir").charAt(0));
-        lDirectory.setLabelFor(jtFolder);
+        lDirectory.setLabelFor(customBundleTextField);
         lDirectory.setText(bundle.getString("LBL_INSTALL_DIR")); // NOI18N
         lDirectory.setToolTipText(bundle.getString("HINT_JSF_Directory")); // NOI18N
 
-        jtFolder.setToolTipText(bundle.getString("HINT_JSF_Directory")); // NOI18N
-        jtFolder.addKeyListener(new java.awt.event.KeyAdapter() {
+        customBundleTextField.setToolTipText(bundle.getString("HINT_JSF_Directory")); // NOI18N
+        customBundleTextField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
-                jtFolderKeyPressed(evt);
+                customBundleTextFieldKeyPressed(evt);
             }
         });
 
@@ -654,28 +702,28 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
             .addGroup(libPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(libPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(rbNewLibrary, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 485, Short.MAX_VALUE)
+                    .addComponent(rbNewLibrary, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 478, Short.MAX_VALUE)
                     .addGroup(libPanelLayout.createSequentialGroup()
                         .addGap(22, 22, 22)
                         .addGroup(libPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(cbPackageJars)
                             .addComponent(lVersion)
                             .addComponent(lDirectory))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 245, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 206, Short.MAX_VALUE))
                     .addGroup(libPanelLayout.createSequentialGroup()
                         .addGroup(libPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                             .addComponent(rbServerLibrary, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(rbRegisteredLibrary, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addGroup(libPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(cbLibraries, 0, 322, Short.MAX_VALUE)
+                            .addComponent(cbLibraries, 0, 316, Short.MAX_VALUE)
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, libPanelLayout.createSequentialGroup()
                                 .addGroup(libPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                    .addComponent(jtNewLibraryName, javax.swing.GroupLayout.DEFAULT_SIZE, 245, Short.MAX_VALUE)
-                                    .addComponent(jtFolder, javax.swing.GroupLayout.DEFAULT_SIZE, 245, Short.MAX_VALUE))
+                                    .addComponent(jtNewLibraryName, javax.swing.GroupLayout.DEFAULT_SIZE, 204, Short.MAX_VALUE)
+                                    .addComponent(customBundleTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 204, Short.MAX_VALUE))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(jbBrowse))
-                            .addComponent(serverLibraries, 0, 322, Short.MAX_VALUE))))
+                            .addComponent(serverLibraries, 0, 295, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         libPanelLayout.setVerticalGroup(
@@ -693,7 +741,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
                 .addComponent(rbNewLibrary)
                 .addGroup(libPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jbBrowse)
-                    .addComponent(jtFolder, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(customBundleTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(lDirectory))
                 .addGroup(libPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jtNewLibraryName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -834,19 +882,32 @@ private void rbRegisteredLibraryItemStateChanged(java.awt.event.ItemEvent evt) {
 private void jbBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbBrowseActionPerformed
     JFileChooser chooser = new JFileChooser();
     chooser.setDialogTitle(NbBundle.getMessage(JSFConfigurationPanelVisual.class,"LBL_SelectLibraryLocation")); //NOI18N
-    chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-    chooser.setCurrentDirectory(new File(jtFolder.getText().trim()));
+    chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+    chooser.setFileFilter(new FileFilter() {
+            @Override
+            public boolean accept(File f) {
+                if (f.getName().endsWith(".jar") || f.isDirectory()) { //N0I18N
+                    return true;
+                }
+                return false;
+            }
+            @Override
+            public String getDescription() {
+                return NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_FileTypeInChooser"); //NOI18N
+            }
+        });
+    chooser.setCurrentDirectory(new File(customBundleTextField.getText().trim()));
 
     if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
-        File projectDir = chooser.getSelectedFile();
-        jtFolder.setText(projectDir.getAbsolutePath());
+        File selectedEntry = chooser.getSelectedFile();
+        customBundleTextField.setText(selectedEntry.getAbsolutePath());
         setNewLibraryFolder();
     }
 }//GEN-LAST:event_jbBrowseActionPerformed
 
-private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jtFolderKeyPressed
+private void customBundleTextFieldKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_customBundleTextFieldKeyPressed
     setNewLibraryFolder();
-}//GEN-LAST:event_jtFolderKeyPressed
+}//GEN-LAST:event_customBundleTextFieldKeyPressed
 
 private void cbPreferredLangActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbPreferredLangActionPerformed
     if (!customizer) {
@@ -876,13 +937,13 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
     private javax.swing.JComboBox cbPreferredLang;
     private javax.swing.JPanel componentsPanel;
     private javax.swing.JPanel confPanel;
+    private javax.swing.JTextField customBundleTextField;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JButton jbBrowse;
     private javax.swing.JLabel jsfComponentsLabel;
     private javax.swing.JScrollPane jsfComponentsScrollPane;
     private javax.swing.JTable jsfComponentsTable;
     private javax.swing.JTabbedPane jsfTabbedPane;
-    private javax.swing.JTextField jtFolder;
     private javax.swing.JTextField jtNewLibraryName;
     private javax.swing.JLabel lDirectory;
     private javax.swing.JLabel lURLPattern;
@@ -941,12 +1002,11 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
 
         if (rbNewLibrary.isSelected()) {
             // checking, whether the folder is the right one
-            String folder = jtFolder.getText().trim();
+            String customResource = customBundleTextField.getText().trim();
             String message;
 
-            // TODO: perhaps remove the version check at all:
-            message = JSFUtils.isJSFInstallFolder(new File(folder), JSFVersion.JSF_2_1);
-            if ("".equals(folder)) {
+            message = JSFUtils.isJSFLibraryResource(new File(customResource));
+            if ("".equals(customResource)) { //NOI18N
                 setInfoMessage(message);
                 return false;
             }
@@ -1155,7 +1215,7 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
         rbNewLibrary.setVisible(visible);
         lDirectory.setVisible(visible);
         lVersion.setVisible(visible);
-        jtFolder.setVisible(visible);
+        customBundleTextField.setVisible(visible);
         jbBrowse.setVisible(visible);
         jtNewLibraryName.setVisible(visible);
     }
@@ -1306,20 +1366,20 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
 
     private void enableNewLibraryComponent(boolean enabled){
         lDirectory.setEnabled(enabled);
-        jtFolder.setEnabled(enabled);
+        customBundleTextField.setEnabled(enabled);
         jbBrowse.setEnabled(enabled);
         lVersion.setEnabled(enabled);
         jtNewLibraryName.setEnabled(enabled);
     }
 
     private void setNewLibraryFolder() {
-        String fileName = jtFolder.getText();
+        String fileName = customBundleTextField.getText();
 
-        if (fileName == null || "".equals(fileName)) {
-            panel.setInstallFolder(null);
+        if (fileName == null || "".equals(fileName)) { //NOI18N
+            panel.setInstallResource(null);
         } else {
             File folder = new File(fileName);
-            panel.setInstallFolder(folder);
+            panel.setInstallResource(folder);
         }
     }
 
@@ -1709,6 +1769,8 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
                 }
             };
             dialogDescriptor.setButtonListener(buttonsListener);
+            // set appropriate state of opened dialog - issue #206424
+            fireJsfDialogUpdate(jsfCustomizer, dialogDescriptor);
             DialogDisplayer.getDefault().notify(dialogDescriptor);
         }
 

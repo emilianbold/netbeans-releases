@@ -83,6 +83,12 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
     
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
     
+    /**
+     * Caches folders known as having no metadata according to {@link #getMetadataFolderNames()}. 
+     * Will be flushed at delegate instantiation.
+     */
+    private final Set<VCSFileProxy> unversionedParents = Collections.synchronizedSet(new HashSet<VCSFileProxy>(20));
+    
     public static DelegatingVCS create(Map<?, ?> map) {
         return new DelegatingVCS(map);
     }
@@ -124,6 +130,7 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
                 } else {
                     LOG.log(Level.WARNING, "Couldn't create delegate for : {0}", map.get("displayName")); // NOI18N
                 }
+                unversionedParents.clear(); // flush cache. its used only if delegate not yet created.
             }
             return delegate;
         }
@@ -486,6 +493,15 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
         if(file == null) {
             return false;
         }
+        
+        LOG.log(Level.FINE, "looking up metadata for {0}", new Object[] { file });
+        if(unversionedParents.contains(file)) {
+            LOG.fine(" cached as unversioned");
+            return false;
+        }
+        
+        boolean ret = false;
+        Set<VCSFileProxy> done = new HashSet<VCSFileProxy>();
         for(String folderName : getMetadataFolderNames()) {
             VCSFileProxy parent;
             if(file.isDirectory()) {
@@ -494,6 +510,12 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
                 parent = file.getParentFile();
             }
             while(parent != null) {
+                
+                if(unversionedParents.contains(parent)) {
+                    LOG.log(Level.FINE, " already known as unversioned {0}", new Object[] { file });
+                    break;
+                }
+                
                 final boolean metadataFolder = VCSFileProxy.createFileProxy(parent, folderName).exists();
                 if(metadataFolder) {
                     LOG.log(
@@ -501,12 +523,19 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
                             "found metadata folder {0} for file {1}",           // NOI18N
                             new Object[]{metadataFolder, file});
                     
-                    return true;
+                    ret = true;
+                } else {
+                    done.add(parent);
                 }
                 parent = parent.getParentFile();
             }
         }
-        return false;
+        
+        if(!ret) {
+            LOG.log(Level.FINE, " storing unversioned");
+            unversionedParents.addAll(done);
+        }
+        return ret;
     }
     
     /**
@@ -574,26 +603,13 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
         public HistoryEntry[] getHistory(VCSFileProxy[] proxies, Date fromDate) {
             File[] files = toFiles(proxies);
             final org.netbeans.modules.versioning.spi.VCSHistoryProvider.HistoryEntry[] history = getDelegate().getVCSHistoryProvider().getHistory(files, fromDate);
+            if(history == null) {
+                return new HistoryEntry[0];
+            }
             HistoryEntry[] proxyHistory = new HistoryEntry[history.length];
             for (int i = 0; i < proxyHistory.length; i++) {
                 final org.netbeans.modules.versioning.spi.VCSHistoryProvider.HistoryEntry he = history[i];
-                RevisionProvider rp = new RevisionProvider() {
-                    @Override
-                    public void getRevisionFile(VCSFileProxy originalFile, VCSFileProxy revisionFile) {
-                        Accessor.IMPL.getRevisionProvider(he);
-                    }
-                };
-                proxyHistory[i] = 
-                    new HistoryEntry(
-                        proxies, 
-                        he.getDateTime(), 
-                        he.getMessage(), 
-                        he.getUsername(), 
-                        he.getUsernameShort(), 
-                        he.getRevision(), 
-                        he.getRevisionShort(), 
-                        he.getActions(), 
-                        rp);
+                proxyHistory[i] = delegateHistoryEntry(proxies, he);
             }
             return proxyHistory;
         }
@@ -603,6 +619,69 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
             File[] files = toFiles(proxies);
             return getDelegate().getVCSHistoryProvider().createShowHistoryAction(files);
         }
+
+        private MessageEditProvider delegateMessageEditProvider(final org.netbeans.modules.versioning.spi.VCSHistoryProvider.HistoryEntry he) {
+            if(he.canEdit()) {
+                return new MessageEditProvider() {
+                    @Override
+                    public void setMessage(String message) throws IOException {
+                        org.netbeans.modules.versioning.spi.VCSHistoryProvider.MessageEditProvider provider = Accessor.IMPL.getMessageEditProvider(he);
+                        if(provider != null) {
+                            provider.setMessage(message);
+                        }
+                    }
+                };
+            }
+            return null;
+        }
+
+        private RevisionProvider delegateRevisionProvider(final org.netbeans.modules.versioning.spi.VCSHistoryProvider.HistoryEntry he) {
+            return new RevisionProvider() {
+                @Override
+                    public void getRevisionFile(VCSFileProxy originalFile, VCSFileProxy revisionFile) {
+                        org.netbeans.modules.versioning.spi.VCSHistoryProvider.RevisionProvider provider = Accessor.IMPL.getRevisionProvider(he);
+                        if(provider != null) {
+                            File of = originalFile.toFile();
+                            File rf = revisionFile.toFile();
+                            if(of != null && rf != null) {
+                                provider.getRevisionFile(of, rf);
+                            }
+                        }
+                    }
+                };
+        }
+
+        private ParentProvider delegateParentProvider(final org.netbeans.modules.versioning.spi.VCSHistoryProvider.HistoryEntry he) {
+            return new ParentProvider() {
+                @Override
+                public HistoryEntry getParentEntry(VCSFileProxy file) {
+                    org.netbeans.modules.versioning.spi.VCSHistoryProvider.ParentProvider provider = Accessor.IMPL.getParentProvider(he);
+                    if(provider != null) {
+                        org.netbeans.modules.versioning.spi.VCSHistoryProvider.HistoryEntry he = provider.getParentEntry(file.toFile());
+                        if(he != null) {
+                            return delegateHistoryEntry(toProxies(he.getFiles()), he);
+                        }
+                    }
+                    return null;
+                }
+            };
+        }
+
+        private HistoryEntry delegateHistoryEntry(VCSFileProxy[] proxies, final org.netbeans.modules.versioning.spi.VCSHistoryProvider.HistoryEntry he) {
+            return Utils.createHistoryEntry(
+                        proxies, 
+                        he.getDateTime(), 
+                        he.getMessage(), 
+                        he.getUsername(), 
+                        he.getUsernameShort(), 
+                        he.getRevision(), 
+                        he.getRevisionShort(), 
+                        he.getActions(), 
+                        delegateRevisionProvider(he),
+                        delegateMessageEditProvider(he), 
+                        delegateParentProvider(he),
+                        new Object[] {he});
+            }
 
         private class DelegateChangeListener implements org.netbeans.modules.versioning.spi.VCSHistoryProvider.HistoryChangeListener {
             private final VCSHistoryProvider.HistoryChangeListener delegate;
@@ -643,8 +722,10 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
     private VCSFileProxy[] toProxies(File[] files) {
         VCSFileProxy[] proxies = new VCSFileProxy[files.length];
         for (int i = 0; i < files.length; i++) {
-            proxies[i] = VCSFileProxy.createFileProxy(files[i]);
             assert files[i] != null;
+            if(files[i] != null) {
+                proxies[i] = VCSFileProxy.createFileProxy(files[i]);
+            }
         }
         return proxies;
     }

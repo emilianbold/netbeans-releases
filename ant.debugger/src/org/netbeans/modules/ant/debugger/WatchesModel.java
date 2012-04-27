@@ -45,23 +45,17 @@
 package org.netbeans.modules.ant.debugger;
 
 import java.util.Vector;
-import javax.swing.Action;
 
-import org.apache.tools.ant.module.api.support.TargetLister;
-import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Watch;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.viewmodel.ModelEvent;
-import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.netbeans.spi.debugger.ui.Constants;
 import org.netbeans.spi.viewmodel.NodeModelFilter;
-import org.openide.text.Annotatable;
-
-import org.openide.text.Line;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -94,6 +88,7 @@ public class WatchesModel implements NodeModelFilter, TableModel {
      *          able to resolve display name for given node type
      * @return  display name for given node
      */
+    @Override
     public String getDisplayName (NodeModel model, Object node) throws UnknownTypeException {
         return model.getDisplayName(node);
     }
@@ -107,6 +102,7 @@ public class WatchesModel implements NodeModelFilter, TableModel {
      *          able to resolve icon for given node type
      * @return  icon for given node
      */
+    @Override
     public String getIconBase (NodeModel model, Object node) throws UnknownTypeException {
         return model.getIconBase(node);
     }
@@ -120,8 +116,12 @@ public class WatchesModel implements NodeModelFilter, TableModel {
      *          able to resolve tooltip for given node type
      * @return  tooltip for given node
      */
+    @Override
     public String getShortDescription (NodeModel model, Object node) throws UnknownTypeException {
         if (node instanceof Watch) {
+            if (!((Watch) node).isEnabled()) {
+                return NbBundle.getMessage(WatchesModel.class, "CTL_WatchDisabled");
+            }
             String expression = ((Watch) node).getExpression ();
             return debugger.getVariableValue (expression);
         }
@@ -147,12 +147,16 @@ public class WatchesModel implements NodeModelFilter, TableModel {
      *
      * @return value of variable representing given position in tree table.
      */
+    @Override
     public Object getValueAt (Object node, String columnID) throws 
     UnknownTypeException {
         if (columnID == Constants.WATCH_TO_STRING_COLUMN_ID ||
             columnID == Constants.WATCH_VALUE_COLUMN_ID
         ) {
             if (node instanceof Watch) {
+                if (!((Watch) node).isEnabled()) {
+                    return NbBundle.getMessage(WatchesModel.class, "CTL_WatchDisabled");
+                }
                 String expression = ((Watch) node).getExpression ();
                 return debugger.getVariableValue (expression);
             }
@@ -177,6 +181,7 @@ public class WatchesModel implements NodeModelFilter, TableModel {
      *
      * @return true if variable on given position is read only
      */
+    @Override
     public boolean isReadOnly (Object node, String columnID) throws 
     UnknownTypeException {
         if (columnID == Constants.WATCH_TO_STRING_COLUMN_ID ||
@@ -201,6 +206,7 @@ public class WatchesModel implements NodeModelFilter, TableModel {
      * @throws UnknownTypeException if there is no TableModel defined for given
      *         parameter type
      */
+    @Override
     public void setValueAt (Object node, String columnID, Object value) 
     throws UnknownTypeException {
         throw new UnknownTypeException (node);
@@ -212,6 +218,7 @@ public class WatchesModel implements NodeModelFilter, TableModel {
      * 
      * @param l the listener to add
      */
+    @Override
     public void addModelListener (ModelListener l) {
         listeners.add (l);
     }
@@ -221,6 +228,7 @@ public class WatchesModel implements NodeModelFilter, TableModel {
      *
      * @param l the listener to remove
      */
+    @Override
     public void removeModelListener (ModelListener l) {
         listeners.remove (l);
     }

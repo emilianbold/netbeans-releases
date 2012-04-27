@@ -52,6 +52,7 @@ import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.apache.maven.project.MavenProject;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
@@ -100,8 +101,10 @@ public class MavenProjectNode extends AbstractNode {
         });
         reporter = proj.getLookup().lookup(ProblemReporterImpl.class);
         reporter.addChangeListener(new ChangeListener() {
+            @Override
             public void stateChanged(ChangeEvent e) {
                 SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         fireIconChange();
                         fireOpenedIconChange();
@@ -124,6 +127,9 @@ public class MavenProjectNode extends AbstractNode {
     }
 
     public @Override String getHtmlDisplayName() {
+        if (!project.isMavenProjectLoaded()) {
+            return null;
+        }
         String packaging = project.getOriginalMavenProject().getPackaging();
         if (project.getLookup().lookup(SpecialIcon.class) != null) {
             return null;
@@ -177,22 +183,23 @@ public class MavenProjectNode extends AbstractNode {
     @Override public String getShortDescription() {
         StringBuilder buf = new StringBuilder();
         String desc;
-        boolean errorPlaceholder = NbMavenProject.isErrorPlaceholder(project.getOriginalMavenProject());
+        MavenProject mp = project.getOriginalMavenProject();
+        boolean errorPlaceholder = NbMavenProject.isErrorPlaceholder(mp);
         if (errorPlaceholder) {
             desc = TXT_FailedProjectLoadingDesc();
         } else {
             //TODO escape the short description
-            desc = project.getOriginalMavenProject().getDescription();
+            desc = mp.getDescription();
             if (desc == null) {
                 desc = LBL_DefaultDescription();
             }
         }
         buf.append("<html><i>").append(DESC_Project1()).append("</i><b> ").append(FileUtil.getFileDisplayName(project.getProjectDirectory())).append("</b><br><i>"); //NOI18N
         if (!errorPlaceholder) {
-            buf.append(DESC_Project2()).append("</i><b> ").append(project.getOriginalMavenProject().getGroupId()).append("</b><br><i>");//NOI18N
-            buf.append(DESC_Project3()).append("</i><b> ").append(project.getOriginalMavenProject().getArtifactId()).append("</b><br><i>");//NOI18N
-            buf.append(DESC_Project4()).append("</i><b> ").append(project.getOriginalMavenProject().getVersion()).append("</b><br><i>");//NOI18N
-            buf.append(DESC_Project5()).append("</i><b> ").append(project.getOriginalMavenProject().getPackaging()).append("</b><br><i>");//NOI18N
+            buf.append(DESC_Project2()).append("</i><b> ").append(mp.getGroupId()).append("</b><br><i>");//NOI18N
+            buf.append(DESC_Project3()).append("</i><b> ").append(mp.getArtifactId()).append("</b><br><i>");//NOI18N
+            buf.append(DESC_Project4()).append("</i><b> ").append(mp.getVersion()).append("</b><br><i>");//NOI18N
+            buf.append(DESC_Project5()).append("</i><b> ").append(mp.getPackaging()).append("</b><br><i>");//NOI18N
         }
         buf.append(DESC_Project6()).append("</i> ").append(breakPerLine(desc, DESC_Project5().length()));//NOI18N
         Collection<ProblemReport> problems = reporter.getReports();

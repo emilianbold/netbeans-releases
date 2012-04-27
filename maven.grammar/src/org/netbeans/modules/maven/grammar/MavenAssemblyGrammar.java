@@ -70,6 +70,7 @@ public class MavenAssemblyGrammar extends AbstractSchemaBasedGrammar {
         super(env);
     }
     
+    @Override
     protected InputStream getSchemaStream() {
         return getClass().getResourceAsStream("/org/netbeans/modules/maven/grammar/assembly-1.0.0.xsd"); //NOI18N
     }

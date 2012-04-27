@@ -49,11 +49,17 @@ import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 
 import java.awt.*;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
 /**
  * @author David Kaspar
  */
 public class LayerWidget103528Test extends VisualTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(LayerWidget103528Test.class);
+    }
 
     public LayerWidget103528Test (String testName) {
         super (testName);

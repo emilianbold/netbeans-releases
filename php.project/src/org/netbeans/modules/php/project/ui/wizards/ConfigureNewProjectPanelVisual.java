@@ -43,7 +43,6 @@
 package org.netbeans.modules.php.project.ui.wizards;
 
 import java.awt.BorderLayout;
-import java.io.File;
 import java.nio.charset.Charset;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
@@ -62,6 +61,7 @@ import org.netbeans.modules.php.project.ui.LastUsedFolders;
 import org.netbeans.modules.php.project.ui.LocalServer;
 import org.netbeans.modules.php.project.ui.LocalServerController;
 import org.netbeans.modules.php.project.ui.Utils.PhpVersionComboBoxModel;
+import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
@@ -85,7 +85,8 @@ class ConfigureNewProjectPanelVisual extends ConfigurableProjectPanel {
         projectNameTextField.getDocument().addDocumentListener(this);
         localServerComponent.addChangeListener(this);
 
-        phpVersionComboBox.setModel(new PhpVersionComboBoxModel(wizardType.equals(NewPhpProjectWizardIterator.WizardType.NEW) ? PhpVersion.PHP_54 : PhpVersion.PHP_53));
+        phpVersionComboBox.setModel(new PhpVersionComboBoxModel(
+                wizardType.equals(NewPhpProjectWizardIterator.WizardType.NEW) ? PhpOptions.getInstance().getDefaultPhpVersion() : PhpVersion.PHP_53));
 
         encodingComboBox.setModel(ProjectCustomizer.encodingModel(Charset.defaultCharset().name()));
         encodingComboBox.setRenderer(ProjectCustomizer.encodingRenderer());
@@ -326,12 +327,9 @@ class ConfigureNewProjectPanelVisual extends ConfigurableProjectPanel {
 
     private static class BrowseSources implements LocalServerController.BrowseHandler {
         @Override
-        public File getCurrentDirectory() {
-            return LastUsedFolders.getSources();
-        }
-        @Override
-        public void locationChanged(File location) {
-            LastUsedFolders.setSources(location);
+        public String getDirKey() {
+            return LastUsedFolders.DOCUMENT_ROOT;
         }
     }
+
 }

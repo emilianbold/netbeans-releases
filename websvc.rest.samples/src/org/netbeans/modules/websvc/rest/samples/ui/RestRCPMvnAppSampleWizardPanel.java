@@ -72,7 +72,7 @@ public class RestRCPMvnAppSampleWizardPanel implements WizardDescriptor.Panel,
     }
 
     public HelpCtx getHelp() {
-        return new HelpCtx(RestRCPMvnAppSampleWizardPanel.class);
+        return null;
     }
 
     public boolean isValid() {

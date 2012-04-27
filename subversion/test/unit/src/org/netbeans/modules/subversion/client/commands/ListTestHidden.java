@@ -44,6 +44,7 @@ package org.netbeans.modules.subversion.client.commands;
 
 import org.netbeans.modules.subversion.client.AbstractCommandTestCase;
 import java.io.File;
+import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.ISVNDirEntry;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
@@ -104,7 +105,8 @@ public class ListTestHidden extends AbstractCommandTestCase {
         }
         assertNotNull(e1);
         assertNotNull(e2);
-        assertTrue(e2.getMessage().indexOf(e1.getMessage()) > -1);
+        assertTrue(SvnClientExceptionHandler.isWrongUrl(e1.getMessage()));
+        assertTrue(SvnClientExceptionHandler.isWrongUrl(e2.getMessage()));
     }
     
     public void testListNoFile() throws Exception {                                
@@ -125,7 +127,10 @@ public class ListTestHidden extends AbstractCommandTestCase {
         commit(getWC());
                                 
         ISVNDirEntry[] entries1 = getNbClient().getList(getTestUrl().appendPath(getWC().getName()), SVNRevision.HEAD, false);        
-        fail("implement list assert against expected values");
+        assertEquals(3, entries1.length);
+        ISVNDirEntry[] entries2 = getFullWorkingClient().getList(getTestUrl().appendPath(getWC().getName()), SVNRevision.HEAD, false);
+        
+        assertEntryArrays(entries1, entries2);
     }
     
     public void testListFilesRecursively() throws Exception {                        
@@ -140,8 +145,11 @@ public class ListTestHidden extends AbstractCommandTestCase {
         add(file3);                       
         commit(getWC());
                         
-        ISVNDirEntry[] entries1 = getNbClient().getList(getTestUrl().appendPath(getWC().getName()), SVNRevision.HEAD, false);        
-        fail("implement list assert against expected values");
+        ISVNDirEntry[] entries1 = getNbClient().getList(getTestUrl().appendPath(getWC().getName()), SVNRevision.HEAD, true);        
+        assertEquals(4, entries1.length);
+        ISVNDirEntry[] entries2 = getFullWorkingClient().getList(getTestUrl().appendPath(getWC().getName()), SVNRevision.HEAD, true);
+        
+        assertEntryArrays(entries1, entries2);
     }
 
 //    XXX not idea how to push a null username through svnclientadapter

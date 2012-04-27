@@ -46,7 +46,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 import javax.lang.model.element.Element;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.java.hints.jackpot.spi.MatcherUtilities;
+import org.netbeans.spi.java.hints.MatcherUtilities;
 
 /**
  *

@@ -42,12 +42,23 @@
 
 package org.netbeans.libs.git.progress;
 
+import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitRevisionInfo;
 
 /**
- *
- * @author ondra
+ * The listener interface for receiving notifications triggered when a git
+ * revision is processed by a certain git commands (e.g. the log command).
+ * The class that is interested in further processing such a revision
+ * implements this interface and registers itself with an instance 
+ * of {@link GitClient}. 
+ * When a revision is processed by a git command, that object's 
+ * <code>notifyRevisionInfo</code> method is invoked.
+ * 
+ * @see NotificationListener
  */
 public interface RevisionInfoListener extends NotificationListener {
+    /**
+     * Invoked when a revision is processed by a certain git command.
+     */
     public void notifyRevisionInfo (GitRevisionInfo revisionInfo);
 }

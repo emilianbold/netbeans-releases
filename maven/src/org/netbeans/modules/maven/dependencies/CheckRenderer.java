@@ -46,8 +46,9 @@ package org.netbeans.modules.maven.dependencies;
 import java.awt.*;
 import javax.swing.*;
 import javax.swing.tree.*;
+import static org.netbeans.modules.maven.dependencies.Bundle.*;
 import org.openide.awt.HtmlRenderer;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  * @author Pavel Flaska
@@ -77,7 +78,7 @@ public class CheckRenderer extends JPanel implements TreeCellRenderer {
                 //May be null on GTK L&F
                 c = Color.WHITE;
             }
-            check.setBackground(c); // NOI18N
+            check.setBackground(c);
             Dimension dim = check.getPreferredSize();
             check.setPreferredSize(checkDim);
         }
@@ -86,7 +87,7 @@ public class CheckRenderer extends JPanel implements TreeCellRenderer {
     /** The component returned by HtmlRenderer.Renderer.getTreeCellRendererComponent() */
     private Component stringDisplayer = new JLabel(" "); //NOI18N
     
-    public Component getTreeCellRendererComponent(JTree tree, Object value,
+    @Override public Component getTreeCellRendererComponent(JTree tree, Object value,
     boolean isSelected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
         if (value instanceof CheckNode) {
             CheckNode node = (CheckNode) value;
@@ -122,7 +123,6 @@ public class CheckRenderer extends JPanel implements TreeCellRenderer {
         Dimension d_label = stringDisplayer == null ? new Dimension(0,0) : 
             stringDisplayer.getPreferredSize();
             
-        int y_check = 0;
         int y_label = 0;
         
         if (d_check.height >= d_label.height) {
@@ -142,8 +142,9 @@ public class CheckRenderer extends JPanel implements TreeCellRenderer {
         }
     }
     
+    @Messages("LBL_NotAvailable=(not available)")
     private String getNodeText(CheckNode node) {
-        String nodeLabel = node.getLabel() == null ? NbBundle.getMessage(CheckRenderer.class,"LBL_NotAvailable") : node.getLabel();
+        String nodeLabel = node.getLabel() == null ? LBL_NotAvailable() : node.getLabel();
         nodeLabel = "<html>" + nodeLabel; // NOI18N
         nodeLabel += "</html>"; // NOI18N
         int i = nodeLabel.indexOf("<br>"); // NOI18N
@@ -174,18 +175,17 @@ public class CheckRenderer extends JPanel implements TreeCellRenderer {
         Dimension d_check = check == null ? new Dimension(0, 0) : check.getPreferredSize();
         Dimension d_label = stringDisplayer == null ? new Dimension (0,0) : stringDisplayer.getPreferredSize();
         int y_check = 0;
-        int y_label = 0;
         
-        if (d_check.height < d_label.height)
+        if (d_check.height < d_label.height) {
             y_check = (d_label.height - d_check.height) / 2;
-        else
-            y_label = (d_check.height - d_label.height) / 2;
+        }
 
         if (check != null) {
             check.setLocation(0, y_check);
             check.setBounds(0, y_check, d_check.width, d_check.height);
-            if (checkBounds == null)
+            if (checkBounds == null) {
                 checkBounds = check.getBounds();
+            }
         }
     }
 

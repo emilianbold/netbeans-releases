@@ -39,7 +39,9 @@ package org.netbeans.libs.freemarker;
 
 import javax.script.*;
 import java.util.*;
+import org.openide.filesystems.MIMEResolver;
 
+@MIMEResolver.Registration(displayName="#ResolverName", position=60378, resource="FreemarkerResolver.xml")
 @org.openide.util.lookup.ServiceProvider(service=javax.script.ScriptEngineFactory.class)
 public class FreemarkerFactory implements ScriptEngineFactory {
     @Override

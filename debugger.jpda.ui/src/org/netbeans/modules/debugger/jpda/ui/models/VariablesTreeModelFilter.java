@@ -156,6 +156,7 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
      * @param   original the original tree model
      * @return  filtered root of hierarchy
      */
+    @Override
     public Object getRoot (TreeModel original) {
         return original.getRoot ();
     }
@@ -240,6 +241,7 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
         }
     }
     
+    @Override
     public void run() {
         Object node;
         do {
@@ -261,7 +263,9 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
                 }
             }
         } while (node != null);
-        evaluationTask = null;
+        synchronized (evaluationQueue) {
+            evaluationTask = null;
+        }
     }
     
     /** 
@@ -278,6 +282,7 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
      *
      * @return  children for given parent on given indexes
      */
+    @Override
     public Object[] getChildren (
         final TreeModel   original, 
         final Object      parent, 
@@ -286,6 +291,7 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
     ) throws UnknownTypeException {
         Object[] ch;
         VariablesFilter vf = getFilter (parent, true, new Runnable() {
+            @Override
             public void run() {
                 fireModelChange(new ModelEvent.NodeChanged(VariablesTreeModelFilter.this,
                                                            parent,
@@ -313,11 +319,13 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
      *
      * @return  true if node is leaf
      */
+    @Override
     public int getChildrenCount (
         final TreeModel   original, 
         final Object      parent
     ) throws UnknownTypeException {
         VariablesFilter vf = getFilter (parent, true, new Runnable() {
+            @Override
             public void run() {
                 fireModelChange(new ModelEvent.NodeChanged(VariablesTreeModelFilter.this,
                                                            parent,
@@ -341,12 +349,14 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
      *          able to resolve children for given node type
      * @return  true if node is leaf
      */
+    @Override
     public boolean isLeaf (
         final TreeModel original,
         final Object node
     ) throws UnknownTypeException {
         final boolean[] unfilteredIsLeaf = new boolean[] { false };
         VariablesFilter vf = getFilter (node, true, new Runnable() {
+            @Override
             public void run() {
                 VariablesFilter vf = getFilter (node, false, null);
                 if (vf == null) return ;
@@ -367,12 +377,14 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
         return vf.isLeaf (original, (Variable) node);
     }
 
+    @Override
     public void addModelListener (ModelListener l) {
         synchronized (modelListeners) {
             modelListeners.add(l);
         }
     }
 
+    @Override
     public void removeModelListener (ModelListener l) {
         synchronized (modelListeners) {
             modelListeners.remove(l);
@@ -403,10 +415,12 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
     
     // NodeModelFilter
     
+    @Override
     public String getDisplayName (final NodeModel original, final Object node) 
     throws UnknownTypeException {
         final String[] unfilteredDisplayName = new String[] { null };
         VariablesFilter vf = getFilter (node, true, new Runnable() {
+            @Override
             public void run() {
                 VariablesFilter vf = getFilter (node, false, null);
                 if (vf == null) return ;
@@ -432,6 +446,7 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
         }
     }
     
+    @Override
     public String getIconBase (final NodeModel original, final Object node) 
     throws UnknownTypeException {
         Logger.getLogger(VariablesTreeModelFilter.class.getName()).log(Level.WARNING,
@@ -439,6 +454,7 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
                 new IllegalStateException("getIconBaseWithExtension() should be called!"));
         final String[] unfilteredIconBase = new String[] { null };
         VariablesFilter vf = getFilter (node, true, new Runnable() {
+            @Override
             public void run() {
                 VariablesFilter vf = getFilter (node, false, null);
                 if (vf == null) return ;
@@ -464,10 +480,12 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
         }
     }
     
+    @Override
     public String getShortDescription (final NodeModel original, final Object node) 
     throws UnknownTypeException {
         final String[] unfilteredShortDescription = new String[] { null };
         VariablesFilter vf = getFilter (node, true, new Runnable() {
+            @Override
             public void run() {
                 VariablesFilter vf = getFilter (node, false, null);
                 if (vf == null) return ;
@@ -494,6 +512,7 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
     
     // NodeActionsProviderFilter
     
+    @Override
     public Action[] getActions (
         NodeActionsProvider original, 
         Object node
@@ -504,6 +523,7 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
         return vf.getActions (original, (Variable) node);
     }
     
+    @Override
     public void performDefaultAction (
         NodeActionsProvider original, 
         Object node
@@ -518,6 +538,7 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
     
     // TableModelFilter
     
+    @Override
     public Object getValueAt (
         TableModel original, 
         Object row, 
@@ -533,6 +554,7 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
         return value;
     }
     
+    @Override
     public boolean isReadOnly (
         TableModel original, 
         Object row, 
@@ -544,6 +566,7 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
         return vf.isReadOnly (original, (Variable) row, columnID);
     }
     
+    @Override
     public void setValueAt (
         TableModel original, 
         Object row, 
@@ -594,7 +617,7 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
                 }
             }
 
-            if (typeToFilter.size() == 0 && ancestorToFilter.size() == 0) return null; // Optimization for corner case
+            if (typeToFilter.isEmpty() && ancestorToFilter.isEmpty()) return null; // Optimization for corner case
 
             typeToFilterL = typeToFilter;
             ancestorToFilterL = ancestorToFilter;
@@ -677,6 +700,7 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
         return null;
     }
 
+    @Override
     public boolean canRename(ExtendedNodeModel original, Object node) throws UnknownTypeException {
         VariablesFilter vf = getFilter (node, true, null);
         if (!(vf instanceof ExtendedNodeModelFilter))  {
@@ -686,6 +710,7 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
         }
     }
 
+    @Override
     public boolean canCopy(ExtendedNodeModel original, Object node) throws UnknownTypeException {
         VariablesFilter vf = getFilter (node, true, null);
         if (!(vf instanceof ExtendedNodeModelFilter))  {
@@ -695,6 +720,7 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
         }
     }
 
+    @Override
     public boolean canCut(ExtendedNodeModel original, Object node) throws UnknownTypeException {
         VariablesFilter vf = getFilter (node, true, null);
         if (!(vf instanceof ExtendedNodeModelFilter))  {
@@ -704,6 +730,7 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
         }
     }
 
+    @Override
     public Transferable clipboardCopy(ExtendedNodeModel original, Object node) throws IOException, UnknownTypeException {
         VariablesFilter vf = getFilter (node, true, null);
         if (!(vf instanceof ExtendedNodeModelFilter))  {
@@ -713,6 +740,7 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
         }
     }
 
+    @Override
     public Transferable clipboardCut(ExtendedNodeModel original, Object node) throws IOException, UnknownTypeException {
         VariablesFilter vf = getFilter (node, true, null);
         if (!(vf instanceof ExtendedNodeModelFilter))  {
@@ -722,6 +750,7 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
         }
     }
 
+    @Override
     public PasteType[] getPasteTypes(ExtendedNodeModel original, Object node, Transferable t) throws UnknownTypeException {
         VariablesFilter vf = getFilter (node, true, null);
         if (!(vf instanceof ExtendedNodeModelFilter))  {
@@ -731,6 +760,7 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
         }
     }
 
+    @Override
     public void setName(ExtendedNodeModel original, Object node, String name) throws UnknownTypeException {
         VariablesFilter vf = getFilter (node, true, null);
         if (!(vf instanceof ExtendedNodeModelFilter))  {
@@ -740,6 +770,7 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
         }
     }
 
+    @Override
     public String getIconBaseWithExtension(ExtendedNodeModel original, Object node) throws UnknownTypeException {
         VariablesFilter vf = getFilter (node, true, null);
         if (!(vf instanceof ExtendedNodeModelFilter))  {
@@ -751,6 +782,7 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
 
     private class VariablesPreferenceChangeListener implements PreferenceChangeListener, PropertyChangeListener {
 
+        @Override
         public void preferenceChange(PreferenceChangeEvent evt) {
             String key = evt.getKey();
             if (VariablesViewButtons.SHOW_VALUE_AS_STRING.equals(key)) {
@@ -758,6 +790,7 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
             }
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if ("VariableFormatters".equals(evt.getPropertyName())) {
                 synchronized (filtersLock) {

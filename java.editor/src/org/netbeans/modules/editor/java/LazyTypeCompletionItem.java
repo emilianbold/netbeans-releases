@@ -61,6 +61,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.support.ReferencesCount;
 import org.netbeans.api.whitelist.WhiteListQuery;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -76,8 +77,8 @@ import org.netbeans.spi.editor.completion.support.CompletionUtilities;
  */
 public class LazyTypeCompletionItem extends JavaCompletionItem.WhiteListJavaCompletionItem<TypeElement> implements LazyCompletionItem {
     
-    public static final LazyTypeCompletionItem create(ElementHandle<TypeElement> handle, EnumSet<ElementKind> kinds, int substitutionOffset, Source source, boolean insideNew, boolean addTypeVars, boolean afterExtends, WhiteListQuery.WhiteList whiteList) {
-        return new LazyTypeCompletionItem(handle, kinds, substitutionOffset, source, insideNew, addTypeVars, afterExtends, whiteList);
+    public static final LazyTypeCompletionItem create(ElementHandle<TypeElement> handle, EnumSet<ElementKind> kinds, int substitutionOffset, ReferencesCount referencesCount, Source source, boolean insideNew, boolean addTypeVars, boolean afterExtends, WhiteListQuery.WhiteList whiteList) {
+        return new LazyTypeCompletionItem(handle, kinds, substitutionOffset, referencesCount, source, insideNew, addTypeVars, afterExtends, whiteList);
     }
     
     private EnumSet<ElementKind> kinds;
@@ -90,9 +91,10 @@ public class LazyTypeCompletionItem extends JavaCompletionItem.WhiteListJavaComp
     private String pkgName;
     private JavaCompletionItem delegate = null;
     private CharSequence sortText;
+    private ReferencesCount referencesCount;
     private int prefWidth = -1;
     
-    private LazyTypeCompletionItem(ElementHandle<TypeElement> handle, EnumSet<ElementKind> kinds, int substitutionOffset, Source source, boolean insideNew, boolean addTypeVars, boolean afterExtends, WhiteListQuery.WhiteList whiteList) {
+    private LazyTypeCompletionItem(ElementHandle<TypeElement> handle, EnumSet<ElementKind> kinds, int substitutionOffset, ReferencesCount referencesCount, Source source, boolean insideNew, boolean addTypeVars, boolean afterExtends, WhiteListQuery.WhiteList whiteList) {
         super(substitutionOffset, handle, whiteList);
         this.kinds = kinds;
         this.source = source;
@@ -103,7 +105,8 @@ public class LazyTypeCompletionItem extends JavaCompletionItem.WhiteListJavaComp
         int idx = name.lastIndexOf('.'); //NOI18N
         this.simpleName = idx > -1 ? name.substring(idx + 1) : name;
         this.pkgName = idx > -1 ? name.substring(0, idx) : ""; //NOI18N
-        this.sortText = this.simpleName + Utilities.getImportanceLevel(this.pkgName) + "#" + this.pkgName; //NOI18N
+        this.sortText = new LazySortText(this.simpleName, this.pkgName, handle, referencesCount);
+        this.referencesCount = referencesCount;
     }
     
     public boolean accept() {
@@ -119,7 +122,7 @@ public class LazyTypeCompletionItem extends JavaCompletionItem.WhiteListJavaComp
                         Elements elements = controller.getElements();
                         if (e != null && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) && controller.getTrees().isAccessible(scope, e)) {
                             if (isOfKind(e, kinds) && (!afterExtends || !e.getModifiers().contains(Modifier.FINAL)) && (!isInDefaultPackage(e) || isInDefaultPackage(scope.getEnclosingClass())) && !Utilities.isExcluded(e.getQualifiedName()))
-                                delegate = JavaCompletionItem.createTypeItem(controller, e, (DeclaredType)e.asType(), substitutionOffset, true, controller.getElements().isDeprecated(e), insideNew, addTypeVars, false, false, false, getWhiteList());
+                                delegate = JavaCompletionItem.createTypeItem(controller, e, (DeclaredType)e.asType(), substitutionOffset, referencesCount, controller.getElements().isDeprecated(e), insideNew, addTypeVars, false, false, false, getWhiteList());
                         }
                     }
                 });

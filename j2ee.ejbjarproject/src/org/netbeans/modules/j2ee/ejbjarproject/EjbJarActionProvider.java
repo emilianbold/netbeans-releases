@@ -48,7 +48,6 @@ import java.util.*;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.AttachingDICookie;
-import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.runner.JavaRunner;
@@ -95,11 +94,14 @@ class EjbJarActionProvider extends BaseActionProvider {
         COMMAND_RUN_SINGLE,
         COMMAND_DEBUG,
         COMMAND_DEBUG_SINGLE,
+        COMMAND_PROFILE,
+        COMMAND_PROFILE_SINGLE,
         EjbProjectConstants.COMMAND_REDEPLOY,
         JavaProjectConstants.COMMAND_JAVADOC,
         COMMAND_TEST,
         COMMAND_TEST_SINGLE,
         COMMAND_DEBUG_TEST_SINGLE,
+        COMMAND_PROFILE_TEST_SINGLE,
         SingleMethod.COMMAND_RUN_SINGLE_METHOD,
         SingleMethod.COMMAND_DEBUG_SINGLE_METHOD,
         JavaProjectConstants.COMMAND_DEBUG_FIX,
@@ -116,10 +118,12 @@ class EjbJarActionProvider extends BaseActionProvider {
         COMMAND_COMPILE_SINGLE,
         COMMAND_RUN_SINGLE,
         COMMAND_DEBUG_SINGLE,
+        COMMAND_PROFILE_SINGLE,
         JavaProjectConstants.COMMAND_JAVADOC,
         COMMAND_TEST,
         COMMAND_TEST_SINGLE,
         COMMAND_DEBUG_TEST_SINGLE,
+        COMMAND_PROFILE_TEST_SINGLE,
         SingleMethod.COMMAND_RUN_SINGLE_METHOD,
         SingleMethod.COMMAND_DEBUG_SINGLE_METHOD,
     };
@@ -153,6 +157,7 @@ class EjbJarActionProvider extends BaseActionProvider {
         commands.put(COMMAND_RUN_SINGLE, new String[] {"run-main"}); // NOI18N
         commands.put(EjbProjectConstants.COMMAND_REDEPLOY, new String[] {"run"}); // NOI18N
         commands.put(COMMAND_DEBUG, new String[] {"debug"}); // NOI18N
+        commands.put(COMMAND_PROFILE, new String[]{"profile"}); // NOI18N
         commands.put(JavaProjectConstants.COMMAND_JAVADOC, new String[] {"javadoc"}); // NOI18N
         commands.put(COMMAND_TEST, new String[] {"test"}); // NOI18N
         commands.put(COMMAND_TEST_SINGLE, new String[] {"test-single"}); // NOI18N
@@ -160,11 +165,15 @@ class EjbJarActionProvider extends BaseActionProvider {
         commands.put(JavaProjectConstants.COMMAND_DEBUG_FIX, new String[] {"debug-fix"}); // NOI18N
         commands.put(COMMAND_VERIFY, new String[] {"verify"}); // NOI18N
         commands.put(COMMAND_DEBUG_SINGLE, new String[] {"debug-single"}); // NOI18N
+        commands.put(COMMAND_PROFILE_SINGLE, new String[]{"profile-single"}); // NOI18N
         this.bkgScanSensitiveActions = new HashSet<String>(Arrays.asList(
             COMMAND_RUN_SINGLE
         ));
 
         this.needJavaModelActions = new HashSet<String>(Arrays.asList(
+            COMMAND_PROFILE,
+            COMMAND_PROFILE_SINGLE,
+            COMMAND_PROFILE_TEST_SINGLE,
             JavaProjectConstants.COMMAND_DEBUG_FIX
         ));
         setServerExecution(true);
@@ -209,7 +218,8 @@ class EjbJarActionProvider extends BaseActionProvider {
     protected void updateJavaRunnerClasspath(String command, Map<String, Object> execProperties) {
         if (COMMAND_TEST_SINGLE.equals(command) || COMMAND_DEBUG_TEST_SINGLE.equals(command) ||
             SingleMethod.COMMAND_DEBUG_SINGLE_METHOD.equals(command) || SingleMethod.COMMAND_RUN_SINGLE_METHOD.equals(command) ||
-            COMMAND_RUN_SINGLE.equals(command) || COMMAND_DEBUG_SINGLE.equals(command)) {
+            COMMAND_RUN_SINGLE.equals(command) || COMMAND_DEBUG_SINGLE.equals(command) ||
+            COMMAND_PROFILE_SINGLE.equals(command) || COMMAND_PROFILE_TEST_SINGLE.equals(command)) {
             FileObject fo = (FileObject)execProperties.get(JavaRunner.PROP_EXECUTE_FILE);
             ClassPath cp = getCallback().findClassPath(fo, ClassPath.EXECUTE);
             ClassPath cp2 = ClassPathFactory.createClassPath(
@@ -243,7 +253,9 @@ class EjbJarActionProvider extends BaseActionProvider {
         if (command.equals(COMMAND_RUN_SINGLE) ||command.equals(COMMAND_RUN) ||
             command.equals(EjbProjectConstants.COMMAND_REDEPLOY) ||command.equals(COMMAND_DEBUG) ||
             command.equals(COMMAND_DEBUG_SINGLE) || command.equals(JavaProjectConstants.COMMAND_DEBUG_FIX) ||
-            command.equals( COMMAND_TEST_SINGLE) || command.equals(COMMAND_DEBUG_TEST_SINGLE)) {
+            command.equals( COMMAND_TEST_SINGLE) || command.equals(COMMAND_DEBUG_TEST_SINGLE) ||
+            command.equals(COMMAND_PROFILE) || command.equals(COMMAND_PROFILE_SINGLE) ||
+            command.equals(COMMAND_PROFILE_TEST_SINGLE)) {
             setDirectoryDeploymentProperty(p);
         }
         if (command.equals(COMMAND_RUN) || command.equals(EjbProjectConstants.COMMAND_REDEPLOY)) {

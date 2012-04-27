@@ -39,76 +39,87 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.java.hints.bugs;
 
-import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.hints.test.api.HintTest;
 
 /**
  *
  * @author lahvac
  */
-public class AnnotationsNotRuntimeTest extends TestBase {
+public class AnnotationsNotRuntimeTest extends NbTestCase {
 
     public AnnotationsNotRuntimeTest(String name) {
-        super(name, AnnotationsNotRuntime.class);
+        super(name);
     }
 
     public void testSimple1() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    private void test() {\n" +
-                            "        Test.class.isAnnotationPresent(SuppressWarnings.class);\n" +
-                            "    }\n" +
-                            "}",
-                            "3:39-3:55:verifier:java.lang.SuppressWarnings isAnnotationPresent");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private void test() {\n" +
+                       "        Test.class.isAnnotationPresent(SuppressWarnings.class);\n" +
+                       "    }\n" +
+                       "}")
+                .run(AnnotationsNotRuntime.class)
+                .assertWarnings("3:39-3:55:verifier:java.lang.SuppressWarnings isAnnotationPresent");
     }
 
     public void testSimple2() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    private void test() {\n" +
-                            "        Test.class.isAnnotationPresent(AA.class);\n" +
-                            "    }\n" +
-                            "}\n" +
-                            "@java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy.RUNTIME)" +
-                            "@interface AA{}\n");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private void test() {\n" +
+                       "        Test.class.isAnnotationPresent(AA.class);\n" +
+                       "    }\n" +
+                       "}\n" +
+                       "@java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy.RUNTIME)" +
+                       "@interface AA{}\n")
+                .run(AnnotationsNotRuntime.class)
+                .assertWarnings();
     }
 
     public void testSimple3() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    private void test() {\n" +
-                            "        Test.class.getAnnotation(SuppressWarnings.class);\n" +
-                            "    }\n" +
-                            "}",
-                            "3:33-3:49:verifier:java.lang.SuppressWarnings getAnnotation");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private void test() {\n" +
+                       "        Test.class.getAnnotation(SuppressWarnings.class);\n" +
+                       "    }\n" +
+                       "}")
+                .run(AnnotationsNotRuntime.class)
+                .assertWarnings("3:33-3:49:verifier:java.lang.SuppressWarnings getAnnotation");
     }
 
     public void testSimple4() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    private void test() {\n" +
-                            "        Test.class.getAnnotation(AA.class);\n" +
-                            "    }\n" +
-                            "}\n" +
-                            "@java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy.RUNTIME)" +
-                            "@interface AA{}\n");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private void test() {\n" +
+                       "        Test.class.getAnnotation(AA.class);\n" +
+                       "    }\n" +
+                       "}\n" +
+                       "@java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy.RUNTIME)" +
+                       "@interface AA{}\n")
+                .run(AnnotationsNotRuntime.class)
+                .assertWarnings();
     }
 
     public void testSimple5() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    private void test(java.lang.annotation.Annotation ann) {\n" +
-                            "        if (ann instanceof SuppressWarnings);\n" +
-                            "    }\n" +
-                            "}\n",
-                            "3:27-3:43:verifier:java.lang.SuppressWarnings instanceof");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private void test(java.lang.annotation.Annotation ann) {\n" +
+                       "        if (ann instanceof SuppressWarnings);\n" +
+                       "    }\n" +
+                       "}\n")
+                .run(AnnotationsNotRuntime.class)
+                .assertWarnings("3:27-3:43:verifier:java.lang.SuppressWarnings instanceof");
     }
-
 }

@@ -84,7 +84,7 @@ final class TestClassInfoTask implements CancellableTask<CompilationController> 
         }
         Elements elements = controller.getElements();
         TypeElement testcase = elements.getTypeElement(TESTCASE);
-        boolean junit3 = testcase != null ? controller.getTypes().isSubtype(typeElement.asType(), testcase.asType()) : false;
+        boolean junit3 = (testcase != null && typeElement != null) ? controller.getTypes().isSubtype(typeElement.asType(), testcase.asType()) : false;
         TreePath tp = controller.getTreeUtilities().pathFor(caretPosition);
         while (tp != null && tp.getLeaf().getKind() != Kind.METHOD) {
             tp = tp.getParentPath();

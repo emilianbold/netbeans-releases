@@ -70,7 +70,6 @@ class ScopeButton extends JToggleButton implements PropertyChangeListener {
         setText( null );
         setIcon( new ImageIcon( Accessor.getIcon( scope ) ) );
         ToolTipManager.sharedInstance().registerComponent(this);
-        setSelected( scope.equals( tm.getScope() ) );
         setFocusable( false );
     }
 
@@ -83,7 +82,6 @@ class ScopeButton extends JToggleButton implements PropertyChangeListener {
     public void addNotify() {
         super.addNotify();
         tm.addPropertyChangeListener( TaskManagerImpl.PROP_SCOPE, this );
-        setSelected( scope.equals( tm.getScope() ) );
     }
     
     @Override

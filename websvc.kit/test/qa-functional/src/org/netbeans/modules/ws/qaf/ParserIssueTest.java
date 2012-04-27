@@ -52,6 +52,7 @@ import org.netbeans.jellytools.actions.BuildJavaProjectAction;
 import org.netbeans.jellytools.actions.OutputWindowViewAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
+import org.netbeans.jemmy.operators.JTabbedPaneOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.project.ui.test.ProjectSupport;
@@ -71,14 +72,16 @@ public class ParserIssueTest extends NbTestCase {
         Project p = (Project) ProjectSupport.openProject(new File(getDataDir(), "projects/Sample"));
         //set Ant verbosity level to "Debug"
         OptionsOperator oo = OptionsOperator.invoke();
-        oo.selectCategory("Miscellaneous");
+        oo.selectJava();
+        JTabbedPaneOperator jtpo = new JTabbedPaneOperator(oo);
+        jtpo.selectPage("Ant"); // NOI18N
         JComboBoxOperator jcbo = new JComboBoxOperator(oo);
         jcbo.selectItem("Debug");
         oo.ok();
         //open output window
         new OutputWindowViewAction().perform();
         //build project
-        Node n = ProjectsTabOperator.invoke().getProjectRootNode("Sample");
+        Node n = ProjectsTabOperator.invoke().getProjectRootNode("Sample"); 
         new BuildJavaProjectAction().perform(n);
         try {
             Thread.sleep(10000);

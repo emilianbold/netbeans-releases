@@ -52,12 +52,13 @@ import java.util.List;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
-import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
-import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
-import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.TriggerPattern;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.JavaFix;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.java.hints.JavaFixUtilities;
 import org.openide.util.NbBundle;
 
 
@@ -65,7 +66,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Jancura
  */
-@Hint(category="code_maturity", suppressWarnings="CallToPrintStackTrace")
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.ThreadDumpStack", description = "#DESC_org.netbeans.modules.java.hints.ThreadDumpStack", category="code_maturity", suppressWarnings="CallToPrintStackTrace")
 public class ThreadDumpStack {
 
     @TriggerPattern (value="Thread.dumpStack ()")
@@ -76,13 +77,13 @@ public class ThreadDumpStack {
             ctx,
             treePath,
             NbBundle.getMessage (ThreadDumpStack.class, "MSG_ThreadDumpStack"),
-            JavaFix.toEditorFix(new FixImpl (
-                NbBundle.getMessage (
-                    LoggerNotStaticFinal.class,
-                    "MSG_ThreadDumpStack_fix"
-                ),
-                TreePathHandle.create (treePath, compilationInfo)
-            ))
+        new FixImpl (
+NbBundle.getMessage (
+LoggerNotStaticFinal.class,
+"MSG_ThreadDumpStack_fix"
+),
+TreePathHandle.create (treePath, compilationInfo)
+).toEditorFix()
         );
     }
 
@@ -104,7 +105,9 @@ public class ThreadDumpStack {
         }
 
         @Override
-        protected void performRewrite(WorkingCopy wc, TreePath tp, boolean canShowUI) {
+        protected void performRewrite(TransformationContext ctx) {
+            WorkingCopy wc = ctx.getWorkingCopy();
+            TreePath tp = ctx.getPath();
             Tree expressionStatementTree = tp.getParentPath ().getLeaf ();
             Tree parent2 = tp.getParentPath ().getParentPath ().getLeaf ();
             if (!(parent2 instanceof BlockTree)) return;

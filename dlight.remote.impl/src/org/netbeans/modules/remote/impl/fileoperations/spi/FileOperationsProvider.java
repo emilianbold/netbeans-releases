@@ -54,6 +54,8 @@ import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.SftpIOException;
+import org.netbeans.modules.nativeexecution.api.util.MacroMap;
+import org.netbeans.modules.remote.impl.fs.RemoteFileObject;
 import org.netbeans.modules.remote.impl.fs.RemoteFileObjectBase;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystem;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemManager;
@@ -86,8 +88,8 @@ abstract public class FileOperationsProvider {
 
         protected FileOperations(FileSystem fs) {
             FileObject root = fs.getRoot();
-            if (root instanceof RemoteFileObjectBase) {
-                env = ((RemoteFileObjectBase)root).getExecutionEnvironment();
+            if (root instanceof RemoteFileObject) {
+                env = ((RemoteFileObject)root).getExecutionEnvironment();
                 RP = new RequestProcessor("Refresh for "+env); //NOI18N
             } else {
                 throw new IllegalArgumentException();
@@ -320,9 +322,9 @@ abstract public class FileOperationsProvider {
         
         private RemoteFileObjectBase findExistingParent(String path) {
             while(true) {
-                RemoteFileObjectBase fo = RemoteFileSystemManager.getInstance().getFileSystem(env).findResource(path);
+                RemoteFileObject fo = RemoteFileSystemManager.getInstance().getFileSystem(env).findResource(path);
                 if (fo != null) {
-                    return fo;
+                    return fo.getImplementor();
                 }
                 path = PathUtilities.getDirName(path);
                 if (path == null) {
@@ -394,7 +396,9 @@ abstract public class FileOperationsProvider {
         public Process createProcess(String executable, String workingDirectory, List<String> arguments, List<String> paths, Map<String, String> environment, boolean redirectErrorStream) throws IOException {
             NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(env);
             pb.setExecutable(executable).setWorkingDirectory(workingDirectory).setArguments(arguments.toArray(new String[arguments.size()]));
-            pb.getEnvironment().putAll(environment);
+            MacroMap mm = MacroMap.forExecEnv(env);
+            mm.putAll(environment);
+            pb.getEnvironment().putAll(mm);
             for(String path : paths) {
                 pb.getEnvironment().appendPathVariable("PATH", path); // NOI18N
             }

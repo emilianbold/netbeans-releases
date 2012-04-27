@@ -43,23 +43,33 @@
  */
 package org.netbeans.modules.refactoring.api;
 
-import java.util.AbstractCollection;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.ListIterator;
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.refactoring.api.impl.ProgressSupport;
 import org.netbeans.modules.refactoring.api.impl.SPIAccessor;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
+import org.netbeans.modules.refactoring.spi.RefactoringCommit;
 import org.netbeans.modules.refactoring.spi.Transaction;
 import org.netbeans.modules.refactoring.spi.impl.UndoManager;
+import org.netbeans.modules.refactoring.spi.impl.UndoableWrapper;
+import org.netbeans.spi.editor.document.UndoableEditWrapper;
 import org.openide.LifecycleManager;
+import org.openide.cookies.EditorCookie;
+import org.openide.cookies.SaveCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 
 
@@ -68,16 +78,20 @@ import org.openide.util.Parameters;
  * @author Martin Matula, Daniel Prusa, Jan Becicka
  */
 public final class RefactoringSession {
-    private final LinkedList<RefactoringElementImplementation> internalList;
+    //private final LinkedList<RefactoringElementImplementation> internalList;
+    private final ArrayList<RefactoringElementImplementation> internalList;
     private final RefactoringElementsBag bag;
     private final Collection<RefactoringElement> refactoringElements;
     private final String description;
     private ProgressSupport progressSupport;
     private UndoManager undoManager = UndoManager.getDefault();
     boolean realcommit = true;
+    private AtomicBoolean finished = new AtomicBoolean(false);
+    private AtomicBoolean prepareStarted = new AtomicBoolean(false);
     
     private RefactoringSession(String description) {
-        internalList = new LinkedList();
+        //internalList = new LinkedList();
+        internalList = new ArrayList<RefactoringElementImplementation>() ;
         bag = SPIAccessor.DEFAULT.createBag(this, internalList);
         this.description = description;
         this.refactoringElements = new ElementsCollection();
@@ -123,11 +137,35 @@ public final class RefactoringSession {
                 }
             } finally {
                 for (Transaction commit:SPIAccessor.DEFAULT.getCommits(bag)) {
-                    commit.commit();
+                    SPIAccessor.DEFAULT.check(commit, false);
                 }
+
+                UndoableWrapper wrapper = MimeLookup.getLookup("").lookup(UndoableWrapper.class);
+                for (Transaction commit:SPIAccessor.DEFAULT.getCommits(bag)) {
+                    if (wrapper !=null)
+                        setWrappers(commit, wrapper);
+                    
+                    commit.commit();
+                    if (wrapper !=null)
+                        unsetWrappers(commit, wrapper);
+                }
+                if (wrapper !=null)
+                    wrapper.close();
+                for (Transaction commit : SPIAccessor.DEFAULT.getCommits(bag)) {
+                    SPIAccessor.DEFAULT.sum(commit);
+                }
+                
             }
             if (saveAfterDone) {
                 LifecycleManager.getDefault().saveAll();
+                for (DataObject dob:DataObject.getRegistry().getModified()) {
+                    SaveCookie cookie = dob.getCookie(SaveCookie.class);
+                    try {
+                        cookie.save();
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
             }
             for (RefactoringElementImplementation fileChange:SPIAccessor.DEFAULT.getFileChanges(bag)) {
                 if (fileChange.isEnabled()) {
@@ -169,10 +207,21 @@ public final class RefactoringSession {
                     f.undoChange();
                 }
             }
-            for (ListIterator<Transaction> commitIterator = commits.listIterator(commits.size()); commitIterator.hasPrevious();) {
-                commitIterator.previous().rollback();
+            for (Transaction commit : SPIAccessor.DEFAULT.getCommits(bag)) {
+                SPIAccessor.DEFAULT.check(commit, true);
             }
-            
+            UndoableWrapper wrapper = MimeLookup.getLookup("").lookup(UndoableWrapper.class);
+            for (ListIterator<Transaction> commitIterator = commits.listIterator(commits.size()); commitIterator.hasPrevious();) {
+                final Transaction commit = commitIterator.previous();
+                setWrappers(commit, wrapper);
+                commit.rollback();
+                unsetWrappers(commit, wrapper);
+            }
+            wrapper.close();
+            for (Transaction commit : SPIAccessor.DEFAULT.getCommits(bag)) {
+                SPIAccessor.DEFAULT.sum(commit);
+            }
+
             while (it.hasPrevious()) {
                 fireProgressListenerStep();
                 RefactoringElementImplementation element = (RefactoringElementImplementation) it.previous();
@@ -196,7 +245,17 @@ public final class RefactoringSession {
      */
     @NonNull
     public Collection<RefactoringElement> getRefactoringElements() {
+        if (!prepareStarted.get())
+            return Collections.emptyList();
         return refactoringElements;
+    }
+    
+    void started() {
+        prepareStarted.set(true);
+    }
+    
+    void finished() {
+        finished.set(true);
     }
     
     /**
@@ -244,12 +303,44 @@ public final class RefactoringSession {
         }
     }
     
+    private void setWrappers(Transaction commit, UndoableWrapper wrap) {
+        wrap.setActive(true);
+        
+        //        if (!(commit instanceof RefactoringCommit))
+        //            return;
+        //        for (FileObject f:((RefactoringCommit) commit).getModifiedFiles()) {
+        //            Document doc = getDocument(f);
+        //            if (doc!=null)
+        //                doc.putProperty(BaseDocument.UndoableEditWrapper.class, wrap);
+        //        }
+    }
+
+    private void unsetWrappers(Transaction commit, UndoableWrapper wrap) {
+        wrap.setActive(false);
+
+        //        setWrappers(commit, null);
+    }
+
+    private Document getDocument(FileObject f) {
+        try {
+            DataObject dob = DataObject.find(f);
+            EditorCookie cookie = dob.getLookup().lookup(EditorCookie.class);
+            if (cookie == null)
+                return null;
+            return cookie.getDocument();
+        } catch (DataObjectNotFoundException ex) {
+            return null;
+        }
+    }
+
+    
     private class ElementsCollection extends AbstractCollection<RefactoringElement> {
         @Override
         public Iterator<RefactoringElement> iterator() {
             return new Iterator() {
-                private final Iterator<RefactoringElementImplementation> inner = internalList.iterator();
+                //private final Iterator<RefactoringElementImplementation> inner = internalList.iterator();
                 private final Iterator<RefactoringElementImplementation> inner2 = SPIAccessor.DEFAULT.getFileChanges(bag).iterator();
+                private int index = 0;
 
                 @Override
                 public void remove() {
@@ -258,8 +349,8 @@ public final class RefactoringSession {
                 
                 @Override
                 public RefactoringElement next() {
-                    if (inner.hasNext()) {
-                        return new RefactoringElement(inner.next());
+                    if (index < internalList.size()) {
+                        return new RefactoringElement(internalList.get(index++));
                     } else {
                         return new RefactoringElement(inner2.next());
                     }
@@ -267,7 +358,21 @@ public final class RefactoringSession {
                 
                 @Override
                 public boolean hasNext() {
-                    return (inner.hasNext() || inner2.hasNext());
+                    boolean hasNext = index < internalList.size();
+                    if (hasNext) {
+                        return hasNext;
+                    }
+                    while (!finished.get()) {
+                        try {
+                            Thread.sleep(50);
+                        } catch (InterruptedException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                        hasNext = index < internalList.size();
+                        if (hasNext)
+                            return hasNext;
+                    }
+                    return index < internalList.size() || inner2.hasNext();
                 }
             };
         }

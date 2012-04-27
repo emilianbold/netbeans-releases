@@ -39,61 +39,63 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.java.hints;
 
 import org.junit.Test;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.hints.test.api.HintTest;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Jan Jancura
  */
-public class PrintStackTraceTest extends TestBase {
+public class PrintStackTraceTest extends NbTestCase {
 
-    public PrintStackTraceTest (String name) {
-        super (name, PrintStackTrace.class);
+    public PrintStackTraceTest(String name) {
+        super(name);
     }
 
     @Test
-    public void test1 () throws Exception {
-        performFixTest (
-            "test/Test.java",
-            "package test;\n" +
-            "class Test {\n" +
-            "    void test () {\n" +
-            "        new Exception ().printStackTrace ();\n" +
-            "    }\n" +
-            "}",
-            "3:25-3:40:verifier:Print Stack Trace",
-            "FixImpl",
-            (
+    public void test1() throws Exception {
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "class Test {\n" +
+                       "    void test () {\n" +
+                       "        new Exception ().printStackTrace ();\n" +
+                       "    }\n" +
+                       "}")
+                .run(PrintStackTrace.class)
+                .findWarning("3:25-3:40:verifier:Print Stack Trace")
+                .applyFix("MSG_PrintStackTrace_fix")
+                .assertCompilable()
+                .assertOutput(
                 "package test;\n" +
                 "class Test {\n" +
                 "    void test () {\n" +
                 "    }\n" +
-                "}"
-            ).replaceAll ("[ \t\n]+", " ")
-        );
+                "}");
     }
 
     @Test
-    public void test2 () throws Exception {
-        performAnalysisTest (
-            "test/Test.java",
-            "package test;\n" +
-            "class Test {\n" +
-            "    void test () {\n" +
-            "        new Test ().printStackTrace ();\n" +
-            "    }\n" +
-            "    void printStackTrace () {\n" +
-            "    }\n" +
-            "}"
-        );
+    public void test2() throws Exception {
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "class Test {\n" +
+                       "    void test () {\n" +
+                       "        new Test ().printStackTrace ();\n" +
+                       "    }\n" +
+                       "    void printStackTrace () {\n" +
+                       "    }\n" +
+                       "}")
+                .run(PrintStackTrace.class)
+                .assertWarnings();
     }
-    
+
     static {
-        NbBundle.setBranding ("test");
+        NbBundle
+                .setBranding("test");
     }
 }

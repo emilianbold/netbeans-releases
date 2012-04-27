@@ -51,7 +51,7 @@ import org.netbeans.lib.profiler.utils.formatting.MethodNameFormatterFactory;
 import org.netbeans.modules.profiler.api.icons.Icons;
 import org.netbeans.modules.profiler.api.icons.LanguageIcons;
 import org.netbeans.modules.profiler.api.java.SourceMethodInfo;
-import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -65,7 +65,7 @@ public class ConstructorNode extends SelectorNode {
     
     /** Creates a new instance of ConstructorNode */
     public ConstructorNode(SourceMethodInfo mi, ConstructorsNode parent) {
-        super((mi != null ? mi.getName() : Bundle.LBL_Unknown()), (mi != null ? mi.getName() : Bundle.LBL_Unknown()), null, SelectorChildren.LEAF, parent); // NOI18N
+        super((mi != null ? mi.getName() : Bundle.LBL_Unknown()), (mi != null ? mi.getName() : Bundle.LBL_Unknown()), null, SelectorChildren.LEAF, parent, Lookups.singleton(mi)); // NOI18N
         this.method = mi;
 
         if (method != null) {

@@ -1,7 +1,0 @@
-Manifest-Version: 1.0
-OpenIDE-Module: org.netbeans.modules.web.client.tools.firefox
-OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/web/client/tools/firefox/Bundle.properties
-OpenIDE-Module-Requires: netbeans.firefox.extension
-OpenIDE-Module-Specification-Version: 1.3
-AutoUpdate-Show-In-Client: false
-

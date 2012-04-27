@@ -19,6 +19,7 @@ apisupport.harness,\
 apisupport.osgidemo,\
 apisupport.paintapp,\
 apisupport.project,\
+apisupport.refactoring,\
 apisupport.wizards,\
 autoupdate.services,\
 autoupdate.ui,\
@@ -27,6 +28,7 @@ core.ide,\
 core.kit,\
 core.multiview,\
 core.netigso,\
+core.osgi,\
 core.output2,\
 core.startup,\
 core.ui,\
@@ -41,6 +43,7 @@ hudson.maven,\
 hudson.mercurial,\
 hudson.subversion,\
 hudson.tasklist,\
+ide.branding,\
 java.api.common,\
 java.freeform,\
 java.j2seplatform,\
@@ -59,6 +62,7 @@ maven.junit,\
 maven.model,\
 maven.osgi,\
 nbjunit,\
+netbinox,\
 o.apache.tools.ant.module,\
 o.n.bootstrap,\
 o.n.core,\

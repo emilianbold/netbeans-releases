@@ -66,6 +66,7 @@ import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.extbrowser.ExtWebBrowser;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.javafx2.project.JFXProjectProperties;
 import org.netbeans.modules.javafx2.project.JFXProjectProperties.PropertiesTableModel;
 import org.netbeans.modules.javafx2.project.JFXProjectUtils;
@@ -92,21 +93,23 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
     /** web browser selection related constants */
     private static final String EA_HIDDEN = "hidden"; // NOI18N    
     private static final String BROWSERS_FOLDER = "Services/Browsers"; // NOI18N
+    private static final String DEFAULT_CONFIG_LABEL = NbBundle.getBundle("org.netbeans.modules.javafx2.project.ui.Bundle").getString("JFXConfigurationProvider.default.label"); // NOI18N
     
     private Lookup.Result<ExtWebBrowser> allBrowsers = null;
 
-    private Project project;
-    private PropertyEvaluator evaluator;
+    private final Project project;
+    private final PropertyEvaluator evaluator;
     private JTextField[] data;
     private JLabel[] dataLabels;
     private String[] keys;
-    private final Map<String/*|null*/,Map<String,String/*|null*/>/*|null*/> configs;
-    private JFXProjectProperties jfxProps;
+    private final JFXProjectProperties.JFXConfigs configs;
+    private final JFXProjectProperties jfxProps;
     private File lastHtmlFolder = null;
     private static final String appParamsColumnNames[] = new String[] {
             NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.applicationParams.name"), // NOI18N
             NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.applicationParams.value") // NOI18N
         };
+    private final boolean isFXinSwing;
     
     private volatile boolean configChangedRunning = false;
     private volatile boolean comboConfigActionRunning = false;
@@ -123,15 +126,29 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
     public JFXRunPanel(JFXProjectProperties props) {
         this.jfxProps = props;
         initComponents();
-
         project = jfxProps.getProject();
         evaluator = jfxProps.getEvaluator();
-        configs = jfxProps.getRunConfigs();
+        configs = jfxProps.getConfigs();
+        isFXinSwing = JFXProjectProperties.isTrue(props.getEvaluator().getProperty(JFXProjectProperties.JAVAFX_SWING));
         
+        if(isFXinSwing) {
+            checkBoxPreloader.setVisible(false);
+            textFieldPreloader.setVisible(false);
+            labelPreloaderClass.setVisible(false);
+            comboBoxPreloaderClass.setVisible(false);
+            buttonPreloader.setVisible(false);
+            buttonPreloaderDefault.setVisible(false);
+            checkBoxPreloader.setEnabled(false);
+            textFieldPreloader.setEnabled(false);
+            labelPreloaderClass.setEnabled(false);
+            comboBoxPreloaderClass.setEnabled(false);
+            buttonPreloader.setEnabled(false);
+            buttonPreloaderDefault.setEnabled(false);
+            labelAppClass.setText(NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.MainClass"));  // NOI18N
+        }
+
         data = new JTextField[] {
             textFieldAppClass,
-            //textFieldParams,
-            //textFieldPreloaderClass,
             textFieldVMOptions,
             textFieldWebPage,
             textFieldHeight,
@@ -140,8 +157,6 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         };
         dataLabels = new JLabel[] {
             labelAppClass,
-            //labelParams,
-            //labelPreloaderClass,
             labelVMOptions,
             labelWebPage,
             labelHeight,
@@ -149,9 +164,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
             labelWorkDir,
         };
         keys = new String[] {
-            JFXProjectProperties.MAIN_CLASS,
-            //JFXProjectProperties.APPLICATION_ARGS,
-            //JFXProjectProperties.PRELOADER_CLASS,
+            isFXinSwing ? ProjectProperties.MAIN_CLASS : JFXProjectProperties.MAIN_CLASS,
             JFXProjectProperties.RUN_JVM_ARGS,
             JFXProjectProperties.RUN_IN_HTMLTEMPLATE,
             JFXProjectProperties.RUN_APP_HEIGHT,
@@ -165,8 +178,8 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
             final String prop = keys[i];
             final JLabel label = dataLabels[i];
             field.getDocument().addDocumentListener(new DocumentListener() {
-                Font basefont = label != null ? label.getFont() : null;
-                Font emphfont = basefont != null ? basefont.deriveFont(Font.ITALIC) : null;
+                //Font basefont = label != null ? label.getFont() : null;
+                //Font emphfont = basefont != null ? basefont.deriveFont(Font.ITALIC) : null;
                 {
                     updateFont();
                 }
@@ -181,27 +194,18 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
                 @Override
                 public void changedUpdate(DocumentEvent e) {}
                 void changed() {
-                    String config = (String) comboConfig.getSelectedItem();
-                    if (config.length() == 0) {
-                        config = null;
-                    }
+                    String config = getSelectedConfig();
                     String v = field.getText();
-                    if (v != null && config != null && v.equals(jfxProps.configsGet(null).get(prop))) {
-                        // default value, do not store as such
-                        v = null;
-                    }
-                    jfxProps.configsGet(config).put(prop, v);
+                    configs.setPropertyTransparent(config, prop, v);
                     updateFont();
                 }
                 void updateFont() {
                     String v = field.getText();
-                    String config = (String) comboConfig.getSelectedItem();
-                    if (config.length() == 0) {
-                        config = null;
-                    }
-                    String def = jfxProps.configsGet(null).get(prop);
+                    String config = getSelectedConfig();
+                    String def = configs.getDefaultProperty(prop);
                     if(label != null) {
-                        label.setFont(config != null && !Utilities.compareObjects(v != null ? v : "", def != null ? def : "") ? emphfont : basefont);
+                        //label.setFont(config != null && !Utilities.compareObjects(v != null ? v : "", def != null ? def : "") ? emphfont : basefont);
+                        setEmphasizedFont(label, config != null && !Utilities.compareObjects(v != null ? v : "", def != null ? def : ""));
                     }
                 }
             });
@@ -212,24 +216,27 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {
-                            String config = (String) comboConfig.getSelectedItem();
-                            if (config.length() == 0) {
-                                config = null;
-                            }
-                            Map<String,String> activeConfig = jfxProps.configsGet(config);
-                            boolean preloaderEnabled = JFXProjectProperties.isTrue(activeConfig.get(JFXProjectProperties.PRELOADER_ENABLED));
+                            String config = getSelectedConfig();
+                            boolean preloaderEnabled = JFXProjectProperties.isTrue(configs.getPropertyTransparent(config, JFXProjectProperties.PRELOADER_ENABLED));
                             boolean preloaderClassAvailable = (e != null);
                             if(!preloaderClassAvailable) {
-                                activeConfig.put(JFXProjectProperties.PRELOADER_ENABLED, "false"); //NOI18N
+                                configs.setPropertyTransparent(config, JFXProjectProperties.PRELOADER_ENABLED, "false"); //NOI18N
                             }
                             checkBoxPreloader.setSelected(preloaderEnabled && preloaderClassAvailable);
                             checkBoxPreloader.setEnabled(preloaderClassAvailable);
                             textFieldPreloader.setEnabled(preloaderClassAvailable);
                             labelPreloaderClass.setEnabled(preloaderClassAvailable);
                             comboBoxPreloaderClass.setEnabled(preloaderClassAvailable);
-                            setEmphasized(checkBoxPreloader, preloaderConfigChanged(config));
-                            String sel = (String)comboBoxPreloaderClass.getSelectedItem();
-                            setEmphasized(labelPreloaderClass, !JFXProjectProperties.isEqual(sel, jfxProps.configsGet(null).get(JFXProjectProperties.PRELOADER_CLASS)));
+                            
+                            boolean change = preloaderConfigDiffersFromDefault(config);
+                            setEmphasizedFont(checkBoxPreloader, change);
+                            setEmphasizedFont(labelPreloaderClass, change);
+                            buttonPreloaderDefault.setEnabled( (config != null && change) || (config == null && isPreloaderDefined(null)) );
+
+//                            setEmphasizedFont(checkBoxPreloader, preloaderConfigDiffersFromDefault(config));
+//                            String sel = (String)comboBoxPreloaderClass.getSelectedItem();
+//                            //setEmphasized(labelPreloaderClass, !JFXProjectProperties.isEqual(sel, jfxProps.configsGet(null).get(JFXProjectProperties.PRELOADER_CLASS)));
+//                            setEmphasizedFont(labelPreloaderClass, !JFXProjectProperties.isEqual(sel, configs.getDefaultProperty(JFXProjectProperties.PRELOADER_CLASS)));
                         }
                     });
                 }
@@ -238,13 +245,22 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         buttonAppClass.addActionListener( new MainClassListener( project, evaluator ) );
         comboBoxPreloaderClass.setModel(jfxProps.getPreloaderClassModel());
         setupWebBrowsersCombo();
-        configChanged(jfxProps.getActiveConfig());        
+        configChanged(configs.getActive());
     }
 
-    void setEmphasized(Component label, boolean emphasized) {
+    void setEmphasizedFont(Component label, boolean emphasized) {
         Font basefont = label.getFont();
         if(emphasized) {
             label.setFont(basefont.deriveFont(Font.ITALIC));
+        } else {
+            label.setFont(basefont.deriveFont(Font.PLAIN));
+        }
+    }
+
+    void setBoldFont(Component label, boolean bold) {
+        Font basefont = label.getFont();
+        if(bold) {
+            label.setFont(basefont.deriveFont(Font.BOLD));
         } else {
             label.setFont(basefont.deriveFont(Font.PLAIN));
         }
@@ -307,21 +323,25 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         labelWebBrowser = new javax.swing.JLabel();
         comboBoxWebBrowser = new javax.swing.JComboBox();
         buttonWebBrowser = new javax.swing.JButton();
+        buttonPreloaderDefault = new javax.swing.JButton();
         filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(32767, 32767));
 
         setLayout(new java.awt.GridBagLayout());
 
         configPanel.setLayout(new java.awt.GridBagLayout());
 
-        labelConfig.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelConfig.text")); // NOI18N
+        labelConfig.setLabelFor(comboConfig);
+        org.openide.awt.Mnemonics.setLocalizedText(labelConfig, org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelConfig.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 5);
         configPanel.add(labelConfig, gridBagConstraints);
+        labelConfig.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelConfig.AccessibleContext.accessibleName")); // NOI18N
+        labelConfig.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelConfig.AccessibleContext.accessibleDescription")); // NOI18N
 
-        comboConfig.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "<default config>" }));
+        comboConfig.setModel(new javax.swing.DefaultComboBoxModel(new String[] { JFXProjectProperties.DEFAULT_CONFIG }));
         comboConfig.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 comboConfigActionPerformed(evt);
@@ -335,8 +355,9 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.weightx = 0.1;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 5);
         configPanel.add(comboConfig, gridBagConstraints);
+        comboConfig.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.comboConfig.AccessibleContext.accessibleDescription")); // NOI18N
 
-        buttonNew.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonNew.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(buttonNew, org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonNew.text")); // NOI18N
         buttonNew.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 buttonNewActionPerformed(evt);
@@ -348,8 +369,10 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_TRAILING;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 5);
         configPanel.add(buttonNew, gridBagConstraints);
+        buttonNew.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonNew.AccessibleContext.accessibleName")); // NOI18N
+        buttonNew.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonNew.AccessibleContext.accessibleDescription")); // NOI18N
 
-        buttonDelete.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonDelete.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(buttonDelete, org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonDelete.text")); // NOI18N
         buttonDelete.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 buttonDeleteActionPerformed(evt);
@@ -360,6 +383,8 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_TRAILING;
         configPanel.add(buttonDelete, gridBagConstraints);
+        buttonDelete.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonDelete.AccessibleContext.accessibleName")); // NOI18N
+        buttonDelete.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonDelete.AccessibleContext.accessibleDescription")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -378,13 +403,15 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
 
         mainPanel.setLayout(new java.awt.GridBagLayout());
 
-        labelAppClass.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelAppClass.text")); // NOI18N
+        labelAppClass.setLabelFor(textFieldAppClass);
+        org.openide.awt.Mnemonics.setLocalizedText(labelAppClass, org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelAppClass.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 20, 0);
         mainPanel.add(labelAppClass, gridBagConstraints);
+        labelAppClass.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelAppClass.AccessibleContext.accessibleName")); // NOI18N
+        labelAppClass.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelAppClass.AccessibleContext.accessibleDescription")); // NOI18N
 
         textFieldAppClass.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -398,25 +425,29 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.weightx = 0.1;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 20, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 15, 0);
         mainPanel.add(textFieldAppClass, gridBagConstraints);
 
-        buttonAppClass.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonAppClass.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(buttonAppClass, org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonAppClass.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_TRAILING;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 20, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
         mainPanel.add(buttonAppClass, gridBagConstraints);
+        buttonAppClass.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonAppClass.AccessibleContext.accessibleName")); // NOI18N
+        buttonAppClass.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonAppClass.AccessibleContext.accessibleDescription")); // NOI18N
 
-        labelParams.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelParams.text")); // NOI18N
+        labelParams.setLabelFor(textFieldParams);
+        org.openide.awt.Mnemonics.setLocalizedText(labelParams, org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelParams.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         mainPanel.add(labelParams, gridBagConstraints);
+        labelParams.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelParams.AccessibleContext.accessibleName")); // NOI18N
+        labelParams.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelParams.AccessibleContext.accessibleDescription")); // NOI18N
 
         textFieldParams.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -429,7 +460,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
         mainPanel.add(textFieldParams, gridBagConstraints);
 
-        buttonParams.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonParams.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(buttonParams, org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonParams.text")); // NOI18N
         buttonParams.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 buttonParamsActionPerformed(evt);
@@ -440,15 +471,21 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
         mainPanel.add(buttonParams, gridBagConstraints);
+        buttonParams.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonParams.AccessibleContext.accessibleName")); // NOI18N
+        buttonParams.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonParams.AccessibleContext.accessibleDescription")); // NOI18N
 
-        labelVMOptions.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelVMOptions.text")); // NOI18N
+        labelVMOptions.setLabelFor(textFieldVMOptions);
+        org.openide.awt.Mnemonics.setLocalizedText(labelVMOptions, org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelVMOptions.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         mainPanel.add(labelVMOptions, gridBagConstraints);
+        labelVMOptions.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelVMOptions.AccessibleContext.accessibleName")); // NOI18N
+        labelVMOptions.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelVMOptions.AccessibleContext.accessibleDescription")); // NOI18N
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -458,6 +495,8 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.weightx = 0.1;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
         mainPanel.add(textFieldVMOptions, gridBagConstraints);
+        textFieldVMOptions.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.textFieldVMOptions.AccessibleContext.accessibleName")); // NOI18N
+        textFieldVMOptions.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.textFieldVMOptions.AccessibleContext.accessibleDescription")); // NOI18N
 
         labelVMOptionsRemark.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelVMOptionsRemark.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -465,10 +504,10 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 10, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 8, 0);
         mainPanel.add(labelVMOptionsRemark, gridBagConstraints);
 
-        checkBoxPreloader.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.checkBoxPreloader.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(checkBoxPreloader, org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.checkBoxPreloader.text")); // NOI18N
         checkBoxPreloader.setEnabled(false);
         checkBoxPreloader.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -479,8 +518,9 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         mainPanel.add(checkBoxPreloader, gridBagConstraints);
+        checkBoxPreloader.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.checkBoxPreloader.AccessibleContext.accessibleName")); // NOI18N
+        checkBoxPreloader.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.checkBoxPreloader.AccessibleContext.accessibleDescription")); // NOI18N
 
         textFieldPreloader.setEditable(false);
         textFieldPreloader.setEnabled(false);
@@ -494,7 +534,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
         mainPanel.add(textFieldPreloader, gridBagConstraints);
 
-        buttonPreloader.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonPreloader.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(buttonPreloader, org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonPreloader.text")); // NOI18N
         buttonPreloader.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 buttonPreloaderActionPerformed(evt);
@@ -505,16 +545,21 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
         mainPanel.add(buttonPreloader, gridBagConstraints);
+        buttonPreloader.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonPreloader.AccessibleContext.accessibleName")); // NOI18N
+        buttonPreloader.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonPreloader.AccessibleContext.accessibleDescription")); // NOI18N
 
-        labelPreloaderClass.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelPreloaderClass.text")); // NOI18N
+        labelPreloaderClass.setLabelFor(comboBoxPreloaderClass);
+        org.openide.awt.Mnemonics.setLocalizedText(labelPreloaderClass, org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelPreloaderClass.text")); // NOI18N
         labelPreloaderClass.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_TRAILING;
         mainPanel.add(labelPreloaderClass, gridBagConstraints);
+        labelPreloaderClass.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelPreloaderClass.AccessibleContext.accessibleName")); // NOI18N
+        labelPreloaderClass.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelPreloaderClass.AccessibleContext.accessibleDescription")); // NOI18N
 
         comboBoxPreloaderClass.setEnabled(false);
         comboBoxPreloaderClass.addActionListener(new java.awt.event.ActionListener() {
@@ -536,10 +581,10 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(10, 0, 10, 0);
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 6, 0);
         mainPanel.add(jSeparator2, gridBagConstraints);
 
-        labelRunAs.setFont(labelRunAs.getFont().deriveFont(labelRunAs.getFont().getStyle() | java.awt.Font.BOLD));
+        labelRunAs.setLabelFor(radioButtonSA);
         labelRunAs.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelRunAs.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -547,13 +592,15 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 15, 0);
         mainPanel.add(labelRunAs, gridBagConstraints);
+        labelRunAs.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelRunAs.AccessibleContext.accessibleName")); // NOI18N
+        labelRunAs.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelRunAs.AccessibleContext.accessibleDescription")); // NOI18N
 
         panelRunAsChoices.setLayout(new java.awt.GridBagLayout());
 
         buttonGroupRunAs.add(radioButtonSA);
         radioButtonSA.setFont(radioButtonSA.getFont().deriveFont(radioButtonSA.getFont().getStyle() | java.awt.Font.BOLD));
         radioButtonSA.setSelected(true);
-        radioButtonSA.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.radioButtonSA.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(radioButtonSA, org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.radioButtonSA.text")); // NOI18N
         radioButtonSA.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 radioButtonSAActionPerformed(evt);
@@ -566,13 +613,16 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 10);
         panelRunAsChoices.add(radioButtonSA, gridBagConstraints);
+        radioButtonSA.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.radioButtonSA.AccessibleContext.accessibleName")); // NOI18N
+        radioButtonSA.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.radioButtonSA.AccessibleContext.accessibleDescription")); // NOI18N
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         panelRunAsChoices.add(filler2, gridBagConstraints);
 
         buttonGroupRunAs.add(radioButtonWS);
-        radioButtonWS.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.radioButtonWS.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(radioButtonWS, org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.radioButtonWS.text")); // NOI18N
         radioButtonWS.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 radioButtonWSActionPerformed(evt);
@@ -585,13 +635,16 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 10);
         panelRunAsChoices.add(radioButtonWS, gridBagConstraints);
+        radioButtonWS.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.radioButtonWS.AccessibleContext.accessibleName")); // NOI18N
+        radioButtonWS.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.radioButtonWS.AccessibleContext.accessibleDescription")); // NOI18N
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
         panelRunAsChoices.add(filler3, gridBagConstraints);
 
         buttonGroupRunAs.add(radioButtonBE);
-        radioButtonBE.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.radioButtonBE.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(radioButtonBE, org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.radioButtonBE.text")); // NOI18N
         radioButtonBE.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 radioButtonBEActionPerformed(evt);
@@ -603,6 +656,9 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         panelRunAsChoices.add(radioButtonBE, gridBagConstraints);
+        radioButtonBE.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.radioButtonBE.AccessibleContext.accessibleName")); // NOI18N
+        radioButtonBE.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.radioButtonBE.AccessibleContext.accessibleDescription")); // NOI18N
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
@@ -625,14 +681,20 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         mainPanel.add(labelSAProps, gridBagConstraints);
+        labelSAProps.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelSAProps.AccessibleContext.accessibleName")); // NOI18N
+        labelSAProps.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelSAProps.AccessibleContext.accessibleDescription")); // NOI18N
 
-        labelWorkDir.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelWorkDir.text")); // NOI18N
+        labelWorkDir.setLabelFor(textFieldWorkDir);
+        org.openide.awt.Mnemonics.setLocalizedText(labelWorkDir, org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelWorkDir.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 9;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
-        gridBagConstraints.insets = new java.awt.Insets(0, 15, 20, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_TRAILING;
+        gridBagConstraints.insets = new java.awt.Insets(0, 7, 0, 0);
         mainPanel.add(labelWorkDir, gridBagConstraints);
+        labelWorkDir.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelWorkDir.AccessibleContext.accessibleName")); // NOI18N
+        labelWorkDir.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelWorkDir.AccessibleContext.accessibleDescription")); // NOI18N
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 9;
@@ -640,10 +702,10 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE;
         gridBagConstraints.weightx = 0.1;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 20, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 16, 0);
         mainPanel.add(textFieldWorkDir, gridBagConstraints);
 
-        buttonWorkDir.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonWorkDir.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(buttonWorkDir, org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonWorkDir.text")); // NOI18N
         buttonWorkDir.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 buttonWorkDirActionPerformed(evt);
@@ -654,8 +716,10 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.gridy = 9;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 20, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
         mainPanel.add(buttonWorkDir, gridBagConstraints);
+        buttonWorkDir.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonWorkDir.AccessibleContext.accessibleName")); // NOI18N
+        buttonWorkDir.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonWorkDir.AccessibleContext.accessibleDescription")); // NOI18N
 
         labelWSBAProps.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelWSBAProps.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -665,14 +729,19 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         mainPanel.add(labelWSBAProps, gridBagConstraints);
+        labelWSBAProps.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelWSBAProps.AccessibleContext.accessibleName")); // NOI18N
+        labelWSBAProps.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelWSBAProps.AccessibleContext.accessibleDescription")); // NOI18N
 
-        labelWidth.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelWidth.text")); // NOI18N
+        labelWidth.setLabelFor(textFieldWidth);
+        org.openide.awt.Mnemonics.setLocalizedText(labelWidth, org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelWidth.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 11;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
-        gridBagConstraints.insets = new java.awt.Insets(0, 15, 5, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 15, 0, 0);
         mainPanel.add(labelWidth, gridBagConstraints);
+        labelWidth.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelWidth.AccessibleContext.accessibleName")); // NOI18N
+        labelWidth.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelWidth.AccessibleContext.accessibleDescription")); // NOI18N
 
         textFieldWidth.setMinimumSize(new java.awt.Dimension(70, 20));
         textFieldWidth.setPreferredSize(new java.awt.Dimension(70, 20));
@@ -683,13 +752,16 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
         mainPanel.add(textFieldWidth, gridBagConstraints);
 
-        labelHeight.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelHeight.text")); // NOI18N
+        labelHeight.setLabelFor(textFieldHeight);
+        org.openide.awt.Mnemonics.setLocalizedText(labelHeight, org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelHeight.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 11;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
-        gridBagConstraints.insets = new java.awt.Insets(0, 20, 5, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 20, 0, 0);
         mainPanel.add(labelHeight, gridBagConstraints);
+        labelHeight.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelHeight.AccessibleContext.accessibleName")); // NOI18N
+        labelHeight.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelHeight.AccessibleContext.accessibleDescription")); // NOI18N
 
         textFieldHeight.setMinimumSize(new java.awt.Dimension(70, 20));
         textFieldHeight.setPreferredSize(new java.awt.Dimension(70, 20));
@@ -701,13 +773,17 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
         mainPanel.add(textFieldHeight, gridBagConstraints);
 
-        labelWebPage.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelWebPage.text")); // NOI18N
+        labelWebPage.setLabelFor(textFieldWebPage);
+        org.openide.awt.Mnemonics.setLocalizedText(labelWebPage, org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelWebPage.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 12;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 15, 0, 0);
         mainPanel.add(labelWebPage, gridBagConstraints);
+        labelWebPage.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelWebPage.AccessibleContext.accessibleName")); // NOI18N
+        labelWebPage.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelWebPage.AccessibleContext.accessibleDescription")); // NOI18N
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 12;
@@ -718,7 +794,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
         mainPanel.add(textFieldWebPage, gridBagConstraints);
 
-        buttonWebPage.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonWebPage.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(buttonWebPage, org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonWebPage.text")); // NOI18N
         buttonWebPage.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 buttonWebPageActionPerformed(evt);
@@ -731,6 +807,8 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
         mainPanel.add(buttonWebPage, gridBagConstraints);
+        buttonWebPage.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonWebPage.AccessibleContext.accessibleName")); // NOI18N
+        buttonWebPage.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonWebPage.AccessibleContext.accessibleDescription")); // NOI18N
 
         labelWebPageRemark.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelWebPageRemark.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -738,16 +816,21 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.gridy = 13;
         gridBagConstraints.gridwidth = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 10, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 8, 0);
         mainPanel.add(labelWebPageRemark, gridBagConstraints);
+        labelWebPageRemark.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelWebPageRemark.AccessibleContext.accessibleName")); // NOI18N
+        labelWebPageRemark.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelWebPageRemark.AccessibleContext.accessibleDescription")); // NOI18N
 
-        labelWebBrowser.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelWebBrowser.text")); // NOI18N
+        labelWebBrowser.setLabelFor(comboBoxWebBrowser);
+        org.openide.awt.Mnemonics.setLocalizedText(labelWebBrowser, org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelWebBrowser.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 14;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
-        gridBagConstraints.insets = new java.awt.Insets(0, 15, 5, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 15, 0, 0);
         mainPanel.add(labelWebBrowser, gridBagConstraints);
+        labelWebBrowser.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelWebBrowser.AccessibleContext.accessibleName")); // NOI18N
+        labelWebBrowser.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelWebBrowser.AccessibleContext.accessibleDescription")); // NOI18N
 
         comboBoxWebBrowser.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -763,8 +846,10 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.weightx = 0.1;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
         mainPanel.add(comboBoxWebBrowser, gridBagConstraints);
+        comboBoxWebBrowser.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.comboBoxWebBrowser.AccessibleContext.accessibleName")); // NOI18N
+        comboBoxWebBrowser.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.comboBoxWebBrowser.AccessibleContext.accessibleDescription")); // NOI18N
 
-        buttonWebBrowser.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonWebBrowser.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(buttonWebBrowser, org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonWebBrowser.text")); // NOI18N
         buttonWebBrowser.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 buttonWebBrowserActionPerformed(evt);
@@ -775,8 +860,27 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.gridy = 14;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
         mainPanel.add(buttonWebBrowser, gridBagConstraints);
+        buttonWebBrowser.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonWebBrowser.AccessibleContext.accessibleName")); // NOI18N
+        buttonWebBrowser.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonWebBrowser.AccessibleContext.accessibleDescription")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(buttonPreloaderDefault, org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonPreloaderDefault.text")); // NOI18N
+        buttonPreloaderDefault.setEnabled(false);
+        buttonPreloaderDefault.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonPreloaderDefaultActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE;
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
+        mainPanel.add(buttonPreloaderDefault, gridBagConstraints);
+        buttonPreloaderDefault.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonPreloaderDefault.AccessibleContext.accessibleName")); // NOI18N
+        buttonPreloaderDefault.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonPreloaderDefault.AccessibleContext.accessibleDescription")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -785,6 +889,9 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.PAGE_START;
         add(mainPanel, gridBagConstraints);
+        mainPanel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.mainPanel.AccessibleContext.accessibleName")); // NOI18N
+        mainPanel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.mainPanel.AccessibleContext.accessibleDescription")); // NOI18N
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -799,22 +906,19 @@ private void textFieldAppClassActionPerformed(java.awt.event.ActionEvent evt) {/
 }//GEN-LAST:event_textFieldAppClassActionPerformed
 
 private void buttonDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonDeleteActionPerformed
-        String config = (String) comboConfig.getSelectedItem();
+        String config = getSelectedConfig();
         assert config != null;
-        configs.put(config, null);
+        configs.eraseConfig(config);
+        configs.setActive(null);
         configChanged(null);
-        jfxProps.setActiveConfig(null);
 }//GEN-LAST:event_buttonDeleteActionPerformed
 
 private void comboConfigActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comboConfigActionPerformed
     if(!comboConfigActionRunning) {
         comboConfigActionRunning = true;
-        String config = (String) comboConfig.getSelectedItem();
-        if (config.length() == 0) {
-            config = null;
-        }
+        String config = getSelectedConfig();
+        configs.setActive(config);
         configChanged(config);
-        jfxProps.setActiveConfig(config);
         comboConfigActionRunning = false;
     }
 }//GEN-LAST:event_comboConfigActionPerformed
@@ -827,7 +931,7 @@ private void buttonNewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
             return;
         }
         String name = d.getInputText();
-        String config = name.replaceAll("[^a-zA-Z0-9_.-]", "_"); // NOI18N
+        String config = JFXProjectUtils.makeSafe(name);
         if (config.trim().length() == 0) {
             //#143764
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
@@ -836,7 +940,7 @@ private void buttonNewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
             return;
             
         }
-        if (configs.get(config) != null) {
+        if (configs.hasConfig(config)) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                     NbBundle.getMessage(JFXRunPanel.class, "JFXConfigurationProvider.input.duplicate", config),  // NOI18N
                     NotifyDescriptor.WARNING_MESSAGE));
@@ -846,9 +950,9 @@ private void buttonNewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         if (!name.equals(config)) {
             m.put("$label", name); // NOI18N
         }
-        configs.put(config, m);
+        configs.addToConfig(config, m);
+        configs.setActive(config);
         configChanged(config);
-        jfxProps.setActiveConfig(config);
 }//GEN-LAST:event_buttonNewActionPerformed
 
 private void buttonWorkDirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonWorkDirActionPerformed
@@ -892,39 +996,46 @@ private void buttonWorkDirActionPerformed(java.awt.event.ActionEvent evt) {//GEN
             radioButtonBEActionRunning = false;
         }
     }//GEN-LAST:event_radioButtonBEActionPerformed
+
+    void runTypeChanged(@NonNull String runTypeString) {
+        if(JFXProjectProperties.isEqual(runTypeString, JFXProjectProperties.RunAsType.ASWEBSTART.getString())) {
+            runTypeChanged(JFXProjectProperties.RunAsType.ASWEBSTART);
+        } else {
+            if(JFXProjectProperties.isEqual(runTypeString, JFXProjectProperties.RunAsType.INBROWSER.getString())) {
+                runTypeChanged(JFXProjectProperties.RunAsType.INBROWSER);
+            } else {
+                runTypeChanged(JFXProjectProperties.RunAsType.STANDALONE);
+            }
+        }
+    }
     
     void runTypeChanged(JFXProjectProperties.RunAsType runType) {
-        String config = (String) comboConfig.getSelectedItem();
-        if (config.length() == 0) {
-            config = null;
-        }
-        String v = runType.getString();
-        if (v != null && config != null && v.equals(jfxProps.configsGet(null).get(JFXProjectProperties.RUN_AS))) {
-            // default value, do not store as such
-            v = null;
-        }
-        jfxProps.configsGet(config).put(JFXProjectProperties.RUN_AS, v);
-        
-        Font basefont = radioButtonWS.getFont();
-        Font plainfont = basefont.deriveFont(Font.PLAIN);
-        Font boldfont = basefont.deriveFont(Font.BOLD);
+        //final Font basefont = radioButtonWS.getFont();
+        //final Font plainfont = basefont.deriveFont(Font.PLAIN);
+        //final Font boldfont = basefont.deriveFont(Font.BOLD);
+        //final Font emphfont = basefont.deriveFont(Font.ITALIC);
+        String config = getSelectedConfig();
+        String type = runType.getString();
+        configs.setPropertyTransparent(config, JFXProjectProperties.RUN_AS, type);
+        //labelRunAs.setFont(JFXProjectProperties.isEqual(type, configs.getDefaultProperty(JFXProjectProperties.RUN_AS)) ? plainfont : emphfont);
+        setEmphasizedFont(labelRunAs, config != null && !JFXProjectProperties.isEqualText(type, configs.getDefaultProperty(JFXProjectProperties.RUN_AS)));
         if(runType == JFXProjectProperties.RunAsType.STANDALONE) {
-            radioButtonSA.setFont(boldfont);
+            setBoldFont(radioButtonSA, true);
             radioButtonSA.setSelected(true);
         } else {
-            radioButtonSA.setFont(plainfont);
+            setBoldFont(radioButtonSA, false);
         }
         if(runType == JFXProjectProperties.RunAsType.ASWEBSTART) {
-            radioButtonWS.setFont(boldfont);
+            setBoldFont(radioButtonWS, true);
             radioButtonWS.setSelected(true);
         } else {
-            radioButtonWS.setFont(plainfont);
+            setBoldFont(radioButtonWS, false);
         }
         if(runType == JFXProjectProperties.RunAsType.INBROWSER) {
-            radioButtonBE.setFont(boldfont);
+            setBoldFont(radioButtonBE, true);
             radioButtonBE.setSelected(true);
         } else {
-            radioButtonBE.setFont(plainfont);
+            setBoldFont(radioButtonBE, false);
         }
     }
 
@@ -949,18 +1060,17 @@ private void buttonWebPageActionPerformed(java.awt.event.ActionEvent evt) {//GEN
 }//GEN-LAST:event_buttonWebPageActionPerformed
 
 private void buttonParamsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonParamsActionPerformed
-    List<Map<String,String>> origProps = jfxProps.getActiveAppParameters();
-    List<Map<String,String>> props = copyList(origProps);
+    List<Map<String, String>> props = configs.getActiveParamsTransparent();
     TableModel appParametersTableModel = new JFXProjectProperties.PropertiesTableModel(props, JFXProjectProperties.APP_PARAM_SUFFIXES, appParamsColumnNames);
     JPanel panel = new JFXApplicationParametersPanel((PropertiesTableModel) appParametersTableModel);
     DialogDescriptor dialogDesc = new DialogDescriptor(panel, NbBundle.getMessage(JFXRunPanel.class, "TITLE_ApplicationParameters"), true, null);
     Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDesc);
     dialog.setVisible(true);
     if (dialogDesc.getValue() == DialogDescriptor.OK_OPTION) {
-        jfxProps.setActiveAppParameters(props);
-        String paramString = getParamsString(props);
+        configs.setActiveParamsTransparent(props);
+        String paramString = configs.getActiveParamsTransparentAsString(false);
         textFieldParams.setText(paramString);
-        setEmphasized(labelParams, !JFXProjectProperties.isEqual(paramString, getParamsString(jfxProps.getActiveAppParameters(null))));
+        setEmphasizedFont(labelParams, !JFXProjectProperties.isEqualText(paramString, configs.getDefaultParamsAsString(false)));
     }
     dialog.dispose();
 }//GEN-LAST:event_buttonParamsActionPerformed
@@ -972,12 +1082,13 @@ private void checkBoxPreloaderActionPerformed(java.awt.event.ActionEvent evt) {/
         textFieldPreloader.setEnabled(sel);
         labelPreloaderClass.setEnabled(sel);
         comboBoxPreloaderClass.setEnabled(sel);
-        String config = (String) comboConfig.getSelectedItem();
-        if (config.length() == 0) {
-            config = null;
-        }
-        jfxProps.configsGet(config).put(JFXProjectProperties.PRELOADER_ENABLED, sel ? "true" : "false"); //NOI18N
-        setEmphasized(checkBoxPreloader, preloaderConfigChanged(config));
+        String config = getSelectedConfig();
+        configs.setPropertyTransparent(config, JFXProjectProperties.PRELOADER_ENABLED, sel ? "true" : "false"); //NOI18N
+        boolean change = preloaderConfigDiffersFromDefault(config);
+        setEmphasizedFont(checkBoxPreloader, change);
+        setEmphasizedFont(labelPreloaderClass, change);
+        //buttonPreloaderDefault.setEnabled(config != null && change);
+        buttonPreloaderDefault.setEnabled( (config != null && change) || (config == null && isPreloaderDefined(null)) );
         checkBoxPreloaderActionRunning = false;
     }
 }//GEN-LAST:event_checkBoxPreloaderActionPerformed
@@ -987,34 +1098,34 @@ private void buttonPreloaderActionPerformed(java.awt.event.ActionEvent evt) {//G
     if(wizard.show()) {
         File file = wizard.getSelectedSource();
         if (file != null) {
-            String config = (String) comboConfig.getSelectedItem();
-            if (config.length() == 0) {
-                config = null;
-            }
-            Map<String,String> activeConfig = jfxProps.configsGet(config);
+            String config = getSelectedConfig();
             String relPath = JFXProjectUtils.getRelativePath(project.getProjectDirectory(), FileUtil.toFileObject(file));
             String path = (relPath == null) ? file.getAbsolutePath() : relPath;
             textFieldPreloader.setText(path);
             if(wizard.getSourceType() == JFXProjectProperties.PreloaderSourceType.PROJECT) {
-                activeConfig.put(JFXProjectProperties.PRELOADER_PROJECT, path);
-                activeConfig.put(JFXProjectProperties.PRELOADER_TYPE, JFXProjectProperties.PreloaderSourceType.PROJECT.getString());
-                activeConfig.put(JFXProjectProperties.PRELOADER_JAR_PATH, "${dist.dir}/lib/${" + JFXProjectProperties.PRELOADER_JAR_FILENAME + "}"); // NOI18N);
-                activeConfig.put(JFXProjectProperties.PRELOADER_JAR_FILENAME, file.getName() + ".jar"); // NOI18N
+                configs.setPropertyTransparent(config, JFXProjectProperties.PRELOADER_PROJECT, path);
+                configs.setPropertyTransparent(config, JFXProjectProperties.PRELOADER_TYPE, JFXProjectProperties.PreloaderSourceType.PROJECT.getString());
+                configs.setPropertyTransparent(config, JFXProjectProperties.PRELOADER_JAR_PATH, "${dist.dir}/lib/${" + JFXProjectProperties.PRELOADER_JAR_FILENAME + "}"); // NOI18N);
+                configs.setPropertyTransparent(config, JFXProjectProperties.PRELOADER_JAR_FILENAME, file.getName() + ".jar"); // NOI18N
             } else {
                 if(wizard.getSourceType() == JFXProjectProperties.PreloaderSourceType.JAR) {
-                    activeConfig.put(JFXProjectProperties.PRELOADER_PROJECT, ""); //NOI18N
-                    activeConfig.put(JFXProjectProperties.PRELOADER_TYPE, JFXProjectProperties.PreloaderSourceType.JAR.getString());
-                    activeConfig.put(JFXProjectProperties.PRELOADER_JAR_PATH, path);
-                    activeConfig.put(JFXProjectProperties.PRELOADER_JAR_FILENAME, file.getName());
+                    configs.setPropertyTransparent(config, JFXProjectProperties.PRELOADER_PROJECT, ""); //NOI18N
+                    configs.setPropertyTransparent(config, JFXProjectProperties.PRELOADER_TYPE, JFXProjectProperties.PreloaderSourceType.JAR.getString());
+                    configs.setPropertyTransparent(config, JFXProjectProperties.PRELOADER_JAR_PATH, path);
+                    configs.setPropertyTransparent(config, JFXProjectProperties.PRELOADER_JAR_FILENAME, file.getName());
                 }
             }
-            activeConfig.put(JFXProjectProperties.PRELOADER_ENABLED, "true"); //NOI18N
-            fillPreloaderCombo(file, wizard.getSourceType(), null, activeConfig);
+            if(preloaderPropertiesExist(config)) {
+                configs.setProperty(config, JFXProjectProperties.PRELOADER_ENABLED, "true"); //NOI18N
+            } else {
+                configs.setPropertyTransparent(config, JFXProjectProperties.PRELOADER_ENABLED, "true"); //NOI18N
+            }
+            fillPreloaderCombo(file, wizard.getSourceType(), null, config);
         }
     }
 }//GEN-LAST:event_buttonPreloaderActionPerformed
 
-    private void fillPreloaderCombo(File file, JFXProjectProperties.PreloaderSourceType type, String select, Map<String,String> config) {
+    private void fillPreloaderCombo(File file, JFXProjectProperties.PreloaderSourceType type, String select, String activeConfig) {
         FileObject fileObj = FileUtil.toFileObject(FileUtil.normalizeFile(file));
         if (fileObj != null) {
             if(type == JFXProjectProperties.PreloaderSourceType.PROJECT) {
@@ -1022,14 +1133,14 @@ private void buttonPreloaderActionPerformed(java.awt.event.ActionEvent evt) {//G
                     Project foundProject = ProjectManager.getDefault()
                                                .findProject(fileObj);
                     if (foundProject != null) { // it is a project directory
-                        jfxProps.getPreloaderClassModel().fillFromProject(foundProject, select, config);
+                        jfxProps.getPreloaderClassModel().fillFromProject(foundProject, select, configs, activeConfig);
                     }
                 }
                 catch (IOException ex) {} // ignore
             } else {
                 if(type == JFXProjectProperties.PreloaderSourceType.JAR) {
                     //try {
-                        jfxProps.getPreloaderClassModel().fillFromJAR(fileObj, select, config);
+                        jfxProps.getPreloaderClassModel().fillFromJAR(fileObj, select, configs, activeConfig);
                     //}
                     //catch (IOException ex) {} // ignore
                 }
@@ -1040,28 +1151,25 @@ private void buttonPreloaderActionPerformed(java.awt.event.ActionEvent evt) {//G
 private void buttonWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonWebBrowserActionPerformed
     Object old = comboBoxWebBrowser.getSelectedItem();
     OptionsDisplayer.getDefault().open("General"); //NOI18N
+    // triggers comboBoxWebBrowserActionPerformed
     comboBoxWebBrowser.setSelectedItem(old);
-    String config = (String) comboConfig.getSelectedItem();
-    if (config.length() == 0) {
-        config = null;
-    }
-    String sel = (String)comboBoxWebBrowser.getSelectedItem();
-    jfxProps.configsGet(config).put(JFXProjectProperties.RUN_IN_BROWSER, sel);
 }//GEN-LAST:event_buttonWebBrowserActionPerformed
 
 private void comboBoxPreloaderClassActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comboBoxPreloaderClassActionPerformed
     if(!comboBoxPreloaderClassActionRunning) {
         comboBoxPreloaderClassActionRunning = true;
-        String config = (String) comboConfig.getSelectedItem();
-        if (config.length() == 0) {
-            config = null;
-        }
+        String config = getSelectedConfig();
         String sel = (String)comboBoxPreloaderClass.getSelectedItem();
         if(sel != null && sel.equalsIgnoreCase(NbBundle.getMessage(JFXProjectProperties.class, "MSG_ComboNoPreloaderClassAvailable"))) { //NOI18N
             sel = null;
         }
-        jfxProps.configsGet(config).put(JFXProjectProperties.PRELOADER_CLASS, sel);
-        setEmphasized(labelPreloaderClass, !JFXProjectProperties.isEqual(sel, jfxProps.configsGet(null).get(JFXProjectProperties.PRELOADER_CLASS)));
+        if(sel != null) {
+            configs.setPropertyTransparent(config, JFXProjectProperties.PRELOADER_CLASS, sel);
+        }
+        boolean change = preloaderConfigDiffersFromDefault(config);
+        setEmphasizedFont(checkBoxPreloader, change);
+        setEmphasizedFont(labelPreloaderClass, change);
+//        setEmphasizedFont(labelPreloaderClass, !JFXProjectProperties.isEqual(sel, configs.getDefaultProperty(JFXProjectProperties.PRELOADER_CLASS)));
         comboBoxPreloaderClassActionRunning = false;
     }
 }//GEN-LAST:event_comboBoxPreloaderClassActionPerformed
@@ -1069,54 +1177,56 @@ private void comboBoxPreloaderClassActionPerformed(java.awt.event.ActionEvent ev
 private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comboBoxWebBrowserActionPerformed
     if(!comboBoxWebBrowserActionRunning) {
         comboBoxWebBrowserActionRunning = true;
-        String config = (String) comboConfig.getSelectedItem();
-        if (config.length() == 0) {
-            config = null;
-        }
+        String config = getSelectedConfig();
         String sel = (String)comboBoxWebBrowser.getSelectedItem();
-        jfxProps.configsGet(config).put(JFXProjectProperties.RUN_IN_BROWSER, sel);
-        setEmphasized(labelWebBrowser, !JFXProjectProperties.isEqual(sel, jfxProps.configsGet(null).get(JFXProjectProperties.RUN_IN_BROWSER)));
+        if(JFXProjectProperties.isEqualIgnoreCase(sel, NbBundle.getMessage(JFXRunPanel.class, "MSG_NoBrowser"))) { //NOI18N
+            configs.setPropertyTransparent(config, JFXProjectProperties.RUN_IN_BROWSER, JFXProjectProperties.RUN_IN_BROWSER_UNDEFINED);
+            configs.setPropertyTransparent(config, JFXProjectProperties.RUN_IN_BROWSER_PATH, JFXProjectProperties.RUN_IN_BROWSER_UNDEFINED);
+            if(radioButtonBE.isSelected()) {
+                radioButtonSA.setSelected(true);
+                runTypeChanged(JFXProjectProperties.RunAsType.STANDALONE);
+            }
+            radioButtonBE.setEnabled(false);
+        } else {
+            configs.setPropertyTransparent(config, JFXProjectProperties.RUN_IN_BROWSER, sel);
+            configs.setPropertyTransparent(config, JFXProjectProperties.RUN_IN_BROWSER_PATH, jfxProps.getBrowserPaths().get(sel));
+            if(!radioButtonBE.isEnabled()) {
+                radioButtonBE.setEnabled(true);
+            }
+        }
+        setEmphasizedFont(labelWebBrowser, config != null && !JFXProjectProperties.isEqualText(sel, configs.getDefaultProperty(JFXProjectProperties.RUN_IN_BROWSER)));
         comboBoxWebBrowserActionRunning = false;
     }
 }//GEN-LAST:event_comboBoxWebBrowserActionPerformed
 
-    private List<Map<String,String>> copyList(List<Map<String,String>> list2Copy) {
-        List<Map<String,String>> list2Return = new ArrayList<Map<String,String>>();
-        if(list2Copy != null ) {
-            for (Map<String,String> map : list2Copy) {
-                Map<String,String> newMap = new HashMap<String,String>();
-                for(String key : map.keySet()) {
-                    String value = map.get(key);
-                    newMap.put(key, value);
-                }
-                list2Return.add(newMap);
-            }
-        }
-        return list2Return;
-    }
+    private void buttonPreloaderDefaultActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonPreloaderDefaultActionPerformed
+        String config = getSelectedConfig();
+        resetPreloaderProperties(config);
+        preloaderSelectionChanged(config);
+    }//GEN-LAST:event_buttonPreloaderDefaultActionPerformed
 
-    private String getParamsString(List<Map<String,String>> props) {
-        String s = new String();
-        if(props != null) {
-            for(Map<String,String> m : props) {
-                if(s.length() > 0) {
-                    s += ", "; // NOI18N
-                }
-                int suffixIdx = 0;
-                for(String propName : JFXProjectProperties.APP_PARAM_SUFFIXES) {
-                    if(m.get(propName) != null && !m.get(propName).isEmpty()) {
-                        if(suffixIdx > 0) {
-                            s += "="; // NOI18N
-                        }
-                        s += m.get(propName);
-                        suffixIdx++;
-                    }
-                }
+    private void resetPreloaderProperties(String config) {
+        if(config == null) {
+            configs.setDefaultProperty(JFXProjectProperties.PRELOADER_ENABLED, "false"); // NOI18N
+            configs.setDefaultProperty(JFXProjectProperties.PRELOADER_TYPE, JFXProjectProperties.PreloaderSourceType.NONE.getString());
+            configs.setDefaultProperty(JFXProjectProperties.PRELOADER_PROJECT, ""); // NOI18N
+            configs.setDefaultProperty(JFXProjectProperties.PRELOADER_CLASS, ""); // NOI18N
+            configs.setDefaultProperty(JFXProjectProperties.PRELOADER_JAR_PATH, ""); // NOI18N
+            configs.setDefaultProperty(JFXProjectProperties.PRELOADER_JAR_FILENAME, ""); // NOI18N
+//            for(String c : configs.getConfigNames()) {
+//                if(c != null) {
+//                    for(String prop : configs.getPreloaderProperties()) {
+//                        configs.eraseProperty(c, prop);
+//                    }
+//                }
+//            }
+        } else {
+            for(String prop : configs.getPreloaderProperties()) {
+                configs.eraseProperty(config, prop);
             }
         }
-        return s;
     }
-    
+   
     private void configChanged(String activeConfig) {
         if(!configChangedRunning) {
             configChangedRunning = true;
@@ -1128,16 +1238,14 @@ private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {
                 public int compare(String s1, String s2) {
                     return coll.compare(label(s1), label(s2));
                 }
-                private String label(String c) {
-                    Map<String,String> m = jfxProps.configsGet(c);
-                    String label = m.get("$label"); // NOI18N
-                    return label != null ? label : c;
+                private String label(String config) {
+                    String label = configs.getProperty(config, "$label"); // NOI18N
+                    return label != null ? label : config;
                 }
             });
-            for (Map.Entry<String,Map<String,String>> entry : configs.entrySet()) {
-                String config = entry.getKey();
-                if (config != null && entry.getValue() != null) {
-                    alphaConfigs.add(config);
+            for (String name : configs.getConfigNames()) {
+                if (name != null) {
+                    alphaConfigs.add(name);
                 }
             }
             for (String c : alphaConfigs) {
@@ -1145,108 +1253,190 @@ private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {
             }
             comboConfig.setModel(model);
             comboConfig.setSelectedItem(activeConfig != null ? activeConfig : "");  // NOI18N
-            Map<String,String> m = configs.get(activeConfig);
-            Map<String,String> def = jfxProps.configsGet(null);
-            if (m != null) {
+            {
                 for (int i = 0; i < data.length; i++) {
-                    String v = m.get(keys[i]);
-                    if (v == null) {
-                        // display default value
-                        v = def.get(keys[i]);
-                    }
-                    data[i].setText(v);
+                    String fill = configs.getPropertyTransparent(activeConfig, keys[i]);
+                    data[i].setText(fill);
+                    setEmphasizedFont(dataLabels[i], !JFXProjectProperties.isEqualText(fill, configs.getDefaultProperty(keys[i])));
                 }
-                String preloaderEnabled = m.get(JFXProjectProperties.PRELOADER_ENABLED);
-                preloaderSelectionChanged(
-                        preloaderEnabled,
-                        m.get(JFXProjectProperties.PRELOADER_PROJECT),
-                        m.get(JFXProjectProperties.PRELOADER_JAR_PATH),
-                        m.get(JFXProjectProperties.PRELOADER_JAR_FILENAME),
-                        m.get(JFXProjectProperties.PRELOADER_CLASS),
-                        m);
-
-                String runType = m.get(JFXProjectProperties.RUN_AS);
+                preloaderSelectionChanged(activeConfig);
+                String runType = configs.getProperty(activeConfig, JFXProjectProperties.RUN_AS);
                 if(runType == null) {
-                    runTypeChanged(JFXProjectProperties.RunAsType.STANDALONE);
-                } else {
-                    if(runType.equals(JFXProjectProperties.RunAsType.ASWEBSTART.getString())) {
-                        runTypeChanged(JFXProjectProperties.RunAsType.ASWEBSTART);
+                    String runTypeDefaultConfig = configs.getDefaultProperty(JFXProjectProperties.RUN_AS);
+                    if(runTypeDefaultConfig != null) {
+                        runTypeChanged(runTypeDefaultConfig);
                     } else {
-                        if(runType.equals(JFXProjectProperties.RunAsType.INBROWSER.getString())) {
-                            runTypeChanged(JFXProjectProperties.RunAsType.INBROWSER);
-                        } else {
-                            runTypeChanged(JFXProjectProperties.RunAsType.STANDALONE);
-                        }                
+                        runTypeChanged(JFXProjectProperties.RunAsType.STANDALONE);
                     }
+                } else {
+                    runTypeChanged(runType);
                 }
-                String paramString = getParamsString(jfxProps.getActiveAppParameters(activeConfig));
+                String paramString = configs.getParamsTransparentAsString(activeConfig, false);
                 textFieldParams.setText(paramString);
-                setEmphasized(labelParams, !JFXProjectProperties.isEqual(paramString, getParamsString(jfxProps.getActiveAppParameters(null))));
+                setEmphasizedFont(labelParams, !JFXProjectProperties.isEqualText(paramString, configs.getDefaultParamsAsString(false)));
 
-                setEmphasized(checkBoxPreloader, preloaderConfigChanged(activeConfig));
-                setEmphasized(labelPreloaderClass, !JFXProjectProperties.isEqual(m.get(JFXProjectProperties.PRELOADER_CLASS),def.get(JFXProjectProperties.PRELOADER_CLASS)));
+//                setEmphasizedFont(checkBoxPreloader, preloaderConfigDiffersFromDefault(activeConfig));
+//                setEmphasizedFont(labelPreloaderClass, !JFXProjectProperties.isEqualText(
+//                        configs.getProperty(activeConfig, JFXProjectProperties.PRELOADER_CLASS), configs.getDefaultProperty(JFXProjectProperties.PRELOADER_CLASS)));
+                boolean change = preloaderConfigDiffersFromDefault(activeConfig);
+                setEmphasizedFont(checkBoxPreloader, change);
+                setEmphasizedFont(labelPreloaderClass, change);
+                buttonPreloaderDefault.setEnabled( (activeConfig != null && change ) || (activeConfig == null && isPreloaderDefined(null)) );
+                if(activeConfig == null) {
+                    buttonPreloaderDefault.setText(NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonPreloaderDefault.text.alt")); //NOI18N
+                } else {
+                    buttonPreloaderDefault.setText(NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonPreloaderDefault.text")); //NOI18N
+                    buttonPreloaderDefault.setMnemonic(java.awt.event.KeyEvent.VK_F);
+                }
 
-                browserSelectionChanged(activeConfig, m.get(JFXProjectProperties.RUN_IN_BROWSER));
+                browserSelectionChanged(activeConfig);
             }
             buttonDelete.setEnabled(activeConfig != null);
             configChangedRunning = false;
         }
     }
-    
-    private void browserSelectionChanged(String config, String browser) {
-        if(browser != null) {
-            comboBoxWebBrowser.setSelectedItem(browser);
-            setEmphasized(labelWebBrowser, !JFXProjectProperties.isEqual(jfxProps.configsGet(config).get(JFXProjectProperties.RUN_IN_BROWSER), jfxProps.configsGet(null).get(JFXProjectProperties.RUN_IN_BROWSER)));
+
+    private boolean isBrowserKnown(String browser) {
+        for(int i = 0; i < comboBoxWebBrowser.getItemCount(); i++) {
+            if(JFXProjectProperties.isEqual(comboBoxWebBrowser.getItemAt(i).toString(), browser)) {
+                return true;
+            }
         }
+        return false;
     }
     
-    private void preloaderSelectionChanged(String enabled, String projectDir, String jarFilePath, String jarFileName, String cls, Map<String,String> config) {
+    private String getDefaultKnownBrowser() {
+        if(comboBoxWebBrowser.getItemCount() > 0) {
+            return comboBoxWebBrowser.getItemAt(0).toString();
+        }
+        return null;
+    }
+    
+    private void browserSelectionChanged(String config) {
+        String name = configs.getProperty(config, JFXProjectProperties.RUN_IN_BROWSER);
+        String defaultConfigName = configs.getDefaultProperty(JFXProjectProperties.RUN_IN_BROWSER);
+        if(isBrowserKnown(name)) {
+            comboBoxWebBrowser.setSelectedItem(name);
+            setEmphasizedFont(labelWebBrowser, config != null && !JFXProjectProperties.isEqualText(name, defaultConfigName)
+                    && !JFXProjectProperties.isEqualIgnoreCase(name, NbBundle.getMessage(JFXRunPanel.class, "MSG_NoBrowser")));
+        } else {
+            if(isBrowserKnown(defaultConfigName)) {
+                comboBoxWebBrowser.setSelectedItem(defaultConfigName);
+                setEmphasizedFont(labelWebBrowser, false);
+            } else {
+                String defaultName = getDefaultKnownBrowser();
+                if(defaultName != null) {
+                    comboBoxWebBrowser.setSelectedItem(defaultName);
+                    setEmphasizedFont(labelWebBrowser, config != null && (JFXProjectProperties.isNonEmpty(name) || JFXProjectProperties.isNonEmpty(defaultConfigName))
+                            && !JFXProjectProperties.isEqualIgnoreCase(defaultName, NbBundle.getMessage(JFXRunPanel.class, "MSG_NoBrowser"))
+                            && !JFXProjectProperties.isEqualText(defaultName, defaultConfigName));
+                }
+            }
+        }
+    }
+
+    private void preloaderSelectionChanged(String activeConfig) {
+        String enabled = configs.getPropertyTransparent(activeConfig, JFXProjectProperties.PRELOADER_ENABLED);
+        String projectDir = configs.getPropertyTransparent(activeConfig, JFXProjectProperties.PRELOADER_PROJECT);
+        String jarFilePath = configs.getPropertyTransparent(activeConfig, JFXProjectProperties.PRELOADER_JAR_PATH);
+        String jarFileName = configs.getPropertyTransparent(activeConfig, JFXProjectProperties.PRELOADER_JAR_FILENAME);
+        String cls = configs.getPropertyTransparent(activeConfig, JFXProjectProperties.PRELOADER_CLASS);
+        String type = configs.getPropertyTransparent(activeConfig, JFXProjectProperties.PRELOADER_TYPE);
         checkBoxPreloader.setSelected(JFXProjectProperties.isTrue(enabled));
         if(projectDir != null && !projectDir.isEmpty()) {
             FileObject thisProjDir = project.getProjectDirectory();
             FileObject fo = JFXProjectUtils.getFileObject(thisProjDir, projectDir);
             File proj = (fo == null) ? null : FileUtil.toFile(fo);
             if(proj == null || !proj.exists() || !proj.isDirectory()) {
-                textFieldPreloader.setText(""); //NOI18N
+                checkBoxPreloader.setSelected(false);
+                textFieldPreloader.setText(NbBundle.getMessage(JFXProjectProperties.class, "MSG_PreloaderInaccessible"));  // NOI18N
                 jfxProps.getPreloaderClassModel().fillNoPreloaderAvailable();
+                configs.setPropertyTransparent(activeConfig, JFXProjectProperties.PRELOADER_ENABLED, "false"); //NOI18N
             } else {
                 textFieldPreloader.setText(projectDir);
-                fillPreloaderCombo(proj, JFXProjectProperties.PreloaderSourceType.PROJECT, cls, config);
+                fillPreloaderCombo(proj, JFXProjectProperties.PreloaderSourceType.PROJECT, cls, activeConfig);
             }
             return;
         }
-        if(jarFilePath != null && jarFileName != null) {
+        if(jarFilePath != null && !jarFilePath.isEmpty() && jarFileName != null && !jarFileName.isEmpty()) {
             FileObject thisProjDir = project.getProjectDirectory();
             FileObject fo = JFXProjectUtils.getFileObject(thisProjDir, jarFilePath);
             File jar = (fo == null) ? null : FileUtil.toFile(fo);
             if(jar == null || !jar.exists() || !jar.isFile()) {
-                textFieldPreloader.setText(""); //NOI18N
+                checkBoxPreloader.setSelected(false);
+                textFieldPreloader.setText(NbBundle.getMessage(JFXProjectProperties.class, "MSG_PreloaderInaccessible"));  // NOI18N
                 jfxProps.getPreloaderClassModel().fillNoPreloaderAvailable();
+                configs.setPropertyTransparent(activeConfig, JFXProjectProperties.PRELOADER_ENABLED, "false"); //NOI18N
             } else {
                 textFieldPreloader.setText(jarFilePath);
-                fillPreloaderCombo(jar, JFXProjectProperties.PreloaderSourceType.JAR, cls, config);
+                fillPreloaderCombo(jar, JFXProjectProperties.PreloaderSourceType.JAR, cls, activeConfig);
             }
             return;
         }
+        resetPreloaderProperties(activeConfig);
         textFieldPreloader.setText(""); //NOI18N
         jfxProps.getPreloaderClassModel().fillNoPreloaderAvailable();
-        config.put(JFXProjectProperties.PRELOADER_ENABLED, "false"); //NOI18N
+        configs.setPropertyTransparent(activeConfig, JFXProjectProperties.PRELOADER_ENABLED, "false"); //NOI18N
         checkBoxPreloader.setSelected(false);
         checkBoxPreloader.setEnabled(false);
         textFieldPreloader.setEnabled(false);
         labelPreloaderClass.setEnabled(false);
         comboBoxPreloaderClass.setEnabled(false);
+        buttonPreloaderDefault.setEnabled(false);
+//        buttonPreloaderDefault.setEnabled(activeConfig != null && preloaderPropertiesExist(activeConfig));
+//        //buttonPreloaderDefault.setEnabled( (activeConfig != null && change) || (activeConfig == null && isPreloaderDefined(null)) );
+    }
+
+    private boolean isPreloaderDefined(String config) {
+        boolean defined = false;
+        String p;
+        defined |= !JFXProjectProperties.isEqual(configs.getPropertyTransparent(config, JFXProjectProperties.PRELOADER_ENABLED), "false"); //NOI18N
+        p = configs.getPropertyTransparent(config, JFXProjectProperties.PRELOADER_TYPE);
+        defined |= (p != null && p.length() > 0 && !JFXProjectProperties.isEqual(p, JFXProjectProperties.PreloaderSourceType.NONE.getString()));
+        p = configs.getPropertyTransparent(config, JFXProjectProperties.PRELOADER_PROJECT);
+        defined |= (p != null && p.length() > 0);
+        p = configs.getPropertyTransparent(config, JFXProjectProperties.PRELOADER_CLASS);
+        defined |= (p != null && p.length() > 0);
+        p = configs.getPropertyTransparent(config, JFXProjectProperties.PRELOADER_JAR_PATH);
+        defined |= (p != null && p.length() > 0);
+        p = configs.getPropertyTransparent(config, JFXProjectProperties.PRELOADER_JAR_FILENAME);
+        defined |= (p != null && p.length() > 0);
+        return defined;
     }
     
-    private boolean preloaderConfigChanged(String config) {
-        return JFXProjectProperties.isTrue(jfxProps.configsGet(config).get(JFXProjectProperties.PRELOADER_ENABLED)) != 
-                JFXProjectProperties.isTrue(jfxProps.configsGet(null).get(JFXProjectProperties.PRELOADER_ENABLED)) ||
-                !JFXProjectProperties.isEqualIgnoreCase(jfxProps.configsGet(config).get(JFXProjectProperties.PRELOADER_PROJECT),
-                jfxProps.configsGet(null).get(JFXProjectProperties.PRELOADER_PROJECT)) ||
-                !JFXProjectProperties.isEqualIgnoreCase(jfxProps.configsGet(config).get(JFXProjectProperties.PRELOADER_JAR_PATH),
-                jfxProps.configsGet(null).get(JFXProjectProperties.PRELOADER_JAR_PATH)) ||
-                !JFXProjectProperties.isEqualIgnoreCase(jfxProps.configsGet(config).get(JFXProjectProperties.PRELOADER_JAR_FILENAME),
-                jfxProps.configsGet(null).get(JFXProjectProperties.PRELOADER_JAR_FILENAME));
+    private boolean preloaderPropertiesExist(String config) {
+        for(String prop : configs.getPreloaderProperties()) {
+            if(configs.isPropertySet(config, prop)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    private boolean preloaderConfigDiffersFromDefault(String config) {
+        return !JFXProjectProperties.isEqual(
+                configs.getPropertyTransparent(config, JFXProjectProperties.PRELOADER_ENABLED), 
+                configs.getDefaultProperty(JFXProjectProperties.PRELOADER_ENABLED)) 
+                ||
+                !JFXProjectProperties.isEqual(
+                configs.getPropertyTransparent(config, JFXProjectProperties.PRELOADER_TYPE),
+                configs.getDefaultProperty(JFXProjectProperties.PRELOADER_TYPE)) 
+                ||
+                !JFXProjectProperties.isEqual(
+                configs.getPropertyTransparent(config, JFXProjectProperties.PRELOADER_PROJECT),
+                configs.getDefaultProperty(JFXProjectProperties.PRELOADER_PROJECT)) 
+                ||
+                !JFXProjectProperties.isEqual(
+                configs.getPropertyTransparent(config, JFXProjectProperties.PRELOADER_CLASS),
+                configs.getDefaultProperty(JFXProjectProperties.PRELOADER_CLASS)) 
+                ||
+                !JFXProjectProperties.isEqual(
+                configs.getPropertyTransparent(config, JFXProjectProperties.PRELOADER_JAR_PATH),
+                configs.getDefaultProperty(JFXProjectProperties.PRELOADER_JAR_PATH)) 
+                ||
+                !JFXProjectProperties.isEqual(
+                configs.getPropertyTransparent(config, JFXProjectProperties.PRELOADER_JAR_FILENAME),
+                configs.getDefaultProperty(JFXProjectProperties.PRELOADER_JAR_FILENAME));
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -1256,6 +1446,7 @@ private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {
     private javax.swing.JButton buttonNew;
     private javax.swing.JButton buttonParams;
     private javax.swing.JButton buttonPreloader;
+    private javax.swing.JButton buttonPreloaderDefault;
     private javax.swing.JButton buttonWebBrowser;
     private javax.swing.JButton buttonWebPage;
     private javax.swing.JButton buttonWorkDir;
@@ -1305,18 +1496,31 @@ private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {
         return new HelpCtx( JFXRunPanel.class );
     }
 
-    @Override
-    public void resultChanged(LookupEvent ev) {
+    private List<String> updateBrowserList() {
         final ArrayList<String> list = new ArrayList<String> (6);
         jfxProps.resetBrowserPaths();
-        for(Lookup.Item<ExtWebBrowser> browser : allBrowsers.allItems()) {
-            list.add(browser.getDisplayName());
-            NbProcessDescriptor proc = browser.getInstance().getBrowserExecutable();
-            String path = proc.getProcessName();
-            jfxProps.getBrowserPaths().put(browser.getDisplayName(), path);
+        if(allBrowsers != null) {
+            for(Lookup.Item<ExtWebBrowser> browser : allBrowsers.allItems()) {
+                list.add(browser.getDisplayName());
+                ExtWebBrowser instance = browser.getInstance();
+                if(instance != null) {
+                    NbProcessDescriptor proc = instance.getBrowserExecutable();
+                    if(proc != null) {
+                        String path = proc.getProcessName();
+                        jfxProps.getBrowserPaths().put(browser.getDisplayName(), path);
+                    }
+                }
+            }
+        } else {
+            list.add(NbBundle.getMessage(JFXRunPanel.class, "MSG_NoBrowser")); // NOI18N
         }
-        final String config = jfxProps.getActiveConfig();
-        final String sel = jfxProps.configsGet(config).get(JFXProjectProperties.RUN_IN_BROWSER);
+        return list;
+    }
+    
+    @Override
+    public void resultChanged(LookupEvent ev) {
+        final List<String> list = updateBrowserList();
+        final String sel = configs.getActiveProperty(JFXProjectProperties.RUN_IN_BROWSER);
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -1332,10 +1536,12 @@ private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {
          private final JButton okButton;
          private final PropertyEvaluator evaluator;
          private final Project project;
+         private final boolean FXinSwing;
          
          MainClassListener( final @NonNull Project p, final @NonNull PropertyEvaluator pe ) {            
              this.evaluator = pe;
              this.project = p;
+             this.FXinSwing = JFXProjectUtils.isFXinSwingProject(p);
              this.okButton  = new JButton (NbBundle.getMessage (JFXRunPanel.class, "LBL_ChooseMainClass_OK")); // NOI18N
              this.okButton.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage (JFXRunPanel.class, "AD_ChooseMainClass_OK"));  // NOI18N
          }
@@ -1369,7 +1575,7 @@ private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {
              okButton.setEnabled (false);
              DialogDescriptor desc = new DialogDescriptor (
                  panel,
-                 NbBundle.getMessage (JFXRunPanel.class, "LBL_ChooseMainClass_Title" ),  // NOI18N
+                 NbBundle.getMessage (JFXRunPanel.class, FXinSwing ? "LBL_ChooseMainClass_Title_Swing" : "LBL_ChooseMainClass_Title" ),  // NOI18N
                  true, 
                  options, 
                  options[0], 
@@ -1385,6 +1591,15 @@ private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {
              dlg.dispose();
          }
     }
+    
+    private String getSelectedConfig() {
+        String label = (String) comboConfig.getSelectedItem();
+        if(label != null && (label.equals("") || label.equals(DEFAULT_CONFIG_LABEL))) { // NOI18N
+            return null;
+        }
+        return label;
+    }
+            
     private final class ConfigListCellRenderer extends JLabel implements ListCellRenderer, UIResource {
         
         public ConfigListCellRenderer () {
@@ -1402,13 +1617,12 @@ private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {
                 // uninitialized?
                 label = null;
             } else if (config.length() > 0) {
-                Map<String,String> m = configs.get(config);
-                label = m != null ? m.get("$label") : /* temporary? */ null;
+                label = configs.getProperty(config, "$label"); // NOI18N
                 if (label == null) {
                     label = config;
                 }
             } else {
-                label = NbBundle.getBundle("org.netbeans.modules.javafx2.project.ui.Bundle").getString("JFXConfigurationProvider.default.label"); // NOI18N
+                label = DEFAULT_CONFIG_LABEL;
             }
             setText(label);
             
@@ -1459,9 +1673,15 @@ private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {
     }
 
     private void setupWebBrowsersCombo() {
+        comboBoxWebBrowserActionRunning = true;
         allBrowsers = Lookup.getDefault().lookupResult(ExtWebBrowser.class);
-        resultChanged(null);
-        allBrowsers.addLookupListener(this);
+        final List<String> list = updateBrowserList();
+        final String sel = configs.getActiveProperty(JFXProjectProperties.RUN_IN_BROWSER);
+        fillWebBrowsersCombo(list, sel);
+        if(allBrowsers != null) {
+            allBrowsers.addLookupListener(this);
+        }
+        comboBoxWebBrowserActionRunning = false;
     }
 
     private void fillWebBrowsersCombo(List<String> list, String select) {
@@ -1473,7 +1693,7 @@ private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {
             for (int i = 0; i<dobjs.length; i++) {
                 // Must not be hidden and have to provide instances (we assume instance is HtmlBrowser.Factory)
                 if (Boolean.TRUE.equals(dobjs[i].getPrimaryFile().getAttribute(EA_HIDDEN)) ||
-                        dobjs[i].getCookie(InstanceCookie.class) == null) {
+                        dobjs[i].getLookup().lookup(InstanceCookie.class) == null) {
                     FileObject fo2 = dobjs[i].getPrimaryFile();
                     String n = fo2.getName();
                     try {
@@ -1495,12 +1715,10 @@ private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {
             }
             labelWebBrowser.setEnabled(true);
             comboBoxWebBrowser.setEnabled(true);
-            //buttonWebBrowser.setEnabled(true);
             jSeparator2.setEnabled(true);
         } else {
             labelWebBrowser.setEnabled(false);
             comboBoxWebBrowser.setEnabled(false);
-            //buttonWebBrowser.setEnabled(false);
             jSeparator2.setEnabled(false);
         }
     }

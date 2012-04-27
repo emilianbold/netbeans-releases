@@ -43,9 +43,9 @@
  */
 package org.netbeans.performance.cnd.setup;
 
+import java.io.IOException;
 import org.netbeans.modules.performance.utilities.CommonUtilities;
-import org.netbeans.jellytools.JellyTestCase;
-import java.io.*;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase2;
 import org.openide.util.Exceptions;
 
 /**
@@ -54,7 +54,7 @@ import org.openide.util.Exceptions;
  *
  * @author  mmirilovic@netbeans.org
  */
-public class CNDSetup extends JellyTestCase {
+public class CNDSetup extends PerformanceTestCase2 {
 
     public CNDSetup(java.lang.String testName) {
         super(testName);

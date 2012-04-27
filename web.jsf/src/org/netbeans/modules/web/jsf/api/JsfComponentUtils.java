@@ -47,8 +47,16 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.StyledDocument;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.editor.indent.api.Reformat;
+import org.openide.cookies.EditorCookie;
+import org.openide.loaders.DataObject;
+import org.openide.text.NbDocument;
+import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
 
 /**
  * Contains utilities methods for JSF components plugins.
@@ -56,6 +64,9 @@ import org.netbeans.api.project.libraries.LibraryManager;
  * @author Martin Fousek <marfous@netbeans.org>
  */
 public class JsfComponentUtils {
+
+    private JsfComponentUtils() {
+    }
 
     /**
      * Recreates library with maven-pom content. If the library already contains
@@ -68,27 +79,114 @@ public class JsfComponentUtils {
      * @return library with pom content (the original library if the content wasn't added)
      * @throws IOException when original library cannot be deleted or recreated
      */
-    public static Library enhanceLibraryWithPomContent(Library library, List<URI> poms) throws IOException {
+    public static Library enhanceLibraryWithPomContent(final Library library, final List<URI> poms) throws IOException {
         List<URL> mavenContent = library.getContent("maven-pom"); //NOI18N
+        final String name = library.getName();
         if (mavenContent == null || mavenContent.isEmpty()) {
-            // copy existing contents
-            Map<String, List<URI>> content = new HashMap<String, List<URI>>();
-            content.put("classpath", library.getURIContent("classpath"));
-            content.put("src", library.getURIContent("src"));
-            content.put("javadoc", library.getURIContent("javadoc"));
+            final Runnable call = new Runnable() {
+                @Override
+                public void run() {
+                    // copy existing contents
+                    final String type = library.getType();
+                    final String name = library.getName();
+                    final String displayName = library.getDisplayName();
+                    final String desc = library.getDescription();
+                    Map<String, List<URI>> content = new HashMap<String, List<URI>>();
+                    content.put("classpath", library.getURIContent("classpath")); //NOI18N
+                    content.put("src", library.getURIContent("src")); //NOI18N
+                    content.put("javadoc", library.getURIContent("javadoc")); //NOI18N
 
-            // include references to maven-pom artifacts
-            content.put("maven-pom", poms);
+                    // include references to maven-pom artifacts
+                    content.put("maven-pom", poms); //NOI18N
 
-            LibraryManager.getDefault().removeLibrary(library);
-            return LibraryManager.getDefault().createURILibrary(
-                    library.getType(),
-                    library.getName(),
-                    library.getDisplayName(),
-                    library.getDescription(),
-                    content);
+                    try {
+                        LibraryManager.getDefault().removeLibrary(library);
+                        LibraryManager.getDefault().createURILibrary(type, name, displayName, desc, content);
+                    } catch (IOException ioe) {
+                        Exceptions.printStackTrace(ioe);
+                    } catch (IllegalArgumentException iae) {
+                        Exceptions.printStackTrace(iae);
+                    }
+                }
+            };
+            Mutex.EVENT.writeAccess(call);
         }
-        return library;
+        return LibraryManager.getDefault().getLibrary(name);
+    }
+
+    /**
+     * Reformats given {@code DataObject}.
+     * @param dob {@code DataObject} to reformat.
+     * @since 1.35
+     */
+    public static void reformat(DataObject dob) {
+        try {
+            EditorCookie ec = dob.getLookup().lookup(EditorCookie.class);
+            if (ec == null) {
+                return;
+            }
+
+            final StyledDocument doc = ec.openDocument();
+            final Reformat reformat = Reformat.get(doc);
+
+            reformat.lock();
+            try {
+                NbDocument.runAtomicAsUser(doc, new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            reformat.reformat(0, doc.getLength());
+                        } catch (BadLocationException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                });
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
+            } finally {
+                reformat.unlock();
+                ec.saveDocument();
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    /**
+     * Enhances existing data object for content.
+     * @param dob data object to be enhanced
+     * @param find text element where text should be included
+     * @param enhanceBy enhancing content
+     * @since 1.35
+     */
+    public static void enhanceFileBody(DataObject dob, final String find, final String enhanceBy) {
+        try {
+            EditorCookie ec = dob.getLookup().lookup(EditorCookie.class);
+            if (ec == null) {
+                return;
+            }
+
+            final StyledDocument doc = ec.openDocument();
+            try {
+                NbDocument.runAtomicAsUser(doc, new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            int position = doc.getText(0, doc.getLength()).indexOf(find);
+                            doc.insertString(position, enhanceBy + "\n", null); //NOI18N
+                        } catch (BadLocationException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                });
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
+            } finally {
+                ec.saveDocument();
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
 }

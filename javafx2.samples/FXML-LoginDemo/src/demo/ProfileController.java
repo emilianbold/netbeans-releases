@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, 2011 Oracle and/or its affiliates.
+ * Copyright (c) 2008, 2012 Oracle and/or its affiliates.
  * All rights reserved. Use is subject to license terms.
  *
  * This file is available and licensed under the following license:
@@ -31,19 +31,15 @@
  */
 package demo;
 
-import javafx.scene.control.TextArea;
 import demo.model.User;
 import java.net.URL;
 import java.util.ResourceBundle;
-
 import javafx.animation.FadeTransition;
-import javafx.collections.ObservableMap;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.CheckBox;
-import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.util.Duration;
 
@@ -74,11 +70,11 @@ public class ProfileController implements Initializable {
         success.setOpacity(0);
     }
     
-    @FXML protected void processLogout(ActionEvent event) {
+    @FXML protected void processLogout() {
         App.getInstance().userLogout();
     }
     
-    @FXML protected void processUpdate(ActionEvent event) {
+    @FXML protected void processUpdate() {
         User loggedUser = App.getInstance().getLoggedUser();
         loggedUser.setEmail(email.getText());
         loggedUser.setPhone(phone.getText());

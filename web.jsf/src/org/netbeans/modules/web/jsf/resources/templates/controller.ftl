@@ -44,8 +44,13 @@ import javax.annotation.Resource;
 import javax.ejb.EJB;
 </#if>
 <#if managedBeanName??>
+<#if cdiEnabled?? && cdiEnabled == true>
+import javax.inject.Named;
+import javax.enterprise.context.SessionScoped;
+<#else>
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
+</#if>
 </#if>
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
@@ -64,8 +69,13 @@ import javax.persistence.Persistence;
 </#if>
 </#if>
 
+
 <#if managedBeanName??>
-@ManagedBean (name="${managedBeanName}")
+<#if cdiEnabled?? && cdiEnabled == true>
+@Named("${managedBeanName}")
+<#else>
+@ManagedBean(name="${managedBeanName}")
+</#if>
 @SessionScoped
 </#if>
 public class ${controllerClassName} implements Serializable {
@@ -341,7 +351,7 @@ ${keyStringBody}
                 ${entityClassName} o = (${entityClassName}) object;
                 return getStringKey(o.${keyGetter}());
             } else {
-                throw new IllegalArgumentException("object " + object + " is of type " + object.getClass().getName() + "; expected type: "+${controllerClassName}.class.getName());
+                throw new IllegalArgumentException("object " + object + " is of type " + object.getClass().getName() + "; expected type: "+${entityClassName}.class.getName());
             }
         }
 

@@ -50,6 +50,7 @@ import java.util.*;
 import junit.framework.*;
 import org.netbeans.junit.*;
 
+@RandomlyFails // occasionally hangs in waitActiveReferenceQueue, generally relies on thread timing
 public class ChildrenKeysIssue30907Test extends NbTestCase {
 
     public ChildrenKeysIssue30907Test(java.lang.String testName) {
@@ -106,7 +107,6 @@ public class ChildrenKeysIssue30907Test extends NbTestCase {
             System.runFinalization();
         }
     }
-    
     
     public void testProperInitializationEvenIfInvokedFromMultipleThreadsBug30907SlowAddNotifyWithReadAccess () throws Exception {
         doBug30907 (true, true, 0, 2);

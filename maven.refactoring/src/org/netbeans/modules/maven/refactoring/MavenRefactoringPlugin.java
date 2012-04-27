@@ -52,7 +52,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
-import org.netbeans.modules.maven.indexer.spi.ClassUsageQuery;
+import org.netbeans.modules.maven.indexer.api.RepositoryQueries.ClassUsage;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
@@ -108,7 +108,13 @@ class MavenRefactoringPlugin implements RefactoringPlugin {
         }
         LOG.log(Level.FINE, "for {0} found FQN: {1}", new Object[] {handle, fqn});
         if (fqn.get() != null) {
-            for (ClassUsageQuery.ClassUsageResult result : RepositoryQueries.findClassUsages(fqn.get(), null)) {
+            long start = System.currentTimeMillis();
+            //#209856 ->getLoadedContexts() 
+            Iterable<ClassUsage> results = RepositoryQueries.findClassUsagesResult(fqn.get(), RepositoryQueries.getLoadedContexts()).getResults();
+            long end = System.currentTimeMillis();
+            LOG.log(Level.FINE, "took {0}msec to find {1}", new Object[] {end - start, fqn});
+            //TODO do we care reporting to the user somehow?
+            for (RepositoryQueries.ClassUsage result : results) {
                 for (String clazz : result.getClasses()) {
                     refactoringElements.add(query, new MavenRefactoringElementImplementation(new ReferringClass(result.getArtifact(), clazz)));
                 }

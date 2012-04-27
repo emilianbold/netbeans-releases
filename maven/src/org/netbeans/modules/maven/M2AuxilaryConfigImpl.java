@@ -114,12 +114,14 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                                 FileObject config = project.getProjectDirectory().getFileObject(CONFIG_FILE_NAME);
                                 if (doc.getDocumentElement().getElementsByTagName("*").getLength() > 0) {
                                     OutputStream out = config == null ? project.getProjectDirectory().createAndOpen(CONFIG_FILE_NAME) : config.getOutputStream();
+                                    LOG.log(Level.FINEST, "Write configuration file for {0}", project.getProjectDirectory());
                                     try {
                                         XMLUtil.write(doc, out, "UTF-8"); //NOI18N
                                     } finally {
                                         out.close();
                                     }
                                 } else if (config != null) {
+                                    LOG.log(Level.FINEST, "Delete empty configuration file for {0}", project.getProjectDirectory());
                                     config.delete();
                                 }
                             }
@@ -135,7 +137,7 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
     private Document loadConfig(FileObject config) throws IOException, SAXException {
         synchronized (configIOLock) {
             //TODO shall be have some kind of caching here to prevent frequent IO?
-            return XMLUtil.parse(new InputSource(config.getURL().toString()), false, true, null, null);
+            return XMLUtil.parse(new InputSource(config.toURL().toString()), false, true, null, null);
         }
     }
 
@@ -162,7 +164,7 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
     }
     @Messages({
         "TXT_Problem_Broken_Config=Broken nb-configuration.xml file.",
-        "DESC_Problem_Broken_Config=The $project_basedir/nb-configuration.xml file cannot be parsed. "
+        "# {0} - parser error message", "DESC_Problem_Broken_Config=The $project_basedir/nb-configuration.xml file cannot be parsed. "
             + "The information contained in the file will be ignored until fixed. "
             + "This affects several features in the IDE that will not work properly as a result.\n\n "
             + "The parsing exception follows:\n{0}"
@@ -223,9 +225,9 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                     doc = XMLUtil.parse(new InputSource(new StringReader(str)), false, true, null, null);
                     return XMLUtil.findElement(doc.getDocumentElement(), elementName, namespace);
                 } catch (SAXException ex) {
-                    ex.printStackTrace();
+                    LOG.log(Level.FINE, "cannot parse", ex);
                 } catch (IOException ex) {
-                    ex.printStackTrace();
+                    LOG.log(Level.FINE, "error reading private auxiliary configuration", ex);
                 }
             }
             return null;
@@ -261,9 +263,9 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                 try {
                     doc = XMLUtil.parse(new InputSource(new StringReader(str)), false, true, null, null);
                 } catch (SAXException ex) {
-                    ex.printStackTrace();
+                    LOG.log(Level.FINE, "cannot parse", ex);
                 } catch (IOException ex) {
-                    ex.printStackTrace();
+                    LOG.log(Level.FINE, "error reading private auxiliary configuration", ex);
                 }
             }
             if (doc == null) {
@@ -282,6 +284,7 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                 if (scheduledDocument == null) {
                     scheduledDocument = doc;
                 }
+                LOG.log(Level.FINEST, "Schedule saving of configuration fragment for " + project.getProjectDirectory(), new Exception());
                 savingTask.schedule(SAVING_DELAY);
             } else {
                 try {
@@ -289,7 +292,7 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                     XMLUtil.write(doc, wr, "UTF-8"); //NOI18N
                     project.getProjectDirectory().setAttribute(AUX_CONFIG, wr.toString("UTF-8"));
                 } catch (IOException ex) {
-                    ex.printStackTrace();
+                    LOG.log(Level.FINE, "error writing private auxiliary configuration", ex);
                 }
             }
         }
@@ -345,6 +348,7 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                 if (scheduledDocument == null) {
                     scheduledDocument = doc;
                 }
+                LOG.log(Level.FINEST, "Schedule saving of configuration fragment for " + project.getProjectDirectory(), new Exception());
                 savingTask.schedule(SAVING_DELAY);
             } else {
                 try {
@@ -374,10 +378,10 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
             if (fo != null) {
                 try {
                     DataObject dobj = DataObject.find(fo);
-                    EditCookie edit = dobj.getCookie(EditCookie.class);
+                    EditCookie edit = dobj.getLookup().lookup(EditCookie.class);
                     edit.edit();
                 } catch (DataObjectNotFoundException ex) {
-                    ex.printStackTrace();
+                    LOG.log(Level.FINEST, "no dataobject for " + fo, ex);
                 }
             }
         }

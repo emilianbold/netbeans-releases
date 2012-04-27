@@ -4,10 +4,6 @@ import java.util.List;
 
 public class MethodProposals {
 
-    public boolean add(String e) {
-        return lext.add(e);
-    }
-
     private Auxiliary a;
     private List l;
     private String s;
@@ -15,4 +11,8 @@ public class MethodProposals {
     private List<? extends String> lext;
     private List<? super String> lsup;
     private List<?> lub;
+
+    public boolean add(String e) {
+        return lext.add(e);
+    }
 }

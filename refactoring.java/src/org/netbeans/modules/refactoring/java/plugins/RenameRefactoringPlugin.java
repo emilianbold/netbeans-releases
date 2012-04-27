@@ -157,7 +157,7 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
         case METHOD:
             fireProgressListenerStep();
             fireProgressListenerStep();
-            overriddenByMethods = JavaRefactoringUtils.getOverridingMethods((ExecutableElement)el, info);
+            overriddenByMethods = JavaRefactoringUtils.getOverridingMethods((ExecutableElement)el, info, cancelRequested);
             fireProgressListenerStep();
             if (el.getModifiers().contains(Modifier.NATIVE)) {
                 preCheckProblem = createProblem(preCheckProblem, false, NbBundle.getMessage(RenameRefactoringPlugin.class, "ERR_RenameNative", el));
@@ -276,10 +276,12 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
                 
                 String pkgname = oldfqn;
                 int i = pkgname.indexOf('.');
-                if (i>=0)
+                if (i>=0) {
                     pkgname = pkgname.substring(0,i);
-                else
+                }
+                else {
                     pkgname = "";
+                }
                 
 //                String fqn = "".equals(pkgname) ? newName : pkgname + '.' + newName;
 //                ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
@@ -337,10 +339,12 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
         
         Problem checkProblem = null;
         int steps = 0;
-        if (overriddenByMethods != null)
+        if (overriddenByMethods != null) {
             steps += overriddenByMethods.size();
-        if (overridesMethods != null)
+        }
+        if (overridesMethods != null) {
             steps += overridesMethods.size();
+        }
         
         fireProgressListenerStart(RenameRefactoring.PARAMETERS_CHECK, 8 + 3*steps);
         
@@ -428,13 +432,13 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
                         } else if (kind == ElementKind.METHOD) {
                             //add all references of overriding methods
                             allMethods.add(ElementHandle.create((ExecutableElement)el));
-                            for (ExecutableElement e:JavaRefactoringUtils.getOverridingMethods((ExecutableElement)el, info)) {
+                            for (ExecutableElement e:JavaRefactoringUtils.getOverridingMethods((ExecutableElement)el, info, cancelRequested)) {
                                 addMethods(e, set, info, idx);
                             }
                             //add all references of overriden methods
                             for (ExecutableElement ov: JavaRefactoringUtils.getOverriddenMethods((ExecutableElement)el, info)) {
                                 addMethods(ov, set, info, idx);
-                                for (ExecutableElement e:JavaRefactoringUtils.getOverridingMethods( ov,info)) {
+                                for (ExecutableElement e:JavaRefactoringUtils.getOverridingMethods( ov,info, cancelRequested)) {
                                     addMethods(e, set, info, idx);
                                 }
                             }
@@ -460,8 +464,9 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
     
     @Override
     public Problem prepare(RefactoringElementsBag elements) {
-        if (treePathHandle == null)
+        if (treePathHandle == null) {
             return null;
+        }
         Set<FileObject> a = getRelevantFiles();
         fireProgressListenerStart(ProgressEvent.START, a.size());
         TransformTask transform = new TransformTask(new RenameTransformer(refactoring.getNewName(), allMethods, refactoring.isSearchInComments()), treePathHandle);

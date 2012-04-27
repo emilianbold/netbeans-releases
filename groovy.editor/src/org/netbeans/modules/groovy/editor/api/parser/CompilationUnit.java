@@ -48,26 +48,21 @@ import groovy.lang.GroovyClassLoader;
 import groovyjarjarasm.asm.Opcodes;
 import java.io.IOException;
 import java.security.CodeSource;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
+import java.util.*;
 import java.util.concurrent.CancellationException;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.MixinNode;
 import org.codehaus.groovy.control.CompilerConfiguration;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
@@ -82,26 +77,31 @@ import org.openide.util.Exceptions;
 final class CompilationUnit extends org.codehaus.groovy.control.CompilationUnit {
 
     public CompilationUnit(GroovyParser parser, CompilerConfiguration configuration,
-            CodeSource security, GroovyClassLoader loader, GroovyClassLoader transformationLoader,
-            JavaSource javaSource) {
+            CodeSource security,
+            @NonNull final GroovyClassLoader loader,
+            @NonNull final GroovyClassLoader transformationLoader,
+            @NonNull final ClasspathInfo cpInfo,
+            @NonNull final ClassNodeCache classNodeCache) {
 
         super(configuration, security, loader, transformationLoader);
-        this.ast = new CompileUnit(parser, this.classLoader, security, this.configuration, javaSource);
+        this.ast = new CompileUnit(parser, this.classLoader, security, this.configuration, cpInfo, classNodeCache);
     }
 
     private static class CompileUnit extends org.codehaus.groovy.ast.CompileUnit {
 
+        private final ClassNodeCache cache;
         private final GroovyParser parser;
-
         private final JavaSource javaSource;
-
-        private final Map<String, ClassNode> cache = new HashMap<String, ClassNode>();
+        
 
         public CompileUnit(GroovyParser parser, GroovyClassLoader classLoader,
-                CodeSource codeSource, CompilerConfiguration config, JavaSource javaSource) {
+                CodeSource codeSource, CompilerConfiguration config,
+                ClasspathInfo cpInfo,
+                ClassNodeCache classNodeCache) {
             super(classLoader, codeSource, config);
             this.parser = parser;
-            this.javaSource = javaSource;
+            this.cache = classNodeCache;
+            this.javaSource = cache.createResolver(cpInfo);
         }
 
 
@@ -110,123 +110,127 @@ final class CompilationUnit extends org.codehaus.groovy.control.CompilationUnit 
             if (parser.isCancelled()) {
                 throw new CancellationException();
             }
-
-            ClassNode classNode;
-            // check the cache for non-null value
-            synchronized (cache) {
-                classNode = cache.get(name);
-                if (classNode != null) {
-                    return cache.get(name);
-                }
-            }
-
-            // if null or not present in cache
-            classNode = super.getClass(name);
+            
+            ClassNode classNode = cache.get(name);
             if (classNode != null) {
                 return classNode;
             }
-
-            // if present in cache but null
-            synchronized (cache) {
-                if (cache.containsKey(name)) {
-                    return null;
-                }
-            }
-
             try {
                 // if it is a groovy file it is useless to load it with java
                 // at least until VirtualSourceProvider will do te job ;)
 //                if (getClassLoader().getResourceLoader().loadGroovySource(name) != null) {
 //                    return null;
 //                }
+                final ClassNode[] holder = new ClassNode[1];
                 Task<CompilationController> task = new Task<CompilationController>() {
+                    @Override
                     public void run(CompilationController controller) throws Exception {
                         Elements elements = controller.getElements();
                         TypeElement typeElement = ElementSearch.getClass(elements, name);
-
-                        synchronized (cache) {
-                            if (typeElement != null) {
-                                ClassNode node = createClassNode(name, typeElement);
-                                if (node != null) {
-                                    cache.put(name, node);
-                                }
-                            } else {
-                                if (!cache.containsKey(name)) {
-                                    cache.put(name, null);
-                                }
+                        if (typeElement != null) {
+                            final ClassNode node = createClassNode(name, typeElement);
+                            if (node != null) {
+                                cache.put(name, node);
+                                holder[0] = node;
                             }
                         }
                     }
                 };
-
                 javaSource.runUserActionTask(task, true);
+                if (holder[0] != null) {
+                    return holder[0];
+                }
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
-
-            synchronized (cache) {
-                return cache.get(name);
+            
+            // if null or not present in cache
+            classNode = super.getClass(name);
+            if (classNode != null) {
+                cache.put(name, classNode);
             }
+            return classNode;
         }
 
         private ClassNode createClassNode(String name, TypeElement typeElement) {
-            int modifiers = 0;
-            ClassNode superClass = null;
-            Set<ClassNode> interfaces = new HashSet<ClassNode>();
-
             if (typeElement.getKind().isInterface()) {
-                if (typeElement.getKind() == ElementKind.ANNOTATION_TYPE) {
-// FIXME give it up and use classloader - annotations created in sources won't work
-// OTOH it will not resolve annotation coming from java source file :( 170517
-                    return null;
-//                    modifiers |= Opcodes.ACC_ANNOTATION;
-//                    interfaces.add(ClassHelper.Annotation_TYPE);
-                }
-                modifiers |= Opcodes.ACC_INTERFACE;
-
-                for (TypeMirror interf : typeElement.getInterfaces()) {
-                    interfaces.add(new ClassNode(Utilities.getClassName(interf).toString(),
-                            Opcodes.ACC_INTERFACE, null));
-                }
+                return createInterfaceKind(name, typeElement);
             } else {
-                // initialize supertypes
-                // super class is required for try {} catch block exception type
-                Stack<DeclaredType> supers = new Stack<DeclaredType>();
-                while (typeElement != null && typeElement.asType().getKind() != TypeKind.NONE) {
-                    TypeMirror type = typeElement.getSuperclass();
-                    if (type.getKind() != TypeKind.DECLARED) {
-                        break;
-                    }
-
-                    DeclaredType superType = (DeclaredType) typeElement.getSuperclass();
-                    supers.push(superType);
-
-                    Element element = superType.asElement();
-                    if ((element.getKind() == ElementKind.CLASS
-                            || element.getKind() == ElementKind.ENUM) && (element instanceof TypeElement)) {
-
-                        typeElement = (TypeElement) element;
-                        continue;
-                    }
-
-                    typeElement = null;
-                }
-
-                while (!supers.empty()) {
-                    superClass = createClassNode(Utilities.getClassName(supers.pop()).toString(),
-                            0, superClass, Collections.<ClassNode>emptySet());
-                }
+                return createClassType(name, typeElement);
             }
-            return createClassNode(name, modifiers, superClass, interfaces);
         }
 
-        private ClassNode createClassNode(String name, int modifiers, ClassNode superClass, Set<ClassNode> interfaces) {
+        private ClassNode createInterfaceKind(String name, TypeElement typeElement) {
+            int modifiers = 0;
+            Set<ClassNode> interfaces = new HashSet<ClassNode>();
+
+            // FIXME give it up and use classloader - annotations created in sources won't work
+            // OTOH it will not resolve annotation coming from java source file :( 170517
+            if (typeElement.getKind() == ElementKind.ANNOTATION_TYPE) {
+                return null;
+                // modifiers |= Opcodes.ACC_ANNOTATION;
+                // interfaces.add(ClassHelper.Annotation_TYPE);
+            }
+
+            // Fix for issue 206811 --> This still needs to be improved and we have
+            // to create ClassNodes for generics paremeters and add them into the
+            // created ClassNode via setGenericsTypes(GenericsType[] types) method
+            if (!typeElement.getTypeParameters().isEmpty()) {
+                return null;
+            }
+
+            modifiers |= Opcodes.ACC_INTERFACE;
+            for (TypeMirror interfaceType : typeElement.getInterfaces()) {
+                interfaces.add(new ClassNode(Utilities.getClassName(interfaceType).toString(), Opcodes.ACC_INTERFACE, null));
+            }
+            return createClassNode(name, modifiers, null, interfaces.toArray(new ClassNode[interfaces.size()]));
+        }
+
+        private ClassNode createClassType(String name, TypeElement typeElement) {
+            // initialize supertypes
+            // super class is required for try {} catch block exception type
+            Stack<DeclaredType> supers = new Stack<DeclaredType>();
+            while (typeElement != null && typeElement.asType().getKind() != TypeKind.NONE) {
+
+                // Fix for issue 206811 --> This still needs to be improved and we have
+                // to create ClassNodes for generics paremeters and add them into the
+                // created ClassNode via setGenericsTypes(GenericsType[] types) method
+                if (!typeElement.getTypeParameters().isEmpty()) {
+                    return null;
+                }
+
+                TypeMirror type = typeElement.getSuperclass();
+                if (type.getKind() != TypeKind.DECLARED) {
+                    break;
+                }
+
+                DeclaredType superType = (DeclaredType) typeElement.getSuperclass();
+                supers.push(superType);
+
+                Element element = superType.asElement();
+                if ((element.getKind() == ElementKind.CLASS
+                        || element.getKind() == ElementKind.ENUM) && (element instanceof TypeElement)) {
+
+                    typeElement = (TypeElement) element;
+                    continue;
+                }
+
+                typeElement = null;
+            }
+
+            ClassNode superClass = null;
+            while (!supers.empty()) {
+                superClass = createClassNode(Utilities.getClassName(supers.pop()).toString(), 0, superClass, new ClassNode[0]);
+            }
+
+            return createClassNode(name, 0, superClass, new ClassNode[0]);
+        }
+
+        private ClassNode createClassNode(String name, int modifiers, ClassNode superClass, ClassNode[] interfaces) {
             if ("java.lang.Object".equals(name) && superClass == null) { // NOI18N
                 return ClassHelper.OBJECT_TYPE;
             }
-            return new ClassNode(name, modifiers, superClass,
-                    (ClassNode[]) interfaces.toArray(new ClassNode[interfaces.size()]), MixinNode.EMPTY_ARRAY);
+            return new ClassNode(name, modifiers, superClass, interfaces, MixinNode.EMPTY_ARRAY);
         }
-
     }
 }

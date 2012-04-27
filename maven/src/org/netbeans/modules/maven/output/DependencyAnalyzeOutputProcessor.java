@@ -133,7 +133,7 @@ public class DependencyAnalyzeOutputProcessor implements OutputProcessor {
         public void outputLineSelected(OutputEvent arg0) {
         }
         
-        @Messages("MSG_Dependency=Dependency {0} added to project''s POM.")
+        @Messages({"# {0} - groupId:artifactId", "MSG_Dependency=Dependency {0} added to project''s POM."})
         public void outputLineAction(OutputEvent arg0) {
             ModelUtils.addDependency(project.getProjectDirectory().getFileObject("pom.xml")/*NOI18N*/,
                     group, artifact, version, type, scope, null,false);

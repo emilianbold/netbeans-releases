@@ -54,7 +54,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class PHPCodeCompletion201452_01Test extends PHPTestBase {
+public class PHPCodeCompletion201452_01Test extends PHPCodeCompletionTestBase {
 
     public PHPCodeCompletion201452_01Test(String testName) {
         super(testName);

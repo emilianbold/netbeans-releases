@@ -85,7 +85,40 @@ public class JDBCDriverDeployHelper {
         return new JDBCDriversProgressObject(driverLoc, listOfURLS);
     }
 
-    /** Returns a list of jdbc drivers that need to be deployed. */
+    /**
+     * Add JDBC drivers URLs into given List of URL objects.
+     *
+     * @param drivers Target ULR list where to add drivers.
+     * @param jdbcDrivers JDBC drivers to be searched for URLs.
+     */
+    static private void addDriversURLs(List<URL> drivers, JDBCDriver[] jdbcDrivers) {
+        for (JDBCDriver jdbcDriver : jdbcDrivers) {
+            URL[] allUrls = jdbcDriver.getURLs();
+            for (int i = 0; i < allUrls.length; i++) {
+                URL driverUrl = allUrls[i];
+                String strUrl = driverUrl.toString();
+                if (strUrl.contains("nbinst:/")) { // NOI18N
+                    FileObject fo = URLMapper.findFileObject(driverUrl);
+                    if (fo != null) {
+                        URL localURL = URLMapper.findURL(fo, URLMapper.EXTERNAL);
+                        if (localURL != null) {
+                            drivers.add(localURL);
+                        }
+                    }
+                } else {
+                    drivers.add(driverUrl);
+                }
+            }
+        } //JDBCDriver
+    }
+
+    /**
+     * Returns a list of jdbc drivers that need to be deployed.
+     *
+     * @param driverLocs  JDBC drivers locations (server library directories).
+     * @param datasources Server data sources from server resources files.
+     * @return List of JDBC drivers URLs to be deployed.
+     */
     static public List<URL> getMissingDrivers(File[] driverLocs, Set<Datasource> datasources) {
         List<URL> drivers = new ArrayList<URL>();
         for (Datasource datasource : datasources) {
@@ -109,34 +142,27 @@ public class JDBCDriverDeployHelper {
                     }
                 }
                 if (!exists) {
-                    for (DatabaseConnection databaseConnection : DatasourceHelper.findDatabaseConnections(datasource)) {
-                        JDBCDriver[] jdbcDrivers;
-                        JDBCDriver connDriver = databaseConnection.getJDBCDriver();
-                        if (connDriver != null) {
-                            jdbcDrivers = new JDBCDriver[]{connDriver};
-                        } else {
-                            // old fashioned way - fallback
-                            String driverClass = databaseConnection.getDriverClass();
-                            jdbcDrivers = JDBCDriverManager.getDefault().getDrivers(driverClass);
-                        }
-                        for (JDBCDriver jdbcDriver : jdbcDrivers) {
-                            URL[] allUrls = jdbcDriver.getURLs();
-                            for (int i = 0; i < allUrls.length; i++) {
-                                URL driverUrl = allUrls[i];
-                                String strUrl = driverUrl.toString();
-                                if (strUrl.contains("nbinst:/")) { // NOI18N
-                                    FileObject fo = URLMapper.findFileObject(driverUrl);
-                                    if (fo != null) {
-                                        URL localURL = URLMapper.findURL(fo, URLMapper.EXTERNAL);
-                                        if (localURL != null) {
-                                            drivers.add(localURL);
-                                        }
-                                    }
-                                } else {
-                                    drivers.add(driverUrl);
-                                }
+                    List<DatabaseConnection> databaseConnections = DatasourceHelper.findDatabaseConnections(datasource);
+                    JDBCDriver[] jdbcDrivers;
+
+                    // Use matching configured database connections to find library for resource driver class.
+                    if (databaseConnections != null && databaseConnections.size() > 0) {
+                        for (DatabaseConnection databaseConnection : databaseConnections) {
+                            JDBCDriver connDriver = databaseConnection.getJDBCDriver();
+                            if (connDriver != null) {
+                                jdbcDrivers = new JDBCDriver[]{connDriver};
+                            } else {
+                                // old fashioned way - fallback
+                                String driverClass = databaseConnection.getDriverClass();
+                                jdbcDrivers = JDBCDriverManager.getDefault().getDrivers(driverClass);
                             }
-                        } //JDBCDriver
+                            addDriversURLs(drivers, jdbcDrivers);
+                        }
+                    // Will try to find library for resource driver class if there is no database connection
+                    // configured for data source. This is fallback option.
+                    } else {
+                        jdbcDrivers = JDBCDriverManager.getDefault().getDrivers(datasource.getDriverClassName());
+                        addDriversURLs(drivers, jdbcDrivers);
                     }
                 } //If
             }

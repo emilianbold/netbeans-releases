@@ -53,16 +53,24 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
 /**
  *
  * @author Anton Chechel
  */
+@NbBundle.Messages("PaletteResolver=VMD Palette Files")
+@MIMEResolver.ExtensionRegistration(
+    displayName="#PaletteResolver", 
+    extension="vmd_palette", mimeType="application/x-vmd-palette",
+    position=850
+)
 public class PaletteItemDataObject extends MultiDataObject implements FileChangeListener {
     private String producerID;
     private String displayName;

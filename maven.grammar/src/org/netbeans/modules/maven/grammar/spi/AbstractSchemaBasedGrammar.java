@@ -492,6 +492,33 @@ public abstract class AbstractSchemaBasedGrammar implements GrammarQuery {
         }
         
     }
+    
+    public static class PartialTextElement extends AbstractResultNode implements Text {
+        public PartialTextElement() {
+            setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/maven/navigator/wait.gif", false)); //NOI18N
+        }
+        
+        @Override
+        public short getNodeType() {
+            return Node.TEXT_NODE;
+        }
+        
+        @Override
+        public String getNodeName() {
+            return "Incomplete result, still processing indices...";
+        }
+        
+        @Override
+        public String getTagName() {
+            return "Partial result";
+        }
+        
+        @Override
+        public String getNodeValue() {
+            return "";
+        }        
+    }
+
 
      public static class MyTextElement extends AbstractResultNode implements Text {
         

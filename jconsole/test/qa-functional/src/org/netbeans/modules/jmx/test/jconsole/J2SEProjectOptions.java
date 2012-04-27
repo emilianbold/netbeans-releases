@@ -87,7 +87,7 @@ public class J2SEProjectOptions extends JConsoleTestCase {
         OptionsOperator oo = OptionsOperator.invoke();
         sleep(5000);
         System.out.println("Select Miscellaneous options category");
-        oo.selectCategory("Miscellaneous");
+        oo.selectMiscellaneous();
         sleep(5000);
         System.out.println("Select JConsole options tab");
         new JTabbedPaneOperator(oo).selectPage("JConsole");

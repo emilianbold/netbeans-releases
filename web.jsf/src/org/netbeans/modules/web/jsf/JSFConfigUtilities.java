@@ -45,16 +45,16 @@
 package org.netbeans.modules.web.jsf;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.*;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -84,6 +84,7 @@ import org.netbeans.modules.web.jsf.api.metamodel.Renderer;
 import org.netbeans.modules.web.jsf.api.metamodel.Validator;
 import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -112,9 +113,27 @@ public class JSFConfigUtilities {
         Converter.class,
         Renderer.class
     };
+    private static final Set<String> JSF_RESOURCES = new HashSet<String>(Arrays.asList(
+            "javax.faces.bean.ManagedBean", //NOI18N
+            "javax.faces.component.behavior.FacesBehavior", //NOI18N
+            "javax.faces.convert.FacesConverter", //NOI18N
+            "javax.faces.component.FacesComponent", //NOI18N
+            "javax.faces.validator.FacesValidator", //NOI18N
+            "javax.faces.render.FacesBehaviorRenderer", //NOI18N
+            "javax.faces.render.FacesRenderer", //NOI18N
+            "javax.faces.event.ListenerFor" //NOI18N
+        ));
+    private static List<ElementHandle> jsfResourcesElementHandles;
+
     public static boolean hasJsfFramework(FileObject fileObject) {
         if (fileObject != null) {
             WebModule webModule = WebModule.getWebModule(fileObject);
+            // Issue #210646 - ideally shouldn't happen since fileObject is got as wm.getDocumentBase().
+            // Probably related to hacks with recreation of webModule by saving maven's web project's server.
+            // Should happen rarely since the hack was almost fixed. Anyway nothing better to do with that here.
+            if (webModule == null) {
+                return false;
+            }
             //Check for faces-config is present
             String[] configFiles = JSFConfigUtilities.getConfigFiles(webModule);
             if (configFiles != null && configFiles.length > 0) {
@@ -146,39 +165,104 @@ public class JSFConfigUtilities {
             final Project project = FileOwnerQuery.getOwner(fileObject);
             Preferences preferences = ProjectUtils.getPreferences(project, ProjectUtils.class, true);
             if (!preferences.get(JSF_PRESENT_PROPERTY, "").equals("true")) {
+                long time = System.currentTimeMillis();
                 try {
                     Future<Boolean> future =  JsfModelFactory.getModel(webModule).runReadActionWhenReady(new MetadataModelAction<JsfModel, Boolean>() {
 
+                        @Override
                         public Boolean run(JsfModel metadata) throws Exception {
-                            long time = System.currentTimeMillis();
-                            try {
-                                for (Class clazz: types) {
-                                    if (!metadata.getElements(clazz).isEmpty()) {
-                                        ProjectUtils.getPreferences(project, ProjectUtils.class, true).put(JSF_PRESENT_PROPERTY, "true");
-                                        return Boolean.TRUE;
-                                    }
+                            for (Class clazz: types) {
+                                if (!metadata.getElements(clazz).isEmpty()) {
+                                    return Boolean.TRUE;
                                 }
-                                return Boolean.FALSE;
-                            } finally {
-                                LOGGER.log(Level.INFO,"Total time spent = "+(System.currentTimeMillis() - time)+" ms");
                             }
+                            return Boolean.FALSE;
                         }
                     });
-                    if (future.isDone()) {
-                        return future.get().booleanValue();
-                    } else {
-                        return false;
+                    if (future.isDone() && future.get()) {
+                        // if anything suspicious found, search finely (just in source root)
+                        if (jsfArtifactsInSourceRoot(webModule)) {
+                            ProjectUtils.getPreferences(project, ProjectUtils.class, true).put(JSF_PRESENT_PROPERTY, "true");
+                            return true;
+                        }
                     }
+                    return false;
                 } catch(NullPointerException npe){
                     //source path is null, nothing to do here, just return false
                 } catch (Exception ex) {
                     LOGGER.log(Level.WARNING, ex.getMessage());
+                } finally {
+                    LOGGER.log(Level.INFO, "Total time spent = {0} ms", (System.currentTimeMillis() - time));
                 }
             } else {
                 return true;
             }
         }
         return false;
+    }
+
+    private static boolean jsfArtifactsInSourceRoot(WebModule webModule) throws IOException {
+        // looks for faces-configs
+        FileObject[] facesConfigFiles = ConfigurationUtils.getFacesConfigFiles(webModule);
+        if (facesConfigFiles.length > 0) {
+            return true;
+        }
+
+        // looks for classes in source root
+        final AtomicBoolean resourceFound = new AtomicBoolean(false);
+        JavaSource js = createJavaSource(webModule);
+        js.runUserActionTask(new Task<CompilationController>() {
+            @Override
+            public void run(CompilationController parameter) throws Exception {
+                parameter.toPhase(JavaSource.Phase.RESOLVED);
+                resourceFound.set(containsAnnotatedJsfResource(parameter));
+            }
+        }, true);
+        return resourceFound.get();
+    }
+
+    private static JavaSource createJavaSource(WebModule webModule) {
+        Project project = FileOwnerQuery.getOwner(webModule.getDocumentBase());
+        ClassPathProvider cpp = project.getLookup().lookup(ClassPathProvider.class);
+        ClassPath bootCP = cpp.findClassPath(webModule.getDocumentBase(), ClassPath.BOOT);
+        ClassPath compileCP = cpp.findClassPath(webModule.getDocumentBase(), ClassPath.COMPILE);
+        ClassPath sourceCP = cpp.findClassPath(webModule.getDocumentBase(), ClassPath.SOURCE);
+        return JavaSource.create(ClasspathInfo.create(bootCP, compileCP, sourceCP), Collections.EMPTY_LIST);
+    }
+
+    private static boolean containsAnnotatedJsfResource(CompilationController parameter) {
+        if (jsfResourcesElementHandles == null) {
+            loadJsfResourcesElementsHandles(parameter);
+        }
+
+        ClassIndex classIndex = parameter.getClasspathInfo().getClassIndex();
+        for (ElementHandle jsfResourceElementHandle : jsfResourcesElementHandles) {
+            Set<ElementHandle<TypeElement>> elements = classIndex.getElements(
+                    jsfResourceElementHandle,
+                    EnumSet.of(ClassIndex.SearchKind.TYPE_REFERENCES),
+                    EnumSet.of(ClassIndex.SearchScope.SOURCE));
+            for (ElementHandle<TypeElement> handle : elements) {
+                TypeElement element = handle.resolve(parameter);
+                List<? extends AnnotationMirror> annotationMirrors = element.getAnnotationMirrors();
+                for (AnnotationMirror annotationMirror : annotationMirrors) {
+                    if (ElementHandle.create(annotationMirror.getAnnotationType().asElement())
+                            .equals(jsfResourceElementHandle)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    private static void loadJsfResourcesElementsHandles(CompilationController parameter) {
+        jsfResourcesElementHandles = new ArrayList<ElementHandle>(JSF_RESOURCES.size());
+        for (String canonicalName : JSF_RESOURCES) {
+            TypeElement typeElement = parameter.getElements().getTypeElement(canonicalName);
+            if (typeElement != null) {
+                jsfResourcesElementHandles.add(ElementHandle.create(typeElement));
+            }
+        }
     }
 
     public static Set extendJsfFramework(FileObject fileObject, boolean createWelcomeFile) {

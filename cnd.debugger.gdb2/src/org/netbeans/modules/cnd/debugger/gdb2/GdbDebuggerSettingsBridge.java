@@ -158,28 +158,36 @@ public final class GdbDebuggerSettingsBridge extends DebuggerSettingsBridge {
         // on attach we should set breakpoints and watches later, see IZ 197786
         if (debugger.getNDI().getPid() != -1) {
             return 0xffffffff & ~DIRTY_BREAKPOINTS & ~DIRTY_WATCHES;
-        } else {
+        } else if (debugger.getNDI().getCorefile() != null) {
             return super.getProgLoadedDirty();
+        } else {
+            // do not create watches, this will be done on the first stop, see IZ 210468
+            return super.getProgLoadedDirty() & ~DIRTY_WATCHES;
         }
     }
     
     void noteAttached() {
         initialApply(DIRTY_BREAKPOINTS | DIRTY_WATCHES);
     }
+    
+    void noteFistStop() {
+        initialApply(DIRTY_WATCHES);
+    }
 
     @Override
     protected void applyRunargs() {
 	String runargs = getArgsFlatEx();
-	if (runargs == null)
+	if (runargs == null) {
 	    runargs = "";
-	gdbDebugger.runArgs(runargs + ioRedirect());
+        }
+	gdbDebugger.runArgs(ioRedirect(runargs));
     }
 
     @Override
     protected void applyRunDirectory() {
-        RunProfile mainRunProfile = getMainSettings().runProfile();
-        if (mainRunProfile.getRunDirectory() != null) {
-            gdbDebugger.runDir(mainRunProfile.getRunDirectory());
+        String runDirectory = getRunDirectory();
+	if (runDirectory != null) {
+            gdbDebugger.runDir(runDirectory);
         }
     }
 
@@ -248,12 +256,49 @@ public final class GdbDebuggerSettingsBridge extends DebuggerSettingsBridge {
     protected void applyInterceptList() {
 	// System.out.println("GdbDebuggerSettingsBridge.applyRunargs(): NOT IMPLEMENTED");
     }
+    
+    static String[] detectRedirect(String runargs, String type) {
+        String[] res = {null, null};
+        int argPos = runargs.indexOf(type);
+        if (argPos != -1) {
+            res[1] = runargs.substring(0, argPos);
 
-    private String ioRedirect() {
+            try {
+                while (runargs.charAt(++argPos) == ' ');
+            } catch (IndexOutOfBoundsException e) {
+                argPos = -1;
+            }
+            
+            if (argPos!=-1) {
+                int endPos;
+                if (runargs.charAt(argPos) == '\"') {
+                    endPos = (runargs.indexOf('\"', argPos + 1) == -1 ? runargs.length() : runargs.indexOf('\"', argPos + 1) + 1); // NOI18N
+                } else {
+                    endPos = (runargs.indexOf(' ', argPos) == -1 ? runargs.length() : runargs.indexOf(' ', argPos));
+                }
+
+                res[0] = runargs.substring(argPos, endPos);
+                res[1] += runargs.substring(Math.min(endPos+1, runargs.length()));
+            }
+        }
+        return res;
+    }
+    
+    private String ioRedirect(String runargs) {
+        // not Standard Output
         String[] files = gdbDebugger.getIOPack().getIOFiles();
         if (files == null) {
-            return "";
+            return runargs;
         }
+            
+        String[] res = detectRedirect(runargs, "<"); // NOI18N
+        String inArg = res[0];
+        runargs = res[1];
+        
+        res = detectRedirect(runargs, ">"); // NOI18N
+        String outArg = res[0];
+        runargs = res[1];
+            
         OSFamily osFamily = OSFamily.UNKNOWN;
         try {
             HostInfo hostInfo = HostInfoUtils.getHostInfo(gdbDebugger.getExecutionEnvironment());
@@ -262,25 +307,28 @@ public final class GdbDebuggerSettingsBridge extends DebuggerSettingsBridge {
         } catch (IOException ex) {
         }
 
-        String inRedir = "";
-        String inFile = files[0];
-        String outFile = files[1];
+        StringBuilder inRedir = new StringBuilder();
+        inRedir.append(runargs);
+        
+        String inFile = (inArg == null ? files[0] : inArg);
+        String outFile = (outArg == null ? files[1] : outArg);
+        
         if (osFamily == OSFamily.WINDOWS) {
             inFile = gdbDebugger.fmap().worldToEngine(inFile);
             outFile = gdbDebugger.fmap().worldToEngine(outFile);
         }
         // fix for the issue 149736 (2>&1 redirection does not work in gdb MI on mac)
         if (osFamily == OSFamily.MACOSX) {
-            inRedir = " < " + inFile + " > " + outFile + " 2> " + outFile; // NOI18N
+            inRedir.append(" < ").append(inFile).append(" > ").append(outFile).append(" 2> ").append(outFile); // NOI18N
         } else {
             // csh (tcsh also) does not support 2>&1 stream redirection, see issue 147872
             String shell = HostInfoProvider.getEnv(gdbDebugger.getExecutionEnvironment()).get("SHELL"); // NOI18N
             if (shell != null && shell.endsWith("csh")) { // NOI18N
-                inRedir = " < " + inFile + " >& " + outFile; // NOI18N
+                inRedir.append(" < ").append(inFile).append(" >& ").append(outFile); // NOI18N
             } else {
-                inRedir = " < " + inFile + " > " + outFile + " 2>&1"; // NOI18N
+                inRedir.append(" < ").append(inFile).append(" > ").append(outFile).append(" 2>&1"); // NOI18N
             }
         }
-        return inRedir;
+        return inRedir.toString();
     }
 }

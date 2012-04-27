@@ -70,7 +70,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.Keymap;
 import org.netbeans.core.NbKeymap;
 import org.netbeans.core.NbLifecycleManager;
-import org.netbeans.core.windows.view.ui.KeyboardPopupSwitcher;
+import org.netbeans.core.windows.view.ui.popupswitcher.KeyboardPopupSwitcher;
 import org.openide.actions.ActionManager;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;

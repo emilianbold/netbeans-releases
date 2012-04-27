@@ -45,6 +45,7 @@
 package org.netbeans.modules.cnd.modelimpl.csm.deep;
 
 
+import java.util.List;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.*;
 
@@ -57,8 +58,11 @@ import org.netbeans.modules.cnd.antlr.collections.AST;
  */
 public final class ExpressionStatementImpl extends StatementBase implements CsmExpressionStatement {
     
+    private final CsmExpression expr;
+    
     private ExpressionStatementImpl(AST ast, CsmFile file, CsmScope scope) {
         super(ast, file, scope);
+        expr = ExpressionBase.create(ast.getFirstChild(), file, scope);
     }
 
     public static ExpressionStatementImpl create(AST ast, CsmFile file, CsmScope scope) {
@@ -72,7 +76,7 @@ public final class ExpressionStatementImpl extends StatementBase implements CsmE
 
     @Override
     public CsmExpression getExpression() {
-        return null;
+        return expr;
     }
 
 }

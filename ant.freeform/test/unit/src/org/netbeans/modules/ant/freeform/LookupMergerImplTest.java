@@ -52,6 +52,7 @@ import java.util.Properties;
 import java.util.TreeMap;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.spi.project.ActionProgress;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
@@ -70,7 +71,7 @@ public class LookupMergerImplTest extends NbTestCase {
     private static List<String> targetsRun = new ArrayList<String>();
     static {
         Actions.TARGET_RUNNER = new Actions.TargetRunner() {
-            public void runTarget(FileObject scriptFile, String[] targetNameArray, Properties props) {
+            public void runTarget(FileObject scriptFile, String[] targetNameArray, Properties props, ActionProgress listener) {
                 targetsRun.add(scriptFile.getNameExt() + ":" + Arrays.toString(targetNameArray) + ":" + new TreeMap<Object,Object>(props));
             }
         };

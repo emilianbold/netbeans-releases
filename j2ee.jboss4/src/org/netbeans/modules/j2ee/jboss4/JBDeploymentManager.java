@@ -55,6 +55,7 @@ import java.io.InputStream;
 import java.net.URLClassLoader;
 import java.util.Locale;
 import java.util.Properties;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.deploy.model.DeployableObject;
@@ -68,11 +69,10 @@ import javax.enterprise.deploy.spi.exceptions.DConfigBeanVersionUnsupportedExcep
 import javax.enterprise.deploy.spi.exceptions.InvalidModuleException;
 import javax.enterprise.deploy.spi.exceptions.TargetException;
 import javax.enterprise.deploy.spi.status.ProgressObject;
-import javax.management.InstanceNotFoundException;
-import javax.management.MBeanException;
 import javax.management.MBeanServerConnection;
-import javax.management.ObjectName;
-import javax.management.ReflectionException;
+import javax.management.remote.JMXConnector;
+import javax.management.remote.JMXConnectorFactory;
+import javax.management.remote.JMXServiceURL;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -87,11 +87,8 @@ public class JBDeploymentManager implements DeploymentManager {
 
     private static final Logger LOGGER = Logger.getLogger(JBDeploymentManager.class.getName());
     
-    private DeploymentManager dm;
-    private String realUri;
-    private MBeanServerConnection rmiServer;
-    
-    private JBoss5ProfileServiceProxy profileServiceProxy;
+    private final DeploymentManager dm;
+    private final String realUri;
 
     private int debuggingPort = 8787;
 
@@ -103,13 +100,12 @@ public class JBDeploymentManager implements DeploymentManager {
      *  running state by Boolean.TRUE, stopped state Boolean.FALSE.
      * WeakHashMap should guarantee erasing of an unregistered server instance bcs instance properties are also removed along with instance.
      */
-    private static Map/*<InstanceProperties, Boolean>*/ propertiesToIsRunning = Collections.synchronizedMap(new WeakHashMap());
-
+    private static final Map<InstanceProperties, Boolean> propertiesToIsRunning = Collections.synchronizedMap(new WeakHashMap());
+    
     /** Creates a new instance of JBDeploymentManager */
     public JBDeploymentManager(DeploymentManager dm, String uri, String username, String password) {
         realUri = uri;
         this.dm = dm;
-        rmiServer = null;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -143,30 +139,15 @@ public class JBDeploymentManager implements DeploymentManager {
         return instanceProperties;
     }
 
-    public synchronized MBeanServerConnection getRMIServer() {
-        if(rmiServer == null) {
-            init();
-        }
+    public <T> T invokeRemoteAction(JBRemoteAction<T> action) throws ExecutionException {
 
-        return rmiServer;
-    }
-    
-    public synchronized JBoss5ProfileServiceProxy getProfileService() {
-        if(profileServiceProxy == null) {
-            init();
-        }
-
-        return profileServiceProxy;
-    }    
-    
-    private void init() {
-        ClassLoader oldLoader = null;
+        ClassLoader oldLoader = Thread.currentThread().getContextClassLoader();
+        InitialContext ctx = null;
+        JMXConnector conn = null;
 
         try {
-            oldLoader = Thread.currentThread().getContextClassLoader();
-            InstanceProperties ip = this.getInstanceProperties();
-            URLClassLoader loader = JBDeploymentFactory.getJBClassLoader(ip.getProperty(JBPluginProperties.PROPERTY_ROOT_DIR),
-                    ip.getProperty(JBPluginProperties.PROPERTY_SERVER_DIR));
+            InstanceProperties ip = getInstanceProperties();
+            URLClassLoader loader = JBDeploymentFactory.getJBClassLoader(ip);
             Thread.currentThread().setContextClassLoader(loader);
 
             JBProperties props = getProperties();
@@ -187,6 +168,8 @@ public class JBDeploymentManager implements DeploymentManager {
 
             env.put(Context.SECURITY_PRINCIPAL, props.getUsername());
             env.put(Context.SECURITY_CREDENTIALS, props.getPassword());
+            env.put("jmx.remote.credentials", // NOI18N
+                    new String[] {props.getUsername(), props.getPassword()});
 
             File securityConf = new File(props.getRootDir(), "/client/auth.conf");
             if (securityConf.exists()) {
@@ -195,7 +178,7 @@ public class JBDeploymentManager implements DeploymentManager {
             }
 
             // Gets naming context
-            InitialContext ctx = new InitialContext(env);
+            ctx = new InitialContext(env);
 
             //restore java.security.auth.login.config system property
             if (oldAuthConf != null) {
@@ -204,45 +187,54 @@ public class JBDeploymentManager implements DeploymentManager {
                 System.clearProperty(JAVA_SEC_AUTH_LOGIN_CONF);
             }
 
-            // Lookup RMI Adaptor
-            rmiServer = (MBeanServerConnection) ctx.lookup("/jmx/invoker/RMIAdaptor");
-            Object service = ctx.lookup("ProfileService");
-            if (service != null) {
-                profileServiceProxy = new JBoss5ProfileServiceProxy(service);
+            MBeanServerConnection rmiServer = null;
+            try {
+                conn = JMXConnectorFactory.connect(new JMXServiceURL(
+                        "service:jmx:rmi:///jndi/rmi://localhost:1090/jmxrmi"));
+
+                rmiServer = conn.getMBeanServerConnection();
+            } catch (IOException ex) {
+                LOGGER.log(Level.FINE, null, ex);
             }
+
+            if (rmiServer == null) {
+                // Lookup RMI Adaptor
+                rmiServer = (MBeanServerConnection) ctx.lookup("/jmx/invoker/RMIAdaptor"); // NOI18N
+            }
+
+            JBoss5ProfileServiceProxy profileService = null;
+            Object service = ctx.lookup("ProfileService"); // NOI18N
+            if (service != null) {
+                profileService = new JBoss5ProfileServiceProxy(service);
+            }
+
+            return action.action(rmiServer, profileService);
         } catch (NameNotFoundException ex) {
             LOGGER.log(Level.FINE, null, ex);
+            throw new ExecutionException(ex);
         } catch (NamingException ex) {
             LOGGER.log(Level.FINE, null, ex);
+            throw new ExecutionException(ex);
         } catch (Exception ex) {
             LOGGER.log(Level.FINE, null, ex);
+            throw new ExecutionException(ex);
         } finally {
-            if (oldLoader != null)
-                Thread.currentThread().setContextClassLoader(oldLoader);
-        }        
-    }
-
-    public Object invokeMBeanOperation(ObjectName name, String method, Object[] params, String[] signature)
-            throws InstanceNotFoundException, MBeanException, ReflectionException, IOException {
-
-        MBeanServerConnection conn = null;
-        synchronized (this) {
-            conn = getRMIServer();
+            try {
+                if (ctx != null) {
+                    ctx.close();
+                }
+            } catch (NamingException ex) {
+                LOGGER.log(Level.FINE, null, ex);
+            }
+            try {
+                if (conn != null) {
+                    conn.close();
+                }
+            } catch (IOException ex) {
+                LOGGER.log(Level.FINE, null, ex);
+            }
+            Thread.currentThread().setContextClassLoader(oldLoader);
         }
-
-        ClassLoader orig = Thread.currentThread().getContextClassLoader();
-        try {
-            Thread.currentThread().setContextClassLoader(conn.getClass().getClassLoader());
-            return conn.invoke(name, method, params, signature);
-        } finally {
-            Thread.currentThread().setContextClassLoader(orig);
-        }
-
-    }
-
-    public synchronized MBeanServerConnection refreshRMIServer() {
-        rmiServer = null;
-        return getRMIServer();
     }
 
     ////////////////////////////////////////////////////////////////////////////

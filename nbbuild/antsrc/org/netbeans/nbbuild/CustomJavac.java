@@ -54,6 +54,7 @@ import org.apache.tools.ant.taskdefs.Delete;
 import org.apache.tools.ant.taskdefs.Javac;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.types.Path;
+import org.apache.tools.ant.util.JavaEnvUtils;
 
 /**
  * Could probably be replaced with a presetdef for javac,
@@ -77,8 +78,25 @@ public class CustomJavac extends Javac {
 
     private File generatedClassesDir;
 
+    private String maybeFork;
+    @Override public void setFork(boolean f) {
+        throw new UnsupportedOperationException();
+    }
+    @Override public void setExecutable(String forkExec) {
+        maybeFork = forkExec;
+    }
+
     @Override
     public void execute() throws BuildException {
+        String src = getSource();
+        if (src.matches("\\d+")) {
+            src = "1." + src;
+        }
+        if (!JavaEnvUtils.isAtLeastJavaVersion(src)) {
+            log("Cannot handle -source " + src + " from this VM; forking " + maybeFork, Project.MSG_WARN);
+            super.setFork(true);
+            super.setExecutable(maybeFork);
+        }
         generatedClassesDir = new File(getDestdir().getParentFile(), getDestdir().getName() + "-generated");
         if (!usingExplicitIncludes) {
             cleanUpStaleClasses();
@@ -181,11 +199,6 @@ public class CustomJavac extends Javac {
 
     @Override
     public void setFailonerror(boolean fail) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void setFork(boolean f) {
         throw new UnsupportedOperationException();
     }
 

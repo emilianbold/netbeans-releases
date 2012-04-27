@@ -89,7 +89,7 @@ public class RelatedCMPHelper {
 
     private boolean useColumnNamesInRelationships = true;
     private boolean generateUnresolvedRelationships = false;
-    private boolean useDefaults = true;
+    private boolean useDefaults = false;
 
 
     private DbSchemaEjbGenerator generator;

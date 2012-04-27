@@ -57,7 +57,7 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
 import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
-import org.netbeans.modules.php.editor.PHPTestBase;
+import org.netbeans.modules.php.editor.PHPCodeCompletionTestBase;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.openide.filesystems.FileObject;
 
@@ -76,7 +76,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Tor Norbye
  */
-public class PHPBracketCompleterTest extends PHPTestBase {
+public class PHPBracketCompleterTest extends PHPCodeCompletionTestBase {
 
     public PHPBracketCompleterTest(String testName) {
         super(testName);
@@ -385,6 +385,34 @@ public class PHPBracketCompleterTest extends PHPTestBase {
 
     public void testSingleQuotes5() throws Exception {
         insertChar("x = '\\'^", '\'', "x = '\\''^");
+    }
+
+    public void testIssue209867_01() throws Exception {
+        insertChar("$x = 'this is (long'^) string';", '\'', "$x = 'this is (long''^) string';");
+    }
+
+    public void testIssue209867_02() throws Exception {
+        insertChar("$x = 'this is long'^ string';", '\'', "$x = 'this is long''^ string';");
+    }
+
+    public void testIssue209867_03() throws Exception {
+        insertChar("$x = 'this is long^ string';", '\'', "$x = 'this is long'^ string';");
+    }
+
+    public void testIssue209867_04() throws Exception {
+        insertChar("if ($x == ^) {}", '\'', "if ($x == '^') {}");
+    }
+
+    public void testIssue209867_05() throws Exception {
+        insertChar("if ($x == '^) {}", '\'', "if ($x == ''^) {}");
+    }
+
+    public void testIssue209867_06() throws Exception {
+        insertChar("$x = 'this is long string' . $foo . ^;", '\'', "$x = 'this is long string' . $foo . '^';");
+    }
+
+    public void testIssue209867_07() throws Exception {
+        insertChar("$x = 'this is long string'^;", '\'', "$x = 'this is long string''^;");
     }
 
     public void testDoubleQuotes1() throws Exception {
@@ -1432,6 +1460,14 @@ public class PHPBracketCompleterTest extends PHPTestBase {
 
     public void testIssue198708_04() throws Exception {
         insertChar("if (($a=($i+1^)))", ')', "if (($a=($i+1)^))");
+    }
+    
+    public void testIssue209638() throws Exception {
+        insertChar("$test = array(\n"
+                + "    array(^)\n"
+                + ");", ')', "$test = array(\n"
+                + "    array()^\n"
+                + ");");
     }
 
 }

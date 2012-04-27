@@ -48,7 +48,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.actions.CallableSystemAction;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebugger;
-import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.EditorContextBridge;
 import org.netbeans.modules.cnd.debugger.common2.debugger.State;
 import org.netbeans.modules.cnd.debugger.common2.debugger.StateListener;
@@ -60,7 +60,7 @@ public class RunToCursorInstAction extends CallableSystemAction implements State
     private NativeDebugger debugger;
 
     public RunToCursorInstAction() {
-        debugger = DebuggerManager.get().currentDebugger();
+        debugger = NativeDebuggerManager.get().currentDebugger();
         if (debugger != null)
             debugger.addStateListener(this);
     }
@@ -76,7 +76,7 @@ public class RunToCursorInstAction extends CallableSystemAction implements State
         if (address == null || address.isEmpty()) {
             return;
         }
-        NativeDebugger debugger = DebuggerManager.get().currentDebugger();
+        NativeDebugger debugger = NativeDebuggerManager.get().currentDebugger();
 	if (debugger == null) {
 	    return;
         }

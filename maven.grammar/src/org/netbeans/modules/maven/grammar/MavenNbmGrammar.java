@@ -67,6 +67,7 @@ public class MavenNbmGrammar extends AbstractSchemaBasedGrammar {
         super(env);
     }
     
+    @Override
     protected InputStream getSchemaStream() {
         return getClass().getResourceAsStream("/org/netbeans/modules/maven/grammar/nbm-1.0.0.xsd"); //NOI18N
     }

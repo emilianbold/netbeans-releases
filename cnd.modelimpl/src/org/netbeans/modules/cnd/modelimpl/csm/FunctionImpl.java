@@ -44,20 +44,48 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
-import java.util.*;
-import java.util.List;
-
-import org.netbeans.modules.cnd.api.model.*;
-import org.netbeans.modules.cnd.api.model.CsmFunction.OperatorKind;
-import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
-import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import org.netbeans.modules.cnd.antlr.collections.AST;
+import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmFunction.OperatorKind;
+import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
+import org.netbeans.modules.cnd.api.model.CsmNamespace;
+import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
+import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmParameter;
+import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.CsmQualifiedNamedElement;
+import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.CsmScopeElement;
+import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
+import org.netbeans.modules.cnd.api.model.CsmTemplate;
+import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
+import org.netbeans.modules.cnd.api.model.CsmType;
+import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
-import org.netbeans.modules.cnd.modelimpl.csm.core.*;
-import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
+import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
+import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
+import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Disposable;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
+import org.netbeans.modules.cnd.modelimpl.csm.core.RawNamable;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.impl.services.InstantiationProviderImpl;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
@@ -80,7 +108,6 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
 
     private final CharSequence name;
     private CsmType returnType;
-//    private final Collection<CsmUID<CsmParameter>>  parameters;
     private FunctionParameterListImpl parameterList;
     private CharSequence signature;
 
@@ -117,24 +144,19 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
             setFlags(FLAGS_OPERATOR, true);
         }
     }
-
-        
-    public static<T> FunctionImpl<T> create(AST ast, CsmFile file, CsmType type, CsmScope scope, boolean global) throws AstRendererException {
-        return create(ast, file, type, scope, global, null);
-    }
     
-    public static<T> FunctionImpl<T> create(AST ast, CsmFile file, CsmType type, CsmScope scope, boolean global, Map<Integer, CsmObject> objects) throws AstRendererException {
+    public static<T> FunctionImpl<T> create(AST ast, CsmFile file, FileContent fileContent, CsmType type, CsmScope scope, boolean global, Map<Integer, CsmObject> objects) throws AstRendererException {
         int startOffset = getStartOffset(ast);
         int endOffset = getEndOffset(ast);
         
         NameHolder nameHolder = NameHolder.createFunctionName(ast);
         CharSequence name = QualifiedNameCache.getManager().getString(nameHolder.getName());
         if (name.length() == 0) {
-            throw new AstRendererException((FileImpl) file, startOffset, "Empty function name."); // NOI18N
+            throw AstRendererException.createAstRendererException((FileImpl) file, ast, startOffset, "Empty function name."); // NOI18N
         }
         CharSequence rawName = initRawName(ast);
         
-        boolean _static = AstRenderer.FunctionRenderer.isStatic(ast, file, name);
+        boolean _static = AstRenderer.FunctionRenderer.isStatic(ast, file, fileContent, name);
         boolean _const = AstRenderer.FunctionRenderer.isConst(ast);
 
         scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, false);
@@ -148,11 +170,11 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         
         functionImpl.setTemplateDescriptor(templateDescriptor, classTemplateSuffix);
         functionImpl.setReturnType(type != null ? type : AstRenderer.FunctionRenderer.createReturnType(ast, functionImpl, file, objects));
-        functionImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, functionImpl, file, global), 
+        functionImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, functionImpl, file, fileContent), 
                 AstRenderer.FunctionRenderer.isVoidParameter(ast));
         
         postObjectCreateRegistration(global, functionImpl);
-        nameHolder.addReference(file, functionImpl);
+        nameHolder.addReference(fileContent, functionImpl);
         return functionImpl;
     }
 

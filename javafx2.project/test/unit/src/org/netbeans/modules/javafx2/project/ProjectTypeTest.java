@@ -94,6 +94,8 @@ public class ProjectTypeTest extends NbTestCase {
         assertNotNull(evaluator);
         // FX project type verification through property
         assertTrue(JFXProjectProperties.isTrue(evaluator.getProperty(JFXProjectProperties.JAVAFX_ENABLED)));
+        // FX projects must not interfere with pre-FX WebStart module code
+        assertFalse(JFXProjectProperties.isTrue(evaluator.getProperty("jnlp.enabled")));
     }
 
     /** Test SE createProject method to produce non-FX project. */

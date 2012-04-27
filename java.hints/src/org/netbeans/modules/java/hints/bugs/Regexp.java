@@ -55,65 +55,65 @@ import java.util.regex.PatternSyntaxException;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.VariableElement;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Constraint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPatterns;
-import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
-import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Options;
-import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.ConstraintVariableType;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.TriggerPattern;
+import org.netbeans.spi.java.hints.TriggerPatterns;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.java.hints.Hint.Options;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author lahvac
  */
-@Hint(category="bugs", suppressWarnings="MalformedRegexp", options=Options.QUERY)
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.bugs.Regexp", description = "#DESC_org.netbeans.modules.java.hints.bugs.Regexp", category="bugs", suppressWarnings="MalformedRegexp", options=Options.QUERY)
 public class Regexp {
 
     @TriggerPatterns({
         @TriggerPattern(value="java.util.regex.Pattern.compile($pattern)",
                         constraints={
-                            @Constraint(variable="$pattern", type="java.lang.String")
+                            @ConstraintVariableType(variable="$pattern", type="java.lang.String")
                         }),
         @TriggerPattern(value="java.util.regex.Pattern.compile($pattern, $flags)",
                         constraints={
-                            @Constraint(variable="$pattern", type="java.lang.String"),
-                            @Constraint(variable="$flags", type="int")
+                            @ConstraintVariableType(variable="$pattern", type="java.lang.String"),
+                            @ConstraintVariableType(variable="$flags", type="int")
                         }),
         @TriggerPattern(value="java.util.regex.Pattern.matches($pattern, $text)",
                         constraints={
-                            @Constraint(variable="$pattern", type="java.lang.String"),
-                            @Constraint(variable="$text", type="java.lang.CharSequence")
+                            @ConstraintVariableType(variable="$pattern", type="java.lang.String"),
+                            @ConstraintVariableType(variable="$text", type="java.lang.CharSequence")
                         }),
         @TriggerPattern(value="$str.split($pattern)",
                         constraints={
-                            @Constraint(variable="$str", type="java.lang.String"),
-                            @Constraint(variable="$pattern", type="java.lang.String")
+                            @ConstraintVariableType(variable="$str", type="java.lang.String"),
+                            @ConstraintVariableType(variable="$pattern", type="java.lang.String")
                         }),
         @TriggerPattern(value="$str.split($pattern, $limit)",
                         constraints={
-                            @Constraint(variable="$str", type="java.lang.String"),
-                            @Constraint(variable="$pattern", type="java.lang.String"),
-                            @Constraint(variable="$limit", type="int")
+                            @ConstraintVariableType(variable="$str", type="java.lang.String"),
+                            @ConstraintVariableType(variable="$pattern", type="java.lang.String"),
+                            @ConstraintVariableType(variable="$limit", type="int")
                         }),
         @TriggerPattern(value="$str.matches($pattern)",
                         constraints={
-                            @Constraint(variable="$str", type="java.lang.String"),
-                            @Constraint(variable="$pattern", type="java.lang.String")
+                            @ConstraintVariableType(variable="$str", type="java.lang.String"),
+                            @ConstraintVariableType(variable="$pattern", type="java.lang.String")
                         }),
         @TriggerPattern(value="$str.replaceFirst($pattern, $repl)",
                         constraints={
-                            @Constraint(variable="$str", type="java.lang.String"),
-                            @Constraint(variable="$pattern", type="java.lang.String"),
-                            @Constraint(variable="$repl", type="java.lang.String")
+                            @ConstraintVariableType(variable="$str", type="java.lang.String"),
+                            @ConstraintVariableType(variable="$pattern", type="java.lang.String"),
+                            @ConstraintVariableType(variable="$repl", type="java.lang.String")
                         }),
         @TriggerPattern(value="$str.replaceAll($pattern, $repl)",
                         constraints={
-                            @Constraint(variable="$str", type="java.lang.String"),
-                            @Constraint(variable="$pattern", type="java.lang.String"),
-                            @Constraint(variable="$repl", type="java.lang.String")
+                            @ConstraintVariableType(variable="$str", type="java.lang.String"),
+                            @ConstraintVariableType(variable="$pattern", type="java.lang.String"),
+                            @ConstraintVariableType(variable="$repl", type="java.lang.String")
                         })
     })
     public static ErrorDescription hint(final HintContext ctx) {

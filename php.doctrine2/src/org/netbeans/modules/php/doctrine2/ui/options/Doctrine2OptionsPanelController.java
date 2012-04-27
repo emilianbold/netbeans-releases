@@ -96,13 +96,12 @@ public class Doctrine2OptionsPanelController extends OptionsPanelController impl
     public void cancel() {
     }
 
-    @NbBundle.Messages("LBL_Doctrine2Prefix=Doctrine: {0}")
     @Override
     public boolean isValid() {
         // warnings
         String warning = validateScript(doctrine2OptionsPanel.getScript());
         if (warning != null) {
-            doctrine2OptionsPanel.setWarning(Bundle.LBL_Doctrine2Prefix(warning));
+            doctrine2OptionsPanel.setWarning(warning);
             return true;
         }
 
@@ -111,8 +110,9 @@ public class Doctrine2OptionsPanelController extends OptionsPanelController impl
         return true;
     }
 
+    @NbBundle.Messages("Doctrine2OptionsPanelController.script=Doctrine2 script")
     public static String validateScript(String script) {
-        return FileUtils.validateFile(script, false);
+        return FileUtils.validateFile(Bundle.Doctrine2OptionsPanelController_script(), script, false);
     }
 
     @Override

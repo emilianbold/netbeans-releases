@@ -56,6 +56,7 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
+import org.netbeans.cnd.api.lexer.Filter;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.cnd.utils.MIMENames;
@@ -74,6 +75,11 @@ public class CKit extends CCKit {
     @Override
     protected Language<CppTokenId> getLanguage() {
         return CppTokenId.languageC();
+    }
+
+    @Override
+    protected Filter<?> getFilter(Language<?> language, BaseDocument doc) {
+        return CndLexerUtilities.getDefatultFilter(false);
     }
 
     @Override

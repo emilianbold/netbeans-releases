@@ -4,7 +4,7 @@
     <folder name="Keymaps">
         <folder name="NetBeans">
             <file name="DS-U.shadow">
-                <attr name="originalFile" stringvalue="Actions/JUnitTests/org-netbeans-modules-junit-CreateTestAction.instance"/>
+                <attr name="originalFile" stringvalue="Actions/UnitTests/org-netbeans-modules-gsf-testrunner-TestCreatorAction.instance"/>
             </file>
             <file name="OS-B.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-spring-beans-jumpto-type-GoToBean.instance"/>
@@ -15,7 +15,7 @@
                 <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-i18n-InsertI18nStringAction.instance"/>
             </file>
             <file name="DS-U.shadow">
-                <attr name="originalFile" stringvalue="Actions/JUnitTests/org-netbeans-modules-junit-CreateTestAction.instance"/>
+                <attr name="originalFile" stringvalue="Actions/UnitTests/org-netbeans-modules-gsf-testrunner-TestCreatorAction.instance"/>
             </file>
         </folder>
         <folder name="Idea">
@@ -63,7 +63,7 @@
                 <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-i18n-InsertI18nStringAction.instance"/>
             </file>
             <file name="DS-U.shadow">
-                <attr name="originalFile" stringvalue="Actions/JUnitTests/org-netbeans-modules-junit-CreateTestAction.instance"/>
+                <attr name="originalFile" stringvalue="Actions/UnitTests/org-netbeans-modules-gsf-testrunner-TestCreatorAction.instance"/>
             </file>
         </folder>
     </folder>

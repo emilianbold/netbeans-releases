@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -45,11 +45,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import org.netbeans.api.db.sql.support.SQLIdentifiers;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
-import org.netbeans.modules.db.explorer.node.ColumnNode;
-import org.netbeans.modules.db.explorer.node.ColumnNameProvider;
-import org.netbeans.modules.db.explorer.node.SchemaNameProvider;
-import org.netbeans.modules.db.explorer.node.TableNode;
-import org.netbeans.modules.db.explorer.node.ViewNode;
+import org.netbeans.modules.db.explorer.node.*;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
@@ -62,8 +58,9 @@ import org.openide.util.NbBundle;
  */
 public abstract class QueryAction extends BaseAction {
 
+    @Override
     protected boolean enable(Node[] activatedNodes) {
-        boolean result = false;
+        boolean result;
 
         // either 1 table or view node, or 1 more more column nodes
         if (activatedNodes.length == 1) {
@@ -113,10 +110,15 @@ public abstract class QueryAction extends BaseAction {
             SQLIdentifiers.Quoter quoter,
             String name,
             String authenticatedName,
-            boolean tableIsQualified) {
+            boolean tableIsQualified,
+            String seperator) {
         if (name != null && (tableIsQualified || !name.equals(authenticatedName))) {
             tableNameBuilder.append(quoter.quoteIfNeeded(name));
-            tableNameBuilder.append('.');
+            if(seperator == null || seperator.trim().isEmpty()) {
+                tableNameBuilder.append( "." );
+            } else {
+                tableNameBuilder.append(seperator);
+            }
             return true;
         } else {
             return tableIsQualified;
@@ -141,19 +143,20 @@ public abstract class QueryAction extends BaseAction {
      * @param connection valid database connection that SQL will be run under using the given table.
      * @param provider gives the catalog and the schema names that the given table name is referenced under.
      * @param quoter puts SQL identifiers is quotes when needed.
+     * @param dmd DatabaseMetaData to determine catalog separator
      * @return table name that is sufficiently qualified to execute against the given catalog and schema.
      * @throws SQLException failed to identify the default catalog for this database connection
      */
-    private String getQualifiedTableName(String simpleTableName, DatabaseConnection connection, SchemaNameProvider provider, SQLIdentifiers.Quoter quoter) throws SQLException {
+    private String getQualifiedTableName(String simpleTableName, DatabaseConnection connection, SchemaNameProvider provider, SQLIdentifiers.Quoter quoter, DatabaseMetaData dmd) throws SQLException {
         final String schemaName = provider.getSchemaName();
         final String catName = provider.getCatalogName();
 
         StringBuilder fullTableName = new StringBuilder();
         boolean tableIsQualified = false;
 
-        tableIsQualified = appendQualifiedName(fullTableName, quoter, catName, connection.getConnection().getCatalog(), tableIsQualified);
+        tableIsQualified = appendQualifiedName(fullTableName, quoter, catName, connection.getConnection().getCatalog(), tableIsQualified, dmd.getCatalogSeparator());
         // add schema always if possible
-        tableIsQualified = appendQualifiedName(fullTableName, quoter, schemaName, null, tableIsQualified);
+        appendQualifiedName(fullTableName, quoter, schemaName, null, tableIsQualified, null);
         fullTableName.append(quoter.quoteIfNeeded(simpleTableName));
 
         return fullTableName.toString();
@@ -175,12 +178,12 @@ public abstract class QueryAction extends BaseAction {
 
             String onome;
             if (!isColumn) {
-                onome = getQualifiedTableName(activatedNodes[0].getName(), connection, provider, quoter);
+                onome = getQualifiedTableName(activatedNodes[0].getName(), connection, provider, quoter, dmd);
 
                 return "select * from " + onome; // NOI18N
             } else {
                 String parentName = activatedNodes[0].getLookup().lookup(ColumnNameProvider.class).getParentName();
-                onome = getQualifiedTableName(parentName, connection, provider, quoter);
+                onome = getQualifiedTableName(parentName, connection, provider, quoter, dmd);
 
                 StringBuilder cols = new StringBuilder();
                 for (Node node : activatedNodes) {

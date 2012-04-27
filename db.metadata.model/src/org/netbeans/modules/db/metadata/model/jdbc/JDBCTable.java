@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 - 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2008 - 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -45,26 +45,12 @@ package org.netbeans.modules.db.metadata.model.jdbc;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.db.metadata.model.MetadataUtilities;
-import org.netbeans.modules.db.metadata.model.api.Catalog;
-import org.netbeans.modules.db.metadata.model.api.Column;
-import org.netbeans.modules.db.metadata.model.api.ForeignKey;
-import org.netbeans.modules.db.metadata.model.api.ForeignKeyColumn;
-import org.netbeans.modules.db.metadata.model.api.Index;
 import org.netbeans.modules.db.metadata.model.api.Index.IndexType;
-import org.netbeans.modules.db.metadata.model.api.IndexColumn;
-import org.netbeans.modules.db.metadata.model.api.MetadataException;
-import org.netbeans.modules.db.metadata.model.api.Ordering;
-import org.netbeans.modules.db.metadata.model.api.PrimaryKey;
-import org.netbeans.modules.db.metadata.model.api.Schema;
-import org.netbeans.modules.db.metadata.model.api.Table;
+import org.netbeans.modules.db.metadata.model.api.*;
 import org.netbeans.modules.db.metadata.model.spi.TableImplementation;
 import org.openide.util.NbBundle;
 
@@ -95,18 +81,22 @@ public class JDBCTable extends TableImplementation {
         this.name = name;
     }
 
+    @Override
     public final Schema getParent() {
         return jdbcSchema.getSchema();
     }
 
+    @Override
     public final String getName() {
         return name;
     }
 
+    @Override
     public final Collection<Column> getColumns() {
         return initColumns().values();
     }
 
+    @Override
     public final Column getColumn(String name) {
         return MetadataUtilities.find(name, initColumns());
     }
@@ -212,7 +202,7 @@ public class JDBCTable extends TableImplementation {
                         continue;
                     }
 
-                    String indexName = rs.getString("INDEX_NAME");
+                    String indexName = MetadataUtilities.trimmed(rs.getString("INDEX_NAME"));
                     if (index == null || !(currentIndexName.equals(indexName))) {
                         index = createJDBCIndex(indexName, rs);
                         LOGGER.log(Level.FINE, "Created index " + index);
@@ -262,7 +252,7 @@ public class JDBCTable extends TableImplementation {
             column = getColumn(rs.getString("COLUMN_NAME"));
             if (!isOdbc(rs)) {
                 position = rs.getInt("ORDINAL_POSITION");
-                ordering = JDBCUtils.getOrdering(rs.getString("ASC_OR_DESC"));
+                ordering = JDBCUtils.getOrdering(MetadataUtilities.trimmed(rs.getString("ASC_OR_DESC")));
             }
         } catch (SQLException e) {
             filterSQLException(e);
@@ -282,7 +272,7 @@ public class JDBCTable extends TableImplementation {
                 JDBCForeignKey fkey = null;
                 String currentKeyName = null;
                 while (rs.next()) {
-                    String keyName = rs.getString("FK_NAME");
+                    String keyName = MetadataUtilities.trimmed(rs.getString("FK_NAME"));
                     // We have to assume that if the foreign key name is null, then this is a *new*
                     // foreign key, even if the last foreign key name was also null.
                     if (fkey == null || keyName == null || !(currentKeyName.equals(keyName))) {
@@ -314,22 +304,21 @@ public class JDBCTable extends TableImplementation {
     }
 
     protected JDBCForeignKeyColumn createJDBCForeignKeyColumn(JDBCForeignKey parent, ResultSet rs) {
-        Table table = findReferredTable(rs);
-        String colname = null;
+        Table table;
+        String colname;
         Column referredColumn = null;
-        colname = null;
         Column referringColumn = null;
         int position = 0;
 
         try {
             table = findReferredTable(rs);
-            colname = rs.getString("PKCOLUMN_NAME"); // NOI18N
+            colname = MetadataUtilities.trimmed(rs.getString("PKCOLUMN_NAME")); // NOI18N
             referredColumn = table.getColumn(colname);
             if (referredColumn == null) {
                 throw new MetadataException(getMessage("ERR_COL_NOT_FOUND", table.getParent().getParent().getName(), table.getParent().getName(), table.getName(), colname)); // NOI18N
             }
 
-            colname = rs.getString("FKCOLUMN_NAME");
+            colname = MetadataUtilities.trimmed(rs.getString("FKCOLUMN_NAME"));
             referringColumn = getColumn(colname);
 
             position = rs.getInt("KEY_SEQ");
@@ -350,7 +339,7 @@ public class JDBCTable extends TableImplementation {
         Table table = null;
 
         try {
-            String catalogName = rs.getString("PKTABLE_CAT"); // NOI18N
+            String catalogName = MetadataUtilities.trimmed(rs.getString("PKTABLE_CAT")); // NOI18N
             if (catalogName == null || catalogName.length() == 0) {
                 catalog = jdbcSchema.getParent();
             } else {
@@ -360,7 +349,7 @@ public class JDBCTable extends TableImplementation {
                 }
             }
 
-            String schemaName = rs.getString("PKTABLE_SCHEM"); // NOI18N
+            String schemaName = MetadataUtilities.trimmed(rs.getString("PKTABLE_SCHEM")); // NOI18N
 
             if (schemaName == null || schemaName.length() == 0) {
                 schema = catalog.getSyntheticSchema();
@@ -371,7 +360,7 @@ public class JDBCTable extends TableImplementation {
                 }
             }
 
-            String tableName = rs.getString("PKTABLE_NAME");
+            String tableName = MetadataUtilities.trimmed(rs.getString("PKTABLE_NAME"));
             table = schema.getTable(tableName);
 
             if (table == null) {
@@ -394,9 +383,9 @@ public class JDBCTable extends TableImplementation {
             try {
                 while (rs.next()) {
                     if (pkname == null) {
-                        pkname = rs.getString("PK_NAME");
+                        pkname = MetadataUtilities.trimmed(rs.getString("PK_NAME"));
                     }
-                    String colName = rs.getString("COLUMN_NAME");
+                    String colName = MetadataUtilities.trimmed(rs.getString("COLUMN_NAME"));
                     pkcols.add(getColumn(colName));
                 }
             } finally {

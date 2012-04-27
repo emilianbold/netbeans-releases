@@ -82,7 +82,7 @@ public class GetPreviousCommitCommand extends GitCommand {
                     walk = new RevWalk(repository);
                     walk.markStart(walk.parseCommit(rev.getParent(0)));
                     String path = Utils.getRelativePath(repository.getWorkTree(), file);
-                    if (path != null) {
+                    if (path != null && !path.isEmpty()) {
                         walk.setTreeFilter(FollowFilter.create(path));
                     }
                     Iterator<RevCommit> it = walk.iterator();

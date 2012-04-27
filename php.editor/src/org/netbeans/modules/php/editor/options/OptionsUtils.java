@@ -81,6 +81,11 @@ public final class OptionsUtils {
                         CodeCompletionPanel.PHP_AUTO_COMPLETION_NAMESPACES,
                         CodeCompletionPanel.PHP_AUTO_COMPLETION_NAMESPACES_DEFAULT);
             }
+            if (settingName == null || CodeCompletionPanel.PHP_AUTO_COMPLETION_SMART_QUOTES.equals(settingName)) {
+                autoCompletionSmartQuotes = preferences.getBoolean(
+                        CodeCompletionPanel.PHP_AUTO_COMPLETION_SMART_QUOTES,
+                        CodeCompletionPanel.PHP_AUTO_COMPLETION_SMART_QUOTES_DEFAULT);
+            }
 
             if (settingName == null || CodeCompletionPanel.PHP_CODE_COMPLETION_STATIC_METHODS.equals(settingName)) {
                 codeCompletionStaticMethods = preferences.getBoolean(
@@ -114,6 +119,7 @@ public final class OptionsUtils {
     private static Boolean autoCompletionVariables = null;
     private static Boolean autoCompletionTypes = null;
     private static Boolean autoCompletionNamespaces = null;
+    private static Boolean autoCompletionSmartQuotes = null;
 
     private static Boolean codeCompletionStaticMethods = null;
     private static Boolean codeCompletionNonStaticMethods = null;
@@ -196,6 +202,15 @@ public final class OptionsUtils {
         lazyInit();
         assert codeCompletionSmartParametersPreFilling != null;
         return codeCompletionSmartParametersPreFilling;
+    }
+
+    /**
+     * Parameters of methods/functions apre pre-filled by preceeding declared variables
+     */
+    public static boolean autoCompletionSmartQuotes() {
+        lazyInit();
+        assert autoCompletionSmartQuotes != null;
+        return autoCompletionSmartQuotes;
     }
 
     /**

@@ -132,31 +132,25 @@ by the IDE, mostly revolving around the API class
 
 <a href="@org-openide-util@/org/openide/util/HelpCtx.html"><code>HelpCtx</code></a>.
 
-<p>This class has several constructors for different
-purposes; the constructor which takes a <code>Class</code> is
-convenient for some purposes, or the one taking a <code>String</code> is also
-fine. The constructor with a string directly uses that help
-ID, which may be any string uniquely identifying the feature, and
-associated with an HTML page using the map file; when passing in a
-class object, this should typically be the class returning the help
-object, and the ID will be the fully-qualified class name, which
-avoids the need to separately choose a good help ID.</p>
+<p>This class has should be constructed with a help ID,
+which should be a string constant uniquely identifying the feature, and
+associated with an HTML page using the map file.</p>
 
 <div class="nonnormative">
 
-<p>For example, a system action might include a method
+<p>For example, an action might include a method
 implementation such as:
 
 <pre>
 <span class="keyword">public</span> <span class="type">HelpCtx</span> <span class="function-name">getHelpCtx</span>() {
-    <span class="keyword">return</span> <span class="keyword">new</span> <span class="type">HelpCtx</span>(ThisAction.<span class="keyword">class</span>);
+    <span class="keyword">return</span> <span class="keyword">new</span> <span class="type">HelpCtx</span>("my.action");
 }
 </pre>
 
 Now the map file should include a line such as:
 
 <pre>
-&lt;<span class="function-name">mapID</span> <span class="variable-name">target</span>=<span class="string">"com.mycom.mymodule.ThisAction"</span> <span class="variable-name">url</span>=<span class="string">"this-action.html"</span>/&gt;
+&lt;<span class="function-name">mapID</span> <span class="variable-name">target</span>=<span class="string">"my.action"</span> <span class="variable-name">url</span>=<span class="string">"this-action.html"</span>/&gt;
 </pre>
 
 </div>
@@ -288,6 +282,17 @@ the
 }
 </pre>
 
+<p>However for most purposes you can use the simpler
+<a href="@org-openide-util@/org/openide/util/HelpCtx.html#display()"><code>HelpCtx.display</code></a>
+method and avoid a direct dependency on this API entirely:</p>
+
+<pre>
+<span class="type">String</span> <span class="variable-name">id</span> = ...;
+<span class="keyword">if</span> (id != <span class="constant">null</span> &amp;&amp; !<span class="keyword">new</span> <span class="type">HelpCtx</span>(id).display()) {
+    Toolkit.getDefaultToolkit().beep();
+}
+</pre>
+
 <p class="nonnormative">If you are having trouble figuring out why you
 are not seeing the help you expect, try running the IDE with the
 command-line option <samp>-J-Dorg.netbeans.modules.javahelp=0</samp>
@@ -390,7 +395,7 @@ of referred module. Instead of
 <pre>
 nbdocs:/org/nb/mod/foo/docs/somepage.html
 </pre>
-it is possible to use:
+it is possible (and in fact recommended) to use:
 <pre>
 nbdocs://org.nb.mod.bar/org/nb/mod/foo/docs/somepage.html
 </pre>

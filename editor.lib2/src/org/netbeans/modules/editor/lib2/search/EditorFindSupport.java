@@ -57,6 +57,7 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
@@ -64,7 +65,10 @@ import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
 import javax.swing.text.Position;
 import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorNames;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.modules.editor.lib2.ComponentUtils;
 import org.netbeans.modules.editor.lib2.DocUtils;
 import org.netbeans.modules.editor.lib2.highlighting.BlockHighlighting;
@@ -128,12 +132,12 @@ public final class EditorFindSupport {
     private static final String WRAP_BLOCK_START_LOCALE = "find-block-wrap-start"; // NOI18N
     private static final String WRAP_BLOCK_END_LOCALE = "find-block-wrap-end"; // NOI18N
     private static final String ITEMS_REPLACED_LOCALE = "find-items-replaced"; // NOI18N
-    /** It's public only to keep backwards compatibility of th FindSupport class. */
+    /** It's public only to keep backwards compatibility of the FindSupport class. */
     public static final String REVERT_MAP = "revert-map"; // NOI18N
 
-    /** It's public only to keep backwards compatibility of th FindSupport class. */
+    /** It's public only to keep backwards compatibility of the FindSupport class. */
     public static final String FIND_HISTORY_PROP = "find-history-prop"; //NOI18N
-    /** It's public only to keep backwards compatibility of th FindSupport class. */
+    /** It's public only to keep backwards compatibility of the FindSupport class. */
     public static final String FIND_HISTORY_CHANGED_PROP = "find-history-changed-prop"; //NOI18N
     
     /**
@@ -148,6 +152,7 @@ public final class EditorFindSupport {
 
     /** Find properties */
     private Map<String, Object> findProps;
+    private WeakReference<JTextComponent> focusedTextComponent;
 
     private final WeakHashMap<JTextComponent, Map<String, WeakReference<BlockHighlighting>>> comp2layer =
         new WeakHashMap<JTextComponent, Map<String, WeakReference<BlockHighlighting>>>();
@@ -156,10 +161,9 @@ public final class EditorFindSupport {
     private PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
     
     private SPW lastSelected;
-    private List<SPW> historyList;
+    private List<SPW> historyList = new ArrayList<SPW>();
 
     private EditorFindSupport() {
-        // prevent instance creation
     }
 
     /** Get shared instance of find support */
@@ -268,8 +272,17 @@ public final class EditorFindSupport {
         }
     }
     
+    public void setFocusedTextComponent(JTextComponent component) { 
+        focusedTextComponent = new WeakReference<JTextComponent>(component);
+    }
+    
+    private JTextComponent getFocusedTextComponent() {
+        JTextComponent jc = focusedTextComponent != null ? focusedTextComponent.get() : null;
+        return (jc != null) ? jc : EditorRegistry.lastFocusedComponent();
+    }
+    
     public void setBlockSearchHighlight(int startSelection, int endSelection){
-        JTextComponent comp = EditorRegistry.lastFocusedComponent();
+        JTextComponent comp = getFocusedTextComponent();
         BlockHighlighting layer = comp == null ? null : findLayer(comp, Factory.BLOCK_SEARCH_LAYER);
 
         if (layer != null) {
@@ -278,61 +291,8 @@ public final class EditorFindSupport {
                 layer.highlightBlock(startSelection, endSelection, FontColorNames.BLOCK_SEARCH_COLORING, true, true);
             } else {
                 layer.highlightBlock(-1, -1, FontColorNames.BLOCK_SEARCH_COLORING, true, true);
-            }
-            
+            }            
         }
-        
-// TODO: remove
-//        JTextComponent c = DocumentsRegistry.getMostActiveComponent();
-//        if (c==null) return;
-//        EditorUI editorUI = ((BaseTextUI)c.getUI()).getEditorUI();
-//        DrawLayerFactory.BlockSearchLayer blockLayer
-//        = (DrawLayerFactory.BlockSearchLayer)editorUI.findLayer(
-//              DrawLayerFactory.BLOCK_SEARCH_LAYER_NAME);
-//        Boolean b = (Boolean)getFindProperties().get(FIND_BACKWARD_SEARCH);
-//        boolean back = (b != null && b.booleanValue());
-//        
-//        if (startSelection >= endSelection){
-//            if (blockLayer != null) {
-//                if (blockLayer.isEnabled()) {
-//                    blockLayer.setEnabled(false);
-//                    try {
-//                        editorUI.repaintBlock(blockLayer.getOffset(), blockLayer.getOffset()+blockLayer.getLength());
-//                    } catch (BadLocationException e) {
-//                        LOG.log(Level.WARNING, e.getMessage(), e);
-//                    }
-//                }
-//            }
-//        }else{
-//            //init layer
-//            if (blockLayer == null) {
-//                blockLayer = new DrawLayerFactory.BlockSearchLayer();
-//                if (!editorUI.addLayer(blockLayer,
-//                    DrawLayerFactory.BLOCK_SEARCH_LAYER_VISIBILITY)
-//                ) {
-//                    return; // couldn't add layer
-//                }
-//            } else {
-//                if (blockLayer.isEnabled()) {
-//                    blockLayer.setEnabled(false);
-//                    try {
-//                        editorUI.repaintOffset(blockLayer.getOffset());
-//                    } catch (BadLocationException e) {
-//                        LOG.log(Level.WARNING, e.getMessage(), e);
-//                    }
-//                }
-//            }
-//            
-//            blockLayer.setEnabled(true);
-//            blockLayer.setArea(startSelection, endSelection-startSelection);
-//            try {
-//                editorUI.repaintBlock(startSelection, endSelection);
-//            } catch (BadLocationException e) {
-//                LOG.log(Level.WARNING, e.getMessage(), e);
-//                return;
-//            }
-//            c.getCaret().setDot(back ? endSelection : startSelection);
-//        }
     }
     
     public boolean incSearch(Map<String, Object> props, int caretPos) {
@@ -346,7 +306,7 @@ public final class EditorFindSupport {
         
         b = (Boolean)props.get(FIND_INC_SEARCH);
         if (b != null && b.booleanValue()) { // inc search enabled
-            JTextComponent comp = EditorRegistry.lastFocusedComponent();
+            JTextComponent comp = getFocusedTextComponent();
             
             if (comp != null) {
                 b = (Boolean)props.get(FIND_BACKWARD_SEARCH);
@@ -398,8 +358,11 @@ public final class EditorFindSupport {
                                 false
                             );
                         }
-
-                        ensureVisible(comp, pos, pos);
+                        Preferences prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
+                        if (prefs.get(SimpleValueNames.EDITOR_SEARCH_TYPE, "default").equals("closing")) // NOI18N
+                            ensureVisible(comp, pos, pos);
+                        else
+                            selectText(comp, pos, pos + len, back);
                         return true;
                     }
                 }
@@ -413,7 +376,7 @@ public final class EditorFindSupport {
 
     public void incSearchReset() {
         // Find the layer
-        JTextComponent comp = EditorRegistry.lastFocusedComponent();
+        JTextComponent comp = getFocusedTextComponent();
         BlockHighlighting layer = comp == null ? null : findLayer(comp, Factory.INC_SEARCH_LAYER);
         
         if (layer != null) {
@@ -496,17 +459,15 @@ public final class EditorFindSupport {
         }
     }
     
-    private FindReplaceResult findReplaceImpl(String replaceExp, 
+    FindReplaceResult findReplaceImpl(String replaceExp, 
             Map<String, Object> props, boolean oppositeDir, JTextComponent c) {
         incSearchReset();
         props = getValidFindProperties(props);
         boolean back = isBackSearch(props, oppositeDir);
-        Object findWhat = props.get(FIND_WHAT);
-        if (findWhat == null) { // nothing to search for
+        if (props.get(FIND_WHAT) == null || !(props.get(FIND_WHAT) instanceof String)) {
             return null;
         }
-
-        String exp = "'" + findWhat + "' "; // NOI18N
+        String findWhat = (String) props.get(FIND_WHAT);
         if (c != null) {
             ComponentUtils.clearStatusText(c);
             Caret caret = c.getCaret();
@@ -542,16 +503,17 @@ public final class EditorFindSupport {
                 }
                 if (blk != null) {
                     selectText(c, blk[0], blk[1], back);
-                    String msg = exp + NbBundle.getBundle(EditorFindSupport.class).getString(FOUND_LOCALE)
-                                 + ' ' + DocUtils.debugPosition(c.getDocument(), blk[0]);
+                    String msg = NbBundle.getMessage(EditorFindSupport.class, FOUND_LOCALE, findWhat, DocUtils.debugPosition(c.getDocument(), Integer.valueOf(blk[0])));
+//                    String msg = exp + NbBundle.getMessage(EditorFindSupport.class, FOUND_LOCALE)
+//                                 + ' ' + DocUtils.debugPosition(c.getDocument(), blk[0]);
                     if (blk[2] == 1) { // wrap was done
                         msg += "; "; // NOI18N
                         if (blockSearch && blockSearchEnd>0 && blockSearchStart >-1){
-                            msg += back ? NbBundle.getBundle(EditorFindSupport.class).getString(WRAP_BLOCK_END_LOCALE)
-                                   : NbBundle.getBundle(EditorFindSupport.class).getString(WRAP_BLOCK_START_LOCALE);
+                            msg += back ? NbBundle.getMessage(EditorFindSupport.class, WRAP_BLOCK_END_LOCALE)
+                                   : NbBundle.getMessage(EditorFindSupport.class, WRAP_BLOCK_START_LOCALE);
                         }else{
-                            msg += back ? NbBundle.getBundle(EditorFindSupport.class).getString(WRAP_END_LOCALE)
-                                   : NbBundle.getBundle(EditorFindSupport.class).getString(WRAP_START_LOCALE);
+                            msg += back ? NbBundle.getMessage(EditorFindSupport.class, WRAP_END_LOCALE)
+                                   : NbBundle.getMessage(EditorFindSupport.class, WRAP_START_LOCALE);
                         }
                         ComponentUtils.setStatusText(c, msg, IMPORTANCE_FIND_OR_REPLACE);
                         c.getToolkit().beep();
@@ -560,8 +522,8 @@ public final class EditorFindSupport {
                     }
                     return result;
                 } else { // not found
-                    ComponentUtils.setStatusText(c, exp + NbBundle.getBundle(EditorFindSupport.class).getString(
-                                                    NOT_FOUND_LOCALE), IMPORTANCE_FIND_OR_REPLACE);
+                    ComponentUtils.setStatusText(c, NbBundle.getMessage(
+                                                    EditorFindSupport.class, NOT_FOUND_LOCALE, findWhat), IMPORTANCE_FIND_OR_REPLACE);
                     // issue 14189 - selection was not removed
                     c.getCaret().setDot(c.getCaret().getDot());
                 }
@@ -577,7 +539,7 @@ public final class EditorFindSupport {
     * @param oppositeDir whether search in opposite direction
     */
     public boolean find(Map<String, Object> props, boolean oppositeDir) {
-        FindReplaceResult result = findReplaceImpl(null, props, oppositeDir, EditorRegistry.lastFocusedComponent());
+        FindReplaceResult result = findReplaceImpl(null, props, oppositeDir, getFocusedTextComponent());
         return (result != null);
     }
 
@@ -678,8 +640,7 @@ public final class EditorFindSupport {
     public boolean replace(Map<String, Object> props, boolean oppositeDir)
     throws BadLocationException {
         incSearchReset();
-        JTextComponent c = EditorRegistry.lastFocusedComponent();
-        return replaceImpl(props, oppositeDir, c);
+        return replaceImpl(props, oppositeDir, getFocusedTextComponent());
     }
 
     boolean replaceImpl(Map<String, Object> props, boolean oppositeDir, JTextComponent c) throws BadLocationException {
@@ -696,10 +657,9 @@ public final class EditorFindSupport {
             String s = (String)props.get(FIND_REPLACE_WITH);
             Caret caret = c.getCaret();
             if (caret.isSelectionVisible() && caret.getDot() != caret.getMark()){
-                int dotPos = caret.getDot();
                 Object dp = props.get(FIND_BACKWARD_SEARCH);
                 boolean direction = (dp != null) ? ((Boolean)dp).booleanValue() : false;
-                dotPos = (oppositeDir ^ direction ? c.getSelectionEnd() : c.getSelectionStart());
+                int dotPos = (oppositeDir ^ direction ? c.getSelectionEnd() : c.getSelectionStart());
                 c.setCaretPosition(dotPos);
             }
             
@@ -743,8 +703,7 @@ public final class EditorFindSupport {
 
     public void replaceAll(Map<String, Object> props) {
         incSearchReset();
-        JTextComponent c = EditorRegistry.lastFocusedComponent();
-        replaceAllImpl(props, c);
+        replaceAllImpl(props, getFocusedTextComponent());
     }
 
     /**
@@ -862,11 +821,11 @@ public final class EditorFindSupport {
                     if (findWhat != null) { // nothing to search for
                         exp = "'" + findWhat + "' "; // NOI18N
                     }
-                    ComponentUtils.setStatusText(c, exp + NbBundle.getBundle(EditorFindSupport.class).getString(
-                                NOT_FOUND_LOCALE), IMPORTANCE_FIND_OR_REPLACE);
+                    ComponentUtils.setStatusText(c, exp + NbBundle.getMessage(
+                                EditorFindSupport.class, NOT_FOUND_LOCALE), IMPORTANCE_FIND_OR_REPLACE);
                 }else{
                     MessageFormat fmt = new MessageFormat(
-                                            NbBundle.getBundle(EditorFindSupport.class).getString(ITEMS_REPLACED_LOCALE));
+                                            NbBundle.getMessage(EditorFindSupport.class, ITEMS_REPLACED_LOCALE));
                     String msg = fmt.format(new Object[] { new Integer(replacedCnt), new Integer(totalCnt) });
                     ComponentUtils.setStatusText(c, msg, IMPORTANCE_FIND_OR_REPLACE);
                 }
@@ -923,22 +882,6 @@ public final class EditorFindSupport {
             return layer;
         }
     }
-    
-// TODO: remove
-//    /** Get position of wrap mark for some document */
-//    public int getWrapSearchMarkPos(Document doc) {
-//        Mark mark = (Mark)doc.getProperty(Document.WRAP_SEARCH_MARK_PROP);
-//        try {
-//            return (mark != null) ? mark.getOffset() : doc.getLength();
-//        } catch (InvalidMarkException e) {
-//            throw new RuntimeException(); // shouldn't happen
-//        }
-//    }
-//
-//    /** Set new position of wrap mark for some document */
-//    public void setWrapSearchMarkPos(Document doc, int pos) {
-//        //!!!
-//    }
 
     /** Add weak listener to listen to change of any property. The caller must
     * hold the listener object in some instance variable to prevent it
@@ -968,10 +911,14 @@ public final class EditorFindSupport {
 
     public void setHistory(List<SPW> spwList){
         this.historyList = new ArrayList<SPW>(spwList);
-        firePropertyChange(FIND_HISTORY_CHANGED_PROP,null,null);
+        if (!spwList.isEmpty())
+            setLastSelected(spwList.get(0));
+//        firePropertyChange(FIND_HISTORY_CHANGED_PROP,null,null);
     }
     
     public List<SPW> getHistory(){
+        if (historyList.isEmpty())
+            firePropertyChange(FIND_HISTORY_CHANGED_PROP,null,null);
         return historyList;
     }
     
@@ -1022,12 +969,12 @@ public final class EditorFindSupport {
         public boolean isMatchCase(){
             return matchCase;
         }
-
+        
         /** @return true if the regExp parameter was used during search performing */
         public boolean isRegExp(){
             return regExp;
         }
-        
+
         public @Override boolean equals(Object obj){
             if (!(obj instanceof SPW)){
                 return false;

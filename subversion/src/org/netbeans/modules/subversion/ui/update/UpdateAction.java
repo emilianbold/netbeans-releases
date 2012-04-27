@@ -290,7 +290,7 @@ public class UpdateAction extends ContextAction {
                 if(revision < -1) {
                     ISVNInfo info = null;
                     try {
-                        info = client.getInfoFromWorkingCopy(root); // try to retrieve from local WC first
+                        info = SvnUtils.getInfoFromWorkingCopy(client, root); // try to retrieve from local WC first
                         svnRevision = info.getRevision();
                         if(svnRevision == null) {
                             info = client.getInfo(root); // contacts the server

@@ -105,6 +105,14 @@ final class NimbusEditorTabCellRenderer extends AbstractTabCellRenderer {
         d.width = isShowCloseButton() && !Boolean.getBoolean("nb.tabs.suppressCloseButton") ? 28 : 14;
         return d;
     }
+
+    @Override
+    protected void paintIconAndText( Graphics g ) {
+        if( isBusy() ) {
+            setIcon( BusyTabsSupport.getDefault().getBusyIcon( isSelected() ) );
+        }
+        super.paintIconAndText( g );
+    }
     
     private static final Insets INSETS = new Insets(0, 2, 0, 10);
     

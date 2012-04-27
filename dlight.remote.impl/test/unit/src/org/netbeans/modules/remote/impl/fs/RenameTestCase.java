@@ -110,6 +110,31 @@ public class RenameTestCase extends RemoteFileTestBase  {
         }
     }
 
+    @ForAllEnvironments
+    public void testRenameLinkChild() throws Exception {
+        String tmpDir = null;
+        try {
+            tmpDir = mkTempAndRefreshParent(true);
+            runScript(
+                    "cd " + tmpDir + "; " +
+                    "mkdir real_dir; " + 
+                    "ln -s real_dir lnk_dir; " +
+                    "cd real_dir; " +
+                    "touch file_1; " +
+                    "touch file_2; " +
+                    "");
+            FileObject tmpDirFO = getFileObject(tmpDir);
+            tmpDirFO.refresh();
+            FileObject fo1 = tmpDirFO.getFileObject("lnk_dir/file_1");
+            assertNotNull(fo1);
+            FileObject fo2 = tmpDirFO.getFileObject("lnk_dir/file_2");
+            assertNotNull(fo2);
+            fo1.move(fo1.lock(), fo2.getParent(), "file1-renamed", "new-ext");
+        } finally {
+            removeRemoteDirIfNotNull(tmpDir);
+        }
+    }
+
     public static Test suite() {
         return RemoteApiTest.createSuite(RenameTestCase.class);
     }

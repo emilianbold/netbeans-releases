@@ -128,13 +128,15 @@ public class CustomizerFrameworks extends javax.swing.JPanel implements HelpCtx.
         
         jListFrameworks.setModel(new DefaultListModel());
         List<WebModuleExtender> usedExtenders = new LinkedList<WebModuleExtender>();
-        for (WebFrameworkProvider framework : uiProperties.getCurrentFrameworks()) {
+        if (uiProperties.getCurrentFrameworks() != null) {
+            for (WebFrameworkProvider framework : uiProperties.getCurrentFrameworks()) {
                 usedFrameworks.add(framework);
                 ((DefaultListModel) jListFrameworks.getModel()).addElement(framework.getName());
                 WebModuleExtender extender = framework.createWebModuleExtender(webModule, controller);
                 extenders.put(framework, extender);
                 usedExtenders.add(extender);
                 extender.addChangeListener(new ExtenderListener(extender));
+            }
         }
         jListFrameworks.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         jListFrameworks.addListSelectionListener(this);

@@ -192,11 +192,11 @@ public class NBLoginPanel extends javax.swing.JPanel implements DocumentListener
     static boolean show(final BugzillaRepository repo, String errorMsg) {
         final NBLoginPanel panel = new NBLoginPanel();
         panel.usernameTextField.setText(repo.getUsername());
-        panel.passwordField.setText(repo.getPassword());
+        panel.passwordField.setText(new String(repo.getPassword()));
         panel.validateFields();
         panel.updateErrorMessage(errorMsg);
         if(panel.showLogin()) {   // NOI18N
-            repo.setCredentials(panel.usernameTextField.getText(), new String(panel.passwordField.getPassword()), null, null );
+            repo.setCredentials(panel.usernameTextField.getText(), panel.passwordField.getPassword(), null, null );
             return true;
         }
         return false;

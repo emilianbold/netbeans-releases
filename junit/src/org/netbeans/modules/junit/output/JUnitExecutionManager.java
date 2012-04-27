@@ -165,7 +165,8 @@ public class JUnitExecutionManager implements RerunHandler{
         SortedMap<String, String> toTest = new TreeMap<String, String>();
         FileObject someTestFO = null;
         for(Testcase test: tests){
-            String prev = toTest.get(test.getClassName());
+            String className = test.getClassName();
+            String prev = className == null ? null : toTest.get(className);
             toTest.put(test.getClassName(), prev == null ? test.getName() : prev + "," + test.getName()); //NOI18N
             if (someTestFO == null && test instanceof JUnitTestcase){
                 someTestFO = ((JUnitTestcase)test).getClassFileObject();
@@ -176,7 +177,7 @@ public class JUnitExecutionManager implements RerunHandler{
         String id = dateFormat.format(new Date());
 
         try {
-            FileObject templateFO = FileUtil.getConfigFile("Templates/JUnit/junit-custom.xml"); //NOI18N
+            FileObject templateFO = FileUtil.getConfigFile("Templates/UnitTests/junit-custom.xml"); //NOI18N
             DataObject templateDO = DataObject.find(templateFO);
             FileObject tmpDir = FileUtil.toFileObject(new File(System.getProperty("java.io.tmpdir")).getCanonicalFile());
             FileObject targetFO = tmpDir.createFolder("junit-custom-" + id);                //NOI18N

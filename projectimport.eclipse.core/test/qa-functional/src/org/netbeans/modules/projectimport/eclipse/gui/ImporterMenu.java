@@ -50,20 +50,19 @@ import org.netbeans.jellytools.actions.ActionNoBlock;
 
 public class ImporterMenu extends JellyTestCase {
     private static final String menuPath = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle", "Menu/File");
-    private static final String importMenuPath = Bundle.getStringTrimmed("org.netbeans.modules.projectimport.eclipse.core.resources.Bundle","Menu/File/Import");
-    private static String menuRootString = menuPath+"|"+importMenuPath+"|";
+    private static final String importMenuPath = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle","Menu/File/Import");
+    private static final String menuRootString = menuPath+"|"+importMenuPath+"|";
+    static final String menuItemString = menuRootString+Bundle.getStringTrimmed("org.netbeans.modules.projectimport.eclipse.core.Bundle", "CTL_MenuItem");
    
     public ImporterMenu(String testName) {
      super(testName);
     }
 
     public void testImporterMenuImport() {
-        String menuItemString = menuRootString+Bundle.getStringTrimmed("org.netbeans.modules.projectimport.eclipse.core.Bundle", "CTL_MenuItem");
 	checkMenuItem(menuItemString);
     }
     public void testImporterMenuSync() {
-        String menuItemString = menuRootString+Bundle.getStringTrimmed("org.netbeans.modules.projectimport.eclipse.core.Bundle", "CTL_SynchronizeMenuItem");
-	checkMenuItem(menuItemString);
+	checkMenuItem(menuRootString+Bundle.getStringTrimmed("org.netbeans.modules.projectimport.eclipse.core.Bundle", "CTL_SynchronizeMenuItem"));
     }
 
     private void checkMenuItem(String menuItem) {

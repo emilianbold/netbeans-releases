@@ -69,6 +69,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.FileChooser;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import static org.netbeans.spi.java.project.support.ui.Bundle.*;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -84,7 +85,7 @@ import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbCollections;
 import org.openide.util.NbPreferences;
 
@@ -136,6 +137,10 @@ public final class SharableLibrariesUtils {
      * @param projectLocation
      * @return relative or absolute path to project libraries folder.
      */
+    @Messages({
+        "LBL_Browse_Libraries_Title=Select Libraries Folder",
+        "ASCD_Browse_Libraries_Title=Browse for the Folder with Library Definitions."
+    })
     public static String browseForLibraryLocation(String current, Component comp, File projectLocation) {
         File lib = PropertyUtils.resolveFile(projectLocation, current);
         if (!lib.exists()) {
@@ -147,8 +152,8 @@ public final class SharableLibrariesUtils {
         // can be revisit if it is needed
         chooser.setCurrentDirectory(lib);
         chooser.setFileSelectionMode( JFileChooser.DIRECTORIES_ONLY );
-        chooser.setDialogTitle(NbBundle.getMessage(SharableLibrariesUtils.class,"LBL_Browse_Libraries_Title"));
-        chooser.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SharableLibrariesUtils.class,"ASCD_Browse_Libraries_Title"));
+        chooser.setDialogTitle(LBL_Browse_Libraries_Title());
+        chooser.getAccessibleContext().setAccessibleDescription(ASCD_Browse_Libraries_Title());
         if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(comp)) {
             String[] files;
             try {
@@ -173,18 +178,22 @@ public final class SharableLibrariesUtils {
      * @param jarReferences
      * @return true is migration was performed, false when aborted.
      */
+    @Messages({
+        "TIT_MakeSharableWizard=New Libraries Folder",
+        "ACSD_MakeSharableWizard=Wizard dialog that guides you through the process of making the project self-contained and sharable in respect to binary dependencies."
+    })
     public static boolean showMakeSharableWizard(final AntProjectHelper helper, ReferenceHelper ref, List<String> libraryNames, List<String> jarReferences) {
 
         final WizardDescriptor wizardDescriptor = new WizardDescriptor(new CopyIterator(helper));
         // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
         wizardDescriptor.setTitleFormat(new MessageFormat("{0}"));
-        wizardDescriptor.setTitle(NbBundle.getMessage(SharableLibrariesUtils.class, "TIT_MakeSharableWizard")); 
+        wizardDescriptor.setTitle(TIT_MakeSharableWizard());
         wizardDescriptor.putProperty(PROP_HELPER, helper);
         wizardDescriptor.putProperty(PROP_REFERENCE_HELPER, ref);
         wizardDescriptor.putProperty(PROP_LIBRARIES, libraryNames);
         wizardDescriptor.putProperty(PROP_JAR_REFS, jarReferences);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(wizardDescriptor);
-        dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SharableLibrariesUtils.class, "ACSD_MakeSharableWizard"));
+        dialog.getAccessibleContext().setAccessibleDescription(ACSD_MakeSharableWizard());
         dialog.setVisible(true);
         dialog.toFront();
         return wizardDescriptor.getValue() == WizardDescriptor.FINISH_OPTION;
@@ -344,9 +353,7 @@ public final class SharableLibrariesUtils {
             }
         }
 
-        @NbBundle.Messages({            
-            "TXT_AlreadyExists=<html>The file {0} already exists in the library folder.<br>Using the existing file."
-        })
+        @Messages("TXT_AlreadyExists=<html>The file {0} already exists in the library folder.<br>Using the existing file.")
         private void updateReference(File oldFile, String key, boolean main, FileObject dir) {
             final FileObject src = FileUtil.toFileObject(oldFile);
             if (src == null) {
@@ -457,6 +464,7 @@ public final class SharableLibrariesUtils {
             keepRelativeLocations = relative;
             helper = h;
         }
+        @Messages("ERR_LibraryExists=The library {0} already exists, reusing the old definition.")
         public void actionPerformed(ActionEvent e) {
             String loc = helper.getLibrariesLocation();
             assert loc != null;
@@ -507,10 +515,7 @@ public final class SharableLibrariesUtils {
                     volumes.put(volume, newurls);
                 }
                 if (man.getLibrary(library.getName())!=null) {
-                  DialogDisplayer.getDefault().notify(
-                    new NotifyDescriptor.Message(
-                    NbBundle.getMessage(SharableLibrariesUtils.class, "ERR_LibraryExists", library.getDisplayName()),
-                    NotifyDescriptor.WARNING_MESSAGE));
+                  DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(ERR_LibraryExists(library.getDisplayName()), NotifyDescriptor.WARNING_MESSAGE));
                 } else {
                     final String name = library.getName();
                     String displayName = library.getDisplayName();

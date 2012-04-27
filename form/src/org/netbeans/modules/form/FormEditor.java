@@ -58,9 +58,11 @@ import org.netbeans.api.editor.guards.GuardedSectionManager;
 import org.netbeans.api.editor.guards.SimpleSection;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.form.actions.CustomizeEmptySpaceAction;
 import org.netbeans.modules.form.actions.EditContainerAction;
 import org.netbeans.modules.form.actions.EditFormAction;
 import org.netbeans.modules.form.assistant.AssistantModel;
+import org.netbeans.modules.form.layoutdesign.LayoutDesigner;
 import org.netbeans.modules.form.palette.PaletteUtils;
 import org.netbeans.spi.palette.PaletteController;
 
@@ -363,7 +365,7 @@ public class FormEditor {
 
         getCodeGenerator().initialize(formModel);
         ResourceSupport resupport = getResourceSupport(); // make sure ResourceSupport is created and initialized
-        if (resupport.getDesignLocale() != null) {
+        if (resupport.getDesignLocale() != null && !"".equals(resupport.getDesignLocale())) { // NOI18N
             resupport.updateDesignLocale();
         }
 
@@ -717,6 +719,7 @@ public class FormEditor {
         formJavaSource = null;
         prefetchedSuperclassName = null;
         resourceSupport = null;
+        bindingSupportInitialized = false;
         bindingSupport = null;
     }
     
@@ -972,6 +975,17 @@ public class FormEditor {
                             designer.getFormToolBar().showPaletteButton(
                                 FormLoaderSettings.getInstance().isPaletteInToolBar());
                         }
+                    } else if (FormLoaderSettings.PROP_PAINT_ADVANCED_LAYOUT.equals(propName)) {
+                        FormDesigner designer = getFormDesigner(formModel);
+                        if (designer != null) {
+                            LayoutDesigner layoutDesigner = designer.getLayoutDesigner();
+                            if (layoutDesigner != null) {
+                                int paintLayout = FormLoaderSettings.getInstance().getPaintAdvancedLayoutInfo();
+                                layoutDesigner.setPaintAlignment((paintLayout&1) != 0);
+                                layoutDesigner.setPaintGaps((paintLayout&2) != 0);
+                                designer.getHandleLayer().repaint();
+                            }
+                        }
                     }
                 }
             }
@@ -1163,6 +1177,7 @@ public class FormEditor {
 
     private void createDefaultComponentActionsList() {
         defaultActions = new LinkedList<Action>();
+        defaultActions.add(SystemAction.get(CustomizeEmptySpaceAction.EditSingleGapAction.class));
         defaultActions.add(SystemAction.get(EditContainerAction.class));
         defaultActions.add(SystemAction.get(EditFormAction.class));
         defaultActions.add(SystemAction.get(DefaultRADAction.class));

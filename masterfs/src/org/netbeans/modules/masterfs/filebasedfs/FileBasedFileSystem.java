@@ -211,6 +211,31 @@ public final class FileBasedFileSystem extends FileSystem {
         }
         return getFileObject(f);
     }
+    
+    @Override
+    public FileObject getTempFolder() throws IOException {
+        FileObject tmpDir =  FileUtil.toFileObject(new File(System.getProperty("java.io.tmpdir")));
+        if (tmpDir != null && tmpDir.isFolder() && tmpDir.isValid()) {
+            return tmpDir;
+        }
+        throw new IOException("Cannot find temporary folder"); // NOI18N
+    }
+    
+    @Override
+    public FileObject createTempFile(FileObject parent, String prefix, String suffix, boolean deleteOnExit) throws IOException {
+        if (parent.isFolder() && parent.isValid()) {
+            File tmpFile = File.createTempFile(prefix, suffix, FileUtil.toFile(parent));
+            if (deleteOnExit) {
+                tmpFile.deleteOnExit();
+            }
+            FileObject fo = FileUtil.toFileObject(tmpFile);
+            if (fo != null && fo.isData() && fo.isValid()) {
+                return fo;
+            }
+            tmpFile.delete();
+        }
+        throw new IOException("Cannot create temporary file"); // NOI18N
+    }
 
     @Override
     public SystemAction[] getActions() {

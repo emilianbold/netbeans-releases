@@ -75,7 +75,6 @@ import org.netbeans.modules.maven.model.pom.POMModel;
 import static org.netbeans.modules.maven.newproject.Bundle.*;
 import org.netbeans.modules.maven.options.MavenCommandSettings;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
-import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
@@ -121,10 +120,17 @@ public class ArchetypeWizardUtils {
             config.setProperty("package", pack); //NOI18N
         }
         config.setProperty("basedir", directory.getAbsolutePath());//NOI18N
-
+        
+        Map<String, String> baseprops = new HashMap<String, String>(config.getProperties());
+        
         if (additional != null) {
             for (Map.Entry<String,String> entry : additional.entrySet()) {
-                config.setProperty(entry.getKey(), entry.getValue());
+                String val = entry.getValue();
+                //#208146 process the additional prop value through a simplistic extression resolution.
+                for (Map.Entry<String, String> basePropEnt : baseprops.entrySet()) {
+                    val = val.replace("${" + basePropEnt.getKey() + "}", basePropEnt.getValue());
+                }
+                config.setProperty(entry.getKey(), val);
             }
         }
         config.setActivatedProfiles(Collections.<String>emptyList());
@@ -202,7 +208,6 @@ public class ArchetypeWizardUtils {
         File projFile = FileUtil.normalizeFile((File) wiz.getProperty("projdir")); // NOI18N
         createFromArchetype(projFile, vi, arch, additional, true);
         Set<FileObject> projects = openProjects(projFile, null);
-        Templates.setDefinesMainProject(wiz, projects.size() > 1);
         return projects;
     }
 

@@ -66,13 +66,13 @@ import org.netbeans.modules.java.hints.declarative.Condition.Instanceof;
 import org.netbeans.modules.java.hints.declarative.DeclarativeHintsParser.FixTextDescription;
 import org.netbeans.modules.java.hints.declarative.DeclarativeHintsParser.HintTextDescription;
 import org.netbeans.modules.java.hints.declarative.DeclarativeHintsParser.Result;
-import org.netbeans.modules.java.hints.jackpot.spi.ClassPathBasedHintProvider;
-import org.netbeans.modules.java.hints.jackpot.spi.HintDescription;
-import org.netbeans.modules.java.hints.jackpot.spi.HintDescription.AdditionalQueryConstraints;
-import org.netbeans.modules.java.hints.jackpot.spi.HintDescriptionFactory;
-import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
-import org.netbeans.modules.java.hints.jackpot.spi.HintProvider;
-import org.netbeans.modules.java.hints.jackpot.spi.Trigger.PatternDescription;
+import org.netbeans.modules.java.hints.providers.spi.ClassPathBasedHintProvider;
+import org.netbeans.modules.java.hints.providers.spi.HintProvider;
+import org.netbeans.modules.java.hints.providers.spi.HintDescription;
+import org.netbeans.modules.java.hints.providers.spi.HintDescription.AdditionalQueryConstraints;
+import org.netbeans.modules.java.hints.providers.spi.HintDescriptionFactory;
+import org.netbeans.modules.java.hints.providers.spi.HintMetadata;
+import org.netbeans.modules.java.hints.providers.spi.Trigger.PatternDescription;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
@@ -267,18 +267,7 @@ public class DeclarativeHintRegistry implements HintProvider, ClassPathBasedHint
         for (HintTextDescription hint : parsed.hints) {
             HintDescriptionFactory f = HintDescriptionFactory.create();
             String displayName = resolveDisplayName(file, bundle, hint.displayName, true, "TODO: No display name");
-
-            Map<String, String> constraints = new HashMap<String, String>();
-
-            for (Condition c : hint.conditions) {
-                if (!(c instanceof Instanceof) || c.not)
-                    continue;
-
-                Instanceof i = (Instanceof) c;
-
-                constraints.put(i.variable, i.constraint.trim()); //TODO: may i.constraint contain comments? if so, they need to be removed
-            }
-
+            Map<String, String> constraints = Utilities.conditions2Constraints(hint.conditions);
             String imports = parsed.importsBlock != null ? spec.substring(parsed.importsBlock[0], parsed.importsBlock[1]) : "";
             String[] importsArray = parsed.importsBlock != null ? new String[] {spec.substring(parsed.importsBlock[0], parsed.importsBlock[1])} : new String[0];
 

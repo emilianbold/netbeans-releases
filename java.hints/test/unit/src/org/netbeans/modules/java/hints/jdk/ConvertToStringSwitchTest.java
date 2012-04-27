@@ -39,30 +39,25 @@
  *
  * Portions Copyrighted 2009-2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.java.hints.jdk;
 
-import java.util.prefs.Preferences;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
-import org.netbeans.modules.java.hints.jackpot.impl.RulesManager;
-import org.netbeans.modules.java.hints.options.HintsSettings;
-import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.hints.test.api.HintTest;
 
 /**
  *
  * @author Jan Lahoda
  */
-public class ConvertToStringSwitchTest extends TestBase {
+public class ConvertToStringSwitchTest extends NbTestCase {
 
     public ConvertToStringSwitchTest(String name) {
-        super(name, ConvertToStringSwitch.class);
+        super(name);
     }
 
     public void testSimple() throws Exception {
-        setSourceLevel("1.7");
-        performFixTest("test/Test.java",
-                       "package test;" +
+        HintTest
+                .create()
+                .input("package test;" +
                        "public class Test {" +
                        "     public void test() {" +
                        "         String g = null;" +
@@ -74,16 +69,19 @@ public class ConvertToStringSwitchTest extends TestBase {
                        "             System.err.println(3);" +
                        "         }" +
                        "     }" +
-                       "}",
-                       "0:91-0:93:verifier:Convert to switch",
-                       "FixImpl",
-                       "package test;public class Test { public void test() { String g = null;switch (g) { case \"j\": System.err.println(1); break; case \"k\": System.err.println(2); break; case \"l\": System.err.println(3); break; } }}");
+                       "}")
+                .sourceLevel("1.7")
+                .run(ConvertToStringSwitch.class)
+                .findWarning("0:91-0:93:verifier:Convert to switch")
+                .applyFix("FIX_ConvertToStringSwitch")
+                .assertCompilable()
+                .assertOutput("package test;public class Test { public void test() { String g = null;switch (g) { case \"j\": System.err.println(1); break; case \"k\": System.err.println(2); break; case \"l\": System.err.println(3); break; } }}");
     }
 
     public void testSimpleFlow() throws Exception {
-        setSourceLevel("1.7");
-        performFixTest("test/Test.java",
-                       "package test;" +
+        HintTest
+                .create()
+                .input("package test;" +
                        "public class Test {" +
                        "     public int test(int r) throws Exception {" +
                        "         String g = null;\n" +
@@ -108,52 +106,55 @@ public class ConvertToStringSwitchTest extends TestBase {
                        "                 throw new java.io.IOException();" +
                        "             } catch (java.io.FileNotFoundException e) {}" +
                        "         } else {\n" +
-                       "             throw new IllegalStateExceptin();\n" +
+                       "             throw new IllegalStateException();\n" +
                        "         }\n" +
                        "         return 11;\n" +
                        "     }" +
-                       "}",
-                       "1:9-1:11:verifier:Convert to switch",
-                       "FixImpl",
-                       ("package test;" +
-                       "public class Test {" +
-                       "     public int test(int r) throws Exception {" +
-                       "         String g = null;" +
-                       "         switch (g) {\n" +
-                       "             case \"j\":\n" +
-                       "                 System.err.println(1);" +
-                       "                 return 1;" +
-                       "             case \"k\":\n" +
-                       "                 System.err.println(2);" +
-                       "                 if (r >= 0) {" +
-                       "                     return 2;" +
-                       "                 } else {" +
-                       "                     return 3;" +
-                       "                 }\n" +
-                       "             case \"l\":\n" +
-                       "                 System.err.println(3);" +
-                       "                 break;" +
-                       "             case \"z\":\n" +
-                       "                 try {" +
-                       "                     throw new java.io.FileNotFoundException();" +
-                       "                 } catch (java.io.IOException e) {}" +
-                       "                 break;" +
-                       "             case \"a\":\n" +
-                       "                 try {" +
-                       "                     throw new java.io.IOException();" +
-                       "                 } catch (java.io.FileNotFoundException e) {}" +
-                       "             default:\n" +
-                       "                 throw new IllegalStateExceptin();\n" +
-                       "         }\n" +
-                       "         return 11;\n" +
-                       "     }" +
-                       "}").replaceAll("[ \t\n]+", " "));
+                       "}")
+                .sourceLevel("1.7")
+                .run(ConvertToStringSwitch.class)
+                .findWarning("1:9-1:11:verifier:Convert to switch")
+                .applyFix("FIX_ConvertToStringSwitch")
+                .assertCompilable()
+                .assertOutput("package test;" +
+                              "public class Test {" +
+                              "     public int test(int r) throws Exception {" +
+                              "         String g = null;" +
+                              "         switch (g) {\n" +
+                              "             case \"j\":\n" +
+                              "                 System.err.println(1);" +
+                              "                 return 1;" +
+                              "             case \"k\":\n" +
+                              "                 System.err.println(2);" +
+                              "                 if (r >= 0) {" +
+                              "                     return 2;" +
+                              "                 } else {" +
+                              "                     return 3;" +
+                              "                 }\n" +
+                              "             case \"l\":\n" +
+                              "                 System.err.println(3);" +
+                              "                 break;" +
+                              "             case \"z\":\n" +
+                              "                 try {" +
+                              "                     throw new java.io.FileNotFoundException();" +
+                              "                 } catch (java.io.IOException e) {}" +
+                              "                 break;" +
+                              "             case \"a\":\n" +
+                              "                 try {" +
+                              "                     throw new java.io.IOException();" +
+                              "                 } catch (java.io.FileNotFoundException e) {}" +
+                              "             default:\n" +
+                              "                 throw new IllegalStateException();\n" +
+                              "         }\n" +
+                              "         return 11;\n" +
+                              "     }" +
+                              "}");
     }
 
     public void testOr() throws Exception {
-        setSourceLevel("1.7");
-        performFixTest("test/Test.java",
-                       "package test;" +
+        HintTest
+                .create()
+                .input("package test;" +
                        "public class Test {" +
                        "     public void test() {" +
                        "         String g = null;" +
@@ -168,16 +169,19 @@ public class ConvertToStringSwitchTest extends TestBase {
                        "             return;" +
                        "         }" +
                        "     }" +
-                       "}",
-                       "0:91-0:93:verifier:Convert to switch",
-                       "FixImpl",
-                       "package test;public class Test { public void test() { String g = null;switch (g) { case \"j\": case \"m\": System.err.println(1); break; case \"k\": System.err.println(2); break; case \"l\": case \"n\": System.err.println(3); break; default: System.err.println(4); return; } }}");
+                       "}")
+                .sourceLevel("1.7")
+                .run(ConvertToStringSwitch.class)
+                .findWarning("0:91-0:93:verifier:Convert to switch")
+                .applyFix("FIX_ConvertToStringSwitch")
+                .assertCompilable()
+                .assertOutput("package test;public class Test { public void test() { String g = null;switch (g) { case \"j\": case \"m\": System.err.println(1); break; case \"k\": System.err.println(2); break; case \"l\": case \"n\": System.err.println(3); break; default: System.err.println(4); return; } }}");
     }
 
     public void testStringEqualsObject() throws Exception {
-        setSourceLevel("1.7");
-        performAnalysisTest("test/Test.java",
-                       "package test;" +
+        HintTest
+                .create()
+                .input("package test;" +
                        "public class Test {" +
                        "     public void test() throws Exception {" +
                        "         Object g = null;\n" +
@@ -189,15 +193,18 @@ public class ConvertToStringSwitchTest extends TestBase {
                        "             System.err.println(3);" +
                        "         }\n" +
                        "     }" +
-                       "}");
+                       "}")
+                .sourceLevel("1.7")
+                .run(ConvertToStringSwitch.class)
+                .assertWarnings();
     }
 
     public void testVariableDeclarations() throws Exception {
-        setSourceLevel("1.7");
-        performFixTest("test/Test.java",
-                       "package test;" +
+        HintTest
+                .create()
+                .input("package test;" +
                        "public class Test {" +
-                       "     private int a, b;"+
+                       "     private int a, b;" +
                        "     public void test() throws Exception {" +
                        "         String g = null;\n" +
                        "         if (g == \"j\") {" +
@@ -221,55 +228,58 @@ public class ConvertToStringSwitchTest extends TestBase {
                        "             System.err.println(a + b);" +
                        "         }\n" +
                        "     }" +
-                       "}",
-                       "1:9-1:11:verifier:Convert to switch",
-                       "FixImpl",
-                       ("package test;" +
-                       "public class Test {" +
-                       "     private int a, b;"+
-                       "     public void test() throws Exception {" +
-                       "         String g = null;" +
-                       "         switch (g) {\n" +
-                       "             case \"j\": {\n" +
-                       "                 int i = 1;" +
-                       "                 int z = 1;" +
-                       "                 System.err.println(i + z);" +
-                       "                 break;" +
-                       "             }" +
-                       "             case \"k\": {\n" +
-                       "                 int i = 2;" +
-                       "                 System.err.println(i);" +
-                       "                 break;" +
-                       "             }" +
-                       "             case \"l\":\n" +
-                       "                 int j = 1;" +
-                       "                 System.err.println(j);" +
-                       "                 break;" +
-                       "             case \"z\": {\n" +
-                       "                 int z = 1;" +
-                       "                 System.err.println(z);" +
-                       "                 break;" +
-                       "             }" +
-                       "             case \"a\": {\n" +
-                       "                 int a = 1;" +
-                       "                 System.err.println(a);" +
-                       "                 break;" +
-                       "             }" +
-                       "             case \"b\":\n" +
-                       "                 int b = 1;" +
-                       "                 System.err.println(a + b);" +
-                       "                 break;" +
-                       "         }\n" +
-                       "     }" +
-                       "}").replaceAll("[ \t\n]+", " "));
+                       "}")
+                .sourceLevel("1.7")
+                .run(ConvertToStringSwitch.class)
+                .findWarning("1:9-1:11:verifier:Convert to switch")
+                .applyFix("FIX_ConvertToStringSwitch")
+                .assertCompilable()
+                .assertOutput("package test;" +
+                              "public class Test {" +
+                              "     private int a, b;" +
+                              "     public void test() throws Exception {" +
+                              "         String g = null;" +
+                              "         switch (g) {\n" +
+                              "             case \"j\": {\n" +
+                              "                 int i = 1;" +
+                              "                 int z = 1;" +
+                              "                 System.err.println(i + z);" +
+                              "                 break;" +
+                              "             }" +
+                              "             case \"k\": {\n" +
+                              "                 int i = 2;" +
+                              "                 System.err.println(i);" +
+                              "                 break;" +
+                              "             }" +
+                              "             case \"l\":\n" +
+                              "                 int j = 1;" +
+                              "                 System.err.println(j);" +
+                              "                 break;" +
+                              "             case \"z\": {\n" +
+                              "                 int z = 1;" +
+                              "                 System.err.println(z);" +
+                              "                 break;" +
+                              "             }" +
+                              "             case \"a\": {\n" +
+                              "                 int a = 1;" +
+                              "                 System.err.println(a);" +
+                              "                 break;" +
+                              "             }" +
+                              "             case \"b\":\n" +
+                              "                 int b = 1;" +
+                              "                 System.err.println(a + b);" +
+                              "                 break;" +
+                              "         }\n" +
+                              "     }" +
+                              "}");
     }
 
     public void testNonLocalBreak() throws Exception {
-        setSourceLevel("1.7");
-        performFixTest("test/Test.java",
-                       "package test;" +
+        HintTest
+                .create()
+                .input("package test;" +
                        "public class Test {" +
-                       "     private int a, b;"+
+                       "     private int a, b;" +
                        "     public void test() throws Exception {" +
                        "         for (;;) {\n" +
                        "             String g = null;\n" +
@@ -282,32 +292,35 @@ public class ConvertToStringSwitchTest extends TestBase {
                        "             }\n" +
                        "         }\n" +
                        "     }" +
-                       "}",
-                       "2:13-2:15:verifier:Convert to switch",
-                       "FixImpl",
-                       ("package test;" +
-                       "public class Test {" +
-                       "     private int a, b;"+
-                       "     public void test() throws Exception {" +
-                       "         OUTER: for (;;) {\n" +
-                       "             String g = null;\n" +
-                       "             switch (g) {" +
-                       "                 case \"j\":" +
-                       "                     System.err.println(1);" +
-                       "                     break OUTER;" +
-                       "                 case \"k\":" +
-                       "                     System.err.println(2);" +
-                       "                     break OUTER;" +
-                       "             }\n" +
-                       "         }\n" +
-                       "     }" +
-                       "}").replaceAll("[ \t\n]+", " "));
+                       "}")
+                .sourceLevel("1.7")
+                .run(ConvertToStringSwitch.class)
+                .findWarning("2:13-2:15:verifier:Convert to switch")
+                .applyFix("FIX_ConvertToStringSwitch")
+                .assertCompilable()
+                .assertOutput("package test;" +
+                              "public class Test {" +
+                              "     private int a, b;" +
+                              "     public void test() throws Exception {" +
+                              "         OUTER: for (;;) {\n" +
+                              "             String g = null;\n" +
+                              "             switch (g) {" +
+                              "                 case \"j\":" +
+                              "                     System.err.println(1);" +
+                              "                     break OUTER;" +
+                              "                 case \"k\":" +
+                              "                     System.err.println(2);" +
+                              "                     break OUTER;" +
+                              "             }\n" +
+                              "         }\n" +
+                              "     }" +
+                              "}");
     }
 
     public void testNonConstantString() throws Exception {
-        setSourceLevel("1.7");
-        performAnalysisTest("test/Test.java",
-                       "package test;" +
+        HintTest
+                .create()
+                .input("package test;" +
                        "public class Test {" +
                        "     private static String nonConstant = \"a\";" +
                        "     public void test() throws Exception {" +
@@ -320,15 +333,18 @@ public class ConvertToStringSwitchTest extends TestBase {
                        "             System.err.println(3);" +
                        "         }\n" +
                        "     }" +
-                       "}");
+                       "}")
+                .sourceLevel("1.7")
+                .run(ConvertToStringSwitch.class)
+                .assertWarnings();
     }
 
     public void testComments1() throws Exception {
-        setSourceLevel("1.7");
-        performFixTest("test/Test.java",
-                       "package test;" +
+        HintTest
+                .create()
+                .input("package test;" +
                        "public class Test {" +
-                       "     private int a, b;"+
+                       "     private int a, b;" +
                        "     public void test() throws Exception {" +
                        "         String g = null;\n" +
                        "         //comment\n" +
@@ -341,62 +357,54 @@ public class ConvertToStringSwitchTest extends TestBase {
                        "             System.err.println(3);" +
                        "         }\n" +
                        "     }" +
-                       "}",
-                       "2:9-2:11:verifier:Convert to switch",
-                       "FixImpl",
-                       ("package test;" +
-                       "public class Test {" +
-                       "     private int a, b;"+
-                       "     public void test() throws Exception {" +
-                       "         String g = null;" +
-                       "         //comment\n" +
-                       "         switch (g) {\n" +
-                       "             case \"j\":\n" +
-                       "                 //foo1\n" +
-                       "                 System.err.println(1);" +
-                       "                 //foo2\n" +
-                       "                 break;" +
-                       "             case \"k\":\n" +
-                       "                 System.err.println(2);" +
-                       "                 break;" +
-                       "             case \"l\":\n" +
-                       "                 System.err.println(3);" +
-                       "                 break;" +
-                       "         }\n" +
-                       "     }" +
-                       "}").replaceAll("[ \t\n]+", " "));
+                       "}")
+                .sourceLevel("1.7")
+                .run(ConvertToStringSwitch.class)
+                .findWarning("2:9-2:11:verifier:Convert to switch")
+                .applyFix("FIX_ConvertToStringSwitch")
+                .assertCompilable()
+                .assertOutput("package test;" +
+                              "public class Test {" +
+                              "     private int a, b;" +
+                              "     public void test() throws Exception {" +
+                              "         String g = null;" +
+                              "         //comment\n" +
+                              "         switch (g) {\n" +
+                              "             case \"j\":\n" +
+                              "                 //foo1\n" +
+                              "                 System.err.println(1);" +
+                              "                 //foo2\n" +
+                              "                 break;" +
+                              "             case \"k\":\n" +
+                              "                 System.err.println(2);" +
+                              "                 break;" +
+                              "             case \"l\":\n" +
+                              "                 System.err.println(3);" +
+                              "                 break;" +
+                              "         }\n" +
+                              "     }" +
+                              "}");
     }
 
     public void testNoEquals() throws Exception {
-        setSourceLevel("1.7");
-
-        Preferences p = RulesManager.getPreferences("org.netbeans.modules.java.hints.jdk.ConvertToStringSwitch", HintsSettings.getCurrentProfileId());
-        boolean oldSetting = p.getBoolean(ConvertToStringSwitch.KEY_ALSO_EQ, ConvertToStringSwitch.DEF_ALSO_EQ);
-
-        try {
-            p.putBoolean(ConvertToStringSwitch.KEY_ALSO_EQ, false);
-            performAnalysisTest("test/Test.java",
-                                "package test;" +
-                                "public class Test {" +
-                                "     public void test() throws Exception {" +
-                                "         String g = null;\n" +
-                                "         if (\"j\" == g) {" +
-                                "             System.err.println(1);" +
-                                "         } else if (\"l\" == g) {" +
-                                "             System.err.println(2);" +
-                                "         } else {\n" +
-                                "             System.err.println(3);" +
-                                "         }\n" +
-                                "     }" +
-                                "}");
-        } finally {
-            p.putBoolean(ConvertToStringSwitch.KEY_ALSO_EQ, oldSetting);
-        }
+        HintTest
+                .create()
+                .input("package test;" +
+                       "public class Test {" +
+                       "     public void test() throws Exception {" +
+                       "         String g = null;\n" +
+                       "         if (\"j\" == g) {" +
+                       "             System.err.println(1);" +
+                       "         } else if (\"l\" == g) {" +
+                       "             System.err.println(2);" +
+                       "         } else {\n" +
+                       "             System.err.println(3);" +
+                       "         }\n" +
+                       "     }" +
+                       "}")
+                .sourceLevel("1.7")
+                .preference(ConvertToStringSwitch.KEY_ALSO_EQ, false)
+                .run(ConvertToStringSwitch.class)
+                .assertWarnings();
     }
-
-    @Override
-    protected String toDebugString(CompilationInfo info, Fix f) {
-        return "FixImpl";
-    }
-
 }

@@ -46,11 +46,11 @@ package org.netbeans.modules.refactoring.java.plugins;
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
-import java.net.URL;
 import java.util.*;
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.*;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
@@ -60,19 +60,10 @@ import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.spi.DiffElement;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
-import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.URLMapper;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.text.PositionBounds;
-import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
-import org.openide.util.lookup.Lookups;
 
 /**
  * Plugin that implements the core functionality of Extract Interface refactoring.
@@ -133,8 +124,6 @@ public final class ExtractInterfaceRefactoringPlugin extends JavaRefactoringPlug
     public Problem prepare(RefactoringElementsBag bag) {
         FileObject primFile = refactoring.getSourceType().getFileObject();
         try {
-            // create interface file
-            bag.add(refactoring, new CreateInterfaceElement(refactoring, primFile.getParent(), classHandle));
             UpdateClassTask.create(bag, primFile, refactoring, classHandle);
         } catch (IOException ex) {
             throw new RuntimeException(ex);
@@ -261,8 +250,9 @@ public final class ExtractInterfaceRefactoringPlugin extends JavaRefactoringPlug
      */
     private static List<TypeMirror> findUsedGenericTypes(ExtractInterfaceRefactoring refactoring, CompilationInfo javac, TypeElement javaClass) {
         List<TypeMirror> typeArgs = JavaRefactoringUtils.elementsToTypes(javaClass.getTypeParameters());
-        if (typeArgs.isEmpty())
+        if (typeArgs.isEmpty()) {
             return typeArgs;
+        }
         
         Types typeUtils = javac.getTypes();
         Set<TypeMirror> used = Collections.newSetFromMap(new IdentityHashMap<TypeMirror, Boolean>());
@@ -293,214 +283,6 @@ public final class ExtractInterfaceRefactoringPlugin extends JavaRefactoringPlug
 
     // --- REFACTORING ELEMENTS ------------------------------------------------
     
-    /**
-     * creates new file with empty interface and adds type params if necessary
-     */
-    private static final class CreateInterfaceElement extends SimpleRefactoringElementImplementation implements CancellableTask<WorkingCopy> {
-        private final URL folderURL;
-        private URL ifcURL;
-        private final String ifcName;
-        private final ExtractInterfaceRefactoring refactoring;
-        private final ElementHandle<TypeElement> sourceType;
-        
-        private CreateInterfaceElement(ExtractInterfaceRefactoring refactoring, FileObject folder, ElementHandle<TypeElement> sourceType) {
-            this.refactoring = refactoring;
-            this.folderURL = URLMapper.findURL(folder, URLMapper.INTERNAL);
-            this.ifcName = refactoring.getInterfaceName();
-            this.sourceType = sourceType;
-        }
-
-        // --- SimpleRefactoringElementImpl methods ----------------------------------
-        
-        @Override
-        public void performChange() {
-            try {
-                FileObject folderFO = URLMapper.findFileObject(folderURL);
-                if (folderFO == null)
-                    return;
-                
-                // create new file
-                
-                // XXX not nice; user might modify the template to something entirely different from the interface
-                FileObject tempFO = FileUtil.getConfigFile("Templates/Classes/Interface.java"); // NOI18N
-                
-                DataFolder folder = (DataFolder) DataObject.find(folderFO);
-                DataObject template = DataObject.find(tempFO);
-                DataObject newIfcDO = template.createFromTemplate(folder, ifcName);
-                this.ifcURL = URLMapper.findURL(newIfcDO.getPrimaryFile(), URLMapper.INTERNAL);
-                refactoring.getContext().add(newIfcDO.getPrimaryFile());
-                
-                // add type params and members
-                JavaSource js = JavaSource.forFileObject(newIfcDO.getPrimaryFile());
-                js.runModificationTask(this).commit();
-            } catch (DataObjectNotFoundException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-        
-        @Override
-        public void undoChange() {
-            FileObject ifcFO = null;
-            if (ifcURL != null) {
-                ifcFO = URLMapper.findFileObject(ifcURL);
-            }
-            if (ifcFO != null) {
-                try {
-                    ifcFO.delete();
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-        }
-        
-        @Override
-        public String getText() {
-            return NbBundle.getMessage(ExtractInterfaceRefactoringPlugin.class, "TXT_ExtractInterface_CreateIfc", ifcName); // NOI18N
-        }
-
-        @Override
-        public String getDisplayText() {
-            return getText();
-        }
-
-        @Override
-        public FileObject getParentFile() {
-            return URLMapper.findFileObject(folderURL);
-        }
-
-        @Override
-        public PositionBounds getPosition() {
-            return null;
-        }
-    
-        @Override
-        public Lookup getLookup() {
-            FileObject fo = ifcURL == null? null: URLMapper.findFileObject(ifcURL);
-            return fo != null? Lookups.singleton(fo): Lookup.EMPTY;
-        }
-        
-        // --- CancellableTask methods ----------------------------------
-        
-        @Override
-        public void cancel() {
-            
-        }
-
-        @Override
-        public void run(WorkingCopy wc) throws Exception {
-            wc.toPhase(JavaSource.Phase.RESOLVED);
-            ClassTree interfaceTree = findInterface(wc, ifcName);
-            TreeMaker make = wc.getTreeMaker();
-            GeneratorUtilities genUtils = GeneratorUtilities.get(wc);            
-            
-            // add type parameters
-            List<TypeMirror> typeParams = findUsedGenericTypes(refactoring, wc, sourceType.resolve(wc));
-            List<TypeParameterTree> newTypeParams = new ArrayList<TypeParameterTree>(typeParams.size());
-            // lets retrieve param type trees from origin class since it is
-            // almost impossible to create them via TreeMaker
-            TypeElement sourceTypeElm = sourceType.resolve(wc);
-            for (TypeParameterElement typeParam : sourceTypeElm.getTypeParameters()) {
-                TypeMirror origParam = typeParam.asType();
-                for (TypeMirror newParam : typeParams) {
-                    if (wc.getTypes().isSameType(origParam, newParam)) {
-                        Tree t = wc.getTrees().getTree(typeParam);
-                        if (t.getKind() == Tree.Kind.TYPE_PARAMETER) {
-                            TypeParameterTree typeParamTree = (TypeParameterTree) t;
-                            if (!typeParamTree.getBounds().isEmpty()) {
-                                typeParamTree = (TypeParameterTree) genUtils.importFQNs(t);
-                            }
-                            newTypeParams.add(typeParamTree);
-                        }
-                    }
-                }
-
-            }
-
-            // add new fields
-            List<Tree> members = new ArrayList<Tree>();
-            for (ElementHandle<VariableElement> handle : refactoring.getFields()) {
-                VariableElement memberElm = handle.resolve(wc);
-                VariableTree tree = (VariableTree) wc.getTrees().getTree(memberElm);
-                VariableTree newVarTree = make.Variable(
-                        make.Modifiers(Collections.<Modifier>emptySet(), tree.getModifiers().getAnnotations()),
-                        tree.getName(),
-                        tree.getType(),
-                        tree.getInitializer());
-                newVarTree = genUtils.importFQNs(newVarTree);
-                RefactoringUtils.copyJavadoc(memberElm, newVarTree, wc);
-                members.add(newVarTree);
-            }
-            // add newmethods
-            for (ElementHandle<ExecutableElement> handle : refactoring.getMethods()) {
-                ExecutableElement memberElm = handle.resolve(wc);
-                TreePath mpath = wc.getTrees().getPath(memberElm);
-                MethodTree tree = wc.getTrees().getTree(memberElm);
-                List<? extends AnnotationTree> annotations =
-                        filterOutOverrideAnnotation(tree.getModifiers().getAnnotations(), wc, mpath);
-                MethodTree newMethodTree = make.Method(
-                        make.Modifiers(Collections.<Modifier>emptySet(), annotations),
-                        tree.getName(),
-                        tree.getReturnType(),
-                        tree.getTypeParameters(),
-                        tree.getParameters(),
-                        tree.getThrows(),
-                        (BlockTree) null,
-                        null);
-                newMethodTree = genUtils.importFQNs(newMethodTree);
-                RefactoringUtils.copyJavadoc(memberElm, newMethodTree, wc);
-                members.add(newMethodTree);
-            }
-            // add super interfaces
-            List <Tree> extendsList = new ArrayList<Tree>();
-            extendsList.addAll(interfaceTree.getImplementsClause());
-            for (TypeMirrorHandle<? extends TypeMirror> handle : refactoring.getImplements()) {
-                // XXX check if interface is not aready there; the templates might be changed by user :-(
-                TypeMirror implMirror = handle.resolve(wc);
-                extendsList.add(make.Type(implMirror));
-            }
-            // create new interface
-            ClassTree newInterfaceTree = make.Interface(
-                    interfaceTree.getModifiers(),
-                    interfaceTree.getSimpleName(),
-                    newTypeParams,
-                    extendsList,
-                    Collections.<Tree>emptyList());
-            
-            newInterfaceTree = genUtils.insertClassMembers(newInterfaceTree, members);
-            wc.rewrite(interfaceTree, newInterfaceTree);
-        }
-        
-        // --- helper methods ----------------------------------
-        
-        private ClassTree findInterface(CompilationInfo javac, String name) {
-            for (Tree tree : javac.getCompilationUnit().getTypeDecls()) {
-                if (TreeUtilities.CLASS_TREE_KINDS.contains(tree.getKind())
-                        && tree.getKind() == Tree.Kind.INTERFACE
-                        && name.contentEquals(((ClassTree) tree).getSimpleName())) {
-                    return (ClassTree) tree;
-                }
-            }
-            throw new IllegalStateException("wrong template, cannot find the interface in " + javac.getFileObject()); // NOI18N
-        }
-
-        private static List<? extends AnnotationTree> filterOutOverrideAnnotation(List<? extends AnnotationTree> annotations, CompilationInfo javac, TreePath pathToMethod) {
-            if (annotations.isEmpty()) {
-                return annotations;
-            }
-            List<AnnotationTree> newAnnotations = new ArrayList<AnnotationTree>(annotations.size());
-            TypeElement overrideAnn = javac.getElements().getTypeElement("java.lang.Override"); // NOI18N
-            for (AnnotationTree annotationTree : annotations) {
-                Element annotation = javac.getTrees().getElement(new TreePath(pathToMethod, annotationTree));
-                if (annotation == null || annotation != overrideAnn) {
-                    newAnnotations.add(annotationTree);
-                }
-            }
-            return newAnnotations;
-        }
-    }
-    
     private final static class UpdateClassTask implements CancellableTask<WorkingCopy> {
         private final ExtractInterfaceRefactoring refactoring;
         private final ElementHandle<TypeElement> sourceType;
@@ -527,6 +309,7 @@ public final class ExtractInterfaceRefactoringPlugin extends JavaRefactoringPlug
         @Override
         public void run(WorkingCopy wc) throws Exception {
             wc.toPhase(JavaSource.Phase.RESOLVED);
+            createCu(wc);
             TypeElement clazz = this.sourceType.resolve(wc);
             assert clazz != null;
             ClassTree classTree = wc.getTrees().getTree(clazz);
@@ -693,6 +476,109 @@ public final class ExtractInterfaceRefactoringPlugin extends JavaRefactoringPlug
             ret.add(impl2Add);
             return ret;
         }
+        
+        public void createCu(WorkingCopy wc) throws Exception {
+            wc.toPhase(JavaSource.Phase.RESOLVED);
+            TreeMaker make = wc.getTreeMaker();
+            GeneratorUtilities genUtils = GeneratorUtilities.get(wc);            
+            
+            // add type parameters
+            List<TypeMirror> typeParams = findUsedGenericTypes(refactoring, wc, sourceType.resolve(wc));
+            List<TypeParameterTree> newTypeParams = new ArrayList<TypeParameterTree>(typeParams.size());
+            // lets retrieve param type trees from origin class since it is
+            // almost impossible to create them via TreeMaker
+            TypeElement sourceTypeElm = sourceType.resolve(wc);
+            for (TypeParameterElement typeParam : sourceTypeElm.getTypeParameters()) {
+                TypeMirror origParam = typeParam.asType();
+                for (TypeMirror newParam : typeParams) {
+                    if (wc.getTypes().isSameType(origParam, newParam)) {
+                        Tree t = wc.getTrees().getTree(typeParam);
+                        if (t.getKind() == Tree.Kind.TYPE_PARAMETER) {
+                            TypeParameterTree typeParamTree = (TypeParameterTree) t;
+                            if (!typeParamTree.getBounds().isEmpty()) {
+                                typeParamTree = (TypeParameterTree) genUtils.importFQNs(t);
+                            }
+                            newTypeParams.add(typeParamTree);
+                        }
+                    }
+                }
+
+            }
+
+            // add new fields
+            List<Tree> members = new ArrayList<Tree>();
+            for (ElementHandle<VariableElement> handle : refactoring.getFields()) {
+                VariableElement memberElm = handle.resolve(wc);
+                VariableTree tree = (VariableTree) wc.getTrees().getTree(memberElm);
+                VariableTree newVarTree = make.Variable(
+                        make.Modifiers(Collections.<Modifier>emptySet(), tree.getModifiers().getAnnotations()),
+                        tree.getName(),
+                        tree.getType(),
+                        tree.getInitializer());
+                newVarTree = genUtils.importFQNs(newVarTree);
+                RefactoringUtils.copyJavadoc(memberElm, newVarTree, wc);
+                members.add(newVarTree);
+            }
+            // add newmethods
+            for (ElementHandle<ExecutableElement> handle : refactoring.getMethods()) {
+                ExecutableElement memberElm = handle.resolve(wc);
+                TreePath mpath = wc.getTrees().getPath(memberElm);
+                MethodTree tree = wc.getTrees().getTree(memberElm);
+                List<? extends AnnotationTree> annotations =
+                        filterOutOverrideAnnotation(tree.getModifiers().getAnnotations(), wc, mpath);
+                MethodTree newMethodTree = make.Method(
+                        make.Modifiers(Collections.<Modifier>emptySet(), annotations),
+                        tree.getName(),
+                        tree.getReturnType(),
+                        tree.getTypeParameters(),
+                        tree.getParameters(),
+                        tree.getThrows(),
+                        (BlockTree) null,
+                        null);
+                newMethodTree = genUtils.importFQNs(newMethodTree);
+                RefactoringUtils.copyJavadoc(memberElm, newMethodTree, wc);
+                members.add(newMethodTree);
+            }
+            // add super interfaces
+            List <Tree> extendsList = new ArrayList<Tree>();
+            for (TypeMirrorHandle<? extends TypeMirror> handle : refactoring.getImplements()) {
+                // XXX check if interface is not aready there; the templates might be changed by user :-(
+                TypeMirror implMirror = handle.resolve(wc);
+                extendsList.add(make.Type(implMirror));
+            }
+            // create new interface
+            ClassTree newInterfaceTree = make.Interface(
+                    make.Modifiers(EnumSet.of(Modifier.PUBLIC)),
+                    refactoring.getInterfaceName(),
+                    newTypeParams,
+                    extendsList,
+                    Collections.<Tree>emptyList());
+            
+            newInterfaceTree = genUtils.insertClassMembers(newInterfaceTree, members);
+
+            FileObject fileObject = refactoring.getSourceType().getFileObject();
+            FileObject sourceRoot = ClassPath.getClassPath(fileObject, ClassPath.SOURCE).findOwnerRoot(fileObject);
+            String relativePath = FileUtil.getRelativePath(sourceRoot, fileObject.getParent()) + "/" + refactoring.getInterfaceName() + ".java";
+
+            CompilationUnitTree cu = JavaPluginUtils.createCompilationUnit(sourceRoot, relativePath, newInterfaceTree, wc, make);
+            wc.rewrite(null, cu);
+        }
+        
+        // --- helper methods ----------------------------------
+        private static List<? extends AnnotationTree> filterOutOverrideAnnotation(List<? extends AnnotationTree> annotations, CompilationInfo javac, TreePath pathToMethod) {
+            if (annotations.isEmpty()) {
+                return annotations;
+            }
+            List<AnnotationTree> newAnnotations = new ArrayList<AnnotationTree>(annotations.size());
+            TypeElement overrideAnn = javac.getElements().getTypeElement("java.lang.Override"); // NOI18N
+            for (AnnotationTree annotationTree : annotations) {
+                Element annotation = javac.getTrees().getElement(new TreePath(pathToMethod, annotationTree));
+                if (annotation == null || annotation != overrideAnn) {
+                    newAnnotations.add(annotationTree);
+                }
+            }
+            return newAnnotations;
+        }        
     }
     
 }

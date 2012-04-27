@@ -79,6 +79,11 @@ public class ValidateModulesTest extends NbTestCase {
         super(n);
     }
 
+    @Override
+    protected int timeOut() {
+        return 60000;
+    }
+
     public static Test suite() {
         TestSuite suite = new TestSuite();
         suite.addTest(new ValidateModulesTest("clusterVersions"));
@@ -198,7 +203,8 @@ public class ValidateModulesTest extends NbTestCase {
         for (Module m : Main.getModuleSystem().getManager().getModules()) {
             if ("true".equals(m.getAttribute("OpenIDE-Module-Deprecated"))) {
                 String cnb = m.getCodeNameBase();
-                if (cnb.equals("org.jdesktop.layout") || cnb.equals("org.netbeans.modules.editor.deprecated.pre65formatting")) {
+                if (cnb.equals("org.jdesktop.layout") || cnb.equals("org.netbeans.modules.editor.deprecated.pre65formatting") ||
+                    cnb.equals("org.netbeans.modules.java.hints.legacy.spi")) {
                     // Will take a while to fix, don't report as error now.
                     continue;
                 }
@@ -232,7 +238,7 @@ public class ValidateModulesTest extends NbTestCase {
             }
         }
         if (!foundJUnit) { // hack - pretend that this module is still in the platform cluster
-            manifests.add(new Manifest(new ByteArrayInputStream("OpenIDE-Module: org.netbeans.libs.junit4\nOpenIDE-Module-Specification-Version: 1.13\n\n".getBytes())));
+            manifests.add(new Manifest(new ByteArrayInputStream("OpenIDE-Module: org.netbeans.libs.junit4\nOpenIDE-Module-Specification-Version: 1.14\n\n".getBytes())));
         }
         return manifests;
     }

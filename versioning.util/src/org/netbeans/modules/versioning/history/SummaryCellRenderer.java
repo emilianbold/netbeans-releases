@@ -732,12 +732,15 @@ class SummaryCellRenderer implements ListCellRenderer {
                 linkerSupport.add(new ShowRemainingFilesLink(((AbstractSummaryView.ShowAllEventsItem) value).getParent()), id);
             }
             StringBuilder sb = new StringBuilder("<html><a href=\"expand\">"); //NOI18N
+            String label = ((AbstractSummaryView.ShowAllEventsItem) value).getParent().isAllEventsExpanded()
+                    ? NbBundle.getMessage(SummaryCellRenderer.class, "MSG_ShowLessFiles") //NOI18N
+                    : NbBundle.getMessage(SummaryCellRenderer.class, "MSG_ShowAllFiles"); //NOI18N
             if (isSelected) {
                 Component c = dlcr.getListCellRendererComponent(list, "<html><a href=\"expand\">ACTION_NAME</a>", index, isSelected, cellHasFocus); //NOI18N
                 sb.append("<font color=\"").append(getColorString(c.getForeground())).append("\">") //NOI18N
-                        .append(NbBundle.getMessage(SummaryCellRenderer.class, "MSG_ShowAllFiles")).append("</font>"); //NOI18N
+                        .append(label).append("</font>"); //NOI18N
             } else {
-                sb.append(NbBundle.getMessage(SummaryCellRenderer.class, "MSG_ShowAllFiles")); //NOI18N
+                sb.append(label);
             }
             sb.append("</a></html>"); //NOI18N
             comp = dlcr.getListCellRendererComponent(list, sb.toString(), index, isSelected, cellHasFocus);

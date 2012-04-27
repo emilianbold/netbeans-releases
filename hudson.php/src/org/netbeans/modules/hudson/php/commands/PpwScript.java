@@ -93,18 +93,16 @@ public class PpwScript extends PhpProgram {
         return new PpwScript(command).validate();
     }
 
-    @NbBundle.Messages("LBL_PpwScriptPrefix=PPW script: {0}")
+    @NbBundle.Messages("PpwScript.script.label=PPW script")
     @Override
     public String validate() {
-        String error = FileUtils.validateFile(getProgram(), false);
-        if (error == null) {
-            return null;
-        }
-        return Bundle.LBL_PpwScriptPrefix(error);
+        return FileUtils.validateFile(Bundle.PpwScript_script_label(), getProgram(), false);
     }
 
     @NbBundle.Messages({
+        "# {0} - project name",
         "PpwScript.create.title=Hudson job files for {0}",
+        "# {0} - project name",
         "PpwScript.create.progress=Creating Hudson job files for project {0}..."
     })
     public boolean createProjectFiles(PhpModule phpModule, Map<String, String> optionalParams) {

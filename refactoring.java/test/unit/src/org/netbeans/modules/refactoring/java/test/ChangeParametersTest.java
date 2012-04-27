@@ -45,12 +45,7 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.util.TreePath;
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import javax.lang.model.element.Modifier;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -70,6 +65,32 @@ public class ChangeParametersTest extends RefactoringTestBase {
 
     public ChangeParametersTest(String name) {
         super(name);
+    }
+    
+    public void test208495() throws Exception { //[Bug 208495] [Change Method Parameter] Method is not renamed when generating javadoc and adding a parameter
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t; public class A {\n"
+                + "    public static void testMethod(int x) {\n"
+                + "         System.out.println(x);\n"
+                + "    }\n"
+                + "\n"
+                + "    public static void main(string[] args) {\n"
+                + "        testMethod(2);\n"
+                + "    }\n"
+                + "}\n"));
+        ParameterInfo[] paramTable = {new ParameterInfo(0, "x", "int", null), new ParameterInfo(-1, "y", "int", "1")};
+        performChangeParameters(null, "renamed", null, paramTable, Javadoc.GENERATE, 1, false);
+        verifyContent(src,
+                new File("t/A.java", "package t; public class A {\n"
+                + "    /** * * @param x the value of x * @param y the value of y */\n"
+                + "    public static void renamed(int x, int y) {\n"
+                + "         System.out.println(x);\n"
+                + "    }\n"
+                + "\n"
+                + "    public static void main(string[] args) {\n"
+                + "        renamed(2, 1);\n"
+                + "    }\n"
+                + "}\n"));
     }
     
     public void test199738() throws Exception {
@@ -172,6 +193,53 @@ public class ChangeParametersTest extends RefactoringTestBase {
                 + "}\n"));
     }
     
+    public void testConstructorJavaDoc() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t; public class A {\n"
+                + "    public A(int x) {\n"
+                + "         System.out.println(x);\n"
+                + "    }\n"
+                + "\n"
+                + "    public static void main(string[] args) {\n"
+                + "        A a = new A(2);\n"
+                + "    }\n"
+                + "}\n"));
+        ParameterInfo[] paramTable = {new ParameterInfo(0, "x", "int", null), new ParameterInfo(-1, "y", "int", "1")};
+        performChangeParameters(null, null, null, paramTable, Javadoc.GENERATE, 0, false);
+        verifyContent(src,
+                new File("t/A.java", "package t; public class A {\n"
+                + "    /** * * @param x the value of x * @param y the value of y */\n"
+                + "    public A(int x, int y) {\n"
+                + "         System.out.println(x);\n"
+                + "    }\n"
+                + "\n"
+                + "    public static void main(string[] args) {\n"
+                + "        A a = new A(2, 1);\n"
+                + "    }\n"
+                + "}\n"));
+    }
+    
+    public void testSynthConstructorJavaDoc() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t; public class A {\n"
+                + "    public static void main(string[] args) {\n"
+                + "        A a = new A();\n"
+                + "    }\n"
+                + "}\n"));
+        ParameterInfo[] paramTable = {new ParameterInfo(-1, "y", "int", "1")};
+        performChangeParameters(null, null, null, paramTable, Javadoc.GENERATE, 0, false);
+        verifyContent(src,
+                new File("t/A.java", "package t; public class A {\n"
+                + "    /** * * @param y the value of y */\n"
+                + "    public A(int y) {\n"
+                + "    }\n"
+                + "\n"
+                + "    public static void main(string[] args) {\n"
+                + "        A a = new A(1);\n"
+                + "    }\n"
+                + "}\n"));
+    }
+    
     public void testConstructor() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t; public class A {\n"
@@ -231,6 +299,24 @@ public class ChangeParametersTest extends RefactoringTestBase {
                 + "}\n"));
         paramTable = new ParameterInfo[] {new ParameterInfo(0, "x", "int", null), new ParameterInfo(-1, "y", "int", "1")};
         performChangeParameters(null, null, null, paramTable, Javadoc.NONE, 0, false, new Problem(false, "ERR_existingConstructor"));
+    }
+    
+    public void test208694() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t; public class A {\n"
+                + "    public String testMethod() {\n"
+                + "         System.out.println(1);\n"
+                + "         return \"\";\n"
+                + "    }\n"
+                + "}\n"),
+                new File("t/B.java", "package t; public class B extends A {\n"
+                + "    public String testMethod() {\n"
+                + "         System.out.println(2);\n"
+                + "         return null;\n"
+                + "    }\n"
+                + "}\n"));
+        ParameterInfo[] paramTable = new ParameterInfo[] {};
+        performChangeParameters(EnumSet.of(Modifier.PROTECTED), null, null, paramTable, Javadoc.NONE, 1, false);
     }
     
     public void test201140() throws Exception {
@@ -671,7 +757,7 @@ public class ChangeParametersTest extends RefactoringTestBase {
                 + "    }\n"
                 + "}\n"));
     }
-    
+
     public void test202156() throws Exception { // [Change Method Parameters] Re-order parameters and change to varargs creates wrong method call
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t; public class A {\n"
@@ -755,7 +841,7 @@ public class ChangeParametersTest extends RefactoringTestBase {
                 + "    }\n"
                 + "}\n"));
         paramTable = new ParameterInfo[] {new ParameterInfo(0, "x", "Strings", null)};
-        performChangeParameters(null, null, null, paramTable, Javadoc.NONE, 1, false, new Problem(false, "WRN_canNotResolve"), new Problem(false, "WRN_isNotAssignable"));
+        performChangeParameters(null, null, null, paramTable, Javadoc.NONE, 1, false, new Problem(false, "WRN_canNotResolve"));
         verifyContent(src,
                 new File("t/A.java", "package t; public class A {\n"
                 + "    public static void testMethod(Strings x) {\n"
@@ -764,6 +850,39 @@ public class ChangeParametersTest extends RefactoringTestBase {
                 + "\n"
                 + "    public static void main(string[] args) {\n"
                 + "        testMethod(2);\n"
+                + "    }\n"
+                + "}\n"));
+    }
+        
+    public void test208022() throws Exception { // Refactoring Change Method Parameters - adding varargs doesn't work correctly
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t; public interface A {\n"
+                + "    void foo();"
+                + "    int testMethod(int x, String y);\n"
+                + "}\n"),
+                new File("t/B.java", "package t; public class B implements A {\n"
+                + "    public int testMethod(int x, String y) {\n"
+                + "         return x;\n"
+                + "    }\n"
+                + "\n"
+                + "    public void foo() {\n"
+                + "        testMethod(2, \"ddd\");\n"
+                + "    }\n"
+                + "}\n"));
+        ParameterInfo[] paramTable = new ParameterInfo[] {new ParameterInfo(0, "x", "int", null), new ParameterInfo(1, "y", "String", null), new ParameterInfo(-1, "i", "int...", "testMethod(1,\"\",2,3), 4")};
+        performChangeParameters(null, null, null, paramTable, Javadoc.NONE, 1, false);
+        verifyContent(src,
+                new File("t/A.java", "package t; public interface A {\n"
+                + "    void foo();"
+                + "    int testMethod(int x, String y, int... i);\n"
+                + "}\n"),
+                new File("t/B.java", "package t; public class B implements A {\n"
+                + "    public int testMethod(int x, String y, int... i) {\n"
+                + "         return x;\n"
+                + "    }\n"
+                + "\n"
+                + "    public void foo() {\n"
+                + "        testMethod(2, \"ddd\", testMethod(1, \"\", 2, 3), 4);\n"
                 + "    }\n"
                 + "}\n"));
     }
@@ -783,9 +902,9 @@ public class ChangeParametersTest extends RefactoringTestBase {
                 r[0] = new ChangeParametersRefactoring(TreePathHandle.create(tp, javac));
 
                 Set<Modifier> modifierSet = modifiers;
-                if(modifiers == null) {
-                    modifierSet = new HashSet<Modifier>(testMethod.getModifiers().getFlags());
-                }
+//                if(modifiers == null) {
+//                    modifierSet = new HashSet<Modifier>(testMethod.getModifiers().getFlags());
+//                }
                 r[0].setModifiers(modifierSet);
                 r[0].setOverloadMethod(compatible);
                 r[0].getContext().add(javadoc);

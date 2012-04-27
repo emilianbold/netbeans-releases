@@ -66,6 +66,44 @@ public class IntroduceParameterTest extends RefactoringTestBase {
     public IntroduceParameterTest(String name) {
         super(name);
     }
+    
+    public void test208699() throws Exception {
+        String source;
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", source = "package t; public class A {\n"
+                + "    /**\n"
+                + "     * My Test Method\n"
+                + "     */\n"
+                + "    public static void testMethod() {\n"
+                + "         System.out.println(2);\n"
+                + "    } // End of Method\n"
+                + "\n"
+                + "    public static void main(string[] args) {\n"
+                + "        testMethod();\n"
+                + "    }\n"
+                + "}\n"));
+        performIntroduce(src.getFileObject("t/A.java"), source.indexOf('2') + 1, Javadoc.NONE, true, false);
+        verifyContent(src,
+                new File("t/A.java", "package t; public class A {\n"
+                + "    /**\n"
+                + "     * My Test Method\n"
+                + "     */\n"
+                + "    public static void testMethod() {\n"
+                + "         testMethod(2);\n"
+                + "    } // End of Method\n"
+                + "\n"
+                + "    /**\n"
+                + "     * My Test Method\n"
+                + "     */\n"
+                + "    public static void testMethod(int introduced) {\n"
+                + "         System.out.println(introduced);\n"
+                + "    }\n"
+                + "\n"
+                + "    public static void main(string[] args) {\n"
+                + "        testMethod();\n"
+                + "    }\n"
+                + "}\n"));
+    }
 
     public void testIntroduceParameter() throws Exception {
         String source;
@@ -114,35 +152,35 @@ public class IntroduceParameterTest extends RefactoringTestBase {
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", source = "package t;\n"
                 + "public class A {\n"
-                + "public int length() {\n"
+                + "public int length(String unused) {\n"
                 + "    String introduced = \"Hello World!\";\n"
                 + "    return introduced.length();\n"
                 + "}\n"
                 + "}\n"),
                 new File("t/F.java", "package t;\n"
                 + "public class F extends A {\n"
-                + "    public int length() {\n"
-                + "        return super.length();\n"
+                + "    public int length(String unused) {\n"
+                + "        return super.length(unused);\n"
                 + "    }\n"
                 + "    public void bar() {\n"
-                + "        System.out.println(length());\n"
+                + "        System.out.println(length(\"\"));\n"
                 + "    }\n"
                 + "}\n"));
         performIntroduce(src.getFileObject("t/A.java"), source.indexOf("introduced"), Javadoc.NONE, false, false );
         verifyContent(src,
                 new File("t/A.java", "package t;\n"
                 + "public class A {\n"
-                + "public int length(String introduced) {\n"
+                + "public int length(String unused, String introduced) {\n"
                 + "    return introduced.length();\n"
                 + "}\n"
                 + "}\n"),
                 new File("t/F.java", "package t;\n"
                 + "public class F extends A {\n"
-                + "    public int length(String introduced) {\n"
-                + "        return super.length(introduced);\n"
+                + "    public int length(String unused, String introduced) {\n"
+                + "        return super.length(unused, introduced);\n"
                 + "    }\n"
                 + "    public void bar() {\n"
-                + "        System.out.println(length(\"Hello World!\"));\n"
+                + "        System.out.println(length(\"\", \"Hello World!\"));\n"
                 + "    }\n"
                 + "}\n"));
         
@@ -202,7 +240,7 @@ public class IntroduceParameterTest extends RefactoringTestBase {
                 + "        A a = new A();\n"
                 + "    }\n"
                 + "}\n"));
-        performIntroduce(src.getFileObject("t/A.java"), source.indexOf("2") + 1, Javadoc.NONE, false, false);
+        performIntroduce(src.getFileObject("t/A.java"), source.indexOf('2') + 1, Javadoc.NONE, false, false);
         verifyContent(src,
                 new File("t/A.java", "package t; public class A {\n"
                 + "    public A(int introduced) {\n"
@@ -224,7 +262,7 @@ public class IntroduceParameterTest extends RefactoringTestBase {
                 + "         System.out.println(x);\n"
                 + "    }\n"
                 + "}\n"));
-        performIntroduce(src.getFileObject("t/A.java"), source.indexOf("2") + 1, Javadoc.NONE, false, false, new Problem(false, "ERR_existingConstructor"));
+        performIntroduce(src.getFileObject("t/A.java"), source.indexOf('2') + 1, Javadoc.NONE, false, false, new Problem(false, "ERR_existingConstructor"));
     }
     
     public void testExistingMethod() throws Exception {
@@ -239,7 +277,7 @@ public class IntroduceParameterTest extends RefactoringTestBase {
                 + "         System.out.println(x);\n"
                 + "    }\n"
                 + "}\n"));
-        performIntroduce(src.getFileObject("t/A.java"), source.indexOf("2") + 1, Javadoc.NONE, false, false, new Problem(false, "ERR_existingMethod"));
+        performIntroduce(src.getFileObject("t/A.java"), source.indexOf('2') + 1, Javadoc.NONE, false, false, new Problem(false, "ERR_existingMethod"));
 
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", source = "package t; public class A extends B{\n"
@@ -252,7 +290,7 @@ public class IntroduceParameterTest extends RefactoringTestBase {
                 + "         System.out.println(x);\n"
                 + "    }\n"
                 + "}\n"));
-        performIntroduce(src.getFileObject("t/A.java"), source.indexOf("2") + 1, Javadoc.NONE, false, false, new Problem(false, "ERR_existingMethod"));
+        performIntroduce(src.getFileObject("t/A.java"), source.indexOf('2') + 1, Javadoc.NONE, false, false, new Problem(false, "ERR_existingMethod"));
     }
     
     public void testJavadoc() throws Exception {
@@ -267,7 +305,7 @@ public class IntroduceParameterTest extends RefactoringTestBase {
                 + "        testMethod();\n"
                 + "    }\n"
                 + "}\n"));
-        performIntroduce(src.getFileObject("t/A.java"), source.indexOf("2") + 1, Javadoc.GENERATE, false, false);
+        performIntroduce(src.getFileObject("t/A.java"), source.indexOf('2') + 1, Javadoc.GENERATE, false, false);
         verifyContent(src,
                 new File("t/A.java", "package t; public class A {\n"
                 + "    /**\n"
@@ -296,7 +334,7 @@ public class IntroduceParameterTest extends RefactoringTestBase {
                 + "        testMethod();\n"
                 + "    }\n"
                 + "}\n"));
-        performIntroduce(src.getFileObject("t/A.java"), source.indexOf("2") + 1, Javadoc.UPDATE, false, false);
+        performIntroduce(src.getFileObject("t/A.java"), source.indexOf('2') + 1, Javadoc.UPDATE, false, false);
         verifyContent(src,
                 new File("t/A.java", "package t; public class A {\n"
                 + "    /**\n"
@@ -327,7 +365,7 @@ public class IntroduceParameterTest extends RefactoringTestBase {
                 + "        testMethod();\n"
                 + "    }\n"
                 + "}\n"));
-        performIntroduce(src.getFileObject("t/A.java"), source.indexOf("2") + 1, Javadoc.GENERATE, false, true);
+        performIntroduce(src.getFileObject("t/A.java"), source.indexOf('2') + 1, Javadoc.GENERATE, false, true);
         verifyContent(src,
                 new File("t/A.java", "package t; public class A {\n"
                 + "    /**\n"

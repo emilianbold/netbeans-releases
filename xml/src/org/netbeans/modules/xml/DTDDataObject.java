@@ -69,6 +69,12 @@ import org.xml.sax.InputSource;
  * @author Libor Kramolis
  * @author Petr Kuzel
  */
+@MIMEResolver.ExtensionRegistration(
+    displayName="org.netbeans.modules.xml.resources.Bundle#DTDResolver",
+    extension="dtd",
+    mimeType="text/x-dtd",
+    position=60002
+)
 public final class DTDDataObject extends MultiDataObject implements XMLDataObjectLook {
     public static final String DTD_MIME_TYPE = "text/x-dtd";
 

@@ -62,6 +62,7 @@ class InsertRecordTableUI extends ResultSetJXTable {
         }
     }   
 
+    // Must correspond to DataViewUtils#isSQLConstantString!
     protected Object[] createNewRow() {
         Object[] row = new Object[getRSColumnCount()];
         for (int i = 0, I = getRSColumnCount(); i < I; i++) {

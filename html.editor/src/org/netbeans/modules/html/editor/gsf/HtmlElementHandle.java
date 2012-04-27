@@ -41,30 +41,42 @@
  */
 package org.netbeans.modules.html.editor.gsf;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
-import org.netbeans.editor.ext.html.parser.api.AstNode;
-import org.netbeans.editor.ext.html.parser.api.AstPath;
+import org.netbeans.modules.html.editor.lib.api.elements.Element;
+import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
+import org.netbeans.modules.html.editor.lib.api.elements.TreePath;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.html.editor.api.HtmlKit;
+import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
+import org.netbeans.modules.html.editor.lib.api.elements.*;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.filesystems.FileObject;
 
 /**
+ * Represents a handle for OpenTags obtained from HtmlParserResult. 
+ * 
+ * The handle may be held out of the parsing task and later resolved
+ * back to node by {@link #resolve(org.netbeans.modules.csl.spi.ParserResult) 
  *
  * @author mfukala@netbeans.org
  */
 public class HtmlElementHandle implements ElementHandle {
 
-    private AstNode node;
     private FileObject fo;
+    private String name;
+    private String elementPath;
 
-    HtmlElementHandle(AstNode node, FileObject fo) {
-        this.node = node;
+    public HtmlElementHandle(OpenTag node, FileObject fo) {
         this.fo = fo;
+        this.name = node.id().toString();
+        this.elementPath = ElementUtils.encodeToString(new TreePath(node));
     }
 
     @Override
@@ -79,7 +91,7 @@ public class HtmlElementHandle implements ElementHandle {
 
     @Override
     public String getName() {
-        return node.name();
+        return name;
     }
 
     @Override
@@ -102,41 +114,60 @@ public class HtmlElementHandle implements ElementHandle {
         if (!(handle instanceof HtmlElementHandle)) {
             return false;
         }
-
-        AstNode foreignNode = ((HtmlElementHandle) handle).node();
-        if (node == foreignNode) {
-            return true;
-        }
-
-        AstPath fnPath = foreignNode.path();
-        AstPath path = node.path();
-
-        return path.equals(fnPath);
-    }
-
-    AstNode node() {
-        return node;
-    }
-
-    public int from() {
-        return node().getLogicalRange()[0];
-    }
-
-    public int to() {
-        return node().getLogicalRange()[1];
+        HtmlElementHandle htmlHandle = (HtmlElementHandle)handle;
+        return htmlHandle.elementPath.equals(elementPath);
     }
 
     @Override
-    public OffsetRange getOffsetRange(ParserResult result) {
-        ElementHandle object = HtmlGSFParser.resolveHandle(result, this);
-        if (object instanceof HtmlElementHandle) {
-            HtmlElementHandle heh = (HtmlElementHandle) object;
-            int from = result.getSnapshot().getOriginalOffset(heh.from());
-            int to = result.getSnapshot().getOriginalOffset(heh.to());
-            return from != -1 && to != -1 ? new OffsetRange(from, to) : OffsetRange.NONE;
-        } else {
-            throw new IllegalArgumentException("Foreign element: " + object + " of type " +
-                    ((object != null) ? object.getClass().getName() : "null")); //NOI18N
-        }
+    public int hashCode() {
+        int hash = 7;
+        hash = 41 * hash + (this.elementPath != null ? this.elementPath.hashCode() : 0);
+        return hash;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final HtmlElementHandle other = (HtmlElementHandle) obj;
+        if ((this.elementPath == null) ? (other.elementPath != null) : !this.elementPath.equals(other.elementPath)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return elementPath;
+    }
+    
+    public OpenTag resolve(ParserResult result) {
+        if(!(result instanceof HtmlParserResult)) {
+            return null;
+        }
+        
+        HtmlParserResult htmlParserResult = (HtmlParserResult)result;
+        Node root = htmlParserResult.root();
+        
+        return ElementUtils.query(root, elementPath);
+    }
+        
+    @Override
+    public OffsetRange getOffsetRange(ParserResult result) {
+        OpenTag node = resolve(result);
+        if(node == null) {
+            return OffsetRange.NONE;
+        }
+        
+        Snapshot snapshot = result.getSnapshot();
+        int dfrom = snapshot.getOriginalOffset(node.from());
+        int dto = snapshot.getOriginalOffset(node.semanticEnd());
+        
+        return dfrom != -1 && dto != -1 ? new OffsetRange(dfrom, dto) : OffsetRange.NONE;
+    }
+    
 }

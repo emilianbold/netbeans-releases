@@ -131,18 +131,16 @@ public final class ApiGenScript extends PhpProgram {
         return new ApiGenScript(command).validate();
     }
 
-    @NbBundle.Messages("ApiGenScript.prefix=ApiGen script: {0}")
+    @NbBundle.Messages("ApiGenScript.script.label=ApiGen script")
     @Override
     public String validate() {
-        String error = FileUtils.validateFile(getProgram(), false);
-        if (error == null) {
-            return null;
-        }
-        return Bundle.ApiGenScript_prefix(error);
+        return FileUtils.validateFile(Bundle.ApiGenScript_script_label(), getProgram(), false);
     }
 
     @NbBundle.Messages({
+        "# {0} - project name",
         "ApiGenScript.api.generating=Generating API documentation for {0}",
+        "# {0} - project name",
         "ApiGenScript.error.generating=Generating API documentation for {0} failed, review Output window for details."
     })
     public void generateDocumentation(final PhpModule phpModule) {
@@ -208,22 +206,25 @@ public final class ApiGenScript extends PhpProgram {
 
     private List<String> getParams(PhpModule phpModule) {
         List<String> params = new ArrayList<String>();
-        addSource(phpModule, params);
-        addDestination(phpModule, params);
-        addTitle(phpModule, params);
-        addConfig(phpModule, params);
-        addCharsets(phpModule, params);
-        addExcludes(phpModule, params);
-        addAccessLevels(phpModule, params);
-        addInternal(phpModule, params);
-        addPhp(phpModule, params);
-        addTree(phpModule, params);
-        addDeprecated(phpModule, params);
-        addTodo(phpModule, params);
-        addDownload(phpModule, params);
-        addSourceCode(phpModule, params);
-        addColors(phpModule, params);
-        addProgressBar(phpModule, params);
+        if (ApiGenPreferences.getBoolean(phpModule, ApiGenPreferences.HAS_CONFIG)) {
+            addConfig(phpModule, params);
+        } else {
+            addSource(phpModule, params);
+            addDestination(phpModule, params);
+            addTitle(phpModule, params);
+            addCharsets(phpModule, params);
+            addExcludes(phpModule, params);
+            addAccessLevels(phpModule, params);
+            addInternal(phpModule, params);
+            addPhp(phpModule, params);
+            addTree(phpModule, params);
+            addDeprecated(phpModule, params);
+            addTodo(phpModule, params);
+            addDownload(phpModule, params);
+            addSourceCode(phpModule, params);
+            addColors(phpModule, params);
+            addProgressBar(phpModule, params);
+        }
         addUpdateCheck(phpModule, params);
         return params;
     }

@@ -215,9 +215,6 @@ public final class ApisupportAntUIUtils {
             try {
                 project = (NbModuleProject) ProjectManager.getDefault().findProject(folder);
                 OpenProjects.getDefault().open(new Project[] { project }, false);
-                if (Templates.getDefinesMainProject(wd)) {
-                    OpenProjects.getDefault().setMainProject(project);
-                }
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }

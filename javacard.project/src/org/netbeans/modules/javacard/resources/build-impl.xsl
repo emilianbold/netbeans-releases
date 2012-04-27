@@ -562,7 +562,7 @@ run   - Builds and deploys the application and starts the browser.
             </target>
 
             <target name="compile" depends="-init" unless="use.preprocessor">
-                <javac destdir="${{build.classes.dir}}" source="${{javac.source}}" target="${{javac.target}}" nowarn="${{javac.deprecation}}" debug="${{javac.debug}}" optimize="no" bootclasspath="${{javacard.classic.bootclasspath}}" includeAntRuntime="no">
+                <javac destdir="${{build.classes.dir}}" source="${{javac.source}}" target="${{javac.target}}" nowarn="${{javac.deprecation}}" debug="${{javac.debug}}" optimize="no" bootclasspath="${{javacard.bootclasspath}}" includeAntRuntime="no">
                     <xsl:for-each select="/project:project/project:configuration/jcproj:data/jcproj:source-roots/jcproj:root">
                         <xsl:if test="@id != 'src.proxies.dir'">
                         <xsl:element name="src">

@@ -50,5 +50,7 @@
 int main(int argc, char *argv[]) {
     checkLoggingArg(argc, argv, true);
     NBExecLoader loader;
-    return loader.start("nbexec.dll", argc - 1, argv + 1);
+    
+    // NBEXEC_DLL specified in preprocessor definitions
+    return loader.start(NBEXEC_DLL, argc - 1, argv + 1);  
 }

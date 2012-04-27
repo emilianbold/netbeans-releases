@@ -281,7 +281,7 @@ public class ModulesNode extends AbstractNode {
 
     private class AddModuleAction extends AbstractAction {
 
-        @Messages("BTN_add_module=Add Module...")
+        @Messages("BTN_add_module=Add Existing Module...")
         AddModuleAction() {
             super(BTN_add_module());
         }

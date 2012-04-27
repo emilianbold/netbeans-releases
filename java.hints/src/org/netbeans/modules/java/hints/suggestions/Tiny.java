@@ -45,34 +45,49 @@ package org.netbeans.modules.java.hints.suggestions;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.LineMap;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.ParenthesizedTree;
+import com.sun.source.tree.Scope;
 import com.sun.source.tree.StatementTree;
+import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.TreePathScanner;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.SourceVersion;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.api.java.source.support.CaretAwareJavaSourceTaskFactory;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Constraint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
-import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
-import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Kind;
-import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
-import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
-import org.netbeans.modules.java.hints.spi.AbstractHint.HintSeverity;
+import org.netbeans.modules.java.hints.suggestions.FillSwitchCustomizer.CustomizerProviderImpl;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.editor.hints.Severity;
+import org.netbeans.spi.java.hints.ConstraintVariableType;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.Hint.Kind;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.JavaFix;
+import org.netbeans.spi.java.hints.JavaFix.TransformationContext;
+import org.netbeans.spi.java.hints.JavaFixUtilities;
+import org.netbeans.spi.java.hints.TriggerPattern;
+import org.netbeans.spi.java.hints.TriggerTreeKind;
 import org.openide.util.NbBundle;
 
 /**
@@ -81,14 +96,14 @@ import org.openide.util.NbBundle;
  */
 public class Tiny {
 
-    @Hint(category="suggestions", hintKind=Kind.SUGGESTION, severity=HintSeverity.CURRENT_LINE_WARNING)
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.suggestions.Tiny.flipEquals", description = "#DESC_org.netbeans.modules.java.hints.suggestions.Tiny.flipEquals", category="suggestions", hintKind=Kind.ACTION, severity=Severity.HINT)
     @TriggerPattern(value="$this.equals($other)",
                     constraints={
-                        @Constraint(variable="$this", type="java.lang.Object"),
-                        @Constraint(variable="$other", type="java.lang.Object")
+                        @ConstraintVariableType(variable="$this", type="java.lang.Object"),
+                        @ConstraintVariableType(variable="$other", type="java.lang.Object")
                     })
     public static ErrorDescription flipEquals(HintContext ctx) {
-        int caret = CaretAwareJavaSourceTaskFactory.getLastPosition(ctx.getInfo().getFileObject());
+        int caret = ctx.getCaretLocation();
         MethodInvocationTree mit = (MethodInvocationTree) ctx.getPath().getLeaf();
         ExpressionTree select = mit.getMethodSelect();
         int selectStart;
@@ -128,12 +143,12 @@ public class Tiny {
             fixPattern = "$other.equals(this)";
         }
 
-        Fix fix = JavaFix.rewriteFix(ctx, fixDisplayName, ctx.getPath(), fixPattern);
+        Fix fix = JavaFixUtilities.rewriteFix(ctx, fixDisplayName, ctx.getPath(), fixPattern);
         
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName, fix);
     }
     
-    @Hint(category="suggestions", hintKind=Kind.SUGGESTION, severity=HintSeverity.CURRENT_LINE_WARNING)
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.suggestions.Tiny.convertToDifferentBase", description = "#DESC_org.netbeans.modules.java.hints.suggestions.Tiny.convertToDifferentBase", category="suggestions", hintKind=Kind.ACTION, severity=Severity.HINT)
     @TriggerTreeKind({Tree.Kind.INT_LITERAL, Tree.Kind.LONG_LITERAL})
     public static ErrorDescription convertToDifferentBase(HintContext ctx) {
         int start = (int) ctx.getInfo().getTrees().getSourcePositions().getStartPosition(ctx.getInfo().getCompilationUnit(), ctx.getPath().getLeaf());
@@ -148,16 +163,16 @@ public class Tiny {
         List<Fix> fixes = new LinkedList<Fix>();
         
         if (currentRadix != 16) {
-            fixes.add(JavaFix.toEditorFix(new ToDifferentRadixFixImpl(ctx.getInfo(), ctx.getPath(), "0x", 16)));
+            fixes.add(new ToDifferentRadixFixImpl(ctx.getInfo(), ctx.getPath(), "0x", 16).toEditorFix());
         }
         if (currentRadix != 10) {
-            fixes.add(JavaFix.toEditorFix(new ToDifferentRadixFixImpl(ctx.getInfo(), ctx.getPath(), "", 10)));
+            fixes.add(new ToDifferentRadixFixImpl(ctx.getInfo(), ctx.getPath(), "", 10).toEditorFix());
         }
         if (currentRadix != 8) {
-            fixes.add(JavaFix.toEditorFix(new ToDifferentRadixFixImpl(ctx.getInfo(), ctx.getPath(), "0", 8)));
+            fixes.add(new ToDifferentRadixFixImpl(ctx.getInfo(), ctx.getPath(), "0", 8).toEditorFix());
         }
         if (currentRadix != 2 && ctx.getInfo().getSourceVersion().compareTo(SourceVersion.RELEASE_7) >= 0) {
-            fixes.add(JavaFix.toEditorFix(new ToDifferentRadixFixImpl(ctx.getInfo(), ctx.getPath(), "0b", 2)));
+            fixes.add(new ToDifferentRadixFixImpl(ctx.getInfo(), ctx.getPath(), "0b", 2).toEditorFix());
         }
         
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), NbBundle.getMessage(Tiny.class, "ERR_convertToDifferentBase"), fixes.toArray(new Fix[0]));
@@ -180,7 +195,9 @@ public class Tiny {
         }
 
         @Override
-        protected void performRewrite(WorkingCopy wc, TreePath tp, boolean canShowUI) {
+        protected void performRewrite(TransformationContext ctx) {
+            WorkingCopy wc = ctx.getWorkingCopy();
+            TreePath tp = ctx.getPath();
             LiteralTree leaf = (LiteralTree) tp.getLeaf();
             String suffix;
             String target;
@@ -222,7 +239,7 @@ public class Tiny {
         
     }
 
-    @Hint(category="suggestions", hintKind=Kind.SUGGESTION, severity=HintSeverity.CURRENT_LINE_WARNING)
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.suggestions.Tiny.splitDeclaration", description = "#DESC_org.netbeans.modules.java.hints.suggestions.Tiny.splitDeclaration", category="suggestions", hintKind=Kind.ACTION, severity=Severity.HINT)
     @TriggerPattern(value="$mods$ $type $name = $init;")
     public static ErrorDescription splitDeclaration(HintContext ctx) {
         Tree.Kind parentKind = ctx.getPath().getParentPath().getLeaf().getKind();
@@ -230,7 +247,7 @@ public class Tiny {
         if (parentKind != Tree.Kind.BLOCK && parentKind != Tree.Kind.CASE) return null;
 
         String displayName = NbBundle.getMessage(Tiny.class, "ERR_splitDeclaration");
-        Fix fix = JavaFix.toEditorFix(new FixImpl(ctx.getInfo(), ctx.getPath()));
+        Fix fix = new FixImpl(ctx.getInfo(), ctx.getPath()).toEditorFix();
 
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName, fix);
     }
@@ -247,7 +264,9 @@ public class Tiny {
         }
 
         @Override
-        protected void performRewrite(WorkingCopy wc, TreePath tp, boolean canShowUI) {
+        protected void performRewrite(TransformationContext ctx) {
+            WorkingCopy wc = ctx.getWorkingCopy();
+            TreePath tp = ctx.getPath();
             Tree parent = tp.getParentPath().getLeaf();
             List<? extends StatementTree> statements;
 
@@ -276,6 +295,118 @@ public class Tiny {
             }
 
             wc.rewrite(parent, target);
+        }
+
+    }
+
+    static final String KEY_DEFAULT_ENABLED = "generateDefault";
+    static final String KEY_DEFAULT_SNIPPET = "defaultSnippet";
+    static final boolean DEF_DEFAULT_ENABLED = true;
+    static final String DEF_DEFAULT_SNIPPET = "throw new java.lang.AssertionError($expression.name());";
+    
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.suggestions.Tiny.fillSwitch", description = "#DESC_org.netbeans.modules.java.hints.suggestions.Tiny.fillSwitch", category="suggestions", hintKind=Kind.ACTION, severity=Severity.HINT, customizerProvider=CustomizerProviderImpl.class)
+    @TriggerPattern(value="switch ($expression) { case $cases$; }",
+                    constraints=@ConstraintVariableType(variable="$expression", type="java.lang.Enum"))
+    public static ErrorDescription fillSwitch(HintContext ctx) {
+        int caret = ctx.getCaretLocation();
+        SwitchTree st = (SwitchTree) ctx.getPath().getLeaf();
+        int switchStart = (int) ctx.getInfo().getTrees().getSourcePositions().getStartPosition(ctx.getPath().getCompilationUnit(), st);
+        LineMap lm = ctx.getPath().getCompilationUnit().getLineMap();
+
+        if (lm.getLineNumber(caret) != lm.getLineNumber(switchStart)) return null;
+        
+        TreePath expression = ctx.getVariables().get("$expression");
+        TypeElement enumType = (TypeElement) ctx.getInfo().getTypes().asElement(ctx.getInfo().getTrees().getTypeMirror(expression));
+        List<VariableElement> enumConstants = new ArrayList<VariableElement>(enumType.getEnclosedElements().size());
+        for (Element e : enumType.getEnclosedElements()) {
+            if (e.getKind() == ElementKind.ENUM_CONSTANT) {
+                enumConstants.add((VariableElement) e);
+            }
+        }
+        boolean hasDefault = false;
+        for (TreePath casePath : ctx.getMultiVariables().get("$cases$")) {
+            CaseTree ct = (CaseTree) casePath.getLeaf();
+
+            if (ct.getExpression() == null) {
+                hasDefault = true;
+            } else {
+                enumConstants.remove(ctx.getInfo().getTrees().getElement(new TreePath(casePath, ct.getExpression())));
+            }
+        }
+        boolean generateDefault = ctx.getPreferences().getBoolean(KEY_DEFAULT_ENABLED, DEF_DEFAULT_ENABLED);
+        if (enumConstants.isEmpty() && (hasDefault || !generateDefault)) return null;
+        List<String> names = new ArrayList<String>(enumConstants.size());
+        for (VariableElement constant : enumConstants) {
+            names.add(constant.getSimpleName().toString());
+        }
+        String defaultTemplate = generateDefault ? ctx.getPreferences().get(KEY_DEFAULT_SNIPPET, DEF_DEFAULT_SNIPPET) : null;
+        String errMessage = enumConstants.isEmpty() ? "ERR_Tiny.fillSwitchDefault" : !hasDefault && generateDefault ? "ERR_Tiny.fillSwitchCasesAndDefault" : "ERR_Tiny.fillSwitchCases";
+        String fixMessage = enumConstants.isEmpty() ? "FIX_Tiny.fillSwitchDefault" : !hasDefault && generateDefault ? "FIX_Tiny.fillSwitchCasesAndDefault" : "FIX_Tiny.fillSwitchCases";
+        return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), NbBundle.getMessage(Tiny.class, errMessage), new AddSwitchCasesImpl(ctx.getInfo(), ctx.getPath(), fixMessage, names, defaultTemplate).toEditorFix());
+    }
+
+    private static final class AddSwitchCasesImpl extends JavaFix {
+
+        private final String text;
+        private final List<String> names;
+        private final String defaultTemplate;
+
+        public AddSwitchCasesImpl(CompilationInfo info, TreePath tp, String text, List<String> names, String defaultTemplate) {
+            super(info, tp);
+            this.text = text;
+            this.names = names;
+            this.defaultTemplate = defaultTemplate;
+        }
+
+        @Override
+        protected String getText() {
+            return NbBundle.getMessage(Tiny.class, text);
+        }
+
+        @Override
+        protected void performRewrite(final TransformationContext ctx) {
+            WorkingCopy wc = ctx.getWorkingCopy();
+            final TreeMaker make = wc.getTreeMaker();
+            final TreePath tp = ctx.getPath();
+            SwitchTree st = (SwitchTree) tp.getLeaf();
+            int insertIndex = 0;
+            boolean hadDefault = false;
+
+            for (CaseTree ct : st.getCases()) {
+                if (ct.getExpression() == null) {
+                    hadDefault = true;
+                    break;
+                }
+                insertIndex++;
+            }
+
+            for (String name : names) {
+                st = make.insertSwitchCase(st, insertIndex++, make.Case(make.Identifier(name), Collections.singletonList(make.Break(null))));
+            }
+
+            if (!hadDefault && defaultTemplate != null) {
+                StatementTree stmt = ctx.getWorkingCopy().getTreeUtilities().parseStatement(defaultTemplate, new SourcePositions[1]);
+                Scope s = ctx.getWorkingCopy().getTrees().getScope(tp);
+                ctx.getWorkingCopy().getTreeUtilities().attributeTree(stmt, s);
+                st = GeneratorUtilities.get(ctx.getWorkingCopy()).importFQNs(make.addSwitchCase(st, make.Case(null, Collections.singletonList(stmt))));
+                new TreePathScanner<Void, Void>() {
+                    @Override public Void visitIdentifier(IdentifierTree node, Void p) {
+                        if (node.getName().contentEquals("$expression")) {
+                            ExpressionTree expression = ((SwitchTree) tp.getLeaf()).getExpression();
+                            if (expression.getKind() == Tree.Kind.PARENTHESIZED) {
+                                expression = ((ParenthesizedTree) expression).getExpression();
+                            }
+                            if (JavaFixUtilities.requiresParenthesis(expression, node, getCurrentPath().getParentPath().getLeaf())) {
+                                expression = make.Parenthesized(expression);
+                            }
+                            ctx.getWorkingCopy().rewrite(node, expression);
+                        }
+                        return super.visitIdentifier(node, p);
+                    }
+                }.scan(new TreePath(ctx.getPath(), st), null);
+            }
+
+            wc.rewrite(tp.getLeaf(), st);
         }
 
     }

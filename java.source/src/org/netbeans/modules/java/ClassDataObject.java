@@ -56,12 +56,12 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.progress.ProgressUtils;
-import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -72,7 +72,15 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
-    
+@NbBundle.Messages({
+    "ClassResolver=Class Files"
+})
+@MIMEResolver.ExtensionRegistration(
+    position=101,
+    displayName="#ClassResolver",
+    extension="class",
+    mimeType="application/x-class-file"
+)    
 public final class ClassDataObject extends MultiDataObject {
     
     public ClassDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException {
@@ -120,7 +128,7 @@ public final class ClassDataObject extends MultiDataObject {
                             return;
                         }
                         FileObject resource = null;
-                        final ElementHandle<TypeElement> handle = resourceName != null ? ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, resourceName.replace('/', '.')) : null;
+                        final ElementHandle<TypeElement> handle = resourceName != null ? ElementHandle.createTypeElementHandle(ElementKind.CLASS, resourceName.replace('/', '.')) : null;
                         final ClasspathInfo cpInfo = cp != null && bootPath != null ? ClasspathInfo.create(bootPath, cp, ClassPathSupport.createClassPath(new URL[0])) : null;
                         if (binaryRoot != null) {
                             //Todo: Ideally it should do the same as ElementOpen.open () but it will require a copy of it because of the reverese module dep.
@@ -140,7 +148,7 @@ public final class ClassDataObject extends MultiDataObject {
                         } else {
                             BinaryElementOpen beo = Lookup.getDefault().lookup(BinaryElementOpen.class);
 
-                            if (beo == null || handle == null || cpInfo == null || !beo.open(cpInfo, handle)) {
+                            if (beo == null || handle == null || cpInfo == null || !beo.open(cpInfo, handle, new AtomicBoolean())) {
                                 if (resourceName == null) {
                                     resourceName = fo.getName();
                                 }

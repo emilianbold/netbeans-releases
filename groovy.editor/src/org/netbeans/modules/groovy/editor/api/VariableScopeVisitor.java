@@ -110,9 +110,12 @@ public final class VariableScopeVisitor extends TypeVisitor {
     }
 
 
-    protected boolean isValidToken(Token<? extends GroovyTokenId> token) {
+    @Override
+    protected boolean isValidToken(Token<? extends GroovyTokenId> currentToken, Token<? extends GroovyTokenId> previousToken) {
         // cursor must be positioned on identifier, otherwise occurences doesn't make sense
-        return token.id() == GroovyTokenId.IDENTIFIER;
+        // second check is here because we want to have occurences also at the end of the identifier (see issue #155574)
+        return currentToken.id() == GroovyTokenId.IDENTIFIER
+            || previousToken.id() == GroovyTokenId.IDENTIFIER;
     }
     
     @Override
@@ -154,11 +157,14 @@ public final class VariableScopeVisitor extends TypeVisitor {
             }
         } else if (leaf instanceof ClassNode) {
             ClassNode clazz = (ClassNode) leaf;
-            VariableExpression variable = expression.getVariableExpression();
-            if (!variable.isDynamicTyped()) {
-                if (clazz.getName().equals(variable.getType().getName())) {
-                    FakeASTNode fakeNode = new FakeASTNode(expression, clazz.getNameWithoutPackage());
-                    occurrences.add(fakeNode);
+
+            if (!expression.isMultipleAssignmentDeclaration()) {
+                VariableExpression variable = expression.getVariableExpression();
+                if (!variable.isDynamicTyped()) {
+                    if (clazz.getName().equals(variable.getType().getName())) {
+                        FakeASTNode fakeNode = new FakeASTNode(expression, clazz.getNameWithoutPackage());
+                        occurrences.add(fakeNode);
+                    }
                 }
             }
         } else if (leaf instanceof MethodNode) {

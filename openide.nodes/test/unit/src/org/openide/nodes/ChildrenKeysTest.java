@@ -816,6 +816,7 @@ public class ChildrenKeysTest extends NbTestCase {
         assertEquals("named as x", "X", arr[0].getName());
     }
 
+    @RandomlyFails // NB-Core-Build #7944: timeout in waitActiveReferenceQueue
     public void testDestroyIsCalledWhenEntryIsRefreshed () throws Exception {
         class K extends Keys {
             public Node[] arr;
@@ -2436,6 +2437,7 @@ public class ChildrenKeysTest extends NbTestCase {
         }
     }
 
+    @RandomlyFails // NB-Core-Build #8126 from ChildrenLazyKeysTest: addNotify() should not be called now
     public void testSetChildrenDoNotCallAddNotify() {
         final AtomicBoolean addNotifyForbidden = new AtomicBoolean(false);
         class K extends Keys {

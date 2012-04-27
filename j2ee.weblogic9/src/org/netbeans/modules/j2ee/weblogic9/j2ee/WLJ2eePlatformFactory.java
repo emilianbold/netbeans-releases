@@ -81,6 +81,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibraryDependency;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.support.LookupProviderSupport;
 import org.openide.modules.InstalledFileLocator;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
 import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
@@ -93,6 +94,9 @@ import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.j2ee.weblogic9.config.WLServerLibrarySupport;
 import org.netbeans.modules.j2ee.weblogic9.config.WLServerLibrarySupport.WLServerLibrary;
+import org.netbeans.modules.javaee.specs.support.api.JaxWs;
+import org.netbeans.modules.websvc.wsstack.api.WSStack;
+import org.netbeans.modules.websvc.wsstack.spi.WSStackFactory;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -153,12 +157,12 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             // the WLS jar is intentional
             File weblogicFile = new File(platformRoot, WLPluginProperties.WEBLOGIC_JAR);
             if (weblogicFile.exists()) {
-                list.add(fileToUrl(weblogicFile));
+                list.add(Util.fileToUrl(weblogicFile));
             }
             File apiFile = new File(platformRoot, "server/lib/api.jar"); // NOI18N
             if (apiFile.exists()) {
-                list.add(fileToUrl(apiFile));
-                list.addAll(getJarClassPath(apiFile));
+                list.add(Util.fileToUrl(apiFile));
+                list.addAll(getJarClassPath(apiFile, mwHome));
             }
 
             // patches
@@ -170,15 +174,15 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                         File jarFile = FileUtil.normalizeFile(new File(candidate,
                                 "profiles/default/sys_manifest_classpath/weblogic_patch.jar")); // NOI18N
                         if (jarFile.exists()) {
-                            list.add(fileToUrl(jarFile));
-                            List<URL> deps = getJarClassPath(jarFile);
+                            list.add(Util.fileToUrl(jarFile));
+                            List<URL> deps = getJarClassPath(jarFile, mwHome);
                             list.addAll(deps);
                             for (URL dep : deps) {
-                                List<URL> innerDeps = getJarClassPath(dep);
+                                List<URL> innerDeps = getJarClassPath(dep, mwHome);
                                 list.addAll(innerDeps);
                                 for (URL innerDep : innerDeps) {
                                     if (innerDep.getPath().contains("patch_jars")) { // NOI18N
-                                        list.addAll(getJarClassPath(innerDep));
+                                        list.addAll(getJarClassPath(innerDep, mwHome));
                                     }
                                 }
                             }
@@ -189,7 +193,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
 
             // oepe contributions
             if (weblogicFile.exists()) {
-                List<URL> cp = getJarClassPath(weblogicFile);
+                List<URL> cp = getJarClassPath(weblogicFile, mwHome);
                 URL oepe = null;
                 for (URL cpElem : cp) {
                     if (OEPE_CONTRIBUTIONS_PATTERN.matcher(cpElem.getPath()).matches()) {
@@ -199,7 +203,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                     }
                 }
                 if (oepe != null) {
-                    list.addAll(getJarClassPath(oepe));
+                    list.addAll(getJarClassPath(oepe, mwHome));
                 }
             }
 
@@ -207,38 +211,22 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             addJerseyLibrary(list, platformRoot, mwHome, j2eePlatform);
 
             // file needed for jsp parsing WL9 and WL10
-            list.add(fileToUrl(new File(platformRoot, "server/lib/wls-api.jar"))); // NOI18N
+            list.add(Util.fileToUrl(new File(platformRoot, "server/lib/wls-api.jar"))); // NOI18N
         } catch (MalformedURLException e) {
             LOGGER.log(Level.WARNING, null, e);
         }
         return list;
     }
-    
-    /**
-     * Converts a file to the URI in system resources.
-     * Copied from the plugin for Sun Appserver 8
-     * 
-     * @param file a file to be converted
-     * 
-     * @return the resulting URI
-     */
-    static URL fileToUrl(File file) throws MalformedURLException {
-        URL url = file.toURI().toURL();
-        if (FileUtil.isArchiveFile(url)) {
-            url = FileUtil.getArchiveRoot(url);
-        }
-        return url;
-    }
 
     // package for tests only
-    static List<URL> getJarClassPath(URL url) {
+    static List<URL> getJarClassPath(URL url, File mwHome) {
         URL fileUrl = FileUtil.getArchiveFile(url);
         if (fileUrl != null) {
             FileObject fo = URLMapper.findFileObject(fileUrl);
             if (fo != null) {
                 File file = FileUtil.toFile(fo);
                 if (file != null) {
-                    return getJarClassPath(file);
+                    return getJarClassPath(file, mwHome);
                 }
             }
         }
@@ -246,7 +234,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
     }
 
     // package for tests only
-    static List<URL> getJarClassPath(File jarFile) {
+    static List<URL> getJarClassPath(File jarFile, File mwHome) {
         List<URL> urls = new ArrayList<URL>();
 
         try {
@@ -267,9 +255,17 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                                 }
                                 f = FileUtil.normalizeFile(f);
                                 if (!f.exists()) {
-                                    continue;
+                                    // fix the possibly wrong path in the jar #206528
+                                    if (mwHome != null && cpElement.startsWith("../../../modules")) { // NOI18N
+                                        f = FileUtil.normalizeFile(
+                                                new File(mwHome, cpElement.substring(9)));
+                                        if (f.exists()) {
+                                            urls.add(Util.fileToUrl(f));
+                                        }
+                                    }
+                                } else {
+                                    urls.add(Util.fileToUrl(f));
                                 }
-                                urls.add(fileToUrl(f));
                             }
                         }
                     }
@@ -325,7 +321,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                 } else {
                     serverVersion = WLPluginProperties.getServerVersion(serverRoot);
                 }
-                if (JPA2_SUPPORTED_SERVER_VERSION.isBelowOrEqual(serverVersion)) {
+                if (serverVersion != null && JPA2_SUPPORTED_SERVER_VERSION.isBelowOrEqual(serverVersion)) {
                     filter = new FilenameFilter() {
                         @Override
                         public boolean accept(File dir, String name) {
@@ -343,7 +339,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                 File[] persistenceCandidates = modules.listFiles(filter);
                 if (persistenceCandidates.length > 0) {
                     for (File candidate : persistenceCandidates) {
-                        list.add(fileToUrl(candidate));
+                        list.add(Util.fileToUrl(candidate));
                     }
                     if (persistenceCandidates.length > 1) {
                         LOGGER.log(Level.INFO, "Multiple javax.persistence JAR candidates");
@@ -361,7 +357,6 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
         if (middleware != null) {
             File modules = getMiddlewareModules(middleware);
             if (modules.exists() && modules.isDirectory()) {
-                FilenameFilter filter = null;
                 Version serverVersion = null;
                 if (j2eePlatform != null) {
                     serverVersion = j2eePlatform.dm.getServerVersion();
@@ -369,15 +364,15 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                     serverVersion = WLPluginProperties.getServerVersion(serverRoot);
                 }
                 if (JAX_RS_SUPPORTED_SERVER_VERSION.isBelowOrEqual(serverVersion)) {
-                    filter = new FilenameFilter() {
+                    FilenameFilter filter = new FilenameFilter() {
                         @Override
                         public boolean accept(File dir, String name) {
                             return JERSEY_PATTERN.matcher(name).matches();
                         }
                     };
-                }
-                for (File jerseyFile : modules.listFiles(filter)) {
-                    list.add(fileToUrl(jerseyFile));
+                    for (File jerseyFile : modules.listFiles(filter)) {
+                        list.add(Util.fileToUrl(jerseyFile));
+                    }
                 }
             }
         }
@@ -617,7 +612,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                 List<URL> cp = new ArrayList<URL>();
                 for (File file : entry.getValue()) {
                     try {
-                        cp.add(fileToUrl(file));
+                        cp.add(Util.fileToUrl(file));
                     } catch (MalformedURLException ex) {
                         LOGGER.log(Level.INFO, null, ex);
                     }
@@ -659,7 +654,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                 File j2eeDoc = InstalledFileLocator.getDefault().locate(J2EE_API_DOC, null, false);
                 if (j2eeDoc != null) {
                     list = new ArrayList();
-                    list.add(fileToUrl(j2eeDoc));
+                    list.add(Util.fileToUrl(j2eeDoc));
                     library.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC, list);
                 }
             } catch (MalformedURLException e) {
@@ -760,10 +755,16 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
         @Override
         public Lookup getLookup() {
             List content = new ArrayList();
-            Collections.addAll(content, new File(getPlatformRoot()), new JpaSupportImpl(this),
-                new JsxWsPoliciesSupportImpl(this), new JaxRsStackSupportImpl(this));
+            File platformRoot = new File(getPlatformRoot());
+            WSStack<JaxWs> wsStack = WSStackFactory.createWSStack(JaxWs.class ,
+                    new WebLogicJaxWsStack(platformRoot), WSStack.Source.SERVER);
+            Collections.addAll(content, platformRoot, 
+                    new JpaSupportImpl(this),new JsxWsPoliciesSupportImpl(this), 
+                    new JaxRsStackSupportImpl(this), wsStack );
+           
             Lookup baseLookup = Lookups.fixed(content.toArray());
-            return LookupProviderSupport.createCompositeLookup(baseLookup, "J2EE/DeploymentPlugins/WebLogic9/Lookup"); //NOI18N
+            return LookupProviderSupport.createCompositeLookup(baseLookup, 
+                    "J2EE/DeploymentPlugins/WebLogic9/Lookup"); //NOI18N
         }
     }
 

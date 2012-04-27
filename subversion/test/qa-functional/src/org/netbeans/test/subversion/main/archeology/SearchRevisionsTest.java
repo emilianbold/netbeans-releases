@@ -67,6 +67,7 @@ public class SearchRevisionsTest extends JellyTestCase {
             TestKit.closeProject(PROJECT_NAME);
             if (TestKit.getOsName().indexOf("Mac") > -1)
                 NewProjectWizardOperator.invoke().close();
+             new EventTool().waitNoEvent(3000);
             stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
             comOperator = new Operator.DefaultStringComparator(true, true);
             oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
@@ -90,13 +91,15 @@ public class SearchRevisionsTest extends JellyTestCase {
             Thread.sleep(500);
             
             rso.next();
-
+             new EventTool().waitNoEvent(3000);
             WorkDirStepOperator wdso = new WorkDirStepOperator();
+             new EventTool().waitNoEvent(3000);
             wdso.setRepositoryFolder("trunk/" + PROJECT_NAME);
             wdso.setLocalFolder(work.getCanonicalPath());
             wdso.checkCheckoutContentOnly(false);
 
             SearchRevisionsOperator sro = wdso.search();
+             new EventTool().waitNoEvent(3000);
             sro.setFrom("");
             sro.list();
             sro.verify();

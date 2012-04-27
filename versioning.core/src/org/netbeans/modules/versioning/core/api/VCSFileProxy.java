@@ -110,6 +110,10 @@ public final class VCSFileProxy {
         return new VCSFileProxy(parent.getPath() + "/" + child, parent.proxy);   // NOI18N
     }
     
+    static VCSFileProxy createFileProxy(String path) {
+        return new VCSFileProxy(path, null);
+    }
+    
     static VCSFileProxy createFileProxy(VCSFileProxy parent, String child, boolean isDirectory) {
         VCSFileProxy file = new VCSFileProxy(parent.getPath() + "/" + child, parent.proxy); // NOI18N
         file.isDirectory = isDirectory;
@@ -122,7 +126,8 @@ public final class VCSFileProxy {
      * {@link #createFileProxy(java.io.File)}.
      * 
      * @param fileObject the file to be represented by VCSFileProxy
-     * @return a VCSFileProxy representing the given file
+     * @return a VCSFileProxy representing the given file or null if the given 
+     * FileObject-s Filesystem isn't supported - e.g. jar filesystem. 
      */
     public static VCSFileProxy createFileProxy(FileObject fileObject) {
         try {

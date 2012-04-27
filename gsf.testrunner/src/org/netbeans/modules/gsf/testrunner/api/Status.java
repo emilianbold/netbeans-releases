@@ -50,7 +50,7 @@ package org.netbeans.modules.gsf.testrunner.api;
  */
 public enum Status {
 
-    PASSED(1,"00CC00"), PENDING(1<<1,"800080"), FAILED(1<<2,"FF0000"), ERROR(1<<3,"FF0000"), ABORTED(1<<4,"D69D29"), SKIPPED(1<<5,"585858"); //NOI18N
+    PASSED(1,"00CC00"), PENDING(1<<1,"800080"), FAILED(1<<2,"FF0000"), ERROR(1<<3,"FF0000"), ABORTED(1<<4,"D69D29"), SKIPPED(1<<5,"585858"), PASSEDWITHERRORS(1<<6,"000000"), IGNORED(1<<7,"000000"); //NOI18N
 
     private final int bitMask;
     private final String displayColor;

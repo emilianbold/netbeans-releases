@@ -68,14 +68,6 @@ public class DuplicatesCCTest extends GroovyTestBase {
         Logger.getLogger(CompletionHandler.class.getName()).setLevel(Level.FINEST);
     }
 
-    // uncomment this to have logging from GroovyLexer
-    protected Level logLevel() {
-        // enabling logging
-        return Level.INFO;
-        // we are only interested in a single logger, so we set its level in setUp(),
-        // as returning Level.FINEST here would log from all loggers
-    }
-
     protected @Override Map<String, ClassPath> createClassPathsForTest() {
         Map<String, ClassPath> map = super.createClassPathsForTest();
         map.put(ClassPath.SOURCE, ClassPathSupport.createClassPath(new FileObject[] {

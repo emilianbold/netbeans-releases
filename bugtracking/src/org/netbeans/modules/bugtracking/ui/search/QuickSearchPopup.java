@@ -51,14 +51,12 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 import javax.swing.JComponent;
 import javax.swing.JLayeredPane;
 import javax.swing.JList;
@@ -67,9 +65,11 @@ import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.Query;
-import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.APIAccessor;
+import org.netbeans.modules.bugtracking.IssueImpl;
+import org.netbeans.modules.bugtracking.QueryImpl;
+import org.netbeans.modules.bugtracking.RepositoryImpl;
+import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.ui.search.PopupItem.IssueItem;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.openide.util.NbBundle;
@@ -106,7 +106,7 @@ public class QuickSearchPopup extends javax.swing.JPanel
     private String searchedText;
 
     private RequestProcessor.Task evalTask;
-    private Repository repository;
+    private RepositoryImpl repository;
     private RequestProcessor rp;
     private List<PopupItem> currentHitlist;
 
@@ -142,7 +142,7 @@ public class QuickSearchPopup extends javax.swing.JPanel
         Object item = model.getElementAt(selection);
         if(item == null) return;
         if(item instanceof PopupItem.IssueItem) {
-            Issue issue = ((PopupItem.IssueItem) item).getIssue();
+            IssueImpl issue = ((PopupItem.IssueItem) item).getIssue();
             if (issue != null) {
                 comboBar.setIssue(issue);
                 clearModel();
@@ -226,7 +226,7 @@ public class QuickSearchPopup extends javax.swing.JPanel
         }
     }
 
-    void setRepository(Repository repo) {
+    void setRepository(RepositoryImpl repo) {
         repository = repo;
     }
 
@@ -250,9 +250,9 @@ public class QuickSearchPopup extends javax.swing.JPanel
         addIssues(BugtrackingUtil.getByIdOrSummary(BugtrackingUtil.getOpenIssues(), criteria), ids);
 
         // all localy known issues
-        Query[] queries = repository.getQueries();
-        for (Query q : queries) {
-            Issue[] issues = q.getIssues(criteria);
+        Collection<QueryImpl> queries = repository.getQueries();
+        for (QueryImpl q : queries) {
+            Collection<IssueImpl> issues = q.getIssues(criteria);
             addIssues(issues, ids);
         }
 
@@ -261,11 +261,11 @@ public class QuickSearchPopup extends javax.swing.JPanel
         populateModel(criteria, false, true);
     }
 
-    private void addIssues(Issue[] issues, Set<String> ids) {
+    private void addIssues(Collection<IssueImpl> issues, Set<String> ids) {
         if(issues == null) {
             return;
         }
-        for (Issue issue : issues) {
+        for (IssueImpl issue : issues) {
             if (ids.contains(issue.getID())) {
                 continue;
             }
@@ -276,7 +276,7 @@ public class QuickSearchPopup extends javax.swing.JPanel
 
     private void populateModel(final String criteria, boolean fullList, final boolean addSearchItem) {
         List<PopupItem> modelList = new ArrayList<PopupItem>();
-        List<Issue> recentIssues = new ArrayList<Issue>(BugtrackingUtil.getRecentIssues(repository));
+        List<IssueImpl> recentIssues = new ArrayList<IssueImpl>(BugtrackingUtil.getRecentIssues(repository));
         Collections.sort(currentHitlist, new IssueComparator(recentIssues));
 
         for (PopupItem item : currentHitlist) {
@@ -302,9 +302,9 @@ public class QuickSearchPopup extends javax.swing.JPanel
     }
 
     private class IssueComparator implements Comparator<PopupItem> {
-        private final List<Issue> recentIssues;
+        private final List<IssueImpl> recentIssues;
 
-        public IssueComparator(List<Issue> recentIssues) {
+        public IssueComparator(List<IssueImpl> recentIssues) {
             this.recentIssues = recentIssues;
         }
 
@@ -334,9 +334,9 @@ public class QuickSearchPopup extends javax.swing.JPanel
             return ii1.getIssue().getID().compareTo(ii2.getIssue().getID());
         }
 
-        private int getRecentIssueIdx(Issue issue) {
+        private int getRecentIssueIdx(IssueImpl issue) {
             for (int i = 0; i < recentIssues.size(); i++) {
-                Issue recentIssue = recentIssues.get(i);
+                IssueImpl recentIssue = recentIssues.get(i);
                 if(recentIssue.getID().equals(issue.getID())) {
                     return i;
                 }
@@ -595,7 +595,7 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
 
         // XXX
         Issue issue = comboBar.getIssue();
-        String issueText = issue != null ? IssueItem.getIssueDescription(issue).trim() : "";                    // NOI18N
+        String issueText = issue != null ? IssueItem.getIssueDescription(APIAccessor.IMPL.getImpl(issue)).trim() : "";                    // NOI18N
         shouldBeVisible = shouldBeVisible && (issue == null || !issueText.equals(comboBar.getText().trim()));
 
         return shouldBeVisible;
@@ -617,7 +617,7 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
                     Set<String> ids = new HashSet<String>();
                     addIssues(BugtrackingUtil.getByIdOrSummary(BugtrackingUtil.getOpenIssues(), criteria), ids);
 
-                    Issue[] issues = repository.simpleSearch(criteria);
+                    Collection<IssueImpl> issues = repository.simpleSearch(criteria);
                     addIssues(issues, ids);
                     populateModel(criteria, false, currentHitlist.size() > 0);
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -75,6 +75,14 @@ public class MetadataUtilities {
             return str2 == null;
         } else {
             return ignoreCase ? str1.equalsIgnoreCase(str2) : str1.equals(str2);
+        }
+    }
+    
+    public static String trimmed(String input) {
+        if(input == null) {
+            return input;
+        } else {
+            return input.trim();
         }
     }
 }

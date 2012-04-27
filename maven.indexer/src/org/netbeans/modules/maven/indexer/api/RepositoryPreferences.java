@@ -56,15 +56,23 @@ import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.swing.event.ChangeListener;
+import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.repository.RepositorySystem;
+import org.apache.maven.settings.Mirror;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
+import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import static org.netbeans.modules.maven.indexer.api.Bundle.*;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbPreferences;
+import org.sonatype.aether.repository.MirrorSelector;
+import org.sonatype.aether.repository.RemoteRepository;
+import org.sonatype.aether.util.repository.DefaultMirrorSelector;
 
 /**
  * List of Maven repositories of interest.
@@ -74,10 +82,6 @@ public final class RepositoryPreferences {
     private static final Logger LOG = Logger.getLogger(RepositoryPreferences.class.getName());
 
     private static RepositoryPreferences instance;
-
-    //TODO - move elsewhere, implementation detail??
-    public static final String TYPE_NEXUS = "nexus"; //NOI18N
-    
 
     private static final String KEY_TYPE = "provider";//NOI18N
     private static final String KEY_DISPLAY_NAME = "name";//NOI18N
@@ -93,15 +97,20 @@ public final class RepositoryPreferences {
     public static final int FREQ_NEVER = 3;
     private final Map<String,RepositoryInfo> infoCache = new HashMap<String,RepositoryInfo>();
     private final Map<Object,List<RepositoryInfo>> transients = new LinkedHashMap<Object,List<RepositoryInfo>>();
-    private final RepositoryInfo local;
+    private RepositoryInfo local;
     private final RepositoryInfo central;
     private final ChangeSupport cs = new ChangeSupport(this);
+    
+    //for tests to change
+    static boolean CONSIDER_MIRRORS = true;
+    
 
-    @Messages("local=Local")
     private RepositoryPreferences() {
         try {
-            local = new RepositoryInfo(RepositorySystem.DEFAULT_LOCAL_REPO_ID, TYPE_NEXUS, local(), EmbedderFactory.getProjectEmbedder().getLocalRepository().getBasedir(), null);
-            central = new RepositoryInfo(RepositorySystem.DEFAULT_REMOTE_REPO_ID, TYPE_NEXUS, /* XXX pull display name from superpom? */RepositorySystem.DEFAULT_REMOTE_REPO_ID, null, RepositorySystem.DEFAULT_REMOTE_REPO_URL);
+            central = new RepositoryInfo(RepositorySystem.DEFAULT_REMOTE_REPO_ID, /* XXX pull display name from superpom? */RepositorySystem.DEFAULT_REMOTE_REPO_ID, null, RepositorySystem.DEFAULT_REMOTE_REPO_URL);
+            //this repository can be mirrored
+            central.setMirrorStrategy(RepositoryInfo.MirrorStrategy.ALL);
+
         } catch (URISyntaxException x) {
             throw new AssertionError(x);
         }
@@ -123,7 +132,6 @@ public final class RepositoryPreferences {
     }
 
     private static @CheckForNull RepositoryInfo createRepositoryInfo(Preferences p) throws URISyntaxException {
-        String type = p.get(KEY_TYPE, TYPE_NEXUS);
         String id = p.name();
         String name = p.get(KEY_DISPLAY_NAME, null);
         if (name == null) {
@@ -132,18 +140,50 @@ public final class RepositoryPreferences {
         String path = p.get(KEY_PATH, null);
         String repourl = p.get(KEY_REPO_URL, null);
         String indexurl = p.get(KEY_INDEX_URL, null);
-        return new RepositoryInfo(id, type, name, path, repourl, indexurl);
+        RepositoryInfo repo = new RepositoryInfo(id, name, path, repourl, indexurl);
+        //repository infos from preferences cannot be wildcard mirrored.
+        repo.setMirrorStrategy(RepositoryInfo.MirrorStrategy.NON_WILDCARD);
+        return repo;
     }
 
     /** @since 2.2 */
-    public @NonNull RepositoryInfo getLocalRepository() {
+    @Messages("local=Local")
+    public @NonNull synchronized RepositoryInfo getLocalRepository() {
+        if (local == null) {
+            try {
+                //TODO do we care about changing the instance when localrepo location changes?
+                local = new RepositoryInfo(RepositorySystem.DEFAULT_LOCAL_REPO_ID, local(), EmbedderFactory.getProjectEmbedder().getLocalRepository().getBasedir(), null);
+                local.setMirrorStrategy(RepositoryInfo.MirrorStrategy.NONE);
+            } catch (URISyntaxException x) {
+                throw new AssertionError(x);
+            }
+        }
         return local;
     }
 
+    /**
+     * returns the RepositoryInfo object with the given id or a mirror repository info
+     * that mirrors the given id.
+     * @param id
+     * @return 
+     */
     public @CheckForNull RepositoryInfo getRepositoryInfoById(String id) {
-        for (RepositoryInfo ri : getRepositoryInfos()) {
+        List<RepositoryInfo> infos = getRepositoryInfos();
+        //repository infos are now including mirrors
+        //first check if the repository itself in the list has the id
+        for (RepositoryInfo ri : infos) {
             if (ri.getId().equals(id)) {
                 return ri;
+            }
+        }
+        //if not, then try checking the mirrored repos..
+        for (RepositoryInfo ri : infos) {
+            if (ri.isMirror()) {
+                for (RepositoryInfo rii : ri.getMirroredRepositories()) {
+                    if (rii.getId().equals(id)) {
+                        return ri;
+                    }
+                }
             }
         }
         return null;
@@ -151,7 +191,7 @@ public final class RepositoryPreferences {
 
     public List<RepositoryInfo> getRepositoryInfos() {
         List<RepositoryInfo> toRet = new ArrayList<RepositoryInfo>();
-        toRet.add(local);
+        toRet.add(getLocalRepository());
         Set<String> ids = new HashSet<String>();
         ids.add(RepositorySystem.DEFAULT_LOCAL_REPO_ID);
         Set<String> urls = new HashSet<String>();
@@ -204,7 +244,63 @@ public final class RepositoryPreferences {
                 }
             }
         }
-        return toRet;
+        if (CONSIDER_MIRRORS) {
+            MavenEmbedder embedder2 = EmbedderFactory.getOnlineEmbedder();
+            DefaultMirrorSelector selectorWithGroups = new DefaultMirrorSelector();
+            DefaultMirrorSelector selectorWithoutGroups = new DefaultMirrorSelector();
+            for (Mirror mirror : embedder2.getSettings().getMirrors()) {
+                String mirrorOf = mirror.getMirrorOf();
+                selectorWithGroups.add(mirror.getId(), mirror.getUrl(), mirror.getLayout(), false, mirrorOf, mirror.getMirrorOfLayouts());
+                if (!mirrorOf.contains("*")) {
+                    selectorWithoutGroups.add(mirror.getId(), mirror.getUrl(), mirror.getLayout(), false, mirrorOf, mirror.getMirrorOfLayouts());
+                }
+            }
+
+            List<RepositoryInfo> semiTreed = new ArrayList<RepositoryInfo>();
+            for (RepositoryInfo in: toRet) {
+                if (in.getMirrorStrategy() == RepositoryInfo.MirrorStrategy.ALL || in.getMirrorStrategy() == RepositoryInfo.MirrorStrategy.NON_WILDCARD) {
+                    RepositoryInfo processed = getMirrorInfo(in, in.getMirrorStrategy() == RepositoryInfo.MirrorStrategy.ALL ? selectorWithGroups : selectorWithoutGroups, semiTreed);
+                    boolean isMirror = true;
+                    if (processed == null) {
+                        isMirror = false;
+                        processed = in;
+                    }
+                    int index = semiTreed.indexOf(processed);
+                    if (index > -1) {
+                        processed = semiTreed.get(index);
+                    } else {
+                        semiTreed.add(processed);
+                    }
+                    if (isMirror) {
+                        processed.addMirrorOfRepository(in);
+                    }
+                } else {
+                    semiTreed.add(in);
+                }
+            }
+            return semiTreed;
+        } else {
+            return toRet;
+        }
+    }
+    
+    /**
+     * if the repository has a mirror, then create a repositoryinfo object for it or find an existing one in the current list..
+     */
+    
+    private RepositoryInfo getMirrorInfo(RepositoryInfo info, MirrorSelector selector, List<RepositoryInfo> infos) {
+        RemoteRepository original = new RemoteRepository(info.getId(), /* XXX do we even support any other layout?*/"default", info.getRepositoryUrl());
+        RemoteRepository mirror = selector.getMirror(original);
+        if (mirror != null) {
+            try {
+                RepositoryInfo toret = new RepositoryInfo(mirror.getId(), mirror.getId(), null, mirror.getUrl());
+                toret.setMirrorStrategy(RepositoryInfo.MirrorStrategy.NONE);
+                return toret;
+            } catch (URISyntaxException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return null;
     }
 
     public void addOrModifyRepositoryInfo(RepositoryInfo info) {
@@ -212,7 +308,6 @@ public final class RepositoryPreferences {
         synchronized (infoCache) {
             infoCache.put(id, info);
             Preferences p = storage().node(id);
-            put(p, KEY_TYPE, info.getType().equals(TYPE_NEXUS) ? null : info.getType());
             p.put(KEY_DISPLAY_NAME, info.getName());
             put(p, KEY_PATH, info.getRepositoryPath());
             put(p, KEY_REPO_URL, info.getRepositoryUrl());
@@ -276,30 +371,34 @@ public final class RepositoryPreferences {
     }
 
     /**
-     * Register a transient repository.
+     * Register a transient repository, the effective url actually used depends on maven settings for mirrors.
      * Its definition will not be persisted.
      * Repositories whose ID or URL duplicate that of a persistent repository,
      * or previously registered transient repository, will be ignored
      * (unless and until that repository is removed).
-     * {@link #TYPE_NEXUS} is assumed.
      * @param key an arbitrary key for use with {@link #removeTransientRepositories}
      * @param id the repository ID
      * @param displayName a display name (may just be {@code id})
      * @param url the remote URL (prefer the canonical public URL to that of a mirror)
+     * @param strategy how is the url parameter processed by local maven mirror settings
      * @throws URISyntaxException in case the URL is malformed
-     * @since 2.1
+     * @since 2.11
      */
-    public void addTransientRepository(Object key, String id, String displayName, String url) throws URISyntaxException {
+    public void addTransientRepository(Object key, String id, String displayName, String url, RepositoryInfo.MirrorStrategy strategy) throws URISyntaxException {
         synchronized (infoCache) {
             List<RepositoryInfo> infos = transients.get(key);
             if (infos == null) {
                 infos = new ArrayList<RepositoryInfo>();
                 transients.put(key, infos);
             }
-            infos.add(new RepositoryInfo(id, RepositoryPreferences.TYPE_NEXUS, displayName, null, url));
+            RepositoryInfo info = new RepositoryInfo(id, displayName, null, url);
+            info.setMirrorStrategy(strategy);
+            infos.add(info);
         }
         cs.fireChange();
     }
+
+    
 
     /**
      * Remote all transient repositories associated with a given ID.
@@ -325,6 +424,24 @@ public final class RepositoryPreferences {
      */
     public void removeChangeListener(ChangeListener l) {
         cs.removeChangeListener(l);
+    }
+
+    /**
+     * Produces a list of remote repositories.
+     * @see MavenEmbedder#resolve
+     * @see ProjectBuildingRequest#setRemoteRepositories
+     * @since 2.12
+     */
+    public List<ArtifactRepository> remoteRepositories(MavenEmbedder embedder) {
+        List<ArtifactRepository> remotes = new ArrayList<ArtifactRepository>();
+        for (RepositoryInfo info : RepositoryPreferences.getInstance().getRepositoryInfos()) {
+            // XXX should there be a String preferredId parameter to limit the remote repositories used in case we have a "reference" ID somehow?
+            if (!info.isLocal()) {
+                remotes.add(embedder.createRemoteRepository(info.getRepositoryUrl(), info.getId()));
+            }
+            // XXX do we care to handle mirrors specially?
+        }
+        return remotes;
     }
 
 }

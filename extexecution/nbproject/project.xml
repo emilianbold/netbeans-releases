@@ -130,8 +130,10 @@
                 <package>org.netbeans.api.extexecution</package>
                 <package>org.netbeans.api.extexecution.print</package>
                 <package>org.netbeans.api.extexecution.input</package>
+                <package>org.netbeans.api.extexecution.startup</package>
                 <package>org.netbeans.spi.extexecution</package>
                 <package>org.netbeans.spi.extexecution.destroy</package>
+                <package>org.netbeans.spi.extexecution.startup</package>
             </public-packages>
         </data>
     </configuration>

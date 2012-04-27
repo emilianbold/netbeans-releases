@@ -89,26 +89,12 @@ public abstract class SPIAccessor {
             boolean followUpJob,
             boolean checkForEditorModifications,
             boolean sourceForBinaryRoot,
-            CancelRequest cancelRequest,
+            @NonNull final SuspendStatus suspendedStatus,
+            @NullAllowed final CancelRequest cancelRequest,
             @NullAllowed final LogContext logContext) throws IOException;
-
-    public final Context createContext (
-            final FileObject indexFolder, final URL rootURL,
-            String indexerName, int indexerVersion, IndexFactoryImpl factory,
-            boolean followUpJob, boolean checkForEditorModifications,
-            boolean sourceForBinaryRoot, CancelRequest cancelRequest) throws IOException {
-        return createContext(
-            indexFolder,
-            rootURL,
-            indexerName,
-            indexerVersion,
-            factory,
-            followUpJob,
-            checkForEditorModifications,
-            sourceForBinaryRoot,
-            cancelRequest,
-            null);
-    }
+    
+    @NonNull
+    public abstract SuspendStatus createSuspendStatus(@NonNull SuspendSupport.SuspendStatusImpl impl);
 
     public abstract void context_attachIndexingSupport(Context context, IndexingSupport support);
 

@@ -46,10 +46,9 @@ package org.netbeans.modules.search.project;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.api.search.provider.SearchInfo;
+import org.netbeans.api.search.provider.SearchInfoUtils;
 import org.openide.util.NbBundle;
-import org.openidex.search.SearchInfo;
-import org.openidex.search.SearchInfoFactory;
 
 /**
  * Defines search scope across all open projects.
@@ -67,15 +66,17 @@ final class SearchScopeOpenProjects extends AbstractProjectSearchScope {
         return "open projects";                                         //NOI18N
     }
     
+    @Override
     public String getDisplayName() {
         return NbBundle.getMessage(getClass(),
                                    "SearchScopeNameOpenProjects");      //NOI18N
     }
-    
-    protected boolean checkIsApplicable() {
+        
+    private boolean checkIsApplicable() {
         return OpenProjects.getDefault().getOpenProjects().length > 0;
     }
 
+    @Override
     public SearchInfo getSearchInfo() {
         Project[] openProjects = OpenProjects.getDefault().getOpenProjects();
         if (openProjects.length == 0) {
@@ -87,7 +88,7 @@ final class SearchScopeOpenProjects extends AbstractProjectSearchScope {
              * is being removed in another thread than this action was
              * invoked from.
              */
-            return createEmptySearchInfo();
+            return SearchInfoUtils.createEmptySearchInfo();
         }
         
         if (openProjects.length == 1) {
@@ -98,7 +99,16 @@ final class SearchScopeOpenProjects extends AbstractProjectSearchScope {
         for (int i = 0; i < prjSearchInfos.length; i++) {
             prjSearchInfos[i] = createSingleProjectSearchInfo(openProjects[i]);
         }
-        return SearchInfoFactory.createCompoundSearchInfo(prjSearchInfos);
+        return SearchInfoUtils.createCompoundSearchInfo(prjSearchInfos);
     }
 
+    @Override
+    public boolean isApplicable() {
+        return checkIsApplicable();
+    }
+
+    @Override
+    public int getPriority() {
+        return 200;
+    }
 }

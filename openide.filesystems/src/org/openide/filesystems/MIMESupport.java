@@ -61,11 +61,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.modules.openide.filesystems.declmime.MIMEResolverImpl;
-import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
-import org.openide.util.NbBundle;
-import org.openide.util.Union2;
+import org.openide.util.*;
 
 /**
  * This class is intended to enhance MIME resolving. This class offers
@@ -280,8 +276,12 @@ final class MIMESupport extends Object {
             if (declarativeFolder != null) {
                 for (FileObject f : Ordering.getOrder(Arrays.asList(declarativeFolder.getChildren()), true)) {
                     if (f.hasExt("xml")) { // NOI18N
-                        // For now, just assume it has the right DTD. Could check this if desired.
-                        declmimes.add(MIMEResolverImpl.forDescriptor(f));
+                        try {
+                            // For now, just assume it has the right DTD. Could check this if desired.
+                            declmimes.add(MIMEResolverImpl.forDescriptor(f)); // NOI18N
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
                     }
                 }
                 declarativeFolder.removeFileChangeListener(weakDeclarativeFolderListener);

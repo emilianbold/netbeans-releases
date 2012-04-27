@@ -52,6 +52,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.MissingResourceException;
 import javax.swing.Action;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmCompoundClassifier;
@@ -77,10 +79,10 @@ import org.netbeans.modules.cnd.modelutil.AbstractCsmNode;
 import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
-import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.netbeans.modules.cnd.refactoring.api.ui.CsmRefactoringActionsFactory;
-import org.openide.util.CharSequences;
+import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.openide.nodes.Children;
+import org.openide.util.CharSequences;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
@@ -94,6 +96,7 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
     private CsmObject object;
     private CsmFile file;
     private boolean isFriend;
+    private boolean isSpecialization;
     private CsmFileModel model;
     private boolean needInitHTML = true;
     private CharSequence name;
@@ -135,7 +138,17 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
         this.isFriend = isFriend;
     }
 
-    private CharSequence createFunctionSpecializationHtmlDisplayName(final CsmObject csmObject) throws MissingResourceException {
+    private CharSequence createFunctionSpecializationHtmlDisplayName() {
+        return CharSequences.create(CsmDisplayUtilities.htmlize(getDisplayName()) + FONT_COLORCONTROLSHADOW + scopeName); // NOI18N
+    }
+    private CharSequence createMemberHtmlDisplayName() {
+        String aName = CsmDisplayUtilities.htmlize(scopeName); 
+        String displayName = CsmDisplayUtilities.htmlize(getDisplayName()); // NOI18N
+        String in = NbBundle.getMessage(getClass(), "LBL_inClass", aName); //NOI18N
+        return CharSequences.create(displayName + FONT_COLORCONTROLSHADOW + in);
+    }
+
+    private CharSequence getFunctionSpecializationName(CsmObject csmObject) throws MissingResourceException {
         CsmFunction fun = (CsmFunction)csmObject;
         String specializationContainerName = fun.getQualifiedName().toString();
         int endInd = specializationContainerName.lastIndexOf("::");//NOI18N
@@ -146,8 +159,7 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
         } else {
             in = "";//NOI18N
         }
-        String displayName = CsmDisplayUtilities.htmlize(getDisplayName()); // NOI18N
-        return CharSequences.create(displayName + FONT_COLORCONTROLSHADOW + in); // NOI18N
+        return CharSequences.create(in);
     }
 
     private static CharSequence getClassifierName(CsmClassifier cls) {
@@ -166,7 +178,13 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
                     CsmClass cls = ((CsmMember) function).getContainingClass();
                     if (cls != null && cls.getName().length() > 0) {
                         scopeName = getClassifierName(cls);
+                    } else if (CsmKindUtilities.isSpecialization(function)) {
+                        isSpecialization = true;
+                        scopeName = getFunctionSpecializationName(function);
                     }
+                } else if (CsmKindUtilities.isSpecialization(object)) {
+                    isSpecialization = true;
+                    scopeName = getFunctionSpecializationName(object);
                 }
             } else if (CsmKindUtilities.isVariableDefinition(getCsmObject())) {
                 CsmVariable variable = ((CsmVariableDefinition) object).getDeclaration();
@@ -176,11 +194,14 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
                         scopeName = getClassifierName(cls);
                     }
                 }
+            } else if (CsmKindUtilities.isFunction(object) && CsmKindUtilities.isSpecialization(object)) {
+                isSpecialization = true;
+                scopeName = getFunctionSpecializationName(object);
             }
         } catch (AssertionError ex) {
-            ex.printStackTrace();
+            ex.printStackTrace(System.err);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            ex.printStackTrace(System.err);
         }
 
         if(CsmKindUtilities.isNamespaceDefinition(object)) {
@@ -247,6 +268,7 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
         weight = node.weight;
         scopeName = node.scopeName;
         isFriend = node.isFriend;
+        isSpecialization = node.isSpecialization;
         needInitHTML = node.needInitHTML;
         htmlDisplayName = node.htmlDisplayName;
         fireDisplayNameChange(null, null);
@@ -326,44 +348,40 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
         try {
             final CsmObject csmObject = getCsmObject();
             if (CsmKindUtilities.isFunctionDefinition(csmObject)) {
-                // the try-catch is just a FIXUP for #118212 NPE when opening file from boost...
-                CsmFunction function = ((CsmFunctionDefinition) object).getDeclaration();
-                if (function != null && !function.equals(object) && CsmKindUtilities.isClassMember(function)) {
-                    CsmClass cls = ((CsmMember) function).getContainingClass();
-                    if (cls != null && cls.getName().length() > 0) {
-                        String aName = CsmDisplayUtilities.htmlize(getClassifierName(cls)); 
-                        String displayName = CsmDisplayUtilities.htmlize(getDisplayName()); // NOI18N
-                        String in = NbBundle.getMessage(getClass(), "LBL_inClass", aName); //NOI18N
-                        return CharSequences.create(displayName + FONT_COLORCONTROLSHADOW + in);
-                    } else if (CsmKindUtilities.isSpecialization(function)) {
-                        return createFunctionSpecializationHtmlDisplayName(function);
+                if (scopeName.length() > 0) {
+                    if (isSpecialization) {
+                        return createFunctionSpecializationHtmlDisplayName();
+                    } else {
+                        return createMemberHtmlDisplayName();
                     }
-                } else if (CsmKindUtilities.isSpecialization(csmObject)) {
-                    return createFunctionSpecializationHtmlDisplayName(csmObject);
                 }
             } else if (CsmKindUtilities.isVariableDefinition(csmObject)) {
-                CsmVariable variable = ((CsmVariableDefinition) object).getDeclaration();
-                if (variable != null && !variable.equals(object) && CsmKindUtilities.isClassMember(variable)) {
-                    CsmClass cls = ((CsmMember) variable).getContainingClass();
-                    if (cls != null && cls.getName().length() > 0) {
-                        String aName = CsmDisplayUtilities.htmlize(getClassifierName(cls));
-                        String displayName = CsmDisplayUtilities.htmlize(getDisplayName()); // NOI18N
-                        String in = NbBundle.getMessage(getClass(), "LBL_inClass", aName); //NOI18N
-                        return CharSequences.create(displayName + FONT_COLORCONTROLSHADOW + in);
-                    }
+                if (scopeName.length() > 0) {
+                    return createMemberHtmlDisplayName();
                 }
             } else if (csmObject instanceof CsmFile) {
-                //Restricted code assistance
-                return CharSequences.create("<font color='"+CsmDisplayUtilities.getHTMLColor(Color.red)+">"+ // NOI18N
-                        NbBundle.getMessage(CppDeclarationNode.class, "StandAloneFile")); // NOI18N
+                if (model.getUnopenedProject() != null) {
+                    // unopened project
+                    return CharSequences.create("<font color='"+CsmDisplayUtilities.getHTMLColor(Color.red)+">"+ // NOI18N
+                            NbBundle.getMessage(CppDeclarationNode.class, "UnopenedProject",  // NOI18N
+                            ProjectUtils.getInformation(model.getUnopenedProject()).getDisplayName()));
+                } else {
+                    //Restricted code assistance
+                    return CharSequences.create("<font color='"+CsmDisplayUtilities.getHTMLColor(Color.red)+">"+ // NOI18N
+                            NbBundle.getMessage(CppDeclarationNode.class, "StandAloneFile")); // NOI18N
+                }
             } else if (CsmKindUtilities.isFunction(csmObject) && CsmKindUtilities.isSpecialization(csmObject)) {
-                return createFunctionSpecializationHtmlDisplayName(csmObject); 
+                if (scopeName.length() > 0) {
+                    if (isSpecialization) {
+                        return createFunctionSpecializationHtmlDisplayName();
+                    }
+                }
             }
 
         } catch (AssertionError ex) {
-            ex.printStackTrace();
+            ex.printStackTrace(System.err);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            ex.printStackTrace(System.err);
         }
         return null;
     }
@@ -414,6 +432,11 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
     public Action getPreferredAction() {
         if (CsmKindUtilities.isOffsetable(object)){
             return new GoToDeclarationAction((CsmOffsetable) object);
+        } else if (object instanceof CsmFile) {
+            Project project = model.getUnopenedProject();
+            if (project != null) {
+                return new OpenContainingProjectAction(project);
+            }
         }
         return null;
     }
@@ -478,7 +501,11 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
                     return null;
                 }
             }
-            node = new CppDeclarationNode((CsmOffsetableDeclaration)element, model,lineNumberIndex);
+            if (CsmKindUtilities.isClassForwardDeclaration(element)) {
+                node = new CppDeclarationNode(Children.LEAF, (CsmOffsetableDeclaration)element, model);
+            } else {
+                node = new CppDeclarationNode((CsmOffsetableDeclaration)element, model,lineNumberIndex);
+            }
             node.name = getClassifierName((CsmClassifier)element);
             model.addOffset(node, (CsmOffsetable)element, lineNumberIndex);
             return node;

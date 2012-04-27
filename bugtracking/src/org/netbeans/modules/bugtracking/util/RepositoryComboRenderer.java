@@ -48,7 +48,8 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.RepositoryImpl;
+import org.netbeans.modules.bugtracking.api.Repository;
 import org.openide.util.NbBundle;
 
 /**
@@ -77,13 +78,17 @@ public class RepositoryComboRenderer extends DefaultListCellRenderer {
         } else if (value instanceof Repository) {
             repo = (Repository) value;
             text = repo.getDisplayName();
+        } else if (value instanceof RepositoryImpl) {
+            assert false : "the value provided to the renderer should be a Repository"; // NOI18N
+            repo = ((RepositoryImpl) value).getRepository();
+            text = repo.getDisplayName();
         } else {
             if (value == RepositoryComboSupport.LOADING_REPOSITORIES) {
                 text = loadingReposText;
             } else if (value == RepositoryComboSupport.NO_REPOSITORIES) {
                 text = noRepositories;
             } else {
-                assert (value == RepositoryComboSupport.SELECT_REPOSITORY);
+                assert (value == RepositoryComboSupport.SELECT_REPOSITORY) : value;
                 text = selectRepoText;
             }
         }

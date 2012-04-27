@@ -145,7 +145,10 @@ public class WrongOrderOfArgsHint extends AbstractRule {
         }
 
         @Override
-        @Messages("RearrangeParamsDisp=Rearrange arguments of the method or function: {0}")
+        @Messages({
+            "# {0} - Method or function name",
+            "RearrangeParamsDisp=Rearrange arguments of the method or function: {0}"
+        })
         public String getDescription() {
             return Bundle.RearrangeParamsDisp(functionDeclarationInfo.getName());
         }

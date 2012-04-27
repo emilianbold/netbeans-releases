@@ -2332,11 +2332,13 @@ class LayoutFeeder implements LayoutConstants {
                     }
 
                     if (distance > 0) {
-                        int pad = neighbors[i] != null || outerNeighbor == null ?
-//                                  || LayoutInterval.getNeighbor(parent, i, false, true, false) == null ?
-//                            determineExpectingPadding(addingInterval, neighbors[i], seq, i) :
-                            dragger.findPaddings(neighbors[i], addingInterval, PaddingType.RELATED, dimension, i)[0] :
-                            Short.MIN_VALUE; // has no neighbor, but is not related to container border
+                        int pad;
+                        if (neighbors[i] != null || outerNeighbor == null) {
+                            int[] pads = dragger.findPaddings(neighbors[i], addingInterval, PaddingType.RELATED, dimension, i);
+                            pad = (pads != null && pads.length > 0) ? pads[0] : 0;
+                        } else {
+                            pad = Short.MIN_VALUE; // has no neighbor, but is not related to container border
+                        }
                         if (distance > pad || (fixedGap && distance != pad)) {
                             gap.setPreferredSize(distance);
                             if (fixedGap) {
@@ -3898,8 +3900,9 @@ class LayoutFeeder implements LayoutConstants {
         if (paddingType == null) {
             paddingType = PaddingType.RELATED;
         }
-        return dragger.findPaddings(neighbor, interval, paddingType, dimension, alignment)[0];
         // need to go through dragger as the component of 'interval' is not in model yet
+        int[] pads = dragger.findPaddings(neighbor, interval, paddingType, dimension, alignment);
+        return (pads != null && pads.length > 0) ? pads[0] : 0;
     }
 
     // -----
@@ -4016,7 +4019,8 @@ class LayoutFeeder implements LayoutConstants {
 
             // second analyze the interval as a single element for "next to" placement
             boolean ortOverlap = orthogonalOverlap(sub);
-            int margin = (dimension == VERTICAL && !ortOverlap ? 4 : 0);
+            int margin = (dimension == VERTICAL && !ortOverlap
+                    && (aSnappedNextTo == null || !group.isParentOf(aSnappedNextTo)) ? 4 : 0);
             boolean dimOverlap = LayoutRegion.overlap(addingSpace, subSpace, dimension, margin);
             // in vertical dimension always pretend orthogonal overlap if there
             // is no overlap in horizontal dimension (i.e. force inserting into sequence)

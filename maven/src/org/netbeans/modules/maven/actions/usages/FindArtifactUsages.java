@@ -45,10 +45,11 @@ import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.apache.maven.artifact.Artifact;
+import static org.netbeans.modules.maven.actions.usages.Bundle.*;
 import org.netbeans.modules.maven.actions.usages.ui.UsagesUI;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
@@ -58,12 +59,15 @@ public class FindArtifactUsages extends AbstractAction {
 
     private Artifact artifact;
 
+    @Messages("LBL_FindartifactUsages=Find Usages")
     public FindArtifactUsages(Artifact artifact) {
         this.artifact = artifact;
-        putValue(Action.NAME, NbBundle.getMessage(FindArtifactUsages.class, "LBL_FindartifactUsages"));
+        putValue(Action.NAME, LBL_FindartifactUsages());
 
     }
 
+    @Override
+    @Messages("TIT_FindartifactUsages=Usages")
     public void actionPerformed(ActionEvent event) {
         StringBuilder buffer = new StringBuilder();
         buffer.append("<b>"); //NOI18N
@@ -75,8 +79,8 @@ public class FindArtifactUsages extends AbstractAction {
         buffer.append("</b>"); //NOI18N
 
         UsagesUI uI = new UsagesUI(buffer.toString(), artifact);
-        DialogDescriptor dd = new DialogDescriptor(uI, NbBundle.getMessage(
-                FindArtifactUsages.class, "TIT_FindartifactUsages"));
+        DialogDescriptor dd = new DialogDescriptor(uI, TIT_FindartifactUsages());
+        uI.initialize(dd.createNotificationLineSupport());
         dd.setClosingOptions(new Object[]{
             DialogDescriptor.CLOSED_OPTION
         });

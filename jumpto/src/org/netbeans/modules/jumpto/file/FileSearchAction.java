@@ -93,6 +93,8 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.api.search.provider.SearchFilter;
+import org.netbeans.api.search.provider.SearchInfoUtils;
 import org.netbeans.modules.jumpto.EntitiesListCellRenderer;
 import org.netbeans.modules.jumpto.type.GoToTypeAction;
 import org.netbeans.modules.jumpto.type.Models;
@@ -120,8 +122,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
-import org.openidex.search.FileObjectFilter;
-import org.openidex.search.SearchInfoFactory;
 /**
  *
  * @author Andrei Badea, Petr Hrebejk
@@ -570,7 +570,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
                 //PENDING Now we have to search folders which not included in Search API
                 st = System.currentTimeMillis();
                 Collection <FileObject> allFolders = new ArrayList<FileObject>();
-                final FileObjectFilter[] filters = new FileObjectFilter[]{SearchInfoFactory.VISIBILITY_FILTER, SearchInfoFactory.SHARABILITY_FILTER};
+                List<SearchFilter> filters = SearchInfoUtils.DEFAULT_FILTERS;
                 for (FileObject root : sgRoots) {
                     allFolders = searchSources(root, allFolders, excludes, filters);
                 }
@@ -641,7 +641,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
         }
     } // End of Worker class
 
-    private Collection<FileObject> searchSources(FileObject root, Collection<FileObject> result, Collection<? extends FileObject> exclude, FileObjectFilter[] filters) {
+    private Collection<FileObject> searchSources(FileObject root, Collection<FileObject> result, Collection<? extends FileObject> exclude, List<SearchFilter> filters) {
         if (root.getChildren().length == 0 || exclude.contains(root) || !checkAgainstFilters(root, filters)) {
             return result;
         } else {
@@ -656,10 +656,10 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
         return result;
     }
 
-    private boolean checkAgainstFilters(FileObject folder, FileObjectFilter[] filters) {
+    private boolean checkAgainstFilters(FileObject folder, List<SearchFilter> filters) {
         assert folder.isFolder();
-        for (FileObjectFilter filter: filters) {
-            if (filter.traverseFolder(folder) == FileObjectFilter.DO_NOT_TRAVERSE)
+        for (SearchFilter filter: filters) {
+            if (filter.traverseFolder(folder) == SearchFilter.FolderResult.DO_NOT_TRAVERSE)
                 return false;
         }
         return true;

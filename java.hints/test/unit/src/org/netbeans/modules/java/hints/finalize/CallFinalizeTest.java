@@ -39,86 +39,99 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.java.hints.finalize;
 
-
-import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.hints.test.api.HintTest;
 
 /**
  *
  * @author Tomas Zezula
  */
-public class CallFinalizeTest extends TestBase {
+public class CallFinalizeTest extends NbTestCase {
 
     public CallFinalizeTest(final String name) {
-        super(name, CallFinalize.class);
+        super(name);
     }
 
     public void testFinalizeCalled() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    private void test() {\n" +
-                            "        this.finalize();\n" +
-                            "    }\n" +
-                            "}",
-                            "3:13-3:21:verifier:finalize() called explicitly");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private void test() throws Throwable {\n" +
+                       "        this.finalize();\n" +
+                       "    }\n" +
+                       "}")
+                .run(CallFinalize.class)
+                .assertWarnings("3:13-3:21:verifier:finalize() called explicitly");
     }
 
     public void testNonFinalizeCalled() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    private void test() {\n" +
-                            "        this.finalize(1);\n" +
-                            "    }\n" +
-                            "    protected void finalize(int a) {\n" +
-                            "    }\n" +
-                            "}");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private void test() {\n" +
+                       "        this.finalize(1);\n" +
+                       "    }\n" +
+                       "    protected void finalize(int a) {\n" +
+                       "    }\n" +
+                       "}")
+                .run(CallFinalize.class)
+                .assertWarnings();
     }
 
     public void testSuppressed() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "@SuppressWarnings({\"FinalizeCalledExplicitly\"})\n"+
-                            "public class Test {\n" +
-                            "    private void test() {\n" +
-                            "        this.finalize();\n" +
-                            "    }\n" +
-                            "}");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "@SuppressWarnings({\"FinalizeCalledExplicitly\"})\n" +
+                       "public class Test {\n" +
+                       "    private void test() throws Throwable {\n" +
+                       "        this.finalize();\n" +
+                       "    }\n" +
+                       "}")
+                .run(CallFinalize.class)
+                .assertWarnings();
     }
 
     public void testSuperFinalizeCalledInOverridenMethod() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    protected void finalize() {\n" +
-                            "        super.finalize();\n" +
-                            "    }\n" +
-                            "}");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    protected void finalize() throws Throwable {\n" +
+                       "        super.finalize();\n" +
+                       "    }\n" +
+                       "}")
+                .run(CallFinalize.class)
+                .assertWarnings();
     }
 
     public void testSuperFinalizeCalledInNonOverridenMethod() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    protected void test() {\n" +
-                            "        super.finalize();\n" +
-                            "    }\n" +
-                            "}",
-                            "3:14-3:22:verifier:finalize() called explicitly");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    protected void test() throws Throwable {\n" +
+                       "        super.finalize();\n" +
+                       "    }\n" +
+                       "}")
+                .run(CallFinalize.class)
+                .assertWarnings("3:14-3:22:verifier:finalize() called explicitly");
     }
 
     public void testFinalizeOnThis() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    protected void test() {\n" +
-                            "        finalize();\n" +
-                            "    }\n" +
-                            "}",
-                            "3:8-3:16:verifier:finalize() called explicitly");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    protected void test() throws Throwable {\n" +
+                       "        finalize();\n" +
+                       "    }\n" +
+                       "}")
+                .run(CallFinalize.class)
+                .assertWarnings("3:8-3:16:verifier:finalize() called explicitly");
     }
-
 }

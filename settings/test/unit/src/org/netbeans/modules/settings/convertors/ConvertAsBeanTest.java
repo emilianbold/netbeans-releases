@@ -72,6 +72,11 @@ public final class ConvertAsBeanTest extends NbTestCase {
     }
 
     @Override
+    protected int timeOut() {
+        return 15000;
+    }
+
+    @Override
     protected void setUp() throws Exception {
         clearWorkDir();
         Lookup.getDefault().lookup(ModuleInfo.class);

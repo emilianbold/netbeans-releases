@@ -120,8 +120,9 @@ public final class PropertiesClient {
                 if (contactServer) {
                     SvnClient client = Subversion.getInstance().getClient(file);
                     if (client != null) {
-                        ISVNInfo info = client.getInfoFromWorkingCopy(file);
-                        if (info != null && (info.getUrl() != null || info.getCopyUrl() != null)) {
+                        ISVNInfo info = SvnUtils.getInfoFromWorkingCopy(client, file);
+                        if (info != null && (info.getUrl() != null || info.getCopyUrl() != null) && info.getRevision() != null
+                                && info.getRevision().getNumber() > -1) {
                             ISVNProperty[] props = client.getProperties(info.getCopyUrl() == null ? info.getUrl() : info.getCopyUrl(),
                                     SVNRevision.getRevision(info.getRevision().toString()),
                                     SVNRevision.getRevision(info.getRevision().toString()));
@@ -186,7 +187,7 @@ public final class PropertiesClient {
         SvnClient client = Subversion.getInstance().getClient(false);
         ISVNInfo info = null;
         try {
-            info = client.getInfoFromWorkingCopy(file);
+            info = SvnUtils.getInfoFromWorkingCopy(client, file);
         } catch (SVNClientException ex) {
             throw ex;
         }
@@ -209,6 +210,8 @@ public final class PropertiesClient {
     public static boolean hasOldMetadata (File file) {
         File parent;
         return new File(file, SvnUtils.SVN_ENTRIES_DIR).canRead()
-                || (parent = file.getParentFile()) != null && new File(parent, SvnUtils.SVN_ENTRIES_DIR).canRead();
+                || (parent = file.getParentFile()) != null 
+                && new File(parent, SvnUtils.SVN_ENTRIES_DIR).canRead()
+                && !new File(parent, SvnUtils.SVN_WC_DB).exists();
     }
 }

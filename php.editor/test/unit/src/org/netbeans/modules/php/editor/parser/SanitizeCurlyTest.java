@@ -42,14 +42,14 @@
 
 package org.netbeans.modules.php.editor.parser;
 
-import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.php.editor.PHPTestBase;
 import org.netbeans.modules.php.editor.parser.GSFPHPParser.Context;
 
 /**
  *
  * @author Petr Pisl
  */
-public class SanitizeCurlyTest extends NbTestCase {
+public class SanitizeCurlyTest extends PHPTestBase {
 
     public SanitizeCurlyTest(String testName) {
         super(testName);

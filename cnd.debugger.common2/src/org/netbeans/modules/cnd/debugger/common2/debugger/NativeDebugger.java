@@ -69,7 +69,7 @@ public interface NativeDebugger {
 
     public String debuggerType();
 
-    public DebuggerManager manager();
+    public NativeDebuggerManager manager();
     public boolean isCurrent();
     public DebuggerSettingsBridge profileBridge();
     public OptionClient getOptionClient();
@@ -216,7 +216,7 @@ public interface NativeDebugger {
     //
     // support for follow-fork
     //
-    public void forkThisWay(DebuggerManager.FollowForkInfo ffi);
+    public void forkThisWay(NativeDebuggerManager.FollowForkInfo ffi);
 
     //
     // support for fix-and-continue

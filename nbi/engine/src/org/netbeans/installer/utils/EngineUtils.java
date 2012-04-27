@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -51,13 +51,13 @@ import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
-import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.Installer;
+import org.netbeans.installer.product.Registry;
+import org.netbeans.installer.utils.cli.CLIHandler;
+import org.netbeans.installer.utils.exceptions.XMLException;
 import org.netbeans.installer.utils.helper.EngineResources;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.progress.Progress;
-import org.netbeans.installer.utils.cli.CLIHandler;
-import org.netbeans.installer.utils.exceptions.XMLException;
 
 /**
  *
@@ -154,12 +154,12 @@ public final class EngineUtils {
         if (is == null) {
             if (exclamationMarkInURL) {
                 String message;
-                if (System.getProperty("user.home").contains("!")) {
+                if (SystemUtils.getDefaultUserdirRoot().toString().contains("!")) {
                     //Issue #156011
                     //Note: don`t use ResourceUtils for getting string here.
                     message =
                             "Looks like the name of current user profile directory contains an exclamation mark (!):\n" +
-                            SystemUtils.getUserHomeDirectory() + "\n\n" +
+                            SystemUtils.getDefaultUserdirRoot() + "\n\n" +
                             "It is not recommended to use such profile names due to JDK bugs:\n" +
                             "http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4730642" + "\n" +
                             "http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4523159" + "\n" + "\n" +
@@ -245,9 +245,7 @@ public final class EngineUtils {
             addJarEntry(jos, EngineResources.ENGINE_CONTENTS_LIST, jarEntries);
             jos.write(StringUtils.asString(entries, SystemUtils.getLineSeparator()).getBytes());
         } catch (XMLException e) {
-            IOException ex = new IOException();
-            ex.initCause(e);
-            throw ex;
+            throw new IOException(e);
         } finally {
             if (jos != null) {
                 try {
@@ -263,8 +261,8 @@ public final class EngineUtils {
     }
 
     private static void addJarEntry(JarOutputStream jos, String name, Set <String> entries) throws IOException {
-        String parent = null;
-        int index = -1;
+        String parent;
+        int index;
         if(!name.endsWith(StringUtils.FORWARD_SLASH)) {
             //file entry
             index = name.lastIndexOf(StringUtils.FORWARD_SLASH);            

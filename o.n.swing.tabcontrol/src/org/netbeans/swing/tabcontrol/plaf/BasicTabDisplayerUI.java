@@ -70,6 +70,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.ListDataEvent;
 import org.netbeans.swing.tabcontrol.TabData;
 import org.netbeans.swing.tabcontrol.TabDisplayer;
+import org.netbeans.swing.tabcontrol.WinsysInfoForTabbedContainer;
 import org.netbeans.swing.tabcontrol.event.ComplexListDataEvent;
 import org.openide.windows.TopComponent;
 
@@ -427,6 +428,10 @@ public abstract class BasicTabDisplayerUI extends AbstractTabDisplayerUI {
                             TabCellRenderer ren = getTabCellRenderer(i);
                             
                             TabData data = displayer.getModel().getTab(i);
+
+                            if( isTabBusy( i ) ) {
+                                state |= TabState.BUSY;
+                            }
                             
                             JComponent renderer = ren.getRendererComponent(
                                     data, scratch, state);

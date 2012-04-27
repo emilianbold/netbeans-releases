@@ -158,6 +158,79 @@ public class GuardedBlockTest extends GeneratorTestMDRCompat {
     }
     
     /**
+     * #177824: Guarded Exception
+     */
+    public void testInsertMethodBeforeVariablesBug177824() throws Exception {
+
+        String source =
+            "package test;\n" +
+            "\n" +
+            "import java.awt.event.ActionEvent;\n" +
+            "import java.awt.event.ActionListener;\n" +
+            "\n" +
+            "public class Guarded1 implements ActionListener {\n" +
+            "    \n" +
+            "    private void fooActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fooActionPerformed\n" +
+            "    }//GEN-LAST:event_fooActionPerformed\n" +
+            "\n" +
+            "    // Variables declaration - do not modify//GEN-BEGIN:variables\n" +
+            "    private javax.swing.JButton jButton1;\n" +
+            "    // End of variables declaration//GEN-END:variables\n" +
+            "}\n";
+
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, source);
+        DataObject dataObject = DataObject.find(FileUtil.toFileObject(testFile));
+        EditorCookie editorCookie = ((GuardedDataObject) dataObject).getCookie(EditorCookie.class);
+        Document doc = editorCookie.openDocument();
+        String golden =
+            "package test;\n" +
+            "\n" +
+            "import java.awt.event.ActionEvent;\n" +
+            "import java.awt.event.ActionListener;\n" +
+            "\n" +
+            "public class Guarded1 implements ActionListener {\n" +
+            "    \n" +
+            "    private void fooActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fooActionPerformed\n" +
+            "    }//GEN-LAST:event_fooActionPerformed\n" +
+            "\n" +
+            "    public String toString() {\n" +
+            "    }\n" +
+            "\n" +
+            "    // Variables declaration - do not modify//GEN-BEGIN:variables\n" +
+            "    private javax.swing.JButton jButton1;\n" +
+            "    // End of variables declaration//GEN-END:variables\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree newMethod = make.Method(
+                        make.Modifiers(Collections.<Modifier>singleton(Modifier.PUBLIC)),
+                        "toString",
+                        make.Type("java.lang.String"),
+                        Collections.<TypeParameterTree>emptyList(),
+                        Collections.<VariableTree>emptyList(),
+                        Collections.<ExpressionTree>emptyList(),
+                        make.Block(Collections.<StatementTree>emptyList(), false),
+                        null // default value - not applicable
+                );
+                ClassTree copy = make.insertClassMember(clazz, 2, newMethod);
+                workingCopy.rewrite(clazz, copy);
+            }
+        };
+        src.runModificationTask(task).commit();
+        editorCookie.saveDocument();
+        String res = TestUtilities.copyFileToString(testFile);
+        assertEquals(golden, res);
+    }
+
+    /**
      * #90424: Guarded Exception
      */
     public void testAddMethodAfterVariables() throws Exception {

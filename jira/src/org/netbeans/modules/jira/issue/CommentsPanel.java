@@ -74,13 +74,14 @@ import javax.swing.UIManager;
 import javax.swing.plaf.basic.BasicTreeUI;
 import javax.swing.text.Caret;
 import javax.swing.text.DefaultCaret;
-import org.netbeans.modules.bugtracking.spi.Issue;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueSettingsStorage;
 import org.netbeans.modules.bugtracking.util.HyperlinkSupport;
 import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.kenai.KenaiRepository;
+import org.netbeans.modules.jira.util.JiraUtils;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -94,7 +95,6 @@ public class CommentsPanel extends JPanel {
     private final static String REPLY_TO_PROPERTY = "replyTo"; // NOI18N
     private final static String QUOTE_PREFIX = "> "; // NOI18N
     private NbJiraIssue issue;
-    private JiraIssueFinder issueFinder;
     private HyperlinkSupport.Link issueLink;
     private NewCommentHandler newCommentHandler;
 
@@ -105,23 +105,21 @@ public class CommentsPanel extends JPanel {
     
     public CommentsPanel() {
         setBackground(UIManager.getColor("TextArea.background")); // NOI18N
-        issueFinder = Lookup.getDefault().lookup(JiraIssueFinder.class);
         issueLink = new HyperlinkSupport.Link() {
             @Override
             public void onClick(String linkText) {
-                final String issueKey = issueFinder.getIssueId(linkText);
+                final String issueKey = JiraIssueFinder.getInstance().getIssueId(linkText);
                 RP.post(new Runnable() {
                     @Override
                     public void run() {
-                        Issue is = issue.getRepository().getIssue(issueKey);
+                        NbJiraIssue is = issue.getRepository().getIssue(issueKey);
                         if (is != null) {
-                            is.open();
+                            JiraUtils.openIssue(is);
                         }
                     }
                 });
             }
         };
-        assert issueFinder != null;
     }
 
     public void setIssue(NbJiraIssue issue) {
@@ -225,7 +223,7 @@ public class CommentsPanel extends JPanel {
         JLabel stateLabel = null;
         if (issue.getRepository() instanceof KenaiRepository) {
             String host = ((KenaiRepository) issue.getRepository()).getHost();
-            stateLabel = KenaiUtil.createUserWidget(author, host, KenaiUtil.getChatLink(issue));
+            stateLabel = KenaiUtil.createUserWidget(author, host, KenaiUtil.getChatLink(issue.getID()));
             stateLabel.setText(null);
         }
         
@@ -282,7 +280,7 @@ public class CommentsPanel extends JPanel {
         HyperlinkSupport.getInstance().registerForTypes(textPane);
         HyperlinkSupport.getInstance().registerForStacktraces(textPane);
         HyperlinkSupport.getInstance().registerForURLs(textPane);
-        HyperlinkSupport.getInstance().registerForIssueLinks(textPane, issueLink, issueFinder);
+        HyperlinkSupport.getInstance().registerForIssueLinks(textPane, issueLink, JiraIssueFinder.getInstance());
         
         textPane.setBackground(BLUE_BACKGROUND);
         textPane.setBorder(BorderFactory.createEmptyBorder(3,3,3,3));

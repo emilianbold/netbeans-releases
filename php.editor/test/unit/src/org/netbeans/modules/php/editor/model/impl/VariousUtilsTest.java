@@ -239,5 +239,24 @@ public class VariousUtilsTest extends ModelTestBase{
         assertEquals("Configurator", fullyQualifiedName.getName());
         assertEquals(QualifiedNameKind.FULLYQUALIFIED, fullyQualifiedName.getKind());
     }
-    
+
+    public void testIssue210558() throws Exception {
+        String array = "array";
+        QualifiedName testName = QualifiedName.create(array);
+        Model model = getModel(prepareTestFile("testfiles/model/issue210558.php"));
+        NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(model.getFileScope(), 1);
+        QualifiedName fullyQualifiedName = VariousUtils.getFullyQualifiedName(testName, 1, namespaceScope);
+        assertEquals(QualifiedNameKind.UNQUALIFIED, fullyQualifiedName.getKind());
+        assertEquals(array, fullyQualifiedName.getName());
+        assertEquals("", fullyQualifiedName.getNamespaceName());
+        assertEquals(1, fullyQualifiedName.getSegments().size());
+    }
+
+    public void testIssue197024() throws Exception {
+        assertEquals("' " + VariousUtils.POST_OPERATION_TYPE_DELIMITER_SUBS + " '", VariousUtils.encodeVariableName("' : '"));
+        assertEquals("' " + VariousUtils.POST_OPERATION_TYPE_DELIMITER_SUBS + " " + VariousUtils.POST_OPERATION_TYPE_DELIMITER_SUBS + " '", VariousUtils.encodeVariableName("' : : '"));
+        assertEquals("\" " + VariousUtils.POST_OPERATION_TYPE_DELIMITER_SUBS + " \"", VariousUtils.encodeVariableName("\" : \""));
+        assertEquals("\" " + VariousUtils.POST_OPERATION_TYPE_DELIMITER_SUBS + " " + VariousUtils.POST_OPERATION_TYPE_DELIMITER_SUBS + " \"", VariousUtils.encodeVariableName("\" : : \""));
+    }
+
 }

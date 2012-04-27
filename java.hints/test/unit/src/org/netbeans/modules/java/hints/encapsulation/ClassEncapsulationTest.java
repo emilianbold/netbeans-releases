@@ -39,141 +39,168 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.java.hints.encapsulation;
 
-import java.util.prefs.Preferences;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
-import org.netbeans.modules.java.hints.jackpot.impl.RulesManager;
-import org.netbeans.modules.java.hints.options.HintsSettings;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.hints.test.api.HintTest;
 
 /**
  *
  * @author Tomas Zezula
  */
-public class ClassEncapsulationTest extends TestBase {
+public class ClassEncapsulationTest extends NbTestCase {
 
     public ClassEncapsulationTest(final String name) {
-        super(name, ClassEncapsulation.class);
+        super(name);
     }
 
     public void testPublic() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    public class Inner {}\n"+
-                            "}",
-                            "2:17-2:22:verifier:Public Inner Class");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public class Inner {}\n" +
+                       "}")
+                .run(ClassEncapsulation.class)
+                .assertWarnings("2:17-2:22:verifier:Public Inner Class");
     }
 
     public void testProtected() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    protected class Inner {}\n"+
-                            "}",
-                            "2:20-2:25:verifier:Protected Inner Class");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    protected class Inner {}\n" +
+                       "}")
+                .run(ClassEncapsulation.class)
+                .assertWarnings("2:20-2:25:verifier:Protected Inner Class");
     }
 
     public void testPackage() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    class Inner {}\n"+
-                            "}",
-                            "2:10-2:15:verifier:Package Visible Inner Class");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    class Inner {}\n" +
+                       "}")
+                .run(ClassEncapsulation.class)
+                .assertWarnings("2:10-2:15:verifier:Package Visible Inner Class");
     }
 
     public void testPrivate() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    private class Inner {}\n"+
-                            "}");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private class Inner {}\n" +
+                       "}")
+                .run(ClassEncapsulation.class)
+                .assertWarnings();
     }
 
     public void testPublicStatic() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    public static class Inner {}\n"+
-                            "}",
-                            "2:24-2:29:verifier:Public Inner Class");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public static class Inner {}\n" +
+                       "}")
+                .run(ClassEncapsulation.class)
+                .assertWarnings("2:24-2:29:verifier:Public Inner Class");
     }
 
     public void testProtectedStatic() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    protected static class Inner {}\n"+
-                            "}",
-                            "2:27-2:32:verifier:Protected Inner Class");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    protected static class Inner {}\n" +
+                       "}")
+                .run(ClassEncapsulation.class)
+                .assertWarnings("2:27-2:32:verifier:Protected Inner Class");
     }
 
     public void testPackageStatic() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    static class Inner {}\n"+
-                            "}",
-                            "2:17-2:22:verifier:Package Visible Inner Class");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    static class Inner {}\n" +
+                       "}")
+                .run(ClassEncapsulation.class)
+                .assertWarnings("2:17-2:22:verifier:Package Visible Inner Class");
     }
 
     public void testPrivateStatic() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    private static class Inner {}\n"+
-                            "}");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private static class Inner {}\n" +
+                       "}")
+                .run(ClassEncapsulation.class)
+                .assertWarnings();
     }
 
     public void testOuther() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "}\n"+
-                            "class Outher {}\n");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "}\n" +
+                       "class Outher {}\n")
+                .run(ClassEncapsulation.class)
+                .assertWarnings();
     }
 
     public void testLocal() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    public void foo() {\n"+
-                            "        class Local {};\n"+
-                            "    }\n"+
-                            "}");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public void foo() {\n" +
+                       "        class Local {};\n" +
+                       "    }\n" +
+                       "}")
+                .run(ClassEncapsulation.class)
+                .assertWarnings();
     }
 
     public void testLimitByEnclosing194543() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    private static final class A {\n"+
-                            "        class E {}\n"+
-                            "    }\n"+
-                            "}");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private static final class A {\n" +
+                       "        class E {}\n" +
+                       "    }\n" +
+                       "}")
+                .run(ClassEncapsulation.class)
+                .assertWarnings();
     }
 
     public void test197590() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    private enum A {\n"+
-                            "        E\n"+
-                            "    }\n"+
-                            "}");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private enum A {\n" +
+                       "        E\n" +
+                       "    }\n" +
+                       "}")
+                .run(ClassEncapsulation.class)
+                .assertWarnings();
     }
 
     public void testEnumIgnore() throws Exception {
-        Preferences p = RulesManager.getPreferences(ClassEncapsulation.class.getName() + ".publicCls", HintsSettings.getCurrentProfileId());
-
-        p.putBoolean(ClassEncapsulation.ALLOW_ENUMS_KEY, true);
-
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    public enum E {A}\n" +
-                            "}");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public enum E {A}\n" +
+                       "}")
+                .preference(ClassEncapsulation.ALLOW_ENUMS_KEY, true)
+                .run(ClassEncapsulation.class)
+                .assertWarnings();
     }
 }

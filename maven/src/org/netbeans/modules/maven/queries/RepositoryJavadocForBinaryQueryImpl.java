@@ -46,9 +46,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
@@ -60,6 +59,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
@@ -68,11 +68,8 @@ import org.openide.modules.InstalledFileLocator;
  * looks for the same artifact but of type "javadoc.jar" or "javadoc"
  * @author  Milos Kleint
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation.class, position=999)
+@ServiceProvider(service=JavadocForBinaryQueryImplementation.class, position=999)
 public class RepositoryJavadocForBinaryQueryImpl implements JavadocForBinaryQueryImplementation {
-    
-    public RepositoryJavadocForBinaryQueryImpl() {
-    }
     
     /**
      * Find any Javadoc corresponding to the given classpath root containing
@@ -86,7 +83,7 @@ public class RepositoryJavadocForBinaryQueryImpl implements JavadocForBinaryQuer
      * @return a result object encapsulating the roots and permitting changes to
      *         be listened to, or null if the binary root is not recognized
      */
-    public JavadocForBinaryQuery.Result findJavadoc(URL url) {
+    @Override public JavadocForBinaryQuery.Result findJavadoc(URL url) {
         File stored = SourceJavadocByHash.find(url, true);
         if (stored != null) {
             return new DocResult(stored);
@@ -128,35 +125,26 @@ public class RepositoryJavadocForBinaryQueryImpl implements JavadocForBinaryQuer
         
     }
     
-    private class DocResult implements JavadocForBinaryQuery.Result  {
+    private static class DocResult implements JavadocForBinaryQuery.Result  {
         private static final String ATTR_PATH = "lastRootCheckPath"; //NOI18N
         private static final String ATTR_STAMP = "lastRootCheckStamp"; //NOI18N
         private File file;
-        private final List<ChangeListener> listeners;
 
-        public DocResult(File javadoc) {
+        DocResult(File javadoc) {
             file = javadoc;
-            listeners = new ArrayList<ChangeListener>();
         }
-        public void addChangeListener(ChangeListener changeListener) {
-            synchronized (listeners) {
-                listeners.add(changeListener);
-            }
-        }
+
+        @Override public void addChangeListener(ChangeListener changeListener) {}
         
-        public void removeChangeListener(ChangeListener changeListener) {
-            synchronized (listeners) {
-                listeners.remove(changeListener);
-            }
-        }
+        @Override public void removeChangeListener(ChangeListener changeListener) {}
         
-        public java.net.URL[] getRoots() {
+        @Override public URL[] getRoots() {
             try {
                 if (file.exists()) {
                     FileObject fo = FileUtil.toFileObject(file);
                     if (!FileUtil.isArchiveFile(fo)) {
                         //#124175  ignore any jar files that are not jar files (like when downloaded file is actually an error html page).
-                        Logger.getLogger(RepositoryJavadocForBinaryQueryImpl.class.getName()).info("The following javadoc jar in repository is not really a jar file: " + file.getAbsolutePath()); //NOI18N
+                        Logger.getLogger(RepositoryJavadocForBinaryQueryImpl.class.getName()).log(Level.INFO, "javadoc in repository is not really a JAR: {0}", file);
                         return new URL[0];
                     }
                     //try detecting the source path root, in case the source jar has the sources not in root.
@@ -204,24 +192,15 @@ public class RepositoryJavadocForBinaryQueryImpl implements JavadocForBinaryQuer
         
     }
 
-    private class Javaee6Result implements JavadocForBinaryQuery.Result {
-        private final List<ChangeListener> listeners;
+    private static class Javaee6Result implements JavadocForBinaryQuery.Result {
 
-        Javaee6Result() {
-            listeners = new ArrayList<ChangeListener>();
-        }
-        public void addChangeListener(ChangeListener changeListener) {
-            synchronized (listeners) {
-                listeners.add(changeListener);
-            }
-        }
+        Javaee6Result() {}
 
-        public void removeChangeListener(ChangeListener changeListener) {
-            synchronized (listeners) {
-                listeners.remove(changeListener);
-            }
-        }
-        public URL[] getRoots() {
+        @Override public void addChangeListener(ChangeListener changeListener) {}
+
+        @Override public void removeChangeListener(ChangeListener changeListener) {}
+
+        @Override public URL[] getRoots() {
                 try {
                     File j2eeDoc = InstalledFileLocator.getDefault().locate("docs/javaee6-doc-api.zip", "org.netbeans.modules.j2ee.platform", false); // NOI18N
                     if (j2eeDoc != null) {
@@ -237,5 +216,4 @@ public class RepositoryJavadocForBinaryQueryImpl implements JavadocForBinaryQuer
 
     }
 
-    
 }

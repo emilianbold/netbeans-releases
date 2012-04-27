@@ -197,7 +197,7 @@ public abstract class ErrorHintsTestBase extends NbTestCase {
     protected void performAnalysisTest(String fileName, String code, String... golden) throws Exception {
         int[] caretPosition = new int[1];
         
-        code = org.netbeans.modules.java.hints.TestUtilities.detectOffsets(code, caretPosition);
+        code = org.netbeans.modules.java.hints.spiimpl.TestUtilities.detectOffsets(code, caretPosition);
         
         performAnalysisTest(fileName, code, caretPosition[0], golden);
     }
@@ -222,7 +222,7 @@ public abstract class ErrorHintsTestBase extends NbTestCase {
     protected void performFixTest(String fileName, String code, String fixCode, String golden) throws Exception {
         int[] caretPosition = new int[1];
         
-        code = org.netbeans.modules.java.hints.TestUtilities.detectOffsets(code, caretPosition);
+        code = org.netbeans.modules.java.hints.spiimpl.TestUtilities.detectOffsets(code, caretPosition);
         
         performFixTest(fileName, code, caretPosition[0], fixCode, golden);
     }
@@ -234,7 +234,7 @@ public abstract class ErrorHintsTestBase extends NbTestCase {
     protected void performFixTest(String fileName, String code, String fixCode, String goldenFileName, String golden) throws Exception {
         int[] caretPosition = new int[1];
 
-        code = org.netbeans.modules.java.hints.TestUtilities.detectOffsets(code, caretPosition);
+        code = org.netbeans.modules.java.hints.spiimpl.TestUtilities.detectOffsets(code, caretPosition);
 
         performFixTest(fileName, code, caretPosition[0], fixCode, goldenFileName, golden);
     }

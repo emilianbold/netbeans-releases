@@ -63,6 +63,9 @@ public class SmartParseHeaderTest extends TraceModelTestBase {
         System.setProperty("antlr.exceptions.hideExpectedTokens", "true");
         System.setProperty("cnd.modelimpl.parser.threads", "1");
         System.setProperty("cnd.cache.file.state","false");
+//        System.setProperty("cnd.trace.schedule.parsing","true");
+//        System.setProperty("cnd.parser.queue.trace","true");
+//        System.setProperty("cnd.parser.queue.trace.poll","true");
         ParseStatistics.getInstance().setEnabled(true);
         super.setUp();
     }
@@ -96,14 +99,18 @@ public class SmartParseHeaderTest extends TraceModelTestBase {
         if (exprectedReparseCount >= 0) {
             ParseStatistics.getInstance().clear();
             ProjectBase project = getProject();
-            //for (FileImpl fileImpl : project.getAllFileImpls()) {
-            ParserQueue.instance().suspend();
-            for (int i = 0; i < filesToParse.length; i++) {
-                FileImpl fileImpl = findFile(filesToParse[i]);
-                fileImpl.markReparseNeeded(false);
-                DeepReparsingUtils.reparseOnChangedFile(fileImpl, project);
+            // suspend/resume parser queue is needed to have stable results or reparsing counters,
+            // although it's not the real situation when work from IDE, but we check only logic correctness
+            try {
+                ParserQueue.instance().suspend();
+                for (int i = 0; i < filesToParse.length; i++) {
+                    FileImpl fileImpl = findFile(filesToParse[i]);
+                    fileImpl.markReparseNeeded(false);
+                    DeepReparsingUtils.fullReparseOnChangedFile(project, fileImpl);
+                }
+            } finally {
+                ParserQueue.instance().resume();
             }
-            ParserQueue.instance().resume();
             getProject().waitParse();
             assertParseCount(headerToCheck, exprectedReparseCount);
         }

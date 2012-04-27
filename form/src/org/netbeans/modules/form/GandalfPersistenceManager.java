@@ -3933,7 +3933,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                     propertyName,		    
                     property.getValueType().getName(),
                     noResource,
-                    prEd.getClass().getName(),
+                    PersistenceObjectRegistry.getPrimaryName(prEd.getClass().getName()),
                     property.getPreCode(),
                     property.getPostCode() });
 

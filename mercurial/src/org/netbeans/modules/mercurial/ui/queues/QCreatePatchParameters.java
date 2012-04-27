@@ -79,9 +79,8 @@ public class QCreatePatchParameters extends DefaultCommitParameters implements I
         return panel;
     }
 
-    @Override
     public JLabel getMessagesTemplateLink (JTextArea text) {
-        return super.getMessagesTemplateLink(text);
+        return super.getMessagesTemplateLink(text, "org.netbeans.modules.mercurial.ui.queues.TemplatePanel"); //NOI18N
     }
 
     @Override

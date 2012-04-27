@@ -303,9 +303,6 @@ public class ClientHandlerButtonListener implements ActionListener {
         }
         handle.finish();
 
-
-
-
     }
 
     private void removeHandlerAnnotation() {
@@ -325,49 +322,49 @@ public class ClientHandlerButtonListener implements ActionListener {
         final JavaSource javaSource = JavaSource.forFileObject(serviceFO);
         final CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
 
+            @Override
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
                 TreeMaker make = workingCopy.getTreeMaker();
                 TypeElement typeElement = SourceUtils.getPublicTopLevelElement(workingCopy);
                 ClassTree javaClass = workingCopy.getTrees().getTree(typeElement);
 
-                TypeElement bindingElement = workingCopy.getElements().getTypeElement("javax.jws.HandlerChain");  //NOI18N
-                if (bindingElement != null) {
-                    AnnotationTree handlerAnnotation = null;
-                    List<? extends AnnotationTree> annots = javaClass.getModifiers().getAnnotations();
-                    for (AnnotationTree an : annots) {
-                        IdentifierTree ident = (IdentifierTree) an.getAnnotationType();
-                        TreePath anTreePath = workingCopy.getTrees().getPath(workingCopy.getCompilationUnit(), ident);
-                        TypeElement anElement = (TypeElement) workingCopy.getTrees().getElement(anTreePath);
-                        if (anElement != null && anElement.getQualifiedName().contentEquals("javax.jws.HandlerChain")) {  //NOI18N
-                            handlerAnnotation = an;
-                            break;
-                        }
+                AnnotationTree handlerAnnotation = null;
+                List<? extends AnnotationTree> annots = javaClass.getModifiers().getAnnotations();
+                for (AnnotationTree an : annots) {
+                    IdentifierTree ident = (IdentifierTree) an.getAnnotationType();
+                    TreePath anTreePath = workingCopy.getTrees().getPath(workingCopy.getCompilationUnit(), ident);
+                    TypeElement anElement = (TypeElement) workingCopy.getTrees().getElement(anTreePath);
+                    if (anElement != null && anElement.getQualifiedName().contentEquals("javax.jws.HandlerChain")) {  //NOI18N
+                        handlerAnnotation = an;
+                        break;
                     }
-                    ModifiersTree modifiers = javaClass.getModifiers();
-                    ModifiersTree newModifiers = make.removeModifiersAnnotation(modifiers, handlerAnnotation);
-                    workingCopy.rewrite(modifiers, newModifiers);
-                    CompilationUnitTree compileUnitTree = workingCopy.getCompilationUnit();
-                    List<? extends ImportTree> imports = compileUnitTree.getImports();
-                    for (ImportTree imp : imports) {
-                        Tree impTree = imp.getQualifiedIdentifier();
-                        TreePath impTreePath = workingCopy.getTrees().getPath(workingCopy.getCompilationUnit(), impTree);
-                        TypeElement impElement = (TypeElement) workingCopy.getTrees().getElement(impTreePath);
-                        if (impElement != null && impElement.getQualifiedName().contentEquals("javax.jws.HandlerChain")) {  //NOI18N
-                            CompilationUnitTree newCompileUnitTree = make.removeCompUnitImport(compileUnitTree, imp);
-                            workingCopy.rewrite(compileUnitTree, newCompileUnitTree);
-                            break;
-                        }
+                }
+                ModifiersTree modifiers = javaClass.getModifiers();
+                ModifiersTree newModifiers = make.removeModifiersAnnotation(modifiers, handlerAnnotation);
+                workingCopy.rewrite(modifiers, newModifiers);
+                CompilationUnitTree compileUnitTree = workingCopy.getCompilationUnit();
+                List<? extends ImportTree> imports = compileUnitTree.getImports();
+                for (ImportTree imp : imports) {
+                    Tree impTree = imp.getQualifiedIdentifier();
+                    TreePath impTreePath = workingCopy.getTrees().getPath(workingCopy.getCompilationUnit(), impTree);
+                    TypeElement impElement = (TypeElement) workingCopy.getTrees().getElement(impTreePath);
+                    if (impElement != null && impElement.getQualifiedName().contentEquals("javax.jws.HandlerChain")) {  //NOI18N
+                        CompilationUnitTree newCompileUnitTree = make.removeCompUnitImport(compileUnitTree, imp);
+                        workingCopy.rewrite(compileUnitTree, newCompileUnitTree);
+                        break;
                     }
                 }
             }
 
+            @Override
             public void cancel() {
             }
         };
         if (SwingUtilities.isEventDispatchThread()) {
             RequestProcessor.getDefault().post(new Runnable() {
 
+                @Override
                 public void run() {
                     try {
                         javaSource.runModificationTask(modificationTask).commit();

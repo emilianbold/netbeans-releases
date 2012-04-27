@@ -48,12 +48,15 @@ import java.awt.Component;
 import java.awt.Image;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
 import java.lang.ref.WeakReference;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.security.PrivilegedAction;
+import java.text.Format;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -119,6 +122,8 @@ public class TreeModelNode extends AbstractNode {
      * This is documented at openide/explorer/src/org/openide/explorer/doc-files/propertyViewCustomization.html
      */
     private static final int MAX_HTML_LENGTH = 511;
+    private static final String HTML_START_TAG = "<html>";
+    private static final String HTML_END_TAG = "</html>";
     
     // variables ...............................................................
 
@@ -673,7 +678,7 @@ public class TreeModelNode extends AbstractNode {
             String _oldDisplayName = oldDisplayName;
 
             String newDisplayName;
-            if (name.startsWith ("<html>")) {
+            if (name.startsWith (HTML_START_TAG)) {
                 htmlDisplayName = name;
                 newDisplayName = removeHTML(name);
             } else if (name.startsWith ("<_html>")) { //[TODO] use empty string as name in the case of <_html> tag
@@ -689,6 +694,118 @@ public class TreeModelNode extends AbstractNode {
                    oldHtmlDisplayName == null || !oldHtmlDisplayName.equals(htmlDisplayName);
         }
     }
+    
+    private String parseDisplayFormat(String name) {
+        MessageFormat treeNodeDisplayFormat = treeModelRoot.getTreeNodeDisplayFormat();
+        if (treeNodeDisplayFormat == null) {
+            return name;
+        }
+        if (propertyDisplayNameListener == null) {
+            propertyDisplayNameListener = new PropertyDisplayNameListener();
+            addPropertyChangeListener(propertyDisplayNameListener);
+        }
+        Property<?>[] nodeProperties = getPropertySets()[0].getProperties();
+        Format[] formatsByArgumentIndex = treeNodeDisplayFormat.getFormatsByArgumentIndex();
+        String pattern = treeNodeDisplayFormat.toPattern();
+        int n = formatsByArgumentIndex.length;
+        Object[] args = new Object[n];
+        String[] argsHTML = new String[n];
+        boolean nonEmptyArgs = false;
+        for (int i = 0; i < n; i++) {
+            if (pattern.indexOf("{"+i) >= 0) {
+            //if (formatsByArgumentIndex[i] != null) {
+                if (columns[i].getType() == null) {
+                    if (name.startsWith (HTML_START_TAG)) {
+                        argsHTML[i] = name;
+                        args[i] = removeHTML(name);
+                    } else if (name.startsWith ("<_html>")) {
+                        argsHTML[i] = '<' + name.substring(2);
+                        args[i] = removeHTML((String) argsHTML[i]);
+                    } else {
+                        argsHTML[i] = null;
+                        args[i] = name;
+                    }
+                } else {
+                    try {
+                        args[i] = nodeProperties[i].getValue();
+                        argsHTML[i] = (String) nodeProperties[i].getValue("htmlDisplayValue");
+                        if (!"".equals(args[i])) {
+                            propertyDisplayNameListener.addPropertyName(nodeProperties[i].getName());
+                            nonEmptyArgs = true;
+                        }
+                    } catch (IllegalAccessException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (InvocationTargetException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            } else {
+                args[i] = null;
+            }
+        }
+        if (nonEmptyArgs) {
+            boolean isHTML = false;
+            int iHTML = -1;
+            for (int i = 0; i < n; i++) {
+                if (argsHTML[i] != null) {
+                    isHTML = true;
+                    iHTML = i;
+                    args[i] = stripHTMLTags(argsHTML[i]);
+                } else if (isHTML && args[i] instanceof String) {
+                    args[i] = adjustHTML((String) args[i]);
+                }
+            }
+            for (int i = 0; i < iHTML; i++) {
+                if (args[i] instanceof String) {
+                    args[i] = adjustHTML((String) args[i]);
+                }
+            }
+            String format = treeNodeDisplayFormat.format(args);
+            if (isHTML) {
+                format = HTML_START_TAG+format+HTML_END_TAG;
+            }
+            return format; //new Object[] { name });
+        } else {
+            return name;
+        }
+    }
+    
+    private static String stripHTMLTags(String str) {
+        if (str.startsWith(HTML_START_TAG)) {
+            str = str.substring(HTML_START_TAG.length());
+        }
+        if (str.endsWith(HTML_END_TAG)) {
+            str = str.substring(0, str.length() - HTML_END_TAG.length());
+        }
+        return str;
+    }
+    
+    private PropertyDisplayNameListener propertyDisplayNameListener;
+    
+    private class PropertyDisplayNameListener implements PropertyChangeListener {
+        
+        private Set<String> propertyNames = new HashSet<String>();
+        
+        PropertyDisplayNameListener() {
+        }
+        
+        void addPropertyName(String propertyName) {
+            propertyNames.add(propertyName);
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (propertyNames.contains(evt.getPropertyName())) {
+                try {
+                    setModelDisplayName();
+                    fireDisplayNameChange(null, null);
+                } catch (UnknownTypeException ex) {
+                    Logger.getLogger(TreeModelNode.class.getName()).log(Level.CONFIG, "Model: "+model, ex);
+                }
+            }
+        }
+        
+    }
 
     private void setModelDisplayName() throws UnknownTypeException {
         Executor exec = asynchronous(model, CALL.DISPLAY_NAME, object);
@@ -702,6 +819,7 @@ public class TreeModelNode extends AbstractNode {
                     );
                 Exceptions.printStackTrace(t);
             } else {
+                name = parseDisplayFormat(name);
                 setName (name, false);
             }
         } else {
@@ -869,7 +987,7 @@ public class TreeModelNode extends AbstractNode {
     }
     
     private static String htmlValue (String name) {
-        if (!(name.length() > 6 && name.substring(0, 6).equalsIgnoreCase("<html>"))) return null;
+        if (!(name.length() > 6 && name.substring(0, 6).equalsIgnoreCase(HTML_START_TAG))) return null;
         if (name.length() > MAX_HTML_LENGTH) {
             int endTagsPos = findEndTagsPos(name);
             String ending = name.substring(endTagsPos + 1);
@@ -902,15 +1020,15 @@ public class TreeModelNode extends AbstractNode {
     }
     
     private static String removeHTML (String text) {
-        if (!(text.length() > 6 && text.substring(0, 6).equalsIgnoreCase("<html>"))) {
+        if (!(text.length() > 6 && text.substring(0, 6).equalsIgnoreCase(HTML_START_TAG))) {
             return text;
         }
         text = text.replaceAll ("<i>", "");
         text = text.replaceAll ("</i>", "");
         text = text.replaceAll ("<b>", "");
         text = text.replaceAll ("</b>", "");
-        text = text.replaceAll ("<html>", "");
-        text = text.replaceAll ("</html>", "");
+        text = text.replaceAll (HTML_START_TAG, "");
+        text = text.replaceAll (HTML_END_TAG, "");
         text = text.replaceAll ("</font>", "");
         int i = text.indexOf ("<font");
         while (i >= 0) {
@@ -1883,7 +2001,7 @@ public class TreeModelNode extends AbstractNode {
                 }
                 synchronized (evaluated) {
                     if (evaluated[0] != 1) {
-                        return "<html><font color=\"0000CC\">"+EVALUATING_STR+"</font></html>";
+                        return HTML_START_TAG+"<font color=\"0000CC\">"+EVALUATING_STR+"</font>"+HTML_END_TAG;
                     }
                 }
                 synchronized (properties) {

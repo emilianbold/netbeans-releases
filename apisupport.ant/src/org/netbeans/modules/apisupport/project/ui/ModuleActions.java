@@ -44,17 +44,14 @@
 
 package org.netbeans.modules.apisupport.project.ui;
 
+import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Map;
+import java.io.RandomAccessFile;
+import java.nio.channels.FileLock;
+import java.nio.channels.OverlappingFileLockException;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 import javax.lang.model.element.TypeElement;
 import javax.swing.Action;
@@ -62,6 +59,9 @@ import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.extexecution.startup.StartupExtender;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.runner.JavaRunner;
 import org.netbeans.api.java.source.ElementHandle;
@@ -75,10 +75,13 @@ import org.netbeans.modules.apisupport.project.spi.ExecProject;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import static org.netbeans.modules.apisupport.project.ui.Bundle.*;
 import org.netbeans.modules.apisupport.project.ui.customizer.CustomizerProviderImpl;
+import org.netbeans.modules.apisupport.project.ui.customizer.ModuleProperties;
+import org.netbeans.modules.apisupport.project.ui.customizer.SingleModuleProperties;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
 import org.netbeans.modules.apisupport.project.universe.HarnessVersion;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
+import org.netbeans.spi.project.ActionProgress;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.SingleMethod;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -94,6 +97,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
+import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -102,15 +106,11 @@ import org.openide.util.Mutex;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
+import org.openide.util.TaskListener;
+import org.openide.util.lookup.Lookups;
 
 public final class ModuleActions implements ActionProvider, ExecProject {
-    static final String TEST_USERDIR_LOCK_PROP_NAME = "run.args.ide";    // NOI18N
-    static final String TEST_USERDIR_LOCK_PROP_VALUE = "--test-userdir-lock-with-invalid-arg";    // NOI18N
-
-    static final Set<String> bkgActions = new HashSet<String>(Arrays.asList(
-        COMMAND_RUN_SINGLE,
-        COMMAND_DEBUG_SINGLE
-    ));
+    private static final String RUN_ARGS_IDE = "run.args.ide";    // NOI18N
 
     private static final String COMMAND_NBM = "nbm";
     private static final String MODULE_ACTIONS_TYPE = "org-netbeans-modules-apisupport-project";
@@ -155,7 +155,7 @@ public final class ModuleActions implements ActionProvider, ExecProject {
         }
         globalCommands.put(ActionProvider.COMMAND_RUN, new String[] {"run"}); // NOI18N
         globalCommands.put(ActionProvider.COMMAND_DEBUG, new String[] {"debug"}); // NOI18N
-        globalCommands.put("profile", new String[] {"profile"}); // NOI18N
+        globalCommands.put(ActionProvider.COMMAND_PROFILE, new String[] {"profile"}); // NOI18N
         globalCommands.put(JavaProjectConstants.COMMAND_JAVADOC, new String[] {"javadoc-nb"}); // NOI18N
         globalCommands.put(ActionProvider.COMMAND_TEST, new String[] {"test-unit"}); // NOI18N
         globalCommands.put(COMMAND_NBM, new String[] {COMMAND_NBM});
@@ -165,8 +165,10 @@ public final class ModuleActions implements ActionProvider, ExecProject {
         if (!project.supportedTestTypes().isEmpty()) {
             supportedActionsSet.add(ActionProvider.COMMAND_TEST_SINGLE);
             supportedActionsSet.add(ActionProvider.COMMAND_DEBUG_TEST_SINGLE);
+            supportedActionsSet.add(ActionProvider.COMMAND_PROFILE_TEST_SINGLE);
             supportedActionsSet.add(ActionProvider.COMMAND_RUN_SINGLE);
             supportedActionsSet.add(ActionProvider.COMMAND_DEBUG_SINGLE);
+            supportedActionsSet.add(ActionProvider.COMMAND_PROFILE_SINGLE);
             supportedActionsSet.add(SingleMethod.COMMAND_RUN_SINGLE_METHOD);
             supportedActionsSet.add(SingleMethod.COMMAND_DEBUG_SINGLE_METHOD);
         }
@@ -205,12 +207,22 @@ public final class ModuleActions implements ActionProvider, ExecProject {
             if (testSources == null)
                     testSources = findTestSources(context, false);
             return testSources != null && testSources.isSingle();
+        } else if (command.equals(COMMAND_PROFILE_TEST_SINGLE)) {
+            TestSources testSources = findTestSourcesForSources(context);
+            if (testSources == null)
+                    testSources = findTestSources(context, false);
+            return testSources != null && testSources.isSingle();
         } else if (command.equals(COMMAND_RUN_SINGLE)) {
             return findTestSources(context, false) != null;
         } else if (command.equals(COMMAND_DEBUG_SINGLE)) {
             TestSources testSources = findTestSources(context, false);
             return testSources != null && testSources.isSingle();
-        } else if (command.equals(SingleMethod.COMMAND_RUN_SINGLE_METHOD) || command.equals(SingleMethod.COMMAND_DEBUG_SINGLE_METHOD)) {
+        } else if (command.equals(COMMAND_PROFILE_SINGLE)) {
+            TestSources testSources = findTestSources(context, false);
+            return testSources != null && testSources.isSingle();
+        } else if (command.equals(SingleMethod.COMMAND_RUN_SINGLE_METHOD) || 
+                   command.equals(SingleMethod.COMMAND_DEBUG_SINGLE_METHOD)
+                ) {
             NbPlatform plaf = project.getPlatform(false);
             if (plaf == null || plaf.getHarnessVersion().compareTo(HarnessVersion.V70) < 0) {
                 return false;
@@ -335,33 +347,46 @@ public final class ModuleActions implements ActionProvider, ExecProject {
     
     @Messages("MSG_no_source=No source to operate on.")
     public void invokeAction(final String command, final Lookup context) throws IllegalArgumentException {
+        if (!canRunNoLock(command, project.getTestUserDirLockFile())) {
+            return;
+        }
         if (ActionProvider.COMMAND_DELETE.equals(command)) {
-            if (ModuleOperations.canRun(project)) {
-                DefaultProjectOperations.performDefaultDeleteOperation(project);
-            }
+            DefaultProjectOperations.performDefaultDeleteOperation(project);
             return;
         } else if (ActionProvider.COMMAND_RENAME.equals(command)) {
-            if (ModuleOperations.canRun(project)) {
-                DefaultProjectOperations.performDefaultRenameOperation(project, null);
-            }
+            DefaultProjectOperations.performDefaultRenameOperation(project, null);
             return;
         } else if (ActionProvider.COMMAND_MOVE.equals(command)) {
-            if (ModuleOperations.canRun(project)) {
-                DefaultProjectOperations.performDefaultMoveOperation(project);
-            }
+            DefaultProjectOperations.performDefaultMoveOperation(project);
             return;
         } else if (ActionProvider.COMMAND_COPY.equals(command)) {
-            if (ModuleOperations.canRun(project)) {
-                DefaultProjectOperations.performDefaultCopyOperation(project);
-            }
+            DefaultProjectOperations.performDefaultCopyOperation(project);
             return;
         }
         if (!verifySufficientlyNewHarness(project)) {
             return;
         }
 
+        // XXX prefer to call just if and when actually starting target, but that is hard to calculate here
+        final ActionProgress listener = ActionProgress.start(context);
         Runnable runnable = new Runnable() {
-            public void run() {
+            ExecutorTask task;
+            @Override public void run() {
+                try {
+                    doRun();
+                } finally {
+                    if (task != null) {
+                        task.addTaskListener(new TaskListener() {
+                            @Override public void taskFinished(Task _) {
+                                listener.finished(task.result() == 0);
+                            }
+                        });
+                    } else {
+                        listener.finished(false);
+                    }
+                }
+            }
+            void doRun() {
                 Properties p = new Properties();
                 String[] targetNames;
                 if (command.equals(COMMAND_COMPILE_SINGLE)) {
@@ -389,13 +414,22 @@ public final class ModuleActions implements ActionProvider, ExecProject {
 
                     }
                     targetNames = setupDebugTestSingle(p, testSources);
+                } else if (command.equals(COMMAND_PROFILE_TEST_SINGLE)) {
+                    TestSources testSources = findTestSourcesForSources(context);
+                    if (testSources == null) {
+                        testSources = findTestSources(context, false);
+
+                    }
+                    targetNames = setupProfileTestSingle(p, testSources);
                 } else if (command.equals(COMMAND_RUN_SINGLE)) {
                     TestSources testSources = findTestSources(context, false);
 //       TODO CoS     String enableQuickTest = project.evaluator().getProperty("quick.test.single"); // NOI18N
 //            if (    Boolean.parseBoolean(enableQuickTest)
 //                 && "unit".equals(testSources.testType) // NOI18N
 //                 && !hasTestUnitDataDir()) { // NOI18N
-//                if (bypassAntBuildScript(command, testSources.sources)) {
+//                AtomicReference<ExecutorTask> _task = new AtomicReference<ExecutorTask>();
+//                if (bypassAntBuildScript(command, testSources.sources, _task)) {
+//                    task = _task.get();
 //                    return ;
 //                }
 //            }
@@ -414,6 +448,15 @@ public final class ModuleActions implements ActionProvider, ExecProject {
                     } else {
                         // fallback to "old" debug tests behavior
                         targetNames = setupDebugTestSingle(p, testSources);
+                    }
+                } else if (command.equals(COMMAND_PROFILE_SINGLE)) {
+                    TestSources testSources = findTestSources(context, false);
+                    String clazz = getMainClass(context);
+                    if (clazz != null) {
+                        targetNames = setupProfileMain(p, testSources, context, clazz);
+                    } else {
+                        // fallback to "old" debug tests behavior
+                        targetNames = setupProfileTestSingle(p, testSources);
                     }
                 } else if (command.equals(SingleMethod.COMMAND_RUN_SINGLE_METHOD)) {
                     TestSources testSources = findTestMethodSources(context);
@@ -453,11 +496,7 @@ public final class ModuleActions implements ActionProvider, ExecProject {
                     promptForPublicPackagesToDocument();
                     return;
                 } else {
-                    if ((command.equals(ActionProvider.COMMAND_RUN) || command.equals(ActionProvider.COMMAND_DEBUG)) // #63652
-                            && project.getTestUserDirLockFile().isFile()) {
-                        // #141069: lock file exists, run with bogus option
-                        p.setProperty(TEST_USERDIR_LOCK_PROP_NAME, TEST_USERDIR_LOCK_PROP_VALUE);
-                    }
+                    // XXX consider passing PM.fP(FU.toFO(SuiteUtils.suiteDirectory(project))) instead for a suite component project:
                     if (command.equals(ActionProvider.COMMAND_REBUILD)) {
                         p.setProperty("do.not.clean.module.config.xml", "true"); // #196192
                     }
@@ -468,16 +507,115 @@ public final class ModuleActions implements ActionProvider, ExecProject {
                     }
                 }
                 try {
+                    setRunArgsIde(project, SingleModuleProperties.getInstance(project), command, p);
+                    task =
                     ActionUtils.runTarget(findBuildXml(project), targetNames, p);
                 } catch (IOException e) {
                     Util.err.notify(e);
                 }
             }
         };
-        if (bkgActions.contains(command)) {
-            RP.post(runnable);
-        } else
-            runnable.run();
+        RP.post(runnable);
+    }
+
+    /**
+     * Checks if a given command can be run at the moment from the perspective of the test userdir lock file.
+     * Cf. #63652, #72397, #141069, #207530.
+     * @param command as in {@link ActionProvider}
+     * @param lock from {@link NbModuleProject#getTestUserDirLockFile} or {@link SuiteProject#getTestUserDirLockFile}
+     * @return true if the command is unrelated, there is no lock file, or the lock file is stale and can be safely deleted;
+     *         false (after showing a warning dialog) if the command must not proceed
+     */
+    @Messages({
+        "ERR_module_already_running=The application is already running within the test user directory. You must shut it down before trying to run it again.",
+        "ERR_ModuleIsBeingRun=Cannot copy/move/rename/delete a module or suite while the application is running; shut it down first."
+    })
+    static boolean canRunNoLock(String command, File lock) {
+        if (command.equals(ActionProvider.COMMAND_RUN) ||
+                command.equals(ActionProvider.COMMAND_DEBUG) ||
+                command.equals(ActionProvider.COMMAND_PROFILE)) {
+            if (isLocked(lock)) {
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(ERR_module_already_running()));
+                return false;
+            }
+        } else if (ActionProvider.COMMAND_DELETE.equals(command) ||
+                ActionProvider.COMMAND_RENAME.equals(command) ||
+                ActionProvider.COMMAND_MOVE.equals(command) ||
+                ActionProvider.COMMAND_COPY.equals(command)) {
+            if (isLocked(lock)) {
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(ERR_ModuleIsBeingRun()));
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    // Cf. org.netbeans.nbbuild.IsLocked
+    private static boolean isLocked(File file) {
+        if (!file.exists()) {
+            return false;
+        }
+        try {
+            RandomAccessFile raf = new RandomAccessFile(file, "rw");
+            try {
+                FileLock lock = raf.getChannel().tryLock();
+                if (lock == null) {
+                    return true;
+                }
+                lock.release();
+                return false;
+            } finally {
+                raf.close();
+            }
+        } catch (IOException x) {
+            return true;
+        } catch (OverlappingFileLockException x) {
+            return true; // ?
+        }
+    }
+
+    private String[] setupProfileTestSingle(Properties p, TestSources testSources) {
+        p.setProperty("test.includes", testSources.includes().replace("**", "**/*Test.java")); // NOI18N
+        p.setProperty("test.type", testSources.testType); // NOI18N
+        return new String[] {"profile-test-single-nb"}; // NOI18N
+    }
+
+    static void setRunArgsIde(Project project, ModuleProperties modprops, String command, Properties p) {
+        StringBuilder runArgsIde = new StringBuilder();
+        StartupExtender.StartMode mode;
+        if (command.equals(COMMAND_RUN) || command.equals(COMMAND_RUN_SINGLE)) {
+            mode = StartupExtender.StartMode.NORMAL;
+        } else if (command.equals(COMMAND_DEBUG) || command.equals(COMMAND_DEBUG_SINGLE) || command.equals(COMMAND_DEBUG_STEP_INTO)) {
+            mode = StartupExtender.StartMode.DEBUG;
+        } else if (command.equals(COMMAND_PROFILE) || command.equals(COMMAND_PROFILE_SINGLE) || command.equals("profile-osgi")) {
+            mode = StartupExtender.StartMode.PROFILE;
+        } else if (command.equals(COMMAND_TEST) || command.equals(COMMAND_TEST_SINGLE)) {
+            mode = StartupExtender.StartMode.TEST_NORMAL;
+        } else if (command.equals(COMMAND_DEBUG_TEST_SINGLE)) {
+            mode = StartupExtender.StartMode.TEST_DEBUG;
+        } else if (command.equals(COMMAND_PROFILE_TEST_SINGLE)) {
+            mode = StartupExtender.StartMode.TEST_PROFILE;
+        } else {
+            mode = null;
+        }
+        
+        boolean isTest = (EnumSet.of(
+                            StartupExtender.StartMode.TEST_PROFILE, 
+                            StartupExtender.StartMode.TEST_NORMAL, 
+                            StartupExtender.StartMode.TEST_DEBUG).contains(mode) || 
+                          command.equals(COMMAND_PROFILE_SINGLE));
+        if (mode != null) {
+            JavaPlatform plaf = modprops.getJavaPlatform();
+            Lookup context = Lookups.fixed(project, plaf != null ? plaf : JavaPlatformManager.getDefault().getDefaultPlatform());
+            for (StartupExtender group : StartupExtender.getExtenders(context, mode)) {
+                for (String arg : group.getArguments()) {
+                    runArgsIde.append(isTest ? "" : "-J").append(arg).append(' ');
+                }
+            }
+        }
+        if (runArgsIde.length() > 0) {
+            p.setProperty(RUN_ARGS_IDE, runArgsIde.toString());
+        }
     }
 
     @Messages({
@@ -565,6 +703,12 @@ public final class ModuleActions implements ActionProvider, ExecProject {
         return  new String[] {"debug-test-main-nb"};    // NOI18N
     }
     
+    private String[] setupProfileMain(Properties p, TestSources testSources, Lookup context, String mainClass) {
+        p.setProperty("main.class", mainClass);    // NOI18N
+        p.setProperty("test.type", testSources.testType); // NOI18N
+        return  new String[] {"profile-test-main-nb"};    // NOI18N
+    }
+    
     private String testClassName(TestSources testSources) {
         String path = testSources.includes();
         assert path.endsWith(".java") && !path.contains(",") : path;
@@ -578,15 +722,21 @@ public final class ModuleActions implements ActionProvider, ExecProject {
         return new String[] {"debug-test-single-nb"}; // NOI18N
     }
     
-    private boolean bypassAntBuildScript(String command, FileObject[] files) throws IllegalArgumentException {
+    private boolean bypassAntBuildScript(String command, FileObject[] files, AtomicReference<ExecutorTask> task) throws IllegalArgumentException {
         FileObject toRun = null;
 
-        if (COMMAND_RUN_SINGLE.equals(command) || COMMAND_DEBUG_SINGLE.equals(command)) {
+        if (COMMAND_RUN_SINGLE.equals(command) || 
+            COMMAND_DEBUG_SINGLE.equals(command) ||
+            COMMAND_PROFILE_SINGLE.equals(command)) {
             toRun = files[0];
         }
         
         if (toRun != null) {
-            String commandToExecute = COMMAND_RUN_SINGLE.equals(command) ? JavaRunner.QUICK_TEST : JavaRunner.QUICK_TEST_DEBUG;
+            String commandToExecute = COMMAND_RUN_SINGLE.equals(command) ? 
+                                        JavaRunner.QUICK_TEST : 
+                                        (COMMAND_DEBUG_SINGLE.equals(command) ? 
+                                            JavaRunner.QUICK_TEST_DEBUG :
+                                            JavaRunner.QUICK_TEST_PROFILE);
             if (!JavaRunner.isSupported(commandToExecute, Collections.singletonMap(JavaRunner.PROP_EXECUTE_FILE, toRun))) {
                 return false;
             }
@@ -597,7 +747,7 @@ public final class ModuleActions implements ActionProvider, ExecProject {
 
                 properties.put(JavaRunner.PROP_EXECUTE_FILE, toRun);
 
-                JavaRunner.execute(commandToExecute, properties);
+                task.set(JavaRunner.execute(commandToExecute, properties));
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -638,11 +788,11 @@ public final class ModuleActions implements ActionProvider, ExecProject {
                 if (findBuildXml(project) == null) {
                     return false;
                 }
-                if (Boolean.parseBoolean(project.evaluator().getProperty("is.autoload")) || Boolean.parseBoolean(project.evaluator().getProperty("is.eager"))) { // NOI18N
-                    return false; // #86395
-                }
                 if (!inIDE) {
                     return project.getTestUserDirLockFile().isFile();
+                }
+                if (Boolean.parseBoolean(project.evaluator().getProperty("is.autoload")) || Boolean.parseBoolean(project.evaluator().getProperty("is.eager"))) {
+                    return false; // #86395 but #208415
                 }
                 NbModuleType type = project.getModuleType();
                 if (type == NbModuleType.NETBEANS_ORG) {

@@ -51,17 +51,20 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;
-import org.netbeans.modules.maven.NbMavenProjectImpl;
-import org.netbeans.modules.maven.indexer.api.NBArtifactInfo;
-import org.netbeans.modules.maven.indexer.api.NBGroupInfo;
-import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
-import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
-import org.netbeans.modules.maven.spi.nodes.NodeUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.maven.NbMavenProjectImpl;
+import static org.netbeans.modules.maven.actions.usages.ui.Bundle.*;
+import org.netbeans.modules.maven.indexer.api.NBArtifactInfo;
+import org.netbeans.modules.maven.indexer.api.NBGroupInfo;
+import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
+import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
+import org.netbeans.modules.maven.indexer.api.RepositoryQueries.Result;
 import org.netbeans.modules.maven.indexer.api.ui.ArtifactViewer;
+import org.netbeans.modules.maven.spi.nodes.NodeUtils;
+import org.openide.NotificationLineSupport;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.AbstractNode;
@@ -69,28 +72,41 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author Anuradha G (theanuradha-at-netbeans.org)
  */
-public class UsagesUI extends javax.swing.JPanel implements ExplorerManager.Provider {
+public final class UsagesUI extends javax.swing.JPanel implements ExplorerManager.Provider {
 
     static final int TYPE_DEPENDENCY = 0;
     static final int TYPE_COMPILE = 1;
     static final int TYPE_TEST = 2;
     static final int TYPE_RUNTIME = 3;
     private ExplorerManager explorerManager = new ExplorerManager();
+    private NotificationLineSupport nls;
+    private final Artifact artifact;
+    private final String libDef;
 
     /** Creates new form UsagesUI */
     public UsagesUI(final String libDef, final Artifact artifact) {
         initComponents();
-        initNodes(libDef, artifact);
-
+        this.libDef = libDef;
+        this.artifact = artifact;
     }
 
+    @Messages({
+        "# {0} maven coordinates",
+        "LBL_Repo=<html>Repository Artifacts that use {0} as Dependency </html>", 
+        "# {0} maven coordinates",
+        "LBL_Description=<html>Open Projects that use {0} as Dependency </html>", 
+        "LBL_Incomplete=Incomplete result, processing indices...", 
+        "LBL_Dependancy=As Direct Dependency", 
+        "LBL_TYPE_COMPILE=As Compile Time Dependency ", 
+        "LBL_TYPE_RUNTIME=As Runtime Dependency", 
+         "LBL_TYPE_TEST=As Test Dependency"})
      void initNodes(final String libDef, final Artifact artifact) {
         Children openProjectsChildren = new Children.Keys<Integer>() {
 
@@ -130,22 +146,22 @@ public class UsagesUI extends javax.swing.JPanel implements ExplorerManager.Prov
                 switch (type) {
                     case TYPE_DEPENDENCY:
                          {
-                            node.setDisplayName(NbBundle.getMessage(UsagesUI.class, "LBL_Dependancy"));//NOI18N
+                            node.setDisplayName(LBL_Dependancy());//NOI18N
                         }
                         break;
                     case TYPE_COMPILE:
                          {
-                            node.setDisplayName(NbBundle.getMessage(UsagesUI.class, "LBL_TYPE_COMPILE"));//NOI18N
+                            node.setDisplayName(LBL_TYPE_COMPILE());//NOI18N
                         }
                         break;
                     case TYPE_TEST:
                          {
-                            node.setDisplayName(NbBundle.getMessage(UsagesUI.class, "LBL_TYPE_TEST"));//NOI18N
+                            node.setDisplayName(LBL_TYPE_TEST());//NOI18N
                         }
                         break;
                     case TYPE_RUNTIME:
                          {
-                            node.setDisplayName(NbBundle.getMessage(UsagesUI.class, "LBL_TYPE_RUNTIME"));//NOI18N
+                            node.setDisplayName(LBL_TYPE_RUNTIME());//NOI18N
                         }
                         break;
                 }
@@ -163,7 +179,7 @@ public class UsagesUI extends javax.swing.JPanel implements ExplorerManager.Prov
 
             @Override
             public String getHtmlDisplayName() {
-                return NbBundle.getMessage(UsagesUI.class, "LBL_Description", libDef);
+                return LBL_Description(libDef);
             }
 
             @Override
@@ -176,9 +192,11 @@ public class UsagesUI extends javax.swing.JPanel implements ExplorerManager.Prov
                 return NodeUtils.getTreeFolderIcon(true);
             }
         };
-        final List<NBGroupInfo> list = RepositoryQueries.findDependencyUsage(
-                artifact.getGroupId(),
-                    artifact.getArtifactId(), artifact.getVersion(), null);
+        Result<NBGroupInfo> result = RepositoryQueries.findDependencyUsageResult(
+                                    artifact.getGroupId(),
+                                        artifact.getArtifactId(), artifact.getVersion(), null);
+        final List<NBGroupInfo> list = result.getResults();
+        nls.setWarningMessage(LBL_Incomplete());
         Children repoChildren = new Children.Keys<NBGroupInfo>() {
 
             @Override
@@ -197,7 +215,7 @@ public class UsagesUI extends javax.swing.JPanel implements ExplorerManager.Prov
             @Override
             public String getHtmlDisplayName() {
 
-                return NbBundle.getMessage(UsagesUI.class, "LBL_Repo", libDef);
+                return LBL_Repo(libDef);
             }
 
             @Override
@@ -220,6 +238,7 @@ public class UsagesUI extends javax.swing.JPanel implements ExplorerManager.Prov
 
         RequestProcessor.getDefault().post(new Runnable() {
 
+            @Override
             public void run() {
                 beanTreeView.expandAll();
 
@@ -227,6 +246,7 @@ public class UsagesUI extends javax.swing.JPanel implements ExplorerManager.Prov
         }, 100);
          RequestProcessor.getDefault().post(new Runnable() {
 
+            @Override
             public void run() {
 
                 try {
@@ -271,6 +291,7 @@ public class UsagesUI extends javax.swing.JPanel implements ExplorerManager.Prov
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JScrollPane jScrollPane1;
     // End of variables declaration//GEN-END:variables
+    @Override
     public ExplorerManager getExplorerManager() {
         return explorerManager;
     }
@@ -346,6 +367,12 @@ public class UsagesUI extends javax.swing.JPanel implements ExplorerManager.Prov
 
         return mavenProjects;
 
+    }
+
+    public void initialize(NotificationLineSupport nls) {
+        assert nls != null;
+        this.nls = nls;
+        initNodes(libDef, artifact);
     }
 
     private static class GroupNode extends AbstractNode {

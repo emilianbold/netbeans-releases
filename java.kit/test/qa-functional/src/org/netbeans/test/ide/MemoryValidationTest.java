@@ -64,7 +64,7 @@ public class MemoryValidationTest extends IDEValidation {
 //    }
 
     protected @Override int timeOut() {
-        return 110000;
+        return 300000;
     }
     
     public static Test suite() {

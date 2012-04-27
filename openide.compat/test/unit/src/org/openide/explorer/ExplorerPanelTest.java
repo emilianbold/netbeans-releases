@@ -54,6 +54,7 @@ import java.util.Arrays;
 import org.netbeans.junit.NbTestCase;
 
 import javax.swing.Action;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 
@@ -202,6 +203,7 @@ public class ExplorerPanelTest extends NbTestCase {
         
     }
 
+    @RandomlyFails // via ExplorerActionsCompatTest, in NB-Core-Build #8109: 2nd "It gets enabled"
     public void testDeleteConfirmAction () throws Exception {
         TestNode [] nodes = new TestNode [] {
             new TestNode(true, true, true),

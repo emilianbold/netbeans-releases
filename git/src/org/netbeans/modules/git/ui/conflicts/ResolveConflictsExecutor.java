@@ -110,7 +110,15 @@ public class ResolveConflictsExecutor extends GitProgressSupport {
                 LOG.warning("can't resolve conflicts for null fileobject : " + file + ", exists: " + file.exists());
                 return;
             }
-            handleMergeFor(file, fo, fo.lock(), merge);
+            FileLock lock = fo.lock();
+            boolean mergeViewerDisplayed = false;
+            try {
+                mergeViewerDisplayed = handleMergeFor(file, fo, lock, merge);
+            } finally {
+                if (!mergeViewerDisplayed) {
+                    lock.releaseLock();
+                }
+            }
         } catch (FileAlreadyLockedException e) {
             EventQueue.invokeLater(new Runnable() {
                 @Override
@@ -129,7 +137,7 @@ public class ResolveConflictsExecutor extends GitProgressSupport {
         }
     }
     
-    private void handleMergeFor(final File file, FileObject fo, FileLock lock, final MergeVisualizer merge) throws IOException {
+    private boolean handleMergeFor(final File file, FileObject fo, FileLock lock, final MergeVisualizer merge) throws IOException {
         String mimeType = (fo == null) ? "text/plain" : fo.getMIMEType(); // NOI18N
         File folder = Utils.getTempFolder();
         File f1 = new File(folder, TMP_PREFIX + "ours-" + file.getName()); //NOI18N
@@ -146,7 +154,7 @@ public class ResolveConflictsExecutor extends GitProgressSupport {
         final Difference[] diffs = copyParts(true, file, f1, true, encoding);
         if (diffs.length == 0) {
             toResolve.add(file);
-            return;
+            return false;
         }
 
         copyParts(false, file, f2, false, encoding);
@@ -185,6 +193,7 @@ public class ResolveConflictsExecutor extends GitProgressSupport {
                 }
             }
         });
+        return true;
     }
 
     /**

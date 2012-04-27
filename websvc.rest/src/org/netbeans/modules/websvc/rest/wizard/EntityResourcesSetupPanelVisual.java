@@ -71,7 +71,7 @@ import org.openide.util.ChangeSupport;
  * @author  Pavel Buzek
  */
 public class EntityResourcesSetupPanelVisual extends JPanel 
-        implements AbstractPanel.Settings 
+        implements AbstractPanel.Settings, SourcePanel 
 {
 
     private static final long serialVersionUID = -2519548265504277682L;
@@ -105,6 +105,10 @@ public class EntityResourcesSetupPanelVisual extends JPanel
             });
         }
     }
+    
+    public SourceGroup getSourceGroup() {
+        return (SourceGroup) locationComboBox.getSelectedItem();
+    }
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -123,7 +127,7 @@ public class EntityResourcesSetupPanelVisual extends JPanel
         controllerPackageLabel = new javax.swing.JLabel();
         controllerPackageComboBox = new javax.swing.JComboBox();
 
-        setPreferredSize(new java.awt.Dimension(519, 301));
+        setPreferredSize(new java.awt.Dimension(596, 100));
 
         projectLabel.setLabelFor(projectTextField);
         org.openide.awt.Mnemonics.setLocalizedText(projectLabel, org.openide.util.NbBundle.getMessage(EntityResourcesSetupPanelVisual.class, "LBL_Project")); // NOI18N
@@ -173,7 +177,7 @@ public class EntityResourcesSetupPanelVisual extends JPanel
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(resourcePackageLabel)
-                            .addComponent(controllerPackageLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 137, Short.MAX_VALUE))
+                            .addComponent(controllerPackageLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 133, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -181,12 +185,10 @@ public class EntityResourcesSetupPanelVisual extends JPanel
                             .addComponent(locationLabel))
                         .addGap(79, 79, 79)))
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(locationComboBox, javax.swing.GroupLayout.Alignment.LEADING, 0, 370, Short.MAX_VALUE)
-                    .addGroup(layout.createSequentialGroup()
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(projectTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 370, Short.MAX_VALUE))
-                    .addComponent(resourcePackageComboBox, javax.swing.GroupLayout.Alignment.LEADING, 0, 370, Short.MAX_VALUE)
-                    .addComponent(controllerPackageComboBox, javax.swing.GroupLayout.Alignment.LEADING, 0, 370, Short.MAX_VALUE)))
+                    .addComponent(locationComboBox, javax.swing.GroupLayout.Alignment.LEADING, 0, 366, Short.MAX_VALUE)
+                    .addComponent(projectTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 366, Short.MAX_VALUE)
+                    .addComponent(resourcePackageComboBox, javax.swing.GroupLayout.Alignment.LEADING, 0, 366, Short.MAX_VALUE)
+                    .addComponent(controllerPackageComboBox, javax.swing.GroupLayout.Alignment.LEADING, 0, 366, Short.MAX_VALUE)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -369,7 +371,4 @@ public class EntityResourcesSetupPanelVisual extends JPanel
         }
     }
 
-    private SourceGroup getSourceGroup() {
-        return (SourceGroup) locationComboBox.getSelectedItem();
-    }
 }

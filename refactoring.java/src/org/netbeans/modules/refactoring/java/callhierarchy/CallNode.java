@@ -122,7 +122,18 @@ final class CallNode extends AbstractNode {
         if (model != null) {
             root = model.getRoot();
         }
-        return root != null ? createCall(root) : createDefault();
+        
+        if (root == null) {
+            return createDefault();
+        }
+        if (root.isBroken()) {
+            return createBroken();
+        } else if (root.isCanceled()) {
+            return createCanceled();
+        } else if (root.isIncomplete()) {
+            return createPleaseWait();
+        }
+        return createCall(root);
     }
 
     @Override

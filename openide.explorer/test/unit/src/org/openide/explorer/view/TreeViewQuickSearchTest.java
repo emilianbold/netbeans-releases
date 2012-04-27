@@ -45,6 +45,7 @@
 package org.openide.explorer.view;
 
 import java.awt.BorderLayout;
+import java.awt.GraphicsEnvironment;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyVetoException;
 import java.lang.reflect.InvocationTargetException;
@@ -53,6 +54,8 @@ import javax.swing.JPanel;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.tree.TreePath;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.AbstractNode;
@@ -63,6 +66,11 @@ import org.openide.nodes.Node;
  * Tests for the quick search feature in the treeview.
  */
 public class TreeViewQuickSearchTest extends NbTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(TreeViewQuickSearchTest.class);
+    }
+
     private JFrame f;
     
     public TreeViewQuickSearchTest(String name) {
@@ -219,9 +227,9 @@ public class TreeViewQuickSearchTest extends NbTestCase {
 
                 if (phase[0] != 0) {
                     if (btv.isQuickSearchAllowed()) {
-                        assertNotNull("Quick Search enabled ", btv.searchpanel);
+                        assertNotNull("Quick Search enabled ", btv.getSearchPanel());
                     } else {
-                        assertNull("Quick Search disable", btv.searchpanel);
+                        assertNull("Quick Search disabled", btv.getSearchPanel());
                     }
                 }
             }

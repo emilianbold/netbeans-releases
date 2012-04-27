@@ -235,10 +235,6 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
                                 }
                                 ((JEditorPane)singleLineEditor[1]).setText(returnType);
                                 ((JEditorPane)singleLineEditor[1]).getDocument().addDocumentListener(returnTypeDocListener);
-                                ((JEditorPane)singleLineEditor[1]).putClientProperty(
-                                    "HighlightsLayerExcludes", //NOI18N
-                                    "^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\.CaretRowHighlighting$" //NOI18N
-                                );
                                 initialized = true;
                                 methodNameChanged = false;
                                 returnTypeChanged = false;
@@ -679,8 +675,9 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         return new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
-                if (e.getValueIsAdjusting())
+                if (e.getValueIsAdjusting()) {
                     return;
+                }
                 
                 ListSelectionModel lsm = (ListSelectionModel) e.getSource();
 
@@ -693,8 +690,9 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
                     boolean enableRemoveBtn = true;
                     for (int i = minIndex; i <= maxIndex; i++) {
                         enableRemoveBtn = model.isRemovable(i);
-                        if (!enableRemoveBtn)
+                        if (!enableRemoveBtn) {
                             break;
+                        }
                     }
                     removeButton.setEnabled(enableRemoveBtn);
                 }
@@ -721,8 +719,9 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
                     for (int i = 0; i < selectedRows.length; i++) {
                         if (selectedRows[i] < model.getRowCount()) {
                             enableRemoveBtn = model.isCellEditable(selectedRows[i], 0);
-                            if (!enableRemoveBtn)
+                            if (!enableRemoveBtn) {
                                 break;
+                            }
                         }
                     }
                     removeButton.setEnabled(enableRemoveBtn);
@@ -754,34 +753,27 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         parameterSpan = info.getTreeUtilities().findMethodParameterSpan(tree);
         
         List<? extends VariableElement> pars = method.getParameters();
-
-        Collection<ExecutableElement> allMethods = new ArrayList();
-        allMethods.addAll(JavaRefactoringUtils.getOverriddenMethods(method, info));
-        allMethods.addAll(JavaRefactoringUtils.getOverridingMethods(method, info));
-        allMethods.add(method);
         
-        for (ExecutableElement currentMethod: allMethods) {
-            int originalIndex = 0;
-            for (VariableElement par:currentMethod.getParameters()) {
-                VariableTree parTree = (VariableTree) info.getTrees().getTree(par);
-                String typeRepresentation;
-                if (method.isVarArgs() && originalIndex == pars.size()-1) {
-                    typeRepresentation = getTypeStringRepresentation(parTree).replace("[]", "..."); // NOI18N
-                } else {
-                    typeRepresentation = getTypeStringRepresentation(parTree);
-                }
-                LocalVarScanner scan = new LocalVarScanner(info, null);
-                scan.scan(path, par);
-                Boolean removable = !scan.hasRefernces();
-                if (model.getRowCount()<=originalIndex) {
-                    Object[] parRep = new Object[] { typeRepresentation, par.toString(), "", new Integer(originalIndex), removable };
-                    model.addRow(parRep);
-                } else {
-                    removable = Boolean.valueOf(model.isRemovable(originalIndex) && removable.booleanValue());
-                    ((Vector) model.getDataVector().get(originalIndex)).set(4, removable);
-                }
-                originalIndex++;
+        int originalIndex = 0;
+        for (VariableElement par:method.getParameters()) {
+            VariableTree parTree = (VariableTree) info.getTrees().getTree(par);
+            String typeRepresentation;
+            if (method.isVarArgs() && originalIndex == pars.size()-1) {
+                typeRepresentation = getTypeStringRepresentation(parTree).replace("[]", "..."); // NOI18N
+            } else {
+                typeRepresentation = getTypeStringRepresentation(parTree);
             }
+            LocalVarScanner scan = new LocalVarScanner(info, null);
+            scan.scan(path, par);
+            Boolean removable = !scan.hasRefernces();
+            if (model.getRowCount()<=originalIndex) {
+                Object[] parRep = new Object[] { typeRepresentation, par.toString(), "", new Integer(originalIndex), removable };
+                model.addRow(parRep);
+            } else {
+                removable = Boolean.valueOf(model.isRemovable(originalIndex) && removable.booleanValue());
+                ((Vector) model.getDataVector().get(originalIndex)).set(4, removable);
+            }
+            originalIndex++;
         }
         if(preConfiguration != null) {
             List<Object[]> newModel = new LinkedList<Object[]>();
@@ -808,8 +800,9 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
 
     private boolean acceptEditedValue() {
         TableCellEditor tce = paramTable.getCellEditor();
-        if (tce != null)
+        if (tce != null) {
             return paramTable.getCellEditor().stopCellEditing();
+        }
         return false;
     }
     
@@ -862,8 +855,9 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         } else if (mods.contains(Modifier.PUBLIC)) {
 //            this.modifiers.add(Modifier.PUBLIC);
             modifiersCombo.setSelectedIndex(MOD_PUBLIC_INDEX);
-        } else
+        } else {
             modifiersCombo.setSelectedIndex(MOD_DEFAULT_INDEX);
+        }
     }
 
     public String genDeclarationString() {
@@ -1138,6 +1132,10 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
                     if (kit == null) {
                         throw new IllegalStateException("No EditorKit for '" + MIME_JAVA + "' mimetype."); //NOI18N
                     }
+                    editorPane.putClientProperty(
+                            "HighlightsLayerExcludes", //NOI18N
+                            ".*(?<!TextSelectionHighlighting)$" //NOI18N
+                            );
                     editorPane.setEditorKit(kit);
                     
                     KeyStroke enterKs = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);

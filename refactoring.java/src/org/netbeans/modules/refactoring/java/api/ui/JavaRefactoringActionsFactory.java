@@ -124,16 +124,31 @@ public final class JavaRefactoringActionsFactory {
         return UseSuperTypeAction.findObject(UseSuperTypeAction.class, true);
     }
     
+    /**
+     * Factory method for ExtractSuperclassAction
+     * @return an instance of ExtractSuperclassAction
+     */
     public static ContextAwareAction extractSuperclassAction() {
         return ExtractSuperclassAction.findObject(ExtractSuperclassAction.class, true);
     }
     
+    /**
+     * Factory method for ExtractInterfaceAction
+     * @return an instance of ExtractInterfaceAction
+     */
     public static ContextAwareAction extractInterfaceAction() {
         return ExtractInterfaceAction.findObject(ExtractInterfaceAction.class, true);
     }
     
+    /**
+     * Factory method for IntroduceParameterAction
+     * @return an instance of IntroduceParameterAction
+     */
     public static ContextAwareAction introduceParameterAction() {
         return IntroduceParameterAction.findObject(IntroduceParameterAction.class, true);
     }
     
+    public static ContextAwareAction introduceLocalExtensionAction() {
+        return IntroduceLocalExtensionAction.findObject(IntroduceLocalExtensionAction.class, true);
+    }
 }

@@ -105,6 +105,8 @@ public class DocumentationScrollPane extends JScrollPane {
     private List<ElementJavadoc> history = new ArrayList<ElementJavadoc>(5);
     private int currentHistoryIndex = -1;
     protected ElementJavadoc currentDocumentation = null;
+    //@GuardedBy("this")
+    private RequestProcessor.Task task;
     
     /** Creates a new instance of ScrollJavaDocPane */
     public DocumentationScrollPane( boolean keepDefaultBorder ) {
@@ -219,30 +221,75 @@ public class DocumentationScrollPane extends JScrollPane {
         installKeybindings(view);
     }
     
-    private synchronized void setDocumentation(ElementJavadoc doc) {
+    private synchronized void setDocumentation(final ElementJavadoc doc) {
         currentDocumentation = doc;
         if( null != doc ) {
-            String text = currentDocumentation.getText();
-            URL url = currentDocumentation.getURL();
-            if (text != null){
-                Document document = view.getDocument();
-                document.putProperty(Document.StreamDescriptionProperty, null);
-                if (url!=null){
-                    // fix of issue #58658
-                    if (document instanceof HTMLDocument){
-                        ((HTMLDocument)document).setBase(url);
+            if (task != null) {
+                task.cancel();
+            }
+            view.setContent(NbBundle.getMessage(DocumentationScrollPane.class, "TXT_LoadingJavadoc"), null);
+            task = RP.create(new Runnable(){
+                @Override
+                public void run() {
+                    
+                    final ElementJavadoc ed;
+                    synchronized (DocumentationScrollPane.this) {
+                        if (currentDocumentation != doc) {
+                            return;
+                        }                        
+                        ed = currentDocumentation;
+                    }
+                    final String text = ed.getText();
+                    final URL url = ed.getURL();
+                    final boolean gtsEnabled = ed.getGotoSourceAction() != null;
+                    synchronized (DocumentationScrollPane.this) {
+                        if (currentDocumentation != doc) {
+                            //Changed, do nothing.
+                            return;
+                        }                        
+                    }
+                    if (text != null){
+                        SwingUtilities.invokeLater(new Runnable(){
+                            @Override
+                            public void run() {
+                                Document document = view.getDocument();
+                                document.putProperty(Document.StreamDescriptionProperty, null);
+                                if (url!=null){
+                                    // fix of issue #58658
+                                    if (document instanceof HTMLDocument){
+                                        ((HTMLDocument)document).setBase(url);
+                                    }
+                                }
+                                view.setContent(text, null);
+                                bShowWeb.setEnabled(url != null);
+                                bGoToSource.setEnabled(gtsEnabled);
+                            }
+                        });
+                    } else if (url != null){
+                        SwingUtilities.invokeLater(new Runnable(){
+                            @Override
+                            public void run() {
+                                try{
+                                    view.setPage(url);
+                                    bShowWeb.setEnabled(url != null);
+                                    bGoToSource.setEnabled(gtsEnabled);
+                                }catch(IOException ioe){
+                                    StatusDisplayer.getDefault().setStatusText(ioe.toString());
+                                }
+                            }
+                        });
+                    } else {
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                bShowWeb.setEnabled(false);
+                                bGoToSource.setEnabled(false);
+                            }
+                        });
                     }
                 }
-                view.setContent(text, null);
-            } else if (url != null){
-                try{
-                    view.setPage(url);
-                }catch(IOException ioe){
-                    StatusDisplayer.getDefault().setStatusText(ioe.toString());
-                }
-            }
-            bShowWeb.setEnabled(url != null);
-            bGoToSource.setEnabled(currentDocumentation.getGotoSourceAction() != null);
+            });
+            task.schedule(0);
         } else {
             bShowWeb.setEnabled( false );
             bGoToSource.setEnabled( false );

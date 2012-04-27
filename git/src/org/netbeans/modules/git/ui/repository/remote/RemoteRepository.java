@@ -204,26 +204,29 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
 
     @Override
     public void insertUpdate(DocumentEvent de) {
-        if(ignoreComboEvents) return;
-        validateFields();
-        updateCurrentSettingsType();
-        findComboItem(false);
+        uriTextChanged();
     }
 
     @Override
     public void removeUpdate(DocumentEvent de) {
-        if(ignoreComboEvents) return;
-        validateFields();
-        updateCurrentSettingsType();
-        findComboItem(false);
+        uriTextChanged();
     }
 
     @Override
     public void changedUpdate(DocumentEvent de) {
+        uriTextChanged();
+    }
+
+    private void uriTextChanged () {
         if(ignoreComboEvents) return;
         validateFields();
         updateCurrentSettingsType();
-        findComboItem(false);
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run () {
+                findComboItem(false);
+            }
+        });
     }
 
     @Override
@@ -344,6 +347,7 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
                         }
                     }
                 });
+                break;
             }
         }
         if (!found && uri != null) {

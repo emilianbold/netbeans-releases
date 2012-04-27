@@ -69,6 +69,13 @@ public class PullUpTest extends RefactoringTestBase {
     public PullUpTest(String name) {
         super(name);
    }
+    
+    public void test206683() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("pullup/A.java", "package pullup; public class A extends B { public int i; }"),
+                new File("pullup/B.java", "package pullup; public class B { private int i; }"));
+        performPullUp(src.getFileObject("pullup/A.java"), 1, Boolean.FALSE, new Problem(true, "ERR_PullUp_MemberAlreadyExists"));
+    }
 
     public void testPullUpField() throws Exception {
         writeFilesAndWaitForScan(src,
@@ -177,6 +184,128 @@ public class PullUpTest extends RefactoringTestBase {
                 + "    }\n"
                 + "    \n"
                 + "\n"
+                + "}"));
+    }
+    
+    public void testPullUpAllComments() throws Exception { // #210915 - Refactoring Pull Up Leaves Single Comment in Sub Class
+        writeFilesAndWaitForScan(src, new File("t/SuperClass.java",
+                  "/*\n"
+                + " * To change this template, choose Tools | Templates\n"
+                + " * and open the template in the editor.\n"
+                + " */\n"
+                + "package t;\n"
+                + "\n"
+                + "import java.util.EventListener;\n"
+                + "import u.SuperDuperClass;\n"
+                + "\n"
+                + "/**\n"
+                + " *\n"
+                + " * @author Mark\n"
+                + " */\n"
+                + "public class SuperClass extends SuperDuperClass {\n"
+                + "    \n"
+                + "    // fields\n"
+                + "    Integer a;\n"
+                + "    /* Comment */\n"
+                + "    Integer b;\n"
+                + "    /**\n"
+                + "     * Comment 3\n"
+                + "     */\n"
+                + "    String s;\n"
+                + "    // Comment 2\n"
+                + "    Boolean t;\n"
+                + "\n"
+                + "    // Comment doSomething(int x)\n"
+                + "    public void doSomething(int x) {\n"
+                + "        // Do Something\n"
+                + "    }\n"
+                + "\n"
+                + "    // Comment doSomethingElse()\n"
+                + "    public String doSomethingElse() {\n"
+                + "        return \"hello world\";\n"
+                + "    }\n"
+                + "\n"
+                + "    /**\n"
+                + "     *\n"
+                + "     * Comment doStuff(String s)\n"
+                + "     */\n"
+                + "    public void doStuff(String s) {\n"
+                + "        System.out.println(\"do stuff\");\n"
+                + "        System.out.println(new EventListener() {\n"
+                + "        });\n"
+                + "    }\n"
+                + "}\n"
+                + ""),
+                new File("u/SuperDuperClass.java",
+                "package u;\n"
+                + "\n"
+                + "/**\n"
+                + " *\n"
+                + " * @author Mark\n"
+                + " */\n"
+                + "public class SuperDuperClass {\n"
+                + "    \n"
+                + "}"));
+        performPullUp(src.getFileObject("t/SuperClass.java"), -1, Boolean.FALSE);
+        verifyContent(src, new File("t/SuperClass.java",
+                  "/*\n"
+                + " * To change this template, choose Tools | Templates\n"
+                + " * and open the template in the editor.\n"
+                + " */\n"
+                + "package t;\n"
+                + "\n"
+                + "import java.util.EventListener;\n"
+                + "import u.SuperDuperClass;\n"
+                + "\n"
+                + "/**\n"
+                + " *\n"
+                + " * @author Mark\n"
+                + " */\n"
+                + "public class SuperClass extends SuperDuperClass {\n"
+                + "    \n"
+                + "}\n"
+                + ""),
+                new File("u/SuperDuperClass.java",
+                "package u;\n"
+                + "\n"
+                + "import java.util.EventListener;\n"
+                + "\n"
+                + "/**\n"
+                + " *\n"
+                + " * @author Mark\n"
+                + " */\n"
+                + "public class SuperDuperClass {\n"
+                + "    \n"
+                + "    // fields\n"
+                + "    Integer a;\n"
+                + "    /* Comment */\n"
+                + "    Integer b;\n"
+                + "    /**\n"
+                + "     * Comment 3\n"
+                + "     */\n"
+                + "    String s;\n"
+                + "    // Comment 2\n"
+                + "    Boolean t;\n"
+                + "\n"
+                + "    // Comment doSomething(int x)\n"
+                + "    public void doSomething(int x) {\n"
+                + "        // Do Something\n"
+                + "    }\n"
+                + "\n"
+                + "    // Comment doSomethingElse()\n"
+                + "    public String doSomethingElse() {\n"
+                + "        return \"hello world\";\n"
+                + "    }\n"
+                + "\n"
+                + "    /**\n"
+                + "     *\n"
+                + "     * Comment doStuff(String s)\n"
+                + "     */\n"
+                + "    public void doStuff(String s) {\n"
+                + "        System.out.println(\"do stuff\");\n"
+                + "        System.out.println(new EventListener() {\n"
+                + "        });\n"
+                + "    }\n"
                 + "}"));
     }
 
@@ -455,7 +584,7 @@ public class PullUpTest extends RefactoringTestBase {
                 + "    public abstract void method();\n"
                 + "}"));
     }
-
+    
     public void testPullUpAbsMethod() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("pullup/PullUpBaseClass.java", "package pullup;\n"
@@ -658,7 +787,7 @@ public class PullUpTest extends RefactoringTestBase {
                 new File("pullup/B.java", "package pullup; public class B { protected void foo() { } }"));
     }
         
-    private void performPullUpImplements(FileObject source, final int position, Problem... expectedProblems) throws IOException, IllegalArgumentException {
+    private void performPullUpImplements(FileObject source, final int position, Problem... expectedProblems) throws IOException, IllegalArgumentException, InterruptedException {
         final PullUpRefactoring[] r = new PullUpRefactoring[1];
         JavaSource.forFileObject(source).runUserActionTask(new Task<CompilationController>() {
 
@@ -698,7 +827,7 @@ public class PullUpTest extends RefactoringTestBase {
         assertProblems(Arrays.asList(expectedProblems), problems);
     }
     
-    private void performPullUpIface(FileObject source, final int position, final int iface, final Boolean makeAbstract, Problem... expectedProblems) throws IOException, IllegalArgumentException {
+    private void performPullUpIface(FileObject source, final int position, final int iface, final Boolean makeAbstract, Problem... expectedProblems) throws IOException, IllegalArgumentException, InterruptedException {
         final PullUpRefactoring[] r = new PullUpRefactoring[1];
         JavaSource.forFileObject(source).runUserActionTask(new Task<CompilationController>() {
 
@@ -740,7 +869,7 @@ public class PullUpTest extends RefactoringTestBase {
         assertProblems(Arrays.asList(expectedProblems), problems);
     }
     
-    private void performPullUp(FileObject source, final int position, final Boolean makeAbstract, Problem... expectedProblems) throws IOException, IllegalArgumentException {
+    private void performPullUp(FileObject source, final int position, final Boolean makeAbstract, Problem... expectedProblems) throws IOException, IllegalArgumentException, InterruptedException {
         final PullUpRefactoring[] r = new PullUpRefactoring[1];
         JavaSource.forFileObject(source).runUserActionTask(new Task<CompilationController>() {
 
@@ -756,12 +885,27 @@ public class PullUpTest extends RefactoringTestBase {
                 TypeMirror superclass = classEl.getSuperclass();
                 TypeElement superEl = (TypeElement) info.getTypes().asElement(superclass);
                 
-                MemberInfo[] members = new MemberInfo[1];
-                Tree member = classTree.getMembers().get(position);
-                Element el = info.getTrees().getElement(new TreePath(classPath, member));
-                members[0] = MemberInfo.create(el, info);
-                members[0].setMakeAbstract(makeAbstract);
-
+                MemberInfo[] members;
+                if(position < 0) {
+                    List<? extends Tree> classMembers = classTree.getMembers();
+                    List<MemberInfo> selectedMembers = new LinkedList<MemberInfo>();
+                    for (int i = 0; i < classMembers.size(); i++) {
+                        Tree tree = classMembers.get(i);
+                        if(!info.getTreeUtilities().isSynthetic(new TreePath(classPath, tree)) ) {
+                            Element el = info.getTrees().getElement(new TreePath(classPath, tree));
+                            MemberInfo<ElementHandle<Element>> memberInfo = MemberInfo.create(el, info);
+                            memberInfo.setMakeAbstract(makeAbstract);
+                            selectedMembers.add(memberInfo);
+                        }
+                    }
+                    members = selectedMembers.toArray(new MemberInfo[selectedMembers.size()]);
+                } else {
+                    members = new MemberInfo[1];
+                    Tree member = classTree.getMembers().get(position);
+                    Element el = info.getTrees().getElement(new TreePath(classPath, member));
+                    members[0] = MemberInfo.create(el, info);
+                    members[0].setMakeAbstract(makeAbstract);
+                }
                 r[0] = new PullUpRefactoring(TreePathHandle.create(classEl, info));
                 r[0].setTargetType(ElementHandle.create(superEl));
                 r[0].setMembers(members);
@@ -782,7 +926,7 @@ public class PullUpTest extends RefactoringTestBase {
         assertProblems(Arrays.asList(expectedProblems), problems);
     }
     
-    private void performPullUpSuper(FileObject source, final int position, final Boolean makeAbstract, Problem... expectedProblems) throws IOException, IllegalArgumentException {
+    private void performPullUpSuper(FileObject source, final int position, final Boolean makeAbstract, Problem... expectedProblems) throws IOException, IllegalArgumentException, InterruptedException {
         final PullUpRefactoring[] r = new PullUpRefactoring[1];
         JavaSource.forFileObject(source).runUserActionTask(new Task<CompilationController>() {
 

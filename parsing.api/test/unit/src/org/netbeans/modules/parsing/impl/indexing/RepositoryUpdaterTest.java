@@ -50,6 +50,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.Field;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
@@ -59,6 +61,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -85,6 +88,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import junit.framework.Test;
 import junit.framework.TestSuite;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -150,7 +154,8 @@ import org.openide.util.RequestProcessor;
 public class RepositoryUpdaterTest extends NbTestCase {
 
 
-    private static final int TIME = 5000;
+    private static final int TIME = Integer.getInteger("RepositoryUpdaterTest.timeout", 5000);                 //NOI18N
+    private static final int NEGATIVE_TIME = Integer.getInteger("RepositoryUpdaterTest.negative-timeout", 5000); //NOI18N
     private static final String SOURCES = "FOO_SOURCES";
     private static final String PLATFORM = "FOO_PLATFORM";
     private static final String LIBS = "FOO_LIBS";
@@ -186,7 +191,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
     private final FooIndexerFactory indexerFactory = new FooIndexerFactory();
     private final EmbIndexerFactory eindexerFactory = new EmbIndexerFactory();
 
-    private final Map<String, Set<ClassPath>> registeredClasspaths = new HashMap<String, Set<ClassPath>>();
+    private final Map<String, Map<ClassPath,Void>> registeredClasspaths = new HashMap<String, Map<ClassPath,Void>>();
 
     public RepositoryUpdaterTest (String name) {
         super (name);
@@ -221,11 +226,8 @@ public class RepositoryUpdaterTest extends NbTestCase {
 //        MockMimeLookup.setInstances(MimePath.get(JARMIME), jarIndexerFactory);
         MockMimeLookup.setInstances(MimePath.get(MIME), indexerFactory);
         MockMimeLookup.setInstances(MimePath.get(EMIME), eindexerFactory, new EmbParserFactory());
-        Set<String> mt = new HashSet<String>();
-        mt.add(EMIME);
-        mt.add(MIME);
-        Util.allMimeTypes = mt;
-
+        setMimeTypes(EMIME, MIME);
+        
         assertNotNull("No masterfs",wd);
         srcRoot1 = wd.createFolder("src1");
         assertNotNull(srcRoot1);
@@ -291,28 +293,30 @@ public class RepositoryUpdaterTest extends NbTestCase {
     @Override
     protected void tearDown() throws Exception {
         for(String id : registeredClasspaths.keySet()) {
-            Set<ClassPath> classpaths = registeredClasspaths.get(id);
-            GlobalPathRegistry.getDefault().unregister(id, classpaths.toArray(new ClassPath[classpaths.size()]));
+            final Map<ClassPath,Void> classpaths = registeredClasspaths.get(id);
+            GlobalPathRegistry.getDefault().unregister(id, classpaths.keySet().toArray(new ClassPath[classpaths.size()]));
         }
 
         super.tearDown();
     }
 
     protected final void globalPathRegistry_register(String id, ClassPath [] classpaths) {
-        Set<ClassPath> set = registeredClasspaths.get(id);
-        if (set == null) {
-            set = new HashSet<ClassPath>();
-            registeredClasspaths.put(id, set);
+        Map<ClassPath,Void> map = registeredClasspaths.get(id);
+        if (map == null) {
+            map = new IdentityHashMap<ClassPath, Void>();
+            registeredClasspaths.put(id, map);
         }
-        set.addAll(Arrays.asList(classpaths));
+        for (ClassPath cp :  classpaths) {
+            map.put(cp,null);
+        }
         GlobalPathRegistry.getDefault().register(id, classpaths);
     }
 
     protected final void globalPathRegistry_unregister(String id, ClassPath [] classpaths) {
         GlobalPathRegistry.getDefault().unregister(id, classpaths);
-        Set<ClassPath> set = registeredClasspaths.get(id);
-        if (set != null) {
-            set.removeAll(Arrays.asList(classpaths));
+        final Map<ClassPath,Void> map = registeredClasspaths.get(id);
+        if (map != null) {
+            map.keySet().removeAll(Arrays.asList(classpaths));
         }
     }
 
@@ -360,7 +364,9 @@ public class RepositoryUpdaterTest extends NbTestCase {
 
         //Nothing should be scanned if the same cp is registered again
         handler.reset();
-        ClassPath cp1clone = ClassPathFactory.createClassPath(mcpi1);
+        final MutableClassPathImplementation mcpi1clone = new MutableClassPathImplementation();
+        mcpi1clone.addResource(this.srcRoot1);
+        ClassPath cp1clone = ClassPathFactory.createClassPath(mcpi1clone);
         globalPathRegistry_register(SOURCES,new ClassPath[]{cp1clone});
         assertTrue (handler.await());
         assertEquals(0, handler.getBinaries().size());
@@ -506,7 +512,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertEquals(0, handler.getBinaries().size());
         assertEquals(1, handler.getSources().size());
         assertEquals(this.srcRootWithFiles1.getURL(), handler.getSources().get(0));
-        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(indexerFactory.indexer.awaitIndex(TIME));
         assertTrue(eindexerFactory.indexer.awaitIndex());
 
         handler.reset();
@@ -599,7 +605,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertEquals(0, handler.getBinaries().size());
         assertEquals(1, handler.getSources().size());
         assertEquals(this.srcRootWithFiles1.getURL(), handler.getSources().get(0));
-        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(indexerFactory.indexer.awaitIndex(TIME));
         assertTrue(eindexerFactory.indexer.awaitIndex());
 
         //Test modifications
@@ -611,7 +617,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         } finally {
             out.close();
         }
-        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(indexerFactory.indexer.awaitIndex(TIME));
         assertTrue(eindexerFactory.indexer.awaitIndex());
         assertEquals(1, eindexerFactory.indexer.indexCounter);
 
@@ -622,7 +628,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         indexerFactory.indexer.setExpectedFile(new URL[0], new URL[0], new URL[0]);
         eindexerFactory.indexer.setExpectedFile(new URL[]{newFile.toURI().toURL()}, new URL[0], new URL[0]);
         assertNotNull(FileUtil.createData(newFile));
-        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(indexerFactory.indexer.awaitIndex(TIME));
         assertTrue(eindexerFactory.indexer.awaitIndex());
         assertEquals(1, eindexerFactory.indexer.indexCounter);
 
@@ -639,7 +645,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         touchFile (newFile2);
         assertEquals(2,newFolder.list().length);
         FileUtil.toFileObject(newFolder);   //Refresh fs 
-        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(indexerFactory.indexer.awaitIndex(TIME));
         assertTrue(eindexerFactory.indexer.awaitIndex());
         assertEquals(2, eindexerFactory.indexer.indexCounter);
 
@@ -649,7 +655,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         eindexerFactory.indexer.setExpectedFile(new URL[0], new URL[]{f3.getURL()}, new URL[0]);
         f3.delete();
         assertTrue (handler.await());
-        assertTrue(indexerFactory.indexer.awaitDeleted());
+        assertTrue(indexerFactory.indexer.awaitDeleted(TIME));
         assertTrue(eindexerFactory.indexer.awaitDeleted());
         assertEquals(0, eindexerFactory.indexer.indexCounter);
         assertEquals(0,eindexerFactory.indexer.expectedDeleted.size());
@@ -669,7 +675,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
                 assertFalse(newFileFo.isValid());
             }
         });
-        assertTrue(indexerFactory.indexer.awaitDeleted());
+        assertTrue(indexerFactory.indexer.awaitDeleted(TIME));
         assertTrue(eindexerFactory.indexer.awaitDeleted());
         assertEquals(0, indexerFactory.indexer.getIndexCount());
         assertEquals(0, indexerFactory.indexer.getDirtyCount());
@@ -702,9 +708,9 @@ public class RepositoryUpdaterTest extends NbTestCase {
         } finally {
             lock.releaseLock();
         }
-        assertTrue(indexerFactory.indexer.awaitDeleted());
+        assertTrue(indexerFactory.indexer.awaitDeleted(TIME));
         assertTrue(eindexerFactory.indexer.awaitDeleted());
-        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(indexerFactory.indexer.awaitIndex(TIME));
         assertTrue(eindexerFactory.indexer.awaitIndex());
         assertEquals(1, eindexerFactory.indexer.getIndexCount());
         assertEquals(1, eindexerFactory.indexer.getDeletedCount());
@@ -758,16 +764,16 @@ public class RepositoryUpdaterTest extends NbTestCase {
 
     public void testFileListWork164622() throws FileStateInvalidException {
         final RepositoryUpdater ru = RepositoryUpdater.getDefault();
-        RepositoryUpdater.FileListWork flw1 = new RepositoryUpdater.FileListWork(ru.getScannedRoots2Dependencies(),srcRootWithFiles1.getURL(), false, false, true, false, SuspendStatus.NOP, null);
-        RepositoryUpdater.FileListWork flw2 = new RepositoryUpdater.FileListWork(ru.getScannedRoots2Dependencies(),srcRootWithFiles1.getURL(), false, false, true, false, SuspendStatus.NOP, null);
+        RepositoryUpdater.FileListWork flw1 = new RepositoryUpdater.FileListWork(ru.getScannedRoots2Dependencies(),srcRootWithFiles1.getURL(), false, false, true, false, SuspendSupport.NOP, null);
+        RepositoryUpdater.FileListWork flw2 = new RepositoryUpdater.FileListWork(ru.getScannedRoots2Dependencies(),srcRootWithFiles1.getURL(), false, false, true, false, SuspendSupport.NOP, null);
         assertTrue("The flw2 job was not absorbed", flw1.absorb(flw2));
 
         FileObject [] children = srcRootWithFiles1.getChildren();
         assertTrue(children.length > 0);
-        RepositoryUpdater.FileListWork flw3 = new RepositoryUpdater.FileListWork(ru.getScannedRoots2Dependencies(),srcRootWithFiles1.getURL(), Collections.singleton(children[0]), false, false, true, false, true, SuspendStatus.NOP, null);
+        RepositoryUpdater.FileListWork flw3 = new RepositoryUpdater.FileListWork(ru.getScannedRoots2Dependencies(),srcRootWithFiles1.getURL(), Collections.singleton(children[0]), false, false, true, false, true, SuspendSupport.NOP, null);
         assertTrue("The flw3 job was not absorbed", flw1.absorb(flw3));
 
-        RepositoryUpdater.FileListWork flw4 = new RepositoryUpdater.FileListWork(ru.getScannedRoots2Dependencies(),srcRoot1.getURL(), false, false, true, false, SuspendStatus.NOP, null);
+        RepositoryUpdater.FileListWork flw4 = new RepositoryUpdater.FileListWork(ru.getScannedRoots2Dependencies(),srcRoot1.getURL(), false, false, true, false, SuspendSupport.NOP, null);
         assertFalse("The flw4 job should not have been absorbed", flw1.absorb(flw4));
     }
     
@@ -790,7 +796,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertEquals(0, handler.getBinaries().size());
         assertEquals(1, handler.getSources().size());
         assertEquals(this.srcRootWithFiles1.getURL(), handler.getSources().get(0));
-        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(indexerFactory.indexer.awaitIndex(TIME));
         assertTrue(eindexerFactory.indexer.awaitIndex());
         assertEquals(1, indexerFactory.scanStartedFor.size());
         assertEquals(srcRootWithFiles1.getURL(), indexerFactory.scanStartedFor.get(0));
@@ -814,7 +820,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertEquals(0, handler.getBinaries().size());
         assertEquals(1, handler.getSources().size());
         assertEquals(this.srcRoot1.getURL(), handler.getSources().get(0));
-        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(indexerFactory.indexer.awaitIndex(TIME));
         assertTrue(eindexerFactory.indexer.awaitIndex());
         assertEquals(1, indexerFactory.scanStartedFor.size());
         assertEquals(srcRoot1.getURL(), indexerFactory.scanStartedFor.get(0));
@@ -858,7 +864,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertTrue (handler.await());
         assertEquals(0, handler.getBinaries().size());
         assertEquals(2, handler.getSources().size());
-        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(indexerFactory.indexer.awaitIndex(TIME));
         assertTrue(eindexerFactory.indexer.awaitIndex());
         assertEquals(2, indexerFactory.scanStartedFor.size());
         assertEquals(new URL[] {srcRoot1.getURL(), srcRootWithFiles1.getURL()}, indexerFactory.scanStartedFor);
@@ -962,7 +968,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertEquals(0, handler.getBinaries().size());
         assertEquals(1, handler.getSources().size());
         assertEquals(this.srcRootWithFiles1.getURL(), handler.getSources().get(0));
-        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(indexerFactory.indexer.awaitIndex(TIME));
         assertTrue(eindexerFactory.indexer.awaitIndex());
         
         File root = FileUtil.toFile(srcRootWithFiles1);
@@ -1052,7 +1058,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
     public void testFileListWorkVsRefreshWork() throws IOException {
         File root1 = new File(getWorkDir(), "root1");
         {
-        RepositoryUpdater.FileListWork flw = new RepositoryUpdater.FileListWork(Collections.<URL, List<URL>>emptyMap(), root1.toURL(), false, false, false, true, SuspendStatus.NOP, null);
+        RepositoryUpdater.FileListWork flw = new RepositoryUpdater.FileListWork(Collections.<URL, List<URL>>emptyMap(), root1.toURL(), false, false, false, true, SuspendSupport.NOP, null);
         RepositoryUpdater.RefreshWork rw = new RepositoryUpdater.RefreshWork(
                 Collections.<URL, List<URL>>emptyMap(),
                 Collections.<URL,List<URL>>emptyMap(),
@@ -1062,12 +1068,12 @@ public class RepositoryUpdaterTest extends NbTestCase {
                 false,
                 null,
                 new RepositoryUpdater.FSRefreshInterceptor(),
-                SuspendStatus.NOP,
+                SuspendSupport.NOP,
                 null);
         assertTrue("RefreshWork didn't absorb FileListWork", rw.absorb(flw));
         }
         {
-        RepositoryUpdater.FileListWork flw = new RepositoryUpdater.FileListWork(Collections.<URL, List<URL>>emptyMap(), root1.toURL(), false, false, true, true, SuspendStatus.NOP, null);
+        RepositoryUpdater.FileListWork flw = new RepositoryUpdater.FileListWork(Collections.<URL, List<URL>>emptyMap(), root1.toURL(), false, false, true, true, SuspendSupport.NOP, null);
         RepositoryUpdater.RefreshWork rw = new RepositoryUpdater.RefreshWork(
                 Collections.<URL, List<URL>>emptyMap(),
                 Collections.<URL,List<URL>>emptyMap(),
@@ -1077,12 +1083,12 @@ public class RepositoryUpdaterTest extends NbTestCase {
                 false,
                 null,
                 new RepositoryUpdater.FSRefreshInterceptor(),
-                SuspendStatus.NOP,
+                SuspendSupport.NOP,
                 null);
         assertTrue("RefreshWork didn't absorb FileListWork", rw.absorb(flw));
         }
         {
-        RepositoryUpdater.FileListWork flw = new RepositoryUpdater.FileListWork(Collections.<URL, List<URL>>emptyMap(), root1.toURL(), false, false, false, true, SuspendStatus.NOP, null);
+        RepositoryUpdater.FileListWork flw = new RepositoryUpdater.FileListWork(Collections.<URL, List<URL>>emptyMap(), root1.toURL(), false, false, false, true, SuspendSupport.NOP, null);
         RepositoryUpdater.RefreshWork rw = new RepositoryUpdater.RefreshWork(
                 Collections.<URL, List<URL>>emptyMap(),
                 Collections.<URL,List<URL>>emptyMap(),
@@ -1092,12 +1098,12 @@ public class RepositoryUpdaterTest extends NbTestCase {
                 false,
                 null,
                 new RepositoryUpdater.FSRefreshInterceptor(),
-                SuspendStatus.NOP,
+                SuspendSupport.NOP,
                 null);
         assertTrue("RefreshWork didn't absorb FileListWork", rw.absorb(flw));
         }
         {
-        RepositoryUpdater.FileListWork flw = new RepositoryUpdater.FileListWork(Collections.<URL, List<URL>>emptyMap(), root1.toURL(), false, false, true, true, SuspendStatus.NOP, null);
+        RepositoryUpdater.FileListWork flw = new RepositoryUpdater.FileListWork(Collections.<URL, List<URL>>emptyMap(), root1.toURL(), false, false, true, true, SuspendSupport.NOP, null);
         RepositoryUpdater.RefreshWork rw = new RepositoryUpdater.RefreshWork(
                 Collections.<URL, List<URL>>emptyMap(),
                 Collections.<URL,List<URL>>emptyMap(),
@@ -1107,7 +1113,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
                 false,
                 null,
                 new RepositoryUpdater.FSRefreshInterceptor(),
-                SuspendStatus.NOP,
+                SuspendSupport.NOP,
                 null);
         assertTrue("RefreshWork didn't absorb FileListWork", rw.absorb(flw));
         }
@@ -1126,7 +1132,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
                 false,
                 Collections.singleton(root1),
                 new RepositoryUpdater.FSRefreshInterceptor(),
-                SuspendStatus.NOP,
+                SuspendSupport.NOP,
                 null);
         RepositoryUpdater.RefreshWork rw2 = new RepositoryUpdater.RefreshWork(
                 Collections.<URL, List<URL>>emptyMap(),
@@ -1137,7 +1143,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
                 false,
                 Collections.singleton(root2),
                 new RepositoryUpdater.FSRefreshInterceptor(),
-                SuspendStatus.NOP,
+                SuspendSupport.NOP,
                 null);
         assertFalse("RefreshWork should not be cancelled by other RefreshWork", rw1.isCancelledBy(rw2, new ArrayList<RepositoryUpdater.Work>()));
         assertTrue("RefreshWork should absorb other RefreshWork", rw1.absorb(rw2));
@@ -1178,22 +1184,22 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertEquals(0, handler.getBinaries().size());
         assertEquals(1, handler.getSources().size());
         assertEquals(srcRootWithFiles1.getURL(), handler.getSources().get(0));
-        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(indexerFactory.indexer.awaitIndex(TIME));
         assertTrue(eindexerFactory.indexer.awaitIndex());
 
         indexerFactory.indexer.setExpectedFile(new URL[]{f1.getURL()}, new URL[0], new URL[0]);
         eindexerFactory.indexer.setExpectedFile(new URL[0], new URL[0], new URL[0]);
-        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(indexerFactory.indexer.awaitIndex(TIME));
         assertTrue(eindexerFactory.indexer.awaitIndex());
     }
 
-    @RandomlyFails // in fact always for jglick
     public void testFileChangedInEditorReparsedOnce191885() throws Exception {
         //Prepare
         final TestHandler handler = new TestHandler();
         final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests");
         logger.setLevel (Level.FINEST);
         logger.addHandler(handler);
+        handler.reset(TestHandler.Type.ROOTS_WORK_FINISHED);
         MutableClassPathImplementation mcpi1 = new MutableClassPathImplementation ();
         mcpi1.addResource(this.srcRootWithFiles1);
         ClassPath cp1 = ClassPathFactory.createClassPath(mcpi1);
@@ -1202,17 +1208,18 @@ public class RepositoryUpdaterTest extends NbTestCase {
         final Source src = Source.create(f1);
         assertNotNull(src);
         assertFalse ("Created source should be valid", SourceAccessor.getINSTANCE().testFlag(src, SourceFlags.INVALID));
+        RepositoryUpdater.getDefault().waitUntilFinished(-1);
         RepositoryUpdater.unitTestActiveSource = src;
         try {
-            IndexingManager.getDefault().refreshIndexAndWait(this.srcRootWithFiles1.getURL(),
-                    Collections.singleton(f1.getURL()));
+            IndexingManager.getDefault().refreshIndexAndWait(this.srcRootWithFiles1.toURL(),
+                    Collections.singleton(f1.toURL()));
             assertFalse("Active shource should not be invalidated",SourceAccessor.getINSTANCE().testFlag(src, SourceFlags.INVALID));
             
         } finally {
             RepositoryUpdater.unitTestActiveSource=null;
         }
-        IndexingManager.getDefault().refreshIndexAndWait(this.srcRootWithFiles1.getURL(),
-                    Collections.singleton(f1.getURL()));
+        IndexingManager.getDefault().refreshIndexAndWait(this.srcRootWithFiles1.toURL(),
+                    Collections.singleton(f1.toURL()));
         assertTrue("Non active shource should be invalidated",SourceAccessor.getINSTANCE().testFlag(src, SourceFlags.INVALID));
     }
     
@@ -1236,9 +1243,9 @@ public class RepositoryUpdaterTest extends NbTestCase {
         } finally {
             lock.releaseLock();
         }
-        assertTrue(indexerFactory.indexer.awaitDeleted());
+        assertTrue(indexerFactory.indexer.awaitDeleted(TIME));
         assertTrue(eindexerFactory.indexer.awaitDeleted());
-        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(indexerFactory.indexer.awaitIndex(TIME));
         assertTrue(eindexerFactory.indexer.awaitIndex());
         assertEquals(0, eindexerFactory.indexer.getIndexCount());
         assertEquals(1, eindexerFactory.indexer.getDeletedCount());
@@ -1259,9 +1266,9 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertTrue (handler.await());       
         indexerFactory.indexer.setExpectedFile(new URL[0], new URL[0], new URL[0]);
         eindexerFactory.indexer.setExpectedFile(new URL[0], new URL[0], new URL[0]);        
-        assertTrue(indexerFactory.indexer.awaitDeleted());
+        assertTrue(indexerFactory.indexer.awaitDeleted(TIME));
         assertTrue(eindexerFactory.indexer.awaitDeleted());
-        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(indexerFactory.indexer.awaitIndex(TIME));
         assertTrue(eindexerFactory.indexer.awaitIndex());
         
         indexerFactory.indexer.setExpectedFile(new URL[0], new URL[0], new URL[0]);
@@ -1280,9 +1287,9 @@ public class RepositoryUpdaterTest extends NbTestCase {
                 FileUtil.createData(b);
             }
         });
-        assertTrue(indexerFactory.indexer.awaitDeleted());
+        assertTrue(indexerFactory.indexer.awaitDeleted(TIME));
         assertTrue(eindexerFactory.indexer.awaitDeleted());
-        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(indexerFactory.indexer.awaitIndex(TIME));
         assertTrue(eindexerFactory.indexer.awaitIndex());
     }
     
@@ -1302,8 +1309,8 @@ public class RepositoryUpdaterTest extends NbTestCase {
         indexerFactory.indexer.setExpectedFile(new URL[0], new URL[] {f1.getURL()}, new URL[0]);
         r.setExcludes(".*/a\\.foo");
 
-        indexerFactory.indexer.awaitDeleted();
-        indexerFactory.indexer.awaitIndex();
+        indexerFactory.indexer.awaitDeleted(TIME);
+        indexerFactory.indexer.awaitIndex(TIME);
 
         assertEquals(1, indexerFactory.indexer.deletedCounter);
         assertEquals(Collections.emptySet(), indexerFactory.indexer.expectedDeleted);
@@ -1313,8 +1320,8 @@ public class RepositoryUpdaterTest extends NbTestCase {
         indexerFactory.indexer.setExpectedFile(new URL[] {f1.getURL()}, new URL[0], new URL[0]);
         r.setExcludes();
 
-        indexerFactory.indexer.awaitDeleted();
-        indexerFactory.indexer.awaitIndex();
+        indexerFactory.indexer.awaitDeleted(TIME);
+        indexerFactory.indexer.awaitIndex(TIME);
 
         assertEquals(0, indexerFactory.indexer.deletedCounter);
         assertEquals(1, indexerFactory.indexer.indexCounter);
@@ -1433,7 +1440,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertEquals(0, handler.getBinaries().size());
         assertEquals(1, handler.getSources().size());
         assertEquals(this.srcRootWithFiles1.getURL(), handler.getSources().get(0));
-        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(indexerFactory.indexer.awaitIndex(TIME));
         assertTrue(eindexerFactory.indexer.awaitIndex());
         Map<URL,Pair<Boolean,Boolean>> contextState = indexerFactory.indexer.getContextState();
         assertEquals(1, contextState.size());
@@ -1468,7 +1475,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertEquals(0, handler.getBinaries().size());
         assertEquals(1, handler.getSources().size());
         assertEquals(this.srcRootWithFiles1.getURL(), handler.getSources().get(0));
-        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(indexerFactory.indexer.awaitIndex(TIME));
         assertTrue(eindexerFactory.indexer.awaitIndex());
         contextState = indexerFactory.indexer.getContextState();
         assertEquals(1, contextState.size());
@@ -1500,7 +1507,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertEquals(0, handler.getBinaries().size());
         assertEquals(1, handler.getSources().size());
         assertEquals(this.srcRootWithFiles1.getURL(), handler.getSources().get(0));
-        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(indexerFactory.indexer.awaitIndex(TIME));
         assertTrue(eindexerFactory.indexer.awaitIndex());
         contextState = indexerFactory.indexer.getContextState();
         assertEquals(1, contextState.size());
@@ -1521,7 +1528,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         fsWait();
         touch(customFiles[0]);
         touch(embeddedFiles[0]);
-        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(indexerFactory.indexer.awaitIndex(TIME));
         assertTrue(eindexerFactory.indexer.awaitIndex());
         contextState = indexerFactory.indexer.getContextState();
         assertEquals(1, contextState.size());
@@ -1540,7 +1547,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         indexerFactory.indexer.setExpectedFile(customFiles, new URL[0], new URL[0]);
         eindexerFactory.indexer.setExpectedFile(embeddedFiles, new URL[0], new URL[0]);
         IndexingManager.getDefault().refreshIndex(srcRootWithFiles1.getURL(), Collections.<URL>emptySet(), true);
-        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(indexerFactory.indexer.awaitIndex(TIME));
         assertTrue(eindexerFactory.indexer.awaitIndex());
         contextState = indexerFactory.indexer.getContextState();
         assertEquals(1, contextState.size());
@@ -1561,7 +1568,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         indexerFactory.indexer.setExpectedFile(new URL[] {customFiles[0]}, new URL[0], new URL[0]);
         eindexerFactory.indexer.setExpectedFile(new URL[] {embeddedFiles[0]}, new URL[0], new URL[0]);
         IndexingManager.getDefault().refreshIndex(srcRootWithFiles1.getURL(), Arrays.asList(new URL[] {customFiles[0], embeddedFiles[0]}), true, true);
-        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(indexerFactory.indexer.awaitIndex(TIME));
         assertTrue(eindexerFactory.indexer.awaitIndex());
         contextState = indexerFactory.indexer.getContextState();
         assertEquals(1, contextState.size());
@@ -1600,7 +1607,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertEquals(0, handler.getBinaries().size());
         assertEquals(1, handler.getSources().size());
         assertEquals(this.srcRootWithFiles1.getURL(), handler.getSources().get(0));
-        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(indexerFactory.indexer.awaitIndex(TIME));
         assertTrue(eindexerFactory.indexer.awaitIndex());
 
         //3rd) Unregister - IDE closed
@@ -1627,9 +1634,9 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertEquals(0, handler.getBinaries().size());
         assertEquals(1, handler.getSources().size());
         assertEquals(this.srcRootWithFiles1.getURL(), handler.getSources().get(0));
-        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(indexerFactory.indexer.awaitIndex(TIME));
         assertTrue(eindexerFactory.indexer.awaitIndex());
-        assertTrue(indexerFactory.indexer.awaitDeleted());
+        assertTrue(indexerFactory.indexer.awaitDeleted(TIME));
 
         //5th) Unregister - IDE closed
         handler.reset();
@@ -1653,7 +1660,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertEquals(0, handler.getBinaries().size());
         assertEquals(1, handler.getSources().size());
         assertEquals(this.srcRootWithFiles1.getURL(), handler.getSources().get(0));
-        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(indexerFactory.indexer.awaitIndex(TIME));
         assertTrue(eindexerFactory.indexer.awaitIndex());
     }
 
@@ -1679,7 +1686,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertEquals(0, handler.getBinaries().size());
         assertEquals(1, handler.getSources().size());
         assertEquals(this.srcRootWithFiles1.getURL(), handler.getSources().get(0));
-        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(indexerFactory.indexer.awaitIndex(TIME));
         assertTrue(eindexerFactory.indexer.awaitIndex());        
 
         //2nd) Change of VisibilityQuery should trigger rescan, customFiles[1] should be invisible
@@ -1693,9 +1700,9 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertEquals(0, handler.getBinaries().size());
         assertEquals(1, handler.getSources().size());
         assertEquals(this.srcRootWithFiles1.getURL(), handler.getSources().get(0));
-        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(indexerFactory.indexer.awaitIndex(TIME));
         assertTrue(eindexerFactory.indexer.awaitIndex());
-        assertTrue(indexerFactory.indexer.awaitDeleted());
+        assertTrue(indexerFactory.indexer.awaitDeleted(TIME));
 
         //3rd) Change of VisibilityQuery should trigger rescan, customFiles[1] should be visible again
         visibility.registerInvisibles(Collections.<FileObject>emptySet());
@@ -1706,9 +1713,9 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertEquals(0, handler.getBinaries().size());
         assertEquals(1, handler.getSources().size());
         assertEquals(this.srcRootWithFiles1.getURL(), handler.getSources().get(0));
-        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(indexerFactory.indexer.awaitIndex(TIME));
         assertTrue(eindexerFactory.indexer.awaitIndex());
-        assertTrue(indexerFactory.indexer.awaitDeleted());        
+        assertTrue(indexerFactory.indexer.awaitDeleted(TIME));        
     }
 
     /**
@@ -1774,7 +1781,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
                         });
                         task.schedule(0);
                         try {
-                            latch.await(5000, TimeUnit.MILLISECONDS);
+                            latch.await(TIME, TimeUnit.MILLISECONDS);
                         } catch (InterruptedException ex) {
                             Exceptions.printStackTrace(ex);
                         }
@@ -1809,7 +1816,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         log2.addHandler(h);
         final ClassPath cp = ClassPathSupport.createClassPath(srcRoot1, srcRoot2, srcRootWithFiles1);
         globalPathRegistry_register(SOURCES, new ClassPath[]{cp});
-        assertTrue(h.await(3, 5000, TimeUnit.MILLISECONDS));
+        assertTrue(h.await(3, TIME, TimeUnit.MILLISECONDS));
         assertTrue(h.wasCanceled());
     }
 
@@ -1828,7 +1835,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
                             @Override
                             public void run() {
                                 try {
-                                    IndexManager.readAccess(new IndexManager.Action<Void>() {
+                                    IndexManager.priorityAccess(new IndexManager.Action<Void>() {
                                         @Override
                                         public Void run() throws IOException, InterruptedException {
                                             return null;
@@ -1843,7 +1850,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
                         });
                         task.schedule(0);
                         try {
-                            latch.await(5000, TimeUnit.MILLISECONDS);
+                            latch.await(TIME, TimeUnit.MILLISECONDS);
                         } catch (InterruptedException ex) {
                             Exceptions.printStackTrace(ex);
                         }
@@ -1878,7 +1885,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         log2.addHandler(h);
         final ClassPath cp = ClassPathSupport.createClassPath(srcRoot1, srcRoot2, srcRootWithFiles1);
         globalPathRegistry_register(SOURCES, new ClassPath[]{cp});
-        assertTrue(h.await(3, 5000, TimeUnit.MILLISECONDS));
+        assertTrue(h.await(3, TIME, TimeUnit.MILLISECONDS));
         assertTrue(h.wasCanceled());
     }
     
@@ -1922,7 +1929,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
                         });
                         task.schedule(0);
                         try {
-                            latch.await(5000, TimeUnit.MILLISECONDS);
+                            latch.await(TIME, TimeUnit.MILLISECONDS);
                         } catch (InterruptedException ex) {
                             Exceptions.printStackTrace(ex);
                         }
@@ -1957,7 +1964,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         log2.addHandler(h);
         final ClassPath cp = ClassPathSupport.createClassPath(srcRoot1, srcRoot2, srcRootWithFiles1);
         globalPathRegistry_register(SOURCES, new ClassPath[]{cp});
-        assertTrue(h.await(3, 5000, TimeUnit.MILLISECONDS));
+        assertTrue(h.await(3, TIME, TimeUnit.MILLISECONDS));
         assertTrue(h.wasCanceled());
     }
     
@@ -2028,7 +2035,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
             perfLogger.setLevel(Level.FINE);
             h.expect("reportScanOfFile:","INDEXING_FINISHED");   //NOI18N
             globalPathRegistry_register(SOURCES, new ClassPath[]{cp});
-            final PerfLoghandler.R r = h.await(5000);
+            final PerfLoghandler.R r = h.await(TIME);
             assertNotNull(r);
             assertEquals(rootFo.getURL(), r.getParams("reportScanOfFile:")[0]);     //NOI18N
             final Object[] data = r.getParams("INDEXING_FINISHED"); //NOI18N
@@ -2116,7 +2123,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
             uiLogger.setLevel(Level.FINE);
             h.expect("INDEXING_STARTED","INDEXING_FINISHED");   //NOI18N
             globalPathRegistry_register(SOURCES, new ClassPath[]{cp});
-            PerfLoghandler.R r = h.await(5000);
+            PerfLoghandler.R r = h.await(TIME);
             assertNotNull(r);
             assertEquals(0L, r.getParams("INDEXING_STARTED")[0]);     //NOI18N
             Object[] data = r.getParams("INDEXING_FINISHED"); //NOI18N
@@ -2131,7 +2138,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
             Thread.sleep(1000);
             h.expect("INDEXING_STARTED","INDEXING_FINISHED");   //NOI18N
             touch(afoo.getURL());
-            r = h.await(5000);
+            r = h.await(TIME);
             assertNotNull(r);
             assertTrue(1000L <= (Long)r.getParams("INDEXING_STARTED")[0]);     //NOI18N
             data = r.getParams("INDEXING_FINISHED"); //NOI18N
@@ -2175,8 +2182,8 @@ public class RepositoryUpdaterTest extends NbTestCase {
                 new URL[0],
                 new URL[0]);
         globalPathRegistry_register(SOURCES,new ClassPath[]{cp1});
-        assertTrue(IndexDownloaderImpl.await());
-        assertFalse(indexerFactory.indexer.awaitIndex());
+        assertTrue(IndexDownloaderImpl.await(TIME));
+        assertFalse(indexerFactory.indexer.awaitIndex(NEGATIVE_TIME));
         assertEquals(0, indexerFactory.indexer.getIndexCount());
 
         globalPathRegistry_unregister(SOURCES, new ClassPath[]{cp1});
@@ -2193,8 +2200,8 @@ public class RepositoryUpdaterTest extends NbTestCase {
                 new URL[0],
                 new URL[0]);
         globalPathRegistry_register(SOURCES,new ClassPath[]{cp1});
-        assertFalse(IndexDownloaderImpl.await());
-        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertFalse(IndexDownloaderImpl.await(NEGATIVE_TIME));
+        assertTrue(indexerFactory.indexer.awaitIndex(TIME));
         assertEquals(2, indexerFactory.indexer.getIndexCount());
 
         //Simulate the index download error - indexer should be started
@@ -2210,8 +2217,8 @@ public class RepositoryUpdaterTest extends NbTestCase {
                 new URL[0],
                 new URL[0]);
         globalPathRegistry_register(SOURCES,new ClassPath[]{cp1});
-        assertTrue(IndexDownloaderImpl.await());
-        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(IndexDownloaderImpl.await(TIME));
+        assertTrue(indexerFactory.indexer.awaitIndex(TIME));
         assertEquals(2, indexerFactory.indexer.getIndexCount());
 
         //Test DownloadedIndexPatcher - votes false -> IndexDownloader should be called and then Indexers should be called
@@ -2228,9 +2235,9 @@ public class RepositoryUpdaterTest extends NbTestCase {
                 new URL[0],
                 new URL[0]);
         globalPathRegistry_register(SOURCES,new ClassPath[]{cp1});
-        assertTrue(IndexDownloaderImpl.await());
+        assertTrue(IndexDownloaderImpl.await(TIME));
         assertTrue(IndexPatcherImpl.await());
-        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(indexerFactory.indexer.awaitIndex(TIME));
         assertEquals(2, indexerFactory.indexer.getIndexCount());
 
         //Test DownloadedIndexPatcher - votes true -> IndexDownloader should be called and NO Indexers should be called
@@ -2247,9 +2254,9 @@ public class RepositoryUpdaterTest extends NbTestCase {
                 new URL[0],
                 new URL[0]);
         globalPathRegistry_register(SOURCES,new ClassPath[]{cp1});
-        assertTrue(IndexDownloaderImpl.await());
+        assertTrue(IndexDownloaderImpl.await(TIME));
         assertTrue(IndexPatcherImpl.await());
-        assertFalse(indexerFactory.indexer.awaitIndex());
+        assertFalse(indexerFactory.indexer.awaitIndex(NEGATIVE_TIME));
         assertEquals(0, indexerFactory.indexer.getIndexCount());
     }
 
@@ -2269,7 +2276,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
                 new URL[0],
                 new URL[0]);
         globalPathRegistry_register(SOURCES, new ClassPath[]{cp});
-        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(indexerFactory.indexer.awaitIndex(TIME));
         assertEquals(1, indexerFactory.indexer.getIndexCount());
 
         //Modify a.foo - should trigger indexer
@@ -2278,7 +2285,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
             new URL[0],
             new URL[0]);
         touch(a.getURL());
-        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(indexerFactory.indexer.awaitIndex(TIME));
         assertEquals(1, indexerFactory.indexer.getIndexCount());
 
         //Modify b.foo - should NOT trigger indexer
@@ -2287,7 +2294,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
             new URL[0],
             new URL[0]);
         touch(b.getURL());
-        assertFalse(indexerFactory.indexer.awaitIndex());
+        assertFalse(indexerFactory.indexer.awaitIndex(NEGATIVE_TIME));
         assertEquals(0, indexerFactory.indexer.getIndexCount());
 
         //Rename a.foo - should trigger indexer
@@ -2303,8 +2310,8 @@ public class RepositoryUpdaterTest extends NbTestCase {
         } finally {
             l.releaseLock();
         }
-        assertTrue(indexerFactory.indexer.awaitIndex());
-        assertTrue(indexerFactory.indexer.awaitDeleted());
+        assertTrue(indexerFactory.indexer.awaitIndex(TIME));
+        assertTrue(indexerFactory.indexer.awaitDeleted(TIME));
         assertEquals(1, indexerFactory.indexer.getIndexCount());
 
         //Rename b.foo - should trigger indexer
@@ -2320,7 +2327,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         } finally {
             l.releaseLock();
         }
-        assertFalse(indexerFactory.indexer.awaitIndex());
+        assertFalse(indexerFactory.indexer.awaitIndex(NEGATIVE_TIME));
         assertEquals(0, indexerFactory.indexer.getIndexCount());
 
         //Delete a.foo - should trigger indexed
@@ -2329,7 +2336,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
             new URL[]{a.getURL()},
             new URL[0]);
         a.delete();
-        assertTrue(indexerFactory.indexer.awaitDeleted());
+        assertTrue(indexerFactory.indexer.awaitDeleted(TIME));
 
         //Delete b.foo - should NOT trigger indexed
         indexerFactory.indexer.setExpectedFile(
@@ -2337,7 +2344,33 @@ public class RepositoryUpdaterTest extends NbTestCase {
             new URL[]{b.getURL()},
             new URL[0]);
         b.delete();
-        assertFalse(indexerFactory.indexer.awaitDeleted());
+        assertFalse(indexerFactory.indexer.awaitDeleted(NEGATIVE_TIME));
+    }
+    
+    public void testExceptionFromScanStarted() throws Exception {
+        final FooExceptionIndexerFactory fooExcPactory = new FooExceptionIndexerFactory();
+        
+        RepositoryUpdater ru = RepositoryUpdater.getDefault();
+        assertEquals(0, ru.getScannedBinaries().size());
+        assertEquals(0, ru.getScannedBinaries().size());
+        assertEquals(0, ru.getScannedUnknowns().size());
+
+        final TestHandler handler = new TestHandler();
+        final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests");
+        logger.setLevel (Level.FINEST);
+        logger.addHandler(handler);
+        
+        
+        MockMimeLookup.setInstances(MimePath.get(MIME), fooExcPactory);
+        fooExcPactory.finishedRoots.clear();
+        ClassPath cp1 = ClassPathSupport.createClassPath(srcRoot1);
+        globalPathRegistry_register(SOURCES,new ClassPath[]{cp1});
+        assertTrue (handler.await());
+        assertEquals(0, handler.getBinaries().size());
+        assertEquals(1, handler.getSources().size());
+        assertEquals(this.srcRoot1.toURL(), handler.getSources().get(0));
+        assertEquals(1, fooExcPactory.finishedRoots.size());
+        assertEquals(this.srcRoot1.toURI(), fooExcPactory.finishedRoots.iterator().next());
     }
 
 //    public void testVisibilityQueryPerformance() throws Exception {
@@ -2385,6 +2418,11 @@ public class RepositoryUpdaterTest extends NbTestCase {
 //        System.out.println("Time: " + h.time);
 //    }
 
+    public static void setMimeTypes(final String... mimes) {
+        Set<String> mt = new HashSet<String>(Arrays.asList(mimes));
+        Util.allMimeTypes = mt;
+    }
+    
     // <editor-fold defaultstate="collapsed" desc="Mock Services">
     public static class TestHandler extends Handler {
 
@@ -3024,12 +3062,12 @@ public class RepositoryUpdaterTest extends NbTestCase {
             this.callBack = callBack;
         }
 
-        public boolean awaitIndex() throws InterruptedException {
-            return this.indexFilesLatch.await(TIME, TimeUnit.MILLISECONDS);
+        public boolean awaitIndex(final long time) throws InterruptedException {
+            return this.indexFilesLatch.await(time, TimeUnit.MILLISECONDS);
         }
 
-        public boolean awaitDeleted() throws InterruptedException {
-            return this.deletedFilesLatch.await(TIME, TimeUnit.MILLISECONDS);
+        public boolean awaitDeleted(final long time) throws InterruptedException {
+            return this.deletedFilesLatch.await(time, TimeUnit.MILLISECONDS);
         }
 
         public boolean awaitDirty() throws InterruptedException {
@@ -3067,6 +3105,58 @@ public class RepositoryUpdaterTest extends NbTestCase {
                 callBack = null;
             }
         }
+    }
+    
+    private static final class FooExceptionIndexerFactory extends CustomIndexerFactory {
+        
+        private final Set<URI> finishedRoots = new HashSet<URI>();
+
+        @Override
+        public CustomIndexer createIndexer() {
+            return new CustomIndexer() {
+                @Override
+                protected void index(Iterable<? extends Indexable> files, Context context) {
+                }
+            };
+        }
+
+        @Override
+        public boolean supportsEmbeddedIndexers() {
+            return false;
+        }
+
+        @Override
+        public void filesDeleted(Iterable<? extends Indexable> deleted, Context context) {
+        }
+
+        @Override
+        public void filesDirty(Iterable<? extends Indexable> dirty, Context context) {
+        }
+
+        @Override
+        public String getIndexerName() {
+            return "fooexcp";   //NOI18N
+        }
+
+        @Override
+        public int getIndexVersion() {
+            return 1;
+        }
+
+        @Override
+        public boolean scanStarted(Context context) {
+            throw new NullPointerException();
+        }
+
+        @Override
+        public void scanFinished(Context context) {
+            try {
+                finishedRoots.add(context.getRootURI().toURI());
+            } catch (URISyntaxException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    
     }
 
     private static class EmbIndexerFactory extends EmbeddingIndexerFactory {
@@ -3378,11 +3468,11 @@ public class RepositoryUpdaterTest extends NbTestCase {
             }
         }
 
-        public static boolean await() throws InterruptedException {
+        public static boolean await(final long time) throws InterruptedException {
             lck.lock();
             try {
                 if (expectedURL != null) {
-                    return cnd.await(TIME, TimeUnit.MILLISECONDS) && expectedURL == null;
+                    return cnd.await(time, TimeUnit.MILLISECONDS) && expectedURL == null;
                 } else {
                     return true;
                 }

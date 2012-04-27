@@ -110,29 +110,31 @@ public class FreeformSourcesTest extends TestBase {
     }
     
     public void testSourceRootChanges() throws Exception {
-        Sources s = ProjectUtils.getSources(extsrcroot);
+        FileObject top = FileUtil.toFileObject(copyFolder(FileUtil.toFile(egdirFO.getFileObject("extsrcroot"))));
+        FreeformProject extsrcroot_ = (FreeformProject) ProjectManager.getDefault().findProject(top.getFileObject("proj"));
+        Sources s = ProjectUtils.getSources(extsrcroot_);
         SourceGroup[] groups = s.getSourceGroups("java");
         assertEquals("one Java group", 1, groups.length);
-        assertEquals("right root folder", egdirFO.getFileObject("extsrcroot/src"), groups[0].getRootFolder());
+        assertEquals("right root folder", top.getFileObject("src"), groups[0].getRootFolder());
         TestCL l = new TestCL();
         s.addChangeListener(l);
-        Element data = extsrcroot.getPrimaryConfigurationData();
+        Element data = extsrcroot_.getPrimaryConfigurationData();
         Element folders = XMLUtil.findElement(data, "folders", FreeformProjectType.NS_GENERAL);
         assertNotNull("have <folders>", folders);
         List<Element> sourceFolders = XMLUtil.findSubElements(folders);
         assertEquals("have 2 <source-folder>s", 2, sourceFolders.size());
-        Element sourceFolder = (Element) sourceFolders.get(1);
+        Element sourceFolder = sourceFolders.get(1);
         Element location = XMLUtil.findElement(sourceFolder, "location", FreeformProjectType.NS_GENERAL);
         assertNotNull("have <location>", location);
         NodeList nl = location.getChildNodes();
         assertEquals("one child (text)", 1, nl.getLength());
         location.removeChild(nl.item(0));
         location.appendChild(location.getOwnerDocument().createTextNode("../src2"));
-        extsrcroot.putPrimaryConfigurationData(data);
+        extsrcroot_.putPrimaryConfigurationData(data);
         assertEquals("got a change in Sources", 1, l.changeCount());
         groups = s.getSourceGroups("java");
         assertEquals("one Java group", 1, groups.length);
-        assertEquals("right root folder", egdirFO.getFileObject("extsrcroot/src2"), groups[0].getRootFolder());
+        assertEquals("right root folder", top.getFileObject("src2"), groups[0].getRootFolder());
     }
     
     public void testExternalBuildRoot() throws Exception {

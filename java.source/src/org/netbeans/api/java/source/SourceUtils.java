@@ -309,7 +309,7 @@ public class SourceUtils {
     @NonNull
     public static String[] getJVMSignature(@NonNull final ElementHandle<?> handle) {
         Parameters.notNull("handle", handle);   //NOI18N
-        return ElementHandleAccessor.INSTANCE.getJVMSignature(handle);
+        return ElementHandleAccessor.getInstance().getJVMSignature(handle);
     }
 
 
@@ -354,6 +354,7 @@ public class SourceUtils {
             int lastDot = qName.lastIndexOf('.');
             Element element = null;
             if ((element = info.getElements().getTypeElement(qName)) != null) {
+                clashing = false;
                 String simple = qName.substring(lastDot < 0 ? 0 : lastDot + 1);
                 if (sqName.length() > 0)
                     sqName.insert(0, '.');
@@ -367,7 +368,7 @@ public class SourceUtils {
                         //either a clash or already imported:
                         if (qName.contentEquals(((TypeElement)e).getQualifiedName())) {
                             return sqName.toString();
-                        } else if (fqn == qName) {
+                        } else {
                             clashing = true;
                         }
                         matchFound = true;
@@ -380,9 +381,10 @@ public class SourceUtils {
                             //either a clash or already imported:
                             if (qName.contentEquals(e.getQualifiedName())) {
                                 return sqName.toString();
-                            } else if (fqn == qName) {
+                            } else {
                                 clashing = true;
                             }
+                            matchFound = true;
                             break;
                         }
                     }
@@ -549,27 +551,22 @@ public class SourceUtils {
     private static FileObject findSource (final String binaryName, final FileObject... fos) throws IOException {
         final ClassIndexManager cim = ClassIndexManager.getDefault();
         try {
-            return IndexManager.readAccess(new IndexManager.Action<FileObject>() {
-
-                public FileObject run() throws IOException, InterruptedException {
-                    for (FileObject fo : fos) {
-                        ClassIndexImpl ci = cim.getUsagesQuery(fo.getURL(), true);
-                        if (ci != null) {
-                            String sourceName = ci.getSourceName(binaryName);
-                            if (sourceName != null) {
-                                FileObject result = fo.getFileObject(sourceName);
-                                if (result != null) {
-                                    return result;
-                                }
-                            }
+            for (FileObject fo : fos) {
+                ClassIndexImpl ci = cim.getUsagesQuery(fo.getURL(), true);
+                if (ci != null) {
+                    String sourceName = ci.getSourceName(binaryName);
+                    if (sourceName != null) {
+                        FileObject result = fo.getFileObject(sourceName);
+                        if (result != null) {
+                            return result;
                         }
                     }
-                    return null;
                 }
-            });
+            }
         } catch (InterruptedException e) {
-            return null;
+            //canceled, pass - returns null
         }
+        return null;
     }
 
     private static abstract class Match {

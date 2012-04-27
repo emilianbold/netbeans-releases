@@ -44,24 +44,25 @@
 
 package org.openide.explorer;
 
+import java.awt.GraphicsEnvironment;
 import java.util.logging.Level;
 import org.netbeans.junit.*;
-import junit.textui.TestRunner;
-import org.openide.explorer.*;
 import org.openide.nodes.Node;
 import org.openide.nodes.Children;
 import org.openide.nodes.AbstractNode;
-import java.util.Collections;
 import java.util.Arrays;
-import java.awt.BorderLayout;
-import org.openide.explorer.view.BeanTreeView;
-import javax.swing.JLabel;
-import org.openide.util.HelpCtx;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.openide.util.io.NbMarshalledObject;
 
 /** Testing behaviour of ExplorerActions in order to fix 33566
  */
 public class ExplorerActionsTest extends NbTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(ExplorerActionsTest.class);
+    }
+
     static {
         // initialize special TopComponent.Registry
         Object x = ActionsInfraHid.UT;

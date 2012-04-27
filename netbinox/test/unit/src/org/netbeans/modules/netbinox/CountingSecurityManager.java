@@ -438,17 +438,37 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
         if (prefix != null && !file.startsWith(prefix)) {
             return false;
         }
-        if (file.contains("/var/cache/netigso/org.eclipse.osgi/.")) {
+        if (containsPath(file, "/var/cache/netigso/org.eclipse.osgi/.")) {
             // Just finite number of files in a cache
+            return false;
+        }
+        if (containsPath(file, "/var/cache/netigso/org.eclipse.equinox.app/.")) {
+            // Just finite number of files in a cache
+            return false;
+        }
+        if (containsPath(file, "/var/cache/netigso/org.eclipse.core.runtime/.")) {
+            // Just finite number of files in a cache
+            return false;
+        }
+        if (containsPath(file, "/var/cache/netigso/.settings")) {
+            // Just finite number of files among settings
+            return false;
+        }
+        if (containsPath(file, ".eclipse/org.eclipse.equinox.security/secure_storage")) {
+            // comes from org.eclipse.equinox.internal.security.storage.StorageUtils.getDefaultLocation
+            // and does not seem to be preventable
             return false;
         }
         if (
             file.equals(System.getProperty("netbeans.user")) ||
             file.equals(System.getProperty("netbeans.home")) ||
+            (file + File.separator + "platform").equals(System.getProperty("netbeans.home")) ||
             file.matches(".*/modules/ext/org\\.eclipse\\.osgi_[0-9\\.]*v[0-9]*\\.jar") ||
-            file.endsWith("modules/org-netbeans-modules-netbinox.jar") ||
-            file.endsWith("var/cache/netigso") ||
-            file.endsWith("var/cache/netigso/org.eclipse.osgi")
+            containsPath(file, "modules/ext/org.eclipse.osgi_3.7.1.R37x_v20110808-1106.jar") ||
+            containsPath(file, "modules/org-netbeans-modules-netbinox.jar") ||
+            containsPath(file, "platform/lib/org-openide-util.jar") ||
+            containsPath(file, "var/cache/netigso") ||
+            containsPath(file, "sun/net/www/content/content/unknown.class")
         ) {
             // equinox just needs to touch some files, preferrably leave them
             // under our directory
@@ -472,7 +492,24 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
         if (file.endsWith("tests.jar")) {
             return false;
         }
-        if (file.endsWith("org-netbeans-modules-nbjunit.jar")) {
+        if (file.endsWith("org-netbeans-modules-nbjunit.jar") || file.endsWith("org-netbeans-libs-junit4.jar")) {
+            return false;
+        }
+        /* NB-Core-Build #7998, #8006:
+        java.lang.Exception: checkRead: .../nbbuild/netbeans/ide/modules/org-netbeans-modules-projectui.jar
+            at org.netbeans.modules.netbinox.CountingSecurityManager.checkRead(CountingSecurityManager.java:178)
+            at java.util.zip.ZipFile.<init>(ZipFile.java:122)
+            ...
+            at java.lang.ClassLoader.loadClass(ClassLoader.java:247)
+            at org.netbeans.modules.project.ui.actions.ProjectAction.refresh(ProjectAction.java:145)
+            at org.netbeans.modules.project.ui.actions.LookupSensitiveAction.doRefresh(LookupSensitiveAction.java:193)
+            at org.netbeans.modules.project.ui.actions.LookupSensitiveAction.isEnabled(LookupSensitiveAction.java:136)
+            at org.netbeans.modules.project.ui.actions.ProjectAction.isEnabled(ProjectAction.java:66)
+            at org.netbeans.modules.debugger.jpda.projects.MainProjectManager$1.run(MainProjectManager.java:106)
+            at java.awt.event.InvocationEvent.dispatch(InvocationEvent.java:209)
+        (where MPM is initialized from registration of DebuggerAction.createKillAction)
+        */
+        if (file.endsWith("org-netbeans-modules-projectui.jar")) {
             return false;
         }
         if (file.startsWith(System.getProperty("java.home").replaceAll("[/\\\\][^/\\\\]*$", ""))) {
@@ -511,6 +548,10 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
             }
         }
         return true;
+    }
+    
+    private boolean containsPath(String file, String pathWithSlash) {
+        return file.contains(pathWithSlash.replace('/', File.separatorChar));
     }
 
     @Override

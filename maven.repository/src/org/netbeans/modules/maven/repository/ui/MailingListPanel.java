@@ -48,6 +48,8 @@
 
 package org.netbeans.modules.maven.repository.ui;
 
+import javax.swing.UIManager;
+
 /**
  *
  * @author mkleint
@@ -57,6 +59,10 @@ public class MailingListPanel extends javax.swing.JPanel {
     /** Creates new form MailingListPanel */
     public MailingListPanel() {
         initComponents();
+        if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
+            setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
+        }
+        
     }
 
     /** This method is called from within the constructor to

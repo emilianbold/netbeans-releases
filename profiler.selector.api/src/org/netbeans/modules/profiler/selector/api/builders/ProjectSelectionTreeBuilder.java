@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.profiler.selector.api.builders;
 
+import org.netbeans.modules.profiler.selector.api.SelectionTreeBuilderType;
 import org.netbeans.modules.profiler.selector.spi.SelectionTreeBuilder;
 import org.openide.util.Lookup;
 
@@ -52,7 +53,7 @@ import org.openide.util.Lookup;
 abstract public class ProjectSelectionTreeBuilder extends SelectionTreeBuilder {
     protected Lookup.Provider project;
 
-    public ProjectSelectionTreeBuilder(Type builderType, boolean isPreferred, Lookup.Provider project) {
+    public ProjectSelectionTreeBuilder(SelectionTreeBuilderType builderType, boolean isPreferred, Lookup.Provider project) {
         super(builderType, isPreferred);
         this.project = project;
     }

@@ -44,11 +44,11 @@ package org.netbeans.modules.uihandler;
 import java.io.File;
 import org.openide.filesystems.FileSystem;
 
-/** Checks that the SelfSampleVFS in this module is similar to the one in core.ui.
+/** Checks that the SelfSampleVFS in this module is similar to the one in sampler
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class SelfSampleVFSTest extends org.netbeans.core.ui.sampler.SelfSampleVFSTest {
+public class SelfSampleVFSTest extends org.netbeans.modules.sampler.SelfSampleVFSTest {
     
     public SelfSampleVFSTest(String s) {
         super(s);

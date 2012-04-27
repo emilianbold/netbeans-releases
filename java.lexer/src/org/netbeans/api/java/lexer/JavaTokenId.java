@@ -261,6 +261,9 @@ public enum JavaTokenId implements TokenId {
                 case STRING_LITERAL:
                     return LanguageEmbedding.create(JavaStringTokenId.language(), 1,
                             (token.partType() == PartType.COMPLETE) ? 1 : 0);
+                case CHAR_LITERAL:
+                    return LanguageEmbedding.create(JavaStringTokenId.language(), 1,
+                            (token.partType() == PartType.COMPLETE) ? 1 : 0);
             }
             return null; // No embedding
         }

@@ -113,7 +113,7 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
      */
     protected TextEditorSupport(XMLDataObjectLook xmlDO, Env env, String mime_type) {
         super((DataObject)xmlDO, null, env);        
-        setMIMEType(mime_type);        
+        this.mimeType = mime_type;      
         initTimer();        
         initListeners();        
     }
@@ -131,6 +131,10 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
      */
     public TextEditorSupport(XMLDataObjectLook xmlDO, String mime_type) {
         this(xmlDO, new Env(xmlDO), mime_type);
+    }
+    
+    private final void syncMimeType() {
+        super.setMIMEType(mimeType);
     }
     
     /**
@@ -156,6 +160,7 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
 
     @Override
     protected Pane createPane() {
+        syncMimeType();
         // defect #202766: whatever+xml gets multiview, although there is nobody
         // who would register the editor. M
         if (getDataObject().getClass() == XMLDataObject.class &&
@@ -597,11 +602,13 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
      * @return component visualizing this support.
      */
     protected CloneableEditor createCloneableEditor() {
+        syncMimeType();
         return new TextEditorComponent(this);
     }
     
     // This must call super createCloneableTopComponent because it prepare document, create cloneable editor and initialize it. See super.
     protected final CloneableTopComponent createCloneableTopComponent() {
+        syncMimeType();
         return super.createCloneableTopComponent(); // creates CloneableEditor (calling createCloneableEditor)
     }
     
@@ -609,6 +616,12 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
      */
     public static final TextEditorSupportFactory findEditorSupportFactory(XMLDataObjectLook xmlDO, String mime) {
         return new TextEditorSupportFactory(xmlDO, mime);
+    }
+    
+    
+    // used from unit tests
+    String getMIMEType() {
+        return mimeType;
     }
     
     //
@@ -713,7 +726,7 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
         /**
          */
         protected Class[] supportedCookies() {
-            return new Class[] { EditorCookie.class,
+            return new Class[] { 
                     EditorCookie.Observable.class,
                     OpenCookie.class,
                     EditCookie.class,
@@ -726,10 +739,7 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
         /**
          */
         public final void registerCookies(CookieSet cookieSet) {
-            Class[] supportedCookies = supportedCookies();
-            for (int i = 0; i < supportedCookies.length; i++) {
-                cookieSet.add(supportedCookies[i], this);
-            }
+            cookieSet.add(supportedCookies(), this);
         }
         
         /** Creates a Node.Cookie of given class. The method
@@ -747,17 +757,20 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
         
         /**
          */
-        public final synchronized TextEditorSupport createEditor() { // atomic test and set
+        public final TextEditorSupport createEditor() { // atomic test and set
             TextEditorSupport editorSupport = null;
             
-            if ( editorRef != null ) {
-                editorSupport = (TextEditorSupport) editorRef.get();
-            }
-            if ( editorSupport == null ) {
+            synchronized (this) {
+                if ( editorRef != null ) {
+                    editorSupport = (TextEditorSupport) editorRef.get();
+                }
+                if ( editorSupport != null ) {
+                    return editorSupport;
+                }
                 editorSupport = prepareEditor();
                 editorRef = new WeakReference(editorSupport);
             }
-            
+            editorSupport.syncMimeType();
             return editorSupport;
         }
         

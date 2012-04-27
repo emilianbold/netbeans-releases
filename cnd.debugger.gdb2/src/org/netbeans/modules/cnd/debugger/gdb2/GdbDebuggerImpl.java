@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.cnd.debugger.gdb2;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Set;
 import java.util.logging.Level;
@@ -54,6 +55,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -124,7 +126,7 @@ import org.openide.util.Exceptions;
 
 public final class GdbDebuggerImpl extends NativeDebuggerImpl 
     implements BreakpointProvider, Gdb.Factory.Listener {
-
+    
     private GdbEngineProvider engineProvider;
     private Gdb gdb;				// gdb proxy
     private GdbVersionPeculiarity peculiarity;  // gdb version differences
@@ -143,6 +145,16 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     private final VariableBag variableBag = new VariableBag();
     
     private FileMapper fmap = FileMapper.getDefault();
+    
+    public static final String MI_BKPT = "bkpt";     //NOI18N
+    public static final String MI_WPT = "wpt";       //NOI18N
+    public static final String MI_EXP = "exp";       //NOI18N
+    public static final String MI_NUMBER = "number"; //NOI18N
+    public static final String MI_WATCHPOINT_TRIGGER = "watchpoint-trigger"; //NOI18N
+    public static final String MI_WATCHPOINT_SCOPE = "watchpoint-scope"; //NOI18N
+    public static final String MI_SYSCALL_ENTRY = "syscall-entry"; //NOI18N
+    public static final String MI_SYSCALL_RETURN = "syscall-return"; //NOI18N
+    public static final String MI_NUMCHILD = "numchild"; //NOI18N
 
     /**
      * Utility class to help us deal with 'frame' or 'source file'
@@ -165,56 +177,22 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                                     int stackSize,
                                     NativeBreakpoint breakpoint) {
 
-	    String src = null;
-	    int line = 0;
+	    String src;
+	    int line;
 	    String func = null;
 	    long pc = 0;
             int level = 0;
 
             if (frameTuple != null) {
-		MIValue addrValue = frameTuple.valueOf("addr");	// NOI18N
-		if (addrValue != null) {
-		    String addr = addrValue.asConst().value();
-                    pc = Address.parseAddr(addr);
-		}
-
-                MIValue funcValue = frameTuple.valueOf("func"); // NOI18N
-                func = funcValue.asConst().value();
-
-                MIValue fullnameValue = frameTuple.valueOf("fullname"); // NOI18N
-                if (fullnameValue != null) {
-                    src = fullnameValue.asConst().value();
-                } else if (srcTuple != null) {
-		    // get fullname from srcTuple
-		    fullnameValue = srcTuple.valueOf("fullname"); // NOI18N
-		    if (fullnameValue != null) {
-			src = fullnameValue.asConst().value();
-		    }
-		}
-
-                MIValue levelValue = frameTuple.valueOf("level"); // NOI18N
-                if (levelValue != null) {
-                    String lineString = levelValue.asConst().value();
-                    level = Integer.parseInt(lineString);
-                }
-                
-                MIValue lineValue = frameTuple.valueOf("line"); // NOI18N
-                if (lineValue != null) {
-                    String lineString = lineValue.asConst().value();
-                    line = Integer.parseInt(lineString);
-                }
+                pc = Address.parseAddr(frameTuple.getConstValue("addr", "0")); // NOI18N
+                func = frameTuple.getConstValue("func"); // NOI18N
+                src = frameTuple.getConstValue("fullname", srcTuple != null ? srcTuple.getConstValue("fullname", null) : null); //NOI18N
+                level = Integer.parseInt(frameTuple.getConstValue("level", "0")); // NOI18N
+                line = Integer.parseInt(frameTuple.getConstValue("line", "0")); //NOI18N
             } else {
                 // use srcTuple
-                MIValue fullnameValue = srcTuple.valueOf("fullname"); // NOI18N
-                if (fullnameValue != null) {
-                    src = fullnameValue.asConst().value();
-                }
-
-                MIValue lineValue = srcTuple.valueOf("line"); // NOI18N
-                if (lineValue != null) {
-                    String lineString = lineValue.asConst().value();
-                    line = Integer.parseInt(lineString);
-                }
+                src = srcTuple.getConstValue("fullname", null); // NOI18N
+                line = Integer.parseInt(srcTuple.getConstValue("line", "0")); //NOI18N
             }
 
 	    src = debugger.remoteToLocal("MILocation", src); // NOI18N
@@ -321,22 +299,22 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         if (org.netbeans.modules.cnd.debugger.common2.debugger.Log.Start.debug) {
             int act = gdi.getAction();
             System.out.printf("START ==========\n\t"); // NOI18N
-            if ((act & DebuggerManager.RUN) != 0) {
+            if ((act & NativeDebuggerManager.RUN) != 0) {
                 System.out.printf("RUN "); // NOI18N
             }
-            if ((act & DebuggerManager.STEP) != 0) {
+            if ((act & NativeDebuggerManager.STEP) != 0) {
                 System.out.printf("STEP "); // NOI18N
             }
-            if ((act & DebuggerManager.ATTACH) != 0) {
+            if ((act & NativeDebuggerManager.ATTACH) != 0) {
                 System.out.printf("ATTACH "); // NOI18N
             }
-            if ((act & DebuggerManager.CORE) != 0) {
+            if ((act & NativeDebuggerManager.CORE) != 0) {
                 System.out.printf("CORE "); // NOI18N
             }
-            if ((act & DebuggerManager.LOAD) != 0) {
+            if ((act & NativeDebuggerManager.LOAD) != 0) {
                 System.out.printf("LOAD "); // NOI18N
             }
-            if ((act & DebuggerManager.CONNECT) != 0) {
+            if ((act & NativeDebuggerManager.CONNECT) != 0) {
                 System.out.printf("CONNECT "); // NOI18N
             }
             System.out.printf("\n"); // NOI18N
@@ -348,7 +326,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
 	// This might make sense for gdbserver for example
         final boolean connectExisting;
-        if ((gdi.getAction() & DebuggerManager.CONNECT) != 0) {
+        if ((gdi.getAction() & NativeDebuggerManager.CONNECT) != 0) {
             connectExisting = true;
         } else {
             connectExisting = false;
@@ -372,7 +350,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	}
 
         // See "README.startup"
-        if (DebuggerManager.isAsyncStart()) {
+        if (NativeDebuggerManager.isAsyncStart()) {
 
             // May not be neccessary in the future.
             SwingUtilities.invokeLater(new Runnable() {
@@ -402,8 +380,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	String gdbInitFile = DebuggerOption.GDB_INIT_FILE.getCurrValue(optionLayers());
 
 	// SHOULD process OPTION_EXEC32?
-        String runDir = gdi.getProfile().getRunDirectory();
-        runDir = localToRemote("gdbRunDirectory", runDir); // NOI18N
+        String runDir = gdi.getRunDir();
+        boolean preventRunPathConvertion = runDir.startsWith("///"); // NOI18N
+
+        if (!preventRunPathConvertion) {
+            runDir = localToRemote("gdbRunDirectory", runDir); // NOI18N
+        }
 
 	factory = new Gdb.Factory(executor, additionalArgv,
 	    listener, false, isShortName(),
@@ -534,7 +516,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         gdb = tentativeGdb;
         gdb.setDebugger(this);
         GdbStartActionProvider.succeeded();
-        DebuggerManager.get().setCurrentDebugger(this);
+        NativeDebuggerManager.get().setCurrentDebugger(this);
 	// OLD initializeGdb(getGDI());
     }
 
@@ -750,12 +732,16 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         sendResumptive("-exec-continue"); // NOI18N
     }
     
+    private boolean targetAttach = false;
+    private static final String ATTACH_ID = "ATTACH"; //NOI18N
+    
     private void doMIAttach(GdbDebuggerInfo gdi) {
         String cmdString;
         long pid = -1;
         String remoteTarget = gdi.getTargetCommand();
         if (remoteTarget != null) {
             cmdString = "target " + remoteTarget;  //NOI18N
+            targetAttach = true;
         } else {
             pid = gdi.getPid();
             // MI command "-target-attach pid | file" does not available in
@@ -763,25 +749,38 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             cmdString = "attach " + Long.toString(pid); //NOI18N
         }
         
-        final long newPid = pid;
-        MICommand cmd =
-            new MiCommandImpl(cmdString) {
-
-                    @Override
-                    protected void onDone(MIRecord record) {
-                        state().isProcess = true;
-                        stateChanged();
-			session().setSessionState(state());
-                        if (newPid != -1) {
-                            session().setPid(newPid);
-                        }
-                        //see IZ 197786, we set breakpoints here not on prog load
-                        ((GdbDebuggerSettingsBridge)profileBridge).noteAttached();
-                        requestStack(null);
-                        finish();
-                    }
-            };
+        firstBreakpointId = ATTACH_ID;
+        MICommand cmd = new MiCommandImpl(cmdString) {
+            @Override
+            protected void onDone(MIRecord record) {
+                attachDone();
+                finish();
+            }
+        };
         gdb.sendCommand(cmd);
+    }
+    
+    private void attachDone() {
+        firstBreakpointId = null;
+        if (state().isProcess) {
+            return;
+        }
+        state().isProcess = true;
+        stateChanged();
+        session().setSessionState(state());
+        long pid = getNDI().getPid();
+        if (pid != -1) {
+            session().setPid(pid);
+        }
+        //see IZ 197786, we set breakpoints here not on prog load
+        ((GdbDebuggerSettingsBridge)profileBridge).noteAttached();
+
+        // continue, see IZ 198495
+        if (DebuggerOption.RUN_AUTOSTART.isEnabled(optionLayers())) {
+            go();
+        } else {
+            requestStack(null);
+        }
     }
 
     private void doMICorefile(GdbDebuggerInfo gdi) {
@@ -856,7 +855,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         // ... so we interrupt
 	int pid = (int) session().getPid();
 	if (pid > 0) {
-	    return gdb.pause(pid, silentStop);
+	    return gdb.pause(pid, silentStop, targetAttach);
         }
         return false;
     }
@@ -909,6 +908,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	    this.reportError = false;
 	}
 
+        @Override
 	protected void onDone(MIRecord record) {
 	    if (emptyDoneIsError && record.isEmpty()) {
 		// See comment for isEmpty
@@ -955,7 +955,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
     /**
-     * Handle the oputput of "info proc".
+     * Handle the output of "info proc".
      */
     static int extractPid1(MIRecord record) {
 	StringTokenizer st =
@@ -1106,12 +1106,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	}
     }
     
-    private String firstBreakpointId = null;
+    private volatile String firstBreakpointId = null;
     
     private void setFirstBreakpointId(MIRecord record) {
-        MIValue bkptValue = record.results().valueOf("bkpt"); //NOI18N
+        MIValue bkptValue = record.results().valueOf(MI_BKPT);
         if (bkptValue != null) {
-            MIValue numberValue = bkptValue.asTList().valueOf("number"); //NOI18N
+            MIValue numberValue = bkptValue.asTList().valueOf(MI_NUMBER);
             if (numberValue != null) {
                 firstBreakpointId = numberValue.asConst().value();
             }
@@ -1188,35 +1188,48 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         }
     }
 
+    @Override
     public void makeCalleeCurrent() {
         Frame frame = getCurrentFrame();
         if (frame != null) {
-            String number = frame.getNumber();
-            makeFrameCurrent(getStack()[Integer.valueOf(number)-1]);
+            int frameNo = Integer.parseInt(frame.getNumber());
+            if (frameNo > 0) {
+                makeFrameCurrent(getStack()[frameNo-1]);
+            }
         }
     }
 
+    @Override
     public void makeCallerCurrent() {
         Frame frame = getCurrentFrame();
         if (frame != null) {
-            String number = frame.getNumber();
-            makeFrameCurrent(getStack()[Integer.valueOf(number)+1]);
+            int newFrameNo = Integer.parseInt(frame.getNumber())+1;
+            Frame[] stack = getStack();
+            if (newFrameNo < stack.length) {
+                makeFrameCurrent(stack[newFrameNo]);
+            }
         }
     }
 
+    @Override
     public void popToHere(Frame frame) {
-        String number = frame.getNumber();
-        makeFrameCurrent(getStack()[Integer.valueOf(number)-1]);
-        execFinish();
+        int frameNo = Integer.parseInt(frame.getNumber());
+        if (frameNo > 0) {
+            makeFrameCurrent(getStack()[frameNo-1]);
+            execFinish();
+        }
     }
 
+    @Override
     public void popTopmostCall() {
         stepOut();
     }
 
+    @Override
     public void popLastDebuggerCall() {
     }
 
+    @Override
     public void popToCurrentFrame() {
         makeCalleeCurrent();
         execFinish();
@@ -1225,9 +1238,21 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     private static final int PRINT_REPEAT = Integer.getInteger("gdb.print.repeat", 0); //NOI18N
     private static final int STACK_MAX_DEPTH = Integer.getInteger("gdb.stack.maxdepth", 1024); // NOI18N
     private static final int PRINT_ELEMENTS = Integer.getInteger("gdb.print.elements", 0); // NOI18N
+    private static final boolean ENABLE_PRETTY_PRINTING = !Boolean.getBoolean("gdb.pretty.disable"); //NOI18N
 
     public FileMapper fmap() {
         return fmap;
+    }
+    
+    private static String parseEnvDirFromOption(String src) {
+        StringBuilder res = new StringBuilder();
+        StringTokenizer st = new StringTokenizer(src, File.pathSeparator); // NOI18N
+        while (st.hasMoreTokens()) {
+            res.append(" \"");// NOI18N
+            res.append(st.nextToken());
+            res.append("\"");// NOI18N
+        }
+        return res.toString();
     }
     
     void initializeGdb(FileMapper fmap) {
@@ -1262,10 +1287,14 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         send("-gdb-set backtrace limit " + STACK_MAX_DEPTH); // NOI18N
         send("-gdb-set print elements " + PRINT_ELEMENTS); // NOI18N
         
+        if (ENABLE_PRETTY_PRINTING) {
+            sendSilent("-enable-pretty-printing"); // NOI18N
+        }
+        
         // set extra source folders
         String sourceFolders = DebuggerOption.GDB_SOURCE_DIRS.getCurrValue(optionLayers());
         if (sourceFolders != null && !sourceFolders.isEmpty()) {
-            send("-environment-directory \"" + sourceFolders + '\"'); // NOI18N
+            send("-environment-directory" + parseEnvDirFromOption(sourceFolders)); // NOI18N
         }
         
         // set terminal mode on windows, see IZ 193220
@@ -1287,33 +1316,33 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
      * StepInto) after all initialization is done
      */
     private void initialAction() {
-        if (DebuggerManager.isStartModel()) {
+        if (NativeDebuggerManager.isStartModel()) {
             // OLD GdbDebuggerInfo gdi = this.getGDI();
             if (gdi != null) {
                 // For load and run
-                if ((gdi.getAction() & DebuggerManager.RUN) != 0) {
+                if ((gdi.getAction() & NativeDebuggerManager.RUN) != 0) {
                     rerun();
-                    gdi.removeAction(DebuggerManager.RUN);
+                    gdi.removeAction(NativeDebuggerManager.RUN);
                 }
                 // For attach
-                if ((gdi.getAction() & DebuggerManager.ATTACH) != 0) {
+                if ((gdi.getAction() & NativeDebuggerManager.ATTACH) != 0) {
 
                     doMIAttach(gdi);
-                    gdi.removeAction(DebuggerManager.ATTACH);
+                    gdi.removeAction(NativeDebuggerManager.ATTACH);
                 }
 
                 // For debugging core file
-                if ((gdi.getAction() & DebuggerManager.CORE) != 0) {
+                if ((gdi.getAction() & NativeDebuggerManager.CORE) != 0) {
 
                     doMICorefile(gdi);
-                    gdi.removeAction(DebuggerManager.CORE);
+                    gdi.removeAction(NativeDebuggerManager.CORE);
                 }
 
                 // For load and step
-                if ((gdi.getAction() & DebuggerManager.STEP) != 0) {
+                if ((gdi.getAction() & NativeDebuggerManager.STEP) != 0) {
                     //stepOver(); // gdb 6.1
 		    stepIntoMain(); // gdb 6.6
-                    gdi.removeAction(DebuggerManager.STEP);
+                    gdi.removeAction(NativeDebuggerManager.STEP);
                 }
             }
         }
@@ -1331,7 +1360,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
         manager().formatStatusText("ReadyToRun"); // NOI18N
 
-        DebuggerManager.get().addRecentDebugTarget(progname, false);
+        NativeDebuggerManager.get().addRecentDebugTarget(progname, false);
 
         if (Log.Bpt.fix6810534) {
             javax.swing.SwingUtilities.invokeLater(new Runnable() {
@@ -1421,8 +1450,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             errMsg = record.error();
 
         } else if (!record.isEmpty()) {
-            MIValue value = record.results().valueOf("msg");	// NOI18N
-            errMsg = value.asConst().value();
+            errMsg = record.results().getConstValue("msg");	// NOI18N
 
         } else {
 	    // See comment to MIRecord.isEmpty().
@@ -1459,7 +1487,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         // SHOULD factor with inline code in DbxDebuggerImpl.noteProcGone
 
 	if (!DebuggerOption.FINISH_SESSION.isEnabled(optionLayers()) ||
-	    ((gdi.getAction() & DebuggerManager.LOAD) != 0)) {
+	    ((gdi.getAction() & NativeDebuggerManager.LOAD) != 0)) {
 	    return true;
 	} else {
 	    return false;
@@ -1489,14 +1517,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             skipkill = dontKillOnExit();
 
         } else if ("exited".equals(reason)) { // NOI18N
-            final MIValue exitcodeValue = results.valueOf("exit-code"); // NOI18N
-            final String exitcodeString = exitcodeValue.asConst().value();
+            final String exitcodeString = results.getConstValue("exit-code"); // NOI18N
             msg = Catalog.format("ProgCompletedExit", exitcodeString); // NOI18N
             skipkill = dontKillOnExit();
 
         } else if ("exited-signalled".equals(reason)) { // NOI18N
-            final MIValue signalnameValue = results.valueOf("signal-name"); // NOI18N
-            final String signalnameString = signalnameValue.asConst().value();
+            final String signalnameString = results.getConstValue("signal-name"); // NOI18N
             msg = Catalog.format("ProgAborted", signalnameString); // NOI18N
 
         } else {
@@ -1505,7 +1531,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
         setStatusText(msg);
 
-        if (!skipkill && DebuggerManager.isStartModel()) {
+        if (!skipkill && NativeDebuggerManager.isStartModel()) {
             postKill();
         }
 
@@ -1552,40 +1578,40 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         }
     }
 
-    private void getAllThreads(MIRecord thread) {
-        MITList threadresults = thread.results();
-        MITList thread_ids = (MITList) threadresults.valueOf("thread-ids"); // NOI18N
-
-        MIValue tid = threadresults.valueOf("number-of-threads"); // NOI18N
-
-	// assume this thread is current
-        String current_tid_no = tid.asConst().value(); 
-
-        if (Log.Variable.mi_threads) {
-            System.out.println("threads " + threadresults.toString()); // NOI18N
-            System.out.println("thread_ids " + thread_ids.toString()); // NOI18N
-        }
-        int size = thread_ids.size();
-
-        threads = new GdbThread[size];
-        for (int vx = 0; vx < size; vx++) {
-            MIResult thread_id = (MIResult) thread_ids.get(vx);
-            String id_no = thread_id.value().asConst().value();
-            if (Log.Variable.mi_threads) {
-                System.out.println("threads_id " + thread_id.toString()); // NOI18N
-                System.out.println("thread_ id " + id_no); // NOI18N
-            }
-	    if (id_no.equals(current_tid_no))
-		current_thread_index = vx;
-	    else
-		// collect detail thread info from gdb engine
-		selectThread(vx, id_no, false); 
-        }
-
-	// do current thread the last, becuase selectThread will also set
-	// current thread
-	selectThread(current_thread_index, current_tid_no, true); 
-    }
+//    private void getAllThreads(MIRecord thread) {
+//        MITList threadresults = thread.results();
+//        MITList thread_ids = (MITList) threadresults.valueOf("thread-ids"); // NOI18N
+//
+//        MIValue tid = threadresults.valueOf("number-of-threads"); // NOI18N
+//
+//	// assume this thread is current
+//        String current_tid_no = tid.asConst().value(); 
+//
+//        if (Log.Variable.mi_threads) {
+//            System.out.println("threads " + threadresults.toString()); // NOI18N
+//            System.out.println("thread_ids " + thread_ids.toString()); // NOI18N
+//        }
+//        int size = thread_ids.size();
+//
+//        threads = new GdbThread[size];
+//        for (int vx = 0; vx < size; vx++) {
+//            MIResult thread_id = (MIResult) thread_ids.get(vx);
+//            String id_no = thread_id.value().asConst().value();
+//            if (Log.Variable.mi_threads) {
+//                System.out.println("threads_id " + thread_id.toString()); // NOI18N
+//                System.out.println("thread_ id " + id_no); // NOI18N
+//            }
+//	    if (id_no.equals(current_tid_no))
+//		current_thread_index = vx;
+//	    else
+//		// collect detail thread info from gdb engine
+//		selectThread(vx, id_no, false); 
+//        }
+//
+//	// do current thread the last, becuase selectThread will also set
+//	// current thread
+//	selectThread(current_thread_index, current_tid_no, true); 
+//    }
 
 //    private void interpAttach(MIRecord threadframe) {
 //        MITList threadresults = threadframe.results();
@@ -1650,13 +1676,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
         MITList threadresults = threadframe.results();
 
-        MIValue tid = threadresults.valueOf("new-thread-id"); // NOI18N
-        String tid_no = tid.asConst().value();
+        String tid_no = threadresults.getConstValue("new-thread-id"); // NOI18N
 
         MIValue frame = threadresults.valueOf("frame");// frame entry // NOI18N
         if (Log.Variable.mi_threads) {
             System.out.println("threadframe " + threadresults.toString()); // NOI18N
-            System.out.println("tid_no " + tid); // NOI18N
+            System.out.println("tid_no " + tid_no); // NOI18N
             System.out.println("frame " + frame.toString()); // NOI18N
         }
         GdbFrame f = new GdbFrame(this, frame, null);
@@ -1717,18 +1742,17 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
     private void showThreads() {
-        if (peculiarity.supportsThreadInfo()) {
+        if (peculiarity.supports(GdbVersionPeculiarity.Feature.THREAD_INFO)) {
             MICommand cmd = new MiCommandImpl("-thread-info") { // NOI18N
                 @Override
                 protected void onDone(MIRecord record) {
                     List<GdbThread> res = new ArrayList<GdbThread>();
                     MITList results = record.results();
-                    String currentThreadId = results.valueOf("current-thread-id").asConst().value(); //NOI18N
-                    MIValue threadsValue = results.valueOf("threads"); //NOI18N
-                    for (MITListItem thr : threadsValue.asList()) {
+                    String currentThreadId = results.getConstValue("current-thread-id"); //NOI18N
+                    for (MITListItem thr : results.valueOf("threads").asList()) { //NOI18N
                         MITList thrList = (MITList)thr;
-                        String id = thrList.valueOf("id").asConst().value(); //NOI18N
-                        String name = thrList.valueOf("target-id").asConst().value(); //NOI18N
+                        String id = thrList.getConstValue("id"); //NOI18N
+                        String name = thrList.getConstValue("target-id"); //NOI18N
                         MIValue frame = thrList.valueOf("frame");// frame entry // NOI18N
                         GdbFrame f = new GdbFrame(GdbDebuggerImpl.this, frame, null);
                         GdbThread gdbThread = new GdbThread(GdbDebuggerImpl.this, threadUpdater, id, name, f);
@@ -1811,6 +1835,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         }
     }
 
+    @Override
     public Frame[] getStack() {
         if (guiStackFrames == null) {
             return new GdbFrame[0];
@@ -1827,6 +1852,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     public void postVerboseStack(boolean v) {
     }
 
+    @Override
     public GdbFrame getCurrentFrame() {
         if (guiStackFrames != null) {
             for (Frame frame : guiStackFrames) {
@@ -1843,6 +1869,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	return;
     }
     
+    @Override
     public void makeFrameCurrent(Frame f) {
         String fno = f.getNumber();
         boolean changed = false;
@@ -2137,7 +2164,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                     if (Log.Variable.mi_vars) {
                         System.out.println("value " + value.toString()); // NOI18N
                     }
-                    String value_string = value.valueOf("value").asConst().value(); // NOI18N
+                    String value_string = value.getConstValue("value"); // NOI18N
                     if (dis) {
                         // see #199557 we need to convert dis annotations to hex
                         if (!value_string.startsWith("0x")) { //NOI18N
@@ -2300,7 +2327,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
     private void updateVarAttr(GdbVariable v, MIRecord attr, boolean evalValue) {
         MITList attr_results = attr.results();
-        String value = attr_results.valueOf("attr").asConst().value(); // NOI18N
+        String value = attr_results.getConstValue("attr"); // NOI18N
         v.setEditable(value);
         if (v.isEditable() && evalValue) {
             evalMIVar(v);
@@ -2367,61 +2394,66 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 				  MIRecord miRecord,
 				  int level) {
         MITList results = miRecord.results();
-        String count = results.valueOf("numchild").asConst().value(); // NOI18N
+        
+        parent.setNumChild(results.getConstValue(MI_NUMCHILD));
+        
         MITList children_list = (MITList) results.valueOf("children"); // NOI18N
-
-        int size = Integer.parseInt(count);
 
         // iterate through children list
 	List<GdbVariable> children = new ArrayList<GdbVariable>();
-        for (int vx = 0; vx < size; vx++) {
-            MIResult childresult = (MIResult) children_list.get(vx);
+        if (children_list != null) {
+            int childIdx = 0;
+            for (MITListItem childresult : children_list) {
+                final MITList childResList = ((MIResult)childresult).value().asTuple();
 
-            // full qualified name,
-            // e.g. "var31.public.proc.private.p_proc_heap"
-            String qname = childresult.value().asTuple().valueOf("name").asConst().value(); // NOI18N
-            // display name,
-            // e.g. "p_proc_heap"
-            String exp = childresult.value().asTuple().valueOf("exp").asConst().value(); // NOI18N
-            String numchild = childresult.value().asTuple().valueOf("numchild").asConst().value(); // NOI18N
-            String value = childresult.value().asTuple().valueOf("value").asConst().value(); // NOI18N
-            MIValue mitype = childresult.value().asTuple().valueOf("type"); // NOI18N
+                // full qualified name,
+                // e.g. "var31.public.proc.private.p_proc_heap"
+                String qname = childResList.getConstValue("name"); // NOI18N
+                // display name,
+                // e.g. "p_proc_heap"
+                String exp = childResList.getConstValue(MI_EXP);
 
-            String type = "";
-            if (mitype != null) {
-                type = mitype.asConst().value();
-            }
+                if (exp.equals("private") || exp.equals("public") || // NOI18N
+                                            exp.equals("protected")) { // NOI18N
+                    getMIChildren(parent, qname, level+1);
+                } else {
+                    if (parent.isDynamic() && parent.getDisplayHint() == GdbVariable.DisplayHint.MAP) {
+                        // in pretty maps even element is a key, odd is a value
+                        exp = (childIdx % 2 == 0) ? Catalog.format("Map_Key", childIdx / 2) : Catalog.format("Map_Value", childIdx / 2); // NOI18N
+                        childIdx++;
+                    } else {
+                        // Show array name and index instead of only index, IZ 192123
+                        try {
+                            Integer.parseInt(exp);
+                            exp = parent.getVariableName() + '[' + exp + ']';
+                        } catch (Exception e) {
+                            // do nothing
+                        }
+                    }
+                    GdbVariable childvar = new GdbVariable(this, parent.getUpdater(),
+                            parent, exp, null, null, parent.isWatch());
 
-            if (exp.equals("private") || exp.equals("public") || // NOI18N
-					exp.equals("protected")) { // NOI18N
-                getMIChildren(parent, qname, level+1);
-            } else {
-                // Show array name and index instead of only index, IZ 192123
-                try {
-                    Integer.parseInt(exp);
-                    exp = parent.getVariableName() + '[' + exp + ']';
-                } catch (Exception e) {
-                    // do nothing
+                    String value = childResList.getConstValue("value"); // NOI18N
+
+                    value = processValue(value);
+                    childvar.setAsText(value);
+
+                    childvar.populateFields(childResList);
+
+                    variableBag.add(childvar);
+                    children.add(childvar);
+                    attrMIVar(childvar, false);
                 }
-                GdbVariable childvar = new GdbVariable(this, parent.getUpdater(),
-                        parent, exp, null, null, parent.isWatch());
-                value = processValue(value);
-                childvar.setAsText(value);
-                childvar.setType(type);
-                childvar.setMIName(qname);
-                childvar.setNumChild(numchild);
-                variableBag.add(childvar);
-		children.add(childvar);
-                attrMIVar(childvar, false);
             }
-	}
+        }
 
 	// make a pull to update children's value
 	GdbVariable[] vars = new GdbVariable[children.size()];
-	if (level == 0)
+	if (level == 0) {
 	    parent.setChildren(children.toArray(vars), true);
-	else
+        } else {
 	    parent.addChildren(children.toArray(vars), true);
+        }
 
 	// make a pull to update children's value
 	// parent.setChildren(childrenvar, true); 
@@ -2450,8 +2482,8 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 		updatevar = (MIValue)item;
 	    }
 
-            String mi_name = updatevar.asTuple().valueOf("name").asConst().value(); // NOI18N
-            String in_scope = updatevar.asTuple().valueOf("in_scope").asConst().value(); // NOI18N
+            String mi_name = updatevar.asTuple().getConstValue("name"); // NOI18N
+            String in_scope = updatevar.asTuple().getConstValue("in_scope"); // NOI18N
             if (Log.Variable.mi_vars) {
                 System.out.println("update name " + mi_name + " in_scope " + in_scope); // NOI18N
             }
@@ -2469,23 +2501,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 //            }
             GdbVariable wv = variableBag.get(mi_name, true, VariableBag.FROM_BOTH);
             if (wv != null) {
-		if (wv instanceof GdbWatch && in_scope != null) {
-		    GdbWatch w = (GdbWatch) wv;
-		    w.setInScope(Boolean.parseBoolean(in_scope));
-		}
-                
-                // update type
-                MIValue newType = updatevar.asTuple().valueOf("new_type"); //NOI18N
-                if (newType != null) {
-                    wv.setType(newType.asConst().value());
-                }
-                
-                // update children
-                MIValue newChildren = updatevar.asTuple().valueOf("new_num_children"); //NOI18N
-                if (newType != null) {
-                    wv.setNumChild(newChildren.asConst().value());
-                    wv.setChildren(null, false);
-                }
+                wv.populateUpdate(updatevar.asTuple());
                 
                 // update value
                 if (updatevar.asTuple().valueOf("value") != null) { //NOI18N
@@ -2554,7 +2570,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
     private void interpVarFormat(GdbVariable v, MIRecord record) {
         MITList format_results = record.results();
-        String format = format_results.valueOf("format").asConst().value(); // NOI18N
+        String format = format_results.getConstValue("format"); // NOI18N
         v.setFormat(format);
 	evalMIVar(v);
     }
@@ -2574,17 +2590,11 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                 };
         gdb.sendCommand(cmd);
     }
-
+    
     private void interpVar(GdbVariable v, MIRecord var) {
-        MITList results = var.results();
-        String mi_name = results.valueOf("name").asConst().value(); // NOI18N
-        String type = results.valueOf("type").asConst().value(); // NOI18N
-        String numchild = results.valueOf("numchild").asConst().value(); // NOI18N
-
-        v.setMIName(mi_name);
-        v.setType(type);
-        v.setNumChild(numchild); // also set children if there is any
-	Variable wv = variableBag.get(mi_name, true, VariableBag.FROM_BOTH);
+        v.populateFields(var.results());
+        
+	Variable wv = variableBag.get(v.getMIName(), true, VariableBag.FROM_BOTH);
         if (wv == null) {
             variableBag.add(v);
         }
@@ -2787,18 +2797,28 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     public Set<String> requestAutos() {
         Set<String> autoNames = super.requestAutos();
         LinkedList<Variable> res = new LinkedList<Variable>();
-        for (String auto : autoNames) {
-            GdbVariable var = variableBag.get(auto, false, VariableBag.FROM_BOTH);
-            if (var == null) {
-                var = new GdbWatch(this, watchUpdater(), auto);
-                createMIVar(var, true);
+        if (autoNames != null) {
+            for (String auto : autoNames) {
+                GdbVariable var = variableBag.get(auto, false, VariableBag.FROM_BOTH);
+                if (var == null) {
+                    var = new GdbWatch(this, watchUpdater(), auto);
+                    createMIVar(var, true);
+                }
+                res.add(var);
             }
-            res.add(var);
+        } else {
+            res = null;
         }
+        
         synchronized (autos) {
-            autos.clear();
-            autos.addAll(res);
+                autos.clear();
+                if (res == null) {
+                    autos.add(null);
+                } else {
+                    autos.addAll(res);
+                }
         }
+        
         return autoNames;
     }
 
@@ -2951,10 +2971,13 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             reason.equals("end-stepping-range") || // NOI18N
             reason.equals("location-reached") || // NOI18N
             reason.equals("signal-received") || // NOI18N
+            reason.equals(MI_WATCHPOINT_TRIGGER) || //NOI18N
+            reason.equals(MI_WATCHPOINT_SCOPE) || //NOI18N
+            reason.equals(MI_SYSCALL_ENTRY) || //NOI18N
+            reason.equals(MI_SYSCALL_RETURN) || //NOI18N
             reason.equals("function-finished")) { // NOI18N
 
 	    // update our views
-
             NativeBreakpoint breakpoint = null;
             MIValue bkptnoValue = (results != null) ? results.valueOf("bkptno") : null; // NOI18N
             if (bkptnoValue != null) {
@@ -2967,6 +2990,33 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                     breakpoint = handler.breakpoint();
                 }
                 // updateFiredEvent will set status
+            }
+            
+            // watchpoint if any
+            MIValue wptValue = (results != null) ? results.valueOf(MI_WPT) : null; // NOI18N
+            if (wptValue != null) {
+		// It's a watchpoint event
+                String bkptnoString = wptValue.asList().getConstValue(MI_NUMBER);
+                int bkptno = Integer.parseInt(bkptnoString);
+                Handler handler = bm().findHandler(bkptno);
+                if (handler != null) {
+                    handler.setFired(true);
+                    breakpoint = handler.breakpoint();
+                }
+            }
+            
+            // watchpoint to disable
+            MIValue wpnumValue = (results != null) ? results.valueOf("wpnum") : null; // NOI18N
+            if (wpnumValue != null) {
+		// It's a watchpoint scope event
+                String bkptnoString = wpnumValue.asConst().value();
+                int bkptno = Integer.parseInt(bkptnoString);
+                Handler handler = bm().findHandler(bkptno);
+                if (handler != null) {
+                    handler.setFired(true);
+                    handler.setEnabled(false);
+                    breakpoint = handler.breakpoint();
+                }
             }
 
             MIValue frameValue = (results != null) ? results.valueOf("frame") : null; // NOI18N
@@ -3110,14 +3160,11 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	    MITList props = b.value().asTuple();
 	    // System.out.printf("props %s\n", props.toString());
 
-	    MIValue number = props.valueOf("number");	// NOI18N
-
-	    int hid = Integer.parseInt(number.asConst().value());
+	    int hid = Integer.parseInt(props.getConstValue(MI_NUMBER));
 	    Handler h = bm().findHandler(hid);
 
 	    if (h != null && h.breakpoint().hasCountLimit()) {
-		MIValue times = props.valueOf("times");	// NOI18N
-		int count = Integer.parseInt(times.asConst().value());
+		int count = Integer.parseInt(props.getConstValue("times")); // NOI18N
 		h.setCount(count);
 
 		adjustIgnore(h.breakpoint(), props);
@@ -3150,10 +3197,18 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         
         // detect first stop (in _start or main)
         if (firstBreakpointId != null) {
+            if (ATTACH_ID.equals(firstBreakpointId)) {
+                attachDone();
+                return;
+            }
             MIValue bkptnoValue = results.valueOf("bkptno"); // NOI18N
             boolean cont = (bkptnoValue == null && !STEP_INTO_ID.equals(firstBreakpointId)) ||
                (bkptnoValue != null && (firstBreakpointId.equals(bkptnoValue.asConst().value())));
             firstBreakpointId = null;
+            
+            // see IZ 210468, init watches here
+            ((GdbDebuggerSettingsBridge)profileBridge).noteFistStop();
+            
             sendPidCommand(cont);
             if (cont) {
                 return;
@@ -3162,8 +3217,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         
         //detect silent stop
         if (gdb.isSignalled()) {
-            final MIValue reasonValue = results.valueOf("reason"); //NOI18N
-            if (reasonValue != null && "signal-received".equals(reasonValue.asConst().value())) { //NOI18N
+            if ("signal-received".equals(results.getConstValue("reason"))) { //NOI18N
                 MIValue signalValue = results.valueOf("signal-name"); //NOI18N
                 if (signalValue != null) {
                     String signal = signalValue.asConst().value();
@@ -3238,13 +3292,8 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
 	// LATER SHOULD factor this info into a class
         
-	String signum = "?"; // NOI18N
+	String signum = results.getConstValue("signal-meaning", "?"); // NOI18N
         
-        final MIValue meaningStr = results.valueOf("signal-meaning"); // NOI18N
-        if (meaningStr != null) {
-            signum = meaningStr.asConst().value();
-        }
-
 	// gdb doesn't furnish any of the other info
 
 	String signalInfo;
@@ -3317,10 +3366,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         if (reason.equals("end-stepping-range")) {		// NOI18N
             stateMsg = Catalog.get("Dbx_program_stopped");	// NOI18N
         } else if (reason.equals("signal-received")) {		// NOI18N
-	    final MIValue signalNameValue =
-		results.valueOf("signal-name");		// NOI18N
-	    if (signalNameValue != null)
-		signalName = signalNameValue.asConst().value();
+            signalName = results.getConstValue("signal-name", signalName); // NOI18N
             stateMsg = Catalog.get("Dbx_signal") + // NOI18N
 		       " " + signalName;			// NOI18N
 
@@ -3328,6 +3374,27 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             stateMsg = Catalog.get("Dbx_program_stopped");	// NOI18N
         } else if (reason.equals("breakpoint-hit")) {		// NOI18N
             stateMsg = Catalog.get("Dbx_program_stopped");	// NOI18N
+        } else if (reason.equals(MI_WATCHPOINT_TRIGGER)) {
+            String expValue = "";
+            MIValue wptVal = results.valueOf(MI_WPT);
+            if (wptVal != null) {
+                expValue = wptVal.asList().getConstValue(MI_EXP);
+            }
+            stateMsg = Catalog.format("MSG_Watchpoint_Trigger", expValue); // NOI18N
+        } else if (reason.equals(MI_WATCHPOINT_SCOPE)) {
+            // LATER: show watchpoint name/expression
+//            String expValue = "";
+//            MIValue wptVal = results.valueOf(MI_WPT);
+//            if (wptVal != null) {
+//                expValue = wptVal.asList().getConstValue(MI_EXP);
+//            }
+            stateMsg = Catalog.format("MSG_Watchpoint_Scope"); // NOI18N
+        } else if (reason.equals(MI_SYSCALL_ENTRY)) {
+            stateMsg = Catalog.format("MSG_Syscall_Entry", //NOI18N
+                    results.getConstValue("syscall-name", "?"), results.getConstValue("syscall-number", "?")); // NOI18N
+        } else if (reason.equals(MI_SYSCALL_RETURN)) {
+            stateMsg = Catalog.format("MSG_Syscall_Return", //NOI18N
+                    results.getConstValue("syscall-name", "?"), results.getConstValue("syscall-number", "?")); // NOI18N    
         } else {
             stateMsg = "Stopped for unrecognized reason: " + reason; // NOI18N
         }
@@ -3480,12 +3547,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     public HandlerExpert handlerExpert() {
         return handlerExpert;
     }
-
+    
     // interface BreakpointProvider
     @Override
     public void postRestoreHandler(final int rt, HandlerCommand hc) {
 
-        final MICommand cmd = new MIRestoreBreakCommand(rt, hc.toString());
+        final MICommand cmd = new MIRestoreBreakCommand(rt, hc.getData());
 
 	//
 	// What's the inject("1\n") about?
@@ -3504,7 +3571,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	// Chaining a bunch of bpt commands in a loop is easy. It's the
 	// trickiness of ensuring that the following commands are also
 	// chained that makes me favor the pre-injection solution ... for now.
-
+        
         sendCommandInt(cmd);
         
         // modern gdb does not ask user when in MI mode
@@ -3520,19 +3587,19 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	private void parseDisasm(MITList inss) {
 	    for (int ix = 0; ix < inss.size(); ix++) {
 		MITList ins = ((MIValue) inss.get(ix)).asTuple();
-		String address = ins.valueOf("address").asConst().value(); // NOI18N
+		String address = ins.getConstValue("address"); // NOI18N
 
 		MIValue fnameValue = ins.valueOf("func-name"); // NOI18N
 		String fname;
 		String offset = null;
 		if (fnameValue != null) {
 		    fname = fnameValue.asConst().value();
-		    offset = ins.valueOf("offset").asConst().value(); // NOI18N
+		    offset = ins.getConstValue("offset"); // NOI18N
 		} else {
 		    fname = Catalog.get("MSG_UnknownFunction");	// NOI18N
 		}
 
-		String inst = ins.valueOf("inst").asConst().value(); // NOI18N
+		String inst = ins.getConstValue("inst"); // NOI18N
 		/*
 		System.out.printf("\t%s: %s+%s: %s\n",
 		    address, fname, offset, inst);
@@ -3571,9 +3638,9 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 			src_and_asm_lineR.value().asTuple();
 
 		    String line =
-			src_and_asm_line.valueOf("line").asConst().value(); // NOI18N
+			src_and_asm_line.getConstValue("line"); // NOI18N
 		    String file =
-			src_and_asm_line.valueOf("file").asConst().value(); // NOI18N
+			src_and_asm_line.getConstValue("file"); // NOI18N
 		    MITList inss = 
 			src_and_asm_line.valueOf("line_asm_insn").asList(); // NOI18N
 
@@ -3744,6 +3811,44 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     public FormatOption[] getMemoryFormats() {
         return GdbMemoryFormat.values();
     }
+    
+    static List<String> parseMem(MIRecord record) {
+        LinkedList<String> res = new LinkedList<String>();
+
+        int size[] = new int[MEMORY_READ_WIDTH];
+
+        for (MITListItem elem : record.results().valueOf("memory").asList()) { //NOI18N
+            MITList line = ((MITList)elem);
+            MIValue dataValue = line.valueOf("data"); //NOI18N
+            int count = 0;
+            for (MITListItem dataElem : dataValue.asList()) {
+                int len = ((MIConst)dataElem).value().length();
+                size[count] = Math.max(size[count], len);
+                count++;
+            }
+        }
+
+        for (MITListItem elem : record.results().valueOf("memory").asList()) { //NOI18N
+            StringBuilder sb = new StringBuilder();
+            MITList line = ((MITList)elem);
+            String addr = line.getConstValue("addr"); //NOI18N
+            sb.append(addr).append(':'); //NOI18N
+            MIValue dataValue = line.valueOf("data"); //NOI18N
+            int count = 0;
+            for (MITListItem dataElem : dataValue.asList()) {
+                for(int i = 0; i < size[count]-((MIConst)dataElem).value().length()+1; i++) {
+                    sb.append(' '); //NOI18N
+                }
+                sb.append(((MIConst)dataElem).value());
+                count++;
+            }
+            String ascii = line.getConstValue("ascii"); //NOI18N
+            sb.append(" \"").append(ascii).append("\""); //NOI18N
+            res.add(sb.toString() + "\n"); //NOI18N
+        }
+        
+        return res;
+    }
 
     private static final int MEMORY_READ_WIDTH = 16;
     
@@ -3759,21 +3864,8 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             @Override
             protected void onDone(MIRecord record) {
                 if (MemoryWindow.getDefault().isShowing()) {
-                    LinkedList<String> res = new LinkedList<String>();
-                    for (MITListItem elem : record.results().valueOf("memory").asList()) { //NOI18N
-                        StringBuilder sb = new StringBuilder();
-                        MITList line = ((MITList)elem);
-                        String addr = line.valueOf("addr").asConst().value(); //NOI18N
-                        sb.append(addr).append(':'); //NOI18N
-                        MIValue dataValue = line.valueOf("data"); //NOI18N
-                        for (MITListItem dataElem : dataValue.asList()) {
-                            sb.append(' ').append(((MIConst)dataElem).value());
-                        }
-                        String ascii = line.valueOf("ascii").asConst().value(); //NOI18N
-                        sb.append(" \"").append(ascii).append("\""); //NOI18N
-                        res.add(sb.toString() + "\n"); //NOI18N
-                    }
-                    MemoryWindow.getDefault().updateData(res);
+                    
+                    MemoryWindow.getDefault().updateData(parseMem(record));
                 }
                 finish();
             }
@@ -3816,7 +3908,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                         for (MITListItem elem : record.results().valueOf("register-values").asList()) { //NOI18N
                             StringBuilder sb = new StringBuilder();
                             MITList line = ((MITList)elem);
-                            String number = line.valueOf("number").asConst().value(); //NOI18N
+                            String number = line.getConstValue(MI_NUMBER);
                             // try to get real name
                             try {
                                 number = regNames.get(Integer.valueOf(number));
@@ -3824,7 +3916,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                                 Exceptions.printStackTrace(e);
                             }
                             sb.append(number).append(' ');
-                            String value = line.valueOf("value").asConst().value(); //NOI18N
+                            String value = line.getConstValue("value"); //NOI18N
                             sb.append(value);
                             res.add(sb.toString());
                         }
@@ -3846,12 +3938,19 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 //    public void registerArrayBrowserWindow(ArrayBrowserWindow w) {
 //        notImplemented("registerArrayBrowserWindow()");	// NOI18N
 //    }
+    void newAsyncBreakpoint(MIRecord record) {
+        Integer rt = cliBreakpointsRTs.poll();
+        if (rt == null) {
+            rt = 0;
+        }
+        newHandlers(rt, null, record);
+    }
 
     private void newHandlers(int rt, MIBreakCommand cmd, MIRecord record) {
 	MITList results = record.results();
 	for (int tx = 0; tx < results.size(); tx++) {
 	    MIResult result = (MIResult) results.get(tx);
-            if (result.matches("bkpt")) { //NOI18N
+            if (result.matches(MI_BKPT) || result.matches(MI_WPT)) {
                 newHandler(rt, cmd, result);
             }
 	}
@@ -3877,17 +3976,9 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	    switch (bp.op()) {
 		case NEW:
 		    handler = handlerExpert.newHandler(template, result, null);
-                    // fix for #193505
-                    if (!template.isEnabled()) {
-                        postEnableHandler(rt, handler.getId(), false);
-                    }
 		    break;
 		case RESTORE:
 		    handler = handlerExpert.newHandler(template, result, bp.restored());
-                    // fix for #193505
-                    if (!template.isEnabled()) {
-                        postEnableHandler(rt, handler.getId(), false);
-                    }
 		    assert handler.breakpoint() == bp.restored();
 		    break;
 		case MODIFY:
@@ -4030,6 +4121,8 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         }
     };
 
+    private final ConcurrentLinkedQueue<Integer> cliBreakpointsRTs = new ConcurrentLinkedQueue<Integer>();
+    
     /**
      * Common behaviour for -break command.
      */
@@ -4039,10 +4132,11 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         protected MIBreakCommand(int rt, String cmdString) {
             super(rt, cmdString);
             this.wasRunning = state().isRunning;
+            //remember catchpoints routing tokens
+            if (isConsoleCommand()) {
+                cliBreakpointsRTs.add(rt);
+            }
         }
-
-        @Override
-        protected abstract void onDone(MIRecord record);
 
         @Override
         protected void finish() {
@@ -4133,10 +4227,13 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             super(rt, cmdString);
         }
 
+        @Override
         protected void onDone(MIRecord record) {
 	    if (record.isEmpty()) {
-		// See comment for isEmpty
-		onError(record);
+		if (!isConsoleCommand()) {
+                    // See comment for isEmpty
+                    onError(record);
+                }
 	    } else {
 		newHandlers(routingToken(), this, record);
 	    }
@@ -4183,10 +4280,13 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             super(rt, cmdString);
         }
 
+        @Override
         protected void onDone(MIRecord record) {
 	    if (record.isEmpty()) {
-		// See comment for isEmpty
-		onError(record);
+                if (!isConsoleCommand()) {
+                    // See comment for isEmpty
+                    onError(record);
+                }
 	    } else {
 		newHandlers(newRT == 0? routingToken(): newRT, this, record);
 		manager().bringDownDialog();
@@ -4213,10 +4313,19 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	}
     };
 
-    private abstract class MIChangeBreakCommand extends MIBreakCommand {
+    private class MIChangeBreakCommand extends MIBreakCommand {
+        private final GdbHandlerCommand ghc;
 
-        MIChangeBreakCommand(int rt, String cmdString) {
-            super(rt, cmdString);
+        MIChangeBreakCommand(int rt, GdbHandlerCommand ghc) {
+            super(rt, ghc.getData());
+            this.ghc = ghc;
+        }
+
+        @Override
+        protected void onDone(MIRecord record) {
+            ghc.onDone();
+            manager().bringDownDialog();
+            super.onDone(record);
         }
     }
 
@@ -4225,17 +4334,18 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
      */
     private class MIReplaceBreakLineCommand extends MIChangeBreakCommand {
 
-        MIReplaceBreakLineCommand(int rt, String cmdString) {
-            super(rt, cmdString);
+        MIReplaceBreakLineCommand(int rt, GdbHandlerCommand ghc) {
+            super(rt, ghc);
         }
 
+        @Override
         protected void onDone(MIRecord record) {
 	    if (record.isEmpty()) {
 		// See comment for isEmpty
 		onError(record);
 	    } else {
 		MITList results = record.results();
-		MIValue bkptValue = results.valueOf("bkpt"); // NOI18N
+//		MIValue bkptValue = results.valueOf("bkpt"); // NOI18N
 		MIResult result = (MIResult) results.get(0);
 		replaceHandler(this, routingToken(), result);
 		manager().bringDownDialog();
@@ -4249,10 +4359,11 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
      */
     private class MIRepairBreakLineCommand extends MIChangeBreakCommand {
 
-        MIRepairBreakLineCommand(int rt, String cmdString) {
-            super(rt, cmdString);
+        MIRepairBreakLineCommand(int rt, GdbHandlerCommand ghc) {
+            super(rt, ghc);
         }
 
+        @Override
         protected void onDone(MIRecord record) {
 	    if (record.isEmpty()) {
 		// See comment for isEmpty
@@ -4350,19 +4461,45 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
     @Override
     public void postCreateHandlerImpl(int routingToken, HandlerCommand hc) {
-	final MICommand cmd = new MIBreakLineCommand(routingToken, hc.toString());
+	final MICommand cmd = new MIBreakLineCommand(routingToken, hc.getData());
         sendCommandInt(cmd);
     }
 
     @Override
     public void postChangeHandlerImpl(int rt, HandlerCommand hc) {
-        final MICommand cmd = new MIReplaceBreakLineCommand(rt, hc.toString());
-        sendCommandInt(cmd);
+        assert hc instanceof GdbHandlerCommand;
+        GdbHandlerCommand ghc = (GdbHandlerCommand)hc;
+        
+        // build a chain of gdb commands
+        MiCommandImpl cmd = null;
+        while (ghc != null) {
+            switch (ghc.getType()) {
+                case CHANGE:
+                    MiCommandImpl changeCmd = new MIChangeBreakCommand(rt, ghc);
+                    if (cmd != null) {
+                        cmd.chain(changeCmd, null);
+                    } else {
+                        cmd = changeCmd;
+                    }
+                    break;
+                case REPLACE:
+                    MICommand old = cmd;
+                    cmd = new MIReplaceBreakLineCommand(rt, ghc);
+                    cmd.chain(old, null);
+                    break;
+            }
+            ghc = ghc.getNext();
+        }
+        if (cmd != null) {
+            sendCommandInt(cmd);
+        }
     }
 
     @Override
     public void postRepairHandlerImpl(int rt, HandlerCommand hc) {
-        final MICommand cmd = new MIRepairBreakLineCommand(rt, hc.toString());
+        assert hc instanceof GdbHandlerCommand;
+        GdbHandlerCommand ghc = (GdbHandlerCommand)hc;
+        final MICommand cmd = new MIRepairBreakLineCommand(rt, ghc);
         sendCommandInt(cmd);
     }
     
@@ -4539,7 +4676,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
     // interface NativeDebugger
-    public void forkThisWay(DebuggerManager.FollowForkInfo ffi) {
+    public void forkThisWay(NativeDebuggerManager.FollowForkInfo ffi) {
         notImplemented("forkThisWay");	// NOI18N
     }
 
@@ -4560,12 +4697,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             protected void onDone(MIRecord record) {
                 final String res;
                 if (!record.isError()) {
-                    MIValue val = record.results().valueOf("value"); //NOI18N
-                    if (val != null) {
-                        res = val.asConst().value();
-                    } else {
-                        res = "";
-                    }
+                    res = record.results().getConstValue("value"); //NOI18N
                 } else {
                     res = record.error();
                 }
@@ -4631,5 +4763,21 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         if (w != null) {
             requestRegisters();
         }
+    }
+    
+    void createWatchFromVariable(GdbVariable var) {
+        MiCommandImpl cmd = new MiCommandImpl("-var-info-path-expression " + var.getMIName()) { //NOI18N
+            @Override
+            protected void onDone(MIRecord record) {
+                if (!record.isEmpty()) {
+                    String expr = record.results().getConstValue("path_expr", null); //NOI18N
+                    if (expr != null) {
+                        manager().createWatch(expr);
+                    }
+                }
+                finish();
+            }
+        };
+        gdb.sendCommand(cmd);
     }
 }

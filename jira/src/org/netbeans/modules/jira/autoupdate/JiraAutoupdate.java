@@ -77,7 +77,7 @@ public class JiraAutoupdate {
     static final JiraVersion SUPPORTED_JIRA_VERSION;
     static {
         String version = System.getProperty("netbeans.t9y.jira.supported.version");
-        SUPPORTED_JIRA_VERSION = version != null ? new JiraVersion(version) : JiraVersion.JIRA_4_2; // NOI18N
+        SUPPORTED_JIRA_VERSION = version != null ? new JiraVersion(version) : new JiraVersion("5.0"); // NOI18N
     }
     static final String JIRA_MODULE_CODE_NAME = "org.netbeans.modules.jira"; // NOI18N
     private static final Pattern VERSION_PATTERN = Pattern.compile("^.*version ((\\d+?\\.\\d+?\\.\\d+?)|(\\d+?\\.\\d+?)).*$");
@@ -89,7 +89,7 @@ public class JiraAutoupdate {
      * an update is available on the UC.
      *
      * @param repository the repository to check the version for
-     * @return true if things are ok or if the user desided to continue even with a
+     * @return true if things are ok or if the user decided to continue even with a
      *         outdated version. False in case a new plugin version is abut to be
      *         downloaded
      */

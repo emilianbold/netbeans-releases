@@ -72,7 +72,6 @@ import org.netbeans.modules.versioning.util.common.VCSCommitTable;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
@@ -123,7 +122,7 @@ abstract class CreateRefreshAction extends ContextAction {
     private void performAction (final File root, final File[] roots, final QCommitPanel panel, final VCSContext ctx) {
         VCSCommitTable<QFileNode> table = panel.getCommitTable();
         String contentTitle = Utils.getContextDisplayName(ctx);
-        boolean ok = panel.open(ctx, new HelpCtx(CreateRefreshAction.class), NbBundle.getMessage(CreateRefreshAction.class, "CTL_RefreshPatchDialog_Title." + bundleKeyPostfix, contentTitle)); //NOI18N
+        boolean ok = panel.open(ctx, panel.getHelpContext(), NbBundle.getMessage(CreateRefreshAction.class, "CTL_RefreshPatchDialog_Title." + bundleKeyPostfix, contentTitle)); //NOI18N
 
         if (ok) {
             final List<QFileNode> commitFiles = table.getCommitFiles();

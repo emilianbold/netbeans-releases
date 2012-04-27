@@ -56,7 +56,6 @@ import javax.swing.event.DocumentEvent;
 import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.filesystems.FileUtil;
@@ -90,7 +89,6 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
 
         switch (type) {
             case LIB:
-                setAsMainCheckBox.setVisible( false );
                 createMainCheckBox.setVisible( false );
                 mainClassTextField.setVisible( false );
                 break;
@@ -105,7 +103,6 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
                 break;
         }
         
-        setAsMainCheckBox.setSelected(WizardSettings.getSetAsMain(type));
         this.mainClassTextField.getDocument().addDocumentListener( new DocumentListener () {
             
             @Override
@@ -241,7 +238,6 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
         lblHint = new javax.swing.JLabel();
         createMainCheckBox = new javax.swing.JCheckBox();
         mainClassTextField = new javax.swing.JTextField();
-        setAsMainCheckBox = new javax.swing.JCheckBox();
 
         cbSharable.setSelected(SharableLibrariesUtils.isLastProjectSharable());
         org.openide.awt.Mnemonics.setLocalizedText(cbSharable, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_PanelOptions_SharableProject_Checkbox")); // NOI18N
@@ -268,8 +264,6 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
 
         mainClassTextField.setText("com.myapp.Main");
 
-        org.openide.awt.Mnemonics.setLocalizedText(setAsMainCheckBox, org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("LBL_setAsMainCheckBox")); // NOI18N
-
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -286,9 +280,6 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
                             .addComponent(txtLibFolder, javax.swing.GroupLayout.DEFAULT_SIZE, 250, Short.MAX_VALUE))))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnLibFolder))
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(setAsMainCheckBox)
-                .addContainerGap())
             .addGroup(layout.createSequentialGroup()
                 .addComponent(createMainCheckBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -309,8 +300,6 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(createMainCheckBox)
                     .addComponent(mainClassTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(setAsMainCheckBox)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -321,8 +310,6 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
         createMainCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("ACSD_createMainCheckBox")); // NOI18N
         mainClassTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("ASCN_mainClassTextFiled")); // NOI18N
         mainClassTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("ASCD_mainClassTextFiled")); // NOI18N
-        setAsMainCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("ACSN_setAsMainCheckBox")); // NOI18N
-        setAsMainCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("ACSD_setAsMainCheckBox")); // NOI18N
 
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSN_PanelOptionsVisual")); // NOI18N
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSD_PanelOptionsVisual")); // NOI18N
@@ -408,8 +395,6 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
 
     @Override
     void store( WizardDescriptor d ) {
-        Templates.setDefinesMainProject(d, setAsMainCheckBox.isSelected());
-        WizardSettings.setSetAsMain(type, setAsMainCheckBox.isSelected());
         d.putProperty( /*XXX Define somewhere */ MAIN_CLASS, createMainCheckBox.isSelected() && createMainCheckBox.isVisible() ? mainClassTextField.getText() : null ); // NOI18N
         d.putProperty( SHARED_LIBRARIES, cbSharable.isSelected() ? txtLibFolder.getText() : null ); // NOI18N
     }
@@ -421,7 +406,6 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
     private javax.swing.JLabel lblHint;
     private javax.swing.JLabel lblLibFolder;
     private javax.swing.JTextField mainClassTextField;
-    private javax.swing.JCheckBox setAsMainCheckBox;
     private javax.swing.JTextField txtLibFolder;
     // End of variables declaration//GEN-END:variables
     

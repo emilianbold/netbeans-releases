@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.java.hints;
 
-import org.netbeans.modules.java.hints.SuspiciousNamesCombination;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;

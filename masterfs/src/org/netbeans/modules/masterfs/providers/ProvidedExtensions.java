@@ -299,9 +299,13 @@ public class ProvidedExtensions implements InterceptionListener {
      * is locked
      * @see org.openide.filesystems.FileObject#lock
      * @param fo file which was locked
+     * @throws IOException since version 2.37 this method declares it throws
+     *    an I/O exception. It the exception is thrown, the lock on
+     *    FileObject is released and the FileObject is not considered
+     *    being locked.
      * @since 1.11
      */            
-    public void fileLocked(FileObject fo) {}    
+    public void fileLocked(FileObject fo) throws IOException {}    
     
     /*
      * Called by <code>MasterFileSystem</code> after <code>FileLock</code>

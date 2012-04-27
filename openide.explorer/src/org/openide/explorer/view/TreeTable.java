@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 package org.openide.explorer.view;
-import java.util.MissingResourceException;
+
 import javax.swing.table.TableColumnModel;
 import org.openide.explorer.propertysheet.PropertyPanel;
 import org.openide.nodes.Node;
@@ -59,6 +59,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 
 import java.beans.PropertyEditor;
+import java.lang.reflect.InvocationTargetException;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -76,8 +77,8 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.tree.*;
+import org.openide.explorer.view.TableQuickSearchSupport.QuickSearchSettings;
 import org.openide.nodes.Children;
-import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 
 
@@ -149,9 +150,9 @@ class TreeTable extends JTable implements Runnable {
         setDefaultRenderer(Property.class, tableCell);
         setDefaultEditor(Property.class, tableCell);
         getTableHeader().setDefaultRenderer(tableCell);
-        getAccessibleContext().setAccessibleName(NbBundle.getBundle(TreeTable.class).getString("ACSN_TreeTable")); // NOI18N
+        getAccessibleContext().setAccessibleName(NbBundle.getMessage(TreeTable.class, "ACSN_TreeTable")); // NOI18N
         getAccessibleContext().setAccessibleDescription( // NOI18N
-            NbBundle.getBundle(TreeTable.class).getString("ACSD_TreeTable")); // NOI18N
+            NbBundle.getMessage(TreeTable.class, "ACSD_TreeTable")); // NOI18N
 
         setFocusCycleRoot(true);
         setFocusTraversalPolicy(new STPolicy());
@@ -207,9 +208,9 @@ class TreeTable extends JTable implements Runnable {
             )
         ); // NOI18N
 
-        getAccessibleContext().setAccessibleName(NbBundle.getBundle(TreeTable.class).getString("ACSN_TreeTable")); // NOI18N
+        getAccessibleContext().setAccessibleName(NbBundle.getMessage(TreeTable.class, "ACSN_TreeTable")); // NOI18N
         getAccessibleContext().setAccessibleDescription( // NOI18N
-            NbBundle.getBundle(TreeTable.class).getString("ACSD_TreeTable")); // NOI18N
+            NbBundle.getMessage(TreeTable.class, "ACSD_TreeTable")); // NOI18N
 
         imp.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0, false), "beginEdit");
         getActionMap().put("beginEdit", new EditAction());
@@ -330,7 +331,49 @@ class TreeTable extends JTable implements Runnable {
             }
         }
     }
+    
+    private QuickSearchSettings qss = new QuickSearchSettings();
+    
+    QuickSearchSettings getQuickSearchSettings() {
+        return qss;
+    }
+    
+    private QuickSearchTableFilter qstf = new DefaultQuickSearchTableFilter();
+    
+    QuickSearchTableFilter getQuickSearchTableFilter() {
+        return qstf;
+    }
 
+    private final class DefaultQuickSearchTableFilter implements QuickSearchTableFilter {
+
+        @Override
+        public String getStringValueAt(int row, int col) {
+            Object value = getValueAt(row, col);
+            String str;
+            if (value instanceof Property) {
+                Property p = (Property) value;
+                Object v = null;
+                try {
+                    v = p.getValue();
+                } catch (IllegalAccessException ex) {
+                } catch (InvocationTargetException ex) {
+                }
+                if (v instanceof String) {
+                    str = (String) v;
+                } else {
+                    str = null;
+                }
+            } else if (value instanceof VisualizerNode) {
+                str = ((VisualizerNode) value).getDisplayName();
+                //str = Visualizer.findNode(value).getDisplayName();
+            } else {
+                str = null;
+            }
+            return str;
+        }
+        
+    }
+    
     private class GuardedActions implements Mutex.Action<Object> {
 
         private int type;

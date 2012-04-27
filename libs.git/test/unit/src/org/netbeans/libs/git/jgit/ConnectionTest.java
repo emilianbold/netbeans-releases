@@ -46,12 +46,12 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.eclipse.jgit.lib.Repository;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitClientCallback;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitRemoteConfig;
-import org.netbeans.libs.git.progress.ProgressMonitor;
 
 /**
  *
@@ -280,6 +280,43 @@ public class ConnectionTest extends AbstractGitTestCase {
             }
         });
         client.listRemoteBranches("ssh://gittester@bugtracking-test.cz.oracle.com/srv/git/repo/", NULL_PROGRESS_MONITOR);
+    }
+    
+    /**
+     * When starts failing then consider rewriting callbacks to return passwords only in getPassword
+     */
+    public void testSshLocalhostConnection () throws Exception {
+        GitClient client = getClient(workDir);
+        final AtomicBoolean asked = new AtomicBoolean(false);
+        client.setCallback(new DefaultCallback() {
+            @Override
+            public String askQuestion (String uri, String prompt) {
+                assertTrue("Expected question prompt for password", prompt.startsWith("Password"));
+                asked.set(true);
+                return null;
+            }
+
+            @Override
+            public String getUsername (String uri, String prompt) {
+                return "gittester";
+            }
+
+            @Override
+            public String getIdentityFile (String uri, String prompt) {
+                return new File(getDataDir(), "private_key").getAbsolutePath();
+            }
+            
+            @Override
+            public char[] getPassphrase (String uri, String prompt) {
+                return null;
+            }
+        });
+        try {
+            client.listRemoteBranches("ssh://gittester@127.0.0.1/" + workDir.getAbsolutePath(), NULL_PROGRESS_MONITOR);
+        } catch (GitException ex) {
+            
+        }
+        assertTrue(asked.get());
     }
     
     private static class DefaultCallback extends GitClientCallback {

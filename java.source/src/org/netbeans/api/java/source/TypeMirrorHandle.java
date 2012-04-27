@@ -269,6 +269,7 @@ public final class TypeMirrorHandle<T extends TypeMirror> {
             case NULL:
                 return (T)info.getTypes().getNullType();
             case DECLARED:
+                Types t = Types.instance(info.impl.getJavacTask().getContext());
                 if (element == null) {
                     //compound type:
                     com.sun.tools.javac.util.List<Type> resolvedBounds = com.sun.tools.javac.util.List.nil();
@@ -280,7 +281,9 @@ public final class TypeMirrorHandle<T extends TypeMirror> {
                         resolvedBounds = resolvedBounds.prepend((Type) resolved);
                     }
 
-                    return (T) Types.instance(info.impl.getJavacTask().getContext()).makeCompoundType(resolvedBounds.reverse());
+                    Type ct = t.makeCompoundType(resolvedBounds.reverse());
+                    ct.getTypeArguments(); //initialize typarams_field
+                    return (T) ct;
                 }
                 TypeElement te = (TypeElement)element.resolve(info);
                 if (te == null)
@@ -305,6 +308,8 @@ public final class TypeMirrorHandle<T extends TypeMirror> {
                 }
                 DeclaredType dt = outer != null ? info.getTypes().getDeclaredType((DeclaredType)outer, te, resolvedTypeArguments.toArray(new TypeMirror[resolvedTypeArguments.size()]))
                         : info.getTypes().getDeclaredType(te, resolvedTypeArguments.toArray(new TypeMirror[resolvedTypeArguments.size()]));
+                t.supertype((Type)dt); //initialize supertype_field
+                t.interfaces((Type)dt); //initialize interfaces_field
                 PlaceholderType pt = map.get(this);
                 if (pt != null) {
                     pt.delegate = (Type)dt;
@@ -370,7 +375,7 @@ public final class TypeMirrorHandle<T extends TypeMirror> {
                     resolvedAlternatives = resolvedAlternatives.prepend((Type) resolvedAlternative);
                 }
 
-                Types t = Types.instance(info.impl.getJavacTask().getContext());
+                t = Types.instance(info.impl.getJavacTask().getContext());
                 Type lub = t.lub(resolvedAlternatives);
 
                 if (lub.tag != TypeTags.CLASS) return null;
@@ -418,6 +423,9 @@ public final class TypeMirrorHandle<T extends TypeMirror> {
 
         @Override
         public Void visitClassType(ClassType t, Void s) {
+            t.supertype_field.accept(this, s);
+            for (com.sun.tools.javac.util.List<Type> l = t.interfaces_field; l.nonEmpty(); l = l.tail)
+                l.head.accept(this, s);
             for (com.sun.tools.javac.util.List<Type> l = t.typarams_field; l.nonEmpty(); l = l.tail)
                 l.head.accept(this, s);
             return null;

@@ -82,7 +82,9 @@ implements FileChangeListener {
         if (RemoteFileObjectBase.USE_VCS) {
             FilesystemInterceptor interseptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(source.getFileSystem());
             LinkedList<FileProxyI> list = new LinkedList<FileProxyI>();
-            long tc = interseptor.listFiles(FilesystemInterceptorProvider.toFileProxy(source), previous, list);
+            if (interseptor != null) {
+                long tc = interseptor.listFiles(FilesystemInterceptorProvider.toFileProxy(source), previous, list);
+            }
             for (FileProxyI proxy : list) {
                 FileObject fo = source.getFileSystem().findResource(proxy.getPath());
                 // TODO what should be fire?

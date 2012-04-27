@@ -47,19 +47,27 @@ package org.netbeans.modules.groovy.gsp.loaders;
 import java.io.IOException;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
+import org.netbeans.modules.groovy.gsp.lexer.GspTokenId;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
 
+@MIMEResolver.ExtensionRegistration(
+    displayName="#GspResolver",
+    extension="gsp",
+    mimeType=GspTokenId.MIME_TYPE,
+    position=255
+)
 public class GspDataObject extends MultiDataObject
         implements Lookup.Provider {
     
     public GspDataObject(FileObject pf, GspDataLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);
-        registerEditor("text/x-gsp", true);
+        registerEditor(GspTokenId.MIME_TYPE, true);
     }
     
     @Override
@@ -75,7 +83,7 @@ public class GspDataObject extends MultiDataObject
     @MultiViewElement.Registration(
         displayName = "#CTL_SourceTabCaption",
         iconBase = "org/netbeans/modules/groovy/gsp/resources/GspFile16x16.png",
-        mimeType = "text/x-gsp",
+        mimeType = GspTokenId.MIME_TYPE,
         persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
         preferredID = "groovy.gsp",
         position = 1

@@ -47,6 +47,7 @@ import java.util.Collection;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.debug.DebugUtils;
+import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 import org.netbeans.modules.cnd.modelimpl.syntaxerr.spi.ReadOnlyTokenBuffer;
 
 /**
@@ -61,7 +62,7 @@ public class TransparentParserErrorFilter extends BaseParserErrorFilter {
     private static final boolean ONLY_WARNINGS = Boolean.getBoolean("cnd.parser.error.transparent.warnings");
 
     @Override
-    public void filter(Collection<RecognitionException> parserErrors, Collection<CsmErrorInfo> result, 
+    public void filter(Collection<CsmParserProvider.ParserError> parserErrors, Collection<CsmErrorInfo> result, 
             ReadOnlyTokenBuffer tokenBuffer, CsmFile file) {
         if (ENABLE) {
             result.addAll(toErrorInfo(parserErrors, file));

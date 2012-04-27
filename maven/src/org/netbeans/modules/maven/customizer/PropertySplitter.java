@@ -61,7 +61,7 @@ public class PropertySplitter {
         private boolean escapeNext = false;
         
         public PropertySplitter(String line) {
-            this(line, new char[] { '"' } , '\\', '\n', '\n'); //NOI18N
+            this(line, new char[] { '"', '\'' } , '\\', '\n', '\n'); //NOI18N
         }
 
         private PropertySplitter(String line, char[] quotes, char escape, char separator, char nl) {
@@ -88,7 +88,11 @@ public class PropertySplitter {
                                                            || inQuote || escapeNext)) {
                 char c = line.charAt(location);
                 if (escapeNext) {
-                    buffer.append(c);
+                    if (c == newline) {
+                        //just continue.. equals to \ + newline
+                    } else {
+                        buffer.append(escape).append(c);
+                    }
                     escapeNext = false;
                 } else if (!inQuote && c == escape) {
                     escapeNext = true;

@@ -30,6 +30,7 @@
  */
 package org.netbeans.modules.java.hints;
 
+import org.netbeans.modules.java.hints.spi.support.FixFactory;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
@@ -55,12 +56,11 @@ import javax.swing.JComponent;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
-import org.netbeans.modules.java.hints.spi.support.FixFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.java.hints.JavaFix;
 import org.openide.util.NbBundle;
 
 /**
@@ -154,7 +154,7 @@ public class StaticAccess extends AbstractHint {
         simpleName[0] = used.getSimpleName().toString();
         
         List<Fix> fixes = new ArrayList<Fix>(2);
-        fixes.add(JavaFix.toEditorFix(new FixImpl(info, expr, type)));
+        fixes.add(new FixImpl(info, expr, type).toEditorFix());
         fixes.addAll(FixFactory.createSuppressWarnings(info, treePath, SUPPRESS_WARNINGS_KEY));
 
 
@@ -237,7 +237,9 @@ public class StaticAccess extends AbstractHint {
         }
         
         @Override
-        protected void performRewrite(WorkingCopy wc, TreePath tp, boolean canShowUI) {
+        protected void performRewrite(TransformationContext ctx) {
+            WorkingCopy wc = ctx.getWorkingCopy();
+            TreePath tp = ctx.getPath();
             Element element = desiredType.resolve(wc);
 
             if (element == null) {

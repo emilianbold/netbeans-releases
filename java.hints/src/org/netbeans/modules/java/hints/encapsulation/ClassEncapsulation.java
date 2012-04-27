@@ -59,16 +59,16 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.modules.java.hints.errors.Utilities.Visibility;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
-import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
-import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Options;
-import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
-import org.netbeans.modules.java.hints.jackpot.spi.support.OneCheckboxCustomizerProvider;
-import org.netbeans.modules.java.hints.spi.support.FixFactory;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.java.hints.BooleanOption;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.Hint.Options;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.TriggerTreeKind;
+import org.netbeans.spi.java.hints.UseOptions;
 import org.openide.awt.Actions;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -82,10 +82,12 @@ public class ClassEncapsulation {
 
     private static final Logger LOG = Logger.getLogger(ClassEncapsulation.class.getName());
 
-    static final String ALLOW_ENUMS_KEY = "allow.enums";
     static final boolean ALLOW_ENUMS_DEFAULT = false;
+    @BooleanOption(displayName = "#LBL_org.netbeans.modules.java.hints.encapsulation.ClassEncapsulation.ALLOW_ENUMS_KEY", tooltip = "#TP_org.netbeans.modules.java.hints.encapsulation.ClassEncapsulation.ALLOW_ENUMS_KEY", defaultValue=ALLOW_ENUMS_DEFAULT)
+    static final String ALLOW_ENUMS_KEY = "allow.enums";
 
-    @Hint(category="encapsulation",suppressWarnings={"PublicInnerClass"}, enabled=false, customizerProvider=CustomizerImpl.class, options=Options.QUERY)   //NOI18N
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.encapsulation.ClassEncapsulation.publicCls", description = "#DESC_org.netbeans.modules.java.hints.encapsulation.ClassEncapsulation.publicCls", category="encapsulation",suppressWarnings={"PublicInnerClass"}, enabled=false, options=Options.QUERY)   //NOI18N
+    @UseOptions(ALLOW_ENUMS_KEY)
     @TriggerTreeKind({Tree.Kind.ANNOTATION_TYPE, Tree.Kind.CLASS, Tree.Kind.ENUM, Tree.Kind.INTERFACE})
     public static ErrorDescription publicCls(final HintContext ctx) {
         assert ctx != null;
@@ -93,7 +95,8 @@ public class ClassEncapsulation {
             NbBundle.getMessage(ClassEncapsulation.class, "TXT_PublicInnerClass"), "PublicInnerClass");  //NOI18N
     }
 
-    @Hint(category="encapsulation",suppressWarnings={"ProtectedInnerClass"}, enabled=false, customizerProvider=CustomizerImpl.class, options=Options.QUERY)    //NOI18N
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.encapsulation.ClassEncapsulation.protectedCls", description = "#DESC_org.netbeans.modules.java.hints.encapsulation.ClassEncapsulation.protectedCls", category="encapsulation",suppressWarnings={"ProtectedInnerClass"}, enabled=false, options=Options.QUERY)    //NOI18N
+    @UseOptions(ALLOW_ENUMS_KEY)
     @TriggerTreeKind({Tree.Kind.ANNOTATION_TYPE, Tree.Kind.CLASS, Tree.Kind.ENUM, Tree.Kind.INTERFACE})
     public static ErrorDescription protectedCls(final HintContext ctx) {
         assert ctx != null;
@@ -101,7 +104,8 @@ public class ClassEncapsulation {
             NbBundle.getMessage(ClassEncapsulation.class, "TXT_ProtectedInnerClass"), "ProtectedInnerClass"); //NOI18N
     }
 
-    @Hint(category="encapsulation", suppressWarnings={"PackageVisibleInnerClass"}, enabled=false, customizerProvider=CustomizerImpl.class, options=Options.QUERY)
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.encapsulation.ClassEncapsulation.packageCls", description = "#DESC_org.netbeans.modules.java.hints.encapsulation.ClassEncapsulation.packageCls", category="encapsulation", suppressWarnings={"PackageVisibleInnerClass"}, enabled=false, options=Options.QUERY)
+    @UseOptions(ALLOW_ENUMS_KEY)
     @TriggerTreeKind({Tree.Kind.ANNOTATION_TYPE, Tree.Kind.CLASS, Tree.Kind.ENUM, Tree.Kind.INTERFACE})
     public static ErrorDescription packageCls(final HintContext ctx) {
         assert ctx != null;
@@ -128,8 +132,7 @@ public class ClassEncapsulation {
             }
         }
         return ErrorDescriptionFactory.forName(ctx, tp, description,
-            new FixImpl(TreePathHandle.create(tp, ctx.getInfo())),
-            FixFactory.createSuppressWarningsFix(ctx.getInfo(), tp, suppressWarnings));
+            new FixImpl(TreePathHandle.create(tp, ctx.getInfo())));
     }
 
     private static class FixImpl implements Fix {
@@ -206,12 +209,4 @@ public class ClassEncapsulation {
         }
     }
 
-    public static final class CustomizerImpl extends OneCheckboxCustomizerProvider {
-        public CustomizerImpl() {
-            super(NbBundle.getMessage(ClassEncapsulation.class, "DN_IgnoreEnumForInnerClass"),
-                  NbBundle.getMessage(ClassEncapsulation.class, "TP_IgnoreEnumForInnerClass"),
-                  ALLOW_ENUMS_KEY,
-                  ALLOW_ENUMS_DEFAULT);
-        }
-    }
 }

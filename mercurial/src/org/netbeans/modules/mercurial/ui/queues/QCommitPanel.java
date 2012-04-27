@@ -99,17 +99,19 @@ public class QCommitPanel extends VCSCommitPanel<QFileNode> {
     private final File[] roots;
     private final File repository;
     private final NodesProvider nodesProvider;
+    private final HelpCtx helpCtx;
 
     private QCommitPanel(QCommitTable table, final File[] roots, final File repository, DefaultCommitParameters parameters, Preferences preferences, Collection<HgQueueHook> hooks, 
-            VCSHookContext hooksContext, VCSCommitDiffProvider diffProvider, NodesProvider nodesProvider) {
+            VCSHookContext hooksContext, VCSCommitDiffProvider diffProvider, NodesProvider nodesProvider, HelpCtx helpCtx) {
         super(table, parameters, preferences, hooks, hooksContext, Collections.<VCSCommitFilter>emptyList(), diffProvider);
         this.roots = roots;
         this.repository = repository;
         this.hooks = hooks;
         this.nodesProvider = nodesProvider;
+        this.helpCtx = helpCtx;
     }
 
-    public static QCommitPanel createNewPanel (final File[] roots, final File repository, String commitMessage) {
+    public static QCommitPanel createNewPanel (final File[] roots, final File repository, String commitMessage, String helpCtxId) {
         Preferences preferences = HgModuleConfig.getDefault().getPreferences();
         
         DefaultCommitParameters parameters = new QCreatePatchParameters(preferences, commitMessage, null); //NOI18N
@@ -119,10 +121,11 @@ public class QCommitPanel extends VCSCommitPanel<QFileNode> {
         
         DiffProvider diffProvider = new DiffProvider();
         VCSCommitPanelModifier modifier = RefreshPanelModifier.getDefault("create"); //NOI18N
-        return new QCommitPanel(new QCommitTable(modifier), roots, repository, parameters, preferences, hooks, hooksCtx, diffProvider, new ModifiedNodesProvider());
+        return new QCommitPanel(new QCommitTable(modifier), roots, repository, parameters, preferences, hooks, hooksCtx, diffProvider, new ModifiedNodesProvider(),
+                new HelpCtx(helpCtxId));
     }
 
-    public static QCommitPanel createRefreshPanel (final File[] roots, final File repository, String commitMessage, QPatch patch, HgRevision parentRevision) {
+    public static QCommitPanel createRefreshPanel (final File[] roots, final File repository, String commitMessage, QPatch patch, HgRevision parentRevision, String helpCtxId) {
         Preferences preferences = HgModuleConfig.getDefault().getPreferences();
         
         DefaultCommitParameters parameters = new QCreatePatchParameters(preferences, commitMessage, patch); //NOI18N
@@ -134,7 +137,8 @@ public class QCommitPanel extends VCSCommitPanel<QFileNode> {
         DiffProvider diffProvider = new QDiffProvider(parentRevision);
         VCSCommitPanelModifier msgProvider = RefreshPanelModifier.getDefault("refresh"); //NOI18N
         // own node computer, displays files not modified in cache but files returned by qdiff
-        return new QCommitPanel(new QCommitTable(msgProvider), roots, repository, parameters, preferences, hooks, hooksCtx, diffProvider, new QRefreshNodesProvider(parentRevision));
+        return new QCommitPanel(new QCommitTable(msgProvider), roots, repository, parameters, preferences, hooks, hooksCtx, diffProvider, new QRefreshNodesProvider(parentRevision),
+                new HelpCtx(helpCtxId));
     }
     
     @Override
@@ -149,6 +153,10 @@ public class QCommitPanel extends VCSCommitPanel<QFileNode> {
     @Override
     protected void computeNodes() {      
         computeNodesIntern();
+    }
+    
+    HelpCtx getHelpContext () {
+        return helpCtx;
     }
 
     @Override
@@ -375,15 +383,26 @@ public class QCommitPanel extends VCSCommitPanel<QFileNode> {
         public QFileNode[] getNodes (File repository, File[] roots, boolean[] refreshFinished) {
             try {
                 if (parent != null && parent != HgLogMessage.HgRevision.EMPTY) {
+                    Map<File, FileInformation> patchChanges = HgCommand.getStatus(repository, Collections.singletonList(repository), parent.getRevisionNumber(), QPatch.TAG_QTIP);
                     FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
-                    cache.refreshAllRoots(Collections.<File, Set<File>>singletonMap(repository, new HashSet<File>(Arrays.asList(roots))));
+                    Set<File> toRefresh = new HashSet<File>(Arrays.asList(roots));
+                    toRefresh.addAll(patchChanges.keySet());
+                    cache.refreshAllRoots(Collections.<File, Set<File>>singletonMap(repository, toRefresh));
+                    
                     Map<File, FileInformation> statuses = getLocalChanges(roots, cache);
                     statuses.keySet().retainAll(HgUtils.flattenFiles(roots, statuses.keySet()));
-                    Map<File, FileInformation> patchChanges = HgCommand.getStatus(repository, Arrays.asList(roots), parent.getRevisionNumber(), QPatch.TAG_QTIP);
-                    patchChanges.keySet().retainAll(HgUtils.flattenFiles(roots, patchChanges.keySet()));
+                    Set<File> patchChangesUnderSelection = getPatchChangesUnderSelection(patchChanges, roots);
+                    
                     for (Map.Entry<File, FileInformation> e : patchChanges.entrySet()) {
-                        if (!statuses.containsKey(e.getKey())) {
-                            statuses.put(e.getKey(), new FileInformation(FileInformation.STATUS_VERSIONED_UPTODATE, null, false));
+                        if (patchChangesUnderSelection.contains(e.getKey())) {
+                            if (!statuses.containsKey(e.getKey())) {
+                                statuses.put(e.getKey(), new FileInformation(FileInformation.STATUS_VERSIONED_UPTODATE, null, false));
+                            }
+                        } else {
+                            FileInformation info = cache.getCachedStatus(e.getKey());
+                            if ((info.getStatus() & FileInformation.STATUS_LOCAL_CHANGE) != 0) {
+                                statuses.put(e.getKey(), info);
+                            }
                         }
                     }
 
@@ -412,6 +431,26 @@ public class QCommitPanel extends VCSCommitPanel<QFileNode> {
                 Mercurial.LOG.log(Level.INFO, null, ex);
             }
             return null;
+        }
+
+        // should contain only patch changes that apply to current selection
+        private Set<File> getPatchChangesUnderSelection(Map<File, FileInformation> patchChanges, File[] roots) {
+            Set<File> patchChangesUnderSelection = new HashSet<File>(patchChanges.keySet());
+            for (Iterator<File> it = patchChangesUnderSelection.iterator(); it.hasNext(); ) {
+                File f = it.next();
+                boolean isUnderRoots = false;
+                for (File root : roots) {
+                    if (Utils.isAncestorOrEqual(root, f)) {
+                        isUnderRoots = true;
+                        break;
+                    }
+                }
+                if (!isUnderRoots) {
+                    it.remove();
+                }
+            }
+            patchChangesUnderSelection = HgUtils.flattenFiles(roots, patchChangesUnderSelection);
+            return patchChangesUnderSelection;
         }
 
         private Map<File, FileInformation> getLocalChanges (File[] roots, FileStatusCache cache) {

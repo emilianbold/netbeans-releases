@@ -54,11 +54,16 @@ public class JavaRefactoringTestSuite {
             CopyClassTest.class,
             InlineTest.class,
             InnerToOutterTest.class,
+            IntroduceLocalExtensionTest.class,
             ChangeParametersTest.class,
             UseSuperTypeTest.class,
             MoveJavaFileTest.class,
+            MoveClassTest.class,
+            MoveMethodTest.class,
+            MoveFieldTest.class,
             EncapsulateFieldsTest.class,
             PullUpTest.class,
+            PushDownTest.class,
             JavaRefactoringActionsProviderTest.class};
         TestSuite testSuite = new TestSuite(classes);
         testSuite.addTest(FindUsagesTest.suite());

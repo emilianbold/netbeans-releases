@@ -53,7 +53,6 @@ import java.io.File;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.net.JarURLConnection;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ConcurrentModificationException;
 import java.util.HashMap;
@@ -64,8 +63,6 @@ import java.util.logging.Logger;
 import javax.swing.Action;
 import junit.framework.AssertionFailedError;
 
-import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.ComponentOperator;
@@ -76,7 +73,6 @@ import org.netbeans.modules.performance.guitracker.ActionTracker;
 import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -95,7 +91,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author  mmirilovic@netbeans.org, rkubacki@netbeans.org, anebuzelsky@netbeans.org, mrkam@netbeans.org
  */
-public abstract class PerformanceTestCase extends JellyTestCase implements NbPerformanceTest{
+public abstract class PerformanceTestCase extends PerformanceTestCase2 implements NbPerformanceTest{
     public static final String OPEN_AFTER = "OPEN - after";
     public static final String OPEN_BEFORE = "OPEN - before";
     

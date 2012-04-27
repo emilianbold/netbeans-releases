@@ -127,7 +127,7 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
                 try {
                     javaSrc.runUserActionTask(new OverriddenAbsMethodFinder(treePathHandle, abstractMethHandles), true);
                 } catch (IOException ioException) {
-                    ErrorManager.getDefault().notify(cancelRequest?ErrorManager.INFORMATIONAL:ErrorManager.UNKNOWN,ioException);
+                    ErrorManager.getDefault().notify(cancelRequested.get()?ErrorManager.INFORMATIONAL:ErrorManager.UNKNOWN,ioException);
                 }
             }
             
@@ -281,6 +281,7 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
     @Override
     public Problem preCheck() {
         cancelRequest = false;
+        cancelRequested.set(false);
 //        Element[] refElements = refactoring.getRefactoredObjects();
 //        for(int i = 0;i < refElements.length; ++i) {
 //            Element refactoredObject = refElements[i];
@@ -337,8 +338,9 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
                         CompilationUnitTree cut = co.getCompilationUnit();
                         for (Tree t: cut.getTypeDecls()) {
                             TreePathHandle handle = TreePathHandle.create(TreePath.getPath(cut, t), co);
-                            if (!containsHandle(handle, co))
+                            if (!containsHandle(handle, co)) {
                                 grips.add(handle);
+                            }
                         }
                     }
                 }, true);
@@ -366,8 +368,9 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
 //          Fix for issue 63050. Doesn't make sense to check usages of a Resource.Ignore it.
 //            if(whereUsedQueries[i].getRefactoredObject() instanceof Resource)
 //                continue;
-            if((problemFromUsage = whereUsedQueries[i].checkParameters()) != null)
+            if((problemFromUsage = whereUsedQueries[i].checkParameters()) != null) {
                 return problemFromUsage;
+            }
         }
         return null;
     }

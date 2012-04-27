@@ -39,8 +39,6 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.lang.String;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.zip.ZipEntry;
@@ -243,7 +241,7 @@ public class LHTestCase extends NbTestCase {
         // what we do here is that we write something into the file and then invoke store.filechange(file)
         // to get the files contents stored...
         write(file, data.getBytes());
-        store.fileChange(file, true, ts);        
+        store.fileChange(file, ts);        
     }
     
     static String read(InputStream is, int length) throws Exception {        

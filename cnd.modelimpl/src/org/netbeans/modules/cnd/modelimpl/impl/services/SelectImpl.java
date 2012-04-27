@@ -265,15 +265,15 @@ public class SelectImpl implements CsmSelectProvider {
             Collection<CsmUID<CsmOffsetableDeclaration>> res = null;
             if (implName != null && implKind != null) {
                 if (implName.caseSensitive && implName.match) {
-                    res = file.findDeclarations(implKind.kinds, implName.strPrefix);
+                    res = file.getDeclarations(implKind.kinds, implName.strPrefix);
                     if (implName.allowEmptyName){
-                        res.addAll(file.findDeclarations(implKind.kinds, ""));
+                        res.addAll(file.getDeclarations(implKind.kinds, ""));
                     }
                 } else {
-                    res = file.findDeclarations(implKind.kinds, null);
+                    res = file.getDeclarations(implKind.kinds, null);
                 }
             } else if (implKind != null) {
-                res = file.findDeclarations(implKind.kinds, null);
+                res = file.getDeclarations(implKind.kinds, null);
             }
             if (res != null) {
                 return UIDCsmConverter.UIDsToDeclarations(res, filter);

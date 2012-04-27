@@ -44,6 +44,7 @@
 
 package org.netbeans.nbbuild;
 
+import java.io.ByteArrayInputStream;
 import java.io.CharConversionException;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -63,7 +64,6 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import org.w3c.dom.DOMException;
-import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.Element;
@@ -74,6 +74,7 @@ import org.xml.sax.EntityResolver;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 /**
  * Utility class collecting library methods related to XML processing.
@@ -90,6 +91,11 @@ public final class XMLUtil extends Object {
             builderTL[i] = new ThreadLocal<DocumentBuilder>();
         }
     }
+
+    /**
+     * @see #rethrowHandler
+     * @see #nullResolver
+     */
     public static Document parse (
             InputSource input, 
             boolean validate, 
@@ -128,6 +134,20 @@ public final class XMLUtil extends Object {
             builder.setEntityResolver(null);
         }
     }
+    public static ErrorHandler rethrowHandler() {
+        return new ErrorHandler() {
+            public void warning(SAXParseException exception) throws SAXException {throw exception;}
+            public void error(SAXParseException exception) throws SAXException {throw exception;}
+            public void fatalError(SAXParseException exception) throws SAXException {throw exception;}
+        };
+    }
+    public static EntityResolver nullResolver() {
+        return new EntityResolver() {
+            @Override public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
+                return new InputSource(new ByteArrayInputStream(new byte[0]));
+            }
+        };
+    }
     
     public static Document createDocument(String rootQName) throws DOMException {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -136,17 +156,6 @@ public final class XMLUtil extends Object {
         } catch (ParserConfigurationException ex) {
             throw (DOMException)new DOMException(DOMException.NOT_SUPPORTED_ERR, "Cannot create parser").initCause(ex); // NOI18N
         }
-    }
-    
-    private static DOMImplementation getDOMImplementation() throws DOMException { //can be made public
-        
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-    
-        try {
-            return factory.newDocumentBuilder().getDOMImplementation();
-        } catch (ParserConfigurationException ex) {
-            throw (DOMException)new DOMException(DOMException.NOT_SUPPORTED_ERR, "Cannot create parser").initCause(ex); // NOI18N
-        }        
     }
 
     // Cf. org.openide.xml.XMLUtil.

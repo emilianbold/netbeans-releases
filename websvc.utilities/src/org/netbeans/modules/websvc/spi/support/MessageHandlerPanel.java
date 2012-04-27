@@ -65,6 +65,7 @@ import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.ui.ScanDialog;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
@@ -130,26 +131,29 @@ public class MessageHandlerPanel extends javax.swing.JPanel {
     private void populateHandlers() {
         ListIterator<String> listIterator = handlerClasses.listIterator();
         final int[] handlerType = new int[]{WSHandlerDialog.JAXWS_LOGICAL_HANDLER};
+        boolean firstIteration = true;
         while (listIterator.hasNext()) {
             String handlerClass = listIterator.next();
-            CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
-
+            final CancellableTask<CompilationController> task = 
+                new CancellableTask<CompilationController>() 
+                {
+                @Override
                 public void run(CompilationController controller) throws IOException {
                     controller.toPhase(Phase.ELEMENTS_RESOLVED);
                     handlerType[0] = WSHandlerDialog.getHandlerType(controller, isJaxWS);
                 }
-
+                @Override
                 public void cancel() {
                 }
             };
 
-            FileObject classFO = getFileObjectOfClass(handlerClass);
+            final FileObject classFO = getFileObjectOfClass(handlerClass);
             if (classFO != null) {
-                try {
-                    JavaSource javaSource = JavaSource.forFileObject(classFO);
-                    javaSource.runUserActionTask(task, true);
-                } catch (IOException ex) {
-                    ErrorManager.getDefault().notify(ex);
+                JavaSource javaSource = JavaSource.forFileObject(
+                        classFO);
+                WSHandlerDialog.runTask(firstIteration, javaSource, task);
+                if ( firstIteration ){
+                    firstIteration = false;
                 }
             }
             if (handlerType[0] == WSHandlerDialog.JAXWS_LOGICAL_HANDLER) {

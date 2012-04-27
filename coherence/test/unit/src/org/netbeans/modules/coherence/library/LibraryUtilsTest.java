@@ -41,18 +41,20 @@
  */
 package org.netbeans.modules.coherence.library;
 
+import java.util.HashMap;
 import java.util.StringTokenizer;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.coherence.server.util.Version;
+import org.netbeans.modules.project.libraries.DefaultLibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
-import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.InstanceDataObject;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -134,8 +136,9 @@ public class LibraryUtilsTest extends NbTestCase {
 
         public LibraryImplementation createLibrary() {
             assert !ProjectManager.mutex().isReadAccess();
-            assert !ProjectManager.mutex().isWriteAccess();
-            return LibrariesSupport.createLibraryImplementation(LIBRARY_TYPE, VOLUME_TYPES);
+            DefaultLibraryImplementation libraryImpl = new DefaultLibraryImplementation(LIBRARY_TYPE, VOLUME_TYPES);
+            libraryImpl.setProperties(new HashMap<String, String>());
+            return libraryImpl;
         }
 
         public void libraryDeleted(LibraryImplementation library) {
@@ -149,7 +152,7 @@ public class LibraryUtilsTest extends NbTestCase {
         }
 
         public org.openide.util.Lookup getLookup() {
-            return null;
+            return Lookup.EMPTY;
         }
     }
 

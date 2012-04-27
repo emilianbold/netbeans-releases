@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.HostInfo.Bitness;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
@@ -95,7 +96,12 @@ public class DebianPackager implements PackagerDescriptor {
             defArch = "i386"; // NOI18N
             HostInfo hostInfo = null;
             try {
-                hostInfo = HostInfoUtils.getHostInfo(makeConfiguration.getDevelopmentHost().getExecutionEnvironment());
+                ExecutionEnvironment env = makeConfiguration.getDevelopmentHost().getExecutionEnvironment();
+                // See #208441 - "Authentication" dialog pop-up
+                // I don't have a solution for the case of remote without currently available host info and connection
+                if (HostInfoUtils.isHostInfoAvailable(env) || env.isLocal()) {
+                    hostInfo = HostInfoUtils.getHostInfo(env);
+                }
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             } catch (CancellationException ex) {

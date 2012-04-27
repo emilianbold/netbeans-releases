@@ -41,35 +41,27 @@
  */
 package org.netbeans.modules.maven.cos;
 
-import org.codehaus.plexus.util.DirectoryScanner;
-import org.codehaus.plexus.util.cli.CommandLineUtils;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.apache.maven.model.Build;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Resource;
 import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.util.DirectoryScanner;
+import org.codehaus.plexus.util.cli.CommandLineUtils;
+import org.netbeans.api.annotations.common.StaticResource;
+import org.netbeans.api.extexecution.startup.StartupExtender;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.modules.maven.api.execute.ExecutionContext;
-import org.netbeans.modules.maven.api.execute.PrerequisitesChecker;
-import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.api.java.project.runner.JavaRunner;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -77,17 +69,18 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.FileUtilities;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
-import org.netbeans.modules.maven.api.execute.ActiveJ2SEPlatformProvider;
-import org.netbeans.modules.maven.api.execute.ExecutionResultChecker;
-import org.netbeans.modules.maven.api.execute.LateBoundPrerequisitesChecker;
-import org.netbeans.modules.maven.api.execute.RunUtils;
+import org.netbeans.modules.maven.api.customizer.ModelHandle2;
+import org.netbeans.modules.maven.api.execute.*;
 import org.netbeans.modules.maven.classpath.AbstractProjectClassPathImpl;
 import org.netbeans.modules.maven.classpath.RuntimeClassPathImpl;
 import org.netbeans.modules.maven.classpath.TestRuntimeClassPathImpl;
 import org.netbeans.modules.maven.configurations.M2ConfigProvider;
 import org.netbeans.modules.maven.configurations.M2Configuration;
+import static org.netbeans.modules.maven.cos.Bundle.*;
+import org.netbeans.modules.maven.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.maven.customizer.RunJarPanel;
 import org.netbeans.modules.maven.execute.DefaultReplaceTokenProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -95,10 +88,17 @@ import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.SingleMethod;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
+import org.openide.awt.Notification;
+import org.openide.awt.NotificationDisplayer;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle.Messages;
+import org.openide.util.RequestProcessor;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
 /**
  *
@@ -108,9 +108,12 @@ import org.openide.util.Exceptions;
 public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesChecker {
 
     static final String NB_COS = ".netbeans_automatic_build"; //NOI18N
+    private static final String STARTUP_ARGS_KEY = "run.jvmargs.ide"; // NOI18N
     private static final String RUN_MAIN = ActionProvider.COMMAND_RUN_SINGLE + ".main"; //NOI18N
     private static final String DEBUG_MAIN = ActionProvider.COMMAND_DEBUG_SINGLE + ".main"; //NOI18N
+    private static final String PROFILE_MAIN = ActionProvider.COMMAND_PROFILE_SINGLE + ".main"; // NOI18N
 
+    @Override
     public boolean checkRunConfig(RunConfig config) {
         if (config.getProject() == null) {
             return true;
@@ -127,6 +130,7 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
         return true;
     }
 
+    @Override
     public boolean checkRunConfig(RunConfig config, ExecutionContext con) {
         //deleting the timestamp before every action invokation means
         // we only can rely on Run via JavaRunner and via DeployOnSave
@@ -230,9 +234,11 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
             if ((NbMavenProject.TYPE_JAR.equals(
                     config.getProject().getLookup().lookup(NbMavenProject.class).getPackagingType()) &&
                     (ActionProvider.COMMAND_RUN.equals(actionName) ||
-                    ActionProvider.COMMAND_DEBUG.equals(actionName))) ||
+                    ActionProvider.COMMAND_DEBUG.equals(actionName) ||
+                    ActionProvider.COMMAND_PROFILE.equals(actionName))) ||
                     RUN_MAIN.equals(actionName) ||
-                    DEBUG_MAIN.equals(actionName)) {
+                    DEBUG_MAIN.equals(actionName) ||
+                    PROFILE_MAIN.equals(actionName)) {
                 long stamp = getLastCoSLastTouch(config, false);
                 //check the COS timestamp against critical files (pom.xml)
                 // if changed, don't do COS.
@@ -256,7 +262,8 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                     params.put(JavaRunner.PROP_WORK_DIR, config.getExecutionDirectory());
                 }
                 if (RUN_MAIN.equals(actionName) ||
-                    DEBUG_MAIN.equals(actionName)) {
+                    DEBUG_MAIN.equals(actionName) ||
+                    PROFILE_MAIN.equals(actionName)) {
                     FileObject selected = config.getSelectedFileObject();
                     ClassPath srcs = config.getProject().getLookup().lookup(ProjectSourcesClassPathProvider.class).getProjectSourcesClassPath(ClassPath.SOURCE);
                     String path = srcs.getResourceName(selected);
@@ -298,6 +305,7 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                     boolean supported = JavaRunner.isSupported(action2Quick, params);
                     if (supported) {
                         try {
+                            collectStartupArgs(config, params);
                             JavaRunner.execute(action2Quick, params);
                         } catch (IOException ex) {
                             Exceptions.printStackTrace(ex);
@@ -318,21 +326,31 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
 
     private boolean checkRunTest(RunConfig config) {
         String actionName = config.getActionName();
-        if (RunUtils.hasTestCompileOnSaveEnabled(config) &&
-                (ActionProvider.COMMAND_TEST_SINGLE.equals(actionName) ||
-                ActionProvider.COMMAND_DEBUG_TEST_SINGLE.equals(actionName))) {
+        if (!(ActionProvider.COMMAND_TEST_SINGLE.equals(actionName) ||
+                ActionProvider.COMMAND_DEBUG_TEST_SINGLE.equals(actionName) ||
+                ActionProvider.COMMAND_PROFILE_TEST_SINGLE.equals(actionName))) {
+            return true;
+        }
+        if (RunUtils.hasTestCompileOnSaveEnabled(config)) {
             String testng = PluginPropertyUtils.getPluginProperty(config.getMavenProject(), Constants.GROUP_APACHE_PLUGINS,
                     Constants.PLUGIN_SUREFIRE, "testNGArtifactName", "test"); //NOI18N
             if (testng == null) {
                 testng = "org.testng:testng"; //NOI18N
             }
             List<Dependency> deps = config.getMavenProject().getTestDependencies();
+            boolean haveJUnit = false, haveTestNG = false;
+            String testngVersion = null;
             for (Dependency d : deps) {
                 if (d.getManagementKey().startsWith(testng)) {
-                    //skip tests that are invoked by testng, no support for it yet.
-                    //#149464
-                    return true;
+                    testngVersion = d.getVersion();
+                    haveTestNG = true;
+                } else if (d.getManagementKey().startsWith("junit:junit")) { //NOI18N
+                    haveJUnit = true;
                 }
+            }
+            if (haveJUnit && haveTestNG && new ComparableVersion("6.5.1").compareTo(new ComparableVersion(testngVersion)) >= 0) {
+                //CoS requires at least TestNG 6.5.2-SNAPSHOT if JUnit is present
+                return true;
             }
             Map<String, Object> params = new HashMap<String, Object>();
             String test = config.getProperties().get("test"); //NOI18N
@@ -361,7 +379,7 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
             ClassPath srcs = cpp.getProjectSourcesClassPath(ClassPath.SOURCE);
             ClassPath[] cps = cpp.getProjectClassPaths(ClassPath.SOURCE);
             ClassPath testcp = ClassPathSupport.createProxyClassPath(cps);
-            String path = null;
+            String path;
             if (selected != null) {
                 path = srcs.getResourceName(selected);
                 if (path != null) {
@@ -501,10 +519,10 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                             }
                             roots.add(url);
                         } catch (MalformedURLException ex) {
-                            Logger.getLogger(CosChecker.class.getName()).info("Cannot convert '" + add + "' to URL");
+                            Logger.getLogger(CosChecker.class.getName()).log(Level.INFO, "Cannot convert ''{0}'' to URL", add);
                         }
                     } else {
-                        Logger.getLogger(CosChecker.class.getName()).info("Cannot convert '" + add + "' to URL.");
+                        Logger.getLogger(CosChecker.class.getName()).log(Level.INFO, "Cannot convert ''{0}'' to URL.", add);
                     }
                 }
                 ClassPath addCp = ClassPathSupport.createClassPath(roots.toArray(new URL[roots.size()]));
@@ -521,6 +539,7 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
             boolean supported = JavaRunner.isSupported(action2Quick, params);
             if (supported) {
                 try {
+                    collectStartupArgs(config, params);
                     ExecutorTask tsk = JavaRunner.execute(action2Quick, params);
                 //TODO listen on result of execution
                 //if failed, tweak the timestamps to force a non-CoS build
@@ -535,6 +554,8 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                 }
                 return false;
             }
+        } else {
+            warnNoTestCoS(config);
         }
         return true;
     }
@@ -733,13 +754,58 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
             return JavaRunner.QUICK_RUN;
         } else if (ActionProvider.COMMAND_DEBUG.equals(actionName) || DEBUG_MAIN.equals(actionName)) {
             return JavaRunner.QUICK_DEBUG;
+        } else if (ActionProvider.COMMAND_PROFILE.equals(actionName) || PROFILE_MAIN.equals(actionName)) {
+            return JavaRunner.QUICK_PROFILE;
         } else if (ActionProvider.COMMAND_TEST.equals(actionName) || ActionProvider.COMMAND_TEST_SINGLE.equals(actionName) || SingleMethod.COMMAND_RUN_SINGLE_METHOD.equals(actionName)) {
             return JavaRunner.QUICK_TEST;
         } else if (ActionProvider.COMMAND_DEBUG_TEST_SINGLE.equals(actionName) || SingleMethod.COMMAND_DEBUG_SINGLE_METHOD.equals(actionName)) {
             return JavaRunner.QUICK_TEST_DEBUG;
+        } else if (ActionProvider.COMMAND_PROFILE_TEST_SINGLE.equals(actionName)) {
+            return JavaRunner.QUICK_TEST_PROFILE;
         }
         assert false : "Cannot convert " + actionName + " to quick actions.";
         return null;
+    }
+    
+    private void collectStartupArgs(RunConfig config, Map<String, Object> params) {
+        String actionName = config.getActionName();
+        StartupExtender.StartMode mode;
+        
+        if (ActionProvider.COMMAND_RUN.equals(actionName) || RUN_MAIN.equals(actionName)) {
+            mode = StartupExtender.StartMode.NORMAL;
+        } else if (ActionProvider.COMMAND_DEBUG.equals(actionName) || DEBUG_MAIN.equals(actionName)) {
+            mode = StartupExtender.StartMode.DEBUG;
+        } else if (ActionProvider.COMMAND_PROFILE.equals(actionName) || ActionProvider.COMMAND_PROFILE_SINGLE.equals(actionName) || PROFILE_MAIN.equals(actionName)) {
+            mode = StartupExtender.StartMode.PROFILE;
+        } else if (ActionProvider.COMMAND_PROFILE_TEST_SINGLE.equals(actionName)) {
+            mode = StartupExtender.StartMode.TEST_PROFILE;
+        } else {
+            // XXX could also set argLine for COMMAND_TEST and relatives (StartMode.TEST_*); need not be specific to TYPE_JAR
+            return;
+        }
+
+        InstanceContent ic = new InstanceContent();
+        Project p = config.getProject();
+        if (p != null) {
+            ic.add(p);
+            ActiveJ2SEPlatformProvider pp = p.getLookup().lookup(ActiveJ2SEPlatformProvider.class);
+            if (pp != null) {
+                ic.add(pp.getJavaPlatform());
+            }
+        }
+        Set<String> args = new HashSet<String>();
+
+        for (StartupExtender group : StartupExtender.getExtenders(new AbstractLookup(ic), mode)) {
+            args.addAll(group.getArguments());
+        }
+        
+        if (!args.isEmpty()) {
+            StringBuilder sb = new StringBuilder();
+            for(String arg : args) {
+                sb.append(arg).append(' ');
+            }
+            params.put(STARTUP_ARGS_KEY, sb.toString());
+        }
     }
 
     static void touchProject(Project project) {
@@ -757,6 +823,36 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                 deleteCoSTimeStamp(mvn, true);
             }
         }
+    }
+
+    @StaticResource private static final String SUGGESTION = "org/netbeans/modules/maven/resources/suggestion.png";
+    private static boolean warned;
+    @Messages({
+        "CosChecker.no_test_cos.title=Not using Compile on Save",
+        "CosChecker.no_test_cos.details=Compile on Save mode can speed up single test execution for many projects."
+    })
+    private static void warnNoTestCoS(RunConfig config) {
+        if (warned) {
+            return;
+        }
+        final Project project = config.getProject();
+        if (project == null) {
+            return;
+        }
+        final Notification n = NotificationDisplayer.getDefault().notify(CosChecker_no_test_cos_title(), ImageUtilities.loadImageIcon(SUGGESTION, true), CosChecker_no_test_cos_details(), new ActionListener() {
+            @Override public void actionPerformed(ActionEvent e) {
+                CustomizerProviderImpl prv = project.getLookup().lookup(CustomizerProviderImpl.class);
+                if (prv != null) {
+                    prv.showCustomizer(ModelHandle2.PANEL_COMPILE);
+                }
+            }
+        }, NotificationDisplayer.Priority.LOW);
+        RequestProcessor.getDefault().post(new Runnable() {
+            @Override public void run() {
+                n.clear();
+            }
+        }, 15 * 1000);
+        warned = true;
     }
 
     @ProjectServiceProvider(service=ProjectOpenedHook.class, projectType="org-netbeans-modules-maven")
@@ -789,6 +885,7 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
     @ProjectServiceProvider(service=ExecutionResultChecker.class, projectType="org-netbeans-modules-maven")
     public static class COSExChecker implements ExecutionResultChecker {
 
+        @Override
         public void executionResult(RunConfig config, ExecutionContext res, int resultCode) {
             // after each build put the Cos stamp in the output folder to have
             // the classes really compiled on save.

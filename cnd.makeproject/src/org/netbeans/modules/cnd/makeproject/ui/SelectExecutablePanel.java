@@ -44,6 +44,7 @@
 package org.netbeans.modules.cnd.makeproject.ui;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import javax.swing.JFileChooser;
 import javax.swing.JList;
@@ -52,10 +53,13 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileFilter;
+import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
+import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.DialogDescriptor;
@@ -74,14 +78,20 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
     private final FileObject buildWorkingDirFO;
 
     /** Creates new form SelectExecutable */
-    public SelectExecutablePanel(MakeConfiguration conf) {
-        this.conf = conf;
+    public SelectExecutablePanel(ProjectActionEvent pae) {
+        this.conf = pae.getConfiguration();
         initComponents();
         instructionsTextArea.setBackground(getBackground());
+        PathMap mapper = RemoteSyncSupport.getPathMap(pae.getProject());
+        String wd = conf.getMakefileConfiguration().getAbsBuildCommandWorkingDir();
+        if (mapper != null) {
+            String aWd = mapper.getRemotePath(conf.getMakefileConfiguration().getAbsBuildCommandWorkingDir(), true);
+            if (aWd != null) {
+                wd = aWd;
+            }
+        }
 
-        buildWorkingDirFO = RemoteFileUtil.getFileObject(
-                conf.getMakefileConfiguration().getAbsBuildCommandWorkingDir(),
-                conf.getFileSystemHost());
+        buildWorkingDirFO = RemoteFileUtil.getFileObject(wd, conf.getFileSystemHost());
         String[] executables = findAllExecutables(buildWorkingDirFO);
         exeList = new JList(executables);
         executableList.setViewportView(exeList);
@@ -180,7 +190,11 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
         }
         ArrayList<String> aLlist = new ArrayList<String>();
         addExecutables(root, aLlist);
-        return aLlist.toArray(new String[aLlist.size()]);
+        
+        // See IZ 205812, sort the list
+        String[] res = aLlist.toArray(new String[aLlist.size()]);
+        Arrays.sort(res);
+        return res;
     }
 
     private void addExecutables(FileObject dir, List<String> filesAdded) {

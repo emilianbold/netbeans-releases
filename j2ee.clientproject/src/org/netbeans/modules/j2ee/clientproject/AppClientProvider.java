@@ -247,7 +247,7 @@ public final class AppClientProvider extends J2eeModuleProvider
         AppClientProjectProperties.setServerInstance(project, helper, serverInstanceID);
     }
     
-    public Iterator getArchiveContents() throws IOException {
+    public Iterator<J2eeModule.RootedEntry> getArchiveContents() throws IOException {
         return new IT(getContentDirectory());
     }
     
@@ -508,7 +508,7 @@ public final class AppClientProvider extends J2eeModuleProvider
         }
     }
 
-    private static class IT implements Iterator {
+    private static class IT implements Iterator<J2eeModule.RootedEntry> {
         
         Enumeration ch;
         FileObject root;
@@ -522,7 +522,7 @@ public final class AppClientProvider extends J2eeModuleProvider
             return ch.hasMoreElements();
         }
         
-        public Object next() {
+        public J2eeModule.RootedEntry next() {
             FileObject f = (FileObject) ch.nextElement();
             return new FSRootRE(root, f);
         }

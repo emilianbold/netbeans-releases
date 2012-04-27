@@ -412,6 +412,7 @@ public class PatchAction extends NodeAction {
                 if(dialog != null){
                     file = null;
                     dialog.setVisible(false);
+                    dialog.dispose();
                 }
             }
         }

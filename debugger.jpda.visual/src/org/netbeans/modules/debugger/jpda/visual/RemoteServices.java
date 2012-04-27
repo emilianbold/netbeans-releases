@@ -68,10 +68,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.CountDownLatch;
@@ -163,7 +166,7 @@ public class RemoteServices {
             ClassObjectReference basicClass = null;
             for (RemoteClass rc : remoteClasses) {
                 String className = rc.name;
-                if (basicClass == null && className.indexOf('$') < 0) {
+                if (basicClass == null && className.indexOf('$') < 0 && className.endsWith("Service")) {
                     if ((sType == ServiceType.AWT && className.contains("AWT")) ||
                         (sType == ServiceType.FX && className.contains("FX"))) {
                         List<ReferenceType> classesByName = VirtualMachineWrapper.classesByName(vm, className);
@@ -207,7 +210,7 @@ public class RemoteServices {
                             uploaded = false;
                             while (!uploaded) {
                                 theUploadedClass = (ClassObjectReference) ObjectReferenceWrapper.invokeMethod(cl, tawt, defineClass, Arrays.asList(nameMirror, byteArray, vm.mirrorOf(0), vm.mirrorOf(rc.bytes.length)), ObjectReference.INVOKE_SINGLE_THREADED);
-                                if (basicClass == null && rc.name.indexOf('$') < 0) {
+                                if (basicClass == null && rc.name.indexOf('$') < 0 && rc.name.endsWith("Service")) {
                                     try {
                                         // Disable collection only of the basic class
                                         ObjectReferenceWrapper.disableCollection(theUploadedClass);
@@ -588,7 +591,7 @@ public class RemoteServices {
                 else i++;
                 int ii = lname.lastIndexOf('$', i);
                 if (ii > i) i = ii + 1;
-                System.err.println("  getAttachableListeners() '"+name.substring(3)+"' should equal to '"+lname.substring(i)+"', lname = "+lname+", i = "+i);
+                //System.err.println("  getAttachableListeners() '"+name.substring(3)+"' should equal to '"+lname.substring(i)+"', lname = "+lname+", i = "+i);
                 if (!name.substring(3).equals(lname.substring(i))) {
                     // addXXXListener() method name does not match XXXListener simple class name.
                     // TODO: Perhaps check removeXXXListener method instead of this.
@@ -603,6 +606,186 @@ public class RemoteServices {
         }
         return listenerClasses;
     }
+
+    /*
+    private static final Map<JavaComponentInfo, Map<ClassObjectReference, Set<LoggingListenerCallBack>>> loggingListeners =
+            new WeakHashMap<JavaComponentInfo, Map<ClassObjectReference, Set<LoggingListenerCallBack>>>();
+    */
+    private static final Map<JPDADebugger, LoggingListeners> loggingListeners =
+            new WeakHashMap<JPDADebugger, LoggingListeners>();
+    
+    private static final class LoggingListeners {
+        
+        private final Map<ObjectReference, Map<ClassObjectReference, Set<LoggingListenerCallBack>>> componentListeners =
+                new HashMap<ObjectReference, Map<ClassObjectReference, Set<LoggingListenerCallBack>>>();
+        
+        static LoggingListeners get(JPDADebugger dbg) {
+            synchronized (loggingListeners) {
+                return loggingListeners.get(dbg);
+            }
+        }
+
+        private synchronized boolean add(ObjectReference component, ClassObjectReference listenerClass, LoggingListenerCallBack listener) {
+            Map<ClassObjectReference, Set<LoggingListenerCallBack>> listeners = componentListeners.get(component);
+            if (listeners == null) {
+                listeners = new HashMap<ClassObjectReference, Set<LoggingListenerCallBack>>();
+                componentListeners.put(component, listeners);
+            }
+            Set<LoggingListenerCallBack> lcb = listeners.get(listenerClass);
+            if (lcb == null) {
+                lcb = new HashSet<LoggingListenerCallBack>();
+                listeners.put(listenerClass, lcb);
+            }
+            return lcb.add(listener);
+        }
+        
+        private synchronized boolean remove(ObjectReference component, ClassObjectReference listenerClass, LoggingListenerCallBack listener) {
+            Map<ClassObjectReference, Set<LoggingListenerCallBack>> listeners = componentListeners.get(component);
+            if (listeners == null) {
+                return false;
+            }
+            Set<LoggingListenerCallBack> lcb = listeners.get(listenerClass);
+            if (lcb == null) {
+                return false;
+            }
+            boolean removed = lcb.remove(listener);
+            if (removed) {
+                if (lcb.isEmpty()) {
+                    listeners.remove(listenerClass);
+                    if (listeners.isEmpty()) {
+                        componentListeners.remove(component);
+                    }
+                }
+            }
+            return removed;
+        }
+        
+        synchronized Set<LoggingListenerCallBack> getListeners(ObjectReference component, ClassObjectReference listenerClass) {
+            Map<ClassObjectReference, Set<LoggingListenerCallBack>> listeners = componentListeners.get(component);
+            if (listeners == null) {
+                return null;
+            }
+            return listeners.get(listenerClass);
+        }
+        
+        private synchronized boolean isEmpty() {
+            return componentListeners.isEmpty();
+        }
+        
+    }
+    
+    private static void addEventsLoggingBreakpoint(final JPDADebugger dbg) {
+        final MethodBreakpoint mb = MethodBreakpoint.create("org.netbeans.modules.debugger.jpda.visual.remote.RemoteAWTService", "calledWithEventsData");
+        mb.setBreakpointType(MethodBreakpoint.TYPE_METHOD_ENTRY);
+        mb.setSuspend(MethodBreakpoint.SUSPEND_EVENT_THREAD);
+        mb.setHidden(true);
+        //final Object bpLock = new Object();
+        mb.addJPDABreakpointListener(new JPDABreakpointListener() {
+            @Override
+            public void breakpointReached(JPDABreakpointEvent event) {
+                //synchronized (bpLock) {
+                    //DebuggerManager.getDebuggerManager().removeBreakpoint(mb);
+                try {
+                    ThreadReference tr = ((JPDAThreadImpl) event.getThread()).getThreadReference();
+                    StackFrame topFrame;
+                    List<Value> argumentValues;
+                    try {
+                        topFrame = ThreadReferenceWrapper.frame(tr, 0);
+                        argumentValues = StackFrameWrapper.getArgumentValues(topFrame);
+                    } catch (InternalExceptionWrapper ex) {
+                        return ;
+                    } catch (VMDisconnectedExceptionWrapper ex) {
+                        return ;
+                    } catch (ObjectCollectedExceptionWrapper ex) {
+                        return ;
+                    } catch (IllegalThreadStateExceptionWrapper ex) {
+                        Exceptions.printStackTrace(ex);
+                        return ;
+                    } catch (IncompatibleThreadStateException ex) {
+                        Exceptions.printStackTrace(ex);
+                        return;
+                    } catch (InvalidStackFrameExceptionWrapper isfex) {
+                        Exceptions.printStackTrace(isfex);
+                        return;
+                    }
+                    //System.err.println("LoggingListener breakpoint reached: argumentValues = "+argumentValues);
+                    if (argumentValues.size() < 3) {  // ERROR: BP is hit somewhere else
+                        logger.info("Warning: attachLoggingListener().breakpointReached(): argumentValues.size() = "+argumentValues.size());
+                        return;
+                    }
+                    LoggingListeners ll = LoggingListeners.get(dbg);
+                    if (ll == null) {
+                        return ;
+                    }
+                    Value component = argumentValues.get(0);
+                    Value listenerClass = argumentValues.get(1);
+                    Set<LoggingListenerCallBack> listeners = ll.getListeners((ObjectReference) component, (ClassObjectReference) listenerClass);
+                    if (listeners == null) {
+                        return;
+                    }
+                    
+                    ArrayReference allDataArray = (ArrayReference) argumentValues.get(2);
+                    try {
+                        int totalLength = ArrayReferenceWrapper.length(allDataArray);
+                        List<Value> dataValues = ArrayReferenceWrapper.getValues(allDataArray);
+                        String[] eventProps = null;
+                        for (int i = 0; i < totalLength; ) {
+                            StringReference sr = (StringReference) dataValues.get(i);
+                            String dataLengthStr = StringReferenceWrapper.value(sr);
+                            //System.err.println("  data["+i+"] = "+dataLengthStr);
+                            int dataLength;
+                            try {
+                                dataLength = Integer.parseInt(dataLengthStr);
+                            } catch (NumberFormatException nfex) {
+                                Exceptions.printStackTrace(Exceptions.attachMessage(nfex, "Data length string = '"+dataLengthStr+"'"));
+                                return;
+                            }
+                            String[] data = new String[dataLength];
+                            i++;
+                            for (int j = 0; j < dataLength; j++, i++) {
+                                sr = (StringReference) dataValues.get(i);
+                                data[j] = StringReferenceWrapper.value(sr);
+                                //System.err.println("  data["+i+"] = "+data[j]);
+                            }
+                            if (eventProps == null) {
+                                eventProps = data;
+                            } else {
+                                //System.err.println("eventsData("+ci+", "+eventProps+", "+data+") passed to "+listener);
+                                for (LoggingListenerCallBack listener : listeners) {
+                                    listener.eventsData(/*ci,*/ eventProps, data/*stack*/);
+                                }
+                                eventProps = null;
+                            }
+                        }
+                    } catch (InternalExceptionWrapper iex) {
+                    } catch (NumberFormatException nfex) {
+                        Exceptions.printStackTrace(nfex);
+                    } catch (ObjectCollectedExceptionWrapper ocex) {
+                        Exceptions.printStackTrace(ocex);
+                    } catch (VMDisconnectedExceptionWrapper vmdex) {
+                    }
+                } finally {
+                    event.resume();
+                }
+            }
+        });
+        PropertyChangeListener listener = new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (dbg.getState() == JPDADebugger.STATE_DISCONNECTED) {
+                    DebuggerManager.getDebuggerManager().removeBreakpoint(mb);
+                    //System.err.println("BREAKPOINT "+mb+" REMOVED after debugger finished."+" ID = "+System.identityHashCode(mb));
+                    dbg.removePropertyChangeListener(JPDADebugger.PROP_STATE, this);
+                }
+            }
+        };
+        dbg.addPropertyChangeListener(JPDADebugger.PROP_STATE, listener);
+        if (dbg.getState() != JPDADebugger.STATE_DISCONNECTED) {
+            DebuggerManager.getDebuggerManager().addBreakpoint(mb);
+        } else {
+            dbg.removePropertyChangeListener(JPDADebugger.PROP_STATE, listener);
+        }
+    }
     
     public static ObjectReference attachLoggingListener(final JavaComponentInfo ci,
                                                         final ClassObjectReference listenerClass,
@@ -614,106 +797,20 @@ public class RemoteServices {
             public void run() {
                 ThreadReference t = thread.getThreadReference();
                 ObjectReference component = ci.getComponent();
-                final MethodBreakpoint mb = MethodBreakpoint.create("org.netbeans.modules.debugger.jpda.visual.remote.RemoteAWTService", "calledWithEventsData");
-                mb.setBreakpointType(MethodBreakpoint.TYPE_METHOD_ENTRY);
-                mb.setSuspend(MethodBreakpoint.SUSPEND_EVENT_THREAD);
-                mb.setHidden(true);
-                //final Object bpLock = new Object();
-                mb.addJPDABreakpointListener(new JPDABreakpointListener() {
-                    @Override
-                    public void breakpointReached(JPDABreakpointEvent event) {
-                        //synchronized (bpLock) {
-                            //DebuggerManager.getDebuggerManager().removeBreakpoint(mb);
-                        try {
-                            ThreadReference tr = ((JPDAThreadImpl) event.getThread()).getThreadReference();
-                            StackFrame topFrame;
-                            List<Value> argumentValues;
-                            try {
-                                topFrame = ThreadReferenceWrapper.frame(tr, 0);
-                                argumentValues = StackFrameWrapper.getArgumentValues(topFrame);
-                            } catch (InternalExceptionWrapper ex) {
-                                return ;
-                            } catch (VMDisconnectedExceptionWrapper ex) {
-                                return ;
-                            } catch (ObjectCollectedExceptionWrapper ex) {
-                                return ;
-                            } catch (IllegalThreadStateExceptionWrapper ex) {
-                                Exceptions.printStackTrace(ex);
-                                return ;
-                            } catch (IncompatibleThreadStateException ex) {
-                                Exceptions.printStackTrace(ex);
-                                return;
-                            } catch (InvalidStackFrameExceptionWrapper isfex) {
-                                Exceptions.printStackTrace(isfex);
-                                return;
-                            }
-                            //System.err.println("LoggingListener breakpoint reached: argumentValues = "+argumentValues);
-                            if (argumentValues.size() < 2) {  // ERROR: BP is hit somewhere else
-                                logger.info("Warning: attachLoggingListener().breakpointReached(): argumentValues.size() = "+argumentValues.size());
-                                return;
-                            }
-                            if (!ci.getComponent().equals(argumentValues.get(0))) {
-                                // Reported for some other component
-                                return;
-                            }
-                            ArrayReference allDataArray = (ArrayReference) argumentValues.get(1);
-                            try {
-                                int totalLength = ArrayReferenceWrapper.length(allDataArray);
-                                List<Value> dataValues = ArrayReferenceWrapper.getValues(allDataArray);
-                                String[] eventProps = null;
-                                for (int i = 0; i < totalLength; ) {
-                                    StringReference sr = (StringReference) dataValues.get(i);
-                                    String dataLengthStr = StringReferenceWrapper.value(sr);
-                                    //System.err.println("  data["+i+"] = "+dataLengthStr);
-                                    int dataLength;
-                                    try {
-                                        dataLength = Integer.parseInt(dataLengthStr);
-                                    } catch (NumberFormatException nfex) {
-                                        Exceptions.printStackTrace(Exceptions.attachMessage(nfex, "Data length string = '"+dataLengthStr+"'"));
-                                        return;
-                                    }
-                                    String[] data = new String[dataLength];
-                                    i++;
-                                    for (int j = 0; j < dataLength; j++, i++) {
-                                        sr = (StringReference) dataValues.get(i);
-                                        data[j] = StringReferenceWrapper.value(sr);
-                                        //System.err.println("  data["+i+"] = "+data[j]);
-                                    }
-                                    if (eventProps == null) {
-                                        eventProps = data;
-                                    } else {
-                                        listener.eventsData(ci, eventProps, data/*stack*/);
-                                        eventProps = null;
-                                    }
-                                }
-                            } catch (InternalExceptionWrapper iex) {
-                            } catch (NumberFormatException nfex) {
-                                Exceptions.printStackTrace(nfex);
-                            } catch (ObjectCollectedExceptionWrapper ocex) {
-                                Exceptions.printStackTrace(ocex);
-                            } catch (VMDisconnectedExceptionWrapper vmdex) {
-                            }
-                        } finally {
-                            event.resume();
-                        }
+                JPDADebugger dbg = ci.getThread().getDebugger();
+                LoggingListeners ll;
+                boolean newLL;
+                synchronized (loggingListeners) {
+                    ll = loggingListeners.get(dbg);
+                    newLL = ll == null;
+                    if (newLL) {
+                        ll = new LoggingListeners();
+                        loggingListeners.put(dbg, ll);
                     }
-                });
-                final JPDADebugger dbg = thread.getDebugger();
-                PropertyChangeListener listener = new PropertyChangeListener() {
-                    @Override
-                    public void propertyChange(PropertyChangeEvent evt) {
-                        if (dbg.getState() == JPDADebugger.STATE_DISCONNECTED) {
-                            DebuggerManager.getDebuggerManager().removeBreakpoint(mb);
-                            //System.err.println("BREAKPOINT "+mb+" REMOVED after debugger finished."+" ID = "+System.identityHashCode(mb));
-                            dbg.removePropertyChangeListener(JPDADebugger.PROP_STATE, this);
-                        }
-                    }
-                };
-                dbg.addPropertyChangeListener(JPDADebugger.PROP_STATE, listener);
-                if (dbg.getState() != JPDADebugger.STATE_DISCONNECTED) {
-                    DebuggerManager.getDebuggerManager().addBreakpoint(mb);
-                } else {
-                    dbg.removePropertyChangeListener(JPDADebugger.PROP_STATE, listener);
+                    ll.add(ci.getComponent(), listenerClass, listener);
+                }
+                if (newLL) {
+                    addEventsLoggingBreakpoint(dbg);
                 }
                 ClassObjectReference serviceClassObject;
                 synchronized (remoteServiceClasses) {
@@ -783,6 +880,59 @@ public class RemoteServices {
             }
         }, ServiceType.AWT);
         return retPtr[0];
+    }
+
+    static void attachHierarchyListeners(final boolean attach, ServiceType sType) {
+        final Set<Entry<JPDADebugger, ClassObjectReference>> serviceClasses;
+        synchronized (remoteServiceClasses) {
+            serviceClasses = new HashSet<Entry<JPDADebugger, ClassObjectReference>>(remoteServiceClasses.entrySet());
+        }
+        
+        for (Entry<JPDADebugger, ClassObjectReference> serviceEntry : serviceClasses) {
+            JPDADebugger debugger = serviceEntry.getKey();
+            ClassObjectReference cor = serviceEntry.getValue();
+            final ClassType serviceClass;
+            try {
+                serviceClass = (ClassType) ClassObjectReferenceWrapper.reflectedType(cor);
+            } catch (InternalExceptionWrapper ex) {
+                continue;
+            } catch (VMDisconnectedExceptionWrapper ex) {
+                continue;
+            } catch (ObjectCollectedExceptionWrapper ex) {
+                continue;
+            }
+            List<JPDAThread> allThreads = debugger.getThreadsCollector().getAllThreads();
+            JPDAThread thread = null;
+            for (JPDAThread t : allThreads) {
+                if (sType == ServiceType.AWT && t.getName().startsWith(RemoteAWTScreenshot.AWTThreadName)) {
+                    thread = t;
+                }
+            }
+            if (thread != null) {
+                final JPDAThread t = thread;
+                final ThreadReference tr = ((JPDAThreadImpl) t).getThreadReference();
+                try {
+                    runOnStoppedThread(t, new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                if (attach) {
+                                    Method startHierarchyListenerMethod = ClassTypeWrapper.concreteMethodByName(serviceClass, "startHierarchyListener", "()V");
+                                    ClassTypeWrapper.invokeMethod(serviceClass, tr, startHierarchyListenerMethod, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+                                } else {
+                                    Method stopHierarchyListenerMethod = ClassTypeWrapper.concreteMethodByName(serviceClass, "stopHierarchyListener", "()V");
+                                    ClassTypeWrapper.invokeMethod(serviceClass, tr, stopHierarchyListenerMethod, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+                                }
+                            } catch (VMDisconnectedExceptionWrapper vmd) {                
+                            } catch (Exception ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+                    }, sType);
+                } catch (PropertyVetoException ex) {
+                }
+            }
+        }
     }
     
     public static ClassObjectReference getServiceClass(JPDADebugger debugger) {
@@ -938,7 +1088,7 @@ public class RemoteServices {
     
     public static interface LoggingListenerCallBack {
         
-        public void eventsData(JavaComponentInfo ci, String[] data, String[] stack);
+        public void eventsData(/*JavaComponentInfo ci,*/ String[] data, String[] stack);
         
     }
     

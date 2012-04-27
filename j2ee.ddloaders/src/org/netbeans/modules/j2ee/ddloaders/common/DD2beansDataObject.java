@@ -55,11 +55,17 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
+import org.openide.filesystems.MIMEResolver;
 
 /** Represents a DD2beansDataObject in the Repository.
  *
  * @author  mkuchtiak
  */
+@MIMEResolver.Registration(
+    displayName="org.netbeans.modules.j2ee.ddloaders.Bundle#DDLoadersResolver",
+    position=340,
+    resource="../resources/dd-loaders-mime-resolver.xml"
+)
 public abstract class DD2beansDataObject extends XMLJ2eeDataObject implements org.openide.nodes.CookieSet.Factory{
 
     private static final int DELAY_FOR_TIMER=200;

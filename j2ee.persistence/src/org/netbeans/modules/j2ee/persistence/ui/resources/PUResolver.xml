@@ -4,7 +4,7 @@
 <MIME-resolver>
     <file>
         <ext name="xml"/>
-        <resolver mime="text/x-persistence1.0">
+        <resolver mime="text/x-persistence1.0+xml">
             <xml-rule>
                 <element name="persistence" ns="http://java.sun.com/xml/ns/persistence"/>
             </xml-rule>
@@ -13,7 +13,7 @@
     </file>
     <file>
         <ext name="xml"/>
-            <resolver mime="text/x-orm1.0">
+            <resolver mime="text/x-orm1.0+xml">
             <xml-rule>
                 <element name="entity-mappings" ns="http://java.sun.com/xml/ns/persistence/orm"/>
             </xml-rule>

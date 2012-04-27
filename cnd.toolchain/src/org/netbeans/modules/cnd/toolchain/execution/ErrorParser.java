@@ -101,6 +101,14 @@ public abstract class ErrorParser implements ErrorParserProvider.ErrorParser {
                 // NOI18N
                 fileName = "" + fileName.charAt(1) + ':' + fileName.substring(2); // NOI18N
             }
+            if (fileName.startsWith("/") || fileName.startsWith("\\")) { // NOI18N
+                if (relativeTo != null) {
+                    String path = relativeTo.getPath();
+                    if (path.length()>2 && path.charAt(1)==':') {
+                        fileName = path.substring(0,2) + fileName;
+                    }
+                }
+            }
             if (fileName.startsWith("/") || fileName.startsWith(".")) { // NOI18N
                 // NOI18N
                 return null;
@@ -155,6 +163,12 @@ public abstract class ErrorParser implements ErrorParserProvider.ErrorParser {
                 String absPath2 = null;
                 if (absPath1.startsWith("/usr/lib")) { // NOI18N
                     absPath2 = absPath1.substring(4);
+                }
+                if (relativePath.startsWith("/") || relativePath.startsWith("\\")) { // NOI18N
+                    String path = relativeDir.getPath();
+                    if (path.length()>2 && path.charAt(1)==':') {
+                        relativePath = path.substring(0,2) + relativePath;
+                    }
                 }
                 List<CompilerSet> compilerSets = CompilerSetManager.get(execEnv).getCompilerSets();
                 for (CompilerSet set : compilerSets) {

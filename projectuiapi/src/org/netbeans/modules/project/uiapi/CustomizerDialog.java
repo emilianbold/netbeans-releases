@@ -73,6 +73,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -291,10 +292,15 @@ public class CustomizerDialog {
                 
                 // Call storeListeners out of AWT EQ
                 RequestProcessor.getDefault().post(new Runnable() {
+                    @Override
                     public void run() {
                         try {
                             ProjectManager.mutex().writeAccess(new Mutex.Action<Object>() {
+                                @Override
                                 public Object run() {
+                                    FileUtil.runAtomicAction(new Runnable() {
+                                        @Override
+                                        public void run() {
                                     handle.start();
                                     if (storeListener != null) {
                                         storeListener.actionPerformed(e);
@@ -302,11 +308,14 @@ public class CustomizerDialog {
                                     storePerformed(e, categories);
                                     // #97998 related
                                     saveModifiedProject();
+                                        }
+                                    });
                                     return null;
                                 }
                             });
                         } finally {
                             SwingUtilities.invokeLater(new Runnable() {
+                                @Override
                                 public void run() {
                                     dialog.setVisible(false);
                                     dialog.dispose();

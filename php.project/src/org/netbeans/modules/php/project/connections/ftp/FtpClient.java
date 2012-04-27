@@ -63,12 +63,14 @@ import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
 import org.apache.commons.net.ftp.FTPSClient;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.connections.RemoteException;
 import org.netbeans.modules.php.project.connections.common.PasswordPanel;
 import org.netbeans.modules.php.project.connections.common.RemoteUtils;
 import org.netbeans.modules.php.project.connections.ftp.FtpConfiguration.Encryption;
 import org.netbeans.modules.php.project.connections.spi.RemoteClient;
 import org.netbeans.modules.php.project.connections.spi.RemoteFile;
+import org.netbeans.modules.php.project.connections.transfer.TransferFile;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.InputOutput;
@@ -89,6 +91,7 @@ public class FtpClient implements RemoteClient {
     };
 
     private final FtpConfiguration configuration;
+    private final InputOutput io;
     // @GuardedBy(this)
     private final FTPClient ftpClient;
     private final ProtocolCommandListener protocolCommandListener;
@@ -96,13 +99,14 @@ public class FtpClient implements RemoteClient {
     private final RequestProcessor.Task keepAliveTask;
     private final AtomicInteger keepAliveCounter = new AtomicInteger();
 
-    // @GuardedBy(this)
+    // @GuardedBy(this) - timestamp diff in seconds
     private Long timestampDiff = null;
 
 
     public FtpClient(FtpConfiguration configuration, InputOutput io) {
         assert configuration != null;
         this.configuration = configuration;
+        this.io = io;
 
         LOGGER.log(Level.FINE, "FTP client creating");
         ftpClient = createFtpClient(configuration);
@@ -219,6 +223,10 @@ public class FtpClient implements RemoteClient {
 
             LOGGER.fine("Setting data timeout");
             ftpClient.setDataTimeout(timeout);
+
+            // always list hidden files as well
+            ftpClient.setListHiddenFiles(true);
+
             scheduleKeepAlive();
         } catch (IOException ex) {
             WindowsJdk7WarningPanel.warn();
@@ -400,6 +408,31 @@ public class FtpClient implements RemoteClient {
     }
 
     @Override
+    public synchronized RemoteFile listFile(String absolutePath) throws RemoteException {
+        assert absolutePath.startsWith(TransferFile.REMOTE_PATH_SEPARATOR) : "Not absolute path give but: " + absolutePath;
+
+        RemoteFile result = null;
+        try {
+            FTPFile[] files = ftpClient.listFiles(absolutePath);
+            if (files.length == 1) {
+                FTPFile file = files[0];
+                if ((file.isFile() || file.isSymbolicLink())
+                        && file.getName().equals(RemoteUtils.getName(absolutePath))) {
+                    String parentPath = RemoteUtils.getParentPath(absolutePath);
+                    assert parentPath != null : "Parent path should exist for " + absolutePath;
+                    result = new RemoteFileImpl(file, parentPath);
+                }
+            }
+        } catch (IOException ex) {
+            WindowsJdk7WarningPanel.warn();
+            LOGGER.log(Level.FINE, "Error while listing file for " + absolutePath, ex);
+            throw new RemoteException(NbBundle.getMessage(FtpClient.class, "MSG_FtpCannotListFile", absolutePath), ex, getReplyString());
+        }
+        scheduleKeepAlive();
+        return result;
+    }
+
+    @Override
     public synchronized boolean retrieveFile(String remote, OutputStream local) throws RemoteException {
         try {
             boolean fileRetrieved = ftpClient.retrieveFile(remote, local);
@@ -533,7 +566,7 @@ public class FtpClient implements RemoteClient {
                 if (storeFile(remotePath, is)) {
                     FTPFile remoteFile = getFile(remotePath);
                     if (remoteFile != null) {
-                        timestampDiff = now - remoteFile.getTimestamp().getTimeInMillis();
+                        timestampDiff = (now - remoteFile.getTimestamp().getTime().getTime()) / 1000;
                     }
                     deleteFile(remotePath);
                 }
@@ -568,9 +601,17 @@ public class FtpClient implements RemoteClient {
             keepAliveTask.cancel();
             silentDisconnect();
             WindowsJdk7WarningPanel.warn();
-            // #201828
-            RemoteException exc = new RemoteException(NbBundle.getMessage(FtpClient.class, "MSG_FtpCannotKeepAlive", configuration.getHost()), ex, getReplyString());
-            RemoteUtils.processRemoteException(exc);
+            // #209043 - just inform user in the log, do not show any dialog
+            if (io != null) {
+                String message;
+                String reason = getReplyString();
+                if (StringUtils.hasText(reason)) {
+                    message = NbBundle.getMessage(FtpClient.class, "MSG_FtpCannotKeepAlive", configuration.getHost(), reason);
+                } else {
+                    message = NbBundle.getMessage(FtpClient.class, "MSG_FtpCannotKeepAliveNoReason", configuration.getHost());
+                }
+                io.getErr().println(message);
+            }
         }
     }
 
@@ -686,7 +727,7 @@ public class FtpClient implements RemoteClient {
 
         @Override
         public long getTimestamp() {
-            return TimeUnit.SECONDS.convert(ftpFile.getTimestamp().getTimeInMillis() + getTimestampDiff(), TimeUnit.MILLISECONDS);
+            return TimeUnit.SECONDS.convert(ftpFile.getTimestamp().getTime().getTime(), TimeUnit.MILLISECONDS) + getTimestampDiff();
         }
 
         @Override

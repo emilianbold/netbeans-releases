@@ -95,6 +95,8 @@ public abstract class WindowManager extends Object implements Serializable {
 
     /** the registry */
     private TopComponent.Registry registry;
+    /** handle {@link OnShowing} */
+    private final OnShowingHandler onShowing = new OnShowingHandler(null, this);
 
     /** Singleton instance accessor method for window manager. Provides entry
      * point for further work with window system API of the system.
@@ -172,10 +174,8 @@ public abstract class WindowManager extends Object implements Serializable {
         if (registry != null) {
             return registry;
         }
-
-        registry = componentRegistry();
-
-        return registry;
+        onShowing.initialize();
+        return registry = componentRegistry();
     }
 
     /** Creates new workspace.
@@ -485,6 +485,19 @@ public abstract class WindowManager extends Object implements Serializable {
      * @param tc A TopComponent
      * @since 5.1 */
     protected void topComponentRequestAttention(TopComponent tc) {
+    }
+
+    /**
+     * Notifies the user that some process is running in the given TopComponent,
+     * for example by drawing an animated "wait" icon in TopComponent's header.<br>
+     * The default implementation does nothing.
+     *
+     * @param tc
+     * @param busy True to start 'busy' notification, false to stop it.
+     *
+     * @since 6.51
+     */
+    protected void topComponentMakeBusy( TopComponent tc, boolean busy ) {
     }
 
     /**

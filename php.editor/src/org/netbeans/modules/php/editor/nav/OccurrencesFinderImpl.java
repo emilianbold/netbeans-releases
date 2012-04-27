@@ -42,13 +42,7 @@
 
 package org.netbeans.modules.php.editor.nav;
 
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.prefs.Preferences;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -82,6 +76,7 @@ public class OccurrencesFinderImpl extends OccurrencesFinder {
     private int caretPosition;
     private volatile boolean cancelled;
 
+    @Override
     public void setCaretPosition(int position) {
         this.caretPosition = position;
     }
@@ -119,24 +114,25 @@ public class OccurrencesFinderImpl extends OccurrencesFinder {
             return ;
         }
 
-        if(localRange2Attribs.size() > 0) {
+        if(!node.getBoolean(MarkOccurencesSettings.KEEP_MARKS, true) || localRange2Attribs.size() > 0) {
             //store the occurrences if not empty, return null in getOccurrences() otherwise
             range2Attribs = localRange2Attribs;
         }
     }
 
     static Collection<OffsetRange> compute(final ParserResult parameter, final int offset) {
+        final PHPParseResult parseResult = (PHPParseResult) parameter;
         Set<OffsetRange> result = new TreeSet<OffsetRange>(new Comparator<OffsetRange>() {
             @Override
             public int compare(OffsetRange o1, OffsetRange o2) {
                 return o1.compareTo(o2);
             }
         });
-        final TokenHierarchy<?> tokenHierarchy = parameter.getSnapshot().getTokenHierarchy();
+        final TokenHierarchy<?> tokenHierarchy = parseResult.getSnapshot().getTokenHierarchy();
         TokenSequence<PHPTokenId> tokenSequence = tokenHierarchy != null ? LexUtilities.getPHPTokenSequence( tokenHierarchy, offset) : null;
-        OffsetRange referenceSpan = tokenSequence != null ? DeclarationFinderImpl.getReferenceSpan(tokenSequence, offset) : OffsetRange.NONE;
+        OffsetRange referenceSpan = tokenSequence != null ? DeclarationFinderImpl.getReferenceSpan(tokenSequence, offset, parseResult.getModel()) : OffsetRange.NONE;
         if (!referenceSpan.equals(OffsetRange.NONE)) {
-            Model model = ((PHPParseResult) parameter).getModel();
+            Model model = parseResult.getModel();
             OccurencesSupport occurencesSupport = model.getOccurencesSupport(referenceSpan);
             Occurence caretOccurence = occurencesSupport.getOccurence();
             if (caretOccurence != null) {
@@ -158,7 +154,7 @@ public class OccurrencesFinderImpl extends OccurrencesFinder {
         } else {
             OffsetRange referenceSpanForCodeMarkers = tokenSequence != null ? getReferenceSpanForCodeMarkers(tokenSequence, offset) : OffsetRange.NONE;
             if (!referenceSpanForCodeMarkers.equals(OffsetRange.NONE)) {
-                Model model = ((PHPParseResult) parameter).getModel();
+                Model model = parseResult.getModel();
                 OccurencesSupport occurencesSupport = model.getOccurencesSupport(referenceSpanForCodeMarkers);
                 CodeMarker codeMarker = occurencesSupport.getCodeMarker();
                 if (codeMarker != null) {

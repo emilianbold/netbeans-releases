@@ -61,7 +61,6 @@ import org.openide.util.NbBundle;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.modules.j2ee.common.FileSearchUtility;
-import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 
@@ -92,7 +91,6 @@ final class ProjectImportLocationPanel extends JPanel implements HelpCtx.Provide
         this.nameFormatter = nameFormatter;
         this.allowAlternativeBuildXml = allowAlternativeBuildXml;
         initComponents ();
-        setAsMainCheckBox.setSelected(UserProjectSettings.getDefault().getSetAsMainProject(j2eeModuleType));
         jLabelSrcLocationDesc.setText(importLabel);
         currentLibrariesLocation = "."+File.separatorChar+"lib"; // NOI18N
         librariesLocation.setText(currentLibrariesLocation);
@@ -163,9 +161,7 @@ final class ProjectImportLocationPanel extends JPanel implements HelpCtx.Provide
             settings.putProperty (ProjectLocationWizardPanel.PROJECT_DIR, new File(projectLocation));
         }
 
-        settings.putProperty(ProjectLocationWizardPanel.SET_AS_MAIN, setAsMainCheckBox.isSelected() ? Boolean.TRUE : Boolean.FALSE );
         settings.putProperty(ProjectLocationWizardPanel.SHARED_LIBRARIES, sharableProject.isSelected() ? librariesLocation.getText() : null);
-        UserProjectSettings.getDefault().setSetAsMainProject(setAsMainCheckBox.isSelected(), j2eeModuleType);
     }
 
     boolean valid (WizardDescriptor settings) {
@@ -204,19 +200,18 @@ final class ProjectImportLocationPanel extends JPanel implements HelpCtx.Provide
 
         File destFolder = FileUtil.normalizeFile(new File(projectLocationPath));
 	
-	// #47611: if there is a live project still residing here, forbid project creation.
+        // #47611: if there is a live project still residing here, forbid project creation.
         if (destFolder.isDirectory()) {
             FileObject destFO = FileUtil.toFileObject(destFolder);
             assert destFO != null : "No FileObject for " + destFolder;
-            boolean clear = false;
             try {
-                clear = ProjectManager.getDefault().findProject(destFO) == null;
+                if (ProjectManager.getDefault().findProject(destFO) != null) {
+                    setErrorMessage("MSG_ProjectFolderHasNbProject"); //NOI18N
+                    return false;
+                }
             } catch (IOException e) {
-                // need not report here; clear remains false -> error
-            }
-            if (!clear) {
-		setErrorMessage("MSG_ProjectFolderHasDeletedProject"); //NOI18N
-		return false;
+                setErrorMessage("MSG_ProjectFolderHasDeletedProject"); //NOI18N
+                return false;
             }
         }
 
@@ -306,7 +301,6 @@ final class ProjectImportLocationPanel extends JPanel implements HelpCtx.Provide
         librariesLabel = new javax.swing.JLabel();
         librariesLocation = new javax.swing.JTextField();
         browseLibraries = new javax.swing.JButton();
-        setAsMainCheckBox = new javax.swing.JCheckBox();
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabelSrcLocationDesc, NbBundle.getMessage(ProjectImportLocationPanel.class, "LBL_IW_LocationSrcDesc")); // NOI18N
 
@@ -362,9 +356,6 @@ final class ProjectImportLocationPanel extends JPanel implements HelpCtx.Provide
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(setAsMainCheckBox, org.openide.util.NbBundle.getMessage(ProjectImportLocationPanel.class, "LBL_NWP1_SetAsMain_CheckBox")); // NOI18N
-        setAsMainCheckBox.setMargin(new java.awt.Insets(2, 0, 2, 2));
-
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -383,23 +374,19 @@ final class ProjectImportLocationPanel extends JPanel implements HelpCtx.Provide
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jButtonSrcLocation, javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(jButtonPrjLocation, javax.swing.GroupLayout.Alignment.TRAILING)))
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(jLabelPrjLocationDesc, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
             .addComponent(jSeparator1, javax.swing.GroupLayout.DEFAULT_SIZE, 639, Short.MAX_VALUE)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(sharableProject)
-                .addContainerGap(304, Short.MAX_VALUE))
             .addGroup(layout.createSequentialGroup()
                 .addComponent(librariesLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(librariesLocation, javax.swing.GroupLayout.DEFAULT_SIZE, 403, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(browseLibraries))
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(setAsMainCheckBox)
-                .addContainerGap())
             .addComponent(jLabelSrcLocationDesc, javax.swing.GroupLayout.DEFAULT_SIZE, 639, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabelPrjLocationDesc, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(sharableProject))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -430,9 +417,7 @@ final class ProjectImportLocationPanel extends JPanel implements HelpCtx.Provide
                     .addComponent(librariesLabel)
                     .addComponent(browseLibraries)
                     .addComponent(librariesLocation, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
-                .addComponent(setAsMainCheckBox)
-                .addGap(52, 52, 52))
+                .addGap(93, 93, 93))
         );
 
         jLabelSrcLocationDesc.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectImportLocationPanel.class, "ACSD_ProjectImportLocationPanel_NA")); // NOI18N
@@ -451,7 +436,6 @@ final class ProjectImportLocationPanel extends JPanel implements HelpCtx.Provide
         librariesLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectImportLocationPanel.class, "ACSD_ProjectImportLocationPanel_NA")); // NOI18N
         librariesLocation.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectImportLocationPanel.class, "ACSD_ProjectImportLocationPanel_NA")); // NOI18N
         browseLibraries.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectImportLocationPanel.class, "ACSD_ProjectImportLocationPanel_NA")); // NOI18N
-        setAsMainCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectImportLocationPanel.class, "ACSD_ProjectImportLocationPanel_NA")); // NOI18N
 
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ProjectImportLocationPanel.class, "ACSD_ProjectImportLocationPanel_NA")); // NOI18N
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectImportLocationPanel.class, "ACSD_ProjectImportLocationPanel_NA")); // NOI18N
@@ -540,7 +524,6 @@ private void browseLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
     public javax.swing.JTextField moduleLocationTextField;
     public javax.swing.JTextField projectLocationTextField;
     public javax.swing.JTextField projectNameTextField;
-    private javax.swing.JCheckBox setAsMainCheckBox;
     private javax.swing.JCheckBox sharableProject;
     // End of variables declaration//GEN-END:variables
 

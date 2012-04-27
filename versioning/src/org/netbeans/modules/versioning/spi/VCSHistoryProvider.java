@@ -45,6 +45,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 import javax.swing.Action;
+import org.openide.util.ContextAwareAction;
 
 
 /**
@@ -123,6 +124,7 @@ public interface VCSHistoryProvider {
         private Action[] actions;
         private RevisionProvider revisionProvider;
         private MessageEditProvider messageEditProvider;
+        private ParentProvider parentProvider;
         
         /**
          * Creates a new HistoryEntry instance.
@@ -195,6 +197,41 @@ public interface VCSHistoryProvider {
         {
             this(files, dateTime, message, username, usernameShort, revision, revisionShort, actions, revisionProvider);
             this.messageEditProvider = messageEditProvider;
+        }
+        
+        /**
+         * Creates a new HistoryEntry instance.
+         * 
+         * @param files involved files
+         * @param dateTime the date and time when the versioning revision was created
+         * @param message the message describing the versioning revision 
+         * @param username full description of the user who created the versioning revision 
+         * @param usernameShort short description of the user who created the versioning revision 
+         * @param revision full description of the versioning revision
+         * @param revisionShort short description of the versioning revision
+         * @param actions actions which might be called in regard with this revision
+         * @param revisionProvider a RevisionProvider to get access to a files contents in this revision
+         * @param messageEditProvider a MessageEditProvider to change a revisions message
+         * @param parentProvider a ParentProvider to provide this entries parent entry. Not necessary for VCS
+         * where a revisions parent always is the time nearest previous revision.
+         * 
+         * @since 1.30
+         */
+        public HistoryEntry(
+                File[] files, 
+                Date dateTime, 
+                String message, 
+                String username, 
+                String usernameShort, 
+                String revision, 
+                String revisionShort, 
+                Action[] actions, 
+                RevisionProvider revisionProvider,
+                MessageEditProvider messageEditProvider,
+                ParentProvider parentProvider) 
+        {
+            this(files, dateTime, message, username, usernameShort, revision, revisionShort, actions, revisionProvider, messageEditProvider);
+            this.parentProvider = parentProvider;
         }
         
         /**
@@ -306,11 +343,16 @@ public interface VCSHistoryProvider {
         }
         
         /**
-         * Returns actions which might be called for this HistoryEntry.
+         * Returns actions which might be called for this HistoryEntry as it is presented 
+         * in the history view.<br>
+         * It is ensured that if the returned actions are a {@link ContextAwareAction}, they 
+         * will be provided with a context containing the nodes selected in the history view.
+         * The lookup of those nodes will again contain the relevant {@link HistoryEntry} 
+         * and {@link java.io.File}-s for which the action should be invoked.
          * 
          * @return a field of actions
          * 
-         * @since 1.29
+         * @since 1.31
          */
         public Action[] getActions() {
             return actions;
@@ -332,6 +374,21 @@ public interface VCSHistoryProvider {
         }
         
         /**
+         * Returns this revisions parent entry or null if not available.
+         * 
+         * @param file the file for whitch the parent HistoryEntry should be returned
+         * @return this revisions parent entry
+         * 
+         * @since 1.30
+         */
+        public HistoryEntry getParentEntry(File file) {
+            if(parentProvider != null) {
+                return parentProvider.getParentEntry(file);
+            } 
+            return null;
+        }
+        
+        /**
          * Returns the RevisionProvider
          * @return the RevisionProvider
          */
@@ -345,6 +402,14 @@ public interface VCSHistoryProvider {
          */
         MessageEditProvider getMessageEditProvider() {
             return messageEditProvider;
+        }
+
+        /**
+         * Returns the ParentProvider or null 
+         * @return the ParentProvider
+         */        
+        ParentProvider getParentProvider() {
+            return parentProvider;
         }
     }
     
@@ -367,7 +432,7 @@ public interface VCSHistoryProvider {
     public void removeHistoryChangeListener(HistoryChangeListener l);
 
     /**
-     * Implement and pass over to {@link HisotryEntry} in case 
+     * Implement and pass over to {@link HistoryEntry} in case 
      * {@link HistoryEntry#getRevisionFile(java.io.File, java.io.File)}
      * is expected to work.
      * 
@@ -393,7 +458,25 @@ public interface VCSHistoryProvider {
     }
     
     /**
-     * Implement and pass over to {@link HisotryEntry} in case 
+     * Implement and pass over to a {@link HistoryEntry} in case you want 
+     * {@link HistoryEntry#getParentEntry(java.io.File)} to return relevant values.
+     * 
+     * @since 1.30
+     */
+    public interface ParentProvider {
+        /**
+         * Return a {@link HistoryEntry} representing the parent of the {@link HistoryEntry}
+         * configured with this ParentProvider.
+         * 
+         * @param file the file for whitch the parent HistoryEntry should be returned
+         * @return the parent HistoryEntry
+         * @since 1.30
+         */
+        HistoryEntry getParentEntry(File file);
+    }
+    
+    /**
+     * Implement and pass over to {@link HistoryEntry} in case 
      * {@link HistoryEntry#setMessage(java.lang.String)}
      * is expected to work.
      * 
@@ -442,7 +525,7 @@ public interface VCSHistoryProvider {
         /**
          * Creates a new HistoryEvent
          * 
-         * @param source {@VCSHistoryProvider} representing the versioning system in which a history change happened. 
+         * @param source {@link VCSHistoryProvider} representing the versioning system in which a history change happened. 
          * @param files the files which history has changed
          * 
          * @since 1.29
@@ -466,7 +549,7 @@ public interface VCSHistoryProvider {
         /**
          * Returns the {@link VCSHistoryProvider} representing the versioning system in which a history change happened. 
          * 
-         * @return {@VCSHistoryProvider} representing the versioning system in which a history change happened. 
+         * @return {@link VCSHistoryProvider} representing the versioning system in which a history change happened. 
          * 
          * @since 1.29
          */

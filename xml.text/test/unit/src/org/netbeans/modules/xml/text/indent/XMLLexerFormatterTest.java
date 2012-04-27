@@ -141,7 +141,7 @@ public class XMLLexerFormatterTest extends AbstractTestCase {
         BaseDocument inputDoc = getDocument("indent/input_sub2.xml");
         //format a subsection of the inputDoc
         XMLLexerFormatter formatter = new XMLLexerFormatter(null);
-        BaseDocument formattedDoc = formatter.doReformat(inputDoc, 51, 80);
+        BaseDocument formattedDoc = formatter.doReformat(inputDoc, 63, 80);
         System.out.println(formattedDoc.getText(0, formattedDoc.getLength()));
         BaseDocument outputDoc = getDocument("indent/output_sub2.xml");
         assert (compare(formattedDoc, outputDoc));
@@ -209,6 +209,17 @@ public class XMLLexerFormatterTest extends AbstractTestCase {
         BaseDocument formattedDoc = formatter.doReformat(inputDoc, 0, inputDoc.getLength());
         System.out.println(formattedDoc.getText(0, formattedDoc.getLength()));
         BaseDocument outputDoc = getDocument("indent/output_processingXml.xml");
+        assert (compare(formattedDoc, outputDoc));
+    }
+    
+    
+    public void testFormat_nestedSameElements() throws Exception {
+        BaseDocument inputDoc = getDocument("indent/input_nestedSame.xml");
+        //format the inputDoc
+        XMLLexerFormatter formatter = new XMLLexerFormatter(null);
+        BaseDocument formattedDoc = formatter.doReformat(inputDoc, 0, inputDoc.getLength());
+        System.out.println(formattedDoc.getText(0, formattedDoc.getLength()));
+        BaseDocument outputDoc = getDocument("indent/output_nestedSame.xml");
         assert (compare(formattedDoc, outputDoc));
     }
 }

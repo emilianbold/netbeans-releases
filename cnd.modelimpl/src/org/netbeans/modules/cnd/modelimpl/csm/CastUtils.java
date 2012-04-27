@@ -114,7 +114,7 @@ public class CastUtils {
         StringBuilder l = new StringBuilder();
         for( ; token != null; token = token.getNextSibling() ) {
             switch( token.getType() ) {
-                case CPPTokenTypes.ID:
+                case CPPTokenTypes.IDENT:
                     if (l.length()>0) {
                         l.append('.');
                     }
@@ -168,7 +168,7 @@ public class CastUtils {
         }
         child = AstRenderer.getFirstSiblingSkipInline(child);
         child = AstRenderer.getFirstSiblingSkipQualifiers(child);
-	if( child != null && child.getType() == CPPTokenTypes.ID ) {
+	if( child != null && child.getType() == CPPTokenTypes.IDENT ) {
 	    child = child.getNextSibling();
 	    if( child != null && child.getType() == CPPTokenTypes.LESSTHAN ) {
                 child = AstRenderer.skipTemplateParameters(child);

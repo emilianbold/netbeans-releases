@@ -78,7 +78,7 @@ public class VCSInterceptorTest extends NbTestCase {
         userdir.mkdirs();
         System.setProperty("netbeans.user", userdir.getAbsolutePath());
         if(!dataRootDir.exists()) dataRootDir.mkdirs();
-        Lookup.getDefault().lookupAll(VersioningSystem.class);
+        Lookup.getDefault().lookupAll(VersioningSystem.class).size();
         inteceptor = (TestVCSInterceptor) TestVCS.getInstance().getVCSInterceptor();
         File f = new File(dataRootDir, "workdir");
         deleteRecursively(f);

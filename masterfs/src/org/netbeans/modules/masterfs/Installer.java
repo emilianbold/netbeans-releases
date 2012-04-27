@@ -42,21 +42,23 @@
 package org.netbeans.modules.masterfs;
 
 import org.netbeans.modules.masterfs.watcher.Watcher;
-import org.openide.modules.ModuleInstall;
-import org.openide.util.Lookup;
+import org.openide.modules.OnStart;
+import org.openide.modules.OnStop;
 
 /** Shutdown the watcher system.
  */
-public final class Installer extends ModuleInstall {
-
+@OnStart
+public final class Installer implements Runnable {
     @Override
-    public void uninstalled() {
-        close();
+    public void run() {
+        Watcher.isEnabled();
     }
-
-    @Override
-    public void close() {
-        Watcher w = Lookup.getDefault().lookup(Watcher.class);
-        w.shutdown();
+    
+    @OnStop
+    public static final class Down implements Runnable {
+        @Override
+        public void run() {
+            Watcher.shutdown();
+        }
     }
 }

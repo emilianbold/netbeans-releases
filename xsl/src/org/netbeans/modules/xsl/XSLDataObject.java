@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.xsl;
 
+import java.io.IOException;
 import org.xml.sax.InputSource;
 import javax.xml.transform.Source;
 import org.netbeans.core.spi.multiview.MultiViewElement;
@@ -61,6 +62,7 @@ import org.netbeans.modules.xml.sync.*;
 import org.netbeans.modules.xml.cookies.*;
 import org.netbeans.modules.xml.api.XmlFileEncodingQueryImpl;
 import org.netbeans.modules.xsl.cookies.ValidateXSLSupport;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
@@ -70,6 +72,13 @@ import org.openide.windows.TopComponent;
  * @author Libor Kramolis
  * @author asgeir@dimonsoftware.com
  */
+@MIMEResolver.NamespaceRegistration(
+    displayName="org.netbeans.modules.xsl.resources.Bundle#XSLTResolver",
+    acceptedExtension={"xsl", "xslt"},
+    mimeType="application/xslt+xml",
+    position=450,
+    elementNS="http://www.w3.org/1999/XSL/Transform"
+)
 public final class XSLDataObject extends MultiDataObject implements XMLDataObjectLook {
     /** Serial Version UID */
     private static final long serialVersionUID = -3523066651187749549L;
@@ -97,11 +106,17 @@ public final class XSLDataObject extends MultiDataObject implements XMLDataObjec
         set.add (new TransformableSupport (source));
 
         // editor support defines MIME type understood by EditorKits registry         
-        TextEditorSupport.TextEditorSupportFactory editorFactory =
+        final TextEditorSupport.TextEditorSupportFactory editorFactory =
             new TextEditorSupport.TextEditorSupportFactory (this, MIME_TYPE);
         editorFactory.registerCookies (set);
 
         set.assign(XmlFileEncodingQueryImpl.class, XmlFileEncodingQueryImpl.singleton());
+
+        set.assign( SaveAsCapable.class, new SaveAsCapable() {
+            public void saveAs(FileObject folder, String fileName) throws IOException {
+                editorFactory.createEditor().saveAs( folder, fileName );
+            }
+        });
     }
 
     @MultiViewElement.Registration(

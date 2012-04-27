@@ -151,10 +151,10 @@ public final class Watcher extends AnnotationProvider {
         return ext;
     }
     
-    public void shutdown() {
-        if (ext != null) {
+    public static void shutdown() {
+        if (isEnabled()) {
             try {
-                ext.shutdown();
+                ext().shutdown();
             } catch (IOException ex) {
                 LOG.log(Level.INFO, "Error on shutdown", ex);
             } catch (InterruptedException ex) {
@@ -220,8 +220,8 @@ public final class Watcher extends AnnotationProvider {
         }
         
         final void register(FileObject fo) {
-            if (fo.isValid()) {
-                assert fo.isFolder() : "Should be a folder: " + fo + " data: " + fo.isData();
+            if (fo.isValid() && !fo.isFolder()) {
+                LOG.log(Level.INFO, "Should be a folder: {0} data: {1} folder: {2} valid: {3}", new Object[]{fo, fo.isData(), fo.isFolder(), fo.isValid()});
             }
             try {
                 clearQueue();
@@ -361,6 +361,9 @@ public final class Watcher extends AnnotationProvider {
             synchronized(lock) {
                 toRefresh = pending;
                 pending = null;
+                if (toRefresh == null) {
+                    return;
+                }
             }
             LOG.log(Level.FINE, "Refreshing {0} directories", toRefresh.size());
 
@@ -412,7 +415,9 @@ public final class Watcher extends AnnotationProvider {
         for (Item<Notifier> item : Lookup.getDefault().lookupResult(Notifier.class).allItems()) {
             try {
                 final Notifier notifier = item.getInstance();
-                NotifierAccessor.getDefault().start(notifier);
+                if (notifier != null) {
+                    NotifierAccessor.getDefault().start(notifier);
+                }
                 return notifier;
             } catch (IOException ex) {
                 LOG.log(Level.INFO, "Notifier {0} refused to be initialized", item.getType()); // NOI18N
@@ -427,6 +432,10 @@ public final class Watcher extends AnnotationProvider {
     }
     
     public static synchronized void lock(FileObject fileObject) {
+        if (fileObject.isData()) {
+            fileObject = fileObject.getParent();
+        }
+        
         int[] arr = MODIFIED.get(fileObject);
         if (arr == null) {
             MODIFIED.put(fileObject, arr = new int[] { 0 });
@@ -434,11 +443,15 @@ public final class Watcher extends AnnotationProvider {
         arr[0]++;
     }
     
-    private static synchronized boolean isLocked(FileObject fo) {
+    static synchronized boolean isLocked(FileObject fo) {
         return MODIFIED.get(fo) != null;
     }
 
     public static synchronized void unlock(FileObject fo) {
+        if (fo.isData()) {
+            fo = fo.getParent();
+        }
+        
         int[] arr = MODIFIED.get(fo);
         if (arr == null) {
             return;

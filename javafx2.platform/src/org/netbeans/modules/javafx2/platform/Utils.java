@@ -212,30 +212,32 @@ public final class Utils {
         Parameters.notNull("sdkPath", sdkPath); // NOI18N
         Parameters.notNull("runtimePath", runtimePath); // NOI18N
         
-        // Unit test execution check
-        if(isTest) {
-            return null;
-        }
-
         // 32b vs 64b check
-        if (!isArchitechtureCorrect(runtimePath)) {
+        if (!isArchitechtureCorrect(runtimePath) && !isTest) {
             return null;
         }
 
         JavaPlatform defaultPlatform = JavaPlatformManager.getDefault().getDefaultPlatform();
         FileObject platformFolder = defaultPlatform.getInstallFolders().iterator().next();
         JavaPlatform platform = null;
-        try {
-            platform = J2SEPlatformCreator.createJ2SEPlatform(platformFolder, platformName);
-            LOGGER.log(Level.INFO, "\"{0}\" has been created successfully", platformName); // NOI18N
-        } catch (IllegalArgumentException illegalArgumentException) {
-            LOGGER.log(Level.WARNING, "Java Platform \"{0}\" already exists, skipping platform creation", platformName); // NOI18N
-            JavaPlatform[] installedPlatforms = JavaPlatformManager.getDefault().getInstalledPlatforms();
-            for (JavaPlatform jp : installedPlatforms) {
-                String name = jp.getProperties().get(JavaFXPlatformUtils.PLATFORM_ANT_NAME);
-                if (name.equals(platformName)) {
-                    platform = jp;
-                    break;
+
+        if(isTest) {
+            // Re-using default platform as FX platform because createJ2SEPlatform fails when called from test
+            // Note that outside tests the default platform must not be used as FX platform
+            platform = defaultPlatform;
+        } else {
+            try {
+                platform = J2SEPlatformCreator.createJ2SEPlatform(platformFolder, platformName);
+                LOGGER.log(Level.INFO, "\"{0}\" has been created successfully", platformName); // NOI18N
+            } catch (IllegalArgumentException illegalArgumentException) {
+                LOGGER.log(Level.WARNING, "Java Platform \"{0}\" already exists, skipping platform creation", platformName); // NOI18N
+                JavaPlatform[] installedPlatforms = JavaPlatformManager.getDefault().getInstalledPlatforms();
+                for (JavaPlatform jp : installedPlatforms) {
+                    String name = jp.getProperties().get(JavaFXPlatformUtils.PLATFORM_ANT_NAME);
+                    if (name.equals(platformName)) {
+                        platform = jp;
+                        break;
+                    }
                 }
             }
         }

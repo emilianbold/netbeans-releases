@@ -47,7 +47,7 @@ import java.util.Collection;
 import java.util.Map;
 import org.netbeans.modules.java.hints.declarative.conditionapi.Context;
 import org.netbeans.modules.java.hints.declarative.conditionapi.Variable;
-import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
+import org.netbeans.spi.java.hints.HintContext;
 
 /**
  *

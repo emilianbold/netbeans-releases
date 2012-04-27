@@ -321,8 +321,13 @@ BIG:
             }
         }
 
+        @Override
         public Collection<? extends T> allInstances() {
             return openCol(result.allInstances(), 0);
+        }
+        @Override
+        protected Collection<? extends T> allInstances(boolean ignore) {
+            return allInstances();
         }
 
         private <S> Collection<S> openCol(Collection<S> c, int type) {
@@ -337,6 +342,10 @@ BIG:
         @Override
         public Collection<? extends Item<T>> allItems() {
             return openCol(result.allItems(), 2);
+        }
+        @Override
+        public Collection<? extends Item<T>> allItems(boolean ignore) {
+            return allItems();
         }
 
         public void resultChanged(org.openide.util.LookupEvent ev) {
@@ -406,6 +415,10 @@ BIG:
             assert false;
             return null;
         }
+        protected Collection<T> allInstances(boolean ignore) {
+            assert false;
+            return null;
+        }
 
         public void resultChanged(LookupEvent ev) {
             R r = (R)result.get();
@@ -421,11 +434,16 @@ BIG:
             assert false;
             return null;
         }
+        @Override
+        protected Collection<? extends Item<T>> allItems(boolean callBeforeLookup) {
+            return allItems();
+        }
 
         @Override
         public Set<Class<? extends T>> allClasses() {
             assert false;
             return null;
         }
+
     } // end of WeakResult
 }

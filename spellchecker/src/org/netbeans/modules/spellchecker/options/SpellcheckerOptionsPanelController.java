@@ -108,7 +108,7 @@ public class SpellcheckerOptionsPanelController extends OptionsPanelController {
     }
 
     public HelpCtx getHelpCtx() {
-        return null;
+        return new HelpCtx("netbeans.optionsDialog.editor.spellchecker"); //NOI18N
     }
 
     private PropertyChangeSupport pcs = new PropertyChangeSupport(this);

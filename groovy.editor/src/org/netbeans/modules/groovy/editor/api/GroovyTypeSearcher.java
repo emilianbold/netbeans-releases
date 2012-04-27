@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.groovy.editor.api;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Locale;
@@ -53,27 +52,24 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.Icon;
-import org.codehaus.groovy.ast.ASTNode;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.IndexSearcher;
 import org.netbeans.modules.csl.api.IndexSearcher.Descriptor;
 import org.netbeans.modules.csl.api.IndexSearcher.Helper;
 import org.netbeans.modules.csl.spi.GsfUtilities;
-import org.netbeans.modules.groovy.editor.api.elements.IndexedClass;
-import org.netbeans.modules.groovy.editor.api.elements.IndexedElement;
+import org.netbeans.modules.groovy.editor.api.elements.index.IndexedClass;
+import org.netbeans.modules.groovy.editor.api.elements.index.IndexedElement;
 import org.netbeans.modules.groovy.support.api.GroovySources;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport.Kind;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -85,6 +81,7 @@ public class GroovyTypeSearcher implements IndexSearcher {
 
     private static final Logger LOGGER = Logger.getLogger(GroovyTypeSearcher.class.getName());
 
+    @Override
     public Set<? extends Descriptor> getSymbols(Project project, String textForQuery, Kind kind, Helper helper) {
         // TODO - search for methods too!!
 
@@ -92,6 +89,7 @@ public class GroovyTypeSearcher implements IndexSearcher {
         return getTypes(project, textForQuery, kind, helper);
     }
 
+    @Override
     public Set<? extends Descriptor> getTypes(Project project, String textForQuery, Kind kind, Helper helper) {
         GroovyIndex index = GroovyIndex.get(QuerySupport.findRoots(project, Collections.singleton(ClassPath.SOURCE), Collections.<String>emptySet(), Collections.<String>emptySet()));
 
@@ -164,20 +162,20 @@ public class GroovyTypeSearcher implements IndexSearcher {
             this.helper = helper;
         }
 
+        @Override
         public Icon getIcon() {
             if (projectName == null) {
                 initProjectInfo();
             }
-            //if (isLibrary) {
-            //    return new ImageIcon(org.openide.util.Utilities.loadImage(Js_KEYWORD));
-            //}
             return helper.getIcon(element);
         }
 
+        @Override
         public String getTypeName() {
             return element.getName();
         }
 
+        @Override
         public String getProjectName() {
             if (projectName == null) {
                 initProjectInfo();
@@ -199,13 +197,14 @@ public class GroovyTypeSearcher implements IndexSearcher {
                 }
             } else {
                 isLibrary = true;
-                LOGGER.log(Level.FINE, "No fileobject for " + element.toString());
+                LOGGER.log(Level.FINE, "No fileobject for {0}", element.toString());
             }
             if (projectName == null) {
                 projectName = "";
             }
         }
         
+        @Override
         public Icon getProjectIcon() {
             if (projectName == null) {
                 initProjectInfo();
@@ -216,40 +215,32 @@ public class GroovyTypeSearcher implements IndexSearcher {
             return projectIcon;
         }
 
+        @Override
         public FileObject getFileObject() {
             return element.getFileObject();
         }
 
+        @Override
         public void open() {
-            ASTNode node = AstUtilities.getForeignNode(element);
-            
-            if (node != null) {
-                // TODO - embedding context?
-                try {
-                    int offset = AstUtilities.getRange(node, (BaseDocument) element.getDocument()).getStart();
-                    GsfUtilities.open(element.getFileObject(), offset, element.getName());
-                } catch (IOException ioe) {
-                    Exceptions.printStackTrace(ioe);
-                }
-                return;
-            }
-            
             FileObject fileObject = element.getFileObject();
             if (fileObject == null) {
                 NotifyDescriptor nd =
-                    new NotifyDescriptor.Message(NbBundle.getMessage(GroovyTypeSearcher.class, "FileDeleted"), 
+                    new NotifyDescriptor.Message(NbBundle.getMessage(GroovyTypeSearcher.class, "FileDeleted"),
                     NotifyDescriptor.Message.ERROR_MESSAGE);
                 DialogDisplayer.getDefault().notify(nd);
                 // TODO: Try to remove the item from the index? Can't fix yet because the url is wiped
                 // out by getFileObject (to avoid checking file existence multiple times; use a boolean
                 // flag for that instead)
-                
-                return;
+            } else {
+
+                // TODO: Would be good to change offset to the start of the class decalaration instead 
+                // of zero. Unfortunatelly we don't have such an information in the index so far and
+                // parsing whole AST for that is too expensive (see issue 183727 for background)
+                GsfUtilities.open(fileObject, 0, element.getName());
             }
-            
-            helper.open(fileObject, element);
         }
 
+        @Override
         public String getContextName() {
             // XXX This is lame - move formatting logic to the goto action!
             StringBuilder sb = new StringBuilder();
@@ -277,18 +268,22 @@ public class GroovyTypeSearcher implements IndexSearcher {
             }
         }
 
+        @Override
         public ElementHandle getElement() {
             return element;
         }
 
+        @Override
         public int getOffset() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        @Override
         public String getSimpleName() {
             return element.getName();
         }
 
+        @Override
         public String getOuterName() {
             return null;
         }

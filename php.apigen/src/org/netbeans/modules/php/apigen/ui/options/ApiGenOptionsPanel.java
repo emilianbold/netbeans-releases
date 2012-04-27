@@ -88,7 +88,11 @@ public class ApiGenOptionsPanel extends JPanel {
         init();
     }
 
-    @NbBundle.Messages("ApiGenOptionsPanel.apiGen.hint=Full path of ApiGen script (typically {0} or {1}).")
+    @NbBundle.Messages({
+        "# {0} - short script name",
+        "# {1} - long script name",
+        "ApiGenOptionsPanel.apiGen.hint=Full path of ApiGen script (typically {0} or {1})."
+    })
     private void init() {
         hintLabel.setText(Bundle.ApiGenOptionsPanel_apiGen_hint(ApiGenScript.SCRIPT_NAME, ApiGenScript.SCRIPT_NAME_LONG));
         errorLabel.setText(" "); // NOI18N

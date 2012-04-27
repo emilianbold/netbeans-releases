@@ -93,7 +93,6 @@ public class NewJavaProjectNameLocationStepOperatorTest extends JellyTestCase {
         stpop.txtProjectLocation().setText("/tmp"); //NOI18N
         stpop.txtProjectFolder().getText();
         stpop.cbCreateMainClass().setSelected(false);
-        stpop.cbSetAsMainProject().setSelected(false);
 
         stpop.cancel();
     }
@@ -110,7 +109,6 @@ public class NewJavaProjectNameLocationStepOperatorTest extends JellyTestCase {
         stpop.txtBuildScript().setText("/path/to/antscript");//NOI18N
         stpop.txtProjectName().setText("ant project");//NOI18N
         stpop.txtProjectFolder().setText("/ant/folder");//NOI18N
-        stpop.cbSetAsMainProject().setSelected(true);
         stpop.btBrowseLocation().pushNoBlock();
 
         String browseExistingAntProjectFolder =
@@ -163,7 +161,6 @@ public class NewJavaProjectNameLocationStepOperatorTest extends JellyTestCase {
         stpop.txtProjectName().setText("MyNewProject");
         stpop.txtProjectFolder().setText("/tmp"); //NOI18N
         stpop.txtProjectFolder().getText();
-        stpop.cbSetAsMainProject().setSelected(false);
         stpop.btBrowseProjectLocation().pushNoBlock();
         String selectProjectLocation =
                 org.netbeans.jellytools.Bundle.getString(

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -26,7 +26,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2007-2012 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.java.hints;
 
@@ -40,249 +40,123 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
-import java.util.prefs.Preferences;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ElementVisitor;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
-import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.TypeParameterElement;
-import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.Types;
-import javax.swing.JComponent;
+import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
-import org.netbeans.modules.java.hints.spi.AbstractHint;
 import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
-import org.netbeans.spi.editor.hints.Fix;
-import org.openide.filesystems.FileObject;
+import org.netbeans.spi.editor.hints.Severity;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.JavaFix;
+import org.netbeans.spi.java.hints.TriggerTreeKind;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Jaroslav tulach
  */
-public class UtilityClass extends AbstractHint implements ElementVisitor<Boolean,CompilationInfo> {
-    private boolean clazz;
-    private transient volatile boolean stop;
-
-    private UtilityClass(boolean b) {
-        super( false, true, b ? AbstractHint.HintSeverity.WARNING : AbstractHint.HintSeverity.CURRENT_LINE_WARNING);
-        clazz = b;
-    }
-
-    public Set<Kind> getTreeKinds() {
-        return EnumSet.of(clazz ? Kind.CLASS : Kind.METHOD);
-    }
-
-    public static UtilityClass withoutConstructor() {
-        return new UtilityClass(true);
-    }
-    public static UtilityClass withConstructor() {
-        return new UtilityClass(false);
-    }
-
-    public List<ErrorDescription> run(CompilationInfo compilationInfo,
-                                      TreePath treePath) {
-        stop = false;
+public class UtilityClass {
+    
+    @Hint(id="org.netbeans.modules.java.hints.UtilityClass_1", displayName="#MSG_UtilityClass", description="#HINT_UtilityClass", category="api", enabled=false, severity= Severity.VERIFIER)
+    @TriggerTreeKind(Kind.CLASS)
+    public static ErrorDescription utilityClass(HintContext ctx) {
+        CompilationInfo compilationInfo = ctx.getInfo();
+        TreePath treePath = ctx.getPath();
         Element e = compilationInfo.getTrees().getElement(treePath);
         if (e == null) {
             return null;
         }
-
-        if (clazz) {
-            if (e.getKind() == ElementKind.ENUM) {
-                return null;
-            }
-            if (e.getKind() == ElementKind.INTERFACE) {
-                return null;
-            }
-            if (e.getKind() == ElementKind.ANNOTATION_TYPE) {
-                return null;
-            }
-            if (e.getKind() == ElementKind.CLASS) {
-                TypeMirror supr = ((TypeElement)e).getSuperclass();
-                if (supr == null) {
-                    return null;
-                }
-                Element superElem = compilationInfo.getTypes().asElement(supr);
-                if (superElem instanceof TypeElement) {
-                    Name superName = compilationInfo.getElements().getBinaryName((TypeElement)superElem);
-                    if (superName != null && !superName.contentEquals("java.lang.Object")) {
-                        return null;
-                    }
-                }
-            }
-
-            int cnt = 0;
-            for (Element m : e.getEnclosedElements()) {
-                if (stop) {
-                    return null;
-                }
-                if (m.accept(this, compilationInfo)) {
-                    return null;
-                }
-                if (m.getKind() == ElementKind.METHOD || m.getKind() == ElementKind.FIELD) {
-                    cnt++;
-                }
-            }
-
-            if (cnt == 0) {
-                return null;
-            }
-
-        } else {
-            if (e.getKind() != ElementKind.CONSTRUCTOR) {
-                return null;
-            }
-            TypeElement jlThrowable = compilationInfo.getElements().getTypeElement("java.lang.Throwable");
-            if (jlThrowable == null) {//no bootclasspath? - better do nothing:
-                return null;
-            }
-            ExecutableElement x = (ExecutableElement)e;
-            Element enclosingType = x.getEnclosingElement();
-            Types t = compilationInfo.getTypes();
-            if (t.isSubtype(t.erasure(enclosingType.asType()), t.erasure(jlThrowable.asType()))) {
-                return null;//#197721
-            }
-            List<? extends Element> allElements = enclosingType.getEnclosedElements();
-            List<Element> enclosedElements = new ArrayList<Element>(allElements.size());
-            
-            for (Element el : allElements) {
-                if (el.getKind() != ElementKind.CONSTRUCTOR) enclosedElements.add(el);
-            }
-            
-            if(enclosedElements.isEmpty())
-                return null; //class contains the ctor only
-
-            for (Element m : enclosedElements) {
-                if (stop) {
-                    return null;
-                }
-                if (m.accept(this, compilationInfo)) {
-                    return null;
-                }
-            }
-            if (x.getModifiers().contains(Modifier.PROTECTED) || x.getModifiers().contains(Modifier.PUBLIC)) {
-                // ok
-            } else {
+        
+        if (!isUtilityClass(compilationInfo, e)) return null;
+        
+        for (ExecutableElement c : ElementFilter.constructorsIn(e.getEnclosedElements())) {
+            if (!compilationInfo.getElementUtilities().isSynthetic(c)) {
                 return null;
             }
         }
-        List<Fix> fixes = Collections.<Fix>singletonList(JavaFix.toEditorFix(new FixImpl(
-            clazz,
-            TreePathHandle.create(e, compilationInfo)
-            )));
 
-        int[] span = null;
+        return ErrorDescriptionFactory.forName(ctx,
+                                               treePath,
+                                               NbBundle.getMessage(UtilityClass.class, "MSG_UtilityClass"),
+                                               new FixImpl(true,
+                                                           TreePathHandle.create(e, compilationInfo)
+                                               ).toEditorFix());
+    }
+    
+    @Hint(id="org.netbeans.modules.java.hints.UtilityClass_2", displayName="#MSG_PublicConstructor", description="HINT_PublicConstructor", category="api", enabled=false, severity= Severity.HINT)
+    @TriggerTreeKind(Kind.METHOD)
+    public static ErrorDescription constructor(HintContext ctx) {
+        CompilationInfo compilationInfo = ctx.getInfo();
+        TreePath treePath = ctx.getPath();
+        Element e = compilationInfo.getTrees().getElement(treePath);
+        if (e == null) {
+            return null;
+        }
+        if (   e.getKind() != ElementKind.CONSTRUCTOR
+            || compilationInfo.getElementUtilities().isSynthetic(e)
+            || (!e.getModifiers().contains(Modifier.PROTECTED) && !e.getModifiers().contains(Modifier.PUBLIC))) {
+            return null;
+        }
+        
+        if (!isUtilityClass(compilationInfo, e.getEnclosingElement())) return null;
+        
+        return ErrorDescriptionFactory.forName(ctx,
+                                               treePath,
+                                               NbBundle.getMessage(UtilityClass.class, "MSG_PublicConstructor"),
+                                               new FixImpl(false,
+                                                           TreePathHandle.create(e, compilationInfo)
+                                               ).toEditorFix());
+    }
+    
+    private static boolean isMainMethod(ExecutableElement m) {
+        return m.getModifiers().contains(Modifier.STATIC) &&
+               m.getSimpleName().contentEquals("main") &&
+               (m.getReturnType().getKind() == TypeKind.VOID) &&
+               (m.getParameters().size() == 1) &&
+               (m.getParameters().get(0).asType().toString().equals("java.lang.String[]"));
+    }
 
-        switch (treePath.getLeaf().getKind()) {
-            case METHOD: span = compilationInfo.getTreeUtilities().findNameSpan((MethodTree) treePath.getLeaf()); break;
-            case ANNOTATION_TYPE:
-            case CLASS:
-            case ENUM:
-            case INTERFACE:
-                span = compilationInfo.getTreeUtilities().findNameSpan((ClassTree) treePath.getLeaf()); break;
-            case VARIABLE: span = compilationInfo.getTreeUtilities().findNameSpan((VariableTree) treePath.getLeaf()); break;
+    private static boolean isUtilityClass(CompilationInfo compilationInfo, Element clazz) {
+        if (clazz.getKind() != ElementKind.CLASS) {
+            return false;
+        }
+        
+        TypeMirror supr = ((TypeElement) clazz).getSuperclass();
+        if (supr == null) {
+            return false;
+        }
+        Element superElem = compilationInfo.getTypes().asElement(supr);
+        if (superElem instanceof TypeElement) {
+            Name superName = compilationInfo.getElements().getBinaryName((TypeElement) superElem);
+            if (superName != null && !superName.contentEquals("java.lang.Object")) {
+                return false;
+            }
         }
 
-        if (span != null) {
-            ErrorDescription ed = ErrorDescriptionFactory.createErrorDescription(
-                    getSeverity().toEditorSeverity(),
-                    NbBundle.getMessage(UtilityClass.class, clazz ? "MSG_UtilityClass" : "MSG_PublicConstructor"), // NOI18N
-                    fixes,
-                    compilationInfo.getFileObject(),
-                    span[0],
-                    span[1]
-                    );
-
-            return Collections.singletonList(ed);
+        int cnt = 0;
+        for (Element m : clazz.getEnclosedElements()) {
+            if (m.getKind() == ElementKind.METHOD && isMainMethod(((ExecutableElement) m))) return false;
+            if (m.getKind() == ElementKind.METHOD || m.getKind() == ElementKind.FIELD) {
+                if (!m.getModifiers().contains(Modifier.STATIC)) return false;
+                cnt++;
+            }
         }
 
-        return null;
+        return cnt > 0;
     }
-
-    public String getId() {
-        return getClass().getName() + (clazz ? "_1" : "_2");
-    }
-
-    public String getDisplayName() {
-        return NbBundle.getMessage(UtilityClass.class, clazz ? "MSG_UtilityClass" : "MSG_PublicConstructor"); // NOI18N
-    }
-
-    public String getDescription() {
-        return NbBundle.getMessage(UtilityClass.class, clazz ? "HINT_UtilityClass" : "HINT_PublicConstructor"); // NOI18N
-    }
-
-    public void cancel() {
-        // XXX implement me
-    }
-
-    public Preferences getPreferences() {
-        return null;
-    }
-
-    @Override
-    public JComponent getCustomizer(Preferences node) {
-        return null;
-    }
-
-    public Boolean visit(Element arg0, CompilationInfo arg1) {
-        return false;
-    }
-
-    public Boolean visit(Element arg0) {
-        return false;
-    }
-
-    public Boolean visitPackage(PackageElement arg0, CompilationInfo arg1) {
-        return false;
-    }
-
-    public Boolean visitType(TypeElement arg0, CompilationInfo arg1) {
-        return false;
-    }
-
-    public Boolean visitVariable(VariableElement v, CompilationInfo arg1) {
-        return !v.getModifiers().contains(Modifier.STATIC);
-    }
-
-    public Boolean visitExecutable(ExecutableElement m, CompilationInfo arg1) {
-        if (clazz) {
-            return !m.getModifiers().contains(Modifier.STATIC) && !arg1.getElementUtilities().isSynthetic(m);
-        } else {
-            boolean staticCtor = !m.getModifiers().contains(Modifier.STATIC) && !m.getSimpleName().contentEquals("<init>"); // NOI18N
-            boolean main = m.getModifiers().contains(Modifier.STATIC) &&
-                    m.getSimpleName().contentEquals("main") &&
-                    (m.getReturnType().getKind() == TypeKind.VOID) &&
-                    (m.getParameters().size() == 1) &&
-                    (m.getParameters().get(0).asType().toString().equals("java.lang.String[]"));
-            return staticCtor || main;
-        }
-    }
-
-    public Boolean visitTypeParameter(TypeParameterElement arg0, CompilationInfo arg1) {
-        return false;
-    }
-
-    public Boolean visitUnknown(Element arg0, CompilationInfo arg1) {
-        return false;
-    }
-
+    
     private static final class FixImpl extends JavaFix {
         private boolean clazz;
 
@@ -300,7 +174,9 @@ public class UtilityClass extends AbstractHint implements ElementVisitor<Boolean
         }
 
         @Override
-        protected void performRewrite(WorkingCopy wc, TreePath tp, boolean canShowUI) {
+        protected void performRewrite(TransformationContext ctx) {
+            WorkingCopy wc = ctx.getWorkingCopy();
+            TreePath tp = ctx.getPath();
             Element e = wc.getTrees().getElement(tp);
             if (e == null) {
                 return;

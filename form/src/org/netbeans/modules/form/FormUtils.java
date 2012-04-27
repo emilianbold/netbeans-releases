@@ -384,7 +384,8 @@ public class FormUtils
     /** Table defining order of dependent properties. */
     private static Object[][] propertyOrder = {
         { "javax.swing.text.JTextComponent",
-            "document", "text" },
+            "document", "text",
+            "editable", "background" },
         { "javax.swing.JSpinner",
             "model", "editor" },
         { "javax.swing.AbstractButton",
@@ -415,6 +416,12 @@ public class FormUtils
             "model", "text" },
         { "javax.swing.JRadioButton",
             "model", "buttonGroup" },
+        { "java.awt.Dialog",
+            "undecorated", "opacity",
+            "undecorated", "shape" },
+        { "java.awt.Frame",
+            "undecorated", "opacity",
+            "undecorated", "shape" },
         { "javax.swing.JFileChooser",
             "dialogType", "approveButtonText"}
     };

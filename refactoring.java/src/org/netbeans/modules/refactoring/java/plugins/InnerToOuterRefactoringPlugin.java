@@ -43,13 +43,21 @@
  */
 package org.netbeans.modules.refactoring.java.plugins;
 
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreePath;
+import com.sun.source.util.TreeScanner;
 import java.io.IOException;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.NestingKind;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.*;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
@@ -138,8 +146,6 @@ public class InnerToOuterRefactoringPlugin extends JavaRefactoringPlugin {
         // increase progress (step 2)
         fireProgressListenerStep();
         
-        refactoring.setReferenceName("outer"); // NOI18N
-        
         fireProgressListenerStop();
         return preCheckProblem;
     }
@@ -147,6 +153,34 @@ public class InnerToOuterRefactoringPlugin extends JavaRefactoringPlugin {
     @Override
     public Problem checkParameters() {
         return null;
+    }
+
+    @Override
+    protected Problem fastCheckParameters(final CompilationController javac) throws IOException {
+        Problem problem = null;
+        String name = refactoring.getReferenceName();
+        if(name != null) {
+            javac.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+            Element resolved = refactoring.getSourceType().resolveElement(javac);
+            if(resolved != null && resolved.getKind().isClass()) {
+                List<VariableElement> fieldsIn = ElementFilter.fieldsIn(((TypeElement)resolved).getEnclosedElements());
+                for (VariableElement variableElement : fieldsIn) {
+                    if(variableElement.getSimpleName().toString().equals(name)) {
+                        problem = new Problem(true, NbBundle.getMessage(InnerToOuterRefactoringPlugin.class, "ERR_OuterNameAlreadyUsed", name, variableElement.getEnclosingElement().getSimpleName())); // NOI18N
+                        return problem;
+                    }
+                }
+                
+                fieldsIn = ElementFilter.fieldsIn(javac.getElements().getAllMembers((TypeElement)resolved));
+                for (VariableElement variableElement : fieldsIn) {
+                    if(variableElement.getSimpleName().toString().equals(name)) {
+                        problem = new Problem(false, NbBundle.getMessage(InnerToOuterRefactoringPlugin.class, "WRN_OuterNameAlreadyUsed", name, variableElement.getEnclosingElement().getSimpleName())); // NOI18N
+                        break;
+                    }
+                }
+            }
+        }
+        return problem;
     }
 
     @Override
@@ -159,6 +193,18 @@ public class InnerToOuterRefactoringPlugin extends JavaRefactoringPlugin {
             result = createProblem(result, true, NbBundle.getMessage(InnerToOuterRefactoringPlugin.class, "ERR_InvalidIdentifier", newName)); // NOI18N
             return result;
         }
+        String referenceName = refactoring.getReferenceName();
+        if(referenceName != null) {
+            if (referenceName.length() < 1) {
+                result = new Problem(true, NbBundle.getMessage(InnerToOuterRefactoringPlugin.class, "ERR_EmptyReferenceName")); // NOI18N
+                return result;
+            } else {
+                if (!Utilities.isJavaIdentifier(referenceName)) {
+                    result = new Problem(true, NbBundle.getMessage(InnerToOuterRefactoringPlugin.class, "ERR_InvalidIdentifier", referenceName)); // NOI18N
+                    return result;
+                }
+            }
+        }
         
         FileObject primFile = refactoring.getSourceType().getFileObject();
         FileObject folder = primFile.getParent();
@@ -170,7 +216,7 @@ public class InnerToOuterRefactoringPlugin extends JavaRefactoringPlugin {
             }
         }
 
-        return null;
+        return super.fastCheckParameters();
     }
 
     private Set<FileObject> getRelevantFiles() {

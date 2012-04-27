@@ -39,116 +39,123 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.java.hints;
 
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
-import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.hints.test.api.HintTest;
 
 /**
  *
  * @author vita
  */
-public class NoLoggersTest extends TestBase {
+public class NoLoggersTest extends NbTestCase {
 
     public NoLoggersTest(String name) {
-        super(name, NoLoggers.class);
+        super(name);
     }
 
     public void testSimple() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {}",
-                            "1:13-1:17:verifier:No logger declared for test.Test class"
-                            );
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {}")
+                .run(NoLoggers.class)
+                .assertWarnings("1:13-1:17:verifier:No logger declared for test.Test class");
     }
 
     public void testSimpleFix() throws Exception {
-        performFixTest("test/Test.java",
-                       "package test;\n" +
+        HintTest
+                .create()
+                .input("package test;\n" +
                        "public class Test {\n" +
-                       "}",
-                       "1:13-1:17:verifier:No logger declared for test.Test class",
-                       "NoLoggersFix",
-                       ("package test;\n" +
-                       "import java.util.logging.Logger;\n" +
-                       "public class Test {\n" +
-                       "    private static final Logger LOG = Logger.getLogger(Test.class.getName());\n" +
-                       "}").replaceAll("[ \t\n]+", " ")
-                       );
+                       "}")
+                .run(NoLoggers.class)
+                .findWarning("1:13-1:17:verifier:No logger declared for test.Test class")
+                .applyFix("MSG_NoLoggers_checkNoLoggers_Fix:test.Test")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "import java.util.logging.Logger;\n" +
+                              "public class Test {\n" +
+                              "    private static final Logger LOG = Logger.getLogger(Test.class.getName());\n" +
+                              "}");
     }
 
     public void testLoggerName1Fix() throws Exception {
-        performFixTest("test/Test.java",
-                       "package test;\n" +
+        HintTest
+                .create()
+                .input("package test;\n" +
                        "public class Test {\n" +
                        "    private String LOG;" +
-                       "}",
-                       "1:13-1:17:verifier:No logger declared for test.Test class",
-                       "NoLoggersFix",
-                       ("package test;\n" +
-                       "import java.util.logging.Logger;\n" +
-                       "public class Test {\n" +
-                       "    private String LOG;" +
-                       "    private static final Logger LOGGER = Logger.getLogger(Test.class.getName());\n" +
-                       "}").replaceAll("[ \t\n]+", " ")
-                       );
+                       "}")
+                .run(NoLoggers.class)
+                .findWarning("1:13-1:17:verifier:No logger declared for test.Test class")
+                .applyFix("MSG_NoLoggers_checkNoLoggers_Fix:test.Test")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "import java.util.logging.Logger;\n" +
+                              "public class Test {\n" +
+                              "    private String LOG;" +
+                              "    private static final Logger LOGGER = Logger.getLogger(Test.class.getName());\n" +
+                              "}");
     }
 
     public void testLoggerName2Fix() throws Exception {
-        performFixTest("test/Test.java",
-                       "package test;\n" +
+        HintTest
+                .create()
+                .input("package test;\n" +
                        "public class Test {\n" +
                        "    private String LOG;" +
                        "    private String LOGGER;" +
-                       "}",
-                       "1:13-1:17:verifier:No logger declared for test.Test class",
-                       "NoLoggersFix",
-                       ("package test;\n" +
-                       "import java.util.logging.Logger;\n" +
-                       "public class Test {\n" +
-                       "    private String LOG;" +
-                       "    private String LOGGER;" +
-                       "    private static final Logger LOG1 = Logger.getLogger(Test.class.getName());\n" +
-                       "}").replaceAll("[ \t\n]+", " ")
-                       );
+                       "}")
+                .run(NoLoggers.class)
+                .findWarning("1:13-1:17:verifier:No logger declared for test.Test class")
+                .applyFix("MSG_NoLoggers_checkNoLoggers_Fix:test.Test")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "import java.util.logging.Logger;\n" +
+                              "public class Test {\n" +
+                              "    private String LOG;" +
+                              "    private String LOGGER;" +
+                              "    private static final Logger LOG1 = Logger.getLogger(Test.class.getName());\n" +
+                              "}");
     }
 
     public void testNoWarningsForAbstractClass() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public abstract class Test {}"
-                            );
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public abstract class Test {}")
+                .run(NoLoggers.class)
+                .assertWarnings();
     }
-    
+
     public void testNoWarningsForInterface() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public interface Test {}"
-                            );
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public interface Test {}")
+                .run(NoLoggers.class)
+                .assertWarnings();
     }
 
     public void testNoWarningsForEnum() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public enum Test {}"
-                            );
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public enum Test {}")
+                .run(NoLoggers.class)
+                .assertWarnings();
     }
 
     public void testNoWarningsForInnerClasses() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public abstract class Test {\n" +
-                            "    public static class Inner {\n" +
-                            "    }\n" +
-                            "}"
-                            );
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public abstract class Test {\n" +
+                       "    public static class Inner {\n" +
+                       "    }\n" +
+                       "}")
+                .run(NoLoggers.class)
+                .assertWarnings();
     }
-
-    @Override
-    protected String toDebugString(CompilationInfo info, Fix f) {
-        return "NoLoggersFix";
-    }
-
 }

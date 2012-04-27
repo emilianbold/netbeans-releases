@@ -59,21 +59,24 @@ import java.util.prefs.PreferenceChangeListener;
 import javax.swing.*;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
-import javax.swing.table.TableColumn;
 import javax.swing.tree.TreePath;
-import org.netbeans.modules.versioning.ui.history.RevisionNode.Filter;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.util.VCSSystemProvider.VersioningSystem;
+import org.netbeans.modules.versioning.core.spi.VCSHistoryProvider;
+import org.netbeans.modules.versioning.core.spi.VCSHistoryProvider.HistoryEvent;
 import org.netbeans.modules.versioning.ui.history.RevisionNode.MessageProperty;
-import org.netbeans.modules.versioning.spi.VCSHistoryProvider;
-import org.netbeans.modules.versioning.spi.VCSHistoryProvider.HistoryEvent;
-import org.netbeans.modules.versioning.spi.VersioningSystem;
+import org.netbeans.modules.versioning.ui.history.HistoryComponent.Filter;
 import org.netbeans.modules.versioning.util.VCSHyperlinkProvider;
 import org.netbeans.swing.etable.ETableColumn;
 import org.netbeans.swing.outline.DefaultOutlineCellRenderer;
 import org.netbeans.swing.outline.Outline;
 import org.netbeans.swing.outline.RenderDataProvider;
+import org.netbeans.swing.outline.TreePathSupport;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.OutlineView;
 import org.openide.explorer.view.Visualizer;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -86,9 +89,8 @@ import org.openide.util.RequestProcessor.Task;
 public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProvider.HistoryChangeListener {
            
     private FileTablePanel tablePanel;             
-    private File[] files;
 
-    private RequestProcessor rp = new RequestProcessor("LocalHistoryView", 1, true); // NOI18N
+    private RequestProcessor rp = new RequestProcessor("HistoryView", 1, true); // NOI18N
     private final HistoryComponent tc; 
     private Filter filter;
     private Task refreshTask;
@@ -99,11 +101,10 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
     private Date currentDateFrom; 
     private LoadNextAction loadNextAction;
     
-    public HistoryFileView(File[] files, VersioningSystem versioningSystem, HistoryComponent tc) {                       
+    public HistoryFileView(VersioningSystem versioningSystem, VersioningSystem lh, HistoryComponent tc) {                       
         this.tc = tc;
-        this.files = files;
         this.versioningSystem = versioningSystem;
-        this.lh = History.getInstance().getLocalHistory(files);
+        this.lh = lh;
         
         tablePanel = new FileTablePanel();
         loadNextAction = new LoadNextAction();
@@ -178,11 +179,11 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
         }
     }
 
-    File[] getFiles() {
-        return files;
+    FileObject[] getFiles() {
+        return tc.getFiles();
     }
                      
-    void setFilter(RevisionNode.Filter filter) {
+    void setFilter(Filter filter) {
         this.filter = filter;
         tablePanel.treeView.getOutline().setQuickFilter(0, filter);
     }
@@ -193,7 +194,7 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
     
     // XXX serialize vcs calls
     // XXX on deserialization do not invoke for every opened TC, but only the activated one
-    private void loadVCSEntries(final File[] files, final boolean forceLoadAll) {
+    private void loadVCSEntries(final VCSFileProxy[] files, final boolean forceLoadAll) {
         if(versioningSystem == null) {
             return;
         }
@@ -209,7 +210,7 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
                     return;
                 }    
                 try {
-                    rootNode.loadingStarted();
+                    rootNode.loadingVCSStarted();
 
                     VCSHistoryProvider.HistoryEntry[] vcsHistory;
                     if(forceLoadAll || HistorySettings.getInstance().getLoadAll()) {
@@ -230,11 +231,11 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
                     }                
                     List<HistoryEntry> entries = new ArrayList<HistoryEntry>(vcsHistory.length);
                     for (VCSHistoryProvider.HistoryEntry he : vcsHistory) {
-                        entries.add(new HistoryEntry(he, files, false));
+                        entries.add(new HistoryEntry(he, false));
                     }
                     rootNode.addVCSEntries(entries.toArray(new HistoryEntry[entries.size()]));
                 } finally {
-                    rootNode.loadingFinished(currentDateFrom);
+                    rootNode.loadingVCSFinished(currentDateFrom);
                     // XXX yet select the first node on
                 }
             }
@@ -251,7 +252,7 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
                     } else {
                         Node[] newExploredContext = getEqualNodes(root, new Node[] { oldSelection[0].getParentNode() });
                         if(newExploredContext.length > 0) {
-                        selectFirstNeighborNode(newExploredContext[0], oldSelection[0]);
+                            selectFirstNeighborNode(newExploredContext[0], oldSelection[0]);
                         }
                     }
                 } else {
@@ -316,30 +317,35 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
         }   
         
     private void setSelection(final Node[] nodes) {
-            SwingUtilities.invokeLater(new Runnable() {
-            @Override
-                public void run() {
-                    try {
-                        tablePanel.getExplorerManager().setSelectedNodes(nodes);
-                    } catch (PropertyVetoException ex) {
-                        // ignore
-                    }
+        SwingUtilities.invokeLater(new Runnable() {
+        @Override
+            public void run() {
+                try {
+                    tablePanel.getExplorerManager().setSelectedNodes(nodes);
+                } catch (PropertyVetoException ex) {
+                    // ignore
                 }
-            });                                             
+            }
+        });                                             
         }
 
     @Override
     public void fireHistoryChanged(HistoryEvent evt) {
-        Set<File> fileSet = new HashSet<File>();
-        for (File f : evt.getFiles()) {
-            if(f != null) {
-                fileSet.add(f);
+        FileObject[] files = tc.getFiles();
+        if(files == null) {
+            return;
+        }
+        Set<FileObject> fileSet = new HashSet<FileObject>();
+        for (VCSFileProxy f : evt.getFiles()) {
+            FileObject fo = f != null ? f.toFileObject() : null;
+            if(fo != null) {
+                fileSet.add(fo);
             }
         }
         if(fileSet.isEmpty()) {
             return;
         }
-        for (File file : files) {
+        for (FileObject file : files) {
             if(fileSet.contains(file)) {
                 refreshTablePanel(evt.getSource());
             }
@@ -347,26 +353,124 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
     }
 
     private static void registerHistoryListener(VersioningSystem versioningSystem, VCSHistoryProvider.HistoryChangeListener l) {
-        VCSHistoryProvider hp = getHistoryProvider(versioningSystem);
+        VCSHistoryProvider hp = History.getHistoryProvider(versioningSystem);
         if(hp != null) {
             hp.addHistoryChangeListener(l);
         }
     }
 
     private static void unregisterHistoryListener(VersioningSystem versioningSystem, VCSHistoryProvider.HistoryChangeListener l) {
-        VCSHistoryProvider hp = getHistoryProvider(versioningSystem);
+        VCSHistoryProvider hp = History.getHistoryProvider(versioningSystem);
         if(hp != null) {
             hp.addHistoryChangeListener(l);
         }
     }
     
-    private static VCSHistoryProvider getHistoryProvider(VersioningSystem versioningSystem) {
-        if(versioningSystem == null) {
-            return null;
+    HistoryEntry getParentEntry(HistoryEntry entry) {
+        // XXX this is a hack! in case of VCS this isn't correct - the previous 
+        // doesn't necesserily has to be real parent of the revision
+        return getRootNode().getPreviousEntry(entry);
+    }
+
+    void selectPrevEntry() {
+        Outline outline = tablePanel.treeView.getOutline();
+        if(outline.getSelectedRowCount() != 1) {
+            return;
         }
-        return  versioningSystem.getVCSHistoryProvider();
+        int row = outline.getSelectedRow();
+        row = row - 1;
+        if(row < 0) {
+            return;
+        }
+        row = getPrevRow(row);
+        if(row > -1) {
+            outline.getSelectionModel().setSelectionInterval(row, row);
+            Rectangle rect = outline.getCellRect(row, 0, true);
+            outline.scrollRectToVisible(new Rectangle(new Point(0, rect.y - rect.height)));
+        } 
     }
     
+    private int getPrevRow(int row) {
+        row = row - 1;
+        Outline outline = tablePanel.treeView.getOutline();
+        if(row < 0 || row >= outline.getRowCount()) {
+            return -1;
+        }
+        TreePath path = outline.getOutlineModel().getLayout().getPathForRow(row);
+        Node node = Visualizer.findNode(path.getLastPathComponent());
+        if(node.isLeaf()) {
+            if(node instanceof RevisionNode || node instanceof RevisionNode.FileNode) {
+                return row;
+            } else {
+                return -1;
+            }
+        } else {
+            TreePathSupport support = outline.getOutlineModel().getTreePathSupport();
+            if(support.isExpanded(path)) {
+                return getPrevRow(row);
+            } else {
+                support.expandPath(path);
+                return row + node.getChildren().getNodesCount();
+            }
+        }
+    }
+    
+    void selectNextEntry() {
+        Outline outline = tablePanel.treeView.getOutline();
+        if(outline.getSelectedRowCount() != 1) {
+            return;
+        }
+        int row = outline.getSelectedRow();
+        if(row == outline.getRowCount() - 1) {
+            return;
+        }
+        row = getNextRow(row);
+        if(row > -1) {
+            outline.getSelectionModel().setSelectionInterval(row, row);
+            Rectangle rect = outline.getCellRect(row, 0, true);
+            outline.scrollRectToVisible(new Rectangle(new Point(0, rect.y + rect.height)));
+        }
+    }
+
+    private int getNextRow(int row) {
+        row = row + 1;
+        Outline outline = tablePanel.treeView.getOutline();
+        if(row < 0 || row >= outline.getRowCount()) {
+            return -1;
+        }
+        TreePath path = outline.getOutlineModel().getLayout().getPathForRow(row);
+        Node node = Visualizer.findNode(path.getLastPathComponent());
+        if(node.isLeaf()) {
+            if(node instanceof RevisionNode || node instanceof RevisionNode.FileNode) {
+                return row;
+            } else {
+                return -1;
+            }
+        } else {
+            TreePathSupport support = outline.getOutlineModel().getTreePathSupport();
+            if(support.isExpanded(path)) {
+                return getPrevRow(row);
+            } else {
+                support.expandPath(path);
+                return row + 1;
+            }
+        }
+    }
+    
+    boolean isFirstRow() {
+        return tablePanel.treeView.getOutline().getSelectedRow() == 0;
+    }
+    
+    boolean isLastRow() {
+        Outline outline = tablePanel.treeView.getOutline();
+        return outline.getSelectedRow() == outline.getRowCount() - 1;
+    }
+
+    boolean isSingleSelection() {
+        int[] rows = tablePanel.treeView.getOutline().getSelectedRows();
+        return rows != null && rows.length == 1;
+    }
+
     /**
      * Selects a node with the timestamp = toSelect, otherwise the selection stays.
      * If there wasn't a selection set yet then the first node will be selected.
@@ -382,30 +486,37 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
         public void run() {  
             HistoryRootNode root = getRootNode();
             if(root == null) {
-                final String vcsName = (String) (getHistoryProvider(versioningSystem) != null ? 
-                                                    versioningSystem.getProperty(VersioningSystem.PROP_DISPLAY_NAME) :
+                final String vcsName = (String) (History.getHistoryProvider(versioningSystem) != null ? 
+                                                    versioningSystem.getDisplayName() :
                                                     null);
                 root = new HistoryRootNode(vcsName, loadNextAction, createActions()); 
                 tablePanel.getExplorerManager().setRootContext(root);
             }
             
+            VCSFileProxy[] proxies = History.toProxies(tc.getFiles());
+                    
             // refresh local history
-            VCSHistoryProvider lhProvider = getHistoryProvider(History.getInstance().getLocalHistory(files));
-            if(lhProvider != null && (providerToRefresh == null || lhProvider == providerToRefresh)) {
-                root.addLHEntries(loadLHEntries(files));
+            try {
+                root.addWaitNode();
+                VCSHistoryProvider lhProvider = History.getHistoryProvider(lh);
+                if(lhProvider != null && (providerToRefresh == null || lhProvider == providerToRefresh)) {
+                    root.addLHEntries(loadLHEntries(proxies));
+                }
+            } finally {
+                root.removeWaitNode();
             }
             // refresh vcs
-            VCSHistoryProvider vcsProvider = getHistoryProvider(versioningSystem);
+            VCSHistoryProvider vcsProvider = History.getHistoryProvider(versioningSystem);
             if(tc != null && vcsProvider != null && (providerToRefresh == null || providerToRefresh == vcsProvider)) {
-                loadVCSEntries(files, false);
+                loadVCSEntries(proxies, false);
             }
             tablePanel.revalidate();
             tablePanel.repaint();
         }
+
     } 
     
-    private HistoryEntry[] loadLHEntries(File[] files) {
-        VersioningSystem lh = History.getInstance().getLocalHistory(files);
+    private HistoryEntry[] loadLHEntries(VCSFileProxy[] files) {
         if(lh == null) {
             return new HistoryEntry[0];
         }
@@ -416,7 +527,7 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
         VCSHistoryProvider.HistoryEntry[] vcsHistory = hp.getHistory(files, null);
         HistoryEntry[] history = new HistoryEntry[vcsHistory.length];
         for (int i = 0; i < vcsHistory.length; i++) {
-            history[i] = new HistoryEntry(vcsHistory[i], files, true);
+            history[i] = new HistoryEntry(vcsHistory[i], true);
         }
         return history;
     }
@@ -427,7 +538,7 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
         actions.add(new AbstractAction(NbBundle.getMessage(HistoryFileView.class, "LBL_LoadAll")) { // NOI18N
             @Override
             public void actionPerformed(ActionEvent e) {
-                loadVCSEntries(files, true);
+                loadVCSEntries(History.toProxies(tc.getFiles()), true);
             }
         });
         actions.add(null); 
@@ -435,7 +546,7 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
             @Override
             public void actionPerformed(ActionEvent e) {
                 HistorySettings.getInstance().setLoadAll(true);
-                loadVCSEntries(files, true);
+                loadVCSEntries(History.toProxies(tc.getFiles()), true);
             }
         });
         return actions.toArray(new Action[actions.size()]);
@@ -455,6 +566,7 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
             add(treeView, BorderLayout.CENTER);
         }   
 
+        @Override
         public ExplorerManager getExplorerManager() {
             return manager;
         }
@@ -542,6 +654,7 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
             
             private void setDefaultColumnSizes() {
                 SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         int width = getWidth();                    
                         getOutline().getColumnModel().getColumn(0).setPreferredWidth(width * 20 / 100);
@@ -665,8 +778,11 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
     
     private static final Icon NO_ICON = new NoIcon();
     private static class NoIcon implements Icon {
+        @Override
         public void paintIcon(Component c, Graphics g, int x, int y) { }
+        @Override
         public int getIconWidth() { return 0; }
+        @Override
         public int getIconHeight() { return 0; }
     }
 
@@ -687,7 +803,6 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
             
     private class PropertyRenderer extends DefaultOutlineCellRenderer {
         private final Outline outline;
-        private static final int VISIBLE_START_CHARS = 0;
         public PropertyRenderer(Outline outline) {
             this.outline = outline;
         }
@@ -698,12 +813,12 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
             if((value instanceof Node.Property)) {
                 try {
                     String valueString = getDisplayValue((Node.Property) value);
-                    valueString = computeFitText(table, row, column, valueString);
-                    valueString = escapeForHTMLLabel(valueString); // XXX might clash with rendered filter matches
+                    valueString = HistoryUtils.computeFitText(table, row, column, valueString);
                     
-                    Filter f = tc != null ? tc.getSelectedFilter() : null;
-                    if(f != null) {
-                        valueString = f.getRendererValue(valueString);
+                    if(filter != null && filter.filtersProperty((Node.Property) value)) {
+                        valueString = filter.getRendererValue(valueString);
+                    } else {
+                        valueString = HistoryUtils.escapeForHTMLLabel(valueString); 
                     }
                     if(value instanceof RevisionNode.MessageProperty) {
                         String[] lines = valueString.split("\n"); // NOI18N
@@ -711,11 +826,11 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
                             int[] spans = getHyperlinkSpans(lines[0]);
                             if (spans != null && spans.length >= 2) {
                                 StringBuilder sb = new StringBuilder();
-                                String line = addHyperlink(escapeForHTMLLabel(lines[0]), spans);
+                                String line = addHyperlink(HistoryUtils.escapeForHTMLLabel(lines[0]), spans);
                                 sb.append(line);
                                 for (int i = 1; i < lines.length; i++) {
                                     sb.append("\n"); // NOI18N
-                                    sb.append(escapeForHTMLLabel(lines[i]));
+                                    sb.append(HistoryUtils.escapeForHTMLLabel(lines[i]));
                                 }
                                 valueString = sb.toString();
                             }
@@ -750,9 +865,13 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
         }
         
         String getTooltip(Node.Property p) throws IllegalAccessException, InvocationTargetException {
+            Object value = p.getValue();
+            if(value instanceof TableEntry) {
+                return ((TableEntry) value).getTooltip();
+            }
             String tooltip = p.toString();
-            if(tooltip.contains("\n")) { // NOI18N
-                tooltip = escapeForHTMLLabel(tooltip);
+            if(tooltip != null && tooltip.contains("\n")) { // NOI18N
+                tooltip = HistoryUtils.escapeForHTMLLabel(tooltip);
                 StringBuilder sb = new StringBuilder();
                 sb.append("<html>"); // NOI18N
                 StringTokenizer st = new StringTokenizer(tooltip, "\n"); // NOI18N
@@ -790,49 +909,6 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
             }
             return sb.toString();
         }
-        
-        private String computeFitText(JTable table, int rowIdx, int columnIdx, String text) {
-            if(text == null) text = ""; // NOI18N
-            if (text.length() <= VISIBLE_START_CHARS + 3) return text;
-
-//            Icon icon = label.getIcon();
-//            int iconWidth = icon != null ? icon.getIconWidth() : 0;
-
-            FontMetrics fm = table.getFontMetrics(table.getFont());
-            TableColumn column = table.getColumnModel().getColumn(columnIdx);
-            int width = table.getCellRect(rowIdx, columnIdx, false).width;
-            //            int width = label.getSize().width; // - iconWidth;
-
-            String sufix = "...";                                                   // NOI18N
-            int sufixLength = fm.stringWidth(sufix + " ");
-            int desired = width - sufixLength;
-            if (desired <= 0) return text;
-
-            for (int i = 0; i <= text.length() - 1; i++) {
-                String prefix = text.substring(0, i);
-                int swidth = fm.stringWidth(prefix);
-                if (swidth >= desired) {
-                    return prefix.length() > 0 ? prefix + sufix: text;
-                }
-            }
-            return text;
-        }    
-        
-        public String escapeForHTMLLabel(String text) {
-            if(text == null) {
-                return "";                              // NOI18N
-            }
-            StringBuilder sb = new StringBuilder();
-            for (int i=0; i<text.length(); i++) {
-                char c = text.charAt(i);
-                switch (c) {
-                    case '<': sb.append("&lt;"); break; // NOI18N
-                    case '>': sb.append("&gt;"); break; // NOI18N
-                    default: sb.append(c);
-                }
-            }
-            return sb.toString();
-        }
     }
     
     private class TableMouseListener implements MouseListener, MouseMotionListener {
@@ -864,7 +940,7 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
 
         @Override
         public void mouseClicked(MouseEvent e) {
-            TreePath path = outline.getLayoutCache().getPathForRow(outline.rowAtPoint(e.getPoint()));
+            TreePath path = outline.getClosestPathForLocation(e.getX(), e.getY());
             if(path == null) {
                 return;
             }
@@ -894,7 +970,9 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
                     String author = entry.getUsername();
                     String revision = entry.getRevision();
                     Date date = entry.getDateTime();
-                    MsgTooltipWindow ttw = new MsgTooltipWindow(outline, files[0], message, revision, author, date);
+                    FileObject[] files = tc.getFiles();
+                    File file = files[0] != null ? FileUtil.toFile(files[0]) : null;
+                    MsgTooltipWindow ttw = new MsgTooltipWindow(outline, file, message, revision, author, date);
                     Point p = e.getPoint();
                     SwingUtilities.convertPointToScreen(p, outline);
                     ttw.show(new Point(p.x, p.y));
@@ -933,21 +1011,31 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
             refreshName();
         }
         private void refreshName() {
-            String name;
+            final String name;
             if(HistorySettings.getInstance().getLoadAll()) {
                 name = NbBundle.getMessage(HistoryRootNode.class,  "LBL_LoadAll"); // NOI18N
             } else {
                 name = NbBundle.getMessage(HistoryRootNode.class,  "LBL_LoadNext", HistorySettings.getInstance().getIncrements()); // NOI18N
             }
-            putValue(Action.NAME, name);
-            HistoryRootNode rootNode = getRootNode();
-            if(rootNode != null) {
-                rootNode.refreshLoadNextName();
+            final Runnable r = new Runnable() {
+                @Override
+                public void run() {
+                    putValue(Action.NAME, name);
+                    HistoryRootNode rootNode = getRootNode();
+                    if(rootNode != null) {
+                        rootNode.refreshLoadNextName();
+                    }
+                }
+            };
+            if(EventQueue.isDispatchThread()) {
+                r.run();
+            } else {
+                EventQueue.invokeLater(r);
             }
         }
         @Override
         public void actionPerformed(ActionEvent e) {
-            loadVCSEntries(files, false); 
+            loadVCSEntries(History.toProxies(tc.getFiles()), false); 
         }
     }
     

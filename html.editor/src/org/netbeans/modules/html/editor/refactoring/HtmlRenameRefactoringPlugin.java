@@ -67,6 +67,7 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
+import org.netbeans.modules.refactoring.spi.RefactoringCommit;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.web.common.api.FileReference;
@@ -139,7 +140,7 @@ public class HtmlRenameRefactoringPlugin implements RefactoringPlugin {
             refactorFile(file, modificationResult, index);
         }
         
-        refactoringElements.registerTransaction(new RetoucheCommit(Collections.singletonList(modificationResult)));
+        refactoringElements.registerTransaction(new RefactoringCommit(Collections.singletonList(modificationResult)));
 
         for (FileObject fo : modificationResult.getModifiedFileObjects()) {
             for (Difference diff : modificationResult.getDifferences(fo)) {

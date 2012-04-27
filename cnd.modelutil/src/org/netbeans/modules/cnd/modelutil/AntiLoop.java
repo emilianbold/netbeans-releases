@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 public class AntiLoop {
     
     private Set<Object> set;
+    private boolean recursion = false;
 
     private static final int MAX_INHERITANCE_DEPTH = 25;
 
@@ -68,14 +69,22 @@ public class AntiLoop {
     
     
     public boolean add(CsmClassifier cls) {
+        if(recursion) {
+            return false;
+        }
         if (isRecursion(cls)) {
+            recursion = true;
             return false;
         }
         return set.add(cls);
     }
 
     public boolean contains(CsmClassifier cls) {
+        if(recursion) {
+            return true;
+        }
         if (isRecursion(cls)) {
+            recursion = true;
             return true;
         }
         return set.contains(cls);

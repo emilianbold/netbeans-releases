@@ -56,6 +56,7 @@ import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.mobility.svgcore.SVGDataObject;
 import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.Node;
@@ -68,6 +69,12 @@ import org.openide.util.lookup.InstanceContent;
  *
  * @author Pavel Benes
  */
+@MIMEResolver.ExtensionRegistration(
+    mimeType="text/x-svg-palette-item",
+    position=250,
+    displayName="#SVGPaletteItemResolver",
+    extension={ "svgPaletteItem" }
+)
 public final class SVGPaletteItemDataObject extends MultiDataObject {
     private final SVGPaletteItemData m_data;
     

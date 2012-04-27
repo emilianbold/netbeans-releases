@@ -156,8 +156,4 @@ public class Loader implements Runnable, Cancellable {
                     "Error while loading tasks from cache", ioE);
         }
     }
-
-    void refresh(FileObject fo) {
-        loadTasks(new FileObject[]{fo}, null);
-    }
 }

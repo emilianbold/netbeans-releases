@@ -57,6 +57,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.JComboBox;
@@ -73,6 +74,7 @@ import javax.swing.table.DefaultTableModel;
 import org.netbeans.modules.profiler.api.ProjectUtilities;
 import org.netbeans.modules.profiler.api.icons.Icons;
 import org.netbeans.modules.profiler.api.icons.ProfilerIcons;
+import org.netbeans.modules.profiler.ppoints.ProfilingPointsManager;
 import org.openide.util.Lookup;
 
 
@@ -148,6 +150,8 @@ public class WizardPanel1UI extends ValidityAwarePanel implements HelpCtx.Provid
     private JLabel ppointTypeCaptionLabel;
     private JTextArea ppointDescriptionArea;
     private ProfilingPointFactory[] ppFactories = new ProfilingPointFactory[0];
+    
+    private boolean hasDefaultScope = false;
 
     //~ Constructors -------------------------------------------------------------------------------------------------------------
 
@@ -194,6 +198,10 @@ public class WizardPanel1UI extends ValidityAwarePanel implements HelpCtx.Provid
         } else {
             return null;
         }
+    }
+    
+    public boolean hasDefaultScope() {
+        return hasDefaultScope;
     }
 
     public void init(final ProfilingPointFactory[] ppFactories) {
@@ -409,14 +417,28 @@ public class WizardPanel1UI extends ValidityAwarePanel implements HelpCtx.Provid
     }
 
     private void initProjectsCombo() {
-        Lookup.Provider[] projects = ProjectUtilities.getSortedProjects(ProjectUtilities.getOpenedProjects());
         ppointProjectCombo.removeAllItems();
+        
+        ProfilingPointsManager manager = ProfilingPointsManager.getDefault();
+        
+        Lookup.Provider defaultScope = null;
+        List<Lookup.Provider> providedScopes = manager.getProvidedScopes();
+        for (Lookup.Provider providedScope : providedScopes) {
+            if (providedScope != null) {
+                if (defaultScope == null && manager.isDefaultScope(providedScope))
+                    defaultScope = providedScope;
+                ppointProjectCombo.addItem(providedScope);
+            }
+        }
 
+        Lookup.Provider[] projects =
+                ProjectUtilities.getSortedProjects(ProjectUtilities.getOpenedProjects());
         for (Lookup.Provider project : projects) {
             ppointProjectCombo.addItem(project);
         }
 
-        setSelectedProject(Utils.getCurrentProject());
+        hasDefaultScope = defaultScope != null;
+        setSelectedProject(hasDefaultScope ? defaultScope : Utils.getCurrentProject());
     }
 
     private void refresh() {

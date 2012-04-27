@@ -42,23 +42,24 @@
 
 package org.netbeans.modules.java.hints.bugs;
 
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 import org.netbeans.api.java.source.TreeUtilities;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Constraint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPatterns;
-import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
-import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Options;
-import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
-import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
-import org.netbeans.modules.java.hints.jackpot.spi.support.OneCheckboxCustomizerProvider;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.JavaFix;
+import org.netbeans.spi.java.hints.BooleanOption;
+import org.netbeans.spi.java.hints.ConstraintVariableType;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.Hint.Options;
+import org.netbeans.spi.java.hints.TriggerPattern;
+import org.netbeans.spi.java.hints.TriggerPatterns;
+import org.netbeans.spi.java.hints.UseOptions;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.JavaFixUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -67,55 +68,56 @@ import org.openide.util.NbBundle;
  */
 public class EqualsHint {
 
-    private static final String ERASURE_PREFS_KEY = "eguals-hint-erasure"; // NOI18N
     private static final boolean ERASURE_PREFS_DEFAULT = true; // NOI18N
+    @BooleanOption(displayName = "#LBL_org.netbeans.modules.java.hints.bugs.EqualsHint.ERASURE_PREFS_KEY", tooltip = "#TP_org.netbeans.modules.java.hints.bugs.EqualsHint.ERASURE_PREFS_KEY", defaultValue=ERASURE_PREFS_DEFAULT)
+    private static final String ERASURE_PREFS_KEY = "eguals-hint-erasure"; // NOI18N
     
-    @Hint(category="bugs", suppressWarnings="ArrayEquals")
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.bugs.EqualsHint.arrayEquals", description = "#DESC_org.netbeans.modules.java.hints.bugs.EqualsHint.arrayEquals", category="bugs", suppressWarnings="ArrayEquals")
     @TriggerPatterns({
         @TriggerPattern(value="$obj.equals($arr)",
                         constraints={
-                            @Constraint(variable="$obj", type="java.lang.Object"),
-                            @Constraint(variable="$arr", type="java.lang.Object[]")
+                            @ConstraintVariableType(variable="$obj", type="java.lang.Object"),
+                            @ConstraintVariableType(variable="$arr", type="java.lang.Object[]")
                         }),
         @TriggerPattern(value="$obj.equals($arr)",
                         constraints={
-                            @Constraint(variable="$obj", type="java.lang.Object"),
-                            @Constraint(variable="$arr", type="boolean[]")
+                            @ConstraintVariableType(variable="$obj", type="java.lang.Object"),
+                            @ConstraintVariableType(variable="$arr", type="boolean[]")
                         }),
         @TriggerPattern(value="$obj.equals($arr)",
                         constraints={
-                            @Constraint(variable="$obj", type="java.lang.Object"),
-                            @Constraint(variable="$arr", type="byte[]")
+                            @ConstraintVariableType(variable="$obj", type="java.lang.Object"),
+                            @ConstraintVariableType(variable="$arr", type="byte[]")
                         }),
         @TriggerPattern(value="$obj.equals($arr)",
                         constraints={
-                            @Constraint(variable="$obj", type="java.lang.Object"),
-                            @Constraint(variable="$arr", type="short[]")
+                            @ConstraintVariableType(variable="$obj", type="java.lang.Object"),
+                            @ConstraintVariableType(variable="$arr", type="short[]")
                         }),
         @TriggerPattern(value="$obj.equals($arr)",
                         constraints={
-                            @Constraint(variable="$obj", type="java.lang.Object"),
-                            @Constraint(variable="$arr", type="char[]")
+                            @ConstraintVariableType(variable="$obj", type="java.lang.Object"),
+                            @ConstraintVariableType(variable="$arr", type="char[]")
                         }),
         @TriggerPattern(value="$obj.equals($arr)",
                         constraints={
-                            @Constraint(variable="$obj", type="java.lang.Object"),
-                            @Constraint(variable="$arr", type="int[]")
+                            @ConstraintVariableType(variable="$obj", type="java.lang.Object"),
+                            @ConstraintVariableType(variable="$arr", type="int[]")
                         }),
         @TriggerPattern(value="$obj.equals($arr)",
                         constraints={
-                            @Constraint(variable="$obj", type="java.lang.Object"),
-                            @Constraint(variable="$arr", type="long[]")
+                            @ConstraintVariableType(variable="$obj", type="java.lang.Object"),
+                            @ConstraintVariableType(variable="$arr", type="long[]")
                         }),
         @TriggerPattern(value="$obj.equals($arr)",
                         constraints={
-                            @Constraint(variable="$obj", type="java.lang.Object"),
-                            @Constraint(variable="$arr", type="float[]")
+                            @ConstraintVariableType(variable="$obj", type="java.lang.Object"),
+                            @ConstraintVariableType(variable="$arr", type="float[]")
                         }),
         @TriggerPattern(value="$obj.equals($arr)",
                         constraints={
-                            @Constraint(variable="$obj", type="java.lang.Object"),
-                            @Constraint(variable="$arr", type="double[]")
+                            @ConstraintVariableType(variable="$obj", type="java.lang.Object"),
+                            @ConstraintVariableType(variable="$arr", type="double[]")
                         })
     })
     public static ErrorDescription arrayEquals(HintContext ctx) {
@@ -129,19 +131,20 @@ public class EqualsHint {
         //XXX end
 
         String fixArraysDisplayName = NbBundle.getMessage(EqualsHint.class, "FIX_ReplaceWithArraysEquals");
-        Fix arrays = JavaFix.rewriteFix(ctx, fixArraysDisplayName, ctx.getPath(), "java.util.Arrays.equals($obj, $arr)");
+        Fix arrays = JavaFixUtilities.rewriteFix(ctx, fixArraysDisplayName, ctx.getPath(), "java.util.Arrays.equals($obj, $arr)");
         String fixInstanceDisplayName = NbBundle.getMessage(EqualsHint.class, "FIX_ReplaceWithInstanceEquals");
-        Fix instance = JavaFix.rewriteFix(ctx, fixInstanceDisplayName, ctx.getPath(), "$obj == $arr");
+        Fix instance = JavaFixUtilities.rewriteFix(ctx, fixInstanceDisplayName, ctx.getPath(), "$obj == $arr");
         String displayName = NbBundle.getMessage(EqualsHint.class, "ERR_ARRAY_EQUALS");
 
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName, arrays, instance);
     }
     
-    @Hint(id="org.netbeans.modules.java.hints.EqualsHint", category="bugs", customizerProvider=CustomizerProviderImpl.class, suppressWarnings="IncompatibleEquals", options=Options.QUERY)
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.EqualsHint", description = "#DESC_org.netbeans.modules.java.hints.EqualsHint", id="org.netbeans.modules.java.hints.EqualsHint", category="bugs", suppressWarnings="IncompatibleEquals", options=Options.QUERY)
+    @UseOptions(ERASURE_PREFS_KEY)
     @TriggerPattern(value="$this.equals($par)",
                     constraints={
-                        @Constraint(variable="$this", type="java.lang.Object"),
-                        @Constraint(variable="$par", type="java.lang.Object")
+                        @ConstraintVariableType(variable="$this", type="java.lang.Object"),
+                        @ConstraintVariableType(variable="$par", type="java.lang.Object")
                     })
     public static ErrorDescription incompatibleEquals(HintContext ctx) {
         TreePath ths = ctx.getVariables().get("$this");
@@ -183,15 +186,6 @@ public class EqualsHint {
         String displayName = NbBundle.getMessage(EqualsHint.class, "ERR_INCOMPATIBLE_EQUALS"); // NOI18N
         
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName);
-    }
-
-    public static final class CustomizerProviderImpl extends OneCheckboxCustomizerProvider {
-        public CustomizerProviderImpl() {
-            super(NbBundle.getMessage(EqualsHint.class, "LBL_Customizer_IncompatibleEquals"),
-                  NbBundle.getMessage(EqualsHint.class, "TP_Customizer_IncompatibleEquals"),
-                  ERASURE_PREFS_KEY,
-                  ERASURE_PREFS_DEFAULT);
-        }
     }
 
 }

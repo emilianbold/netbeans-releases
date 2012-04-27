@@ -118,8 +118,10 @@ final class JavaActions implements ActionProvider {
     private static final String[] ACTIONS = {
         ActionProvider.COMMAND_COMPILE_SINGLE,
         ActionProvider.COMMAND_DEBUG,
+        ActionProvider.COMMAND_PROFILE,
         ActionProvider.COMMAND_RUN_SINGLE,
-        ActionProvider.COMMAND_DEBUG_SINGLE
+        ActionProvider.COMMAND_DEBUG_SINGLE,
+        ActionProvider.COMMAND_PROFILE_SINGLE
         // XXX more
     };
     
@@ -162,9 +164,13 @@ final class JavaActions implements ActionProvider {
             return findPackageRoot(context) != null;
         } else if (command.equals(ActionProvider.COMMAND_DEBUG)) {
             return true;
+        } else if (command.equals(ActionProvider.COMMAND_PROFILE)) {
+            return true;
         } else if (command.equals(ActionProvider.COMMAND_RUN_SINGLE)) {
             return (findPackageRoot(context) != null) && isSingleJavaFileSelected(context);
         } else if (command.equals(ActionProvider.COMMAND_DEBUG_SINGLE)) {
+            return (findPackageRoot(context) != null) && isSingleJavaFileSelected(context);
+        } else if (command.equals(ActionProvider.COMMAND_PROFILE_SINGLE)) {
             return (findPackageRoot(context) != null) && isSingleJavaFileSelected(context);
         } else {
             throw new IllegalArgumentException(command);
@@ -180,10 +186,14 @@ final class JavaActions implements ActionProvider {
                             handleCompileSingle(context);
                         } else if (command.equals(ActionProvider.COMMAND_DEBUG)) {
                             handleDebug();
+                        } else if (command.equals(ActionProvider.COMMAND_PROFILE)) {
+                            handleProfile();
                         } else if (command.equals(ActionProvider.COMMAND_RUN_SINGLE)) {
                             handleRunSingle(context);
                         } else if (command.equals(ActionProvider.COMMAND_DEBUG_SINGLE)) {
                             handleDebugSingle(context);
+                        } else if (command.equals(ActionProvider.COMMAND_PROFILE_SINGLE)) {
+                            handleProfileSingle(context);
                         } else {
                             throw new IllegalArgumentException(command);
                         }
@@ -460,6 +470,156 @@ final class JavaActions implements ActionProvider {
         addDebugVMArgs(java, ownerDocument);
         target.appendChild(java);
         return target;
+    }
+    
+    private void handleProfile() throws IOException, SAXException {                        
+        if (!this.setOutputsNotified) {
+            ProjectModel pm = ProjectModel.createModel(Util.getProjectLocation(this.helper, this.evaluator),
+                FileUtil.toFile(project.getProjectDirectory()), this.evaluator, this.helper);        
+            List<ProjectModel.CompilationUnitKey> cuKeys = pm.createCompilationUnitKeys();
+            assert cuKeys != null;
+            boolean hasOutputs = false;
+            for (Iterator it = cuKeys.iterator(); it.hasNext();) {
+                ProjectModel.CompilationUnitKey ck = (ProjectModel.CompilationUnitKey) it.next();
+                JavaProjectGenerator.JavaCompilationUnit cu = pm.getCompilationUnit(ck,false);
+                if (cu.output != null && cu.output.size()>0) {
+                    hasOutputs = true;
+                    break;
+                }
+            }
+            if (!hasOutputs) {
+                alertOutputs (NbBundle.getMessage(JavaActions.class, "ACTION_profile")); // NOI18N           
+                this.setOutputsNotified = true;
+                return;
+            }
+        }        
+        String[] bindings = findCommandBinding(ActionProvider.COMMAND_RUN);
+        Element task = null;
+        Element origTarget = null;
+        if (bindings != null && bindings.length <= 2) {
+            origTarget = findExistingBuildTarget(ActionProvider.COMMAND_RUN);
+            //The origTarget may be null if the user has removed it from build.xml
+            if (origTarget != null) {
+                task = targetUsesTaskExactlyOnce(origTarget, "java"); // NOI18N
+            }
+        }
+        
+        if (!alert(NbBundle.getMessage(JavaActions.class, "ACTION_profile"), task != null ? GENERAL_SCRIPT_PATH : FILE_SCRIPT_PATH)) { // NOI18N
+            return;
+        }
+        
+        String generatedTargetName = "profile-nb"; // NOI18N
+        String generatedScriptPath;
+        Document doc;
+        Element generatedTarget;
+        if (task != null) {
+            // We can copy the original run target with some modifications.
+            generatedScriptPath = GENERAL_SCRIPT_PATH;
+            doc = readCustomScript(GENERAL_SCRIPT_PATH);
+            ensureImports(doc.getDocumentElement(), bindings[0]);
+            generatedTarget = createProfileTargetFromTemplate(generatedTargetName, origTarget, task, doc);
+        } else {
+            // No info, need to generate a dummy profile target.
+            generatedScriptPath = FILE_SCRIPT_PATH;
+            doc = readCustomScript(FILE_SCRIPT_PATH);
+            ensurePropertiesCopied(doc.getDocumentElement());
+            generatedTarget = createProfileTargetFromScratch(generatedTargetName, doc);
+        }
+        Comment comm = doc.createComment(" " + NbBundle.getMessage(JavaActions.class, "COMMENT_edit_target") + " "); // NOI18N
+        doc.getDocumentElement().appendChild(comm);
+        comm = doc.createComment(" " + NbBundle.getMessage(JavaActions.class, "COMMENT_more_info_profile") + " "); // NOI18N
+        doc.getDocumentElement().appendChild(comm);
+        doc.getDocumentElement().appendChild(generatedTarget);
+        writeCustomScript(doc, generatedScriptPath);
+        addBinding(ActionProvider.COMMAND_PROFILE, generatedScriptPath, generatedTargetName, null, null, null, null, null);
+        jumpToBinding(ActionProvider.COMMAND_PROFILE);
+        jumpToBuildScript(generatedScriptPath, generatedTargetName);                
+    }
+    
+    Element createProfileTargetFromTemplate(String generatedTargetName, Element origTarget, Element origTask, Document ownerDocument) {
+        NodeList tasks = origTarget.getChildNodes();
+        int taskIndex = -1;
+        for (int i = 0; i < tasks.getLength(); i++) {
+            if (tasks.item(i) == origTask) {
+                taskIndex = i;
+                break;
+            }
+        }
+        assert taskIndex != -1;
+        Element target = (Element) ownerDocument.importNode(origTarget, true);
+        target.setAttribute("depends", "-profile-check"); // NOI18N
+        target.setAttribute("if", "profiler.configured"); // NOI18N
+        addJdkInitDeps(target);
+        Element task = (Element) target.getChildNodes().item(taskIndex);
+        target.setAttribute("name", generatedTargetName); // NOI18N
+        addProfileInit(ownerDocument, ownerDocument.getDocumentElement());
+
+        addProfileVMArgs(task, ownerDocument);
+        return target;
+    }
+    
+    Element createProfileTargetFromScratch(String generatedTargetName, Document ownerDocument) {
+        Element target = ownerDocument.createElement("target"); // NOI18N
+        target.setAttribute("depends", "-profile-check"); // NOI18N        
+        target.setAttribute("if", "profiler.configured"); // NOI18N
+        addJdkInitDeps(target);
+        target.setAttribute("name", generatedTargetName); // NOI18N
+        Element path = ownerDocument.createElement("path"); // NOI18N
+        // XXX would be better to determine runtime CP from project.xml and put it here instead (if that is possible)...
+        path.setAttribute("id", "cp"); // NOI18N
+        path.appendChild(ownerDocument.createComment(" " + NbBundle.getMessage(JavaActions.class, "COMMENT_set_runtime_cp") + " ")); // NOI18N
+        target.appendChild(path);
+        addProfileInit(ownerDocument, ownerDocument.getDocumentElement());
+
+        target.appendChild(ownerDocument.createComment(" " + NbBundle.getMessage(JavaActions.class, "COMMENT_set_main_class") + " ")); // NOI18N
+        Element java = ownerDocument.createElement("java"); // NOI18N
+        java.setAttribute("classname", "some.main.Class"); // NOI18N
+        Element classpath = ownerDocument.createElement("classpath"); // NOI18N
+        classpath.setAttribute("refid", "cp"); // NOI18N
+        java.appendChild(classpath);
+        addProfileVMArgs(java, ownerDocument);
+        target.appendChild(java);
+        return target;
+    }
+    
+    private void addProfileInit(Document ownerDocument, Element parent) {
+        NodeList nl = ownerDocument.getElementsByTagName("target");
+        for(int i=0;i<nl.getLength();i++) {
+            if ("-profile-check".equals(((Element)nl.item(i)).getAttribute("name"))) {
+                return;
+            }
+        }
+        Element init = ownerDocument.createElement("target"); // NOI18N
+        init.setAttribute("name", "-profile-check");
+        Element profilerStart = ownerDocument.createElement("startprofiler");
+        profilerStart.setAttribute("freeform", "true");
+        init.appendChild(profilerStart);
+        
+        parent.appendChild(init);
+    }
+    
+    private void addProfileVMArgs(Element java, Document ownerDocument) {
+        //Add fork="true" if not alredy there
+        NamedNodeMap attrs = java.getAttributes();
+        boolean found = false;
+        for (int i=0; i<attrs.getLength(); i++) {
+            Attr attr = (Attr) attrs.item(i);
+            if ("fork".equals(attr.getName())) {        //NOI18N
+                String value = attr.getValue();
+                if ("on".equalsIgnoreCase (value) ||    //NOI18N
+                    "true".equalsIgnoreCase(value) ||   //NOI18N
+                    "yes".equalsIgnoreCase(value)) {    //NOI18N
+                    found = true;
+                }
+                break;
+            }
+        }
+        if (!found) {
+            java.setAttribute("fork", "true");  //NOI18N
+        }
+        Element jvmarg = ownerDocument.createElement("jvmarg"); // NOI18N
+        jvmarg.setAttribute("line", "${agent.jvmargs}"); // NOI18N
+        java.appendChild(jvmarg);
     }
     
     /**
@@ -1120,6 +1280,24 @@ final class JavaActions implements ActionProvider {
         jumpToBinding(ActionProvider.COMMAND_DEBUG_SINGLE);
         jumpToBuildScript(FILE_SCRIPT_PATH, targetName);
     }
+    
+    private void handleProfileSingle(Lookup context) throws IOException, SAXException {
+        if (!alert(NbBundle.getMessage(JavaActions.class, "ACTION_profile.single"), FILE_SCRIPT_PATH)) { // NOI18N
+            return;
+        }
+        Document doc = readCustomScript(FILE_SCRIPT_PATH);
+        AntLocation root = handleInitials(doc, context);
+        assert root != null : context;
+        String propertyName = "profile.class"; // NOI18N
+        String targetName = "profile-selected-file-in-" + root.physical.getNameExt(); // NOI18N
+        Element targetElem = createProfileSingleTargetElem(doc, targetName, propertyName, root);
+        doc.getDocumentElement().appendChild(targetElem);
+        writeCustomScript(doc, FILE_SCRIPT_PATH);
+        addBinding(ActionProvider.COMMAND_PROFILE_SINGLE, FILE_SCRIPT_PATH, targetName,
+                propertyName, root.virtual, JAVA_FILE_PATTERN, "java-name", null); // NOI18N
+        jumpToBinding(ActionProvider.COMMAND_PROFILE_SINGLE);
+        jumpToBuildScript(FILE_SCRIPT_PATH, targetName);
+    }
 
     Element createRunSingleTargetElem(Document doc, String tgName,
                 String propName, AntLocation root) throws IOException, SAXException {
@@ -1193,6 +1371,50 @@ final class JavaActions implements ActionProvider {
         cpElem.setAttribute("refid", "cp"); // NOI18N
         javaElem.appendChild(cpElem);
         addDebugVMArgs(javaElem, doc);
+
+        targetElem.appendChild(javaElem);
+        return targetElem;
+    }
+    
+    Element createProfileSingleTargetElem(Document doc, String tgName,
+                String propName, AntLocation root) throws IOException, SAXException {
+
+        Element targetElem = doc.createElement("target"); // NOI18N
+        addJdkInitDeps(targetElem);
+        targetElem.setAttribute("name", tgName); // NOI18N
+        targetElem.setAttribute("if", "profiler.configured"); // NOI18N
+        targetElem.setAttribute("depends", "-profile-check"); // NOI18N
+        Element failElem = doc.createElement("fail"); // NOI18N
+        failElem.setAttribute("unless", propName); // NOI18N
+        failElem.appendChild(doc.createTextNode(NbBundle.getMessage(JavaActions.class,
+                "COMMENT_must_set_property", propName)));
+        targetElem.appendChild(failElem);
+
+        String depends[] = getRunDepends();
+        if (depends != null) {
+            targetElem.appendChild(createAntElem(doc, depends[0], depends[1]));
+        }
+
+        Element pElem = getPathFromCU(doc, root.virtual, "path"); // NOI18N
+        pElem.setAttribute("id", "cp"); // NOI18N
+        // add comment only if there is no definition
+        if (pElem.getChildNodes().getLength() == 0) {
+            pElem.appendChild(doc.createComment(" " + NbBundle.getMessage(JavaActions.class,
+                    "COMMENT_set_runtime_cp") + " "));
+        }
+        targetElem.appendChild(pElem);
+
+        Element cpElem = doc.createElement("classpath"); // NOI18N
+        cpElem.setAttribute("refid", "cp"); // NOI18N
+
+        Element javaElem = doc.createElement("java"); // NOI18N
+        javaElem.setAttribute("classname", "${" + propName + "}"); // NOI18N
+
+        cpElem = doc.createElement("classpath"); // NOI18N
+        cpElem.setAttribute("refid", "cp"); // NOI18N
+        javaElem.appendChild(cpElem);
+        addProfileInit(doc, doc.getDocumentElement());
+        addProfileVMArgs(javaElem, doc);
 
         targetElem.appendChild(javaElem);
         return targetElem;

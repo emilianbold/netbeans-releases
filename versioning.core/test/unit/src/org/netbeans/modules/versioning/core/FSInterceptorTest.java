@@ -167,7 +167,7 @@ public class FSInterceptorTest extends NbTestCase {
         }
 
         @Override
-        public void beforeEdit(VCSFileProxy file) {
+        public void beforeEdit(VCSFileProxy file) throws IOException {
             storeMethodName();
             super.beforeEdit(file);
         }

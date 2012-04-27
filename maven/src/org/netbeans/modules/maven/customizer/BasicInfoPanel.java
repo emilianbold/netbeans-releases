@@ -43,18 +43,20 @@
 package org.netbeans.modules.maven.customizer;
 
 import java.io.CharConversionException;
-import javax.swing.event.DocumentEvent;
-import org.netbeans.modules.maven.api.customizer.support.TextComponentUpdater;
-import org.netbeans.modules.maven.api.customizer.support.ReflectionTextComponentUpdater;
-import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JTextField;
+import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.apache.maven.project.MavenProject;
+import org.netbeans.modules.maven.api.customizer.ModelHandle2;
+import org.netbeans.modules.maven.api.customizer.support.ReflectionTextComponentUpdater;
+import org.netbeans.modules.maven.api.customizer.support.TextComponentUpdater;
+import static org.netbeans.modules.maven.customizer.Bundle.*;
+import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Project;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.xml.XMLUtil;
 
 /**
@@ -62,12 +64,12 @@ import org.openide.xml.XMLUtil;
  * @author  mkleint
  */
 public class BasicInfoPanel extends javax.swing.JPanel implements DocumentListener {
-    private final ModelHandle handle;
+    private final ModelHandle2 handle;
     private List<TextComponentUpdater> listeners;
     private final Category category;
     
     /** Creates new form BasicInfoPanel */
-    public BasicInfoPanel(ModelHandle handle, Category category) {
+    public BasicInfoPanel(ModelHandle2 handle, Category category) {
         initComponents();
         this.handle = handle;
         this.category = category;
@@ -76,15 +78,52 @@ public class BasicInfoPanel extends javax.swing.JPanel implements DocumentListen
     
     private void initValues() {
         Project mdl = handle.getPOMModel().getProject();
-        MavenProject project = handle.getProject().getParent();
+        MavenProject project;
+        try {
+            project = handle.getProject().getParent();
+        } catch (IllegalStateException x) { // #200320
+            project = null;
+        }
         listeners = new ArrayList<TextComponentUpdater>();
         try {
-            listeners.add(new ReflectionTextComponentUpdater("getGroupId", "setGroupId", mdl, project, txtGroupId, lblGroupId, handle)); //NOI18N
-            listeners.add(new ReflectionTextComponentUpdater("getArtifactId", "setArtifactId", mdl, project, txtArtifactId, lblArtifactId, handle)); //NOI18N
-            listeners.add(new ReflectionTextComponentUpdater("getVersion", "setVersion", mdl, project, txtVersion, lblVersion, handle)); //NOI18N
-            listeners.add(new ReflectionTextComponentUpdater("getName", "setName", mdl, project, txtName, lblName, handle)); //NOI18N
-            listeners.add(new ReflectionTextComponentUpdater("getPackaging", "setPackaging", mdl, project, txtPackaging, lblPackaging, handle)); //NOI18N
-            listeners.add(new ReflectionTextComponentUpdater("getDescription", "setDescription", mdl, project, taDescription, lblDescription, handle)); //NOI18N
+            listeners.add(new ReflectionTextComponentUpdater("getGroupId", mdl, project, txtGroupId, lblGroupId, handle, new ReflectionTextComponentUpdater.Operation() {
+                @Override
+                public void performOperation(POMModel model) {
+                    model.getProject().setGroupId(getNewValue());
+                }
+            })); //NOI18N
+            listeners.add(new ReflectionTextComponentUpdater("getArtifactId",  mdl, project, txtArtifactId, lblArtifactId, handle, new ReflectionTextComponentUpdater.Operation() {
+                @Override
+                public void performOperation(POMModel model) {
+                    model.getProject().setArtifactId(getNewValue());
+                }
+            })); //NOI18N
+            listeners.add(new ReflectionTextComponentUpdater("getVersion",  mdl, project, txtVersion, lblVersion, handle, new ReflectionTextComponentUpdater.Operation() {
+                @Override
+                public void performOperation(POMModel model) {
+                    model.getProject().setVersion(getNewValue());
+                }
+            })); //NOI18N
+            listeners.add(new ReflectionTextComponentUpdater("getName",  mdl, project, txtName, lblName, handle, new ReflectionTextComponentUpdater.Operation() {
+                @Override
+                public void performOperation(POMModel model) {
+                    model.getProject().setName(getNewValue());
+                }
+            })); //NOI18N
+            //in this case referring to parent project for default value is wrong. packaging
+            //doesn't get inherited from parent. the default value is jar no matter what the parent has.
+            listeners.add(new ReflectionTextComponentUpdater("getPackaging",  mdl, project, txtPackaging, lblPackaging, handle, new ReflectionTextComponentUpdater.Operation() {
+                @Override
+                public void performOperation(POMModel model) {
+                    model.getProject().setPackaging(getNewValue());
+                }
+            })); //NOI18N
+            listeners.add(new ReflectionTextComponentUpdater("getDescription",  mdl, project, taDescription, lblDescription, handle, new ReflectionTextComponentUpdater.Operation() {
+                @Override
+                public void performOperation(POMModel model) {
+                    model.getProject().setDescription(getNewValue());
+                }
+            })); //NOI18N
         } catch (NoSuchMethodException ex) {
             ex.printStackTrace();
         }
@@ -206,14 +245,17 @@ public class BasicInfoPanel extends javax.swing.JPanel implements DocumentListen
     private javax.swing.JTextField txtVersion;
     // End of variables declaration//GEN-END:variables
 
+    @Override
     public void insertUpdate(DocumentEvent arg0) {
         checkCoords();
     }
 
+    @Override
     public void removeUpdate(DocumentEvent arg0) {
         checkCoords();
     }
 
+    @Override
     public void changedUpdate(DocumentEvent arg0) {
         checkCoords();
     }
@@ -226,6 +268,7 @@ public class BasicInfoPanel extends javax.swing.JPanel implements DocumentListen
         category.setValid(isValid);
     }
 
+    @Messages("ERR_Coord_breaks_pom=Error: Group Id or Artifact Id would invalidate Maven POM xml file.")
     private boolean checkCoord(JTextField field) {
         String coord = field.getText();
         boolean result = false;
@@ -239,7 +282,7 @@ public class BasicInfoPanel extends javax.swing.JPanel implements DocumentListen
         if (result) {
             result = !containsMultiByte(coord);
         } else {
-            category.setErrorMessage(NbBundle.getMessage(BasicInfoPanel.class, "ERR_Coord_breaks_pom"));
+            category.setErrorMessage(ERR_Coord_breaks_pom());
         }
 
         if (result) {
@@ -249,11 +292,12 @@ public class BasicInfoPanel extends javax.swing.JPanel implements DocumentListen
         return result;
     }
 
+    @Messages("ERR_multibyte=Error: Multibyte chars forbidden in Group Id and Artifact Id.")
     boolean containsMultiByte (String text) {
         char[] textChars = text.toCharArray();
         for (int i = 0; i < textChars.length; i++) {
             if ((int)textChars[i] > 255) {
-                category.setErrorMessage(NbBundle.getMessage(BasicInfoPanel.class, "ERR_multibyte"));
+                category.setErrorMessage(ERR_multibyte());
                 return true;
             }
 

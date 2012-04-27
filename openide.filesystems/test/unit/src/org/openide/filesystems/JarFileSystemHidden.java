@@ -50,6 +50,7 @@ import java.util.jar.JarOutputStream;
 import java.util.logging.Level;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 
 /**
  *
@@ -91,6 +92,7 @@ public class JarFileSystemHidden extends NbTestCase {
         assertEquals("No children", 0, fs.getRoot().getChildren().length);
     }
 
+    @RandomlyFails // NB-Core-Build #7927 (from JarFileSystemTest): ...ok.jar shall be opened now
     public void testLazyOpen() throws Exception {
         File f = new File(getWorkDir(), "ok.jar");
         JarOutputStream jos = new JarOutputStream(new FileOutputStream(f));
@@ -101,7 +103,7 @@ public class JarFileSystemHidden extends NbTestCase {
 
         CharSequence log = Log.enable(JarFileSystem.class.getName(), Level.FINE);
         JarFileSystem fs = new JarFileSystem(f);
-        final String match = "opened: " + f.getAbsolutePath();
+        final String match = "opened: WORKDIR/o.o.f.J/testLazyOpen/ok.jar".replace('/', File.separatorChar);
         if (log.toString().contains(match)) {
             fail("The file " + f + " shall not be opened when fs created:\n" + log);
         }

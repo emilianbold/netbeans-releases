@@ -70,6 +70,7 @@ public class ExecPluginOutputListenerProvider implements OutputProcessor {
         project = proj;
     }
     
+    @Override
     public void processLine(String line, OutputVisitor visitor) {
         ClassPath[] cp = project.getLookup().lookup(ProjectSourcesClassPathProvider.class).getProjectClassPaths(ClassPath.EXECUTE);
         OutputListener list = OutputUtils.matchStackTraceLine(line, ClassPathSupport.createProxyClassPath(cp));
@@ -78,16 +79,20 @@ public class ExecPluginOutputListenerProvider implements OutputProcessor {
         }
     }
 
+    @Override
     public String[] getRegisteredOutputSequences() {
         return EXECGOALS;
     }
 
+    @Override
     public void sequenceStart(String sequenceId, OutputVisitor visitor) {
     }
 
+    @Override
     public void sequenceEnd(String sequenceId, OutputVisitor visitor) {
     }
     
+    @Override
     public void sequenceFail(String sequenceId, OutputVisitor visitor) {
     }
     

@@ -66,29 +66,35 @@ import org.openide.loaders.DataObject;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
-/** 
+/**
  * @author Jan Becicka
  */
 @ActionID(id = "org.netbeans.modules.refactoring.api.ui.SafeDeleteAction", category = "Refactoring")
-@ActionRegistration(displayName = "#LBL_SafeDel_Action")
+@ActionRegistration(displayName = "#LBL_SafeDel_Action", lazy=false)
 @ActionReferences({
-    @ActionReference(path = "Menu/Refactoring" , name = "SafeDeleteAction", position = 350),
+    @ActionReference(path = "Menu/Refactoring", name = "SafeDeleteAction", position = 350),
     @ActionReference(path = "Shortcuts", name = "O-DELETE")
 })
-        
-@org.openide.util.lookup.ServiceProvider(service=org.openide.explorer.ExtendedDelete.class)
+@NbBundle.Messages({
+    "# {0} - name",
+    "MSG_ConfirmDeleteObject=Are you sure you want to delete {0}?",
+    "# {0} - number of objects",
+    "MSG_ConfirmDeleteObjects=Are you sure you want to delete these {0} items?",
+    "MSG_ConfirmDeleteObjectTitle=Confirm Object Deletion",
+    "MSG_ConfirmDeleteObjectsTitle=Confirm Multiple Object Deletion"})
+@org.openide.util.lookup.ServiceProvider(service = org.openide.explorer.ExtendedDelete.class)
 public class SafeDeleteAction extends RefactoringGlobalAction implements ExtendedDelete {
-    
+
     private static final Logger LOGGER = Logger.getLogger(SafeDeleteAction.class.getName());
 
     /**
      * Creates a new instance of SafeDeleteAction
      */
     public SafeDeleteAction() {
-        super (NbBundle.getMessage(SafeDeleteAction.class, "LBL_SafeDel_Action"), null);
+        super(NbBundle.getMessage(SafeDeleteAction.class, "LBL_SafeDel_Action"), null);
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
-    
+
     @Override
     public final void performAction(Lookup context) {
         ActionsImplementationFactory.doDelete(context);
@@ -96,7 +102,7 @@ public class SafeDeleteAction extends RefactoringGlobalAction implements Extende
             LOGGER.log(Level.FINEST, "SafeDeleteAction.performAction", new Exception());
         }
     }
-    
+
     @Override
     public org.openide.util.HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
@@ -111,13 +117,13 @@ public class SafeDeleteAction extends RefactoringGlobalAction implements Extende
     protected boolean enable(Lookup context) {
         return true;
     }
-    
+
     @Override
     protected Lookup getLookup(Node[] n) {
         Lookup l = super.getLookup(n);
         if (regularDelete) {
             ExplorerContext con = l.lookup(ExplorerContext.class);
-            if (con!=null) {
+            if (con != null) {
                 con.setDelete(true);
             } else {
                 con = new ExplorerContext();
@@ -127,8 +133,8 @@ public class SafeDeleteAction extends RefactoringGlobalAction implements Extende
         }
         return l;
     }
-    
     private boolean regularDelete = false;
+
     @Override
     public boolean delete(final Node[] nodes) {
         if (nodes.length < 2 && ActionsImplementationFactory.canDelete(getLookup(nodes))) {
@@ -144,7 +150,6 @@ public class SafeDeleteAction extends RefactoringGlobalAction implements Extende
                         performAction(nodes);
                         regularDelete = false;
                     }
-
                 });
             }
             return true;
@@ -155,7 +160,7 @@ public class SafeDeleteAction extends RefactoringGlobalAction implements Extende
             // performing delete in the safe way all nodes/files were deleted in a single
             // batch operation from RepositoryUpdater's perspective.
             boolean delete = true;
-            for(int i = 0; i < nodes.length; i++) {
+            for (int i = 0; i < nodes.length; i++) {
                 if (nodes[i].getLookup().lookup(DataObject.class) == null) {
                     // not file-based node
                     delete = false;
@@ -208,15 +213,13 @@ public class SafeDeleteAction extends RefactoringGlobalAction implements Extende
         }
 
         if (sel.length == 1) {
-            message = NbBundle.getMessage(
-                    ExtendedDelete.class, "MSG_ConfirmDeleteObject", sel[0].getDisplayName() //NOI18N
-                );
-            title = NbBundle.getMessage(ExtendedDelete.class, "MSG_ConfirmDeleteObjectTitle"); //NOI18N
+            message = NbBundle.getMessage(SafeDeleteAction.class, "MSG_ConfirmDeleteObject", sel[0].getDisplayName() //NOI18N
+                    );
+            title = NbBundle.getMessage(SafeDeleteAction.class, "MSG_ConfirmDeleteObjectTitle"); //NOI18N
         } else {
-            message = NbBundle.getMessage(
-                    ExtendedDelete.class, "MSG_ConfirmDeleteObjects", Integer.valueOf(sel.length) //NOI18N
-                );
-            title = NbBundle.getMessage(ExtendedDelete.class, "MSG_ConfirmDeleteObjectsTitle"); //NOI18N
+            message = NbBundle.getMessage(SafeDeleteAction.class, "MSG_ConfirmDeleteObjects", Integer.valueOf(sel.length) //NOI18N
+                    );
+            title = NbBundle.getMessage(SafeDeleteAction.class, "MSG_ConfirmDeleteObjectsTitle"); //NOI18N
         }
 
         NotifyDescriptor desc = new NotifyDescriptor.Confirmation(message, title, NotifyDescriptor.YES_NO_OPTION);

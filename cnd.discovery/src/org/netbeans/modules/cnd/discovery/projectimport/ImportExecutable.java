@@ -226,7 +226,6 @@ public class ImportExecutable implements PropertyChangeListener {
             map.put("DW:consolidationLevel", ConsolidationStrategy.FILE_LEVEL); // NOI18N
             map.put("DW:rootFolder", lastSelectedProject.getProjectDirectory().getPath()); // NOI18N
             OpenProjects.getDefault().open(new Project[]{lastSelectedProject}, false);
-            OpenProjects.getDefault().setMainProject(lastSelectedProject);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }

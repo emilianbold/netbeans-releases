@@ -49,15 +49,19 @@ import java.beans.PropertyChangeEvent;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.project.libraries.LibraryAccessor;
 import org.netbeans.modules.project.libraries.Util;
 import org.netbeans.modules.project.libraries.ui.LibrariesModel;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryImplementation2;
+import org.netbeans.spi.project.libraries.LibraryImplementation3;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
@@ -77,6 +81,19 @@ public final class Library {
     public static final String PROP_NAME = "name";                  //NOI18N
     public static final String PROP_DESCRIPTION = "description";    //NOI18N
     public static final String PROP_CONTENT = "content";            //NOI18N
+    
+    
+    /**
+     * Name of the display name property.
+     * @since 1.35
+     */
+    public static final String PROP_DISPLAY_NAME = "displayName";   //NOI18N
+    
+    /**
+     * Name of the properties property.
+     * @since 1.35
+     */
+    public static final String PROP_PROPERTIES = "properties";      //NOI18N
 
     private static final Logger LOG = Logger.getLogger(Library.class.getName());
 
@@ -147,6 +164,22 @@ public final class Library {
         }
     } // end getContent
 
+    /**
+     * Returns properties associated with this library. Returned properties
+     * object should be considered readonly and any changes to it will not be 
+     * propagated back to the library itself.
+     * @return never null but can be empty if library does not have any properties
+     * or does not support concept of properties
+     * @since 1.34
+     */
+    @NonNull
+    public Map<String,String> getProperties() {
+        if (impl instanceof LibraryImplementation3) {
+            return Collections.unmodifiableMap(((LibraryImplementation3)impl).getProperties());
+        } else {
+            return Collections.<String,String>emptyMap();
+        }
+    }
 
     /**
      * Get library binding name. The name identifies library

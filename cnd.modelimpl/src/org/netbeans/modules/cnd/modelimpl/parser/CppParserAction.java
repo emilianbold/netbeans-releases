@@ -42,12 +42,19 @@
 package org.netbeans.modules.cnd.modelimpl.parser;
 
 import org.netbeans.modules.cnd.antlr.Token;
+import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 
 /**
  *
  * @author nick
  */
-public interface CppParserAction {
+public interface CppParserAction extends CsmParserProvider.CsmParseCallback {
+    
+    public static int DECL_SPECIFIER__STORAGE_CLASS_SPECIFIER = 0;
+    public static int DECL_SPECIFIER__FUNCTION_SPECIFIER = 1;
+    public static int DECL_SPECIFIER__LITERAL_FRIEND = 2;
+    public static int DECL_SPECIFIER__LITERAL_TYPEDEF = 3;
+    public static int DECL_SPECIFIER__TYPE_SPECIFIER = 4;
     
     void enum_declaration(Token token);
     void enum_name(Token token);
@@ -72,10 +79,19 @@ public interface CppParserAction {
     void compound_statement(Token token);
     void end_compound_statement(Token token);
     
+    void simple_declaration(Token token);
+    void end_simple_declaration(Token token);
+    
+    void decl_specifier(int kind, Token token);
+    
+    void simple_type_specifier(Token token);
+    void nested_name_specifier(Token token);
+    void simple_template_id_nocheck(Token token);
+    void simple_template_id(Token token);
+    
     void id(Token token);
     
     void simple_type_id(Token token);
     
     boolean isType(String name);
-
 }

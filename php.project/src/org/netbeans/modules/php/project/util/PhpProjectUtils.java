@@ -113,17 +113,21 @@ public final class PhpProjectUtils {
         return project.getLookup().lookup(PhpProject.class);
     }
 
-    /**
-     * Opens the file and set cursor to the line. This action is always run in AWT thread.
-     * @param path path of a file to open
-     * @param line line of a file to set cursor to
-     */
-    public static void openFile(String path, int line) {
-        assert path != null;
+    public static void openFile(File file) {
+        openFile(file, -1);
+    }
 
-        FileObject fileObject = FileUtil.toFileObject(new File(path));
+    /**
+     * Opens the file and optionally set cursor to the line. This action is always run in AWT thread.
+     * @param file path of a file to open
+     * @param line line of a file to set cursor to, {@code -1} if no specific line is needed
+     */
+    public static void openFile(File file, int line) {
+        assert file != null;
+
+        FileObject fileObject = FileUtil.toFileObject(FileUtil.normalizeFile(file));
         if (fileObject == null) {
-            LOGGER.log(Level.INFO, "FileObject not found for {0}", path);
+            LOGGER.log(Level.INFO, "FileObject not found for {0}", file);
             return;
         }
 
@@ -131,13 +135,21 @@ public final class PhpProjectUtils {
         try {
             dataObject = DataObject.find(fileObject);
         } catch (DataObjectNotFoundException ex) {
-            LOGGER.log(Level.INFO, "DataObject not found for {0}", path);
+            LOGGER.log(Level.INFO, "DataObject not found for {0}", file);
             return;
         }
 
+        if (line == -1) {
+            // simply open file
+            EditorCookie ec = dataObject.getCookie(EditorCookie.class);
+            ec.open();
+            return;
+        }
+
+        // open at specific line
         LineCookie lineCookie = dataObject.getCookie(LineCookie.class);
         if (lineCookie == null) {
-            LOGGER.log(Level.INFO, "LineCookie not found for {0}", path);
+            LOGGER.log(Level.INFO, "LineCookie not found for {0}", file);
             return;
         }
         Set lineSet = lineCookie.getLineSet();
@@ -309,7 +321,14 @@ public final class PhpProjectUtils {
      * Open project customizer, Run Configuration category.
      */
     public static void openCustomizerRun(Project project) {
-        project.getLookup().lookup(CustomizerProviderImpl.class).showCustomizer(CompositePanelProviderImpl.RUN);
+        openCustomizer(project, CompositePanelProviderImpl.RUN);
+    }
+
+    /**
+     * Open project customizer.
+     */
+    public static void openCustomizer(Project project, String category) {
+        project.getLookup().lookup(CustomizerProviderImpl.class).showCustomizer(category);
     }
 
     // http://wiki.netbeans.org/UsageLoggingSpecification

@@ -67,15 +67,15 @@ public class MylynUtils {
     
     private static Logger LOG = Logger.getLogger("org.netbeans.libs.bugtracking.mylyn");
     
-    public static TaskRepository createTaskRepository(String connectorKind, String name, String url, String user, String password, String httpUser, String httpPassword) {
+    public static TaskRepository createTaskRepository(String connectorKind, String name, String url, String user, char[] password, String httpUser, char[] httpPassword) {
         TaskRepository repository = new TaskRepository(connectorKind, url);
         setCredentials(repository, user, password, httpUser, httpPassword);
         return repository;
     }
 
-    public static void setCredentials (TaskRepository repository, String user, String password, String httpUser, String httpPassword) {
+    public static void setCredentials (TaskRepository repository, String user, char[] password, String httpUser, char[] httpPassword) {
         logCredentials(repository, user, password, "Setting credentials: ");    // NOI18N
-        AuthenticationCredentials authenticationCredentials = new AuthenticationCredentials(user != null ? user : "", password != null ? password : ""); // NOI18N
+        AuthenticationCredentials authenticationCredentials = new AuthenticationCredentials(user != null ? user : "", password != null ? new String(password) : ""); // NOI18N
         repository.setCredentials(AuthenticationType.REPOSITORY, authenticationCredentials, false);
 
         if(httpUser != null || httpPassword != null) {
@@ -83,10 +83,10 @@ public class MylynUtils {
                 httpUser = "";      // NOI18N
             }
             if(httpPassword == null) {
-                httpPassword = "";  // NOI18N
+                httpPassword = new char[0];
             }
             logCredentials(repository, httpUser, httpPassword, "Setting http credentials: ");   // NOI18N
-            authenticationCredentials = new AuthenticationCredentials(httpUser, httpPassword);
+            authenticationCredentials = new AuthenticationCredentials(httpUser, new String(httpPassword));
             repository.setCredentials(AuthenticationType.HTTP, authenticationCredentials, false);
         }
 
@@ -113,9 +113,9 @@ public class MylynUtils {
             String proxyUser = NetworkSettings.getAuthenticationUsername(uri);
             if(proxyUser != null) {
                 char[] pwd = Keyring.read(NetworkSettings.getKeyForAuthenticationPassword(uri));
-                String proxyPassword = pwd == null ? "" : new String(pwd); //NOI18N
+                char[] proxyPassword = pwd == null ? new char[0] : pwd; //NOI18N
                 logCredentials(repository, proxyUser, proxyPassword, "Setting proxy credentials: ");
-                authenticationCredentials = new AuthenticationCredentials(proxyUser, proxyPassword);
+                authenticationCredentials = new AuthenticationCredentials(proxyUser, new String(proxyPassword));
                 repository.setCredentials(AuthenticationType.PROXY, authenticationCredentials, false);
             }
         } else {
@@ -125,7 +125,7 @@ public class MylynUtils {
         }
     }
     
-    public static void logCredentials(TaskRepository repository, String user, String psswd, String msg) {
+    public static void logCredentials(TaskRepository repository, String user, char[] psswd, String msg) {
         LOG.log(
             Level.FINEST,
             msg + "[{0}, user={1}, password={2}]",                               // NOI18N
@@ -218,12 +218,12 @@ public class MylynUtils {
         return dontUseProxy;
     }
     
-    private static String getPasswordLog(String psswd) {
+    private static String getPasswordLog(char[] psswd) {
         if(psswd == null) {
             return ""; // NOI18N
         }
         if("true".equals(System.getProperty("org.netbeans.modules.bugtracking.logPasswords", "false"))) { // NOI18N
-            return psswd; 
+            return new String(psswd); 
         }
         return "******"; // NOI18N
     }

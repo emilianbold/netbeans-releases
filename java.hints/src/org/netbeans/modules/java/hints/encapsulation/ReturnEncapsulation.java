@@ -62,18 +62,17 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Constraint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPatterns;
-import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
-import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Options;
-import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
-import org.netbeans.modules.java.hints.jackpot.spi.MatcherUtilities;
-import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
-import org.netbeans.modules.java.hints.spi.support.FixFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.java.hints.ConstraintVariableType;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.Hint.Options;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.JavaFixUtilities;
+import org.netbeans.spi.java.hints.MatcherUtilities;
+import org.netbeans.spi.java.hints.TriggerPattern;
+import org.netbeans.spi.java.hints.TriggerPatterns;
 import org.openide.util.NbBundle;
 
 /**
@@ -114,16 +113,16 @@ public class ReturnEncapsulation {
             "java.util.Arrays.<$T$>asList($any$)"
     );
 
-    @Hint(category="encapsulation",suppressWarnings="ReturnOfCollectionOrArrayField", enabled=false) //NOI18N
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.encapsulation.ReturnEncapsulation.collection", description = "#DESC_org.netbeans.modules.java.hints.encapsulation.ReturnEncapsulation.collection", category="encapsulation",suppressWarnings="ReturnOfCollectionOrArrayField", enabled=false) //NOI18N
     @TriggerPatterns({
         @TriggerPattern(value="return $expr",    //NOI18N
             constraints={
-                @Constraint(variable="$expr",type=COLLECTION)   //NOI18N
+                @ConstraintVariableType(variable="$expr",type=COLLECTION)   //NOI18N
             }
         ),
         @TriggerPattern(value="return $expr",    //NOI18N
             constraints={
-                @Constraint(variable="$expr",type=MAP)   //NOI18N
+                @ConstraintVariableType(variable="$expr",type=MAP)   //NOI18N
             }
         )
     })
@@ -135,51 +134,51 @@ public class ReturnEncapsulation {
                new FixProvider());   //NOI18N
     }
 
-    @Hint(category="encapsulation",suppressWarnings="ReturnOfCollectionOrArrayField", enabled=false, options=Options.QUERY) //NOI18N
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.encapsulation.ReturnEncapsulation.array", description = "#DESC_org.netbeans.modules.java.hints.encapsulation.ReturnEncapsulation.array", category="encapsulation",suppressWarnings="ReturnOfCollectionOrArrayField", enabled=false, options=Options.QUERY) //NOI18N
     @TriggerPatterns ({
         @TriggerPattern(value="return $expr",    //NOI18N
             constraints={
-                @Constraint(variable="$expr",type=A_OBJ)   //NOI18N
+                @ConstraintVariableType(variable="$expr",type=A_OBJ)   //NOI18N
             }
         ),
         @TriggerPattern(value="return $expr",    //NOI18N
             constraints={
-                @Constraint(variable="$expr",type=A_BOOL)   //NOI18N
+                @ConstraintVariableType(variable="$expr",type=A_BOOL)   //NOI18N
             }
         ),
         @TriggerPattern(value="return $expr",    //NOI18N
             constraints={
-                @Constraint(variable="$expr",type=A_BYTE)   //NOI18N
+                @ConstraintVariableType(variable="$expr",type=A_BYTE)   //NOI18N
             }
         ),
         @TriggerPattern(value="return $expr",    //NOI18N
             constraints={
-                @Constraint(variable="$expr",type=A_CHAR)   //NOI18N
+                @ConstraintVariableType(variable="$expr",type=A_CHAR)   //NOI18N
             }
         ),
         @TriggerPattern(value="return $expr",    //NOI18N
             constraints={
-                @Constraint(variable="$expr",type=A_SHORT)   //NOI18N
+                @ConstraintVariableType(variable="$expr",type=A_SHORT)   //NOI18N
             }
         ),
         @TriggerPattern(value="return $expr",    //NOI18N
             constraints={
-                @Constraint(variable="$expr",type=A_INT)   //NOI18N
+                @ConstraintVariableType(variable="$expr",type=A_INT)   //NOI18N
             }
         ),
         @TriggerPattern(value="return $expr",    //NOI18N
             constraints={
-                @Constraint(variable="$expr",type=A_LONG)   //NOI18N
+                @ConstraintVariableType(variable="$expr",type=A_LONG)   //NOI18N
             }
         ),
         @TriggerPattern(value="return $expr",    //NOI18N
             constraints={
-                @Constraint(variable="$expr",type=A_FLOAT)   //NOI18N
+                @ConstraintVariableType(variable="$expr",type=A_FLOAT)   //NOI18N
             }
         ),
         @TriggerPattern(value="return $expr",    //NOI18N
             constraints={
-                @Constraint(variable="$expr",type=A_DOUBLE)   //NOI18N
+                @ConstraintVariableType(variable="$expr",type=A_DOUBLE)   //NOI18N
             }
         )
     })
@@ -190,15 +189,15 @@ public class ReturnEncapsulation {
             "ReturnOfCollectionOrArrayField");  //NOI18N
     }
 
-    @Hint(category="encapsulation", suppressWarnings={"ReturnOfDateField"}, enabled=false, options=Options.QUERY) //NOI18N
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.encapsulation.ReturnEncapsulation.date", description = "#DESC_org.netbeans.modules.java.hints.encapsulation.ReturnEncapsulation.date", category="encapsulation", suppressWarnings={"ReturnOfDateField"}, enabled=false, options=Options.QUERY) //NOI18N
     @TriggerPatterns({
         @TriggerPattern(value="return $expr",   //NOI18N
             constraints={
-                @Constraint(variable="$expr",type=DATE)   //NOI18N
+                @ConstraintVariableType(variable="$expr",type=DATE)   //NOI18N
         }),
         @TriggerPattern(value="return $expr",   //NOI18N
             constraints={
-                @Constraint(variable="$expr",type=CALENDAR)   //NOI18N
+                @ConstraintVariableType(variable="$expr",type=CALENDAR)   //NOI18N
         })
     })
     public static ErrorDescription date(final HintContext ctx) {
@@ -241,7 +240,6 @@ public class ReturnEncapsulation {
         if (enclMethod == null || enclMethod.getEnclosingElement() != exprElement.getEnclosingElement()) {
             return null;
         }
-        final Fix swFix = FixFactory.createSuppressWarningsFix(info, tp, suppressWarnings);
         List<Fix> fixes = new ArrayList<Fix>(providers.length + 1);
         for (int i=0; i<providers.length; i++) {
             Fix f = providers[i].fixFor(ctx,(ExecutableElement) enclMethod,exprPath);
@@ -249,7 +247,6 @@ public class ReturnEncapsulation {
                 fixes.add(f);
             }
         }
-        fixes.add(swFix);
         return ErrorDescriptionFactory.forTree(ctx, tp,
             description,
             fixes.toArray(new Fix[0]));
@@ -299,7 +296,7 @@ public class ReturnEncapsulation {
             for (Entry<String, String> e : TO_UNMODIFIABLE.entrySet()) {
                 TypeElement el = elements.getTypeElement(e.getKey());
                 if (el != null && types.isSameType(returnTypeEr, types.erasure(el.asType()))) {
-                    return JavaFix.rewriteFix(ctx, NbBundle.getMessage(ReturnEncapsulation.class, "FIX_ReplaceWithUC",e.getValue(),field), tp, "java.util.Collections." + e.getValue() + "($expr)");
+                    return JavaFixUtilities.rewriteFix(ctx, NbBundle.getMessage(ReturnEncapsulation.class, "FIX_ReplaceWithUC",e.getValue(),field), tp, "java.util.Collections." + e.getValue() + "($expr)");
                 }
             }
             return null;

@@ -53,9 +53,9 @@ import javax.swing.text.Document;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
-import org.netbeans.editor.ext.html.parser.api.HtmlSource;
-import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
-import org.netbeans.editor.ext.html.parser.spi.UndeclaredContentResolver;
+import org.netbeans.modules.html.editor.lib.api.HtmlSource;
+import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
+import org.netbeans.modules.html.editor.lib.api.UndeclaredContentResolver;
 import org.netbeans.junit.MockServices;
 import org.netbeans.modules.html.editor.HtmlPreferences;
 import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
@@ -63,6 +63,7 @@ import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
 import org.netbeans.modules.html.editor.api.gsf.HtmlExtension.CompletionContext;
 import org.netbeans.modules.html.editor.api.gsf.HtmlExtensionTestSupport;
 import org.netbeans.modules.html.editor.completion.HtmlCompletionTestSupport.Match;
+import org.netbeans.modules.html.parser.HtmlDocumentation;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.spi.editor.completion.CompletionItem;
 
@@ -87,11 +88,12 @@ public class HtmlCompletionQueryTest extends HtmlCompletionTestBase {
         super.setUp();
         HtmlVersion.DEFAULT_VERSION_UNIT_TESTS_OVERRIDE = HtmlVersion.HTML41_TRANSATIONAL;
         MockServices.setServices(MockMimeLookup.class);
+        HtmlDocumentation.setupDocumentationForUnitTests();
     }
 
-    public static Test xsuite() throws IOException, BadLocationException {
+    public static Test suite() throws IOException, BadLocationException {
 	TestSuite suite = new TestSuite();
-//        suite.addTest(new HtmlCompletionQueryTest("testSimpleEndTag"));
+        suite.addTest(new HtmlCompletionQueryTest("testSimpleEndTagBeforeText"));
         return suite;
     }
 

@@ -44,16 +44,19 @@ package org.netbeans.modules.glassfish.javaee;
 
 import java.util.Collection;
 import java.util.Collections;
-import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.glassfish.eecommon.api.LogHyperLinkSupport;
-import org.netbeans.modules.glassfish.spi.ProfilerCookie;
 import org.netbeans.modules.glassfish.spi.Recognizer;
 import org.netbeans.modules.glassfish.spi.RecognizerCookie;
 import org.netbeans.modules.glassfish.spi.RemoveCookie;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerServerSettings;
-import org.netbeans.modules.j2ee.deployment.profiler.spi.Profiler;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.OutputListener;
 
 
@@ -61,45 +64,44 @@ import org.openide.windows.OutputListener;
  *
  * @author Peter Williams
  */
-public class JavaEEServerModule implements RemoveCookie, ProfilerCookie, RecognizerCookie {
+public class JavaEEServerModule implements Lookup.Provider, RemoveCookie, RecognizerCookie {
 
     private final InstanceProperties instanceProperties;
     private final LogHyperLinkSupport.AppServerLogSupport logSupport;
-    
+
+    private final Lookup lookup;
+
     JavaEEServerModule(Lookup instanceLookup, InstanceProperties ip) {
         instanceProperties = ip;
         logSupport = new LogHyperLinkSupport.AppServerLogSupport("", "/");
+
+        // is this ok, can platform change ?
+        ServerInstance inst = Deployment.getDefault().getServerInstance(
+                instanceProperties.getProperty(InstanceProperties.URL_ATTR));
+        J2eePlatform platform = null;
+        try {
+            platform = inst.getJ2eePlatform();
+        } catch (InstanceRemovedException ex) {
+        }
+        lookup = platform != null
+                ? new ProxyLookup(Lookups.fixed(platform, ip), Lookups.proxy(platform))
+                : Lookup.EMPTY;
     }
 
     public InstanceProperties getInstanceProperties() {
         return instanceProperties;
     }
-    
+
+    @Override
+    public Lookup getLookup() {
+        return lookup;
+    }
+
     // ------------------------------------------------------------------------
     // RemoveCookie support
     // ------------------------------------------------------------------------
     public void removeInstance(String serverUri) {
         InstanceProperties.removeInstance(serverUri);
-    }
-
-    // ------------------------------------------------------------------------
-    // ProfilerCookie support
-    // ------------------------------------------------------------------------
-    public Object[] getData() {
-        Profiler profiler = Lookup.getDefault().lookup(Profiler.class);
-        Object[] retVal = new Object[2];
-        retVal[0] = JavaPlatform.getDefault().getInstallFolders().iterator().next();
-        retVal[1] = new String[0];
-        if (profiler == null) {
-            return retVal;
-        }
-        final ProfilerServerSettings settings = profiler.getSettings(instanceProperties.getProperty(InstanceProperties.URL_ATTR));
-        if (settings == null) {
-            return retVal;
-        }
-        retVal[0] = settings.getJavaPlatform().getInstallFolders().iterator().next();
-        retVal[1] = settings.getJvmArgs();
-        return retVal;
     }
 
     // ------------------------------------------------------------------------

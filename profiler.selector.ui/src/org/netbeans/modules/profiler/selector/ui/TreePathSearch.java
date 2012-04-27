@@ -45,38 +45,36 @@ import java.util.*;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import org.netbeans.lib.profiler.client.ClientUtils;
-import org.netbeans.modules.profiler.api.java.ProfilerTypeUtils;
 import org.netbeans.modules.profiler.api.java.SourceClassInfo;
-import org.netbeans.modules.profiler.api.java.SourcePackageInfo;
-import org.netbeans.modules.profiler.selector.api.nodes.ConstructorsNode;
-import org.netbeans.modules.profiler.selector.api.nodes.MethodsNode;
-import org.netbeans.modules.profiler.selector.api.nodes.SelectorNode;
+import org.netbeans.modules.profiler.selector.api.nodes.*;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  * Bi-directional tree search support with index backing and state persisting
  * @author Jaroslav Bachorik
  */
-class TreePathSearch extends WrappingSearchCursor<TreePath> {
+public class TreePathSearch extends WrappingSearchCursor<TreePath> {
+    public static interface ClassIndex {
+        List<SourceClassInfo> getClasses(String pattern, Lookup context);
+    }
+    
     private TreeNode root;
     
-    final private List<Lookup.Provider> projects = new ArrayList<Lookup.Provider>();
+    final private ClassIndex ci;
+    final private List<Lookup> contexts = new ArrayList<Lookup>();
     final private List<List<SourceClassInfo>> rslts = new ArrayList<List<SourceClassInfo>>();
-    
-    final private Comparator<SourceClassInfo> sciComparator = new Comparator<SourceClassInfo>() {
-        @Override
-        public int compare(SourceClassInfo o1, SourceClassInfo o2) {
-            return o1.getVMName().compareTo(o2.getVMName());
-        }
-    };
         
-    TreePathSearch(TreeNode root, String searchTerm) {
+    protected TreePathSearch(TreeNode root, String searchTerm, ClassIndex ci) {
         super(searchTerm);
+        this.ci = ci;
         this.root = root;
 
         Enumeration e = root.children();
         while (e.hasMoreElements()) {
-            projects.add(((SelectorNode)e.nextElement()).getLookup().lookup(Lookup.Provider.class));
+            SelectorNode n = (SelectorNode)e.nextElement();
+            contexts.add(n.getLookup());
             rslts.add(null);
         }
     }
@@ -97,21 +95,15 @@ class TreePathSearch extends WrappingSearchCursor<TreePath> {
 
     @Override
     protected int getSlotsNumber() {
-        return projects.size();
+        return contexts.size();
     }
 
     private List<SourceClassInfo> getSlot(int slotIndex) {
         List<SourceClassInfo> scis = rslts.get(slotIndex);
         if (scis == null) {
             String pattern = ".*" + getSearchTerm() + ".*"; // NOI18N
-            List<SourceClassInfo> srcClzs = new ArrayList<SourceClassInfo>(ProfilerTypeUtils.findClasses(pattern, EnumSet.of(SourcePackageInfo.Scope.SOURCE), projects.get(slotIndex)));
-            List<SourceClassInfo> libClzs = new ArrayList<SourceClassInfo>(ProfilerTypeUtils.findClasses(pattern, EnumSet.of(SourcePackageInfo.Scope.DEPENDENCIES), projects.get(slotIndex)));
-
-            Collections.sort(srcClzs, sciComparator);
-            Collections.sort(libClzs, sciComparator);
-
-            scis = new ArrayList<SourceClassInfo>(srcClzs);
-            scis.addAll(libClzs);
+            Lookup c = contexts.get(slotIndex);
+            scis = ci.getClasses(pattern, c);
 
             rslts.set(slotIndex, scis);
         }

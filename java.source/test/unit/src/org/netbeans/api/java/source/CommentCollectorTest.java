@@ -194,25 +194,22 @@ public class CommentCollectorTest extends NbTestCase {
             protected CommentHandlerService service;
 
             public void run(WorkingCopy workingCopy) throws Exception {
-                CommentCollector cc = CommentCollector.getInstance();
                 workingCopy.toPhase(JavaSource.Phase.PARSED);
-                cc.collect(workingCopy);
+                CompilationUnitTree cu = workingCopy.getCompilationUnit();
+                GeneratorUtilities.get(workingCopy).importComments(cu, cu);
 
                 service = CommentHandlerService.instance(workingCopy.impl.getJavacTask().getContext());
                 CommentPrinter printer = new CommentPrinter(service);
-                CompilationUnitTree cu = workingCopy.getCompilationUnit();
                 cu.accept(printer, null);
 
                 JCTree.JCClassDecl clazz = (JCTree.JCClassDecl) cu.getTypeDecls().get(0);
                 final boolean[] processed = new boolean[1];
                 TreeVisitor<Void, Void> w = new TreeScanner<Void, Void>() {
                     @Override
-                    public Void visitIdentifier(IdentifierTree node, Void aVoid) {
-                        if (node.getName().contentEquals("System")) {
-                            verify(node, CommentSet.RelativePosition.PRECEDING, service, "// Test");
-                            processed[0] = true;
-                        }
-                        return super.visitIdentifier(node, aVoid);
+                    public Void visitExpressionStatement(ExpressionStatementTree node, Void p) {
+                        verify(node, CommentSet.RelativePosition.PRECEDING, service, "// Test");
+                        processed[0] = true;
+                        return super.visitExpressionStatement(node, p);
                     }
                 };
                 clazz.accept(w, null);
@@ -245,9 +242,7 @@ public class CommentCollectorTest extends NbTestCase {
             protected CommentHandlerService service;
 
             public void run(WorkingCopy workingCopy) throws Exception {
-//                CommentCollector cc = CommentCollector.getInstance();
                 workingCopy.toPhase(JavaSource.Phase.PARSED);
-//                cc.collect(workingCopy);
                 CompilationUnitTree cu = workingCopy.getCompilationUnit();
                 GeneratorUtilities.get(workingCopy).importComments(cu, cu);
 
@@ -558,6 +553,39 @@ public class CommentCollectorTest extends NbTestCase {
                 assertTrue(service.getComments(clazz).areCommentsMapped());
 
                 verify(clazz, CommentSet.RelativePosition.INNER, service);
+            }
+        };
+        src.runModificationTask(task);
+
+    }
+
+    public void testImportCommentsIdempotent206200() throws Exception {
+        File testFile = new File(work, "Test.java");
+        final String origin =
+                       "package test;\n" +
+                       "public class Test {\n /**prec*/\npublic void aa() {\n//aa\n int ii = 0;} }\n";
+        TestUtilities.copyStringToFile(testFile, origin);
+        JavaSource src = getJavaSource(testFile);
+
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            public void run(final WorkingCopy workingCopy) throws Exception {
+                workingCopy.toPhase(JavaSource.Phase.PARSED);
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree mt = (MethodTree) clazz.getMembers().get(0);
+                VariableTree var = (VariableTree) mt.getBody().getStatements().get(0);
+                
+                GeneratorUtilities.get(workingCopy).importComments(var, workingCopy.getCompilationUnit());
+                GeneratorUtilities.get(workingCopy).importComments(var, workingCopy.getCompilationUnit());
+
+                final CommentHandlerService service = CommentHandlerService.instance(workingCopy.impl.getJavacTask().getContext());
+
+                verify(var, CommentSet.RelativePosition.PRECEDING, service, "//aa");
+
+                GeneratorUtilities.get(workingCopy).importComments(clazz, workingCopy.getCompilationUnit());
+
+                verify(var, CommentSet.RelativePosition.PRECEDING, service, "//aa");
+                verify(mt, CommentSet.RelativePosition.PRECEDING, service, "/**prec*/");
+                verify(clazz, CommentSet.RelativePosition.PRECEDING, service);
             }
         };
         src.runModificationTask(task);

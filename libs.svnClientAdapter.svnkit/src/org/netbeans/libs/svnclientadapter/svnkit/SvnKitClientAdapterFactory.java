@@ -47,7 +47,6 @@ import org.netbeans.libs.svnclientadapter.SvnClientAdapterFactory;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.ServiceProviders;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
-import org.tigris.subversion.svnclientadapter.javahl.JhlClientAdapterFactory;
 import org.tmatesoft.svn.core.javahl.SVNClientImpl;
 
 /**
@@ -78,8 +77,6 @@ public class SvnKitClientAdapterFactory extends SvnClientAdapterFactory {
             }
             if(org.tigris.subversion.svnclientadapter.svnkit.SvnKitClientAdapterFactory.isAvailable()) {
                 available = true;
-                // is this really needed? this clears the credentials cache
-                SVNClientImpl.setRuntimeCredentialsStorage(null);
             }
         }
         return available;
@@ -87,6 +84,9 @@ public class SvnKitClientAdapterFactory extends SvnClientAdapterFactory {
 
     @Override
     public ISVNClientAdapter createClient() {
+        // is this really needed? this clears the credentials cache
+        SVNClientImpl.setRuntimeCredentialsStorage(null);
+        org.tmatesoft.svn.core.javahl17.SVNClientImpl.setRuntimeCredentialsStorage(null);
         return org.tigris.subversion.svnclientadapter.svnkit.SvnKitClientAdapterFactory
                 .createSVNClient(org.tigris.subversion.svnclientadapter.svnkit.SvnKitClientAdapterFactory.SVNKIT_CLIENT);
     }

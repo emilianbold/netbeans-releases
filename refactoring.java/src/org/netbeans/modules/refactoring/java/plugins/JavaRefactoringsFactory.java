@@ -45,7 +45,9 @@
 package org.netbeans.modules.refactoring.java.plugins;
 
 import java.util.Collection;
+import javax.lang.model.element.ElementKind;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.*;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
@@ -83,10 +85,10 @@ public class JavaRefactoringsFactory implements RefactoringPluginFactory {
                 return new RenameRefactoringPlugin((RenameRefactoring)refactoring);
             } else if (file!=null && JavaRefactoringUtils.isOnSourceClasspath(file) && file.isFolder()) {
                 //rename folder
-                return new MoveRefactoringPlugin((RenameRefactoring)refactoring);
+                return new MoveFileRefactoringPlugin((RenameRefactoring)refactoring);
             } else if (folder!=null && JavaRefactoringUtils.isOnSourceClasspath(folder.getFolder())) {
                 //rename package
-                return new MoveRefactoringPlugin((RenameRefactoring)refactoring);
+                return new MoveFileRefactoringPlugin((RenameRefactoring)refactoring);
             }
         } else if (refactoring instanceof SafeDeleteRefactoring) {
             //TODO: should be implemented better
@@ -95,7 +97,9 @@ public class JavaRefactoringsFactory implements RefactoringPluginFactory {
             }
         } else if (refactoring instanceof MoveRefactoring) {
             if (checkMoveFile(refactoring.getRefactoringSource())) {
-                return new MoveRefactoringPlugin((MoveRefactoring) refactoring);
+                return new MoveFileRefactoringPlugin((MoveRefactoring) refactoring);
+            } else if (checkMoveSecondClass(refactoring.getRefactoringSource())) {
+                return new MoveClassRefactoringPlugin((MoveRefactoring) refactoring);
             } else if (checkMoveMembers(refactoring.getContext())) {
                 return new MoveMembersRefactoringPlugin((MoveRefactoring) refactoring);
             }
@@ -112,6 +116,8 @@ public class JavaRefactoringsFactory implements RefactoringPluginFactory {
                 return new ExtractInterfaceRefactoringPlugin((ExtractInterfaceRefactoring) refactoring);
             } else if (refactoring instanceof ExtractSuperclassRefactoring) {
                 return new ExtractSuperclassRefactoringPlugin((ExtractSuperclassRefactoring) refactoring);
+            } else if (refactoring instanceof IntroduceLocalExtensionRefactoring) {
+                return new IntroduceLocalExtensionPlugin((IntroduceLocalExtensionRefactoring) refactoring);
             } else if (refactoring instanceof PullUpRefactoring) {
                 return new PullUpRefactoringPlugin((PullUpRefactoring)refactoring);
             } else if (refactoring instanceof PushDownRefactoring) {
@@ -130,6 +136,12 @@ public class JavaRefactoringsFactory implements RefactoringPluginFactory {
                 return new EncapsulateFieldsPlugin((EncapsulateFieldsRefactoring) refactoring);
             } else if (refactoring instanceof InlineRefactoring) {
                 return new InlineRefactoringPlugin((InlineRefactoring) refactoring);
+            } else if (refactoring instanceof ReplaceConstructorWithFactoryRefactoring) {
+                return new ReplaceConstructorWithFactoryPlugin((ReplaceConstructorWithFactoryRefactoring) refactoring);
+            } else if (refactoring instanceof InvertBooleanRefactoring) {
+                return new InvertBooleanRefactoringPlugin((InvertBooleanRefactoring) refactoring);
+            } else if (refactoring instanceof ReplaceConstructorWithBuilderRefactoring) {
+                return new ReplaceConstructorWithBuilderPlugin((ReplaceConstructorWithBuilderRefactoring) refactoring);
             }
         }
         return null;
@@ -141,6 +153,17 @@ public class JavaRefactoringsFactory implements RefactoringPluginFactory {
                 return true;
             }
             if (f.isFolder()) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    private boolean checkMoveSecondClass(Lookup refactoringSource) {
+        Collection<? extends TreePathHandle> tphs = refactoringSource.lookupAll(TreePathHandle.class);
+        if(tphs.size() == 1) {
+            ElementHandle elementHandle = tphs.iterator().next().getElementHandle();
+            if(elementHandle != null && elementHandle.getKind() == ElementKind.CLASS){
                 return true;
             }
         }
@@ -163,8 +186,9 @@ public class JavaRefactoringsFactory implements RefactoringPluginFactory {
                 return false;
             }
         }
-        if (object.lookup(TreePathHandle.class)!=null)
+        if (object.lookup(TreePathHandle.class)!=null) {
             return true;
+        }
         
         return a;
     }

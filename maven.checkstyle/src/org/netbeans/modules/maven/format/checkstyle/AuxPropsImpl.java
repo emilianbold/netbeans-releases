@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.maven.format.checkstyle;
 
-import org.codehaus.plexus.util.IOUtil;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.ByteArrayInputStream;
@@ -55,6 +54,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Plugin;
@@ -62,6 +63,7 @@ import org.apache.maven.model.ReportPlugin;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
+import org.codehaus.plexus.util.IOUtil;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.maven.api.Constants;
@@ -104,19 +106,8 @@ public class AuxPropsImpl implements AuxiliaryProperties, PropertyChangeListener
     private FileObject cacheDir() throws IOException {
         return ProjectUtils.getCacheDirectory(project, AuxPropsImpl.class);
     }
-
-    private FileObject copyToCacheDir(FileObject fo) throws IOException {
-        assert Thread.holdsLock(this);
-        FileObject cacheDir = cacheDir();
-        FileObject file = cacheDir.getFileObject("checkstyle-checker.xml");
-        if (file != null) {
-            file.delete();
-        }
-        return FileUtil.copyFile(fo, cacheDir, "checkstyle-checker", "xml");
-    }
-
+    
     private FileObject copyToCacheDir(InputStream in) throws IOException {
-        assert Thread.holdsLock(this);
         FileObject cacheDir = cacheDir();
         FileObject file = cacheDir.getFileObject("checkstyle-checker.xml");
         if (file == null) {
@@ -146,7 +137,7 @@ public class AuxPropsImpl implements AuxiliaryProperties, PropertyChangeListener
                     return cache;
                 } else {
                     // no cached file or the current one is different..
-                    fo = copyToCacheDir(fo);
+                    fo = copyToCacheDir(fo.getInputStream());
                 }
             } else {
                 FileObject pom = project.getProjectDirectory().getFileObject("pom.xml");
@@ -165,7 +156,7 @@ public class AuxPropsImpl implements AuxiliaryProperties, PropertyChangeListener
                         //find in local fs
                         File file = FileUtilities.resolveFilePath(FileUtil.toFile(project.getProjectDirectory()), loc);
                         if (file != null && file.exists()) {
-                            fo = copyToCacheDir(FileUtil.toFileObject(file));
+                            fo = copyToCacheDir(FileUtil.toFileObject(file).getInputStream());
                         } else {
                             List<File> deps = findDependencyArtifacts();
                             if (deps.size() > 0) {
@@ -272,6 +263,7 @@ public class AuxPropsImpl implements AuxiliaryProperties, PropertyChangeListener
                                 try {
                                     //TODO add progress bar.
                                     // XXX does online.resolve(...) not suffice?
+                                    online.setUpLegacySupport();
                                     builder.buildFromRepository(projectArtifact, p.getMavenProject().getRemoteArtifactRepositories(), online.getLocalRepository());
                                     synchronized (AuxPropsImpl.this) {
                                         recheck = true;
@@ -294,7 +286,18 @@ public class AuxPropsImpl implements AuxiliaryProperties, PropertyChangeListener
         synchronized (this) {
         if (cache == null || recheck) {
             if (enabled != null && Boolean.parseBoolean(enabled)) {
-                cache = convert();
+                    try {
+                        cache = RequestProcessor.getDefault().submit(new Callable<Properties>() {
+                                @Override
+                                public Properties call() throws Exception {
+                                    return convert();
+                                }
+                            }).get();
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (ExecutionException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
             } else {
                 cache = new Properties();
             }

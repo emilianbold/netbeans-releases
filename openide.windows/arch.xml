@@ -729,6 +729,21 @@ Yes. Component can control its persistence and way how they are displayed in con
          <code>WinSys.TabControl.SimpleTabs.Enabled</code> is set to false.
          The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
     </api>
+
+    <api type="export" group="branding" name="WinSys.CtrlTabSwitching.In.JTable.Enabled" category="stable">
+         Name of resource bundle property which can disable window switching 
+         when the input focus is in JTable or JTabbedPane.<br/>
+         Ctrl+Tab and Ctrl+Shift+Tab key strokes are hard-coded to switch between
+         opened TopComponents. However the same keys are also used in some Containers
+         (e.g. JTable and JTabbedPane) to transfer input focus to next Component.<br/>
+         When this property is set to <code>true</code> (default value) and input
+         focus is in JTable or JTabbedPane then the window system will consume
+         Ctrl+Tab and Ctrl+Shift+Tab key strokes and show window switcher popup.<br/>
+         When this property is set to <code>false</code> then KeyboardFocusManager will consume
+         Ctrl+Tab and Ctrl+Shift+Tab key strokes to transfer focus out of JTable or
+         out of JTabbedPane.<br/>
+         The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
+    </api>
 </answer>
 
 

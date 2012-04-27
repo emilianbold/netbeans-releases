@@ -75,6 +75,7 @@ import org.netbeans.modules.java.source.parsing.ClasspathInfoTask;
 import org.netbeans.modules.java.source.parsing.CompilationInfoImpl;
 import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.parsing.JavacParserFactory;
+import org.netbeans.modules.java.source.parsing.MimeTask;
 import org.netbeans.modules.java.source.parsing.NewComilerTask;
 import org.netbeans.modules.java.source.save.ElementOverlay;
 import org.netbeans.modules.parsing.api.Embedding;
@@ -233,6 +234,7 @@ public final class JavaSource {
             throw new IllegalArgumentException ("fileObject == null");  //NOI18N
         }
         if (!fileObject.isValid()) {
+            LOGGER.log(Level.FINE, "FileObject ({0}) passed to JavaSource.forFileObject is invalid", fileObject.toURI().toString());
             return null;
         }
 
@@ -242,6 +244,7 @@ public final class JavaSource {
             if (   fileObject.getFileSystem().isDefault()
                 && fileObject.getAttribute("javax.script.ScriptEngine") != null
                 && fileObject.getAttribute("template") == Boolean.TRUE) {
+                LOGGER.log(Level.FINE, "FileObject ({0}) passed to JavaSource.forFileObject is a template", fileObject.toURI().toString());
                 return null;
             }
             DataObject od = DataObject.find(fileObject);
@@ -252,6 +255,7 @@ public final class JavaSource {
                 //allow creation of JavaSource for .class files:
                 mimeType = FileUtil.getMIMEType(fileObject, supportedMIMETypes);
                 if (!("application/x-class-file".equals(mimeType) || "class".equals(fileObject.getExt()))) {
+                    LOGGER.log(Level.FINE, "DataObject ({1}) created for FileObject ({0}) passed to JavaSource.forFileObject does not provide CloneableEditorSupport and is not a classfile", new Object[] {fileObject.toURI().toString(), od.getClass().getName()});
                     return null;
                 }
             }
@@ -284,6 +288,7 @@ public final class JavaSource {
                 final ClasspathInfo info = ClasspathInfo.create(bootPath, compilePath, srcPath);
                 FileObject root = ClassPathSupport.createProxyClassPath(bootPath,compilePath,srcPath).findOwnerRoot(fileObject);
                 if (root == null) {
+                    LOGGER.log(Level.FINE, "FileObject ({0}) passed to JavaSource.forFileObject of mimeType classfile does not have a corresponding root", fileObject.toURI().toString());
                     return null;
                 }
                 try {
@@ -294,6 +299,7 @@ public final class JavaSource {
             } 
             else {
                 if (!"text/x-java".equals(mimeType) && !"java".equals(fileObject.getExt())) {  //NOI18N
+                    LOGGER.log(Level.FINE, "FileObject ({0}) passed to JavaSource.forFileObject is not a Java source file (mimetype: {1})", new Object[] {fileObject.toURI().toString(), mimeType});
                     return null;
                 }
                 js = _create(null, Collections.singletonList(fileObject));
@@ -525,33 +531,6 @@ public final class JavaSource {
 
     }
 
-    private static class MimeTask extends ClasspathInfoTask {
-
-        private final Task<CompilationController> task;
-        private final JavaSource js;
-
-        public MimeTask (final JavaSource js,
-                         final Task<CompilationController> task,
-                         final ClasspathInfo cpInfo) {
-            super (cpInfo);
-            assert js != null;
-            assert task != null;
-            this.js = js;
-            this.task = task;
-        }
-
-        @Override
-        public void run(ResultIterator resultIterator) throws Exception {
-            Result result = resultIterator.getParserResult ();
-            final CompilationController cc = CompilationController.get(result);
-            assert cc != null;
-            cc.setJavaSource(this.js);
-            task.run (cc);
-        }
-    }
-
-    
-    
     long createTaggedController (final long timestamp, final Object[] controller) throws IOException {
         assert controller.length == 1;
         assert controller[0] == null || controller[0] instanceof CompilationController;
@@ -649,7 +628,7 @@ public final class JavaSource {
             throw new IllegalArgumentException ("Task cannot be null");     //NOI18N
         }        
         final ModificationResult result = new ModificationResult(this);
-        final ElementOverlay overlay = new ElementOverlay();
+        final ElementOverlay overlay = ElementOverlay.getOrCreateOverlay();
         long start = System.currentTimeMillis();
 
         Task<CompilationController> inner = new Task<CompilationController>() {
@@ -678,7 +657,7 @@ public final class JavaSource {
         if (sources.size() == 1) {
             Logger.getLogger("TIMER").log(Level.FINE, "Modification Task",  //NOI18N
                 new Object[] {sources.iterator().next().getFileObject(), System.currentTimeMillis() - start});
-        }            
+        }
         return result;
     }
 

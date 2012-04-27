@@ -60,6 +60,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -84,12 +85,15 @@ import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.api.editor.EditorActionRegistrations;
+import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.ActionFactory.CutToLineBeginOrEndAction;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.BaseKit.CutAction;
@@ -327,11 +331,11 @@ public class ClipboardHandler {
 
                 return (Transferable)method.invoke(delegate, new Object[] {c});
             } catch (NoSuchMethodException ex) {
-                ex.printStackTrace();
+                Exceptions.printStackTrace(ex);
             } catch (IllegalAccessException ex) {
-                ex.printStackTrace();
+                Exceptions.printStackTrace(ex);
             } catch (java.lang.reflect.InvocationTargetException ex) {
-                ex.printStackTrace();
+                Exceptions.printStackTrace(ex);
             }
             return null;
         }
@@ -350,82 +354,88 @@ public class ClipboardHandler {
                 method.setAccessible(true);
                 method.invoke(delegate, new Object[] {source, data, new Integer(action)});
             } catch (NoSuchMethodException ex) {
-                ex.printStackTrace();
+                Exceptions.printStackTrace(ex);
             } catch (IllegalAccessException ex) {
-                ex.printStackTrace();
+                Exceptions.printStackTrace(ex);
             } catch (java.lang.reflect.InvocationTargetException ex) {
-                ex.printStackTrace();
+                Exceptions.printStackTrace(ex);
             }
         }
 
         @Override
         public void exportToClipboard(JComponent comp, Clipboard clip, int action) throws IllegalStateException {
             JavaSource js;
+            ImportsWrapper iw = null;
+            boolean copiedFromString = false;
 
-            if (comp instanceof JTextComponent && comp.getClientProperty(NO_IMPORTS) == null && (js = JavaSource.forDocument(((JTextComponent) comp).getDocument())) != null) {
-                final JTextComponent tc = (JTextComponent) comp;
-                final int start = tc.getSelectionStart();
-                final int end = tc.getSelectionEnd();
-                final Map<String, String> simple2ImportFQN = new HashMap<String, String>();
-                final List<int[]> spans = new ArrayList<int[]>();
+            if (comp instanceof JTextComponent) {
+                copiedFromString = insideToken((JTextComponent)comp, JavaTokenId.STRING_LITERAL, JavaTokenId.CHAR_LITERAL);
+                if (comp.getClientProperty(NO_IMPORTS) == null && (js = JavaSource.forDocument(((JTextComponent) comp).getDocument())) != null) {
+                    final JTextComponent tc = (JTextComponent) comp;
+                    final int start = tc.getSelectionStart();
+                    final int end = tc.getSelectionEnd();
+                    final Map<String, String> simple2ImportFQN = new HashMap<String, String>();
+                    final List<int[]> spans = new ArrayList<int[]>();
 
-                Task<CompilationController> w = new Task<CompilationController>() {
-                    @Override public void run(final CompilationController parameter) throws Exception {
-                        parameter.toPhase(JavaSource.Phase.RESOLVED);
+                    Task<CompilationController> w = new Task<CompilationController>() {
+                        @Override public void run(final CompilationController parameter) throws Exception {
+                            parameter.toPhase(JavaSource.Phase.RESOLVED);
 
-                        new TreePathScanner<Void, Void>() {
-                            @Override public Void visitIdentifier(IdentifierTree node, Void p) {
-                                int s = (int) parameter.getTrees().getSourcePositions().getStartPosition(parameter.getCompilationUnit(), node);
-                                int e = (int) parameter.getTrees().getSourcePositions().getEndPosition(parameter.getCompilationUnit(), node);
-                                javax.lang.model.element.Element el = parameter.getTrees().getElement(getCurrentPath());
+                            new TreePathScanner<Void, Void>() {
+                                @Override public Void visitIdentifier(IdentifierTree node, Void p) {
+                                    int s = (int) parameter.getTrees().getSourcePositions().getStartPosition(parameter.getCompilationUnit(), node);
+                                    int e = (int) parameter.getTrees().getSourcePositions().getEndPosition(parameter.getCompilationUnit(), node);
+                                    javax.lang.model.element.Element el = parameter.getTrees().getElement(getCurrentPath());
 
-                                if (s >= start && e <= end && el != null && (el.getKind().isClass() || el.getKind().isInterface())) {
-                                    simple2ImportFQN.put(el.getSimpleName().toString(), ((TypeElement) el).getQualifiedName().toString());
-                                    spans.add(new int[] {s - start, e - start});
+                                    if (s >= start && e <= end && el != null && (el.getKind().isClass() || el.getKind().isInterface())) {
+                                        simple2ImportFQN.put(el.getSimpleName().toString(), ((TypeElement) el).getQualifiedName().toString());
+                                        spans.add(new int[] {s - start, e - start});
+                                    }
+                                    return super.visitIdentifier(node, p);
                                 }
-                                return super.visitIdentifier(node, p);
-                            }
-                            private Tree lastType;
-                            @Override
-                            public Void visitVariable(VariableTree node, Void p) {
-                                if (lastType == node.getType()) {
-                                    scan(node.getInitializer(), null);
-                                    return null;
-                                } else {
-                                    lastType = node.getType();
-                                    return super.visitVariable(node, p);
+                                private Tree lastType;
+                                @Override
+                                public Void visitVariable(VariableTree node, Void p) {
+                                    if (lastType == node.getType()) {
+                                        scan(node.getInitializer(), null);
+                                        return null;
+                                    } else {
+                                        lastType = node.getType();
+                                        return super.visitVariable(node, p);
+                                    }
                                 }
-                            }
-                            @Override public Void scan(Tree tree, Void p) {
-                                if (tree == null || parameter.getTreeUtilities().isSynthetic(new TreePath(getCurrentPath(), tree))) return null;
-                                return super.scan(tree, p);
-                            }
-                        }.scan(parameter.getCompilationUnit(), null);
+                                @Override public Void scan(Tree tree, Void p) {
+                                    if (tree == null || parameter.getTreeUtilities().isSynthetic(new TreePath(getCurrentPath(), tree))) return null;
+                                    return super.scan(tree, p);
+                                }
+                            }.scan(parameter.getCompilationUnit(), null);
+                        }
+                    };
+
+                    boolean finished = false;
+
+                    if (comp.getClientProperty(RUN_SYNCHRONOUSLY) != null) {
+                        try {
+                            js.runUserActionTask(w, true);
+                            finished = true;
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    } else {
+                        finished = runQuickly(js, w);
                     }
-                };
 
-                boolean finished = false;
 
-                if (comp.getClientProperty(RUN_SYNCHRONOUSLY) != null) {
-                    try {
-                        js.runUserActionTask(w, true);
-                        finished = true;
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
+                    if (finished) {
+                        iw = new ImportsWrapper(NbEditorUtilities.getFileObject(tc.getDocument()), simple2ImportFQN, spans);
                     }
-                } else {
-                    finished = runQuickly(js, w);
-                }
-
-
-                if (finished) {
-                    delegate.exportToClipboard(comp, clip, action);
-                    clip.setContents(new WrappedTransferable(clip.getContents(null), new ImportsWrapper(NbEditorUtilities.getFileObject(tc.getDocument()), simple2ImportFQN, spans)), null);
-                    return;
                 }
             }
             
             delegate.exportToClipboard(comp, clip, action);
+            if (iw != null || copiedFromString) {
+                clip.setContents(new WrappedTransferable(clip.getContents(null), iw, copiedFromString), null);
+            }
         }
 
         @Override
@@ -445,14 +455,14 @@ public class ClipboardHandler {
 
         @Override
         public boolean importData(JComponent comp, Transferable t) {
-            if (t.isDataFlavorSupported(IMPORT_FLAVOR) && comp instanceof JTextComponent) {
+            if (t.isDataFlavorSupported(IMPORT_FLAVOR) && comp instanceof JTextComponent && !insideToken((JTextComponent)comp, JavaTokenId.STRING_LITERAL)) {
                 boolean result = false;
 
                 try {
                     final JTextComponent tc = (JTextComponent) comp;
                     final int caret = tc.getSelectionStart();
 
-                    if (result = delegate.importData(comp, t)) {
+                    if (result = delegatedImportData(comp, t)) {
                         final ImportsWrapper imports = (ImportsWrapper) t.getTransferData(IMPORT_FLAVOR);
                         final FileObject file = NbEditorUtilities.getFileObject(tc.getDocument());
                         final Document doc = tc.getDocument();
@@ -495,22 +505,64 @@ public class ClipboardHandler {
                 return result;
             }
 
+            return delegatedImportData(comp, t);
+        }
+        
+        private boolean delegatedImportData(final JComponent comp, final Transferable t) {
+            if (comp instanceof JTextComponent && !t.isDataFlavorSupported(COPY_FROM_STRING_FLAVOR) && insideToken((JTextComponent) comp, JavaTokenId.STRING_LITERAL)) {
+                return delegate.importData(comp, new Transferable() {
+                    @Override
+                    public DataFlavor[] getTransferDataFlavors() {
+                        return t.getTransferDataFlavors();
+                    }
+
+                    @Override
+                    public boolean isDataFlavorSupported(DataFlavor flavor) {
+                        return t.isDataFlavorSupported(flavor);
+                    }
+
+                    @Override
+                    public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
+                        Object data = t.getTransferData(flavor);
+                        if (data instanceof String) {
+                            String s = (String) data;
+                            s = s.replace("\\","\\\\"); //NOI18N
+                            s = s.replace("\"","\\\""); //NOI18N
+                            s = s.replace("\n","\\n\" +\n\""); //NOI18N
+                            data = s;
+                        }
+                        return data;
+                    }
+                });
+            }
             return delegate.importData(comp, t);
+        }
+        
+        private boolean insideToken(JTextComponent jtc, JavaTokenId first, JavaTokenId... rest) {
+            int offset = jtc.getSelectionStart();
+            TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(TokenHierarchy.get(jtc.getDocument()), offset);
+            if (ts == null || !ts.moveNext() && !ts.movePrevious() || offset == ts.offset())
+                return false;
+            EnumSet tokenIds = EnumSet.of(first, rest);
+            return tokenIds.contains(ts.token().id());
         }
     }
 
     private static final Object NO_IMPORTS = new Object();
     private static final Object RUN_SYNCHRONOUSLY = new Object();
     private static final DataFlavor IMPORT_FLAVOR = new DataFlavor(ImportsWrapper.class, NbBundle.getMessage(ClipboardHandler.class, "MSG_ClipboardImportFlavor"));
+    private static final DataFlavor COPY_FROM_STRING_FLAVOR = new DataFlavor(Boolean.class, NbBundle.getMessage(ClipboardHandler.class, "MSG_ClipboardCopyFromStringFlavor"));
 
     private static final class WrappedTransferable implements Transferable {
 
         private final Transferable delegate;
         private final ImportsWrapper importsData;
+        private final boolean copiedFromString;
 
-        public WrappedTransferable(Transferable delegate, ImportsWrapper importsData) {
+        public WrappedTransferable(Transferable delegate, ImportsWrapper importsData, boolean copiedFromString) {
             this.delegate = delegate;
             this.importsData = importsData;
+            this.copiedFromString = copiedFromString;
         }
 
         private DataFlavor[] transferDataFlavorsCache;
@@ -520,21 +572,27 @@ public class ClipboardHandler {
             if (transferDataFlavorsCache != null) return transferDataFlavorsCache;
 
             DataFlavor[] f = delegate.getTransferDataFlavors();
-            DataFlavor[] result = Arrays.copyOf(f, f.length + 1);
+            DataFlavor[] result = Arrays.copyOf(f, f.length + (importsData != null ? 1 : 0) + (copiedFromString ? 1 : 0));
 
-            result[f.length] = IMPORT_FLAVOR;
+            if (importsData != null)
+                result[f.length] = IMPORT_FLAVOR;
+            if (copiedFromString)
+                result[result.length - 1] = COPY_FROM_STRING_FLAVOR;
 
             return transferDataFlavorsCache = result;
         }
 
         @Override
         public boolean isDataFlavorSupported(DataFlavor flavor) {
-            return IMPORT_FLAVOR.equals(flavor) || delegate.isDataFlavorSupported(flavor);
+            return IMPORT_FLAVOR.equals(flavor) && importsData != null
+                    || COPY_FROM_STRING_FLAVOR.equals(flavor) && copiedFromString
+                    || delegate.isDataFlavorSupported(flavor);
         }
 
         @Override
         public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
             if (IMPORT_FLAVOR.equals(flavor)) return importsData;
+            if (COPY_FROM_STRING_FLAVOR.equals(flavor)) return copiedFromString;
             return delegate.getTransferData(flavor);
         }
 

@@ -63,6 +63,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
@@ -75,6 +76,7 @@ import javax.tools.Diagnostic;
 import javax.tools.Diagnostic.Kind;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.AnnotationProcessingQuery;
 import org.netbeans.api.java.source.ClassIndex;
@@ -86,7 +88,7 @@ import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.JavaSourceTaskFactoryManager;
 import org.netbeans.modules.java.source.parsing.FileManagerTransaction;
 import org.netbeans.modules.java.source.parsing.FileObjects;
-import org.netbeans.modules.java.source.parsing.InferableJavaFileObject;
+import org.netbeans.modules.java.source.parsing.PrefetchableJavaFileObject;
 import org.netbeans.modules.java.source.parsing.SourceFileObject;
 import org.netbeans.modules.java.source.tasklist.TasklistSettings;
 import org.netbeans.modules.java.source.usages.*;
@@ -153,116 +155,135 @@ public class JavaCustomIndexer extends CustomIndexer {
                 JavaIndex.LOG.fine("Ignoring annotation processor build generated folder"); //NOI18N
                 return;
             }
-            final List<Indexable> javaSources = new ArrayList<Indexable>();
-            final Collection<? extends CompileTuple> virtualSourceTuples = translateVirtualSources (
+            if (!files.iterator().hasNext() && !context.isAllFilesIndexing()) {
+                boolean success = false;
+                try {
+                    final JavaParsingContext javaContext = new JavaParsingContext(
+                            context,
+                            bootPath,
+                            compilePath,
+                            sourcePath,
+                            Collections.<CompileTuple>emptySet());
+                    try {
+                        javaContext.getClassIndexImpl().setDirty(null);
+                    } finally {
+                        javaContext.finish();
+                    }
+                    success = true;
+                } finally {
+                    if (!success) {
+                        JavaIndex.setAttribute(context.getRootURI(), ClassIndexManager.PROP_DIRTY_ROOT, Boolean.TRUE.toString());
+                    }
+                }
+                
+            } else {
+                final List<Indexable> javaSources = new ArrayList<Indexable>();
+                final Collection<? extends CompileTuple> virtualSourceTuples = translateVirtualSources (
                     splitSources(files,javaSources),
                     context.getRootURI());
-            final JavaParsingContext javaContext;
-            try {
-                //todo: Ugly hack, the ClassIndexManager.createUsagesQuery has to be called before the root is set to dirty mode.
-                javaContext = new JavaParsingContext(context, bootPath, compilePath, sourcePath, virtualSourceTuples);
-            } finally {
-                JavaIndex.setAttribute(context.getRootURI(), ClassIndexManager.PROP_DIRTY_ROOT, Boolean.TRUE.toString());
-            }
-            boolean finished = false;
-            final Set<ElementHandle<TypeElement>> removedTypes = new HashSet <ElementHandle<TypeElement>> ();
-            final Set<File> removedFiles = new HashSet<File> ();
-            final List<CompileTuple> toCompile = new ArrayList<CompileTuple>(javaSources.size()+virtualSourceTuples.size());
-            CompileWorker.ParsingOutput compileResult = null;
-            try {
-                if (context.isAllFilesIndexing()) {
-                    cleanUpResources(context.getRootURI());
-                }
-                if (javaContext.uq == null)
-                    return; //IDE is exiting, indeces are already closed.
-
-                javaContext.uq.setDirty(null);
-                for (Indexable i : javaSources) {
-                    final CompileTuple tuple = createTuple(context, javaContext, i);
-                    if (tuple != null) {
-                        toCompile.add(tuple);
-                    }
-                    clear(context, javaContext, i, removedTypes, removedFiles, fmTx);
-                }
-                for (CompileTuple tuple : virtualSourceTuples) {
-                    clear(context, javaContext, tuple.indexable, removedTypes, removedFiles, fmTx);
-                }
-                toCompile.addAll(virtualSourceTuples);
-                List<CompileTuple> toCompileRound = toCompile;
-                int round = 0;
-                while (round++ < 2) {
-                    CompileWorker[] WORKERS = {
-                        toCompileRound.size() < TRESHOLD ? new SuperOnePassCompileWorker() : new OnePassCompileWorker(),
-                        new MultiPassCompileWorker()
-                    };
-                    for (CompileWorker w : WORKERS) {
-                        compileResult = w.compile(compileResult, context, javaContext, toCompileRound);
-                        if (compileResult == null || context.isCancelled()) {
-                            return; // cancelled, IDE is sutting down
-                        }
-                        if (compileResult.success) {
-                            break;
-                        }
-                    }
-                    if (compileResult.aptGenerated.isEmpty()) {
-                        round++;
-                    } else {
-                        toCompileRound = new ArrayList<CompileTuple>(compileResult.aptGenerated.size());
-                        for (CompileTuple ct : compileResult.aptGenerated) {
-                            toCompileRound.add(ct);
-                            toCompile.add(ct);
-                        }
-                        compileResult.aptGenerated.clear();
-                    }
-                }
-                finished = compileResult.success;
-            } finally {
+                final JavaParsingContext javaContext;
                 try {
-                    javaContext.finish();
+                    //todo: Ugly hack, the ClassIndexManager.createUsagesQuery has to be called before the root is set to dirty mode.
+                    javaContext = new JavaParsingContext(context, bootPath, compilePath, sourcePath, virtualSourceTuples);
                 } finally {
-                    if (finished) {
-                        JavaIndex.setAttribute(context.getRootURI(), ClassIndexManager.PROP_DIRTY_ROOT, null);
-                    }
+                    JavaIndex.setAttribute(context.getRootURI(), ClassIndexManager.PROP_DIRTY_ROOT, Boolean.TRUE.toString());
                 }
-            }
-            assert compileResult != null;
-
-            Set<ElementHandle<TypeElement>> _at = new HashSet<ElementHandle<TypeElement>> (compileResult.addedTypes); //Added types
-            Set<ElementHandle<TypeElement>> _rt = new HashSet<ElementHandle<TypeElement>> (removedTypes); //Removed types
-            _at.removeAll(removedTypes);
-            _rt.removeAll(compileResult.addedTypes);
-            compileResult.addedTypes.retainAll(removedTypes); //Changed types
-
-            if (!context.isSupplementaryFilesIndexing() && !context.isCancelled()) {
-                compileResult.modifiedTypes.addAll(_rt);
-                Map<URL, Set<URL>> root2Rebuild = findDependent(context.getRootURI(), compileResult.modifiedTypes, !_at.isEmpty());
-                Set<URL> urls = root2Rebuild.get(context.getRootURI());
-                if (urls != null) {
+                boolean finished = false;
+                final Set<ElementHandle<TypeElement>> removedTypes = new HashSet <ElementHandle<TypeElement>> ();
+                final Set<File> removedFiles = new HashSet<File> ();
+                final List<CompileTuple> toCompile = new ArrayList<CompileTuple>(javaSources.size()+virtualSourceTuples.size());
+                CompileWorker.ParsingOutput compileResult = null;
+                try {
                     if (context.isAllFilesIndexing()) {
-                        root2Rebuild.remove(context.getRootURI());
-                    } else {
-                        for (CompileTuple ct : toCompile)
-                            urls.remove(ct.indexable.getURL());
-                        if (urls.isEmpty())
-                            root2Rebuild.remove(context.getRootURI());
+                        cleanUpResources(context.getRootURI());
+                    }
+                    if (javaContext.getClassIndexImpl() == null)
+                        return; //IDE is exiting, indeces are already closed.
+
+                    javaContext.getClassIndexImpl().setDirty(null);
+                    for (Indexable i : javaSources) {
+                        final CompileTuple tuple = createTuple(context, javaContext, i);
+                        if (tuple != null) {
+                            toCompile.add(tuple);
+                        }
+                        clear(context, javaContext, i, removedTypes, removedFiles, fmTx);
+                    }
+                    for (CompileTuple tuple : virtualSourceTuples) {
+                        clear(context, javaContext, tuple.indexable, removedTypes, removedFiles, fmTx);
+                    }
+                    toCompile.addAll(virtualSourceTuples);
+                    List<CompileTuple> toCompileRound = toCompile;
+                    int round = 0;
+                    while (round++ < 2) {
+                        CompileWorker[] WORKERS = {
+                            toCompileRound.size() < TRESHOLD ? new SuperOnePassCompileWorker() : new OnePassCompileWorker(),
+                            new MultiPassCompileWorker()
+                        };
+                        for (CompileWorker w : WORKERS) {
+                            compileResult = w.compile(compileResult, context, javaContext, toCompileRound);
+                            if (compileResult == null || context.isCancelled()) {
+                                return; // cancelled, IDE is sutting down
+                            }
+                            if (compileResult.success) {
+                                break;
+                            }
+                        }
+                        if (compileResult.aptGenerated.isEmpty()) {
+                            round++;
+                        } else {
+                            toCompileRound = new ArrayList<CompileTuple>(compileResult.aptGenerated.size());
+                            for (CompileTuple ct : compileResult.aptGenerated) {
+                                toCompileRound.add(ct);
+                                toCompile.add(ct);
+                            }
+                            compileResult.aptGenerated.clear();
+                        }
+                    }
+                    finished = compileResult.success;
+                } finally {
+                    try {
+                        javaContext.finish();
+                    } finally {
+                        if (finished) {
+                            JavaIndex.setAttribute(context.getRootURI(), ClassIndexManager.PROP_DIRTY_ROOT, null);
+                        }
                     }
                 }
-                for (Map.Entry<URL, Set<URL>> entry : root2Rebuild.entrySet()) {
-                    context.addSupplementaryFiles(entry.getKey(), entry.getValue());
+                assert compileResult != null;
+
+                Set<ElementHandle<TypeElement>> _at = new HashSet<ElementHandle<TypeElement>> (compileResult.addedTypes); //Added types
+                Set<ElementHandle<TypeElement>> _rt = new HashSet<ElementHandle<TypeElement>> (removedTypes); //Removed types
+                _at.removeAll(removedTypes);
+                _rt.removeAll(compileResult.addedTypes);
+                compileResult.addedTypes.retainAll(removedTypes); //Changed types
+
+                if (!context.isSupplementaryFilesIndexing() && !context.isCancelled()) {
+                    compileResult.modifiedTypes.addAll(_rt);
+                    Map<URL, Set<URL>> root2Rebuild = findDependent(context.getRootURI(), compileResult.modifiedTypes, !_at.isEmpty());
+                    Set<URL> urls = root2Rebuild.get(context.getRootURI());
+                    if (urls != null) {
+                        if (context.isAllFilesIndexing()) {
+                            root2Rebuild.remove(context.getRootURI());
+                        } else {
+                            for (CompileTuple ct : toCompile)
+                                urls.remove(ct.indexable.getURL());
+                            if (urls.isEmpty())
+                                root2Rebuild.remove(context.getRootURI());
+                        }
+                    }
+                    for (Map.Entry<URL, Set<URL>> entry : root2Rebuild.entrySet()) {
+                        context.addSupplementaryFiles(entry.getKey(), entry.getValue());
+                    }
+                }
+                javaContext.store();
+                ciTx.addedTypes(context.getRootURI(), _at);
+                ciTx.removedTypes(context.getRootURI(), _rt);
+                ciTx.changedTypes(context.getRootURI(), compileResult.addedTypes);
+                if (!context.checkForEditorModifications()) { // #152222
+                    ciTx.addedCacheFiles(context.getRootURI(), compileResult.createdFiles);
+                    ciTx.removedCacheFiles(context.getRootURI(), removedFiles);
                 }
             }
-            javaContext.checkSums.store();
-            javaContext.fqn2Files.store();
-            javaContext.sa.store();
-            ciTx.addedTypes(context.getRootURI(), _at);
-            ciTx.removedTypes(context.getRootURI(), _rt);
-            ciTx.changedTypes(context.getRootURI(), compileResult.addedTypes);
-            if (!context.checkForEditorModifications()) { // #152222
-                ciTx.addedCacheFiles(context.getRootURI(), compileResult.createdFiles);
-                ciTx.removedCacheFiles(context.getRootURI(), removedFiles);
-            }
-        } catch (NoSuchAlgorithmException ex) {
-            Exceptions.printStackTrace(ex);
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
         }
@@ -306,7 +327,7 @@ public class JavaCustomIndexer extends CustomIndexer {
         if (!context.checkForEditorModifications() && "file".equals(indexable.getURL().getProtocol()) && (root = FileUtil.toFile(context.getRoot())) != null) { //NOI18N
             try {
                 File file = new File(indexable.getURL().toURI().getPath());
-                return new CompileTuple(FileObjects.fileFileObject(file, root, javaContext.filter, javaContext.encoding), indexable);
+                return new CompileTuple(FileObjects.fileFileObject(file, root, javaContext.getJavaFileFilter(), javaContext.getEncoding()), indexable);
             } catch (Exception ex) {
             } catch (AssertionError ae) {
                 //Add more debug messages
@@ -329,9 +350,9 @@ public class JavaCustomIndexer extends CustomIndexer {
         try {
             final JavaParsingContext javaContext = new JavaParsingContext(context, true);
             try {
-                if (javaContext.uq == null)
+                if (javaContext.getClassIndexImpl() == null)
                     return; //IDE is exiting, indeces are already closed.
-                if (javaContext.uq.getType() == ClassIndexImpl.Type.EMPTY)
+                if (javaContext.getClassIndexImpl().getType() == ClassIndexImpl.Type.EMPTY)
                     return; //No java no need to continue
                 final Set<ElementHandle<TypeElement>> removedTypes = new HashSet <ElementHandle<TypeElement>> ();
                 final Set<File> removedFiles = new HashSet<File> ();
@@ -339,21 +360,17 @@ public class JavaCustomIndexer extends CustomIndexer {
                     clear(context, javaContext, i, removedTypes, removedFiles, fmTx);
                     ErrorsCache.setErrors(context.getRootURI(), i, Collections.<Diagnostic<?>>emptyList(), ERROR_CONVERTOR);
                     ExecutableFilesIndex.DEFAULT.setMainClass(context.getRootURI(), i.getURL(), false);
-                    javaContext.checkSums.remove(i.getURL());
+                    javaContext.getCheckSums().remove(i.getURL());
                 }
                 for (Map.Entry<URL, Set<URL>> entry : findDependent(context.getRootURI(), removedTypes, false).entrySet()) {
                     context.addSupplementaryFiles(entry.getKey(), entry.getValue());
                 }
-                javaContext.checkSums.store();
-                javaContext.fqn2Files.store();
-                javaContext.sa.store();
+                javaContext.store();
                 ciTx.removedCacheFiles(context.getRootURI(), removedFiles);
                 ciTx.removedTypes(context.getRootURI(), removedTypes);
             } finally {
                 javaContext.finish();
             }
-        } catch (NoSuchAlgorithmException ex) {
-            Exceptions.printStackTrace(ex);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -403,9 +420,9 @@ public class JavaCustomIndexer extends CustomIndexer {
                     for (String className : readRSFile(file)) {
                         File f = new File(classFolder, FileObjects.convertPackage2Folder(className) + '.' + FileObjects.SIG);
                         if (!binaryName.equals(className)) {
-                            if (javaContext.fqn2Files.remove(className, relURLPair.second)) {
+                            if (javaContext.getFQNs().remove(className, relURLPair.second)) {
                                 toDelete.add(Pair.<String, String>of(className, relURLPair.first));
-                                removedTypes.add(ElementHandleAccessor.INSTANCE.create(ElementKind.OTHER, className));
+                                removedTypes.add(ElementHandleAccessor.getInstance().create(ElementKind.OTHER, className));
                                 removedFiles.add(f);
                                 fmTx.delete(f);
                             }
@@ -420,7 +437,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                 fmTx.delete(file);
             }
             if (cont && (file = new File(classFolder, withoutExt + '.' + FileObjects.SIG)).exists()) {
-                if (javaContext.fqn2Files.remove(FileObjects.getBinaryName(file, classFolder), relURLPair.second)) {
+                if (javaContext.getFQNs().remove(FileObjects.getBinaryName(file, classFolder), relURLPair.second)) {
                     String fileName = file.getName();
                     fileName = fileName.substring(0, fileName.lastIndexOf('.'));
                     final String[] patterns = new String[]{fileName + '.', fileName + '$'}; //NOI18N
@@ -442,7 +459,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                         for (File f : children) {
                             String className = FileObjects.getBinaryName(f, classFolder);
                             toDelete.add(Pair.<String, String>of(className, null));
-                            removedTypes.add(ElementHandleAccessor.INSTANCE.create(ElementKind.OTHER, className));
+                            removedTypes.add(ElementHandleAccessor.getInstance().create(ElementKind.OTHER, className));
                             removedFiles.add(f);
                             fmTx.delete(f);
                         }
@@ -484,7 +501,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                 String binaryName = FileObjects.getBinaryName(file, classFolder);
                 for (String className : readRSFile(file)) {
                     if (!binaryName.equals(className)) {
-                        result.add(ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, className));
+                        result.add(ElementHandleAccessor.getInstance().create(ElementKind.CLASS, className));
                     } else {
                         cont = !dieIfNoRefFile;
                     }
@@ -515,7 +532,7 @@ public class JavaCustomIndexer extends CustomIndexer {
             };
             for (File f : parent.listFiles(filter)) {
                 String className = FileObjects.getBinaryName (f, classFolder);
-                result.add(ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, className));
+                result.add(ElementHandleAccessor.getInstance().create(ElementKind.CLASS, className));
             }
         }
         return result;
@@ -536,7 +553,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                         File f = new File (aptFolder, fileName);
                         if (f.exists() && FileObjects.JAVA.equals(FileObjects.getExtension(f.getName()))) {
                             Indexable i = accessor.create(new FileObjectIndexable(root, fileName));
-                            InferableJavaFileObject ffo = FileObjects.fileFileObject(f, aptFolder, null, javaContext.encoding);
+                            PrefetchableJavaFileObject ffo = FileObjects.fileFileObject(f, aptFolder, null, javaContext.getEncoding());
                             ret |= aptGenerated.add(new CompileTuple(ffo, i, false, true, true));
                         }
                     }
@@ -553,6 +570,71 @@ public class JavaCustomIndexer extends CustomIndexer {
         if (!active.virtual) {
             Iterable<Diagnostic<? extends JavaFileObject>> filteredErrorsList = Iterators.filter(errors.getDiagnostics(active.jfo), new FilterOutDiamondWarnings());
             ErrorsCache.setErrors(context.getRootURI(), active.indexable, filteredErrorsList, active.aptGenerated ? ERROR_CONVERTOR_NO_BADGE : ERROR_CONVERTOR);
+        }
+    }
+    
+    static void brokenPlatform(
+            @NonNull final Context ctx,
+            @NonNull final Iterable<? extends CompileTuple> files,
+            @NullAllowed final Diagnostic<JavaFileObject> diagnostic) {
+        if (diagnostic == null) {
+            return;
+        }
+        final Diagnostic<JavaFileObject> error = new Diagnostic<JavaFileObject>() {
+
+            @Override
+            public Kind getKind() {
+                return Kind.ERROR;
+            }
+
+            @Override
+            public JavaFileObject getSource() {
+                return diagnostic.getSource();
+            }
+
+            @Override
+            public long getPosition() {
+                return diagnostic.getPosition();
+            }
+
+            @Override
+            public long getStartPosition() {
+                return diagnostic.getStartPosition();
+            }
+
+            @Override
+            public long getEndPosition() {
+                return diagnostic.getEndPosition();
+            }
+
+            @Override
+            public long getLineNumber() {
+                return diagnostic.getLineNumber();
+            }
+
+            @Override
+            public long getColumnNumber() {
+                return diagnostic.getColumnNumber();
+            }
+
+            @Override
+            public String getCode() {
+                return diagnostic.getCode();
+            }
+
+            @Override
+            public String getMessage(Locale locale) {
+                return diagnostic.getMessage(locale);
+            }
+        };
+        for (CompileTuple file : files) {
+            if (!file.virtual) {
+                ErrorsCache.setErrors(
+                    ctx.getRootURI(),
+                    file.indexable,
+                    Collections.<Diagnostic<JavaFileObject>>singleton(error),
+                    ERROR_CONVERTOR);
+            }
         }
     }
 
@@ -843,8 +925,12 @@ public class JavaCustomIndexer extends CustomIndexer {
                     //Closing
                     return;
                 }
-                uq.setState(ClassIndexImpl.State.INITIALIZED);
-                JavaIndex.setAttribute(context.getRootURI(), ClassIndexManager.PROP_SOURCE_ROOT, Boolean.TRUE.toString());
+                if (uq.getState() == ClassIndexImpl.State.NEW) {
+                    if (uq.getType() != ClassIndexImpl.Type.SOURCE) {
+                        JavaIndex.setAttribute(context.getRootURI(), ClassIndexManager.PROP_SOURCE_ROOT, Boolean.TRUE.toString());
+                    }
+                    uq.setState(ClassIndexImpl.State.INITIALIZED);
+                }
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             } finally {
@@ -970,18 +1056,18 @@ public class JavaCustomIndexer extends CustomIndexer {
     }
 
     public static final class CompileTuple {
-        public final InferableJavaFileObject jfo;
+        public final PrefetchableJavaFileObject jfo;
         public final Indexable indexable;
         public final boolean virtual;
         public final boolean index;
         public final boolean aptGenerated;
 
-        public CompileTuple (final InferableJavaFileObject jfo, final Indexable indexable,
+        public CompileTuple (final PrefetchableJavaFileObject jfo, final Indexable indexable,
                 final boolean virtual, final boolean index) {
             this(jfo, indexable, virtual, index, false);
         }
 
-        public CompileTuple (final InferableJavaFileObject jfo, final Indexable indexable,
+        public CompileTuple (final PrefetchableJavaFileObject jfo, final Indexable indexable,
                 final boolean virtual, final boolean index, final boolean aptGenerated) {
             this.jfo = jfo;
             this.indexable = indexable;
@@ -990,7 +1076,7 @@ public class JavaCustomIndexer extends CustomIndexer {
             this.aptGenerated = aptGenerated;
         }
 
-        public CompileTuple (final InferableJavaFileObject jfo, final Indexable indexable) {
+        public CompileTuple (final PrefetchableJavaFileObject jfo, final Indexable indexable) {
             this(jfo,indexable,false, true);
         }
     }

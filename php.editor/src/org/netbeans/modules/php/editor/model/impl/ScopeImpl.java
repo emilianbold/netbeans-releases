@@ -102,11 +102,14 @@ abstract class ScopeImpl extends ModelElementImpl implements Scope {
             case METHOD:
             case VARIABLE:
             case FIELD:
+            case USE_STATEMENT:
+            case TRAIT:
                 return true;
         }
         return false;
     }
 
+    @Override
     public List<? extends ModelElementImpl> getElements() {
         return new ArrayList<ModelElementImpl>(elements);
     }

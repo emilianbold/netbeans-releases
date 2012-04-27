@@ -78,6 +78,9 @@ import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl2;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils;
+import org.netbeans.modules.javaee.specs.support.api.JaxWs;
+import org.netbeans.modules.websvc.wsstack.api.WSStack;
+import org.netbeans.modules.websvc.wsstack.spi.WSStackFactory;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.openide.util.lookup.Lookups;
@@ -448,15 +451,6 @@ public class JBJ2eePlatformFactory extends J2eePlatformFactory {
             }
             return null;
         }
-
-        // copied from appserv plugin
-        private URL fileToUrl(File file) throws MalformedURLException {
-            URL url = file.toURI().toURL();
-            if (FileUtil.isArchiveFile(url)) {
-                url = FileUtil.getArchiveRoot(url);
-            }
-            return url;
-        }
         
         public String getToolProperty(String toolName, String propertyName) {
             if (J2eePlatform.TOOL_APP_CLIENT_RUNTIME.equals(toolName)) {
@@ -493,8 +487,11 @@ public class JBJ2eePlatformFactory extends J2eePlatformFactory {
 
         @Override
         public Lookup getLookup() {
-            Lookup baseLookup = Lookups.fixed(properties.getRootDir());
-            return LookupProviderSupport.createCompositeLookup(baseLookup, "J2EE/DeploymentPlugins/JBoss4/Lookup"); //NOI18N
+            WSStack<JaxWs> wsStack=WSStackFactory.createWSStack(JaxWs.class ,
+                    new JBossJaxWsStack(properties.getRootDir()), WSStack.Source.SERVER);
+            Lookup baseLookup = Lookups.fixed(properties.getRootDir(), wsStack);
+            return LookupProviderSupport.createCompositeLookup(baseLookup, 
+                    "J2EE/DeploymentPlugins/JBoss4/Lookup"); //NOI18N
         }
         
     }

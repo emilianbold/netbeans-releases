@@ -105,7 +105,12 @@ public final class SlideBarContainer extends AbstractModeContainer {
     @Override
     public void cancelRequestAttention (TopComponent tc) {
         tabbedHandler.cancelRequestAttention (tc);
-    }    
+    }
+
+    @Override
+    public void makeBusy(TopComponent tc, boolean busy) {
+        tabbedHandler.makeBusy( tc, busy );
+    }
     
     @Override
     public void setTopComponents(TopComponent[] tcs, TopComponent selected) {

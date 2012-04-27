@@ -52,6 +52,19 @@ made subject to such option by the copyright holder.
     <apidef name="sendoptsspi">SendOpts SPI</apidef>
 </apidefs>
 <changes>
+    <change id="own-hep">
+      <api name="sendoptsspi"/>
+      <summary>Easier way to process own <code>--help</code> request</summary>
+      <version major="2" minor="21"/>
+      <date day="18" month="3" year="2012"/>
+      <author login="jtulach"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible"/>
+      <description>
+          <a href="@TOP@/org/netbeans/spi/sendopts/Env.html#usage()">Env.usage</a> 
+          can be called when one wants to process own <code>--help</code> option.
+     </description>
+     <class package="org.netbeans.spi.sendopts" name="Env"/>
+    </change>
     <change id="declarative-options">
       <api name="sendoptsspi"/>
       <summary>@Arg annotation</summary>

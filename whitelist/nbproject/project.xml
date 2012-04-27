@@ -71,7 +71,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>2</release-version>
-                        <specification-version>2.5</specification-version>
+                        <specification-version>2.9</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -136,6 +136,8 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>org.netbeans.libs.oracle.cloud</friend>
+                <friend>org.netbeans.modules.cloud.oracle</friend>
                 <friend>org.netbeans.modules.j2ee.common</friend>
                 <friend>org.netbeans.modules.j2ee.ejbjarproject</friend>
                 <friend>org.netbeans.modules.j2ee.weblogic9</friend>

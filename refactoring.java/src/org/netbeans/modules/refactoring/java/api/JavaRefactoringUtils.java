@@ -36,6 +36,7 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -70,11 +71,24 @@ public final class JavaRefactoringUtils {
     /**
      * @param method 
      * @param info 
+     * @since 1.33
      * @return collection of ExecutableElements which overrides 'method'
      */
     @SuppressWarnings("deprecation")
+    public static Collection<ExecutableElement> getOverridingMethods(ExecutableElement method, CompilationInfo info, AtomicBoolean cancel) {
+        return RefactoringUtils.getOverridingMethods(method, info, cancel);
+    }
+
+    /**
+     * @param method 
+     * @param info 
+     * @return collection of ExecutableElements which overrides 'method'
+     * @deprecated use {@link #getOverridingMethods(javax.lang.model.element.ExecutableElement, org.netbeans.api.java.source.CompilationInfo, java.util.concurrent.atomic.AtomicBoolean) 
+     */
+    @Deprecated
+    @SuppressWarnings("deprecation")
     public static Collection<ExecutableElement> getOverridingMethods(ExecutableElement method, CompilationInfo info) {
-        return RefactoringUtils.getOverridingMethods(method, info);
+        return RefactoringUtils.getOverridingMethods(method, info, new AtomicBoolean());
     }
 
     /**
@@ -306,12 +320,14 @@ public final class JavaRefactoringUtils {
         }
 
         private void addIfMatch(TreePath path, Tree tree, Element elementToFind) {
-            if (cc.getTreeUtilities().isSynthetic(path))
+            if (cc.getTreeUtilities().isSynthetic(path)) {
                 return;
+            }
 
             Element el = cc.getTrees().getElement(path);
-            if (el==null)
+            if (el==null) {
                 return;
+            }
 
             if (elementToFind.getKind() == ElementKind.METHOD && el.getKind() == ElementKind.METHOD) {
                 if (el.equals(elementToFind) || cc.getElements().overrides(((ExecutableElement) el), (ExecutableElement) elementToFind, (TypeElement) elementToFind.getEnclosingElement())) {
@@ -335,9 +351,13 @@ public final class JavaRefactoringUtils {
 
         @Override
         public void run(CompilationController cc) throws Exception {
-            if (cancelled) return;
+            if (cancelled) {
+                return;
+            }
             cc.toPhase(Phase.RESOLVED);
-            if (cancelled) return;
+            if (cancelled) {
+                return;
+            }
             this.cc = cc;
             try {
                 TreePath path = new TreePath (cc.getCompilationUnit());

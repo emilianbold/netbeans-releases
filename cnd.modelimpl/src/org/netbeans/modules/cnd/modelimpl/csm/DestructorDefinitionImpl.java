@@ -44,10 +44,14 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
-import org.netbeans.modules.cnd.api.model.*;
-import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.IOException;
+import org.netbeans.modules.cnd.antlr.collections.AST;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
+import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
@@ -64,7 +68,7 @@ public final class DestructorDefinitionImpl extends FunctionDefinitionImpl<CsmFu
         super(name, rawName, scope, _static, _const, file, startOffset, endOffset, global);
     }
 
-    public static DestructorDefinitionImpl create(AST ast, CsmFile file, boolean global) throws AstRendererException{
+    public static DestructorDefinitionImpl create(AST ast, CsmFile file, FileContent fileContent, boolean global) throws AstRendererException{
         CsmScope scope = null;
         
         int startOffset = getStartOffset(ast);
@@ -73,12 +77,12 @@ public final class DestructorDefinitionImpl extends FunctionDefinitionImpl<CsmFu
         NameHolder nameHolder = NameHolder.createDestructorDefinitionName(ast);
         CharSequence name = QualifiedNameCache.getManager().getString(nameHolder.getName());
         if (name.length() == 0) {
-            DiagnosticExceptoins.register(new AstRendererException((FileImpl) file, startOffset, "Empty function name.")); // NOI18N
+            DiagnosticExceptoins.register(AstRendererException.createAstRendererException((FileImpl) file, ast, startOffset, "Empty function name.")); // NOI18N
             return null;
         }
         CharSequence rawName = initRawName(ast);
         
-        boolean _static = AstRenderer.FunctionRenderer.isStatic(ast, file, name);
+        boolean _static = AstRenderer.FunctionRenderer.isStatic(ast, file, fileContent, name);
         boolean _const = AstRenderer.FunctionRenderer.isConst(ast);
 
         scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, true);
@@ -93,7 +97,7 @@ public final class DestructorDefinitionImpl extends FunctionDefinitionImpl<CsmFu
         
         res.setTemplateDescriptor(templateDescriptor, classTemplateSuffix);
         res.setReturnType(AstRenderer.FunctionRenderer.createReturnType(ast, res, file));
-        res.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, res, file, global), 
+        res.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, res, file, fileContent), 
                 AstRenderer.FunctionRenderer.isVoidParameter(ast));        
         
         CharSequence[] classOrNspNames = CastUtils.isCast(ast) ?
@@ -103,13 +107,14 @@ public final class DestructorDefinitionImpl extends FunctionDefinitionImpl<CsmFu
 
         CsmCompoundStatement body = AstRenderer.findCompoundStatement(ast, file, res);
         if (body == null) {
-            throw new AstRendererException((FileImpl)file, startOffset,
+            throw AstRendererException.createAstRendererException((FileImpl)file, ast, startOffset,
                     "Null body in method definition."); // NOI18N
         }        
         res.setCompoundStatement(body);
         
         postObjectCreateRegistration(global, res);
-        nameHolder.addReference(file, res);
+        postFunctionImpExCreateRegistration(fileContent, global, res);
+        nameHolder.addReference(fileContent, res);
         return res;
     }
 

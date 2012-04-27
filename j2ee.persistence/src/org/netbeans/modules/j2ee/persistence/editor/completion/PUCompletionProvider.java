@@ -56,7 +56,6 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.j2ee.persistence.editor.CompletionContext;
 import org.netbeans.modules.j2ee.persistence.editor.completion.db.DBCompletionContextResolver;
 import org.netbeans.modules.j2ee.persistence.unit.PUDataLoader;
-import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionProvider;
@@ -75,7 +74,7 @@ public class PUCompletionProvider implements CompletionProvider {
 
     @Override
     public CompletionTask createTask(int queryType, JTextComponent component) {
-        if (queryType != CompletionProvider.COMPLETION_QUERY_TYPE) {
+        if (queryType != CompletionProvider.COMPLETION_QUERY_TYPE && queryType !=CompletionProvider.COMPLETION_ALL_QUERY_TYPE) {
             return null;
         }
         return new AsyncCompletionTask(new PUCompletionQuery(queryType, component, component.getSelectionStart(), true), component);
@@ -148,10 +147,13 @@ public class PUCompletionProvider implements CompletionProvider {
 
         @Override
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
+            System.out.println("QUERY");
             List<JPACompletionItem> completionItems = new ArrayList<JPACompletionItem>();
 
             int anchorOffset = getCompletionItems(doc, caretOffset, completionItems);
-
+            if(completionItems==null || completionItems.size()==0){
+                System.out.println("EMPTY");
+            }
             resultSet.addAllItems(completionItems);
             if (anchorOffset != -1) {
                 resultSet.setAnchorOffset(anchorOffset);
@@ -172,16 +174,16 @@ public class PUCompletionProvider implements CompletionProvider {
 
             switch (context.getCompletionType()) {
                 case ATTRIBUTE_VALUE:
-                    //anchorOffset = HibernateCfgCompletionManager.getDefault().completeAttributeValues(context, completionItems);
+                    anchorOffset = PUCompletionManager.getDefault().completeAttributeValues(context, completionItems);
                     break;
                 case ATTRIBUTE:
-                    //anchorOffset = HibernateCfgCompletionManager.getDefault().completeAttributes(context, completionItems);
+                    anchorOffset = PUCompletionManager.getDefault().completeAttributes(context, completionItems);
                     break;
                 case TAG:
-                    //anchorOffset = HibernateCfgCompletionManager.getDefault().completeElements(context, completionItems);
+                    anchorOffset = PUCompletionManager.getDefault().completeElements(context, completionItems);
                     break;
                 case VALUE:
-                    //anchorOffset = HibernateCfgCompletionManager.getDefault().completeValues(context, completionItems);
+                    anchorOffset = PUCompletionManager.getDefault().completeValues(context, completionItems);
                     break;
             }
 

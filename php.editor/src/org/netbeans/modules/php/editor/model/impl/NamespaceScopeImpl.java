@@ -67,6 +67,7 @@ final class NamespaceScopeImpl extends ScopeImpl implements NamespaceScope, Vari
 
     private final boolean isDefault;
 
+    @Override
     public VariableNameImpl createElement( Variable variable) {
         VariableNameImpl retval = new VariableNameImpl(this, variable, true);
         return retval;
@@ -85,8 +86,8 @@ final class NamespaceScopeImpl extends ScopeImpl implements NamespaceScope, Vari
         ConstantElementImpl retval = new ConstantElementImpl(this, node);
         return retval;
     }
-    UseElementImpl createUseStatementPart(ASTNodeInfo<UseStatementPart> node) {
-        UseElementImpl retval = new UseElementImpl(this, node);
+    UseScopeImpl createUseStatementPart(ASTNodeInfo<UseStatementPart> node) {
+        UseScopeImpl retval = new UseScopeImpl(this, node);
         return retval;
     }
 
@@ -111,16 +112,20 @@ final class NamespaceScopeImpl extends ScopeImpl implements NamespaceScope, Vari
         super.addElement(element);
     }
 
+    @Override
     public Collection<? extends ClassScopeImpl> getDeclaredClasses() {
         return filter(getElements(), new ElementFilter<ClassScopeImpl>() {
+            @Override
             public boolean isAccepted(ModelElement element) {
                 return element.getPhpElementKind().equals(PhpElementKind.CLASS);
             }
         });
     }
 
+    @Override
     public Collection<? extends InterfaceScope> getDeclaredInterfaces() {
         return filter(getElements(), new ElementFilter() {
+            @Override
             public boolean isAccepted(ModelElement element) {
                 return element.getPhpElementKind().equals(PhpElementKind.IFACE);
             }
@@ -137,8 +142,10 @@ final class NamespaceScopeImpl extends ScopeImpl implements NamespaceScope, Vari
         });
     }
 
+    @Override
     public Collection<? extends ConstantElement> getDeclaredConstants() {
         return filter(getElements(), new ElementFilter() {
+            @Override
             public boolean isAccepted(ModelElement element) {
                 return element.getPhpElementKind().equals(PhpElementKind.CONSTANT);
             }
@@ -146,16 +153,20 @@ final class NamespaceScopeImpl extends ScopeImpl implements NamespaceScope, Vari
     }
 
 
+    @Override
     public Collection<? extends FunctionScope> getDeclaredFunctions() {
         return filter(getElements(), new ElementFilter() {
+            @Override
             public boolean isAccepted(ModelElement element) {
                 return element.getPhpElementKind().equals(PhpElementKind.FUNCTION);
             }
         });
     }
 
-    public Collection<? extends UseElement> getDeclaredUses() {
+    @Override
+    public Collection<? extends UseScope> getDeclaredUses() {
         return filter(getElements(), new ElementFilter() {
+            @Override
             public boolean isAccepted(ModelElement element) {
                 return element.getPhpElementKind().equals(PhpElementKind.USE_STATEMENT);
             }
@@ -163,6 +174,7 @@ final class NamespaceScopeImpl extends ScopeImpl implements NamespaceScope, Vari
     }
 
     @SuppressWarnings("unchecked")
+    @Override
     public Collection<? extends TypeScope> getDeclaredTypes() {
         Collection<? extends ClassScope> classes = getDeclaredClasses();
         Collection<? extends InterfaceScope> interfaces = getDeclaredInterfaces();
@@ -171,22 +183,27 @@ final class NamespaceScopeImpl extends ScopeImpl implements NamespaceScope, Vari
     }
 
 
+    @Override
     public Collection<? extends VariableName> getDeclaredVariables() {
         return filter(getElements(), new ElementFilter() {
+            @Override
             public boolean isAccepted(ModelElement element) {
                 return element.getPhpElementKind().equals(PhpElementKind.VARIABLE);
             }
         });
     }
 
+    @Override
     public boolean isDefaultNamespace() {
         return this.isDefault;
     }
 
+    @Override
     public FileScopeImpl getFileScope() {
         return (FileScopeImpl) getInScope();
     }
 
+    @Override
     public QualifiedName getQualifiedName() {
         QualifiedName qualifiedName = QualifiedName.create(this);
         return qualifiedName;

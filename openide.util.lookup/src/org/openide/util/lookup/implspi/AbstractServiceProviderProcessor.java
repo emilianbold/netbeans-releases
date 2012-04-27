@@ -97,9 +97,13 @@ public abstract class AbstractServiceProviderProcessor extends AbstractProcessor
             // OK subclass
             return;
         }
+        if (getClass().getName().equals("org.netbeans.modules.openide.util.NamedServiceProcessor")) { // NOI18N
+            // OK subclass
+            return;
+        }
         throw new IllegalStateException();
     }
-
+    
     public @Override final boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         if (roundEnv.errorRaised()) {
             return false;
@@ -135,21 +139,20 @@ public abstract class AbstractServiceProviderProcessor extends AbstractProcessor
      * @param supersedes possibly empty list of implementation to supersede
      * @since 8.8
      */
-    protected final void register(Element el, Class<? extends Annotation> annotation,
-            TypeMirror type, String path, int position, String[] supersedes) {
+    protected final void register(
+        Element el, Class<? extends Annotation> annotation,
+        TypeMirror type, String path, int position, String... supersedes
+    ) {
         if (el.getKind() != ElementKind.CLASS) {
             processingEnv.getMessager().printMessage(Kind.ERROR, annotation.getName() + " is not applicable to a " + el.getKind(), el);
             return;
         }
-        TypeElement clazz = (TypeElement) el;
-        Boolean verify = verifiedClasses.get(clazz);
-        if (verify == null) {
-            verify = verifyServiceProviderSignature(clazz, annotation);
-            verifiedClasses.put(clazz, verify);
-        }
-        if (!verify) {
+        if (el.getEnclosingElement().getKind() == ElementKind.CLASS && !el.getModifiers().contains(Modifier.STATIC)) {
+            processingEnv.getMessager().printMessage(Kind.ERROR, "Inner class needs to be static to be annotated with @ServiceProvider", el);
             return;
         }
+        
+        TypeElement clazz = (TypeElement) el;
         String impl = processingEnv.getElementUtils().getBinaryName(clazz).toString();
         String xface = processingEnv.getElementUtils().getBinaryName((TypeElement) processingEnv.getTypeUtils().asElement(type)).toString();
         if (!processingEnv.getTypeUtils().isAssignable(clazz.asType(), type)) {
@@ -158,9 +161,31 @@ public abstract class AbstractServiceProviderProcessor extends AbstractProcessor
                     clazz, ann, findAnnotationValue(ann, "service"));
             return;
         }
+        String rsrc = (path.length() > 0 ? "META-INF/namedservices/" + path + "/" : "META-INF/services/") + xface;
+        Boolean verify = verifiedClasses.get(clazz);
+        if (verify == null) {
+            verify = verifyServiceProviderSignature(clazz, annotation);
+            verifiedClasses.put(clazz, verify);
+        }
+        if (!verify) {
+            return;
+        }
+        registerImpl(clazz, impl, rsrc, position, supersedes);
+    }
+    
+    protected final void register(Element el, String path) {
+        TypeElement clazz = (TypeElement)el;
+        String impl = processingEnv.getElementUtils().getBinaryName(clazz).toString();
+        registerImpl(clazz, impl, path, Integer.MAX_VALUE);
+    }
+    
+    private void registerImpl(
+        TypeElement clazz, String impl, String rsrc, int position, String... supersedes
+    ) {
+        /*
         processingEnv.getMessager().printMessage(Kind.NOTE,
                 impl + " to be registered as a " + xface + (path.length() > 0 ? " under " + path : ""));
-        String rsrc = (path.length() > 0 ? "META-INF/namedservices/" + path + "/" : "META-INF/services/") + xface;
+        */
         Filer filer = processingEnv.getFiler();
         {
             Map<String,List<Element>> originatingElements = originatingElementsByProcessor.get(filer);
@@ -259,6 +284,10 @@ public abstract class AbstractServiceProviderProcessor extends AbstractProcessor
         }
         if (clazz.getModifiers().contains(Modifier.ABSTRACT)) {
             processingEnv.getMessager().printMessage(Kind.ERROR, clazz + " must not be abstract", clazz, ann);
+            return false;
+        }
+        if (clazz.getEnclosingElement().getKind() != ElementKind.PACKAGE && !clazz.getModifiers().contains(Modifier.STATIC)) {
+            processingEnv.getMessager().printMessage(Kind.ERROR, clazz + " must be static", clazz, ann);
             return false;
         }
         {

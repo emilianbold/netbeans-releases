@@ -46,6 +46,7 @@ import java.util.Collections;
 import java.util.Set;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleIgnoredFilesExtender;
+import org.netbeans.modules.php.symfony2.preferences.Symfony2Preferences;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -54,7 +55,8 @@ import org.openide.filesystems.FileUtil;
  */
 public class Symfony2PhpModuleIgnoredFilesExtender extends PhpModuleIgnoredFilesExtender {
 
-    private static final String CACHE_DIRECTORY = "app/cache"; // NOI18N
+    private static final String CACHE_NAME = "cache"; // NOI18N
+    private static final String DEFAULT_CACHE_DIR = "app/cache"; // NOI18N
 
     private final PhpModule phpModule;
     private final File cache;
@@ -64,19 +66,26 @@ public class Symfony2PhpModuleIgnoredFilesExtender extends PhpModuleIgnoredFiles
         assert phpModule != null;
 
         this.phpModule = phpModule;
+        cache = findCacheDir(phpModule);
+    }
 
-        FileObject cacheFO = phpModule.getSourceDirectory().getFileObject(CACHE_DIRECTORY);
-        if (cacheFO != null && cacheFO.isFolder()) {
-            cache = FileUtil.toFile(cacheFO);
-        } else {
-            // cache not found, simply pretend that it's there
-            cache = new File(FileUtil.toFile(phpModule.getSourceDirectory()), CACHE_DIRECTORY.replace('/', File.separatorChar)); // NOI18N
+    private File findCacheDir(PhpModule phpModule) {
+        final File defaultCacheDir = new File(FileUtil.toFile(phpModule.getSourceDirectory()), DEFAULT_CACHE_DIR.replace('/', File.separatorChar)); // NOI18N
+        FileObject appDir = phpModule.getSourceDirectory().getFileObject(Symfony2Preferences.getAppDir(phpModule));
+        if (appDir == null) {
+            // not found, simply return the default location
+            return defaultCacheDir;
         }
+        FileObject cacheFo = appDir.getFileObject(CACHE_NAME);
+        if (cacheFo != null && cacheFo.isFolder()) {
+            return FileUtil.toFile(cacheFo);
+        }
+        return defaultCacheDir;
     }
 
     @Override
     public Set<File> getIgnoredFiles() {
-        boolean cacheIgnored = Symfony2PhpModuleCustomizerExtender.isCacheDirectoryIgnored(phpModule);
+        boolean cacheIgnored = Symfony2Preferences.isCacheDirIgnored(phpModule);
         return cacheIgnored ? Collections.singleton(cache) : Collections.<File>emptySet();
     }
 

@@ -124,6 +124,7 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
     public static final String PHP_UNIT_BOOTSTRAP_FOR_CREATE_TESTS = "phpunit.bootstrap.create.tests"; // NOI18N
     public static final String PHP_UNIT_CONFIGURATION = "phpunit.configuration"; // NOI18N
     public static final String PHP_UNIT_SUITE = "phpunit.suite"; // NOI18N
+    public static final String PHP_UNIT_SCRIPT = "phpunit.script"; // NOI18N
     public static final String PHP_UNIT_RUN_TEST_FILES = "phpunit.run.test.files"; // NOI18N
     public static final String PHP_UNIT_ASK_FOR_TEST_GROUPS = "phpunit.test.groups.ask"; // NOI18N
     public static final String PHP_UNIT_LAST_USED_TEST_GROUPS = "phpunit.test.groups.last.used"; // NOI18N
@@ -235,6 +236,7 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
     private Boolean phpUnitBootstrapForCreateTests;
     private String phpUnitConfiguration;
     private String phpUnitSuite;
+    private String phpUnitScript;
     private Boolean phpUnitRunTestFiles;
     private Boolean phpUnitAskForTestGroups;
     private String phpUnitLastUsedTestGroups;
@@ -351,16 +353,7 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
         return srcDir;
     }
 
-    public String getTestDir() {
-        if (testDir == null) {
-            FileObject tests = ProjectPropertiesSupport.getTestDirectory(project, false);
-            if (tests != null) {
-                testDir = FileUtil.toFile(tests).getAbsolutePath();
-            }
-        }
-        return testDir;
-    }
-
+    // getter not needed
     public void setTestDir(String testDir) {
         this.testDir = testDir;
     }
@@ -472,6 +465,20 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
 
     public void setPhpUnitSuite(String phpUnitSuite) {
         this.phpUnitSuite = phpUnitSuite;
+    }
+
+    public String getPhpUnitScript() {
+        if (phpUnitScript == null) {
+            File script = ProjectPropertiesSupport.getPhpUnitScript(project);
+            if (script != null) {
+                phpUnitScript = script.getAbsolutePath();
+            }
+        }
+        return phpUnitScript;
+    }
+
+    public void setPhpUnitScript(String phpUnitScript) {
+        this.phpUnitScript = phpUnitScript;
     }
 
     public Boolean getPhpUnitRunTestFiles() {
@@ -600,6 +607,9 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
         }
         if (phpUnitSuite != null) {
             projectProperties.setProperty(PHP_UNIT_SUITE, relativizeFile(phpUnitSuite));
+        }
+        if (phpUnitScript != null) {
+            projectProperties.setProperty(PHP_UNIT_SCRIPT, relativizeFile(phpUnitScript));
         }
         if (phpUnitRunTestFiles != null) {
             projectProperties.setProperty(PHP_UNIT_RUN_TEST_FILES, phpUnitRunTestFiles.toString());

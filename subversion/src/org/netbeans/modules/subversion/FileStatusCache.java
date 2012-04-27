@@ -564,7 +564,7 @@ public class FileStatusCache {
                 symlink = isSymlink(file);
                 if (!symlink) {
                     SvnClient client = Subversion.getInstance().getClient(false);
-                    status = client.getSingleStatus(file);
+                    status = SvnUtils.getSingleStatus(client, file);
                     if (status != null && SVNStatusKind.UNVERSIONED.equals(status.getTextStatus())) {
                         status = null;
                     }
@@ -838,7 +838,7 @@ public class FileStatusCache {
     }
 
     private boolean isNotManagedByDefault(File dir) {
-        return !dir.exists();
+        return !(dir.exists() || SvnUtils.isManaged(dir)); // cannot just test dir for existence, deleted folders now no longer exist on disk
     }
 
     /**
@@ -861,7 +861,12 @@ public class FileStatusCache {
         } catch (SVNClientException e) {
             // no or damaged entries
             //LOG.getDefault().annotate(e, "Can not status " + dir.getAbsolutePath() + ", guessing it...");  // NOI18N
-            SvnClientExceptionHandler.notifyException(e, false, false);
+            if (!SvnClientExceptionHandler.isUnversionedResource(e.getMessage())
+                    && !WorkingCopyAttributesCache.getInstance().isSuppressed(e)) {
+                // missing or damaged entries
+                // or ignored file
+                SvnClientExceptionHandler.notifyException(e, false, false);
+            }
         }
 
         if (entries == null) {
@@ -895,7 +900,7 @@ public class FileStatusCache {
             while (it.hasNext()) {
                 File localFile = (File) it.next();
                 FileInformation fi = createFileInformation(localFile, null, REPOSITORY_STATUS_UNKNOWN);
-                if (fi.isDirectory() || fi.getStatus() != FileInformation.STATUS_VERSIONED_UPTODATE) {
+                if (fi.isDirectory() || (fi.getStatus() != FileInformation.STATUS_VERSIONED_UPTODATE && !isSymlink(localFile))) {
                     folderFiles.put(localFile, fi);
                 }
             }
@@ -1182,10 +1187,6 @@ public class FileStatusCache {
             return value.getUrlString();
         }
         @Override
-        public SVNUrl getUrlCopiedFrom() {
-            return value.getUrlCopiedFrom();
-        }
-        @Override
         public SVNUrl getUrl() {
             return value.getUrl();
         }
@@ -1388,7 +1389,7 @@ public class FileStatusCache {
                         try {
                             SvnClient client = Subversion.getInstance().getClient(false);
                             // get status for all files
-                            ISVNInfo info = client.getInfoFromWorkingCopy(file);
+                            ISVNInfo info = SvnUtils.getInfoFromWorkingCopy(client, file);
                             SVNRevision rev = info.getRevision();
                             String revisionString, stickyString, binaryString = null;
                             String lastRevisionString, lastDateString = null;

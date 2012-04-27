@@ -110,6 +110,19 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="lookup">
+            <api name="common_server_api"/>
+            <summary>The ServerInstance implements Lookup.Provider</summary>
+            <version major="1" minor="19"/>
+            <date day="13" month="1" year="2012"/>
+            <author login="phejl"/>
+            <compatibility addition="yes"/>
+            <description>
+                The ServerInstance became Lookup.Provider.
+            </description>
+            <class package="org.netbeans.api.server" name="ServerInstance"/>
+            <issue number="206196"/>
+        </change>
         <change id="CommonServerUIs-showAddServerInstanceWizard">
             <api name="common_server_api"/>
             <summary>Added UI helper method CommonServerUIs.showAddServerInstanceWizard</summary>

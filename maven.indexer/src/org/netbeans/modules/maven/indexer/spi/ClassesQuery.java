@@ -45,9 +45,10 @@ package org.netbeans.modules.maven.indexer.spi;
 import java.util.List;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
+import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 
 /**
- * Query to find artifacts information from class names.Non mandatory for repository managers.
+ * Query to find artifacts information from class names.
  * 
  * @author Anuradha G
  */
@@ -60,5 +61,5 @@ public interface  ClassesQuery {
      * accordingly, for example by telling user that entered text for
      * search is too general.
      */
-    public List<NBVersionInfo> findVersionsByClass(final String className, List<RepositoryInfo> repos);
+    public RepositoryQueries.Result<NBVersionInfo> findVersionsByClass(final String className, List<RepositoryInfo> repos);
 }

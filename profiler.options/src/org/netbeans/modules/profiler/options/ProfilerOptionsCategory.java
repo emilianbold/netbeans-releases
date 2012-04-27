@@ -51,13 +51,14 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import java.beans.PropertyChangeListener;
 import javax.swing.*;
+import org.netbeans.modules.options.java.api.JavaOptions;
 
 @OptionsPanelController.SubRegistration(
-    location="Java",
+    location=JavaOptions.JAVA,
     id="Profiler",
     displayName="#ProfilerOptionsCategory_Title",
     keywords="#KW_ProfilerOptions",
-    keywordsCategory="Java/Profiler")
+    keywordsCategory=JavaOptions.JAVA + "/Profiler")
 public class ProfilerOptionsCategory extends OptionsPanelController {
         //~ Static fields/initializers -------------------------------------------------------------------------------------------
 

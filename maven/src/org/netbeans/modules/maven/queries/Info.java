@@ -46,6 +46,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import javax.swing.Icon;
+import javax.swing.SwingUtilities;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
@@ -54,11 +55,15 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import static org.netbeans.modules.maven.queries.Bundle.*;
 import org.netbeans.modules.maven.spi.nodes.SpecialIcon;
 import org.netbeans.spi.project.ProjectServiceProvider;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.RequestProcessor;
 
 @ProjectServiceProvider(service=ProjectInformation.class, projectType="org-netbeans-modules-maven")
 public final class Info implements ProjectInformation, PropertyChangeListener {
+    
+    private static final RequestProcessor RP = new RequestProcessor(Info.class.getName(), 10);
 
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private final Project project;
@@ -68,15 +73,40 @@ public final class Info implements ProjectInformation, PropertyChangeListener {
     }
 
     @Override public String getName() {
-        return project.getLookup().lookup(NbMavenProject.class).getMavenProject().getId().replace(':', '_');
+        final NbMavenProject nb = project.getLookup().lookup(NbMavenProject.class);
+        if (SwingUtilities.isEventDispatchThread() && !nb.isMavenProjectLoaded()) {
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    //assuming this takes long and hangs in sync.
+                    nb.getMavenProject();
+                    pcs.firePropertyChange(ProjectInformation.PROP_DISPLAY_NAME, null, null);
+                }
+            });
+            return project.getProjectDirectory().getNameExt();
+        }
+        return nb.getMavenProject().getId().replace(':', '_');
     }
 
     @Messages({
         "# {0} - dir basename", "LBL_misconfigured_project={0} [unloadable]",
-        "TXT_Maven_project_at=Maven project at {0}"
+        "# {0} - path to project", "TXT_Maven_project_at=Maven project at {0}"
     })
     @Override public @NonNull String getDisplayName() {
-        MavenProject pr = project.getLookup().lookup(NbMavenProject.class).getMavenProject();
+        final NbMavenProject nb = project.getLookup().lookup(NbMavenProject.class);
+        if (SwingUtilities.isEventDispatchThread() && !nb.isMavenProjectLoaded()) {
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    //assuming this takes long and hangs in sync.
+                    nb.getMavenProject();
+                    pcs.firePropertyChange(ProjectInformation.PROP_DISPLAY_NAME, null, null);
+                }
+            });
+            return FileUtil.getFileDisplayName(project.getProjectDirectory());
+        }
+        
+        MavenProject pr = nb.getMavenProject();
         if (NbMavenProject.isErrorPlaceholder(pr)) {
             return LBL_misconfigured_project(project.getProjectDirectory().getNameExt());
         }
@@ -87,13 +117,25 @@ public final class Info implements ProjectInformation, PropertyChangeListener {
             if (grId != null && artId != null) {
                 toReturn = grId + ":" + artId; //NOI18N
             } else {
-                toReturn = TXT_Maven_project_at(project.getProjectDirectory().getPath());
+                toReturn = TXT_Maven_project_at(FileUtil.getFileDisplayName(project.getProjectDirectory()));
             }
         }
         return toReturn;
     }
     
     @Override public Icon getIcon() {
+        final NbMavenProject nb = project.getLookup().lookup(NbMavenProject.class);
+        if (SwingUtilities.isEventDispatchThread() && !nb.isMavenProjectLoaded()) {
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    //assuming this takes long and hangs in sync.
+                    nb.getMavenProject();
+                    pcs.firePropertyChange(ProjectInformation.PROP_ICON, null, null);
+                }
+            });
+            return ImageUtilities.loadImageIcon("org/netbeans/modules/maven/resources/Maven2Icon.gif", true);
+        }
         SpecialIcon special = project.getLookup().lookup(SpecialIcon.class);
         return special != null ? special.getIcon() : ImageUtilities.loadImageIcon("org/netbeans/modules/maven/resources/Maven2Icon.gif", true);
     }

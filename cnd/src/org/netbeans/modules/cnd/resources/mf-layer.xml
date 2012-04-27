@@ -58,23 +58,6 @@ made subject to such option by the copyright holder.
     -->
     
     <folder name="Services">
-        
-        <folder name="MIMEResolver">
-            
-            <file name="mime-resolver-name-ext.xml" url="mime-resolver-name-ext.xml">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-                <attr name="position" intvalue="138"/>
-            </file>
-            <file name="cnd-ext-based-mime-resolver2.xml" url="mime-resolver-ext-based.xml">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-                <attr name="position" intvalue="215"/>
-            </file>
-            <file name="cnd-hex-based-mime-resolver.xml" url="mime-resolver-hex-based.xml">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-                <attr name="position" intvalue="500"/>
-            </file>
-        </folder>
-        
         <folder name="JavaHelp">
             <file name="org-netbeans-modules-cnd-helpset.xml" url="helpset-decl.xml">
                 <attr name="position" intvalue="850"/>

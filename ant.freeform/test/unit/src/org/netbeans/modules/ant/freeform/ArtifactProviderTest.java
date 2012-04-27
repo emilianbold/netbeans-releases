@@ -92,7 +92,8 @@ public class ArtifactProviderTest extends TestBase {
     }
     
     public void testGetBuildArtifacts() throws Exception {
-        AntProjectHelper helper = simple.helper();
+        FreeformProject simple_ = copyProject(simple);
+        AntProjectHelper helper = simple_.helper();
         List<Export> exports = new ArrayList<Export>();
         Export e = new Export();
         e.type = "jar";
@@ -101,7 +102,7 @@ public class ArtifactProviderTest extends TestBase {
         e.buildTarget = "build_target";
         exports.add(e);
         putExports(helper, exports);
-        AntArtifact[] aa = AntArtifactQuery.findArtifactsByType(simple, "jar");
+        AntArtifact[] aa = AntArtifactQuery.findArtifactsByType(simple_, "jar");
         assertNotNull("some artifact found", aa);
         assertEquals("one artifact found", 1, aa.length);
 
@@ -112,7 +113,7 @@ public class ArtifactProviderTest extends TestBase {
         e.buildTarget = "build_target2";
         exports.add(e);
         putExports(helper, exports);
-        aa = AntArtifactQuery.findArtifactsByType(simple, "jar");
+        aa = AntArtifactQuery.findArtifactsByType(simple_, "jar");
         assertNotNull("some artifact found", aa);
         assertEquals("two artifacts found", 2, aa.length);
 
@@ -124,13 +125,13 @@ public class ArtifactProviderTest extends TestBase {
         e.buildTarget = "build_target2";
         exports.add(e);
         putExports(helper, exports);
-        aa = AntArtifactQuery.findArtifactsByType(simple, "jar");
+        aa = AntArtifactQuery.findArtifactsByType(simple_, "jar");
         assertNotNull("some artifact found", aa);
         assertEquals("two artifacts found", 2, aa.length);
         
         exports.remove(0);
         putExports(helper, exports);
-        aa = AntArtifactQuery.findArtifactsByType(simple, "jar");
+        aa = AntArtifactQuery.findArtifactsByType(simple_, "jar");
         assertNotNull("some artifact found", aa);
         assertEquals("one artifact found", 1, aa.length);
         assertEquals("the artifact has two locations", 2, aa[0].getArtifactLocations().length);

@@ -716,7 +716,7 @@ public class WindowsNativeUtils extends NativeUtils {
         return 0;
     }
     
-    public List<File> getFileSystemRoots() throws IOException {
+    public List<File> getFileSystemRoots(String... files) throws IOException {
         return Arrays.asList(File.listRoots());
     }
     

@@ -54,6 +54,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.ui.ScanDialog;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.wsitconf.util.AbstractTask;
 import org.netbeans.modules.websvc.wsitconf.util.SourceUtils;
@@ -189,23 +190,31 @@ public class ClassDialog {
             }
         }
 
-        private boolean isWantedClass(JavaSource js) {
+        private boolean isWantedClass(final JavaSource js) {
             if (extendingClass == null) {
                 return true;
             }
             final Boolean[] subType = new Boolean[1];
             subType[0] = false;
-            try {
-                js.runUserActionTask(new AbstractTask<CompilationController>() {
-                     public void run(CompilationController controller) throws java.io.IOException {
-                         controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                         SourceUtils sourceUtils = SourceUtils.newInstance(controller);
-                         subType[0] = Boolean.valueOf(sourceUtils.isSubtype(extendingClass));
-                     }
-                 }, true);
-            } catch (Throwable t) { // we don't care about anything else happening here - either the file is recognize, or not
-                Logger.global.log(Level.INFO, t.getMessage());
-            }
+            ScanDialog.runWhenScanFinished( new Runnable() {
+                
+                @Override
+                public void run() {
+                    try {
+                        js.runUserActionTask(new AbstractTask<CompilationController>() {
+                            @Override
+                             public void run(CompilationController controller) throws java.io.IOException {
+                                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                                 SourceUtils sourceUtils = SourceUtils.newInstance(controller);
+                                 subType[0] = Boolean.valueOf(sourceUtils.isSubtype(extendingClass));
+                             }
+                         }, true);
+                    } catch (Throwable t) { // we don't care about anything else happening here - either the file is recognize, or not
+                        Logger.global.log(Level.INFO, t.getMessage());
+                    }                    
+                }
+            }, NbBundle.getMessage(ClassDialog.class, "LBL_AnalyzeClass"));     // NOI18N
+            
             return subType[0];
         }
     }

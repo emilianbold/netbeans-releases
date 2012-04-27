@@ -85,16 +85,19 @@ public class ExistingWizardIterator implements WizardDescriptor.ProgressInstanti
         };
     }
     
+    @Override
     public Set/*<FileObject>*/ instantiate() throws IOException {
         assert false : "Cannot call this method if implements WizardDescriptor.ProgressInstantiatingIterator."; //NOI18N
         return null;
     }
     
+    @Override
     public Set instantiate(ProgressHandle handle) throws IOException {
         try {
             handle.start(2);
             handle.progress(1);
             RequestProcessor.getDefault().post(new Runnable() {
+                @Override
                 public void run() {
                     tryOpenProject();
                 }
@@ -110,6 +113,7 @@ public class ExistingWizardIterator implements WizardDescriptor.ProgressInstanti
         final Action act = Actions.forID("Project", "org.netbeans.modules.project.ui.OpenProject"); //NOI18N
         if (act != null) {
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     act.actionPerformed(null);
                 }
@@ -117,6 +121,7 @@ public class ExistingWizardIterator implements WizardDescriptor.ProgressInstanti
         }
     }
     
+    @Override
     public void initialize(WizardDescriptor wiz) {
         index = 0;
         panels = createPanels();
@@ -140,35 +145,44 @@ public class ExistingWizardIterator implements WizardDescriptor.ProgressInstanti
         }
     }
     
+    @Override
     public void uninitialize(WizardDescriptor wiz) {
         panels = null;
     }
     
-    @Messages("MSG_One_of_Many={0} of {1}")
+    @Messages({"# {0} - index", "# {1} - length", "MSG_One_of_Many={0} of {1}"})
+    @Override
     public String name() {
         return MSG_One_of_Many(index + 1, panels.length);
     }
     
+    @Override
     public boolean hasNext() {
         return false;
     }
     
+    @Override
     public boolean hasPrevious() {
         return false;
     }
     
+    @Override
     public void nextPanel() {
     }
     
+    @Override
     public void previousPanel() {
     }
     
+    @Override
     public WizardDescriptor.Panel current() {
         return panels[index];
     }
     
     // If nothing unusual changes in the middle of the wizard, simply:
+    @Override
     public final void addChangeListener(ChangeListener l) {}
+    @Override
     public final void removeChangeListener(ChangeListener l) {}
     
 }

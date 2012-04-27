@@ -86,7 +86,7 @@ public class Utils {
     /**
      * Keeps excluded/unversioned folders
      */
-    private static VCSFileProxy [] unversionedFolders;
+    private static String [] unversionedFolders;
 
     /**
      * Constructs a VCSContext out of a Lookup, basically taking all Nodes inside. 
@@ -133,20 +133,29 @@ public class Utils {
      * @return true if ancestor is an ancestor folder of file OR both parameters are equal, false otherwise
      */
     public static boolean isAncestorOrEqual(VCSFileProxy ancestor, VCSFileProxy file) {
-        return isAncestorOrEqual(ancestor, file, false);
+        if (APIAccessor.IMPL.isFlat(ancestor)) {
+            return ancestor.equals(file) || ancestor.equals(file.getParentFile()) && !file.isDirectory();
+        }
+        return isAncestorOrEqual(ancestor, ancestor.getPath(), file);
+    }
+
+    /**
+     * Tests for ancestor/child file relationsip.
+     * 
+     * @param ancestorPath the supposed ancestors path 
+     * @param file a file 
+     * @return true if ancestor is an ancestor folder of file OR both parameters are equal, false otherwise
+     */    
+    public static boolean isAncestorOrEqual(String ancestorPath, VCSFileProxy file) {
+        return isAncestorOrEqual(null, ancestorPath, file);
     }
     
-    public static boolean isAncestorOrEqual(VCSFileProxy ancestor, VCSFileProxy file, boolean pathMatch) {
-        if (APIAccessor.IMPL.isFlat(ancestor)) {
-            if(pathMatch) {
-                return ancestor.getPath().equals(file.getPath()) || ancestor.getPath().equals(file.getParentFile().getPath()) && !file.isDirectory();
-            } else {
-                return ancestor.equals(file) || ancestor.equals(file.getParentFile()) && !file.isDirectory();
-            }
+    private static boolean isAncestorOrEqual(VCSFileProxy ancestor, String ancestorPath, VCSFileProxy file) {
+        if(ancestorPath == null) {
+            assert ancestor != null;
+            ancestorPath = ancestor.getPath();
         }
-        
         String filePath = file.getPath();
-        String ancestorPath = ancestor.getPath();
         if(Utilities.isWindows()) {
             if(filePath.indexOf("~") < 0 && ancestorPath.indexOf("~") < 0) {
                 if(filePath.length() < ancestorPath.length()) {
@@ -168,10 +177,13 @@ public class Utils {
         // ancestor: /home/dil
         // file:     /home/dil1/dil2
         for (; file != null; file = file.getParentFile()) {
-            if(pathMatch) {
+            if(ancestor == null && APIAccessor.IMPL.isLocalFile(file)) {
+                ancestor = APIAccessor.IMPL.createFileProxy(ancestorPath);
+            }
+            if(ancestor == null) {
                 // XXX have to rely on path because of fileproxy being created from 
                 // io.file even if it was originaly stored from a remote
-                if (file.getPath().equals(ancestor.getPath())) return true; 
+                if (file.getPath().equals(ancestorPath)) return true; 
             } else {
                 if (file.equals(ancestor)) return true; 
             }
@@ -261,9 +273,9 @@ public class Utils {
         }
     }
 
-    public static VCSFileProxy[] getUnversionedFolders () {
+    public static String[] getUnversionedFolders () {
         if (unversionedFolders == null) {
-            VCSFileProxy[] files;
+            String[] files;
             try {
                 String uf = VersioningSupport.getPreferences().get("unversionedFolders", ""); //NOI18N
                 String ufProp = System.getProperty("versioning.unversionedFolders", ""); //NOI18N
@@ -282,17 +294,17 @@ public class Utils {
                     sb.append(ufProp);
                 }
                 if (sb.length() == 0) {
-                    files = new VCSFileProxy[0];
+                    files = new String[0];
                 } else {
                     String [] paths = sb.toString().split("\\;"); //NOI18N
-                    files = new VCSFileProxy[paths.length];
+                    files = new String[paths.length];
                     int idx = 0;
                     for (String path : paths) {
-                        files[idx++] = VCSFileProxy.createFileProxy(new File(path));
+                        files[idx++] = path;
                     }
                 }
             } catch (Exception e) {
-                files = new VCSFileProxy[0];
+                files = new String[0];
                 Logger.getLogger(Utils.class.getName()).log(Level.INFO, e.getMessage(), e);
             }
             unversionedFolders = files;

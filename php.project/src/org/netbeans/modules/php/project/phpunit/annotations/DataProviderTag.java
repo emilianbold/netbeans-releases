@@ -48,7 +48,7 @@ public class DataProviderTag extends PhpAnnotationTag {
 
     public DataProviderTag() {
         super("dataProvider", // NOI18N
-                "@dataProvider ${u1 default=\"methodName\"}", // NOI18N
+                "@dataProvider ${methodName}", // NOI18N
                 NbBundle.getMessage(DataProviderTag.class, "DataProviderTag.documentation"));
     }
 

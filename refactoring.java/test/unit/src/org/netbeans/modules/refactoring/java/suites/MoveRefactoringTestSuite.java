@@ -39,6 +39,7 @@ package org.netbeans.modules.refactoring.java.suites;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
+import org.netbeans.modules.refactoring.java.test.MoveClassTest;
 import org.netbeans.modules.refactoring.java.test.MoveFieldTest;
 import org.netbeans.modules.refactoring.java.test.MoveJavaFileTest;
 import org.netbeans.modules.refactoring.java.test.MoveMethodTest;
@@ -51,6 +52,7 @@ public class MoveRefactoringTestSuite {
 
     public static Test suite() throws InterruptedException {
         Class[] classes = {MoveJavaFileTest.class,
+            MoveClassTest.class,
             MoveMethodTest.class,
             MoveFieldTest.class};
         TestSuite testSuite = new TestSuite(classes);

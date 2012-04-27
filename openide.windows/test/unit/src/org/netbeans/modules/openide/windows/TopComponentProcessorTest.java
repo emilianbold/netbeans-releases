@@ -43,11 +43,14 @@
 package org.netbeans.modules.openide.windows;
 
 import java.awt.EventQueue;
+import java.awt.GraphicsEnvironment;
 import java.awt.event.ActionEvent;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import javax.swing.Action;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
@@ -62,6 +65,10 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 public class TopComponentProcessorTest extends  NbTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(TopComponentProcessorTest.class);
+    }
 
     public TopComponentProcessorTest(String n) {
         super(n);
@@ -79,11 +86,16 @@ public class TopComponentProcessorTest extends  NbTestCase {
         FileObject set2 = FileUtil.getConfigFile("Windows2/Roles/UnitTestRole2/Components/my-tc2.settings");
         assertNotNull("Settings file found", set2);
     }
-    
+
     public void testTCRegisteredFine() throws Exception {
         FileObject set = FileUtil.getConfigFile("Windows2/Components/my-tc.settings");
         assertNotNull("Settings file found", set);
         assertValidate(set.asText());
+    }
+
+    public void testNonPersistentTCHasNoSettingsGenerated() throws Exception {
+        FileObject set = FileUtil.getConfigFile("Windows2/Components/my-nonpersistentTC.settings");
+        assertNull("Non-persistent TC cannot have .settings file", set);
     }
 
     public void testModeIsOK() throws Exception {
@@ -178,6 +190,17 @@ public class TopComponentProcessorTest extends  NbTestCase {
     public static class TC2 extends TopComponent {
     }
     
+    @TopComponent.Registration(
+        mode="output",
+        openAtStartup=false
+    )
+    @TopComponent.Description(
+        preferredID="my-nonpersistentTC", iconBase="org/openide/windows/Icon.png",
+        persistenceType=TopComponent.PERSISTENCE_NEVER
+    )
+    public static class NonPersistentTC extends TopComponent {
+    }
+
     @TopComponent.Registration(
         mode="explorer",
         openAtStartup=true

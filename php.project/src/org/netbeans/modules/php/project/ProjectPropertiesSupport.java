@@ -432,6 +432,13 @@ public final class ProjectPropertiesSupport {
     }
 
     /**
+     * @return file (which can be invalid!) or <code>null</code>
+     */
+    public static File getPhpUnitScript(PhpProject project) {
+        return getFile(project, PhpProjectProperties.PHP_UNIT_SCRIPT);
+    }
+
+    /**
      * @return {@code true} if all *Test files should be run via PhpUnit (default is {@code false})
      */
     public static boolean runAllTestFilesUsingPhpUnit(PhpProject project) {

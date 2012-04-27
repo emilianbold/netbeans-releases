@@ -73,7 +73,7 @@ public class MnemonicsTest extends NbTestCase {
         JButton b = new JButton();
         Mnemonics.setLocalizedText(b, "Execute (&Force Reload)");
         assertEquals("Execute (Force Reload)", b.getText());
-        if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+        if (Mnemonics.isAquaLF()) {
             assertEquals(0, b.getMnemonic());
             assertEquals(-1, b.getDisplayedMnemonicIndex());
         } else {
@@ -90,11 +90,11 @@ public class MnemonicsTest extends NbTestCase {
         assertEquals("<html><b>R&amp;D</b> department", b.getText());
         assertEquals(0, b.getMnemonic());
         assertEquals(-1, b.getDisplayedMnemonicIndex());
-        String underStart = Utilities.isMac() ? "" : "<u>";
-        String underEnd = Utilities.isMac() ? "" : "</u>";
+        String underStart = Mnemonics.isAquaLF() ? "" : "<u>";
+        String underEnd = Mnemonics.isAquaLF() ? "" : "</u>";
         Mnemonics.setLocalizedText(b, "<html><b>R&amp;D</b> departmen&t");
         assertEquals("<html><b>R&amp;D</b> departmen" + underStart + "t" + underEnd, b.getText());
-        if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+        if (Mnemonics.isAquaLF()) {
             assertEquals(0, b.getMnemonic());
             assertEquals(-1, b.getDisplayedMnemonicIndex());
         } else {
@@ -103,7 +103,7 @@ public class MnemonicsTest extends NbTestCase {
         
         Mnemonics.setLocalizedText(b, "<html>Smith &amp; &Wesson");
         assertEquals("<html>Smith &amp; " + underStart + "W" + underEnd + "esson", b.getText());
-        if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+        if (Mnemonics.isAquaLF()) {
             assertEquals(0, b.getMnemonic());
             assertEquals(-1, b.getDisplayedMnemonicIndex());
         } else {
@@ -111,7 +111,7 @@ public class MnemonicsTest extends NbTestCase {
         }
         Mnemonics.setLocalizedText(b, "<html>&Advanced Mode <em>(experimental)</em></html>");
         assertEquals("<html>" + underStart + "A" + underEnd + "dvanced Mode <em>(experimental)</em></html>", b.getText());
-        if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+        if (Mnemonics.isAquaLF()) {
             assertEquals(0, b.getMnemonic());
             assertEquals(-1, b.getDisplayedMnemonicIndex());
         } else {
@@ -125,12 +125,22 @@ public class MnemonicsTest extends NbTestCase {
         JButton b = new JButton();
         Mnemonics.setLocalizedText(b, "Hello &There");
         assertEquals("Hello There", b.getText());
-        assertEquals('T', b.getMnemonic());
-        assertEquals(6, b.getDisplayedMnemonicIndex());
+        if( Mnemonics.isAquaLF() ) {
+            assertEquals(0, b.getMnemonic());
+            assertEquals(-1, b.getDisplayedMnemonicIndex());
+        } else {
+            assertEquals('T', b.getMnemonic());
+            assertEquals(6, b.getDisplayedMnemonicIndex());
+        }
         b.setModel(m);
         assertEquals("Hello There", b.getText());
-        assertEquals('T', b.getMnemonic());
-        assertEquals(6, b.getDisplayedMnemonicIndex());
+        if( Mnemonics.isAquaLF() ) {
+            assertEquals(0, b.getMnemonic());
+            assertEquals(-1, b.getDisplayedMnemonicIndex());
+        } else {
+            assertEquals('T', b.getMnemonic());
+            assertEquals(6, b.getDisplayedMnemonicIndex());
+        }
     }
 
     public void testBug174191_1() {
@@ -151,7 +161,11 @@ public class MnemonicsTest extends NbTestCase {
         JMenuItem item = new JMenuItem();
         Actions.connect(item, mnem, true);
         assertEquals("Plain text", "Mnem", item.getText());
-        assertEquals("Mnenonic is on n", 'N', item.getMnemonic());
+        if( Mnemonics.isAquaLF() ) {
+            assertEquals("No mnenonic on Mac", 0, item.getMnemonic());
+        } else {
+            assertEquals("Mnenonic is on n", 'N', item.getMnemonic());
+        }
     }
     public void testNeverMnemonics() {
         Locale.setDefault(new Locale("te", "NO"));

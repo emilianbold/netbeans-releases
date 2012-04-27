@@ -42,8 +42,10 @@
 package org.netbeans.modules.maven.indexer.spi;
 
 import java.util.List;
+import org.netbeans.modules.maven.indexer.api.NBGroupInfo;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
+import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 
 /**
  * Query to find dependency information of artifacts.Non mandatory for repository managers.
@@ -51,6 +53,8 @@ import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
  */
 public interface DependencyInfoQueries {
 
-    List<NBVersionInfo> findDependencyUsage(String groupId, String artifactId, String version, List<RepositoryInfo> repoIds);
+    RepositoryQueries.Result<NBVersionInfo> findDependencyUsage(String groupId, String artifactId, String version, List<RepositoryInfo> repoIds);
+    
+    RepositoryQueries.Result<NBGroupInfo> findDependencyUsageGroups(String groupId, String artifactId, String version, List<RepositoryInfo> repoIds);
 
 }

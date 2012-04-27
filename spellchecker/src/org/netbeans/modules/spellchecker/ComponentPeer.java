@@ -613,20 +613,24 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
                 LOG.log(Level.FINE, "currentWSO={0}, w={1}, length={2}", new Object[] {currentWSO, w, length});
                 
                 if (currentWSO <= lastCaretPositionCopy[0] && (currentWSO + length) >= lastCaretPositionCopy[0]) {
-                    ValidityType validity = d.validateWord(w);
-                    
-                    if (validity != ValidityType.VALID) {
-                        try {
-                            span[0] = document.createPosition(currentWSO);
-                            span[1] = document.createPosition(currentWSO + length);
-                            word[0] = w;
-                        } catch (BadLocationException e) {
-                            LOG.log(Level.INFO, null, e);
-                        }
+                    try {
+                        span[0] = document.createPosition(currentWSO);
+                        span[1] = document.createPosition(currentWSO + length);
+                        word[0] = w;
+                    } catch (BadLocationException e) {
+                        LOG.log(Level.INFO, null, e);
                     }
                 }
             }
         });
+
+        if (span[0] != null && span[1] != null) {
+            ValidityType validity = d.validateWord(word[0]);
+
+            if (validity == ValidityType.VALID) {
+                span[0] = span[1] = null;
+            }
+        }
         
         List<Fix> result = new ArrayList<Fix>();
         

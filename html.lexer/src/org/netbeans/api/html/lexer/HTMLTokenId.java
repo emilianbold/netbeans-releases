@@ -48,12 +48,7 @@ import java.util.EnumSet;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.lexer.InputAttributes;
-import org.netbeans.api.lexer.Language;
-import org.netbeans.api.lexer.LanguagePath;
-import org.netbeans.api.lexer.PartType;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenId;
+import org.netbeans.api.lexer.*;
 import org.netbeans.lib.html.lexer.HtmlLexer;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageHierarchy;
@@ -97,6 +92,8 @@ public enum HTMLTokenId implements TokenId {
     SGML_COMMENT("sgml-comment"),
     /** HTML/SGML declaration: <code> &lt;!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"&gt; </code>.*/
     DECLARATION("sgml-declaration"),
+    /** XML processing instruction: <? ... ?>*/
+    XML_PI("xml-pi"),
     /** Character reference: <code> &amp;amp; </code>.*/
     CHARACTER("character"),
     /** End of line.*/

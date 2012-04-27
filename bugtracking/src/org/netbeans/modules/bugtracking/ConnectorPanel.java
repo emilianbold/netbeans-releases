@@ -45,7 +45,6 @@ package org.netbeans.modules.bugtracking;
 import java.awt.Component;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
-import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 
 /**
  *
@@ -61,7 +60,7 @@ public class ConnectorPanel extends javax.swing.JPanel {
         connectorCbo.setRenderer(new ListCellRenderer() {
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 if(value != null) {
-                    BugtrackingConnector rc = (BugtrackingConnector) value;
+                    DelegatingConnector rc = (DelegatingConnector) value;
                     value = rc.getDisplayName();
                 }
                 return lcr.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);

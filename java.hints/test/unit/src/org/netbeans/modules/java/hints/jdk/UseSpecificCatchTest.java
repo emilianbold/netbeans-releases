@@ -39,27 +39,25 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.java.hints.jdk;
 
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
-import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.hints.test.api.HintTest;
 
 /**
  *
  * @author lahvac
  */
-public class UseSpecificCatchTest extends TestBase {
+public class UseSpecificCatchTest extends NbTestCase {
 
     public UseSpecificCatchTest(String name) {
-        super(name, UseSpecificCatch.class);
+        super(name);
     }
 
     public void testHintPos() throws Exception {
-        setSourceLevel("1.7");
-        performFixTest("test/Test.java",
-                       "package test;\n" +
+        HintTest
+                .create()
+                .input("package test;\n" +
                        "public class Test {\n" +
                        "    {\n" +
                        "        try {\n" +
@@ -69,28 +67,31 @@ public class UseSpecificCatchTest extends TestBase {
                        "            e.printStackTrace();\n" +
                        "        }\n" +
                        "    }\n" +
-                       "}\n",
-                       "6:17-6:26:verifier:ERR_UseSpecificCatch",
-                       "FIX_UseSpecificCatch",
-                       ("package test;\n" +
-                        "import java.io.FileNotFoundException;\n" +
-                        "import java.net.MalformedURLException;\n" +
-                        "public class Test {\n" +
-                        "    {\n" +
-                        "        try {\n" +
-                        "            if (true) throw new java.io.FileNotFoundException();\n" +
-                        "            else      throw new java.net.MalformedURLException();\n" +
-                        "        } catch (FileNotFoundException | MalformedURLException e) {\n" +
-                        "            e.printStackTrace();\n" +
-                        "        }\n" +
-                        "    }\n" +
-                        "}\n").replaceAll("[ \n\t]+", " "));
+                       "}\n")
+                .sourceLevel("1.7")
+                .run(UseSpecificCatch.class)
+                .findWarning("6:17-6:26:verifier:ERR_UseSpecificCatch")
+                .applyFix("FIX_UseSpecificCatch")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "import java.io.FileNotFoundException;\n" +
+                              "import java.net.MalformedURLException;\n" +
+                              "public class Test {\n" +
+                              "    {\n" +
+                              "        try {\n" +
+                              "            if (true) throw new java.io.FileNotFoundException();\n" +
+                              "            else      throw new java.net.MalformedURLException();\n" +
+                              "        } catch (FileNotFoundException | MalformedURLException e) {\n" +
+                              "            e.printStackTrace();\n" +
+                              "        }\n" +
+                              "    }\n" +
+                              "}\n");
     }
 
     public void testHintPosFinally() throws Exception {
-        setSourceLevel("1.7");
-        performFixTest("test/Test.java",
-                       "package test;\n" +
+        HintTest
+                .create()
+                .input("package test;\n" +
                        "public class Test {\n" +
                        "    {\n" +
                        "        try {\n" +
@@ -102,60 +103,63 @@ public class UseSpecificCatchTest extends TestBase {
                        "            System.err.println(1);\n" +
                        "        }\n" +
                        "    }\n" +
-                       "}\n",
-                       "6:23-6:32:verifier:ERR_UseSpecificCatch",
-                       "FIX_UseSpecificCatch",
-                       ("package test;\n" +
-                        "import java.io.FileNotFoundException;\n" +
-                        "import java.net.MalformedURLException;\n" +
-                        "public class Test {\n" +
-                        "    {\n" +
-                        "        try {\n" +
-                        "            if (true) throw new java.io.FileNotFoundException();\n" +
-                        "            else      throw new java.net.MalformedURLException();\n" +
-                        "        } catch (final FileNotFoundException | MalformedURLException e) {\n" +
-                        "            e.printStackTrace();\n" +
-                       "        } finally {\n" +
-                       "            System.err.println(1);\n" +
-                        "        }\n" +
-                        "    }\n" +
-                        "}\n").replaceAll("[ \n\t]+", " "));
+                       "}\n")
+                .sourceLevel("1.7")
+                .run(UseSpecificCatch.class)
+                .findWarning("6:23-6:32:verifier:ERR_UseSpecificCatch")
+                .applyFix("FIX_UseSpecificCatch")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "import java.io.FileNotFoundException;\n" +
+                              "import java.net.MalformedURLException;\n" +
+                              "public class Test {\n" +
+                              "    {\n" +
+                              "        try {\n" +
+                              "            if (true) throw new java.io.FileNotFoundException();\n" +
+                              "            else      throw new java.net.MalformedURLException();\n" +
+                              "        } catch (final FileNotFoundException | MalformedURLException e) {\n" +
+                              "            e.printStackTrace();\n" +
+                              "        } finally {\n" +
+                              "            System.err.println(1);\n" +
+                              "        }\n" +
+                              "    }\n" +
+                              "}\n");
     }
 
     public void testHintNeg() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    {\n" +
-                            "        try {\n" +
-                            "            if (true) throw new java.io.FileNotFoundException();\n" +
-                            "            else      throw new Throwable();\n" +
-                            "        } catch (Throwable e) {\n" +
-                            "            e.printStackTrace();\n" +
-                            "        }\n" +
-                            "    }\n" +
-                            "}\n");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    {\n" +
+                       "        try {\n" +
+                       "            if (true) throw new java.io.FileNotFoundException();\n" +
+                       "            else      throw new Throwable();\n" +
+                       "        } catch (Throwable e) {\n" +
+                       "            e.printStackTrace();\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n")
+                .run(UseSpecificCatch.class)
+                .assertWarnings();
     }
 
     public void testNeg2() throws Exception {
-        setSourceLevel("1.7");
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    {\n" +
-                            "        try {\n" +
-                            "            if (true) throw new java.io.FileNotFoundException();\n" +
-                            "            else      throw new java.net.MalformedURLException();\n" +
-                            "        } catch (Throwable e) {\n" +
-                            "            e = new FileNotFoundException();\n" +
-                            "        }\n" +
-                            "    }\n" +
-                            "}\n");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    {\n" +
+                       "        try {\n" +
+                       "            if (true) throw new java.io.FileNotFoundException();\n" +
+                       "            else      throw new java.net.MalformedURLException();\n" +
+                       "        } catch (Throwable e) {\n" +
+                       "            e = new java.io.FileNotFoundException();\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n")
+                .sourceLevel("1.7")
+                .run(UseSpecificCatch.class)
+                .assertWarnings();
     }
-
-    @Override
-    protected String toDebugString(CompilationInfo info, Fix f) {
-        return f.getText();
-    }
-
 }

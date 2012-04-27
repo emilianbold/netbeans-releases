@@ -213,7 +213,7 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
         }
         breakpoint.removePropertyChangeListener(this);
         setValidity(Breakpoint.VALIDITY.UNKNOWN, null);
-        if (breakpoint instanceof ChangeListener) {
+        if (breakpoint instanceof PropertyChangeListener) {
             Session s = debugger.getSession();
             DebuggerEngine de = s.getEngineForLanguage ("Java");
             ((PropertyChangeListener) breakpoint).propertyChange(new PropertyChangeEvent(this, DebuggerEngine.class.getName(), de, null));

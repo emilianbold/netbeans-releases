@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -56,6 +56,7 @@ import static org.netbeans.installer.utils.StringUtils.BACK_SLASH;
 import static org.netbeans.installer.utils.StringUtils.EMPTY_STRING;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.applications.JavaUtils;
+import org.netbeans.installer.utils.applications.WebLogicUtils;
 import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.exceptions.InstallationException;
 import org.netbeans.installer.utils.exceptions.NativeException;
@@ -120,7 +121,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     final Progress jdkProgress = new Progress();
                     final Progress jreProgress = new Progress();
                     final Progress javadbProgress = new Progress();
-                    final boolean isFullSilentInstaller = isJDK6U15orLater() && !isJDK7(); //workaround for restart issue in jdk installer #7100937
+                    final boolean isFullSilentInstaller = isJDK6U15orLater();
                     //TODO: JavaDB feature is turned off for 64-bit OS
                     final boolean javadbBundled =
                             getProduct().getVersion().newerOrEquals(Version.getVersion("1.6.0"));
@@ -234,13 +235,8 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         }  finally {
             try {
                 FileUtils.deleteFile(installer);
-                FileUtils.deleteFile(new File(location, CAB_INSTALLER_FILE_SJ));
-                FileUtils.deleteFile(new File(location, CAB_INSTALLER_FILE_SS));
-                FileUtils.deleteFile(new File(location, CAB_INSTALLER_FILE_ST));
-                FileUtils.deleteFile(new File(location, CAB_INSTALLER_FILE_SZ));
             } catch (IOException e) {
                 LogManager.log("Cannot delete installer file "+ installer, e);
-                
             }
         }
         
@@ -263,27 +259,6 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         }
     }
 
-
-    private Product getJavaFXSDKProduct() {
-            Registry bundledRegistry = new Registry();
-            try {
-                final String bundledRegistryUri = System.getProperty(
-                        Registry.BUNDLED_PRODUCT_REGISTRY_URI_PROPERTY);
-
-                bundledRegistry.loadProductRegistry(
-                        (bundledRegistryUri != null) ? bundledRegistryUri : Registry.DEFAULT_BUNDLED_PRODUCT_REGISTRY_URI);
-            } catch (InitializationException e) {
-                LogManager.log("Cannot load bundled registry", e);
-            }
-            LogManager.log("... checking if javafxsdk is bundled");
-            final List<Product> fxsdkProducts = bundledRegistry.getProducts("javafxsdk");
-            final Product javafxsdk = (fxsdkProducts.isEmpty())? null : fxsdkProducts.get(0);
-            if(javafxsdk != null) {
-                LogManager.log("javafxsdk status: " + javafxsdk.getStatus() + "; install location: " + javafxsdk.getInstallationLocation());
-            }
-            return javafxsdk;
-    }
-
     private ExecutionResults runJDKInstallerWindows(File location,
             File installer, Progress progress,
             final boolean isFullSilentInstaller,
@@ -297,18 +272,19 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         if(installer.getAbsolutePath().endsWith(".exe")) {
             /////////////////////////for exe////////////////////////////
             LogManager.log("Installing JDK with exe installer");
+            String logPath = logFile.getAbsolutePath();
+            String locationPath = location.getAbsolutePath();
+            if (logPath.contains(" ")) {
+                logPath = convertPathNamesToShort(logPath);
+            }
+            if (locationPath.contains(" ")) {
+                locationPath = convertPathNamesToShort(locationPath);
+            }
             final String loggingOption = (logFile!=null) ?
-                "/log " + BACK_SLASH + QUOTE  + logFile.getAbsolutePath()  + BACK_SLASH + QUOTE +" ":
+                "/log " + BACK_SLASH + QUOTE  +  logPath + BACK_SLASH + QUOTE +" ":
                 EMPTY_STRING;
             String installLocationOption = "/qn /norestart INSTALLDIR=" +
-                    BACK_SLASH + QUOTE + location.getAbsolutePath() + BACK_SLASH + QUOTE;
-            final Product javafxsdk=getJavaFXSDKProduct();
-            if( javafxsdk != null) {
-                LogManager.log("... javafxsdk is found");
-                installLocationOption += " INSTALLDIRFXSDK=" +
-                        BACK_SLASH + QUOTE + javafxsdk.getInstallationLocation().getAbsolutePath() + BACK_SLASH + QUOTE;
-                                        // " INSTALLDIRFXRT=" + BACK_SLASH + QUOTE + javafxsdk.getProperty("javafx.runtime.installation.location") + BACK_SLASH + QUOTE;
-            }
+                    BACK_SLASH + QUOTE + locationPath + BACK_SLASH + QUOTE;
             commands = new String [] {
                 installer.getAbsolutePath(),
                 "/s",
@@ -385,6 +361,27 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         }
     }
     
+    
+    private static String convertPathNamesToShort(String path){
+        File pathConverter = new File(SystemUtils.getTempDirectory(), "pathConverter.cmd");
+        String result = path;
+        List <String> commands = new ArrayList <String> (); 
+        commands.add("@echo off");
+        commands.add("set JPATH=" + path);
+        commands.add("for %%i in (\"%JPATH%\") do set JPATH=%%~fsi");
+        commands.add("echo %JPATH%");
+        try{
+            FileUtils.writeStringList(pathConverter, commands);
+            ExecutionResults res=SystemUtils.executeCommand(pathConverter.getAbsolutePath());        
+            FileUtils.deleteFile(pathConverter);
+            result = res.getStdOut().trim();
+        } catch(IOException ioe) {
+            LogManager.log(ErrorLevel.WARNING, 
+                    "Failed to convert " + path + " to a path with short names only." +
+                     "\n Exception is thrown " + ioe);
+        }
+        return result;
+    }    
     
     private ExecutionResults runJDKInstallerUnix(File location, File installer, Progress progress) throws InstallationException {
         File yesFile = null;
@@ -918,27 +915,6 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         }
         return id;
     }
-
-     private static String convertPathNamesToShort(String path){
-        File pathConverter = new File(SystemUtils.getTempDirectory(), "pathConverter.cmd");
-        String result = path;
-        List <String> commands = new ArrayList <String> ();
-        commands.add("@echo off");
-        commands.add("set JPATH=" + path);
-        commands.add("for %%i in (\"%JPATH%\") do set JPATH=%%~fsi");
-        commands.add("echo %JPATH%");
-        try{
-            FileUtils.writeStringList(pathConverter, commands);
-            ExecutionResults res=SystemUtils.executeCommand(pathConverter.getAbsolutePath());
-            FileUtils.deleteFile(pathConverter);
-            result = res.getStdOut().trim();
-        } catch(IOException ioe) {
-            LogManager.log(ErrorLevel.WARNING,
-                    "Failed to convert " + path + " to a path with short names only." +
-                     "\n Exception is thrown " + ioe);
-        }
-        return result;
-    }
     
     private ExecutionResults runJDKUninstallerWindows(Progress progress, File location) throws UninstallationException {
         ExecutionResults results = null;
@@ -1316,13 +1292,13 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     public static final String JRE_INSTALLER_FILE_NAME =
             "{jre-installer-file}";
     public static final String CAB_INSTALLER_FILE_SJ =
-            "sj170020.cab";
+            "sj170030.cab";
     public static final String CAB_INSTALLER_FILE_SS =
-            "ss170020.cab";
+            "ss170030.cab";
     public static final String CAB_INSTALLER_FILE_ST =
-            "st170020.cab";
+            "st170030.cab";
     public static final String CAB_INSTALLER_FILE_SZ =
-            "sz170020.cab";
+            "sz170030.cab";
     public static final String ERROR_JDK_INSTALL_SCRIPT_RETURN_NONZERO_KEY =
             "CL.error.jdk.installation.return.nonzero";//NOI18N
     public static final String ERROR_JDK_UNINSTALL_SCRIPT_RETURN_NONZERO_KEY =

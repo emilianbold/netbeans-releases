@@ -1,21 +1,3 @@
-#
-#  There exist several targets which are by default empty and which can be 
-#  used for execution of your targets. These targets are usually executed 
-#  before and after some main targets. They are: 
-#
-#     .build-pre:              called before 'build' target
-#     .build-post:             called after 'build' target
-#     .clean-pre:              called before 'clean' target
-#     .clean-post:             called after 'clean' target
-#     .clobber-pre:            called before 'clobber' target
-#     .clobber-post:           called after 'clobber' target
-#     .all-pre:                called before 'all' target
-#     .all-post:               called after 'all' target
-#     .help-pre:                called before 'help' target
-#     .help-post:               called after 'help' target
-#
-#  Targets beginning with '.' are not intended to be called on their own.
-#
 #  Main targets can be executed directly, and they are:
 #  
 #     build                    build a specific configuration
@@ -30,6 +12,7 @@
 # NOCDDL
 
 
+
 # Environment 
 MKDIR=mkdir
 CP=cp
@@ -37,17 +20,23 @@ CCADMIN=CCadmin
 RANLIB=ranlib
 
 
+
 # build
 build: .build-post
 
-.build-pre: app.res
+.build-pre: .build-pre-$(CONF)
 # Add your pre 'build' code here...
 
-.build-post: .build-impl
-# Add your post 'build' code here...
+.build-pre-app.exe: app.rc
+	windres -oapp.res -Ocoff app.rc
 
-app.res : app.rc
-	windres -o$@ -Ocoff app.rc
+.build-pre-app64.exe: app.rc
+	x86_64-w64-mingw32-windres.exe -oapp64.res -Ocoff app.rc
+
+.build-post: .build-impl
+# Add your post 'build' code here...	
+
+
 
 # clean
 clean: .clean-post
@@ -57,6 +46,7 @@ clean: .clean-post
 
 .clean-post: .clean-impl
 # Add your post 'clean' code here...
+
 
 
 # clobber
@@ -69,6 +59,7 @@ clobber: .clobber-post
 # Add your post 'clobber' code here...
 
 
+
 # all
 all: .all-post
 
@@ -77,6 +68,7 @@ all: .all-post
 
 .all-post: .all-impl
 # Add your post 'all' code here...
+
 
 
 # help

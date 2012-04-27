@@ -49,7 +49,9 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages/>
+            <public-packages>
+                <package>org.netbeans.modules.java.hints.declarative.test.api</package>
+            </public-packages>
         </data>
     </configuration>
 </project>

@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.uihandler;
 
+import java.util.Random;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -60,6 +61,8 @@ public class MetricsHandler extends Handler {
     private static RequestProcessor FLUSH = new RequestProcessor("Flush Metrics Logs"); // NOI18N
     private static boolean flushOnRecord;
     static final int MAX_LOGS = 400;
+    /** Maximum number of days, after which we send the report. 40 days ± one week.*/
+    static final int MAX_DAYS = 33 + new Random(System.currentTimeMillis()).nextInt(14);
     /** Maximum allowed size of backup log file 10MB */
     static final long MAX_LOGS_SIZE = 10L * 1024L * 1024L;
     

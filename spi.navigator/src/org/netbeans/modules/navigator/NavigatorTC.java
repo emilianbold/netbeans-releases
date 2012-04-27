@@ -150,6 +150,11 @@ public final class NavigatorTC extends TopComponent implements NavigatorDisplaye
         }
     }
 
+    @Override
+    public String getShortName() {
+        return NbBundle.getMessage(NavigatorTC.class, "LBL_Navigator"); //NOI18N
+    }
+
     /** Singleton accessor, finds instance in winsys structures */
     public static final NavigatorTC getInstance () {
         NavigatorTC navTC = (NavigatorTC)WindowManager.getDefault().
@@ -330,7 +335,20 @@ public final class NavigatorTC extends TopComponent implements NavigatorDisplaye
         }
         return controller;
     }
-    
+
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        getController().makeActive(true);
+    }
+
+    @Override
+    public void removeNotify() {
+        getController().makeActive(false);
+        super.removeNotify();
+    }
+
+
     
     /*************** private stuff ************/
     

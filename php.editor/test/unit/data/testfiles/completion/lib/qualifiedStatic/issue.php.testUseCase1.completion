@@ -1,0 +1,5 @@
+Code completion result for source line:
+Utils\Strings::|trim();
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+METHOD     trim()                          [STATIC]   \Nette\Utils\Strings

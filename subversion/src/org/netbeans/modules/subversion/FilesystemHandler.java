@@ -46,7 +46,6 @@ package org.netbeans.modules.subversion;
 
 import java.awt.EventQueue;
 import java.util.Map.Entry;
-import javax.swing.SwingUtilities;
 import org.netbeans.modules.versioning.util.FileUtils;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.subversion.client.SvnClient;
@@ -292,9 +291,6 @@ class FilesystemHandler extends VCSInterceptor {
     @Override
     public void doMove(final File from, final File to) throws IOException {
         Subversion.LOG.log(Level.FINE, "doMove {0} -> {1}", new Object[]{from, to});
-        if (SwingUtilities.isEventDispatchThread()) {
-            Subversion.LOG.log(Level.INFO, "Warning: launching external process in AWT", new Exception().fillInStackTrace());
-        }
         svnMoveImplementation(from, to);
     }
 
@@ -351,9 +347,6 @@ class FilesystemHandler extends VCSInterceptor {
     @Override
     public void doCopy(final File from, final File to) throws IOException {
         Subversion.LOG.log(Level.FINE, "doCopy {0} -> {1}", new Object[]{from, to});
-        if (SwingUtilities.isEventDispatchThread()) {
-            Subversion.LOG.log(Level.INFO, "Warning: launching external process in AWT", new Exception().fillInStackTrace());
-        }
         svnCopyImplementation(from, to);
     }
 
@@ -697,7 +690,7 @@ class FilesystemHandler extends VCSInterceptor {
             return true;
         }
         try {
-            SVNStatusKind statusKind = Subversion.getInstance().getClient(false).getSingleStatus(file).getTextStatus();
+            SVNStatusKind statusKind = SvnUtils.getSingleStatus(Subversion.getInstance().getClient(false), file).getTextStatus();
             return statusKind != SVNStatusKind.UNVERSIONED && statusKind != SVNStatusKind.IGNORED;
         } catch (SVNClientException ex) {
             return false;
@@ -802,7 +795,7 @@ class FilesystemHandler extends VCSInterceptor {
 
                     // store all from-s children -> they also have to be refreshed in after move
                     List<File> srcChildren = null;
-                    SVNUrl url = status != null ? status.getUrlCopiedFrom() : null;
+                    SVNUrl url = status != null && status.isCopied() ? getCopiedUrl(client, from) : null;
                     SVNUrl toUrl = toStatus != null ? toStatus.getUrl() : null;
                     try {
                         srcChildren = SvnUtils.listRecursively(from);
@@ -816,8 +809,10 @@ class FilesystemHandler extends VCSInterceptor {
                             // check if the file wasn't just deleted in this session
                             revertDeleted(client, toStatus, to, true);
 
-                            client.revert(from, true);
                             moved = from.renameTo(to);
+                            if (moved) {
+                                client.revert(from, true);
+                            }
                         } else if (status != null && (status.getTextStatus().equals(SVNStatusKind.UNVERSIONED)
                                 || status.getTextStatus().equals(SVNStatusKind.IGNORED))) { // ignored file CAN'T be moved via svn
                             // check if the file wasn't just deleted in this session
@@ -849,16 +844,21 @@ class FilesystemHandler extends VCSInterceptor {
                                     }
                                 }
                             } else {
+                                boolean remove = false;
                                 if (from.isDirectory()) {
                                     // tree should be moved separately, otherwise the metadata from the source WC will be copied too
                                     moveFolderToDifferentRepository(from, to);
+                                    remove = true;
                                 } else if (from.renameTo(to)) {
-                                    client.remove(new File[] {from}, force);
-                                    Subversion.LOG.log(Level.FINE, FilesystemHandler.class.getName()
-                                            + ": moving between different repositories {0} to {1}", new Object[] {from, to});
+                                    remove = true;
                                 } else {
                                     Subversion.LOG.log(Level.WARNING, FilesystemHandler.class.getName()
                                             + ": cannot rename {0} to {1}", new Object[] {from, to});
+                                }
+                                if (remove) {
+                                    client.remove(new File[] {from}, force);
+                                    Subversion.LOG.log(Level.FINE, FilesystemHandler.class.getName()
+                                            + ": moving between different repositories {0} to {1}", new Object[] {from, to});
                                 }
                             }
                         }
@@ -936,7 +936,7 @@ class FilesystemHandler extends VCSInterceptor {
     private static ISVNStatus getStatus(SvnClient client, File file) throws SVNClientException {
         // a direct cache call could, because of the synchrone beforeCreate handling,
         // trigger an reentrant call on FS => we have to check manually
-        return client.getSingleStatus(file);
+        return SvnUtils.getSingleStatus(client, file);
     }
 
     private boolean equals(ISVNStatus status, SVNStatusKind kind) {
@@ -971,7 +971,7 @@ class FilesystemHandler extends VCSInterceptor {
                             }
                         }
                         if (hasPropSet) {
-                            ISVNStatus status = client.getSingleStatus(file);
+                            ISVNStatus status = SvnUtils.getSingleStatus(client, file);
                             // ... are not just added - lock does not make sense since the file is not in repo yet
                             if (status != null && status.getTextStatus() != SVNStatusKind.ADDED) {
                                 SVNUrl url = SvnUtils.getRepositoryRootUrl(file);
@@ -1006,6 +1006,21 @@ class FilesystemHandler extends VCSInterceptor {
                 outsideAWT.run();
             }
         }
+    }
+
+    private SVNUrl getCopiedUrl (SvnClient client, File f) {
+        try {
+            ISVNInfo info = SvnUtils.getInfoFromWorkingCopy(client, f);
+            if (info != null) {
+                return info.getCopyUrl();
+            }
+        } catch (SVNClientException e) {
+            // at least log the exception
+            if (!WorkingCopyAttributesCache.getInstance().isSuppressed(e)) {
+                Subversion.LOG.log(Level.INFO, null, e);
+            }
+        }
+        return null;
     }
 
 }

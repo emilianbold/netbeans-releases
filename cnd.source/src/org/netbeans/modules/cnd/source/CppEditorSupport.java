@@ -51,22 +51,30 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
 import java.nio.charset.Charset;
+import java.util.Collection;
+import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultEditorKit;
+import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
+import org.netbeans.api.lexer.InputAttributes;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.cnd.api.lexer.CndLexerUtilities;
+import org.netbeans.cnd.api.lexer.CppTokenId;
+import org.netbeans.cnd.api.lexer.Filter;
+import org.netbeans.cnd.api.lexer.FortranTokenId;
 import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.modules.cnd.source.spi.CndPaneProvider;
-
+import org.netbeans.modules.cnd.source.spi.CndSourcePropertiesProvider;
 import org.netbeans.modules.cnd.support.ReadOnlySupport;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.spi.editor.guards.GuardedEditorSupport;
 import org.netbeans.spi.editor.guards.GuardedSectionsFactory;
 import org.netbeans.spi.editor.guards.GuardedSectionsProvider;
 import org.openide.awt.UndoRedo;
-import org.openide.loaders.DataObject;
-
 import org.openide.cookies.CloseCookie;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
@@ -75,12 +83,15 @@ import org.openide.cookies.PrintCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.DataEditorSupport;
 import org.openide.util.Lookup;
+import org.openide.util.Task;
 import org.openide.util.lookup.InstanceContent;
+import org.openide.util.lookup.Lookups;
 import org.openide.windows.CloneableOpenSupport;
 
 /**
@@ -203,7 +214,7 @@ public class CppEditorSupport extends DataEditorSupport implements EditCookie,
             }
             in.close();
         }
-        GuardedSectionsProvider guardedProvider = getGuardedSectionsProvider(doc);
+        GuardedSectionsProvider guardedProvider = getGuardedSectionsProvider(doc, kit);
         if (guardedProvider == null) {
             super.loadFromStreamToKit(doc, stream, kit);
         } else {
@@ -222,7 +233,7 @@ public class CppEditorSupport extends DataEditorSupport implements EditCookie,
 
     @Override
     protected void saveFromKitToStream(StyledDocument doc, EditorKit kit, OutputStream stream) throws IOException, BadLocationException {
-        GuardedSectionsProvider guardedProvider = getGuardedSectionsProvider(doc);
+        GuardedSectionsProvider guardedProvider = getGuardedSectionsProvider(doc, kit);
         if (guardedProvider != null) {
             Charset cs = FileEncodingQuery.getEncoding(this.getDataObject().getPrimaryFile());
             Writer writer = guardedProvider.createGuardedWriter(stream, cs);
@@ -236,6 +247,60 @@ public class CppEditorSupport extends DataEditorSupport implements EditCookie,
         }
     }
 
+    private static final String EXTRA_DOCUMENT_PROPERTIES = "EXTRA_DOCUMENT_PROPERTIES"; // NOI18N
+    private StyledDocument setupSlowDocumentProperties(StyledDocument doc) {
+        assert !SwingUtilities.isEventDispatchThread();
+        if (doc != null && !Boolean.TRUE.equals(doc.getProperty(EXTRA_DOCUMENT_PROPERTIES))) {
+            // setup language flavor lexing attributes 
+            Language<?> language = (Language<?>) doc.getProperty(Language.class);
+            assert language != null : "no language for " + doc;
+            if (language != null) {
+                InputAttributes lexerAttrs = (InputAttributes)doc.getProperty(InputAttributes.class);
+                assert lexerAttrs != null : "no language attributes for " + doc;
+                if (lexerAttrs == null) {
+                    lexerAttrs = new InputAttributes();
+                    doc.putProperty(InputAttributes.class, lexerAttrs);
+                }
+                Filter<?> filter = getDefaultFilter(language, doc);
+                assert filter != null : "no language filter for " + doc + " with language " + language;
+                if (filter != null) {
+                    lexerAttrs.setValue(language, CndLexerUtilities.LEXER_FILTER, filter, true);  // NOI18N
+                }
+            }
+            // try to setup document's extra properties during non-EDT load if needed
+            PropertiesProviders.addProperty(getDataObject(), doc);
+            doc.putProperty(EXTRA_DOCUMENT_PROPERTIES, Boolean.TRUE);
+        }
+        return doc;
+    }
+
+    private final static class PropertiesProviders {
+
+        private final static Collection<? extends CndSourcePropertiesProvider> providers = Lookups.forPath(CndSourcePropertiesProvider.REGISTRATION_PATH).lookupAll(CndSourcePropertiesProvider.class);
+
+        static void addProperty(DataObject dobj, StyledDocument doc) {
+            assert !SwingUtilities.isEventDispatchThread();
+            for (CndSourcePropertiesProvider provider : providers) {
+                provider.addProperty(dobj, doc);
+            }
+        }
+    }
+
+    private static Filter<?> getDefaultFilter(Language<?> language, Document doc) {
+        if (language == CppTokenId.languageHeader()) {
+            return CndLexerUtilities.getHeaderFilter();
+        } else if (language == CppTokenId.languageC()) {
+            return CndLexerUtilities.getGccCFilter();
+        } else if (language == CppTokenId.languagePreproc()) {
+            return CndLexerUtilities.getPreprocFilter();
+        } else if (language == FortranTokenId.languageFortran()) {
+            return CndLexerUtilities.getFortranFilter();
+        } else if (language == CppTokenId.languageCpp()) {
+            return CndLexerUtilities.getGccCppFilter();
+        }
+        return null;
+    }
+
     private static class GuardedEditorSupportImpl implements GuardedEditorSupport {
         private final StyledDocument doc;
         public GuardedEditorSupportImpl(StyledDocument doc) {
@@ -247,15 +312,15 @@ public class CppEditorSupport extends DataEditorSupport implements EditCookie,
         }
     }
     
-    private GuardedSectionsProvider getGuardedSectionsProvider(final StyledDocument doc) {
+    private GuardedSectionsProvider getGuardedSectionsProvider(final StyledDocument doc, EditorKit kit) {
         Object o = doc.getProperty(GuardedSectionsProvider.class);
         if (o instanceof GuardedSectionsProvider) {
             return (GuardedSectionsProvider) o;
         }        
-        DataObject dataObject = getDataObject();
-        if (dataObject != null) {
-            FileObject fo = dataObject.getPrimaryFile();
-            GuardedSectionsFactory gsf = GuardedSectionsFactory.find(dataObject.getPrimaryFile().getMIMEType());
+        String mimeType = kit.getContentType();
+        CndUtils.assertTrueInConsole(mimeType != null, "unexpected null content type"); // NOI18N
+        if (mimeType != null) {
+            GuardedSectionsFactory gsf = GuardedSectionsFactory.find(mimeType);
             if (gsf != null) {
                 GuardedSectionsProvider gsp = gsf.create(new GuardedEditorSupportImpl(doc));
                 doc.putProperty(GuardedSectionsProvider.class, gsp);
@@ -290,8 +355,25 @@ public class CppEditorSupport extends DataEditorSupport implements EditCookie,
         }
         return (CloneableEditorSupport.Pane) MultiViews.createCloneableMultiView(getDataObject().getPrimaryFile().getMIMEType(), getDataObject());
     }
-    
-    
+
+    @Override
+    protected StyledDocument createStyledDocument(EditorKit kit) {
+        StyledDocument doc = super.createStyledDocument(kit);
+        if (!SwingUtilities.isEventDispatchThread()) {
+            setupSlowDocumentProperties(doc);
+        }
+        return doc;
+    }
+
+    @Override
+    public Task prepareDocument() {
+        Task task = super.prepareDocument();
+        if (!SwingUtilities.isEventDispatchThread()) {
+            setupSlowDocumentProperties(super.getDocument());
+        }
+        return task;
+    }
+
     /** Nested class. Environment for this support. Extends <code>DataEditorSupport.Env</code> abstract class. */
     private static class Environment extends DataEditorSupport.Env {
 

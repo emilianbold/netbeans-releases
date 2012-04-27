@@ -73,8 +73,8 @@ import org.openide.nodes.Node;
  */
 public class BackoutAction extends ContextAction {
     
-    private static final String HG_BACKOUT_REVISION_REPLACE = "\\{revision}";
-    public static final String HG_BACKOUT_REVISION = " {revision}";
+    private static final String HG_BACKOUT_REVISION_REPLACE = "\\{revision}"; //NOI18N
+    static final String HG_BACKOUT_REVISION = "{revision}"; //NOI18N
     private static String HG_TIP = "tip"; // NOI18N
             
     @Override

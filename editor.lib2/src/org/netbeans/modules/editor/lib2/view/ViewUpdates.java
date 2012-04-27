@@ -204,9 +204,7 @@ public final class ViewUpdates implements DocumentListener, EditorViewFactoryLis
             ViewBuilder viewBuilder = startBuildViews();
             boolean noException = false;
             try {
-                viewBuilder.initParagraphs(startIndex, endIndex,
-                        docView.getParagraphView(startIndex).getStartOffset(),
-                        docView.getParagraphView(endIndex - 1).getEndOffset());
+                viewBuilder.initParagraphs(startIndex, endIndex);
                 boolean replaceSuccessful = viewBuilder.createReplaceRepaintViews(i == 0);
                 noException = true;
                 if (replaceSuccessful) {
@@ -415,7 +413,10 @@ public final class ViewUpdates implements DocumentListener, EditorViewFactoryLis
                                 break; // Creation finished successfully
                             } else {
                                 // There could be additional changes in the meantime
-                                pRegion = pRegion.union(fetchParagraphRebuildRegion(), true);
+                                OffsetRegion newPRegion = fetchParagraphRebuildRegion();
+                                if (newPRegion != null) {
+                                    pRegion = pRegion.union(newPRegion, true);
+                                }
                             }
                         }
                         noException = true;

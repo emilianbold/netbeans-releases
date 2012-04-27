@@ -235,4 +235,22 @@ public final class JavaActionsImplementationFactory {
             }
         }
     }
+    
+    public static boolean canIntroduceLocalExtension(Lookup lookup) {
+        for (JavaActionsImplementationProvider rafi: implementations.allInstances()) {
+            if (rafi.canIntroduceLocalExtension(lookup)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public static void doIntroduceLocalExtension(Lookup lookup) {
+        for (JavaActionsImplementationProvider rafi: implementations.allInstances()) {
+            if (rafi.canIntroduceLocalExtension(lookup)) {
+                rafi.doIntroduceLocalExtension(lookup);
+                return;
+            }
+        }
+    }
 }

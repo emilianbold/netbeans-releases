@@ -47,6 +47,8 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.Collections;
+import java.util.List;
 import org.netbeans.modules.php.api.phpmodule.BadgeIcon;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
@@ -271,20 +273,20 @@ public abstract class PhpFrameworkProvider {
     public abstract EditorExtender getEditorExtender(PhpModule phpModule);
 
     /**
-     * Get a {@link PhpAnnotationsProvider annotations provider} for this framework
+     * Get list of {@link PhpAnnotationsProvider annotations providers} for this framework
      * and the given PHP module.
      * <p>
      * This method is called only for PHP modules with this framework present.
      * <p>
-     * The default implementation returns {@code null}.
+     * The default implementation returns empty list.
      *
      * @param  phpModule the PHP module for which annotations provider is to be gotten
-     * @return annotations provider, can be <code>null</code> if the framework doesn't provide
+     * @return list of annotations providers, never <code>null</code>; empty list if the framework doesn't provide
      *         any PHP annotations
-     * @since 1.63
+     * @since 1.65
      */
-    public PhpAnnotationsProvider getAnnotationsProvider(PhpModule phpModule) {
-        return null;
+    public List<PhpAnnotationsProvider> getAnnotationsProviders(PhpModule phpModule) {
+        return Collections.emptyList();
     }
 
     /**

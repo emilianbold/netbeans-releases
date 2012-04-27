@@ -296,11 +296,12 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
             resultsPanel.repaint();
         }
         updateActions();
+        fileInfoCheckBox.setEnabled(tbSummary.isSelected());
 
         searchCriteriaPanel.setVisible(criteriaVisible);
         expandCriteriaButton.setIcon(criteriaVisible ? ICON_EXPANDED : ICON_COLLAPSED);
         if (criteria.getLimit() <= 0) {
-            criteria.setLimit(SearchExecutor.DEFAULT_LIMIT);
+            criteria.setLimit(SearchExecutor.UNLIMITTED);
         }
         enableFilters(results != null);
         revalidate();

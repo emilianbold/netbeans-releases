@@ -54,9 +54,10 @@ public class NbRepositoryClasspathTest extends NbTestCase {
      */
     public void testNbRepositoryInitializedFromClasspath() throws Exception {
         MockLookup.setInstances();
-        assertNotNull(FileUtil.getConfigFile("Services/MIMEResolver/instance-mime-resolver.xml"));
+        final String PATH = "Services/MIMEResolver/org-netbeans-core-startup-layers-SystemFileSystem-Extension.xml";
+        assertNotNull(FileUtil.getConfigFile(PATH));
         MockLookup.setInstances(new XMLFileSystem()); // #200848
-        assertNotNull(FileUtil.getConfigFile("Services/MIMEResolver/instance-mime-resolver.xml"));
+        assertNotNull(FileUtil.getConfigFile(PATH));
     }
 
 }

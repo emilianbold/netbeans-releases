@@ -247,7 +247,6 @@ public class MappingOptionsPanel extends javax.swing.JPanel {
         add(relationshipColumnNamesCheckBox, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(defaultsCheckBox, org.openide.util.NbBundle.getMessage(MappingOptionsPanel.class, "MappingOptionsPanel.defaultsCheckBox.text_1")); // NOI18N
-        defaultsCheckBox.setLabel(org.openide.util.NbBundle.getMessage(MappingOptionsPanel.class, "MappingOptionsPanel.defaultsCheckBox.label")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
@@ -257,7 +256,6 @@ public class MappingOptionsPanel extends javax.swing.JPanel {
         add(defaultsCheckBox, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(relationshipsUnresolvedCheckBox, org.openide.util.NbBundle.getMessage(MappingOptionsPanel.class, "MappingOptionsPanel.relationshipsUnresolvedCheckBox.text_1")); // NOI18N
-        relationshipsUnresolvedCheckBox.setLabel(org.openide.util.NbBundle.getMessage(MappingOptionsPanel.class, "MappingOptionsPanel.relationshipsUnresolvedCheckBox.label")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 7;

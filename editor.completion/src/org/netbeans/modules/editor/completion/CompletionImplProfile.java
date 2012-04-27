@@ -43,15 +43,11 @@
  */
 package org.netbeans.modules.editor.completion;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.Action;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.netbeans.modules.sampler.Sampler;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
@@ -59,27 +55,18 @@ final class CompletionImplProfile {
     private static final Logger LOG = Logger.getLogger(CompletionImplProfile.class.getName());
     static final RequestProcessor RP = new RequestProcessor("Completion Slowness"); // NOI18N
 
-    private final Object profiler;
+    private final Sampler profiler;
     private boolean profiling;
     private final long time;
 
     CompletionImplProfile(long when) {
         time = when;
 
-        Object p = null;
-        FileObject fo = FileUtil.getConfigFile("Actions/Profile/org-netbeans-modules-profiler-actions-SelfSamplerAction.instance"); // NOI18N
-        if (fo != null) {
-            Action a = (Action) fo.getAttribute("delegate"); // NOI18N
-            if (a != null) {
-                p = a.getValue("logger-completion"); // NOI18N
-            }
-        }
-        this.profiler = p;
+        this.profiler = Sampler.createSampler("completion");  // NOI18N
         this.profiling = true;
         
-        if (profiler instanceof Runnable) {
-            Runnable r = (Runnable) profiler;
-            r.run();
+        if (profiler != null) {
+            profiler.start();
             LOG.log(Level.FINE, "Profiling started {0} at {1}", new Object[] { profiler, time });
         }
     }
@@ -106,12 +93,11 @@ final class CompletionImplProfile {
     private void stopImpl(long now) throws Exception {
         long delta = now - time;
         LOG.log(Level.FINE, "Profiling stopped at {0}", now);
-        ActionListener ss = (ActionListener) profiler;
         int report = Integer.getInteger("org.netbeans.modules.editor.completion.slowness.report", 2000); // NOI18N
         if (delta < report) {
-            LOG.log(Level.FINE, "Cancel profiling of {0}. Profiling {1}. Time {2} ms.", new Object[] { ss, profiling, delta });
-            if (ss != null) {
-                ss.actionPerformed(new ActionEvent(this, 0, "cancel"));
+            LOG.log(Level.FINE, "Cancel profiling of {0}. Profiling {1}. Time {2} ms.", new Object[] { profiler, profiling, delta });
+            if (profiler != null) {
+                profiler.cancel();
             }
             return;
         }
@@ -119,8 +105,8 @@ final class CompletionImplProfile {
             LOG.log(Level.FINE, "Obtaining snapshot for {0} ms.", delta);
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             DataOutputStream dos = new DataOutputStream(out);
-            if (ss != null) {
-                ss.actionPerformed(new ActionEvent(dos, 0, "write")); // NOI18N
+            if (profiler != null) {
+                profiler.stopAndWriteTo(dos);
             }
             dos.close();
             if (dos.size() > 0) {

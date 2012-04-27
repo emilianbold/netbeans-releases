@@ -49,11 +49,13 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import java.beans.PropertyVetoException;
 import java.io.File;
@@ -65,6 +67,7 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.prefs.Preferences;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -78,12 +81,19 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
+import javax.swing.JEditorPane;
+
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.JavaDataLoader;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.Repository;
+import org.openide.util.SharedClassObject;
 
 /**
  *
@@ -97,7 +107,9 @@ public class GeneratorUtilitiesTest extends NbTestCase {
 
     @Override
     protected void setUp() throws Exception {
-        SourceUtilsTestUtil.prepareTest(new String[0], new Object[0]);
+        SharedClassObject loader = JavaDataLoader.findObject(JavaDataLoader.class, true);
+        SourceUtilsTestUtil.prepareTest(new String[]{"org/netbeans/modules/java/source/resources/layer.xml"}, new Object[]{loader/*, cpp*/});
+        JEditorPane.registerEditorKitForContentType("text/x-java", "org.netbeans.modules.editor.java.JavaKit");
     }
 
     private void writeIntoFile(FileObject file, String what) throws Exception {
@@ -453,6 +465,8 @@ public class GeneratorUtilitiesTest extends NbTestCase {
     }
 
     public void testAddImports5() throws Exception {
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+        preferences.putBoolean("allowConvertToStarImport", true);
         performTest("package test;\nimport java.util.AbstractList;\nimport java.util.ArrayList;\nimport java.util.List;\nimport java.util.Vector;\npublic class Test { }\n", "1.5", new AddImportsTask("java.util.Collection"), new Validator() {
             public void validate(CompilationInfo info) {
                 assertEquals(0, info.getDiagnostics().size());
@@ -461,9 +475,12 @@ public class GeneratorUtilitiesTest extends NbTestCase {
                 assertEquals("java.util.*", imports.get(0).getQualifiedIdentifier().toString());
             }
         }, false);
+        preferences.putBoolean("allowConvertToStarImport", false);
     }
 
     public void testAddImports6() throws Exception {
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+        preferences.putBoolean("allowConvertToStarImport", true);
         performTest("package test;\nimport java.util.AbstractList;\nimport java.util.ArrayList;\nimport java.util.List;\nimport java.util.Vector;\npublic class Test { }\n", "1.5", new AddImportsTask("java.util.Collection"), new Validator() {
             public void validate(CompilationInfo info) {
                 assertEquals(0, info.getDiagnostics().size());
@@ -472,6 +489,7 @@ public class GeneratorUtilitiesTest extends NbTestCase {
                 assertEquals("java.util.*", imports.get(0).getQualifiedIdentifier().toString());
             }
         }, false);
+        preferences.putBoolean("allowConvertToStarImport", false);
     }
 
     public void testAddImports7() throws Exception {
@@ -500,6 +518,8 @@ public class GeneratorUtilitiesTest extends NbTestCase {
     }
 
     public void testAddImports9() throws Exception {
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+        preferences.putBoolean("allowConvertToStarImport", true);
         performTest("package test;\nimport java.awt.*;\nimport java.util.List;\npublic class Test {\nprivate void op(List list) {\nint size = list.size();\n}\n}\n", "1.5", new AddImportsTask("java.util.AbstractList", "java.util.ArrayList", "java.util.Collection", "java.util.Collections"), new Validator() {
             public void validate(CompilationInfo info) {
                 assertEquals(0, info.getDiagnostics().size());
@@ -510,9 +530,12 @@ public class GeneratorUtilitiesTest extends NbTestCase {
                 assertEquals("java.util.List", imports.get(2).getQualifiedIdentifier().toString());
             }
         }, false);
+        preferences.putBoolean("allowConvertToStarImport", false);
     }
 
     public void testAddImports9a() throws Exception {
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+        preferences.putBoolean("allowConvertToStarImport", true);
         performTest("package test;\npublic class Test {\nprivate void op(List list) {\nint size = list.size();\n}\n}\n", "1.5", new AddImportsTask("java.util.AbstractList", "java.util.ArrayList", "java.util.Collection", "java.util.Collections", "java.util.List", "java.awt.Component", "java.awt.Container", "java.awt.Dialog", "java.awt.Graphics", "java.awt.Menu"), new Validator() {
             public void validate(CompilationInfo info) {
                 assertEquals(0, info.getDiagnostics().size());
@@ -523,9 +546,12 @@ public class GeneratorUtilitiesTest extends NbTestCase {
                 assertEquals("java.util.List", imports.get(2).getQualifiedIdentifier().toString());
             }
         }, false);
+        preferences.putBoolean("allowConvertToStarImport", false);
     }
 
     public void testAddImports10() throws Exception {
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+        preferences.putBoolean("allowConvertToStaticStarImport", true);
         performTest("package test;\nimport static java.lang.Math.max;\npublic class Test { }\n", "1.5", new AddImportsTask("java.lang.Math.abs", "java.lang.Math.min"), new Validator() {
             public void validate(CompilationInfo info) {
                 assertEquals(0, info.getDiagnostics().size());
@@ -535,6 +561,7 @@ public class GeneratorUtilitiesTest extends NbTestCase {
                 assertTrue(imports.get(0).isStatic());
             }
         }, false);
+        preferences.putBoolean("allowConvertToStaticStarImport", false);
     }
 
     public void testAddImports11() throws Exception {
@@ -1155,13 +1182,17 @@ public class GeneratorUtilitiesTest extends NbTestCase {
     }
 
     private void performTest(String sourceCode, String sourceLevel, final Task<WorkingCopy> task, final Validator validator, final boolean requireNoErrors) throws Exception {
+        performTest("test/Test.java", sourceCode, sourceLevel, task, validator, requireNoErrors);
+    }
+
+    private void performTest(String filePath, String sourceCode, String sourceLevel, final Task<WorkingCopy> task, final Validator validator, final boolean requireNoErrors) throws Exception {
         FileObject root = makeScratchDir(this);
 
         FileObject sourceDir = root.createFolder("src");
         FileObject buildDir = root.createFolder("build");
         FileObject cacheDir = root.createFolder("cache");
 
-        FileObject source = sourceDir.createFolder("test").createData("Test.java");
+        FileObject source = FileUtil.createData(sourceDir, filePath);
 
         writeIntoFile(source, sourceCode);
 
@@ -1178,8 +1209,6 @@ public class GeneratorUtilitiesTest extends NbTestCase {
             public void cancel() {
             }
             public void run(CompilationController controller) throws Exception {
-                System.err.println("text:");
-                System.err.println(controller.getText());
                 controller.toPhase(JavaSource.Phase.RESOLVED);
 
                 if (requireNoErrors) {
@@ -1339,4 +1368,104 @@ public class GeneratorUtilitiesTest extends NbTestCase {
                         "}\n";
         assertEquals(golden, actual);
     }
+
+    public void testAddAnnotationAttributeValue1() throws Exception {
+        performTest("package test;\npublic class Test { }\n",
+                    new AddAnnotationAttributeValue("java.lang.SuppressWarnings", "value", "\"foobar\""),
+                    new ContentValidator("package test;\n@SuppressWarnings(\"foobar\")\npublic class Test { }\n"));
+    }
+
+    public void testAddAnnotationAttributeValue2() throws Exception {
+        performTest("package test;\n@SuppressWarnings(\"w\")\npublic class Test { }\n",
+                    new AddAnnotationAttributeValue("java.lang.SuppressWarnings", "value", "\"foobar\""),
+                    new ContentValidator("package test;\n@SuppressWarnings({\"w\", \"foobar\"})\npublic class Test { }\n"));
+    }
+
+    public void testAddAnnotationAttributeValue3() throws Exception {
+        performTest("package test;\n@SuppressWarnings({\"w1\", \"w2\"})\npublic class Test { }\n",
+                    new AddAnnotationAttributeValue("java.lang.SuppressWarnings", "value", "\"foobar\""),
+                    new ContentValidator("package test;\n@SuppressWarnings({\"w1\", \"w2\", \"foobar\"})\npublic class Test { }\n"));
+    }
+
+    public void testAddAnnotationAttributeValue4() throws Exception {
+        performTest("package test;\npublic class Test { }\n",
+                    new AddAnnotationAttributeValue("java.lang.SuppressWarnings", "value", "\"foo\"", "\"bar\""),
+                    new ContentValidator("package test;\n@SuppressWarnings({\"foo\", \"bar\"})\npublic class Test { }\n"));
+    }
+
+    public void testAddAnnotationAttributeValue5() throws Exception {
+        performTest("package test;\n@SuppressWarnings({\"w1\", \"w2\"})\npublic class Test { }\n",
+                    new AddAnnotationAttributeValue("java.lang.SuppressWarnings", "value", "\"foo\"", "\"bar\""),
+                    new ContentValidator("package test;\n@SuppressWarnings({\"w1\", \"w2\", \"foo\", \"bar\"})\npublic class Test { }\n"));
+    }
+
+    public void testAddAnnotationAttributeValueCompilationUnit() throws Exception {
+        performTest("test/package-info.java",
+                    "package test;\n",
+                    "1.5",
+                    new AddAnnotationAttributeValue("java.lang.SuppressWarnings", "value", "\"foo\"", "\"bar\""),
+                    new ContentValidator("@SuppressWarnings({\"foo\", \"bar\"})\npackage test;\n"),
+                    false);//@SuppressWarning is not application to package-info.
+    }
+
+    private static final class AddAnnotationAttributeValue implements Task<WorkingCopy> {
+
+        private final String annotationType;
+        private final String attributeName;
+        private final String[] values;
+
+        public AddAnnotationAttributeValue(String annotationType, String attributeName, String... values) {
+            this.annotationType = annotationType;
+            this.attributeName = attributeName;
+            this.values = values;
+        }
+
+        @Override
+        public void run(WorkingCopy parameter) throws Exception {
+            parameter.toPhase(Phase.RESOLVED);
+
+            if ("package-info.java".equals(parameter.getFileObject().getNameExt())) {
+                CompilationUnitTree newCUT = parameter.getCompilationUnit();
+                TypeElement annotation = parameter.getElements().getTypeElement(annotationType);
+
+                assertNotNull(annotation);
+
+                for (int i = 0; i < values.length; i++) {
+                    ExpressionTree value = parameter.getTreeUtilities().parseExpression(values[i], new SourcePositions[1]);
+                    newCUT = GeneratorUtilities.get(parameter).appendToAnnotationValue(newCUT, annotation, attributeName, value);
+                }
+
+                parameter.rewrite(parameter.getCompilationUnit(), newCUT);
+            } else {
+                ClassTree ct = (ClassTree) parameter.getCompilationUnit().getTypeDecls().get(0);
+                ModifiersTree newMods = ct.getModifiers();
+                TypeElement annotation = parameter.getElements().getTypeElement(annotationType);
+
+                assertNotNull(annotation);
+
+                for (int i = 0; i < values.length; i++) {
+                    ExpressionTree value = parameter.getTreeUtilities().parseExpression(values[i], new SourcePositions[1]);
+                    newMods = GeneratorUtilities.get(parameter).appendToAnnotationValue(newMods, annotation, attributeName, value);
+                }
+
+                parameter.rewrite(ct.getModifiers(), newMods);
+            }
+        }
+    }
+
+    private static final class ContentValidator implements Validator {
+
+        private final String expectedCode;
+
+        public ContentValidator(String expectedCode) {
+            this.expectedCode = expectedCode;
+        }
+
+        @Override
+        public void validate(CompilationInfo info) {
+            assertEquals(expectedCode, info.getText());
+        }
+
+    }
+
 }

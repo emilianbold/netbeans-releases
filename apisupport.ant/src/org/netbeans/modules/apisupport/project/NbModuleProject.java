@@ -84,6 +84,7 @@ import org.netbeans.modules.apisupport.project.api.Util;
 import org.netbeans.modules.apisupport.project.queries.AccessibilityQueryImpl;
 import org.netbeans.modules.apisupport.project.queries.AnnotationProcessingQueryImpl;
 import org.netbeans.modules.apisupport.project.queries.AntArtifactProviderImpl;
+import org.netbeans.modules.apisupport.project.queries.BinaryForSourceImpl;
 import org.netbeans.modules.apisupport.project.queries.ClassPathProviderImpl;
 import org.netbeans.modules.apisupport.project.queries.FileEncodingQueryImpl;
 import org.netbeans.modules.apisupport.project.queries.JavadocForBinaryImpl;
@@ -291,6 +292,7 @@ public final class NbModuleProject implements Project {
         ic.add(new ModuleActions(this));
         ic.add(new ClassPathProviderImpl(this));
         ic.add(new SourceForBinaryImpl(this));
+        ic.add(new BinaryForSourceImpl(this));
         ic.add(LookupMergerSupport.createSFBLookupMerger());
         ic.add(createESQI(eJSQEval));
         ic.add(new JavadocForBinaryImpl(this));

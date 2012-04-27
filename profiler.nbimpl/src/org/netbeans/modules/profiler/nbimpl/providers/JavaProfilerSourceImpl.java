@@ -60,6 +60,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -71,15 +73,8 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.ElementUtilities;
-import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.SourceUtils;
-import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
@@ -108,6 +103,7 @@ public class JavaProfilerSourceImpl implements AbstractJavaProfilerSource {
     private static final String[] APPLET_CLASSES = new String[]{"java.applet.Applet", "javax.swing.JApplet"}; // NOI18N
     private static final String[] TEST_CLASSES = new String[]{JUNIT_SUITE, JUNIT_TEST};
     private static final String[] TEST_ANNOTATIONS = new String[]{"org.junit.Test", "org.junit.runners.Suite", "org.testng.annotations.Test"}; // NOI18N
+    private static final Logger LOG = Logger.getLogger(JavaProfilerSourceImpl.class.getName());
     
     @Override
     public SourceClassInfo getEnclosingClass(FileObject fo, final int position) {
@@ -479,7 +475,7 @@ public class JavaProfilerSourceImpl implements AbstractJavaProfilerSource {
         final Boolean[] validated = new Boolean[1];
 
         JavaSource js = JavaSource.forFileObject(fo);
-
+        
         if (js != null) {
             try {
                 js.runUserActionTask(new CancellableTask<CompilationController>() {
@@ -642,6 +638,10 @@ public class JavaProfilerSourceImpl implements AbstractJavaProfilerSource {
     private static boolean isJunit3TestSuite(FileObject fo) {
         final boolean[] rslt = new boolean[]{false};
         SourceGroup sg = SourceGroupModifier.createSourceGroup(FileOwnerQuery.getOwner(fo), JavaProjectConstants.SOURCES_TYPE_JAVA, JavaProjectConstants.SOURCES_HINT_TEST);
+        if (sg == null) {
+            LOG.log(Level.INFO, "Can not resolve source group for {0}", fo.getPath());
+            return false;
+        }
         if (FileUtil.getRelativePath(sg.getRootFolder(), fo) != null && // need to check for this first otherwise i will get IAE
             sg.contains(fo)) {
             JavaSource js = JavaSource.forFileObject(fo);

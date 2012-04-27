@@ -61,6 +61,7 @@ public class RemoteApiMultipleTestSuite extends NativeExecutionBaseTestSuite {
         this("Remote API", getTestClasses());
     }
 
+    @SuppressWarnings("unchecked")
     /*package*/ static Class<? extends NativeExecutionBaseTestCase>[] getTestClasses() {
         Class[] orig = RemoteApiTest.getTestClasses();
         int mul = 4;

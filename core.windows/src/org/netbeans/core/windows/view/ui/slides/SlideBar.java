@@ -65,6 +65,7 @@ import org.netbeans.swing.tabcontrol.customtabs.Tabbed;
 import org.netbeans.swing.tabcontrol.event.ComplexListDataEvent;
 import org.netbeans.swing.tabcontrol.event.ComplexListDataListener;
 import org.netbeans.swing.tabcontrol.event.TabActionEvent;
+import org.netbeans.swing.tabcontrol.plaf.BusyTabsSupport;
 import org.netbeans.swing.tabcontrol.plaf.TabControlButton;
 import org.netbeans.swing.tabcontrol.plaf.TabControlButtonFactory;
 import org.openide.windows.Mode;
@@ -465,7 +466,24 @@ public final class SlideBar extends JPanel implements ComplexListDataListener,
         if( gap > 0 )
             addStrut(gap);
     }
-    
+
+    void makeBusy( TopComponent tc, boolean busy ) {
+        BusyTabsSupport.getDefault().makeTabBusy( tabbed, 0, busy );
+        syncWithModel();
+    }
+
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        BusyTabsSupport.getDefault().install( getTabbed(), dataModel );
+    }
+
+    @Override
+    public void removeNotify() {
+        super.removeNotify();
+        BusyTabsSupport.getDefault().uninstall( getTabbed(), dataModel );
+    }
+
     private class SlidedWinsysInfoForTabbedContainer extends WinsysInfoForTabbedContainer {
         @Override
         public Object getOrientation(Component comp) {
@@ -518,6 +536,11 @@ public final class SlideBar extends JPanel implements ComplexListDataListener,
         @Override
         public boolean isSlidedOutContainer() {
             return true;
+        }
+
+        @Override
+        public boolean isTopComponentBusy( TopComponent tc ) {
+            return WindowManagerImpl.getInstance().isTopComponentBusy( tc );
         }
     }
     
@@ -602,6 +625,10 @@ public final class SlideBar extends JPanel implements ComplexListDataListener,
             curButton = new SlidingButton(td, dataModel.getOrientation());
             if (blinks != null && blinks.contains(td)) {
                 curButton.setBlinking(true);
+            }
+            TopComponent tc = ( TopComponent ) td.getComponent();
+            if( tabbed.isBusy( tc ) ) {
+                curButton.setIcon( BusyTabsSupport.getDefault().getBusyIcon(false) );
             }
             String modeName = getRestoreModeNameForTab( td );
             gestureRecognizer.attachButton(curButton);

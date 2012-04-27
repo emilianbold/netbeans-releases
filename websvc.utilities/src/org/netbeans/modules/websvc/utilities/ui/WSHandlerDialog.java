@@ -59,6 +59,7 @@ import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.ui.ScanDialog;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.api.support.java.SourceUtils;
 import org.openide.DialogDescriptor;
@@ -159,7 +160,8 @@ public class WSHandlerDialog {
                         }
                         final int[] handlerType = new int[]{JAXWS_LOGICAL_HANDLER};
                         
-                        JavaSource javaSource = JavaSource.forFileObject(javaClassFo);
+                        final JavaSource javaSource = JavaSource.
+                            forFileObject(javaClassFo);
                         if(javaSource == null){
                             errMsg = NbBundle.getMessage(WSHandlerDialog.class,
                                     "NotJavaClass_msg");
@@ -167,18 +169,22 @@ public class WSHandlerDialog {
                             break;
                         }
                         
-                        CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
-                            public void run(CompilationController controller) throws IOException {
+                        final CancellableTask<CompilationController> task = 
+                            new CancellableTask<CompilationController>() 
+                        {
+                            @Override
+                            public void run(CompilationController controller) 
+                                throws IOException 
+                            {
                                 controller.toPhase(Phase.ELEMENTS_RESOLVED);
                                 handlerType[0] = getHandlerType(controller, isJaxWS);
                             }
-                            public void cancel() {}
+                            @Override
+                            public void cancel() {
+                            }
                         };
-                        try {
-                            javaSource.runUserActionTask(task, true);
-                        } catch (IOException ex) {
-                            ErrorManager.getDefault().notify(ex);
-                        }
+                        
+                        runTask( i==0, javaSource , task );
                         
                         if(handlerType[0] == INVALID_HANDLER) {
                             errMsg = NbBundle.getMessage(WSHandlerDialog.class,
@@ -205,6 +211,32 @@ public class WSHandlerDialog {
                         AddMessageHandlerDialogDesc.this.setClosingOptions(closingOptionsWithOK);
                     }
                 }
+            }
+        }
+    }
+    
+    public static void runTask( boolean firstTask , final JavaSource javaSource, 
+            final CancellableTask<CompilationController> task )
+    {
+        if ( firstTask ){
+            ScanDialog.runWhenScanFinished( new Runnable() {
+                
+                @Override
+                public void run() {
+                    try {
+                        javaSource.runUserActionTask(task, true);
+                    } catch (IOException ex) {
+                        ErrorManager.getDefault().notify(ex);
+                    }                                    
+                }
+            }, NbBundle.getMessage(WSHandlerDialog.class, 
+                    "LBL_SearchHandlers"));         // NOI18N
+        }
+        else {
+            try {
+                javaSource.runUserActionTask(task, true);
+            } catch (IOException ex) {
+                ErrorManager.getDefault().notify(ex);
             }
         }
     }
@@ -251,4 +283,5 @@ public class WSHandlerDialog {
         return INVALID_HANDLER;
     }
     // }
+    
 }

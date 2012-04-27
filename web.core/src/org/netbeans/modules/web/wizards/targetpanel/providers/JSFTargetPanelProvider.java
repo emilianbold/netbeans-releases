@@ -240,63 +240,48 @@ class JSFUIManager extends AbstractOptionPanelManager {
         return true;
     }
     
-    boolean isFacelets() {
-        if( myFaceletsSyntaxButton == null ){
+    protected boolean isFacelets() {
+        if (myFaceletsSyntaxButton == null) {
             return false;
         }
         return myFaceletsSyntaxButton.isSelected();
     }
     
-    boolean isSegment() {
-        if ( getSegmentBox() == null ){
+    protected boolean isSegment() {
+        if (getSegmentBox() == null ) {
             return false;
         }
-        return getSegmentBox().isSelected();
+        return getSegmentBox().isSelected() && getSegmentBox().isEnabled();
     }
 
     @Override
     protected void checkBoxChanged( ItemEvent evt , TargetChooserPanel<FileType> panel ,
             final TargetChooserPanelGUI<FileType> uiPanel) {
-        if (isSegment()) {
-            getDescription().setText(NbBundle.getMessage(
-                    JSFTargetPanelProvider.class,"DESC_segment"));
-            String createdFile = uiPanel.getFile();
-            if (createdFile.endsWith("jspx")) {//NOI18N
-                uiPanel.setFile(
-                        createdFile.substring(0,createdFile.length()-1)+"f"); //NOI18N
-            }
-            else if (createdFile.endsWith("jsp")) {//NOI18N
-                uiPanel.setFile(createdFile+"f"); //NOI18N
-            }
+        if (isFacelets()) {
+            getSegmentBox().setEnabled(false);
+            getDescription().setText(NbBundle.getMessage(JSFTargetPanelProvider.class, "DESC_FACELETS")); //NOI18N
+            setNewFileExtension(uiPanel, JSFTargetPanelProvider.FACELETS_EXT);
         } else {
-            String createdFile = uiPanel.getFile();
-            if(isFacelets()) {
-                getDescription().setText(NbBundle.getMessage(JSFTargetPanelProvider.class,
-                        "DESC_FACELETS"));
-                if (createdFile.endsWith("jspf") || createdFile.endsWith("jspx")) { //NOI18N
-                    uiPanel.setFile(
-                            createdFile.substring(0,createdFile.length()-4)+
-                            JSFTargetPanelProvider.FACELETS_EXT); //NOI18N
-                } else if(createdFile.endsWith("jsp")) { //NOI18N
-                    uiPanel.setFile(
-                            createdFile.substring(0,createdFile.length()-3)+
-                            JSFTargetPanelProvider.FACELETS_EXT); //NOI18N
-                }
-                getSegmentBox().setEnabled(false);
+            getSegmentBox().setEnabled(true);
+            if (isSegment()) {
+                getDescription().setText(NbBundle.getMessage(JSFTargetPanelProvider.class, "DESC_segment")); //NOI18N
+                setNewFileExtension(uiPanel, "jspf"); //NOI18N
             } else {
-                getSegmentBox().setEnabled(true);
-                getDescription().setText(NbBundle.getMessage(JSFTargetPanelProvider.class,
-                        "DESC_JSP"));
-                if (createdFile.endsWith("jspf") || createdFile.endsWith("jspx")) { //NOI18N
-                    uiPanel.setFile(
-                            createdFile.substring(0,createdFile.length()-1)); //NOI18N
-                } else {
-                    uiPanel.setFile(
-                            createdFile.substring(0,createdFile.lastIndexOf(".")+1)+"jsp"); //NOI18N
-                }
+                getDescription().setText(NbBundle.getMessage(JSFTargetPanelProvider.class, "DESC_JSP")); //NOI18N
+                setNewFileExtension(uiPanel, "jsp"); //NOI18N
             }
-        }    
+        }
         panel.fireChange();
+    }
+
+    private void setNewFileExtension(TargetChooserPanelGUI<FileType> uiPanel, String extension) {
+        String createdFile = uiPanel.getFile();
+        int dotOffset = createdFile.lastIndexOf("."); //NOI18N
+        if (dotOffset > 0) {
+            uiPanel.setFile(createdFile.substring(0, dotOffset + 1) + extension);
+        } else {
+            uiPanel.setFile(createdFile + "." + extension); //NOI18N
+        }
     }
 
     @Override

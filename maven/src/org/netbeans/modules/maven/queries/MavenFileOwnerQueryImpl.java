@@ -66,7 +66,6 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.spi.project.FileOwnerQueryImplementation;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.ChangeSupport;
@@ -113,11 +112,7 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
             LOG.log(Level.FINE, "will not register unloadable {0}", project.getPOMFile());
             return;
         }
-        try {
-            registerCoordinates(model.getGroupId(), model.getArtifactId(), project.getProjectDirectory().getURL());
-        } catch (FileStateInvalidException x) {
-            LOG.log(Level.INFO, null, x);
-        }
+        registerCoordinates(model.getGroupId(), model.getArtifactId(), project.getProjectDirectory().toURL());
         project.getProjectWatcher().removePropertyChangeListener(projectListener);
         project.getProjectWatcher().addPropertyChangeListener(projectListener);
         fireChange();
@@ -199,7 +194,7 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
         LOG.log(Level.FINER, "Looking for owner of {0}", file);
         String[] coordinates = findCoordinates(file);
         if (coordinates == null) {
-            LOG.log(Level.FINE, "{0} not an artifact in local repo", file);
+            LOG.log(Level.FINER, "{0} not an artifact in local repo", file);
             return null;
         }
         return getOwner(coordinates[0], coordinates[1], coordinates[2]);

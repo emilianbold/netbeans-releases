@@ -51,6 +51,7 @@ import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.modules.maven.api.Constants;
+import static org.netbeans.modules.maven.codegen.Bundle.*;
 import org.netbeans.modules.maven.model.pom.Activation;
 import org.netbeans.modules.maven.model.pom.ActivationFile;
 import org.netbeans.modules.maven.model.pom.ActivationOS;
@@ -69,17 +70,22 @@ import org.openide.DialogDisplayer;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.Utilities;
 
 /**
  *
  * @author Milos Kleint
  */
+@Messages({"NAME_Profile=Profile...",
+           "TIT_Add_profile=Add new profile"
+})
 public class ProfileGenerator implements CodeGenerator {
 
     @MimeRegistration(mimeType=Constants.POM_MIME_TYPE, service=CodeGenerator.Factory.class, position=300)
     public static class Factory implements CodeGenerator.Factory {
         
+        @Override
         public List<? extends CodeGenerator> create(Lookup context) {
             ArrayList<CodeGenerator> toRet = new ArrayList<CodeGenerator>();
             POMModel model = context.lookup(POMModel.class);
@@ -100,10 +106,12 @@ public class ProfileGenerator implements CodeGenerator {
         this.component = component;
     }
 
+    @Override
     public String getDisplayName() {
-        return NbBundle.getMessage(ProfileGenerator.class, "NAME_Profile");
+        return NAME_Profile();
     }
 
+    @Override
     public void invoke() {
         try {
             model.sync();
@@ -115,7 +123,7 @@ public class ProfileGenerator implements CodeGenerator {
             return;
         }
         NewProfilePanel panel = new NewProfilePanel(model);
-        DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(ProfileGenerator.class, "TIT_Add_profile"));
+        DialogDescriptor dd = new DialogDescriptor(panel, TIT_Add_profile());
         panel.attachDialogDisplayer(dd);
         Object ret = DialogDisplayer.getDefault().notify(dd);
         if (ret == DialogDescriptor.OK_OPTION) {

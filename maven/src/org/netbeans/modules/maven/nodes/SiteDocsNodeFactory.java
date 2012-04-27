@@ -41,14 +41,14 @@
  */
 
 package org.netbeans.modules.maven.nodes;
-import org.netbeans.modules.maven.spi.nodes.AbstractMavenNodeList;
-import org.netbeans.modules.maven.api.NbMavenProject;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.NbMavenProjectImpl;
+import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.spi.nodes.AbstractMavenNodeList;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
 import org.openide.filesystems.FileObject;
@@ -68,6 +68,7 @@ public class SiteDocsNodeFactory implements NodeFactory {
     public SiteDocsNodeFactory() {
     }
     
+    @Override
     public NodeList createNodes(Project project) {
         NbMavenProjectImpl prj = project.getLookup().lookup(NbMavenProjectImpl.class);
         return new NList(prj);
@@ -81,6 +82,7 @@ public class SiteDocsNodeFactory implements NodeFactory {
             project = prj;
         }
         
+        @Override
         public List<String> keys() {
             //TODO handle custom locations of sit docs
             if (project.getProjectDirectory().getFileObject(SITE) != null) {
@@ -89,10 +91,12 @@ public class SiteDocsNodeFactory implements NodeFactory {
             return Collections.emptyList();
         }
         
+        @Override
         public Node node(String key) {
             return createSiteDocsNode();
         }
         
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (NbMavenProjectImpl.PROP_PROJECT.equals(evt.getPropertyName())) {
                 fireChange();

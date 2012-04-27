@@ -1,4 +1,4 @@
-Find Direct SubTypes of <b>class FindSubtype</b> [4 occurrences]
+Find Direct SubTypes of <b>FindSubtype</b> [4 occurrences]
     RefactoringTest
         Subtype1.java
             <font color=#0000e6>public</font>&nbsp;<font color=#0000e6>class</font>&nbsp;<b>Subtype1</b>&nbsp;<font color=#0000e6>extends</font>&nbsp;<font color=#000000>FindSubtype</font><font color=#000000>{</font>

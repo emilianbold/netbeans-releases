@@ -54,26 +54,27 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.hints.errors.Utilities;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Constraint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
-import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
-import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
-import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.ConstraintVariableType;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.TriggerPattern;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.JavaFix;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.java.hints.JavaFixUtilities;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author lahvac
  */
-@Hint(id="StringBuilderAppend", category="performance")
+@Hint(displayName = "#DN_StringBuilderAppend", description = "#DESC_StringBuilderAppend", id="StringBuilderAppend", category="performance")
 public class StringBuilderAppend {
 
     @TriggerPattern(value="$build.append($app)",
                     constraints={
-                        @Constraint(variable="$build", type="java.lang.StringBuilder"),
-                        @Constraint(variable="$app", type="java.lang.String")
+                        @ConstraintVariableType(variable="$build", type="java.lang.StringBuilder"),
+                        @ConstraintVariableType(variable="$app", type="java.lang.String")
                     })
     public static ErrorDescription builder(HintContext ctx) {
         return hint(ctx, "StringBuilder");
@@ -81,8 +82,8 @@ public class StringBuilderAppend {
 
     @TriggerPattern(value="$build.append($app)",
                     constraints={
-                        @Constraint(variable="$build", type="java.lang.StringBuffer"),
-                        @Constraint(variable="$app", type="java.lang.String")
+                        @ConstraintVariableType(variable="$build", type="java.lang.StringBuffer"),
+                        @ConstraintVariableType(variable="$app", type="java.lang.String")
                     })
     public static ErrorDescription buffer(HintContext ctx) {
         return hint(ctx, "StringBuffer");
@@ -96,7 +97,7 @@ public class StringBuilderAppend {
 
         if (sorted.size() > 1) {
             String error = NbBundle.getMessage(StringBuilderAppend.class, "ERR_StringBuilderAppend", clazzName);
-            return ErrorDescriptionFactory.forTree(ctx, param, error, JavaFix.toEditorFix(new FixImpl(info, ctx.getPath())));
+            return ErrorDescriptionFactory.forTree(ctx, param, error, new FixImpl(info, ctx.getPath()).toEditorFix());
         }
 
         return null;
@@ -113,7 +114,9 @@ public class StringBuilderAppend {
         }
 
         @Override
-        protected void performRewrite(WorkingCopy copy, TreePath tp, boolean canShowUI) {
+        protected void performRewrite(TransformationContext ctx) {
+            WorkingCopy copy = ctx.getWorkingCopy();
+            TreePath tp = ctx.getPath();
             MethodInvocationTree mit = (MethodInvocationTree) tp.getLeaf();
             ExpressionTree param = mit.getArguments().get(0);
             List<List<TreePath>> sorted = Utilities.splitStringConcatenationToElements(copy, new TreePath(tp, param));

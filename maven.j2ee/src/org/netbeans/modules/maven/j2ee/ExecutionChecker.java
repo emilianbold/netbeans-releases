@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.maven.j2ee;
 
-import org.netbeans.modules.maven.j2ee.utils.LoggingUtils;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -58,16 +57,17 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
 import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.modules.maven.api.customizer.ModelHandle;
+import org.netbeans.modules.maven.api.customizer.ModelHandle2;
 import org.netbeans.modules.maven.api.execute.ExecutionContext;
 import org.netbeans.modules.maven.api.execute.ExecutionResultChecker;
 import org.netbeans.modules.maven.api.execute.PrerequisitesChecker;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
-import org.netbeans.modules.maven.spi.debug.MavenDebugger;
 import org.netbeans.modules.maven.j2ee.customizer.CustomizerRunWeb;
+import org.netbeans.modules.maven.j2ee.utils.LoggingUtils;
 import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
+import org.netbeans.modules.maven.spi.debug.MavenDebugger;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
@@ -303,10 +303,10 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
     private static void removeNetbeansDeployFromActionMappings(Project project, String actionName) {
         try {
             ProjectConfiguration cfg = project.getLookup().lookup(ProjectConfigurationProvider.class).getActiveConfiguration();
-            NetbeansActionMapping mapp = ModelHandle.getMapping(actionName, project, cfg);
+            NetbeansActionMapping mapp = ModelHandle2.getMapping(actionName, project, cfg);
             if (mapp != null) {
                 mapp.getProperties().remove(MavenJavaEEConstants.ACTION_PROPERTY_DEPLOY);
-                ModelHandle.putMapping(mapp, project, cfg);
+                ModelHandle2.putMapping(mapp, project, cfg);
             }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);

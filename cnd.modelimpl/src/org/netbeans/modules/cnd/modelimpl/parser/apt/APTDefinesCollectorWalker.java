@@ -63,6 +63,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
  *
  * @author Sergey Grinev
  */
+@Deprecated
 public class APTDefinesCollectorWalker extends APTSelfWalker {
 
     private final Map<CharSequence, MacroInfo> macroRefMap;

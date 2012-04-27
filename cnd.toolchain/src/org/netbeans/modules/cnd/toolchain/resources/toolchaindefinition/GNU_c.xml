@@ -76,6 +76,11 @@ made subject to such option by the copyright holder.
             <bits_64 flags="-m64"/>
         </architecture>
         <strip flags="-s"/>
+        <c_standard>
+            <default flags="" default="true"/>
+            <c89 flags="-std=c89"/>
+            <c99 flags="-std=c99"/>
+        </c_standard>
         <output_object_file flags="-o " />
         <dependency_generation flags="-MMD -MP -MF $@.d" />
         <precompiled_header flags="-o $@" suffix=".gch" append="true" />

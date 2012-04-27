@@ -117,7 +117,7 @@ public class DBTableDrop extends DBConnectionDrop {
         if (isBindingOnly()) {
             FormEditor.getAssistantModel(model).setContext("tableDropBinding", "tableDropComponent"); // NOI18N
             pItem = new PaletteItem(new ClassSource("javax.persistence.EntityManager", // NOI18N
-                        new ClassSourceResolver.LibraryEntry(LibraryManager.getDefault().getLibrary("toplink"))), // NOI18N
+                        new ClassSourceResolver.LibraryEntry(LibraryManager.getDefault().getLibrary("eclipselink"))), // NOI18N
                         null);
             pItem.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/j2ee/resources/binding.gif", false).getImage()); // NOI18N
         } else {

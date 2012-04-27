@@ -88,6 +88,11 @@ public class UninitializedVariableHint extends AbstractRule implements PHPRuleWi
         UNCHECKED_VARIABLES.add("_SESSION"); //NOI18N
         UNCHECKED_VARIABLES.add("_REQUEST"); //NOI18N
         UNCHECKED_VARIABLES.add("_ENV"); //NOI18N
+        UNCHECKED_VARIABLES.add("argc"); //NOI18N
+        UNCHECKED_VARIABLES.add("argv"); //NOI18N
+        UNCHECKED_VARIABLES.add("HTTP_RAW_POST_DATA"); //NOI18N
+        UNCHECKED_VARIABLES.add("php_errormsg"); //NOI18N
+        UNCHECKED_VARIABLES.add("http_response_header"); //NOI18N
     }
 
     @Override
@@ -124,7 +129,10 @@ public class UninitializedVariableHint extends AbstractRule implements PHPRuleWi
             return hints;
         }
 
-        @Messages("UninitializedVariableVariableHintCustom=Variable ${0} seems to be uninitialized")
+        @Messages({
+            "# {0} - Name of the variable",
+            "UninitializedVariableVariableHintCustom=Variable ${0} seems to be uninitialized"
+        })
         private void createHints(List<Variable> uninitializedVariables) {
             for (Variable variable : uninitializedVariables) {
                 int start = variable.getStartOffset() + 1;
@@ -180,6 +188,7 @@ public class UninitializedVariableHint extends AbstractRule implements PHPRuleWi
             scan(node.getExpression());
             initializeExpression(node.getKey());
             initializeExpression(node.getValue());
+            scan(node.getStatement());
         }
 
         @Override
@@ -263,7 +272,11 @@ public class UninitializedVariableHint extends AbstractRule implements PHPRuleWi
                             scan(invocationParameterExp);
                         }
                     }
+                } else {
+                    scan(invocationParametersExp);
                 }
+            } else {
+                scan(invocationParametersExp);
             }
         }
 
@@ -391,11 +404,19 @@ public class UninitializedVariableHint extends AbstractRule implements PHPRuleWi
         private void initializeExpression(Expression expression) {
             if (expression instanceof Variable) {
                 initializeVariable((Variable) expression);
+            } else if (expression instanceof Reference) {
+                initializeReference((Reference) expression);
             }
         }
 
+        private void initializeReference(Reference node) {
+            initializeExpression(node.getExpression());
+        }
+
         private void initializeVariableBase(VariableBase variableBase) {
-            if (variableBase instanceof Variable) {
+            if (variableBase instanceof ArrayAccess) {
+                initializeArrayAccessVariable((ArrayAccess) variableBase);
+            } else if (variableBase instanceof Variable) {
                 initializeVariable((Variable) variableBase);
             } else if (variableBase instanceof ListVariable) {
                 initializeListVariable((ListVariable) variableBase);
@@ -404,7 +425,14 @@ public class UninitializedVariableHint extends AbstractRule implements PHPRuleWi
             }
         }
 
-        public void initializeListVariable(ListVariable node) {
+        private void initializeArrayAccessVariable(ArrayAccess node) {
+            VariableBase name = node.getName();
+            if (name instanceof Variable) {
+                initializeVariable((Variable) name);
+            }
+        }
+
+        private void initializeListVariable(ListVariable node) {
             List<VariableBase> variables = node.getVariables();
             for (VariableBase variableBase : variables) {
                 initializeVariableBase(variableBase);

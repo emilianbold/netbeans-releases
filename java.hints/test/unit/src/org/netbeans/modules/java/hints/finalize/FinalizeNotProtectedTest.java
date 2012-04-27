@@ -39,80 +39,86 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.java.hints.finalize;
 
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
-import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.hints.test.api.HintTest;
 
 /**
  *
  * @author Tomas Zezula
  */
-public class FinalizeNotProtectedTest extends TestBase {
+public class FinalizeNotProtectedTest extends NbTestCase {
 
     public FinalizeNotProtectedTest(final String name) {
-        super(name, FinalizeNotProtected.class);
+        super(name);
     }
 
     public void testFinalizeNotProtected() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    public final void finalize() {\n" +
-                            "    }\n" +
-                            "}",
-                            "2:22-2:30:verifier:finalize() not declared protected");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public final void finalize() {\n" +
+                       "    }\n" +
+                       "}")
+                .run(FinalizeNotProtected.class)
+                .assertWarnings("2:22-2:30:verifier:finalize() not declared protected");
     }
 
     public void testFinalizeProtected() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    protected void finalize() {\n" +
-                            "    }\n" +
-                            "}");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    protected void finalize() {\n" +
+                       "    }\n" +
+                       "}")
+                .run(FinalizeNotProtected.class)
+                .assertWarnings();
     }
 
     public void testNonFinalizeNotProtected() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    public void finalize(int i) {\n" +
-                            "    }\n" +
-                            "}");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public void finalize(int i) {\n" +
+                       "    }\n" +
+                       "}")
+                .run(FinalizeNotProtected.class)
+                .assertWarnings();
     }
 
     public void testSuppressed() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "@SuppressWarnings(\"FinalizeNotProtected\")\n"+
-                            "public class Test {\n" +
-                            "    public final void finalize() {\n" +
-                            "    }\n" +
-                            "}");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "@SuppressWarnings(\"FinalizeNotProtected\")\n" +
+                       "public class Test {\n" +
+                       "    public final void finalize() {\n" +
+                       "    }\n" +
+                       "}")
+                .run(FinalizeNotProtected.class)
+                .assertWarnings();
     }
 
     public void testFix() throws Exception {
-        performFixTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    public final void finalize() {\n" +
-                            "    }\n" +
-                            "}",
-                            "2:22-2:30:verifier:finalize() not declared protected",
-                            "Make pretected",
-                            ("package test;\n" +
-                            "public class Test {\n" +
-                            "    protected final void finalize() {\n" +
-                            "    }\n" +
-                            "}").replaceAll("[ \t\n]+", " "));
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public final void finalize() {\n" +
+                       "    }\n" +
+                       "}")
+                .run(FinalizeNotProtected.class)
+                .findWarning("2:22-2:30:verifier:finalize() not declared protected")
+                .applyFix("Make pretected")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public class Test {\n" +
+                              "    protected final void finalize() {\n" +
+                              "    }\n" +
+                              "}");
     }
-
-    @Override
-    protected String toDebugString(CompilationInfo info, Fix f) {
-        return f.getText();
-    }
-
 }

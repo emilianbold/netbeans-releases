@@ -67,11 +67,12 @@ public class SvnUtils {
      * @param dir a directory URL within a Subversion checkout
      * @return information about it, or null if this is not a Subversion checkout
      * @throws IOException if it is a checkout but cannot be parsed
+     * @throws UnsupportedSubversionVersionException if it is a checkout but the format is unsupported
      */
-    public static Info parseCheckout(URL dir) throws IOException {
+    public static Info parseCheckout(URL dir) throws IOException, UnsupportedSubversionVersionException {
         return parseCheckout(dir, null);
     }
-    static Info parseCheckout(URL dir, HudsonJob job) throws IOException {
+    static Info parseCheckout(URL dir, HudsonJob job) throws IOException, UnsupportedSubversionVersionException {
         URL svnEntries = new URL(dir, ".svn/entries"); // NOI18N
         ConnectionBuilder cb = new ConnectionBuilder();
         if (job != null) {
@@ -95,12 +96,19 @@ public class SvnUtils {
         } finally {
             is.close();
         }
+        if (module == null || repository == null) {
+            throw new UnsupportedSubversionVersionException();
+        }
         try {
             return new Info(new URI(module), new URI(repository));
         } catch (URISyntaxException x) {
             throw new IOException(x);
         }
     }
+    /**
+     * There is a Subversion checkout here, but the format is known to not be supported.
+     */
+    public static class UnsupportedSubversionVersionException extends Exception {}
 
     /**
      * Represents the checkout and repository portions of a {@code .svn/entries} file.

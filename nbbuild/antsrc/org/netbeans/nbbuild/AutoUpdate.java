@@ -526,19 +526,17 @@ public class AutoUpdate extends Task {
     }
     
     private String readVersion(File nbm) {
+        String infoXml = "jar:" + nbm.toURI() + "!/Info/info.xml";
         try {
-            URL u = new URL("jar:" + nbm.toURI() + "!/Info/info.xml");
             XPathFactory f = XPathFactory.newInstance();
-            final InputStream s = u.openStream();
-            InputSource is = new InputSource(s);
-            String res = f.newXPath().evaluate("module/manifest/@OpenIDE-Module-Specification-Version", is);
+            Document doc = XMLUtil.parse(new InputSource(infoXml), false, false, XMLUtil.rethrowHandler(), XMLUtil.nullResolver());
+            String res = f.newXPath().evaluate("module/manifest/@OpenIDE-Module-Specification-Version", doc);
             if (res.length() == 0) {
                 throw new IOException("Not found tag OpenIDE-Module-Specification-Version!");
             }
-            s.close();
             return res;
         } catch (Exception ex) {
-            log("Cannot parse Info/info.xml from " + nbm, ex, Project.MSG_INFO);
+            log("Cannot parse " + infoXml + ": " + ex, ex, Project.MSG_WARN);
             return null;
         }
     }

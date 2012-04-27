@@ -44,7 +44,6 @@
 
 package org.netbeans.nbbuild;
 
-import java.io.ByteArrayInputStream;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -84,9 +83,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
-import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
 /** Makes an XML file representing update information from NBMs.
  *
@@ -548,14 +545,9 @@ public class MakeUpdateDesc extends MatchingTask {
                             if (entry == null) {
                                 throw new BuildException("NBM " + n_file + " was malformed: no Info/info.xml", getLocation());
                             }
-                            EntityResolver nullResolver = new EntityResolver() {
-                                public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
-                                    return new InputSource(new ByteArrayInputStream(new byte[0]));
-                                }
-                            };
                             InputStream is = jar.getInputStream(entry);
                             try {
-                                m.xml = XMLUtil.parse(new InputSource(is), false, false, null, nullResolver).getDocumentElement();
+                                m.xml = XMLUtil.parse(new InputSource(is), false, false, XMLUtil.rethrowHandler(), XMLUtil.nullResolver()).getDocumentElement();
                             } finally {
                                 is.close();
                             }
@@ -588,7 +580,7 @@ public class MakeUpdateDesc extends MatchingTask {
                                 if (entry != null) {
                                     is = jar.getInputStream(entry);
                                     try {
-                                        NodeList nl = XMLUtil.parse(new InputSource(is), false, false, null, nullResolver).getElementsByTagName("param");
+                                        NodeList nl = XMLUtil.parse(new InputSource(is), false, false, XMLUtil.rethrowHandler(), XMLUtil.nullResolver()).getElementsByTagName("param");
                                         for (int i = 0; i < nl.getLength(); i++) {
                                             String name = ((Element) nl.item(i)).getAttribute("name");
                                             String value = ((Text) nl.item(i).getFirstChild()).getData();

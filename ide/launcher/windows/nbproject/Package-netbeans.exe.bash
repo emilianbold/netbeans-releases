@@ -6,8 +6,11 @@
 
 # Macros
 TOP=`pwd`
-PLATFORM=Cygwin-Windows
-TMPDIR=build/netbeans.exe/${PLATFORM}/tmp-packaging
+CND_PLATFORM=Cygwin-Windows
+CND_CONF=netbeans.exe
+CND_DISTDIR=dist
+CND_BUILDDIR=build
+NBTMPDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}/tmp-packaging
 TMPDIRNAME=tmp-packaging
 OUTPUT_PATH=netbeans.exe
 OUTPUT_BASENAME=netbeans.exe
@@ -50,23 +53,23 @@ function copyFileToTmpDir
 
 # Setup
 cd "${TOP}"
-mkdir -p dist/netbeans.exe/${PLATFORM}/package
-rm -rf ${TMPDIR}
-mkdir -p ${TMPDIR}
+mkdir -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/package
+rm -rf ${NBTMPDIR}
+mkdir -p ${NBTMPDIR}
 
 # Copy files and create directories and links
 cd "${TOP}"
-makeDirectory ${TMPDIR}/windows/bin
-copyFileToTmpDir "${OUTPUT_PATH}.exe" "${TMPDIR}/${PACKAGE_TOP_DIR}bin/${OUTPUT_BASENAME}.exe" 0755
+makeDirectory "${NBTMPDIR}/windows/bin"
+copyFileToTmpDir "${OUTPUT_PATH}.exe" "${NBTMPDIR}/${PACKAGE_TOP_DIR}bin/${OUTPUT_BASENAME}.exe" 0755
 
 
 # Generate tar file
 cd "${TOP}"
-rm -f dist/netbeans.exe/${PLATFORM}/package/windows.tar
-cd ${TMPDIR}
-tar -vcf ../../../../dist/netbeans.exe/${PLATFORM}/package/windows.tar *
+rm -f ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/package/windows.tar
+cd ${NBTMPDIR}
+tar -vcf ../../../../${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/package/windows.tar *
 checkReturnCode
 
 # Cleanup
 cd "${TOP}"
-rm -rf ${TMPDIR}
+rm -rf ${NBTMPDIR}

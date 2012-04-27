@@ -1,4 +1,4 @@
-Usages of <b>Test</b> [3 occurrences]
+Usages of <b>Test.<init></b> [3 occurrences]
     RefactoringTest
         SubClass.java
             <b>super</b><font color=#000000>(</font><font color=#000000>)</font><font color=#000000>;</font>

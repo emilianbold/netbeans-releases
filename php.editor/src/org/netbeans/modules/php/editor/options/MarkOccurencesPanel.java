@@ -133,6 +133,7 @@ public class MarkOccurencesPanel extends javax.swing.JPanel {
     private void initComponents() {
 
         onOffCheckBox = new javax.swing.JCheckBox();
+        keepMarksCheckBox = new javax.swing.JCheckBox();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
         setFocusCycleRoot(true);
@@ -161,13 +162,21 @@ public class MarkOccurencesPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(onOffCheckBox, org.openide.util.NbBundle.getMessage(MarkOccurencesPanel.class, "CTL_OnOff_CheckBox")); // NOI18N
         onOffCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
+        keepMarksCheckBox.setMnemonic('s');
+        org.openide.awt.Mnemonics.setLocalizedText(keepMarksCheckBox, org.openide.util.NbBundle.getMessage(MarkOccurencesPanel.class, "MarkOccurencesPanel.keepMarksCheckBox.text")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(onOffCheckBox)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(onOffCheckBox))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(37, 37, 37)
+                        .addComponent(keepMarksCheckBox)))
                 .addContainerGap(226, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -175,7 +184,9 @@ public class MarkOccurencesPanel extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(onOffCheckBox)
-                .addContainerGap(273, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(keepMarksCheckBox)
+                .addContainerGap(237, Short.MAX_VALUE))
         );
 
         onOffCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(MarkOccurencesPanel.class, "MarkOccurrencesPanel.onOffCheckBox.AccessibleContext.accessibleName")); // NOI18N
@@ -187,6 +198,7 @@ public class MarkOccurencesPanel extends javax.swing.JPanel {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox keepMarksCheckBox;
     private javax.swing.JCheckBox onOffCheckBox;
     // End of variables declaration//GEN-END:variables
     // End of variables declaration
@@ -195,8 +207,10 @@ public class MarkOccurencesPanel extends javax.swing.JPanel {
     private void fillBoxes() {
         boxes = new ArrayList<JCheckBox>();
         boxes.add( onOffCheckBox );
+        boxes.add(keepMarksCheckBox);
 
         onOffCheckBox.setActionCommand(MarkOccurencesSettings.ON_OFF);
+        keepMarksCheckBox.setActionCommand(MarkOccurencesSettings.KEEP_MARKS);
     }
 
 

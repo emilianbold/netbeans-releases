@@ -453,6 +453,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
             if (event1 != null) {
                 revision1 = event1.getLogInfoHeader().getLog().getRevision().toString();
                 file1 = event1.getOriginalFile() == null ? event1.getFile() : event1.getOriginalFile();
+                name1 = event1.getOriginalName() == null ? event1.getName() : event1.getOriginalName();
                 filePath1 = event1.getOriginalPath() == null ? event1.getChangedPath().getPath() : event1.getOriginalPath();
             }
             this.showLastDifference = showLastDifference;

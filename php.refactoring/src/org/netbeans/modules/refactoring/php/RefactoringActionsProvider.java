@@ -73,7 +73,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
     @Override
     public boolean canFindUsages(Lookup lookup) {
         FileObject fo = isFromEditor(lookup) ? getFileObject(lookup) : null;
-        return fo != null && RefactoringUtils.isRefactorable(fo) ? !RefactoringUtils.isOutsidePhp(lookup, fo) : false;
+        return fo != null && RefactoringUtils.isRefactorable(fo) ? !(RefactoringUtils.isOutsidePhp(lookup, fo) && RefactoringUtils.isOutsidePHPDoc(lookup, fo)) : false;
     }
 
     private FileObject getFileObject(Lookup lookup) {

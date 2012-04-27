@@ -64,14 +64,18 @@ import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic.Kind;
 import javax.tools.StandardLocation;
 import org.openide.util.EditableProperties;
 import org.openide.util.NbBundle;
+import org.openide.util.NbCollections;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -241,7 +245,12 @@ public class NbBundleProcessor extends AbstractProcessor {
                     String name = toIdentifier(key);
                     method.append("    static String ").append(name).append("(");
                     boolean first = true;
+                    i = 0;
                     for (String param : params) {
+                        if (param.equals("arg" + i)) {
+                            warnUndocumented(i, identifiers.get(name), key);
+                        }
+                        i++;
                         if (first) {
                             first = false;
                         } else {
@@ -268,9 +277,11 @@ public class NbBundleProcessor extends AbstractProcessor {
                             restored.add(identifier);
                         }
                     }
+                    /*
                     if (!restored.isEmpty()) {
                         processingEnv.getMessager().printMessage(Kind.NOTE, "loaded " + pkg + ".Bundle identifiers " + restored + " from earlier run");
                     }
+                    */
                 } catch (IOException x) {
                     // OK, not there
                 }
@@ -350,6 +361,42 @@ public class NbBundleProcessor extends AbstractProcessor {
                 addToAnnotatedElements(e.getEnclosedElements(), annotatedElements);
             }
         }
+    }
+
+    private void warnUndocumented(int i, Element e, String key) {
+        AnnotationMirror mirror = null;
+        AnnotationValue value = null;
+        if (e != null) {
+            for (AnnotationMirror _mirror : e.getAnnotationMirrors()) {
+                if (_mirror.getAnnotationType().toString().equals(NbBundle.Messages.class.getCanonicalName())) {
+                    mirror = _mirror;
+                    for (Map.Entry<? extends ExecutableElement,? extends AnnotationValue> entry : mirror.getElementValues().entrySet()) {
+                        if (entry.getKey().getSimpleName().contentEquals("value")) {
+                            // SimpleAnnotationValueVisitor6 unusable here since we need to determine the AnnotationValue in scope when visitString is called:
+                            Object v = entry.getValue().getValue();
+                            if (v instanceof String) {
+                                if (((String) v).startsWith(key + "=")) {
+                                    value = entry.getValue();
+                                }
+                            } else {
+                                for (AnnotationValue subentry : NbCollections.checkedListByCopy((List<?>) v, AnnotationValue.class, true)) {
+                                    v = subentry.getValue();
+                                    if (v instanceof String) {
+                                        if (((String) v).startsWith(key + "=")) {
+                                            value = subentry;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+        processingEnv.getMessager().printMessage(Kind.WARNING, "Undocumented format parameter {" + i + "}", e, mirror, value);
     }
 
 }

@@ -57,9 +57,6 @@ import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.netbeans.spi.debugger.ui.Constants;
-import org.openide.text.Annotatable;
-
-import org.openide.text.Line;
 
 /**
  *
@@ -89,6 +86,7 @@ NodeActionsProvider, TableModel {
      *
      * @return the root node of the tree or null
      */
+    @Override
     public Object getRoot () {
         return ROOT;
     }
@@ -109,6 +107,7 @@ NodeActionsProvider, TableModel {
      *
      * @return  children for given parent on given indexes
      */
+    @Override
     public Object[] getChildren (Object parent, int from, int to) 
         throws UnknownTypeException {
         if (parent == ROOT)
@@ -123,6 +122,7 @@ NodeActionsProvider, TableModel {
      *          able to resolve dchildren for given node type
      * @return  true if node is leaf
      */
+    @Override
     public boolean isLeaf (Object node) throws UnknownTypeException {
         if (node == ROOT)
             return false;
@@ -147,6 +147,7 @@ NodeActionsProvider, TableModel {
      * @return  true if node is leaf
      * @since 1.1
      */
+    @Override
     public int getChildrenCount (Object node) throws UnknownTypeException {
         if (node == ROOT)
             return debugger.getCallStack ().length;
@@ -158,6 +159,7 @@ NodeActionsProvider, TableModel {
      * 
      * @param l the listener to add
      */
+    @Override
     public void addModelListener (ModelListener l) {
         listeners.add (l);
     }
@@ -167,6 +169,7 @@ NodeActionsProvider, TableModel {
      *
      * @param l the listener to remove
      */
+    @Override
     public void removeModelListener (ModelListener l) {
         listeners.remove (l);
     }
@@ -183,6 +186,7 @@ NodeActionsProvider, TableModel {
      *          able to resolve display name for given node type
      * @return  display name for given node
      */
+    @Override
     public String getDisplayName (Object node) throws UnknownTypeException {
         if (node instanceof TargetLister.Target) {
             try {
@@ -215,6 +219,7 @@ NodeActionsProvider, TableModel {
      *          able to resolve icon for given node type
      * @return  icon for given node
      */
+    @Override
     public String getIconBase (Object node) throws UnknownTypeException {
         if (node instanceof TargetLister.Target) 
             return CALL_STACK;
@@ -235,6 +240,7 @@ NodeActionsProvider, TableModel {
      *          able to resolve tooltip for given node type
      * @return  tooltip for given node
      */
+    @Override
     public String getShortDescription (Object node) 
     throws UnknownTypeException {
         if (node instanceof TargetLister.Target) 
@@ -254,6 +260,7 @@ NodeActionsProvider, TableModel {
      *          is not able to resolve actions for given node type
      * @return  display name for given node
      */
+    @Override
     public void performDefaultAction (Object node) 
     throws UnknownTypeException {
         if (node instanceof TargetLister.Target) {
@@ -280,6 +287,7 @@ NodeActionsProvider, TableModel {
      *          is not able to resolve actions for given node type
      * @return  display name for given node
      */
+    @Override
     public Action[] getActions (Object node) 
     throws UnknownTypeException {
         return new Action [] {};
@@ -304,6 +312,7 @@ NodeActionsProvider, TableModel {
      *
      * @return value of variable representing given position in tree table.
      */
+    @Override
     public Object getValueAt (Object node, String columnID) throws 
     UnknownTypeException {
         if (columnID == Constants.CALL_STACK_FRAME_LOCATION_COLUMN_ID) {
@@ -336,6 +345,7 @@ NodeActionsProvider, TableModel {
      *
      * @return true if variable on given position is read only
      */
+    @Override
     public boolean isReadOnly (Object node, String columnID) throws 
     UnknownTypeException {
         if (columnID == Constants.CALL_STACK_FRAME_LOCATION_COLUMN_ID) {
@@ -361,6 +371,7 @@ NodeActionsProvider, TableModel {
      * @throws UnknownTypeException if there is no TableModel defined for given
      *         parameter type
      */
+    @Override
     public void setValueAt (Object node, String columnID, Object value) 
     throws UnknownTypeException {
         throw new UnknownTypeException (node);

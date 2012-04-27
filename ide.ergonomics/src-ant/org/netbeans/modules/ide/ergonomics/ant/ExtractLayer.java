@@ -42,12 +42,7 @@
 package org.netbeans.modules.ide.ergonomics.ant;
 
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringReader;
+import java.io.*;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -60,6 +55,8 @@ import java.util.TreeSet;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.imageio.ImageIO;
 import javax.xml.parsers.DocumentBuilder;
@@ -81,14 +78,13 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.filters.LineContainsRegExp;
 import org.apache.tools.ant.taskdefs.Concat;
+import org.apache.tools.ant.taskdefs.Concat.TextElement;
 import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.types.FilterChain;
 import org.apache.tools.ant.types.RegularExpression;
 import org.apache.tools.ant.types.Resource;
 import org.apache.tools.ant.types.ResourceCollection;
-import org.apache.tools.ant.types.resources.FileResource;
-import org.apache.tools.ant.types.resources.JavaResource;
 import org.apache.tools.ant.types.resources.StringResource;
 import org.apache.tools.ant.types.resources.ZipResource;
 import org.apache.tools.ant.util.FileNameMapper;
@@ -159,18 +155,22 @@ implements FileNameMapper, URIResolver, EntityResolver {
         Transformer ft;
         Transformer rt;
         Transformer et;
+        Transformer bt;
 
 
         try {
             StreamSource fullpaths;
             StreamSource relative;
             StreamSource entryPoints;
+            StreamSource bundleEntryPoints;
             URL fu = ExtractLayer.class.getResource("full-paths.xsl");
             URL ru = ExtractLayer.class.getResource("relative-refs.xsl");
             URL eu = ExtractLayer.class.getResource("entry-points.xsl");
+            URL bu = ExtractLayer.class.getResource("entry-points-to-bundle.xsl");
             fullpaths = new StreamSource(fu.openStream());
             relative = new StreamSource(ru.openStream());
             entryPoints = new StreamSource(eu.openStream());
+            bundleEntryPoints = new StreamSource(bu.openStream());
 
             SAXTransformerFactory fack;
             fack = (SAXTransformerFactory)TransformerFactory.newInstance();
@@ -182,6 +182,7 @@ implements FileNameMapper, URIResolver, EntityResolver {
             rt.setParameter("cluster.name", clusterName);
             et = fack.newTransformer(entryPoints);
             et.setParameter("cluster.name", clusterName);
+            bt = fack.newTransformer(bundleEntryPoints);
         } catch (Exception ex) {
             throw new BuildException(ex);
         }
@@ -195,6 +196,8 @@ implements FileNameMapper, URIResolver, EntityResolver {
         } catch (IOException iOException) {
             throw new BuildException(iOException);
         }
+        ByteArrayOutputStream bundleHeader = new ByteArrayOutputStream();
+        StreamResult bundleOut = new StreamResult(bundleHeader);
         StreamResult uberOut = new StreamResult(uberLayer);
         SAXParserFactory f = SAXParserFactory.newInstance();
         f.setValidating(false);
@@ -231,11 +234,13 @@ implements FileNameMapper, URIResolver, EntityResolver {
                             String n = mflayer.replaceFirst("/[^/]+$", "").replace('/', '.') + ".xml";
                             et.setParameter("filename", n);
                             et.transform(createSource(jf, jf.getEntry(mflayer)), uberOut);
+                            bt.transform(createSource(jf, jf.getEntry(mflayer)), bundleOut);
                         }
                         java.util.zip.ZipEntry generatedLayer = jf.getEntry("META-INF/generated-layer.xml");
                         if (generatedLayer != null) {
                             et.setParameter("filename", base + "-generated.xml");
                             et.transform(createSource(jf, generatedLayer), uberOut);
+                            bt.transform(createSource(jf, generatedLayer), bundleOut);
                         }
 
                     } finally {
@@ -362,6 +367,12 @@ implements FileNameMapper, URIResolver, EntityResolver {
             te.setProject(getProject());
             te.addText("\n\n\ncnbs=\\" + modules + "\n\n");
             te.setFiltering(false);
+            try {
+                final String antProjects = new String(bundleHeader.toByteArray(), "UTF-8");
+                te.addText(antProjects + "\n\n");
+            } catch (UnsupportedEncodingException ex) {
+                throw new BuildException(ex);
+            }
             concat.addFooter(te);
             concat.execute();
         }

@@ -65,7 +65,6 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -114,7 +113,7 @@ public class MissingReturnStatement implements ErrorRule<Void> {
         List<Fix> result = new ArrayList<Fix>(2);
 
         result.add(new FixImpl(compilationInfo.getSnapshot().getSource(), TreePathHandle.create(tp, compilationInfo)));
-        result.add(JavaFix.toEditorFix(new ChangeMethodReturnType.FixImpl(compilationInfo, tp, TypeMirrorHandle.create(compilationInfo.getTypes().getNoType(TypeKind.VOID)), "void")));
+        result.add(new ChangeMethodReturnType.FixImpl(compilationInfo, tp, TypeMirrorHandle.create(compilationInfo.getTypes().getNoType(TypeKind.VOID)), "void").toEditorFix());
 
         return result;
     }

@@ -48,21 +48,19 @@ import java.awt.Dialog;
 import java.awt.Frame;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.logging.Level;
-import junit.framework.*;
-import java.util.Locale;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.lib.uihandler.LogRecords;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -122,6 +120,7 @@ public class LogFileIsKeptAtSizeOf1000Test extends NbTestCase {
         doGenerateALotOfLogs(true);
     }
 
+    @RandomlyFails // NB-Core-Build #7949: full buffer expected:<1000> but was:<0>
     public void testGenerateEnoughLogsInOneRun() throws Exception {
         doGenerateALotOfLogs(false);
     }

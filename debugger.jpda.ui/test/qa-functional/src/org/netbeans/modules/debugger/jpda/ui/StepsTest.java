@@ -47,7 +47,6 @@ import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.DebugProjectAction;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.modules.debugger.actions.RunToCursorAction;
@@ -59,7 +58,7 @@ import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.EventTool;
 /**
  *
- * @author felipee
+ * @author felipee, Jiri Kovalsky
  */
 public class StepsTest extends DebuggerTestCase {
 
@@ -93,7 +92,6 @@ public class StepsTest extends DebuggerTestCase {
         if (projectNode == null) {
             projectNode = ProjectsTabOperator.invoke().getProjectRootNode(Utilities.testProjectName);
             beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
-                        new Action(null, Utilities.setMainProjectAction).perform(new ProjectsTabOperator().getProjectRootNode(Utilities.testProjectName));
         }
         new OpenAction().performAPI(beanNode);
     }
@@ -104,7 +102,7 @@ public void testStepInto() throws Throwable {
     Utilities.toggleBreakpoint(eo, 80);
     new DebugProjectAction().perform(projectNode);
     //wait for breakpoint
-    Utilities.waitStatusText("Thread main stopped at MemoryView.java:80");
+    Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:80");
     new StepIntoAction().perform();
     Thread.sleep(2000);
     assertTrue("CurrentPC annotation is not on line 92", Utilities.checkAnnotation(eo, 92, "CurrentPC"));
@@ -117,7 +115,7 @@ public void testStepOver() throws Throwable {
     Utilities.toggleBreakpoint(eo, 80);
     new DebugProjectAction().perform(projectNode);
     //wait for breakpoint
-    Utilities.waitStatusText("Thread main stopped at MemoryView.java:80");
+    Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:80");
     new StepOverAction().performMenu();
     new EventTool().waitNoEvent(1000);
     assertFalse("CurrentPC annotation remains on line 80", Utilities.checkAnnotation(eo, 80, "CurrentPC"));
@@ -130,7 +128,7 @@ public void testStepOver() throws Throwable {
     Utilities.toggleBreakpoint(eo, 80);
     new DebugProjectAction().perform(projectNode);
     //wait for breakpoint
-    Utilities.waitStatusText("Thread main stopped at MemoryView.java:80");
+    Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:80");
     Utilities.deleteAllBreakpoints(); //removes the breakpoint in the way of run to cursor
     Utilities.setCaret(eo, 109);
     //run to cursor
@@ -146,7 +144,7 @@ public void testStepOver() throws Throwable {
         Utilities.toggleBreakpoint(eo, 94);
         new DebugProjectAction().perform(projectNode);
         //wait for breakpoint
-        Utilities.waitStatusText("Thread main stopped at MemoryView.java:94");
+        Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:94");
         new StepOutAction().performMenu();
         new EventTool().waitNoEvent(1000);
         assertFalse("Current PC annotation remains on line 94", Utilities.checkAnnotation(eo, 94, "CurrentPC"));
@@ -158,7 +156,7 @@ public void testStepOver() throws Throwable {
         Utilities.toggleBreakpoint(eo, 104);
         new DebugProjectAction().perform(projectNode);
         //wait for breakpoint
-        Utilities.waitStatusText("Thread main stopped at MemoryView.java:104");
+        Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:104");
         Utilities.toggleBreakpoint(eo, 104, false);
         new EventTool().waitNoEvent(1000);
 

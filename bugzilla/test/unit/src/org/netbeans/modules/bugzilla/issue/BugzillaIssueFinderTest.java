@@ -96,11 +96,25 @@ public class BugzillaIssueFinderTest extends NbTestCase {
         checkNoIssueSpansFound(" 123456");
         checkNoIssueSpansFound("  123456");
         checkNoIssueSpansFound("   123456");
-        checkNoIssueSpansFound("bug123456");
+        checkNoIssueSpansFound("bug123456"); 
         checkNoIssueSpansFound("bug#123456");
         checkNoIssueSpansFound("bug# 123456");
         checkNoIssueSpansFound("bug#  123456");
 
+        checkIssueSpans("// #123456", "#123456");
+        checkIssueSpans("/* #123456", "#123456");
+        checkIssueSpans("//whatever #123456", "#123456");
+        checkIssueSpans("/*#123456", "#123456");
+        checkIssueSpans("//#123456", "#123456");
+        
+        checkIssueSpans("// #123456*78", "#123456");
+        checkIssueSpans("/* #123456*78", "#123456");
+        checkIssueSpans("#123456*78", "#123456");
+        checkIssueSpans("#123456/78", "#123456");
+        checkIssueSpans("#123456//78", "#123456");
+        checkIssueSpans("#123456//", "#123456");
+        checkIssueSpans("#123456*/", "#123456");
+        
         checkIssueSpans("#123456", "#123456");
         checkIssueSpans("# 123456", "# 123456");
         checkIssueSpans(" #123456", "#123456");
@@ -119,6 +133,13 @@ public class BugzillaIssueFinderTest extends NbTestCase {
         checkIssueSpans("Issue 123456", "Issue 123456");
         checkIssueSpans("ISSUE 123456", "ISSUE 123456");
 
+        checkIssueSpans("// Bug #123456", "Bug #123456");
+        checkIssueSpans("/* Bug #123456", "Bug #123456");
+        checkIssueSpans("//Bug #123456", "Bug #123456");
+        checkIssueSpans("/*Bug #123456", "Bug #123456");
+        checkIssueSpans("Bug #123456//", "Bug #123456");
+        checkIssueSpans("Bug #123456*/", "Bug #123456");
+        
         checkIssueSpans("Bug #123456", "Bug #123456");
         checkIssueSpans("BUG #123456", "BUG #123456");
         checkIssueSpans("Issue #123456", "Issue #123456");
@@ -181,7 +202,7 @@ public class BugzillaIssueFinderTest extends NbTestCase {
         checkIssueSpans("issue bug #123456", "bug #123456");
         checkIssueSpans("issue issue #123456", "issue #123456");
 
-
+        
         /* -------- tests for special phrase "duplicate of" -------- */
 
         checkIssueSpans("duplicate of 123456", "123456");
@@ -254,7 +275,7 @@ public class BugzillaIssueFinderTest extends NbTestCase {
         testGetIssueNumber("BUG #123456", "123456");
         testGetIssueNumber("Issue #123456", "123456");
         testGetIssueNumber("ISSUE #123456", "123456");
-
+        
         testGetIssueNumber("duplicate of 123456", "123456");
         testGetIssueNumber("duplicate of #123456", "123456");
         testGetIssueNumber("duplicate of # 123456", "123456");
@@ -303,7 +324,7 @@ public class BugzillaIssueFinderTest extends NbTestCase {
     private void checkIssueSpans(String str, String... substr) {
         checkTestValidity(str != null);
         checkTestValidity(substr != null);
-
+        
         int fromIndex = 0;
 
         int[] expBounds = new int[substr.length * 2];
@@ -326,7 +347,7 @@ public class BugzillaIssueFinderTest extends NbTestCase {
 
         checkTestValidity(expectedBounds.length % 2 == 0);
 
-        int[] spans = issueFinder.getIssueSpans(str);
+        int[] spans = issueFinder.getIssueSpans(str); 
         assertNotNull(spans);
         assertTrue("incorrect bounds detected: "
                        + "expected: " + printArray(expectedBounds)

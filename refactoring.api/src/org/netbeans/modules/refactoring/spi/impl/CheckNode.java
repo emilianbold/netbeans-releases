@@ -52,6 +52,7 @@ import org.openide.text.PositionBounds;
 import org.netbeans.modules.refactoring.api.RefactoringElement;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -70,8 +71,9 @@ public class CheckNode extends DefaultMutableTreeNode {
     
     private boolean disabled = false;
     private boolean needsRefresh = false;
+    private static Icon found = ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/api/resources/found_item_orange.png", false);
     
-    public CheckNode(Object userObject, String nodeLabel, Icon icon) {
+    public CheckNode(Object userObject, String nodeLabel, Icon icon, boolean isQuery) {
         super(userObject, !(userObject instanceof RefactoringElement));
         this.isSelected = true;
         setSelectionMode(DIG_IN_SELECTION);
@@ -81,6 +83,22 @@ public class CheckNode extends DefaultMutableTreeNode {
             if (((TreeElement)userObject).getUserObject() instanceof RefactoringElement) {
                 RefactoringElement ree = (RefactoringElement) ((TreeElement)userObject).getUserObject();
                 int s = ree.getStatus();
+                
+                PositionBounds bounds = getPosition();
+                if (isQuery && bounds != null) {
+                    int line = 0;
+                    try {
+                        line = bounds.getBegin().getLine() + 1;
+                    } catch (IOException ioe) {
+                    }
+
+
+                    this.nodeLabel = "<font color='!controlShadow'>" + getLineString(line,4) + "</font>" + nodeLabel; //NOI18N
+                    if (this.icon==null) {
+                        this.icon = found;
+                    }
+                }
+                
                 if (s==RefactoringElement.GUARDED || s==RefactoringElement.READ_ONLY) {
                     isSelected = false;
                     disabled = true;
@@ -94,6 +112,10 @@ public class CheckNode extends DefaultMutableTreeNode {
     
     String getLabel() {
         return nodeLabel;
+    }
+
+    void setNodeLabel(String nodeLabel) {
+        this.nodeLabel = nodeLabel;
     }
     
     Icon getIcon() {
@@ -186,5 +208,14 @@ public class CheckNode extends DefaultMutableTreeNode {
             }
         }
         return tooltip;
+    }
+
+    private String getLineString(int line, int size) {
+        String l = Integer.toString(line);
+        int length = size-l.length();
+        for (int i=0; i < length*2; i++) {
+            l = "&nbsp;" + l; //NOI18N
+        }
+        return l + ":&nbsp;&nbsp;"; //NOI18N
     }
 }

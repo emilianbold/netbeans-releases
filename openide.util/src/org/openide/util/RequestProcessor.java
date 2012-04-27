@@ -45,6 +45,7 @@
 package org.openide.util;
 
 import java.lang.reflect.Method;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -226,12 +227,14 @@ public final class RequestProcessor implements ScheduledExecutorService {
     private final Object processorLock = new Object();
 
     /** The set holding all the Processors assigned to this RequestProcessor */
-    private HashSet<Processor> processors = new HashSet<Processor>();
+    private final HashSet<Processor> processors = new HashSet<Processor>();
 
     /** Actualy the first item is pending to be processed.
      * Can be accessed/trusted only under the above processorLock lock.
-     * If null, nothing is scheduled and the processor is not running. */
-    private List<Item> queue = new LinkedList<Item>();
+     * If null, nothing is scheduled and the processor is not running. 
+     * @GuardedBy("processorLock")
+     */
+    private final List<Item> queue = new LinkedList<Item>();
 
     /** Number of currently running processors. If there is a new request
      * and this number is lower that the throughput, new Processor is asked
@@ -629,16 +632,16 @@ public final class RequestProcessor implements ScheduledExecutorService {
     private void prioritizedEnqueue(Item item) {
         int iprio = item.getPriority();
 
-        if (queue.isEmpty()) {
-            queue.add(item);
+        if (getQueue().isEmpty()) {
+            getQueue().add(item);
             item.enqueued = true;
 
             return;
-        } else if (iprio <= queue.get(queue.size() - 1).getPriority()) {
-            queue.add(item);
+        } else if (iprio <= getQueue().get(getQueue().size() - 1).getPriority()) {
+            getQueue().add(item);
             item.enqueued = true;
         } else {
-            for (ListIterator<Item> it = queue.listIterator(); it.hasNext();) {
+            for (ListIterator<Item> it = getQueue().listIterator(); it.hasNext();) {
                 Item next = it.next();
 
                 if (iprio > next.getPriority()) {
@@ -655,7 +658,7 @@ public final class RequestProcessor implements ScheduledExecutorService {
     }
 
     Task askForWork(Processor worker, String debug) {
-        if (queue.isEmpty() || (stopped && !finishAwaitingTasks)) { // no more work in this burst, return him
+        if (getQueue().isEmpty() || (stopped && !finishAwaitingTasks)) { // no more work in this burst, return him
             processors.remove(worker);
             Processor.put(worker, debug);
             running--;
@@ -663,7 +666,7 @@ public final class RequestProcessor implements ScheduledExecutorService {
             return null;
         } else { // we have some work for the worker, pass it
 
-            Item i = queue.remove(0);
+            Item i = getQueue().remove(0);
             Task t = i.getTask();
             i.clear(worker);
 
@@ -702,8 +705,8 @@ public final class RequestProcessor implements ScheduledExecutorService {
         //XXX more aggressive shutdown?
         stop();
         synchronized (processorLock) {
-            List<Runnable> result = new ArrayList<Runnable>(queue.size());
-            for (Item item : queue) {
+            List<Runnable> result = new ArrayList<Runnable>(getQueue().size());
+            for (Item item : getQueue()) {
                 Task task = item.getTask();
                 if (task != null && task.run != null) {
                     Runnable r = task.run;
@@ -1067,6 +1070,51 @@ outer:  do {
         t.schedule (initialDelayMillis);
 
         return wrap;
+    }
+
+    private List<Item> getQueue() {
+        assert Thread.holdsLock(processorLock);
+        return queue;
+    }
+    
+    /**
+     * @return a top level ThreadGroup. The method ensures that even Processors
+     * created by internal execution will survive the end of the task.
+     */
+    private static final TopLevelThreadGroup TOP_GROUP = new TopLevelThreadGroup();
+    private static final class TopLevelThreadGroup implements PrivilegedAction<ThreadGroup> {
+        public ThreadGroup getTopLevelThreadGroup() {
+            ThreadGroup orig = java.security.AccessController.doPrivileged(this);
+            ThreadGroup nuova = null;
+
+            try {
+                Class<?> appContext = Class.forName("sun.awt.AppContext");
+                Method instance = appContext.getMethod("getAppContext");
+                Method getTG = appContext.getMethod("getThreadGroup");
+                nuova = (ThreadGroup) getTG.invoke(instance.invoke(null));
+            } catch (Exception exception) {
+                logger().log(Level.FINE, "Cannot access sun.awt.AppContext", exception);
+                return orig;
+            }
+
+            assert nuova != null;
+
+            if (nuova != orig) {
+                logger().log(Level.WARNING, "AppContext group {0} differs from originally used {1}", new Object[]{nuova, orig});
+            }
+            return nuova;
+            
+        }
+        @Override
+        public ThreadGroup run() {
+            ThreadGroup current = Thread.currentThread().getThreadGroup();
+
+            while (current.getParent() != null) {
+                current = current.getParent();
+            }
+
+            return current;
+        }
     }
 
     private static abstract class TaskFutureWrapper implements ScheduledFuture<Void>, Runnable, RunnableWrapper {
@@ -1594,7 +1642,7 @@ outer:  do {
                     return;
                 }
 
-                if (queue.remove(item)) {
+                if (getQueue().remove(item)) {
                     prioritizedEnqueue(item);
                 }
             }
@@ -1737,7 +1785,7 @@ outer:  do {
             boolean ret;
             synchronized (owner.processorLock) {
                 action = processor;
-                ret = enqueued ? owner.queue.remove(this) : true;
+                ret = enqueued ? owner.getQueue().remove(this) : true;
             }
             TickTac.cancel(this);
             return ret;
@@ -1848,7 +1896,7 @@ outer:  do {
         private final Object lock = new Object();
 
         public Processor() {
-            super(getTopLevelThreadGroup(), "Inactive RequestProcessor thread"); // NOI18N
+            super(TOP_GROUP.getTopLevelThreadGroup(), "Inactive RequestProcessor thread"); // NOI18N
             setDaemon(true);
         }
 
@@ -1867,7 +1915,7 @@ outer:  do {
 
                     return proc;
                 } else {
-                    assert checkAccess(getTopLevelThreadGroup());
+                    assert checkAccess(TOP_GROUP.getTopLevelThreadGroup());
                     Processor proc = pool.pop();
                     proc.idle = false;
 
@@ -2074,45 +2122,6 @@ outer:  do {
                 }
             }
             logger().log(Level.SEVERE, "Error in RequestProcessor " + todo.debug(), ex);
-        }
-
-        /**
-         * @return a top level ThreadGroup. The method ensures that even
-         * Processors created by internal execution will survive the
-         * end of the task.
-         */
-        static ThreadGroup getTopLevelThreadGroup() {
-            java.security.PrivilegedAction<ThreadGroup> run = new java.security.PrivilegedAction<ThreadGroup>() {
-                    @Override
-                    public ThreadGroup run() {
-                        ThreadGroup current = Thread.currentThread().getThreadGroup();
-
-                        while (current.getParent() != null) {
-                            current = current.getParent();
-                        }
-
-                        return current;
-                    }
-                };
-            ThreadGroup orig = java.security.AccessController.doPrivileged(run);
-            ThreadGroup nuova = null;
-
-            try {
-                Class<?> appContext = Class.forName("sun.awt.AppContext");
-                Method instance = appContext.getMethod("getAppContext");
-                Method getTG = appContext.getMethod("getThreadGroup");
-                nuova = (ThreadGroup) getTG.invoke(instance.invoke(null));
-            } catch (Exception exception) {
-                logger().log(Level.FINE, "Cannot access sun.awt.AppContext", exception);
-                return orig;
-            }
-
-            assert nuova != null;
-
-            if (nuova != orig) {
-                logger().log(Level.WARNING, "AppContext group {0} differs from originally used {1}", new Object[]{nuova, orig});
-            }
-            return nuova;
         }
 
         private static final Map<Class<? extends Runnable>,Object> warnedClasses = Collections.synchronizedMap(

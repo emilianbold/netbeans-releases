@@ -471,11 +471,12 @@ public final class GitUtils {
     public static File[] listFiles (File[] roots, EnumSet<Status> includedStatuses) {
         File[][] split = Utils.splitFlatOthers(roots);
         List<File> fileList = new ArrayList<File>();
+        FileStatusCache cache = Git.getInstance().getFileStatusCache();
         for (int c = 0; c < split.length; c++) {
             File[] splitRoots = split[c];
             if (c == 1) {
                 // recursive
-                fileList.addAll(Arrays.asList(splitRoots));
+                fileList.addAll(Arrays.asList(cache.listFiles(splitRoots, includedStatuses)));
             } else {
                 // not recursive, list only direct descendants
                 fileList.addAll(Arrays.asList(GitUtils.flatten(splitRoots, includedStatuses)));

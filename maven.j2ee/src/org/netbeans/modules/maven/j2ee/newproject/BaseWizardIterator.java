@@ -83,9 +83,7 @@ public abstract class BaseWizardIterator implements WizardDescriptor.BackgroundI
     protected abstract WizardDescriptor.Panel[] createPanels(ValidationGroup vg);
 
     
-    protected void saveSettingsToNbConfiguration(FileObject projectFile) throws IOException {
-        Project project = ProjectManager.getDefault().findProject(projectFile);
-
+    protected void saveSettingsToNbConfiguration(Project project) throws IOException {
         // Getting properties saved in ServerSelectionHelper.storeServerSettings
         String instanceID = (String) wiz.getProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID);
         String j2eeVersion = (String) wiz.getProperty(MavenJavaEEConstants.HINT_J2EE_VERSION);
@@ -94,7 +92,6 @@ public abstract class BaseWizardIterator implements WizardDescriptor.BackgroundI
         AuxiliaryProperties props = project.getLookup().lookup(AuxiliaryProperties.class);
         props.put(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, instanceID, false);
         props.put(MavenJavaEEConstants.HINT_J2EE_VERSION, j2eeVersion, false);
-        props.put(Constants.HINT_COMPILE_ON_SAVE, "all", true); //NOI18N
     }
     
     protected void saveServerToPom(Project project) {

@@ -97,64 +97,37 @@ public final class GenerateJavadocAction extends TextAction {
     public void actionPerformed(ActionEvent e) {
         final JTextComponent jtc = getTextComponent(e);
         final Document doc = jtc.getDocument();
-        
+
         if (!(doc instanceof StyledDocument)) {
             // unsupported document
             return;
         }
 
-        if (!SourceUtils.isScanInProgress()) {
-            try {
-                Descriptor desc = prepareGenerating(doc, jtc.getCaretPosition());
+        RequestProcessor.getDefault().post(new Runnable() {
 
-                if (desc != null) {
-                    // add javadoc content
-                    generate(doc, desc, jtc);
-                }
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (BadLocationException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        } else {
-            RequestProcessor.getDefault().post(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    final Descriptor desc = prepareGenerating(doc, jtc.getCaretPosition());
+                    if (desc != null) {
+                        // add javadoc content
+                        SwingUtilities.invokeLater(new Runnable() {
 
-                @Override
-                public void run() {
-                    try {
-                        if (SourceUtils.isScanInProgress()) {
-                            //wait 1ms
-                            try {
-                                Thread.sleep(1000);
-                            } catch (InterruptedException ex) {
-                                Exceptions.printStackTrace(ex);
-                            }
-                            //still scanning? -> exit!
-                            if (SourceUtils.isScanInProgress()) {
-                                return;
-                            }
-
-                        }
-                        final Descriptor desc = prepareGenerating(doc, jtc.getCaretPosition());
-                        if (desc != null) {
-                            // add javadoc content
-                            SwingUtilities.invokeLater(new Runnable() {
-                                @Override
-                                public void run() {
-                                    try {
-                                        generate(doc, desc, jtc);
-                                    } catch (BadLocationException ex) {
-                                        Exceptions.printStackTrace(ex);
-                                    }
+                            @Override
+                            public void run() {
+                                try {
+                                    generate(doc, desc, jtc);
+                                } catch (BadLocationException ex) {
+                                    Exceptions.printStackTrace(ex);
                                 }
-                            });
-                        }
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
+                            }
+                        });
                     }
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
-            });
-        }
+            }
+        });
     }
     
     private Descriptor prepareGenerating(final Document doc, final int offset) throws IOException {

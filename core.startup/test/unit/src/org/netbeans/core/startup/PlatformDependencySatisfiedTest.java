@@ -44,6 +44,7 @@
 
 package org.netbeans.core.startup;
 
+import java.awt.GraphicsEnvironment;
 import org.netbeans.SetupHid;
 import org.netbeans.MockEvents;
 import java.io.File;
@@ -53,6 +54,8 @@ import java.util.Collections;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
 import org.openide.util.Utilities;
@@ -61,6 +64,11 @@ import org.openide.util.Utilities;
  * @author Jaroslav Tulach
  */
 public class PlatformDependencySatisfiedTest extends SetupHid {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(PlatformDependencySatisfiedTest.class);
+    }
+
     private File moduleJarFile;
 
     public PlatformDependencySatisfiedTest(String name) {
@@ -76,7 +84,6 @@ public class PlatformDependencySatisfiedTest extends SetupHid {
     protected void setUp() throws Exception {
         super.setUp();
         System.setProperty("org.netbeans.core.modules.NbInstaller.noAutoDeps", "true");
-        Main.getModuleSystem (); // init module system
         
         clearWorkDir();
         moduleJarFile = new File(getWorkDir(), "PlatformDependencySatisfiedModule.jar");

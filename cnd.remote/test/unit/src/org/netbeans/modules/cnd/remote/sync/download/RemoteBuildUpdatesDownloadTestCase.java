@@ -51,10 +51,10 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import junit.framework.AssertionFailedError;
 import junit.framework.Test;
-import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.remote.test.RemoteDevelopmentTest;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
+import org.netbeans.modules.cnd.remote.support.RemoteProjectSupport;
 import org.netbeans.modules.cnd.remote.sync.download.FileDownloadInfo.State;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -117,11 +117,10 @@ public class RemoteBuildUpdatesDownloadTestCase extends RemoteBuildTestBase {
             new NameStatePair(new File(projectDirFile, "y.tab.h"), FileDownloadInfo.State.UNCONFIRMED),
             new NameStatePair(new File(projectDirFile, "lex.yy.c"), FileDownloadInfo.State.UNCONFIRMED)
         };
-        checkInfo(filesToCheck, 10000);
+        checkInfo(filesToCheck, 10000, RemoteProjectSupport.getPrivateStorage(makeProject));
     }
 
     @ForAllEnvironments
-    @RandomlyFails
     public void testNonProjectUpdates() throws Exception {
         final ExecutionEnvironment execEnv = getTestExecutionEnvironment();
         MakeProject makeProject = openProject("TestNonProjectUpdates", execEnv, Sync.RFS, Toolchain.GNU);
@@ -137,7 +136,7 @@ public class RemoteBuildUpdatesDownloadTestCase extends RemoteBuildTestBase {
             new NameStatePair(new File(projectDirFile, "file_1.hpp"), FileDownloadInfo.State.UNCONFIRMED)
             //new NameStatePair(new File(projectDirFile, "Makefile"), FileDownloadInfo.State.UNCONFIRMED)
         };
-        checkInfo(filesToCheck, 12000);
+        checkInfo(filesToCheck, 12000, RemoteProjectSupport.getPrivateStorage(makeProject));
     }
 
     @Override
@@ -165,12 +164,12 @@ public class RemoteBuildUpdatesDownloadTestCase extends RemoteBuildTestBase {
         }
     }
 
-    private void checkInfo(NameStatePair[] pairsToCheck, long timeout) {
+    private void checkInfo(NameStatePair[] pairsToCheck, long timeout, File privProjectStorageDir) {
         List<NameStatePair> pairs = new ArrayList<NameStatePair>(Arrays.asList(pairsToCheck));
         pairsToCheck = null; // just to reference only one of them
         long stopTime = System.currentTimeMillis() + timeout;
         while (true) {
-            List<FileDownloadInfo> updates = HostUpdates.testGetUpdates(getTestExecutionEnvironment());
+            List<FileDownloadInfo> updates = HostUpdates.testGetUpdates(getTestExecutionEnvironment(), privProjectStorageDir);
             boolean success = true;
             StringBuilder notFoundMessage = new StringBuilder();
             StringBuilder wrongStateFoundMessage = new StringBuilder();

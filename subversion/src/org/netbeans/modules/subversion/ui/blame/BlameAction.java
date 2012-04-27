@@ -147,8 +147,8 @@ public class BlameAction extends ContextAction {
 
         if (revision == null) {
             ISVNStatus status = Subversion.getInstance().getStatusCache().getStatus(file).getEntry(file);
-            if (status == null) {
-                // status could not be loaded, do not continnue
+            if (status == null || status.getRevision() == null) {
+                // status could not be loaded or we have a symlink, do not continnue
                 return;
             }
             ab.setSVNClienListener(new SVNClientListener(status.getRevision().getNumber(), repository, file, ab));
@@ -205,7 +205,7 @@ public class BlameAction extends ContextAction {
         // fetch log messages
         ISVNLogMessage [] logs;
         try {
-            logs = client.getLogMessages(file, new SVNRevision.Number(1), revision, false, false);
+            logs = client.getLogMessages(file, revision, new SVNRevision.Number(1), revision, false, false, 0, false);
         } catch (SVNClientException e) {
             progress.annotate(e);
             return;

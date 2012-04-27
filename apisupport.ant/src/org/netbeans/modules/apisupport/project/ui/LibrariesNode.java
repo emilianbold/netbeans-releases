@@ -501,7 +501,7 @@ final class LibrariesNode extends AbstractNode {
             DialogDescriptor descriptor = new DialogDescriptor(editPanel,
                     NbBundle.getMessage(LibrariesNode.class, "CTL_EditModuleDependencyTitle",
                     dep.getModuleEntry().getLocalizedName()));
-            descriptor.setHelpCtx(new HelpCtx(EditDependencyPanel.class));
+            descriptor.setHelpCtx(new HelpCtx("org.netbeans.modules.apisupport.project.ui.customizer.EditDependencyPanel"));
             Dialog d = DialogDisplayer.getDefault().createDialog(descriptor);
             try {
                 d.setVisible(true);

@@ -65,10 +65,10 @@ import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
-import static org.junit.Assert.*;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.java.JavaDataLoader;
+import org.netbeans.modules.java.hints.spiimpl.JavaHintsPositionRefresher;
 import org.netbeans.modules.java.source.indexing.JavaCustomIndexer;
 import org.netbeans.modules.java.source.parsing.JavacParserFactory;
 import org.netbeans.modules.java.source.usages.IndexUtil;
@@ -222,7 +222,7 @@ public class JavaHintsPositionRefresherTest extends NbTestCase {
 
     private void performTest(String fileName , String code, String[] expected) throws Exception {
         int[] caretPosition = new int[1];
-        code = org.netbeans.modules.java.hints.TestUtilities.detectOffsets(code, caretPosition);
+        code = org.netbeans.modules.java.hints.spiimpl.TestUtilities.detectOffsets(code, caretPosition);
         prepareTest(fileName, code);
         final Context ctx = prepareContext(caretPosition[0]);
         final Map<String, List<ErrorDescription>> errorDescriptionsAt = new HashMap<String, List<ErrorDescription>>();

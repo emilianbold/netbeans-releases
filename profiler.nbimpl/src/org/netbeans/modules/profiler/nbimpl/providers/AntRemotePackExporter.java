@@ -61,15 +61,6 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service=AbstractRemotePackExporter.class)
 public class AntRemotePackExporter extends AbstractRemotePackExporter {
     private AntProjectCookie cookie;
-    
-    public AntRemotePackExporter() {
-        try {
-            File antFile = InstalledFileLocator.getDefault().locate("remote-pack-defs/build.xml", "org-netbeans-lib-profiler", false); //NOI18N
-            cookie = DataObject.find(FileUtil.toFileObject(antFile)).getCookie(AntProjectCookie.class);
-        } catch (DataObjectNotFoundException ex) {
-            throw new ExceptionInInitializerError(ex);
-        }
-    }
 
     @Override
     public String export(String exportPath, String hostOS, String jvm) throws IOException {
@@ -84,7 +75,7 @@ public class AntRemotePackExporter extends AbstractRemotePackExporter {
         antProperties.setProperty("dest.dir", adjustExportPath(exportPath)); //NOI18N
         env.setProperties(antProperties);
         AntTargetExecutor ate = AntTargetExecutor.createTargetExecutor(env);
-        ate.execute(cookie, new String[]{"profiler-server-" + getPlatformShort(hostOS) + "-" + getJVMShort(jvm)}).result();
+        ate.execute(getCookie(), new String[]{"profiler-server-" + getPlatformShort(hostOS) + "-" + getJVMShort(jvm)}).result();
         
         return getRemotePackPath(exportPath, hostOS);
     }
@@ -96,5 +87,13 @@ public class AntRemotePackExporter extends AbstractRemotePackExporter {
     
     private String adjustExportPath(String exportPath) {
         return exportPath != null ? exportPath : System.getProperty("java.io.tmpdir");
+    }
+    
+    private synchronized AntProjectCookie getCookie() throws IOException {
+        if (cookie == null) {
+            File antFile = InstalledFileLocator.getDefault().locate("remote-pack-defs/build.xml", "org-netbeans-lib-profiler", false); //NOI18N
+            cookie = DataObject.find(FileUtil.toFileObject(antFile)).getCookie(AntProjectCookie.class);
+        }
+        return cookie;
     }
 }

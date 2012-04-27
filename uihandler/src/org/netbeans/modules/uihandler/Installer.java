@@ -52,43 +52,14 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.io.Reader;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.lang.reflect.InvocationTargetException;
-import java.net.ConnectException;
-import java.net.MalformedURLException;
-import java.net.NoRouteToHostException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLEncoder;
-import java.net.UnknownHostException;
+import java.net.*;
 import java.security.GeneralSecurityException;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
-import java.util.MissingResourceException;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Handler;
@@ -102,15 +73,7 @@ import java.util.prefs.Preferences;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPOutputStream;
-import javax.swing.AbstractButton;
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JEditorPane;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
+import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import javax.xml.parsers.ParserConfigurationException;
@@ -119,8 +82,8 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.lib.uihandler.LogRecords;
 import org.netbeans.lib.uihandler.PasswdEncryption;
-import org.netbeans.modules.exceptions.ReportPanel;
 import org.netbeans.modules.exceptions.ExceptionsSettings;
+import org.netbeans.modules.exceptions.ReportPanel;
 import org.netbeans.modules.exceptions.ReporterResultTopComponent;
 import org.netbeans.modules.uihandler.api.Activated;
 import org.netbeans.modules.uihandler.api.Deactivated;
@@ -139,12 +102,7 @@ import org.openide.modules.SpecificationVersion;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.util.ContextAwareAction;
-import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
-import org.openide.util.RequestProcessor;
+import org.openide.util.*;
 import org.openide.util.io.NullOutputStream;
 import org.openide.windows.WindowManager;
 import org.xml.sax.SAXException;
@@ -170,12 +128,16 @@ public class Installer extends ModuleInstall implements Runnable {
     private static OutputStream logStreamMetrics;
     private static int logsSize;
     private static int logsSizeMetrics;
+    private static long logsFirstDateMetric;
     private static URL hintURL;
     private static Object[] selectedExcParams;
 
     private static boolean logMetricsEnabled = false;
     /** Flag to store status of last metrics upload */
     private static boolean logMetricsUploadFailed = false;
+    
+    /** Log records currently displaying/uploading */
+    private static final ThreadLocal<List<LogRecord>> logRecords = new ThreadLocal<List<LogRecord>>();
     
     private static final  String USAGE_STATISTICS_ENABLED          = "usageStatisticsEnabled"; // NOI18N
     private static final String USAGE_STATISTICS_SET_BY_IDE       = "usageStatisticsSetByIde"; // NOI18N
@@ -264,6 +226,7 @@ public class Installer extends ModuleInstall implements Runnable {
         all.addHandler(handler);
         logsSize = prefs.getInt("count", 0);
         logsSizeMetrics = prefs.getInt("countMetrics", 0);
+        logsFirstDateMetric = prefs.getLong("firstDateMetric", -1);
         logMetricsUploadFailed = prefs.getBoolean("metrics.upload.failed", false); // NOI18N
         corePref.addPreferenceChangeListener(new PrefChangeListener());
 
@@ -310,6 +273,11 @@ public class Installer extends ModuleInstall implements Runnable {
         if (logsSize >= UIHandler.MAX_LOGS) {
             WindowManager.getDefault().invokeWhenUIReady(this);
         }
+    }
+    
+    /** Accessed from tests. */
+    static int getLogsSizeTest() {
+        return logsSize;
     }
     
     private void logIdeStartup() {
@@ -433,22 +401,48 @@ public class Installer extends ModuleInstall implements Runnable {
         closeLogStream();
         closeLogStreamMetrics();
     }
+    
+    static boolean isImmediateWriteOut(LogRecord r) {
+        List<LogRecord> preferredLog = logRecords.get();
+        if (preferredLog != null) {
+            preferredLog.add(r);
+            return true;
+        } else {
+            return false;
+        }
+    }
 
     static void writeOut(LogRecord r) {
         try {
+            boolean logOverflow;
+            boolean logSizeControl;
+            List<LogRecord> logs = null;
             synchronized (UIGESTURE_LOG_LOCK) {
                 LogRecords.write(logStream(), r);
-            }
-            if (logsSize >= UIHandler.MAX_LOGS) {
-                if(preferencesWritable) {
-                    prefs.putInt("count", UIHandler.MAX_LOGS);
+                logsSize++;
+                logOverflow = logsSize > UIHandler.MAX_LOGS;
+                if (preferencesWritable) {
+                    if (logOverflow) {
+                        prefs.putInt("count", UIHandler.MAX_LOGS);
+                    } else if (prefs.getInt("count", 0) < logsSize) {
+                        prefs.putInt("count", logsSize);
+                    }
                 }
-                closeLogStream();
+                if (logOverflow) {
+                    closeLogStream();
+                    if (isHintsMode()) {
+                        logs = new ArrayList<LogRecord>(getLogs());
+                    }
+                }
+                logSizeControl = (logsSize % 100) == 0 && !logOverflow;
+            }
+            if (logOverflow) {
                 if (isHintsMode()) {
+                    final List<LogRecord> recs = logs;
                     class Auto implements Runnable {
                         @Override
                         public void run() {
-                            displaySummary("WELCOME_URL", true, true,true);
+                            displaySummary("WELCOME_URL", true, true,true, DataType.DATA_UIGESTURE, recs, null);
                         }
                     }
                     RP.post(new Auto()).waitFinished();
@@ -460,15 +454,10 @@ public class Installer extends ModuleInstall implements Runnable {
                         f1.delete();
                     }
                     f.renameTo(f1);
-                }
-                logsSize = 0;
-            } else {
-                logsSize++;
-                if (prefs.getInt("count", 0) < logsSize && preferencesWritable) {
-                    prefs.putInt("count", logsSize);
+                    logsSize = 0;
                 }
             }
-            if ((logsSize % 100) == 0) {
+            if (logSizeControl) {
                 synchronized (UIGESTURE_LOG_LOCK) {
                     //This is fallback to avoid growing log file over any limit.
                     File f = logFile(0);
@@ -478,7 +467,7 @@ public class Installer extends ModuleInstall implements Runnable {
                         LOG.log(Level.INFO, "Log file:{0} Size:{1} Bytes", new Object[]{f, f.length()}); // NOI18N
                         closeLogStream();
                         logsSize = 0;
-                        if (prefs.getInt("count", 0) < logsSize && preferencesWritable) {
+                        if (preferencesWritable) {
                             prefs.putInt("count", logsSize);
                         }
                         f.delete();
@@ -511,18 +500,36 @@ public class Installer extends ModuleInstall implements Runnable {
         userData.setLoggerName(logger.getName());
         return userData;
     }
+    
+    private static boolean uploadMetricsTest() {
+        if (logsSizeMetrics >= MetricsHandler.MAX_LOGS) {
+            return true;
+        }
+        int daysSinceFirstMetric = (int) ((System.currentTimeMillis() - logsFirstDateMetric)/(1000*60*60*24));
+        if (daysSinceFirstMetric > MetricsHandler.MAX_DAYS) {
+            return true;
+        }
+        return false;
+    }
 
     static void writeOutMetrics (LogRecord r) {
         try {
+            boolean upload;
             synchronized (METRICS_LOG_LOCK) {
                 LogRecords.write(logStreamMetrics(), r);
-            }
-            logsSizeMetrics++;
-            if (preferencesWritable) {
-                prefs.putInt("countMetrics", logsSizeMetrics);
-            }
-            if (logsSizeMetrics >= MetricsHandler.MAX_LOGS) {
-                synchronized (METRICS_LOG_LOCK) {
+                logsSizeMetrics++;
+                boolean firstDateMetric = logsFirstDateMetric < 0;
+                if (firstDateMetric) {
+                    logsFirstDateMetric = System.currentTimeMillis();
+                }
+                if (preferencesWritable) {
+                    prefs.putInt("countMetrics", logsSizeMetrics);
+                    if (firstDateMetric) {
+                        prefs.putLong("firstDateMetric", logsFirstDateMetric);
+                    }
+                }
+                upload = uploadMetricsTest();
+                if (upload) {
                     MetricsHandler.waitFlushed();
                     closeLogStreamMetrics();
                     File f = logFileMetrics(0);
@@ -552,15 +559,20 @@ public class Installer extends ModuleInstall implements Runnable {
                         }
                     }
                     logsSizeMetrics = 0;
+                    logsFirstDateMetric = System.currentTimeMillis();
                     if (preferencesWritable) {
                         prefs.putInt("countMetrics", logsSizeMetrics);
+                        prefs.putLong("dateFirstMetric", logsFirstDateMetric);
                     }
                 }
+            }
+            if (upload) {
                 //Task to upload metrics data
+                final List<LogRecord> recs = null;
                 class Auto implements Runnable {
                     @Override
                     public void run() {
-                        displaySummary("METRICS_URL", true, true, true, DataType.DATA_METRICS, null);
+                        displaySummary("METRICS_URL", true, true, true, DataType.DATA_METRICS, recs, null);
                     }
                 }
                 //Must be performed out of lock because it calls getLogsMetrics
@@ -573,31 +585,37 @@ public class Installer extends ModuleInstall implements Runnable {
 
     /** Append content of source to target */
     private static void appendFile (File source, File target) {
+        byte[] buf = new byte[8192];
+        FileInputStream is = null;
+        FileOutputStream os = null;
+        long targetSize = -1;
         try {
-            FileInputStream is = null;
-            FileOutputStream os = null;
-            try {
-                is = new FileInputStream(source);
-                BufferedInputStream bis = new BufferedInputStream(is);
+            is = new FileInputStream(source);
+            targetSize = target.length();
+            os = new FileOutputStream(target, true);
 
-                os = new FileOutputStream(target, true);
-                BufferedOutputStream bos = new BufferedOutputStream(os);
-
-                int c;
-                while ((c = bis.read()) != -1) {
-                    bos.write(c);
-                }
-                bos.flush();
-            } finally {
-                if (is != null) {
-                    is.close();
-                }
-                if (os != null) {
-                    os.close();
-                }
+            int l;
+            while ((l = is.read(buf)) != -1) {
+                os.write(buf, 0, l);
             }
+            os.flush();
         } catch (IOException ex) {
+            if (os != null) {
+                // Write failed, to assure consistency of data, truncate the file back to the original size:
+                DataConsistentFileOutputStream.truncateFileToConsistentSize(os, targetSize);
+            }
             Exceptions.printStackTrace(ex);
+        } finally {
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (IOException ex) {}
+            }
+            if (os != null) {
+                try {
+                    os.close();
+                } catch (IOException ex) {}
+            }
         }
     }
 
@@ -674,12 +692,14 @@ public class Installer extends ModuleInstall implements Runnable {
 
     public static int getLogsSize() {
         UIHandler.waitFlushed();
-        return prefs.getInt("count", 0); // NOI18N
+        synchronized (UIGESTURE_LOG_LOCK) {
+            return prefs.getInt("count", 0); // NOI18N
+        }
     }
 
     static void readLogs(Handler handler){
+        UIHandler.waitFlushed();
         synchronized (UIGESTURE_LOG_LOCK) {
-            UIHandler.waitFlushed();
 
             File f = logFile(0);
             if (f == null || !f.exists()) {
@@ -694,21 +714,53 @@ public class Installer extends ModuleInstall implements Runnable {
             scan(f, handler);
         }
     }
+    
+    private static String reportFileContent(File f) {
+        BufferedReader br = null;
+        try {
+            br = new BufferedReader(new InputStreamReader(new FileInputStream(f), "UTF-8"));
+            StringWriter sw = new StringWriter();
+            String line;
+            while ((line = br.readLine()) != null) {
+                sw.write(line);
+                sw.write('\n');
+            }
+            sw.close();
+            return sw.toString();
+        } catch (IOException ioex) {
+            return ioex.toString();
+        } finally {
+            if (br != null) {
+                try {
+                    br.close();
+                } catch (IOException ex) {}
+            }
+        }
+    }
 
+    private static boolean fileContentReported;
+    
     private static void scan(File f, Handler handler){
         InputStream is = null;
         try {
             is = new FileInputStream(f);
             LogRecords.scan(is, handler);
         } catch (IOException ex) {
-            LOG.log(Level.INFO, "Broken uilogs file, not all UI actions will submitted", ex);
+            LOG.log(Level.INFO, "Broken uilogs file, not all UI actions will be submitted", ex);
+            if (!fileContentReported) {
+                try {
+                    LOG.log(Level.INFO, "Problematic file content = "+reportFileContent(f));
+                } finally {
+                    fileContentReported = true;
+                }
+            }
         } finally {
             try {
                 if (is != null) {
                     is.close();
                 }
             } catch (IOException ex) {
-                LOG.log(Level.INFO, "Broken uilogs file, not all UI actions will submitted", ex);
+                LOG.log(Level.INFO, "Broken uilogs file, not all UI actions will be submitted", ex);
             }
         }
     }
@@ -766,7 +818,16 @@ public class Installer extends ModuleInstall implements Runnable {
                     is = new FileInputStream(f1);
                     LogRecords.scan(is, hndlr);
                 } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+                    Exceptions.printStackTrace(
+                        Exceptions.attachMessage(ex, "Broken metrics log file, not all metrics data will be submitted")
+                    );
+                    if (!fileContentReported) {
+                        try {
+                            LOG.log(Level.INFO, "Problematic file content = "+reportFileContent(f1));
+                        } finally {
+                            fileContentReported = true;
+                        }
+                    }
                 } finally {
                     try {
                         if (is != null) {
@@ -831,7 +892,7 @@ public class Installer extends ModuleInstall implements Runnable {
         File logFile = logFile(0);
         if (logFile != null) {
             logFile.getParentFile().mkdirs();
-            os = new BufferedOutputStream(new FileOutputStream(logFile, true));
+            os = new DataConsistentFileOutputStream(logFile, true);
         } else {
             os = new NullOutputStream();
         }
@@ -840,9 +901,7 @@ public class Installer extends ModuleInstall implements Runnable {
             if (logStream != null) {
                 try {
                     os.close();
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+                } catch (IOException ex) {}
                 return logStream;
             }
             logStream = os;
@@ -861,7 +920,7 @@ public class Installer extends ModuleInstall implements Runnable {
         File logFile = logFileMetrics(0);
         if (logFile != null) {
             logFile.getParentFile().mkdirs();
-            os = new BufferedOutputStream(new FileOutputStream(logFile, true));
+            os = new DataConsistentFileOutputStream(logFile, true);
         } else {
             os = new NullOutputStream();
         }
@@ -870,9 +929,7 @@ public class Installer extends ModuleInstall implements Runnable {
             if (logStreamMetrics != null) {
                 try {
                     os.close();
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+                } catch (IOException ex) {}
                 return logStreamMetrics;
             }
             logStreamMetrics = os;
@@ -892,9 +949,7 @@ public class Installer extends ModuleInstall implements Runnable {
 
         try {
             os.close();
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        } catch (IOException ex) {}
     }
 
     private static void closeLogStreamMetrics() {
@@ -909,25 +964,25 @@ public class Installer extends ModuleInstall implements Runnable {
 
         try {
             os.close();
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        } catch (IOException ex) {}
     }
 
     static void clearLogs() {
-        closeLogStream();
+        synchronized (UIGESTURE_LOG_LOCK) {
+            closeLogStream();
 
-        for (int i = 0; ; i++) {
-            File f = logFile(i);
-            if (f == null || !f.exists()) {
-                break;
+            for (int i = 0; ; i++) {
+                File f = logFile(i);
+                if (f == null || !f.exists()) {
+                    break;
+                }
+                f.delete();
             }
-            f.delete();
-        }
 
-        logsSize = 0;
-        if(preferencesWritable) {
-            prefs.putInt("count", 0);
+            logsSize = 0;
+            if (preferencesWritable) {
+                prefs.putInt("count", 0);
+            }
         }
         UIHandler.SUPPORT.firePropertyChange(null, null, null);
     }
@@ -947,7 +1002,7 @@ public class Installer extends ModuleInstall implements Runnable {
     
     private static AtomicReference<String> DISPLAYING = new AtomicReference<String>();
 
-    private static boolean displaySummary(String msg, boolean explicit, boolean auto, boolean connectDialog, DataType dataType, SlownessData slownData) {
+    private static boolean displaySummary(String msg, boolean explicit, boolean auto, boolean connectDialog, DataType dataType, List<LogRecord> recs, SlownessData slownData) {
         if (!DISPLAYING.compareAndSet(null, msg)) {
             return true;
         }
@@ -962,7 +1017,7 @@ public class Installer extends ModuleInstall implements Runnable {
                 }
             }
 
-            Submit submit = auto ? new SubmitAutomatic(msg, Button.SUBMIT, dataType) : new SubmitInteractive(msg, connectDialog, dataType, slownData);
+            Submit submit = auto ? new SubmitAutomatic(msg, Button.SUBMIT, dataType, recs) : new SubmitInteractive(msg, connectDialog, dataType, recs, slownData);
             submit.doShow(dataType);
             v = submit.okToExit;
         } finally {
@@ -972,11 +1027,11 @@ public class Installer extends ModuleInstall implements Runnable {
     }
 
     public static boolean displaySummary(String msg, boolean explicit, boolean auto, boolean connectDialog) {
-        return displaySummary(msg, explicit, auto, connectDialog, DataType.DATA_UIGESTURE, null);
+        return displaySummary(msg, explicit, auto, connectDialog, DataType.DATA_UIGESTURE, null, null);
     }
 
     static boolean displaySummary(String msg, boolean explicit, boolean auto, boolean connectDialog, SlownessData slownessData) {
-        return displaySummary(msg, explicit, auto, connectDialog, DataType.DATA_UIGESTURE, slownessData);
+        return displaySummary(msg, explicit, auto, connectDialog, DataType.DATA_UIGESTURE, null, slownessData);
     }
 
     /** used only in tests - low performance - should use read logs*/
@@ -1129,27 +1184,41 @@ public class Installer extends ModuleInstall implements Runnable {
             h.progress(NbBundle.getMessage(Installer.class, "MSG_UploadConnecting")); // NOI18N
         }
         
+        boolean fileProtocol = "file".equals(postURL.getProtocol()); // For tests or other non-http usages
+        
         LOG.log(Level.FINE, "uploadLogs, postURL = {0}", postURL); // NOI18N
-        URLConnection conn = postURL.openConnection();
+        URLConnection conn;
+        if (fileProtocol) {
+            conn = null;
+        } else {
+            conn = postURL.openConnection();
+        }
 
         if (dataType != DataType.DATA_METRICS) {
             h.progress(10);
         }
         
-        conn.setReadTimeout(60000);
-        conn.setDoOutput(true);
-        conn.setDoInput(true);
-        conn.setRequestProperty("Content-Type", "multipart/form-data; boundary=--------konec<>bloku");
-        conn.setRequestProperty("Pragma", "no-cache");
-        conn.setRequestProperty("Cache-control", "no-cache");
-        conn.setRequestProperty("User-Agent", "NetBeans");
+        if (!fileProtocol) {
+            conn.setReadTimeout(60000);
+            conn.setDoOutput(true);
+            conn.setDoInput(true);
+            conn.setRequestProperty("Content-Type", "multipart/form-data; boundary=--------konec<>bloku");
+            conn.setRequestProperty("Pragma", "no-cache");
+            conn.setRequestProperty("Cache-control", "no-cache");
+            conn.setRequestProperty("User-Agent", "NetBeans");
+        }
         
         if (dataType != DataType.DATA_METRICS) {
             h.progress(NbBundle.getMessage(Installer.class, "MSG_UploadSending"), 20);
         }
         LOG.log(Level.FINE, "uploadLogs, header sent"); // NOI18N
 
-        PrintStream os = new PrintStream(conn.getOutputStream());
+        PrintStream os;
+        if (fileProtocol) {
+            os = new PrintStream(new FileOutputStream(postURL.getFile()));
+        } else {
+            os = new PrintStream(conn.getOutputStream());
+        }
         /*
         os.println("POST " + postURL.getPath() + " HTTP/1.1");
         os.println("Pragma: no-cache");
@@ -1260,27 +1329,33 @@ public class Installer extends ModuleInstall implements Runnable {
         if (dataType != DataType.DATA_METRICS) {
             h.progress(NbBundle.getMessage(Installer.class, "MSG_UploadReading"), cnt + 10);
         }
+
+        //System.err.println("DONE: Uploaded logs to "+postURL+" in "+Thread.currentThread());
         
-        LOG.log(Level.FINE, "uploadLogs, reading reply"); // NOI18N
-        InputStream is = conn.getInputStream();
-        StringBuffer redir = new StringBuffer();
-        for (;;) {
-            int ch = is.read();
-            if (ch == -1) {
-                break;
+        StringBuffer redir = null;
+        Matcher m = null;
+        if (!fileProtocol) {
+            LOG.log(Level.FINE, "uploadLogs, reading reply"); // NOI18N
+            InputStream is = conn.getInputStream();
+            redir = new StringBuffer();
+            for (;;) {
+                int ch = is.read();
+                if (ch == -1) {
+                    break;
+                }
+                redir.append((char)ch);
             }
-            redir.append((char)ch);
-        }
-        is.close();
-        
-        if (dataType != DataType.DATA_METRICS) {
-            h.progress(cnt + 20);
-        }
+            is.close();
 
-        LOG.log(Level.FINE, "uploadLogs, Reply from uploadLogs: {0}", redir);
+            if (dataType != DataType.DATA_METRICS) {
+                h.progress(cnt + 20);
+            }
 
-        Pattern p = Pattern.compile("<meta\\s*http-equiv=.Refresh.\\s*content.*url=['\"]?([^'\" ]*)\\s*['\"]", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
-        Matcher m = p.matcher(redir);
+            LOG.log(Level.FINE, "uploadLogs, Reply from uploadLogs: {0}", redir);
+
+            Pattern p = Pattern.compile("<meta\\s*http-equiv=.Refresh.\\s*content.*url=['\"]?([^'\" ]*)\\s*['\"]", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
+            m = p.matcher(redir);
+        }
 
         if (isOOM){
             FileObject fo = FileUtil.createData(getHeapDump());
@@ -1295,17 +1370,21 @@ public class Installer extends ModuleInstall implements Runnable {
             lock.releaseLock();
         }
 
-        if (m.find()) {
-            LOG.log(Level.FINE, "uploadLogs, found url = {0}", m.group(1)); // NOI18N
-            return new URL(m.group(1));
+        if (!fileProtocol) {
+            if (m.find()) {
+                LOG.log(Level.FINE, "uploadLogs, found url = {0}", m.group(1)); // NOI18N
+                return new URL(m.group(1));
+            } else {
+                File f = File.createTempFile("uipage", "html");
+                f.deleteOnExit();
+                FileWriter w = new FileWriter(f);
+                w.write(redir.toString());
+                w.close();
+                LOG.log(Level.FINE, "uploadLogs, temporary url = {0}", f.toURI()); // NOI18N
+                return f.toURI().toURL();
+            }
         } else {
-            File f = File.createTempFile("uipage", "html");
-            f.deleteOnExit();
-            FileWriter w = new FileWriter(f);
-            w.write(redir.toString());
-            w.close();
-            LOG.log(Level.FINE, "uploadLogs, temporary url = {0}", f.toURI()); // NOI18N
-            return f.toURI().toURL();
+            return null;
         }
     }
 
@@ -1443,19 +1522,24 @@ public class Installer extends ModuleInstall implements Runnable {
         final protected List<LogRecord> recs;
         protected boolean isOOM = false;
         protected ExceptionsSettings settings;
+        protected JProgressBar jpb = new JProgressBar();
         
         public Submit(String msg) {
-            this(msg,DataType.DATA_UIGESTURE);
+            this(msg,DataType.DATA_UIGESTURE, null);
         }
 
-        public Submit(String msg, DataType dataType) {
+        public Submit(String msg, DataType dataType, List<LogRecord> recs) {
             this.msg = msg;
             this.dataType = dataType;
             isSubmiting = new AtomicBoolean(false);
-            if (dataType == DataType.DATA_METRICS) {
-                recs = getLogsMetrics();
-            }else{
-                recs = new ArrayList<LogRecord>(getLogs());
+            if (recs != null) {
+                this.recs = recs;
+            } else {
+                if (dataType == DataType.DATA_METRICS) {
+                    this.recs = getLogsMetrics();
+                } else {
+                    this.recs = new ArrayList<LogRecord>(getLogs());
+                }
             }
             if ("ERROR_URL".equals(msg)) { // NOI18N
                 report = true;
@@ -1486,8 +1570,15 @@ public class Installer extends ModuleInstall implements Runnable {
         }
 
         public void doShow(DataType dataType) {
+            //System.err.println("doShow("+dataType+")");
+            //Thread.dumpStack();
             if (dataType == DataType.DATA_UIGESTURE) {
-                logDeactivated();
+                try {
+                    logRecords.set(recs);
+                    logDeactivated();
+                } finally {
+                    logRecords.remove();
+                }
             }
             findDD();
             
@@ -1618,6 +1709,7 @@ public class Installer extends ModuleInstall implements Runnable {
         private void catchConnectionProblem(Exception exception){
             LOG.log(Level.INFO, url.toExternalForm(), exception);
             url = getUnknownHostExceptionURL();
+            jpb.setVisible(false);
             errorPage = true;
         }
 
@@ -1671,6 +1763,8 @@ public class Installer extends ModuleInstall implements Runnable {
             String actionURL = decodeButtons(e.getSource(), universalResourceLocator, dataType);
 
             LOG.log(Level.FINE, "actionPerformed: command = {0}", e.getActionCommand()); // NOI18N
+            //System.err.println("actionPerformed: command = "+e.getActionCommand()); // NOI18N
+            //Thread.dumpStack();
 
             boolean submit = Button.SUBMIT.isCommand(actionURL);
             if (Button.AUTO_SUBMIT.isCommand(e.getActionCommand())) {
@@ -1946,11 +2040,11 @@ public class Installer extends ModuleInstall implements Runnable {
         }
 
         public SubmitInteractive(String msg, boolean connectDialog, DataType dataType) {
-            this(msg, connectDialog, dataType, null);
+            this(msg, connectDialog, dataType, null, null);
         }
 
-        private SubmitInteractive(String msg, boolean connectDialog, DataType dataType, SlownessData slownData) {
-            super(msg, dataType);
+        private SubmitInteractive(String msg, boolean connectDialog, DataType dataType, List<LogRecord> recs, SlownessData slownData) {
+            super(msg, dataType, recs);
             this.connectDialog = connectDialog;
             this.slownData = slownData;
         }
@@ -1990,9 +2084,9 @@ public class Installer extends ModuleInstall implements Runnable {
                         if (summary != null){
                             reportPanel.setSummary(summary);
                         }
-                        Dimension dim = new Dimension(450, 50);
+                        Dimension dim = new Dimension(350, 50);
                         if ("ERROR_URL".equals(msg)) {
-                            dim = new Dimension(470, 450);
+                            dim = new Dimension(370, 250);
                         }
                         browser = new JEditorPane();
                         try {
@@ -2016,8 +2110,15 @@ public class Installer extends ModuleInstall implements Runnable {
                         p.setBorder(BorderFactory.createEmptyBorder());
                         p.setPreferredSize(dim);
                         DialogDescriptor descr = findDD();
-                        descr.setMessage(p);
-                        //        AbstractNode root = new AbstractNode(new Children.Array());
+                        JPanel jp = new JPanel();
+                        BoxLayout l = new BoxLayout(jp, BoxLayout.Y_AXIS);
+                        jp.setLayout(l);
+                        jpb.setVisible(true);
+                        jpb.setIndeterminate(true);
+                        jp.add(p);
+                        jp.add(jpb);
+                        descr.setMessage(jp);
+                       //        AbstractNode root = new AbstractNode(new Children.Array());
                         //        root.setName("root"); // NOI18N
                         //        root.setDisplayName(NbBundle.getMessage(Installer.class, "MSG_RootDisplayName", recs.size(), new Date()));
                         //        root.setIconBaseWithExtension("org/netbeans/modules/uihandler/logs.gif");
@@ -2122,6 +2223,7 @@ public class Installer extends ModuleInstall implements Runnable {
                 flushSystemLogs();
                 JTabbedPane tabs = new JTabbedPane();
                 tabs.addTab(org.openide.util.NbBundle.getMessage(Installer.class, "UI_TAB_TITLE"), panel);
+                tabs.setPreferredSize(panel.getPreferredSize());
                 File messagesLog = getMessagesLog();
                 try {
                     JEditorPane pane = new JEditorPane(messagesLog.toURI().toURL());
@@ -2340,16 +2442,16 @@ public class Installer extends ModuleInstall implements Runnable {
     } // end SubmitInteractive
 
     private static final class SubmitAutomatic extends Submit {
-        Button def;
+        final Button def;
         private boolean urlComputed;
 
-        public SubmitAutomatic(String msg, Button def, DataType dataType) {
-            super(msg,dataType);
+        public SubmitAutomatic(String msg, Button def, DataType dataType, List<LogRecord> recs) {
+            super(msg, dataType, recs);
             this.def = def;
         }
 
         public SubmitAutomatic(String msg, Button def) {
-            this(msg,def,DataType.DATA_UIGESTURE);
+            this(msg, def, DataType.DATA_UIGESTURE, null);
         }
 
         @Override
@@ -2378,7 +2480,9 @@ public class Installer extends ModuleInstall implements Runnable {
         protected void addMoreLogs(List<? super String> params, boolean openPasswd) {
         }
         @Override
-        protected Object showDialogAndGetValue(DialogDescriptor dd) {
+        protected Object showDialogAndGetValue(final DialogDescriptor dd) {
+            //System.err.println("showDialogAndGetValue()");
+            //Thread.dumpStack();
             while (!urlComputed) {
                 synchronized (this) {
                     try {
@@ -2388,14 +2492,27 @@ public class Installer extends ModuleInstall implements Runnable {
                     }
                 }
             }
-            for (Object o : dd.getOptions()) {
-                if (o instanceof JButton) {
-                    JButton b = (JButton)o;
-                    if (def.isCommand(b.getActionCommand())) {
-                        actionPerformed(new ActionEvent(b, 0, b.getActionCommand()));
-                        return b;
+            final JButton[] buttonPtr = new JButton[] { null };
+            try {
+                EventQueue.invokeAndWait(new Runnable() {
+                    @Override
+                    public void run() {
+                        for (Object o : dd.getOptions()) {
+                            if (o instanceof JButton) {
+                                JButton b = (JButton)o;
+                                if (def.isCommand(b.getActionCommand())) {
+                                    actionPerformed(new ActionEvent(b, 0, b.getActionCommand()));
+                                    buttonPtr[0] = b;
+                                    break;
+                                }
+                            }
+                        }
                     }
-                }
+                });
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InvocationTargetException ex) {
+                Exceptions.printStackTrace(ex);
             }
             return DialogDescriptor.CLOSED_OPTION;
         }

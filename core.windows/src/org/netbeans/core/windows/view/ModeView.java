@@ -188,6 +188,10 @@ public class ModeView extends ViewElement {
         container.cancelRequestAttention(tc);
     }
 
+    public void makeBusy(TopComponent tc, boolean busy) {
+        container.makeBusy(tc, busy);
+    }
+
     // XXX
     public void updateFrameState() {
         Component comp = container.getComponent();

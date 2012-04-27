@@ -50,6 +50,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.CookieSet;
@@ -71,6 +72,11 @@ import org.openide.windows.TopComponent;
  *
  * @author Petr Pisl
  */
+@MIMEResolver.Registration(
+    displayName="org.netbeans.modules.web.jsf.resources.Bundle#JSFResolver",
+    resource="resources/web-faces-mime-resolver.xml",
+    position=405
+)
 public class JSFConfigDataObject extends MultiDataObject
                                     implements org.openide.nodes.CookieSet.Factory  {
 

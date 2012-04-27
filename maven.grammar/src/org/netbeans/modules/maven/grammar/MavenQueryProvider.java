@@ -73,13 +73,14 @@ public final class MavenQueryProvider extends GrammarQueryManager {
 
     }
     
+    @Override
     public Enumeration enabled(GrammarEnvironment ctx) {
         // check if is supported environment..
         if (getGrammar(ctx) != null) {
             Enumeration en = ctx.getDocumentChildren();
             while (en.hasMoreElements()) {
                 Node next = (Node)en.nextElement();
-                if (next.getNodeType() == next.ELEMENT_NODE) {
+                if (next.getNodeType() == Node.ELEMENT_NODE) {
                     return Collections.enumeration(Collections.singletonList(next));
                 }
             }
@@ -87,10 +88,12 @@ public final class MavenQueryProvider extends GrammarQueryManager {
         return null;
     }
     
+    @Override
     public FeatureDescriptor getDescriptor() {
         return new FeatureDescriptor();
     }
     
+    @Override
     public GrammarQuery getGrammar(GrammarEnvironment env) {
         for (GrammarFactory gr : grammars) {
             GrammarQuery query = gr.isSupported(env);

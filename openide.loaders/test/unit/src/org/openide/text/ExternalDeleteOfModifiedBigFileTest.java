@@ -43,9 +43,7 @@
  */
 
 package org.openide.text;
-import java.io.BufferedOutputStream;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
+import java.awt.GraphicsEnvironment;
 import java.util.Stack;
 import java.util.logging.Level;
 import javax.swing.JEditorPane;
@@ -54,7 +52,6 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 
 import org.openide.DialogDescriptor;
 import org.openide.cookies.EditorCookie;
@@ -69,6 +66,11 @@ import org.openide.util.Mutex;
  * @author Jaroslav Tulach
  */
 public class ExternalDeleteOfModifiedBigFileTest extends NbTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(ExternalDeleteOfModifiedBigFileTest.class);
+    }
+
     static {
         System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
     }

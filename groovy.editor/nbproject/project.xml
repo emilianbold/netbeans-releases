@@ -33,6 +33,15 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.api.progress</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.27</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.core.multiview</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -238,7 +247,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.3</specification-version>
+                        <specification-version>7.58</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -358,11 +367,6 @@
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.nbjunit</code-name-base>
-                        <recursive/>
-                        <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
                         <code-name-base>org.netbeans.modules.projectui</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
@@ -377,6 +381,30 @@
                         <test/>
                     </test-dependency>
                 </test-type>
+                <test-type>
+                    <name>qa-functional</name>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.libs.junit4</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.jellytools.ide</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.jellytools.platform</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.jemmy</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.nbjunit</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
+                </test-type>
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.groovy.grailsproject</friend>
@@ -389,13 +417,16 @@
                 <package>org.netbeans.modules.groovy.editor.api</package>
                 <package>org.netbeans.modules.groovy.editor.api.completion</package>
                 <package>org.netbeans.modules.groovy.editor.api.elements</package>
+                <package>org.netbeans.modules.groovy.editor.api.elements.ast</package>
+                <package>org.netbeans.modules.groovy.editor.api.elements.common</package>
+                <package>org.netbeans.modules.groovy.editor.api.elements.index</package>
                 <package>org.netbeans.modules.groovy.editor.api.lexer</package>
                 <package>org.netbeans.modules.groovy.editor.api.parser</package>
                 <package>org.netbeans.modules.groovy.editor.spi.completion</package>
             </friend-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/groovy-all.jar</runtime-relative-path>
-                <binary-origin>external/groovy-all-1.9.0-beta-4.jar</binary-origin>
+                <binary-origin>external/groovy-all-1.8.6.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

@@ -176,7 +176,7 @@ public final class ProjectImpl extends ProjectBase {
             // no need for deep parsing util call here in case of save, because it will be called as external notification change anyway
             if (undo) {
                 // but we need to call in case of undo when there are no external modifications
-                DeepReparsingUtils.reparseOnEditingFile(this, file);
+                DeepReparsingUtils.reparseOnUndoEditedFile(this, file);
             }
         }
     }
@@ -186,13 +186,13 @@ public final class ProjectImpl extends ProjectBase {
         if (TraceFlags.DEBUG) {
             Diagnostic.trace("------------------------- onFilePropertyChanged " + nativeFile.getName()); //NOI18N
         }
-        DeepReparsingUtils.reparseOnPropertyChanged(Collections.singletonList(nativeFile), this);
+        DeepReparsingUtils.reparseOnPropertyChanged(Collections.singletonList(nativeFile), this, false);
     }
 
     @Override
-    public void onFilePropertyChanged(List<NativeFileItem> items) {
+    public void onFilePropertyChanged(List<NativeFileItem> items, boolean invalidateLibs) {
         if (items.size() > 0) {
-            DeepReparsingUtils.reparseOnPropertyChanged(items, this);
+            DeepReparsingUtils.reparseOnPropertyChanged(items, this, invalidateLibs);
         }
     }
 
@@ -292,10 +292,10 @@ public final class ProjectImpl extends ProjectBase {
     void ensureChangedFilesEnqueued() {
         synchronized (editedFiles) {
             super.ensureChangedFilesEnqueued();
-            for (Iterator iter = editedFiles.keySet().iterator(); iter.hasNext();) {
+            for (Iterator<CsmFile> iter = editedFiles.keySet().iterator(); iter.hasNext();) {
                 FileImpl file = (FileImpl) iter.next();
                 if (!file.isParsingOrParsed()) {
-                    ParserQueue.instance().add(file, getPreprocHandlers(file.getAbsolutePath()), ParserQueue.Position.TAIL);
+                    ParserQueue.instance().add(file, getPreprocHandlers(file), ParserQueue.Position.TAIL);
                 }
             }
         }
@@ -423,6 +423,13 @@ public final class ProjectImpl extends ProjectBase {
     }
     private final NativeFileContainer nativeFiles = new NativeFileContainer();
 
+    @Override
+    protected void onDispose() {
+        nativeFiles.clear();
+        editedFiles.clear();
+        projectRoots.clear();
+    }
+    
     private final SourceRootContainer projectRoots = new SourceRootContainer(false);
     @Override
     protected SourceRootContainer getProjectRoots() {

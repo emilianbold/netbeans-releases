@@ -1101,7 +1101,8 @@ public class UnixNativeUtils extends NativeUtils {
         return command.toArray(new String[0]);
     }
         
-    public List<File> getFileSystemRoots() throws IOException {
+    @Override
+    public List<File> getFileSystemRoots(String... files) throws IOException {
         try {
             setEnvironmentVariable(
                     "LANG", "C", EnvironmentScope.PROCESS, false);
@@ -1119,7 +1120,7 @@ public class UnixNativeUtils extends NativeUtils {
             setEnvironmentVariable(
                     "LC_TIME", "C", EnvironmentScope.PROCESS, false);
             
-            final String stdout = SystemUtils.executeCommand(getDfCommand()).getStdOut();
+            final String stdout = SystemUtils.executeCommand(getDfCommand(files)).getStdOut();
             final String[] lines = StringUtils.splitByLines(stdout);
 
             // a quick and dirty solution - we assume that % is present only once in

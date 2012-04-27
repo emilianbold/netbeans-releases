@@ -79,7 +79,11 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
  * Bridge utility between our remote DB to the CND remote DB.
  */
 
-public class CndRemote {
+public final class CndRemote {
+
+    private CndRemote() {
+    }
+
     /**
      * Convert a combo-box index into a HostName
      */
@@ -140,12 +144,23 @@ public class CndRemote {
      * See IZ 147560.
      */
     public static void validate(final String name, final Runnable continuation) {
+        validate(name, continuation, null);
+    }
+
+    /**
+     * If the host 'name' is offline, bring it online and get it's
+     * compiler-set up-to-date.
+     * Once everything is ready continuation is called.
+     * If not validated (unable to connect), onError is be called.
+     */
+    public static void validate(final String name, final Runnable continuation, final Runnable onError) {
 	if (name != null && name.equals("localhost")) { // NOI18N
 	    continuation.run();
 	    return;
 	}
-        
-	Runnable validator = new Runnable() {
+
+        Runnable validator = new Runnable() {
+            @Override
 	    public void run() {
                 Host host = Host.byName(name);
 
@@ -154,6 +169,14 @@ public class CndRemote {
 		serverRecord.validate(true);
                 // No need to continue if connection is not available
                 if (!serverRecord.isOnline()) {
+                    showErrorDialog(serverRecord);
+                    if (onError != null) {
+                        try {
+                            javax.swing.SwingUtilities.invokeAndWait(onError);
+                        } catch (Exception x) {
+                            ErrorManager.getDefault().notify(x);
+                        }
+                    }
                     return;
                 }
                 ExecutionEnvironment exEnv = serverRecord.getExecutionEnvironment();
@@ -165,17 +188,22 @@ public class CndRemote {
 		    javax.swing.SwingUtilities.invokeAndWait(continuation);
 		} catch (Exception x) {
 		    ErrorManager.getDefault().notify(x);
-		    final String message = MessageFormat.format(Catalog.get("ERR_Cant_Cnnect"), serverRecord.getDisplayName()); // NOI18N
-		    final String title = Catalog.get("DLG_TITLE_Cant_Connect"); //NOI18N
-		    SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-			    JOptionPane.showMessageDialog(
-				WindowManager.getDefault().getMainWindow(),
-				message, title, JOptionPane.ERROR_MESSAGE);
-			}
-		    });
+                    showErrorDialog(serverRecord);
 		}
 	    }
+
+            private void showErrorDialog(ServerRecord serverRecord) {
+                final String message = MessageFormat.format(Catalog.get("ERR_Cant_Cnnect"), serverRecord.getDisplayName()); // NOI18N
+                final String title = Catalog.get("DLG_TITLE_Cant_Connect"); //NOI18N
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        JOptionPane.showMessageDialog(
+                            WindowManager.getDefault().getMainWindow(),
+                            message, title, JOptionPane.ERROR_MESSAGE);
+                    }
+                });
+            }
 	};
 	RequestProcessor.Task task = validatorRP.post(validator);
     }

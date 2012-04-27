@@ -100,7 +100,7 @@ public class ValidateCommand extends BugzillaCommand {
         if(c == null) {
             return "null, null";                                                            // NOI18N
         }
-        return c.getUserName() + "," + BugtrackingUtil.getPasswordLog(c.getPassword());     // NOI18N
+        return c.getUserName() + "," + BugtrackingUtil.getPasswordLog(c.getPassword().toCharArray());     // NOI18N
     }
 
 

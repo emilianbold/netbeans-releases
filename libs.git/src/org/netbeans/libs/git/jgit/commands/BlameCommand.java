@@ -45,7 +45,11 @@ package org.netbeans.libs.git.jgit.commands;
 import java.io.File;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.blame.BlameResult;
+import org.eclipse.jgit.diff.RawText;
+import org.eclipse.jgit.diff.RawTextComparator;
+import org.eclipse.jgit.lib.CoreConfig;
 import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.treewalk.WorkingTreeOptions;
 import org.netbeans.libs.git.GitBlameResult;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.jgit.GitClassFactory;
@@ -77,6 +81,9 @@ public class BlameCommand extends GitCommand {
         cmd.setFilePath(Utils.getRelativePath(getRepository().getWorkTree(), file));
         if (revision != null) {
             cmd.setStartCommit(Utils.findCommit(repository, revision));
+        } else if (repository.getConfig().get(WorkingTreeOptions.KEY).getAutoCRLF() != CoreConfig.AutoCRLF.FALSE) {
+            // work-around for autocrlf
+            cmd.setTextComparator(new WAComparator());
         }
         cmd.setFollowFileRenames(true);
         BlameResult cmdResult = cmd.call();
@@ -97,6 +104,50 @@ public class BlameCommand extends GitCommand {
 
     public GitBlameResult getResult () {
         return result;
+    }
+
+    private static class WAComparator extends RawTextComparator {
+
+        @Override
+        public boolean equals (RawText a, int ai, RawText b, int bi) {
+            String line1 = a.getString(ai);
+            String line2 = b.getString(bi);
+            line1 = trimTrailingEoL(line1);
+            line2 = trimTrailingEoL(line2);
+
+            return line1.equals(line2);
+        }
+
+        @Override
+        protected int hashRegion (final byte[] raw, int ptr, int end) {
+            int hash = 5381;
+            end = trimTrailingEoL(raw, ptr, end);
+            for (; ptr < end; ptr++) {
+                hash = ((hash << 5) + hash) + (raw[ptr] & 0xff);
+            }
+            return hash;
+        }
+        
+        private static String trimTrailingEoL (String line) {
+            int end = line.length() - 1;
+            while (end >= 0 && isNewLine(line.charAt(end))) {
+                --end;
+            }
+            return line.substring(0, end + 1);
+	}
+        
+        private static int trimTrailingEoL(byte[] raw, int start, int end) {
+            int ptr = end - 1;
+            while (start <= ptr && raw[ptr] == '\r' || raw[ptr] == '\n') {
+                ptr--;
+            }
+
+            return ptr + 1;
+	}
+
+        private static boolean isNewLine (char ch) {
+            return ch == '\n' || ch == '\r';
+        }
     }
 
 }

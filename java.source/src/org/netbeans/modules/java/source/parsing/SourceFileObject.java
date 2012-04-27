@@ -86,7 +86,7 @@ import org.openide.text.NbDocument;
  * @author Tomas Zezula
  */
 @Trusted
-public class SourceFileObject implements DocumentProvider, InferableJavaFileObject {
+public class SourceFileObject implements DocumentProvider, PrefetchableJavaFileObject {
 
     final Handle handle;
     private final Kind kind;
@@ -326,6 +326,16 @@ public class SourceFileObject implements DocumentProvider, InferableJavaFileObje
         assert index > 0;
         final String result = relativePath.substring(0,index).replace('/','.');
         return result;
+    }
+    
+    @Override
+    public int prefetch() throws IOException {
+        return 0;
+    }
+    
+    @Override
+    public int dispose() {
+        return 0;
     }
 
     public @Override String toString () {

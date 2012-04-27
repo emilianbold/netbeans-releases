@@ -46,7 +46,6 @@ import java.awt.EventQueue;
 import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.modules.versioning.util.common.VCSCommitOptions;
 import org.netbeans.modules.versioning.util.common.VCSCommitTable;
-import org.netbeans.modules.versioning.util.common.VCSFileNode;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -64,7 +63,6 @@ import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitRepositoryState;
 import org.netbeans.libs.git.GitStatus;
 import org.netbeans.libs.git.GitUser;
-import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.FileInformation;
 import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.Git;
@@ -211,10 +209,10 @@ public class CommitAction extends SingleRepositoryAction {
                     Git.getInstance().getFileStatusCache().refreshAllRoots(commitCandidates);
                     outputInRed(NbBundle.getMessage(CommitAction.class, "MSG_COMMIT_DONE")); // NOI18N
                     output(""); // NOI18N
+                    Git.getInstance().getHistoryProvider().fireHistoryChange(commitCandidates.toArray(new File[commitCandidates.size()]));
                 }
             } catch (GitException ex) {
                 LOG.log(Level.WARNING, null, ex);
-                return;
             }
         }
         

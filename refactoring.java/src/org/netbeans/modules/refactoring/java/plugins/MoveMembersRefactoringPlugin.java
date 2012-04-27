@@ -41,18 +41,18 @@
  */
 package org.netbeans.modules.refactoring.java.plugins;
 
+import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.net.URL;
 import java.util.*;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.PackageElement;
-import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.*;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.*;
+import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -80,11 +80,19 @@ import org.openide.util.NbBundle;
 @NbBundle.Messages({"ERR_NothingSelected=Nothing selected to move",
     "ERR_MoveToLibrary=Cannot move to a library",
     "ERR_MoveFromLibrary=Cannot move from a library",
+    "ERR_MoveFromClass=Can only move members of a class",
     "ERR_MoveToSameClass=Target can not be the same as the source class",
     "ERR_MoveToSuperClass=Cannot move to a superclass, maybe you need the Pull Up Refactoring?",
     "ERR_MoveToSubClass=Cannot move to a subclass, maybe you need the Push Down Refactoring?",
+    "ERR_MoveGenericField=Cannot move a generic field",
+    "# {0} - Method name",
+    "ERR_MoveAbstractMember=Cannot move abstract method \"{0}\"",
+    "# {0} - Method name",
+    "ERR_MoveMethodPolymorphic=Cannot move polymorphic method \"{0}\"",
     "WRN_InitNoAccess=Field initializer uses local accessors which will not be accessible",
-    "WRN_NoAccessor=No accessor found to invoke the method from: {0}"})
+    "# {0} - File displayname : line number",
+    "WRN_NoAccessor=No accessor found to invoke the method from: {0}",
+    "TXT_DelegatingMethod=Delegating method"})
 public class MoveMembersRefactoringPlugin extends JavaRefactoringPlugin {
 
     private final MoveRefactoring refactoring;
@@ -98,11 +106,7 @@ public class MoveMembersRefactoringPlugin extends JavaRefactoringPlugin {
     @Override
     protected JavaSource getJavaSource(Phase p) {
         TreePathHandle source;
-        if(p == Phase.PRECHECK) {
-            source = properties.getPreSelectedMembers()[0];
-        } else {
-            source = refactoring.getRefactoringSource().lookup(TreePathHandle.class);
-        }
+        source = properties.getPreSelectedMembers()[0];
         if(source != null && source.getFileObject() != null) {
             switch(p) {
                 case CHECKPARAMETERS:
@@ -143,7 +147,22 @@ public class MoveMembersRefactoringPlugin extends JavaRefactoringPlugin {
         if (preCheckProblem != null) {
             return preCheckProblem;
         }
-        
+
+        Element element = properties.getPreSelectedMembers()[0].resolveElement(info);
+        TreePath path = info.getTrees().getPath(element);
+        if (path != null) {
+            TreePath enclosingClassPath = JavaRefactoringUtils.findEnclosingClass(info, path, true, true, true, true, false);
+            if (enclosingClassPath != null) {
+                Element typeElement = info.getTrees().getElement(enclosingClassPath);
+                if (typeElement == null || !typeElement.getKind().isClass() || enclosingClassPath.getLeaf().getKind() == Tree.Kind.INTERFACE) {
+                    return new Problem(true, NbBundle.getMessage(MoveMembersRefactoringPlugin.class, "ERR_MoveFromClass"));
+                }
+            } else {
+                return new Problem(true, NbBundle.getMessage(MoveMembersRefactoringPlugin.class, "ERR_MoveFromClass"));
+            }
+        } else {
+            return new Problem(true, NbBundle.getMessage(MoveMembersRefactoringPlugin.class, "ERR_MoveFromClass"));
+        }
         return preCheckProblem;
     }
 
@@ -161,13 +180,14 @@ public class MoveMembersRefactoringPlugin extends JavaRefactoringPlugin {
     protected Problem fastCheckParameters(CompilationController javac) throws IOException {
         javac.toPhase(JavaSource.Phase.RESOLVED);
         Collection<? extends TreePathHandle> source = refactoring.getRefactoringSource().lookupAll(TreePathHandle.class);
-        TreePathHandle target = refactoring.getTarget().lookup(TreePathHandle.class);
 
         if (source.isEmpty()) { // [f] nothing is selected
             return new Problem(true, NbBundle.getMessage(MoveMembersRefactoringPlugin.class, "ERR_NothingSelected")); //NOI18N
         }
-        
-        if(target == null) {
+
+        Lookup targetLookup = refactoring.getTarget();
+        TreePathHandle target;
+        if(targetLookup == null || (target = targetLookup.lookup(TreePathHandle.class)) == null) {
             return new Problem(true, NbBundle.getMessage(MoveMembersRefactoringPlugin.class, "ERR_NoTarget")); //NOI18N
         }
 
@@ -178,19 +198,46 @@ public class MoveMembersRefactoringPlugin extends JavaRefactoringPlugin {
         if (sourceTph.getFileObject() == null || !JavaRefactoringUtils.isOnSourceClasspath(sourceTph.getFileObject())) { // [f] source is not on source classpath
             return new Problem(true, NbBundle.getMessage(MoveMembersRefactoringPlugin.class, "ERR_MoveFromLibrary")); //NOI18N
         }
+        
+        for (TreePathHandle treePathHandle : source) {
+            Element element = treePathHandle.resolveElement(javac);
+            if(element.getKind() == ElementKind.FIELD) {
+                VariableElement var = (VariableElement) element;
+                if(var.asType().getKind() == TypeKind.TYPEVAR) {
+                    return new Problem(true, NbBundle.getMessage(MoveMembersRefactoringPlugin.class, "ERR_MoveGenericField"));
+                }
+            }
+            if(element.getKind() == ElementKind.METHOD) {
+                ExecutableElement method = (ExecutableElement) element;
+                if(method.getModifiers().contains(Modifier.ABSTRACT)) {
+                    return new Problem(true, NbBundle.getMessage(MoveMembersRefactoringPlugin.class, "ERR_MoveAbstractMember", element.getSimpleName()));
+                }
+                
+                // Method can not be polymorphic
+                Collection<ExecutableElement> overridenMethods = JavaRefactoringUtils.getOverriddenMethods(method, javac);
+                Collection<ExecutableElement> overridingMethods = JavaRefactoringUtils.getOverridingMethods(method, javac, cancelRequested);
+                if (overridenMethods.size() > 0 || overridingMethods.size() > 0) {
+                    return new Problem(true, NbBundle.getMessage(InlineRefactoringPlugin.class, "ERR_MoveMethodPolymorphic", method.getSimpleName())); //NOI18N
+                }
+            }
+        }
 
-        TreePath sourceClass = JavaRefactoringUtils.findEnclosingClass(javac, sourceTph.resolve(javac), true, true, true, true, true);
         TreePath targetPath = target.resolve(javac);
         if(targetPath == null) {
+            return new Problem(true, NbBundle.getMessage(MoveMembersRefactoringPlugin.class, "ERR_TargetNotResolved"));
+        }
+        TreePath targetClass = JavaRefactoringUtils.findEnclosingClass(javac, targetPath, true, true, true, true, true);
+        TypeMirror targetType = javac.getTrees().getTypeMirror(targetClass);
+        if(targetType == null) {
             return new Problem(true, NbBundle.getMessage(MoveMembersRefactoringPlugin.class, "ERR_TargetNotResolved"));
         }
         Problem p = checkProjectDeps(sourceTph.getFileObject(), target.getFileObject());
         if(p != null) {
             return p;
         }
-        TreePath targetClass = JavaRefactoringUtils.findEnclosingClass(javac, targetPath, true, true, true, true, true);
+
+        TreePath sourceClass = JavaRefactoringUtils.findEnclosingClass(javac, sourceTph.resolve(javac), true, true, true, true, true);
         TypeMirror sourceType = javac.getTrees().getTypeMirror(sourceClass);
-        TypeMirror targetType = javac.getTrees().getTypeMirror(targetClass);
         if (sourceType.equals(targetType)) { // [f] target is the same as source
             return new Problem(true, NbBundle.getMessage(MoveMembersRefactoringPlugin.class, "ERR_MoveToSameClass")); //NOI18N
         }
@@ -242,7 +289,7 @@ public class MoveMembersRefactoringPlugin extends JavaRefactoringPlugin {
         final Collection<? extends TreePathHandle> tphs = refactoring.getRefactoringSource().lookupAll(TreePathHandle.class);
         TreePathHandle target = refactoring.getTarget().lookup(TreePathHandle.class);
         FileObject file = target.getFileObject();
-        JavaSource source = createSource(file, cpInfo, target);
+        JavaSource source = JavaPluginUtils.createSource(file, cpInfo, target);
         CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
 
             public void cancel() {
@@ -278,35 +325,6 @@ public class MoveMembersRefactoringPlugin extends JavaRefactoringPlugin {
         return set;
     }
 
-    private static JavaSource createSource(final FileObject file, final ClasspathInfo cpInfo, final TreePathHandle tph) throws IllegalArgumentException {
-        JavaSource source;
-        if (file != null) {
-            final ClassPath mergedPlatformPath = merge(cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT), ClassPath.getClassPath(file, ClassPath.BOOT));
-            final ClassPath mergedCompilePath = merge(cpInfo.getClassPath(ClasspathInfo.PathKind.COMPILE), ClassPath.getClassPath(file, ClassPath.COMPILE));
-            final ClassPath mergedSourcePath = merge(cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE), ClassPath.getClassPath(file, ClassPath.SOURCE));
-            final ClasspathInfo mergedInfo = ClasspathInfo.create(mergedPlatformPath, mergedCompilePath, mergedSourcePath);
-            source = JavaSource.create(mergedInfo, new FileObject[]{tph.getFileObject()});
-        } else {
-            source = JavaSource.create(cpInfo);
-        }
-        return source;
-    }
-
-    private static ClassPath merge(final ClassPath... cps) {
-        final Set<URL> roots = new LinkedHashSet<URL>();
-        for (final ClassPath cp : cps) {
-            if (cp != null) {
-                for (final ClassPath.Entry entry : cp.entries()) {
-                    final URL root = entry.getURL();
-                    if (!roots.contains(root)) {
-                        roots.add(root);
-                    }
-                }
-            }
-        }
-        return ClassPathSupport.createClassPath(roots.toArray(new URL[roots.size()]));
-    }
-
     @Override
     public Problem prepare(RefactoringElementsBag refactoringElements) {
         fireProgressListenerStart(ProgressEvent.START, -1);
@@ -323,6 +341,7 @@ public class MoveMembersRefactoringPlugin extends JavaRefactoringPlugin {
         return prob != null ? prob : JavaPluginUtils.chainProblems(transformer.getProblem(), p);
     }
 
+    @SuppressWarnings("CollectionContainsUrl")
     private Problem checkProjectDeps(FileObject sourceFile, FileObject targetFile) {
         Set<FileObject> sourceRoots = new HashSet<FileObject>();
         ClassPath cp = ClassPath.getClassPath(sourceFile, ClassPath.SOURCE);

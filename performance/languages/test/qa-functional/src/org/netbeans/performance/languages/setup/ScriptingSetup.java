@@ -44,17 +44,17 @@
 
 package org.netbeans.performance.languages.setup;
 
-import org.netbeans.jellytools.JellyTestCase;
 import java.io.IOException;
-import org.openide.util.Exceptions;
 import org.netbeans.modules.performance.utilities.CommonUtilities;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase2;
 import org.netbeans.performance.languages.Projects;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author mkhramov@netbeans.org
  */
-public class ScriptingSetup extends JellyTestCase {
+public class ScriptingSetup extends PerformanceTestCase2 {
     
     public ScriptingSetup(String testName) {
         super(testName);

@@ -50,8 +50,11 @@ import org.eclipse.jgit.transport.TrackingRefUpdate;
 import org.eclipse.jgit.transport.URIish;
 
 /**
- *
- * @author ondra
+ * Represents a result of transport and update of a git reference between a local and remote
+ * repository.
+ * Instance of this class is usually returned by inter-repository commands (as fetch or push).
+ * 
+ * @author Ondra Vrabec
  */
 public final class GitTransportUpdate {
 
@@ -63,8 +66,17 @@ public final class GitTransportUpdate {
     private final String uri;
     private final Type type;
 
+    /**
+     * Git object kind.
+     */
     public enum Type {
+        /**
+         * a branch
+         */
         BRANCH,
+        /**
+         * a tag
+         */
         TAG
     }
 
@@ -88,30 +100,56 @@ public final class GitTransportUpdate {
         this.type = getType(update.getRemoteName());
     }
     
+    /**
+     * @return URI of a remote repository
+     */
     public String getRemoteUri () {
         return uri;
     }
 
+    /**
+     * Returns the name of the reference in a local repository without the prefix.
+     * Instead of <code>refs/heads/master</code> <code>master</code> is returned.
+     * @return name of the reference in a local repository without the reference prefix.
+     */
     public String getLocalName () {
         return localName;
     }
 
+    /**
+     * Returns the name of the reference in a remote repository without the prefix.
+     * Instead of <code>refs/heads/master</code> <code>master</code> is returned.
+     * @return name of the reference in a remote repository without the reference prefix.
+     */
     public String getRemoteName () {
         return remoteName;
     }
 
+    /**
+     * @return object id the reference pointed to before it was updated.
+     */
     public String getOldObjectId () {
         return oldObjectId;
     }
 
+    /**
+     * @return object id the reference points to now, after the update.
+     */
     public String getNewObjectId () {
         return newObjectId;
     }
 
+    /**
+     * Returns information about the result of the local/remote reference update.
+     * @return result of the reference update
+     */
     public GitRefUpdateResult getResult () {
         return result;
     }
 
+    /**
+     * @return kind of a git object this update refers to.
+     */
     public Type getType () {
         return type;
     }

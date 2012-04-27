@@ -55,14 +55,15 @@ import java.util.logging.Logger;
 import org.netbeans.libs.svnclientadapter.SvnClientAdapterFactory;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.SvnModuleConfig;
+import org.netbeans.modules.subversion.client.cli.CommandlineClient;
 import org.netbeans.modules.subversion.config.SvnConfigFiles;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.Places;
+import org.openide.util.Utilities;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.ISVNPromptUserPassword;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
-import org.netbeans.modules.subversion.client.cli.CommandlineClient;
-import org.openide.util.Utilities;
 
 /**
  * A SvnClient factory
@@ -85,7 +86,10 @@ public class SvnClientFactory {
 
     private static final Logger LOG = Logger.getLogger("org.netbeans.modules.subversion.client.SvnClientFactory");
     private static final String FACTORY_PROP = "svnClientAdapterFactory"; //NOI18N
-    private static final String FACTORY_TYPE_COMMANDLINE = "commandline"; //NOI18N
+    public static final String FACTORY_TYPE_COMMANDLINE = "commandline"; //NOI18N
+    public static final String FACTORY_TYPE_JAVAHL = "javahl"; //NOI18N
+    public static final String FACTORY_TYPE_SVNKIT = "svnkit"; //NOI18N
+    public static final String DEFAULT_FACTORY = FACTORY_TYPE_JAVAHL; // javahl is default
 
     public enum ConnectionType {
         javahl,
@@ -119,30 +123,13 @@ public class SvnClientFactory {
     }
 
     /**
-     * Resets the SvnClientFactory instance in case it is the cli client.
-     * This should be called either when javahl was currently installed or
-     * if the svn executable path was changed. 
+     * Resets the SvnClientFactory instance.
+     * Call this method if user's preferences regarding used client change.
      */
-    public synchronized static void resetCLI() {
-        if(exception != null || // looks like factory setup didn't work at all, so lets give it a shot
-           isCLI()) 
-        { 
-            instance = null;
-        }
+    public synchronized static void resetClient() {
+        instance = null;
     }
     
-    /**
-     * Switches to commandline client.
-     * Call this as a fallback when no integrated svn clients work with some working copies
-     */
-    static void switchToCLI () {
-        LOG.log(Level.INFO, "Switching forcefully to a commandline client"); //NOI18N
-        System.setProperty(FACTORY_PROP, FACTORY_TYPE_COMMANDLINE); //NOI18N
-        SvnModuleConfig.getDefault().setForceCommnandlineClient(true);
-        instance = null;
-        Subversion.getInstance().svnClientChanged();
-    }
-
     public static boolean isCLI() {
         if(!isClientAvailable()) return false;
         assert factory != null;
@@ -214,15 +201,12 @@ public class SvnClientFactory {
             // ping config file copying
             SvnConfigFiles.getInstance();
 
-            if ((factoryType == null || factoryType.trim().isEmpty())
-                    && SvnModuleConfig.getDefault().isForcedCommandlineClient()) {
-                // fallback to commandline only if factoryType is not set explicitely
-                factoryType = FACTORY_TYPE_COMMANDLINE;
-                LOG.log(Level.INFO, "setup: using commandline as the client - saved in preferences");
-            }
+            SvnModuleConfig.getDefault().setForceCommnandlineClient(false);
             
-            if(factoryType == null ||
-               factoryType.trim().equals("")) {
+            if(factoryType == null || factoryType.trim().equals("")) {
+                factoryType = SvnModuleConfig.getDefault().getPreferredFactoryType(DEFAULT_FACTORY);
+            }
+            if (factoryType.trim().equals(FACTORY_TYPE_JAVAHL)) {
                 if(setupJavaHl()) {
                     return;
                 }
@@ -232,26 +216,12 @@ public class SvnClientFactory {
                 }          
                 LOG.log(Level.INFO, "SvnKit not available. Falling back on commandline.");
                 setupCommandline();
-            } else if (factoryType.trim().equals("javahl")) {
-                if(setupJavaHl()) {
-                    SvnModuleConfig.getDefault().setForceCommnandlineClient(false);
-                    return;
-                }
-                LOG.log(Level.INFO, "JavaHL not available. Falling back on SvnKit.");
+            } else if(factoryType.trim().equals(FACTORY_TYPE_SVNKIT)) {
                 if(setupSvnKit()) {
-                    SvnModuleConfig.getDefault().setForceCommnandlineClient(false);
-                    return;
-                }          
-                LOG.log(Level.INFO, "SvnKit not available. Falling back on commandline.");
-                setupCommandline();
-            } else if(factoryType.trim().equals("svnkit")) {
-                if(setupSvnKit()) {
-                    SvnModuleConfig.getDefault().setForceCommnandlineClient(false);
                     return;
                 }
                 LOG.log(Level.INFO, "SvnKit not available. Falling back on javahl.");
                 if(setupJavaHl()) {
-                    SvnModuleConfig.getDefault().setForceCommnandlineClient(false);
                     return;
                 }
                 LOG.log(Level.INFO, "JavaHL not available. Falling back on comandline.");
@@ -298,7 +268,7 @@ public class SvnClientFactory {
 
     private boolean setupJavaHl () {
 
-        String jhlInitFile = System.getProperty("netbeans.user") + "/config/svn/jhlinit";
+        String jhlInitFile = Places.getUserDirectory().getAbsolutePath() + "/config/svn/jhlinit";
         File initFile = new File(jhlInitFile);
 
         if(checkJavahlCrash(initFile)) {

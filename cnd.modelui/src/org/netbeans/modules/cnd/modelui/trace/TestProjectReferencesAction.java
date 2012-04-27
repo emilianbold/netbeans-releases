@@ -78,6 +78,7 @@ public class TestProjectReferencesAction extends TestProjectActionBase {
     private final boolean allReferences;
     private final boolean analyzeStatistics;
     private final Boolean reportUnresolved;
+    private final boolean reportIndex;
     private int numThreads = 1;
     // < 0 if use; == 0 if do not use; > 0 if collect
     private long timeThreshold = 0;
@@ -92,6 +93,10 @@ public class TestProjectReferencesAction extends TestProjectActionBase {
     
     public static Action getDirectUsageReferencesAction() {
         return SharedClassObject.findObject(DirectUsageAction.class, true);
+    }
+
+    public static Action getIndexReferencesAction() {
+        return SharedClassObject.findObject(IndexUsageAction.class, true);
     }
     
     public static Action getAllReferencesAction() {
@@ -153,34 +158,41 @@ public class TestProjectReferencesAction extends TestProjectActionBase {
     static final class SmartCompletionAnalyzerAction extends TestProjectReferencesAction {
 
         SmartCompletionAnalyzerAction() {
-            super(false, true, null);
+            super(false, true, null, false);
         }
     }
     
     static final class DirectUsageAction extends TestProjectReferencesAction {
         DirectUsageAction() {
-            super(false, false, null);
+            super(false, false, null, false);
+        }
+    }
+
+    static final class IndexUsageAction extends TestProjectReferencesAction {
+        IndexUsageAction() {
+            super(false, false, null, true);
         }
     }
     
     static final class AllUsagesAction extends TestProjectReferencesAction {
 
         AllUsagesAction() {
-            super(true, false, Boolean.TRUE);
+            super(true, false, Boolean.TRUE, false);
         }
     }
 
     static final class AllUsagesPerformanceAction extends TestProjectReferencesAction {
 
         AllUsagesPerformanceAction() {
-            super(true, false, Boolean.FALSE);
+            super(true, false, Boolean.FALSE, false);
         }
     }
     
-    protected TestProjectReferencesAction(boolean allReferences, boolean analyzeStatistics, Boolean reportUnresolved) {
+    protected TestProjectReferencesAction(boolean allReferences, boolean analyzeStatistics, Boolean reportUnresolved, boolean reportIndex) {
         this.allReferences = allReferences;
         this.analyzeStatistics = analyzeStatistics;
         this.reportUnresolved = reportUnresolved;
+        this.reportIndex = reportIndex;
         this.numThreads = (reportUnresolved == Boolean.FALSE) ? Runtime.getRuntime().availableProcessors() : 1;
     }
 
@@ -191,6 +203,8 @@ public class TestProjectReferencesAction extends TestProjectActionBase {
             nameKey = "CTL_TestProjectSmartCCDirectUsageReferencesAction"; // NOI18N
         } else if (reportUnresolved != null) {
             nameKey = (reportUnresolved ? "CTL_TestProjectReferencesAction" : "CTL_TestProjectReferencesPerformanceAction"); // NOI18N
+        } else if (reportIndex) {
+            nameKey = "CTL_TestProjectIndexUsageReferencesAction"; // NOI18N
         } else {
             nameKey = "CTL_TestProjectDirectUsageReferencesAction"; // NOI18N
         }
@@ -229,7 +243,7 @@ public class TestProjectReferencesAction extends TestProjectActionBase {
 
     
     private void testProject(CsmProject p) {
-        String task = (this.allReferences ? "All " : "Direct usage ") + "xRef - " + p.getName() + (this.analyzeStatistics ? " Statistics" : ""); // NOI18N
+        String task = (this.reportIndex ? "Indexed " : (this.allReferences ? "All " : "Direct usage ")) + "xRef - " + p.getName() + (this.analyzeStatistics ? " Statistics" : ""); // NOI18N
         InputOutput io = IOProvider.getDefault().getIO(task, false);
         io.select();
         final AtomicBoolean canceled = new AtomicBoolean(false);        
@@ -271,7 +285,7 @@ public class TestProjectReferencesAction extends TestProjectActionBase {
             }
         }
         TraceXRef.traceProjectRefsStatistics(p, filesMap, new TraceXRef.StatisticsParameters(interestedElems, analyzeStatistics,
-                (reportUnresolved == null) ? true : reportUnresolved.booleanValue(), numThreads, passedThreshold), out, err, new CsmProgressAdapter() {
+                (reportUnresolved == null) ? true : reportUnresolved.booleanValue(), reportIndex, numThreads, passedThreshold), out, err, new CsmProgressAdapter() {
             private volatile int handled = 0;
             @Override
             public void projectFilesCounted(CsmProject project, int filesCount) {

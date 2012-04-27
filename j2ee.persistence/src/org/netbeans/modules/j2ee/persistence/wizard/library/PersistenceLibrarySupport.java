@@ -289,7 +289,7 @@ public class PersistenceLibrarySupport {
      * is defined, or null none could be found.
      */
     public static Library getLibrary(Provider provider) {
-        List<ProviderLibrary> libraries = createLibraries();
+        List<ProviderLibrary> libraries = createLibraries(provider!=null ? provider.getProviderClass() : null);
         for (ProviderLibrary each : libraries) {
             if (provider.equals(each.getProvider())) {
                 return each.getLibrary();
@@ -368,11 +368,14 @@ public class PersistenceLibrarySupport {
     }
 
     private static List<ProviderLibrary> createLibraries() {
+        return createLibraries(null);
+    }
+    private static List<ProviderLibrary> createLibraries(String providerClass) {
         List<ProviderLibrary> providerLibs = new ArrayList<ProviderLibrary>();
         for (Library each : LibraryManager.getDefault().getLibraries()) {
             ClassPath cp = getLibraryClassPath(each);
-            Provider provider = extractProvider(cp);
-            if (provider != null && containsClass(cp, "javax.persistence.EntityManager") && provider.isOnClassPath(cp)) { //NOI18N
+            Provider provider = extractProvider(cp, providerClass);
+            if (provider != null && containsClass(cp, "javax.persistence.EntityManager")) { //NOI18N
                 providerLibs.add(new ProviderLibrary(each, cp, provider));
             }
         }
@@ -426,9 +429,9 @@ public class PersistenceLibrarySupport {
         return null;
     }
 
-    private static Provider extractProvider(ClassPath cp) {
+    private static Provider extractProvider(ClassPath cp, String providerClass) {
         for (Provider each : ProviderUtil.getAllProviders()) {
-            if (each.isOnClassPath(cp)) {
+            if ((providerClass == null || providerClass.equals(each.getProviderClass())) && each.isOnClassPath(cp)) {
                 return each;
             }
         }

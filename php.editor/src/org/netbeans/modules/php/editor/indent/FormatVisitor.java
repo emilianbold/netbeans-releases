@@ -275,8 +275,11 @@ public class FormatVisitor extends DefaultVisitor {
             addFormatToken(formatTokens);
         }
         if (ts.token().id() == PHPTokenId.PHP_TOKEN) {
-            if (node.getLeftHandSide() instanceof Variable) {
-                handleGroupAlignment(node.getLeftHandSide());
+            if (path.size() > 1 && !(path.get(1) instanceof ForStatement)) {
+                VariableBase leftHandSide = node.getLeftHandSide();
+                if (leftHandSide instanceof Variable || leftHandSide instanceof FieldAccess) {
+                    handleGroupAlignment(leftHandSide);
+                }
             }
             addFormatToken(formatTokens);
         } else {
@@ -1771,6 +1774,10 @@ public class FormatVisitor extends DefaultVisitor {
             FormatToken.AssignmentAnchorToken aaToken = new FormatToken.AssignmentAnchorToken(ts.offset());
             aaToken.setLenght(length);
             aaToken.setPrevious(previousGroupToken);
+            aaToken.setIsInGroup(true);
+            if (!previousGroupToken.isInGroup()) {
+                previousGroupToken.setIsInGroup(true);
+            }
             if (previousGroupToken.getMaxLength() < length) {
                 // if the length of the current identifier is bigger, then is in
                 // the group so far, change max length for all items in the group

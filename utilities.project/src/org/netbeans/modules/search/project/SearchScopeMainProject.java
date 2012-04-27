@@ -46,8 +46,9 @@ package org.netbeans.modules.search.project;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.api.search.provider.SearchInfo;
+import org.netbeans.api.search.provider.SearchInfoUtils;
 import org.openide.util.NbBundle;
-import org.openidex.search.SearchInfo;
 
 /**
  * Defines search scope across the main project.
@@ -65,6 +66,7 @@ final class SearchScopeMainProject extends AbstractProjectSearchScope {
         return "main project";                                          //NOI18N
     }
     
+    @Override
     public String getDisplayName() {
         return NbBundle.getMessage(getClass(),
                                    "SearchScopeNameMainProject");       //NOI18N
@@ -74,6 +76,7 @@ final class SearchScopeMainProject extends AbstractProjectSearchScope {
         return OpenProjects.getDefault().getMainProject() != null;
     }
 
+    @Override
     public SearchInfo getSearchInfo() {
         Project mainProject = OpenProjects.getDefault().getMainProject();
         if (mainProject == null) {
@@ -85,10 +88,20 @@ final class SearchScopeMainProject extends AbstractProjectSearchScope {
              * is being closed in another thread than this action was
              * invoked from.
              */
-            return createEmptySearchInfo();
+            return SearchInfoUtils.createEmptySearchInfo();
         }
         
         return createSingleProjectSearchInfo(mainProject);
+    }
+
+    @Override
+    public boolean isApplicable() {
+        return checkIsApplicable();
+    }
+
+    @Override
+    public int getPriority() {
+        return 100;
     }
     
 }

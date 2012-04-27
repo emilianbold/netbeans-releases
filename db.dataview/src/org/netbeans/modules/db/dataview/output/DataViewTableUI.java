@@ -155,18 +155,15 @@ final class DataViewTableUI extends ResultSetJXTable {
             Object obj = dataView.getDataViewPageContext().getColumnData(
                     table.convertRowIndexToModel(row),
                     table.convertColumnIndexToModel(column));
-            if (value == null) {
-                return c;
-            }
 
             if (isSelected) {
-                if (obj != null && value.equals(obj)) {
+                if ((obj == null && value == null) || (obj != null && value != null && value.equals(obj))) {
                     c.setForeground(gray);
                 } else {
                     c.setForeground(Color.ORANGE);
                 }
             } else {
-                if (obj != null && value.equals(obj)) {
+                if ((obj == null && value == null) || (obj != null && value != null && value.equals(obj))) {
                     c.setForeground(table.getForeground());
                 } else {
                     c.setForeground(green);
@@ -380,7 +377,8 @@ final class DataViewTableUI extends ResultSetJXTable {
                     int[] rows = getSelectedRows();
                     String insertSQL = "";
                     for (int j = 0; j < rows.length; j++) {
-                        Object[] insertRow = dataView.getDataViewPageContext().getCurrentRows().get(rows[j]);
+                        int modelIndex = convertRowIndexToModel(rows[j]);
+                        Object[] insertRow = dataView.getDataViewPageContext().getCurrentRows().get(modelIndex);
                         String sql = dataView.getSQLStatementGenerator().generateRawInsertStatement(insertRow);
                         insertSQL += sql.replaceAll("\n", "").replaceAll("\t", "") + ";\n"; // NOI18N
                     }
@@ -405,7 +403,8 @@ final class DataViewTableUI extends ResultSetJXTable {
                 String rawDeleteStmt = "";
                 for (int j = 0; j < rows.length; j++) {
                     SQLStatementGenerator generator = dataView.getSQLStatementGenerator();
-                    final String deleteStmt = generator.generateDeleteStatement(rows[j], getModel());
+                    int modelIndex = convertRowIndexToModel(rows[j]);
+                    final String deleteStmt = generator.generateDeleteStatement(modelIndex, getModel());
                     rawDeleteStmt += deleteStmt + ";\n"; // NOI18N
                 }
                 ShowSQLDialog dialog = new ShowSQLDialog();

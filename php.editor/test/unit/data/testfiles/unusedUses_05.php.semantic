@@ -1,0 +1,19 @@
+<?php
+
+namespace Datagrid {
+    class |>CLASS:Datagrid<| {}
+    class |>CLASS:Action<| {}
+    interface |>CLASS:IFace<| {}
+}
+
+namespace AdminModule {
+    use \DataGrid\Action,
+        \DataGrid\IFace,
+        |>UNUSED:\DataGrid\DataGrid<|;
+    class |>CLASS:Presenter<| extends Action implements IFace {
+
+    }
+
+}
+
+?>

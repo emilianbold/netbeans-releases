@@ -43,19 +43,12 @@
  */
 package org.netbeans.modules.php.editor.indent;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-
+import java.util.*;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
@@ -77,6 +70,7 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
+import org.netbeans.modules.php.editor.options.OptionsUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
@@ -604,7 +598,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                 if (ts.offset()+token.length() > offset+1) {
                     // See if the remaining text is just whitespace
                     String trailing = doc.getText(offset,Utilities.getRowEnd(doc, offset)-offset);
-                    if (trailing.trim().length() != 0) {
+                    if (trailing.trim().length() != 0 && !trailing.startsWith("//")) { //NOI18N
                         continueComment = true;
                     }
                 } else if (CONTINUE_COMMENTS) {
@@ -683,7 +677,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                                 public void run(ResultIterator resultIterator) throws Exception {
                                     if (System.currentTimeMillis() - currentTimeMillis < 1500) {
                                         GeneratingBracketCompleter.generateDocTags(doc, (Integer) ret[0], indent);
-                                        caret.setDot((Integer) ret[0] - 1);
+                                        caret.setDot((Integer) ret[0]);
                                     }
                                 }
                             });
@@ -824,10 +818,11 @@ public class PHPBracketCompleter implements KeystrokeHandler {
     private static boolean isClosedComment(CharSequence txt, int pos) {
         int length = txt.length();
         int quotation = 0;
+        int simpleQuotation = 0;
         for (int i = pos; i < length; i++) {
             char c = txt.charAt(i);
             if (c == '*' && i < length - 1 && txt.charAt(i + 1) == '/') {
-                if (quotation == 0 && i < length - 2) {
+                if (quotation == 0 && simpleQuotation == 0 && i < length - 2) {
                     return true;
                 }
                 // guess it is not just part of some text constant
@@ -837,6 +832,9 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                     if (cc == '\n') {
                         break;
                     } else if (cc == '"' && j < length - 1 && txt.charAt(j + 1) != '\'') {
+                        isClosed = false;
+                        break;
+                    } else if (cc == '\'' && j < length - 1) {
                         isClosed = false;
                         break;
                     }
@@ -850,8 +848,11 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                 return false;
             } else if (c == '\n') {
                 quotation = 0;
+                simpleQuotation = 0;
             } else if (c == '"' && i < length - 1 && txt.charAt(i + 1) != '\'') {
                 quotation = ++quotation % 2;
+            } else if (c == '\'' && i < length - 1) {
+                simpleQuotation = ++simpleQuotation % 2;
             }
         }
 
@@ -939,6 +940,30 @@ public class PHPBracketCompleter implements KeystrokeHandler {
         return false;
     }
 
+    private boolean isBracket(final char ch) {
+        return isOpeningBracket(ch) || isClosingBracket(ch);
+    }
+
+    private boolean isOpeningBracket(final char ch) {
+        return ch == '(' || ch == '{' || ch == '[';
+    }
+
+    private boolean isClosingBracket(final char ch) {
+        return ch == ')' || ch == '}' || ch == ']';
+    }
+
+    private boolean isQuote(final char ch) {
+        return ch == '"' || ch == '\'';
+    }
+
+    private boolean isQuote(final Token<?extends PHPTokenId> token) {
+        return isQuote(token.text().charAt(0));
+    }
+
+    private boolean doNotAutoComplete(final BaseDocument baseDocument, final char ch) {
+        return (!isInsertMatchingEnabled(baseDocument) && isBracket(ch)) || (isQuote(ch) && !OptionsUtils.autoCompletionSmartQuotes());
+    }
+
     @Override
     public boolean beforeCharInserted(Document document, int caretOffset, JTextComponent target, char ch)
         throws BadLocationException {
@@ -946,7 +971,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
         Caret caret = target.getCaret();
         BaseDocument doc = (BaseDocument)document;
 
-        if (!isInsertMatchingEnabled(doc)) {
+        if (doNotAutoComplete(doc, ch)) {
             return false;
         }
 
@@ -1136,6 +1161,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                 caret.setDot(caretOffset + 1);
                 return true;
             } else {
+                caret.setDot(caretOffset);
                 return false;
             }
         }
@@ -1528,175 +1554,47 @@ public class PHPBracketCompleter implements KeystrokeHandler {
      */
     private boolean isSkipClosingBracket(BaseDocument doc, int caretOffset, char bracket)
         throws BadLocationException {
-        // First check whether the caret is not after the last char in the document
-        // because no bracket would follow then so it could not be skipped.
         if (caretOffset == doc.getLength()) {
-            return false; // no skip in this case
+            return false;
         }
-
-        boolean skipClosingBracket = false; // by default do not remove
-
         TokenSequence<?extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, caretOffset);
-
         if (ts == null) {
             return false;
         }
-
-        // XXX BEGIN TOR MODIFICATIONS
-        //ts.move(caretOffset+1);
         ts.move(caretOffset);
-
         if (!ts.moveNext()) {
             return false;
         }
-
         Token<?extends PHPTokenId> token = ts.token();
-
+        boolean skipClosingBracket = false;
         // Check whether character follows the bracket is the same bracket
         if ((token != null) && (LexUtilities.textEquals(token.text(), bracket))) {
-//            int bracketIntId = bracketId.ordinal();
-//            int leftBracketIntId =
-//                (bracketIntId == PHPTokenId.PHP_RPAREN.ordinal()) ? PHPTokenId.PHP_LPAREN.ordinal()
-//                                                               : PHPTokenId.PHP_LBRACKET.ordinal();
-
             char leftBracket = bracket == ')' ? '(' : (bracket == ']' ? '[' : '{');
-
-            // Skip all the brackets of the same type that follow the last one
-            ts.moveNext();
-
-            Token<?extends PHPTokenId> nextToken = ts.token();
-
-            while ((nextToken != null) && (LexUtilities.textEquals(nextToken.text(), bracket))) {
-                token = nextToken;
-
-                if (!ts.moveNext()) {
-                    break;
-                }
-
-                nextToken = ts.token();
+            int bracketBalanceWithNewBracket = 0;
+            ts.moveStart();
+            if (!ts.moveNext()) {
+                return false;
             }
-
-            // token var points to the last bracket in a group of two or more right brackets
-            // Attempt to find the left matching bracket for it
-            // Search would stop on an extra opening left brace if found
-            int braceBalance = 0; // balance of '{' and '}'
-            int bracketBalance = -1; // balance of the brackets or parenthesis
-            Token<?extends PHPTokenId> lastRBracket = token;
-            ts.movePrevious();
             token = ts.token();
-
-            boolean finished = false;
-
-            while (!finished && (token != null)) {
+            while (token != null) {
                 if ((LexUtilities.textEquals(token.text(), '(')) || (LexUtilities.textEquals(token.text(), '['))) {
                     if (LexUtilities.textEquals(token.text(), leftBracket)) {
-                        bracketBalance++;
-
-                        if (bracketBalance == 0) {
-                            if (braceBalance != 0) {
-                                // Here the bracket is matched but it is located
-                                // inside an unclosed brace block
-                                // e.g. ... ->( } a()|)
-                                // which is in fact illegal but it's a question
-                                // of what's best to do in this case.
-                                // We chose to leave the typed bracket
-                                // by setting bracketBalance to 1.
-                                // It can be revised in the future.
-                                bracketBalance = 1;
-                            }
-
-                            finished = true;
-                        }
+                        bracketBalanceWithNewBracket++;
                     }
                 } else if ((LexUtilities.textEquals(token.text(), ')')) || (LexUtilities.textEquals(token.text(), ']'))) {
                     if (LexUtilities.textEquals(token.text(), bracket)) {
-                        bracketBalance--;
+                        bracketBalanceWithNewBracket--;
                     }
-                } else if (token.id() == PHPTokenId.PHP_CURLY_OPEN) {
-                    braceBalance++;
-
-                    if (braceBalance > 0) { // stop on extra left brace
-                        finished = true;
-                    }
-                } else if (token.id() == PHPTokenId.PHP_CURLY_CLOSE) {
-                    braceBalance--;
                 }
-
-                if (!ts.movePrevious()) {
+                if (!ts.moveNext()) {
                     break;
                 }
-
                 token = ts.token();
             }
-
-            if (bracketBalance > 0) { // not found matching bracket
-                                       // Remove the typed bracket as it's unmatched
+            if (bracketBalanceWithNewBracket == 0) {
+                skipClosingBracket = false;
+            } else {
                 skipClosingBracket = true;
-            } else { // the bracket is matched
-                     // Now check whether the bracket would be matched
-                     // when the closing bracket would be removed
-                     // i.e. starting from the original lastRBracket token
-                     // and search for the same bracket to the right in the text
-                     // The search would stop on an extra right brace if found
-                braceBalance = 0;
-                bracketBalance = 0; // simulate one extra left bracket
-
-                //token = lastRBracket.getNext();
-                TokenHierarchy<BaseDocument> th = TokenHierarchy.get(doc);
-
-                int ofs = lastRBracket.offset(th);
-
-                ts.move(ofs);
-                ts.movePrevious();
-                token = ts.token();
-                finished = false;
-
-                while (!finished && (token != null)) {
-                    //int tokenIntId = token.getTokenID().getNumericID();
-                    if ((LexUtilities.textEquals(token.text(), '(')) || (LexUtilities.textEquals(token.text(), '['))) {
-                        if (LexUtilities.textEquals(token.text(), leftBracket)) {
-                            bracketBalance++;
-                        }
-                    } else if ((LexUtilities.textEquals(token.text(), ')')) || (LexUtilities.textEquals(token.text(), ']'))) {
-                        if (LexUtilities.textEquals(token.text(), bracket)) {
-                            bracketBalance--;
-
-                            if (bracketBalance == 0) {
-                                if (braceBalance != 0) {
-                                    // Here the bracket is matched but it is located
-                                    // inside an unclosed brace block
-                                    // which is in fact illegal but it's a question
-                                    // of what's best to do in this case.
-                                    // We chose to leave the typed bracket
-                                    // by setting bracketBalance to -1.
-                                    // It can be revised in the future.
-                                    bracketBalance = -1;
-                                }
-
-                                finished = true;
-                            }
-                        }
-                    } else if (token.id() == PHPTokenId.PHP_CURLY_OPEN) {
-                        braceBalance++;
-                    } else if (token.id() == PHPTokenId.PHP_CURLY_CLOSE) {
-                        braceBalance--;
-
-                        if (braceBalance < 0) { // stop on extra right brace
-                            finished = true;
-                        }
-                    }
-
-                    //token = token.getPrevious(); // done regardless of finished flag state
-                    if (!ts.movePrevious()) {
-                        break;
-                    }
-
-                    token = ts.token();
-                }
-
-                // If bracketBalance == 0 the bracket would be matched
-                // by the bracket that follows the last right bracket.
-                skipClosingBracket = (bracketBalance == 0);
             }
         }
 
@@ -1817,8 +1715,8 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                 int firstNonWhiteFwd = Utilities.getFirstNonWhiteFwd(doc, dotPos, sectionEnd);
                 if (firstNonWhiteFwd != -1) {
                     char chr = doc.getChars(firstNonWhiteFwd, 1)[0];
-                    insert = chr == ')' || chr == ',' || chr == '+' || chr == '}' || //NOI18N
-                             chr == ';' || chr == ']' || chr == '.'; //NOI18N
+                    insert = (chr == ')' || chr == ',' || chr == '+' || chr == '}' || //NOI18N
+                             chr == ';' || chr == ']' || chr == '.') && !isStringToken(previousToken) && !isQuote(token); //NOI18N
                 }
             }
 

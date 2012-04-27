@@ -31,15 +31,15 @@
 
         <p>The IDE indexes the contents of local and remote Maven repositories using the Nexus indexing engine.
         The IDE uses the repository indexes for some Maven-related functions such as code completion.
-        You can browse and manage the indexes in the Maven Repositories window.</p>
+        You can browse and manage Maven repository indexes in the Services window.</p>
 
-        <p><strong>To browse Maven repositories</strong></p>
-        <ol>
-            <li>Choose Window &gt; Other &gt; Maven Repository Browser to open the Maven Repositories window.</li>
-            <li>Expand the nodes in the window to view the contents of the repositories.</li>
-        </ol>
+        <p><strong>To browse Maven repositories:</strong></p>
+        <ul>
+            <li>Choose Window &gt; Services from the main menu 
+            and expand the Maven Repositories node to view the contents of the repositories.</li>
+        </ul>
 
-        <p>The Maven Repositories window lists the Maven repositories registered with the IDE and
+        <p>The Maven Repositories node in the Services window lists the Maven repositories registered with the IDE and
         enables you to add, remove and update Maven repositories.
         The local Maven repository is indicated by a yellow repository node
         (&nbsp;<img src="img/localrepo.png" alt="local Maven repository">)
@@ -52,48 +52,63 @@
             Maven downloads the required artifacts to the local repository from a remote repository.
             The files in the local Maven repository are then shared by all your Maven projects.</li>
         </ul>
-        <p>The Maven Repositories window contains the following buttons for working with repositories.</p>
-
-        <table border="1" cellpadding="5" cellspacing="0">
-            <tr>
-            <th align="left" scope="col"><b>Button</b></th>
-            <th align="left" scope="col"><b>Description</b></th>
-            </tr>
-            <tr><td><img src="img/refreshRepo.png" alt="Updates repository indexes"></td><td>Updates Indexes.
-            Click this to reindex the local repository and update the indexes for the remote repositories.</td></tr>
-            <tr><td><img src="img/AddRepo.png" alt="Add repository"></td><td>Add repository.
-            Click this to open the Add Repository dialog box where you can specify the details
-            for the new repository.</td></tr>
-            <tr><td><img src="img/FindInRepo.png" alt="Find in repository"></td><td>Find.
-            Click this to open the Find in Repositories dialog box.
-            Enter a term to search the repositories for artifacts containing the term.</td></tr>
-        </table>
-
+        
         <p>You can expand the repository nodes to view the indexed artifacts grouped by GroupId and ArtifactId,
-        the version of the library sources and the type of packaging.
-        Depending on the metadata available, you can right-click a library to perform various actions.</p>
+        the version of the sources and the type of packaging.
+        Depending on the metadata available, you can right-click an artifact to perform various actions.</p>
         <ul>
+            <li><strong>View Details.</strong> Opens the Artifact Viewer tab in the editor window.</li>
             <li><strong>Add As Dependency to.</strong> Choose this to add the library to an open project as a dependency.
             The IDE automatically modifies the project's pom.</li>
             <li><strong>Find Usages.</strong> Choose this to view open projects and repository artifacts that use
             the selected library as a dependency.</li>
             <li><strong>View JavaDoc.</strong></li>
-            <li><strong>Open Project Home Page.</strong> If available, opens the project home page for the library in your browser.</li>
-            <li><strong>Open Bug Tracker.</strong> If available, opens the bug tracking page for the library in your browser.</li>
+            <li><strong>Open.</strong> Opens the project POM in the IDE.</li>
+            <li><strong>Download.</strong></li>
+            <li><strong>Download Sources.</strong></li>
+            <li><strong>Download JavaDoc.</strong></li>
+            <li><strong>Copy.</strong></li>
+<!--            <li><strong>Open Bug Tracker.</strong> If available, opens the bug tracking page for the library in your browser.</li>
             <li><strong>SCM.</strong> If available, you can choose this to browse the sources online or checkout the sources.
             If you choose to checkout the sources, you will be prompted to specify either a
             remote or local repository and to supply the checkout details.
-            Sources are checked out from the repository using Maven SCM.</li>
+            Sources are checked out from the repository using Maven SCM.</li>-->
         </ul>
+        
+        <p><strong>To locate artifacts in the repositories:</strong></p>
+        <ol>
+            <li>Right-click the Maven Repositories node and choose Find.</li>
+            <li>Enter the search term for the artifact in the Find in Repositories dialog box (a groupID, for example)
+                and select any additional criteria. Click OK.</li>
+        </ol>
+        <p>When you click OK the IDE will create a node for the search term (<img src="img/FindInRepo.png" alt="Find in repository">) 
+            under the Maven Repositories node.
+            Expand the search node to view a list of the artifacts that matched your search.
+            You can remove the search node by right-clicking the node and choosing Delete.
+            
+       <p><strong>To add a repository:</strong></p>
+        <ol>
+            <li>Right-click the Maven Repositories node and choose Add Repository.</li>
+            <li>Specify the details for the new repository. Click Add.</li>
+        </ol>
+        <p>When you click Add the IDE will create a node for the new repository.
+            under the Maven Repositories node.</p>
+            
+        <p><strong>To update the index of a repository:</strong></p>
+        <ul>
+            <li>Expand the Maven Repositories node, right-click the repository node 
+                you want to update and choose Update Index.</li>
+        </ul>
+        
 
+        
 
-        <!--In a Maven development environment, it is recommended that you store Maven software library JARs and
-        project artifacts in a local repository instead of in CVS.-->
 
 
         
 <dl>
     <dt><a name="seealso">See Also</a></dt>
+    <dd><a href="maven-artifacts.html">Working with Maven Artifacts</a></dd>
     <dd><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/maven/maven-about.html">About Working with Maven</a></dd>
 </dl>
 <hr>

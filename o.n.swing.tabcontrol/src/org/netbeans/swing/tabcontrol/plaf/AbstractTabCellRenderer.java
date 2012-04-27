@@ -160,6 +160,9 @@ public abstract class AbstractTabCellRenderer extends JLabel
                      return TabDisplayer.COMMAND_CLOSE_ALL;
                  } else if ((modifiers & MouseEvent.ALT_DOWN_MASK) != 0 && mouseButton != MouseEvent.BUTTON2) {
                      return TabDisplayer.COMMAND_CLOSE_ALL_BUT_THIS;
+                 } else if( (tabState & TabState.CLOSE_BUTTON_ARMED) == 0 && mouseButton == MouseEvent.BUTTON1 )  {
+                     //#208732
+                     result = TabDisplayer.COMMAND_SELECT;
                  }
                  return result;
              }
@@ -268,6 +271,13 @@ public abstract class AbstractTabCellRenderer extends JLabel
         return (state & TabState.AFTER_SELECTED) != 0;
     }
 
+    /**
+     * @return True if the tab is busy.
+     */
+    protected final boolean isBusy() {
+        return (state & TabState.BUSY) != 0;
+    }
+    
     public Dimension getPadding() {
         return new Dimension(padding);
     }

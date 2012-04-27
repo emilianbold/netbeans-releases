@@ -103,6 +103,9 @@ public class ProfilingPointWizard implements WizardDescriptor.Iterator {
             component.addValidityListener(this);
             component.init(ppFactories);
             setValid(component.areSettingsValid());
+            
+            if (component.hasDefaultScope())
+                selectedProject = component.getSelectedProject();
 
             return component;
         }
@@ -420,8 +423,6 @@ public class ProfilingPointWizard implements WizardDescriptor.Iterator {
             for (int i = 0; i < wizardPanels.length; i++) {
                 wizardPanels[i].notifyClosed(cancelled); // Will invoke profilingPoint = null
             }
-
-            preferredPanelSize = wizardPanels[currentPanel].getComponent().getSize(); // Persist customized size
         }
 
         return result;

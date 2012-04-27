@@ -107,6 +107,45 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="Profiler.Actions">
+            <api name="general"/>
+            <summary>Profiler actions are an integral part of the project infrastructure - just like the debugger actions</summary>
+            <version major="1" minor="44"/>
+            <date day="27" month="3" year="2011"/>
+            <author login="yardus"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    In order to be able to fully integrate the profiler with the project infrastructure
+                    it is necessary to add three new constants to 
+                    <code>ActionProvider</code> SPI for profiling a project, profiling a single file and
+                    profiling a test for single file. 
+                </p>
+            </description>
+            <class package="org.netbeans.spi.project" name="ActionProvider"/>
+            <issue number="203519"/>
+        </change>
+        <change id="ActionProgress">
+            <api name="general"/>
+            <summary>Added <code>ActionProgress</code></summary>
+            <version major="1" minor="43"/>
+            <date year="2012" month="3" day="20"/>
+            <author login="jglick"/>
+            <compatibility addition="yes">
+                <p>
+                    <code>ActionProvider</code> implementations should call the
+                    new progress listener if possible.
+                </p>
+            </compatibility>
+            <description>
+                <p>
+                    A new callback was added permitting the invoker of a project
+                    action to be notified when the action completes.
+                </p>
+            </description>
+            <class package="org.netbeans.spi.project" name="ActionProgress"/>
+            <issue number="71515"/>
+        </change>
 
         <change id="SourceGroup.contains.IAE">
             <api name="general"/>

@@ -5,4 +5,5 @@ new Test().set|
 METHOD     setAge(Object)                  [PUBLIC]   void
 METHOD     setMetaClass(MetaClass)                    void
 METHOD     setName(String)                 [PUBLIC]   void
+METHOD     setOkDef(boolean)               [PUBLIC]   void
 METHOD     setProperty(String, Object)     [PUBLIC]   void

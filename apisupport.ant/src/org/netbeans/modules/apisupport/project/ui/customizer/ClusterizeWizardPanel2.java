@@ -70,7 +70,7 @@ implements WizardDescriptor.Panel<Clusterize>, PropertyChangeListener {
 
     @Override
     public HelpCtx getHelp() {
-        return new HelpCtx(ClusterizeWizardPanel2.class);
+        return new HelpCtx("org.netbeans.modules.apisupport.project.ui.customizer.ClusterizeWizardPanel2");
     }
 
     void setValid(boolean valid) {

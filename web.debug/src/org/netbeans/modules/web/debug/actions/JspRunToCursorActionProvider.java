@@ -120,6 +120,7 @@ public class JspRunToCursorActionProvider extends ActionsProviderSupport {
         
         // check if current project supports this action
         Project p = MainProjectManager.getDefault ().getMainProject ();
+        // XXX revisit - should perhaps check selection?
         if (p == null) return false;
         ActionProvider actionProvider = (ActionProvider)p.getLookup ().lookup (ActionProvider.class);
         if (actionProvider == null) return false;

@@ -47,9 +47,12 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.text.BadLocationException;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.css.lib.api.*;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -64,7 +67,7 @@ public class Css3ParserTest extends CssTestBase {
 //     public static Test suite() throws IOException, BadLocationException {
 //        System.err.println("Beware, only selected tests runs!!!");
 //        TestSuite suite = new TestSuite();
-//        suite.addTest(new Css3ParserTest("testErrors"));
+//        suite.addTest(new Css3ParserTest("testIssue211103"));
 //        return suite;
 //    }
     @Override
@@ -889,6 +892,7 @@ public class Css3ParserTest extends CssTestBase {
     
     public void testParsingOfAsterixOnly() throws BadLocationException, ParseException {
         CssParserResult result = TestUtil.parse("*     ");
+        //                                       0123456
         TestUtil.dumpResult(result);
         
         Node node = NodeUtil.query(result.getParseTree(),
@@ -983,6 +987,69 @@ public class Css3ParserTest extends CssTestBase {
     public void testParseNsPrefixedElementInPseudo() throws BadLocationException, ParseException {
         assertResultOK(TestUtil.parse("div.test *:not(a|p) {  }"));
     }
+    
+    //Bug 207080 - Insufficient CSS parser error recovery
+    public void testIssue_207080() {
+        String code = "#wrapper {\n"
+                + "   height: 100%;\n"
+                + "#z-index: 200; \n"
+                + "}\n"
+                + "\n"
+                + "#header {\n"
+                + "}\n";
+        CssParserResult result = TestUtil.parse(code);
+        
+//        TestUtil.dumpResult(result);
+        
+        assertResult(result, 1); //ProblemDescription{from=28, to=36, description=Unexpected token HASH found, key=PARSING, type=ERROR}
+
+        
+        //check if the #header rule is properly parsed
+        Node node = NodeUtil.query(result.getParseTree(),
+                "styleSheet/bodylist/bodyset|1/"
+                + "ruleSet/selectorsGroup/selector/simpleSelectorSequence/elementSubsequent/cssId");
+        assertNotNull(node);
+        
+                
+    }
+    
+    public void testGenericAtRule() {
+        String code = "@-webkit-keyframes spin { h2 { color: red; } }";
+        CssParserResult result = TestUtil.parse(code);
+        
+        assertResultOK(result);
+        
+        TestUtil.dumpResult(result);
+        
+        Node node = NodeUtil.query(result.getParseTree(),
+                "styleSheet/bodylist/bodyset/generic_at_rule");
+                
+        assertNotNull(node);
+        
+    }
+    
+    //Bug 211103 - Freezes on starting IDE at "Scanning project" for too long
+    public void testIssue211103() throws IOException, ParseException, BadLocationException {
+        FileObject file = getTestFile("testfiles/itabbar.css.testfile");
+        //check if we can even parse the file w/o an infinite loop in the recovery
+        TestUtil.parse(file);
+    }
+    
+//    public void testRecoveryInBodySet() {
+//        String code = "div { } ;@ a { } h1 { }";
+//        CssParserResult result = TestUtil.parse(code);
+//        
+//        assertResultOK(result);
+//        
+//        TestUtil.dumpResult(result);
+//        
+//        Node node = NodeUtil.query(result.getParseTree(),
+//                "styleSheet/bodylist/bodyset/generic_at_rule");
+//                
+//        assertNotNull(node);
+//        
+//        
+//    }
     
     
 }

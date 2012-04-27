@@ -136,10 +136,20 @@ public final class RunUtils {
         return brc;
     }
     
-    private static ExecutorTask executeMavenImpl(String runtimeName, MavenExecutor exec) {
+    private static ExecutorTask executeMavenImpl(String runtimeName, final MavenExecutor exec) {
         ExecutorTask task =  ExecutionEngine.getDefault().execute(runtimeName, exec, exec.getInputOutput());
         exec.setTask(task);
         return task;
+    }
+    
+    /**
+     * return a new instance of runconfig by the template passed as parameter
+     * @param original
+     * @return 
+     * @since 2.40
+     */
+    public static RunConfig cloneRunConfig(RunConfig original) {
+        return new BeanRunConfig(original);
     }
 
     /**
@@ -154,7 +164,7 @@ public final class RunUtils {
             return false;
         }
         String cos = auxprops.get(Constants.HINT_COMPILE_ON_SAVE, true);
-        return cos != null && ("all".equalsIgnoreCase(cos) || "app".equalsIgnoreCase(cos));
+        return cos == null || "all".equalsIgnoreCase(cos) || "app".equalsIgnoreCase(cos);
     }
 
     /**
@@ -182,8 +192,7 @@ public final class RunUtils {
             return true;
         }
         String cos = auxprops.get(Constants.HINT_COMPILE_ON_SAVE, true);
-        //COS for tests is the default value.
-        return cos == null || ("all".equalsIgnoreCase(cos) || "test".equalsIgnoreCase(cos));
+        return cos != null && ("all".equalsIgnoreCase(cos) || "test".equalsIgnoreCase(cos));
     }
     /**
      *

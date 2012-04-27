@@ -42,6 +42,7 @@
 
 package org.netbeans.libs.git.jgit.commands;
 
+import java.util.Map;
 import org.eclipse.jgit.api.CreateBranchCommand.SetupUpstreamMode;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -50,6 +51,7 @@ import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.jgit.DelegatingGitProgressMonitor;
 import org.netbeans.libs.git.jgit.GitClassFactory;
 import org.netbeans.libs.git.jgit.Utils;
 import org.netbeans.libs.git.progress.ProgressMonitor;
@@ -62,11 +64,13 @@ public class CreateBranchCommand extends GitCommand {
     private final String revision;
     private final String branchName;
     private GitBranch branch;
+    private final ProgressMonitor monitor;
 
     public CreateBranchCommand (Repository repository, GitClassFactory gitFactory, String branchName, String revision, ProgressMonitor monitor) {
         super(repository, gitFactory, monitor);
         this.branchName = branchName;
         this.revision = revision;
+        this.monitor = monitor;
     }
 
     @Override
@@ -74,19 +78,21 @@ public class CreateBranchCommand extends GitCommand {
         Repository repository = getRepository();
         org.eclipse.jgit.api.CreateBranchCommand cmd = new Git(repository).branchCreate();
         cmd.setName(branchName);
-        Ref ref;
         if (revision.startsWith(Constants.R_HEADS) || revision.startsWith(Constants.R_REMOTES)) {
             cmd.setUpstreamMode(SetupUpstreamMode.TRACK);
         } else {
-            cmd.setStartPoint(Utils.findCommit(repository, revision));
+            Utils.findCommit(repository, revision); // does it exist?
         }
         cmd.setStartPoint(revision);
         try {
-            ref = cmd.call();
+            cmd.call();
         } catch (GitAPIException ex) {
             throw new GitException(ex);
         }
-        branch = getBranch(false, ref);
+        ListBranchCommand branchCmd = new ListBranchCommand(repository, getClassFactory(), false, new DelegatingGitProgressMonitor(monitor));
+        branchCmd.run();
+        Map<String, GitBranch> branches = branchCmd.getBranches();
+        branch = branches.get(branchName);
     }
 
     @Override
@@ -96,11 +102,5 @@ public class CreateBranchCommand extends GitCommand {
     
     public GitBranch getBranch () {
         return branch;
-    }
-    
-    private GitBranch getBranch (boolean isRemote, Ref ref) {
-        String refName = ref.getLeaf().getName();
-        String name = refName.substring(refName.indexOf('/', 5) + 1);
-        return getClassFactory().createBranch(name, isRemote, false, ref.getLeaf().getObjectId());
     }
 }

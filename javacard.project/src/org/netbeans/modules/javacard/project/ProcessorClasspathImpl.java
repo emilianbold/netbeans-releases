@@ -133,7 +133,10 @@ final class ProcessorClasspathImpl implements ClassPathImplementation {
 
         @Override
         protected void attach(JCProject obj, PropertyChangeListener precreatedListener) {
-            setListeningTo(project.getPlatform().getProcessorClasspath(get().kind()), precreatedListener);
+            final JavacardPlatform platform = project.getPlatform();
+            if (platform != null) {
+                setListeningTo(platform.getProcessorClasspath(get().kind()), precreatedListener);
+            }
             obj.addChangeListener(this);
         }
 

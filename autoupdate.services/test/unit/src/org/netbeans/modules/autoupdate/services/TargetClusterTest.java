@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -45,6 +45,7 @@
 package org.netbeans.modules.autoupdate.services;
 
 import java.io.IOException;
+import java.util.logging.Level;
 import org.netbeans.junit.RandomlyFails;
 import org.netbeans.updater.UpdateTracking;
 
@@ -57,18 +58,27 @@ public class TargetClusterTest extends TargetClusterTestCase {
     public TargetClusterTest (String testName) {
         super (testName);
     }
+
+    @Override protected Level logLevel() {
+        return Level.FINE;
+    }
+
+    @Override protected String logRoot() {
+        return "org.netbeans.modules.autoupdate";
+    }
     
     public void testInstallGloballyNewIntoDeclaredPlatform () throws IOException {
         // Otherwise (new module), if a cluster name is specified in NBM, put it there
         assertEquals ("Goes into " + platformDir.getName (), platformDir.getName (), getTargetCluster (platformDir.getName (), true).getName ());
     }
 
-    @RandomlyFails // NB-Core-Build #7716: "org.yourorghere.platform.null - UpdateUnit found." @TargetClusterTestCase.getTargetCluster
+    @RandomlyFails // org.yourorghere.platform.null - UpdateUnit found.
     public void testInstallNewIntoDeclaredPlatform () throws IOException {
         // Otherwise (new module), if a cluster name is specified in NBM, put it there
         assertEquals ("Goes into " + platformDir.getName (), platformDir.getName (), getTargetCluster (platformDir.getName (), null).getName ());
     }
     
+    @RandomlyFails
     public void testInstallNewIntoDeclaredNextCluster () throws IOException {
         // Otherwise (new module), if a cluster name is specified in NBM, put it there
         assertEquals ("Goes into " + nextDir.getName (), nextDir.getName (), getTargetCluster (nextDir.getName (), null).getName ());

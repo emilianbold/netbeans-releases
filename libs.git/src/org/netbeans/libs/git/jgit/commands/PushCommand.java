@@ -126,7 +126,7 @@ public class PushCommand extends TransportCommand {
                 GitTransportUpdate upd = getClassFactory().createTransportUpdate(transport.getURI(), update);
                 localRepositoryUpdates.put(upd.getRemoteName(), upd);
             }
-            result = new GitPushResult(remoteRepositoryUpdates, localRepositoryUpdates);
+            result = getClassFactory().createPushResult(remoteRepositoryUpdates, localRepositoryUpdates);
         } catch (NotSupportedException e) {
             throw new GitException(e.getMessage(), e);
         } catch (URISyntaxException e) {

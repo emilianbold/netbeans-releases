@@ -90,8 +90,12 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
         updateReferencesCheckBox.setVisible(showUpdateReferences);
         nameField.setEnabled(editable);
         //parent.setPreviewEnabled(false);        
-        if(editable) nameField.requestFocus();
-        else textCheckBox.requestFocus();
+        if(editable) {
+            nameField.requestFocus();
+        }
+        else {
+            textCheckBox.requestFocus();
+        }
         nameField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void changedUpdate(DocumentEvent event) {
@@ -119,7 +123,7 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
             return;
         }
 
-        if (handle!=null && (handle.getElementHandle().getKind() == ElementKind.FIELD
+        if (handle!=null && handle.getElementHandle() != null && (handle.getElementHandle().getKind() == ElementKind.FIELD
                 || handle.getElementHandle().getKind() == ElementKind.CLASS)) {
             JavaSource source = JavaSource.forFileObject(handle.getFileObject());
             CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
@@ -136,7 +140,7 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
                         TypeElement parent = (TypeElement) element.getEnclosingElement();
                     boolean hasGetters = false;
                         for (ExecutableElement method : ElementFilter.methodsIn(parent.getEnclosedElements())) {
-                            if (RefactoringUtils.isGetter(method, element) || RefactoringUtils.isSetter(method, element)) {
+                            if (RefactoringUtils.isGetter(info, method, element) || RefactoringUtils.isSetter(info, method, element)) {
                                 hasGetters = true;
                                 break;
                             }
@@ -202,8 +206,12 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
     
     @Override
     public void requestFocus() {
-        if(nameField.isEnabled()) nameField.requestFocus();
-        else textCheckBox.requestFocus();
+        if(nameField.isEnabled()) {
+            nameField.requestFocus();
+        }
+        else {
+            textCheckBox.requestFocus();
+        }
     }
     
     /** This method is called from within the constructor to
@@ -346,8 +354,9 @@ private void renameTestClassCheckBoxStateChanged(javax.swing.event.ChangeEvent e
     }
     
     public boolean isUpdateReferences() {
-        if (updateReferencesCheckBox.isVisible() && updateReferencesCheckBox.isSelected())
+        if (updateReferencesCheckBox.isVisible() && updateReferencesCheckBox.isSelected()) {
             return false;
+        }
         return true;
     }
     

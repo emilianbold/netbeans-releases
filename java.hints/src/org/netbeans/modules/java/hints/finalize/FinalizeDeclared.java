@@ -45,20 +45,19 @@ package org.netbeans.modules.java.hints.finalize;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
-import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
-import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Options;
-import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
-import org.netbeans.modules.java.hints.spi.support.FixFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.Hint.Options;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.TriggerTreeKind;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Tomas Zezula
  */
-@Hint(category="finalization",suppressWarnings={"FinalizeDeclaration"}, options=Options.QUERY) //NOI18N
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.finalize.FinalizeDeclared", description = "#DESC_org.netbeans.modules.java.hints.finalize.FinalizeDeclared", category="finalization",suppressWarnings={"FinalizeDeclaration"}, options=Options.QUERY) //NOI18N
 public class FinalizeDeclared {
 
     @TriggerTreeKind(Tree.Kind.METHOD)
@@ -68,8 +67,7 @@ public class FinalizeDeclared {
         final MethodTree tree = (MethodTree) tp.getLeaf();
         if (Util.isFinalize(tree)) {
             if (!Util.isInObject(ctx, tp)) {
-                return ErrorDescriptionFactory.forName(ctx, tp, NbBundle.getMessage(FinalizeDeclared.class, "TXT_FinalizeDeclared"),
-                FixFactory.createSuppressWarningsFix(ctx.getInfo(), tp, "FinalizeDeclaration"));    //NOI18N
+                return ErrorDescriptionFactory.forName(ctx, tp, NbBundle.getMessage(FinalizeDeclared.class, "TXT_FinalizeDeclared"));
             }
         }
         return null;

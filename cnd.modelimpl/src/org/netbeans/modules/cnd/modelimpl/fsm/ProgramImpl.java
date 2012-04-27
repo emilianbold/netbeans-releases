@@ -279,7 +279,6 @@ public final class ProgramImpl<T> extends OffsetableDeclarationBase<T>
 //
 //    private final CharSequence name;
 //    private final CsmType returnType;
-////    private final Collection<CsmUID<CsmParameter>>  parameters;
 //    private final FunctionParameterListImpl parameterList;
 //    private CharSequence signature;
 //

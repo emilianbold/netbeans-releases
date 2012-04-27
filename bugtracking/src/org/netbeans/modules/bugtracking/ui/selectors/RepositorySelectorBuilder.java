@@ -67,8 +67,7 @@ import javax.swing.ListCellRenderer;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
-import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.openide.DialogDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
@@ -84,6 +83,9 @@ import static javax.swing.SwingConstants.VERTICAL;
 import static javax.swing.SwingConstants.WEST;
 import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
 import static javax.swing.LayoutStyle.ComponentPlacement.UNRELATED;
+import org.netbeans.modules.bugtracking.APIAccessor;
+import org.netbeans.modules.bugtracking.DelegatingConnector;
+import org.netbeans.modules.bugtracking.api.Repository;
 
 /**
  * Allows the user to select an existing connection to a bug-tracking repository
@@ -98,8 +100,8 @@ public final class RepositorySelectorBuilder implements ItemListener,
     private static final String EMPTY_PANEL = "empty panel";            //NOI18N
     private static final String NEW_REPO_PANEL = "new repo panel";      //NOI18N
 
-    private Repository[] existingRepositories;
-    private BugtrackingConnector[] bugtrackingConnectors;
+    private RepositoryImpl[] existingRepositories;
+    private DelegatingConnector[] bugtrackingConnectors;
 
     private JLabel label;
     private JComboBox combo;
@@ -130,7 +132,7 @@ public final class RepositorySelectorBuilder implements ItemListener,
     private boolean displayFormForExistingRepo = true;
     private String bugtrackingConnectorDisplayFormat;
     private String initialErrorMessage;
-    private Repository repoToPreselect;
+    private RepositoryImpl repoToPreselect;
 
     /* SETTERS */
 
@@ -179,7 +181,7 @@ public final class RepositorySelectorBuilder implements ItemListener,
         displayFormForExistingRepo = display;
     }
 
-    public void setExistingRepositories(Repository[] repositories) {
+    public void setExistingRepositories(RepositoryImpl[] repositories) {
         if (combo != null) {
             throw new IllegalStateException(
                   "Cannot change parameters of an already created combo-box."); //NOI18N
@@ -192,7 +194,7 @@ public final class RepositorySelectorBuilder implements ItemListener,
         this.existingRepositories = repositories;
     }
 
-    public void setBugtrackingConnectors(BugtrackingConnector[] connectors) {
+    public void setBugtrackingConnectors(DelegatingConnector[] connectors) {
         if (combo != null) {
             throw new IllegalStateException(
                   "Cannot change parameters of an already created combo-box."); //NOI18N
@@ -205,7 +207,7 @@ public final class RepositorySelectorBuilder implements ItemListener,
         this.bugtrackingConnectors = connectors;
     }
 
-    public void setPreselectedRepository(Repository repository) {
+    public void setPreselectedRepository(RepositoryImpl repository) {
         repoToPreselect = repository;
         if (combo != null) {
             combo.setSelectedItem(repository);
@@ -381,7 +383,7 @@ public final class RepositorySelectorBuilder implements ItemListener,
         private void updateHelpId() {
             setHelpCtx(getHelpFor(RepositorySelectorBuilder.this.getSelectedRepository()));
         }
-        private HelpCtx getHelpFor(Repository repository) {
+        private HelpCtx getHelpFor(RepositoryImpl repository) {
             return (repository != null)
                    ? repository.getController().getHelpCtx()
                    : null;
@@ -440,7 +442,7 @@ public final class RepositorySelectorBuilder implements ItemListener,
     /* PRIVATE METHODS */
 
     private static NewRepositoryInfo[] createRepositoryInfos(
-                                            BugtrackingConnector[] connectors) {
+                                            DelegatingConnector[] connectors) {
         if (connectors == null) {
             return null;
         }
@@ -452,11 +454,11 @@ public final class RepositorySelectorBuilder implements ItemListener,
         return result;
     }
 
-    public Repository getSelectedRepository() {
+    public RepositoryImpl getSelectedRepository() {
         if (combo != null) {
             Object selectedItem = combo.getSelectedItem();
-            if (selectedItem instanceof Repository) {
-                return (Repository) selectedItem;
+            if (selectedItem instanceof RepositoryImpl) {
+                return (RepositoryImpl) selectedItem;
             }
         }
 
@@ -491,9 +493,9 @@ public final class RepositorySelectorBuilder implements ItemListener,
             NewRepositoryInfo newRepoInfo = (NewRepositoryInfo) selectedItem;
             displayRepositoryForm(newRepoInfo);
         } else {
-            assert selectedItem instanceof Repository;
+            assert selectedItem instanceof RepositoryImpl;
             if (displayFormForExistingRepo) {
-                Repository repository = (Repository) selectedItem;
+                RepositoryImpl repository = (RepositoryImpl) selectedItem;
                 displayRepositoryForm(repository);
             } else {
                 displayEmptyPanel();
@@ -534,7 +536,7 @@ public final class RepositorySelectorBuilder implements ItemListener,
         displayRepositoryForm(newRepoInfo.repository);
     }
 
-    public void displayRepository(Repository repository) {
+    public void displayRepository(RepositoryImpl repository) {
         boolean selectedInCombo;
         if (combo != null) {
             combo.setSelectedItem(repository);
@@ -548,11 +550,11 @@ public final class RepositorySelectorBuilder implements ItemListener,
         }
     }
 
-    public void displayRepositoryForm(Repository repository) {
+    public void displayRepositoryForm(RepositoryImpl repository) {
         displayRepositoryForm(repository, null);
     }
 
-    public void displayRepositoryForm(Repository repository, String initialErrMsg) {
+    public void displayRepositoryForm(RepositoryImpl repository, String initialErrMsg) {
         makeSureRepositoryFormsPanelExists();
 
         boolean wasRepositoryFormVisible = repositoryFormVisible;
@@ -631,8 +633,8 @@ public final class RepositorySelectorBuilder implements ItemListener,
     }
 
     public Object[] getSelectedObjects() {
-        Repository selectedRepo = getSelectedRepository();
-        return (selectedRepo != null) ? new Repository[] {selectedRepo}
+        RepositoryImpl selectedRepo = getSelectedRepository();
+        return (selectedRepo != null) ? new RepositoryImpl[] {selectedRepo}
                                       : null;
     }
 
@@ -712,17 +714,18 @@ public final class RepositorySelectorBuilder implements ItemListener,
     }
 
     private static final class NewRepositoryInfo {
-        private final BugtrackingConnector connector;
-        private Repository repository;
-        private NewRepositoryInfo(BugtrackingConnector connector) {
+        private final DelegatingConnector connector;
+        private RepositoryImpl repository;
+        private NewRepositoryInfo(DelegatingConnector connector) {
             this.connector = connector;
         }
-        Repository initializeRepository() {
+        RepositoryImpl initializeRepository() {
             assert repository == null;
-            repository = connector.createRepository();
+            Repository repo = connector.createRepository();
+            repository = APIAccessor.IMPL.getImpl(repo);
             return repository;
         }
-            }
+    }
 
     private static final class ComboItemsRenderer implements ListCellRenderer {
 
@@ -749,8 +752,8 @@ public final class RepositorySelectorBuilder implements ItemListener,
             String text;
             if (value == null) {
                 text = null;
-            } else if (value instanceof Repository) {
-                text = ((Repository) value).getDisplayName();
+            } else if (value instanceof RepositoryImpl) {
+                text = ((RepositoryImpl) value).getDisplayName();
             } else if (value instanceof NewRepositoryInfo) {
                 String connectorName = ((NewRepositoryInfo) value).connector
                                        .getDisplayName();

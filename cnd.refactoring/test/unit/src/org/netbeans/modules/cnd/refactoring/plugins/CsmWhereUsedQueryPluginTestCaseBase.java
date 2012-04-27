@@ -117,7 +117,7 @@ public class CsmWhereUsedQueryPluginTestCaseBase extends RefactoringBaseTestCase
             query.putValue(entry.getKey(), entry.getValue());
         }
         CsmWhereUsedQueryPlugin whereUsedPlugin = new CsmWhereUsedQueryPlugin(query);
-        Collection<RefactoringElementImplementation> elements = whereUsedPlugin.doPrepareElements(targetObject);
+        Collection<RefactoringElementImplementation> elements = whereUsedPlugin.doPrepareElements(targetObject, null);
         dumpAndCheckResults(elements, goldenFileName);
     }
 
@@ -137,9 +137,11 @@ public class CsmWhereUsedQueryPluginTestCaseBase extends RefactoringBaseTestCase
                 streamOut.println("References in file " + curFO.getParent().getName() + "/" + curFO.getNameExt());
                 lastFO = curFO;
             }
-            int start = elem.getPosition().getBegin().getOffset();
-            int end = elem.getPosition().getBegin().getOffset();
-            streamOut.printf("[%d-%d] %s\n", start, end, elem.getDisplayText());
+            int startLine = elem.getPosition().getBegin().getLine()+1;
+            int startCol = elem.getPosition().getBegin().getColumn()+1;
+            int endLine = elem.getPosition().getEnd().getLine()+1;
+            int endCol = elem.getPosition().getEnd().getColumn()+1;
+            streamOut.printf("[%d:%d-%d:%d] %s\n", startLine, startCol, endLine, endCol, elem.getDisplayText());
         }
         streamOut.close();
 

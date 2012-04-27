@@ -79,14 +79,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.MissingResourceException;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
@@ -94,22 +87,18 @@ import javax.swing.JComponent;
 import javax.swing.JList;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.Document;
 import org.eclipse.core.runtime.CoreException;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.Query;
-import org.netbeans.modules.bugtracking.spi.QueryNotifyListener;
+import org.netbeans.modules.bugtracking.api.Util;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer;
-import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.util.LogUtils;
+import org.netbeans.modules.bugtracking.util.OwnerUtils;
 import org.netbeans.modules.bugtracking.util.SaveQueryPanel;
 import org.netbeans.modules.bugtracking.util.SaveQueryPanel.QueryNameValidator;
 import org.netbeans.modules.jira.Jira;
@@ -121,6 +110,7 @@ import org.netbeans.modules.jira.kenai.KenaiRepository;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.jira.util.ComponentComparator;
+import org.netbeans.modules.jira.util.JiraUtils;
 import org.netbeans.modules.jira.util.VersionComparator;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -135,7 +125,7 @@ import org.openide.util.RequestProcessor.Task;
  *
  * @author Tomas Stupka
  */
-public class QueryController extends BugtrackingController implements DocumentListener, ItemListener, ListSelectionListener, ActionListener, FocusListener, KeyListener {
+public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryController implements ItemListener, ListSelectionListener, ActionListener, FocusListener, KeyListener, IssueTable.IssueTableProvider {
     private QueryPanel panel;
 
     private RequestProcessor rp = new RequestProcessor("Jira query", 1, true);  // NOI18N
@@ -158,6 +148,8 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
     private static final String[] LBL_LOADING = new String[]{ NbBundle.getMessage(QueryController.class, "LBL_Loading") };
 
+    private final Object REFRESH_LOCK = new Object();
+        
     public QueryController(JiraRepository repository, JiraQuery query, FilterDefinition fd) {
         this(repository, query, fd, true);
     }
@@ -168,7 +160,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         this.modifiable = modifiable;
         this.jiraFilter = jiraFilter;
 
-        issueTable = new IssueTable(query, query.getColumnDescriptors());
+        issueTable = new IssueTable(JiraUtils.getRepository(repository), query, query.getColumnDescriptors());
         setupRenderer(issueTable);
         panel = new QueryPanel(issueTable.getComponent(), this, isNamedFilter(jiraFilter));
         panel.projectList.addListSelectionListener(this);
@@ -199,17 +191,6 @@ public class QueryController extends BugtrackingController implements DocumentLi
         panel.queryTextField.addActionListener(this);
         panel.assigneeTextField.addActionListener(this);
         panel.reporterTextField.addActionListener(this);
-        panel.idTextField.getDocument().addDocumentListener(this);
-
-        panel.createdFromTextField.getDocument().addDocumentListener(this);
-        panel.createdToTextField.getDocument().addDocumentListener(this);
-        panel.updatedFromTextField.getDocument().addDocumentListener(this);
-        panel.updatedToTextField.getDocument().addDocumentListener(this);
-        panel.dueFromTextField.getDocument().addDocumentListener(this);
-        panel.dueToTextField.getDocument().addDocumentListener(this);
-
-        panel.ratioMinTextField.getDocument().addDocumentListener(this);
-        panel.ratioMaxTextField.getDocument().addDocumentListener(this);
 
         panel.filterComboBox.setModel(new DefaultComboBoxModel(issueTable.getDefinedFilters()));
 
@@ -226,12 +207,12 @@ public class QueryController extends BugtrackingController implements DocumentLi
         }
     }
 
-    private static boolean isNamedFilter(JiraFilter jiraFilter) {
+    static boolean isNamedFilter(JiraFilter jiraFilter) {
         return jiraFilter instanceof NamedFilter;
     }
 
     private void setupRenderer(IssueTable issueTable) {
-        renderer = new JiraQueryCellRenderer(query, issueTable, new QueryTableCellRenderer(query, issueTable));
+        renderer = new JiraQueryCellRenderer(query, issueTable, (QueryTableCellRenderer) issueTable.getRenderer());
         issueTable.setRenderer(renderer);
     }
 
@@ -291,15 +272,18 @@ public class QueryController extends BugtrackingController implements DocumentLi
             fd.setPriorityFilter(new PriorityFilter(priorities.toArray(new Priority[priorities.size()])));
         }
 
-        UserFilter userFilter = reporterUserSearch.getFilter();
-        if(userFilter != null) {
-            fd.setReportedByFilter(userFilter);
+        if(reporterUserSearch != null) {
+            UserFilter userFilter = reporterUserSearch.getFilter();
+            if(userFilter != null) {
+                fd.setReportedByFilter(userFilter);
+            }
         }
-        userFilter = assigneeUserSearch.getFilter();
-        if(userFilter != null) {
-            fd.setAssignedToFilter(userFilter);
+        if(assigneeUserSearch != null) { 
+            UserFilter userFilter = assigneeUserSearch.getFilter();
+            if(userFilter != null) {
+                fd.setAssignedToFilter(userFilter);
+            }
         }
-
         Long min = getLongValue(panel.ratioMinTextField);
         Long max = getLongValue(panel.ratioMaxTextField);
         if(min != null || max != null) {
@@ -622,8 +606,10 @@ public class QueryController extends BugtrackingController implements DocumentLi
     @Override
     public void closed() {
         onCancelChanges();
-        if(refreshTask != null) {
-            refreshTask.cancel();
+        synchronized(REFRESH_LOCK) {
+            if(refreshTask != null) {
+                refreshTask.cancel();
+            }
         }
         if(query.isSaved()) {
             if(!(query.getRepository() instanceof KenaiRepository)) {
@@ -649,13 +635,19 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     @Override
-    public boolean isValid() {
-        return true;
-    }
-
-    @Override
-    public void applyChanges() {
-
+    public void setMode(QueryMode mode) {
+        Filter filter;
+        switch(mode) {
+            case SHOW_ALL:
+                filter = issueTable.getAllFilter();
+                break;
+            case SHOW_NEW_OR_CHANGED:
+                filter = issueTable.getNewOrChangedFilter();
+                break;
+            default: 
+                throw new IllegalStateException("Unsupported mode " + mode);
+        }
+        selectFilter(filter);
     }
 
     protected void enableFields(boolean bl) {
@@ -676,23 +668,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     @Override
-    public void insertUpdate(DocumentEvent e) {
-        documentChanged(e);
-    }
-
-    @Override
-    public void removeUpdate(DocumentEvent e) {
-        documentChanged(e);
-    }
-
-    @Override
-    public void changedUpdate(DocumentEvent e) {
-        documentChanged(e);
-    }
-
-    @Override
     public void itemStateChanged(ItemEvent e) {
-        fireDataChanged();
         if(e.getSource() == panel.filterComboBox) {
             onFilterChange((Filter)e.getItem());
         }
@@ -703,7 +679,6 @@ public class QueryController extends BugtrackingController implements DocumentLi
         if(e.getSource() == panel.projectList) {
             onProjectChanged(e);
         }
-        fireDataChanged();            // XXX do we need this ???
     }
 
     @Override
@@ -823,8 +798,8 @@ public class QueryController extends BugtrackingController implements DocumentLi
         QueryNameValidator v = new QueryNameValidator() {
             @Override
             public String isValid(String name) {
-                Query[] queries = repository.getQueries();
-                for (Query q : queries) {
+                Collection<JiraQuery> queries = repository.getQueries();
+                for (JiraQuery q : queries) {
                     if(q.getDisplayName().equals(name)) {
                         return NbBundle.getMessage(QueryController.class, "MSG_SAME_NAME");
                     }
@@ -858,13 +833,12 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
     public void selectFilter(final Filter filter) {
         if(filter != null) {
-
             // XXX this part should be handled in the issues table - move the filtercombo and the label over
-            Issue[] issues = query.getIssues();
+            Collection<NbJiraIssue> issues = query.getIssues();
             int c = 0;
             if(issues != null) {
-                for (Issue issue : issues) {
-                    if(filter.accept(issue)) c++;
+                for (NbJiraIssue issue : issues) {
+                    if(filter.accept(issue.getNode())) c++;
                 }
             }
             final int issueCount = c;
@@ -948,8 +922,6 @@ public class QueryController extends BugtrackingController implements DocumentLi
         } else if (document == panel.ratioMinTextField.getDocument()) {
             validateLongField(panel.ratioMinTextField);
         }
-
-        fireDataChanged();
     }
 
     private void validateDateField(JTextField txt) {
@@ -1024,7 +996,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
     protected void openIssue(NbJiraIssue issue) {
         if (issue != null) {
-            issue.open();
+            JiraUtils.openIssue(issue);
         } else {
             // XXX nice message?
         }
@@ -1053,19 +1025,31 @@ public class QueryController extends BugtrackingController implements DocumentLi
         });
     }
 
+    public void refresh(boolean synchronously) {
+        refresh(false, synchronously);
+    }
+    
     public void autoRefresh() {
-        onRefresh(true);
+        refresh(true, false);
     }
 
     public void onRefresh() {
-        onRefresh(false);
+        refresh(false, false);
     }
 
-    private void onRefresh(final boolean autoRefresh) {
-        if(refreshTask == null) {
-            refreshTask = new QueryTask();
+    private void refresh(final boolean autoRefresh, boolean synchronously) {
+        Task t;
+        synchronized(REFRESH_LOCK) {
+            if(refreshTask == null) {
+                refreshTask = new QueryTask();
+            } else {
+                refreshTask.cancel();
+            }
+            t = refreshTask.post(autoRefresh);
         }
-        refreshTask.post(autoRefresh);
+        if(synchronously) {
+            t.waitFinished();
+        }
     }
 
     private void onModify() {
@@ -1076,9 +1060,13 @@ public class QueryController extends BugtrackingController implements DocumentLi
         Jira.getInstance().getRequestProcessor().post(new Runnable() {
             @Override
             public void run() {
-                Issue[] issues = query.getIssues();
-                for (Issue issue : issues) {
-                    IssueCacheUtils.setSeen(issue, true);
+                Collection<NbJiraIssue> issues = query.getIssues();
+                for (NbJiraIssue issue : issues) {
+                    try {
+                        issue.setSeen(true);
+                    } catch (IOException ex) {
+                        Jira.LOG.log(Level.SEVERE, null, ex);
+                    }
                 }
             }
         });
@@ -1112,7 +1100,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     protected void logAutoRefreshEvent(boolean autoRefresh) {
-        BugtrackingUtil.logAutoRefreshEvent(
+        LogUtils.logAutoRefreshEvent(
             JiraConnector.getConnectorName(),
             query.getDisplayName(),
             false,
@@ -1229,8 +1217,10 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
 
     private void remove() {
-        if (refreshTask != null) {
-            refreshTask.cancel();
+        synchronized(REFRESH_LOCK) {
+            if (refreshTask != null) {
+                refreshTask.cancel();
+            }
         }
         query.remove();
     }
@@ -1242,19 +1232,26 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     private void onFindIssues() {
-        Query.openNew(repository);
+        Util.createNewQuery(JiraUtils.getRepository(repository));
     }
 
     private void onCloneQuery() {
         FilterDefinition fd = getFilterDefinition();
         JiraQuery q = new JiraQuery(null, repository, fd, false, true);
-        BugtrackingUtil.openQuery(q, repository, false);
+        JiraUtils.openQuery(q);
     }
 
     void progress(String issueDesc) {
-        if(refreshTask != null) {
-            refreshTask.progress(issueDesc);
+        synchronized(REFRESH_LOCK) {
+            if(refreshTask != null) {
+                refreshTask.progress(issueDesc);
+            }
         }
+    }
+
+    @Override
+    public IssueTable getIssueTable() {
+        return issueTable;
     }
 
     private class QueryTask implements Runnable, Cancellable, QueryNotifyListener {
@@ -1299,7 +1296,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
             });
         }
 
-        synchronized void progress(String issueDesc) {
+        void progress(String issueDesc) {
             if(handle != null) {
                 handle.progress(
                     NbBundle.getMessage(
@@ -1337,13 +1334,14 @@ public class QueryController extends BugtrackingController implements DocumentLi
             }
         }
 
-        synchronized void post(boolean autoRefresh) {
+        Task post(boolean autoRefresh) {
             if(task != null) {
                 task.cancel();
             }
             task = rp.create(this);
             this.autoRefresh = autoRefresh;
             task.schedule(0);
+            return task;
         }
 
         @Override
@@ -1356,8 +1354,9 @@ public class QueryController extends BugtrackingController implements DocumentLi
         }
 
         @Override
-        public void notifyData(final Issue issue) {
-            if(!query.contains(issue)) {
+        public void notifyData(final NbJiraIssue issue) {
+            issueTable.addNode(issue.getNode());
+            if(!query.contains(issue.getID())) {
                 // XXX this is quite ugly - the query notifies an archoived issue
                 // but it doesn't "contain" it!
                 return;
@@ -1375,8 +1374,12 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
         @Override
         public void started() {
+            issueTable.started();
             counter = 0;
             setIssueCount(counter);
+            
+            // XXX move to API
+            OwnerUtils.setLooseAssociation(JiraUtils.getRepository(repository), false);                             
         }
 
         @Override

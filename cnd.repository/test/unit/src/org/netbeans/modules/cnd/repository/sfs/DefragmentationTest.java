@@ -49,6 +49,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.cnd.modelimpl.test.ModelImplBaseTestCase;
 
 /**
  * A test for DoubleFileStorage defragmentation
@@ -84,7 +85,7 @@ public class DefragmentationTest extends NbTestCase {
     }
 
     private void fillData(DoubleFileStorage dfs) throws IOException {
-        String dataPath = getDataDir().getAbsolutePath().replaceAll("/repository/", "/modelimpl/").replaceAll("\\\\repository\\\\", "\\modelimpl\\"); //NOI18N
+        String dataPath = ModelImplBaseTestCase.convertToModelImplDataDir(getDataDir(), "repository");
         Collection<TestObject> objects = new TestObjectCreator().createTestObjects(dataPath);
         for (int i = 0; i < 3; i++) {
             for (TestObject obj : objects) {

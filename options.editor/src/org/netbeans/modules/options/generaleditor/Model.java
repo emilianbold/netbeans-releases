@@ -46,6 +46,7 @@ package org.netbeans.modules.options.generaleditor;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.prefs.Preferences;
@@ -98,7 +99,8 @@ public class Model {
         boolean foldMethods,
         boolean foldTags
     ) {
-        Set<String> mimeTypes = EditorSettings.getDefault().getAllMimeTypes();
+        Collection<String> mimeTypes = new ArrayList<String>(EditorSettings.getDefault().getAllMimeTypes());
+        mimeTypes.add("");
         for(String mimeType : mimeTypes) {
             Preferences prefs = MimeLookup.getLookup(mimeType).lookup(Preferences.class);
             
@@ -132,6 +134,16 @@ public class Model {
     void setRemoveTrailingWhitespace(String value) {
         Preferences prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
         prefs.put(SimpleValueNames.ON_SAVE_REMOVE_TRAILING_WHITESPACE, value);
+    }
+    
+    String getEditorSearchType() {
+        Preferences prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
+        return prefs.get(SimpleValueNames.EDITOR_SEARCH_TYPE, "default");
+    }
+
+    void setEditorSearchType(String value) {
+        Preferences prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
+        prefs.put(SimpleValueNames.EDITOR_SEARCH_TYPE, value);
     }
 
     // private helper methods ..................................................

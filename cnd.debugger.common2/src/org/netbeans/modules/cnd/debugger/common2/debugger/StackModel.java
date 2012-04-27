@@ -326,7 +326,7 @@ public final class StackModel extends ModelListenerSupport
 
 	// interface BooleanStateAction
 	public boolean getBooleanState() {
-	    NativeDebugger debugger = DebuggerManager.get().currentNativeDebugger();
+	    NativeDebugger debugger = NativeDebuggerManager.get().currentNativeDebugger();
 	    return debugger.getVerboseStack();
 	}
 
@@ -342,7 +342,7 @@ public final class StackModel extends ModelListenerSupport
 
 	// interface SystemAction
 	public void actionPerformed(ActionEvent e) {
-	    NativeDebugger debugger = DebuggerManager.get().currentNativeDebugger();
+	    NativeDebugger debugger = NativeDebuggerManager.get().currentNativeDebugger();
 	    debugger.postVerboseStack( ! getBooleanState());
 	}
     }

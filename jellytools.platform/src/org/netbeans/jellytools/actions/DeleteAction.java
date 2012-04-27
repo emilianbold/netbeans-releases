@@ -46,6 +46,7 @@ package org.netbeans.jellytools.actions;
 import java.awt.event.KeyEvent;
 import javax.swing.KeyStroke;
 import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.NbDialogOperator;
 
 /** Used to call "Delete" popup menu item, "Edit|Delete" main menu item,
  * "org.openide.actions.DeleteAction" or Delete shortcut.
@@ -63,5 +64,21 @@ public class DeleteAction extends ActionNoBlock {
     /** creates new DeleteAction instance */    
     public DeleteAction() {
         super(deleteMenu, deletePopup, "org.openide.actions.DeleteAction", keystroke);
+    }
+    
+    /**
+     * Waits for confirmation dialog and approves deletion of object. It handles
+     * both Confirm Object Deletion dialog and Delete dialog with refactoring.
+     */
+    public static void confirmDeletion() {
+        NbDialogOperator deleteDialogOper = new NbDialogOperator("Delet");
+        if (deleteDialogOper.getTitle().equals("Delete")) {
+            // "Delete" - safe delete when scanning is not running
+            deleteDialogOper.ok();
+        } else {
+            // "Confirm Object Deletion" - if scanning is in progress
+            deleteDialogOper.yes();
+        }
+        deleteDialogOper.waitClosed();
     }
 }

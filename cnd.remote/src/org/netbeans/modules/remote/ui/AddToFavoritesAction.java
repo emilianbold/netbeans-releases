@@ -146,6 +146,7 @@ public class AddToFavoritesAction extends SingleHostAction {
     }
     
     private static abstract class AddPlace extends SingleHostAction {
+        private static final RequestProcessor RP = new RequestProcessor("AddToFavoritesAction", 1); // NOI18N
         private final PLACE place;
         private AddPlace(PLACE place) {
             this.place = place;
@@ -202,7 +203,7 @@ public class AddToFavoritesAction extends SingleHostAction {
                         }
                     }
                 };
-                RequestProcessor.getDefault().post(runnable);
+                RP.post(runnable);
             }
         }
 

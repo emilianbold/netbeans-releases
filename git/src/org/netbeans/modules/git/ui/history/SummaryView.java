@@ -300,11 +300,6 @@ class SummaryView extends AbstractSummaryView {
         }
 
         @Override
-        public File getFile () {
-            return event.getFile();
-        }
-
-        @Override
         public String getAction () {
             return Character.toString(event.getAction());
         }

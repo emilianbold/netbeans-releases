@@ -43,10 +43,6 @@
  */
 package org.netbeans.modules.html.editor;
 
-import org.netbeans.editor.ext.html.parser.spi.HtmlParseResult;
-import org.netbeans.editor.ext.html.parser.spi.HtmlTag;
-import org.netbeans.modules.html.editor.api.Utils;
-import org.netbeans.modules.html.editor.api.HtmlKit;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -58,8 +54,13 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.editor.ext.html.parser.api.AstNode;
+import org.netbeans.modules.html.editor.api.HtmlKit;
+import org.netbeans.modules.html.editor.api.Utils;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
+import org.netbeans.modules.html.editor.lib.api.elements.*;
+import org.netbeans.modules.html.editor.lib.api.model.HtmlModel;
+import org.netbeans.modules.html.editor.lib.api.model.HtmlModelFactory;
+import org.netbeans.modules.html.editor.lib.api.model.HtmlTag;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -73,7 +74,7 @@ import org.netbeans.spi.editor.bracesmatching.MatcherContext;
 import org.openide.util.Exceptions;
 
 /**
- * A HTML parser based implementation of BracesMatcher. 
+ * A HTML parser based implementation of BracesMatcher.
  *
  * @author Marek Fukala
  */
@@ -104,21 +105,21 @@ public class HtmlBracesMatching implements BracesMatcher, BracesMatcherFactory {
             TokenHierarchy<Document> th = TokenHierarchy.get(context.getDocument());
 
             if (ts.language() == HTMLTokenId.language()) {
-                while(searchOffset != context.getLimitOffset()) {
+                while (searchOffset != context.getLimitOffset()) {
                     int diff = ts.move(searchOffset);
-                    searchOffset = searchOffset + (context.isSearchingBackward() ? -1 : +1 );
-                    
-                    if(diff == 0 && context.isSearchingBackward()) {
+                    searchOffset = searchOffset + (context.isSearchingBackward() ? -1 : +1);
+
+                    if (diff == 0 && context.isSearchingBackward()) {
                         //we are searching backward and the offset is at the token boundary
-                        if(!ts.movePrevious()) {
+                        if (!ts.movePrevious()) {
                             continue;
                         }
                     } else {
-                        if(!ts.moveNext()) {
+                        if (!ts.moveNext()) {
                             continue;
                         }
                     }
-                    
+
                     Token<HTMLTokenId> t = ts.token();
                     int toffs = ts.offset();
                     if (tokenInTag(t)) {
@@ -165,7 +166,7 @@ public class HtmlBracesMatching implements BracesMatcher, BracesMatcherFactory {
                         } else if (tokenImage.endsWith(BLOCK_COMMENT_END) && (context.getSearchOffset() >= toffs + tokenImage.length() - BLOCK_COMMENT_END.length())) {
                             return new int[]{toffs + t.length() - BLOCK_COMMENT_END.length(), toffs + t.length()};
                         }
-                    }                    
+                    }
                 }
             }
             return null;
@@ -194,7 +195,6 @@ public class HtmlBracesMatching implements BracesMatcher, BracesMatcherFactory {
         final int[][] ret = new int[1][];
         try {
             ParserManager.parse(Collections.singleton(source), new UserTask() {
-
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
                     if (!testMode && MatcherContext.isTaskCanceled()) {
@@ -216,65 +216,74 @@ public class HtmlBracesMatching implements BracesMatcher, BracesMatcherFactory {
                         return;
                     }
                     
-                    HtmlParseResult parseResult = result.getSyntaxAnalyzerResult().parseHtml();
-                    if(parseResult == null) {
+                    HtmlModel model = HtmlModelFactory.getModel(result.getHtmlVersion());
+                    if(model == null) {
                         return ;
                     }
+                    
                     int searchOffsetLocal = searchOffset;
-                    while(searchOffsetLocal != context.getLimitOffset()) {
+                    while (searchOffsetLocal != context.getLimitOffset()) {
                         int searched = result.getSnapshot().getEmbeddedOffset(searchOffsetLocal);
-                        AstNode origin = result.findLeafTag(searched, !context.isSearchingBackward(), true);
+                        Element origin = result.findByPhysicalRange(searched, !context.isSearchingBackward());
                         if (origin != null) {
-                            if (origin.type() == AstNode.NodeType.OPEN_TAG ||
-                                    origin.type() == AstNode.NodeType.ENDTAG) {
-
-                                if (origin == null) {
-                                    //offset between tags, no match
-                                    ret[0] = null;
-                                } else {
-
-                                    AstNode match = origin.getMatchingTag();
-                                    if (match == null) {
-                                        //no matched tag foud
-                                        HtmlTag tag = parseResult.model().getTag(origin.getNameWithoutPrefix().toLowerCase(Locale.ENGLISH));
-                                        if(tag != null) {
-                                            if(origin.type() == AstNode.NodeType.OPEN_TAG && tag.hasOptionalEndTag() 
-                                                    || origin.type() == AstNode.NodeType.ENDTAG && tag.hasOptionalOpenTag()) {
-                                                //valid
-                                                ret[0] = new int[]{searchOffsetLocal, searchOffsetLocal}; //match nothing, origin will be yellow  - workaround
-                                                return ;
-                                            }
-                                        }
-                                        //error
-                                        ret[0] = null; //no match
-                                    } else {
-                                        //match
-
-                                        if (match.type() == AstNode.NodeType.OPEN_TAG) {
-                                            //match the '<tagname' part
-                                            int f1 = match.startOffset();
-                                            int t1 = f1 + match.name().length() + 1; /* +1 == open tag symbol '<' length */
-                                            //match the closing '>' symbol
-                                            int f2 = match.endOffset() - 1; // -1 == close tag symbol '>' length
-                                            int t2 = match.endOffset();
-
-                                            ret[0] = translate(new int[]{f1, t1, f2, t2}, result);
-                                        } else {
-                                            ret[0] = translate(new int[]{match.startOffset(), match.endOffset()}, result);
+                            if (origin.type() == ElementType.OPEN_TAG) {
+                                OpenTag origin_tag = (OpenTag) origin;
+                                CloseTag match = origin_tag.matchingCloseTag();
+                                if (match == null || ElementUtils.isVirtualNode(match)) {
+                                    //no matched tag foud
+                                    HtmlTag tag = model.getTag(origin_tag.unqualifiedName().toString().toLowerCase(Locale.ENGLISH));
+                                    if (tag != null) {
+                                        if (tag.hasOptionalEndTag()) {
+                                            //valid
+                                            ret[0] = new int[]{searchOffsetLocal, searchOffsetLocal}; //match nothing, origin will be yellow  - workaround
+                                            return;
                                         }
                                     }
+                                    //error
+                                    ret[0] = null; //no match
+                                } else {
+                                    ret[0] = translate(new int[]{match.from(), match.to()}, result);
+                                    
                                 }
-                            } else if (origin.type() == AstNode.NodeType.COMMENT) {
-                                if (searched >= origin.startOffset() && searched <= origin.startOffset() + BLOCK_COMMENT_START.length()) {
+
+                            } else if (origin.type() == ElementType.CLOSE_TAG) {
+                                CloseTag origin_tag = (CloseTag) origin;
+                                OpenTag match = origin_tag.matchingOpenTag();
+                                if (match == null || ElementUtils.isVirtualNode(match)) {
+                                    //no matched tag foud
+                                    HtmlTag tag = model.getTag(origin_tag.unqualifiedName().toString().toLowerCase(Locale.ENGLISH));
+                                    if (tag != null) {
+                                        if (tag.hasOptionalOpenTag()) {
+                                            //valid
+                                            ret[0] = new int[]{searchOffsetLocal, searchOffsetLocal}; //match nothing, origin will be yellow  - workaround
+                                            return;
+                                        }
+                                    }
+                                    //error
+                                    ret[0] = null; //no match
+                                } else {
+                                    //match
+                                    //match the '<tagname' part
+                                    int f1 = match.from();
+                                    int t1 = f1 + match.name().length() + 1; /* +1 == open tag symbol '<' length */
+                                    //match the closing '>' symbol
+                                    int f2 = match.to() - 1; // -1 == close tag symbol '>' length
+                                    int t2 = match.to();
+
+                                    ret[0] = translate(new int[]{f1, t1, f2, t2}, result);
+                                    
+                                }
+                            } else if (origin.type() == ElementType.COMMENT) {
+                                if (searched >= origin.from() && searched <= origin.from() + BLOCK_COMMENT_START.length()) {
                                     //complete end of comment
-                                    ret[0] = translate(new int[]{origin.endOffset() - BLOCK_COMMENT_END.length(), origin.endOffset()}, result);
-                                } else if (searched >= origin.endOffset() - BLOCK_COMMENT_END.length() && searched <= origin.endOffset()) {
+                                    ret[0] = translate(new int[]{origin.to() - BLOCK_COMMENT_END.length(), origin.to()}, result);
+                                } else if (searched >= origin.to() - BLOCK_COMMENT_END.length() && searched <= origin.to()) {
                                     //complete start of comment
-                                    ret[0] = translate(new int[]{origin.startOffset(), origin.startOffset() + BLOCK_COMMENT_START.length()}, result);
+                                    ret[0] = translate(new int[]{origin.from(), origin.from() + BLOCK_COMMENT_START.length()}, result);
                                 }
                             }
                         }
-                        
+
                         searchOffsetLocal = searchOffsetLocal + (context.isSearchingBackward() ? -1 : +1);
 
                     }
@@ -302,7 +311,6 @@ public class HtmlBracesMatching implements BracesMatcher, BracesMatcherFactory {
     public BracesMatcher createMatcher(final MatcherContext context) {
         final HtmlBracesMatching[] ret = {null};
         context.getDocument().render(new Runnable() {
-
             @Override
             public void run() {
                 TokenHierarchy<Document> hierarchy = TokenHierarchy.get(context.getDocument());

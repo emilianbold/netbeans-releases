@@ -43,7 +43,7 @@
  */
 package org.netbeans.modules.cnd.refactoring.codegen;
 
-import org.netbeans.modules.cnd.refactoring.support.CsmContext;
+import org.netbeans.modules.cnd.refactoring.api.CsmContext;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.refactoring.support.GeneratorUtils;
 import java.awt.Dialog;

@@ -43,14 +43,20 @@ package org.netbeans.modules.maven.repository;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
+import org.netbeans.modules.maven.indexer.api.RepositoryQueries.Result;
+import org.openide.nodes.AbstractNode;
 import org.openide.nodes.ChildFactory;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.WeakListeners;
+import static org.netbeans.modules.maven.repository.Bundle.*;
 
 /**
  *
@@ -60,6 +66,7 @@ import org.openide.util.WeakListeners;
 public class GroupListChildren extends ChildFactory.Detachable<String> implements ChangeListener {
 
     private RepositoryInfo info;
+    static final String KEY_PARTIAL = "____PARTIAL_RESULT";
 
     public GroupListChildren(RepositoryInfo info) {
         this.info = info;
@@ -69,13 +76,29 @@ public class GroupListChildren extends ChildFactory.Detachable<String> implement
         this.info = info;
         refresh(false);
     }
-
-    protected @Override Node createNodeForKey(String key) {
+    
+    @Override 
+    @Messages("TXT_Partial_result=<No result, processing index...>")
+    protected Node createNodeForKey(String key) {
+        if (KEY_PARTIAL.equals(key)) {
+            return createPartialNode();
+        }
         return new GroupNode(info, key);
     }
 
+    static Node createPartialNode() {
+        AbstractNode node = new AbstractNode(Children.LEAF);
+        node.setIconBaseWithExtension("org/netbeans/modules/maven/resources/wait.gif");
+        node.setDisplayName(TXT_Partial_result());
+        return node;
+    }
+
     protected @Override boolean createKeys(List<String> toPopulate) {
-        toPopulate.addAll(RepositoryQueries.getGroups(Collections.singletonList(info)));
+        Result<String> result = RepositoryQueries.getGroupsResult(Collections.singletonList(info));
+        toPopulate.addAll(result.getResults());
+        if (result.isPartial()) {
+            toPopulate.add(KEY_PARTIAL);
+        }
         return true;
     }
     

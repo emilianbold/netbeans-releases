@@ -43,27 +43,19 @@
 package org.netbeans.modules.maven.api.customizer;
 
 import java.io.IOException;
-import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import org.apache.maven.project.MavenProject;
-import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.modules.maven.configurations.M2Configuration;
-import org.netbeans.modules.maven.customizer.CustomizerProviderImpl;
-import org.netbeans.modules.maven.execute.ActionToGoalUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.MavenProjectPropsImpl;
+import org.netbeans.modules.maven.configurations.M2Configuration;
+import org.netbeans.modules.maven.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
-import org.netbeans.modules.maven.execute.model.io.xpp3.NetbeansBuildActionXpp3Reader;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.spi.project.ProjectConfiguration;
-import org.openide.util.NbBundle;
 
 /**
  * ModelHandle instance is passed down to customizer panel providers in the context lookup.
@@ -71,13 +63,13 @@ import org.openide.util.NbBundle;
  * @author Milos Kleint (mkleint@codehaus.org)
  */
 public final class ModelHandle {
-    public static final String PANEL_RUN = "RUN"; //NOI18N
-    public static final String PANEL_BASIC = "BASIC"; //NOI18N
-    public static final String PANEL_CONFIGURATION = "CONFIGURATION"; //NOI18N
-    public static final String PANEL_MAPPING = "MAPPING"; //NOI18N
-    public static final String PANEL_LIBRARIES = "LIBRARIES"; //NOI18N
-    public static final String PANEL_SOURCES = "SOURCES"; //NOI18N
-    public static final String PANEL_COMPILE = "COMPILE"; //NOI18N
+    public static final String PANEL_RUN = ModelHandle2.PANEL_RUN;
+    public static final String PANEL_BASIC = ModelHandle2.PANEL_BASIC;
+    public static final String PANEL_CONFIGURATION = ModelHandle2.PANEL_CONFIGURATION;
+    public static final String PANEL_MAPPING = ModelHandle2.PANEL_MAPPING;
+    public static final String PANEL_LIBRARIES = ModelHandle2.PANEL_LIBRARIES;
+    public static final String PANEL_SOURCES = ModelHandle2.PANEL_SOURCES;
+    public static final String PANEL_COMPILE = ModelHandle2.PANEL_COMPILE;
     
     private final MavenProjectPropsImpl auxiliaryProps;
     private final POMModel model;
@@ -93,6 +85,7 @@ public final class ModelHandle {
         AccessorImpl impl = new AccessorImpl();
         impl.assign();
     }
+    
     
     
     static class AccessorImpl extends CustomizerProviderImpl.ModelAccessor {
@@ -202,28 +195,14 @@ public final class ModelHandle {
      * @param mapp
      */
     public static void setUserActionMapping(NetbeansActionMapping action, ActionToGoalMapping mapp) {
-        action.setPackagings(null);
-        List<NetbeansActionMapping> lst = mapp.getActions() != null ? mapp.getActions() : new ArrayList<NetbeansActionMapping>();
-        Iterator<NetbeansActionMapping> it = lst.iterator();
-        while (it.hasNext()) {
-            NetbeansActionMapping act = it.next();
-            if (act.getActionName().equals(action.getActionName())) {
-                int index = lst.indexOf(act);
-                it.remove();
-                lst.add(index, action);
-                return;
+        ModelHandle2.setUserActionMapping(action, mapp);
             }
-
-        }
-        //if not found, add to the end.
-        lst.add(action);
-    }
 
     /**
      * @since 2.19
      */
     public static @CheckForNull NetbeansActionMapping getDefaultMapping(String action, Project project) {
-        return ActionToGoalUtils.getDefaultMapping(action, project);
+        return ModelHandle2.getDefaultMapping(action, project);
     }
 
     /**
@@ -235,7 +214,7 @@ public final class ModelHandle {
      * @since 2.19
      */
     public static @CheckForNull NetbeansActionMapping getMapping(String action, Project project, ProjectConfiguration config) {
-        return ActionToGoalUtils.getActiveMapping(action, project, (M2Configuration) config);
+        return ModelHandle2.getMapping(action, project, config);
     }
 
     /**
@@ -247,27 +226,8 @@ public final class ModelHandle {
      * @since 2.19
      */
     public static void putMapping(NetbeansActionMapping mapp, Project project, ProjectConfiguration config) throws IOException {
-        M2Configuration cfg = (M2Configuration) config;
-        ActionToGoalMapping mapping;
-        try {
-            mapping = new NetbeansBuildActionXpp3Reader().read(new StringReader(cfg.getRawMappingsAsString()));
-        } catch (XmlPullParserException x) {
-            throw new IOException(x);
+        ModelHandle2.putMapping(mapp, project, config);
         }
-        NetbeansActionMapping existing = null;
-        for (NetbeansActionMapping m : mapping.getActions()) {
-            if (m.getActionName().equals(mapp.getActionName())) {
-                existing = m;
-                break;
-            }
-        }
-        if (existing != null) {
-            mapping.getActions().set(mapping.getActions().indexOf(existing), mapp);
-        } else {
-            mapping.addAction(mapp);
-        }
-        CustomizerProviderImpl.writeNbActionsModel(project, mapping, M2Configuration.getFileNameExt(cfg.getId()));
-    }
 
     public List<Configuration> getConfigurations() {
         return configurations;
@@ -350,78 +310,6 @@ public final class ModelHandle {
      * a javabean wrapper for configurations within the project customizer
      * 
      */
-    public static class Configuration {
-        private String id;
-        private boolean profileBased = false;
-        private boolean defaul = false;
-
-        private List<String> activatedProfiles;
-        private boolean shared = false;
-        
-        Configuration() {}
-
-        public String getFileNameExt() {
-            return M2Configuration.getFileNameExt(id);
+    public static class Configuration extends ModelHandle2.Configuration {
         }
-
-        public boolean isDefault() {
-            return defaul;
         }
-
-        public void setDefault(boolean def) {
-            this.defaul = def;
-        }
-        
-        public List<String> getActivatedProfiles() {
-            return activatedProfiles;
-        }
-
-        public void setActivatedProfiles(List<String> activatedProfiles) {
-            this.activatedProfiles = activatedProfiles;
-        }
-
-        public String getDisplayName() {
-            if (isDefault()) {
-                return NbBundle.getMessage(ModelHandle.class, "DefaultConfig");
-            }
-            if (isProfileBased()) {
-                return NbBundle.getMessage(ModelHandle.class, "ProfileConfig", id);
-            }
-            if (getActivatedProfiles() != null && getActivatedProfiles().size() > 0) {
-                return NbBundle.getMessage(ModelHandle.class, "CustomConfig1", id, Arrays.toString(getActivatedProfiles().toArray()));
-            }
-            return NbBundle.getMessage(ModelHandle.class, "CustomConfig2", id);
-        }
-
-        public String getId() {
-            return id;
-        }
-
-        public void setShared(boolean shared) {
-            this.shared = shared;
-        }
-        
-        public boolean isShared() {
-            return shared;
-        }
-
-        void setId(String id) {
-            this.id = id;
-        }
-
-        public boolean isProfileBased() {
-            return profileBased;
-        }
-
-        void setProfileBased(boolean profileBased) {
-            this.profileBased = profileBased;
-        }
-
-        @Override
-        public String toString() {
-            return getDisplayName();
-        }
-        
-        
-    }
-}

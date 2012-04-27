@@ -37,62 +37,72 @@
  */
 package org.netbeans.modules.java.hints;
 
-import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.hints.test.api.HintTest;
 
 /**
  *
  * @author lahvac
  */
-public class AssignmentToItselfTest extends TestBase {
+public class AssignmentToItselfTest extends NbTestCase {
 
     public AssignmentToItselfTest(String name) {
-        super(name, AssignmentToItself.class);
+        super(name);
     }
 
     public void testAnalysis1() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    public Test(int i) {\n" +
-                            "        i = i;\n" +
-                            "    }\n" +
-                            "}",
-                            "3:8-3:13:verifier:ERR_AssignmentToItself");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public Test(int i) {\n" +
+                       "        i = i;\n" +
+                       "    }\n" +
+                       "}")
+                .run(AssignmentToItself.class)
+                .assertWarnings("3:8-3:13:verifier:ERR_AssignmentToItself");
     }
 
     public void testAnalysis2() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    private int i;\n" +
-                            "    public Test(int i) {\n" +
-                            "        this.i = i;\n" +
-                            "    }\n" +
-                            "}");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private int i;\n" +
+                       "    public Test(int i) {\n" +
+                       "        this.i = i;\n" +
+                       "    }\n" +
+                       "}")
+                .run(AssignmentToItself.class)
+                .assertWarnings();
     }
 
     public void testAnalysis3() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    public Test(int[] i, int j) {\n" +
-                            "        i[0] = i[1];\n" +
-                            "        i[j] = i[j + 1];\n" +
-                            "        i[j] = i[j];\n" +
-                            "    }\n" +
-                            "}",
-                            "5:8-5:19:verifier:ERR_AssignmentToItself");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public Test(int[] i, int j) {\n" +
+                       "        i[0] = i[1];\n" +
+                       "        i[j] = i[j + 1];\n" +
+                       "        i[j] = i[j];\n" +
+                       "    }\n" +
+                       "}")
+                .run(AssignmentToItself.class)
+                .assertWarnings("5:8-5:19:verifier:ERR_AssignmentToItself");
     }
 
     public void testAnalysis4() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    private int i;\n" +
-                            "    public Test() {\n" +
-                            "        this.i = i;\n" +
-                            "    }\n" +
-                            "}",
-                            "4:8-4:18:verifier:ERR_AssignmentToItself");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private int i;\n" +
+                       "    public Test() {\n" +
+                       "        this.i = i;\n" +
+                       "    }\n" +
+                       "}")
+                .run(AssignmentToItself.class)
+                .assertWarnings("4:8-4:18:verifier:ERR_AssignmentToItself");
     }
 }

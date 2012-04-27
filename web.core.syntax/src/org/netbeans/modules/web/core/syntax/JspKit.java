@@ -410,6 +410,25 @@ public class JspKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
 
         @Override
         public void actionPerformed(final ActionEvent e, final JTextComponent target) {
+            // Preliminary checks that avoid interpreting e.g. Ctrl+W that would then invoke runAtomic()
+            if ((target != null) && (e != null)) {
+                    // Check whether the modifiers are OK
+                    int mod = e.getModifiers();
+                    boolean ctrl = ((mod & ActionEvent.CTRL_MASK) != 0);
+                    // On the mac, norwegian and french keyboards use Alt to do bracket characters.
+                    // This replicates Apple's modification DefaultEditorKit.DefaultKeyTypedAction
+                    boolean alt = org.openide.util.Utilities.isMac() ? ((mod & ActionEvent.META_MASK) != 0) :
+                        ((mod & ActionEvent.ALT_MASK) != 0);
+                    if (alt || ctrl) {
+                        return;
+                    }
+                    // Check whether the target is enabled and editable
+                    if (!target.isEditable() || !target.isEnabled()) {
+                        target.getToolkit().beep();
+                        return;
+                    }
+            }
+
             currentTarget = target;
             try {
                 if (!triggerJavaDefaultKeyTypedAction(e, target)) {
@@ -448,6 +467,11 @@ public class JspKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
         protected void insertString(BaseDocument doc, int dotPos,
                 Caret caret, String str,
                 boolean overwrite) throws BadLocationException {
+            // see issue #211036 - inserted string can be empty since #204450
+            if (str.isEmpty()) {
+                return;
+            }
+
             if (completionSettingEnabled()) {
                 KeystrokeHandler bracketCompletion = UiUtils.getBracketCompletion(doc, dotPos);
 
@@ -473,6 +497,14 @@ public class JspKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
         @Override
         protected void replaceSelection(JTextComponent target, int dotPos, Caret caret,
                 String str, boolean overwrite) throws BadLocationException {
+            //workaround for #209019 - regression of issue 
+            //#204450 - Rewrite actions to use TypingHooks SPI
+            if(str.length() == 0) {
+                //called from BaseKit.actionPerformed():1160 with empty str argument
+                //==> ignore this call since we are going to be called a bit later
+                //from HtmlKit.performTextInsertion() properly with the text typed
+                return ;
+            }            
             char insertedChar = str.charAt(0);
             Document document = target.getDocument();
 

@@ -575,8 +575,10 @@ implements java.io.Serializable {
                 fo.setAttribute(DataObject.EA_ASSIGNED_LOADER_MODULE, module.getCodeNameBase());
             }
         }
-        if (!DataObjectPool.getPOOL().revalidate(Collections.singleton(fo)).isEmpty()) {
-            DataObject.LOG.fine("It was not possible to invalidate data object: " + fo); // NOI18N
+        Set<FileObject> one = new HashSet<FileObject>();
+        one.add(fo);
+        if (!DataObjectPool.getPOOL().revalidate(one).isEmpty()) {
+            DataObject.LOG.log(Level.FINE, "It was not possible to invalidate data object: {0}", fo); // NOI18N
         }
     }
     
@@ -640,7 +642,7 @@ implements java.io.Serializable {
      *   &lt;attr name="instanceCreate" methodvalue="org.openide.loaders.DataLoaderPool.factory"/&gt;
      *   &lt;attr name="dataObjectClass" stringvalue="org.your.pkg.YourDataObject"/&gt;
      *   &lt;attr name="mimeType" stringvalue="yourmime/type"/&gt;
-     *   &lt;attr name="SystemFileSystem.localizingIcon" stringvalue="org/your/pkg/YourDataObject.png"/&gt;
+     *   &lt;attr name="iconBase" stringvalue="org/your/pkg/YourDataObject.png"/&gt;
      * &lt;/file&gt;
      * </pre>
      * @param clazz the class of the data object to create. Must have appropriate
@@ -708,6 +710,10 @@ implements java.io.Serializable {
      */
     static MultiFileLoader getShadowLoader () {
         return getSystemLoaders ()[0];
+    }
+    
+    static MultiFileLoader getInstanceLoader() {
+        return getDefaultLoaders()[2];
     }
 
     /**

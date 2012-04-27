@@ -108,7 +108,7 @@ public class IssuesTest extends NbTestCase {
         //      event was fired even in cases, the lookup listener should be quiet.
         MimeLookup lookup = MimeLookup.getMimeLookup("text/jsp"); //NOI18N
         Result result = lookup.lookup(new Template(TestLookupObject.class));
-        result.allInstances(); // remove this line if issue #60010 is fixed
+        result.allInstances().size(); // remove this line if issue #60010 is fixed
         LookupListener listener = new LookupListener(){
             public void resultChanged(LookupEvent ev){
                 resultChangedCount[0]++;

@@ -61,6 +61,7 @@ public final class PhpUnitSkelGen extends PhpProgram {
     public static final String SCRIPT_NAME = "phpunit-skelgen"; // NOI18N
     public static final String SCRIPT_NAME_LONG = SCRIPT_NAME + FileUtils.getScriptExtension(true);
 
+    private static final String BOOTSTRAP_PARAM = "--bootstrap"; // NOI18N
     private static final String TEST_PARAM = "--test"; // NOI18N
     private static final String SEPARATOR_PARAM = "--"; // NOI18N
 
@@ -87,29 +88,38 @@ public final class PhpUnitSkelGen extends PhpProgram {
         return new PhpUnitSkelGen(command).validate();
     }
 
-    @NbBundle.Messages("PhpUnitSkelGen.prefix=Skeleton generator script: {0}")
+    @NbBundle.Messages("PhpUnitSkelGen.script.label=Skeleton generator script")
     @Override
     public String validate() {
-        String error = FileUtils.validateFile(getProgram(), false);
-        if (error == null) {
-            return null;
-        }
-        return Bundle.PhpUnitSkelGen_prefix(error);
+        return FileUtils.validateFile(Bundle.PhpUnitSkelGen_script_label(), getProgram(), false);
     }
 
-    @NbBundle.Messages("PhpUnitSkelGen.test.generating=Creating test file for {0}")
-    public File generateTest(String sourceClassName, File sourceClassFile, String testClassName, File testClassFile) {
+    @NbBundle.Messages({
+        "# {0} - file name",
+        "PhpUnitSkelGen.test.generating=Creating test file for {0}"
+    })
+    public File generateTest(PhpUnit.ConfigFiles configFiles, String sourceClassName, File sourceClassFile, String testClassName, File testClassFile) {
         if (testClassFile.isFile()) {
             // file already exists
             return testClassFile;
         }
-        ExternalProcessBuilder processBuilder = getProcessBuilder()
-                    .addArgument(TEST_PARAM)
-                    .addArgument(SEPARATOR_PARAM)
-                    .addArgument(sanitizeClassName(sourceClassName))
-                    .addArgument(sourceClassFile.getAbsolutePath())
-                    .addArgument(sanitizeClassName(testClassName))
-                    .addArgument(testClassFile.getAbsolutePath());
+        if (!ensureTestFolderExists(testClassFile)) {
+            return null;
+        }
+        ExternalProcessBuilder processBuilder = getProcessBuilder();
+        if (configFiles.bootstrap != null
+                && configFiles.useBootstrapForCreateTests) {
+            processBuilder = processBuilder
+                    .addArgument(BOOTSTRAP_PARAM)
+                    .addArgument(configFiles.bootstrap.getAbsolutePath());
+        }
+        processBuilder = processBuilder
+                .addArgument(TEST_PARAM)
+                .addArgument(SEPARATOR_PARAM)
+                .addArgument(sanitizeClassName(sourceClassName))
+                .addArgument(sourceClassFile.getAbsolutePath())
+                .addArgument(sanitizeClassName(testClassName))
+                .addArgument(testClassFile.getAbsolutePath());
         ExecutionDescriptor executionDescriptor = getExecutionDescriptor()
                 .inputVisible(false)
                 .frontWindow(true)
@@ -140,6 +150,18 @@ public final class PhpUnitSkelGen extends PhpProgram {
             className = className.substring(1);
         }
         return className;
+    }
+
+    // #210123
+    private boolean ensureTestFolderExists(File testClassFile) {
+        File parent = testClassFile.getParentFile();
+        if (!parent.isDirectory()) {
+            if (!parent.mkdirs()) {
+                return false;
+            }
+            FileUtil.refreshFor(parent);
+        }
+        return true;
     }
 
 }

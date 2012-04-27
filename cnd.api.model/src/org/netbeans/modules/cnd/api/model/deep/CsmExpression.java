@@ -196,4 +196,8 @@ public interface CsmExpression extends CsmOffsetable, CsmScopeElement {
      * Gets this expression operands
      */
     List<CsmExpression> getOperands();
+
+
+    List<CsmStatement> getLambdas();
+
 }

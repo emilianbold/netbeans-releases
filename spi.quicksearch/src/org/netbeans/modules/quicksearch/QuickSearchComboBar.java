@@ -53,6 +53,7 @@ import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
 import javax.swing.Timer;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.openide.util.ImageUtilities;
 
 /**
@@ -61,7 +62,30 @@ import org.openide.util.ImageUtilities;
  */
 public class QuickSearchComboBar extends AbstractQuickSearchComboBar {
 
-    private final ImageIcon findIcon = new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/quicksearch/resources/find.png")); // NOI18N
+    @StaticResource(searchClasspath=true)
+    private static final String ICON_FIND = "org/openide/awt/resources/quicksearch/findMenu.png";             // NOI18N
+    @StaticResource(searchClasspath=true)
+    private static final String ICON_PROGRESS_0 = "org/openide/awt/resources/quicksearch/progress_0.png"; // NOI18N
+    @StaticResource(searchClasspath=true)
+    private static final String ICON_PROGRESS_1 = "org/openide/awt/resources/quicksearch/progress_1.png"; // NOI18N
+    @StaticResource(searchClasspath=true)
+    private static final String ICON_PROGRESS_2 = "org/openide/awt/resources/quicksearch/progress_2.png"; // NOI18N
+    @StaticResource(searchClasspath=true)
+    private static final String ICON_PROGRESS_3 = "org/openide/awt/resources/quicksearch/progress_3.png"; // NOI18N
+    @StaticResource(searchClasspath=true)
+    private static final String ICON_PROGRESS_4 = "org/openide/awt/resources/quicksearch/progress_4.png"; // NOI18N
+    @StaticResource(searchClasspath=true)
+    private static final String ICON_PROGRESS_5 = "org/openide/awt/resources/quicksearch/progress_5.png"; // NOI18N
+    @StaticResource(searchClasspath=true)
+    private static final String ICON_PROGRESS_6 = "org/openide/awt/resources/quicksearch/progress_6.png"; // NOI18N
+    @StaticResource(searchClasspath=true)
+    private static final String ICON_PROGRESS_7 = "org/openide/awt/resources/quicksearch/progress_7.png"; // NOI18N
+    private static final String[] ICON_PROGRESS = new String[] {
+        ICON_PROGRESS_0, ICON_PROGRESS_1, ICON_PROGRESS_2, ICON_PROGRESS_3,
+        ICON_PROGRESS_4, ICON_PROGRESS_5, ICON_PROGRESS_6, ICON_PROGRESS_7
+    };
+    
+    private final ImageIcon findIcon = ImageUtilities.loadImageIcon(ICON_FIND, false);
     /** Timer used for progress animation (see #143019).  */
     private final Timer animationTimer = new Timer(100, new ActionListener() {
 
@@ -72,7 +96,7 @@ public class QuickSearchComboBar extends AbstractQuickSearchComboBar {
             if (icons == null) {
                 icons = new ImageIcon[8];
                 for (int i = 0; i < 8; i++) {
-                    icons[i] = ImageUtilities.loadImageIcon("org/netbeans/modules/quicksearch/resources/progress_" + i + ".png", false);  //NOI18N
+                    icons[i] = ImageUtilities.loadImageIcon(ICON_PROGRESS[i], false);
                 }
             }
             jLabel2.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 6));

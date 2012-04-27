@@ -28,18 +28,16 @@
         <ul>
             <li><b>List of Fields to Encapsulate.</b> Contains a list of fields 
                 in the class. Select the checkbox for each field that you want to 
-                encapsulate.
-            </li>
+                encapsulate.            </li>
+			<li><b>Insert Point.</b> Drop-down list containing the six possible points (<tt>Default</tt>, <tt>First Method</tt>, <tt>Last Method</tt>, <tt>After About(JFrame Parent)</tt>, <tt>After initComponents() : void</tt>, and <tt>After closeButtonActionPerformed(java.awt.event.ActionEvent evt)</tt>) for inserting a new accessor method. </li>
+			<li><b>Sort by.</b> Drop-down list containing the three possible options (<tt>Getter/Setter pairs</tt>, <tt>Getters then Setters</tt>, and <tt>Method names</tt>). Select the option that you want to be used for sorting the fields in the class.</li>
+			<li><b>Javadoc.</b> Drop-down list containing the three possible options (<tt>Copy from field</tt>, <tt>Create default comments</tt>, and <tt>None</tt>). Select the option that you want to be used for creating Javadoc. </li>
             <li><b>Fields' Visibility.</b> Drop-down list containing the four 
-                possible accessibility modifiers (<tt>public</tt>, <tt>protected</tt>, 
-                <tt>&lt;default&gt;</tt>, and <tt>private</tt>). Select the accessibility 
-                modifier that you want the field or fields to have.
-            </li>
+                possible accessibility modifiers (<tt>&lt;default&gt;</tt>, <tt>private</tt>, <tt>protected</tt>, and <tt>public</tt>). Select the accessibility 
+                modifier that you want the field or fields to have.            </li>
             <li><b>Accessor's Visibility.</b> Drop-down list containing the four 
-                possible accessibility modifiers (<tt>public</tt>, <tt>protected</tt>, 
-                <tt>&lt;default&gt;</tt>, and <tt>private</tt>). Select the accessibility 
-                modifier that you want the accessor (getter and setter) methods to have.
-            </li>
+                possible accessibility modifiers (<tt>&lt;default&gt;</tt>, <tt>private</tt>, <tt>protected</tt>, and <tt>public</tt>). Select the accessibility 
+                modifier that you want the accessor (getter and setter) methods to have.            </li>
             <li><b>Use Accessors Even When Field Is Accessible.</b> If selected, any 
                 direct references in your code to the field are updated to use the accessor methods instead. 
                 If not selected, any direct references to the fields that you already have in 
@@ -52,7 +50,11 @@
                     to the classes with these references.</li>
                 </ul>
             </li>
-          
+			<li><b>Generate Property Change Support.</b> If selected, the property change support code is generated in addition to the field and methods for the property.
+			  <ul>
+                    <li><b>Generate Vetoable change support.</b> If selected, the vetoable change listeners are generated for specific properties.</li>
+			</ul></li>
+			
         </ul>
 
         <p>If you want to preview the changes, you need to follow these steps 

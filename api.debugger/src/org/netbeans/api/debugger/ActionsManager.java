@@ -46,14 +46,17 @@ package org.netbeans.api.debugger;
 
 import java.beans.*;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import javax.swing.SwingUtilities;
 
 import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.ActionsProviderListener;
 import org.openide.util.Cancellable;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 
 /**
- * Manages some set of actions. Loads some set of ActionProviders registerred
+ * Manages some set of actions. Loads some set of ActionProviders registered
  * for some context, and allows to call isEnabled and doAction methods on them.
  *
  * @author   Jan Jancura
@@ -120,10 +123,11 @@ public final class ActionsManager {
 
     // variables ...............................................................
     
-    private Vector                  listener = new Vector ();
-    private HashMap                 listeners = new HashMap ();
-    private HashMap                 actionProviders;
+    private final Vector<ActionsManagerListener>    listener = new Vector<ActionsManagerListener>();
+    private final HashMap<String, List<ActionsManagerListener>> listeners = new HashMap<String, List<ActionsManagerListener>>();
+    private HashMap<Object, ArrayList<ActionsProvider>>  actionProviders;
     private final Object            actionProvidersLock = new Object();
+    private final AtomicBoolean     actionProvidersInitialized = new AtomicBoolean(false);
     private MyActionListener        actionListener = new MyActionListener ();
     private Lookup                  lookup;
     private boolean                 doiingDo = false;
@@ -145,27 +149,21 @@ public final class ActionsManager {
     /**
      * Performs action on this DebbuggerEngine.
      *
-     * @param action action constant (default set of constanct are defined
+     * @param action action constant (default set of constants are defined
      *    in this class with ACTION_ prefix)
      * @return true if action has been performed
      */
     public final void doAction (final Object action) {
         doiingDo = true;
-        ArrayList l;
-        synchronized (actionProvidersLock) {
-            if (actionProviders == null) initActionImpls ();
-            l = (ArrayList) actionProviders.get (action);
-            if (l != null) {
-                l = (ArrayList) l.clone ();
-            }
-        }
+        ArrayList<ActionsProvider> l = getActionProvidersForActionWithInit(action);
         boolean done = false;
         if (l != null) {
             int i, k = l.size ();
             for (i = 0; i < k; i++) {
-                if (((ActionsProvider) l.get (i)).isEnabled (action)) {
+                ActionsProvider ap = l.get(i);
+                if (ap.isEnabled (action)) {
                     done = true;
-                    ((ActionsProvider) l.get (i)).doAction (action);
+                    ap.doAction (action);
                 }
             }
         }
@@ -177,15 +175,15 @@ public final class ActionsManager {
     }
     
     /**
-     * Post action on this DebbuggerEngine.
+     * Post action on this DebuggerEngine.
      * This method does not block till the action is done,
      * if {@link #canPostAsynchronously} returns true.
      * Otherwise it behaves like {@link #doAction}.
-     * The returned taks, or
+     * The returned task, or
      * {@link ActionsManagerListener} can be used to
      * be notified when the action is done.
      *
-     * @param action action constant (default set of constanct are defined
+     * @param action action constant (default set of constants are defined
      *    in this class with ACTION_ prefix)
      *
      * @return a task, that can be checked for whether the action finished
@@ -195,14 +193,7 @@ public final class ActionsManager {
      */
     public final Task postAction(final Object action) {
         doiingDo = true;
-        ArrayList l;
-        synchronized (actionProvidersLock) {
-            if (actionProviders == null) initActionImpls ();
-            l = (ArrayList) actionProviders.get (action);
-            if (l != null) {
-                l = (ArrayList) l.clone ();
-            }
-        }
+        ArrayList<ActionsProvider> l = getActionProvidersForActionWithInit(action);
         boolean posted = false;
         int k;
         if (l != null) {
@@ -210,12 +201,12 @@ public final class ActionsManager {
         } else {
             k = 0;
         }
-        List postedActions = new ArrayList(k);
+        List<ActionsProvider> postedActions = new ArrayList<ActionsProvider>(k);
         final AsynchActionTask task = new AsynchActionTask(postedActions);
         if (l != null) {
             int i;
             for (i = 0; i < k; i++) {
-                ActionsProvider ap = (ActionsProvider) l.get (i);
+                ActionsProvider ap = l.get (i);
                 if (ap.isEnabled (action)) {
                     postedActions.add(ap);
                     posted = true;
@@ -224,6 +215,7 @@ public final class ActionsManager {
             if (posted) {
                 final int[] count = new int[] { 0 };
                 Runnable notifier = new Runnable() {
+                    @Override
                     public void run() {
                         synchronized (count) {
                             if (--count[0] == 0) {
@@ -237,9 +229,7 @@ public final class ActionsManager {
                 };
                 count[0] = k = postedActions.size();
                 for (i = 0; i < k; i++) {
-                    ((ActionsProvider) postedActions.get (i)).postAction (
-                            action, notifier
-                    );
+                    postedActions.get(i).postAction (action, notifier);
                 }
             }
         }
@@ -254,24 +244,41 @@ public final class ActionsManager {
     /**
      * Returns true if given action can be performed on this DebuggerEngine.
      * 
-     * @param action action constant (default set of constanct are defined
+     * @param action action constant (default set of constants are defined
      *    in this class with ACTION_ prefix)
      * @return true if given action can be performed on this DebuggerEngine
      */
     public final boolean isEnabled (final Object action) {
-        ArrayList l;
+        boolean doInit = false;
         synchronized (actionProvidersLock) {
-            if (actionProviders == null) initActionImpls ();
-            l = (ArrayList) actionProviders.get (action);
-            if (l != null) {
-                l = (ArrayList) l.clone ();
+            if (actionProviders == null) {
+                actionProviders = new HashMap<Object, ArrayList<ActionsProvider>>();
+                doInit = true;
             }
         }
+        if (doInit) {
+            if (SwingUtilities.isEventDispatchThread()) {
+                // Need to initialize lazily when called in AWT
+                // A state change will be fired after actions providers are initialized.
+                new RequestProcessor(ActionsManager.class).post(new Runnable() {
+                    @Override
+                    public void run() {
+                        initActionImpls();
+                    }
+                });
+            } else {
+                initActionImpls();
+            }
+        }
+        ArrayList<ActionsProvider> l = getActionProvidersForAction(action);
         if (l != null) {
             int i, k = l.size ();
-            for (i = 0; i < k; i++)
-                if (((ActionsProvider) l.get (i)).isEnabled (action))
+            for (i = 0; i < k; i++) {
+                ActionsProvider ap = l.get (i);
+                if (ap.isEnabled (action)) {
                     return true;
+                }
+            }
         }
         return false;
     }
@@ -315,12 +322,14 @@ public final class ActionsManager {
         String propertyName, 
         ActionsManagerListener l
     ) {
-        Vector ls = (Vector) listeners.get (propertyName);
-        if (ls == null) {
-            ls = new Vector ();
-            listeners.put (propertyName, ls);
+        synchronized (listeners) {
+            List<ActionsManagerListener> ls = listeners.get (propertyName);
+            if (ls == null) {
+                ls = new ArrayList<ActionsManagerListener>();
+                listeners.put (propertyName, ls);
+            }
+            ls.add(l);
         }
-        ls.addElement (l);
     }
 
     /** 
@@ -333,11 +342,14 @@ public final class ActionsManager {
         String propertyName, 
         ActionsManagerListener l
     ) {
-        Vector ls = (Vector) listeners.get (propertyName);
-        if (ls == null) return;
-        ls.removeElement (l);
-        if (ls.size () == 0)
-            listeners.remove (propertyName);
+        synchronized (listeners) {
+            List<ActionsManagerListener> ls = listeners.get (propertyName);
+            if (ls == null) return;
+            ls.remove(l);
+            if (ls.isEmpty()) {
+                listeners.remove(propertyName);
+            }
+        }
     }
 
     
@@ -357,22 +369,23 @@ public final class ActionsManager {
         final Object action
     ) {
         initListeners ();
-        Vector l = (Vector) listener.clone ();
-        Vector l1 = (Vector) listeners.get (
-            ActionsManagerListener.PROP_ACTION_PERFORMED
-        );
-        if (l1 != null)
-            l1 = (Vector) l1.clone ();
+        List<ActionsManagerListener> l = new ArrayList<ActionsManagerListener>(listener);
+        List<ActionsManagerListener> l1;
+        synchronized (listeners) {
+            l1 = listeners.get(ActionsManagerListener.PROP_ACTION_PERFORMED);
+            if (l1 != null) {
+                l1 = new ArrayList<ActionsManagerListener>(l1);
+            }
+        }
         int i, k = l.size ();
-        for (i = 0; i < k; i++)
-            ((ActionsManagerListener) l.elementAt (i)).actionPerformed ( 
-                action
-            );
+        for (i = 0; i < k; i++) {
+            l.get(i).actionPerformed(action);
+        }
         if (l1 != null) {
             k = l1.size ();
-            for (i = 0; i < k; i++)
-                ((ActionsManagerListener) l1.elementAt (i)).actionPerformed 
-                    (action);
+            for (i = 0; i < k; i++) {
+                l1.get(i).actionPerformed(action);
+            }
         }
     }
 
@@ -391,33 +404,69 @@ public final class ActionsManager {
     ) {
         boolean enabled = isEnabled (action);
         initListeners ();
-        Vector l = (Vector) listener.clone ();
-        Vector l1 = (Vector) listeners.get (
-            ActionsManagerListener.PROP_ACTION_STATE_CHANGED
-        );
-        if (l1 != null)
-            l1 = (Vector) l1.clone ();
+        List<ActionsManagerListener> l = new ArrayList<ActionsManagerListener>(listener);
+        List<ActionsManagerListener> l1;
+        synchronized (listeners) {
+            l1 = listeners.get(ActionsManagerListener.PROP_ACTION_STATE_CHANGED);
+            if (l1 != null) {
+                l1 = new ArrayList<ActionsManagerListener>(l1);
+            }
+        }
         int i, k = l.size ();
-        for (i = 0; i < k; i++)
-            ((ActionsManagerListener) l.elementAt (i)).actionStateChanged ( 
-                action, enabled
-            );
+        for (i = 0; i < k; i++) {
+            l.get(i).actionStateChanged(action, enabled);
+        }
         if (l1 != null) {
             k = l1.size ();
-            for (i = 0; i < k; i++)
-                ((ActionsManagerListener) l1.elementAt (i)).actionStateChanged 
-                    (action, enabled);
+            for (i = 0; i < k; i++) {
+                l1.get(i).actionStateChanged(action, enabled);
+            }
         }
     }
     
     
     // private support .........................................................
     
+    private ArrayList<ActionsProvider> getActionProvidersForAction(Object action) {
+        ArrayList<ActionsProvider> l;
+        synchronized (actionProvidersLock) {
+            l = actionProviders.get(action);
+            if (l != null) {
+                l = (ArrayList<ActionsProvider>) l.clone ();
+            }
+        }
+        return l;
+    }
+    
+    private ArrayList<ActionsProvider> getActionProvidersForActionWithInit(Object action) {
+        boolean doInit = false;
+        synchronized (actionProvidersLock) {
+            if (actionProviders == null) {
+                actionProviders = new HashMap<Object, ArrayList<ActionsProvider>>();
+                doInit = true;
+            }
+        }
+        if (doInit) {
+            initActionImpls ();
+        } else {
+            if (!actionProvidersInitialized.get()) {
+                synchronized (actionProvidersInitialized) {
+                    if (!actionProvidersInitialized.get()) {
+                        try {
+                            actionProvidersInitialized.wait();
+                        } catch (InterruptedException ex) {}
+                    }
+                }
+            }
+        }
+        return getActionProvidersForAction(action);
+    }
+    
     private void registerActionsProvider (Object action, ActionsProvider p) {
         synchronized (actionProvidersLock) {
-            ArrayList l = (ArrayList) actionProviders.get (action);
+            ArrayList<ActionsProvider> l = actionProviders.get (action);
             if (l == null) {
-                l = new ArrayList ();
+                l = new ArrayList<ActionsProvider>();
                 actionProviders.put (action, l);
             }
             l.add (p);
@@ -437,17 +486,21 @@ public final class ActionsManager {
     }
 
     private void initActionImpls () {
-        actionProviders = new HashMap ();
         aps = lookup.lookup(null, ActionsProvider.class);
         ((Customizer) aps).addPropertyChangeListener(new PropertyChangeListener() {
+                @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     synchronized (actionProvidersLock) {
                         actionProviders.clear();
-                        registerActionsProviders(aps);
                     }
+                    registerActionsProviders(aps);
                 }
         });
         registerActionsProviders(aps);
+        synchronized (actionProvidersInitialized) {
+            actionProvidersInitialized.set(true);
+            actionProvidersInitialized.notifyAll();
+        }
     }
 
     private boolean listerersLoaded = false;
@@ -515,6 +568,7 @@ public final class ActionsManager {
             notifyFinished();
         }
 
+        @Override
         public boolean cancel() {
             for (Iterator it = postedActions.iterator(); it.hasNext(); ) {
                 Object action = it.next();
@@ -531,6 +585,7 @@ public final class ActionsManager {
     }
     
     class MyActionListener implements ActionsProviderListener {
+        @Override
         public void actionStateChange (Object action, boolean enabled) {
             fireActionStateChanged (action);
         }

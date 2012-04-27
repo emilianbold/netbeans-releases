@@ -50,6 +50,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
+import static org.netbeans.modules.maven.codegen.Bundle.*;
 import org.netbeans.modules.maven.grammar.POMDataObject;
 import org.netbeans.modules.maven.model.settings.Mirror;
 import org.netbeans.modules.maven.model.settings.SettingsModel;
@@ -58,19 +59,22 @@ import org.netbeans.spi.editor.codegen.CodeGenerator;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.StatusDisplayer;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-
+import org.openide.util.NbBundle.Messages;
 /**
  *
  * @author Milos Kleint
  */
+@Messages({"NAME_Mirror=Mirror...",
+           "TIT_Add_mirror=Add new mirror"
+})
 public class MirrorGenerator implements CodeGenerator {
 
     @MimeRegistration(mimeType=POMDataObject.SETTINGS_MIME_TYPE, service=CodeGenerator.Factory.class, position=100)
     public static class Factory implements CodeGenerator.Factory {
         
+        @Override
         public List<? extends CodeGenerator> create(Lookup context) {
             ArrayList<CodeGenerator> toRet = new ArrayList<CodeGenerator>();
             SettingsModel model = context.lookup(SettingsModel.class);
@@ -91,10 +95,12 @@ public class MirrorGenerator implements CodeGenerator {
         this.component = component;
     }
 
+    @Override
     public String getDisplayName() {
-        return NbBundle.getMessage(MirrorGenerator.class, "NAME_Mirror");
+        return NAME_Mirror();
     }
 
+    @Override
     public void invoke() {
         try {
             model.sync();
@@ -107,7 +113,7 @@ public class MirrorGenerator implements CodeGenerator {
             return;
         }
         NewMirrorPanel panel = new NewMirrorPanel(model);
-        DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(MirrorGenerator.class, "TIT_Add_mirror"));
+        DialogDescriptor dd = new DialogDescriptor(panel, TIT_Add_mirror());
         panel.attachDialogDisplayer(dd);
         Object ret = DialogDisplayer.getDefault().notify(dd);
         if (ret == DialogDescriptor.OK_OPTION) {

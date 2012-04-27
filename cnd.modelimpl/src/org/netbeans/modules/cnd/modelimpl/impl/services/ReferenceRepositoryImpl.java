@@ -80,12 +80,12 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileBuffer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
-import org.netbeans.modules.cnd.modelimpl.csm.core.ReferencesIndex;
+import org.netbeans.modules.cnd.modelimpl.content.file.ReferencesIndex;
+import org.netbeans.modules.cnd.modelimpl.content.project.FileContainer;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.openide.util.CharSequences;
-import org.openide.util.Exceptions;
 
 /**
  * prototype implementation of service
@@ -339,7 +339,7 @@ public final class ReferenceRepositoryImpl extends CsmReferenceRepository {
             // TODO FileBuffer should provide method isValid()
             // Do nothing, it seems temporary file.
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            APTUtils.LOG.log(Level.INFO, ex.getMessage());
         }
         return false;
     }
@@ -359,7 +359,7 @@ public final class ReferenceRepositoryImpl extends CsmReferenceRepository {
                 while (!APTUtils.isEOF(token)) {
                     if (token.getOffset() >= startOffset) {
                         int id = token.getType();
-                        if ((id == APTTokenTypes.ID || id == APTTokenTypes.ID_DEFINED) &&
+                        if ((id == APTTokenTypes.IDENT || id == APTTokenTypes.ID_DEFINED) &&
                                 name.equals(token.getTextID())) {
                             // this is candidate to resolve
                             if (!destructor || (prev != null && prev.getType() == APTTokenTypes.TILDE)) {
@@ -398,12 +398,9 @@ public final class ReferenceRepositoryImpl extends CsmReferenceRepository {
         if (ts == null || !file.isValid()) {
             return null;
         }
-        APTPreprocHandler.State ppState = null;
-        Collection<APTPreprocHandler.State> preprocStates = file.getProjectImpl(false).getPreprocStates(file);
-        if (!preprocStates.isEmpty()) {
-            // use start file from one of states (i.e. first)
-            ppState = preprocStates.iterator().next();
-        }
+         // use start file from one of states (i.e. first)
+        CharSequence fileKey = FileContainer.getFileKey(file.getAbsolutePath(), false);
+        APTPreprocHandler.State ppState = file.getProjectImpl(false).getFirstValidPreprocState(fileKey);
         return file.getLanguageFilter(ppState).getFilteredStream( new APTCommentsFilter(ts));
     }
 

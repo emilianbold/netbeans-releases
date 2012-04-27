@@ -43,7 +43,6 @@ package org.netbeans.modules.maven.search;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -56,6 +55,7 @@ import org.netbeans.modules.maven.indexer.api.QueryField;
 import org.netbeans.modules.maven.indexer.api.QueryRequest;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
+import org.netbeans.modules.maven.indexer.api.RepositoryQueries.Result;
 import org.netbeans.modules.maven.indexer.spi.ui.ArtifactNodeSelector;
 import org.netbeans.spi.quicksearch.SearchProvider;
 import org.netbeans.spi.quicksearch.SearchRequest;
@@ -81,32 +81,28 @@ public class MavenRepoProvider implements SearchProvider {
         if (s == null) {
             return;
         }
+        final String q = request.getText();
+        if (q == null || q.trim().isEmpty()) {
+            //#205552
+            return;
+        }
         
-        List<RepositoryInfo> loadedRepos = RepositoryQueries.getLoadedContexts();
+        final List<RepositoryInfo> loadedRepos = RepositoryQueries.getLoadedContexts();
         if (loadedRepos.isEmpty()) {
             return;
         }
 
         List<NBVersionInfo> infos = new ArrayList<NBVersionInfo>();
         final List<NBVersionInfo> tempInfos = new ArrayList<NBVersionInfo>();
-        Observer observer = new Observer() {
-            @Override
-            public void update(Observable o, Object arg) {
-                if (null == o || !(o instanceof QueryRequest)) {
-                    return;
-                }
-                synchronized (tempInfos) {
-                    tempInfos.addAll(((QueryRequest) o).getResults());
-                }
-            }
-        };
-        String q = request.getText();
-        final QueryRequest queryRequest = new QueryRequest(getQuery(q), loadedRepos, observer);
+
         final RequestProcessor.Task searchTask = RP.post(new Runnable() {
             @Override
             public void run() {
                 try {
-                    RepositoryQueries.find(queryRequest);
+                    Result<NBVersionInfo> result = RepositoryQueries.findResult(getQuery(q), loadedRepos);
+                    synchronized (tempInfos) {
+                        tempInfos.addAll(result.getResults());
+                    }
                 } catch (BooleanQuery.TooManyClauses exc) {
                     // query too general, just ignore it
                     synchronized (tempInfos) {
@@ -133,7 +129,6 @@ public class MavenRepoProvider implements SearchProvider {
             searchTask.waitFinished(5000);
         } catch (InterruptedException ex) {
         }
-        queryRequest.deleteObserver(observer);
         synchronized (tempInfos) {
             infos.addAll(tempInfos);
         }
@@ -178,6 +173,10 @@ public class MavenRepoProvider implements SearchProvider {
 //        fields.add(QueryField.FIELD_CLASSES);
 
         for (String one : splits) {
+            if (one.trim().isEmpty()) {
+                //#205552
+                continue;
+            }
             for (String fld : fields) {
                 QueryField f = new QueryField();
                 f.setField(fld);
@@ -188,33 +187,4 @@ public class MavenRepoProvider implements SearchProvider {
         return fq;
     }
 
-    //TODO copied from AddDependencyPanel.java, we shall somehow unify..
-    private static class Comp implements Comparator<String> {
-        private String query;
-
-        public Comp(String q) {
-            query = q;
-        }
-
-        /** Impl of comparator, sorts artifacts asfabetically with exception
-         * of items that contain current query string, which take precedence.
-         */
-        public int compare(String s1, String s2) {
-
-            int index1 = s1.indexOf(query);
-            int index2 = s2.indexOf(query);
-
-            if (index1 >= 0 || index2 >=0) {
-                if (index1 < 0) {
-                    return 1;
-                } else if (index2 < 0) {
-                    return -1;
-                }
-                return s1.compareTo(s2);
-            } else {
-                return s1.compareTo(s2);
-            }
-        }
-
-    }
 }

@@ -234,7 +234,7 @@ public class MockupFilesystemInterceptorProvider extends FilesystemInterceptorPr
         }
 
         @Override
-        public void fileLocked(FileProxyI fo) {
+        public void fileLocked(FileProxyI fo) throws IOException {
         }
 
         @Override

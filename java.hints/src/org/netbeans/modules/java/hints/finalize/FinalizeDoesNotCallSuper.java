@@ -58,20 +58,19 @@ import java.util.List;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
-import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
-import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
-import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
-import org.netbeans.modules.java.hints.spi.support.FixFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.JavaFix;
+import org.netbeans.spi.java.hints.TriggerTreeKind;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Tomas Zezula
  */
-@Hint(category="finalization",suppressWarnings={"FinalizeDoesntCallSuperFinalize"})  //NOI18N
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.finalize.FinalizeDoesNotCallSuper", description = "#DESC_org.netbeans.modules.java.hints.finalize.FinalizeDoesNotCallSuper", category="finalization",suppressWarnings={"FinalizeDoesntCallSuperFinalize"})  //NOI18N
 public class FinalizeDoesNotCallSuper {
 
     private static final String SUPER = "super";    //NOI18N
@@ -92,8 +91,7 @@ public class FinalizeDoesNotCallSuper {
             return null;
         }
         return ErrorDescriptionFactory.forName(ctx, method, NbBundle.getMessage(FinalizeDoesNotCallSuper.class, "TXT_FinalizeDoesNotCallSuper"),
-                JavaFix.toEditorFix(new FixImpl(TreePathHandle.create(ctx.getPath(), ctx.getInfo()))),
-                FixFactory.createSuppressWarningsFix(ctx.getInfo(), tp, "FinalizeDoesntCallSuperFinalize"));
+                new FixImpl(TreePathHandle.create(ctx.getPath(), ctx.getInfo())).toEditorFix());
     }
 
     static final class FindSuper extends TreeScanner<Void, Void> {
@@ -143,7 +141,9 @@ public class FinalizeDoesNotCallSuper {
         }
 
         @Override
-        protected void performRewrite(WorkingCopy wc, TreePath tp, boolean canShowUI) {
+        protected void performRewrite(TransformationContext ctx) {
+            WorkingCopy wc = ctx.getWorkingCopy();
+            TreePath tp = ctx.getPath();
             final BlockTree oldBody = ((MethodTree)tp.getLeaf()).getBody();
             final TreeMaker tm = wc.getTreeMaker();
             final List<StatementTree> statements = new ArrayList<StatementTree>(1+oldBody.getStatements().size());

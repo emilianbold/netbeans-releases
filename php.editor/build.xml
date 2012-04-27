@@ -5,6 +5,16 @@
 
     <!-- for generationg lexer and parser, uncomment the tasks and set up the right classpath -->
 
+    <!--<target name="-prepare-jflex" depends="build-init">
+        <mkdir dir="${build.dir}/tools"/>
+        <get src="http://repo1.maven.org/maven2/de/jflex/jflex/1.4.3/jflex-1.4.3.jar" dest="${build.dir}/tools/jflex.jar" verbose="true"/>
+        <taskdef name="jflex" classname="JFlex.anttask.JFlexTask" classpath="${build.dir}/tools/jflex.jar" />
+    </target>
+
+    <target name="-gen-lexer" depends="-prepare-jflex">
+        <jflex file="tools/Php5ColoringScanner.flex" destdir="src" skel="tools/skeleton.netbeans" />
+    </target>-->
+
     <!--<taskdef name="jflex"
         classname="JFlex.anttask.JFlexTask"
         classpath="/usr/share/ant/lib/jflex.jar" />-->

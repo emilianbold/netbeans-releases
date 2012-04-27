@@ -70,6 +70,7 @@ import org.netbeans.Stamps;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.ModuleInfo;
 import org.openide.util.Exceptions;
 
 /** Controller of the IDE's whole module system.
@@ -296,7 +297,11 @@ public final class ModuleSystem {
         } finally {
             mgr.mutexPrivileged().exitWriteAccess();
         }
-	ev.log(Events.PERF_END, "ModuleSystem.restore"); // NOI18N	
+        installer.preloadCache(mgr.getModules());
+        ev.log(Events.PERF_END, "ModuleSystem.restore"); // NOI18N	
+    	ev.log(Events.PERF_START, "ModuleSystem.waitOnStart"); // NOI18N
+        installer.waitOnStart();
+    	ev.log(Events.PERF_END, "ModuleSystem.waitOnStart"); // NOI18N
     }
     
     /** Shut down the system: ask modules to shut down.
@@ -353,6 +358,10 @@ public final class ModuleSystem {
             for (Module m : mgr.getModules()) {
                 if (m.getJarFile() != null) {
                     if (jar.equals(m.getJarFile())) {
+                        if (m.isAutoload() || m.isEager()) {
+                            System.err.println("Reloading autoload and eager modules is not supported, sorry! (Try Javeleon.)");
+                            return;
+                        }
                         // Hah, found it.
                         if (! m.isReloadable()) {
                             m.setReloadable(true);
@@ -454,6 +463,20 @@ public final class ModuleSystem {
      */
     public String getEffectiveClasspath(Module m) {
         return installer.getEffectiveClasspath(m);
+    }
+
+    /** Checks whether the provided module will be visible in autoupdate client.
+     * Seeks for AutoUpdate-Show-In-Client attribute in manifest. The module
+     * is visible if the attribute is missing or if it is set to <code>true</code>.
+     * Uses caches to remember the value between restarts.
+     * 
+     * @since 1.38
+     * @param mi the module to test
+     * @return <code>true</code> if the module is supposed to be visible in 
+     *   autoupdate client
+     */
+    public boolean isShowInAutoUpdateClient(ModuleInfo mi) {
+        return this.installer.isShowInAutoUpdateClient(mi);
     }
     
     /** Dummy event handler that does not print anything.

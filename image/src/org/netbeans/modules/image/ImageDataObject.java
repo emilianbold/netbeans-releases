@@ -65,10 +65,12 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.*;
 import org.openide.nodes.*;
 import org.openide.ErrorManager;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.util.Lookup;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 
 /** 
@@ -78,14 +80,42 @@ import org.openide.util.NbBundle;
  */
 public class ImageDataObject extends MultiDataObject implements CookieSet.Factory {
     
+    @MIMEResolver.ExtensionRegistration(
+        displayName="#ImageMimeResolverJPG",
+        mimeType=ImageDataLoader.JPEG_MIME_TYPE,
+        extension={"jpg", "JPG", "jpe", "JPE", "jpeg", "JPEG"},
+        position=110
+    )
+    @Messages("ImageMimeResolverJPG=JPEG Image Files")
     /** Generated serialized version UID. */
     static final long serialVersionUID = -6035788991669336965L;
 
+    @MIMEResolver.ExtensionRegistration(
+        displayName="#ImageMimeResolverGIF",
+        mimeType=ImageDataLoader.GIF_MIME_TYPE,
+        extension={"gif", "GIF"},
+        position=111
+    )
+    @Messages("ImageMimeResolverGIF=GIF Image Files")
     /** Base for image resource. */
     private static final String IMAGE_ICON_BASE = "org/netbeans/modules/image/imageObject.png"; // NOI18N
     
+    @MIMEResolver.ExtensionRegistration(
+        displayName="#ImageMimeResolverPNG",
+        mimeType=ImageDataLoader.PNG_MIME_TYPE,
+        extension={"png", "PNG"},
+        position=112
+    )
+    @Messages("ImageMimeResolverPNG=PNG Image Files")
     /** Open support for this image data object. */
     private transient ImageOpenSupport openSupport;
+    @MIMEResolver.ExtensionRegistration(
+        displayName="#ImageMimeResolverBMP",
+        mimeType=ImageDataLoader.BMP_MIME_TYPE,
+        extension={"bmp", "BMP"},
+        position=113
+    )
+    @Messages("ImageMimeResolverBMP=BMP Image Files")
     /** Print support for this image data object **/
     private transient ImagePrintSupport printSupport;
  

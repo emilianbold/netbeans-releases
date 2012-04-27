@@ -53,10 +53,11 @@ import java.io.CharConversionException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
@@ -67,9 +68,13 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.cnd.api.project.BrokenIncludes;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
 import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
+import org.netbeans.modules.cnd.makeproject.MakeProjectConfigurationProvider;
 import org.netbeans.modules.cnd.makeproject.MakeProjectTypeImpl;
 import org.netbeans.modules.cnd.makeproject.actions.AddExistingFolderItemsAction;
 import org.netbeans.modules.cnd.makeproject.api.actions.AddExistingItemAction;
@@ -81,9 +86,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakefileConfiguration;
-import org.netbeans.modules.cnd.api.project.BrokenIncludes;
-import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
-import org.netbeans.modules.cnd.makeproject.MakeProjectConfigurationProvider;
 import org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -121,6 +123,7 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
     private boolean brokenIncludes;
     private boolean brokenProject;
     private boolean incorrectVersion;
+    private boolean incorrectPlatform;
     private boolean checkVersion = true;
     private Folder folder;
     private final Lookup.Result<BrokenIncludes> brokenIncludesResult;
@@ -159,6 +162,16 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
                 });
             }
         }
+        incorrectPlatform = isIncorrectPlatform();
+        if (incorrectPlatform) {
+            EventQueue.invokeLater(new Runnable() {
+
+                @Override
+                public void run() {
+                    (new ResolveIncorrectPlatformAction(MakeLogicalViewRootNode.this)).actionPerformed(null);                
+                }
+            });
+        }                    
         // Handle annotations
         setForceAnnotation(true);
         if (folder != null) {
@@ -193,12 +206,12 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
     
     private String getHtmlDisplayName2() {
         String ret;
-        if (brokenLinks || incorrectVersion) {
+        if (brokenLinks || incorrectVersion || incorrectPlatform) {
             ret = getName();
         } else {
             ret = super.getHtmlDisplayName();
         }
-        if (brokenLinks || incorrectVersion) {
+        if (brokenLinks || incorrectVersion || incorrectPlatform) {
             try {
                 ret = XMLUtil.toElementContent(ret);
             } catch (CharConversionException ex) {
@@ -232,11 +245,20 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
         stateChanged(null);
     }
     
+    void reInitWithRemovedPrivate() {
+        try {
+            provider.getMakeConfigurationDescriptor().getNbPrivateProjectFileObject().delete();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }        
+        reInit(provider.getMakeConfigurationDescriptor());
+    }
+    
     void reInitWithUnsupportedVersion() {
         checkVersion = false;
         reInit(provider.getMakeConfigurationDescriptor());
     }
-
+    
     private void setRealProjectFolder(Folder folder) {
         assert folder != null;
         if (this.folder != null) {
@@ -285,14 +307,12 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
     }
 
     private void updateAnnotationFiles() {
-        HashSet<FileObject> set = new HashSet<FileObject>();
         // Add project directory
         FileObject fo = getProject().getProjectDirectory();
         if (fo == null || !fo.isValid()) {
             // See IZ 125880
             Logger.getLogger("cnd.makeproject").log(Level.WARNING, "project.getProjectDirectory() == null - {0}", getProject());
         }
-        set.add(getProject().getProjectDirectory());
         if (!gotMakeConfigurationDescriptor()) {
             return;
         }
@@ -305,6 +325,7 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
         if (confs == null) {
             return;
         }
+        Set<FileObject> set = new LinkedHashSet<FileObject>();
         for (Configuration conf : confs.toArray()) {
             MakeConfiguration makeConfiguration = (MakeConfiguration) conf;
             if (makeConfiguration.isMakefileConfiguration()) {
@@ -322,6 +343,7 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
                 }
             }
         }
+        set.add(getProject().getProjectDirectory());
         setFiles(set);
         Folder aFolder = folder;
         if (aFolder != null) {
@@ -359,7 +381,7 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
 
         @Override
         public void run() {
-            if (brokenProject || incorrectVersion) {
+            if (brokenProject || incorrectVersion || incorrectPlatform) {
                 MakeLogicalViewRootNode.this.setChildren(Children.LEAF);
             }
             fireIconChange();
@@ -368,6 +390,20 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
         }
     }
 
+    private boolean isIncorrectPlatform() {
+        if (gotMakeConfigurationDescriptor()) {
+            Configuration[] confs = provider.getMakeConfigurationDescriptor().getConfs().toArray();
+            for (int i = 0; i < confs.length; i++) {
+                MakeConfiguration conf = (MakeConfiguration) confs[i];
+                if (conf.getDevelopmentHost().isLocalhost() && 
+                    CompilerSetManager.get(conf.getDevelopmentHost().getExecutionEnvironment()).getPlatform() != conf.getDevelopmentHost().getBuildPlatformConfiguration().getValue()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
     /*
      * Something in the folder has changed
      **/
@@ -378,6 +414,7 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
         MakeConfigurationDescriptor makeConfigurationDescriptor = provider.getMakeConfigurationDescriptor();
         if (makeConfigurationDescriptor != null) {
             brokenProject =  makeConfigurationDescriptor.getState() == State.BROKEN;
+            incorrectPlatform = isIncorrectPlatform();
             incorrectVersion = !isCorectVersion(makeConfigurationDescriptor.getVersion());
             if (gotMakeConfigurationDescriptor() && provider.getMakeConfigurationDescriptor().getConfs().size() == 0 ) {
                 brokenProject = true;
@@ -431,7 +468,7 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
             return ImageUtilities.mergeImages(original, MakeLogicalViewProvider.brokenLinkBadge, 8, 0);
         } else if (brokenIncludes) {
             return ImageUtilities.mergeImages(original, MakeLogicalViewProvider.brokenIncludeBadge, 8, 0);
-        } else if (brokenProject || incorrectVersion) {
+        } else if (brokenProject || incorrectVersion || incorrectPlatform) {
             return ImageUtilities.mergeImages(original, MakeLogicalViewProvider.brokenProjectBadge, 8, 0);
         }
         return original;
@@ -439,58 +476,57 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
 
     @Override
     public Action[] getActions(boolean context) {
-        List<Action> actions = new ArrayList<Action>();
         if (!gotMakeConfigurationDescriptor()) {
-            actions.add(CommonProjectActions.closeProjectAction()); // NOI18N
+            return new Action[] {CommonProjectActions.closeProjectAction()};
+        }
+        List<Action> actions = new ArrayList<Action>();
+        MakeConfigurationDescriptor descriptor = getMakeConfigurationDescriptor();
+
+        // TODO: not clear if we need to call the following method at all
+        // but we need to remove remembering the output to prevent memory leak;
+        // I think it could be removed
+        if (descriptor != null) {
+            descriptor.getLogicalFolders();
+        }
+
+        // Add standard actions
+        Action[] standardActions;
+        MakeConfiguration active = (descriptor == null) ? null : descriptor.getActiveConfiguration();
+        if (descriptor == null || active == null || active.isMakefileConfiguration()) { // FIXUP: need better check
+            standardActions = getAdditionalDiskFolderActions();
         } else {
-            MakeConfigurationDescriptor descriptor = getMakeConfigurationDescriptor();
-
-            // TODO: not clear if we need to call the following method at all
-            // but we need to remove remembering the output to prevent memory leak;
-            // I think it could be removed
-            if (descriptor != null) {
-                descriptor.getLogicalFolders();
-            }
-
-            // Add standard actions
-            Action[] standardActions;
-            MakeConfiguration active = (descriptor == null) ? null : descriptor.getActiveConfiguration();
-            if (descriptor == null || active == null || active.isMakefileConfiguration()) { // FIXUP: need better check
-                standardActions = getAdditionalDiskFolderActions();
-            }
-            else {
-                standardActions = getAdditionalLogicalFolderActions();
-            }
-            actions.addAll(Arrays.asList(standardActions));
-            actions.add(null);
-            //actions.add(new CodeAssistanceAction());
-            // makeproject sensitive actions
-            final MakeProjectTypeImpl projectKind = provider.getProject().getLookup().lookup(MakeProjectTypeImpl.class);
-            final List<? extends Action> actionsForMakeProject = Utilities.actionsForPath(projectKind.projectActionsPath());
-            if (!actionsForMakeProject.isEmpty()) {
-                actions.addAll(actionsForMakeProject);
-                actions.add(null);
-            }
-            actions.add(SystemAction.get(org.openide.actions.FindAction.class));
-            // all project sensitive actions
-            actions.addAll(Utilities.actionsForPath("Projects/Actions")); // NOI18N
-            // Add remaining actions
-            actions.add(null);
-            //actions.add(SystemAction.get(ToolsAction.class));
-            if (brokenLinks) {
-                actions.add(new ResolveReferenceAction(provider.getProject()));
-            }
-            if (incorrectVersion) {
-                actions.add(new ResolveIncorrectVersionAction(this, new VisualUpdater()));
-            }
-            //actions.add(null);
-            actions.add(CommonProjectActions.customizeProjectAction());
+            standardActions = getAdditionalLogicalFolderActions();
         }
-        MakeConfiguration active = (getMakeConfigurationDescriptor() == null) ? null : getMakeConfigurationDescriptor().getActiveConfiguration();
+        actions.addAll(Arrays.asList(standardActions));
+        actions.add(null);
+        //actions.add(new CodeAssistanceAction());
+        // makeproject sensitive actions
+        final MakeProjectTypeImpl projectKind = provider.getProject().getLookup().lookup(MakeProjectTypeImpl.class);
+        final List<? extends Action> actionsForMakeProject = Utilities.actionsForPath(projectKind.projectActionsPath());
+        if (!actionsForMakeProject.isEmpty()) {
+            actions.addAll(actionsForMakeProject);
+            actions.add(null);
+        }
+        actions.add(SystemAction.get(org.openide.actions.FindAction.class));
+        // all project sensitive actions
+        actions.addAll(Utilities.actionsForPath("Projects/Actions")); // NOI18N
+        // Add remaining actions
+        actions.add(null);
+        //actions.add(SystemAction.get(ToolsAction.class));
+        if (brokenLinks) {
+            actions.add(new ResolveReferenceAction(provider.getProject()));
+        }
+        if (incorrectVersion) {
+            actions.add(new ResolveIncorrectVersionAction(this, new VisualUpdater()));
+        }
+        if (incorrectPlatform) {
+            actions.add(new ResolveIncorrectPlatformAction(this));
+        }
+        //actions.add(null);
+        actions.add(CommonProjectActions.customizeProjectAction());
         if (active != null && active.isCustomConfiguration() && active.getProjectCustomizer().getActions(provider.getProject(), actions) != null) {
-                return active.getProjectCustomizer().getActions(provider.getProject(), actions);
-        }
-        else {
+            return active.getProjectCustomizer().getActions(provider.getProject(), actions);
+        } else {
             return actions.toArray(new Action[actions.size()]);
         }
     }

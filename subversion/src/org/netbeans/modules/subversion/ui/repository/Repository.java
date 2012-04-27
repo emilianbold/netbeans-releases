@@ -197,8 +197,9 @@ public class Repository implements ActionListener, DocumentListener, ItemListene
         svnSSH.showHints(isSet(FLAG_SHOW_HINTS));
 
         // fill url field with a default value
-        ((JTextComponent) repositoryPanel.urlComboBox.getEditor().getEditorComponent()).setText("file://"); //NOI18N
-        updateVisibility(FILE_PANEL);
+        String selectedUrlString = "file://"; //NOI18N
+        ((JTextComponent) repositoryPanel.urlComboBox.getEditor().getEditorComponent()).setText(selectedUrlString); //NOI18N
+        updateVisibility(FILE_PANEL, selectedUrlString);
         
         repositoryPanel.urlComboBox.addActionListener(this);
         getUrlComboEditor().getDocument().addDocumentListener(this);
@@ -371,7 +372,6 @@ public class Repository implements ActionListener, DocumentListener, ItemListene
         }
         
         setValid(valid, message);
-        currentPanel.setEnabled(valid);
         repositoryPanel.removeButton.setEnabled(rc != null && rc.getUrl().length() > 0);
     }
     
@@ -439,17 +439,6 @@ public class Repository implements ActionListener, DocumentListener, ItemListene
         }
 
         updateVisibility(connPanelType, selectedUrlString);
-    }
-
-    private void updateVisibility(String connPanelTypeId) {
-        String selectedUrlString;
-        try {
-            selectedUrlString = getUrlString();
-        } catch (InterruptedException ex) {
-            return;
-        }
-
-        updateVisibility(connPanelTypeId, selectedUrlString);
     }
 
     private void updateVisibility(String connPanelTypeId,

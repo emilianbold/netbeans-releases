@@ -235,7 +235,7 @@ public class Abbreviations {
     
     public static Abbreviations invoke(String language) {
         OptionsOperator options = OptionsOperator.invoke();
-        options.selectCategory("Editor");
+        options.selectEditor();
         JTabbedPaneOperator jtpo = new JTabbedPaneOperator(options);
         jtpo.selectPage("Code Templates");                
         new EventTool().waitNoEvent(500);                

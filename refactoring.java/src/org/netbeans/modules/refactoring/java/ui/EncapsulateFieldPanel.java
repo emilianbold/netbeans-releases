@@ -156,6 +156,9 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
         }
         
         JavaSource js = JavaSource.forFileObject(selectedObjects.getFileObject());
+        if (js==null) {
+            throw new NullPointerException("Cannot get JavaSource for " + selectedObjects.getFileObject().getPath());
+        }
         try {
             js.runUserActionTask(new Task<CompilationController>() {
 

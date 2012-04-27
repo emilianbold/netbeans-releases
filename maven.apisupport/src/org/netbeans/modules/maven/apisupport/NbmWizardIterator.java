@@ -68,7 +68,6 @@ import org.netbeans.modules.maven.model.pom.Dependency;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Plugin;
 import org.netbeans.modules.maven.model.pom.Repository;
-import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.netbeans.validation.api.ui.ValidationGroup;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -85,17 +84,17 @@ public class NbmWizardIterator implements WizardDescriptor.BackgroundInstantiati
     static {
         NB_MODULE_ARCH = new Archetype();
         NB_MODULE_ARCH.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        NB_MODULE_ARCH.setVersion("1.9"); //NOI18N
+        NB_MODULE_ARCH.setVersion("1.10"); //NOI18N
         NB_MODULE_ARCH.setArtifactId("nbm-archetype"); //NOI18N
 
         NB_APP_ARCH = new Archetype();
         NB_APP_ARCH.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        NB_APP_ARCH.setVersion("1.10"); //NOI18N
+        NB_APP_ARCH.setVersion("1.11"); //NOI18N
         NB_APP_ARCH.setArtifactId("netbeans-platform-app-archetype"); //NOI18N
 
         NB_SUITE_ARCH = new Archetype();
         NB_SUITE_ARCH.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        NB_SUITE_ARCH.setVersion("1.6"); //NOI18N
+        NB_SUITE_ARCH.setVersion("1.7"); //NOI18N
         NB_SUITE_ARCH.setArtifactId("nbm-suite-root"); //NOI18N
     }
 
@@ -186,7 +185,6 @@ public class NbmWizardIterator implements WizardDescriptor.BackgroundInstantiati
             if ("SNAPSHOT".equals(version)) { // NOI18N
                 addSnapshotRepo(projFile);
             }
-            Templates.setDefinesMainProject(wiz, projects.size() > 1);
             return projects;
     }
     

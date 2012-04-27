@@ -47,6 +47,8 @@ package org.netbeans.modules.cnd.makeproject.api;
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.api.remote.PathMap;
@@ -68,6 +70,7 @@ import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
 
 public class ProjectSupport {
+    private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
     private ProjectSupport() {
     }
 
@@ -184,7 +187,15 @@ public class ProjectSupport {
         if (execEnv.isRemote()) {
             if (RemoteSyncSupport.getRemoteMode(pae.getProject()) == RemoteProject.Mode.LOCAL_SOURCES) {
                 PathMap mapper = RemoteSyncSupport.getPathMap(pae.getProject());
-                return mapper.getRemotePath(localDir, false);
+                if (mapper != null) {
+                    String aLocalDir = mapper.getRemotePath(localDir, false);
+                    if (aLocalDir != null) {
+                        localDir = aLocalDir;
+                    }
+                } else {
+                    LOGGER.log(Level.SEVERE, "Path Mapper not found for project {0} - using local path {1}", new Object[]{pae.getProject(), localDir}); //NOI18N
+                }
+                return localDir;
             } else {
                 CndUtils.assertAbsolutePathInConsole(localDir);
                 if (CndPathUtilitities.isPathAbsolute(localDir)) {

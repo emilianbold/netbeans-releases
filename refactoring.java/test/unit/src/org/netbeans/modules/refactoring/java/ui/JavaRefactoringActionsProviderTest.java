@@ -61,6 +61,34 @@ public class JavaRefactoringActionsProviderTest extends RefactoringTestBase {
     public JavaRefactoringActionsProviderTest(String name) {
         super(name);
     }
+    
+    public void test211193() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    public static void foo() {\n"
+                + "        int someArray[] = {};\n"
+                + "    }\n"
+                + "}"));
+        FileObject testFile = src.getFileObject("t/A.java");
+        DataObject testFileDO = DataObject.find(testFile);
+        EditorCookie ec = testFileDO.getLookup().lookup(EditorCookie.class);
+        ec.open();
+        ec.getOpenedPanes()[0].setCaretPosition(80);
+        ec.getOpenedPanes()[0].setSelectionStart(71);
+        ec.getOpenedPanes()[0].setSelectionEnd(80);
+        final AtomicInteger called = new AtomicInteger();
+        ContextAnalyzer.SHOW = new ContextAnalyzer.ShowUI() {
+            @Override
+            public void show(RefactoringUI ui, TopComponent activetc) {
+                assertNotNull(ui);
+                called.incrementAndGet();
+            }
+        };
+        int expectedCount = 0;
+        new RefactoringActionsProvider().doRename(Lookups.fixed(ec));
+        assertEquals(++expectedCount, called.get());
+    }
 
     public void test190101() throws Exception {
         writeFilesAndWaitForScan(src,
@@ -74,7 +102,7 @@ public class JavaRefactoringActionsProviderTest extends RefactoringTestBase {
         ec.open();
         ec.getOpenedPanes()[0].setCaretPosition(30);
         final AtomicInteger called = new AtomicInteger();
-        RefactoringActionsProvider.SHOW = new RefactoringActionsProvider.ShowUI() {
+        ContextAnalyzer.SHOW = new ContextAnalyzer.ShowUI() {
             @Override
             public void show(RefactoringUI ui, TopComponent activetc) {
                 assertNull(ui);

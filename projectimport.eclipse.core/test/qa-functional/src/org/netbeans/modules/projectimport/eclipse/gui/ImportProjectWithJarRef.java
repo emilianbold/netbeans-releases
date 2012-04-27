@@ -59,7 +59,7 @@ public class ImportProjectWithJarRef extends ProjectImporterTestCase {
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        ExtractToWorkDir(getDataDir().getAbsolutePath(),"testdata.jar");
+        ExtractToWorkDir(getDataDir(), "testdata.jar");
     }
 
     public void testImportProjectWithIntJarRef() {

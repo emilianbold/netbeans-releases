@@ -147,6 +147,9 @@ implements ActionListener, Runnable, Callable<JButton> {
             }
         }
 
+        if (Installer.isImmediateWriteOut(record)) {
+            return ;
+        }
         class WriteOut implements Runnable {
             public LogRecord r;
             @Override
@@ -177,7 +180,7 @@ implements ActionListener, Runnable, Callable<JButton> {
     
     static void waitFlushed() {
         try {
-            lastRecord.waitFinished(1000);
+            lastRecord.waitFinished(0);
         } catch (InterruptedException ex) {
             Installer.LOG.log(Level.FINE, null, ex);
         }

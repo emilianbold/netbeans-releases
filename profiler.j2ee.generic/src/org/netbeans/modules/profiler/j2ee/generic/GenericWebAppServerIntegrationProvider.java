@@ -176,7 +176,8 @@ public class GenericWebAppServerIntegrationProvider extends AbstractIntegrationP
                                     targetOS, 
                                     getTargetJava(),
                                     attachSettings.isRemote(),
-                                    attachSettings.getPort())));
+                                    attachSettings.getPort(),
+                                    false)));
 
         // Step 3
         instructions.addStep(Bundle.GenericWebAppServerIntegrationProvider_ManualDirectStep3Message());
@@ -256,7 +257,8 @@ public class GenericWebAppServerIntegrationProvider extends AbstractIntegrationP
                                     targetOS, 
                                     getTargetJava(),
                                     attachSettings.isRemote(),
-                                    attachSettings.getPort()),
+                                    attachSettings.getPort(),
+                                    false),
                                 REMOTE_ABSOLUTE_PATH_HINT));
 
         // Step 5

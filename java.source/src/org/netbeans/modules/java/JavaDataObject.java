@@ -58,6 +58,7 @@ import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectExistsException;
@@ -65,8 +66,18 @@ import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
+@NbBundle.Messages({
+    "JavaResolver=Java Files"
+})
+@MIMEResolver.ExtensionRegistration(
+    position=100,
+    displayName="#JavaResolver",
+    extension="java",
+    mimeType="text/x-java"
+)    
 public final class JavaDataObject extends MultiDataObject {
     
     public JavaDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException {

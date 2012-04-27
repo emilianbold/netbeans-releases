@@ -59,6 +59,7 @@ import javax.swing.UIManager;
 import org.netbeans.swing.tabcontrol.TabDisplayer;
 
 import javax.swing.plaf.ComponentUI;
+import org.netbeans.swing.tabcontrol.WinsysInfoForTabbedContainer;
 
 
 import org.openide.awt.HtmlRenderer;
@@ -149,6 +150,11 @@ public final class MetalViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
     @Override
     protected void paintTabContent(Graphics g, int index, String text, int x,
                                    int y, int width, int height) {
+        boolean slidedOut = false;
+        WinsysInfoForTabbedContainer winsysInfo = displayer.getContainerWinsysInfo();
+        if( null != winsysInfo && winsysInfo.isSlidedOutContainer() )
+            slidedOut = false;
+
         FontMetrics fm = getTxtFontMetrics();
         // setting font already here to compute string width correctly
         g.setFont(getTxtFont());
@@ -168,7 +174,14 @@ public final class MetalViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
                 }
             }
             
-            txtWidth = (int)HtmlRenderer.renderString(text, g, x + TXT_X_PAD, height - 
+            if( isTabBusy( index ) && !slidedOut ) {
+                Icon busyIcon = BusyTabsSupport.getDefault().getBusyIcon( isSelected( index ) );
+                txtWidth -= busyIcon.getIconWidth() - 3 - TXT_X_PAD;
+                busyIcon.paintIcon( displayer, g, x+TXT_X_PAD, y+(height-busyIcon.getIconHeight())/2);
+                x += busyIcon.getIconWidth() + 3;
+            }
+
+            txtWidth = (int)HtmlRenderer.renderString(text, g, x + TXT_X_PAD, height -
                     fm.getDescent() - 4, txtWidth, height, getTxtFont(),
                     UIManager.getColor("textText"),
                     HtmlRenderer.STYLE_TRUNCATE, true);
@@ -179,6 +192,13 @@ public final class MetalViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
                           y + BUMP_Y_PAD, bumpWidth, height - 2 * BUMP_Y_PAD);
             }
         } else {
+            if( isTabBusy( index ) && !slidedOut ) {
+                Icon busyIcon = BusyTabsSupport.getDefault().getBusyIcon( isSelected( index ) );
+                txtWidth -= busyIcon.getIconWidth() - 3 - TXT_X_PAD;
+                busyIcon.paintIcon( displayer, g, x+TXT_X_PAD, y+(height-busyIcon.getIconHeight())/2);
+                x += busyIcon.getIconWidth() + 3;
+            }
+
             txtWidth = width - 2 * TXT_X_PAD;
             HtmlRenderer.renderString(text, g, x + TXT_X_PAD, height - 
                 fm.getDescent() - 4, txtWidth, height, getTxtFont(),

@@ -45,9 +45,9 @@ atom returns [int value]
     |   id = qualified_id
         {
             $value = vp==null?0:vp.getValue($id.q);
-            //Integer v = (Integer)memory.get($ID.text);
+            //Integer v = (Integer)memory.get($IDENT.text);
             //if ( v!=null ) $value = v.intValue();
-            //else System.err.println("undefined variable "+$ID.text);
+            //else System.err.println("undefined variable "+$IDENT.text);
         }
     |   LPAREN expr RPAREN {$value = $expr.value;}
     |   LITERAL_static_cast LESSTHAN (~GREATERTHAN)* GREATERTHAN LPAREN expr RPAREN {$value = $expr.value;}
@@ -66,8 +66,8 @@ qualified_id returns [String q = ""]
         so = scope_override
         { q += ($so.s != null)? $so.s : ""; }
         (
-            ID
-            {q += $ID.text;}
+            IDENT
+            {q += $IDENT.text;}
             (
                 LESSTHAN
                 {q += "<";}
@@ -93,9 +93,9 @@ scope_override returns [String s = ""]
 
 scope_override_part returns [String s = ""]
     :
-        ID
+        IDENT
         {
-            s += $ID.text;
+            s += $IDENT.text;
         }
         (
             LESSTHAN
@@ -109,14 +109,14 @@ scope_override_part returns [String s = ""]
             s += "::";
         }
 
-        ((ID SCOPE) => sp = scope_override_part)?
+        ((IDENT SCOPE) => sp = scope_override_part)?
         {
             s += ($sp.s != null) ? $sp.s : "";
         }
     ;
 
 // Suppressing warnings "no lexer rule corresponding to token"
-fragment ID: ' ';
+fragment IDENT: ' ';
 fragment DECIMALINT: ' ';
 
 fragment PLUS: ' ';

@@ -42,10 +42,7 @@
 
 package org.netbeans.modules.maven.customizer;
 
-import org.codehaus.plexus.util.StringUtils;
-import javax.swing.text.BadLocationException;
 import java.awt.Component;
-import javax.swing.JList;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -67,31 +64,38 @@ import javax.swing.Action;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
+import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
-import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.maven.spi.grammar.GoalsProvider;
-import org.netbeans.modules.maven.api.customizer.ModelHandle;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.JTextComponent;
+import org.codehaus.plexus.util.StringUtils;
+import org.jdom.Verifier;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.modules.maven.ActionProviderImpl;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
+import org.netbeans.modules.maven.TestChecker;
 import org.netbeans.modules.maven.TextValueCompleter;
 import org.netbeans.modules.maven.api.Constants;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.ProjectProfileHandler;
+import org.netbeans.modules.maven.api.customizer.ModelHandle2;
+import static org.netbeans.modules.maven.customizer.Bundle.*;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.execute.ActionToGoalUtils;
-import org.netbeans.modules.maven.ActionProviderImpl;
-import org.netbeans.modules.maven.TestChecker;
-import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.execute.DefaultReplaceTokenProvider;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.modules.maven.options.DontShowAgainSettings;
+import org.netbeans.modules.maven.spi.grammar.GoalsProvider;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -99,6 +103,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -110,7 +115,7 @@ public class ActionMappings extends javax.swing.JPanel {
 
     private static final RequestProcessor RP = new RequestProcessor(ActionMappings.class);
     private NbMavenProjectImpl project;
-    private ModelHandle handle;
+    private ModelHandle2 handle;
     private HashMap<String, String> titles = new HashMap<String, String>();
     
     private final GoalsListener goalsListener;
@@ -140,7 +145,7 @@ public class ActionMappings extends javax.swing.JPanel {
                 if (e.getComponent() == txtProfiles) {
                     lblHint.setText(NbBundle.getMessage(ActionMappings.class, "ActinMappings.txtProfiles.hint"));
                 }
-                if (e.getComponent() == taProperties) {
+                if (e.getComponent() == epProperties) {
                     lblHint.setText(NbBundle.getMessage(ActionMappings.class, "ActinMappings.txtProperties.hint"));
                 }
             }
@@ -150,7 +155,7 @@ public class ActionMappings extends javax.swing.JPanel {
         };
         txtGoals.addFocusListener(focus);
         txtProfiles.addFocusListener(focus);
-        taProperties.addFocusListener(focus);
+        epProperties.addFocusListener(focus);
         goalcompleter = new TextValueCompleter(Collections.<String>emptyList(), txtGoals, " "); //NOI18N
         profilecompleter = new TextValueCompleter(Collections.<String>emptyList(), txtProfiles, " "); //NOI18N
 
@@ -173,7 +178,7 @@ public class ActionMappings extends javax.swing.JPanel {
     }
     
     /** Creates new form ActionMappings */
-    public ActionMappings(ModelHandle hand, NbMavenProjectImpl proj) {
+    public ActionMappings(ModelHandle2 hand, NbMavenProjectImpl proj) {
         this();
         project = proj;
         handle = hand;
@@ -191,7 +196,10 @@ public class ActionMappings extends javax.swing.JPanel {
         titles.put(ActionProvider.COMMAND_RUN_SINGLE + ".deploy", NbBundle.getMessage(ActionMappings.class, "COM_Run_file_deploy"));
         titles.put(ActionProvider.COMMAND_TEST, NbBundle.getMessage(ActionMappings.class, "COM_Test_project"));
         titles.put(ActionProvider.COMMAND_TEST_SINGLE, NbBundle.getMessage(ActionMappings.class, "COM_Test_file"));
-        titles.put("profile", NbBundle.getMessage(ActionMappings.class, "COM_Profile_project"));
+        titles.put(ActionProvider.COMMAND_PROFILE, NbBundle.getMessage(ActionMappings.class, "COM_Profile_project"));
+        titles.put(ActionProvider.COMMAND_PROFILE_SINGLE + ".main", NbBundle.getMessage(ActionMappings.class, "COM_Profile_file_main"));
+        titles.put(ActionProvider.COMMAND_PROFILE_SINGLE + ".deploy", NbBundle.getMessage(ActionMappings.class, "COM_Profile_file_deploy"));
+        titles.put(ActionProvider.COMMAND_PROFILE_TEST_SINGLE, NbBundle.getMessage(ActionMappings.class, "COM_Profile_test"));
         titles.put("javadoc", NbBundle.getMessage(ActionMappings.class, "COM_Javadoc_project"));
         titles.put(ActionProviderImpl.BUILD_WITH_DEPENDENCIES, NbBundle.getMessage(ActionMappings.class, "COM_Build_WithDeps_project"));
 
@@ -219,6 +227,19 @@ public class ActionMappings extends javax.swing.JPanel {
                 addListeners();
             }
         };
+    }
+
+    public static void showAddPropertyPopupMenu(JButton btn, JTextComponent area, JTextField goalsField, @NullAllowed NbMavenProjectImpl project) {
+        JPopupMenu menu = new JPopupMenu();
+        menu.add(new SkipTestsAction(area));
+        menu.add(new DebugMavenAction(area));
+        menu.add(new EnvVarAction(area));
+        menu.add(createGlobalVarSubmenu(area));
+        if (project != null) {
+            menu.add(new PluginPropertyAction(area, goalsField, project));
+        }
+        menu.add(createFileSelectionSubmenu(area));
+        menu.show(btn, btn.getSize().width, 0);
     }
     
     private void addListeners() {
@@ -261,10 +282,10 @@ public class ActionMappings extends javax.swing.JPanel {
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override public void run() {
                         if (provider != null) {
-                            goalcompleter.setValueList(strs);
+                            goalcompleter.setValueList(strs, false); //do not bother about partial results, too many intermediate apis..
                         }
                         if (profiles != null) {
-                            profilecompleter.setValueList(profiles);
+                            profilecompleter.setValueList(profiles, false);
                         }
                     }
                 });
@@ -291,14 +312,14 @@ public class ActionMappings extends javax.swing.JPanel {
         lblProfiles = new javax.swing.JLabel();
         txtProfiles = new javax.swing.JTextField();
         lblProperties = new javax.swing.JLabel();
-        jScrollPane3 = new javax.swing.JScrollPane();
-        taProperties = new javax.swing.JTextArea();
         cbRecursively = new javax.swing.JCheckBox();
         lblMappings = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
         lblHint = new javax.swing.JLabel();
         btnAddProps = new javax.swing.JButton();
         cbBuildWithDeps = new javax.swing.JCheckBox();
+        jScrollPane5 = new javax.swing.JScrollPane();
+        epProperties = new javax.swing.JEditorPane();
 
         lblConfiguration.setLabelFor(comConfiguration);
         org.openide.awt.Mnemonics.setLocalizedText(lblConfiguration, org.openide.util.NbBundle.getMessage(ActionMappings.class, "ActionMappings.lblConfiguration.text")); // NOI18N
@@ -331,13 +352,7 @@ public class ActionMappings extends javax.swing.JPanel {
         lblProfiles.setLabelFor(txtProfiles);
         org.openide.awt.Mnemonics.setLocalizedText(lblProfiles, org.openide.util.NbBundle.getMessage(ActionMappings.class, "ActionMappings.lblProfiles.text")); // NOI18N
 
-        lblProperties.setLabelFor(taProperties);
         org.openide.awt.Mnemonics.setLocalizedText(lblProperties, org.openide.util.NbBundle.getMessage(ActionMappings.class, "ActionMappings.lblProperties.text")); // NOI18N
-
-        taProperties.setColumns(20);
-        taProperties.setRows(5);
-        jScrollPane3.setViewportView(taProperties);
-        taProperties.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ActionMappings.class, "ActionMappings.taProperties.AccessibleContext.accessibleDescription")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(cbRecursively, org.openide.util.NbBundle.getMessage(ActionMappings.class, "ActionMappings.cbRecursively.text")); // NOI18N
 
@@ -346,7 +361,6 @@ public class ActionMappings extends javax.swing.JPanel {
         lblMappings.setVerticalAlignment(javax.swing.SwingConstants.BOTTOM);
 
         jScrollPane2.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
-        jScrollPane2.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
         lblHint.setVerticalAlignment(javax.swing.SwingConstants.BOTTOM);
         jScrollPane2.setViewportView(lblHint);
@@ -360,6 +374,10 @@ public class ActionMappings extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(cbBuildWithDeps, org.openide.util.NbBundle.getMessage(ActionMappings.class, "ActionMappings.cbBuildWithDeps.text")); // NOI18N
 
+        epProperties.setContentType("text/x-properties"); // NOI18N
+        epProperties.setMargin(new java.awt.Insets(0, 6, 0, 6));
+        jScrollPane5.setViewportView(epProperties);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -367,37 +385,36 @@ public class ActionMappings extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 668, Short.MAX_VALUE)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(lblConfiguration)
-                            .addComponent(lblGoals)
-                            .addComponent(lblMappings))
-                        .addGap(28, 28, 28)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(txtGoals, javax.swing.GroupLayout.DEFAULT_SIZE, 532, Short.MAX_VALUE)
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 392, Short.MAX_VALUE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(btnRemove)
-                                    .addComponent(btnAdd)))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addComponent(comConfiguration, 0, 389, Short.MAX_VALUE)
-                                .addGap(143, 143, 143))))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(lblProfiles)
-                            .addComponent(lblProperties)
-                            .addComponent(btnAddProps))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(txtProfiles, javax.swing.GroupLayout.DEFAULT_SIZE, 532, Short.MAX_VALUE)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(cbRecursively)
-                                .addGap(18, 18, 18)
-                                .addComponent(cbBuildWithDeps))
-                            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 532, Short.MAX_VALUE))))
+                    .addComponent(lblConfiguration)
+                    .addComponent(lblGoals)
+                    .addComponent(lblMappings)
+                    .addComponent(lblProfiles)
+                    .addComponent(lblProperties)
+                    .addComponent(btnAddProps))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(txtGoals)
+                    .addComponent(txtProfiles)
+                    .addComponent(comConfiguration, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jScrollPane5))
+                .addContainerGap())
+            .addGroup(layout.createSequentialGroup()
+                .addGap(122, 122, 122)
+                .addComponent(cbRecursively)
+                .addGap(18, 18, 18)
+                .addComponent(cbBuildWithDeps)
+                .addContainerGap(94, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addGap(124, 124, 124)
+                .addComponent(jScrollPane1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(btnRemove)
+                    .addComponent(btnAdd))
+                .addGap(6, 6, 6))
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane2)
                 .addContainerGap())
         );
 
@@ -425,20 +442,22 @@ public class ActionMappings extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblProfiles)
                     .addComponent(txtProfiles, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
+                        .addGap(10, 10, 10)
                         .addComponent(lblProperties)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnAddProps))
-                    .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 46, Short.MAX_VALUE))
+                        .addComponent(btnAddProps)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jScrollPane5)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(cbRecursively)
                     .addComponent(cbBuildWithDeps))
-                .addGap(41, 41, 41)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 105, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         comConfiguration.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ActionMappings.class, "ActionMappings.comConfiguration.AccessibleContext.accessibleDescription")); // NOI18N
@@ -511,19 +530,19 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
             MappingWrapper wr = (MappingWrapper)obj;
             NetbeansActionMapping mapp = wr.getMapping();
             txtGoals.setEnabled(true);
-            taProperties.setEnabled(true);
+            epProperties.setEnabled(true);
             txtProfiles.setEnabled(true);
             
             txtGoals.getDocument().removeDocumentListener(goalsListener);
             txtProfiles.getDocument().removeDocumentListener(profilesListener);
-            taProperties.getDocument().removeDocumentListener(propertiesListener);
+            epProperties.getDocument().removeDocumentListener(propertiesListener);
             cbRecursively.removeActionListener(recursiveListener);
             cbBuildWithDeps.removeActionListener(depsListener);
             
             txtGoals.setText(createSpaceSeparatedList(mapp != null ? mapp.getGoals() : Collections.<String>emptyList()));
             txtProfiles.setText(createSpaceSeparatedList(mapp != null ? mapp.getActivatedProfiles() : Collections.<String>emptyList()));
-            taProperties.setText(createPropertiesList(mapp != null ? mapp.getProperties() : Collections.<String,String>emptyMap()));
-            taProperties.setCaretPosition(0);
+            epProperties.setText(createPropertiesList(mapp != null ? mapp.getProperties() : Collections.<String,String>emptyMap()));
+            epProperties.setCaretPosition(0);
             if (handle != null && "pom".equals(handle.getProject().getPackaging())) { //NOI18N
                 cbRecursively.setEnabled(true);
                 cbRecursively.setSelected(mapp != null ? mapp.isRecursive() : true);
@@ -536,7 +555,7 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
             }
             txtGoals.getDocument().addDocumentListener(goalsListener);
             txtProfiles.getDocument().addDocumentListener(profilesListener);
-            taProperties.getDocument().addDocumentListener(propertiesListener);
+            epProperties.getDocument().addDocumentListener(propertiesListener);
             cbRecursively.addActionListener(recursiveListener);
             cbBuildWithDeps.addActionListener(depsListener);
             btnAddProps.setEnabled(true);
@@ -545,14 +564,7 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
     }//GEN-LAST:event_lstMappingsValueChanged
 
     private void btnAddPropsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddPropsActionPerformed
-        JPopupMenu menu = new JPopupMenu();
-        menu.add(new SkipTestsAction(taProperties));
-        menu.add(new DebugMavenAction(taProperties));
-        menu.add(new EnvVarAction(taProperties));
-        menu.add(createGlobalVarSubmenu(taProperties));
-        menu.add(new PluginPropertyAction(taProperties, txtGoals, project));
-        menu.show(btnAddProps, btnAddProps.getSize().width, 0);
-
+        showAddPropertyPopupMenu(btnAddProps, epProperties, txtGoals, project);
     }//GEN-LAST:event_btnAddPropsActionPerformed
     
     private void loadMappings() {
@@ -577,7 +589,11 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
                 addSingleAction(ActionProvider.COMMAND_DEBUG_SINGLE + ".deploy", model); //NOI18N
             }
             addSingleAction(ActionProvider.COMMAND_DEBUG_TEST_SINGLE, model);
-            addSingleAction("profile", model); //NOI18N
+            addSingleAction(ActionProvider.COMMAND_PROFILE, model);
+            addSingleAction(ActionProvider.COMMAND_PROFILE_SINGLE + ".main", model); // NOI18N
+            if (isWar) {
+                addSingleAction(ActionProvider.COMMAND_PROFILE_SINGLE + ".deploy", model); //NOI18N
+            }
             addSingleAction("javadoc", model); //NOI18N
         }
         for (NetbeansActionMapping elem : getActionMappings().getActions()) {
@@ -632,18 +648,18 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
         comConfiguration.removeActionListener(comboListener);
         txtGoals.getDocument().removeDocumentListener(goalsListener);
         txtProfiles.getDocument().removeDocumentListener(profilesListener);
-        taProperties.getDocument().removeDocumentListener(propertiesListener);
+        epProperties.getDocument().removeDocumentListener(propertiesListener);
         
         txtGoals.setText(""); //NOI18N
         txtProfiles.setText(""); //NOI18N
-        taProperties.setText(""); //NOI18N
+        epProperties.setText(""); //NOI18N
         
         txtGoals.getDocument().addDocumentListener(goalsListener);
         txtProfiles.getDocument().addDocumentListener(profilesListener);
-        taProperties.getDocument().addDocumentListener(propertiesListener);
+        epProperties.getDocument().addDocumentListener(propertiesListener);
         
         txtGoals.setEnabled(false);
-        taProperties.setEnabled(false);
+        epProperties.setEnabled(false);
         txtProfiles.setEnabled(false);
         updateColor(null);
         cbRecursively.setEnabled(false);
@@ -658,14 +674,19 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
         lblProfiles.setFont(fnt);
     }
     
-    private String createPropertiesList(Map<String,String> properties) {
+    public static String createPropertiesList(Map<? extends String,? extends String> properties) {
         StringBuilder b = new StringBuilder();
         if (properties != null) {
-            for (Map.Entry<String,String> entry : properties.entrySet()) {
+            for (Map.Entry<? extends String,? extends String> entry : properties.entrySet()) {
                 if (b.length() > 0) {
                     b.append('\n');
                 }
                 b.append(entry.getKey()).append('=').append(entry.getValue());
+                if (entry.getValue().endsWith("\\")) {
+                    // we interpret \ at the end of the line as the properties file editor, as a continuation on the next line. This 
+                    //has a sideeffect on entries ending with \ naturally
+                    b.append(" ");
+                }
             }
         }
         return b.toString();
@@ -680,9 +701,10 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
     private javax.swing.JCheckBox cbBuildWithDeps;
     private javax.swing.JCheckBox cbRecursively;
     private javax.swing.JComboBox comConfiguration;
+    private javax.swing.JEditorPane epProperties;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JScrollPane jScrollPane5;
     private javax.swing.JLabel lblConfiguration;
     private javax.swing.JLabel lblGoals;
     private javax.swing.JLabel lblHint;
@@ -690,19 +712,24 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
     private javax.swing.JLabel lblProfiles;
     private javax.swing.JLabel lblProperties;
     private javax.swing.JList lstMappings;
-    private javax.swing.JTextArea taProperties;
     private javax.swing.JTextField txtGoals;
     private javax.swing.JTextField txtProfiles;
     // End of variables declaration//GEN-END:variables
     
     private void writeProperties(final NetbeansActionMapping mapp) {
-        String text = taProperties.getText();
+        mapp.setProperties(convertStringToActionProperties(epProperties.getText()));
+        if (handle != null) {
+            handle.markAsModified(getActionMappings());
+        }
+    }
+
+    public static Map<String, String> convertStringToActionProperties(String text) {
         PropertySplitter split = new PropertySplitter(text);
         String tok = split.nextPair();
         Map<String,String> props = new LinkedHashMap<String,String>();
         while (tok != null) {
             String[] prp = StringUtils.split(tok, "=", 2); //NOI18N
-            if (prp.length == 2) {
+            if (prp.length >= 1 ) {
                 String key = prp[0];
                 //in case the user adds -D by mistake, remove it to get a parsable xml file.
                 if (key.startsWith("-D")) { //NOI18N
@@ -711,20 +738,22 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
                 if (key.startsWith("-")) { //NOI18N
                     key = key.substring(1);
                 }
-                props.put(key, prp[1]);
+                if (key.endsWith("=")) {
+                    key = key.substring(0, key.length() - 1);
+                }
+                if (key.trim().length() > 0 && Verifier.checkElementName(key.trim()) == null) {
+                    props.put(key.trim(), prp.length > 1 ? prp[1] : "");
+                }
             }
             tok = split.nextPair();
         }
-        mapp.setProperties(props);
-        if (handle != null) {
-            handle.markAsModified(getActionMappings());
-        }
+        return props;
     }
     
     private ActionToGoalMapping getActionMappings() {
         assert handle != null || actionmappings != null;
         if (handle != null) {
-            return handle.getActionMappings((ModelHandle.Configuration) comConfiguration.getSelectedItem());
+            return handle.getActionMappings((ModelHandle2.Configuration) comConfiguration.getSelectedItem());
         }
         return actionmappings;
     }
@@ -959,7 +988,7 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
             lblConfiguration.setVisible(true);
             comConfiguration.setVisible(true);
             DefaultComboBoxModel comModel = new DefaultComboBoxModel();
-            for (ModelHandle.Configuration conf : handle.getConfigurations()) {
+            for (ModelHandle2.Configuration conf : handle.getConfigurations()) {
                 comModel.addElement(conf);
             }
             comConfiguration.setModel(comModel);
@@ -973,8 +1002,8 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
     }
 
     static class SkipTestsAction extends AbstractAction {
-        private JTextArea area;
-        SkipTestsAction(JTextArea area) {
+        private JTextComponent area;
+        SkipTestsAction(JTextComponent area) {
             putValue(Action.NAME, NbBundle.getMessage(ActionMappings.class, "ActionMappings.skipTests"));
             this.area = area;
         }
@@ -987,9 +1016,9 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
     }
     
     static class DebugMavenAction extends AbstractAction {
-        private JTextArea area;
+        private JTextComponent area;
         
-        DebugMavenAction(JTextArea area) {
+        DebugMavenAction(JTextComponent area) {
             putValue(Action.NAME, NbBundle.getMessage(ActionMappings.class, "ActionMappings.debugMaven"));
             this.area = area;
         }
@@ -1002,22 +1031,24 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
     }
 
     static class PluginPropertyAction extends AbstractAction {
-        private JTextArea area;
+        private JTextComponent area;
         private JTextField goals;
         private NbMavenProjectImpl project;
 
-        PluginPropertyAction(JTextArea area, JTextField goals, NbMavenProjectImpl prj) {
+        PluginPropertyAction(JTextComponent area, JTextField goals, NbMavenProjectImpl prj) {
             putValue(Action.NAME, NbBundle.getMessage(ActionMappings.class, "TXT_PLUGIN_EXPRESSION"));
             this.area = area;
             this.goals = goals;
             this.project = prj;
         }
 
-        @Override public void actionPerformed(ActionEvent e) {
+        @Override
+        @Messages("TIT_PLUGIN_EXPRESSION=Add Plugin Expression Property")
+        public void actionPerformed(ActionEvent e) {
             GoalsProvider provider = Lookup.getDefault().lookup(GoalsProvider.class);
             if (provider != null) {
                 AddPropertyDialog panel = new AddPropertyDialog(project, goals.getText());
-                DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(ActionMappings.class, "TIT_PLUGIN_EXPRESSION"));
+                DialogDescriptor dd = new DialogDescriptor(panel, TIT_PLUGIN_EXPRESSION());
                 dd.setOptions(new Object[] {panel.getOkButton(), DialogDescriptor.CANCEL_OPTION});
                 dd.setClosingOptions(new Object[] {panel.getOkButton(), DialogDescriptor.CANCEL_OPTION});
                 DialogDisplayer.getDefault().notify(dd);
@@ -1042,9 +1073,9 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
 
 
     static class EnvVarAction extends AbstractAction {
-        private JTextArea area;
+        private JTextComponent area;
 
-        EnvVarAction(JTextArea area) {
+        EnvVarAction(JTextComponent area) {
             putValue(Action.NAME, NbBundle.getMessage(ActionMappings.class, "ActionMappings.envVar"));
             this.area = area;
         }
@@ -1063,9 +1094,10 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
         }
     }
 
-    private JMenu createGlobalVarSubmenu(JTextArea area) {
+    @Messages("ActionMappings.globalVar=Reference IDE Global Variable")
+    private static JMenu createGlobalVarSubmenu(JTextComponent area) {
         JMenu menu = new JMenu();
-            menu.setText(NbBundle.getMessage(ActionMappings.class, "ActionMappings.globalVar"));
+        menu.setText(ActionMappings_globalVar());
         Map<String, String> vars = DefaultReplaceTokenProvider.readVariables();
         boolean hasAny = false;
         for (Map.Entry<String, String> ent : vars.entrySet()) {
@@ -1078,11 +1110,24 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
         return menu;
     }
 
+    @Messages("ActionMappings.fileExpressions=IDE Selection Expressions")
+    private static JMenu createFileSelectionSubmenu(JTextComponent area) {
+        JMenu menu = new JMenu();
+        menu.setText(ActionMappings_fileExpressions());
+        menu.add(new FileVariableAction(area, "packageClassName"));
+        menu.add(new FileVariableAction(area, "className"));
+        menu.add(new FileVariableAction(area, "classNameWithExtension"));
+        menu.add(new FileVariableAction(area, "webPagePath"));
+        menu.add(new FileVariableAction(area, "classPathScope"));
+            
+        return menu;
+    }
+    
     static class UseGlobalVarAction extends AbstractAction {
-        private JTextArea area;
+        private JTextComponent area;
         private final String key;
 
-        UseGlobalVarAction(JTextArea area, String key) {
+        UseGlobalVarAction(JTextComponent area, String key) {
             putValue(Action.NAME, "${" + key + "}"); //NOI18N
             this.area = area;
             this.key = key;
@@ -1099,9 +1144,31 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
             }
         }
     }
+    
+    static class FileVariableAction extends AbstractAction {
+        private JTextComponent area;
+        private final String key;
+
+        FileVariableAction(JTextComponent area, String key) {
+            putValue(Action.NAME, "${" + key + "}"); //NOI18N
+            this.area = area;
+            this.key = key;
+        }
+
+        @Override public void actionPerformed(ActionEvent e) {
+            try {
+                area.getDocument().insertString(area.getCaretPosition(), "${" + key + "}", null); //NOI18N
+            } catch (BadLocationException ex) {
+                String text = area.getText();
+                text = text + "${" + key + "}"; //NOI18N
+                area.setText(text);
+                area.requestFocusInWindow();
+            }
+        }
+    }    
 
 
-    private static void replacePattern(String pattern, JTextArea area, String replace, boolean select) {
+    private static void replacePattern(String pattern, JTextComponent area, String replace, boolean select) {
         String props = area.getText();
         Matcher match = Pattern.compile(pattern, Pattern.DOTALL).matcher(props);
         if (match.matches()) {

@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.maven.dependencies;
 
-import org.netbeans.modules.maven.embedder.DependencyTreeFactory;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
@@ -65,10 +64,12 @@ import javax.swing.tree.TreePath;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
+import static org.netbeans.modules.maven.dependencies.Bundle.*;
+import org.netbeans.modules.maven.embedder.DependencyTreeFactory;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.openide.NotificationLineSupport;
 import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -181,12 +182,13 @@ public class ExcludeDependencyPanel extends javax.swing.JPanel {
         lineSupport = createNotificationLineSupport;
     }
 
+    @Messages("TXT_Exclude_all=Exclude from all by pressing 'SPACE' key.")
     private void printSpaceMessage() {
         if (lineSupport == null) {
             return;
         }
         if (trTrans.isFocusOwner() && trTrans.getSelectionPath() != null) {
-            lineSupport.setInformationMessage(NbBundle.getMessage(ExcludeDependencyPanel.class, "TXT_Exclude_all"));
+            lineSupport.setInformationMessage(TXT_Exclude_all());
         } else {
             lineSupport.clearMessages();
         }

@@ -50,7 +50,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
 import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
-import org.netbeans.modules.php.editor.PHPTestBase;
+import org.netbeans.modules.php.editor.PHPCodeCompletionTestBase;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.openide.filesystems.FileObject;
 
@@ -58,7 +58,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Filip.Zamboj at SUN.com
  */
-public class PHPNewLineIndenterQATest extends PHPTestBase {
+public class PHPNewLineIndenterQATest extends PHPCodeCompletionTestBase {
 
     public PHPNewLineIndenterQATest(String testName) {
         super(testName);

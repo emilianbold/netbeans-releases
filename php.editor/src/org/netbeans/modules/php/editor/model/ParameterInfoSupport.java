@@ -140,13 +140,13 @@ public class ParameterInfoSupport {
                         state = (state.equals(State.METHOD)) ? State.STOP : State.INVALID;
                         // state = State.INVALID;
                         if (isReference(token)) {
-                            metaAll.insert(0, "@" + VariousUtils.METHOD_TYPE_PREFIX);
+                            metaAll.insert(0, VariousUtils.PRE_OPERATION_TYPE_DELIMITER + VariousUtils.METHOD_TYPE_PREFIX);
                             state = State.REFERENCE;
                         } else if (isStaticReference(token)) {
-                            metaAll.insert(0, "@" + VariousUtils.METHOD_TYPE_PREFIX);
+                            metaAll.insert(0, VariousUtils.PRE_OPERATION_TYPE_DELIMITER + VariousUtils.METHOD_TYPE_PREFIX);
                             state = State.STATIC_REFERENCE;
                         } else if (state.equals(State.STOP)) {
-                            metaAll.insert(0, "@" + VariousUtils.FUNCTION_TYPE_PREFIX);
+                            metaAll.insert(0, VariousUtils.PRE_OPERATION_TYPE_DELIMITER + VariousUtils.FUNCTION_TYPE_PREFIX);
                         }
                         break;
                     case REFERENCE:
@@ -210,7 +210,7 @@ public class ParameterInfoSupport {
                     case FIELD:
                         state = State.INVALID;
                         if (isReference(token)) {
-                            metaAll.insert(0, "@" + VariousUtils.FIELD_TYPE_PREFIX);
+                            metaAll.insert(0, VariousUtils.PRE_OPERATION_TYPE_DELIMITER + VariousUtils.FIELD_TYPE_PREFIX);
                             state = State.REFERENCE;
                         }
                         break;
@@ -224,7 +224,7 @@ public class ParameterInfoSupport {
                         }
 
                     case VARIABLE:
-                        metaAll.insert(0, "@" + VariousUtils.VAR_TYPE_PREFIX);
+                        metaAll.insert(0, VariousUtils.PRE_OPERATION_TYPE_DELIMITER + VariousUtils.VAR_TYPE_PREFIX);
                     case CLASSNAME:
                         //TODO: self, parent not handled yet
                         //TODO: maybe rather introduce its own State for self, parent
@@ -236,9 +236,9 @@ public class ParameterInfoSupport {
                     state = State.STOP;
                     PHPTokenId id = token.id();
                     if (id != null && PHPTokenId.PHP_NEW.equals(id)) {
-                        metaAll.insert(0, "@" + VariousUtils.CONSTRUCTOR_TYPE_PREFIX);
+                        metaAll.insert(0, VariousUtils.PRE_OPERATION_TYPE_DELIMITER + VariousUtils.CONSTRUCTOR_TYPE_PREFIX);
                     } else {
-                        metaAll.insert(0, "@" + VariousUtils.FUNCTION_TYPE_PREFIX);
+                        metaAll.insert(0, VariousUtils.PRE_OPERATION_TYPE_DELIMITER + VariousUtils.FUNCTION_TYPE_PREFIX);
                     }
                     break;
                 }

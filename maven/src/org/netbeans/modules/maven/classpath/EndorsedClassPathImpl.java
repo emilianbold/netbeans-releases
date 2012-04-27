@@ -42,8 +42,6 @@
 
 package org.netbeans.modules.maven.classpath;
 
-import java.util.logging.Level;
-import org.codehaus.plexus.util.StringUtils;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
@@ -58,8 +56,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.codehaus.plexus.util.FileUtils;
+import org.codehaus.plexus.util.StringUtils;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
@@ -73,7 +73,6 @@ import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 import org.netbeans.modules.maven.indexer.api.RepositoryUtil;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
-
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileAttributeEvent;
@@ -145,7 +144,7 @@ public final class EndorsedClassPathImpl implements ClassPathImplementation, Fil
                                         File toScan = null;
                                         REPO: for (RepositoryInfo repo : RepositoryPreferences.getInstance().getRepositoryInfos()) {
                                             LOG.log(Level.FINE, "checking {0}", repo);
-                                            for (NBVersionInfo analogue : RepositoryQueries.findBySHA1(jar, Collections.singletonList(repo))) {
+                                            for (NBVersionInfo analogue : RepositoryQueries.findBySHA1Result(jar, Collections.singletonList(repo)).getResults()) {
                                                 toScan = RepositoryUtil.createArtifact(analogue).getFile();
                                                 LOG.log(Level.FINE, "found {0}", toScan);
                                                 break REPO;

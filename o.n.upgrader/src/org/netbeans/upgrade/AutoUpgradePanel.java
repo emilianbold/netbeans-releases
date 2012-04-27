@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -57,11 +57,13 @@ import org.openide.util.NbBundle;
  */
 final class AutoUpgradePanel extends JPanel {
 
-    String source;
+    private String source;
+    private String note;
 
     /** Creates new form UpgradePanel */
-    public AutoUpgradePanel (String directory) {
+    public AutoUpgradePanel (String directory, String note) {
         this.source = directory;
+        this.note = note;
         initComponents();
         initAccessibility();
     }
@@ -98,31 +100,30 @@ final class AutoUpgradePanel extends JPanel {
 
         txtVersions = new javax.swing.JTextArea();
 
-        setPreferredSize(new java.awt.Dimension(550, 60));
+        setPreferredSize(new java.awt.Dimension(550, source != null && ! note.isEmpty() ? 120 : 60));
 
         txtVersions.setBackground(getBackground());
         txtVersions.setColumns(50);
         txtVersions.setEditable(false);
         txtVersions.setFont(new java.awt.Font("Dialog", 0, 12));
         txtVersions.setLineWrap(true);
-        txtVersions.setRows(3);
-        txtVersions.setText(NbBundle.getMessage (AutoUpgradePanel.class, "MSG_Confirmation", source)); // NOI18N
+        txtVersions.setRows(source != null && ! note.isEmpty() ? 6 : 3);
+        if (source != null) {
+            txtVersions.setText(NbBundle.getMessage (AutoUpgradePanel.class, "MSG_Confirmation", source, note)); // NOI18N
+        } else {
+            txtVersions.setText(note);
+        }
         txtVersions.setWrapStyleWord(true);
-        txtVersions.setFocusable(false);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(txtVersions, javax.swing.GroupLayout.DEFAULT_SIZE, 544, Short.MAX_VALUE)
-                .addContainerGap())
+            .addComponent(txtVersions, javax.swing.GroupLayout.DEFAULT_SIZE, 583, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(txtVersions, javax.swing.GroupLayout.DEFAULT_SIZE, 72, Short.MAX_VALUE)
-                .addContainerGap())
+            .addComponent(txtVersions, javax.swing.GroupLayout.DEFAULT_SIZE, 60, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
 

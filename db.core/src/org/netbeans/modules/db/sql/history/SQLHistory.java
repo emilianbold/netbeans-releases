@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2009-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,38 +37,139 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2008-2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 - 2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.sql.history;
 
-import java.util.Date;
+import java.util.*;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
-/**
- *
- * @author John Baker
- */
-public class SQLHistory {
-    String sql;
-    String url;
-    Date   date;
+@XmlRootElement(name="history")
+public class SQLHistory implements Set<SQLHistoryEntry> {
+    @XmlTransient
+    private int historyLimit = 100;
+    @XmlElement(name="sql")
+    private Set<SQLHistoryEntry> history;
+
+    public SQLHistory() {
+        history = new HashSet<SQLHistoryEntry>();
+    }
+
+    @Override
+    public String toString() {
+        return history.toString();
+    }
+
+    @Override
+    public <T> T[] toArray(T[] a) {
+        return history.toArray(a);
+    }
+
+    @Override
+    public Object[] toArray() {
+        return history.toArray();
+    }
+
+    @Override
+    public int size() {
+        return history.size();
+    }
+
+    @Override
+    public boolean retainAll(Collection<?> c) {
+        return history.retainAll(c);
+    }
+
+    @Override
+    public boolean removeAll(Collection<?> c) {
+        return history.removeAll(c);
+    }
+
+    @Override
+    public boolean remove(Object o) {
+        return history.remove(o);
+    }
+
+    @Override
+    public Iterator<SQLHistoryEntry> iterator() {
+        return history.iterator();
+    }
      
-    public SQLHistory(String url, String sql, Date date) {
-        this.url = url;
-        this.sql = sql;
-        this.date = date;
+    @Override
+    public boolean isEmpty() {
+        return history.isEmpty();
     }
     
-    public String getUrl() {
-        return url;
+    @Override
+    public int hashCode() {
+        return history.hashCode();
     }
     
-    public String getSql() {
-        return sql;
+    @Override
+    @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
+    public boolean equals(Object o) {
+        return history.equals(o);
     }
     
-    public Date getDate() {
-        return date;
+    @Override
+    public boolean containsAll(Collection<?> c) {
+        return history.containsAll(c);
     }
 
+    @Override
+    public boolean contains(Object o) {
+        return history.contains(o);
+    }
+
+    @Override
+    public void clear() {
+        history.clear();
+    }
+     
+    @Override
+    public boolean addAll(Collection<? extends SQLHistoryEntry> c) {
+        boolean changed = false;
+        for(SQLHistoryEntry sqe: c) {
+            changed |= this.add(sqe);
+        }
+        return changed;
+    }
+    
+    @Override
+    public boolean add(SQLHistoryEntry e) {
+        boolean result = history.add(e);
+        if(! result) {
+            history.remove(e);
+            result = history.add(e);
+        }
+        enforceLimit();
+        return result;
+    }
+    
+    public void enforceLimit() {
+        if(size() > historyLimit) {
+            List<SQLHistoryEntry> list = new ArrayList<SQLHistoryEntry>(history);
+            Collections.sort(list, new Comparator<SQLHistoryEntry>() {
+                @Override
+                public int compare(SQLHistoryEntry o1, SQLHistoryEntry o2) {
+                    return o2.getDate().compareTo(o1.getDate());
+                }
+            });
+            history.clear();
+            history.addAll(list.subList(0, historyLimit));
+        }
+    }
+    
+    @XmlTransient
+    public int getHistoryLimit() {
+        return historyLimit;
+    }
+
+    public void setHistoryLimit(int historyLimit) {
+        this.historyLimit = historyLimit;
+        enforceLimit();
+    }
 }

@@ -38,17 +38,18 @@ You open the Profiler window by choosing Window &gt; Profiling &gt; Profiler Con
                 <th scope="col">Button</th>
                 <th scope="col">Function</th>
             </tr>
-            <tr><td><img src="../img/rerun-icon.png"></td><td><b>Rerun Profiling Session</b> (Ctrl-Shift-F2)<br>Run the last profiling command again.</td></tr>
-            <tr><td><img src="../img/stop-icon.png"></td><td><b>Stop Profiling Session</b> <br> 
+            <tr><td><img src="../img/rerun-icon.png" alt="Rerun Profiler button"></td><td><b>Rerun Profiling Session</b> (Ctrl-Shift-F2)<br>Run the last profiling command again.</td></tr>
+            <tr><td><img src="../img/stop-icon.png" alt="Stop Session button"></td><td><b>Stop Profiling Session</b> <br> 
             Stops the current profiling command. Also stops the target application if the application was started by Profiler.</td></tr>
-            <tr><td><img src="../img/resetResults.png"></td><td><b>Reset Collected Results</b><br>Discards the already accumulated profiling results.</td></tr>
-            <tr><td><img src="../img/trash-icon.png"></td><td><b>Run GC</b><br>Runs Garbage Collection.</td></tr>            
-            <tr><td><img src="../img/clock-icon.png"></td><td><b>Modify Profiling Session</b> (Alt+Shift+F2) <br>
+            <tr><td><img src="../img/resetResults.png" alt="Reset Results button"></td><td><b>Reset Collected Results</b><br>Discards the already accumulated profiling results.</td></tr>
+            <tr><td><img src="../img/trash-icon.png" alt="Collect Garbage button"></td><td><b>Run GC</b><br>Runs Garbage Collection.</td></tr>            
+            <tr><td><img src="../img/clock-icon.png" alt="Modify Current Session button"></td><td><b>Modify Profiling Session</b> (Alt+Shift+F2) <br>
             Opens the Modify Profiling Task dialog box and allows you to run a new profiling command without stopping the target application.</td></tr>
-            <tr><td><img src="../img/telemetryOverviewWindow.png"></td><td><b>VM Telemetry</b><br> 
+            <tr><td><img src="../img/telemetryOverviewWindow.png" alt="Telemety Overview button"></td><td><b>VM Telemetry</b><br> 
             Opens the VM Telemetry Overview in the Output window of the IDE, displaying smaller
              versions of the telemetry graphs.</td></tr>
-             <tr><td><img src="../img/detach.png"</td><td><b>Detach</b> Detaches the IDE from the profiled application.</td></tr>
+             <tr><td><img src="../img/detach.png" alt="Detach button"></td><td><b>Detach</b> Detaches the IDE from the profiled application
+                     if the IDE is attached to an application.</td></tr>
         </table>
 
         <h3>Status</h3>
@@ -62,19 +63,19 @@ You open the Profiler window by choosing Window &gt; Profiling &gt; Profiler Con
                 <th scope="col">Function</th>
             </tr>
             <tr valign="top">
-                <td><img src="../img/takeSnapshotMem.png" alt="Telemetry tab button"></td>
+                <td><img src="../img/takeSnapshotCPU32.png" alt="Take Snapshot button"></td>
                 <td><b>Take Snapshot</b><br>
                 Takes a snapshot of the current profiling results and opens the snapshot in the main editor window.</td>
+            </tr>
+            <tr valign="top">
+                <td><img src="../img/takeSnapshotMem32.png" alt="Dump Heap button"></td>
+                <td><b>Dump Heap</b><br>
+                Takes a heap snapshot of the application.</td>
             </tr>
             <tr valign="top">
                 <td><img src="../img/liveResultsView.png" alt="Live Results button"></td>
                 <td><b>Live Results</b><br>
                 Opens the Live Profiling Results window.</td>
-            </tr>
-            <tr valign="top">
-                <td><img src="../img/resetResults.png"></td>
-                <td><b>Reset Collected Results</b><br>
-                Discards the already accumulated profiling results.</td>
             </tr>
         </table>
 

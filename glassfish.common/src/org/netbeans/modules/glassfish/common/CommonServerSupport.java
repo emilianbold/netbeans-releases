@@ -48,6 +48,7 @@ import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -85,7 +86,6 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -357,23 +357,15 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
     private static final RequestProcessor RP = new RequestProcessor("CommonServerSupport - start/stop/refresh",5); // NOI18N
 
     @Override
-    public Future<OperationState> startServer(final OperationStateListener stateListener) {
+    public Future<OperationState> startServer(final OperationStateListener stateListener, ServerState endState) {
         Logger.getLogger("glassfish").log(Level.FINEST, "CSS.startServer called on thread \"{0}\"", Thread.currentThread().getName()); // NOI18N
-        OperationStateListener startServerListener = new StartOperationStateListener(GlassfishModule.ServerState.RUNNING);
+        OperationStateListener startServerListener = new StartOperationStateListener(endState);
         VMIntrospector vmi = Lookups.forPath(Util.GF_LOOKUP_PATH).lookup(VMIntrospector.class);
         FutureTask<OperationState> task = new FutureTask<OperationState>(
-                new StartTask(this, getRecognizers(), vmi, startServerListener, stateListener));
-        RP.post(task);
-        return task;
-    }
-
-    @Override
-    public Future<OperationState> startServer(final OperationStateListener stateListener, FileObject jdkRoot, String[] jvmArgs) {
-        Logger.getLogger("glassfish").log(Level.FINEST, "CSS.startServer called on thread \"{0}\"", Thread.currentThread().getName()); // NOI18N
-        OperationStateListener startServerListener = new StartOperationStateListener(GlassfishModule.ServerState.STOPPED_JVM_PROFILER);
-        VMIntrospector vmi = Lookups.forPath(Util.GF_LOOKUP_PATH).lookup(VMIntrospector.class);
-        FutureTask<OperationState> task = new FutureTask<OperationState>(
-                new StartTask(this, getRecognizers(), vmi, jdkRoot, jvmArgs, startServerListener, stateListener));
+                new StartTask(this, getRecognizers(), vmi,
+                              (FileObject)null,
+                              (String[])(endState == ServerState.STOPPED_JVM_PROFILER ? new String[]{""} : null),
+                              startServerListener, stateListener));
         RP.post(task);
         return task;
     }

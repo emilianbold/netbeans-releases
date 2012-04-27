@@ -44,6 +44,9 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
+import org.netbeans.modules.cnd.modelimpl.content.project.ProjectComponent;
+import org.netbeans.modules.cnd.modelimpl.content.project.DeclarationContainerNamespace;
+import org.netbeans.modules.cnd.modelimpl.content.project.DeclarationContainer;
 import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;

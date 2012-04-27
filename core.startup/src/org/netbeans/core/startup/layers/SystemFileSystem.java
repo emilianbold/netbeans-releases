@@ -66,8 +66,10 @@ import org.openide.filesystems.FileStatusEvent;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.filesystems.MultiFileSystem;
 import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 
@@ -75,6 +77,15 @@ import org.openide.util.NbBundle.Messages;
 *
 * @author Jan Jancura, Ian Formanek, Petr Hamernik
 */
+@NbBundle.Messages({
+    "INSTANCE_FILES=Instance Files"
+})
+@MIMEResolver.ExtensionRegistration(
+    displayName="#INSTANCE_FILES",
+    mimeType="content/unknown",
+    extension="instance",
+    position=90
+)
 public final class SystemFileSystem extends MultiFileSystem 
 implements FileChangeListener {
     // Must be public for BeanInfo to work: #11186.
@@ -86,6 +97,12 @@ implements FileChangeListener {
     private static final String SYSTEM_NAME = "SystemFileSystem"; // NOI18N
 
     private static final Logger LOG = Logger.getLogger(SystemFileSystem.class.getName());
+
+    /** A mutex to use to guard access to changes of layers in the 
+     * system file system. */
+    public static void registerMutex(Mutex mutex) {
+        ModuleLayeredFileSystem.registerMutex(mutex);
+    }
 
     /** user fs */
     private ModuleLayeredFileSystem user;

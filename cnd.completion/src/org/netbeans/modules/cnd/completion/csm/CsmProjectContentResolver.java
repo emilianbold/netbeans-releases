@@ -169,16 +169,17 @@ public final class CsmProjectContentResolver {
                     // for typedef check whether it defines unnamed enum
                     assert CsmKindUtilities.isTypedef(ob);
                     CsmTypedef td = (CsmTypedef) ob;
-                    if (td.isTypeUnnamed() && td.getType() != null) {
-                        CsmType type = td.getType();
-                        if (CsmKindUtilities.isEnum(type.getClassifier())) {
-                            elemEnum = (CsmEnum) type.getClassifier();
+                    CsmType type = td.getType();
+                    if (td.isTypeUnnamed() && type != null) {
+                        CsmClassifier classifier = type.getClassifier();
+                        if (CsmKindUtilities.isEnum(classifier)) {
+                            elemEnum = (CsmEnum) classifier;
                         }
                     }
                 }
                 if (elemEnum != null) {
-                    for (Iterator enmtrIter = elemEnum.getEnumerators().iterator(); enmtrIter.hasNext();) {
-                        CsmEnumerator elem = (CsmEnumerator) enmtrIter.next();
+                    for (Iterator<CsmEnumerator> enmtrIter = elemEnum.getEnumerators().iterator(); enmtrIter.hasNext();) {
+                        CsmEnumerator elem = enmtrIter.next();
                         if (matchName(elem.getName(), strPrefix, match)) {
                             res.add(elem);
                         }
@@ -493,6 +494,7 @@ public final class CsmProjectContentResolver {
             kinds = new CsmDeclaration.Kind[]{
                         CsmDeclaration.Kind.FUNCTION,
                         CsmDeclaration.Kind.FUNCTION_DEFINITION,
+                        CsmDeclaration.Kind.FUNCTION_LAMBDA,
                         CsmDeclaration.Kind.FUNCTION_FRIEND,
                         CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION,
                         CsmDeclaration.Kind.NAMESPACE_DEFINITION};
@@ -500,6 +502,7 @@ public final class CsmProjectContentResolver {
             kinds = new CsmDeclaration.Kind[]{
                         CsmDeclaration.Kind.FUNCTION,
                         CsmDeclaration.Kind.FUNCTION_DEFINITION,
+                        CsmDeclaration.Kind.FUNCTION_LAMBDA,
                         CsmDeclaration.Kind.FUNCTION_FRIEND,
                         CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION};
         }
@@ -532,6 +535,7 @@ public final class CsmProjectContentResolver {
             kinds = new CsmDeclaration.Kind[]{
                         CsmDeclaration.Kind.FUNCTION,
                         CsmDeclaration.Kind.FUNCTION_DEFINITION,
+                        CsmDeclaration.Kind.FUNCTION_LAMBDA,
                         CsmDeclaration.Kind.FUNCTION_FRIEND,
                         CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION,
 
@@ -540,6 +544,7 @@ public final class CsmProjectContentResolver {
             kinds = new CsmDeclaration.Kind[]{
                         CsmDeclaration.Kind.FUNCTION,
                         CsmDeclaration.Kind.FUNCTION_DEFINITION,
+                        CsmDeclaration.Kind.FUNCTION_LAMBDA,
                         CsmDeclaration.Kind.FUNCTION_FRIEND,
                         CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION};
         }
@@ -722,6 +727,7 @@ public final class CsmProjectContentResolver {
         CsmDeclaration.Kind kinds[] = {
             CsmDeclaration.Kind.FUNCTION,
             CsmDeclaration.Kind.FUNCTION_DEFINITION,
+            CsmDeclaration.Kind.FUNCTION_LAMBDA,
             CsmDeclaration.Kind.FUNCTION_FRIEND,
             CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION
         };
@@ -848,6 +854,7 @@ public final class CsmProjectContentResolver {
         CsmDeclaration.Kind memberKinds[] = {
             CsmDeclaration.Kind.FUNCTION,
             CsmDeclaration.Kind.FUNCTION_DEFINITION,
+            CsmDeclaration.Kind.FUNCTION_LAMBDA,
             CsmDeclaration.Kind.FUNCTION_FRIEND,
             CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION
         };
@@ -971,6 +978,7 @@ public final class CsmProjectContentResolver {
         CsmDeclaration.Kind memberKinds[] = {
             CsmDeclaration.Kind.FUNCTION,
             CsmDeclaration.Kind.FUNCTION_DEFINITION,
+            CsmDeclaration.Kind.FUNCTION_LAMBDA,
             CsmDeclaration.Kind.FUNCTION_FRIEND,
             CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION
         };
@@ -992,7 +1000,7 @@ public final class CsmProjectContentResolver {
             minVisibility = CsmInheritanceUtilities.getContextVisibility(clazz, contextDeclaration, CsmVisibility.PUBLIC, true);
         }
 
-        Map<CharSequence, CsmClass> set = getBaseClasses(clazz, contextDeclaration, strPrefix, match, new AntiLoop(), minVisibility, INIT_INHERITANCE_LEVEL, MAX_INHERITANCE_DEPTH);
+        Map<CharSequence, CsmClass> set = getBaseClasses(clazz, contextDeclaration, strPrefix, match, new AntiLoop(), minVisibility, INIT_INHERITANCE_LEVEL);
         List<CsmClass> res;
         if (set != null && set.size() > 0) {
             res = new ArrayList<CsmClass>(set.values());
@@ -1037,6 +1045,7 @@ public final class CsmProjectContentResolver {
             CsmDeclaration.Kind.VARIABLE,
             CsmDeclaration.Kind.FUNCTION,
             CsmDeclaration.Kind.FUNCTION_DEFINITION,
+            CsmDeclaration.Kind.FUNCTION_LAMBDA,
             CsmDeclaration.Kind.FUNCTION_FRIEND,
             CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION
         };
@@ -1259,12 +1268,13 @@ public final class CsmProjectContentResolver {
 
     @SuppressWarnings("unchecked")
     private Map<CharSequence, CsmClass> getBaseClasses(CsmClass csmClass, CsmOffsetableDeclaration contextDeclaration, String strPrefix, boolean match,
-            AntiLoop handledClasses, CsmVisibility minVisibility, int inheritanceLevel, int level) {
+            AntiLoop handledClasses, CsmVisibility minVisibility, int inheritanceLevel) {
         assert (csmClass != null);
 
         if (handledClasses.contains(csmClass)) {
             return new HashMap<CharSequence, CsmClass>();
         }
+        handledClasses.add(csmClass);
 
         if (minVisibility == CsmVisibility.NONE) {
             return new HashMap<CharSequence, CsmClass>();
@@ -1280,14 +1290,14 @@ public final class CsmProjectContentResolver {
         for (Iterator<CsmInheritance> it2 = csmClass.getBaseClasses().iterator(); it2.hasNext();) {
             CsmInheritance inherit = it2.next();
             CsmClass baseClass = CsmInheritanceUtilities.getCsmClass(inherit);
-            if (baseClass != null) {
-                if (!baseClass.equals(csmClass) && (level != 0)) {
+            if (baseClass != null) {                
+                if (!baseClass.equals(csmClass)) {
                     VisibilityInfo nextInfo = getNextInheritanceInfo(minVisibility, inherit, inheritanceLevel, friend);
                     CsmVisibility nextMinVisibility = nextInfo.visibility;
                     int nextInheritanceLevel = nextInfo.inheritanceLevel;
                     if (nextMinVisibility != CsmVisibility.NONE) {
                         Map<CharSequence, CsmClass> baseRes = getBaseClasses(baseClass, contextDeclaration, strPrefix, match,
-                                handledClasses, nextMinVisibility, nextInheritanceLevel, level - 1);
+                                handledClasses, nextMinVisibility, nextInheritanceLevel);
                         if (matchName(baseClass.getName(), strPrefix, match)) {
                             baseRes.put(baseClass.getQualifiedName(), baseClass);
                         }

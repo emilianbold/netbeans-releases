@@ -45,7 +45,11 @@ package org.netbeans.modules.subversion;
 import java.awt.EventQueue;
 import java.io.File;
 import java.util.HashSet;
+import java.util.concurrent.ExecutionException;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.ui.wcadmin.UpgradeAction;
+import org.openide.util.actions.SystemAction;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 
 /**
@@ -60,6 +64,7 @@ public final class WorkingCopyAttributesCache {
     private final HashSet<String> unsupportedWorkingCopies;
     private final HashSet<String> tooOldClientForWorkingCopies;
     private final HashSet<String> tooOldWorkingCopies;
+    private final HashSet<String> askedToUpgradeWorkingCopies;
 
     /**
      * Returns (and creates if needed) an instance.
@@ -77,6 +82,7 @@ public final class WorkingCopyAttributesCache {
         unsupportedWorkingCopies = new HashSet<String>(5);
         tooOldClientForWorkingCopies = new HashSet<String>(5);
         tooOldWorkingCopies = new HashSet<String>(5);
+        askedToUpgradeWorkingCopies = new HashSet<String>(5);
     }
 
     private void init () {
@@ -149,18 +155,53 @@ public final class WorkingCopyAttributesCache {
     private void logWC (final SVNClientException ex, File file, HashSet<String> loggedWCs) throws SVNClientException {
         String fileName = file.getAbsolutePath();
         if (!isLogged(fileName, loggedWCs)) {
-            File topManaged = Subversion.getInstance().getTopmostManagedAncestor(file);
+            final File topManaged = Subversion.getInstance().getTopmostManagedAncestor(file);
             synchronized (loggedWCs) {
                 loggedWCs.add(topManaged.getAbsolutePath());
             }
-            EventQueue.invokeLater(new Runnable() {
+            Subversion.getInstance().getParallelRequestProcessor().post(new Runnable() {
                 @Override
                 public void run() {
-                    SvnClientExceptionHandler.notifyException(ex, true, true);
+                    try {
+                        // this exception may be handled really early after the IDE starts, wait till the projects open at least
+                        OpenProjects.getDefault().openProjects().get();
+                    } catch (InterruptedException ex) {
+                        //
+                    } catch (ExecutionException ex) {
+                        //
                     }
-                });
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            String msg = ex.getMessage();
+                            if (SvnClientExceptionHandler.isTooOldWorkingCopy(msg) 
+                                    && (msg.toLowerCase().contains("svn upgrade") //NOI18N
+                                    || msg.toLowerCase().contains("needs to be upgraded"))) { //NOI18N
+                                SvnClientExceptionHandler.notifyException(ex, false, false);
+                                SystemAction.get(UpgradeAction.class).upgrade(topManaged);
+                            } else {
+                                SvnClientExceptionHandler.notifyException(ex, true, true);
+                            }
+                        }
+                    });
+                }
+            });
         }
         throw ex;
     }
 
+    /**
+     * Returns true if the topmost root for the given file is logged just right now and has not been already logged before, false if has been already logged.
+     */
+    public boolean logAskedToUpgrade (File file) {
+        if (!isLogged(file.getAbsolutePath(), askedToUpgradeWorkingCopies)) {
+            final File topManaged = Subversion.getInstance().getTopmostManagedAncestor(file);
+            synchronized (askedToUpgradeWorkingCopies) {
+                askedToUpgradeWorkingCopies.add(topManaged.getAbsolutePath());
+            }
+            return true;
+        } else {
+            return false;
+        }
+    }
 }

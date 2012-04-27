@@ -101,6 +101,11 @@ final class GitClassFactoryImpl extends GitClassFactory {
     }
 
     @Override
+    public GitPushResult createPushResult (Map<String, GitTransportUpdate> remoteRepositoryUpdates, Map<String, GitTransportUpdate> localRepositoryUpdates) {
+        return new GitPushResult(remoteRepositoryUpdates, localRepositoryUpdates);
+    }
+
+    @Override
     public GitRemoteConfig createRemoteConfig (RemoteConfig remoteConfig) {
         return GitRemoteConfig.fromRemoteConfig(remoteConfig);
     }
@@ -160,6 +165,11 @@ final class GitClassFactoryImpl extends GitClassFactory {
             personIdent = new PersonIdent("", ""); //NOI18N
         }
         return new GitUser(personIdent.getName(), personIdent.getEmailAddress());
+    }
+    
+    @Override
+    public void setBranchTracking (GitBranch branch, GitBranch trackedBranch) {
+        branch.setTrackedBranch(trackedBranch);
     }
 
 }

@@ -56,6 +56,7 @@ import org.openide.util.Exceptions;
 public class ModalMessageDlgTestCase {
 
     private Runnable runner = new Runnable() {
+        @Override
         public void run() {
             int cycle = 0;
             while (true) {
@@ -85,6 +86,7 @@ public class ModalMessageDlgTestCase {
         Dialog parent = null;
         Runnable postEDTTask = null;
         Cancellable canceller = new Cancellable() {
+            @Override
             public boolean cancel() {
                 System.err.printf("CANCELLER\n");
                 return true;

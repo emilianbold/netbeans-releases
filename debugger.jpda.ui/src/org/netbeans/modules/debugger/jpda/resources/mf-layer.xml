@@ -87,6 +87,30 @@ made subject to such option by the copyright holder.
                     </file>
                     </folder>
             </folder>
+            <folder name="x-java-nbdebug-class">
+                <file name="EditorKit.instance">
+                    <attr name="instanceClass" 
+                          stringvalue="org.netbeans.modules.debugger.jpda.ui.completion.JavaClassNbDebugEditorKit"/>
+                </file>
+            </folder>
+            <folder name="x-java-nbdebug-class-exception">
+                <file name="EditorKit.instance">
+                    <attr name="instanceClass" 
+                          stringvalue="org.netbeans.modules.debugger.jpda.ui.completion.ExceptionClassNbDebugEditorKit"/>
+                </file>
+            </folder>
+            <folder name="x-java-nbdebug-class-field">
+                <file name="EditorKit.instance">
+                    <attr name="instanceClass" 
+                          stringvalue="org.netbeans.modules.debugger.jpda.ui.completion.JavaFieldNbDebugEditorKit"/>
+                </file>
+            </folder>
+            <folder name="x-java-nbdebug-class-method">
+                <file name="EditorKit.instance">
+                    <attr name="instanceClass" 
+                          stringvalue="org.netbeans.modules.debugger.jpda.ui.completion.JavaMethodNbDebugEditorKit"/>
+                </file>
+            </folder>
         </folder>
         <folder name="AnnotationTypes">  <!-- Editor gutter popup menu -->
             <file name="DisabledFieldBreakpoint.xml" url="DisabledFieldBreakpoint.xml"/>

@@ -41,17 +41,19 @@
  */
 
 package org.netbeans.modules.maven.nodes;
-import org.netbeans.modules.maven.spi.nodes.AbstractMavenNodeList;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import org.netbeans.modules.maven.classpath.MavenSourcesImpl;
-import org.netbeans.modules.maven.NbMavenProjectImpl;
-import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.maven.NbMavenProjectImpl;
+import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.classpath.MavenSourcesImpl;
+import org.netbeans.modules.maven.spi.nodes.AbstractMavenNodeList;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
@@ -68,6 +70,7 @@ public class GenSourcesNodeFactory implements NodeFactory {
     public GenSourcesNodeFactory() {
     }
     
+    @Override
     public NodeList createNodes(Project project) {
         NbMavenProjectImpl prj = project.getLookup().lookup(NbMavenProjectImpl.class);
         return  new NList(prj);
@@ -79,23 +82,21 @@ public class GenSourcesNodeFactory implements NodeFactory {
             project = prj;
         }
         
+        @Override
         public List<SourceGroup> keys() {
             List<SourceGroup> list = new ArrayList<SourceGroup>();
-            Sources srcs = project.getLookup().lookup(Sources.class);
-            if (srcs == null) {
-                throw new IllegalStateException("need Sources instance in lookup"); //NOI18N
-            }
+            Sources srcs = ProjectUtils.getSources(project);
             SourceGroup[] gengroup = srcs.getSourceGroups(MavenSourcesImpl.TYPE_GEN_SOURCES);
-            for (int i = 0; i < gengroup.length; i++) {
-                list.add(gengroup[i]);
-            }
+            list.addAll(Arrays.asList(gengroup));
             return list;
         }
         
+        @Override
         public Node node(SourceGroup group) {
             return PackageView.createPackageView(group);
         }
         
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (NbMavenProjectImpl.PROP_PROJECT.equals(evt.getPropertyName())) {
                 fireChange();

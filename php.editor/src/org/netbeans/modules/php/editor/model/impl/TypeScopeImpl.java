@@ -186,6 +186,7 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
         return new ArrayList<InterfaceScope>(retval);
     }
 
+    @Override
     public Collection<? extends MethodScope> getDeclaredMethods() {
         if (ModelUtils.getFileScope(this) == null) {
             IndexScope indexScopeImpl = ModelUtils.getIndexScope(this);
@@ -193,6 +194,7 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
         }
         return filter(getElements(), new ElementFilter() {
 
+            @Override
             public boolean isAccepted(ModelElement element) {
                 return element.getPhpElementKind().equals(PhpElementKind.METHOD);
             }
@@ -210,6 +212,7 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
 
         return filter(getElements(), new ElementFilter() {
 
+            @Override
             public boolean isAccepted(ModelElement element) {
                 return element.getPhpElementKind().equals(PhpElementKind.METHOD) &&
                         ModelElementImpl.nameKindMatch(element.getName(), QuerySupport.Kind.EXACT, queryName) &&
@@ -220,6 +223,7 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
     }
 
 
+    @Override
     public final Collection<? extends ClassConstantElement> getDeclaredConstants() {
         if (ModelUtils.getFileScope(this) == null) {
             IndexScopeImpl indexScopeImpl = (IndexScopeImpl) ModelUtils.getIndexScope(this);
@@ -227,6 +231,7 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
         }
         return filter(getElements(), new ElementFilter() {
 
+            @Override
             public boolean isAccepted(ModelElement element) {
                 return element.getPhpElementKind().equals(PhpElementKind.TYPE_CONSTANT);
             }

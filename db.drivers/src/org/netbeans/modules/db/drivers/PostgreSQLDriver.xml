@@ -6,7 +6,7 @@
     <localizing-bundle>org.netbeans.modules.db.drivers.Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst://org.netbeans.modules.db.drivers/modules/ext/postgresql-8.3-603.jdbc3.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.db.drivers/modules/ext/postgresql-9.1-901.jdbc4.jar!/</resource>
     </volume>
     <volume>
         <type>src</type>
@@ -20,7 +20,7 @@
     <volume>
         <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
         <type>maven-pom</type>
-        <resource>http://repo1.maven.org/maven2/postgresql/postgresql/8.3-603.jdbc3/postgresql-8.3-603.jdbc3.pom</resource>
+        <resource>http://repo1.maven.org/maven2/postgresql/postgresql/9.1-901.jdbc4/postgresql-9.1-901.jdbc4.pom</resource>
     </volume>
 
 </library>

@@ -306,7 +306,10 @@ public final class HudsonJobCreator extends JPanel implements ProjectHudsonJobCr
         return allTargets;
     }
 
-    @NbBundle.Messages("HudsonJobCreator.checkbox.a11y=Run Ant target: {0}")
+    @NbBundle.Messages({
+        "# {0} - Ant target name",
+        "HudsonJobCreator.checkbox.a11y=Run Ant target: {0}"
+    })
     private void initTargetComponent(final int row, final Target target) {
         // checkbox
         JCheckBox checkBox = new JCheckBox();

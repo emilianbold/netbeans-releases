@@ -45,6 +45,7 @@ package org.netbeans.modules.maven.spi.nodes;
 import java.awt.Image;
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.maven.model.DependencyManagement;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -78,7 +79,7 @@ public final class MavenNodeFactory {
 
         /** Creates a new instance of VersionNode */
         public VersionNode(NBVersionInfo versionInfo, boolean fromDepMng) {
-            super(Children.LEAF, Lookups.fixed(versionInfo));
+            super(Children.LEAF, fromDepMng ? Lookups.fixed(versionInfo, new DependencyManagement()) : Lookups.fixed(versionInfo));
 
             this.nbvi = versionInfo;
             this.fromDepMng = fromDepMng;

@@ -59,6 +59,7 @@ import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementati
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem.AtomicAction;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.text.PositionBounds;
@@ -123,6 +124,13 @@ public class PackageRename implements RefactoringPluginFactory{
             if ((fo = projectClassPath.findResource(newName.replace('.','/')))!=null) {
                 FileObject ownerRoot = projectClassPath.findOwnerRoot(folder);
                 if(ownerRoot != null && ownerRoot.equals(projectClassPath.findOwnerRoot(fo))) {
+                    if (fo.isFolder() && fo.getChildren().length == 1) {
+                        FileObject parent = fo.getChildren()[0];
+                        String relativePath = FileUtil.getRelativePath(parent, refactoring.getRefactoringSource().lookup(NonRecursiveFolder.class).getFolder());
+                        if (relativePath != null) {
+                            return null;
+                        }
+                    }
                     String msg = new MessageFormat(NbBundle.getMessage(RenameRefactoringPlugin.class,"ERR_PackageExists")).format(
                             new Object[] {newName}
                     );
@@ -245,7 +253,11 @@ public class PackageRename implements RefactoringPluginFactory{
                         }
                         destination = tmp;
                     }
+                    if (!this.folder.isValid()) {
+                        this.folder = FileUtil.toFileObject(new java.io.File(this.folder.getPath()));
+                    }
                     FileObject folder = this.folder;
+                    FileUtil.toFileObject(new java.io.File(this.folder.getPath()));
                     DataFolder sourceFolder = DataFolder.findFolder(folder);
                     DataFolder destinationFolder = DataFolder.findFolder(destination);
                     DataObject[] children = sourceFolder.getChildren();
@@ -276,8 +288,9 @@ public class PackageRename implements RefactoringPluginFactory{
                     return folder.getChildren().length==0;
                 }
                 for (FileObject child:folder.getChildren()) {
-                    if (VisibilityQuery.getDefault().isVisible(child))
+                    if (VisibilityQuery.getDefault().isVisible(child)) {
                         return false;
+                    }
                 }
                 return true;
             }

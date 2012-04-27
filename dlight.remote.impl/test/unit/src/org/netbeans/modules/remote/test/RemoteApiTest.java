@@ -45,25 +45,7 @@ package org.netbeans.modules.remote.test;
 import junit.framework.Test;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
-import org.netbeans.modules.remote.impl.fs.CanonicalTestCase;
-import org.netbeans.modules.remote.impl.fs.CaseSensivityTestCase;
-import org.netbeans.modules.remote.impl.fs.CreateDataAndFolderTestCase;
-import org.netbeans.modules.remote.impl.fs.DirectoryReaderTestCase;
-import org.netbeans.modules.remote.impl.fs.DirectoryStorageSftpTestCase;
-import org.netbeans.modules.remote.impl.fs.EscapeWindowsNameTestCase;
-import org.netbeans.modules.remote.impl.fs.ListenersParityTestCase;
-import org.netbeans.modules.remote.impl.fs.ListenersTestCase;
-import org.netbeans.modules.remote.impl.fs.NormalizationTestCase;
-import org.netbeans.modules.remote.impl.fs.ReadOnlyDirTestCase;
-import org.netbeans.modules.remote.impl.fs.RefreshTestCase;
-import org.netbeans.modules.remote.impl.fs.RemoteFileSystemOffilneTestCase;
-import org.netbeans.modules.remote.impl.fs.RemoteFileSystemTestCase;
-import org.netbeans.modules.remote.impl.fs.RemoteLinksTestCase;
-import org.netbeans.modules.remote.impl.fs.RemotePathTestCase;
-import org.netbeans.modules.remote.impl.fs.RemoteURLTestCase;
-import org.netbeans.modules.remote.impl.fs.RenameTestCase;
-import org.netbeans.modules.remote.impl.fs.ScheduleRefreshParityTestCase;
-import org.netbeans.modules.remote.impl.fs.WritingQueueTestCase;
+import org.netbeans.modules.remote.impl.fs.*;
 
 /**
  *
@@ -76,10 +58,14 @@ public class RemoteApiTest extends NativeExecutionBaseTestSuite {
         this("Remote API", getTestClasses());
     }
 
+    @SuppressWarnings("unchecked")
     /*package*/ static Class<? extends NativeExecutionBaseTestCase>[] getTestClasses() {
         return new Class[] {
+           AdeMockupTestCase.class,
            RemoteFileSystemTestCase.class,
            RemoteLinksTestCase.class,
+           RemoteLinksChangeLinkTestCase.class,
+           RemoteLinksChangeLinkTestCase2.class,
            RemotePathTestCase.class,
            RemoteURLTestCase.class,
            RenameTestCase.class,
@@ -88,6 +74,9 @@ public class RemoteApiTest extends NativeExecutionBaseTestSuite {
            DirectoryStorageSftpTestCase.class,
            DirectoryReaderTestCase.class,
            RefreshTestCase.class,
+           RefreshTestCase_IZ_210125.class,
+           RefreshNonInstantiatedTestCase.class,
+           RefreshDirSyncCountTestCase.class,
            CanonicalTestCase.class,
            CreateDataAndFolderTestCase.class,
            ListenersTestCase.class,
@@ -96,7 +85,7 @@ public class RemoteApiTest extends NativeExecutionBaseTestSuite {
            ReadOnlyDirTestCase.class,
            ScheduleRefreshParityTestCase.class,
            WritingQueueTestCase.class,
-           RemoteFileSystemOffilneTestCase.class
+           RemoteFileSystemOffilneTestCase.class,
         };
     }
     
@@ -105,6 +94,7 @@ public class RemoteApiTest extends NativeExecutionBaseTestSuite {
         return new RemoteApiTest(testClass.getName(), testClass);
     }
 
+    @SuppressWarnings("unchecked")
     public static RemoteApiTest createSuite(Class<? extends NativeExecutionBaseTestCase> testClass, int timesToRepeat) {
         Class[] classes = new Class[timesToRepeat];
         for (int i = 0; i < classes.length; i++) {

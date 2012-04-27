@@ -75,19 +75,25 @@ import org.netbeans.lib.editor.util.ListenerList;
 
 public abstract class EditorViewFactory {
 
-    private static List<Factory> viewFactoryFactories = new ArrayList<Factory>(3);
+    /**
+     * Copy-on-write & unmodifiable collection, the instance can be returned to the clients.
+     */
+    private static volatile List<Factory> viewFactoryFactories = Collections.emptyList();
 
-    public static void registerFactory(Factory factory) {
-        viewFactoryFactories.add(factory);
-        Collections.sort(viewFactoryFactories, new Comparator<Factory>() {
+    public static synchronized void registerFactory(Factory factory) {
+        List<Factory> copy = new ArrayList<Factory>(viewFactoryFactories);
+        
+        copy.add(factory);
+        Collections.sort(copy, new Comparator<Factory>() {
             public int compare(Factory f0, Factory f1) {
                 return f0.weight() - f1.weight();
             }
         });
+        viewFactoryFactories = Collections.unmodifiableList(copy);
     }
 
     public static List<Factory> factories() {
-        return Collections.unmodifiableList(viewFactoryFactories);
+        return viewFactoryFactories;
     }
     
     private final DocumentView docView;

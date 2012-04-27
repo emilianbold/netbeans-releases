@@ -71,7 +71,12 @@ public final class DummyParameterImpl extends VariableImpl<CsmParameter> impleme
     protected boolean registerInProject() {
         return false;
     }
-    
+
+    @Override
+    protected boolean unregisterInProject() {
+        return false;
+    }
+
     @Override
     public boolean isVarArgs() {
         return false;
@@ -87,18 +92,10 @@ public final class DummyParameterImpl extends VariableImpl<CsmParameter> impleme
     
     @Override
     public void write(RepositoryDataOutput output) throws IOException {
-        super.write(output);      
-        // write UID for unnamed parameter
-        if (getName().length() == 0) {
-            super.writeUID(output);
-        }
+        super.write(output);
     }  
     
     public DummyParameterImpl(RepositoryDataInput input) throws IOException {
-        super(input);
-        // restore UID for unnamed parameter
-        if (getName().length() == 0) {
-            super.readUID(input);
-        }        
+        super(input);    
     } 
 }

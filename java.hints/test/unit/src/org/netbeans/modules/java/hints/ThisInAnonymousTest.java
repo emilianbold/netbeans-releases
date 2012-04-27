@@ -39,74 +39,75 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.java.hints;
 
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
-import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.hints.test.api.HintTest;
 
 /**
  *
  * @author lahvac
  */
-public class ThisInAnonymousTest extends TestBase {
+public class ThisInAnonymousTest extends NbTestCase {
 
     public ThisInAnonymousTest(String name) {
-        super(name, ThisInAnonymous.class);
+        super(name);
     }
 
     public void testSynchronized() throws Exception {
-        performFixTest("test/Test.java",
-                       "package test;\n" +
+        HintTest
+                .create()
+                .input("package test;\n" +
                        "public class Test {\n" +
                        "     private void m() {\n" +
                        "         new Runnable() {\n" +
                        "             public void run() {\n" +
                        "                 synchronized(this) {}\n" +
                        "             }\n" +
-                       "         }\n" +
+                       "         };\n" +
                        "     }\n" +
-                       "}\n",
-                       "5:30-5:34:verifier:ERR_ThisInAnonymous",
-                       "FIX_ThisInAnonymous",
-                       "package test; public class Test { private void m() { new Runnable() { public void run() { synchronized(Test.this) {} } } } } ");
+                       "}\n")
+                .run(ThisInAnonymous.class)
+                .findWarning("5:30-5:34:verifier:ERR_ThisInAnonymous")
+                .applyFix("FIX_ThisInAnonymous")
+                .assertCompilable()
+                .assertOutput("package test; public class Test { private void m() { new Runnable() { public void run() { synchronized(Test.this) {} } }; } } ");
     }
 
     public void testSynchronized184382() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "     private void m() {\n" +
-                            "         new Runnable() {\n" +
-                            "             public void run() {\n" +
-                            "                 javax.swing.SwingUtilities.invokeLater(this);\n" +
-                            "             }\n" +
-                            "         }\n" +
-                            "     }\n" +
-                            "}\n");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "     private void m() {\n" +
+                       "         new Runnable() {\n" +
+                       "             public void run() {\n" +
+                       "                 javax.swing.SwingUtilities.invokeLater(this);\n" +
+                       "             }\n" +
+                       "         };\n" +
+                       "     }\n" +
+                       "}\n")
+                .run(ThisInAnonymous.class)
+                .assertWarnings();
     }
 
     public void testLocalClass() throws Exception {
-        performFixTest("test/Test.java",
-                       "package test;\n" +
+        HintTest
+                .create()
+                .input("package test;\n" +
                        "public class Test {\n" +
                        "     private void m() {\n" +
-                       "         class L extends Runnable {\n" +
+                       "         class L implements Runnable {\n" +
                        "             public void run() {\n" +
                        "                 synchronized(this) {}\n" +
                        "             }\n" +
                        "         }\n" +
                        "     }\n" +
-                       "}\n",
-                       "5:30-5:34:verifier:ERR_ThisInAnonymousLocal",
-                       "FIX_ThisInAnonymous",
-                       "package test; public class Test { private void m() { class L extends Runnable { public void run() { synchronized(Test.this) {} } } } } ");
+                       "}\n")
+                .run(ThisInAnonymous.class)
+                .findWarning("5:30-5:34:verifier:ERR_ThisInAnonymousLocal")
+                .applyFix("FIX_ThisInAnonymous")
+                .assertCompilable()
+                .assertOutput("package test; public class Test { private void m() { class L implements Runnable { public void run() { synchronized(Test.this) {} } } } } ");
     }
-
-    @Override
-    protected String toDebugString(CompilationInfo info, Fix f) {
-        return f.getText();
-    }
-
 }

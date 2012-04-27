@@ -41,8 +41,10 @@ package org.netbeans.installer.utils.progress;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
+import org.netbeans.installer.utils.helper.ErrorLevel;
 
 /**
  * This class encapsulates data that describes the course of an operation, such as
@@ -226,21 +228,18 @@ public class Progress {
      * progress listeners are notified only if the update actually took place.
      *
      * @param percentage The new value for the <code>percentage</code> property.
-     * 
-     * @throws IllegalArgumentException if the supplied percentage cannot be 
-     *      set.
      */
     public void setPercentage(final int percentage) {
         if (this.percentage != percentage) {
             if ((percentage < START) || (percentage > COMPLETE)) {
-                throw new IllegalArgumentException(StringUtils.format(
+                LogManager.log(StringUtils.format(
                         ERROR_WRONG_PERCENTAGE,
                         percentage,
                         START,
                         COMPLETE));
+            } else {
+               this.percentage = percentage; 
             }
-            
-            this.percentage = percentage;
             
             notifyListeners();
         }
@@ -269,23 +268,20 @@ public class Progress {
      * place.
      *
      * @param addition The amount to add to the <code>percentage</code> property.
-     * 
-     * @throws IllegalArgumentException if the supplied percentage cannot be 
-     *      added.
      */
     public void addPercentage(final int addition) {
         final int result = percentage + addition;
         
         if (this.percentage != result) {
             if ((result < START) || (result > COMPLETE)) {
-                throw new IllegalArgumentException(StringUtils.format(
+                LogManager.log(StringUtils.format(
                         ERROR_WRONG_PERCENTAGE,
                         result,
                         START,
                         COMPLETE));
+            } else {
+               this.percentage = result;
             }
-            
-            this.percentage = result;
             
             notifyListeners();
         }

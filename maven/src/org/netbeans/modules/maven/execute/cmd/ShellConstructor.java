@@ -58,6 +58,7 @@ public class ShellConstructor implements Constructor {
         this.mavenHome = mavenHome;
     }
 
+    @Override
     public List<String> construct() {
         //#164234
         //if maven.bat file is in space containing path, we need to quote with simple quotes.
@@ -89,9 +90,9 @@ public class ShellConstructor implements Constructor {
     //once/if we get rid of shell/bat execution, we might need to remove this
     //#164234
     private static String quoteSpaces(String val, String quote) {
-        if (val.indexOf(' ') != -1) { //NOI18N
-            if (Utilities.isWindows()) {
-                return quote + val + quote; //NOI18N
+        if (Utilities.isWindows()) {
+            if (val.indexOf(' ') != -1 || val.indexOf('=') != -1) { //NOI18N
+                return quote + val + quote;
             }
         }
         return val;

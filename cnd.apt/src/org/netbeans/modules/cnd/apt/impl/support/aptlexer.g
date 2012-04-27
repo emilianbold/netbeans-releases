@@ -133,6 +133,8 @@ tokens {
         FUN_LIKE_MACRO_LPAREN;
         GRAVE_ACCENT;
 
+        END_PREPROC_DIRECTIVE;
+
         // marker for last const text token
         LAST_CONST_TEXT_TOKEN;
 
@@ -166,13 +168,13 @@ tokens {
 	Exponent;
 	Vocabulary;
 	NUMBER;
-	ID;
+	IDENT;
         BINARYINT;
 
     // preprocessor specific tokens
     INCLUDE_STRING;
     SYS_INCLUDE_STRING;
-    END_PREPROC_DIRECTIVE;
+//    END_PREPROC_DIRECTIVE; // was moved into const tokens part
 
     // preprocessor directives
     INCLUDE;
@@ -190,6 +192,7 @@ tokens {
     ERROR;
     PREPROC_DIRECTIVE; // unrecongnized #-directive
 
+    FIRST_LITERAL_TOKEN;
     LITERAL_OPERATOR = "operator"; // NOI18N
     LITERAL_alignof="alignof"; // NOI18N
     LITERAL___alignof__="__alignof__"; // NOI18N
@@ -314,6 +317,20 @@ tokens {
     LITERAL_char16_t="char16_t"; // NOI18N
     LITERAL_char32_t="char32_t"; // NOI18N
     LITERAL_noexcept="noexcept"; // NOI18N
+    LITERAL___decltype="__decltype"; // NOI18N
+    LITERAL___complex="__complex"; // NOI18N
+    LITERAL___forceinline="__forceinline"; // NOI18N
+    LITERAL___clrcall="__clrcall"; // NOI18N
+    LITERAL___try="__try"; // NOI18N
+    LITERAL___finally="__finally"; // NOI18N
+    LITERAL___null="__null"; // NOI18N
+    LITERAL___alignof="__alignof"; // NOI18N
+    LITERAL___is_class="__is_class"; // NOI18N
+    LITERAL___is_pod="__is_pod"; // NOI18N
+    LITERAL___is_base_of="__is_base_of"; // NOI18N
+    LITERAL___has_trivial_constructor="__has_trivial_constructor"; // NOI18N
+
+    LAST_LITERAL_TOKEN;
 
     // Extension points
     LITERAL__BUILT_IN_TYPE__; // extra built-in type name
@@ -535,13 +552,20 @@ tokens {
 {
     private boolean reportErrors;
     private Language lang;
-
+    private APTLexerCallback callback;
     public static enum Language {
         C,
         CPP,
         FORTRAN
     };
 
+    public interface APTLexerCallback {
+        void onMakeToken(int tokType, int startColumn, int startLine);
+    }
+
+    public void setCallback(APTLexerCallback callback) {
+        this.callback = callback;
+    }
 
     public void init(String filename, int flags, String language) {
         preprocPossible = true;
@@ -741,6 +765,10 @@ tokens {
 
     @Override
     protected APTToken makeToken(int t) {
+        if (callback != null) {
+            callback.onMakeToken(t, getTokenStartColumn(), getTokenStartLine());
+        }
+
         if (isOnlyPreproc() && isPreprocPossible()) {
            // do not create token if lexer builds light stream
             if (!(t==Token.EOF_TYPE || t==END_PREPROC_DIRECTIVE)){
@@ -956,7 +984,9 @@ FIRST_LESS :
                | '=' {$setType(SHIFTLEFTEQUAL);}))      //SHIFTLEFTEQUAL        : "<<=" ;
     );
 
+/*
 DOLLAR options { constText=true; }  :  '$' ;
+*/
 
 AT  options { constText=true; }     :  '@' ;
 
@@ -1124,14 +1154,14 @@ protected CHAR_LITERAL_BODY
 		|	
                          ~('\'' | '\r' | '\n' | '\\')
 		)*
-            ('\'' // correct ending of char literal
+            ('\'' (Suffix)? // correct ending of char literal
                 |  {LA(1)=='\r'||LA(1)=='\n'}? // error char literal doesn't have closing quote
             )
         ;
 
 protected STRING_LITERAL
         :
-            '"' STRING_LITERAL_BODY
+            '"' STRING_LITERAL_BODY            
         ;
 
 
@@ -1151,11 +1181,53 @@ protected STRING_LITERAL_BODY :
 		|	
                          ~('"' | '\r' | '\n' | '\\')
 		)*
-            ('"' // correct ending of string
+            ('"' (Suffix)? // correct ending of string
                 |  {LA(1)=='\r'||LA(1)=='\n'}? // error string doesn't have closing quote
             )
         ;
 
+protected RAW_STRING_LITERAL
+        :
+            '"' RAW_STRING_LITERAL_BODY            
+        ;
+
+protected RAW_STRING_LITERAL_BODY 
+{
+    boolean end = false;
+    StringBuilder s1 = new StringBuilder();
+    StringBuilder s2 = null; 
+}   
+    :
+    ((~('"' | '\r' | '\n' | '\\' | '\t' | '(' | ')') {s1.append(LA(0));} )*)
+    '('
+        (options{greedy=true;}:   
+            (   "\r"
+                    (options{greedy=true;}: "\n" {offset--;} // MS 
+                    |   // MAC
+                    )
+            |   "\n"     // Unix
+            ) {deferredNewline();}
+        |	
+               (')' (~('"' | '\r' | '\n' | '\\' | '\t' | '(' | ')') )* ) =>
+                {s2 = new StringBuilder();}
+                ')' (options{greedy=true;}: ~('"' | '\r' | '\n' | '\\' | '\t' | '(' | ')') {s2.append(LA(0));})*
+
+                ({ LA(1)=='"' && !s1.toString().equals(s2.toString())}? 
+                    '"'
+                |
+                    {end = LA(1)=='"';}
+                )
+                {s2 = null;}
+            | 
+                ~('\r' | '\n' | '"')                         
+            |   
+                { !end }? '"' 
+            
+        )*
+    ('"' (Suffix)? // correct ending of string
+        |  {LA(1)=='\r'||LA(1)=='\n'}? // error string doesn't have closing quote
+    )
+    ;
 
 /*
  * Handle the various escape sequences.
@@ -1192,11 +1264,12 @@ protected Digit:	'0'..'9' ;
 
 //protected Decimal:	('0'..'9')+ ;
 
-protected LongSuffix:	   (options {combineChars=true;} :'l' | 'L') ;
-
-protected UnsignedSuffix:  (options {combineChars=true;} :'u' | 'U') ;
-
-protected FloatSuffix:     (options {combineChars=true;} :'f' | 'F') ;
+protected Suffix:
+    (
+        (options {combineChars=true;} : 'a'..'z'|'A'..'Z'|'_') // '$' added for gcc support
+        (options {combineChars=true;greedy=true;} : 'a'..'z'|'A'..'Z'|'_'|'0'..'9')* // '$' added for gcc support
+    )
+    ;
 
 protected Exponent:	('e' | 'E') ('+' | '-')? (Digit)* ;
 
@@ -1204,44 +1277,36 @@ protected Exponent:	('e' | 'E') ('+' | '-')? (Digit)* ;
 
 NUMBER
         :
+    (options {greedy=true;} :
 		( (Digit)+ ('.' | 'e' | 'E') )=> (Digit)+
-		( '.' (Digit)* (Exponent)? {$setType(FLOATONE);} //Zuo 3/12/01
+		(options {greedy=true;} : '.' (Digit)* (options {greedy=true;} : Exponent)? {$setType(FLOATONE);} //Zuo 3/12/01
 		| Exponent                 {$setType(FLOATTWO);} //Zuo 3/12/01
-		)                          //{type = DoubleDoubleConst;}
-		(FloatSuffix               //{type = FloatDoubleConst;}
-		|LongSuffix                //{type = LongDoubleConst;}
-		)?
-
-	|	'.'  (                     {$setType(DOT);}	//TODO: solve "dot & ellipsis"! 
-		| 	(Digit)+ (Exponent)?   {$setType(FLOATONE);} //Zuo 3/12/01
-                                   //{type = DoubleDoubleConst;}
-			(FloatSuffix           //{type = FloatDoubleConst;}
-			|LongSuffix            //{type = LongDoubleConst;}
-			)?
+		)
+                (Suffix)?
+	|	'.'  (                  {$setType(DOT);}	//TODO: solve "dot & ellipsis"! 
+		| 	(Digit)+ (options {greedy=true;} : Exponent)?   
+                                        {$setType(FLOATONE);} //Zuo 3/12/01
+                        (Suffix)?
 		| '*' {$setType(DOTMBR);}
-                | {(LA(2)=='.')}? ".." {$setType(ELLIPSIS);}
+                | {(LA(2)=='.')}? ".."  {$setType(ELLIPSIS);}
                 )
 
-	|	'0' ('0'..'7')*            //{type = IntOctalConst;}
-		(LongSuffix                //{type = LongOctalConst;}
-		|UnsignedSuffix            //{type = UnsignedOctalConst;}
-		)*                         {$setType(OCTALINT);}
-
-	|	'1'..'9' (Digit)*          //{type = IntIntConst;}
-		(LongSuffix                //{type = LongIntConst;}
-		|UnsignedSuffix            //{type = UnsignedIntConst;}
-		)*                         {$setType(DECIMALINT);}  
-
-	|	'0' ('x' | 'X') ('a'..'f' | 'A'..'F' | Digit)*
-                                   //{type = IntHexConst;}
-		(LongSuffix                //{type = LongHexConst;}
-		|UnsignedSuffix            //{type = UnsignedHexConst;}
-		)*                         {$setType(HEXADECIMALINT);}   
-	|	'0' ('b' | 'B') ('0'|'1')*
-		(LongSuffix
-		|UnsignedSuffix
-		)*                         {$setType(BINARYINT);}
-	;
+	|	'1'..'9' (Digit)*
+                                        {$setType(DECIMALINT);}  
+                (Suffix)?
+        |
+                (       '0'
+                    (   ('x' | 'X') => ('x' | 'X') (options {greedy=true;} : 'a'..'f' | 'A'..'F' | Digit)*
+                                        {$setType(HEXADECIMALINT);}   
+                    |	('b' | 'B') => ('b' | 'B') (options {greedy=true;} : '0'|'1')*
+                                        {$setType(BINARYINT);}
+                    |   ('0'..'7')*            
+                                        {$setType(OCTALINT);}
+                    )
+                )
+                (Suffix)?
+    )    
+    ;
 
 // Everything that can be treated lke ID
 ID_LIKE:
@@ -1255,7 +1320,7 @@ ID_LIKE:
                         setAfterPPDefined(false);
                         $setType(ID_DEFINED);
                     } else {
-                        $setType(ID); 
+                        $setType(IDENT); 
                     }
                 }
            )
@@ -1269,15 +1334,24 @@ ID_LIKE:
                     setFunLikeMacro(true);
                 }
             }
-            $setType(ID);
+            $setType(IDENT);
         }
+     |  ('L' 'R' '"') => 'L' 'R' RAW_STRING_LITERAL {$setType(STRING_LITERAL);}
+     |  ('u' 'R' '"') => 'u' 'R' RAW_STRING_LITERAL {$setType(STRING_LITERAL);}
+     |  ('U' 'R' '"') => 'U' 'R' RAW_STRING_LITERAL {$setType(STRING_LITERAL);}
+     |  ('u' '8' 'R' '"') => 'u' '8' 'R' RAW_STRING_LITERAL {$setType(STRING_LITERAL);}
      |
         // We have checked opposite above
         //{isAfterPPDefined()}? 
         Identifier 
         {setAfterPPDefined(false);$setType(ID_DEFINED);}
-     |  'L' (CHAR_LITERAL {$setType(CHAR_LITERAL);}
-            |STRING_LITERAL {$setType(STRING_LITERAL);})
+     |  'L' ( CHAR_LITERAL {$setType(CHAR_LITERAL);}
+            | STRING_LITERAL {$setType(STRING_LITERAL);})
+     |  'u' ( CHAR_LITERAL {$setType(CHAR_LITERAL);}
+            | STRING_LITERAL {$setType(STRING_LITERAL);})
+     |  'U' ( CHAR_LITERAL {$setType(CHAR_LITERAL);}
+            | STRING_LITERAL {$setType(STRING_LITERAL);})
+     |  'R' RAW_STRING_LITERAL {$setType(STRING_LITERAL);}
 ;
 
 // FAKE , just to get the correct type number for this token
@@ -1289,7 +1363,7 @@ Identifier
             // I think this check should have been done before
             //{ LA(1)!='L' || (LA(2)!='\'' && LA(2) != '\"') }? // L"" and L'' are StringLiterals/CharLiterals, not ID
             (
-                (options {combineChars=true;} : 'a'..'z'|'A'..'Z'|'_') 
+                (options {combineChars=true;} : 'a'..'z'|'A'..'Z'|'_'|'$') // '$' added for gcc support
 		(options {combineChars=true;} : 'a'..'z'|'A'..'Z'|'_'|'0'..'9'|'$')* // '$' added for gcc support
             )
         ;

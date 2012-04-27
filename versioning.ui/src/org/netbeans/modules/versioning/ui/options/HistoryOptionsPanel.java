@@ -74,6 +74,7 @@ public class HistoryOptionsPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(daysLabel2, org.openide.util.NbBundle.getMessage(HistoryOptionsPanel.class, "HistoryOptionsPanel.daysLabel2.text")); // NOI18N
 
         warningLabel.setForeground(java.awt.Color.red);
+        warningLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/ui/resources/icons/error.gif"))); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(warningLabel, org.openide.util.NbBundle.getMessage(HistoryOptionsPanel.class, "HistoryOptionsPanel.warningLabel.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(noLabelCleanupCheckBox, org.openide.util.NbBundle.getMessage(HistoryOptionsPanel.class, "HistoryOptionsPanel.noLabelCleanupCheckBox.text")); // NOI18N
@@ -104,7 +105,6 @@ public class HistoryOptionsPanel extends javax.swing.JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(warningLabel)
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -125,21 +125,20 @@ public class HistoryOptionsPanel extends javax.swing.JPanel {
                         .addComponent(olderThanDaysTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(daysLabel2)))
-                .addGap(0, 124, Short.MAX_VALUE))
+                .addGap(0, 0, Short.MAX_VALUE))
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel2)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jSeparator2, javax.swing.GroupLayout.DEFAULT_SIZE, 344, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jSeparator1))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel2)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jSeparator2))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(keepForeverRadioButton)
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                    .addComponent(keepForeverRadioButton)
+                    .addComponent(warningLabel))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -169,9 +168,9 @@ public class HistoryOptionsPanel extends javax.swing.JPanel {
                     .addComponent(loadIncrementsRadioButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(loadAllRadioButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 71, Short.MAX_VALUE)
+                .addGap(18, 18, 18)
                 .addComponent(warningLabel)
-                .addContainerGap())
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         olderThanDaysTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(HistoryOptionsPanel.class, "ACSN_LocalHistoryOptionsPanel.daysTextField.text")); // NOI18N

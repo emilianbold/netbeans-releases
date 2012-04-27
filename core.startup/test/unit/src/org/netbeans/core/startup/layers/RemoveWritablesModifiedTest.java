@@ -54,6 +54,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import org.netbeans.Module;
+import org.netbeans.ModuleManager;
 import org.netbeans.core.startup.Main;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
@@ -72,6 +73,7 @@ public class RemoveWritablesModifiedTest extends NbTestCase {
                 + "OpenIDE-Module-Specification-Version: 1.0\n"
                 + "OpenIDE-Module-Implementation-Version: today\n"
                 + "OpenIDE-Module-Layer: foo/mf-layer.xml\n";
+    private ModuleManager mgr;
 
     public RemoveWritablesModifiedTest(String testName) {
         super(testName);
@@ -90,8 +92,14 @@ public class RemoveWritablesModifiedTest extends NbTestCase {
         System.setProperty("netbeans.home", h.toString());
 
         File moduleJar = createModuleJar( manifest );
-        myModule = Main.getModuleSystem().getManager().create( moduleJar, null, true, false, false );
-        Main.getModuleSystem().getManager().enable( myModule );
+        mgr = Main.getModuleSystem().getManager();
+        try {
+            mgr.mutexPrivileged().enterWriteAccess();
+            myModule = mgr.create( moduleJar, null, true, false, false );
+            mgr.enable( myModule );
+        } finally {
+            mgr.mutexPrivileged().exitWriteAccess();
+        }
         
         assertNotNull("Module layer is installed", FileUtil.getConfigFile( "foo" ) );
         
@@ -101,8 +109,14 @@ public class RemoveWritablesModifiedTest extends NbTestCase {
 
     protected @Override void tearDown() throws Exception {
         if( null != myModule ) {
-            Main.getModuleSystem().getManager().disable( myModule );
-            Main.getModuleSystem().getManager().delete( myModule );
+            mgr = Main.getModuleSystem().getManager();
+            try {
+                mgr.mutexPrivileged().enterWriteAccess();
+                mgr.disable( myModule );
+                mgr.delete( myModule );
+            } finally {
+                mgr.mutexPrivileged().exitWriteAccess();
+            }
         }
     }
     

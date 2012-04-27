@@ -45,28 +45,28 @@
 package org.netbeans.modules.mercurial.util;
 
 import java.awt.EventQueue;
-import java.net.URISyntaxException;
-import java.util.Collections;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InterruptedIOException;
 import java.io.InputStreamReader;
+import java.io.InterruptedIOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.net.PasswordAuthentication;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -82,28 +82,28 @@ import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.options.OptionsDisplayer;
-import org.netbeans.modules.mercurial.ui.queues.QPatch;
-import org.openide.util.NbBundle;
 import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.FileStatus;
 import org.netbeans.modules.mercurial.HgException;
+import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
-import org.netbeans.modules.mercurial.kenai.HgKenaiAccessor;
-import org.netbeans.modules.mercurial.HgModuleConfig;
+import org.netbeans.modules.mercurial.WorkingCopyInfo;
 import org.netbeans.modules.mercurial.config.HgConfigFiles;
+import org.netbeans.modules.mercurial.kenai.HgKenaiAccessor;
 import org.netbeans.modules.mercurial.ui.branch.HgBranch;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
+import org.netbeans.modules.mercurial.ui.queues.QPatch;
 import org.netbeans.modules.mercurial.ui.repository.HgURL;
 import org.netbeans.modules.mercurial.ui.repository.Repository;
-import org.netbeans.modules.mercurial.WorkingCopyInfo;
 import org.netbeans.modules.mercurial.ui.repository.UserCredentialsSupport;
 import org.netbeans.modules.mercurial.ui.tag.HgTag;
 import org.netbeans.modules.versioning.util.IndexingBridge;
 import org.netbeans.modules.versioning.util.KeyringSupport;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 import org.openide.util.NetworkSettings;
 import org.openide.util.Utilities;
 
@@ -455,6 +455,7 @@ public class HgCommand {
     private static final String HG_FLAG_TOPO = "--topo"; //NOI18N
     
     private static final String CMD_EXE = "cmd.exe"; //NOI18N
+    private static ThreadLocal<Boolean> doNotAddHgPlain = new ThreadLocal<Boolean>();
     
     /**
      * Merge working directory with the head revision
@@ -1008,9 +1009,15 @@ public class HgCommand {
         command.showSaveOption = true;
         command.urlPathProperties = new String[] {HgConfigFiles.HG_DEFAULT_PULL_VALUE, HgConfigFiles.HG_DEFAULT_PULL};
 
-        List<String> retval = command.invoke();
-
-        return retval;
+        try {
+            // remove when rebase is implemented
+            if ("false".equals(System.getProperty("versioning.mercurial.enableFetchExtension"))) { //NOI18N
+                doNotAddHgPlain.set(true);
+            }
+            return command.invoke();
+        } finally {
+            doNotAddHgPlain.remove();
+        }
     }
 
     public static List<HgLogMessage> processLogMessages (File root, List<File> files, List<String> list) {
@@ -1280,6 +1287,25 @@ public class HgCommand {
 
         return messages.toArray(new HgLogMessage[0]);
    }
+    
+    public static HgLogMessage[] getRevisionInfo (File root, List<String> revisions, OutputLogger logger) {
+        List<HgLogMessage> messages = Collections.<HgLogMessage>emptyList();
+
+        try {
+            List<String> list = HgCommand.doLog(root, revisions, -1, logger);
+            messages = processLogMessages(root, null, list, false);
+        } catch (HgException.HgCommandCanceledException ex) {
+            // do not take any action
+        } catch (HgException ex) {
+            HgUtils.notifyException(ex);
+        } finally {
+            if(logger != null) {
+                logger.closeLog();
+            }
+        }
+
+        return messages.toArray(new HgLogMessage[0]);
+    }
 
     /**
      * Determines whether anything has been committed to the repository
@@ -3583,7 +3609,9 @@ public class HgCommand {
     }
 
     private static void setGlobalEnvVariables (Map<String, String> environment) {
-        environment.put(ENV_HGPLAIN, "true"); //NOI18N
+        if (!Boolean.TRUE.equals(doNotAddHgPlain.get())) {
+            environment.put(ENV_HGPLAIN, "true"); //NOI18N
+        }
         if (ENCODING != null) {
             environment.put(ENV_HGENCODING, ENCODING);
         }

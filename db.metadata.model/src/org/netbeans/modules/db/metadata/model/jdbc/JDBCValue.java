@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -42,10 +42,10 @@
 
 package org.netbeans.modules.db.metadata.model.jdbc;
 
-import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.logging.Logger;
+import org.netbeans.modules.db.metadata.model.MetadataUtilities;
 import org.netbeans.modules.db.metadata.model.api.MetadataElement;
 import org.netbeans.modules.db.metadata.model.api.Nullable;
 import org.netbeans.modules.db.metadata.model.api.SQLType;
@@ -76,7 +76,7 @@ public class JDBCValue extends ValueImplementation {
      * @throws java.sql.SQLException
      */
     public static JDBCValue createProcedureValue(ResultSet rs) throws SQLException {
-        String name = rs.getString("COLUMN_NAME");
+        String name = MetadataUtilities.trimmed(rs.getString("COLUMN_NAME"));
         SQLType type = JDBCUtils.getSQLType(rs.getInt("DATA_TYPE"));
         int length = rs.getInt("LENGTH");
         int precision = rs.getInt("PRECISION");
@@ -95,7 +95,7 @@ public class JDBCValue extends ValueImplementation {
      * @throws java.sql.SQLException
      */
     public static JDBCValue createTableColumnValue(ResultSet rs) throws SQLException {
-        String name = rs.getString("COLUMN_NAME");
+        String name = MetadataUtilities.trimmed(rs.getString("COLUMN_NAME"));
         SQLType type = JDBCUtils.getSQLType(rs.getInt("DATA_TYPE"));
 
         int length = 0;
@@ -124,7 +124,7 @@ public class JDBCValue extends ValueImplementation {
      * @throws java.sql.SQLException
      */
     public static JDBCValue createTableColumnValueODBC(ResultSet rs) throws SQLException {
-        String name = rs.getString("COLUMN_NAME");
+        String name = MetadataUtilities.trimmed(rs.getString("COLUMN_NAME"));
         SQLType type = JDBCUtils.getSQLType(rs.getInt("DATA_TYPE"));
         int length = 0;
         int precision = 0;
@@ -150,30 +150,37 @@ public class JDBCValue extends ValueImplementation {
         this.nullable = nullable;
     }
 
+    @Override
     public int getLength() {
         return length;
     }
 
+    @Override
     public String getName() {
         return name;
     }
 
+    @Override
     public Nullable getNullable() {
         return nullable;
     }
 
+    @Override
     public int getPrecision() {
         return precision;
     }
 
+    @Override
     public short getRadix() {
         return radix;
     }
 
+    @Override
     public short getScale() {
         return scale;
     }
 
+    @Override
     public SQLType getType() {
         return type;
     }

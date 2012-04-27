@@ -519,22 +519,18 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
         }
         if (needToRender) {
             CachePair newCachePair = new CachePair(FileImpl.getParseCount(), ResolverFactory.getCurrentStartFile(this));
-            if (classifier != null) {                
-                if (newCachePair.equals(lastCache)) {
-                    return classifier;
+            if (classifier == null || !newCachePair.equals(lastCache)) {                
+                if (qname != null) {
+                    classifier = renderClassifier(qname);
+                } else if (classifierText.length() > 0) {
+                    classifier = renderClassifier(new CharSequence[] { classifierText });
                 }
+                synchronized (this) {
+                    _setClassifier(classifier);
+                    lastCache = newCachePair;
+                }
+                classifier = _getClassifier();
             }
-
-            if (qname != null) {
-                classifier = renderClassifier(qname);
-            } else if (classifierText.length() > 0) {
-                classifier = renderClassifier(new CharSequence[] { classifierText });
-            }
-            synchronized (this) {
-                _setClassifier(classifier);
-                lastCache = newCachePair;
-            }
-            classifier = _getClassifier();
         }
         if (isInstantiation() && CsmKindUtilities.isTemplate(classifier) && !((CsmTemplate)classifier).getTemplateParameters().isEmpty()) {
             CsmInstantiationProvider ip = CsmInstantiationProvider.getDefault();
@@ -677,7 +673,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
                 List<CharSequence> l = new ArrayList<CharSequence>();
                 int templateDepth = 0;
                 for (AST namePart = tokFirstId; namePart != null; namePart = namePart.getNextSibling()) {
-                    if (templateDepth == 0 && namePart.getType() == CPPTokenTypes.ID) {
+                    if (templateDepth == 0 && namePart.getType() == CPPTokenTypes.IDENT) {
                         l.add(NameCache.getManager().getString(AstUtil.getText(namePart)));
                     } else if (namePart.getType() == CPPTokenTypes.LESSTHAN) {
                         // the beginning of template parameters
@@ -775,14 +771,15 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
         // remove old cached value
         FileImpl file = (FileImpl) getContainingFile();
         file.removeResolvedReference(new CsmTypeReferenceImpl(this));
-        this.classifierUID = UIDCsmConverter.declarationToUID(classifier);
+        CsmUID<CsmClassifier> cUID = UIDCsmConverter.declarationToUID(classifier);
+        this.classifierUID = cUID;
         // register new cached value
-        if (classifierUID != null && classifier != null && !CsmKindUtilities.isBuiltIn(classifier) && CsmBaseUtilities.isValid(classifier) && !CsmKindUtilities.isTypedef(classifier)
+        if (cUID != null && classifier != null && !CsmKindUtilities.isBuiltIn(classifier) && CsmBaseUtilities.isValid(classifier) && !CsmKindUtilities.isTypedef(classifier)
             //&& !CsmKindUtilities.isTemplate(classifier) && !isInstantiation()
            ) {
            file.addResolvedReference(new CsmTypeReferenceImpl(this), classifier);
         }
-        assert (classifierUID != null || classifier == null);
+        assert (cUID != null || classifier == null);
     }
 
     @Override

@@ -60,7 +60,7 @@ public class ImportJavaVersion extends ProjectImporterTestCase {
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        ExtractToWorkDir(getDataDir().getAbsolutePath(),"testdata.jar");
+        ExtractToWorkDir(getDataDir(), "testdata.jar");
     }
     public void testImportJavaVersion13() {
         String projectName = "JavaVersion13";

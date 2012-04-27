@@ -61,6 +61,7 @@ class LayoutOperations implements LayoutConstants {
     private VisualMapper visualMapper;
 
     private static final boolean PREFER_ZERO_GAPS = true;
+    private static final boolean SYMETRIC_ZERO_GAPS = true;
 
     LayoutOperations(LayoutModel model, VisualMapper mapper) {
         layoutModel = model;
@@ -1304,8 +1305,10 @@ class LayoutOperations implements LayoutConstants {
         }
 
         // 2) Remove gaps where needed (to be substituted, or if just invalid).
-        PaddingType effectiveLeadingPadding = null; // if not null, the leading padding has default preferred size
-        PaddingType effectiveTrailingPadding = null; // if not null, the trailing padding has default preferred size
+        boolean defaultLeadingPadding = false;
+        boolean defaultTrailingPadding = false;
+        PaddingType leadingPadding = null;
+        PaddingType trailingPadding = null;
         boolean effectiveExplicitGapLeading = false; // in case effectiveLeadingPadding is null
         boolean effectiveExplicitGapTrailing = false; // in case effectiveTrailingPadding is null
         boolean resizingGapLeading = false;
@@ -1337,10 +1340,8 @@ class LayoutOperations implements LayoutConstants {
                     if (isEndingGapEffective(li, dimension, LEADING)) {
                         if (gap.getPreferredSize() == NOT_EXPLICITLY_DEFINED) {
                             // default padding to be used as common gap
-                            effectiveLeadingPadding = gap.getPaddingType();
-                            if (effectiveLeadingPadding == null) {
-                                effectiveLeadingPadding = PaddingType.RELATED;
-                            }
+                            defaultLeadingPadding = true;
+                            leadingPadding = gap.getPaddingType();
                         } else {
                             effectiveExplicitGapLeading = true;
                         }
@@ -1382,10 +1383,8 @@ class LayoutOperations implements LayoutConstants {
                     if (isEndingGapEffective(li, dimension, TRAILING)) {
                         if (gap.getPreferredSize() == NOT_EXPLICITLY_DEFINED) {
                             // default padding to be used as common gap
-                            effectiveTrailingPadding = gap.getPaddingType();
-                            if (effectiveTrailingPadding == null) {
-                                effectiveTrailingPadding = PaddingType.RELATED;
-                            }
+                            defaultTrailingPadding = true;
+                            trailingPadding = gap.getPaddingType();
                         } else {
                             effectiveExplicitGapTrailing = true;
                         }
@@ -1464,10 +1463,10 @@ class LayoutOperations implements LayoutConstants {
         if (validLeadingGapRemoved) {
             if (!anyAlignedLeading) { // group is open at leading edge
                 int size = groupInnerPosLeading - groupOuterPos[LEADING];
-                if (size > 0 || effectiveLeadingPadding != null) {
+                if (size > 0 || defaultLeadingPadding) {
                     leadingGap = new LayoutInterval(SINGLE);
-                    if (effectiveLeadingPadding != null) {
-                        leadingGap.setPaddingType(effectiveLeadingPadding);
+                    if (defaultLeadingPadding) {
+                        leadingGap.setPaddingType(leadingPadding);
                     } else if (effectiveExplicitGapLeading) {
                         leadingGap.setPreferredSize(size);
                         if (resizingGapLeading) {
@@ -1490,7 +1489,7 @@ class LayoutOperations implements LayoutConstants {
                 leadingGap = new LayoutInterval(SINGLE);
                 leadingGap.setSize(commonGapLeadingSize);
                 if (commonGapLeadingSize == DEFAULT) {
-                    leadingGap.setPaddingType(effectiveLeadingPadding);
+                    leadingGap.setPaddingType(leadingPadding);
                 }
                 if (!reduceToZeroGapsLeading.isEmpty()) {
                     int sizeDiff = groupInnerPosLeading - groupOuterPos[LEADING];
@@ -1507,10 +1506,10 @@ class LayoutOperations implements LayoutConstants {
         if (validTrailingGapRemoved) {
             if (!anyAlignedTrailing) { // group is open at trailing edge
                 int size = groupOuterPos[TRAILING] - groupInnerPosTrailing;
-                if (size > 0 || effectiveTrailingPadding != null) {
+                if (size > 0 || defaultTrailingPadding) {
                     trailingGap = new LayoutInterval(SINGLE);
-                    if (effectiveTrailingPadding != null) {
-                        trailingGap.setPaddingType(effectiveTrailingPadding);
+                    if (defaultTrailingPadding) {
+                        trailingGap.setPaddingType(trailingPadding);
                     } else if (effectiveExplicitGapTrailing) {
                         trailingGap.setPreferredSize(size);
                         if (resizingGapTrailing) {
@@ -1533,7 +1532,7 @@ class LayoutOperations implements LayoutConstants {
                 trailingGap = new LayoutInterval(SINGLE);
                 trailingGap.setSize(commonGapTrailingSize);
                 if (commonGapTrailingSize == DEFAULT) {
-                    trailingGap.setPaddingType(effectiveTrailingPadding);
+                    trailingGap.setPaddingType(trailingPadding);
                 }
                 if (!reduceToZeroGapsTrailing.isEmpty()) {
                     int sizeDiff = groupOuterPos[TRAILING] - groupInnerPosTrailing;
@@ -1677,6 +1676,7 @@ class LayoutOperations implements LayoutConstants {
                                                       IntervalSet[] unalignedFixedGaps,
                                                       IntervalSet[] unalignedResGaps) {
         IntervalSet[] sets = new IntervalSet[2];
+        int[] alignedGapSizes = new int[2];
         for (int a=LEADING; a <= TRAILING; a++) {
             int gapSize = Integer.MIN_VALUE;
             for (LayoutInterval li : alignedGaps[a].intervals()) {
@@ -1697,24 +1697,49 @@ class LayoutOperations implements LayoutConstants {
                         iSet.add(li, false);
                     }
                 }
-                if (iSet.resizing && PREFER_ZERO_GAPS) {
-                    // Allow resizing gaps to combine with aligned gaps (if they
-                    // have same min size, typically default). A common fixed gap
-                    // will be separated out of the group, and min. size of the
-                    // resizing gap set to 0.
-                    for (LayoutInterval li : unalignedResGaps[a].intervals()) {
-                        LayoutInterval gap = li.getSubInterval(a==LEADING ? 0 : li.getSubIntervalCount()-1);
-                        int minSize = gap.getMinimumSize();
-                        if (minSize == USE_PREFERRED_SIZE) {
-                            minSize = gap.getPreferredSize();
+            }
+            alignedGapSizes[a] = gapSize;
+            sets[a] = iSet;
+        }
+
+        for (int a=LEADING; a <= TRAILING; a++) {
+            int gapSize = alignedGapSizes[a];
+            if (gapSize == Integer.MIN_VALUE || !sets[a].resizing || !PREFER_ZERO_GAPS) {
+                continue;
+            }
+            // Allow resizing gaps to combine with aligned gaps (if they
+            // have same min size, typically default). A common fixed gap
+            // will be separated out of the group, and min. size of the
+            // resizing gap set to 0.
+            for (LayoutInterval li : unalignedResGaps[a].intervals()) {
+                LayoutInterval gap = li.getSubInterval(a==LEADING ? 0 : li.getSubIntervalCount()-1);
+                int minSize = gap.getMinimumSize();
+                if (minSize == USE_PREFERRED_SIZE) {
+                    minSize = gap.getPreferredSize();
+                }
+                if (minSize == gapSize) {
+                    boolean add = true;
+                    if (SYMETRIC_ZERO_GAPS) { // do that only if there's not an opposite gap that is not going to combine
+                        LayoutInterval otherGap = li.getSubInterval(a==LEADING ? li.getSubIntervalCount()-1 : 0);
+                        if (otherGap.isEmptySpace()) { // we have a gap on the opposite side
+                            if (sets[a^1].count() == 0 || (sets[a^1].count() == 1 && sets[a^1].intervals.contains(li))) {
+                                add = false; // there is no aligned gap on the other side to combine with
+                            } else {
+                                int otherMinSize = otherGap.getMinimumSize();
+                                if (otherMinSize == USE_PREFERRED_SIZE) {
+                                    otherMinSize = otherGap.getPreferredSize();
+                                }
+                                if (otherMinSize != alignedGapSizes[a^1]) {
+                                    add = false; // the gap on the other side is different, not going to combine
+                                }
+                            }
                         }
-                        if (minSize == gapSize) {
-                            iSet.add(li, true);
-                        }
+                    }
+                    if (add) {
+                        sets[a].add(li, true);
                     }
                 }
             }
-            sets[a] = iSet;
         }
         return sets;
     }
@@ -1846,7 +1871,7 @@ class LayoutOperations implements LayoutConstants {
             }
             for (int i=0; i < seq.getSubIntervalCount(); i++) {
                 LayoutInterval sub = seq.getSubInterval(i);
-                if (sub != gap && LayoutInterval.wantResize(sub)) {
+                if (sub != gap && !sub.isEmptySpace() && LayoutInterval.wantResize(sub)) {
                     return false; // resizing zero gap in resizing sequence does not make sense
                                   // (see bug 202636, attachment 111677)
                 }

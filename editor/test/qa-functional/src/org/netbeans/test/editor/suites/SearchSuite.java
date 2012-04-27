@@ -57,6 +57,7 @@ public class SearchSuite {
         return NbModuleSuite.create(
                 //NbModuleSuite.createConfiguration(IncrementalSearchTest.class).addTest(IncrementalSearchTest.class).addTest(ReplaceTest.class));                
                 NbModuleSuite
+
                 .createConfiguration(IncrementalSearchTest.class)
                 .addTest(IncrementalSearchTest.class,
                          "testSearchForward",
@@ -72,6 +73,7 @@ public class SearchSuite {
                          "testRegularExpression",
                          "testFindNext",
                          "testFindPrev")                
+                .addTest(ReplaceTest.class)
                 .enableModules(".*").clusters(".*"));
     }
 }

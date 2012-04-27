@@ -60,7 +60,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.netbeans.editor.ext.html.parser.spi.HelpResolver;
+import org.netbeans.modules.html.editor.lib.api.HelpResolver;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.CharSequences;
@@ -139,8 +139,13 @@ public class HtmlDocumentation implements HelpResolver {
         if (relativeLink == null) {
             return null;
         }
+        URL zipURL = getZipURL();
+        if(zipURL == null) {
+            return null;
+        }
+        
         try {
-            return new URI(getZipURL().toExternalForm() + relativeLink).toURL();
+            return new URI(zipURL.toExternalForm() + relativeLink).toURL();
         } catch (URISyntaxException ex) {
             Logger.getLogger(HtmlDocumentation.class.getName()).log(Level.SEVERE, null, ex);
         } catch (MalformedURLException ex) {

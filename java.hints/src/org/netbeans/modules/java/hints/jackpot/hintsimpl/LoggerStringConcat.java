@@ -65,30 +65,31 @@ import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.hints.errors.Utilities;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Constraint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPatterns;
-import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
-import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
-import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.ConstraintVariableType;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.TriggerPattern;
+import org.netbeans.spi.java.hints.TriggerPatterns;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.JavaFix;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.java.hints.JavaFixUtilities;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author lahvac
  */
-@Hint(id="org.netbeans.modules.java.hints.jackpot.hintsimpl.LoggerStringConcat", category="logging", suppressWarnings="LoggerStringConcat")
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.jackpot.hintsimpl.LoggerStringConcat", description = "#DESC_org.netbeans.modules.java.hints.jackpot.hintsimpl.LoggerStringConcat", id="org.netbeans.modules.java.hints.jackpot.hintsimpl.LoggerStringConcat", category="logging", suppressWarnings="LoggerStringConcat")
 public class LoggerStringConcat {
 
     private static final Logger LOG = Logger.getLogger(LoggerStringConcat.class.getName());
 
     @TriggerPattern(value = "$logger.log($level, $message)",
                     constraints = {
-                        @Constraint(variable="$logger", type="java.util.logging.Logger"),
-                        @Constraint(variable="$level", type="java.util.logging.Level"),
-                        @Constraint(variable="$message", type="java.lang.String")
+                        @ConstraintVariableType(variable="$logger", type="java.util.logging.Logger"),
+                        @ConstraintVariableType(variable="$level", type="java.util.logging.Level"),
+                        @ConstraintVariableType(variable="$message", type="java.lang.String")
                     })
     public static ErrorDescription hint1(HintContext ctx) {
         return compute(ctx, null);
@@ -113,38 +114,38 @@ public class LoggerStringConcat {
     @TriggerPatterns({
         @TriggerPattern(value = "$logger.severe($message)",
                         constraints = {
-                            @Constraint(variable="$logger", type="java.util.logging.Logger"),
-                            @Constraint(variable="$message", type="java.lang.String")
+                            @ConstraintVariableType(variable="$logger", type="java.util.logging.Logger"),
+                            @ConstraintVariableType(variable="$message", type="java.lang.String")
                         }),
         @TriggerPattern(value = "$logger.warning($message)",
                         constraints = {
-                            @Constraint(variable="$logger", type="java.util.logging.Logger"),
-                            @Constraint(variable="$message", type="java.lang.String")
+                            @ConstraintVariableType(variable="$logger", type="java.util.logging.Logger"),
+                            @ConstraintVariableType(variable="$message", type="java.lang.String")
                         }),
         @TriggerPattern(value = "$logger.info($message)",
                         constraints = {
-                            @Constraint(variable="$logger", type="java.util.logging.Logger"),
-                            @Constraint(variable="$message", type="java.lang.String")
+                            @ConstraintVariableType(variable="$logger", type="java.util.logging.Logger"),
+                            @ConstraintVariableType(variable="$message", type="java.lang.String")
                         }),
         @TriggerPattern(value = "$logger.config($message)",
                         constraints = {
-                            @Constraint(variable="$logger", type="java.util.logging.Logger"),
-                            @Constraint(variable="$message", type="java.lang.String")
+                            @ConstraintVariableType(variable="$logger", type="java.util.logging.Logger"),
+                            @ConstraintVariableType(variable="$message", type="java.lang.String")
                         }),
         @TriggerPattern(value = "$logger.fine($message)",
                         constraints = {
-                            @Constraint(variable="$logger", type="java.util.logging.Logger"),
-                            @Constraint(variable="$message", type="java.lang.String")
+                            @ConstraintVariableType(variable="$logger", type="java.util.logging.Logger"),
+                            @ConstraintVariableType(variable="$message", type="java.lang.String")
                         }),
         @TriggerPattern(value = "$logger.finer($message)",
                         constraints = {
-                            @Constraint(variable="$logger", type="java.util.logging.Logger"),
-                            @Constraint(variable="$message", type="java.lang.String")
+                            @ConstraintVariableType(variable="$logger", type="java.util.logging.Logger"),
+                            @ConstraintVariableType(variable="$message", type="java.lang.String")
                         }),
         @TriggerPattern(value = "$logger.finest($message)",
                         constraints = {
-                            @Constraint(variable="$logger", type="java.util.logging.Logger"),
-                            @Constraint(variable="$message", type="java.lang.String")
+                            @ConstraintVariableType(variable="$logger", type="java.util.logging.Logger"),
+                            @ConstraintVariableType(variable="$message", type="java.lang.String")
                         })
     })
     public static ErrorDescription hint2(HintContext ctx) {
@@ -196,7 +197,7 @@ public class LoggerStringConcat {
 
         FixImpl fix = new FixImpl(NbBundle.getMessage(LoggerStringConcat.class, "MSG_LoggerStringConcat_fix"), methodName, TreePathHandle.create(ctx.getPath(), ctx.getInfo()), TreePathHandle.create(message, ctx.getInfo()));
 
-        return ErrorDescriptionFactory.forTree(ctx, message, NbBundle.getMessage(LoggerStringConcat.class, "MSG_LoggerStringConcat"), JavaFix.toEditorFix(fix));
+        return ErrorDescriptionFactory.forTree(ctx, message, NbBundle.getMessage(LoggerStringConcat.class, "MSG_LoggerStringConcat"), fix.toEditorFix());
     }
 
     private static void rewrite(WorkingCopy wc, ExpressionTree level, MethodInvocationTree invocation, TreePath message) {
@@ -327,7 +328,9 @@ public class LoggerStringConcat {
         }
 
         @Override
-        protected void performRewrite(WorkingCopy wc, TreePath invocation, boolean canShowUI) {
+        protected void performRewrite(TransformationContext ctx) {
+            WorkingCopy wc = ctx.getWorkingCopy();
+            TreePath invocation = ctx.getPath();
             TreePath message    = FixImpl.this.message.resolve(wc);
             MethodInvocationTree mit = (MethodInvocationTree) invocation.getLeaf();
             ExpressionTree level = null;

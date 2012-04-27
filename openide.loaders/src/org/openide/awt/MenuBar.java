@@ -246,10 +246,13 @@ public class MenuBar extends JMenuBar implements Externalizable {
                 e.getWhen(), mods, e.getKeyCode(), e.getKeyChar(), 
                 e.getKeyLocation());
             
-            KeyStroke newStroke = e.getID() == KeyEvent.KEY_TYPED ?
-                KeyStroke.getKeyStroke (ks.getKeyChar(), mods) :
-                KeyStroke.getKeyStroke (ks.getKeyCode(), mods, 
-                !ks.isOnKeyRelease());
+            KeyStroke newStroke = null;
+            if( null != ks ) {
+                newStroke = e.getID() == KeyEvent.KEY_TYPED ?
+                    KeyStroke.getKeyStroke (ks.getKeyChar(), mods) :
+                    KeyStroke.getKeyStroke (ks.getKeyCode(), mods,
+                    !ks.isOnKeyRelease());
+            }
             
             boolean result = super.processKeyBinding (newStroke, newEvent, 
                 condition, pressed);
@@ -597,10 +600,13 @@ public class MenuBar extends JMenuBar implements Externalizable {
                         e.getWhen(), mods, e.getKeyCode(), e.getKeyChar(), 
                         e.getKeyLocation());
                     
-                    KeyStroke newStroke = e.getID() == KeyEvent.KEY_TYPED ?
-                        KeyStroke.getKeyStroke (ks.getKeyChar(), mods) :
-                        KeyStroke.getKeyStroke (ks.getKeyCode(), mods, 
-                        !ks.isOnKeyRelease());
+                    KeyStroke newStroke = null;
+                    if( null != ks ) {
+                        newStroke = e.getID() == KeyEvent.KEY_TYPED ?
+                            KeyStroke.getKeyStroke (ks.getKeyChar(), mods) :
+                            KeyStroke.getKeyStroke (ks.getKeyCode(), mods,
+                            !ks.isOnKeyRelease());
+                    }
                     
                     boolean result = super.processKeyBinding (newStroke, 
                         newEvent, condition, pressed);

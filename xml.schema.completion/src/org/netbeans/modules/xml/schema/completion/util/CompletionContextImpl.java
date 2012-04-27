@@ -44,12 +44,8 @@
 package org.netbeans.modules.xml.schema.completion.util;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Stack;
+import java.net.URISyntaxException;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.AbstractDocument;
@@ -109,6 +105,10 @@ public class CompletionContextImpl extends CompletionContext {
     private char lastTypedChar;
     private CompletionType completionType = CompletionType.COMPLETION_TYPE_UNKNOWN;
     private List<QName> pathFromRoot;
+    /**
+     * Tags on the path from root to the context element (the one the CC tries to fill)
+     */
+    private List<Tag> elementsFromRoot;
     private String schemaLocation;
     private String noNamespaceSchemaLocation;
     private String defaultNamespace;
@@ -187,6 +187,15 @@ public class CompletionContextImpl extends CompletionContext {
     public boolean isSchemaAwareCompletion() {
         return (schemaLocation != null) || (noNamespaceSchemaLocation != null);
     }
+    
+    /**
+     * Namespaces suggested by the context, but NOT DECLARED yet in the document
+     * 
+     * @return suggested namespaces
+     */
+    public Map<String, String> getSuggestedNamespace() {
+        return Collections.unmodifiableMap(suggestedNamespaces);
+    }
 
     public List<URI> getSchemas() {
         List<URI> uris = new ArrayList<URI>();
@@ -200,7 +209,118 @@ public class CompletionContextImpl extends CompletionContext {
         }                        
         return uris;
     }
+    
+    /**
+     * Extracts prefix from the tagname, returns "" or {@code null} if there's no
+     * prefix
+     * 
+     * @param tagName tag name string, incl. possible prefix (DOM Level 1)
+     * @param empty if true, "" is returned for no prefix.
+     * @return namespace prefix, "" or {@code null) for no prefix
+     */
+    private String getPrefix(String tagName, boolean empty) {
+        int index = tagName.indexOf(':');
+        if (index == -1) {
+            return empty ? "" : null;
+        }
+        return tagName.substring(index + 1);
+    }
+    
+    /**
+     * Adds namespaces from the tag to this context, possibly overriding namespaces
+     * from previously added tags. Tags should be added starting from the root down
+     * to the context position.
+     */
+    private void addNamespacesFrom(Tag e) {
+        NamedNodeMap attrs = e.getAttributes();
+        String nodePrefix = getPrefix(e.getTagName(), false);
+        String version = null;
+        String xsltAttrName = null;
         
+        for (int i = attrs.getLength() - 1; i >= 0; i--) {
+            Node n = attrs.item(i);
+            if (n.getNodeType() == Node.ATTRIBUTE_NODE) {
+                Attr a = (Attr)n;
+                String attrName = a.getName();
+                String value = a.getValue();
+                addNamespace(attrName, value, nodePrefix);
+
+            
+                if(value.trim().equals("http://www.w3.org/1999/XSL/Transform")) { //NOI18N
+                    xsltAttrName = attrName;
+                }
+                if(CompletionUtil.getLocalNameFromTag(attrName).
+                        equals("version")) { //NOI18N
+                    version = value.trim();
+                }
+            } 
+        }
+        
+        if (xsltAttrName != null && "2.0".equals(version)) {
+            String prefix = getPrefix(xsltAttrName, false);
+            if (prefix == null) {
+                // override nonNS location because nonNS schema is XSLT 2.0
+                noNamespaceSchemaLocation = "http://www.w3.org/2007/schema-for-xslt20.xsd";
+            } else {
+                addSchemaLocation(prefix + " http://www.w3.org/2007/schema-for-xslt20.xsd"); //NOI18N
+            }
+        }
+    }
+
+    /**
+     * Initializes the declared namespaces from the context path.
+     * Adds all declared namespaces from context element and its parents - these are
+     * in scope and will form {@link #declaredNamespaces} map.
+     * 
+     * @param stack path from the context element (index 0) to the root (index N-1).
+     */
+    private void addContextNamespaces(List<Tag> stack) {
+        // must iterate from root down to the context element, to properly override
+        // namespaces and replace default/noNamespace information.
+        for (int i = stack.size() - 1; i >= 0; i--) {
+            Tag t = stack.get(i);
+            addNamespacesFrom(t);
+        }
+    }
+
+    /**
+     * Processes an attribute for namespace-related stuff. Detects and sets
+     * {@link #schemaLocation}, {@link #noNamespaceSchemaLocation}, {@link #defaultNamespace} URIs.
+     * Should be called for elements starting from root down to the context element for
+     * proper overriding
+     */
+    private void addNamespace(String attrName, String value, String nodePrefix) {
+        String defNS = XMLConstants.XMLNS_ATTRIBUTE;
+        if(nodePrefix != null) defNS = defNS+":"+nodePrefix; //NOI18N
+
+        if(CompletionUtil.getLocalNameFromTag(attrName).
+                equals(XSI_SCHEMALOCATION)) {
+            schemaLocation = value.trim();
+            return;
+        } 
+        if(CompletionUtil.getLocalNameFromTag(attrName).
+                equals(XSI_NONS_SCHEMALOCATION)) {
+            noNamespaceSchemaLocation = value.trim();
+            return;
+        }            
+
+        if(! attrName.startsWith(XMLConstants.XMLNS_ATTRIBUTE))
+            return;            
+
+        if(attrName.equals(defNS)) {
+            this.defaultNamespace = value;
+        }
+        declaredNamespaces.put(attrName, value);
+    }
+    
+    private void addSchemaLocation(String s) {
+        if (schemaLocation == null) {
+            schemaLocation = s;
+        } else {
+            schemaLocation = schemaLocation + " " + s; // NO18N
+        }
+    }
+    
     /**
      * Keeps all namespaces along with their prefixes in a HashMap.
      * This is obtained from the root element's attributes, with
@@ -228,17 +348,9 @@ public class CompletionContextImpl extends CompletionContext {
         for(int index=0; index<attributes.size(); index++) {
             DocRootAttribute attr = attributes.get(index);
             String attrName = attr.getName();
-            if(CompletionUtil.getLocalNameFromTag(attrName).
-                    equals(XSI_SCHEMALOCATION)) {
-                schemaLocation = attr.getValue().trim();
-                continue;
-            }
-            if(CompletionUtil.getLocalNameFromTag(attrName).
-                    equals(XSI_NONS_SCHEMALOCATION)) {
-                noNamespaceSchemaLocation = attr.getValue().trim();
-                continue;
-            }            
-            
+            String value = attr.getValue();
+            addNamespace(attrName, value, temp);
+
             //resolve xsl stylesheets w/o the schema location specification.
             //In such case the root element only contains the xmlns:xsl=""http://www.w3.org/1999/XSL/Transform"
             //along with the version attribute.
@@ -252,12 +364,6 @@ public class CompletionContextImpl extends CompletionContext {
                     equals("version")) { //NOI18N
                 version = attr.getValue().trim();
             }
-            
-            if(! attrName.startsWith(XMLConstants.XMLNS_ATTRIBUTE))
-                continue;            
-            if(attrName.equals(defNS))
-                this.defaultNamespace = attr.getValue();
-            declaredNamespaces.put(attrName, attr.getValue());
         }
         
         if(schemaLocation == null && xsltDeclared && "2.0".equals(version)) {
@@ -339,12 +445,22 @@ public class CompletionContextImpl extends CompletionContext {
      * carried out and finds the path from root.
      */
     public boolean initContext() {
+        boolean res = doInitContext();
+        if (pathFromRoot != null) {
+            addContextNamespaces(elementsFromRoot);
+        } else {
+            populateNamespaces();
+        }
+        return res;
+    }
+    
+    private boolean doInitContext() {
         TokenSequence tokenSequence = getTokenSequence();
         try {
             if (isTagAttributeRequired(tokenSequence)) {
                 completionType = CompletionType.COMPLETION_TYPE_ATTRIBUTE;
                 typedChars = token.getTokenID().equals(XMLDefaultTokenContext.WS) ? null : token.getImage();
-                pathFromRoot = getPathFromRoot(element);
+                createPathFromRoot(element);
                 return true;
             }
             
@@ -363,19 +479,19 @@ public class CompletionContextImpl extends CompletionContext {
                         previousTokenText.endsWith(">")) {
                         //completionType = CompletionType.COMPLETION_TYPE_UNKNOWN;
                         completionType = CompletionType.COMPLETION_TYPE_ELEMENT;
-                        pathFromRoot = getPathFromRoot(element);
+                        createPathFromRoot(element);
                         break;
                     }                    
                     if(chars != null && chars.startsWith("<")) {
                         typedChars = chars.substring(1);
                         completionType = CompletionType.COMPLETION_TYPE_ELEMENT;
-                        pathFromRoot = getPathFromRoot(element);
+                        createPathFromRoot(element);
                         break;
                     }
                     if (chars != null && previousTokenText.equals(">")) {
                         if(!chars.equals("") && !chars.equals(">"))
                             typedChars = chars;
-                        pathFromRoot = getPathFromRoot(element);
+                        createPathFromRoot(element);
                         completionType = CompletionType.COMPLETION_TYPE_ELEMENT_VALUE;
                         break;
                     }
@@ -387,7 +503,7 @@ public class CompletionContextImpl extends CompletionContext {
 
                 case XMLDefaultTokenContext.BLOCK_COMMENT_ID:
                     completionType = CompletionType.COMPLETION_TYPE_ELEMENT;
-                    pathFromRoot = getPathFromRoot(element);
+                    createPathFromRoot(element);
                     break;
 
                 //start tag of an element
@@ -408,7 +524,7 @@ public class CompletionContextImpl extends CompletionContext {
                         if ((element.getElementOffset() + 1 == completionAtOffset) ||
                             (token.getOffset() + token.getImage().length() == completionAtOffset)) {
                             completionType = CompletionType.COMPLETION_TYPE_ELEMENT;
-                            pathFromRoot = getPathFromRoot(element.getPrevious());
+                            createPathFromRoot(element.getPrevious());
                             break;
                         }
                         if (completionAtOffset > element.getElementOffset() + 1 &&
@@ -418,7 +534,7 @@ public class CompletionContextImpl extends CompletionContext {
                             int index = completionAtOffset - element.getElementOffset() - 1;
                             typedChars = index < 0 ? tag.getTagName() :
                                 tag.getTagName().substring(0, index);
-                            pathFromRoot = getPathFromRoot(element.getPrevious());
+                            createPathFromRoot(element.getPrevious());
                             break;
                         }                        
 //***???completionType = CompletionType.COMPLETION_TYPE_ATTRIBUTE;
@@ -429,7 +545,7 @@ public class CompletionContextImpl extends CompletionContext {
                     if(element instanceof StartTag) {
                         if(token != null &&
                            token.getImage().trim().equals(">")) {
-                            pathFromRoot = getPathFromRoot(element);
+                            createPathFromRoot(element);
                             completionType = CompletionType.COMPLETION_TYPE_ELEMENT_VALUE;
                             break;
                         }
@@ -443,7 +559,7 @@ public class CompletionContextImpl extends CompletionContext {
                         }
                     }
                     completionType = CompletionType.COMPLETION_TYPE_ELEMENT;
-                    pathFromRoot = getPathFromRoot(element.getPrevious());
+                    createPathFromRoot(element.getPrevious());
                     break;
 
                 //user enters an attribute name
@@ -489,7 +605,7 @@ public class CompletionContextImpl extends CompletionContext {
                     completionType = attribute == null ?
                             CompletionType.COMPLETION_TYPE_UNKNOWN : 
                             CompletionType.COMPLETION_TYPE_ATTRIBUTE_VALUE;
-                    pathFromRoot = getPathFromRoot(element);
+                    createPathFromRoot(element);
                     break;
                 }
 
@@ -519,6 +635,8 @@ public class CompletionContextImpl extends CompletionContext {
                 e.getMessage() == null ? e.getClass().getName() : e.getMessage(), e);
             return false;
         }
+        // TODO - complete namespaces based on 'pathToRoot'
+        
         return true;        
     }
     
@@ -568,10 +686,10 @@ public class CompletionContextImpl extends CompletionContext {
      * if any intermediate item can be treated as root. This is possible when dealing
      * with items from multiple namespaces.
      */
-    private List<QName> getPathFromRoot(SyntaxElement se) {
+    private void createPathFromRoot(SyntaxElement se) {
         //1st pass
         if(se == null)
-            return null;
+            return;
         Stack<Tag> stack = new Stack<Tag>();
         if(se instanceof EmptyTag)
             stack.push((Tag)se);
@@ -596,8 +714,9 @@ public class CompletionContextImpl extends CompletionContext {
             se = se.getPrevious();
         }
         
+        this.elementsFromRoot = stack;
         //2nd pass
-        return createPath(stack);
+        this.pathFromRoot = createPath(stack);
     }    
 
     /**
@@ -823,8 +942,8 @@ public class CompletionContextImpl extends CompletionContext {
             return;
         
 //        specialCompletion = true;
-        specialNamespaceMap = CompletionUtil.getNamespacesFromStartTags(document);
-        for(String temp : specialNamespaceMap.keySet()) {
+        for(String prefix : declaredNamespaces.keySet()) {
+            String temp = declaredNamespaces.get(prefix);
             try {
                 if (nsModelMap.containsKey(temp)) {
                     // ignore, was added from specific location

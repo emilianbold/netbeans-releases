@@ -178,22 +178,11 @@ public interface GlassfishModule {
      * 
      * @param stateListener listener to listen message describing the startup 
      *   process as it progresses.  Can be null.
-     * 
+     * @param endState {@linkplain ServerState} the server is to be put to upon successful startup
      * @return Future instance that finishes when the server startup has
      *   completed (or failed).
      */
-    public Future<OperationState> startServer(OperationStateListener stateListener);
-
-    /**
-     * Start the server with a specific JDK.
-     * 
-     * @param stateListener listener to listen message describing the startup 
-     *   process as it progresses.  Can be null.
-     * 
-     * @return Future instance that finishes when the server startup has
-     *   completed (or failed).
-     */
-    public Future<OperationState> startServer(OperationStateListener stateListener,FileObject jdkRoot, String[] jvmArgs);
+    public Future<OperationState> startServer(OperationStateListener stateListener, ServerState endState);
 
     /**
      * Stop the server.

@@ -53,7 +53,7 @@ import org.openide.text.PositionBounds;
 public final class ErrorDescriptionTestSupport {
     
     public static ErrorDescription createErrorDescription(FileObject file, String description, Severity severity, LazyFixList fixes, PositionBounds span) {
-        return new ErrorDescription(file, description, severity, fixes, span);
+        return new ErrorDescription(file, null, description, null, severity, fixes, span);
     }
 
 }

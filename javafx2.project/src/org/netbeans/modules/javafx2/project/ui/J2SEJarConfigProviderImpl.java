@@ -72,7 +72,8 @@ public class J2SEJarConfigProviderImpl implements J2SECategoryExtensionProvider 
         boolean fxDisabled = false;
         if (p != null) {
             final J2SEPropertyEvaluator j2sepe = p.getLookup().lookup(J2SEPropertyEvaluator.class);
-            fxDisabled = !JFXProjectProperties.isTrue(j2sepe.evaluator().getProperty("javafx.enabled"));
+            fxDisabled = !JFXProjectProperties.isTrue(j2sepe.evaluator().getProperty(JFXProjectProperties.JAVAFX_ENABLED))
+                    || JFXProjectProperties.isTrue(j2sepe.evaluator().getProperty(JFXProjectProperties.JAVAFX_SWING));
         }
         return fxDisabled ? null : JFXProjectProperties.getInstance(p.getLookup()).getCustomizerJarComponent();
     }

@@ -81,7 +81,7 @@ public final class SearchHistoryTest extends NbTestCase {
         for (int i = 0; i<60; i++){
             SearchHistory.getDefault().add(SearchPattern.create(String.valueOf(i),true,true,false));
         }
-        assertTrue(SearchHistory.getDefault().getSearchPatterns().size() == 50);
+        assertTrue(SearchHistory.getDefault().getSearchPatterns().size() == 10);
     }
     
     public void testLastSelectedListener() throws Exception{
@@ -95,7 +95,7 @@ public final class SearchHistoryTest extends NbTestCase {
                 }
         };
         SearchHistory.getDefault().addPropertyChangeListener(pcl);
-        SearchHistory.getDefault().setLastSelected(SearchPattern.create("searchtext",true,true,false));
+        SearchHistory.getDefault().setLastSelected(SearchPattern.create("newSearchtext",true,true,false));
         SearchHistory.getDefault().removePropertyChangeListener(pcl);
         assertTrue(fired[0]);
     }    

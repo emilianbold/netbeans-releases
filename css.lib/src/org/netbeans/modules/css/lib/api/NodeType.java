@@ -102,6 +102,12 @@ public enum NodeType {
         
         function, 
         function_name, 
+        
+        /**
+         * any @xxxx { ... } generic at-rule
+         */
+        generic_at_rule,
+        
         charSet, 
         imports, 
         invalidRule, 
@@ -181,6 +187,8 @@ public enum NodeType {
          * error recovery rule
          */
         syncTo_IDENT_RBRACKET_LBRACE,
+        
+        syncTo_RBRACE,
         
         synpred2_Css3, 
         selectorsGroup, 

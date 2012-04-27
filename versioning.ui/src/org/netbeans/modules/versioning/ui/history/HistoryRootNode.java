@@ -43,9 +43,6 @@
  */
 package org.netbeans.modules.versioning.ui.history;
 
-import java.beans.PropertyEditor;
-import java.beans.PropertyEditorSupport;
-import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.text.DateFormat;
 import java.util.*;
@@ -57,7 +54,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * The toplevel Node in the LocalHistoryView
+ * The toplevel Node in the HistoryView
  * 
  * @author Tomas Stupka
  *
@@ -87,8 +84,6 @@ public class HistoryRootNode extends AbstractNode {
         this.vcsName = vcsName;
         this.loadNextAction = loadNextAction;
         this.actions = actions;
-        waitNode = new WaitNode();
-        getChildren().add(new Node[] {waitNode}); 
     }
     
     static boolean isLoadNext(Object n) {
@@ -107,6 +102,27 @@ public class HistoryRootNode extends AbstractNode {
         addEntries(entries, true);
     }
         
+    synchronized HistoryEntry getPreviousEntry(HistoryEntry entry) {
+        Enumeration<Node> en = getChildren().nodes();
+        boolean hit = false;
+        while(en.hasMoreElements()) {
+            Node n = en.nextElement();
+            HistoryEntry he = n.getLookup().lookup(HistoryEntry.class);
+            if(he != null) {
+                if(!entry.isLocalHistory() && he.isLocalHistory()) {
+                    continue;
+                }
+                if(hit) {
+                    return he;
+                }
+                if(he == entry) {
+                    hit = true;
+                }
+            }
+        }
+        return null;
+    }
+    
     private void addEntries(HistoryEntry[] entries, boolean vcs) {
         // remove previous
         Children children = getChildren();
@@ -139,40 +155,52 @@ public class HistoryRootNode extends AbstractNode {
         getChildren().add(nodes);
     }
 
-    synchronized void loadingStarted() {
-        Children children = getChildren();
-        if(loadNextNode != null) {
-            children.remove(new Node[] { loadNextNode });
-        }
+    public synchronized void addWaitNode() {
         if(waitNode != null) {
-            children.remove(new Node[] { waitNode });
+            getChildren().remove(new Node[] { waitNode });
         }
         waitNode = new WaitNode();
-        children.add(new Node[] { waitNode });
+        getChildren().add(new Node[] { waitNode });
     }
-
-    synchronized void loadingFinished(Date dateFrom) {
-        Children children = getChildren();
+    
+    public synchronized void removeWaitNode() {
         if(waitNode != null) {
-            children.remove(new Node[] { waitNode });
-    }                
+            getChildren().remove(new Node[] { waitNode });
+            waitNode = null;
+        }
+    }
+    
+    synchronized void loadingVCSStarted() {
+        Children children = getChildren();
         if(loadNextNode != null) {
             children.remove(new Node[] { loadNextNode });
         }
-        if(!HistorySettings.getInstance().getLoadAll()) {
+        addWaitNode();
+    }
+
+    synchronized void loadingVCSFinished(Date dateFrom) {
+        Children children = getChildren();
+        removeWaitNode();         
+        if(loadNextNode != null) {
+            children.remove(new Node[] { loadNextNode });
+        }
+        if(dateFrom != null && !HistorySettings.getInstance().getLoadAll()) {
             loadNextNode = new LoadNextNode(dateFrom);
             children.add(new Node[] {loadNextNode});
         }
     }
     
+    @Override
     public String getName() {
         return NODE_ROOT; 
     }
     
+    @Override
     public String getDisplayName() {
         return NbBundle.getMessage(HistoryRootNode.class, "LBL_LocalHistory_Column_Version"); // NOI18N
     }            
         
+    @Override
     public Action[] getActions(boolean context) {
         return NO_ACTION;
     }
@@ -217,7 +245,7 @@ public class HistoryRootNode extends AbstractNode {
 
         @Override
         public int compareTo(Node n) {
-            return 1;
+            return n instanceof WaitNode ? 0 : 1;
         }
 
         @Override
@@ -247,6 +275,10 @@ public class HistoryRootNode extends AbstractNode {
                     return NbBundle.getMessage(HistoryRootNode.class, "LBL_ShowingAllVCSRevisions", vcsName); // NOI18N
                 }
             }
+            @Override
+            public String toString() {
+                return getDisplayValue();
+            }
         }
     }
 
@@ -267,13 +299,19 @@ public class HistoryRootNode extends AbstractNode {
         
         @Override
         public int compareTo(Node n) {
-            return 1;
+            return n instanceof LoadNextNode ? 0 : 1;
         }   
         
         @Override
         public String getName() {
             return NODE_WAIT;
         }
+
+        @Override
+        public String toString() {
+            return getDisplayName();
+        }
+        
     }    
     
     private class BaseProperty extends PropertySupport.ReadOnly<TableEntry> {
@@ -289,10 +327,6 @@ public class HistoryRootNode extends AbstractNode {
                 @Override
                 public String getTooltip() {
                     return BaseProperty.this.getDisplayValue();
-                }
-                @Override
-                public int compareTo(TableEntry e) {
-                    return -1;
                 }
                 @Override
                 public Integer order() {

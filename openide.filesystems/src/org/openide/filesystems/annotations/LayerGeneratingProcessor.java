@@ -54,8 +54,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import java.util.WeakHashMap;
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Filer;
@@ -69,7 +67,6 @@ import javax.tools.StandardLocation;
 import org.openide.filesystems.XMLFileSystem;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
-import org.w3c.dom.NodeList;
 import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.LSOutput;
 import org.w3c.dom.ls.LSSerializer;
@@ -166,6 +163,7 @@ public abstract class LayerGeneratingProcessor extends AbstractProcessor {
                     } finally {
                         os.close();
                     }
+                    /*
                     {
                         SortedSet<String> files = new TreeSet<String>();
                         NodeList nl = doc.getElementsByTagName("file");
@@ -181,6 +179,7 @@ public abstract class LayerGeneratingProcessor extends AbstractProcessor {
                             messager.printMessage(Kind.NOTE, "generated layer entry: " + file);
                         }
                     }
+                    */
                 } catch (IOException x) {
                     messager.printMessage(Kind.ERROR, "Failed to write generated-layer.xml: " + x.toString());
                 } catch (SAXException x) {

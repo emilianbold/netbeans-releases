@@ -44,12 +44,11 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
-import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
-import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
@@ -58,9 +57,11 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
+import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Disposable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
@@ -84,23 +85,33 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
         super(name, rawName, scope, _static, _const, file, startOffset, endOffset, global);
     }
     
-    public static<T> FunctionDDImpl<T> create(AST ast, CsmFile file, CsmScope scope, boolean global) throws AstRendererException {
+    public static<T> FunctionDDImpl<T> create(AST ast, CsmFile file, FileContent fileContent, CsmScope scope, boolean global) throws AstRendererException {
         int startOffset = getStartOffset(ast);
         int endOffset = getEndOffset(ast);
         
         NameHolder nameHolder = NameHolder.createFunctionName(ast);
         CharSequence name = QualifiedNameCache.getManager().getString(nameHolder.getName());
+        boolean isLambda = false;
+        if (name.length() == 0 && !global) {
+            name = QualifiedNameCache.getManager().getString("lambda"); // NOI18N
+            isLambda = true;
+        }        
         if (name.length() == 0) {
-            throw new AstRendererException((FileImpl) file, startOffset, "Empty function name."); // NOI18N
+            throw AstRendererException.createAstRendererException((FileImpl) file, ast, startOffset, "Empty function name."); // NOI18N
         }
         CharSequence rawName = initRawName(ast);
         
-        boolean _static = AstRenderer.FunctionRenderer.isStatic(ast, file, name);
+        boolean _static = AstRenderer.FunctionRenderer.isStatic(ast, file, fileContent, name);
         boolean _const = AstRenderer.FunctionRenderer.isConst(ast);
 
         scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, true);
 
-        FunctionDDImpl<T> functionDDImpl = new FunctionDDImpl<T>(name, rawName, scope, _static, _const, file, startOffset, endOffset, global);        
+        FunctionDDImpl<T> functionDDImpl;
+        if (isLambda) {
+            functionDDImpl = new LambdaFunction<T>(name, rawName, scope, _static, _const, file, startOffset, endOffset, global);        
+        } else {
+            functionDDImpl = new FunctionDDImpl<T>(name, rawName, scope, _static, _const, file, startOffset, endOffset, global);        
+        }
         temporaryRepositoryRegistration(global, functionDDImpl);
         
         StringBuilder clsTemplateSuffix = new StringBuilder();
@@ -109,18 +120,18 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
         
         functionDDImpl.setTemplateDescriptor(templateDescriptor, classTemplateSuffix);
         functionDDImpl.setReturnType(AstRenderer.FunctionRenderer.createReturnType(ast, functionDDImpl, file));
-        functionDDImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, functionDDImpl, file, global), 
+        functionDDImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, functionDDImpl, file, fileContent), 
                 AstRenderer.FunctionRenderer.isVoidParameter(ast));
         CsmCompoundStatement body = AstRenderer.findCompoundStatement(ast, file, functionDDImpl);
         if (body == null) {
-            throw new AstRendererException((FileImpl)file, startOffset,
+            throw AstRendererException.createAstRendererException((FileImpl)file, ast, startOffset,
                     "Null body in method definition."); // NOI18N
         }        
         functionDDImpl.setCompoundStatement(body);
         
 
         postObjectCreateRegistration(global, functionDDImpl);
-        nameHolder.addReference(file, functionDDImpl);
+        nameHolder.addReference(fileContent, functionDDImpl);
         return functionDDImpl;
     }
 

@@ -3,6 +3,7 @@ implements |ClsBaseDeclarationTest
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 PACKAGE    ANS                             [PUBLIC]   null
 PACKAGE    Admin                           [PUBLIC]   null
+PACKAGE    AdminModule                     [PUBLIC]   null
 PACKAGE    App                             [PUBLIC]   null
 PACKAGE    Bar                             [PUBLIC]   null
 PACKAGE    Brite                           [PUBLIC]   null
@@ -12,6 +13,7 @@ PACKAGE    Data                            [PUBLIC]   null
 PACKAGE    Extra                           [PUBLIC]   null
 PACKAGE    ExtraThrow                      [PUBLIC]   null
 PACKAGE    Foo                             [PUBLIC]   null
+PACKAGE    FrontSpace                      [PUBLIC]   null
 PACKAGE    MC                              [PUBLIC]   null
 PACKAGE    MySpace                         [PUBLIC]   null
 PACKAGE    MySpaceThrow                    [PUBLIC]   null
@@ -39,9 +41,11 @@ PACKAGE    Test204925_08_C                 [PUBLIC]   null
 PACKAGE    Test204925_08_P                 [PUBLIC]   null
 PACKAGE    Testing                         [PUBLIC]   null
 PACKAGE    XUser                           [PUBLIC]   null
+PACKAGE    delme                           [PUBLIC]   null
 ------------------------------------
 PACKAGE    Application                     [PUBLIC]   Nette
 PACKAGE    BNS                             [PUBLIC]   ANS
+PACKAGE    Bar                             [PUBLIC]   Foo
 PACKAGE    Base                            [PUBLIC]   Brite
 PACKAGE    Controller                      [PUBLIC]   Brite
 PACKAGE    Data                            [PUBLIC]   Shit
@@ -50,6 +54,7 @@ PACKAGE    Ns                              [PUBLIC]   Testing
 PACKAGE    Test                            [PUBLIC]   App
 PACKAGE    UI                              [PUBLIC]   Nette\Application
 PACKAGE    User                            [PUBLIC]   Package2
+PACKAGE    Utils                           [PUBLIC]   Nette
 PACKAGE    a                               [PUBLIC]   Test204925_06_P
 PACKAGE    a                               [PUBLIC]   Test204925_07_P
 PACKAGE    a                               [PUBLIC]   Test204925_08_P
@@ -71,6 +76,10 @@ PACKAGE    f                               [PUBLIC]   Test204925_08_C\d\e
 CLASS      ChildInterface                  [PUBLIC]   interfaces.php
 CLASS      If1                             [PUBLIC]   tests166339.php
 CLASS      If2                             [PUBLIC]   tests166339.php
+CLASS      Interface1                      [PUBLIC]   test204104.php
+CLASS      Interface1                      [PUBLIC]   test204104_02.php
+CLASS      Interface2                      [PUBLIC]   test204104.php
+CLASS      Interface2                      [PUBLIC]   test204104_02.php
 CLASS      MyIface                         [PUBLIC]   insideInterface.php
 CLASS      MySecondIface                   [PUBLIC]   insideInterface.php
 CLASS      ParentInterface                 [PUBLIC]   interfaces.php

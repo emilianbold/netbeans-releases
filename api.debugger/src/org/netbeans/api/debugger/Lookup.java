@@ -831,7 +831,11 @@ abstract class Lookup implements ContextProvider {
                                     }
                                     fi.setInstance(instance);
                                     synchronized (instanceCache) {
-                                        instanceCache.put (cn, instance);
+                                        if (instance != null) {
+                                            instanceCache.put (cn, instance);
+                                        } else {
+                                            instanceCache.remove(cn);
+                                        }
                                         origInstanceCache.put(cn, origInstance);
                                         // Hold the lookup item.
                                         // This is holding the underlying instance data object,
@@ -876,7 +880,9 @@ abstract class Lookup implements ContextProvider {
                                         /*if (className.endsWith("EngineProvider")) {
                                             System.err.println("PUTTING created instance "+instance+" into the instance cache, which already contains instance "+instanceCache.get(className));
                                         }*/
-                                        instanceCache.put (className, instance);
+                                        if (instance != null) {
+                                            instanceCache.put (className, instance);
+                                        }
                                         instanceFutureCache.remove(className);
                                     }
                                 }

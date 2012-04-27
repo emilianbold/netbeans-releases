@@ -475,7 +475,7 @@ public class VersioningAnnotationProvider {
         FileObject fo = null;
         for (VCSFileProxy parent = file; parent != null && fo == null; parent = parent.getParentFile()) {
             // find the fileobject
-            fo = file.toFileObject();
+            fo = parent.toFileObject();
         }
         return fo;
     }

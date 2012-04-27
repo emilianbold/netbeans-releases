@@ -43,7 +43,6 @@
  */
 package org.netbeans.spi.java.project.support.ui;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.io.File;
 import java.net.MalformedURLException;
@@ -71,6 +70,7 @@ import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.queries.CollocationQuery;
+import static org.netbeans.spi.java.project.support.ui.Bundle.*;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -80,9 +80,8 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbCollections;
-
 
 final class MakeSharableVisualPanel2 extends JPanel {
 
@@ -108,9 +107,10 @@ final class MakeSharableVisualPanel2 extends JPanel {
 
     }
 
+    @Messages("MakeSharablePanel2.LBL_Actions=Actions")
     @Override
     public String getName() {
-        return NbBundle.getMessage(MakeSharableVisualPanel2.class, "MakeSharablePanel2.LBL_Actions");
+        return MakeSharablePanel2_LBL_Actions();
     }
 
     void readSettings(WizardDescriptor wiz) {
@@ -167,6 +167,17 @@ final class MakeSharableVisualPanel2 extends JPanel {
 
     }
 
+    @Messages({
+        "tblJars.header1=Library/JAR/Folder",
+        "TXT_Absolute=Use Absolute Path to Library JAR Files",
+        "TXT_Copy=Copy Library JAR Files to New Libraries Folder",
+        "TXT_Keep=Use Relative Path to Library JAR Files",
+        "TXT_UseLocal=Use Existing Library in Libraries Folder",
+        "TXT_AbsoluteJar=Use Absolute Path to JAR/Folder",
+        "TXT_CopyJar=Copy JAR/Folder to New Libraries Folder",
+        "TXT_KeepJar=Use Relative Path to JAR/Folder",
+        "tblJars.header2=Action"
+    })
     private void createTableDefinition() {
         model = new DefaultTableModel() {
 
@@ -179,7 +190,7 @@ final class MakeSharableVisualPanel2 extends JPanel {
         model.addColumn("action"); //NOI18N
         tblJars.setModel(model);
         TableColumn col1 = tblJars.getColumn("jar"); //NOI18N
-        col1.setHeaderValue(NbBundle.getMessage(MakeSharableVisualPanel2.class, "tblJars.header1"));
+        col1.setHeaderValue(tblJars_header1());
         col1.setResizable(true);
         col1.setCellRenderer(new DefaultTableCellRenderer() {
 
@@ -212,21 +223,21 @@ final class MakeSharableVisualPanel2 extends JPanel {
                 String val = (String) value;
                 if (table.getValueAt(row, 0) instanceof Library) {
                     if (ACTION_ABSOLUTE.equals(val)) {
-                        val = NbBundle.getMessage(MakeSharableVisualPanel2.class, "TXT_Absolute");
+                        val = TXT_Absolute();
                     } else if (ACTION_COPY.equals(val)) {
-                        val = NbBundle.getMessage(MakeSharableVisualPanel2.class, "TXT_Copy");
+                        val = TXT_Copy();
                     } else if (ACTION_RELATIVE.equals(val)) {
-                        val = NbBundle.getMessage(MakeSharableVisualPanel2.class, "TXT_Keep");
+                        val = TXT_Keep();
                     } else if (ACTION_USE_LOCAL_LIBRARY.equals(val)) {
-                        val = NbBundle.getMessage(MakeSharableVisualPanel2.class, "TXT_UseLocal");
+                        val = TXT_UseLocal();
                     }
                 } else {
                     if (ACTION_ABSOLUTE.equals(val)) {
-                        val = NbBundle.getMessage(MakeSharableVisualPanel2.class, "TXT_AbsoluteJar");
+                        val = TXT_AbsoluteJar();
                     } else if (ACTION_COPY.equals(val)) {
-                        val = NbBundle.getMessage(MakeSharableVisualPanel2.class, "TXT_CopyJar");
+                        val = TXT_CopyJar();
                     } else if (ACTION_RELATIVE.equals(val)) {
-                        val = NbBundle.getMessage(MakeSharableVisualPanel2.class, "TXT_KeepJar");
+                        val = TXT_KeepJar();
                     }
                 }
                 return super.getTableCellRendererComponent(table, val, isSelected, hasFocus, row, column);
@@ -248,7 +259,7 @@ final class MakeSharableVisualPanel2 extends JPanel {
         col2.setPreferredWidth(300);
         col2.setMinWidth(150);
         col2.setWidth(300);
-        col2.setHeaderValue(NbBundle.getMessage(MakeSharableVisualPanel2.class, "tblJars.header2"));
+        col2.setHeaderValue(tblJars_header2());
         
     }
     
@@ -395,6 +406,13 @@ final class MakeSharableVisualPanel2 extends JPanel {
         }
     }
 
+    @Messages({
+        "LBL_LIbraryContent=Library ( {0} )\nContents:\n{1}",
+        "LBL_BinaryDesc=Jar/Folder\nBinary: {0}",
+        "LBL_SourcesDesc=\nSources: {0}",
+        "LBL_JavadocDesc=\nJavadoc: {0}",
+        "LBL_DescNoItems=<No items selected>"
+    })
     private void populateDescriptionField() {
         int row = tblJars.getSelectedRow();
         if (row != -1) {
@@ -423,31 +441,30 @@ final class MakeSharableVisualPanel2 extends JPanel {
                         }
                     }
                 }
-                taDetails.setText(NbBundle.getMessage(MakeSharableVisualPanel2.class, "LBL_LIbraryContent", 
-                        typeString, contents));
+                taDetails.setText(LBL_LIbraryContent(typeString, contents));
             } else if (val instanceof String) {
                 String ref = (String) val;
                 String value = helper.getStandardPropertyEvaluator().evaluate(ref);
                 File absFile = helper.resolveFile(value);
-                String text = NbBundle.getMessage(MakeSharableVisualPanel2.class, "LBL_BinaryDesc", absFile.getAbsolutePath());
+                String text = LBL_BinaryDesc(absFile.getAbsolutePath());
                 String source = ref.replace("${file.reference", "${source.reference"); //NOI18N
                 value = helper.getStandardPropertyEvaluator().evaluate(source);
                 if (!value.startsWith("${source.")) { //NOI18N
                     absFile = helper.resolveFile(value);
-                    text = text + NbBundle.getMessage(MakeSharableVisualPanel2.class, "LBL_SourcesDesc", absFile.getAbsolutePath());
+                    text = text + LBL_SourcesDesc(absFile.getAbsolutePath());
                 }
                 String javadoc = ref.replace("${file.reference", "${javadoc.reference"); //NOI18N
                 value = helper.getStandardPropertyEvaluator().evaluate(javadoc);
                 if (!value.startsWith("${javadoc.")) { //NOI18N
                     absFile = helper.resolveFile(value);
-                    text = text + NbBundle.getMessage(MakeSharableVisualPanel2.class, "LBL_JavadocDesc", absFile.getAbsolutePath());
+                    text = text + LBL_JavadocDesc(absFile.getAbsolutePath());
                 }
 
 
                 taDetails.setText(text);
             }
         } else {
-            taDetails.setText(org.openide.util.NbBundle.getMessage(MakeSharableVisualPanel2.class, "LBL_DescNoItems"));
+            taDetails.setText(LBL_DescNoItems());
         }
     }
 
@@ -458,6 +475,7 @@ final class MakeSharableVisualPanel2 extends JPanel {
         private DefaultListCellRenderer library;
         private DefaultListCellRenderer jar;
 
+        @Messages("TXT_UseLocalJar=Use Existing JAR in Libraries Folder")
         MyCellEditor(JComboBox combo) {
             super(combo);
             cb = combo;
@@ -466,13 +484,13 @@ final class MakeSharableVisualPanel2 extends JPanel {
                 public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                     String val = (String) value;
                     if (ACTION_ABSOLUTE.equals(val)) {
-                        val = NbBundle.getMessage(MakeSharableVisualPanel2.class, "TXT_Absolute");
+                        val = TXT_Absolute();
                     } else if (ACTION_COPY.equals(val)) {
-                        val = NbBundle.getMessage(MakeSharableVisualPanel2.class, "TXT_Copy");
+                        val = TXT_Copy();
                     } else if (ACTION_RELATIVE.equals(val)) {
-                        val = NbBundle.getMessage(MakeSharableVisualPanel2.class, "TXT_Keep");
+                        val = TXT_Keep();
                     } else if (ACTION_USE_LOCAL_LIBRARY.equals(val)) {
-                        val = NbBundle.getMessage(MakeSharableVisualPanel2.class, "TXT_UseLocal");
+                        val = TXT_UseLocal();
                     }
                     return super.getListCellRendererComponent(list, val, index, isSelected, cellHasFocus);
                 }
@@ -482,13 +500,13 @@ final class MakeSharableVisualPanel2 extends JPanel {
                 public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                     String val = (String) value;
                     if (ACTION_ABSOLUTE.equals(val)) {
-                        val = NbBundle.getMessage(MakeSharableVisualPanel2.class, "TXT_AbsoluteJar");
+                        val = TXT_AbsoluteJar();
                     } else if (ACTION_COPY.equals(val)) {
-                        val = NbBundle.getMessage(MakeSharableVisualPanel2.class, "TXT_CopyJar");
+                        val = TXT_CopyJar();
                     } else if (ACTION_RELATIVE.equals(val)) {
-                        val = NbBundle.getMessage(MakeSharableVisualPanel2.class, "TXT_KeepJar");
+                        val = TXT_KeepJar();
                     } else if (ACTION_USE_LOCAL_LIBRARY.equals(val)) {
-                        val = NbBundle.getMessage(MakeSharableVisualPanel2.class, "TXT_UseLocalJar");
+                        val = TXT_UseLocalJar();
                     }
                     return super.getListCellRendererComponent(list, val, index, isSelected, cellHasFocus);
                 }

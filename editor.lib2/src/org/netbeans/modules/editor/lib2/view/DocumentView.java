@@ -652,9 +652,12 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
     void updateStartEndOffsets() {
         Position startPos = getExtraStartPosition();
         Position endPos = getExtraEndPosition();
+        Document doc = getDocument();
         startOffset = (startPos != null) ? startPos.getOffset() : 0;
         endOffset = Math.max(startOffset,
-                (endPos != null) ? endPos.getOffset() : getDocument().getEndPosition().getOffset());
+                (endPos != null)
+                    ? endPos.getOffset()
+                    : ((doc != null) ? doc.getEndPosition().getOffset() : 0));
     }
     
     @Override

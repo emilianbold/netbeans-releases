@@ -49,13 +49,6 @@ made subject to such option by the copyright holder.
             <file name="org-openide-actions-SaveAsTemplateAction.instance"/>
         </folder>
     </folder>
-    <folder name="Services">
-        <folder name="MIMEResolver">
-            <file name="plain-text-resolver.xml" url="plain-text-resolver.xml">
-                <attr name="position" intvalue="140"/>
-            </file>
-        </folder>
-    </folder>
     <folder name="Menu">
         <folder name="GoTo">
             <file name="org-netbeans-core-actions-JumpNextAction.shadow">

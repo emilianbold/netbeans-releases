@@ -169,7 +169,8 @@ public class CppBracesMatcher implements BracesMatcher, BracesMatcherFactory {
             // Check special tokens
             seq.move(originOffset);
             if (seq.moveNext()) {
-                if (seq.token().id() == CppTokenId.STRING_LITERAL) {
+                Object id = seq.token().id();
+                if (id == CppTokenId.STRING_LITERAL || id == CppTokenId.RAW_STRING_LITERAL) {
                     int offset = BracesMatcherSupport.matchChar(
                         context.getDocument(),
                         backward ? originOffset : originOffset + 1,

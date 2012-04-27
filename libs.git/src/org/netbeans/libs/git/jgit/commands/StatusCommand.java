@@ -44,6 +44,9 @@ package org.netbeans.libs.git.jgit.commands;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -52,6 +55,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import org.eclipse.jgit.JGitText;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.RenameDetector;
 import org.eclipse.jgit.dircache.DirCache;
@@ -59,19 +63,22 @@ import org.eclipse.jgit.dircache.DirCacheEntry;
 import org.eclipse.jgit.dircache.DirCacheIterator;
 import org.eclipse.jgit.errors.CorruptObjectException;
 import org.eclipse.jgit.lib.Constants;
+import org.eclipse.jgit.lib.CoreConfig;
 import org.eclipse.jgit.lib.FileMode;
 import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.ObjectInserter;
+import org.eclipse.jgit.lib.ObjectLoader;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevWalk;
-import org.eclipse.jgit.treewalk.EmptyTreeIterator;
-import org.eclipse.jgit.treewalk.FileTreeIterator;
-import org.eclipse.jgit.treewalk.TreeWalk;
+import org.eclipse.jgit.treewalk.*;
 import org.eclipse.jgit.treewalk.filter.AndTreeFilter;
 import org.eclipse.jgit.treewalk.filter.NotTreeFilter;
 import org.eclipse.jgit.treewalk.filter.OrTreeFilter;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.eclipse.jgit.treewalk.filter.PathFilterGroup;
 import org.eclipse.jgit.treewalk.filter.TreeFilter;
+import org.eclipse.jgit.util.IO;
+import org.eclipse.jgit.util.io.EolCanonicalizingInputStream;
 import org.netbeans.libs.git.GitConflictDescriptor;
 import org.netbeans.libs.git.GitConflictDescriptor.Type;
 import org.netbeans.libs.git.GitException;
@@ -119,6 +126,7 @@ public class StatusCommand extends GitCommand {
         Repository repository = getRepository();
         try {
             DirCache cache = repository.readDirCache();
+            ObjectInserter oi = repository.newObjectInserter();
             try {
                 String workTreePath = repository.getWorkTree().getAbsolutePath();
                 Collection<PathFilter> pathFilters = Utils.getPathFilters(repository.getWorkTree(), roots);
@@ -147,6 +155,8 @@ public class StatusCommand extends GitCommand {
                 List<GitStatus> symLinks = new LinkedList<GitStatus>();
                 boolean checkExecutable = Utils.checkExecutable(repository);
                 boolean trackSymLinks = Boolean.valueOf(System.getProperty(PROP_TRACK_SYMLINKS, Boolean.FALSE.toString()));
+                WorkingTreeOptions opt = repository.getConfig().get(WorkingTreeOptions.KEY);
+                boolean autocrlf = opt.getAutoCRLF() != CoreConfig.AutoCRLF.FALSE;
                 while (treeWalk.next() && !monitor.isCanceled()) {
                     String path = treeWalk.getPathString();
                     boolean symlink = false;
@@ -198,9 +208,6 @@ public class StatusCommand extends GitCommand {
                             treeWalk.enterSubtree();
                             continue;
                         }
-                    } else if (Utils.isFromNested(mWorking) || Utils.isFromNested(mIndex) || Utils.isFromNested(mHead)) {
-                        // nested repository
-                        continue;
                     } else {
                         if (mWorking == FileMode.MISSING.getBits() && mIndex != FileMode.MISSING.getBits()) {
                             statusIndexWC = GitStatus.Status.STATUS_REMOVED;
@@ -210,7 +217,12 @@ public class StatusCommand extends GitCommand {
                             } else {
                                 statusIndexWC = GitStatus.Status.STATUS_ADDED;
                             }
-                        } else if (!isExistingSymlink(mIndex, mWorking) && (differ(mIndex, mWorking, checkExecutable) || (mWorking != 0 && mWorking != FileMode.TREE.getBits() && fti.isModified(indexEntry, true)))) {
+                        } else if (!isExistingSymlink(mIndex, mWorking) && (differ(mIndex, mWorking, checkExecutable) 
+                                || (mWorking != 0 && mWorking != FileMode.TREE.getBits() 
+                                && (autocrlf && fti.isModified(indexEntry, false) 
+                                && (fti.compareMetadata(indexEntry) == WorkingTreeIterator.MetadataDiff.DIFFER_BY_METADATA //entry is modified, but in metadata, no content check needed
+                                    || differ(indexEntry.getObjectId(), fti, oi))
+                                || !autocrlf && fti.isModified(indexEntry, true))))) {
                             statusIndexWC = GitStatus.Status.STATUS_MODIFIED;
                         } else {
                             statusIndexWC = GitStatus.Status.STATUS_NORMAL;
@@ -222,6 +234,8 @@ public class StatusCommand extends GitCommand {
                         } else if (!isExistingSymlink(mIndex, mWorking) && (differ(mHead, mWorking, checkExecutable) 
                                 || (mWorking != 0 && mWorking != FileMode.TREE.getBits() 
                                     && (indexEntry == null || !indexEntry.isAssumeValid()) //no update-index --assume-unchanged
+                                    // head vs wt can be modified only when head vs index or index vs wt are modified, otherwise it's probably line-endings issue
+                                    && (statusIndexWC != GitStatus.Status.STATUS_NORMAL || statusHeadIndex != GitStatus.Status.STATUS_NORMAL)
                                     && !treeWalk.getObjectId(T_HEAD).equals(fti.getEntryObjectId())))) {
                             statusHeadWC = GitStatus.Status.STATUS_MODIFIED;
                         } else {
@@ -245,6 +259,7 @@ public class StatusCommand extends GitCommand {
                 handleConflict(conflicts, workTreePath);
                 handleSymlink(symLinks, workTreePath);
             } finally {
+                oi.release();
                 cache.unlock();
             }
         } catch (CorruptObjectException ex) {
@@ -395,6 +410,29 @@ public class StatusCommand extends GitCommand {
                     null, status.isFolder(), null);
             addStatus(status.getFile(), status);
             symLinks.clear();
+        }
+    }
+
+    private boolean differ (ObjectId objectId, FileTreeIterator fti, ObjectInserter oi) throws IOException {
+        InputStream s1 = null, s2 = null;
+        try {
+            ByteBuffer buf = IO.readWholeStream(s1 = fti.openEntryStream(), (int) fti.getEntryLength());
+            ObjectId hash1 = oi.idFor(Constants.OBJ_BLOB, buf.array());
+            ObjectLoader loader = getRepository().getObjectDatabase().open(objectId);
+            ByteBuffer buf2 = IO.readWholeStream(s2 = new EolCanonicalizingInputStream(loader.openStream()), (int) fti.getEntryLength());
+            ObjectId hash2 = oi.idFor(Constants.OBJ_BLOB, buf2.array());
+            return !hash1.equals(hash2);
+        } finally {
+            if (s1 != null) {
+                try {
+                    s1.close();
+                } catch (IOException ex) {}
+            }
+            if (s2 != null) {
+                try {
+                    s2.close();
+                } catch (IOException ex) {}
+            }
         }
     }
 }

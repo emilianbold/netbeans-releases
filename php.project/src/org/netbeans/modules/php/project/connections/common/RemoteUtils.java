@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.php.project.connections.common;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.php.api.util.StringUtils;
@@ -68,6 +70,7 @@ public final class RemoteUtils {
      */
     @NbBundle.Messages({
         "LBL_RemoteError=Remote Error",
+        "# {0} - reason of the failure",
         "MSG_RemoteErrorReason=\n\nReason: {0}"
     })
     public static void processRemoteException(RemoteException remoteException) {
@@ -128,6 +131,46 @@ public final class RemoteUtils {
             uploadDirectory = ""; // NOI18N
         }
         return uploadDirectory;
+    }
+
+    /**
+     * Get parent path for the given path.
+     * @param path file path
+     * @return parent path or "/" for absolute top-level path
+     * or {@code null} if parent path does not exist
+     */
+    public static String getParentPath(String path) {
+        if (path.equals(TransferFile.REMOTE_PATH_SEPARATOR)) {
+            return null;
+        }
+        boolean absolute = path.startsWith(TransferFile.REMOTE_PATH_SEPARATOR);
+        if (absolute) {
+            path = path.substring(1);
+        }
+        String parent;
+        List<String> parts = new ArrayList<String>(StringUtils.explode(path, TransferFile.REMOTE_PATH_SEPARATOR));
+        if (parts.size() <= 1) {
+            return absolute ? TransferFile.REMOTE_PATH_SEPARATOR : null;
+        }
+        parts.remove(parts.size() - 1);
+        parent = StringUtils.implode(parts, TransferFile.REMOTE_PATH_SEPARATOR);
+        if (absolute) {
+            return TransferFile.REMOTE_PATH_SEPARATOR + parent;
+        }
+        return parent;
+    }
+
+    /**
+     * Get name of the file for the given path.
+     * @param path file path
+     * @return name of the file for the given path
+     */
+    public static String getName(String path) {
+        if (path.equals(TransferFile.REMOTE_PATH_SEPARATOR)) {
+            return TransferFile.REMOTE_PATH_SEPARATOR;
+        }
+        List<String> parts = new ArrayList<String>(StringUtils.explode(path, TransferFile.REMOTE_PATH_SEPARATOR));
+        return parts.get(parts.size() - 1);
     }
 
 }

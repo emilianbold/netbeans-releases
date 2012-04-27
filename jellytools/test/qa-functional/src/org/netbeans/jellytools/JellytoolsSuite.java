@@ -60,12 +60,12 @@ public class JellytoolsSuite {
                 addTest(NavigatorOperatorTest.class).
                 addTest(NewFileWizardOperatorTest.class, NewFileWizardOperatorTest.tests).
                 addTest(NewProjectWizardOperatorTest.class, NewProjectWizardOperatorTest.tests).
-                //TODO addTest(OutlineOperatorTest.class, OutlineOperatorTest.tests).
+                addTest(OutlineOperatorTest.class, OutlineOperatorTest.tests).
                 addTest(OutputOperatorTest.class, OutputOperatorTest.tests).
                 addTest(OutputTabOperatorTest.class, OutputTabOperatorTest.tests).
                 addTest(ProjectsTabOperatorTest.class, ProjectsTabOperatorTest.tests).
                 addTest(SaveAsTemplateOperatorTest.class, SaveAsTemplateOperatorTest.tests).
                 addTest(TopComponentOperatorTest.class, TopComponentOperatorTest.tests);
-        return NbModuleSuite.create(conf.clusters(".*").enableModules(".*"));
+        return conf.clusters(".*").enableModules(".*").suite();
     }
 }

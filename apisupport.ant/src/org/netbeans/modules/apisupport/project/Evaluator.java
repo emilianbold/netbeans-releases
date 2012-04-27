@@ -73,6 +73,7 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.api.Util;
 import org.netbeans.modules.apisupport.project.queries.ClassPathProviderImpl;
+import org.netbeans.modules.apisupport.project.ui.customizer.ModuleProperties;
 import org.netbeans.modules.apisupport.project.ui.customizer.SingleModuleProperties;
 import org.netbeans.modules.apisupport.project.universe.DestDirProvider;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
@@ -483,7 +484,7 @@ public final class Evaluator implements PropertyEvaluator, PropertyChangeListene
             Map<String,String> props = new HashMap<String,String>();
             String home = eval.getProperty(NBJDK_HOME);
             if (home == null) {
-                String active = eval.getProperty("nbjdk.active"); // NOI18N
+                String active = eval.getProperty(ModuleProperties.JAVA_PLATFORM_PROPERTY);
                 if (active != null && !active.equals("default")) { // NOI18N
                     home = eval.getProperty("platforms." + active + ".home"); // NOI18N
                     if (home != null) {

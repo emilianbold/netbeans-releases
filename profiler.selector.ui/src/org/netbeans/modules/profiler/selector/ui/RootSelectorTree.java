@@ -54,6 +54,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.*;
 import javax.swing.event.*;
@@ -71,7 +72,9 @@ import org.netbeans.modules.profiler.api.ProfilerDialogs;
 import org.netbeans.modules.profiler.api.java.SourceMethodInfo;
 import org.netbeans.modules.profiler.selector.api.nodes.*;
 import org.netbeans.modules.profiler.selector.spi.SelectionTreeBuilder;
+import org.netbeans.modules.profiler.selector.api.SelectionTreeBuilderType;
 import org.netbeans.modules.profiler.utilities.trees.NodeFilter;
+import org.openide.util.Cancellable;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -90,6 +93,21 @@ import org.openide.util.NbBundle;
 })
 public class RootSelectorTree extends JPanel {
     final private static MethodNameFormatterFactory methodFormatterFactory = MethodNameFormatterFactory.getDefault(new DefaultMethodNameFormatter(DefaultMethodNameFormatter.VERBOSITY_FULLCLASSMETHOD));
+    final private static Comparator<SourceCodeSelection> containmentComparator = new Comparator<SourceCodeSelection>() {
+        @Override
+        public int compare(SourceCodeSelection o1, SourceCodeSelection o2) {
+            if (o1 == null && o2 != null) return 1;
+            if (o1 != null && o2 == null) return -1;
+            if (o1 == null && o2 == null) return 0;
+
+            if (o1.equals(o2)) return 0;
+            if (o1.contains(o2)) return -1;
+            if (o2.contains(o1)) return 1;
+
+            return o1.toFlattened().compareTo(o2.toFlattened());
+        }
+    };
+    
     private JCheckTree tree = new JCheckTree() {
         @Override
         public String getToolTipText(MouseEvent event) {
@@ -149,26 +167,17 @@ public class RootSelectorTree extends JPanel {
     public static final String SELECTION_TREE_VIEW_LIST_PROPERTY = "SELECTION_TREE_VIEW_LIST"; // NO18N
     private final Set<SourceCodeSelection> currentSelectionSet = new HashSet<SourceCodeSelection>();
     private ProgressDisplayer progress = ProgressDisplayer.DEFAULT;
-    private NodeFilter<SelectorNode> nodeFilter = DEFAULT_FILTER_INNER;
+//    private NodeFilter<SelectorNode> nodeFilter = DEFAULT_FILTER_INNER;
     private Lookup context = Lookup.EMPTY;
-    private SelectionTreeBuilder.Type builderType = null;
+    private SelectionTreeBuilderType builderType = null;
     private SearchPanel searchPanel = null;
-    
-    public RootSelectorTree(BuilderUsageCalculator usageCalculator) {
-        this(ProgressDisplayer.DEFAULT, DEFAULT_FILTER_INNER);
-    }
+    final private TreePathSearch.ClassIndex ci;
+    private Cancellable cancellHandler;
 
-    public RootSelectorTree(ProgressDisplayer pd) {
-        this(pd, DEFAULT_FILTER_INNER);
-    }
-
-    public RootSelectorTree(NodeFilter<SelectorNode> filter) {
-        this(ProgressDisplayer.DEFAULT, filter);
-    }
-
-    public RootSelectorTree(ProgressDisplayer pd, NodeFilter<SelectorNode> filter) {
+    public RootSelectorTree(ProgressDisplayer pd, TreePathSearch.ClassIndex ci) {
         this.progress = pd;
-        this.nodeFilter = filter;
+        this.ci = ci;
+//        this.nodeFilter = filter;
         init();
     }
 
@@ -177,11 +186,19 @@ public class RootSelectorTree extends JPanel {
 
         firePropertyChange(SELECTION_TREE_VIEW_LIST_PROPERTY, null, null);
     }
+    
+    public void setCancelHandler(Cancellable cancellable) {
+        this.cancellHandler = cancellable;
+    }
 
+    final private AtomicBoolean isActive = new AtomicBoolean(true);
+    final private Semaphore selectionSemaphore = new Semaphore(1);
     public void setSelection(final SourceCodeSelection[] selection) {
-        new SwingWorker(false) {
+        new SwingWorker(selectionSemaphore) {
+            volatile private ProgressDisplayer pd = null;
             
             protected void doInBackground() {
+                isActive.set(true);
                 removeSelection(getSelection());
                 applySelection(selection);
             }
@@ -197,7 +214,14 @@ public class RootSelectorTree extends JPanel {
                         cl.countDown();
                     }
                 });
-                progress.showProgress(Bundle.MSG_ApplyingSelection());
+                final SwingWorker worker = this;
+                pd = progress.showProgress(Bundle.MSG_ApplyingSelection(), new ProgressDisplayer.ProgressController() {
+                    @Override
+                    public boolean cancel() {
+                        worker.cancel();
+                        return true;
+                    }
+                });
                 
                 try {
                     cl.await();
@@ -207,7 +231,7 @@ public class RootSelectorTree extends JPanel {
             }
             
             protected void done() {
-                progress.close();
+                closeProgress();
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
@@ -216,30 +240,60 @@ public class RootSelectorTree extends JPanel {
                 });
                 tree.treeDidChange();
             }
+            
+            
+            
+            private void closeProgress() {
+                if (pd != null && pd.isOpened()) {
+                    pd.close();
+                    pd = null;
+                }                
+            }
 
             @Override
             protected int getWarmup() {
                 return 50;
             }
-            
-            
+
+            @Override
+            protected void cancelled() {
+                isActive.set(false);
+                closeProgress();
+                if (cancellHandler != null) {
+                    cancellHandler.cancel();
+                }
+            }
         }.execute();
     }
 
     public SourceCodeSelection[] getSelection() {
+        if (currentSelectionSet.isEmpty()) return new SourceCodeSelection[0];
+        
+        List<SourceCodeSelection> selectionList = new ArrayList<SourceCodeSelection>(currentSelectionSet);
+        
+        Collections.sort(selectionList, containmentComparator);
+        
+        currentSelectionSet.clear();
+        SourceCodeSelection parentSel = null;
+        for(SourceCodeSelection scs : selectionList) {
+            if (parentSel == null || !parentSel.contains(scs)) {
+                parentSel = scs;
+                currentSelectionSet.add(scs);
+            }
+        }        
         return currentSelectionSet.toArray(new SourceCodeSelection[currentSelectionSet.size()]);
     }
 
-    public List<SelectionTreeBuilder.Type> getBuilderTypes() {
+    public List<SelectionTreeBuilderType> getBuilderTypes() {
 //      **** useful for testing *******
 //      return Collections.EMPTY_LIST;
 //      *******************************
         class TypeEntry {
 
-            SelectionTreeBuilder.Type type;
+            SelectionTreeBuilderType type;
             int frequency;
 
-            public TypeEntry(SelectionTreeBuilder.Type type) {
+            public TypeEntry(SelectionTreeBuilderType type) {
                 this.type = type;
                 frequency = 0;
             }
@@ -271,13 +325,14 @@ public class RootSelectorTree extends JPanel {
 
         for (SelectionTreeBuilder builder : context.lookupAll(SelectionTreeBuilder.class)) {
             if (builder.estimatedNodeCount() == -1) continue; // builder can't build the tree for some reason
-            SelectionTreeBuilder.Type type = builder.getType();
+            SelectionTreeBuilderType type = builder.getType();
             TypeEntry te = new TypeEntry(type);
             if (entries.contains(te)) {
                 int index = entries.indexOf(te);
                 te = entries.get(index);
                 te.frequency += builder.isPreferred() ? 2 : 1;
             } else {
+                te.frequency = builder.isPreferred() ? 2 : 1;
                 entries.add(te);
             }
         }
@@ -286,9 +341,9 @@ public class RootSelectorTree extends JPanel {
 
             @Override
             public int compare(TypeEntry o1, TypeEntry o2) {
-                if (o1.frequency > o2.frequency) {
+                if (o1.frequency < o2.frequency) {
                     return 1;
-                } else if (o1.frequency < o2.frequency) {
+                } else if (o1.frequency > o2.frequency) {
                     return -1;
                 } else {
                     return 0;
@@ -296,7 +351,7 @@ public class RootSelectorTree extends JPanel {
             }
         });
 
-        List<SelectionTreeBuilder.Type> types = new ArrayList<SelectionTreeBuilder.Type>(entries.size());
+        List<SelectionTreeBuilderType> types = new ArrayList<SelectionTreeBuilderType>(entries.size());
         for (TypeEntry entry : entries) {
             types.add(entry.type);
         }
@@ -304,7 +359,7 @@ public class RootSelectorTree extends JPanel {
         return types;
     }
 
-    public void setBuilderType(SelectionTreeBuilder.Type type) {
+    public void setBuilderType(SelectionTreeBuilderType type) {
         builderType = type;
         refreshTree();
     }
@@ -315,6 +370,7 @@ public class RootSelectorTree extends JPanel {
      * Should be called right before trying to show the selector tree
      */
     public void reset() {
+        isActive.set(true);
         tree.setModel(DEFAULTMODEL);
         currentSelectionSet.clear();
         context = Lookup.EMPTY;
@@ -390,6 +446,7 @@ public class RootSelectorTree extends JPanel {
         repaint();
     }
 
+    final private Semaphore lazyOpeningSemaphore = new Semaphore(1);
     private void addTreeLazyOpening() {
         tree.addTreeWillExpandListener(new TreeWillExpandListener() {
 
@@ -418,7 +475,7 @@ public class RootSelectorTree extends JPanel {
 
                     openingSubtree = true;
 
-                    new SwingWorker() {
+                    new SwingWorker(lazyOpeningSemaphore) {
 
                         @Override
                         protected void doInBackground() {
@@ -533,7 +590,7 @@ public class RootSelectorTree extends JPanel {
     private void findNode(final String searchText) {
         GestureSubmitter.logRMSSearch(searchText);
         
-        sCont = new TreePathSearch((TreeNode)tree.getModel().getRoot(), searchText);
+        sCont = new TreePathSearch((TreeNode)tree.getModel().getRoot(), searchText, ci);
         find(false);
     }
     
@@ -548,7 +605,7 @@ public class RootSelectorTree extends JPanel {
             return;
         }
         if (searchInProgress.compareAndSet(false, true)) {
-            new SwingWorker(true) {
+            new SwingWorker() {
                 volatile private TreePath rsltPath;
                 volatile private ProgressDisplayer pd;
                 @Override
@@ -618,12 +675,15 @@ public class RootSelectorTree extends JPanel {
             }
         }
     }
-
+    
     private void applySelection(SourceCodeSelection[] selections) {
+        if (!isActive.get()) return;
+        
         TreeNode root = (TreeNode) tree.getModel().getRoot();
         Enumeration childrenEnum = root.children();
 
         while (childrenEnum.hasMoreElements()) {
+            if (!isActive.get()) return;
             Object child = childrenEnum.nextElement();
 
             if (child instanceof SelectorNode) {
@@ -637,6 +697,7 @@ public class RootSelectorTree extends JPanel {
     }
 
     private void applySelection(SelectorNode node, SourceCodeSelection selection) {
+        if (!isActive.get()) return;
         SourceCodeSelection signature = node.getSignature();
 
         if (signature != null) {
@@ -654,6 +715,7 @@ public class RootSelectorTree extends JPanel {
         Enumeration childrenEnum = node.children();
 
         while (childrenEnum.hasMoreElements()) {
+            if (!isActive.get()) return;
             Object child = childrenEnum.nextElement();
 
             if (child instanceof SelectorNode) {
@@ -772,17 +834,18 @@ public class RootSelectorTree extends JPanel {
     }
 
     private void applyCurrentSelection() {
-        TreeNode root = (TreeNode) tree.getModel().getRoot();
-        Enumeration childrenEnum = root.children();
-
-        while (childrenEnum.hasMoreElements()) {
-            Object child = childrenEnum.nextElement();
-
-            if (child instanceof SelectorNode) {
-                for (SourceCodeSelection selection : currentSelectionSet) {
-                    applySelection((SelectorNode) child, selection);
-                }
-            }
-        }
+        setSelection(currentSelectionSet.toArray(new SourceCodeSelection[currentSelectionSet.size()]));
+//        TreeNode root = (TreeNode) tree.getModel().getRoot();
+//        Enumeration childrenEnum = root.children();
+//
+//        while (childrenEnum.hasMoreElements()) {
+//            Object child = childrenEnum.nextElement();
+//
+//            if (child instanceof SelectorNode) {
+//                for (SourceCodeSelection selection : currentSelectionSet) {
+//                    applySelection((SelectorNode) child, selection);
+//                }
+//            }
+//        }
     }
 }

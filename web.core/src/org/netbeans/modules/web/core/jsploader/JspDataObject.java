@@ -71,6 +71,7 @@ import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataLoader;
 import org.openide.loaders.DataLoaderPool;
@@ -90,6 +91,10 @@ import org.openide.windows.TopComponent;
  *
  * @author Petr Jiricka
  */
+@NbBundle.Messages("JSPResolver=Web Application files")
+@MIMEResolver.Registration(
+    displayName="#JSPResolver", position=390, resource="../resources/jsp-mime-resolver.xml"
+)
 public class JspDataObject extends MultiDataObject implements QueryStringCookie {
     
     public static final String EA_JSP_ERRORPAGE = "jsp_errorpage"; // NOI18N

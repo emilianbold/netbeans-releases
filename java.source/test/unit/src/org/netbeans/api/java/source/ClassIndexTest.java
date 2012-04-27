@@ -62,9 +62,10 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
+import org.netbeans.modules.java.source.usages.ClassIndexManagerEvent;
+import org.netbeans.modules.java.source.usages.ClassIndexManagerListener;
 import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
@@ -258,6 +259,7 @@ public class ClassIndexTest extends NbTestCase {
         assertExpectedEvents (et, testListener.getEventLog());
     }
     
+    @SuppressWarnings("deprecation")
     public void testholdsWriteLock () throws Exception {
         //Test basics
         IndexManager.readAccess(new IndexManager.Action<Void>() {
@@ -302,13 +304,13 @@ public class ClassIndexTest extends NbTestCase {
             scp);
         final ClassIndex ci = cpInfo.getClassIndex();
         Set<ElementHandle<TypeElement>> r = ci.getElements(
-            ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, "org.me.base.Base"),
+            ElementHandle.createTypeElementHandle(ElementKind.CLASS, "org.me.base.Base"),
             EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS),
             EnumSet.of(ClassIndex.SearchScope.SOURCE));
         assertElementHandles(new String[]{"org.me.pkg1.Class1","org.me.pkg2.Class2"}, r);
 
         r = ci.getElements(
-            ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, "org.me.base.Base"),
+            ElementHandle.createTypeElementHandle(ElementKind.CLASS, "org.me.base.Base"),
             EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS),
             Collections.singleton(
                 ClassIndex.createPackageSearchScope(
@@ -325,13 +327,13 @@ public class ClassIndexTest extends NbTestCase {
             ClassIndex.SearchScope.SOURCE,
             "org.me.pkg2"));
         r = ci.getElements(
-            ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, "org.me.base.Base"),
+            ElementHandle.createTypeElementHandle(ElementKind.CLASS, "org.me.base.Base"),
             EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS),
             scopes);
         assertElementHandles(new String[]{"org.me.pkg1.Class1","org.me.pkg2.Class2"}, r);
 
         r = ci.getElements(
-            ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, "org.me.base.Base"),
+            ElementHandle.createTypeElementHandle(ElementKind.CLASS, "org.me.base.Base"),
             EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS),
             Collections.singleton(
                 new ClassIndex.SearchScopeType() {
@@ -353,7 +355,7 @@ public class ClassIndexTest extends NbTestCase {
         assertElementHandles(new String[]{"org.me.pkg1.Class1","org.me.pkg2.Class2"}, r);
 
         r = ci.getElements(
-            ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, "org.me.base.Base"),
+            ElementHandle.createTypeElementHandle(ElementKind.CLASS, "org.me.base.Base"),
             EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS),
             Collections.singleton(
                 ClassIndex.createPackageSearchScope(
@@ -362,7 +364,7 @@ public class ClassIndexTest extends NbTestCase {
         assertElementHandles(new String[]{"org.me.pkg1.Class1"}, r);
 
         r = ci.getElements(
-            ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, "org.me.base.Base"),
+            ElementHandle.createTypeElementHandle(ElementKind.CLASS, "org.me.base.Base"),
             EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS),
             Collections.singleton(
                 ClassIndex.createPackageSearchScope(
@@ -370,13 +372,13 @@ public class ClassIndexTest extends NbTestCase {
         assertElementHandles(new String[]{}, r);
 
         r = ci.getElements(
-            ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, "java.lang.Object"),
+            ElementHandle.createTypeElementHandle(ElementKind.CLASS, "java.lang.Object"),
             EnumSet.allOf(ClassIndex.SearchKind.class),
             EnumSet.of(ClassIndex.SearchScope.SOURCE));
         assertElementHandles(new String[]{"org.me.base.Base", "org.me.pkg1.Class1","org.me.pkg2.Class2"}, r);
 
         r = ci.getElements(
-            ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, "java.lang.Object"),
+            ElementHandle.createTypeElementHandle(ElementKind.CLASS, "java.lang.Object"),
             EnumSet.allOf(ClassIndex.SearchKind.class),
             Collections.singleton(ClassIndex.createPackageSearchScope(ClassIndex.SearchScope.SOURCE, "org.me.pkg1")));
         assertElementHandles(new String[]{"org.me.pkg1.Class1"}, r);
@@ -506,35 +508,47 @@ public class ClassIndexTest extends NbTestCase {
         final ClassIndex ci = ClasspathInfo.create(bootPath, compilePath, sourcePath).getClassIndex();
         assertNotNull(ci);
         Set<FileObject> result = ci.getResourcesForPackage(
-            ElementHandleAccessor.INSTANCE.create(ElementKind.PACKAGE, "java.util"),    //NOI18N
+            ElementHandle.createPackageElementHandle("java.util"),    //NOI18N
             EnumSet.<ClassIndex.SearchKind>of(ClassIndex.SearchKind.IMPLEMENTORS),
             EnumSet.<ClassIndex.SearchScope>of(ClassIndex.SearchScope.SOURCE));
         assertNotNull(result);
         assertFiles(Collections.singleton(t1),result);
         result = ci.getResourcesForPackage(
-            ElementHandleAccessor.INSTANCE.create(ElementKind.PACKAGE, "java.util"),    //NOI18N
+            ElementHandle.createPackageElementHandle("java.util"),    //NOI18N
             EnumSet.<ClassIndex.SearchKind>allOf(ClassIndex.SearchKind.class),
             EnumSet.<ClassIndex.SearchScope>of(ClassIndex.SearchScope.SOURCE));
         assertNotNull(result);
         assertFiles(Arrays.asList(t1,t2),result);
         result = ci.getResourcesForPackage(
-            ElementHandleAccessor.INSTANCE.create(ElementKind.PACKAGE, "java.io"),      //NOI18N
+            ElementHandle.createPackageElementHandle("java.io"),      //NOI18N
             EnumSet.<ClassIndex.SearchKind>allOf(ClassIndex.SearchKind.class),
             EnumSet.<ClassIndex.SearchScope>of(ClassIndex.SearchScope.SOURCE));
         assertNotNull(result);
         assertFiles(Collections.singleton(t3),result);
         result = ci.getResourcesForPackage(
-            ElementHandleAccessor.INSTANCE.create(ElementKind.PACKAGE, "java.util.concurrent"), //NOI18N
+            ElementHandle.createPackageElementHandle("java.util.concurrent"), //NOI18N
             EnumSet.<ClassIndex.SearchKind>allOf(ClassIndex.SearchKind.class),
             EnumSet.<ClassIndex.SearchScope>of(ClassIndex.SearchScope.SOURCE));
         assertNotNull(result);
         assertFiles(Collections.<FileObject>emptySet(),result);
         result = ci.getResourcesForPackage(
-            ElementHandleAccessor.INSTANCE.create(ElementKind.PACKAGE, "u"),    //NOI18N
+            ElementHandle.createPackageElementHandle("u"),    //NOI18N
             EnumSet.<ClassIndex.SearchKind>of(ClassIndex.SearchKind.TYPE_REFERENCES),
             EnumSet.<ClassIndex.SearchScope>of(ClassIndex.SearchScope.SOURCE));
         assertNotNull(result);
         assertFiles(Arrays.asList(dummy, t4),result);
+    }
+    
+    public void testNullRootPassedToClassIndexEvent() throws Exception {
+        
+        GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, new ClassPath[] {sourcePath});
+        IndexingManager.getDefault().refreshIndexAndWait(srcRoot.toURL(), null);
+        final ClassIndexManagerListenerImpl testListener = new ClassIndexManagerListenerImpl();
+        ClassIndexManager.getDefault().addClassIndexManagerListener(testListener);
+        testListener.expect(EventType.ROOTS_REMOVED);
+        GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, new ClassPath[] {sourcePath});
+        assertTrue(testListener.await(10000));
+        assertTrue(testListener.getAdded().isEmpty());
     }
 
     private FileObject createJavaFile (
@@ -714,7 +728,7 @@ public class ClassIndexTest extends NbTestCase {
             this.typesEvent = null;
             this.rootsEvent = event;
         }
-
+        
         @Override
         public String toString() {
             return "[" + type +"]";
@@ -782,6 +796,55 @@ public class ClassIndexTest extends NbTestCase {
             return res;
         }
         
+    }
+    
+    private static class ClassIndexManagerListenerImpl implements ClassIndexManagerListener {
+        
+        private Set<? extends EventType> expectedEvents; 
+        private final List<ClassIndexManagerEvent> added = new ArrayList<ClassIndexManagerEvent>();
+        private final List<ClassIndexManagerEvent> removed = new ArrayList<ClassIndexManagerEvent>();
+        
+        synchronized void expect(final EventType... events) {
+            expectedEvents = new HashSet<EventType>(Arrays.<EventType>asList(events));
+            added.clear();
+            removed.clear();
+        }
+        
+        synchronized boolean await(int millis) throws InterruptedException {
+            final long st = System.currentTimeMillis();
+            while (!expectedEvents.isEmpty()) {
+                if (System.currentTimeMillis() - st >= millis) {
+                    return false;
+                }
+                wait(millis);
+            }
+            return true;
+        }
+        
+        public synchronized List<? extends ClassIndexManagerEvent> getAdded() {
+            return Collections.<ClassIndexManagerEvent>unmodifiableList(added);
+        }
+        
+        public synchronized List<? extends ClassIndexManagerEvent> getRemoved() {
+            return Collections.<ClassIndexManagerEvent>unmodifiableList(removed);
+        }
+
+        @Override
+        public synchronized void classIndexAdded(ClassIndexManagerEvent event) {
+            added.add(event);
+            if (expectedEvents.remove(EventType.ROOTS_ADDED)) {
+                notifyAll();
+            }
+        }
+
+        @Override
+        public synchronized void classIndexRemoved(ClassIndexManagerEvent event) {
+            removed.add(event);
+            if (expectedEvents.remove(EventType.ROOTS_REMOVED)) {
+                notifyAll();
+            }
+        }
+
     }
     
     

@@ -60,6 +60,8 @@ import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.event.MethodEntryEvent;
 import com.sun.jdi.event.WatchpointEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -110,6 +112,7 @@ import org.netbeans.modules.debugger.jpda.visual.breakpoints.AWTComponentBreakpo
 import org.netbeans.modules.debugger.jpda.visual.ui.ScreenshotComponent;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -123,14 +126,46 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
     private static final Map<JPDADebugger, Map<ObjectReference, Stack>> componentsAndStackTraces
             = new WeakHashMap<JPDADebugger, Map<ObjectReference, Stack>>();
     
+    private static final String PROPERTIES_VISUAL = "debugger.options.JPDA.visual"; // NOI18N
+    private static final String PROPERTIES_TCC = "TrackComponentChanges";  // NOI18N
+    private static final String PROPERTIES_UPLOAD_AGENT = "UploadAgent";  // NOI18N
+    
     private Collection<Breakpoint> trackComponentBreakpoints = new ArrayList<Breakpoint>();
+    private final Properties properties;
+    private volatile Boolean isTrackComponentChanges = null;
+    
+    public VisualDebuggerListener() {
+        final RequestProcessor rp = new RequestProcessor(VisualDebuggerListener.class);
+        properties = Properties.getDefault().getProperties(PROPERTIES_VISUAL);
+        if (RemoteAWTScreenshot.FAST_SNAPSHOT_RETRIEVAL) {
+            properties.addPropertyChangeListener(new PropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    String pName = evt.getPropertyName();
+                    if (PROPERTIES_TCC.equals(pName)) {
+                        final Object newValue = evt.getNewValue();
+                        if (isTrackComponentChanges != null && !isTrackComponentChanges.equals(newValue)) {
+                            rp.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    RemoteServices.attachHierarchyListeners(
+                                            Boolean.TRUE.equals(newValue),
+                                            RemoteServices.ServiceType.AWT);
+                                }
+                            });
+                            isTrackComponentChanges = Boolean.TRUE.equals(newValue);
+                        }
+                    }
+                }
+            });
+        }
+    }
 
     @Override
     public void engineAdded(DebuggerEngine engine) {
         // Create a BP in AWT and when hit, inject the remote service.
         final JPDADebugger debugger = engine.lookupFirst(null, JPDADebugger.class);
-        Properties p = Properties.getDefault().getProperties("debugger.options.JPDA.visual");
-        boolean uploadAgent = p.getBoolean("UploadAgent", true);
+        boolean uploadAgent = properties.getBoolean(PROPERTIES_UPLOAD_AGENT, true);
         logger.log(Level.FINE, "engineAdded({0}), debugger = {1}, uploadAgent = {2}", new Object[]{engine, debugger, uploadAgent});
         if (debugger != null && uploadAgent) {
             final AtomicBoolean inited = new AtomicBoolean(false);
@@ -172,20 +207,23 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
             DebuggerManager.getDebuggerManager().addBreakpoint(mb[0]);
             DebuggerManager.getDebuggerManager().addBreakpoint(mb[1]);
         }
-        boolean trackComponentChanges = p.getBoolean("TrackComponentChanges", true);
         if (debugger != null) {
+            boolean trackComponentChanges = properties.getBoolean(PROPERTIES_TCC, true);
+            isTrackComponentChanges = trackComponentChanges;
             if (trackComponentChanges) {
-                MethodBreakpoint cmb = MethodBreakpoint.create("java.awt.Component", "createHierarchyEvents");
-                cmb.setHidden(true);
-                cmb.addJPDABreakpointListener(new JPDABreakpointListener() {
-                    @Override
-                    public void breakpointReached(JPDABreakpointEvent event) {
-                        componentParentChanged(debugger, event, RemoteServices.ServiceType.AWT);
-                        event.resume();
-                    }
-                });
-                DebuggerManager.getDebuggerManager().addBreakpoint(cmb);
-                trackComponentBreakpoints.add(cmb);
+                if (!RemoteAWTScreenshot.FAST_SNAPSHOT_RETRIEVAL) {
+                    MethodBreakpoint cmb = MethodBreakpoint.create("java.awt.Component", "createHierarchyEvents");
+                    cmb.setHidden(true);
+                    cmb.addJPDABreakpointListener(new JPDABreakpointListener() {
+                        @Override
+                        public void breakpointReached(JPDABreakpointEvent event) {
+                            componentParentChanged(debugger, event, RemoteServices.ServiceType.AWT);
+                            event.resume();
+                        }
+                    });
+                    DebuggerManager.getDebuggerManager().addBreakpoint(cmb);
+                    trackComponentBreakpoints.add(cmb);
+                }
                 
                 MethodBreakpoint mb = MethodBreakpoint.create("javafx.scene.Node", "setParent");
                 mb.setHidden(true);
@@ -252,6 +290,14 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
             try {
                 t.notifyMethodInvoking();
                 ClassTypeWrapper.invokeMethod(serviceClass, tr, startMethod, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+                boolean trackComponentChanges = properties.getBoolean(PROPERTIES_TCC, true);
+                isTrackComponentChanges = trackComponentChanges;
+                if (trackComponentChanges && RemoteAWTScreenshot.FAST_SNAPSHOT_RETRIEVAL) {
+                    Method startHierarchyListenerMethod = ClassTypeWrapper.concreteMethodByName(serviceClass, "startHierarchyListener", "()V");
+                    if (startHierarchyListenerMethod != null) {
+                        ClassTypeWrapper.invokeMethod(serviceClass, tr, startHierarchyListenerMethod, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+                    }
+                }
             } catch (VMDisconnectedExceptionWrapper vmd) {                
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
@@ -295,6 +341,9 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
                 it.remove();
             }
         }
+        synchronized (componentsAndStackTraces) {
+            componentsAndStackTraces.remove(debugger);
+        }
     }
     
     private void stopDebuggerRemoteService(JPDADebugger d) {
@@ -303,9 +352,11 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
             return ;
         }
         try {
-//            ReferenceType serviceType = serviceClass.reflectedType();
-//            Field awtAccessLoop = serviceType.fieldByName("awtAccessLoop"); // NOI18N
-//            ((ClassType) serviceType).setValue(awtAccessLoop, serviceClass.virtualMachine().mirrorOf(false));
+            ReferenceType serviceType = serviceClass.reflectedType();
+            Field awtAccessLoop = serviceType.fieldByName("awtAccessLoop"); // NOI18N
+            if (awtAccessLoop != null) {
+                ((ClassType) serviceType).setValue(awtAccessLoop, serviceClass.virtualMachine().mirrorOf(false));
+            }
             serviceClass.enableCollection();
         } catch (VMDisconnectedException vdex) {
             // Ignore

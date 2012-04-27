@@ -15,7 +15,6 @@ import org.openide.loaders.MultiFileLoader;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.windows.TopComponent;
-
 public class ${PREFIX}DataObject extends MultiDataObject {
 
     public ${PREFIX}DataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {

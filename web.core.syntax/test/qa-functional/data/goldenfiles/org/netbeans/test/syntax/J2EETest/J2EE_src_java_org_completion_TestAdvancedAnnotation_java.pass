@@ -151,6 +151,7 @@ Collections
 Comparator <T>
 ConcurrentModificationExceptio
 Currency
+concurrent
 End cursor position = 1195
 [@Column(unique=|, false, @Column(unique=false, 1236]
 false
@@ -180,7 +181,7 @@ Compiler
 Deprecated
 Double
 Enum <E>
-EnumConstantNotPresentException
+EnumConstantNotPresentExceptio
 Enumerated
 Error
 Exception
@@ -236,7 +237,7 @@ StrictMath
 String
 StringBuffer
 StringBuilder
-StringIndexOutOfBoundsException
+StringIndexOutOfBoundsExceptio
 SuppressWarnings
 System
 Temporal
@@ -255,9 +256,11 @@ UnsupportedOperationException
 VerifyError
 VirtualMachineError
 Void
+ch
 com
 java
 javanet
+javassist
 javax
 jp
 org
@@ -277,18 +280,20 @@ RequestForEnhancement
 SuppressWarnings
 Temporal
 TestAdvancedAnnotation
+ch
 com
 java
 javanet
+javassist
 javax
 jp
 org
 sun
 sunw
-End cursor position = 1360
+End cursor position = 1356
 [@RequestForEnhancement(|), int id, @RequestForEnhancement(id=), 1412]
-String date = "[unimplemented]"
-String engineer = "[unassigned]"
+String date = "[unimplemented]
+String engineer = "[unassigned
 int id
 String synopsis
-End cursor position = 1439
+End cursor position = 1435

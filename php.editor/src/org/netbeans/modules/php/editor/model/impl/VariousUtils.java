@@ -42,75 +42,22 @@
 package org.netbeans.modules.php.editor.model.impl;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
-import java.util.StringTokenizer;
+import java.util.*;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.api.AliasedName;
 import org.netbeans.modules.php.editor.api.PhpModifiers;
-import org.netbeans.modules.php.editor.lexer.PHPTokenId;
-import org.netbeans.modules.php.editor.model.ClassScope;
-import org.netbeans.modules.php.editor.model.FieldElement;
-import org.netbeans.modules.php.editor.model.FileScope;
-import org.netbeans.modules.php.editor.model.FunctionScope;
-import org.netbeans.modules.php.editor.model.InterfaceScope;
-import org.netbeans.modules.php.editor.model.MethodScope;
-import org.netbeans.modules.php.editor.model.ModelElement;
-import org.netbeans.modules.php.editor.model.ModelUtils;
-import org.netbeans.modules.php.editor.model.NamespaceScope;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.QualifiedNameKind;
-import org.netbeans.modules.php.editor.model.IndexScope;
-import org.netbeans.modules.php.editor.model.Scope;
-import org.netbeans.modules.php.editor.model.TraitScope;
-import org.netbeans.modules.php.editor.model.TypeScope;
-import org.netbeans.modules.php.editor.model.UseElement;
-import org.netbeans.modules.php.editor.model.VariableName;
-import org.netbeans.modules.php.editor.model.VariableScope;
+import org.netbeans.modules.php.editor.lexer.PHPTokenId;
+import org.netbeans.modules.php.editor.model.*;
 import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.api.Utils;
-import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
-import org.netbeans.modules.php.editor.parser.astnodes.ArrayCreation;
-import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
-import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
-import org.netbeans.modules.php.editor.parser.astnodes.ClassName;
-import org.netbeans.modules.php.editor.parser.astnodes.CloneExpression;
-import org.netbeans.modules.php.editor.parser.astnodes.Comment;
-import org.netbeans.modules.php.editor.parser.astnodes.Expression;
-import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
-import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
-import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
-import org.netbeans.modules.php.editor.parser.astnodes.Include;
-import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression.OperatorType;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar.Type;
-import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
-import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocVarTypeTag;
-import org.netbeans.modules.php.editor.parser.astnodes.ParenthesisExpression;
-import org.netbeans.modules.php.editor.parser.astnodes.Program;
-import org.netbeans.modules.php.editor.parser.astnodes.Reference;
-import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
-import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
-import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
-import org.netbeans.modules.php.editor.parser.astnodes.Variable;
-import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
+import org.netbeans.modules.php.editor.parser.astnodes.*;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -122,14 +69,24 @@ import org.openide.util.Parameters;
  */
 public class VariousUtils {
 
-    public static final String CONSTRUCTOR_TYPE_PREFIX = "constuct:";
-    public static final String FUNCTION_TYPE_PREFIX = "fn:";
-    public static final String METHOD_TYPE_PREFIX = "mtd:";
-    public static final String STATIC_METHOD_TYPE_PREFIX = "static.mtd:";
-    public static final String FIELD_TYPE_PREFIX = "fld:";
-    public static final String STATIC_FIELD__TYPE_PREFIX = "static.fld:";
-    public static final String VAR_TYPE_PREFIX = "var:";
-    public static final String ARRAY_TYPE_PREFIX = "array:";
+    public static final String PRE_OPERATION_TYPE_DELIMITER = "@"; //NOI18N
+    public static final String POST_OPERATION_TYPE_DELIMITER = ":"; //NOI18N
+    public static final String POST_OPERATION_TYPE_DELIMITER_SUBS = "_POTD_"; //NOI18N
+    public static final String CONSTRUCTOR_TYPE_PREFIX = "constuct" + POST_OPERATION_TYPE_DELIMITER; //NOI18N
+    public static final String FUNCTION_TYPE_PREFIX = "fn" + POST_OPERATION_TYPE_DELIMITER; //NOI18N
+    public static final String METHOD_TYPE_PREFIX = "mtd" + POST_OPERATION_TYPE_DELIMITER; //NOI18N
+    public static final String STATIC_METHOD_TYPE_PREFIX = "static.mtd" + POST_OPERATION_TYPE_DELIMITER; //NOI18N
+    public static final String FIELD_TYPE_PREFIX = "fld" + POST_OPERATION_TYPE_DELIMITER; //NOI18N
+    public static final String STATIC_FIELD_TYPE_PREFIX = "static.fld" + POST_OPERATION_TYPE_DELIMITER; //NOI18N
+    public static final String VAR_TYPE_PREFIX = "var" + POST_OPERATION_TYPE_DELIMITER; //NOI18N
+    public static final String ARRAY_TYPE_PREFIX = "array" + POST_OPERATION_TYPE_DELIMITER; //NOI18N
+    private static final Collection<String> SPECIAL_CLASS_NAMES = new LinkedList<String>();
+
+    static {
+        SPECIAL_CLASS_NAMES.add("self"); //NOI18N
+        SPECIAL_CLASS_NAMES.add("static"); //NOI18N
+        SPECIAL_CLASS_NAMES.add("parent"); //NOI18N
+    }
 
     public static enum Kind {
         CONSTRUCTOR,
@@ -153,13 +110,21 @@ public class VariousUtils {
                 case FIELD:
                     return VariousUtils.FIELD_TYPE_PREFIX;
                 case STATIC_FIELD:
-                    return VariousUtils.STATIC_FIELD__TYPE_PREFIX;
+                    return VariousUtils.STATIC_FIELD_TYPE_PREFIX;
                 case VAR:
                     return VariousUtils.VAR_TYPE_PREFIX;
             }
             return super.toString();
         }
     };
+
+    public static String encodeVariableName(final String name) {
+        String result = name;
+        if (name != null) {
+            result = name.replace(POST_OPERATION_TYPE_DELIMITER, POST_OPERATION_TYPE_DELIMITER_SUBS);
+        }
+        return result;
+    }
 
     public static String extractTypeFroVariableBase(VariableBase varBase) {
         return extractTypeFroVariableBase(varBase, Collections.<String, AssignmentImpl>emptyMap());
@@ -229,7 +194,7 @@ public class VariousUtils {
                     String parts[] = tag.getValue().trim().split("\\s+", 2); //NOI18N
 
                     if (parts.length > 0) {
-                        String type = parts[0].split("\\;", 2)[0];
+                        String type = parts[0].split("\\;", 2)[0]; //NOI18N
                         return type;
                     }
 
@@ -297,7 +262,7 @@ public class VariousUtils {
 
     public static String replaceVarNames(String semiTypeName, Map<String,String> var2Type)  {
         StringBuilder retval = new StringBuilder();
-        String[] fragments = semiTypeName.split("[@:]");
+        String[] fragments = semiTypeName.split("[" + PRE_OPERATION_TYPE_DELIMITER + POST_OPERATION_TYPE_DELIMITER + "]"); //NOI18N
         for (int i = 0; i < fragments.length; i++) {
             String frag = fragments[i];
             if (frag.trim().length() == 0) continue;
@@ -321,9 +286,9 @@ public class VariousUtils {
                 }
             }
             if (isPrefix) {
-                retval.append("@");//NOI18N
+                retval.append(PRE_OPERATION_TYPE_DELIMITER);
                 retval.append(frag);
-                retval.append(":");//NOI18N
+                retval.append(POST_OPERATION_TYPE_DELIMITER);
                 isPrefix = true;
             } else {
                 retval.append(frag);
@@ -333,7 +298,7 @@ public class VariousUtils {
     }
     public static Collection<? extends VariableName> getAllVariables(VariableScope varScope, String semiTypeName)  {
         List<VariableName> retval = new ArrayList<VariableName>();
-        String[] fragments = semiTypeName.split("[@:]");
+        String[] fragments = semiTypeName.split("[" + PRE_OPERATION_TYPE_DELIMITER + POST_OPERATION_TYPE_DELIMITER + "]"); //NOI18N
         for (int i = 0; i < fragments.length; i++) {
             String frag = fragments[i];
             if (frag.trim().length() == 0) continue;
@@ -359,9 +324,9 @@ public class VariousUtils {
         Collection<? extends TypeScope> oldRecentTypes = Collections.emptyList();
         Stack<VariableName> fldVarStack = new Stack<VariableName>();
 
-        if (semiTypeName != null && semiTypeName.contains("@")) {
+        if (semiTypeName != null && semiTypeName.contains(PRE_OPERATION_TYPE_DELIMITER)) {
             String operation = null;
-            String[] fragments = semiTypeName.split("[@:]");
+            String[] fragments = semiTypeName.split("[" + PRE_OPERATION_TYPE_DELIMITER + POST_OPERATION_TYPE_DELIMITER + "]"); //NOI18N
             int len = (justDispatcher) ? fragments.length - 1 : fragments.length;
             for (int i = 0; i < len; i++) {
                 oldRecentTypes = recentTypes;
@@ -369,15 +334,15 @@ public class VariousUtils {
                 if (frag.length() == 0) {
                     continue;
                 }
-                String operationPrefix = (frag.endsWith(":")) ? frag : String.format("%s:", frag);
+                String operationPrefix = (frag.endsWith(POST_OPERATION_TYPE_DELIMITER)) ? frag : String.format("%s%s", frag, POST_OPERATION_TYPE_DELIMITER);
                 if (VariousUtils.METHOD_TYPE_PREFIX.equalsIgnoreCase(operationPrefix)) {
                     operation = VariousUtils.METHOD_TYPE_PREFIX;
                 } else if (VariousUtils.FUNCTION_TYPE_PREFIX.equalsIgnoreCase(operationPrefix)) {
                     operation = VariousUtils.FUNCTION_TYPE_PREFIX;
                 } else if (VariousUtils.STATIC_METHOD_TYPE_PREFIX.equalsIgnoreCase(operationPrefix)) {
                     operation = VariousUtils.STATIC_METHOD_TYPE_PREFIX;
-                } else if (VariousUtils.STATIC_FIELD__TYPE_PREFIX.equalsIgnoreCase(operationPrefix)) {
-                    operation = VariousUtils.FIELD_TYPE_PREFIX;
+                } else if (VariousUtils.STATIC_FIELD_TYPE_PREFIX.equalsIgnoreCase(operationPrefix)) {
+                    operation = VariousUtils.STATIC_FIELD_TYPE_PREFIX;
                 } else if (VariousUtils.VAR_TYPE_PREFIX.equalsIgnoreCase(operationPrefix)) {
                     operation = VariousUtils.VAR_TYPE_PREFIX;
                 } else if (VariousUtils.ARRAY_TYPE_PREFIX.equalsIgnoreCase(operationPrefix)) {
@@ -415,9 +380,26 @@ public class VariousUtils {
                         }
                         recentTypes = newRecentTypes;
                         operation = null;
+                    } else if (operation.startsWith(STATIC_FIELD_TYPE_PREFIX)) {
+                        Set<TypeScope> newRecentTypes = new HashSet<TypeScope>();
+                        String[] frgs = frag.split("\\."); //NOI18N
+                        assert frgs.length == 2 : semiTypeName;
+                        String clsName = frgs[0];
+                        if (clsName != null) {
+                        QualifiedName fullyQualifiedName = getFullyQualifiedName(createQuery(clsName, varScope), offset, varScope);
+                            Collection<? extends ClassScope> classes = IndexScopeImpl.getClasses(fullyQualifiedName, varScope);
+                            for (ClassScope cls : classes) {
+                                Collection<? extends FieldElement> fields = IndexScopeImpl.getFields(cls, frgs[1], varScope, PhpModifiers.ALL_FLAGS);
+                                for (FieldElement field : fields) {
+                                    newRecentTypes.addAll(field.getTypes(offset));
+                                }
+                            }
+                        }
+                        recentTypes = newRecentTypes;
+                        operation = null;
                     } else if (operation.startsWith(VariousUtils.STATIC_METHOD_TYPE_PREFIX)) {
                         Set<TypeScope> newRecentTypes = new HashSet<TypeScope>();
-                        String[] frgs = frag.split("\\.");
+                        String[] frgs = frag.split("\\."); //NOI18N
                         assert frgs.length == 2;
                         String clsName = frgs[0];
                         if (clsName != null) {
@@ -540,16 +522,16 @@ public class VariousUtils {
         Stack<Collection<? extends TypeScope>> stack = new Stack<Collection<? extends TypeScope>>();
 
         TypeScope type = null;
-        if (semiTypeName != null && semiTypeName.contains("@")) {
+        if (semiTypeName != null && semiTypeName.contains(PRE_OPERATION_TYPE_DELIMITER)) {
             String operation = null;
-            String[] fragments = semiTypeName.split("[@:]");
+            String[] fragments = semiTypeName.split("[" + PRE_OPERATION_TYPE_DELIMITER + POST_OPERATION_TYPE_DELIMITER + "]"); //NOI18N
             int len = fragments.length;
             for (int i = 0; i < len; i++) {
                 String frag = fragments[i];
                 if (frag.trim().length() == 0) {
                     continue;
                 }
-                String operationPrefix = (frag.endsWith(":")) ? frag : String.format("%s:", frag);
+                String operationPrefix = (frag.endsWith(POST_OPERATION_TYPE_DELIMITER)) ? frag : String.format("%s%s", frag, POST_OPERATION_TYPE_DELIMITER);
                 if (VariousUtils.METHOD_TYPE_PREFIX.equalsIgnoreCase(operationPrefix)) {
                     operation = VariousUtils.METHOD_TYPE_PREFIX;
                 } else if (VariousUtils.FUNCTION_TYPE_PREFIX.equalsIgnoreCase(operationPrefix)) {
@@ -622,7 +604,7 @@ public class VariousUtils {
                         stack.push(Collections.singletonList(cls));
                         operation = null;
                     } else if (operation.startsWith(VariousUtils.STATIC_METHOD_TYPE_PREFIX)) {
-                        String[] frgs = frag.split("\\.");
+                        String[] frgs = frag.split("\\."); //NOI18N
                         assert frgs.length == 2;
                         String clsName = frgs[0];
                         if (clsName == null) {
@@ -737,11 +719,11 @@ public class VariousUtils {
                     return semiTypeName;
                 }
             }
-            return "@" + VAR_TYPE_PREFIX + varName;
+            return PRE_OPERATION_TYPE_DELIMITER + VAR_TYPE_PREFIX + varName;
         } else if (varBase instanceof FunctionInvocation) {
             FunctionInvocation functionInvocation = (FunctionInvocation) varBase;
             String fname = CodeUtils.extractFunctionName(functionInvocation);
-            return "@" + FUNCTION_TYPE_PREFIX + fname;
+            return PRE_OPERATION_TYPE_DELIMITER + FUNCTION_TYPE_PREFIX + fname;
         } else if (varBase instanceof StaticMethodInvocation) {
             StaticMethodInvocation staticMethodInvocation = (StaticMethodInvocation) varBase;
             String className = null;
@@ -752,26 +734,26 @@ public class VariousUtils {
             String methodName = CodeUtils.extractFunctionName(staticMethodInvocation.getMethod());
 
             if (className != null && methodName != null) {
-                return "@" + STATIC_METHOD_TYPE_PREFIX + className + '.' + methodName;
+                return PRE_OPERATION_TYPE_DELIMITER + STATIC_METHOD_TYPE_PREFIX + className + '.' + methodName;
             }
         } else if (varBase instanceof MethodInvocation) {
             MethodInvocation methodInvocation = (MethodInvocation) varBase;
             String methodName = CodeUtils.extractFunctionName(methodInvocation.getMethod());
             if (methodName != null) {
-                return "@" + METHOD_TYPE_PREFIX + methodName;
+                return PRE_OPERATION_TYPE_DELIMITER + METHOD_TYPE_PREFIX + methodName;
             }
         } else if (varBase instanceof FieldAccess) {
             FieldAccess fieldAccess = (FieldAccess) varBase;
             String filedName = CodeUtils.extractVariableName(fieldAccess.getField());
             if (filedName != null) {
-                return "@" + FIELD_TYPE_PREFIX + filedName;
+                return PRE_OPERATION_TYPE_DELIMITER + FIELD_TYPE_PREFIX + encodeVariableName(filedName);
             }
         } else if (varBase instanceof StaticFieldAccess) {
             StaticFieldAccess fieldAccess = (StaticFieldAccess) varBase;
             String clsName = CodeUtils.extractUnqualifiedName(fieldAccess.getClassName());
             String fldName = CodeUtils.extractVariableName(fieldAccess.getField());
             if (clsName != null && fldName != null) {
-                return clsName+"@" + STATIC_FIELD__TYPE_PREFIX + fldName;
+                return PRE_OPERATION_TYPE_DELIMITER + STATIC_FIELD_TYPE_PREFIX + clsName + '.' + fldName;
             }
         }
 
@@ -801,7 +783,7 @@ public class VariousUtils {
      * @param sourceFile needs to be data file (not folder)
      */
     public static FileObject resolveInclude(FileObject sourceFile, Include include) {
-        Parameters.notNull("sourceFile", sourceFile);
+        Parameters.notNull("sourceFile", sourceFile); //NOI18N
         if (sourceFile.isFolder()) {
             throw new IllegalArgumentException(FileUtil.getFileDisplayName(sourceFile));
         }
@@ -844,7 +826,7 @@ public class VariousUtils {
 
     public static String getSemiType(TokenSequence<PHPTokenId> tokenSequence, State state, VariableScope varScope) throws IllegalStateException {
         int commasCount = 0;
-        String possibleClassName = null;
+        String possibleClassName = ""; //NOI18N
         int anchor = -1;
         int leftBraces = 0;
         int rightBraces = State.PARAMS.equals(state) ? 1 : 0;
@@ -858,13 +840,13 @@ public class VariousUtils {
                         state = (state.equals(State.METHOD)) ? State.STOP : State.INVALID;
                         // state = State.INVALID;
                         if (isReference(token)) {
-                            metaAll.insert(0, "@" + VariousUtils.METHOD_TYPE_PREFIX);
+                            metaAll.insert(0, PRE_OPERATION_TYPE_DELIMITER + VariousUtils.METHOD_TYPE_PREFIX);
                             state = State.REFERENCE;
                         } else if (isStaticReference(token)) {
-                            metaAll.insert(0, "@" + VariousUtils.METHOD_TYPE_PREFIX);
+                            metaAll.insert(0, PRE_OPERATION_TYPE_DELIMITER + VariousUtils.METHOD_TYPE_PREFIX);
                             state = State.STATIC_REFERENCE;
                         } else if (state.equals(State.STOP)) {
-                            metaAll.insert(0, "@" + VariousUtils.FUNCTION_TYPE_PREFIX);
+                            metaAll.insert(0, PRE_OPERATION_TYPE_DELIMITER + VariousUtils.FUNCTION_TYPE_PREFIX);
                         }
                         break;
                     case IDX:
@@ -894,11 +876,11 @@ public class VariousUtils {
                     case STATIC_REFERENCE:
                         state = State.INVALID;
                         if (isString(token)) {
-                            metaAll.insert(0, "@" + VariousUtils.FIELD_TYPE_PREFIX);
+                            metaAll.insert(0, PRE_OPERATION_TYPE_DELIMITER + VariousUtils.FIELD_TYPE_PREFIX);
                             metaAll.insert(0, token.text().toString());
                             state = State.CLASSNAME;
                         } else if (isSelf(token) || isParent(token) || isStatic(token)) {
-                            metaAll.insert(0, "@" + VariousUtils.FIELD_TYPE_PREFIX);
+                            metaAll.insert(0, PRE_OPERATION_TYPE_DELIMITER + VariousUtils.FIELD_TYPE_PREFIX);
                             metaAll.insert(0, translateSpecialClassName(varScope, token.text().toString()));
                             //TODO: maybe rather introduce its own State
                             state = State.CLASSNAME;
@@ -918,7 +900,7 @@ public class VariousUtils {
                         } else if (isRightBracket(token)) {
                             rightBraces++;
                         } else if (isString(token)) {
-                            possibleClassName = token.text().toString();
+                            possibleClassName = fetchPossibleClassName(tokenSequence);
                         }
                         if (leftBraces == rightBraces) {
                             state = State.FUNCTION;
@@ -938,7 +920,7 @@ public class VariousUtils {
                     case FIELD:
                         state = State.INVALID;
                         if (isReference(token)) {
-                            metaAll.insert(0, "@" + VariousUtils.FIELD_TYPE_PREFIX);
+                            metaAll.insert(0, PRE_OPERATION_TYPE_DELIMITER + VariousUtils.FIELD_TYPE_PREFIX);
                             state = State.REFERENCE;
                         }
                         break;
@@ -953,9 +935,9 @@ public class VariousUtils {
                     case ARRAY_VARIABLE:
                     case VARIABLE:
                         if (state.equals(State.ARRAY_VARIABLE)) {
-                            metaAll.insert(0, "@" + VariousUtils.ARRAY_TYPE_PREFIX);
+                            metaAll.insert(0, PRE_OPERATION_TYPE_DELIMITER + VariousUtils.ARRAY_TYPE_PREFIX);
                         } else {
-                            metaAll.insert(0, "@" + VariousUtils.VAR_TYPE_PREFIX);
+                            metaAll.insert(0, PRE_OPERATION_TYPE_DELIMITER + VariousUtils.VAR_TYPE_PREFIX);
                         }
                     case CLASSNAME:
                         //TODO: self, parent not handled yet
@@ -970,35 +952,32 @@ public class VariousUtils {
                                 }
                             }
                         } else {
-                            String currentMetaAll = metaAll.toString();
-                            int indexOfType = currentMetaAll.indexOf("@"); //NOI18N
-                            if (indexOfType != -1) {
-                                String lastType = currentMetaAll.substring(0, indexOfType);
-                                if (!lastType.trim().isEmpty()) {
-                                    String qualifiedTypeName = qualifyTypeNames(lastType, tokenSequence.offset(), varScope);
-                                    metaAll = new StringBuilder(qualifiedTypeName + currentMetaAll.substring(indexOfType));
-                                }
-                            }
+                            metaAll = transformToFullyQualifiedType(metaAll, tokenSequence, varScope);
                         }
                         state = State.STOP;
                         break;
                 }
             } else {
                 if (state.equals(State.CLASSNAME)) {
+                    if (!metaAll.toString().startsWith("\\")) { //NOI18N
+                        if (tokenSequence.moveNext()) { // return to last valid token
+                            metaAll = transformToFullyQualifiedType(metaAll, tokenSequence, varScope);
+                        }
+                    }
                     state = State.STOP;
                     break;
                 } else if (state.equals(State.METHOD)) {
                     state = State.STOP;
                     PHPTokenId id = token.id();
                     if (id != null && PHPTokenId.PHP_NEW.equals(id)) {
-                        metaAll.insert(0, "@" + VariousUtils.CONSTRUCTOR_TYPE_PREFIX);
+                        metaAll.insert(0, PRE_OPERATION_TYPE_DELIMITER + VariousUtils.CONSTRUCTOR_TYPE_PREFIX);
                     } else {
-                        metaAll.insert(0, "@" + VariousUtils.FUNCTION_TYPE_PREFIX);
+                        metaAll.insert(0, PRE_OPERATION_TYPE_DELIMITER + VariousUtils.FUNCTION_TYPE_PREFIX);
                     }
                     break;
-                } else if (state.equals(State.PARAMS) && possibleClassName != null && token.id() != null && PHPTokenId.PHP_NEW.equals(token.id()) && (rightBraces - 1 == leftBraces)) {
+                } else if (state.equals(State.PARAMS) && !possibleClassName.isEmpty() && token.id() != null && PHPTokenId.PHP_NEW.equals(token.id()) && (rightBraces - 1 == leftBraces)) {
                     state = State.STOP;
-                    metaAll.insert(0, "@" + VariousUtils.CONSTRUCTOR_TYPE_PREFIX + possibleClassName);
+                    metaAll.insert(0, PRE_OPERATION_TYPE_DELIMITER + VariousUtils.CONSTRUCTOR_TYPE_PREFIX + possibleClassName);
                     break;
                 }
             }
@@ -1012,12 +991,35 @@ public class VariousUtils {
         return null;
     }
 
+    private static String fetchPossibleClassName(final TokenSequence<PHPTokenId> tokenSequence) {
+        String result = isString(tokenSequence.token()) ? tokenSequence.token().text().toString() : ""; //NOI18N
+        while (tokenSequence.movePrevious() && (isString(tokenSequence.token()) || isNamespaceSeparator(tokenSequence.token()))) {
+            result = tokenSequence.token().text().toString() + result;
+        }
+        tokenSequence.moveNext();
+        return result;
+    }
+
+    private static StringBuilder transformToFullyQualifiedType(final StringBuilder metaAll, final TokenSequence<PHPTokenId> tokenSequence, final Scope varScope) {
+        StringBuilder result = metaAll;
+        String currentMetaAll = metaAll.toString();
+        int indexOfType = currentMetaAll.indexOf(PRE_OPERATION_TYPE_DELIMITER);
+        if (indexOfType != -1) {
+            String lastType = currentMetaAll.substring(0, indexOfType);
+            if (!lastType.trim().isEmpty()) {
+                String qualifiedTypeName = qualifyTypeNames(lastType, tokenSequence.offset(), varScope);
+                result = new StringBuilder(qualifiedTypeName + currentMetaAll.substring(indexOfType));
+            }
+        }
+        return result;
+    }
+
     // XXX
     public static String getVariableName(String semiType) {
         if (semiType != null) {
-            String prefix = "@" + VariousUtils.VAR_TYPE_PREFIX; // NOI18N
+            String prefix = PRE_OPERATION_TYPE_DELIMITER + VariousUtils.VAR_TYPE_PREFIX;
             if (semiType.startsWith(prefix)) {
-                return semiType.substring(prefix.length(), semiType.lastIndexOf("@")); // NOI18N
+                return semiType.substring(prefix.length(), semiType.lastIndexOf(PRE_OPERATION_TYPE_DELIMITER));
             }
         }
         return null;
@@ -1049,7 +1051,7 @@ public class VariousUtils {
         if (classScope != null) {
             if ("self".equals(clsName) || "this".equals(clsName) || "static".equals(clsName)) {//NOI18N
                 clsName = classScope.getName();
-            } else if ("parent".equals(clsName)) {
+            } else if ("parent".equals(clsName)) { //NOI18N
                 QualifiedName fullyQualifiedName = ModelUtils.getFirst(classScope.getPossibleFQSuperClassNames());
                 if (fullyQualifiedName != null) {
                     clsName = fullyQualifiedName.toString();
@@ -1138,9 +1140,9 @@ public class VariousUtils {
             csi = (TypeScope)inScope;
         }
         if (csi != null) {
-            if ("self".equals(staticTypeName)) {
+            if ("self".equals(staticTypeName)) { //NOI18N
                 return Collections.singletonList(csi);
-            } else if ( "parent".equals(staticTypeName) && (csi instanceof ClassScope)) {
+            } else if ( "parent".equals(staticTypeName) && (csi instanceof ClassScope)) { //NOI18N
                 return ((ClassScope)csi).getSuperClasses();
             }
         }
@@ -1168,8 +1170,8 @@ public class VariousUtils {
     }
     public static Collection<QualifiedName> getRelativesToUses(NamespaceScope contextNamespace, QualifiedName fullName) {
         Set<QualifiedName> namesProposals = new HashSet<QualifiedName>();
-        Collection<? extends UseElement> declaredUses = contextNamespace.getDeclaredUses();
-        for (UseElement useElement : declaredUses) {
+        Collection<? extends UseScope> declaredUses = contextNamespace.getDeclaredUses();
+        for (UseScope useElement : declaredUses) {
             QualifiedName proposedName = QualifiedName.getSuffix(fullName, QualifiedName.create(useElement.getName()), true);
             if (proposedName != null) {
                 namesProposals.add(proposedName);
@@ -1193,14 +1195,14 @@ public class VariousUtils {
     }
 
     public static Collection<QualifiedName> getComposedNames(QualifiedName name, NamespaceScope contextNamespace) {
-        Collection<? extends UseElement> declaredUses = contextNamespace.getDeclaredUses();
+        Collection<? extends UseScope> declaredUses = contextNamespace.getDeclaredUses();
         Set<QualifiedName> namesProposals = new HashSet<QualifiedName>();
         if (!name.getKind().isFullyQualified()) {
             QualifiedName proposedName = QualifiedName.create(contextNamespace).append(name).toFullyQualified();
             if (proposedName != null) {
                 namesProposals.add(proposedName);
             }
-            for (UseElement useElement : declaredUses) {
+            for (UseScope useElement : declaredUses) {
                 final QualifiedName useQName = QualifiedName.create(useElement.getName());
                 proposedName = useQName.toNamespaceName().append(name).toFullyQualified();
                 if (proposedName != null) {
@@ -1261,13 +1263,13 @@ public class VariousUtils {
     public static Collection<QualifiedName> getPossibleFQN(QualifiedName name, int nameOffset, NamespaceScope contextNamespace){
         Set<QualifiedName> namespaces = new HashSet<QualifiedName>();
         boolean resolved = false;
-        if (name.getKind() == QualifiedNameKind.FULLYQUALIFIED) {
+        if (name.getKind().isFullyQualified()) {
             namespaces.add(name);
             resolved = true;
         } else {
-            Collection<? extends UseElement> uses = contextNamespace.getDeclaredUses();
+            Collection<? extends UseScope> uses = contextNamespace.getDeclaredUses();
             if (uses.size() > 0) {
-                for(UseElement useDeclaration : contextNamespace.getDeclaredUses()) {
+                for(UseScope useDeclaration : contextNamespace.getDeclaredUses()) {
                     if (useDeclaration.getOffset() < nameOffset) {
                         String firstNameSegment = name.getSegments().getFirst();
                         QualifiedName returnName = null;
@@ -1292,7 +1294,7 @@ public class VariousUtils {
             }
         }
         if (!resolved) {
-            if (name.getKind() == QualifiedNameKind.UNQUALIFIED) {
+            if (name.getKind().isUnqualified()) {
                 namespaces.add(contextNamespace.getNamespaceName().append(name).toFullyQualified());
             } else {
                 // the name is qualified -> append the name to the namespace name
@@ -1302,9 +1304,79 @@ public class VariousUtils {
         return namespaces;
     }
 
+    public static boolean isAliased(final QualifiedName qualifiedName, final int offset, final Scope inScope) {
+        boolean result = false;
+        if(!qualifiedName.getKind().isFullyQualified() && !isSpecialClassName(qualifiedName.getName())) {
+            result = isAliasedClassName(qualifiedName.getSegments().getFirst(), offset, inScope);
+        }
+        return result;
+    }
+
+    public static boolean isAlias(final QualifiedName unqualifiedName, final int offset, final Scope inScope) {
+        boolean result = false;
+        if(unqualifiedName.getKind().isUnqualified() && !isSpecialClassName(unqualifiedName.getName())) {
+            result = isAliasedClassName(unqualifiedName.getSegments().getFirst(), offset, inScope);
+        }
+        return result;
+    }
+
+    private static boolean isAliasedClassName(final String className, final int offset, final Scope inScope) {
+        boolean result = false;
+        Scope scope = inScope;
+        while (scope != null && !(scope instanceof NamespaceScope)) {
+            scope = scope.getInScope();
+        }
+        if (scope != null) {
+            result = isAlias(className, offset, (NamespaceScope) scope);
+        }
+        return result;
+    }
+
+    private static boolean isAlias(final String name, final int offset, final NamespaceScope namespaceScope) {
+        boolean result = false;
+        for (UseScope useElement : namespaceScope.getDeclaredUses()) {
+            if (useElement.getOffset() < offset) {
+                AliasedName aliasName = useElement.getAliasedName();
+                if (aliasName != null) {
+                    if (name.equals(aliasName.getAliasName())) {
+                        result = true;
+                        break;
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    @CheckForNull
+    public static AliasedName getAliasedName(final QualifiedName qualifiedName, final int offset, final Scope inScope) {
+        AliasedName result = null;
+        if(!qualifiedName.getKind().isFullyQualified() && !isSpecialClassName(qualifiedName.getName())) {
+            Scope scope = inScope;
+            while (scope != null && !(scope instanceof NamespaceScope)) {
+                scope = scope.getInScope();
+            }
+            if (scope != null) {
+                NamespaceScope namespaceScope = (NamespaceScope) scope;
+                String firstSegmentName = qualifiedName.getSegments().getFirst();
+                for (UseScope useElement : namespaceScope.getDeclaredUses()) {
+                    if (useElement.getOffset() < offset) {
+                        AliasedName aliasName = useElement.getAliasedName();
+                        if (aliasName != null) {
+                            if (firstSegmentName.equals(aliasName.getAliasName())) {
+                                result = aliasName;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
     public static QualifiedName getFullyQualifiedName(QualifiedName qualifiedName, int offset, Scope inScope) {
-        if(qualifiedName.getKind() != QualifiedNameKind.FULLYQUALIFIED && !qualifiedName.getName().equalsIgnoreCase("self")
-                && !qualifiedName.getName().equalsIgnoreCase("static") && !qualifiedName.getName().equalsIgnoreCase("parent")) { //NOI18N
+        if(!qualifiedName.getKind().isFullyQualified() && !isSpecialClassName(qualifiedName.getName()) && !isPrimitiveType(qualifiedName.toString())) {
             while (inScope != null && !(inScope instanceof NamespaceScope)) {
                 inScope = inScope.getInScope();
             }
@@ -1312,10 +1384,14 @@ public class VariousUtils {
                 NamespaceScope namespace = (NamespaceScope) inScope;
                 // needs to count
                 String firstSegmentName = qualifiedName.getSegments().getFirst();
-                UseElement matchedUseElement = null;
+                UseScope matchedUseElement = null;
                 int lastOffset = -1; // remember offset of the last use declaration, that fits
-                for (UseElement useElement : namespace.getDeclaredUses()) {
-                    if (useElement.getOffset() < offset) {
+                for (UseScope useElement : namespace.getDeclaredUses()) {
+                    // trying to make a FQ from exact use element, they are FQ by default
+                    if (useElement.getNameRange().containsInclusive(offset)) {
+                        qualifiedName = QualifiedName.create(true, qualifiedName.getSegments());
+                        break;
+                    } else if (useElement.getOffset() < offset) {
                         AliasedName aliasName = useElement.getAliasedName();
                         if (aliasName != null) {
                             //if it's allisased name
@@ -1400,6 +1476,16 @@ public class VariousUtils {
             retval = typeNames;
         }
         return retval;
+    }
+
+    /**
+     * Check if a className is "self", "static", or "parent".
+     *
+     * @param className
+     * @return
+     */
+    public static boolean isSpecialClassName(final String className) {
+        return SPECIAL_CLASS_NAMES.contains(className.toLowerCase());
     }
 
 }

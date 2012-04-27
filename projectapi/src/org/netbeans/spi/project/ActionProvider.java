@@ -130,6 +130,24 @@ public interface ActionProvider {
     String COMMAND_DEBUG_STEP_INTO = "debug.stepinto"; // NOI18N
     
     /**
+     * Standard command for running the project in profiler
+     * @since 1.43
+     */
+    String COMMAND_PROFILE = "profile"; // NOI18N
+    
+    /**
+     * Standard command for running single file in profiler
+     * @since 1.43
+    */
+    String COMMAND_PROFILE_SINGLE = "profile.single"; // NOI18N
+    
+    /** 
+     * Standard command for running one test in profiler
+     * @since 1.43
+    */
+    String COMMAND_PROFILE_TEST_SINGLE = "profile.test.single"; // NOI18N
+    
+    /**
      * Standard command for deleting the project.
      *
      * @since 1.6
@@ -175,6 +193,7 @@ public interface ActionProvider {
      * @param context any action context, e.g. for a node selection
      *                (as in {@link ContextAwareAction})
      * @throws IllegalArgumentException if the requested command is not supported
+     * @see ActionProgress
      */
     void invokeAction(String command, Lookup context) throws IllegalArgumentException;
     

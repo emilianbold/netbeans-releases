@@ -219,7 +219,9 @@ public final class ClassIndexEventsTransaction extends TransactionContext.Servic
             }
         } finally {
             final ClassIndexManager ciManager = ClassIndexManager.getDefault();
-            ciManager.fire(Collections.<URL>singleton(addedRoot), removedRoots);
+            ciManager.fire(
+                addedRoot == null ? Collections.<URL>emptySet() : Collections.<URL>singleton(addedRoot),
+                removedRoots);
             final ClassIndexImpl ci = changesInRoot == null ?
                 null:
                 ciManager.getUsagesQuery(changesInRoot, false);

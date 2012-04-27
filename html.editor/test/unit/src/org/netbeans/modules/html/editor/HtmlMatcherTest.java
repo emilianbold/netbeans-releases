@@ -32,7 +32,7 @@ package org.netbeans.modules.html.editor;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
+import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
 
 import org.netbeans.modules.editor.bracesmatching.api.BracesMatchingTestUtils;
 import org.netbeans.modules.html.editor.test.TestBase;

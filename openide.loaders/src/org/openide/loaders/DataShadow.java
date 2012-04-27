@@ -393,9 +393,13 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
     /**
      * Tries to load the original file from a shadow.
      * Looks for file contents as well as the originalFile/originalFileSystem attributes.
+     * Attempts to discover locations for migrated files in configuration.
+     * 
      * @param fileObject a data shadow
      * @return the original <code>DataObject</code> referenced by the shadow
      * @throws IOException error during load or broken link
+     * 
+     * @see Utilities#translate
      */
     protected static DataObject deserialize(FileObject fileObject) throws IOException {
         String[] fileAndFileSystem = readOriginalFileAndFileSystem(fileObject);
@@ -411,17 +415,54 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
         String fsname = fileAndFileSystem[1];
         if (u != null && u.isAbsolute()) {
             target = URLMapper.findFileObject(u.toURL());
+            if (target == null) {
+                FileObject cfgRoot = FileUtil.getConfigRoot();
+                URI cfgURI = cfgRoot.toURI();
+                String prefix = cfgURI.toString();
+                String urlText = u.toString();
+                // try to recover a broken shadow by translation, but only for 
+                // configuration
+                if (urlText.startsWith(prefix)) {
+                    String rootPathFragment = cfgURI.getRawPath();
+                    // get the file part with all the URL escaping, escapes e.g. # and = characters.
+                    String cfgPart = u.getRawPath().substring(rootPathFragment.length());
+                    String translated = Utilities.translate(cfgPart);
+                    if (!translated.equals(cfgPart)) {
+                        try {
+                            // assume translated value can be added to the prefix, no bad characters allowed
+                            URI temp = new URI(prefix + translated);
+                            target = URLMapper.findFileObject(temp.toURL());
+                        } catch (URISyntaxException ex) {
+                            LOG.log(Level.WARNING, "Could not form URI from {0}: {1}", new Object[] { translated, ex });
+                        }
+                    }
+                }
+            }
         } else {
             FileSystem fs;
+            boolean sfs;
             if (SFS_NAME.equals(fsname)) {
                 fs = FileUtil.getConfigRoot().getFileSystem();
+                sfs = true;
             } else {
                 // Even if it is specified, we no longer have mounts, so we can no longer find it.
                 fs = fileObject.getFileSystem();
+                sfs = false;
             }
             target = fs.findResource(path);
             if (target == null && fsname == null) {
+                sfs = true;
                 target = FileUtil.getConfigFile(path);
+            }
+            
+            // defect #208779 - if target is not found on SFS, try to translate the path:
+            if (sfs && target == null) {
+                // encode the path:
+                String translated = Utilities.translate(path);
+                if (!path.equals(translated)) {
+                    // decode translated path back:
+                    target = FileUtil.getConfigFile(translated);
+                }
             }
         }
         if (target != null) {

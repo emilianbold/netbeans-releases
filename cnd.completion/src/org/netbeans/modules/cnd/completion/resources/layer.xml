@@ -228,7 +228,7 @@ made subject to such option by the copyright holder.
         <folder name="Editor">
             <folder name="CodeCompletion">
                 <folder name="text">
-                    <folder name="x-c++">
+                    <folder name="x-cnd+sourcefile">
                         <file name="CppSpecific.instance">
                             <attr name="instanceOf" stringvalue="org.netbeans.modules.options.editor.spi.PreferencesCustomizer$Factory"/>
                             <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.completion.options.CodeCompletionPanel.getCustomizerFactory"/>

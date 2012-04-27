@@ -64,9 +64,9 @@ import org.netbeans.modules.projectimport.eclipse.gui.ImportTestProjects;
 public class ImporterTest {
 
     public static Test suite() {
-        return NbModuleSuite.create(NbModuleSuite.createConfiguration(ImporterMenu.class).
+        return NbModuleSuite.createConfiguration(ImporterMenu.class).
                 addTest(ImporterWizard.class).
-		addTest(ImportSimpleJavaProjectFromWS.class).
+                addTest(ImportSimpleJavaProjectFromWS.class).
                 //addTest(ImportSimpleWebProjectFromWS.class).
                 addTest(ImportMultipleRootsJavaProjectFromWS.class).
                 addTest(ImportJavaVersion.class).
@@ -78,7 +78,9 @@ public class ImporterTest {
                 addTest(ImportProjectWithJarRef.class).
                 addTest(ImportStandaloneProject.class).
                 enableModules(".*").clusters(".*").
-                gui(true).reuseUserDir(true));
+                gui(true).reuseUserDir(true).suite();
     }
+
+    private ImporterTest() {}
 
 }

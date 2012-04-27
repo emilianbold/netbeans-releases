@@ -45,12 +45,25 @@ import java.awt.event.ActionEvent;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.modules.groovy.grailsproject.NavigationSupport;
-import org.openide.util.NbBundle;
+import static org.netbeans.modules.groovy.grailsproject.actions.Bundle.*;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
+import org.openide.awt.ActionRegistration;
+import org.openide.util.NbBundle.Messages;
+
+@Messages("CTL_GotoViewAction=Go to Grails Vi&ew")
+@ActionID(id = "org.netbeans.modules.groovy.grailsproject.actions.GotoViewAction", category = "Groovy")
+@ActionRegistration(lazy = false, displayName = "#CTL_GotoViewAction")
+@ActionReferences(value = {
+    @ActionReference(path = "Menu/GoTo", position = 575),
+    @ActionReference(path = "Editors/text/x-groovy/Popup/goto", position = 100),
+    @ActionReference(path = "Editors/text/x-gsp/Popup/goto", position = 100)})
 
 public final class GotoViewAction extends BaseAction {
 
     public GotoViewAction() {
-        super(NbBundle.getMessage(GotoViewAction.class, "CTL_GotoViewAction")); // NOI18N
+        super(CTL_GotoViewAction()); // NOI18N
     }
 
     @Override

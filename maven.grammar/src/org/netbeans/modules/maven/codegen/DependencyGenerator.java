@@ -52,6 +52,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.maven.api.Constants;
+import static org.netbeans.modules.maven.codegen.Bundle.*;
 import org.netbeans.modules.maven.model.pom.Dependency;
 import org.netbeans.modules.maven.model.pom.DependencyContainer;
 import org.netbeans.modules.maven.model.pom.POMModel;
@@ -69,11 +70,13 @@ import org.openide.util.NbBundle;
  *
  * @author Milos Kleint
  */
+@NbBundle.Messages("NAME_Dependency=Dependency...")
 public class DependencyGenerator implements CodeGenerator {
 
     @MimeRegistration(mimeType=Constants.POM_MIME_TYPE, service=CodeGenerator.Factory.class, position=100)
     public static class Factory implements CodeGenerator.Factory {
         
+        @Override
         public List<? extends CodeGenerator> create(Lookup context) {
             ArrayList<CodeGenerator> toRet = new ArrayList<CodeGenerator>();
             POMModel model = context.lookup(POMModel.class);
@@ -93,10 +96,12 @@ public class DependencyGenerator implements CodeGenerator {
         this.component = component;
     }
 
+    @Override
     public String getDisplayName() {
-        return NbBundle.getMessage(DependencyGenerator.class, "NAME_Dependency");
+        return NAME_Dependency();
     }
 
+    @Override
     public void invoke() {
         try {
             model.sync();

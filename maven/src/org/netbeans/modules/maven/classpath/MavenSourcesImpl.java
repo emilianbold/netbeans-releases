@@ -311,8 +311,8 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
      * consult the SourceGroup cache, return true if anything changed..
      */
     @Messages({
-        "SG_Generated_Sources=Generated Sources ({0})",
-        "SG_Generated_Test_Sources=Generated Test Sources ({0})"
+        "# {0} - name suffix", "SG_Generated_Sources=Generated Sources ({0})",
+        "# {0} - name suffix", "SG_Generated_Test_Sources=Generated Test Sources ({0})"
     })
     private boolean checkGeneratedGroupCache(FileObject root, File rootFile, String nameSuffix, boolean test) {
         SourceGroup group = genSrcGroup.get(rootFile);
@@ -413,6 +413,7 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
                 return null;
             }
             FileUtil.refreshFor(folder);
+            // XXX might suffice to just listen to PROP_RESOURCE
             checkChanges(true, true);
             FileObject fo = FileUtil.toFileObject(folder);
             assert fo != null;

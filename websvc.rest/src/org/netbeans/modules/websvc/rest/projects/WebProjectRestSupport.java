@@ -52,12 +52,10 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.tools.ant.module.api.support.ActionUtils;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.j2ee.dd.api.common.InitParam;
-import org.netbeans.modules.j2ee.dd.api.web.Servlet;
-import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
@@ -66,6 +64,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.javaee.specs.support.api.JaxRsStackSupport;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.api.jaxws.project.LogUtils;
 import org.netbeans.modules.websvc.rest.RestUtils;
 import org.netbeans.modules.websvc.rest.model.api.RestApplication;
@@ -104,62 +103,6 @@ public class WebProjectRestSupport extends WebRestSupport {
     }
 
     @Override
-    public void upgrade() {
-        if (!isRestSupportOn()) {
-            return;
-        }
-        try {
-            //Fix issue#141595, 154378
-//            addSwdpLibrary();
-
-            FileObject ddFO = getDeploymentDescriptor();
-            if (ddFO == null) {
-                return;
-            }
-
-            WebApp webApp = findWebApp();
-            if (webApp == null) {
-                return;
-            }
-
-            Servlet adaptorServlet = getRestServletAdaptorByName(webApp,REST_SERVLET_ADAPTOR);
-            if (adaptorServlet != null) {
-                // Starting with jersey 0.8, the adaptor class is under 
-                // com.sun.jersey package instead of com.sun.we.rest package.
-                if (REST_SERVLET_ADAPTOR_CLASS_OLD.equals(adaptorServlet.getServletClass())) {
-                    boolean isSpring = hasSpringSupport();
-                    if (isSpring) {
-                        adaptorServlet.setServletClass(REST_SPRING_SERVLET_ADAPTOR_CLASS);
-                        InitParam initParam = 
-                                (InitParam) adaptorServlet.findBeanByName("InitParam", //NOI18N
-                                "ParamName", //NOI18N
-                                JERSEY_PROP_PACKAGES); //NOI18N
-                        if (initParam == null) {
-                            try {
-                                initParam = (InitParam) adaptorServlet.createBean("InitParam"); //NOI18N
-                                initParam.setParamName(JERSEY_PROP_PACKAGES);
-                                initParam.setParamValue("."); //NOI18N
-                                initParam.setDescription(JERSEY_PROP_PACKAGES_DESC);
-                                adaptorServlet.addInitParam(initParam);
-                            } catch (ClassNotFoundException ex) {}
-                        }
-                    } else {
-                        adaptorServlet.setServletClass(REST_SERVLET_ADAPTOR_CLASS);
-                    }
-                    webApp.write(ddFO);
-                }
-            }
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
-        }
-    }
-
-    @Override
-    public void extendBuildScripts() throws IOException {
-        new AntFilesHelper(this).initRestBuildExtension();
-    }
-
-    @Override
     public void ensureRestDevelopmentReady() throws IOException {
         boolean needsRefresh = false;
         
@@ -170,8 +113,13 @@ public class WebProjectRestSupport extends WebRestSupport {
                     RestUtils.isAnnotationConfigAvailable(project));
         }
         
-
-        extendBuildScripts();
+        WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
+        Profile profile = webModule.getJ2eeProfile();
+        boolean isJee6 = Profile.JAVA_EE_6_WEB.equals(profile) || 
+            Profile.JAVA_EE_6_FULL.equals(profile); 
+        if ( !isJee6 ) {
+            extendBuildScripts();
+        }
 
         String restConfigType = getProjectProperty(PROP_REST_CONFIG_TYPE);
         
@@ -188,23 +136,29 @@ public class WebProjectRestSupport extends WebRestSupport {
             }
         }
 
-        if (restConfigType == null || CONFIG_TYPE_DD.equals(restConfigType)) {
+        if (!isJee6) {
+            if (restConfigType == null || CONFIG_TYPE_DD.equals(restConfigType))
+            {
 
-            String resourceUrl = null;
-            if (restConfig != null) {
-                resourceUrl = restConfig.getResourcePath();
-            } else {
-                resourceUrl = getApplicationPathFromDD();
+                String resourceUrl = null;
+                if (restConfig != null) {
+                    resourceUrl = restConfig.getResourcePath();
+                }
+                else {
+                    resourceUrl = getApplicationPathFromDD();
+                }
+                if (resourceUrl == null) {
+                    resourceUrl = REST_SERVLET_ADAPTOR_MAPPING;
+                }
+                addResourceConfigToWebApp(resourceUrl);
             }
-            if (resourceUrl == null) {
-                resourceUrl = REST_SERVLET_ADAPTOR_MAPPING;
-            }
-            addResourceConfigToWebApp(resourceUrl);
-        }
-        if (CONFIG_TYPE_IDE.equals(restConfigType)) {
-            FileObject buildFo = Utils.findBuildXml(project);
-            if (buildFo != null) {
-                ActionUtils.runTarget(buildFo, new String[] {WebRestSupport.REST_CONFIG_TARGET}, null);
+            if (needsRefresh && CONFIG_TYPE_IDE.equals(restConfigType)) {
+                FileObject buildFo = Utils.findBuildXml(project);
+                if (buildFo != null) {
+                    ActionUtils.runTarget(buildFo,
+                            new String[] { WebRestSupport.REST_CONFIG_TARGET },
+                            null);
+                }
             }
         }
 
@@ -409,7 +363,8 @@ public class WebProjectRestSupport extends WebRestSupport {
     public static String getApplicationPathFromDialog(List<RestApplication> restApplications) {
         if (restApplications.size() == 1) {
             return restApplications.get(0).getApplicationPath();
-        } else {
+        } 
+        else {
             RestApplicationsPanel panel = new RestApplicationsPanel(restApplications);
             DialogDescriptor desc = new DialogDescriptor(panel,
                     NbBundle.getMessage(WebProjectRestSupport.class,"TTL_RestResourcesPath"));
@@ -420,5 +375,10 @@ public class WebProjectRestSupport extends WebRestSupport {
         }
         return null;
     }
+    
+    private void extendBuildScripts() throws IOException {
+        new AntFilesHelper(this).initRestBuildExtension();
+    }
+
 
 }

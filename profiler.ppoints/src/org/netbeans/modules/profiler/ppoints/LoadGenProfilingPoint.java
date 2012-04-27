@@ -72,6 +72,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.TitledBorder;
 import org.netbeans.lib.profiler.ui.UIUtils;
 import org.netbeans.modules.profiler.api.ProjectUtilities;
+import org.netbeans.modules.profiler.ppoints.ui.ProfilingPointReport;
 
 
 /**
@@ -85,7 +86,6 @@ import org.netbeans.modules.profiler.api.ProjectUtilities;
     "LoadGenProfilingPoint_AnnotationStartString={0} (start)",
     "LoadGenProfilingPoint_AnnotationEndString={0} (end)",
     "LoadGenProfilingPoint_ReportAccessDescr=Report of {0}",
-    "LoadGenProfilingPoint_NoHitsString=no hits",
     "LoadGenProfilingPoint_HeaderTypeString=<b>Type:</b> {0}",
     "LoadGenProfilingPoint_HeaderEnabledString=<b>Enabled:</b> {0}",
     "LoadGenProfilingPoint_HeaderProjectString=<b>Project:</b> {0}",
@@ -185,7 +185,7 @@ public class LoadGenProfilingPoint extends CodeProfilingPoint.Paired implements 
         }
     }
 
-    private class Report extends TopComponent {
+    private class Report extends ProfilingPointReport {
         //~ Static fields/initializers -------------------------------------------------------------------------------------------
 
         private static final String START_LOCATION_URLMASK = "file:/1"; // NOI18N
@@ -201,20 +201,12 @@ public class LoadGenProfilingPoint extends CodeProfilingPoint.Paired implements 
         public Report() {
             initDefaults();
             initComponents();
-            refreshData();
+            refresh();
         }
 
         //~ Methods --------------------------------------------------------------------------------------------------------------
 
-        public int getPersistenceType() {
-            return TopComponent.PERSISTENCE_NEVER;
-        }
-
-        protected String preferredID() {
-            return this.getClass().getName();
-        }
-
-        void refreshData() {
+        protected void refresh() {
             StringBuilder headerAreaTextBuilder = new StringBuilder();
 
             headerAreaTextBuilder.append(getHeaderName());
@@ -246,8 +238,8 @@ public class LoadGenProfilingPoint extends CodeProfilingPoint.Paired implements 
             StringBuilder dataAreaTextBuilder = new StringBuilder();
 
             synchronized(resultsSync) {
-                if (results.size() == 0) {
-                    dataAreaTextBuilder.append("&nbsp;&nbsp;&lt;").append(Bundle.LoadGenProfilingPoint_NoHitsString()).append("&gt;"); // NOI18N
+                if (results.isEmpty()) {
+                    dataAreaTextBuilder.append(ProfilingPointReport.getNoDataHint(LoadGenProfilingPoint.this));
                 } else {
                     if (results.size() > 1) {
                         Collections.sort(results,
@@ -263,6 +255,9 @@ public class LoadGenProfilingPoint extends CodeProfilingPoint.Paired implements 
                         dataAreaTextBuilder.append(getDataResultItem(i));
                         dataAreaTextBuilder.append("<br>"); // NOI18N
                     }
+                    ProfilingPointsManager m = ProfilingPointsManager.getDefault();
+                    if (!m.belowMaxHits(results.size()))
+                        dataAreaTextBuilder.append(m.getTruncatedResultsText());
                 }
             }
 
@@ -479,7 +474,7 @@ public class LoadGenProfilingPoint extends CodeProfilingPoint.Paired implements 
                 report.refreshProperties();
             }
 
-            report.refreshData();
+            report.refresh();
         }
     }
 
@@ -567,11 +562,13 @@ public class LoadGenProfilingPoint extends CodeProfilingPoint.Paired implements 
                             private long correlationId = hitEvent.getTimestamp();
 
                             public void afterStart(LoadGenPlugin.Result result) {
-                                Result rslt = new Result(hitEvent.getTimestamp(), hitEvent.getThreadId(),
-                                                         result == LoadGenPlugin.Result.SUCCESS);
-                                results.add(rslt);
-                                correlationId = hitEvent.getTimestamp();
-                                getChangeSupport().firePropertyChange(PROPERTY_RESULTS, false, true);
+                                if (ProfilingPointsManager.getDefault().belowMaxHits(results.size())) {
+                                    Result rslt = new Result(hitEvent.getTimestamp(), hitEvent.getThreadId(),
+                                                            result == LoadGenPlugin.Result.SUCCESS);
+                                    results.add(rslt);
+                                    correlationId = hitEvent.getTimestamp();
+                                    getChangeSupport().firePropertyChange(PROPERTY_RESULTS, false, true);
+                                }
                             }
 
                             public void afterStop(LoadGenPlugin.Result result) {

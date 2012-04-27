@@ -44,8 +44,9 @@ package org.netbeans.libs.git;
 import java.util.Map;
 
 /**
- *
- * @author ondra
+ * Returned by a git pull command, represents its result.
+ * 
+ * @author Ondra Vrabec
  */
 public final class GitPullResult {
     private final Map<String, GitTransportUpdate> fetchResult;
@@ -56,10 +57,16 @@ public final class GitPullResult {
         this.mergeResult = mergeResult;
     }
 
+    /**
+     * @return collection of reference updates in a local repository
+     */
     public Map<String, GitTransportUpdate> getFetchResult () {
         return fetchResult;
     }
 
+    /**
+     * @return result of a merge with a current HEAD that followed the fetch part of the git push command
+     */
     public GitMergeResult getMergeResult () {
         return mergeResult;
     }

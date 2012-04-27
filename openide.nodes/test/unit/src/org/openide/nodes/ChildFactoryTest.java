@@ -47,7 +47,8 @@ import java.awt.EventQueue;
 import java.beans.*;
 import java.util.*;
 import java.util.concurrent.Semaphore;
-import junit.framework.TestCase;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.nodes.ChildFactory.Detachable;
 import org.openide.util.NbBundle;
 
@@ -55,7 +56,7 @@ import org.openide.util.NbBundle;
  *
  * @author Tim Boudreau
  */
-public class ChildFactoryTest extends TestCase {
+public class ChildFactoryTest extends NbTestCase {
     
     public ChildFactoryTest(String name) {
         super(name);
@@ -203,7 +204,8 @@ public class ChildFactoryTest extends TestCase {
             ix++;
         }
     }
-    
+
+    @RandomlyFails
     public void testCancel() throws Exception {
         Thread.interrupted();
         factory.wait = true;

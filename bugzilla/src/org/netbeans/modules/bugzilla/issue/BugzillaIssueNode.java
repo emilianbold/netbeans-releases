@@ -43,11 +43,8 @@
 package org.netbeans.modules.bugzilla.issue;
 
 import java.util.List;
-import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
-import org.netbeans.modules.bugtracking.issuetable.IssueNode.SeenProperty;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
-import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.repository.IssueField;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.openide.nodes.Node.Property;
@@ -57,20 +54,20 @@ import org.openide.util.NbBundle;
  *
  * @author Tomas Stupka
  */
-public class BugzillaIssueNode extends IssueNode {
-    public BugzillaIssueNode(Issue issue) {
-        super(issue);
+public class BugzillaIssueNode extends IssueNode<BugzillaIssue> {
+    public BugzillaIssueNode(BugzillaIssue issue) {
+        super(BugzillaUtil.getRepository(issue.getRepository()), issue);
     }
 
     BugzillaIssue getBugzillaIssue() {
-        return (BugzillaIssue) super.getIssue();
+        return getIssueData();
     }
 
     @Override
     protected Property<?>[] getProperties() {
         return new Property<?>[] {
             new IDProperty(),
-            BugzillaUtil.isNbRepository((BugzillaRepository) getIssue().getRepository()) 
+            BugzillaUtil.isNbRepository(getBugzillaIssue().getRepository()) 
                 ? new IssueTypeProperty()
                 : new SeverityProperty(),
             new PriorityProperty(),
@@ -98,7 +95,7 @@ public class BugzillaIssueNode extends IssueNode {
     }
 
     private Integer getIssueTypeSortKey(String issueType) {
-        BugzillaConfiguration bc = getBugzillaIssue().getBugzillaRepository().getConfiguration();
+        BugzillaConfiguration bc = getBugzillaIssue().getRepository().getConfiguration();
         if(bc == null || !bc.isValid()) {
             return null;
         }
@@ -110,7 +107,7 @@ public class BugzillaIssueNode extends IssueNode {
     }
 
     private Integer getSeveritySortKey(String severity) {
-        BugzillaConfiguration bc = getBugzillaIssue().getBugzillaRepository().getConfiguration();
+        BugzillaConfiguration bc = getBugzillaIssue().getRepository().getConfiguration();
         if(bc == null || !bc.isValid()) {
             return null;
         }
@@ -122,7 +119,7 @@ public class BugzillaIssueNode extends IssueNode {
     }
 
     private Integer getPrioritySortKey(String priority) {
-        BugzillaConfiguration bc = getBugzillaIssue().getBugzillaRepository().getConfiguration();
+        BugzillaConfiguration bc = getBugzillaIssue().getRepository().getConfiguration();
         if(bc == null || !bc.isValid()) {
             return null;
         }
@@ -134,7 +131,7 @@ public class BugzillaIssueNode extends IssueNode {
     }
 
     private Integer getResolutionSortKey(String resolution) {
-        BugzillaConfiguration bc = getBugzillaIssue().getBugzillaRepository().getConfiguration();
+        BugzillaConfiguration bc = getBugzillaIssue().getRepository().getConfiguration();
         if(bc == null || !bc.isValid()) {
             return null;
         }
@@ -145,7 +142,7 @@ public class BugzillaIssueNode extends IssueNode {
         return r.indexOf(resolution);
     }
 
-    private class IDProperty extends IssueNode.IssueProperty<String> {
+    private class IDProperty extends IssueNode<BugzillaIssue>.IssueProperty<String> {
         public IDProperty() {
             super(BugzillaIssue.LABEL_NAME_ID,
                   String.class,
@@ -165,7 +162,7 @@ public class BugzillaIssueNode extends IssueNode {
         }
     }
 
-    private class SeverityProperty extends IssueNode.IssueProperty<String> {
+    private class SeverityProperty extends IssueNode<BugzillaIssue>.IssueProperty<String> {
         public SeverityProperty() {
             super(BugzillaIssue.LABEL_NAME_SEVERITY,
                   String.class,
@@ -186,7 +183,7 @@ public class BugzillaIssueNode extends IssueNode {
         }
     }
 
-    private class IssueTypeProperty extends IssueNode.IssueProperty<String> {
+    private class IssueTypeProperty extends IssueNode<BugzillaIssue>.IssueProperty<String> {
         public IssueTypeProperty() {
             super(BugzillaIssue.LABEL_NAME_ISSUE_TYPE,
                   String.class,
@@ -207,7 +204,7 @@ public class BugzillaIssueNode extends IssueNode {
         }
     }
 
-    public class PriorityProperty extends IssueProperty<String> {
+    public class PriorityProperty extends IssueNode<BugzillaIssue>.IssueProperty<String> {
         public PriorityProperty() {
             super(BugzillaIssue.LABEL_NAME_PRIORITY,
                   String.class,
@@ -228,7 +225,7 @@ public class BugzillaIssueNode extends IssueNode {
         }
     }
 
-    private class ResolutionProperty extends IssueProperty<String> {
+    private class ResolutionProperty extends IssueNode<BugzillaIssue>.IssueProperty<String> {
         public ResolutionProperty() {
             super(BugzillaIssue.LABEL_NAME_RESOLUTION,
                   String.class,
@@ -249,7 +246,7 @@ public class BugzillaIssueNode extends IssueNode {
         }
     }
 
-    private class ModificationProperty extends IssueProperty<String> {
+    private class ModificationProperty extends IssueNode<BugzillaIssue>.IssueProperty<String> {
         public ModificationProperty() {
             super(BugzillaIssue.LABEL_NAME_MODIFICATION,
                   String.class,
@@ -261,11 +258,11 @@ public class BugzillaIssueNode extends IssueNode {
             return getBugzillaIssue().getFieldValue(IssueField.MODIFICATION);
         }
         @Override
-        public int compareTo(IssueProperty p) {
+        public int compareTo(IssueNode<BugzillaIssue>.IssueProperty<String> p) {
             if(p == null) return 1;
             // XXX sort as date
             String s1 = getBugzillaIssue().getFieldValue(IssueField.MODIFICATION);
-            String s2 = ((BugzillaIssue)p.getIssue()).getFieldValue(IssueField.MODIFICATION);
+            String s2 = p.getIssueData().getFieldValue(IssueField.MODIFICATION);
             return s1.compareTo(s2);
         }
     }
@@ -284,10 +281,10 @@ public class BugzillaIssueNode extends IssueNode {
             return getBugzillaIssue().getFieldValue(field);
         }
         @Override
-        public int compareTo(IssueProperty p) {
+        public int compareTo(IssueNode<BugzillaIssue>.IssueProperty<String> p) {
             if(p == null) return 1;
             String s1 = getBugzillaIssue().getFieldValue(field);
-            String s2 = ((BugzillaIssue)p.getIssue()).getFieldValue(field);
+            String s2 = p.getIssueData().getFieldValue(field);
             return s1.compareTo(s2);
         }
     }

@@ -150,7 +150,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 
 %}
 
-IDENTIFIER=[[:letter:]_\x7f-\xff][[:letter:][:digit:]_\x7f-\xff\.]*"!"?
+IDENTIFIER=[[:letter:]_\x7f-\xff][[:letter:][:digit:]_#\x7f-\xff\.]*"!"?
 KEYWORD=("true" | "TRUE" | "false" | "FALSE" | "yes" | "YES" | "no" | "NO" | "null" | "NULL" | "not" | "self")
 WHITESPACE=[ \t]+
 NEWLINE=("\r"|"\n"|"\r\n")
@@ -165,7 +165,7 @@ FLOAT_3=[0-9]+\.{EXPONENT}?
 FLOAT_4=[0-9]+{EXPONENT}
 FLOAT={FLOAT_1} | {FLOAT_2} | {FLOAT_3} | {FLOAT_4}
 NUMBER={ZERO} | {DECIMAL} | {OCTAL} | {HEXADECIMAL} | {FLOAT}
-LITERAL=([^#%\"',=\[\]\{\}\(\)\<\>\t\n\r@ ])+
+LITERAL=([^%\"',=\[\]\{\}\(\)\<\>\t\n\r@ ])+
 ARRAY_CLOSE_DELIM = ("]" | "}" | ")")
 ARRAY_MINUS_DELIM="-"
 ARRAY_ITEM_DELIM=","
@@ -174,11 +174,12 @@ S_STRING="'"([^"\r""\n""\r\n""'"]|"\\'")*"'"
 STRING = {D_STRING} | {S_STRING}
 VARIABLE="%"{LITERAL}"%"?
 ARRAY_KEY=({REFERENCE} | {LITERAL} | {STRING} | {NUMBER}){WHITESPACE}*(":"|"=")
-ARRAY_VALUE={WHITESPACE}*({REFERENCE} | {LITERAL} | {STRING} | {NUMBER} | {VARIABLE} | {KEYWORD}){WHITESPACE}*
+ARRAY_VALUE={WHITESPACE}*{VALUE}+{WHITESPACE}*
 BLOCK_HEADER={IDENTIFIER}({WHITESPACE}*"<"{WHITESPACE}*{IDENTIFIER})?{WHITESPACE}*":"{WHITESPACE}*({NEWLINE} | {COMMENT})
 COMMENT="#"[^"\r""\n""\r\n"]*
 BLOCK_ARRAY_SEPARATOR=":" | "="
-REFERENCE="@"({IDENTIFIER} | "\\")+
+REFERENCE="@""#"*({IDENTIFIER} | "\\")+
+VALUE={REFERENCE} | {LITERAL} | {STRING} | {NUMBER} | {VARIABLE} | {KEYWORD}
 
 %state ST_IN_BLOCK
 %state ST_BLOCK_HEADER
@@ -290,7 +291,7 @@ REFERENCE="@"({IDENTIFIER} | "\\")+
         return NeonTokenId.NEON_STRING;
     }
 }
-<ST_IN_RIGHT_BLOCK, ST_IN_ARRAY_VALUE, ST_IN_MINUS_ARRAY_VALUE> {
+<ST_IN_RIGHT_BLOCK, ST_IN_ARRAY_VALUE, ST_IN_MINUS_ARRAY_VALUE, ST_IN_SQ_ARRAY, ST_IN_CU_ARRAY, ST_IN_PA_ARRAY> {
     "[" {
         pushState(ST_IN_SQ_ARRAY);
         return NeonTokenId.NEON_INTERPUNCTION;

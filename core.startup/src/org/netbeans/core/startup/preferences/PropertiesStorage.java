@@ -56,14 +56,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.openide.filesystems.FileChangeAdapter;
-import org.openide.filesystems.FileEvent;
-import org.openide.filesystems.FileLock;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileRenameEvent;
-import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.*;
 import org.openide.filesystems.FileSystem.AtomicAction;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.EditableProperties;
 import org.openide.util.Exceptions;
 
@@ -339,6 +333,20 @@ class PropertiesStorage implements NbPreferences.FileStorage {
      public void attachChangeListener(final ChangeListener changeListener) {
          try {            
              fileChangeAdapter = new FileChangeAdapter(){
+
+              @Override
+              public void fileDataCreated(FileEvent fe) {                  
+                  if(fe.getFile().equals(toPropertiesFile())){
+                      changeListener.stateChanged(new ChangeEvent(PropertiesStorage.this));
+                  }
+              }
+
+              @Override
+              public void fileFolderCreated(FileEvent fe) {                  
+                  if(fe.getFile().equals(toPropertiesFile())){
+                      changeListener.stateChanged(new ChangeEvent(PropertiesStorage.this));
+                  }
+              }
 
               @Override
               public void fileChanged(FileEvent fe) {                  

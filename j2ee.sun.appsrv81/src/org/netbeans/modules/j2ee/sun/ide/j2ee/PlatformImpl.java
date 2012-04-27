@@ -69,6 +69,10 @@ import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.support.LookupProviderSupport;
 import org.netbeans.modules.j2ee.sun.api.Asenv;
+import org.netbeans.modules.javaee.specs.support.api.JaxRpc;
+import org.netbeans.modules.javaee.specs.support.api.JaxWs;
+import org.netbeans.modules.websvc.wsstack.api.WSStack;
+import org.netbeans.modules.websvc.wsstack.spi.WSStackFactory;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
@@ -782,10 +786,13 @@ public class PlatformImpl extends J2eePlatformImpl {
     }
     
     public Lookup getLookup() {
-        Lookup baseLookup = Lookups.fixed(root);
-        return LookupProviderSupport.createCompositeLookup(baseLookup, "J2EE/DeploymentPlugins/J2EE/Lookup"); //NOI18N
-//        WSStackSPI metroStack = new GlassfishJaxWsStack(root);
-//        return Lookups.fixed(WSStackFactory.createWSStack(metroStack));
+        WSStack<JaxWs> wsStack = WSStackFactory.createWSStack(JaxWs.class ,
+                new GlassFishV2JaxWsStack(root), WSStack.Source.SERVER);
+        WSStack<JaxRpc> rpcStack = WSStackFactory.createWSStack(JaxRpc.class ,
+                new GlassFishV2JaxRpcStack(root), WSStack.Source.SERVER);
+        Lookup baseLookup = Lookups.fixed(root, wsStack, rpcStack);
+        return LookupProviderSupport.createCompositeLookup(baseLookup, 
+                "J2EE/DeploymentPlugins/J2EE/Lookup"); //NOI18N
     }
     
 }

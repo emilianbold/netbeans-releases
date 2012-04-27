@@ -71,7 +71,10 @@ public class Symfony2RunCommandAction extends RunCommandAction {
         Symfony2PhpFrameworkProvider.getInstance().getFrameworkCommandSupport(phpModule).runCommand();
     }
 
-    @Messages("LBL_Symfony2Action=Symfony2: {0}")
+    @Messages({
+        "# {0} - command name",
+        "LBL_Symfony2Action=Symfony2: {0}"
+    })
     @Override
     protected String getFullName() {
         return Bundle.LBL_Symfony2Action(getPureName());

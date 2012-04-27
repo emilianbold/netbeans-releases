@@ -102,7 +102,7 @@ public class DataView {
         try {
             dv.dataPage = new DataViewPageContext(pageSize);
             dv.execHelper = new SQLExecutionHelper(dv);
-            SQLExecutionHelper.initialDataLoad(dv, dbConn, dv.execHelper);
+            dv.execHelper.initialDataLoad();
             dv.stmtGenerator = new SQLStatementGenerator(dv);
         } catch (Exception ex) {
             dv.setErrorStatusText(ex);
@@ -258,10 +258,14 @@ public class DataView {
 
             @Override
             public void run() {
-                dataViewUI.getParent().setVisible(false);
-                dataViewUI.removeAll();
-                dataViewUI.repaint();
-                dataViewUI.revalidate();
+                if (dataViewUI != null) {
+                    if (dataViewUI.getParent() != null) {
+                        dataViewUI.getParent().setVisible(false);
+                    }
+                    dataViewUI.removeAll();
+                    dataViewUI.repaint();
+                    dataViewUI.revalidate();
+                }
             }
         });
     }

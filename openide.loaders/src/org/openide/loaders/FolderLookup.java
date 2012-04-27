@@ -410,6 +410,9 @@ public class FolderLookup extends FolderInstance {
                 // ok
                 return;
             }
+            if (template.getType().equals(DataLoader.class)) {
+                return;
+            }
             
             // do not wait in folder recognizer, but in all other cases
             if (

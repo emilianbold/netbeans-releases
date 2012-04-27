@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.options.indentation;
 
-import com.sun.org.apache.xerces.internal.impl.dv.util.Base64;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.ref.Reference;
@@ -67,6 +66,7 @@ import java.util.prefs.NodeChangeListener;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
+import javax.xml.bind.DatatypeConverter;
 import org.netbeans.modules.editor.settings.storage.spi.TypedValue;
 import org.openide.util.WeakListeners;
 
@@ -268,14 +268,14 @@ public final class ProxyPreferences extends Preferences implements PreferenceCha
 
     @Override
     public void putByteArray(String key, byte[] value) {
-        _put(key, Base64.encode(value), value.getClass().getName());
+        _put(key, DatatypeConverter.printBase64Binary(value), value.getClass().getName());
     }
 
     @Override
     public byte[] getByteArray(String key, byte[] def) {
         String value = get(key, null);
         if (value != null) {
-            byte [] decoded = Base64.decode(value);
+            byte [] decoded = DatatypeConverter.parseBase64Binary(value);
             if (decoded != null) {
                 return decoded;
             }
@@ -462,7 +462,7 @@ public final class ProxyPreferences extends Preferences implements PreferenceCha
                             delegate.putDouble(key, Double.parseDouble(typedValue.getValue()));
 
                         } else {
-                            delegate.putByteArray(key, Base64.decode(typedValue.getValue()));
+                            delegate.putByteArray(key, DatatypeConverter.parseBase64Binary(typedValue.getValue()));
                         }
                     }
                 }

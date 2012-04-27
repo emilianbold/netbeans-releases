@@ -42,6 +42,7 @@
 package org.netbeans.core.spi.multiview.text;
 
 import java.awt.EventQueue;
+import java.awt.GraphicsEnvironment;
 import java.beans.PropertyChangeListener;
 import java.beans.VetoableChangeListener;
 import java.io.ByteArrayInputStream;
@@ -52,6 +53,8 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.Date;
 import javax.swing.text.StyledDocument;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.api.actions.Savable;
 import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.core.multiview.MultiViewProcessorTest.LP;
@@ -70,6 +73,10 @@ import org.openide.windows.CloneableTopComponent;
  */
 public class MultiViewEditorCloneTest extends NbTestCase {
     
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(MultiViewEditorCloneTest.class);
+    }
+
     public MultiViewEditorCloneTest(String n) {
         super(n);
     }

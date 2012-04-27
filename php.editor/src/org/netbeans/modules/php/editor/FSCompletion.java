@@ -315,29 +315,24 @@ public class FSCompletion implements CompletionProvider {
             this.prefix = prefix;
         }
 
-        private void doSubstitute(JTextComponent component, String toAdd, int backOffset) {
-            BaseDocument doc = (BaseDocument) component.getDocument();
-            int caretOffset = component.getCaretPosition();
-            String value = getText();
-
-            if (toAdd != null) {
-                value += toAdd;
-            }
-
+        private void doSubstitute(final JTextComponent component, String toAdd, final int backOffset) {
+            final BaseDocument doc = (BaseDocument) component.getDocument();
+            final int caretOffset = component.getCaretPosition();
+            final String value = getText() + (toAdd != null ? toAdd : ""); //NOI18N
             // Update the text
-            doc.atomicLock();
-            try {
-                String pfx = doc.getText(anchor, caretOffset - anchor);
-
-                doc.remove(caretOffset - pfx.length(), pfx.length());
-                doc.insertString(caretOffset - pfx.length(), value, null);
-
-                component.setCaretPosition(component.getCaretPosition() - backOffset);
-            } catch (BadLocationException e) {
-                Exceptions.printStackTrace(e);
-            } finally {
-                doc.atomicUnlock();
-            }
+            doc.runAtomic(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        String pfx = doc.getText(anchor, caretOffset - anchor);
+                        doc.remove(caretOffset - pfx.length(), pfx.length());
+                        doc.insertString(caretOffset - pfx.length(), value, null);
+                        component.setCaretPosition(component.getCaretPosition() - backOffset);
+                    } catch (BadLocationException e) {
+                        Exceptions.printStackTrace(e);
+                    }
+                }
+            });
         }
 
         public void defaultAction(JTextComponent component) {

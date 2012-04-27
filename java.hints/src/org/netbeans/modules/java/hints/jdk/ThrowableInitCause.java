@@ -54,35 +54,36 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Types;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Constraint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPatterns;
-import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
-import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
-import org.netbeans.modules.java.hints.jackpot.spi.MatcherUtilities;
-import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
-import org.netbeans.modules.java.hints.jackpot.spi.support.OneCheckboxCustomizerProvider;
-import org.netbeans.modules.java.hints.jdk.ThrowableInitCause.CustomizerProviderImpl;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.JavaFix;
+import org.netbeans.spi.java.hints.MatcherUtilities;
+import org.netbeans.spi.java.hints.BooleanOption;
+import org.netbeans.spi.java.hints.ConstraintVariableType;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.TriggerPattern;
+import org.netbeans.spi.java.hints.TriggerPatterns;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.JavaFixUtilities;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author lahvac
  */
-@Hint(category="general", customizerProvider=CustomizerProviderImpl.class, suppressWarnings="ThrowableInitCause")
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.jdk.ThrowableInitCause", description = "#DESC_org.netbeans.modules.java.hints.jdk.ThrowableInitCause", category="general", suppressWarnings="ThrowableInitCause")
 public class ThrowableInitCause {
 
-    public static final String STRICT_KEY = "strict";
     public static final boolean STRICT_DEFAULT = false;
+    @BooleanOption(displayName = "#LBL_org.netbeans.modules.java.hints.jdk.ThrowableInitCause.STRICT_KEY", tooltip = "#TP_org.netbeans.modules.java.hints.jdk.ThrowableInitCause.STRICT_KEY", defaultValue=STRICT_DEFAULT)
+    public static final String STRICT_KEY = "strict";
 
     @TriggerPatterns({
         @TriggerPattern(value="($exc) new $exc($str).initCause($del)",
-                        constraints={@Constraint(variable="$str", type="java.lang.String"),
-                                     @Constraint(variable="$del", type="java.lang.Throwable")}),
+                        constraints={@ConstraintVariableType(variable="$str", type="java.lang.String"),
+                                     @ConstraintVariableType(variable="$del", type="java.lang.Throwable")}),
         @TriggerPattern(value="($exc) new $exc().initCause($del)",
-                        constraints={@Constraint(variable="$del", type="java.lang.Throwable")})
+                        constraints={@ConstraintVariableType(variable="$del", type="java.lang.Throwable")})
     })
     public static ErrorDescription expression(HintContext ctx) {
         return initCause(ctx, false);
@@ -90,15 +91,15 @@ public class ThrowableInitCause {
 
     @TriggerPatterns({
         @TriggerPattern(value="$exc $excVar = new $exc($str); $excVar.initCause($del); throw $excVar;",
-                        constraints={@Constraint(variable="$str", type="java.lang.String"),
-                                     @Constraint(variable="$del", type="java.lang.Throwable")}),
+                        constraints={@ConstraintVariableType(variable="$str", type="java.lang.String"),
+                                     @ConstraintVariableType(variable="$del", type="java.lang.Throwable")}),
         @TriggerPattern(value="final $exc $excVar = new $exc($str); $excVar.initCause($del); throw $excVar;",
-                        constraints={@Constraint(variable="$str", type="java.lang.String"),
-                                     @Constraint(variable="$del", type="java.lang.Throwable")}),
+                        constraints={@ConstraintVariableType(variable="$str", type="java.lang.String"),
+                                     @ConstraintVariableType(variable="$del", type="java.lang.Throwable")}),
         @TriggerPattern(value="$exc $excVar = new $exc(); $excVar.initCause($del); throw $excVar;",
-                        constraints={@Constraint(variable="$del", type="java.lang.Throwable")}),
+                        constraints={@ConstraintVariableType(variable="$del", type="java.lang.Throwable")}),
         @TriggerPattern(value="final $exc $excVar = new $exc(); $excVar.initCause($del); throw $excVar;",
-                        constraints={@Constraint(variable="$del", type="java.lang.Throwable")})
+                        constraints={@ConstraintVariableType(variable="$del", type="java.lang.Throwable")})
     })
     public static ErrorDescription variable(HintContext ctx) {
         return initCause(ctx, true);
@@ -168,7 +169,7 @@ public class ThrowableInitCause {
             toUnderline = ctx.getPath();
         }
 
-        return ErrorDescriptionFactory.forTree(ctx, toUnderline, displayName, JavaFix.rewriteFix(ctx, fixDisplayName, ctx.getPath(), target));
+        return ErrorDescriptionFactory.forTree(ctx, toUnderline, displayName, JavaFixUtilities.rewriteFix(ctx, fixDisplayName, ctx.getPath(), target));
     }
 
     private static boolean findConstructor(Element el, Types t, List<TypeMirror> paramTypes) {
@@ -194,12 +195,4 @@ public class ThrowableInitCause {
         return found;
     }
 
-    public static final class CustomizerProviderImpl extends OneCheckboxCustomizerProvider {
-        public CustomizerProviderImpl() {
-            super(NbBundle.getMessage(ThrowableInitCause.class, "DN_ThrowableInitCauseStrict"),
-                  NbBundle.getMessage(ThrowableInitCause.class, "TP_ThrowableInitCauseStrict"),
-                  STRICT_KEY,
-                  STRICT_DEFAULT);
-        }
-    }
 }

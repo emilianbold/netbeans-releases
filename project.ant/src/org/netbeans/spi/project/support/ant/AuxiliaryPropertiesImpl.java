@@ -54,22 +54,22 @@ import org.openide.util.Mutex;
 class AuxiliaryPropertiesImpl implements AuxiliaryProperties {
 
     private final AntProjectHelper helper;
-    private final String propertyPrefix = "auxiliary.";
+    private static final String propertyPrefix = "auxiliary.";
 
-    public AuxiliaryPropertiesImpl(AntProjectHelper helper) {
+    AuxiliaryPropertiesImpl(AntProjectHelper helper) {
         this.helper = helper;
     }
     
-    public String get(String key, boolean shared) {
+    @Override public String get(String key, boolean shared) {
         String location = shared ? AntProjectHelper.PROJECT_PROPERTIES_PATH : AntProjectHelper.PRIVATE_PROPERTIES_PATH;
         EditableProperties props = helper.getProperties(location);
         
         return props.get(propertyPrefix + key);
     }
 
-    public void put(final String key, final String value, final boolean shared) {
+    @Override public void put(final String key, final String value, final boolean shared) {
         ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
-            public Void run() {
+            @Override public Void run() {
                 String location = shared ? AntProjectHelper.PROJECT_PROPERTIES_PATH : AntProjectHelper.PRIVATE_PROPERTIES_PATH;
                 EditableProperties props = helper.getProperties(location);
 
@@ -86,7 +86,7 @@ class AuxiliaryPropertiesImpl implements AuxiliaryProperties {
         });
     }
 
-    public Iterable<String> listKeys(boolean shared) {
+    @Override public Iterable<String> listKeys(boolean shared) {
         List<String> result = new LinkedList<String>();
         String location = shared ? AntProjectHelper.PROJECT_PROPERTIES_PATH : AntProjectHelper.PRIVATE_PROPERTIES_PATH;
         EditableProperties props = helper.getProperties(location);

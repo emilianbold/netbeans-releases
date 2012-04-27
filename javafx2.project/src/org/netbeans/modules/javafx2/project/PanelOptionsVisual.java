@@ -52,6 +52,7 @@ import java.util.logging.Logger;
 import javax.swing.ComboBoxModel;
 import javax.swing.ListCellRenderer;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
@@ -65,22 +66,23 @@ import org.netbeans.modules.javafx2.project.JavaFXProjectWizardIterator.WizardTy
 import org.netbeans.modules.javafx2.project.api.JavaFXProjectUtils;
 import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
+import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.*;
 
     
 /**
- * @author  phrebejk, Anton Chechel
+ * @author  Petr Hrebejk
+ * @author Anton Chechel
+ * @author Petr Somol
  */
 public class PanelOptionsVisual extends SettingsPanel implements TaskListener, PropertyChangeListener, DocumentListener {
 
     private static final Logger LOGGER = Logger.getLogger("javafx"); // NOI18N
 
     private static boolean lastMainClassCheck = true; // XXX Store somewhere
-    public static final String SHARED_LIBRARIES = "sharedLibraries"; // NOI18N
 
     private volatile RequestProcessor.Task task;
     private DetectPlatformTask detectPlatformTask;
@@ -97,6 +99,7 @@ public class PanelOptionsVisual extends SettingsPanel implements TaskListener, P
 
     private boolean isMainClassValid;
     private boolean isPreloaderNameValid;
+    private boolean isFXMLNameValid;
     
     PanelOptionsVisual(PanelConfigureProject panel, WizardType type) {
         this.panel = panel;
@@ -117,7 +120,9 @@ public class PanelOptionsVisual extends SettingsPanel implements TaskListener, P
     
     private void postInitComponents() {
         // copied from CustomizerLibraries
-        platformComboBox.putClientProperty("JComboBox.isTableCellEditor", Boolean.TRUE); // NOI18N
+        if (!UIManager.getLookAndFeel().getClass().getName().toUpperCase().contains("AQUA")) {  //NOI18N
+            platformComboBox.putClientProperty("JComboBox.isTableCellEditor", Boolean.TRUE); // NOI18N
+        }
         jpcl = new JavaPlatformChangeListener();
         JavaPlatformManager.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(jpcl, JavaPlatformManager.getDefault()));
         
@@ -129,41 +134,62 @@ public class PanelOptionsVisual extends SettingsPanel implements TaskListener, P
 
         switch (type) {
             case LIBRARY:
-                setAsMainCheckBox.setVisible(false);
                 createMainCheckBox.setVisible(false);
                 mainClassTextField.setVisible(false);
                 preloaderCheckBox.setVisible(false);
+                lblPreloaderProject.setVisible(false);
                 txtPreloaderProject.setVisible(false);
+                fxmlLabel.setVisible(false);
+                fxmlTextField.setVisible(false);
                 break;
             case APPLICATION:
                 createMainCheckBox.setSelected(lastMainClassCheck);
                 mainClassTextField.setEnabled(lastMainClassCheck);
+                fxmlLabel.setVisible(false);
+                fxmlTextField.setVisible(false);
                 break;
             case PRELOADER:
                 createMainCheckBox.setSelected(lastMainClassCheck);
-                org.openide.awt.Mnemonics.setLocalizedText(createMainCheckBox, org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("LBL_createPrealoaderCheckBox")); // NOI18N
+                Mnemonics.setLocalizedText(createMainCheckBox, NbBundle.getMessage(PanelOptionsVisual.class, "LBL_createPreloaderCheckBox")); // NOI18N
                 mainClassTextField.setEnabled(lastMainClassCheck);
                 preloaderCheckBox.setVisible(false);
+                lblPreloaderProject.setVisible(false);
                 txtPreloaderProject.setVisible(false);
+                fxmlLabel.setVisible(false);
+                fxmlTextField.setVisible(false);
                 break;
             case FXML:
                 createMainCheckBox.setSelected(lastMainClassCheck);
                 mainClassTextField.setEnabled(lastMainClassCheck);
                 preloaderCheckBox.setVisible(false);
+                lblPreloaderProject.setVisible(false);
                 txtPreloaderProject.setVisible(false);
+                break;
+            case SWING:
+                createMainCheckBox.setSelected(lastMainClassCheck);
+                Mnemonics.setLocalizedText(createMainCheckBox, NbBundle.getMessage(PanelOptionsVisual.class, "LBL_createMainSwingCheckBox")); // NOI18N
+                mainClassTextField.setEnabled(lastMainClassCheck);
+                preloaderCheckBox.setVisible(false);
+                txtPreloaderProject.setVisible(false);
+                lblPreloaderProject.setVisible(false);
+                fxmlLabel.setVisible(false);
+                fxmlTextField.setVisible(false);
                 break;
             case EXTISTING:
                 createMainCheckBox.setVisible(false);
                 mainClassTextField.setVisible(false);
                 preloaderCheckBox.setVisible(false);
+                lblPreloaderProject.setVisible(false);
                 txtPreloaderProject.setVisible(false);
+                fxmlLabel.setVisible(false);
+                fxmlTextField.setVisible(false);
                 break;
         }
 
-        setAsMainCheckBox.setSelected(WizardSettings.getSetAsMain(type));
         mainClassTextField.getDocument().addDocumentListener(this);
         txtLibFolder.getDocument().addDocumentListener(this);
         txtPreloaderProject.getDocument().addDocumentListener(this);
+        fxmlTextField.getDocument().addDocumentListener(this);
     }
 
     @Override
@@ -200,6 +226,8 @@ public class PanelOptionsVisual extends SettingsPanel implements TaskListener, P
             mainClassChanged();
         } else if (txtPreloaderProject.getDocument().equals(doc)) {
             preloaderNameChanged();
+        } else if (fxmlTextField.getDocument().equals(doc)) {
+            fxmlNameChanged();
         }
     }
     
@@ -292,22 +320,29 @@ public class PanelOptionsVisual extends SettingsPanel implements TaskListener, P
      */
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
 
         cbSharable = new javax.swing.JCheckBox();
         lblLibFolder = new javax.swing.JLabel();
-        txtLibFolder = new javax.swing.JTextField();
-        btnLibFolder = new javax.swing.JButton();
-        lblHint = new javax.swing.JLabel();
         createMainCheckBox = new javax.swing.JCheckBox();
         mainClassTextField = new javax.swing.JTextField();
-        setAsMainCheckBox = new javax.swing.JCheckBox();
         lblPlatform = new javax.swing.JLabel();
         platformComboBox = new javax.swing.JComboBox();
         btnManagePlatforms = new javax.swing.JButton();
         preloaderCheckBox = new javax.swing.JCheckBox();
         lblPreloaderProject = new javax.swing.JLabel();
         txtPreloaderProject = new javax.swing.JTextField();
-        jSeparator1 = new javax.swing.JSeparator();
+        fxmlLabel = new javax.swing.JLabel();
+        fxmlTextField = new javax.swing.JTextField();
+        jSeparator2 = new javax.swing.JSeparator();
+        jPanel1 = new javax.swing.JPanel();
+        btnLibFolder = new javax.swing.JButton();
+        lblHint = new javax.swing.JLabel();
+        txtLibFolder = new javax.swing.JTextField();
+        filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 32767));
+        filler2 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 32767));
+
+        setLayout(new java.awt.GridBagLayout());
 
         cbSharable.setSelected(SharableLibrariesUtils.isLastProjectSharable());
         org.openide.awt.Mnemonics.setLocalizedText(cbSharable, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_PanelOptions_SharableProject_Checkbox")); // NOI18N
@@ -316,18 +351,23 @@ public class PanelOptionsVisual extends SettingsPanel implements TaskListener, P
                 cbSharableActionPerformed(evt);
             }
         });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        add(cbSharable, gridBagConstraints);
+        cbSharable.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSD_sharableProject")); // NOI18N
 
         lblLibFolder.setLabelFor(txtLibFolder);
         org.openide.awt.Mnemonics.setLocalizedText(lblLibFolder, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_PanelOptions_Location_Label")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(btnLibFolder, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_PanelOptions_Browse_Button")); // NOI18N
-        btnLibFolder.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnLibFolderActionPerformed(evt);
-            }
-        });
-
-        org.openide.awt.Mnemonics.setLocalizedText(lblHint, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "HINT_LibrariesFolder")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_TRAILING;
+        gridBagConstraints.insets = new java.awt.Insets(10, 0, 0, 5);
+        add(lblLibFolder, gridBagConstraints);
 
         createMainCheckBox.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(createMainCheckBox, org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("LBL_createMainCheckBox")); // NOI18N
@@ -336,13 +376,37 @@ public class PanelOptionsVisual extends SettingsPanel implements TaskListener, P
                 createMainCheckBoxItemStateChanged(evt);
             }
         });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.ABOVE_BASELINE_LEADING;
+        gridBagConstraints.insets = new java.awt.Insets(25, 0, 0, 10);
+        add(createMainCheckBox, gridBagConstraints);
+        createMainCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("ACSN_createMainCheckBox")); // NOI18N
+        createMainCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("ACSD_createMainCheckBox")); // NOI18N
 
         mainClassTextField.setText("com.myapp.Main");
-
-        org.openide.awt.Mnemonics.setLocalizedText(setAsMainCheckBox, org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("LBL_setAsMainCheckBox")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.ABOVE_BASELINE_LEADING;
+        gridBagConstraints.weightx = 0.1;
+        gridBagConstraints.insets = new java.awt.Insets(25, 0, 0, 0);
+        add(mainClassTextField, gridBagConstraints);
+        mainClassTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("ASCN_mainClassTextFiled")); // NOI18N
+        mainClassTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("ASCD_mainClassTextFiled")); // NOI18N
 
         lblPlatform.setLabelFor(platformComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(lblPlatform, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_PanelOptions_Platform_ComboBox")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
+        add(lblPlatform, gridBagConstraints);
 
         platformComboBox.setModel(platformsModel);
         platformComboBox.setRenderer(platformsCellRenderer);
@@ -351,6 +415,14 @@ public class PanelOptionsVisual extends SettingsPanel implements TaskListener, P
                 platformComboBoxItemStateChanged(evt);
             }
         });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
+        gridBagConstraints.weightx = 0.1;
+        add(platformComboBox, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(btnManagePlatforms, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_PanelOptions_Manage_Button")); // NOI18N
         btnManagePlatforms.addActionListener(new java.awt.event.ActionListener() {
@@ -358,6 +430,13 @@ public class PanelOptionsVisual extends SettingsPanel implements TaskListener, P
                 btnManagePlatformsActionPerformed(evt);
             }
         });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_TRAILING;
+        gridBagConstraints.insets = new java.awt.Insets(0, 10, 0, 0);
+        add(btnManagePlatforms, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(preloaderCheckBox, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_PanelOptions_Preloader_Checkbox")); // NOI18N
         preloaderCheckBox.addItemListener(new java.awt.event.ItemListener() {
@@ -365,99 +444,117 @@ public class PanelOptionsVisual extends SettingsPanel implements TaskListener, P
                 preloaderCheckBoxItemStateChanged(evt);
             }
         });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(10, 0, 0, 0);
+        add(preloaderCheckBox, gridBagConstraints);
 
         lblPreloaderProject.setLabelFor(txtPreloaderProject);
         org.openide.awt.Mnemonics.setLocalizedText(lblPreloaderProject, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_PanelOptions_PreloaderName_TextBox")); // NOI18N
         lblPreloaderProject.setEnabled(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_TRAILING;
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 5);
+        add(lblPreloaderProject, gridBagConstraints);
 
         txtPreloaderProject.setText(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "TXT_PanelOptions_Preloader_Project_Name")); // NOI18N
         txtPreloaderProject.setEnabled(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
+        gridBagConstraints.weightx = 0.1;
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
+        add(txtPreloaderProject, gridBagConstraints);
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(21, 21, 21)
-                        .addComponent(lblPreloaderProject)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(txtPreloaderProject, javax.swing.GroupLayout.DEFAULT_SIZE, 265, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(lblPlatform)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(platformComboBox, 0, 272, Short.MAX_VALUE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btnManagePlatforms))
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(preloaderCheckBox)
-                .addContainerGap())
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(cbSharable)
-                .addContainerGap())
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(21, 21, 21)
-                        .addComponent(lblLibFolder)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(txtLibFolder, javax.swing.GroupLayout.DEFAULT_SIZE, 298, Short.MAX_VALUE)
-                            .addComponent(lblHint, javax.swing.GroupLayout.DEFAULT_SIZE, 298, Short.MAX_VALUE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnLibFolder, javax.swing.GroupLayout.PREFERRED_SIZE, 87, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                        .addComponent(createMainCheckBox)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(mainClassTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 382, Short.MAX_VALUE))
-                    .addComponent(setAsMainCheckBox, javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jSeparator1, javax.swing.GroupLayout.DEFAULT_SIZE, 495, Short.MAX_VALUE))
-                .addGap(0, 0, 0))
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lblPlatform)
-                    .addComponent(platformComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnManagePlatforms))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(preloaderCheckBox)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lblPreloaderProject)
-                    .addComponent(txtPreloaderProject, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(cbSharable)
-                .addGap(5, 5, 5)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(txtLibFolder, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(btnLibFolder))
-                    .addComponent(lblLibFolder))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(lblHint, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(createMainCheckBox)
-                    .addComponent(mainClassTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(setAsMainCheckBox)
-                .addContainerGap(24, Short.MAX_VALUE))
-        );
+        fxmlLabel.setLabelFor(fxmlTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(fxmlLabel, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_PanelOptions_FXML_lbl")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
+        gridBagConstraints.insets = new java.awt.Insets(15, 0, 0, 0);
+        add(fxmlLabel, gridBagConstraints);
 
-        cbSharable.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSD_sharableProject")); // NOI18N
-        txtLibFolder.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSD_LibrariesLocation")); // NOI18N
+        fxmlTextField.setText("Sample");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
+        gridBagConstraints.weightx = 0.1;
+        gridBagConstraints.insets = new java.awt.Insets(15, 0, 0, 0);
+        add(fxmlTextField, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 13, 0);
+        add(jSeparator2, gridBagConstraints);
+
+        jPanel1.setLayout(new java.awt.GridBagLayout());
+
+        org.openide.awt.Mnemonics.setLocalizedText(btnLibFolder, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_PanelOptions_Browse_Button")); // NOI18N
+        btnLibFolder.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnLibFolderActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_TRAILING;
+        gridBagConstraints.insets = new java.awt.Insets(0, 10, 0, 0);
+        jPanel1.add(btnLibFolder, gridBagConstraints);
         btnLibFolder.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSD_browseLibraries")); // NOI18N
-        createMainCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("ACSN_createMainCheckBox")); // NOI18N
-        createMainCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("ACSD_createMainCheckBox")); // NOI18N
-        mainClassTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("ASCN_mainClassTextFiled")); // NOI18N
-        mainClassTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("ASCD_mainClassTextFiled")); // NOI18N
-        setAsMainCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("ACSN_setAsMainCheckBox")); // NOI18N
-        setAsMainCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("ACSD_setAsMainCheckBox")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(lblHint, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "HINT_LibrariesFolder")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 0.2;
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
+        jPanel1.add(lblHint, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
+        gridBagConstraints.weightx = 0.2;
+        jPanel1.add(txtLibFolder, gridBagConstraints);
+        txtLibFolder.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSD_LibrariesLocation")); // NOI18N
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridheight = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.FIRST_LINE_START;
+        gridBagConstraints.weightx = 0.2;
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
+        add(jPanel1, gridBagConstraints);
+        add(filler1, new java.awt.GridBagConstraints());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 9;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
+        gridBagConstraints.weighty = 0.1;
+        add(filler2, gridBagConstraints);
 
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSN_PanelOptionsVisual")); // NOI18N
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSD_PanelOptionsVisual")); // NOI18N
@@ -543,6 +640,12 @@ private void createMainCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {/
                         NbBundle.getMessage(PanelOptionsVisual.class, "ERROR_IllegalPreloaderProjectName")); // NOI18N
             }
             return isPreloaderNameValid;
+        } else if (fxmlTextField.isVisible()) {
+            if (!isFXMLNameValid) {
+                settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                        NbBundle.getMessage(PanelOptionsVisual.class, "ERROR_IllegalFXMLName")); // NOI18N
+            }
+            return isFXMLNameValid;
         } else {
             return true;
         }
@@ -562,16 +665,18 @@ private void createMainCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {/
 
     @Override
     void store(WizardDescriptor d) {
-        Templates.setDefinesMainProject(d, setAsMainCheckBox.isSelected());
-        WizardSettings.setSetAsMain(type, setAsMainCheckBox.isSelected());
-        d.putProperty("mainClass", createMainCheckBox.isSelected() && createMainCheckBox.isVisible() ? mainClassTextField.getText() : null); // NOI18N
-        d.putProperty(SHARED_LIBRARIES, cbSharable.isSelected() ? txtLibFolder.getText() : null);
+        d.putProperty(JavaFXProjectWizardIterator.MAIN_CLASS, createMainCheckBox.isSelected() && createMainCheckBox.isVisible() ? mainClassTextField.getText() : null);
+        d.putProperty(JavaFXProjectWizardIterator.SHARED_LIBRARIES, cbSharable.isSelected() ? txtLibFolder.getText() : null);
         
         String platformName = getSelectedPlatform().getProperties().get(JavaFXPlatformUtils.PLATFORM_ANT_NAME);
         d.putProperty(JavaFXProjectUtils.PROP_JAVA_PLATFORM_NAME, platformName);
 
         if (preloaderCheckBox.isSelected()) {
             d.putProperty(JavaFXProjectWizardIterator.PROP_PRELOADER_NAME, txtPreloaderProject.getText());
+        }
+        
+        if (fxmlTextField.isVisible()) {
+            d.putProperty(JavaFXProjectWizardIterator.FXML_NAME, fxmlTextField.getText());
         }
     }
     
@@ -580,7 +685,12 @@ private void createMainCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {/
     private javax.swing.JButton btnManagePlatforms;
     private javax.swing.JCheckBox cbSharable;
     private javax.swing.JCheckBox createMainCheckBox;
-    private javax.swing.JSeparator jSeparator1;
+    private javax.swing.Box.Filler filler1;
+    private javax.swing.Box.Filler filler2;
+    private javax.swing.JLabel fxmlLabel;
+    private javax.swing.JTextField fxmlTextField;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JSeparator jSeparator2;
     private javax.swing.JLabel lblHint;
     private javax.swing.JLabel lblLibFolder;
     private javax.swing.JLabel lblPlatform;
@@ -588,7 +698,6 @@ private void createMainCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {/
     private javax.swing.JTextField mainClassTextField;
     private javax.swing.JComboBox platformComboBox;
     private javax.swing.JCheckBox preloaderCheckBox;
-    private javax.swing.JCheckBox setAsMainCheckBox;
     private javax.swing.JTextField txtLibFolder;
     private javax.swing.JTextField txtPreloaderProject;
     // End of variables declaration//GEN-END:variables
@@ -605,6 +714,12 @@ private void createMainCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {/
             }
         }
         isMainClassValid = isValid;
+        panel.fireChangeEvent();
+    }
+
+    private void fxmlNameChanged() {
+        String fxmlName = fxmlTextField.getText();
+        isFXMLNameValid = !fxmlName.isEmpty() && Utilities.isJavaIdentifier(fxmlName);
         panel.fireChangeEvent();
     }
 

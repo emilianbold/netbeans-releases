@@ -247,7 +247,7 @@ public class FilesystemInterceptorProviderImpl extends FilesystemInterceptorProv
         }
 
         @Override
-        public void fileLocked(FileProxyI fo) {
+        public void fileLocked(FileProxyI fo) throws IOException {
             VCSFilesystemInterceptor.fileLocked(toVCSFileProxy(fo));
         }
 

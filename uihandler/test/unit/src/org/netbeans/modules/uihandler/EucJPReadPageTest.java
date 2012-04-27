@@ -46,12 +46,15 @@ package org.netbeans.modules.uihandler;
 
 import java.awt.Dialog;
 import java.awt.Frame;
+import java.awt.GraphicsEnvironment;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 import javax.swing.JButton;
 import java.util.Locale;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
@@ -65,6 +68,10 @@ import org.openide.NotifyDescriptor;
  */
 public class EucJPReadPageTest extends NbTestCase {
     
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(EucJPReadPageTest.class);
+    }
+
     public EucJPReadPageTest(String testName) {
         super(testName);
     }

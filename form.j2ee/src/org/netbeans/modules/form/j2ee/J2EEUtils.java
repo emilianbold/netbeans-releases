@@ -81,6 +81,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.form.FormEditor;
 import org.netbeans.modules.form.FormModel;
@@ -182,8 +183,7 @@ public class J2EEUtils {
         } else {
             // The first persistence unit - use EclipseLink provider
             // (it is delivered as a part of NetBeans J2EE support)
-            //provider = ProviderUtil.ECLIPSELINK_PROVIDER;
-            provider = ProviderUtil.TOPLINK_PROVIDER1_0;
+            provider = ProviderUtil.ECLIPSELINK_PROVIDER;
         }
 
         unit = ProviderUtil.buildPersistenceUnit(puName, provider, connection, persistence.getVersion());
@@ -244,7 +244,7 @@ public class J2EEUtils {
             return new String[0];
         }
         if (persistenceXML == null) return new String[0];
-        Persistence persistence = null;
+        Persistence persistence;
         try {
              persistence = PersistenceMetadata.getDefault().getRoot(persistenceXML);
         } catch (IOException ioex) {
@@ -291,9 +291,12 @@ public class J2EEUtils {
                 fob =classPath.findResource("oracle/toplink/essentials/PersistenceProvider.class");//alternative
             }
             if (fob == null) {
-                ClassSource cs = new ClassSource("", // class name is not needed // NOI18N
-                        new ClassSourceResolver.LibraryEntry(LibraryManager.getDefault().getLibrary("toplink"))); // NOI18N
-                return ClassPathUtils.updateProject(fileInProject, cs);
+                Library lib = LibraryManager.getDefault().getLibrary("toplink");
+                if(lib !=null ){
+                    ClassSource cs = new ClassSource("", // class name is not needed // NOI18N
+                            new ClassSourceResolver.LibraryEntry(lib)); // NOI18N
+                    return ClassPathUtils.updateProject(fileInProject, cs);
+                }
             }
         } catch (IOException ex) {
             Logger.getLogger(J2EEUtils.class.getName()).log(Level.INFO, ex.getMessage(), ex);
@@ -519,10 +522,11 @@ public class J2EEUtils {
      * @param driver JDBC driver to be used in the project.
      */
     public static void updateProjectForUnit(FileObject fileInProject, PersistenceUnit unit, JDBCDriver driver) {
-        // Make sure that TopLink JAR files are on the classpath (if using TopLink)
-        if(ProviderUtil.ECLIPSELINK_PROVIDER.equals(ProviderUtil.getProvider(unit)) || ProviderUtil.ECLIPSELINK_PROVIDER1_0.equals(ProviderUtil.getProvider(unit))) {//the same for eclipselink
+        // Make sure that TopLink/EclipseLink JAR files are on the classpath
+        Provider provider = ProviderUtil.getProvider(unit);
+        if (ProviderUtil.ECLIPSELINK_PROVIDER.equals(provider) || ProviderUtil.ECLIPSELINK_PROVIDER1_0.equals(provider)) {
             updateProjectForEclipseLink(fileInProject);
-        }    else    if (ProviderUtil.TOPLINK_PROVIDER1_0.equals(ProviderUtil.getProvider(unit))) {
+        } else if (ProviderUtil.TOPLINK_PROVIDER1_0.equals(provider)) {
             updateProjectForTopLink(fileInProject);
         }
 

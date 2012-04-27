@@ -64,6 +64,9 @@ public final class MIMENames {
 
     /** Preprocessor */
     public static final String PREPROC_MIME_TYPE = "text/x-cpp+preprocessor";// NOI18N
+
+    /** any c/c++/header source file */
+    public static final String SOURCES_MIME_TYPE = "text/x-cnd+sourcefile";// NOI18N
     
     /** Doxygen embedded */
     public static final String DOXYGEN_MIME_TYPE = "text/x-doxygen"; // NOI18N
@@ -86,6 +89,7 @@ public final class MIMENames {
     /** Makefiles */
     public static final String MAKEFILE_MIME_TYPE = "text/x-make"; //NOI18N
     public static final String CMAKE_MIME_TYPE = "text/x-cmake"; //NOI18N
+    public static final String CMAKE_INCLUDE_MIME_TYPE = "text/x-cmake-include"; //NOI18N
     public static final String QTPROJECT_MIME_TYPE = "text/x-qtproject"; //NOI18N
 
     /** Shell */

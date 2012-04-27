@@ -116,6 +116,7 @@ function classpath() {
     CP=${CP}${path_sep}${ide}/modules/org-openidex-util.jar
     CP=${CP}${path_sep}${ide}/modules/org-netbeans-modules-xml-catalog.jar
     CP=${CP}${path_sep}${ide}/modules/org-netbeans-modules-dlight-nativeexecution.jar
+    CP=${CP}${path_sep}${ide}/modules/org-netbeans-api-java-classpath.jar
 
     CP=${CP}${path_sep}${platform}/lib/org-openide-util.jar
     CP=${CP}${path_sep}${platform}/lib/org-openide-util-lookup.jar
@@ -135,6 +136,8 @@ function classpath() {
     CP=${CP}${path_sep}${platform}/modules/org-openide-awt.jar
 
     CP=${CP}${path_sep}${dlightdist}/modules/org-netbeans-modules-dlight-libs-common.jar
+    CP=${CP}${path_sep}${dlightdist}/modules/org-netbeans-modules-dlight-remote.jar
+    CP=${CP}${path_sep}${dlightdist}/modules/org-netbeans-modules-dlight-remote-impl.jar
 
     CP=${CP}${path_sep}${cnddist}/modules/org-netbeans-modules-cnd-api-model.jar
     CP=${CP}${path_sep}${cnddist}/modules/org-netbeans-modules-cnd-modelimpl.jar
@@ -149,6 +152,9 @@ function classpath() {
     CP=${CP}${path_sep}${cnddist}/modules/org-netbeans-modules-cnd-utils.jar
     CP=${CP}${path_sep}${cnddist}/modules/org-netbeans-modules-cnd-model-services.jar
     CP=${CP}${path_sep}${cnddist}/modules/org-netbeans-modules-cnd-modelutil.jar
+    CP=${CP}${path_sep}${cnddist}/modules/org-netbeans-modules-cnd-remote.jar
+    CP=${CP}${path_sep}${cnddist}/modules/org-netbeans-modules-cnd-toolchain.jar
+    CP=${CP}${path_sep}${cnddist}/modules/org-netbeans-modules-cnd-api-remote.jar
 
     XREF_CP=""
     if [ -n "${XREF}" ]; then

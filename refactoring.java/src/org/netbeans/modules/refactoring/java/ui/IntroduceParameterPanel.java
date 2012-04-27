@@ -192,10 +192,6 @@ public class IntroduceParameterPanel extends JPanel implements CustomRefactoring
                                 }
 
                                 ((JEditorPane)singleLineEditor[1]).getDocument().addDocumentListener(nameChangedListener);
-                                ((JEditorPane)singleLineEditor[1]).putClientProperty(
-                                    "HighlightsLayerExcludes", //NOI18N
-                                    "^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\.CaretRowHighlighting$" //NOI18N
-                                );
                                 initialized = true;
                             }});
                     }

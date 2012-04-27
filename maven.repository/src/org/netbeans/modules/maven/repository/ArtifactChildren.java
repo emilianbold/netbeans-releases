@@ -43,10 +43,10 @@ package org.netbeans.modules.maven.repository;
 
 import java.util.Collections;
 import java.util.List;
-
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
+import org.netbeans.modules.maven.indexer.api.RepositoryQueries.Result;
 import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Node;
 
@@ -76,7 +76,8 @@ public class ArtifactChildren extends ChildFactory<NBVersionInfo> {
     }
     
     protected @Override boolean createKeys(List<NBVersionInfo> toPopulate) {
-        toPopulate.addAll(RepositoryQueries.getVersions(groupId, artifactId, Collections.singletonList(info)));
+        Result<NBVersionInfo> result = RepositoryQueries.getVersionsResult(groupId, artifactId, Collections.singletonList(info));
+        toPopulate.addAll(result.getResults());
         return true;
     }
 

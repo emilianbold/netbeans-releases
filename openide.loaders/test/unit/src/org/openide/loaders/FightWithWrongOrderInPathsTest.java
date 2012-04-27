@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.junit.Log;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.CookieSet;
@@ -142,6 +143,7 @@ implements DataLoader.RecognizedFiles {
         }
     }
 
+    @RandomlyFails // NB-Core-Build #7947 and in manual runs: Form loader shall be consulted
     public void testRecognizeJavaFirstFormKitLater() throws Exception {
         DataObject obj0 = DataObject.find(f0);
         DataObject obj2 = DataObject.find(f2);

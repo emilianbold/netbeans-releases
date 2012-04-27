@@ -548,13 +548,14 @@ public class JavaMembersPanel extends javax.swing.JPanel {
     }
     //</editor-fold>
 
+    @Override
     public void addNotify() {
         super.addNotify();
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 applyFilter(true);
-                filterTextField.requestFocusInWindow();
-            }           
+            }
         });
     }
 
@@ -628,6 +629,12 @@ public class JavaMembersPanel extends javax.swing.JPanel {
             }
             lastFocusedComponent = null;
         }
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                filterTextField.requestFocusInWindow();
+            }
+        });
     }
        
     private void applyFilter() {

@@ -53,8 +53,6 @@ import org.w3c.dom.*;
 import org.xml.sax.InputSource;
 
 import org.apache.tools.ant.BuildException;
-import org.xml.sax.ErrorHandler;
-import org.xml.sax.SAXParseException;
 
 /** This class represents module updates tracking
  *
@@ -80,8 +78,6 @@ class UpdateTracking {
 
     /** The name of the install_later file */
     public static final String TRACKING_DIRECTORY = "update_tracking"; // NOI18N
-    
-    private boolean pError = false;
     
     private File trackingFile = null;
     
@@ -281,7 +277,7 @@ class UpdateTracking {
         }
         try {
             InputSource xmlInputSource = new InputSource( this.is );
-            document = XMLUtil.parse( xmlInputSource, false, false, new ErrorCatcher(), null );
+            document = XMLUtil.parse( xmlInputSource, false, false, XMLUtil.rethrowHandler(), XMLUtil.nullResolver());
             if (is != null)
                 is.close();
         } catch ( org.xml.sax.SAXException e ) {
@@ -621,19 +617,4 @@ class UpdateTracking {
         
     }
 
-    class ErrorCatcher implements ErrorHandler {
-        public void error(SAXParseException e) {
-            // normally a validity error
-            pError = true;
-        }
-
-        public void warning(SAXParseException e) {
-            //parseFailed = true;
-        }
-
-        public void fatalError(SAXParseException e) {
-            pError = true;
-        }
-    }
-    
 }

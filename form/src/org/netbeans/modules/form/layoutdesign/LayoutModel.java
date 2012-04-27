@@ -441,7 +441,11 @@ public class LayoutModel implements LayoutConstants {
 
     public void setUserIntervalSize(LayoutInterval interval, int dimension, int size) {
         int min = interval.getMinimumSize();
+        int pref = interval.getPreferredSize();
         int max = interval.getMaximumSize();
+        if (min == pref && max == USE_PREFERRED_SIZE && pref != size) {
+            min = USE_PREFERRED_SIZE;
+        }
         if (resizeHandler != null) {
             resizeHandler.setIntervalSize(interval, dimension, min, size, max);
         } else {
@@ -465,8 +469,7 @@ public class LayoutModel implements LayoutConstants {
             }
             max = Short.MAX_VALUE;
         } else {
-            min = (size == 0 || size == NOT_EXPLICITLY_DEFINED)
-                    ? interval.getMinimumSize() : USE_PREFERRED_SIZE;
+            min = (size == 0 || size == NOT_EXPLICITLY_DEFINED) ? size : USE_PREFERRED_SIZE;
             max = USE_PREFERRED_SIZE;
         }
         if (resizeHandler != null) {
@@ -476,7 +479,7 @@ public class LayoutModel implements LayoutConstants {
         }
 
         if (sizeChange) {
-            interval.unsetAttribute(LayoutInterval.ATTR_FLEX_SIZEDEF);
+            changeIntervalAttribute(interval, LayoutInterval.ATTR_FLEX_SIZEDEF, false);
         }
     }
 

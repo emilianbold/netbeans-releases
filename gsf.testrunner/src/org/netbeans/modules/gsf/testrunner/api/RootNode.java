@@ -47,10 +47,12 @@ import java.awt.EventQueue;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import static org.netbeans.modules.gsf.testrunner.api.Bundle.*;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -88,12 +90,13 @@ final class RootNode extends AbstractNode {
     /**
      * Creates a new instance of RootNode
      */
-    public RootNode(TestSession session, int filterMask) {
+    @Messages("MSG_RunningTests=Running tests, please wait...")
+    RootNode(TestSession session, int filterMask) {
         super(new RootNodeChildren(session, filterMask));
         this.session = session;
         this.filterMask = filterMask;
         children = (RootNodeChildren) getChildren();
-        setName(NbBundle.getMessage(RootNode.class, "MSG_RunningTests"));
+        setName(MSG_RunningTests());
 
         setIconBaseWithExtension(
                 "org/netbeans/modules/gsf/testrunner/resources/empty.gif");     //NOI18N
@@ -212,60 +215,52 @@ final class RootNode extends AbstractNode {
         }
         this.filterMask = filterMask;
 
-        Children children = getChildren();
-        if (children != Children.LEAF) {
-            ((RootNodeChildren) children).setFilterMask(filterMask);
+        Children ch = getChildren();
+        if (ch != Children.LEAF) {
+            ((RootNodeChildren) ch).setFilterMask(filterMask);
         }
     }
 
-    /**
-     */
+    @Messages({
+        "MSG_TestsInfoNoTests=No tests executed.",
+        "# e.g.: 'All 58 tests passed.'", "# {0} - number of tests", "MSG_TestsInfoAllOK={0,choice,1#The test|2#Both tests|2<All {0,number,integer} tests} passed.",
+        "# {0} - number of tests", "MSG_PassedTestsInfo={0,choice,0#No test|1#1 test|1<{0,number,integer} tests} passed",
+        "# {0} - number of tests", "MSG_PendingTestsInfo={0,choice,1#1 test|1<{0,number,integer} tests} pending",
+        "# {0} - number of tests", "MSG_FailedTestsInfo={0,choice,1#1 test|1<{0,number,integer} tests} failed",
+        "# {0} - number of tests", "MSG_ErrorTestsInfo={0,choice,1#1 test|1<{0,number,integer} tests} caused an error",
+        "MSG_SomePassedNotDisplayed=Information about some passed tests is not displayed.",
+        "MSG_PassedNotDisplayed=Information about passed tests is not displayed.",
+        "# Elapsed time for a test suite", "# {0} - number of tests", "MSG_TestSuiteElapsedTime=({0,number,0.0##} s)"
+    })
     private void updateDisplayName() {
         assert EventQueue.isDispatchThread();
 
         /* Called from the EventDispatch thread */
 
-        final Class bundleRefClass = getClass();
         String msg;
 
         if (totalTests == 0) {
             if (sessionFinished) {
-                msg = NbBundle.getMessage(bundleRefClass,
-                        "MSG_TestsInfoNoTests");      //NOI18N
-
+                msg = MSG_TestsInfoNoTests();
             } else {
                 msg = null;
             }
         } else if (failures == 0 && errors == 0 && pending == 0) {
-            msg = NbBundle.getMessage(bundleRefClass,
-                    "MSG_TestsInfoAllOK", //NOI18N
-                    new Integer(totalTests));
+            msg = MSG_TestsInfoAllOK(totalTests);
         } else {
             
-            String passedTestsInfo = NbBundle.getMessage(
-                    bundleRefClass,
-                    "MSG_PassedTestsInfo", //NOI18N
-                    new Integer(totalTests - failures - errors - pending));
+            String passedTestsInfo = MSG_PassedTestsInfo(totalTests - failures - errors - pending);
             
             String pendingTestsInfo = (pending == 0)
                     ? null
-                    : NbBundle.getMessage(
-                    bundleRefClass,
-                    "MSG_PendingTestsInfo", //NOI18N
-                    new Integer(errors));
+                    : MSG_PendingTestsInfo(errors);
 
             String failedTestsInfo = (failures == 0)
                     ? null
-                    : NbBundle.getMessage(
-                    bundleRefClass,
-                    "MSG_FailedTestsInfo", //NOI18N
-                    new Integer(failures));
+                    : MSG_FailedTestsInfo(failures);
             String errorTestsInfo = (errors == 0)
                     ? null
-                    : NbBundle.getMessage(
-                    bundleRefClass,
-                    "MSG_ErrorTestsInfo", //NOI18N
-                    new Integer(errors));
+                    : MSG_ErrorTestsInfo(errors);
             
             msg = constructMessage(passedTestsInfo, pendingTestsInfo, failedTestsInfo, errorTestsInfo);
             
@@ -277,17 +272,11 @@ final class RootNode extends AbstractNode {
             switch (successDisplayedLevel) {
                 case SOME_PASSED_ABSENT:
                     msg += ' ';
-                    msg += NbBundle.getMessage(
-                            bundleRefClass,
-                            "MSG_SomePassedNotDisplayed");  //NOI18N
-
+                    msg += MSG_SomePassedNotDisplayed();
                     break;
                 case ALL_PASSED_ABSENT:
                     msg += ' ';
-                    msg += NbBundle.getMessage(
-                            bundleRefClass,
-                            "MSG_PassedNotDisplayed");      //NOI18N
-
+                    msg += MSG_PassedNotDisplayed();
                     break;
                 case ALL_PASSED_DISPLAYED:
                     break;
@@ -298,7 +287,7 @@ final class RootNode extends AbstractNode {
         }
 
         if (msg != null) {
-            msg += NbBundle.getMessage(bundleRefClass, "MSG_TestSuiteElapsedTime", new Double(elapsedTimeMillis / 1000d));
+            msg += MSG_TestSuiteElapsedTime(elapsedTimeMillis / 1000d);
         }
 
         if (this.message != null) {
@@ -310,11 +299,16 @@ final class RootNode extends AbstractNode {
         }
 
         // #143508
-        LOGGER.fine("Setting display name to: '" + msg + "'. Total tests run: " + totalTests + ". Session finished: " + sessionFinished);
+        LOGGER.log(Level.FINE, "Setting display name to: ''{0}''. Total tests run: {1}. Session finished: {2}", new Object[] {msg, totalTests, sessionFinished});
 
         setDisplayName(msg);
     }
     
+    @Messages({
+        "# {0} - info about tests in one state", "# {1} - info about tests in another state", "MSG_TestResultSummary1={0}, {1}.",
+        "# {0} - info about tests in one state", "# {1} - info about tests in another state", "# {2} - info about tests in yet another state", "MSG_TestResultSummary2={0}, {1}, {2}.",
+        "# {0} - info about passed tests", "# {1} - info about pending tests", "# {2} - info about failed tests", "# {3} - info about erroneous tests", "MSG_TestResultSummary3={0}, {1}, {2}, {3}."
+    })
     String constructMessage(String... subMessages) {
         List<String> messageList = new ArrayList<String>();
         for (String msg : subMessages) {
@@ -323,8 +317,16 @@ final class RootNode extends AbstractNode {
             }
         }
         int size = messageList.size();
-        String key = "MSG_TestResultSummary" + (size - 1);
-        return NbBundle.getMessage(RootNode.class, key, messageList.toArray(new String[size]));
+        switch (size) {
+        case 2:
+            return MSG_TestResultSummary1(messageList.get(0), messageList.get(1));
+        case 3:
+            return MSG_TestResultSummary2(messageList.get(0), messageList.get(1), messageList.get(2));
+        case 4:
+            return MSG_TestResultSummary3(messageList.get(0), messageList.get(1), messageList.get(2), messageList.get(4));
+        default:
+            throw new AssertionError(messageList);
+        }
     }
 
     /**

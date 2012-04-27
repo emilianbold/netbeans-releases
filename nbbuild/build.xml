@@ -296,6 +296,7 @@ made subject to such option by the copyright holder.
     <copy file="../ide/launcher/unix/netbeans" todir="${netbeans.dest.dir}/bin" />
     <chmod file="${netbeans.dest.dir}/bin/netbeans" perm="ugo+rx"/>
     <copy file="../ide/launcher/windows/netbeans.exe" todir="${netbeans.dest.dir}/bin" />
+    <copy file="../ide/launcher/windows/netbeans64.exe" todir="${netbeans.dest.dir}/bin" />
     <!-- if anybody knows better place for icons, let me know: jtulach@netbeans.org -->
 
     <mkdir dir="${netbeans.dest.dir}/etc" />
@@ -914,8 +915,17 @@ PKGINST=${pkg.svr4.pkginst}</echo>
     <property name="debug.server" value="n"/>
     <antcall target="tryme"/>
   </target>
-    
-  <target name="tryme-profile" depends="-jdk-presetdef-nbprofiledirect" description="Start IDE in debugger. May only be called from within IDE.">
+
+  <target name="-profile-check" if="netbeans.home">
+      <condition property="profiler.configured">
+          <or>
+              <contains string="${run.args.ide}" substring="-agentpath:" casesensitive="true"/>
+              <contains string="${run.args.ide}" substring="-javaagent:" casesensitive="true"/>
+          </or>
+      </condition>
+  </target>
+  
+  <target name="-tryme-profile-pre72" depends="-jdk-presetdef-nbprofiledirect" if="profiler.info.jvmargs.agent" description="Start IDE in profiler (pre72 compatibility mode). May only be called from within IDE.">
     <property name="profiler.roots.path" value="profiler.roots.all" />
     <fileset id="profiler.roots.all" dir="${netbeans.dest.dir}">
         <include name="**/*.jar"/>
@@ -934,10 +944,11 @@ PKGINST=${pkg.svr4.pkginst}</echo>
           <fileset refid="${profiler.roots.path}" />
       </rootspath>
     </nbprofiledirect>
-    
-    <antcall target="tryme">
-        <param name="tryme.debug.args" value="${profiler.jvmargs}"/>
-    </antcall>
+  </target>
+  
+  <target name="tryme-profile" depends="-profile-check,-tryme-profile-pre72" if="profiler.configured" unless="profiler.info.jvmargs.agent" description="Start IDE in profiler. May only be called from within IDE.">
+    <startprofiler/>
+    <antcall target="tryme"/>
   </target>
   
   <target name="tryme" depends="-load-build-properties,tryme-setup-debug-args,-jdk-init"
@@ -960,13 +971,21 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <condition property="run.env.display" value="${env.NBDISPLAY}" else="${env.DISPLAY}">
 	<isset property="env.NBDISPLAY"/>
     </condition>
-    <exec osfamily="windows" executable="${netbeans.dest.dir}/bin/netbeans.exe" failonerror="yes" dir="${java.io.tmpdir}">
+    
+    <!-- architecture of jvm on which app will run -->
+    <condition property="jvm.arch.string" value="64" else="">
+      <available file="${nbjdk.home}\jre\lib\amd64" />
+    </condition>        
+    
+    <property name="run.args.ide" value=""/>
+    <exec osfamily="windows" executable="${netbeans.dest.dir}/bin/netbeans${jvm.arch.string}.exe" failonerror="yes" dir="${java.io.tmpdir}">
       <arg value="--jdkhome"/>
       <arg file="${nbjdk.home}"/>
       <arg value="--userdir"/>
       <arg file="${test.user.dir}"/>
       <arg line="${tryme.args}"/>
       <arg line="${tryme.debug.args}" />
+      <arg line="${run.args.ide}"/>
     </exec>
     <exec osfamily="unix" executable="sh" failonerror="yes" dir="${java.io.tmpdir}">
       <arg value="${netbeans.dest.dir}/bin/netbeans"/>
@@ -976,6 +995,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       <arg file="${test.user.dir}"/>
       <arg line="${tryme.args}"/>
       <arg line="${tryme.debug.args}" />
+      <arg line="${run.args.ide}"/>
       <env key="DISPLAY" value="${run.env.display}"/>
     </exec>
   </target>

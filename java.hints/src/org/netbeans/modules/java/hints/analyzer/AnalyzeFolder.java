@@ -45,19 +45,16 @@ import java.awt.event.ActionEvent;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.java.hints.jackpot.impl.RulesManager;
-import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
-import org.netbeans.modules.java.hints.options.HintsSettings;
-import org.netbeans.modules.java.hints.spi.AbstractHint;
-import org.netbeans.modules.java.hints.spi.AbstractHint.HintSeverity;
-import org.netbeans.modules.java.hints.spi.TreeRule;
+import org.netbeans.modules.java.hints.providers.spi.HintMetadata;
+import org.netbeans.modules.java.hints.spiimpl.RulesManager;
+import org.netbeans.modules.java.hints.spiimpl.options.HintsSettings;
+import org.netbeans.spi.editor.hints.Severity;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -101,16 +98,16 @@ public final class AnalyzeFolder extends AbstractAction implements ContextAwareA
             @Override
             public void run() {
                 final Map<String, Preferences> preferencesOverlay = new HashMap<String, Preferences>();
-                for (HintMetadata hm : RulesManager.getInstance().allHints.keySet()) {
+                for (HintMetadata hm : RulesManager.getInstance().readHints(null, null, null).keySet()) {
                     String id = hm.id;
 
                     if (!preferencesOverlay.containsKey(id)) {
-                        Preferences origPreferences = RulesManager.getPreferences(id, HintsSettings.getCurrentProfileId());
+                        Preferences origPreferences = HintsSettings.getPreferences(id, HintsSettings.getCurrentProfileId());
                         OverridePreferences prefs = new OverridePreferences(origPreferences);
 
                         preferencesOverlay.put(id, prefs);
                         HintsSettings.setEnabled(prefs, SUPPORTED_IDS.contains(id));
-                        HintsSettings.setSeverity(prefs, HintSeverity.WARNING);
+                        HintsSettings.setSeverity(prefs, Severity.WARNING);
                     }
                 }
 

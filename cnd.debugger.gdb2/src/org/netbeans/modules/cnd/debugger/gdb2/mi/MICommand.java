@@ -243,7 +243,7 @@ public abstract class MICommand {
 	return sb.toString();
     }
    
-    public boolean isConsoleCommand() {
+    public final boolean isConsoleCommand() {
         return consoleCommand;
     }
 }

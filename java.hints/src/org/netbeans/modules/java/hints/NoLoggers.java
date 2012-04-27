@@ -63,28 +63,22 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
-import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
-import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
-import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
-import org.netbeans.modules.java.hints.spi.support.FixFactory;
-import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.JavaFix;
+import org.netbeans.spi.java.hints.TriggerTreeKind;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author vita
  */
-@Hint(category="logging", suppressWarnings={"ClassWithoutLogger"}, enabled=false) //NOI18N
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.NoLoggers", description = "#DESC_org.netbeans.modules.java.hints.NoLoggers", category="logging", suppressWarnings={"ClassWithoutLogger"}, enabled=false) //NOI18N
 public final class NoLoggers {
 
     public NoLoggers() {
@@ -125,8 +119,7 @@ public final class NoLoggers {
                     ctx,
                     ctx.getPath(),
                     NbBundle.getMessage(NoLoggers.class, "MSG_NoLoggers_checkNoLoggers", cls), //NOI18N
-                    JavaFix.toEditorFix(new NoLoggersFix(NbBundle.getMessage(NoLoggers.class, "MSG_NoLoggers_checkNoLoggers_Fix", cls), TreePathHandle.create(cls, ctx.getInfo()))), //NOI18N
-                    FixFactory.createSuppressWarningsFix(ctx.getInfo(), ctx.getPath(), "ClassWithoutLogger") //NOI18N
+                    new NoLoggersFix(NbBundle.getMessage(NoLoggers.class, "MSG_NoLoggers_checkNoLoggers_Fix", cls), TreePathHandle.create(cls, ctx.getInfo())).toEditorFix() //NOI18N
             ));
         } else {
             return null;
@@ -147,7 +140,9 @@ public final class NoLoggers {
         }
 
         @Override
-        protected void performRewrite(WorkingCopy wc, TreePath tp, boolean canShowUI) {
+        protected void performRewrite(TransformationContext ctx) {
+            WorkingCopy wc = ctx.getWorkingCopy();
+            TreePath tp = ctx.getPath();
             TreeMaker m = wc.getTreeMaker();
             ClassTree classTree = (ClassTree) tp.getLeaf();
             Element cls = wc.getTrees().getElement(tp);

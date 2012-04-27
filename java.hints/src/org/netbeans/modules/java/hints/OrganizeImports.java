@@ -47,6 +47,7 @@ import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
+import javax.tools.Diagnostic;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
@@ -74,17 +75,17 @@ import org.netbeans.api.java.source.ModificationResult.Difference;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.editor.javadoc.JavadocImports;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
-import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
-import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
-import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.JavaFix;
+import org.netbeans.spi.java.hints.TriggerTreeKind;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -92,8 +93,10 @@ import org.openide.util.NbBundle;
  *
  * @author Dusan Balek
  */
-@Hint(category = "imports")
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.OrganizeImports", description = "#DESC_org.netbeans.modules.java.hints.OrganizeImports", category = "imports")
 public class OrganizeImports {
+    
+    private static final String ERROR_CODE = "compiler.err.expected"; // NOI18N
 
     @TriggerTreeKind(Kind.COMPILATION_UNIT)
     public static ErrorDescription checkImports(final HintContext context) {
@@ -106,7 +109,7 @@ public class OrganizeImports {
                 public void run(ResultIterator resultIterator) throws Exception {
                     WorkingCopy copy = WorkingCopy.get(resultIterator.getParserResult());
                     copy.toPhase(Phase.RESOLVED);
-                    doOrganizeImports(copy);
+                    doOrganizeImports(copy, context.isBulkMode());
                 }
             });
         } catch (ParseException ex) {
@@ -114,7 +117,7 @@ public class OrganizeImports {
         }
         List<? extends Difference> diffs = result != null ? result.getDifferences(source.getFileObject()) : null;
         if (diffs != null && !diffs.isEmpty()) {
-            Fix fix = JavaFix.toEditorFix(new OrganizeImportsFix(context.getInfo(), context.getPath()));
+            Fix fix = new OrganizeImportsFix(context.getInfo(), context.getPath(), context.isBulkMode()).toEditorFix();
             SourcePositions sp = context.getInfo().getTrees().getSourcePositions();
             int offset = diffs.get(0).getStartPosition().getOffset();
             CompilationUnitTree cu = context.getInfo().getCompilationUnit();
@@ -127,15 +130,27 @@ public class OrganizeImports {
         return null;
     }
 
-
-    private static void doOrganizeImports(WorkingCopy copy) throws IllegalStateException {
+    private static void doOrganizeImports(WorkingCopy copy, boolean isBulkMode) throws IllegalStateException {
         CompilationUnitTree cu = copy.getCompilationUnit();
-        if (!cu.getImports().isEmpty()) {
+        List<? extends ImportTree> imports = cu.getImports();
+        if (!imports.isEmpty()) {
+            List<Diagnostic> diags = copy.getDiagnostics();
+            if (!diags.isEmpty()) {
+                SourcePositions sp = copy.getTrees().getSourcePositions();
+                long startPos = sp.getStartPosition(cu, imports.get(0));
+                long endPos = sp.getEndPosition(cu, imports.get(imports.size() - 1));
+                for (Diagnostic d : diags) {
+                    if (startPos <= d.getPosition() && d.getPosition() <= endPos) {
+                        if (ERROR_CODE.contentEquals(d.getCode()))
+                            return;
+                    }
+                }
+            }
             final CodeStyle cs = CodeStyle.getDefault(copy.getFileObject());
             Set<Element> starImports = cs.countForUsingStarImport() == Integer.MAX_VALUE ? new HashSet<Element>() : null;
             Set<Element> staticStarImports = cs.countForUsingStaticStarImport() == Integer.MAX_VALUE ? new HashSet<Element>() : null;
             Set<Element> toImport = getUsedElements(copy, cu, starImports, staticStarImports);
-            if (!toImport.isEmpty()) {
+            if (!toImport.isEmpty() || isBulkMode) {
                 List<ImportTree> imps;
                 TreeMaker maker = copy.getTreeMaker();
                 if (starImports != null || staticStarImports != null) {
@@ -172,7 +187,7 @@ public class OrganizeImports {
                 }
                 CompilationUnitTree cut = maker.CompilationUnit(cu.getPackageAnnotations(), cu.getPackageName(), imps, cu.getTypeDecls(), cu.getSourceFile());
                 ((JCCompilationUnit)cut).packge = ((JCCompilationUnit)cu).packge;
-                CompilationUnitTree ncu = GeneratorUtilities.get(copy).addImports(cut, toImport);
+                CompilationUnitTree ncu = toImport.isEmpty() ? cut : GeneratorUtilities.get(copy).addImports(cut, toImport);
                 copy.rewrite(cu, ncu);
             }
         }
@@ -263,8 +278,11 @@ public class OrganizeImports {
 
     private static final class OrganizeImportsFix extends JavaFix {
 
-        public OrganizeImportsFix(CompilationInfo info, TreePath tp) {
+        private final boolean isBulkMode;
+        
+        public OrganizeImportsFix(CompilationInfo info, TreePath tp, boolean isBulkMode) {
             super(info, tp);
+            this.isBulkMode = isBulkMode;
         }
 
         @Override
@@ -273,8 +291,10 @@ public class OrganizeImports {
         }
 
         @Override
-        protected void performRewrite(WorkingCopy wc, TreePath tp, boolean canShowUI) {
-            doOrganizeImports(wc);
+        protected void performRewrite(TransformationContext ctx) {
+            WorkingCopy wc = ctx.getWorkingCopy();
+            TreePath tp = ctx.getPath();
+            doOrganizeImports(wc, isBulkMode);
         }
     }
 }

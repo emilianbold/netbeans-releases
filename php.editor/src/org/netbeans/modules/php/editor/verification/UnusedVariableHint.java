@@ -41,11 +41,7 @@
  */
 package org.netbeans.modules.php.editor.verification;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Stack;
+import java.util.*;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.text.BadLocationException;
@@ -53,59 +49,9 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
-import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
-import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
-import org.netbeans.modules.php.editor.parser.astnodes.CastExpression;
-import org.netbeans.modules.php.editor.parser.astnodes.CatchClause;
-import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
-import org.netbeans.modules.php.editor.parser.astnodes.CloneExpression;
-import org.netbeans.modules.php.editor.parser.astnodes.ConditionalExpression;
-import org.netbeans.modules.php.editor.parser.astnodes.ConstantDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.ContinueStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.DeclareStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.EchoStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.ExpressionStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.ForEachStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.ForStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
-import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
-import org.netbeans.modules.php.editor.parser.astnodes.GotoLabel;
-import org.netbeans.modules.php.editor.parser.astnodes.GotoStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
-import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.Include;
-import org.netbeans.modules.php.editor.parser.astnodes.InstanceOfExpression;
-import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.LambdaFunctionDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
-import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocMethodTag;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocStaticAccessType;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeTag;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocVarTypeTag;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPVarComment;
-import org.netbeans.modules.php.editor.parser.astnodes.PostfixExpression;
-import org.netbeans.modules.php.editor.parser.astnodes.PrefixExpression;
-import org.netbeans.modules.php.editor.parser.astnodes.Program;
-import org.netbeans.modules.php.editor.parser.astnodes.ReflectionVariable;
-import org.netbeans.modules.php.editor.parser.astnodes.ReturnStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
-import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
-import org.netbeans.modules.php.editor.parser.astnodes.SwitchCase;
-import org.netbeans.modules.php.editor.parser.astnodes.SwitchStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.ThrowStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.UnaryOperation;
-import org.netbeans.modules.php.editor.parser.astnodes.UseStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.UseStatementPart;
-import org.netbeans.modules.php.editor.parser.astnodes.Variable;
-import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.*;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.netbeans.modules.php.editor.verification.PHPHintsProvider.Kind;
 import org.openide.filesystems.FileObject;
@@ -150,8 +96,8 @@ public class UnusedVariableHint extends AbstractRule implements PHPRuleWithPrefe
     private class CheckVisitor extends DefaultVisitor {
 
         private final Stack<ASTNode> parentNodes = new Stack<ASTNode>();
-        private final Map<ASTNode, List<Variable>> unusedVariables = new HashMap<ASTNode, List<Variable>>();
-        private final Map<ASTNode, List<Variable>> usedVariables = new HashMap<ASTNode, List<Variable>>();
+        private final Map<ASTNode, List<HintVariable>> unusedVariables = new HashMap<ASTNode, List<HintVariable>>();
+        private final Map<ASTNode, List<HintVariable>> usedVariables = new HashMap<ASTNode, List<HintVariable>>();
         private final FileObject fileObject;
         private boolean forceVariableAsUsed;
         private boolean forceVariableAsUnused;
@@ -160,16 +106,19 @@ public class UnusedVariableHint extends AbstractRule implements PHPRuleWithPrefe
             this.fileObject = fileObject;
         }
 
-        @Messages("UnusedVariableHintCustom=Variable ${0} seems to be unused in its scope")
+        @Messages({
+            "# {0} - Name of the variable",
+            "UnusedVariableHintCustom=Variable ${0} seems to be unused in its scope"
+        })
         public List<Hint> getHints() {
             List<Hint> hints = new LinkedList<Hint>();
             for (ASTNode scopeNode : unusedVariables.keySet()) {
-                List<Variable> scopeVariables = unusedVariables.get(scopeNode);
-                for (Variable variable : scopeVariables) {
-                    int start = variable.getStartOffset() + 1;
+                List<HintVariable> scopeVariables = unusedVariables.get(scopeNode);
+                for (HintVariable variable : scopeVariables) {
+                    int start = variable.getStartOffset();
                     int end = variable.getEndOffset();
                     OffsetRange offsetRange = new OffsetRange(start, end);
-                    hints.add(new Hint(UnusedVariableHint.this, Bundle.UnusedVariableHintCustom(getIdentifier(variable).getName()), fileObject, offsetRange, null, 500));
+                    hints.add(new Hint(UnusedVariableHint.this, Bundle.UnusedVariableHintCustom(variable.getName()), fileObject, offsetRange, null, 500));
                 }
             }
             return hints;
@@ -186,29 +135,29 @@ public class UnusedVariableHint extends AbstractRule implements PHPRuleWithPrefe
             return retval;
         }
 
-        private List<Variable> getUsedScopeVariables(ASTNode parentNode) {
-            List<Variable> usedScopeVariables = usedVariables.get(parentNode);
+        private List<HintVariable> getUsedScopeVariables(ASTNode parentNode) {
+            List<HintVariable> usedScopeVariables = usedVariables.get(parentNode);
             if (usedScopeVariables == null) {
-                usedScopeVariables = new LinkedList<Variable>();
+                usedScopeVariables = new LinkedList<HintVariable>();
                 usedVariables.put(parentNode, usedScopeVariables);
             }
             return usedScopeVariables;
         }
 
-        private List<Variable> getUnusedScopeVariables(ASTNode parentNode) {
-            List<Variable> unusedScopeVariables = unusedVariables.get(parentNode);
+        private List<HintVariable> getUnusedScopeVariables(ASTNode parentNode) {
+            List<HintVariable> unusedScopeVariables = unusedVariables.get(parentNode);
             if (unusedScopeVariables == null) {
-                unusedScopeVariables = new LinkedList<Variable>();
+                unusedScopeVariables = new LinkedList<HintVariable>();
                 unusedVariables.put(parentNode, unusedScopeVariables);
             }
             return unusedScopeVariables;
         }
 
         @CheckForNull
-        private Variable getUnusedVariable(String currentVarName, List<Variable> unusedScopeVariables) {
-            Variable retval = null;
-            for (Variable variable : unusedScopeVariables) {
-                String varName = getIdentifier(variable).getName();
+        private HintVariable getUnusedVariable(String currentVarName, List<HintVariable> unusedScopeVariables) {
+            HintVariable retval = null;
+            for (HintVariable variable : unusedScopeVariables) {
+                String varName = variable.getName();
                 if (currentVarName.equals(varName)) {
                     retval = variable;
                     break;
@@ -217,10 +166,10 @@ public class UnusedVariableHint extends AbstractRule implements PHPRuleWithPrefe
             return retval;
         }
 
-        private boolean isVariableUsed(String currentVarName, List<Variable> usedScopeVariables) {
+        private boolean isVariableUsed(String currentVarName, List<HintVariable> usedScopeVariables) {
             boolean retval = false;
-            for (Variable variable : usedScopeVariables) {
-                String varName = getIdentifier(variable).getName();
+            for (HintVariable variable : usedScopeVariables) {
+                String varName = variable.getName();
                 if (currentVarName.equals(varName)) {
                     retval = true;
                     break;
@@ -229,54 +178,58 @@ public class UnusedVariableHint extends AbstractRule implements PHPRuleWithPrefe
             return retval;
         }
 
-        private void forceVariableAsUnused(Variable node, List<Variable> unusedScopeVariables) {
-            String currentVarName = getIdentifier(node).getName();
-            Variable unusedVariable = getUnusedVariable(currentVarName, unusedScopeVariables);
+        private void forceVariableAsUnused(HintVariable node, List<HintVariable> unusedScopeVariables) {
+            HintVariable unusedVariable = getUnusedVariable(node.getName(), unusedScopeVariables);
             if (unusedVariable != null) {
                 unusedScopeVariables.remove(unusedVariable);
             }
             unusedScopeVariables.add(node);
         }
 
-        private void forceVariableAsUsed(Variable node, List<Variable> usedScopeVariables, List<Variable> unusedScopeVariables) {
-            String currentVarName = getIdentifier(node).getName();
+        private void forceVariableAsUsed(HintVariable hintVariable, List<HintVariable> usedScopeVariables, List<HintVariable> unusedScopeVariables) {
+            String currentVarName = hintVariable.getName();
             if (isVariableUsed(currentVarName, usedScopeVariables)) {
                 return;
             }
-            usedScopeVariables.add(node);
-            Variable unusedVariable = getUnusedVariable(currentVarName, unusedScopeVariables);
+            usedScopeVariables.add(hintVariable);
+            HintVariable unusedVariable = getUnusedVariable(currentVarName, unusedScopeVariables);
             if (unusedVariable != null) {
                 unusedScopeVariables.remove(unusedVariable);
             }
-            return;
         }
 
         @Override
         public void visit(Variable node) {
             Identifier identifier = getIdentifier(node);
-            if (identifier != null && !UNCHECKED_VARIABLES.contains(identifier.getName())) {
+            if (identifier != null) {
+                process(HintVariable.create(node, identifier.getName()));
+            }
+        }
+
+        private void process(HintVariable hintVariable) {
+            if (hintVariable != null && !UNCHECKED_VARIABLES.contains(hintVariable.getName())) {
                 ASTNode parentNode = parentNodes.peek();
-                String currentVarName = getIdentifier(node).getName();
-                List<Variable> usedScopeVariables = getUsedScopeVariables(parentNode);
-                List<Variable> unusedScopeVariables = getUnusedScopeVariables(parentNode);
+                String currentVarName = hintVariable.getName();
+                List<HintVariable> usedScopeVariables = getUsedScopeVariables(parentNode);
+                List<HintVariable> unusedScopeVariables = getUnusedScopeVariables(parentNode);
                 if (forceVariableAsUnused) {
-                    forceVariableAsUnused(node, unusedScopeVariables);
+                    forceVariableAsUnused(hintVariable, unusedScopeVariables);
                     return;
                 }
                 if (forceVariableAsUsed) {
-                    forceVariableAsUsed(node, usedScopeVariables, unusedScopeVariables);
+                    forceVariableAsUsed(hintVariable, usedScopeVariables, unusedScopeVariables);
                     return;
                 }
                 if (isVariableUsed(currentVarName, usedScopeVariables)) {
                     return;
                 }
-                Variable unusedVariable = getUnusedVariable(currentVarName, unusedScopeVariables);
+                HintVariable unusedVariable = getUnusedVariable(currentVarName, unusedScopeVariables);
                 if (unusedVariable != null) {
                     unusedScopeVariables.remove(unusedVariable);
-                    usedScopeVariables.add(node);
+                    usedScopeVariables.add(hintVariable);
                     return;
                 }
-                unusedScopeVariables.add(node);
+                unusedScopeVariables.add(hintVariable);
             }
         }
 
@@ -331,8 +284,39 @@ public class UnusedVariableHint extends AbstractRule implements PHPRuleWithPrefe
         @Override
         public void visit(FunctionInvocation node) {
             forceVariableAsUsed = true;
+            String functionName = CodeUtils.extractFunctionName(node);
+            if (functionName.equals("compact")) { //NOI18N
+                handleCompactFunction(node);
+            }
             super.visit(node);
             forceVariableAsUsed = false;
+        }
+
+        private void handleCompactFunction(final FunctionInvocation node) {
+            List<Expression> parameters = node.getParameters();
+            for (Expression parameter : parameters) {
+                handleFunctionParameter(parameter);
+            }
+        }
+
+        private void handleFunctionParameter(final Expression parameter) {
+            if (parameter instanceof Scalar) {
+                handleScalar((Scalar) parameter);
+            }
+        }
+
+        private void handleScalar(final Scalar scalar) {
+            if (scalar.getScalarType().equals(Scalar.Type.STRING)) {
+                process(HintVariable.create(scalar, extractVariableName(scalar.getStringValue())));
+            }
+        }
+
+        private String extractVariableName(final String quotedValue) {
+            String result = quotedValue;
+            if ((quotedValue.startsWith("'") && quotedValue.endsWith("'")) || (quotedValue.startsWith("\"") && quotedValue.endsWith("\""))) { //NOI18N
+                result = quotedValue.substring(1, quotedValue.length() - 1);
+            }
+            return result;
         }
 
         @Override
@@ -356,6 +340,7 @@ public class UnusedVariableHint extends AbstractRule implements PHPRuleWithPrefe
         public void visit(InstanceOfExpression node) {
             forceVariableAsUsed = true;
             scan(node.getExpression());
+            scan(node.getClassName());
             forceVariableAsUsed = false;
         }
 
@@ -512,11 +497,6 @@ public class UnusedVariableHint extends AbstractRule implements PHPRuleWithPrefe
         }
 
         @Override
-        public void visit(SwitchCase node) {
-            scan(node.getActions());
-        }
-
-        @Override
         public void visit(WhileStatement node) {
             forceVariableAsUsed = true;
             scan(node.getCondition());
@@ -618,6 +598,55 @@ public class UnusedVariableHint extends AbstractRule implements PHPRuleWithPrefe
         @Override
         public void visit(GotoStatement node) {
             // intentionally
+        }
+
+    }
+
+    private static class HintVariable {
+        private final ASTNode node;
+        private final String name;
+
+        static HintVariable create(final ASTNode node, final String name) {
+            return new HintVariable(node, name);
+        }
+
+        private HintVariable(final ASTNode node, final String name) {
+            this.node = node;
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public int getStartOffset() {
+            return node.getStartOffset() + 1;
+        }
+
+        public int getEndOffset() {
+            return node.getEndOffset();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final HintVariable other = (HintVariable) obj;
+            if ((this.name == null) ? (other.name != null) : !this.name.equals(other.name)) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 19 * hash + (this.name != null ? this.name.hashCode() : 0);
+            return hash;
         }
 
     }

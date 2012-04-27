@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.cnd.refactoring.support;
 
+import org.netbeans.modules.cnd.refactoring.api.CsmContext;
 import java.awt.Toolkit;
 import java.io.File;
 import java.util.ArrayList;

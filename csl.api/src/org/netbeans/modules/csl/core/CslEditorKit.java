@@ -44,6 +44,8 @@ package org.netbeans.modules.csl.core;
 
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -91,6 +93,8 @@ import org.openide.util.NbBundle;
  */
 public final class CslEditorKit extends NbEditorKit {
 
+    private static final Logger LOG = Logger.getLogger(CslEditorKit.class.getName());
+    
     public static EditorKit createEditorKitInstance(FileObject f) {
         String mimeType = detectMimeType(f);
         return mimeType != null ? new CslEditorKit(mimeType) : null;
@@ -187,7 +191,9 @@ public final class CslEditorKit extends NbEditorKit {
         actions.add(new DeleteToNextCamelCasePosition(findAction(superActions, removeNextWordAction)));
         actions.add(new DeleteToPreviousCamelCasePosition(findAction(superActions, removePreviousWordAction)));
 
-        if (language.hasOccurrencesFinder()) {
+        if (language == null) {
+            LOG.log(Level.WARNING, "Language missing for MIME type {0}", mimeType);
+        } else if (language.hasOccurrencesFinder()) {
             actions.add(new GoToMarkOccurrencesAction(false));
             actions.add(new GoToMarkOccurrencesAction(true));
         }
@@ -227,6 +233,7 @@ public final class CslEditorKit extends NbEditorKit {
 
     private final class GsfDefaultKeyTypedAction extends ExtDefaultKeyTypedAction {
         private JTextComponent currentTarget;
+        private String replacedText = null;
 
         @Override
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
@@ -263,6 +270,9 @@ public final class CslEditorKit extends NbEditorKit {
         @Override
         protected void replaceSelection(JTextComponent target, int dotPos, Caret caret,
             String str, boolean overwrite) throws BadLocationException {
+            if (str.equals("")) {
+                return;
+            }
             char insertedChar = str.charAt(0);
             Document document = target.getDocument();
 

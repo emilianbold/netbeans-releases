@@ -45,6 +45,7 @@
 package org.netbeans.modules.cnd.loaders;
 
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.Node;
@@ -57,6 +58,11 @@ import org.openide.util.lookup.InstanceContent;
 /** Superclass for Elf objects in the Repository.
  *
  */
+@MIMEResolver.Registration(
+    displayName="#HexBasedResolver", // NOI18N
+    position=500,
+    resource="../resources/mime-resolver-hex-based.xml" // NOI18N
+)
 public class ExeObject extends MultiDataObject {
     //private static final Logger LOG = Logger.getLogger(ExeObject.class.getName());
 

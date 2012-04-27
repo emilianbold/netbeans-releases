@@ -17,6 +17,7 @@ import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.subversion.operators.CommitStepOperator;
@@ -87,16 +88,17 @@ public class CopyUiTest extends JellyTestCase{
             projectPath = TestKit.prepareProject("Java", "Java Application", PROJECT_NAME);
 
             ImportWizardOperator.invoke(ProjectsTabOperator.invoke().getProjectRootNode(PROJECT_NAME));
+            new EventTool().waitNoEvent(2000);
             RepositoryStepOperator rso = new RepositoryStepOperator();
             rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
             rso.next();
-            Thread.sleep(1000);
+            new EventTool().waitNoEvent(2000);
 
             FolderToImportStepOperator ftiso = new FolderToImportStepOperator();
             ftiso.setRepositoryFolder("trunk/Import" + PROJECT_NAME);
             ftiso.setImportMessage("initial import");
             ftiso.next();
-            Thread.sleep(1000);
+            new EventTool().waitNoEvent(2000);
             CommitStepOperator cso = new CommitStepOperator();
             cso.finish();
             

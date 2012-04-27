@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -51,11 +51,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.db.metadata.model.MetadataUtilities;
-import org.netbeans.modules.db.metadata.model.api.Catalog;
-import org.netbeans.modules.db.metadata.model.api.MetadataException;
-import org.netbeans.modules.db.metadata.model.api.Procedure;
-import org.netbeans.modules.db.metadata.model.api.Table;
-import org.netbeans.modules.db.metadata.model.api.View;
+import org.netbeans.modules.db.metadata.model.api.*;
 import org.netbeans.modules.db.metadata.model.spi.SchemaImplementation;
 
 /**
@@ -163,7 +159,7 @@ public class JDBCSchema extends SchemaImplementation {
             ResultSet rs = jdbcCatalog.getJDBCMetadata().getDmd().getTables(jdbcCatalog.getName(), name, "%", new String[] { "TABLE", "SYSTEM TABLE" }); // NOI18N
             try {
                 while (rs.next()) {
-                    String tableName = rs.getString("TABLE_NAME"); // NOI18N
+                    String tableName = MetadataUtilities.trimmed(rs.getString("TABLE_NAME")); // NOI18N
                     Table table = createJDBCTable(tableName).getTable();
                     newTables.put(tableName, table);
                     LOGGER.log(Level.FINE, "Created table {0}", table);
@@ -186,7 +182,7 @@ public class JDBCSchema extends SchemaImplementation {
             ResultSet rs = jdbcCatalog.getJDBCMetadata().getDmd().getTables(jdbcCatalog.getName(), name, "%", new String[] { "VIEW" }); // NOI18N
             try {
                 while (rs.next()) {
-                    String viewName = rs.getString("TABLE_NAME"); // NOI18N
+                    String viewName = MetadataUtilities.trimmed(rs.getString("TABLE_NAME")); // NOI18N
                     View view = createJDBCView(viewName).getView();
                     newViews.put(viewName, view);
                     LOGGER.log(Level.FINE, "Created view {0}", view);
@@ -209,7 +205,7 @@ public class JDBCSchema extends SchemaImplementation {
             ResultSet rs = jdbcCatalog.getJDBCMetadata().getDmd().getProcedures(jdbcCatalog.getName(), name, "%"); // NOI18N
             try {
                 while (rs.next()) {
-                    String procedureName = rs.getString("PROCEDURE_NAME"); // NOI18N
+                    String procedureName = MetadataUtilities.trimmed(rs.getString("PROCEDURE_NAME")); // NOI18N
                     Procedure procedure = createJDBCProcedure(procedureName).getProcedure();
                     newProcedures.put(procedureName, procedure);
                     LOGGER.log(Level.FINE, "Created procedure {0}", procedure);

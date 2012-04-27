@@ -75,4 +75,8 @@ public class PHPHintsTest extends PHPHintsTestBase {
         checkHintsInStartEndFile(new WrongOrderOfArgsHint(), "testWrongOrderOfArgsHint.php");
     }
 
+    public void testUnusedUsesHint() throws Exception {
+        checkHintsInStartEndFile(new UnusedUsesHint(), "testUnusedUsesHint.php");
+    }
+
 }

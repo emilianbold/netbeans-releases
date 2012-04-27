@@ -108,6 +108,7 @@ class IssueStorage {
         }
         writeStorage();
         Task t = BugtrackingManager.getInstance().getRequestProcessor().create(new Runnable() {
+            @Override
             public void run() {
                 cleanup();
             }
@@ -117,7 +118,7 @@ class IssueStorage {
 
     long getReferenceTime(String nameSpace) throws IOException {
         File folder = StorageUtils.getNameSpaceFolder(storage, nameSpace);
-        File data = new File(folder, "data");
+        File data = new File(folder, "data");                                   // NOI18N
         
         FileLock lock = FileLocks.getLock(data);
         try {
@@ -138,9 +139,7 @@ class IssueStorage {
                         return -1;
                     } catch (InterruptedException ex) {
                         BugtrackingManager.LOG.log(Level.WARNING, null, ex);
-                        IOException ioe = new IOException(ex.getMessage());
-                        ioe.initCause(ex);
-                        throw ioe;
+                        throw new IOException(ex);
                     } finally {
                         if(BugtrackingManager.LOG.isLoggable(Level.FINE)) {
                             String dateString = ret > -1 ? new SimpleDateFormat().format(new Date(ret)) : "null";   // NOI18N
@@ -149,6 +148,9 @@ class IssueStorage {
                         try { if(is != null) is.close(); } catch (IOException e) {}
                     }
                 } else {
+                    if(!folder.exists()) {
+                        folder.mkdirs();
+                    }
                     data.createNewFile();
                     ret = System.currentTimeMillis();
                     DataOutputStream os = null;
@@ -157,10 +159,8 @@ class IssueStorage {
                         os.writeLong(ret);
                         return ret;
                     } catch (InterruptedException ex) {
-                        BugtrackingManager.LOG.log(Level.WARNING, null, ex);
-                        IOException ioe = new IOException(ex.getMessage());
-                        ioe.initCause(ex);
-                        throw ioe;
+                        BugtrackingManager.LOG.log(Level.WARNING, data.getAbsolutePath(), ex);
+                        throw new IOException(ex);
                     } finally {
                         if(BugtrackingManager.LOG.isLoggable(Level.FINE)) {
                             String dateString = ret > -1 ? new SimpleDateFormat().format(new Date(ret)) : "null";   // NOI18N
@@ -193,7 +193,8 @@ class IssueStorage {
                 dos.writeLong(entry.getLastSeenModified());
                 dos.writeInt(entry.getLastUnseenStatus());
                 if(entry.getSeenAttributes() != null) {
-                    for(Entry<String, String> e : entry.getSeenAttributes().entrySet()) {
+                    Map<String, String> sa = entry.getSeenAttributes();
+                    for(Entry<String, String> e : sa.entrySet()) {
                         writeString(dos, e.getKey());
                         writeString(dos, e.getValue());
                     }
@@ -201,9 +202,7 @@ class IssueStorage {
             }
         } catch (InterruptedException ex) {
             BugtrackingManager.LOG.log(Level.WARNING, null, ex);
-            IOException ioe = new IOException(ex.getMessage());
-            ioe.initCause(ex);
-            throw ioe;
+            throw new IOException(ex);
         } finally {
             try { if(dos != null) dos.close(); } catch (IOException e) {}
             try { if(is != null) is.close(); } catch (IOException e) {}
@@ -251,9 +250,7 @@ class IssueStorage {
             }
         } catch (InterruptedException ex) {
             BugtrackingManager.LOG.log(Level.WARNING, null, ex);
-            IOException ioe = new IOException(ex.getMessage());
-            ioe.initCause(ex);
-            throw ioe;
+            throw new IOException(ex);
         } finally {
             if(is != null) try { is.close(); } catch(IOException e) {}
             if(lock != null) {
@@ -281,9 +278,7 @@ class IssueStorage {
             }
         } catch (InterruptedException ex) {
             BugtrackingManager.LOG.log(Level.WARNING, null, ex);
-            IOException ioe = new IOException(ex.getMessage());
-            ioe.initCause(ex);
-            throw ioe;
+            throw new IOException(ex);
         } finally {
             BugtrackingManager.LOG.log(Level.FINE, "finished reading query {0} - {1}", new Object[] {nameSpace, queryName}); // NOI18N
             if(dis != null) try { dis.close(); } catch(IOException e) {}
@@ -297,7 +292,7 @@ class IssueStorage {
         if(dis == null) return Collections.emptyList();
         List<String> ids = new ArrayList<String>();
         while(true) {
-            String id = null;
+            String id;
             try {
                 id = readString(dis);
             } catch (EOFException e) {
@@ -344,9 +339,7 @@ class IssueStorage {
             }
         } catch (InterruptedException ex) {
             BugtrackingManager.LOG.log(Level.WARNING, null, ex);
-            IOException ioe = new IOException(ex.getMessage());
-            ioe.initCause(ex);
-            throw ioe;
+            throw new IOException(ex);
         } finally {
             BugtrackingManager.LOG.log(Level.FINE, "finished reading archived query issues {0} - {1}", new Object[] {nameSpace, queryName}); // NOI18N
             if(dis != null) try { dis.close(); } catch(IOException e) {}
@@ -360,11 +353,9 @@ class IssueStorage {
         if(dis == null) return Collections.emptyMap();
         Map<String, Long> ids = new HashMap<String, Long>();
         while(true) {
-            String id = null;
-            long ts = -1;
             try {
-                id = readString(dis);
-                ts = dis.readLong();
+                String id = readString(dis);
+                long ts = dis.readLong();
                 ids.put(id, ts);
             } catch (EOFException e) {
                 break;
@@ -376,8 +367,8 @@ class IssueStorage {
     void removeQuery(String nameSpace, String queryName) throws IOException {
         assert !SwingUtilities.isEventDispatchThread() : "should not access the issue storage in awt"; // NOI18N
         BugtrackingManager.LOG.log(Level.FINE, "start removing query {0} - {1}", new Object[] {nameSpace, queryName}); // NOI18N
-        FileLock lock = null;
         try {
+            FileLock lock;
             File folder = StorageUtils.getNameSpaceFolder(storage, nameSpace);
             File query = getQueryFile(folder, queryName, false);
             if(query.exists()) {
@@ -425,9 +416,7 @@ class IssueStorage {
             }
         } catch (InterruptedException ex) {
             BugtrackingManager.LOG.log(Level.WARNING, null, ex);
-            IOException ioe = new IOException(ex.getMessage());
-            ioe.initCause(ex);
-            throw ioe;
+            throw new IOException(ex);
         } finally {
             BugtrackingManager.LOG.log(Level.FINE, "finished storing query issues {0} - {1}", new Object[] {nameSpace, queryName}); // NOI18N
             if(dos != null) try { dos.close(); } catch(IOException e) {}
@@ -463,9 +452,7 @@ class IssueStorage {
             }
         } catch (InterruptedException ex) {
             BugtrackingManager.LOG.log(Level.WARNING, null, ex);
-            IOException ioe = new IOException(ex.getMessage());
-            ioe.initCause(ex);
-            throw ioe;
+            throw new IOException(ex);
         } finally {
             try { if(dos != null) dos.close(); } catch (IOException e) {}
             if(lock != null) {
@@ -506,6 +493,7 @@ class IssueStorage {
             BugtrackingManager.LOG.log(Level.FINE, "starting bugtrackig storage cleanup for {0}", new Object[] {repo.getAbsoluteFile()}); // NOI18N
             Set<String> livingIssues = new HashSet<String>();
             File[] queries = repo.listFiles(new FilenameFilter() {
+                @Override
                 public boolean accept(File dir, String name) {
                     return name.endsWith(QUERY_SUFIX);
                 }
@@ -521,13 +509,14 @@ class IssueStorage {
                     } finally {
                         if(lock != null) lock.release();
                     }
-                    if(ids == null || ids.size() == 0) {
+                    if(ids == null || ids.isEmpty()) {
                         continue;
                     }
                     livingIssues.addAll(ids);
                 }
             }
             queries = repo.listFiles(new FilenameFilter() {
+                @Override
                 public boolean accept(File dir, String name) {
                     return name.endsWith(QUERY_ARCHIVED_SUFIX);
                 }
@@ -543,7 +532,7 @@ class IssueStorage {
                     } finally {
                         if(lock != null) lock.release();
                     }
-                    if(ids == null || ids.size() == 0) {
+                    if(ids == null || ids.isEmpty()) {
                         continue;
                     }
                     livingIssues.addAll(ids.keySet());
@@ -551,6 +540,7 @@ class IssueStorage {
             }
             BugtrackingManager.LOG.log(Level.FINER, "living query issues {0}", new Object[] {livingIssues}); // NOI18N
             File[] issues = repo.listFiles(new FilenameFilter() {
+                @Override
                 public boolean accept(File dir, String name) {
                     return name.endsWith(ISSUE_SUFIX);
                 }
@@ -618,7 +608,7 @@ class IssueStorage {
         if(len == 0) {
             return "";                                                          // NOI18N
         }
-        StringBuffer sb = new StringBuffer();                
+        StringBuilder sb = new StringBuilder();                
         while(len-- > 0) {
             char c = dis.readChar();
             sb.append(c);                       

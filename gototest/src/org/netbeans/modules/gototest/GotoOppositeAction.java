@@ -45,11 +45,19 @@
 package org.netbeans.modules.gototest;
 
 import java.awt.EventQueue;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.concurrent.Semaphore;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JEditorPane;
+import javax.swing.SwingUtilities;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.netbeans.modules.csl.api.UiUtils;
+import javax.swing.text.JTextComponent;
 import org.netbeans.spi.gototest.TestLocator;
 import org.netbeans.spi.gototest.TestLocator.FileType;
 import org.netbeans.spi.gototest.TestLocator.LocationListener;
@@ -59,13 +67,12 @@ import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditorSupport;
+import org.openide.text.Line;
 import org.openide.text.NbDocument;
-import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
+import org.openide.util.*;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.windows.TopComponent;
 
@@ -83,7 +90,10 @@ public class GotoOppositeAction extends CallableSystemAction {
     private TestLocator cachedLocator;
     private FileObject cachedLocatorFo;
     private FileObject cachedFileTypeFo;
+    private FileObject cachedLocationResultsFo;
     private FileType cachedFileType;
+    private HashMap<LocationResult, String> locationResults = new HashMap<LocationResult, String>();
+    private Semaphore lock;
 
     public GotoOppositeAction() {
         putValue("noIconInMenu", Boolean.TRUE); //NOI18N
@@ -131,39 +141,131 @@ public class GotoOppositeAction extends CallableSystemAction {
         return false;
     }
     
+    @Override
     public void performAction() {
         int caretOffsetHolder[] = { -1 };
-        FileObject fo = getApplicableFileObject(caretOffsetHolder);
-        int caretOffset = caretOffsetHolder[0];
+        final FileObject fo = getApplicableFileObject(caretOffsetHolder);
+        final int caretOffset = caretOffsetHolder[0];
 
         if (fo != null) {
-            TestLocator locator = getLocatorFor(fo);
-            if (locator != null) {
-                if (locator.appliesTo(fo)) {
-                    if (locator.asynchronous()) {
-                        locator.findOpposite(fo, caretOffset, new LocationListener() {
-                            public void foundLocation(FileObject fo, LocationResult location) {
-                                if (location != null) {
-                                    handleResult(location);
-                                }
-                            }
-                        });
-                    } else {
-                        LocationResult opposite = locator.findOpposite(fo, caretOffset);
+            RequestProcessor RP = new RequestProcessor(GotoOppositeAction.class.getName());
 
-                        if (opposite != null) {
-                            handleResult(opposite);
+            RP.post(new Runnable() {
+
+                @Override
+                public void run() {
+                    populateLocationResults(fo, caretOffset);
+                    SwingUtilities.invokeLater(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            if (locationResults.size() == 1) {
+                                handleResult(locationResults.keySet().iterator().next());
+                            } else if (locationResults.size() > 1) {
+                                showPopup(fo);
+                            }
                         }
+                    });
+                }
+            });
+        }
+    }
+
+    private void populateLocationResults(FileObject fo, int caretOffset) {
+        if (cachedLocationResultsFo == fo) {
+            return;
+        }
+        cachedLocationResultsFo = fo;
+        locationResults.clear();
+
+        Collection<? extends TestLocator> locators = Lookup.getDefault().lookupAll(TestLocator.class);
+
+        int permits = 0;
+        for (TestLocator locator : locators) {
+            if (locator.appliesTo(fo)) {
+                permits++;
+            }
+        }
+
+        lock = new Semaphore(permits);
+        try {
+            lock.acquire(permits);
+        } catch (InterruptedException e) {
+        }
+
+        for (TestLocator locator : locators) {
+            if (locator.appliesTo(fo)) {
+                doPopulateLocationResults(fo, caretOffset, locator);
+            }
+        }
+        try {
+            lock.acquire(permits);
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    private void doPopulateLocationResults(FileObject fo, int caretOffset, TestLocator locator) {
+        if (locator != null) {
+            if (locator.appliesTo(fo)) {
+                if (locator.asynchronous()) {
+                    locator.findOpposite(fo, caretOffset, new LocationListener() {
+
+                        @Override
+                        public void foundLocation(FileObject fo, LocationResult location) {
+                            if (location != null) {
+                                locationResults.put(location, location.getFileObject().getName());
+                            }
+                            lock.release();
+                        }
+                    });
+                } else {
+                    LocationResult opposite = locator.findOpposite(fo, caretOffset);
+
+                    if (opposite != null) {
+                        locationResults.put(opposite, opposite.getFileObject().getName());
                     }
+                    lock.release();
                 }
             }
         }
     }
 
-    private void handleResult(LocationResult opposite) {
+    @NbBundle.Messages("LBL_PickExpression=Go to Test")
+    private void showPopup(FileObject fo) {
+        JTextComponent pane;
+        Point l = new Point(-1, -1);
+
+        DataObject dobj = null;
+        try {
+            dobj = DataObject.find(fo);
+            EditorCookie ec = dobj.getLookup().lookup(EditorCookie.class);
+            if (ec != null) {
+                pane = NbDocument.findRecentEditorPane(ec);
+                Rectangle pos = pane.modelToView(pane.getCaretPosition());
+                l = new Point(pos.x + pos.width, pos.y + pos.height);
+                SwingUtilities.convertPointToScreen(l, pane);
+
+                String label = Bundle.LBL_PickExpression();
+                PopupUtil.showPopup(new OppositeCandidateChooser(this, label, locationResults), label, l.x, l.y, true, -1);
+            }
+        } catch (DataObjectNotFoundException ex) {
+            Logger.getLogger(GotoOppositeAction.class.getName()).log(Level.WARNING, null, ex);
+        } catch (BadLocationException ex) {
+            Logger.getLogger(GotoOppositeAction.class.getName()).log(Level.WARNING, null, ex);
+        }
+    }
+
+    public void handleResult(LocationResult opposite) {
         FileObject fileObject = opposite.getFileObject();
         if (fileObject != null) {
-            UiUtils.open(fileObject, opposite.getOffset());
+            DataObject dobj = null;
+            try {
+                dobj = DataObject.find(fileObject);
+            } catch (DataObjectNotFoundException ex) {
+                Logger.getLogger(GotoOppositeAction.class.getName()).log(Level.WARNING, null, ex);
+            }
+            NbDocument.openDocument(dobj, opposite.getOffset(), Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
         } else if (opposite.getErrorMessage() != null) {
             String msg = opposite.getErrorMessage();
             NotifyDescriptor descr = new NotifyDescriptor.Message(msg, 

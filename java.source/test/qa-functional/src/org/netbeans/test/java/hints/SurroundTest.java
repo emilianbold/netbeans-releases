@@ -156,7 +156,7 @@ public class SurroundTest extends HintsTestCase {
         String file = "Surround";
 	openSourceFile("org.netbeans.test.java.hints.HintsTest",file);        
         OptionsOperator oo = OptionsOperator.invoke();
-        oo.selectCategory("Java Code");        
+        oo.selectEditor();
         JTabbedPaneOperator jtpo = new JTabbedPaneOperator(oo);
         jtpo.selectPage("Hints");
         JSplitPaneOperator jspo = new JSplitPaneOperator(oo);       
@@ -184,7 +184,7 @@ public class SurroundTest extends HintsTestCase {
         String file = "Surround";
 	openSourceFile("org.netbeans.test.java.hints.HintsTest",file);        
         OptionsOperator oo = OptionsOperator.invoke();
-        oo.selectCategory("Java Code");        
+        oo.selectEditor();
         JTabbedPaneOperator jtpo = new JTabbedPaneOperator(oo);
         jtpo.selectPage("Hints");
         JSplitPaneOperator jspo = new JSplitPaneOperator(oo);       

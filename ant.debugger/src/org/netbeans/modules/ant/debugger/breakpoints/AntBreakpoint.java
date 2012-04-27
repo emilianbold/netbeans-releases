@@ -85,6 +85,7 @@ public class AntBreakpoint extends Breakpoint {
      *
      * @return <code>true</code> if so
      */
+    @Override
     public boolean isEnabled () {
         return enabled;
     }
@@ -92,6 +93,7 @@ public class AntBreakpoint extends Breakpoint {
     /**
      * Disables the breakpoint.
      */
+    @Override
     public void disable () {
         if (!enabled) return;
         enabled = false;
@@ -101,6 +103,7 @@ public class AntBreakpoint extends Breakpoint {
     /**
      * Enables the breakpoint.
      */
+    @Override
     public void enable () {
         if (enabled) return;
         enabled = true;
@@ -196,7 +199,7 @@ public class AntBreakpoint extends Breakpoint {
             }
         }
 
-        private final boolean isAntEngine(DebuggerEngine e) {
+        private boolean isAntEngine(DebuggerEngine e) {
             return e.lookupFirst(null, AntDebugger.class) != null;
         }
 

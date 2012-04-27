@@ -44,12 +44,12 @@
 
 package org.netbeans.performance.j2ee.setup;
 
-import org.netbeans.modules.performance.utilities.CommonUtilities;
-import org.netbeans.jellytools.JellyTestCase;
 import java.io.IOException;
+import org.netbeans.modules.performance.utilities.CommonUtilities;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase2;
 import org.openide.util.Exceptions;
 
-public class J2EESetup extends JellyTestCase {
+public class J2EESetup extends PerformanceTestCase2 {
     
 
     public J2EESetup(java.lang.String testName) {

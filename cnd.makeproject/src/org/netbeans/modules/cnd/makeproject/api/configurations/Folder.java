@@ -64,9 +64,9 @@ import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
 import org.netbeans.modules.cnd.makeproject.MakeProjectFileProviderFactory;
-import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileAttributeEvent;
@@ -276,6 +276,10 @@ public class Folder implements FileChangeListener, ChangeListener {
         }
     }
 
+    public String getDiskName() {
+        return CndPathUtilitities.getBaseName(getAbsolutePath());
+    }
+    
     public void attachListeners() {
         if (configurationDescriptor == null) {
             CndUtils.assertTrueInConsole(false, "null configurationDescriptor for " + this.name);
@@ -399,7 +403,14 @@ public class Folder implements FileChangeListener, ChangeListener {
     }
 
     public String getDisplayName() {
-        return displayName;
+        // This is dirty fix for #201152. Do not see other way to do this,
+        // as Folders instances are always updated and it is impossible
+        // to provide them with the right name.
+        if (!isDiskFolder() || getRoot() == null) {
+            return displayName;
+        } else {
+            return getDiskName();
+        }
     }
 
     public void setDisplayName(String displayName) {
@@ -1054,24 +1065,30 @@ public class Folder implements FileChangeListener, ChangeListener {
     /*
      * Returns a set of all files in this logical folder and subfolders as FileObjetc's
      */
-    public Set<DataObject> getAllItemsAsDataObjectSet(boolean projectFilesOnly, String MIMETypeFilter) {
-        LinkedHashSet<DataObject> files = new LinkedHashSet<DataObject>();
-        getAllItemsAsDataObjectSet(files, projectFilesOnly, MIMETypeFilter);
+    public Set<FileObject> getAllItemsAsFileObjectSet(boolean projectFilesOnly, FileObjectNameMatcher matcher) {
+        LinkedHashSet<FileObject> files = new LinkedHashSet<FileObject>();
+        getAllItemsAsFileObjectSet(files, projectFilesOnly, matcher);
         return files;
     }
 
-    private void getAllItemsAsDataObjectSet(Set<DataObject> files, boolean projectFilesOnly, String MIMETypeFilter) {
+    private void getAllItemsAsFileObjectSet(Set<FileObject> files, boolean projectFilesOnly, FileObjectNameMatcher matcher) {
         if (!projectFilesOnly || isProjectFiles()) {
+            if (matcher.isTerminated()) {
+                return;
+            }
             Iterator<?> iter = new ArrayList<Object>(getElements()).iterator();
             while (iter.hasNext()) {
+                if (matcher.isTerminated()) {
+                    return;
+                }
                 Object item = iter.next();
                 if (item instanceof Item) {
-                    DataObject da = ((Item) item).getDataObject();
-                    if (da != null && (MIMETypeFilter == null || da.getPrimaryFile().getMIMEType().contains(MIMETypeFilter))) {
-                        files.add(da);
+                    FileObject fo = ((Item) item).getFileObject();
+                    if (fo != null && (matcher == null || matcher.pathMatches(fo))) {
+                        files.add(fo);
                     }
                 } else if (item instanceof Folder) {
-                    ((Folder) item).getAllItemsAsDataObjectSet(files, projectFilesOnly, MIMETypeFilter);
+                    ((Folder) item).getAllItemsAsFileObjectSet(files, projectFilesOnly, matcher);
                 }
             }
         }
@@ -1227,7 +1244,7 @@ public class Folder implements FileChangeListener, ChangeListener {
             itemPath = CndPathUtilitities.toRelativePath(getConfigurationDescriptor().getBaseDir(), itemPath);
             itemPath = CndPathUtilitities.normalizeSlashes(itemPath);
             Item item = Item.createInFileSystem(configurationDescriptor.getBaseDirFileSystem(), itemPath);
-            addItemAction(item, false);
+            addItemAction(item, true);
         } else {
             while (aParent != null && aParent.isValid() && !aParent.isRoot()) {
                 if (aParent.equals(thisFolder)) {
@@ -1256,7 +1273,7 @@ public class Folder implements FileChangeListener, ChangeListener {
                     // It is possible that short-living temporary folder is created while building project
                     return;
                 }
-                /*Folder top =*/ getConfigurationDescriptor().addFilesFromDir(this, fileObject, true, false, null);
+                /*Folder top =*/ getConfigurationDescriptor().addFilesFromDir(this, fileObject, true, true, null);
             }
         } else {
             while (aParent != null && aParent.isValid() && !aParent.isRoot()) {
@@ -1294,13 +1311,13 @@ public class Folder implements FileChangeListener, ChangeListener {
             }
             
             if (item != null) {
-                removeItemAction(item, false);
+                removeItemAction(item, true);
                 return;
             }
             // then folder
             Folder folder = findFolderByName(fileObject.getNameExt());
             if (folder != null) {
-                removeFolderAction(folder, false);
+                removeFolderAction(folder, true);
                 return;
             }
             fireChangeEvent(this, false);
@@ -1414,5 +1431,15 @@ public class Folder implements FileChangeListener, ChangeListener {
 
         private ConfigurationAuxObject aux;
         private ItemConfiguration ic;
+    }
+    
+    public static interface FileObjectNameMatcher {
+        /**
+        * @param fileObject File whose name or path should be matched.
+        * @return True if file path matches required criteria, false otherwise.
+        */
+        boolean pathMatches(FileObject fileObject);
+        
+        boolean isTerminated();
     }
 }

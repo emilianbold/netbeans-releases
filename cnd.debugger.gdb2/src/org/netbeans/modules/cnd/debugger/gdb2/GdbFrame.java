@@ -66,49 +66,16 @@ public final class GdbFrame extends Frame {
 	if (MIframe == null)
 	    return;
 
-	MIValue framenov = MIframe.valueOf("level"); // NOI18N
-	if (framenov != null)
-	    frameno = framenov.asConst().value();
-	else
-	    frameno = "";
-	
-	MIValue pcv = MIframe.valueOf("addr"); // NOI18N
-	if (pcv != null)
-	    pc = pcv.asConst().value();
-	else
-	    pc = "";
-	
-	MIValue funcv = MIframe.valueOf("func"); // NOI18N
-	if (funcv != null)
-	    func = funcv.asConst().value();
-	else
-	    func = "";
-	
+        frameno = MIframe.getConstValue("level"); // NOI18N
+        pc = MIframe.getConstValue("addr"); // NOI18N
+        func = MIframe.getConstValue("func"); // NOI18N
+        lineno = MIframe.getConstValue("line"); // NOI18N
+	source = MIframe.getConstValue("file", MIframe.getConstValue("from")); // NOI18N
+        fullname = MIframe.getConstValue("fullname", null); // NOI18N
+        
         MITList args_list = (MITList) MIframe.valueOf("args"); // NOI18N
 	if (args_list != null && frameargs != null)
 	    System.out.println("GdbFrame Impossible "); // NOI18N
-
-	MIValue linenov = MIframe.valueOf("line"); // NOI18N
-	if (linenov != null)
-	    lineno = linenov.asConst().value();
-	else
-	    lineno = "";
-	
-	MIValue sourcev = MIframe.valueOf("file"); // NOI18N
-	if (sourcev != null)
-	    source = sourcev.asConst().value();
-	else {
-	    MIValue fromv = MIframe.valueOf("from"); // NOI18N
-	    if (fromv != null)
-	        source = fromv.asConst().value();
-	    else
-	        source = "";
-	}
-        
-        MIValue fn = MIframe.valueOf("fullname"); // NOI18N
-        if (fn != null) {
-            fullname = fn.asConst().value();
-        }
 
 	// handle args info
 	if (frameargs != null) 
@@ -123,7 +90,7 @@ public final class GdbFrame extends Frame {
                     MIValue arg = (MIValue)args_list.get(vx);
                     if (vx != 0)
                         args += ", "; // NOI18N
-                    args += arg.asTuple().valueOf("name").asConst().value(); // NOI18N
+                    args += arg.asTuple().getConstValue("name"); // NOI18N
                     MIValue value = arg.asTuple().valueOf("value"); // NOI18N
                     if (value != null) {
                         argsArray.add(new GdbLocal(arg));

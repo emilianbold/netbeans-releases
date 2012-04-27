@@ -33,11 +33,15 @@
  */
 package org.netbeans.api.templates;
 
+import freemarker.core.Environment;
 import freemarker.ext.beans.BeansWrapper;
+import freemarker.template.TemplateException;
+import freemarker.template.TemplateExceptionHandler;
 import java.awt.Color;
 import java.awt.Panel;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -45,21 +49,22 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import junit.framework.TestCase;
-import org.netbeans.junit.Log;
 import org.netbeans.junit.MockServices;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -120,9 +125,6 @@ public class ProcessorTest extends TestCase {
     }
 
     public void testFailTwice() throws Exception {
-        CharSequence severe = Log.enable("freemarker", Level.SEVERE);
-        CharSequence info = Log.enable("org.netbeans.libs.freemarker", Level.INFO);
-
         FileObject template = FileUtil.createData(root, "some.txt");
         OutputStream os = template.getOutputStream();
         String txt = "<html><h1>${unknown}</h1></html>";
@@ -130,18 +132,22 @@ public class ProcessorTest extends TestCase {
         os.close();
 
         StringWriter w1 = new StringWriter();
-        apply(template, w1);
+        TestFailTemplateExceptionHandler tfeh1 = new TestFailTemplateExceptionHandler();
+        apply(template, w1, tfeh1);
 
         StringWriter w2 = new StringWriter();
-        apply(template, w2);
+        TestFailTemplateExceptionHandler tfeh2 = new TestFailTemplateExceptionHandler();
+        apply(template, w2, tfeh2);
 
-        String exp = "<html><h1>Expression unknown is undefined on line 1, column 13 in some.txt.</h1></html>";
+        String expText = "Expression unknown is undefined on line 1, column 13 in some.txt.";
+        String exp = "<html><h1>"+expText+"</h1></html>";
         assertEquals(exp, w1.toString());
+        assertEquals(exp, w2.toString());
 
-        assertEquals("No severe exceptions reported:\n" + severe, 0, severe.length());
-        if (info.toString().indexOf("unknown is undefined") == -1) {
-            fail("unknown shall be reported:\n" + info);
-        }
+        assertNotNull("An expected exception was reported:", tfeh1.getExceptions());
+        assertEquals("Just two exception reported:", 2, tfeh1.getExceptions().size());
+        assertEquals("The expected exception was reported:", expText, tfeh1.getExceptions().get(0).getMessage());
+        assertEquals("The expected exception was reported:", expText, tfeh1.getExceptions().get(1).getMessage());
     }
 
     public void testCanHandleComplexData() throws Exception {
@@ -254,7 +260,8 @@ public class ProcessorTest extends TestCase {
         }        
         StringWriter w = new StringWriter();
         
-        apply(template, w);
+        TestFailTemplateExceptionHandler tfeh = new TestFailTemplateExceptionHandler();        
+        apply(template, w, tfeh);
         
         if (!w.toString().matches("<html><h1>.*</h1></html>")) {
             fail("should survive the missing variable:\n" + w.toString());
@@ -262,6 +269,10 @@ public class ProcessorTest extends TestCase {
         if (w.toString().indexOf("title") == -1) {
             fail("There should be a note about title variable:\n" + w);
         }
+        String expText = "Expression title is undefined on line 1, column 13 in Templates/Others/some.txt.";
+        assertNotNull("An expected exception was reported:", tfeh.getExceptions());
+        assertEquals("Just one exception reported:", 1, tfeh.getExceptions().size());
+        assertEquals("The expected exception was reported:", expText, tfeh.getExceptions().get(0).getMessage());
     }
 
     public void testMissingImportsAreJustLogged() throws Exception {
@@ -274,7 +285,8 @@ public class ProcessorTest extends TestCase {
         }        
         StringWriter w = new StringWriter();
         
-        apply(template, w);
+        TestFailTemplateExceptionHandler tfeh = new TestFailTemplateExceptionHandler();        
+        apply(template, w, tfeh);
         
         if (!w.toString().matches("<html><h1>.*</h1></html>")) {
             fail("should survive the missing variable:\n" + w.toString());
@@ -282,6 +294,10 @@ public class ProcessorTest extends TestCase {
         if (w.toString().indexOf("gpl.txt") == -1) {
             fail("There should be a note about gpl include:\n" + w);
         }
+        String expText = "Error reading included file Templates/Others/*/Licenses/gpl.txt";
+        assertNotNull("An expected exception was reported:", tfeh.getExceptions());
+        assertEquals("Just one exception reported:", 1, tfeh.getExceptions().size());
+        assertEquals("The expected exception was reported:", expText, tfeh.getExceptions().get(0).getMessage());
     }
     
     public void testCanHandleImport() throws Exception {
@@ -497,16 +513,27 @@ public class ProcessorTest extends TestCase {
     
     
     static void apply(FileObject template, Writer w) throws Exception {
-        apply(template, w, Collections.<String,Object>emptyMap());
+        apply(template, w, (TemplateExceptionHandler) null);
+    }
+    
+    static void apply(FileObject template, Writer w, TemplateExceptionHandler teh) throws Exception {
+        apply(template, w, Collections.<String,Object>emptyMap(), teh);
     }
     
     static void apply(FileObject template, Writer w, Map<String,? extends Object> values) throws Exception {
+        apply(template, w, values, null);
+    }
+    
+    static void apply(FileObject template, Writer w, Map<String,? extends Object> values, TemplateExceptionHandler teh) throws Exception {
         ScriptEngineManager mgr = new ScriptEngineManager();
         ScriptEngine eng = mgr.getEngineByName("freemarker");
         assertNotNull("We do have such engine", eng);
         eng.getContext().setWriter(w);
         eng.getContext().setAttribute(FileObject.class.getName(), template, ScriptContext.ENGINE_SCOPE);
         eng.getContext().getBindings(ScriptContext.ENGINE_SCOPE).putAll(values);
+        if (teh != null) {
+            eng.getContext().setAttribute("org.netbeans.libs.freemarker.exceptionHandler", teh, ScriptContext.ENGINE_SCOPE);
+        }
         eng.eval(new InputStreamReader(template.getInputStream()));
     }
 
@@ -518,6 +545,29 @@ public class ProcessorTest extends TestCase {
                 return Charset.forName((String)obj);
             }
             return null;
+        }
+        
+    }
+    
+    private static final class TestFailTemplateExceptionHandler implements TemplateExceptionHandler {
+        
+        private List<TemplateException> exceptions;
+
+        @Override
+        public void handleTemplateException(TemplateException te, Environment e, Writer writer) throws TemplateException {
+            if (exceptions == null) {
+                exceptions = new ArrayList<TemplateException>();
+            }
+            exceptions.add(te);
+            try {
+                writer.append(te.getLocalizedMessage());
+            } catch (IOException ioex) {
+                Exceptions.printStackTrace(ioex);
+            }
+        }
+        
+        public List<TemplateException> getExceptions() {
+            return exceptions;
         }
         
     }

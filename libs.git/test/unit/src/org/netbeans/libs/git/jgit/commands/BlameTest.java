@@ -43,14 +43,20 @@ package org.netbeans.libs.git.jgit.commands;
 
 import java.io.File;
 import java.io.IOException;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.blame.BlameResult;
+import org.eclipse.jgit.diff.RawTextComparator;
+import org.eclipse.jgit.lib.ConfigConstants;
 import org.eclipse.jgit.lib.PersonIdent;
+import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.lib.StoredConfig;
 import org.netbeans.libs.git.ApiUtils;
 import org.netbeans.libs.git.GitBlameResult;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitLineDetails;
+import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.GitUser;
 import org.netbeans.libs.git.jgit.AbstractGitTestCase;
-import org.netbeans.libs.git.progress.ProgressMonitor;
 
 /**
  *
@@ -60,6 +66,7 @@ public class BlameTest extends AbstractGitTestCase {
     private File workDir;
     private static final GitUser USER1 = ApiUtils.getClassFactory().createUser(new PersonIdent("user1", "user1@company.com")); //NOI18N
     private static final GitUser USER2 = ApiUtils.getClassFactory().createUser(new PersonIdent("user2", "user2@company.com")); //NOI18N
+    private Repository repository;
 
     public BlameTest (String testName) throws IOException {
         super(testName);
@@ -69,6 +76,7 @@ public class BlameTest extends AbstractGitTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         workDir = getWorkingDirectory();
+        repository = getRepository(getLocalGitRepository());
     }
     
     public void testBlameSimple () throws Exception {
@@ -196,6 +204,52 @@ public class BlameTest extends AbstractGitTestCase {
         assertEquals(2, result.getLineCount());
         assertLineDetails(f, 0, revision1, USER1, USER1, result.getLineDetails(0));
         assertLineDetails(f, 2, revision1, USER1, USER1, result.getLineDetails(1));
+    }
+    
+    public void testBlameMixedLineEndings () throws Exception {
+        File f = new File(workDir, "f");
+        String content = "";
+        for (int i = 0; i < 10000; ++i) {
+            content += i + "\r\n";
+        }
+        write(f, content);
+
+        // lets turn autocrlf on
+        StoredConfig cfg = repository.getConfig();
+        cfg.setString(ConfigConstants.CONFIG_CORE_SECTION, null, ConfigConstants.CONFIG_KEY_AUTOCRLF, "true");
+        cfg.save();
+
+        File[] files = new File[] { f };
+        GitClient client = getClient(workDir);
+        client.add(files, NULL_PROGRESS_MONITOR);
+        GitRevisionInfo info = client.commit(files, "commit", null, null, NULL_PROGRESS_MONITOR);
+
+        content = content.replaceFirst("0", "01");
+        write(f, content);
+
+        // it should be up to date again
+        // JGit does not work either:
+        org.eclipse.jgit.api.BlameCommand cmd = new Git(repository).blame();
+        cmd.setFilePath("f");
+        BlameResult blameResult = cmd.call();
+        assertNull(blameResult.getSourceCommit(1));
+        
+        // stupid workaround for JGit
+        cmd = new Git(repository).blame();
+        cmd.setFilePath("f");
+        cmd.setTextComparator(RawTextComparator.WS_IGNORE_TRAILING);
+        blameResult = cmd.call();
+        assertEquals(info.getRevision(), blameResult.getSourceCommit(1).getName());
+        
+        GitBlameResult res = client.blame(f, null, NULL_PROGRESS_MONITOR);
+        assertNull(res.getLineDetails(0));
+        assertLineDetails(f, 1, info.getRevision(), info.getAuthor(), info.getCommitter(), res.getLineDetails(1));
+        
+        // without autocrlf it should all be modified
+        cfg.setString(ConfigConstants.CONFIG_CORE_SECTION, null, ConfigConstants.CONFIG_KEY_AUTOCRLF, "false");
+        cfg.save();
+        res = client.blame(f, null, NULL_PROGRESS_MONITOR);
+        assertNull(res.getLineDetails(1));
     }
 
     private void assertLineDetails (File file, int line, String revision, GitUser author, GitUser committer, GitLineDetails lineDetails) {

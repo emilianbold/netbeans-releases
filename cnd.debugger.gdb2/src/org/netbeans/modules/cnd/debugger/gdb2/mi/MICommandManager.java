@@ -121,8 +121,7 @@ class MICommandManager {
     // see IZ 200046
     private boolean processAsyncError(MIRecord record) {
         if ("error".equals(record.cls) && !record.isEmpty()) { //NOI18N
-            MIValue msgVal = record.results().valueOf("msg"); //NOI18N
-            if (msgVal != null && msgVal.asConst().value().endsWith("while target running")) { //NOI18N
+            if (record.results().getConstValue("msg").endsWith("while target running")) { //NOI18N
                 for (Iterator<MICommand> iter = pendingCommands.iterator(); iter.hasNext();) {
                     if (iter.next().getToken() == record.token) {
                         iter.remove();

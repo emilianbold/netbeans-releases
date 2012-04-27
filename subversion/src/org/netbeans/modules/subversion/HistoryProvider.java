@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.subversion;
 
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
@@ -52,12 +53,12 @@ import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.ui.history.SearchHistoryAction;
-import org.netbeans.modules.subversion.util.SvnSearchHistorySupport;
 import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.versioning.history.HistoryAction;
 import org.netbeans.modules.versioning.spi.VCSHistoryProvider;
 import org.netbeans.modules.versioning.util.FileUtils;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
+import org.openide.nodes.Node;
+import org.openide.util.*;
 import org.tigris.subversion.svnclientadapter.*;
 
 /**
@@ -67,6 +68,7 @@ import org.tigris.subversion.svnclientadapter.*;
 public class HistoryProvider implements VCSHistoryProvider {
 
     private final List<VCSHistoryProvider.HistoryChangeListener> listeners = new LinkedList<VCSHistoryProvider.HistoryChangeListener>();
+    private Action[] actions;
 
     @Override
     public void addHistoryChangeListener(VCSHistoryProvider.HistoryChangeListener l) {
@@ -91,21 +93,43 @@ public class HistoryProvider implements VCSHistoryProvider {
             List<HistoryEntry> ret = new LinkedList<HistoryEntry>();
             Map<String, Set<File>> rev2FileMap = new HashMap<String, Set<File>>();
             Map<String, ISVNLogMessage> rev2LMMap = new HashMap<String, ISVNLogMessage>();
-
+            Map<File, SVNUrl> file2Copy = new HashMap<File, SVNUrl>();
+            SVNUrl repoUrl = null;
             for (File file : files) {
-                FileInformation info = Subversion.getInstance().getStatusCache().getStatus(file);
-                if ((info.getStatus() & FileInformation.STATUS_VERSIONED) == 0) {
+                FileInformation fi = Subversion.getInstance().getStatusCache().getStatus(file);
+                if ((fi.getStatus() & FileInformation.STATUS_VERSIONED) == 0) {
                     continue;
                 }
                 
-                ISVNLogMessage[] messages = 
-                    client.getLogMessages(
-                                file, 
+                ISVNLogMessage[] messages;
+                if ((fi.getStatus() == FileInformation.STATUS_VERSIONED_ADDEDLOCALLY) &&
+                     fi.getEntry(file).isCopied()) 
+                {
+                    ISVNInfo info = SvnUtils.getInfoFromWorkingCopy(client, file);
+                    SVNUrl copyUrl = info.getCopyUrl();
+                    repoUrl = info.getRepository();
+                    
+                    messages = 
+                        client.getLogMessages(
+                                copyUrl, 
                                 fromDate == null ? 
                                     new SVNRevision.Number(1) : 
                                     new SVNRevision.DateSpec(fromDate),
                                     SVNRevision.HEAD
                                 );
+                    file2Copy.put(file, copyUrl);
+                    
+                } else {
+                    messages = 
+                        client.getLogMessages(
+                                    file, 
+                                    fromDate == null ? 
+                                        new SVNRevision.Number(1) : 
+                                        new SVNRevision.DateSpec(fromDate),
+                                        SVNRevision.HEAD
+                                    );
+                }
+                
                 for (ISVNLogMessage m : messages) {
                     String r = m.getRevision().toString();
                     rev2LMMap.put(r, m);
@@ -129,15 +153,19 @@ public class HistoryProvider implements VCSHistoryProvider {
                     m.getAuthor(), 
                     m.getRevision().toString(), 
                     m.getRevision().toString(), 
-                    createActions(m.getRevision(), files), 
-                    new RevisionProviderImpl(m.getRevision()));
+                    getActions(), 
+                    new RevisionProviderImpl(m.getRevision(), repoUrl, file2Copy));
                 ret.add(e);
                 
             }
 
             return ret.toArray(new HistoryEntry[ret.size()]);
         } catch (SVNClientException e) {
-            Subversion.LOG.log(Level.WARNING, null, e);
+            if (SvnClientExceptionHandler.isCancelledAction(e.getMessage())) {
+                Subversion.LOG.log(Level.FINE, null, e);
+            } else {
+                SvnClientExceptionHandler.notifyException(e, true, true);
+            }
         }
         return null;
     }
@@ -163,19 +191,37 @@ public class HistoryProvider implements VCSHistoryProvider {
     }
     
     private static class RevisionProviderImpl implements RevisionProvider {
-        private SVNRevision revision;
+        private final SVNRevision revision;
+        private final Map<File, SVNUrl> file2Copy;
+        private final SVNUrl repoUrl;
 
-        public RevisionProviderImpl(SVNRevision svnRevision) {
+        public RevisionProviderImpl(SVNRevision svnRevision, SVNUrl repoUrl, Map<File, SVNUrl> file2Copy) {
             this.revision = svnRevision;
+            this.file2Copy = file2Copy;
+            this.repoUrl = repoUrl;
         }
         
         @Override
         public void getRevisionFile(File originalFile, File revisionFile) {
             try {
-                File file = VersionsCache.getInstance().getFileRevision(originalFile, revision.toString());
+                File file;
+                SVNUrl copyUrl = repoUrl != null ? file2Copy.get(originalFile) : null;
+                if(copyUrl != null) {
+                    file = VersionsCache.getInstance().getFileRevision(repoUrl, copyUrl, revision.toString(), originalFile.getName());
+                } else {
+                    file = VersionsCache.getInstance().getFileRevision(originalFile, revision.toString());
+                }
                 FileUtils.copyFile(file, revisionFile); // XXX lets be faster - LH should cache that somehow ...
             } catch (IOException e) {
-                Subversion.LOG.log(Level.WARNING, null, e);
+                Exception ex = e;
+                if (e.getCause() != null && e.getCause() instanceof SVNClientException) {
+                    ex = (SVNClientException) e.getCause();
+                }
+                if (SvnClientExceptionHandler.isCancelledAction(ex.getMessage())) {
+                    Subversion.LOG.log(Level.FINE, null, e);
+                } else {
+                    SvnClientExceptionHandler.notifyException(ex, true, true);
+                }
             }
         }
     }
@@ -191,62 +237,105 @@ public class HistoryProvider implements VCSHistoryProvider {
             openHistory(files);
         }
 
-        public void openHistory(File[] files) {
+        public void openHistory(final File[] files) {
             if(files == null || files.length == 0) {
                 return;
             }
-            // XXX do not use searchsupport, it diff against local state instead of previous revision
-            SvnSearchHistorySupport support = new SvnSearchHistorySupport(files[0]);
-            try {
-                support.searchHistory(-1);
-            } catch (IOException ex) {
-                Subversion.LOG.log(Level.WARNING, null, ex);
+            if(!org.netbeans.modules.subversion.api.Subversion.isClientAvailable(true)) {
+                org.netbeans.modules.subversion.Subversion.LOG.log(Level.WARNING, "Subversion client is unavailable");
+                return;
             }
+
+            /**
+            * Open in AWT
+            */
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    SearchHistoryAction.openHistory(files);
+                }
+            });
         }
     }
     
-    private Action[] createActions(final SVNRevision.Number revision, final File... files) {
-        return new Action[] {new AbstractAction(NbBundle.getMessage(SearchHistoryAction.class, "CTL_SummaryView_RollbackTo", revision.toString())) { // NOI18N
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                SVNUrl repository;
-                try {
-                    repository = SvnUtils.getRepositoryRootUrl(files[0]);
-                } catch (SVNClientException ex) {
-                    SvnClientExceptionHandler.notifyException(ex, false, false);
-                    return;
-                }
-                RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repository);
-                SvnProgressSupport support = new SvnProgressSupport() {
-                    @Override
-                    public void perform() {
-                        try {
-                            SVNUrl repoUrl = SvnUtils.getRepositoryRootUrl(files[0]);
-                            for(File file : files) {
-                                SvnClient client = Subversion.getInstance().getClient(false);
-                                ISVNInfo info = client.getInfo(file);
-                                SVNUrl fileUrl = info.getUrl();
-                                SvnUtils.rollback(file, repoUrl, fileUrl, revision, false, getLogger());
-                            }
-                        } catch (SVNClientException ex) {
-                            SvnClientExceptionHandler.notifyException(ex, false, false);
-                        }
-                    }
-                };
-                support.start(rp, repository, NbBundle.getMessage(SearchHistoryAction.class, "MSG_Rollback_Progress")); // NOI18N
-            }
-        }, new AbstractAction(NbBundle.getMessage(SearchHistoryAction.class, "CTL_SummaryView_View")) { // NOI18N
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                view(revision, false, files);
-            }
-        }, new AbstractAction(NbBundle.getMessage(SearchHistoryAction.class, "CTL_SummaryView_ShowAnnotations")) { // NOI18N
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                view(revision, true, files);
-            }
-        }};
+    private synchronized Action[] getActions() {
+        if(actions == null) {
+            actions = new Action[] {
+                new RollbackAction(),
+                new ViewAction(),
+                new AnnotateAction()
+            };
+        }
+        return actions;
     }
+
+    private class ViewAction extends HistoryAction {
+        public ViewAction() {
+            super(NbBundle.getMessage(SearchHistoryAction.class, "CTL_SummaryView_View"));
+        }
+            @Override
+        protected void perform(HistoryEntry entry, Set<File> files) {
+            SVNRevision.Number svnRevision = new SVNRevision.Number(Long.parseLong(entry.getRevision()));
+            view(svnRevision, false, files.toArray(new File[files.size()]));
+        }
+    }
+
+    private class AnnotateAction extends HistoryAction {
+        public AnnotateAction() {
+            super(NbBundle.getMessage(SearchHistoryAction.class, "CTL_SummaryView_ShowAnnotations"));
+        }
+        @Override
+        protected void perform(HistoryEntry entry, Set<File> files) {
+            SVNRevision.Number svnRevision = new SVNRevision.Number(Long.parseLong(entry.getRevision()));
+            view(svnRevision, true, files.toArray(new File[files.size()]));
+        }
+    }
+    
+    private class RollbackAction extends HistoryAction {
+        @Override
+        protected void perform(final HistoryEntry entry, final Set<File> files) {
+            final File file = files.iterator().next();
+            SVNUrl repository;
+            try {
+                repository = SvnUtils.getRepositoryRootUrl(file);
+            } catch (SVNClientException ex) {
+                SvnClientExceptionHandler.notifyException(ex, false, false);
+                return;
+            }
+            RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repository);
+            SvnProgressSupport support = new SvnProgressSupport() {
+                @Override
+                public void perform() {
+                    try {
+                        SVNUrl repoUrl = SvnUtils.getRepositoryRootUrl(file);
+                        for(File file : files) {
+                            SvnClient client = Subversion.getInstance().getClient(false);
+                            ISVNInfo info = client.getInfo(file);
+                            SVNUrl fileUrl = info.getUrl();
+                            SVNRevision.Number svnRevision = new SVNRevision.Number(Long.parseLong(entry.getRevision()));
+                            SvnUtils.rollback(file, repoUrl, fileUrl, svnRevision, false, getLogger());
+                        }
+                    } catch (SVNClientException ex) {
+                        SvnClientExceptionHandler.notifyException(ex, false, false);
+                    }
+                }
+            };
+            support.start(rp, repository, NbBundle.getMessage(SearchHistoryAction.class, "MSG_Rollback_Progress")); // NOI18N
+        }
+        @Override
+        protected boolean isMultipleHistory() {
+            return false;
+        }
+        @Override
+        public String getName() {
+            HistoryEntry he = getHistoryEntry();
+            return NbBundle.getMessage(SearchHistoryAction.class, "CTL_SummaryView_RollbackTo", he.getRevisionShort());
+        }
+        @Override
+        public HelpCtx getHelpCtx() {
+            return null;
+        }
+    }
+    
     private void view(final SVNRevision revision, final boolean showAnnotations, final File... files) {
         if(files == null || files.length == 0) {
             return;
@@ -268,5 +357,4 @@ public class HistoryProvider implements VCSHistoryProvider {
             }
         });
     }
-
 }

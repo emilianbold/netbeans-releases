@@ -43,11 +43,11 @@ package org.netbeans.modules.maven.grammar;
 
 import java.io.File;
 import java.net.URI;
-import org.netbeans.modules.maven.api.FileUtilities;
-import org.netbeans.modules.maven.api.PluginPropertyUtils;
-import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.api.FileUtilities;
+import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.xml.api.model.GrammarEnvironment;
 import org.netbeans.modules.xml.api.model.GrammarQuery;
 import org.openide.filesystems.FileObject;
@@ -60,12 +60,13 @@ import org.openide.filesystems.FileUtil;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.maven.grammar.GrammarFactory.class)
 public class DefaultGrammarFactory extends GrammarFactory {
 
+    @Override
     public GrammarQuery isSupported(GrammarEnvironment env) {
         FileObject fo = env.getFileObject();
         if (fo == null) { //#134797 in abbreviation ui the fileobject can be non existant..
             return null;
         }
-        if (fo.getNameExt().equals("settings.xml") && fo.getParent() != null && ".m2".equalsIgnoreCase(fo.getParent().getNameExt())) {
+        if (fo.getNameExt().equals("settings.xml") && fo.getParent() != null && ".m2".equalsIgnoreCase(fo.getParent().getNameExt())) {//NOI18N
             return new MavenSettingsGrammar(env);
         }
         Project owner = FileOwnerQuery.getOwner(fo);
@@ -73,18 +74,18 @@ public class DefaultGrammarFactory extends GrammarFactory {
             //#107511
             return null;
         }
-        if (fo.getNameExt().equals("pom.xml") && owner.getProjectDirectory().equals(fo.getParent())) {
+        if (fo.getNameExt().equals("pom.xml") && owner.getProjectDirectory().equals(fo.getParent())) {//NOI18N
             return new MavenProjectGrammar(env);
         }
         File file = FileUtil.toFile(fo);
         if (owner.getLookup().lookup(NbMavenProject.class) != null) {
-            if ("src/main/resources/META-INF/archetype.xml".equals(FileUtil.getRelativePath(owner.getProjectDirectory(), env.getFileObject()))) {
+            if ("src/main/resources/META-INF/archetype.xml".equals(FileUtil.getRelativePath(owner.getProjectDirectory(), env.getFileObject()))) {//NOI18N
                 return new MavenArchetypeGrammar(env);
             }
-            String desc = PluginPropertyUtils.getPluginProperty(owner, "org.apache.maven.plugins", "maven-assembly-plugin", "descriptor", "assembly");
+            String desc = PluginPropertyUtils.getPluginProperty(owner, "org.apache.maven.plugins", "maven-assembly-plugin", "descriptor", "assembly");//NOI18N
             //NOI18N
             if (desc == null) {
-                desc = PluginPropertyUtils.getPluginProperty(owner, "org.apache.maven.plugins", "maven-assembly-plugin", "descriptor", "directory");
+                desc = PluginPropertyUtils.getPluginProperty(owner, "org.apache.maven.plugins", "maven-assembly-plugin", "descriptor", "directory");//NOI18N
             }
             if (desc != null) {
                 URI uri = FileUtilities.getDirURI(owner.getProjectDirectory(), desc);
@@ -92,10 +93,10 @@ public class DefaultGrammarFactory extends GrammarFactory {
                     return new MavenAssemblyGrammar(env);
                 }
             }
-            desc = PluginPropertyUtils.getPluginProperty(owner, "org.codehaus.mojo", "nbm-maven-plugin", "descriptor", "jar");
+            desc = PluginPropertyUtils.getPluginProperty(owner, "org.codehaus.mojo", "nbm-maven-plugin", "descriptor", "jar");//NOI18N
             //NOI18N
             if (desc == null) {
-                desc = PluginPropertyUtils.getPluginProperty(owner, "org.codehaus.mevenide.plugins", "maven-nbm-plugin", "descriptor", "jar");
+                desc = PluginPropertyUtils.getPluginProperty(owner, "org.codehaus.mevenide.plugins", "maven-nbm-plugin", "descriptor", "jar");//NOI18N
             }
             if (desc != null) {
                 URI uri = FileUtilities.getDirURI(owner.getProjectDirectory(), desc);

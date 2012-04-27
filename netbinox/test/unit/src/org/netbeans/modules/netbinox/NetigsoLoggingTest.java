@@ -96,17 +96,20 @@ public class NetigsoLoggingTest extends SetupHid {
         ModuleSystem ms = Main.getModuleSystem();
         mgr = ms.getManager();
         mgr.mutexPrivileged().enterWriteAccess();
+        CharSequence log;
         try {
             File simpleModule = new File(jars, "activate.jar");
             m1 = mgr.create(simpleModule, null, false, false, false);
             System.setProperty("activated.throw", "error!");
-            CharSequence log = Log.enable("", Level.WARNING);
+            log = Log.enable("", Level.WARNING);
             mgr.enable(m1);
-            if (!log.toString().contains("error!")) {
-                fail("There shall be a warning in the log:\n" + log);
-            }
+            assertTrue("Shutdown is OK", mgr.shutDown());
         } finally {
             mgr.mutexPrivileged().exitWriteAccess();
+        }
+        
+        if (!log.toString().contains("error!")) {
+            fail("There shall be a warning in the log:\n" + log);
         }
     }
     private File createTestJAR(String name, String srcdir, File... classpath) throws IOException {

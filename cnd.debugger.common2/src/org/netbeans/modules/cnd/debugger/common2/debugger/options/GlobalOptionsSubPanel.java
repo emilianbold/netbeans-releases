@@ -50,7 +50,7 @@ import org.netbeans.modules.cnd.debugger.common2.utils.options.UISet;
 import org.netbeans.modules.cnd.debugger.common2.utils.options.OptionSet;
 import org.netbeans.modules.cnd.debugger.common2.utils.options.OptionCustomizerPanel;
 import org.openide.util.HelpCtx;
-import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 
 class GlobalOptionsSubPanel extends javax.swing.JPanel
     implements OptionCustomizerPanel, HelpCtx.Provider {
@@ -74,7 +74,7 @@ class GlobalOptionsSubPanel extends javax.swing.JPanel
 		    DebuggerOption.BALLOON_EVAL.createUI(),
 		};
 
-	    if (DebuggerManager.isStandalone())
+	    if (NativeDebuggerManager.isStandalone())
 		setup(dbxtool_panels);
 	    else
 		setup(panels);

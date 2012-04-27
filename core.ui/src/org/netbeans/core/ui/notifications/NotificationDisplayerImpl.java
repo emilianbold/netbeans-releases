@@ -75,15 +75,10 @@ public final class NotificationDisplayerImpl extends NotificationDisplayer {
     static final String PROP_NOTIFICATION_ADDED = "notificationAdded"; //NOI18N
     static final String PROP_NOTIFICATION_REMOVED = "notificationRemoved"; //NOI18N
 
-    private final List<NotificationImpl> model = new LinkedList<NotificationImpl>();
-    private final PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
-    
-    //#203326 - prevent the garbage collect of the instance held in Lookup
-    private static NotificationDisplayerImpl theInstance = null;
+    private static final List<NotificationImpl> model = new LinkedList<NotificationImpl>();
+    private static final PropertyChangeSupport propSupport = new PropertyChangeSupport(NotificationDisplayerImpl.class);
     
     public NotificationDisplayerImpl() {
-        assert null == theInstance;
-        theInstance = this;
     }
 
     static NotificationDisplayerImpl getInstance() {

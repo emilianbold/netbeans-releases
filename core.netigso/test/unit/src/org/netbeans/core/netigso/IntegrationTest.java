@@ -57,6 +57,7 @@ import org.netbeans.SetupHid;
 import org.netbeans.core.startup.Main;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.util.Lookup;
 import org.osgi.framework.launch.Framework;
 
@@ -98,7 +99,7 @@ public class IntegrationTest extends NbTestCase {
         j1 = SetupHid.createTestJAR(getDataDir(), jars, "simple-module.jar", null);
     }
 
-
+    @RandomlyFails // NB-Core-Build #8007: Framework found
     public void testCheckWhichContainerIsRunning() throws Exception {
         ModuleManager mgr = Main.getModuleSystem().getManager();
         Module m1;
@@ -120,13 +121,7 @@ public class IntegrationTest extends NbTestCase {
             mgr.mutexPrivileged().exitWriteAccess();
         }
 
-        Object obj = Lookup.getDefault().lookup(NetigsoFramework.class);
-        LOG.log(Level.INFO, "NetigsoFramework: {0}", obj);
-        final Method m = obj.getClass().getDeclaredMethod("getFramework");
-        m.setAccessible(true);
-        LOG.log(Level.INFO, "Method to use: {0}", m);
-        Framework w = (Framework) m.invoke(obj);
-        LOG.log(Level.INFO, "Framework is here: {0}", w);
+        Framework w = NetigsoUtil.framework(mgr);
         assertNotNull("Framework found", w);
         if (!w.getClass().getName().contains("felix")) {
             fail("By default the OSGi framework is felix: " + w.getClass());

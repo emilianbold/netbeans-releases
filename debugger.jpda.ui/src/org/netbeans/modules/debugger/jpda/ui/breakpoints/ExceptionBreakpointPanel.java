@@ -47,11 +47,12 @@ package org.netbeans.modules.debugger.jpda.ui.breakpoints;
 import java.util.ResourceBundle;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 
-import javax.swing.JTextField;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.ExceptionBreakpoint;
 import org.netbeans.modules.debugger.jpda.ui.EditorContextBridge;
+import org.netbeans.modules.debugger.jpda.ui.completion.ExceptionClassNbDebugEditorKit;
 import org.netbeans.spi.debugger.ui.Controller;
 
 import org.openide.DialogDisplayer;
@@ -75,7 +76,8 @@ public class ExceptionBreakpointPanel extends JPanel implements Controller, org.
     private ActionsPanel                actionsPanel; 
     private ExceptionBreakpoint         breakpoint;
     private boolean                     createBreakpoint = false;
-    private JTextField                  tfExceptionClassName;
+    private JEditorPane                 epExceptionClassName;
+    private JScrollPane                 spExceptionClassName;
     
     private static ExceptionBreakpoint creteBreakpoint () {
         String className;
@@ -110,12 +112,14 @@ public class ExceptionBreakpointPanel extends JPanel implements Controller, org.
         String className = b.getExceptionClassName ();
         ResourceBundle bundle = NbBundle.getBundle(ExceptionBreakpointPanel.class);
         String tooltipText = bundle.getString("TTT_TF_Field_Breakpoint_Class_Name");
-        tfExceptionClassName = ClassBreakpointPanel.addClassNameEditor(pSettings, className, tooltipText);
-        tfExceptionClassName.setToolTipText(tooltipText); // NOI18N
-        tfExceptionClassName.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_Method_Breakpoint_ClassName"));
-        tfExceptionClassName.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_Exception_Breakpoint_ClassName"));
-        HelpCtx.setHelpIDString(tfExceptionClassName, HELP_ID);
-        jLabel3.setLabelFor(tfExceptionClassName);
+        Pair<JScrollPane, JEditorPane> editorCC = ClassBreakpointPanel.addClassNameEditorCC(
+                ExceptionClassNbDebugEditorKit.MIME_TYPE, pSettings, className, tooltipText);
+        spExceptionClassName = editorCC.get1();
+        epExceptionClassName = editorCC.get2();
+        epExceptionClassName.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_Method_Breakpoint_ClassName"));
+        epExceptionClassName.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_Exception_Breakpoint_ClassName"));
+        HelpCtx.setHelpIDString(epExceptionClassName, HELP_ID);
+        jLabel3.setLabelFor(spExceptionClassName);
         
         cbBreakpointType.addItem (bundle.getString("LBL_Exception_Breakpoint_Type_Catched"));
         cbBreakpointType.addItem (bundle.getString("LBL_Exception_Breakpoint_Type_Uncatched"));
@@ -262,7 +266,7 @@ public class ExceptionBreakpointPanel extends JPanel implements Controller, org.
             return false;
         }
         actionsPanel.ok ();
-        String className = tfExceptionClassName.getText ().trim ();
+        String className = epExceptionClassName.getText ().trim ();
         breakpoint.setExceptionClassName (className);
         
         switch (cbBreakpointType.getSelectedIndex ()) {
@@ -297,7 +301,7 @@ public class ExceptionBreakpointPanel extends JPanel implements Controller, org.
     }
     
     private String valiadateMsg () {
-        if (tfExceptionClassName.getText().trim ().length() == 0) {
+        if (epExceptionClassName.getText().trim ().length() == 0) {
             return NbBundle.getMessage(ExceptionBreakpointPanel.class, "MSG_No_Exception_Class_Name_Spec");
         }
         return null;

@@ -151,6 +151,9 @@ public class SchemaNode extends BaseNode {
         if (name == null) {
             name = schema.getParent().getName();
         }
+        if (name == null) {
+            name = "";
+        }
 
         if (schema != null) {
             boolean isDefault = false;

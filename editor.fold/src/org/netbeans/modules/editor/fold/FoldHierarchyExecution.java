@@ -55,6 +55,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -68,6 +70,7 @@ import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldHierarchyEvent;
 import org.netbeans.api.editor.fold.FoldHierarchyListener;
 import org.netbeans.api.editor.fold.FoldStateChange;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.lib.editor.util.swing.DocumentListenerPriority;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.spi.editor.fold.FoldManager;
@@ -269,6 +272,9 @@ public final class FoldHierarchyExecution implements DocumentListener {
      * be used together with {@link #lock()} in <code>try..finally</code> block.
      */
     public void unlock() {
+        if (activeTransaction != null) {
+            activeTransaction.cancelled();
+        }
         mutex.unlock();
     }
     
@@ -827,6 +833,14 @@ public final class FoldHierarchyExecution implements DocumentListener {
 
     private boolean getFoldingEnabledSetting() {
         Boolean b = (Boolean)component.getClientProperty(PROPERTY_FOLDING_ENABLED);
+        // no preferences in component; get from lookup:
+        if (b == null && component.getDocument() != null) {
+            String mime = DocumentUtilities.getMimeType(component.getDocument());
+            if (mime != null) {
+                Preferences prefs = MimeLookup.getLookup(mime).lookup(Preferences.class);
+                b = prefs.getBoolean(PROPERTY_FOLDING_ENABLED, true);
+            }
+        }
         return (b != null) ? b.booleanValue() : true;
     }
     

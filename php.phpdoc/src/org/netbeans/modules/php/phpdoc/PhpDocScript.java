@@ -110,7 +110,7 @@ public class PhpDocScript extends PhpProgram {
 
     @Override
     public String validate() {
-        return FileUtils.validateScript(getProgram(), NbBundle.getMessage(PhpDocScript.class, "LBL_PhpDocScript"));
+        return FileUtils.validateFile(NbBundle.getMessage(PhpDocScript.class, "LBL_PhpDocScript"), getProgram(), false);
     }
 
     public void generateDocumentation(final PhpModule phpModule) {
@@ -129,7 +129,7 @@ public class PhpDocScript extends PhpProgram {
                 .addArgument("-t") // NOI18N
                 .addArgument(sanitizedPhpDocTarget)
                 // title
-                .addArgument("-ti") // NOI18N
+                .addArgument("--title") // NOI18N
                 .addArgument(PhpDocPreferences.getPhpDocTitle(phpModule));
         ExecutionDescriptor executionDescriptor = getExecutionDescriptor()
                 .frontWindow(false)

@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.*;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 
 import org.netbeans.modules.cnd.antlr.collections.AST;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
 /**
@@ -78,7 +79,7 @@ public final class ExceptionHandlerImpl extends CompoundStatementImpl implements
     private void init(AST ast) {
         AST ast2 = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_PARAMETER_DECLARATION);
         if( ast2 != null ) {
-            List<ParameterImpl> params = AstRenderer.renderParameter(ast2, getContainingFile(), this, !globalHandler);
+            List<ParameterImpl> params = AstRenderer.renderParameter(ast2, getContainingFile(), null, this);
             if( params != null && ! params.isEmpty() ) {
                         parameter = params.get(0);
             }

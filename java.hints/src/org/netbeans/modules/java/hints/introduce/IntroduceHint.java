@@ -43,7 +43,7 @@
  */
 package org.netbeans.modules.java.hints.introduce;
 
-import org.netbeans.modules.java.hints.jackpot.impl.tm.Pattern;
+import org.netbeans.api.java.source.matching.Pattern;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.BreakTree;
 import com.sun.source.tree.CaseTree;
@@ -70,6 +70,7 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import java.awt.Color;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -104,6 +105,7 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.StyleConstants;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CancellableTask;
@@ -121,13 +123,9 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.java.source.support.CaretAwareJavaSourceTaskFactory;
 import org.netbeans.api.java.source.support.SelectionAwareJavaSourceTaskFactory;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.lib.editor.util.swing.DocumentUtilities;
-import org.netbeans.modules.java.editor.codegen.GeneratorUtils;
 import org.netbeans.modules.java.hints.errors.Utilities;
-import org.netbeans.modules.java.hints.infrastructure.JavaHintsPositionRefresher;
 import org.netbeans.modules.java.hints.introduce.Flow.FlowResult;
-import org.netbeans.modules.java.hints.jackpot.impl.tm.Matcher;
-import org.netbeans.modules.java.hints.jackpot.impl.tm.Matcher.OccurrenceDescription;
+import org.netbeans.api.java.source.matching.Matcher;
 import org.netbeans.spi.editor.highlighting.HighlightsLayer;
 import org.netbeans.spi.editor.highlighting.HighlightsLayerFactory;
 import org.netbeans.spi.editor.highlighting.ZOrder;
@@ -138,6 +136,8 @@ import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.HintsController;
 import org.netbeans.spi.editor.hints.Severity;
+import org.netbeans.api.java.source.matching.Occurrence;
+import org.netbeans.modules.java.hints.providers.spi.PositionRefresherHelper;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -354,9 +354,10 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             HintsController.setErrors(info.getFileObject(), IntroduceHint.class.getName(), computeError(info, selection[0], selection[1], null, new EnumMap<IntroduceKind, String>(IntroduceKind.class), cancel));
 
             Document doc = info.getSnapshot().getSource().getDocument(false);
-            long version = doc != null ? DocumentUtilities.getDocumentVersion(doc) : 0;
-            
-            JavaHintsPositionRefresher.introduceHintsUpdated(doc, version, selection[0], selection[1]);
+
+            if (doc != null) {
+                PositionRefresherHelperImpl.setVersion(doc, selection[0], selection[1]);
+            }
         }
     }
 
@@ -418,6 +419,8 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             boolean variableRewrite = resolved.getLeaf().getKind() == Kind.VARIABLE;
             TreePath value = !variableRewrite ? resolved : new TreePath(resolved, ((VariableTree) resolved.getLeaf()).getInitializer());
             boolean isConstant = checkConstantExpression(info, value);
+            TreePath constantTarget = isConstant ? findAcceptableConstantTarget(info, resolved) : null;
+            isConstant &= constantTarget != null;
             boolean isVariable = findStatement(resolved) != null && method != null && !variableRewrite;
             Set<TreePath> duplicatesForVariable = isVariable ? SourceUtils.computeDuplicates(info, resolved, method, cancel) : null;
             Set<TreePath> duplicatesForConstant = /*isConstant ? */SourceUtils.computeDuplicates(info, resolved, new TreePath(info.getCompilationUnit()), cancel);// : null;
@@ -427,7 +430,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             if (guessedName == null) guessedName = "name";
             Scope s = info.getTrees().getScope(resolved);
             Fix variable = isVariable ? new IntroduceFix(h, info.getJavaSource(), variableRewrite ? guessedName : Utilities.makeNameUnique(info, s, guessedName), duplicatesForVariable.size() + 1, IntroduceKind.CREATE_VARIABLE) : null;
-            Fix constant = isConstant ? new IntroduceFix(h, info.getJavaSource(), variableRewrite ? guessedName : Utilities.makeNameUnique(info, s, Utilities.toConstantName(guessedName)), duplicatesForConstant.size() + 1, IntroduceKind.CREATE_CONSTANT) : null;
+            Fix constant = isConstant ? new IntroduceFix(h, info.getJavaSource(), variableRewrite ? guessedName : Utilities.makeNameUnique(info, info.getTrees().getScope(constantTarget), Utilities.toConstantName(guessedName)), duplicatesForConstant.size() + 1, IntroduceKind.CREATE_CONSTANT) : null;
             Fix parameter = isVariable ? new IntroduceParameterFix(h) : null;
             Fix field = null;
             Fix methodFix = null;
@@ -495,7 +498,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                         }
 
                         Pattern p = Pattern.createPatternWithRemappableVariables(resolved, scanner.usedLocalVariables.keySet(), true);
-                        int duplicatesCount = Matcher.create(info, cancel).match(p).size();
+                        int duplicatesCount = Matcher.create(info).setCancel(cancel).match(p).size();
 
                         typeVars.retainAll(scanner.usedTypeVariables);
 
@@ -683,7 +686,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         boolean declareVariableForReturnValue;
 
         Pattern p = Pattern.createPatternWithRemappableVariables(pathsOfStatementsToWrap, scanner.usedLocalVariables.keySet(), true);
-        int duplicatesCount = Matcher.create(info, cancel).match(p).size();
+        int duplicatesCount = Matcher.create(info).setCancel(cancel).match(p).size();
 
         if (!scanner.usedAfterSelection.isEmpty()) {
             VariableElement result = scanner.usedAfterSelection.keySet().iterator().next();
@@ -1049,6 +1052,24 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         }
     }
 
+    private static TreePath findAcceptableConstantTarget(CompilationInfo info, TreePath from) {
+        boolean compileTimeConstant = info.getTreeUtilities().isCompileTimeConstantExpression(from);
+
+        while (from != null) {
+            if (TreeUtilities.CLASS_TREE_KINDS.contains(from.getLeaf().getKind())) {
+                if (from.getParentPath().getLeaf().getKind() == Kind.COMPILATION_UNIT) return from;
+                if (compileTimeConstant || ((ClassTree) from.getLeaf()).getModifiers().getFlags().contains(Modifier.STATIC)) {
+                    /*TODO: should use TreeUtilities.isStaticContext?*/
+                    return from;
+                }
+            }
+
+            from = from.getParentPath();
+        }
+
+        return null;
+    }
+
     private static final class ScanStatement extends TreePathScanner<Void, Void> {
         private static final int PHASE_BEFORE_SELECTION = 1;
         private static final int PHASE_INSIDE_SELECTION = 2;
@@ -1373,6 +1394,46 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         }
     }
 
+    private static Map<Tree, TreePath> createTree2TreePathMap(TreePath pathToClass) {
+        Map<Tree, TreePath> classNormalization = new IdentityHashMap<Tree, TreePath>();
+        TreePath temp = pathToClass;
+
+        while (temp != null) {
+            classNormalization.put(temp.getLeaf(), temp);
+            temp = temp.getParentPath();
+        }
+
+        return classNormalization;
+    }
+
+    private static TreePath findTargetClassWithDuplicates(TreePath pathToClass, Collection<TreePath> duplicates) {
+        TreePath targetClassWithDuplicates = pathToClass;
+        Map<Tree, TreePath> classNormalization = createTree2TreePathMap(pathToClass);
+
+        for (TreePath p : duplicates) {
+            while (p != null) {
+                if (classNormalization.containsKey(p.getLeaf())) {
+                    classNormalization = createTree2TreePathMap(targetClassWithDuplicates = p);
+                    break;
+                }
+                p = p.getParentPath();
+            }
+        }
+
+        assert targetClassWithDuplicates != null;
+
+        while (targetClassWithDuplicates != null && !TreeUtilities.CLASS_TREE_KINDS.contains(targetClassWithDuplicates.getLeaf().getKind())) {
+            targetClassWithDuplicates = targetClassWithDuplicates.getParentPath();
+        }
+
+        if (targetClassWithDuplicates == null) {
+            //strange...
+            targetClassWithDuplicates = pathToClass;
+        }
+        
+        return targetClassWithDuplicates;
+    }
+
     private static final class IntroduceFix implements Fix {
 
         private String guessedName;
@@ -1451,15 +1512,21 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                     switch (kind) {
                         case CREATE_CONSTANT:
                             //find first class:
-                            TreePath pathToClass = resolved;
-
-                            while (pathToClass != null && !TreeUtilities.CLASS_TREE_KINDS.contains(pathToClass.getLeaf().getKind())) {
-                                pathToClass = pathToClass.getParentPath();
-                            }
+                            TreePath pathToClass = findAcceptableConstantTarget(parameter, resolved);
 
                             if (pathToClass == null) {
                                 return ; //TODO...
                             }
+
+                            Collection<TreePath> duplicates;
+
+                            if (replaceAll) {
+                                duplicates = SourceUtils.computeDuplicates(parameter, resolved, new TreePath(parameter.getCompilationUnit()), new AtomicBoolean());
+                            } else {
+                                duplicates = Collections.emptyList();
+                            }
+
+                            pathToClass = findTargetClassWithDuplicates(pathToClass, duplicates);
 
                             Set<Modifier> localAccess = EnumSet.of(Modifier.FINAL, Modifier.STATIC);
 
@@ -1481,12 +1548,12 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                                 expressionStatement = true;
                             }
                             
-                            ClassTree nueClass = GeneratorUtils.insertClassMember(parameter, pathToClass, constant);
+                            ClassTree nueClass = GeneratorUtilities.get(parameter).insertClassMember((ClassTree)pathToClass.getLeaf(), constant);
 
                             parameter.rewrite(pathToClass.getLeaf(), nueClass);
 
                             if (replaceAll) {
-                                for (TreePath p : SourceUtils.computeDuplicates(parameter, resolved, new TreePath(parameter.getCompilationUnit()), new AtomicBoolean())) {
+                                for (TreePath p : duplicates) {
                                     parameter.rewrite(p.getLeaf(), make.Identifier(name));
                                 }
                             }
@@ -1636,6 +1703,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                     final TreeMaker make = parameter.getTreeMaker();
 
                     boolean isAnyOccurenceStatic = false;
+                    Collection<TreePath> duplicates = new ArrayList<TreePath>();
 
                     if (replaceAll) {
                         for (TreePath p : SourceUtils.computeDuplicates(parameter, resolved, new TreePath(parameter.getCompilationUnit()), new AtomicBoolean())) {
@@ -1643,13 +1711,15 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                             Scope occurenceScope = parameter.getTrees().getScope(p);
                             if(parameter.getTreeUtilities().isStaticContext(occurenceScope))
                                 isAnyOccurenceStatic = true;
-
+                            duplicates.add(p);
                         }
                     }
 
                     if(!statik && isAnyOccurenceStatic) {
                         mods.add(Modifier.STATIC);
                     }
+
+                    pathToClass = findTargetClassWithDuplicates(pathToClass, duplicates);
 
                     ModifiersTree modsTree = make.Modifiers(mods);
                     Tree parentTree = resolved.getParentPath().getLeaf();
@@ -1675,7 +1745,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                         toRemoveFromParent = resolved;
                     }
                     
-                    ClassTree nueClass = GeneratorUtils.insertClassMember(parameter, pathToClass, field);
+                    ClassTree nueClass = GeneratorUtilities.get(parameter).insertClassMember((ClassTree)pathToClass.getLeaf(), field);
 
                     TreePath method        = findMethod(resolved);
 
@@ -1738,7 +1808,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                                 BlockTree nueBlock = make.Block(nueStatements, false);
                                 MethodTree nueConstr = make.Method(constrMods, "<init>", null, Collections.<TypeParameterTree>emptyList(), Collections.<VariableTree>emptyList(), Collections.<ExpressionTree>emptyList(), nueBlock, null); //NOI18N
 
-                                nueClass = GeneratorUtils.insertClassMember(parameter, new TreePath(new TreePath(parameter.getCompilationUnit()), nueClass), nueConstr);
+                                nueClass = GeneratorUtilities.get(parameter).insertClassMember(nueClass, nueConstr);
 
                                 nueClass = make.removeClassMember(nueClass, constructor.getLeaf());
                                 break;
@@ -1897,6 +1967,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
                     Tree returnTypeTree = make.Type(returnType);
                     ExpressionTree invocation = make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.Identifier(name), realArguments);
+                    boolean alreadyInvoked = false;
 
                     Callable<ReturnTree> ret = null;
                     final VariableElement returnAssignTo;
@@ -1919,7 +1990,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                         };
                         if (declareVariableForReturnValue) {
                             nueStatements.add(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), returnAssignTo.getSimpleName(), returnTypeTree, invocation));
-                            invocation = null;
+                            alreadyInvoked = true;
                         } else {
                             invocation = make.Assignment(make.Identifier(returnAssignTo.getSimpleName()), invocation);
                         }
@@ -1989,14 +2060,14 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                             }
                         }
 
-                        invocation = null;
+                        alreadyInvoked = true;
                     } else {
                         if (ret != null) {
                             methodStatements.add(ret.call());
                         }
                     }
 
-                    if (invocation != null)
+                    if (!alreadyInvoked)
                         nueStatements.add(make.ExpressionStatement(invocation));
 
                     nueStatements.addAll(statements.subList(to + 1, statements.size()));
@@ -2016,7 +2087,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
                         Pattern p = Pattern.createPatternWithRemappableVariables(statementsPaths, parameters, true);
 
-                        for (OccurrenceDescription desc : Matcher.create(copy, new AtomicBoolean()).match(p)) {
+                        for (Occurrence desc : Matcher.create(copy).setCancel(new AtomicBoolean()).match(p)) {
                             TreePath firstLeaf = desc.getOccurrenceRoot();
                             List<? extends StatementTree> parentStatements = getStatements(new TreePath(new TreePath(firstLeaf.getParentPath().getParentPath(), resolveRewritten(rewritten, firstLeaf.getParentPath().getLeaf())), firstLeaf.getLeaf()));
                             int dupeStart = parentStatements.indexOf(firstLeaf.getLeaf());
@@ -2116,12 +2187,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                     assert pathToClass != null;
                     
                     Tree parent = findMethod(firstStatement).getLeaf();
-                    ClassTree nueClass = null;
-                    if (parent.getKind() == Kind.METHOD) {
-                        nueClass = GeneratorUtils.insertMethodAfter(copy, pathToClass, method, (MethodTree) parent);
-                    } else {
-                        nueClass = GeneratorUtilities.get(copy).insertClassMember((ClassTree)pathToClass.getLeaf(), method);
-                    }
+                    ClassTree nueClass = GeneratorUtilities.get(copy).insertClassMember((ClassTree)pathToClass.getLeaf(), method);
 
                     copy.rewrite(pathToClass.getLeaf(), nueClass);
                 }
@@ -2264,12 +2330,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                     assert pathToClass != null;
 
                     Tree parent = findMethod(expression).getLeaf();
-                    ClassTree nueClass = null;
-                    if (parent.getKind() == Kind.METHOD) {
-                        nueClass = GeneratorUtils.insertMethodAfter(copy, pathToClass, method, (MethodTree) parent);
-                    } else {
-                        nueClass = GeneratorUtilities.get(copy).insertClassMember((ClassTree)pathToClass.getLeaf(), method);
-                    }
+                    ClassTree nueClass = GeneratorUtilities.get(copy).insertClassMember((ClassTree)pathToClass.getLeaf(), method);
                     
                     copy.rewrite(pathToClass.getLeaf(), nueClass);
 
@@ -2282,7 +2343,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                         Document doc = copy.getDocument();
                         Pattern p = Pattern.createPatternWithRemappableVariables(expression, parameters, true);
 
-                        for (OccurrenceDescription desc : Matcher.create(copy, new AtomicBoolean()).match(p)) {
+                        for (Occurrence desc : Matcher.create(copy).setCancel(new AtomicBoolean()).match(p)) {
                             TreePath firstLeaf = desc.getOccurrenceRoot();
                             int startOff = (int) copy.getTrees().getSourcePositions().getStartPosition(copy.getCompilationUnit(), firstLeaf.getLeaf());
                             int endOff = (int) copy.getTrees().getSourcePositions().getEndPosition(copy.getCompilationUnit(), firstLeaf.getLeaf());

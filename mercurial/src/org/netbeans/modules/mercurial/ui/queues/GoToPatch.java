@@ -164,6 +164,12 @@ class GoToPatch {
             }
             panel.lstPatches.setListData(toAdd);
             panel.lstPatches.setEnabled(true);
+            if (onTopPatch == null) {
+                panel.lstPatches.setSelectedIndex(1);
+            } else {
+                panel.lstPatches.setSelectedValue(onTopPatch, true);
+            }
+            panel.lstPatches.requestFocusInWindow();
         }
     }
 

@@ -43,34 +43,29 @@
  */
 package org.netbeans.test.php;
 
-import org.netbeans.jemmy.JemmyException;
-import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.NewProjectWizardOperator;
-import org.netbeans.jellytools.NewFileWizardOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.nodes.ProjectRootNode;
-import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JDialogOperator;
-import org.netbeans.jemmy.operators.JListOperator;
-import org.netbeans.jemmy.operators.JPopupMenuOperator;
-import java.awt.event.KeyEvent;
-import javax.swing.JEditorPane;
 import java.awt.Rectangle;
-import javax.swing.text.BadLocationException;
-import org.netbeans.jemmy.operators.JComboBoxOperator;
-import org.netbeans.jemmy.operators.JEditorPaneOperator;
-import org.netbeans.jemmy.operators.JTextComponentOperator;
-import org.netbeans.jemmy.operators.Operator;
+import java.awt.event.KeyEvent;
 import java.io.File;
-import org.netbeans.jemmy.Timeouts;
-import org.netbeans.jemmy.operators.JCheckBoxOperator;
-import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
 import java.util.List;
+import javax.swing.JEditorPane;
+import javax.swing.text.BadLocationException;
 import org.netbeans.jellytools.*;
+import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
+import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.EventTool;
+import org.netbeans.jemmy.JemmyException;
+import org.netbeans.jemmy.Timeouts;
+import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JCheckBoxOperator;
+import org.netbeans.jemmy.operators.JComboBoxOperator;
+import org.netbeans.jemmy.operators.JDialogOperator;
+import org.netbeans.jemmy.operators.JEditorPaneOperator;
+import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
+import org.netbeans.jemmy.operators.JPopupMenuOperator;
+import org.netbeans.jemmy.operators.JTextComponentOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
+import org.netbeans.jemmy.operators.Operator;
 import org.openide.util.Utilities;
 
 /**
@@ -148,13 +143,11 @@ public class GeneralPHP extends JellyTestCase {
         opNewProjectWizard.selectCategory(SAMPLES + "|" + PHP_CATEGORY_NAME);
 //        opNewProjectWizard.selectCategory(PHP_CATEGORY_NAME);
 
-        String typeName = "";
-
-        if (type == "RentZend") {
+        if ("RentZend".equals(type)) {
             opNewProjectWizard.selectProject(PROJECT_RentZend);
-        } else if (type == "TodoList") {
+        } else if ("TodoList".equals(type)) {
             opNewProjectWizard.selectProject(PROJECT_TodoList);
-        } else if (type == "RentSymfony") {
+        } else if ("RentSymfony".equals(type)) {
             opNewProjectWizard.selectProject(PROJECT_RentSymfony);
         }
 
@@ -177,7 +170,7 @@ public class GeneralPHP extends JellyTestCase {
         // Workaround for MacOS platform
         // TODO : check platform
         // TODO : remove after normal issue fix
-        NewProjectWizardOperator.invoke().cancel();
+        //NewProjectWizardOperator.invoke().cancel();
 
         NewProjectWizardOperator opNewProjectWizard = NewProjectWizardOperator.invoke();
         opNewProjectWizard.selectCategory(PHP_CATEGORY_NAME);
@@ -190,8 +183,6 @@ public class GeneralPHP extends JellyTestCase {
         JTextComponentOperator jtName = new JTextComponentOperator(jdNew, 0);
 
         String sResult = jtName.getText();
-
-        String sProjectPath = GetWorkDir() + File.separator + sResult;
 
         /*
          * JComboBoxOperator jcPath = new JComboBoxOperator( jdNew, 0 );
@@ -320,7 +311,6 @@ public class GeneralPHP extends JellyTestCase {
         }
 
         opNewProjectWizard.finish();
-        new ProjectsTabOperator().getProjectRootNode(sProjectName);
         waitScanFinished();
     }
 
@@ -358,7 +348,7 @@ public class GeneralPHP extends JellyTestCase {
                 int count = 0;
                 while (!text.isEmpty() && count < 20) {
                     eoPHP.pushKey(KeyEvent.VK_Z, KeyEvent.CTRL_MASK);
-                    text = eoPHP.getText(eoPHP.getLineNumber() + iOffset).replace("\r\n", "").replace("\n", "");;
+                    text = eoPHP.getText(eoPHP.getLineNumber() + iOffset).replace("\r\n", "").replace("\n", "");
                     log(">>" + text + "<<");
                     count++;
                 }
@@ -442,8 +432,6 @@ public class GeneralPHP extends JellyTestCase {
         } catch (BadLocationException ex) {
             System.out.println("=== Bad location");
         }
-
-        return;
     }
 
     private void SetTagsSupport(String sTag, String sProject, boolean b) {
@@ -467,6 +455,38 @@ public class GeneralPHP extends JellyTestCase {
         jdProperties.waitClosed();
     }
 
+    protected void SetPhpVersion(String sProject, int version) {
+        // Open project properties
+        ProjectsTabOperator pto = new ProjectsTabOperator();
+        ProjectRootNode prn = pto.getProjectRootNode(sProject);
+        prn.select();
+        prn.callPopup();
+        JPopupMenuOperator popup = new JPopupMenuOperator();
+        popup.pushMenuNoBlock("Properties");
+        JDialogOperator jdProperties = new JDialogOperator("Project Properties - ");
+        // Set support
+        JComboBoxOperator box = new JComboBoxOperator(jdProperties, 1);
+        switch (version) {
+            case 2:
+                box.selectItem(0);
+                break;
+            case 3:
+                box.selectItem(1);
+                break;
+            case 4:
+                box.selectItem(2);
+                break;
+            default:
+                box.selectItem(2);
+                break;
+        }
+        //Sleep( 10000 );
+        // Close dialog
+        JButtonOperator bOk = new JButtonOperator(jdProperties, "OK");
+        bOk.push();
+        jdProperties.waitClosed();
+    }
+
     protected void SetShortTags(String sProject, boolean b) {
         SetTagsSupport("Allow short tags", sProject, b);
     }
@@ -475,7 +495,7 @@ public class GeneralPHP extends JellyTestCase {
         SetTagsSupport("Allow ASP tags", sProject, b);
     }
 
-    protected void CreatePHPFile(
+    protected EditorOperator CreatePHPFile(
             String sProject,
             String sItem,
             String sName) {
@@ -507,7 +527,7 @@ public class GeneralPHP extends JellyTestCase {
         prn.select();
 
         // Check created in editor
-        new EditorOperator(sName);
+        return new EditorOperator(sName);
     }
 
     protected CompletionInfo GetCompletion() {

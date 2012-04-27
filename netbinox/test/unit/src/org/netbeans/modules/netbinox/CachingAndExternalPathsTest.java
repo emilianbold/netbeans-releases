@@ -44,20 +44,29 @@ package org.netbeans.modules.netbinox;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import junit.framework.Test;
+import org.netbeans.ModuleManager;
+import org.netbeans.NetigsoFramework;
 import org.netbeans.SetupHid;
+import org.netbeans.core.netigso.Netigso;
+import org.netbeans.core.netigso.NetigsoUtil;
+import org.netbeans.core.startup.Main;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.launch.Framework;
 
 /**
  * Read access test
@@ -105,17 +114,29 @@ public class CachingAndExternalPathsTest extends NbTestCase {
             NbModuleSuite.Configuration conf = common.reuseUserDir(true).addTest(CachingAndExternalPathsTest.class, "testStartAgain");
             suite.addTest(NbModuleSuite.create(conf));
         }
+        {
+            NbModuleSuite.Configuration conf = common.reuseUserDir(true).addTest(
+                CachingAndExternalPathsTest.class, 
+                "testStartOnceMore",
+                "testTeaseTheSystemWithFileLocatorBundleFile"
+            );
+            suite.addTest(NbModuleSuite.create(conf));
+        }
 
         suite.addTest(new CachingAndExternalPathsTest("testInMiddle"));
 
         {
-            NbModuleSuite.Configuration conf = common.reuseUserDir(true).addTest(CachingAndExternalPathsTest.class, "testReadAccess", "testVerifyActivatorExecuted");
+            NbModuleSuite.Configuration conf = common.reuseUserDir(true).addTest(CachingAndExternalPathsTest.class, 
+                "testTeaseTheSystemWithFileLocatorBundleFile", 
+                "testReadAccess", "testVerifyActivatorExecuted"
+            );
             suite.addTest(NbModuleSuite.create(conf));
         }
 
         return suite;
     }
 
+    @RandomlyFails
     public void testInitUserDir() throws Exception {
         File simpleModule = new File(System.getProperty("external.jar"));
 
@@ -171,6 +192,11 @@ public class CachingAndExternalPathsTest extends NbTestCase {
         doNecessarySetup();
         // will be reset next time the system starts
         System.getProperties().remove("netbeans.dirs");
+    }
+    public void testStartOnceMore() throws Exception {
+        doNecessarySetup();
+        // will be reset next time the system starts
+        System.getProperties().remove("netbeans.dirs");
         // initializes counting, but waits till netbeans.dirs are provided
         // by NbModuleSuite
         LOG.info("testStartAgain - enabling initCheckReadAccess");
@@ -178,7 +204,7 @@ public class CachingAndExternalPathsTest extends NbTestCase {
         LOG.info("testStartAgain - finished");
     }
 
-    static void doNecessarySetup() throws ClassNotFoundException, IOException {
+    static void doNecessarySetup() throws Exception {
         ClassLoader l = Lookup.getDefault().lookup(ClassLoader.class);
         try {
             Class<?> c = Class.forName("javax.help.HelpSet", true, l);
@@ -192,11 +218,35 @@ public class CachingAndExternalPathsTest extends NbTestCase {
         if (fo != null) {
             fo.delete();
         }
+        waitWarmUpFinished();
+    }
+    private static void waitWarmUpFinished() throws Exception {
+        ClassLoader global = Thread.currentThread().getContextClassLoader();
+        Class<?> warmTask = global.loadClass("org.netbeans.core.startup.MainLookup"); // NOI18N
+        Method warmUp = warmTask.getMethod("warmUp", long.class); // NOI18N
+        Object wait = warmUp.invoke(null, 0L);
+        Method waitUp = wait.getClass().getDeclaredMethod("waitFinished"); // NOI18N
+        waitUp.invoke(wait);
     }
 
     public void testInMiddle() {
         LOG.info("Previous run finished, starting another one");
         System.setProperty("activated.count", "0");
+    }
+    
+    public void testTeaseTheSystemWithFileLocatorBundleFile() throws Exception {
+        Framework f = findFramework();
+        Method getBundleFile;
+        try {
+            getBundleFile = Class.forName("org.eclipse.core.runtime.FileLocator").getMethod("getBundleFile", Bundle.class);
+        } catch (Exception ex) {
+            LOG.log(Level.INFO, "Skipping the " + getName() + " test", ex);
+            return;
+        }
+        for (Bundle b : f.getBundleContext().getBundles()) {
+            File file = (File) getBundleFile.invoke(null, b);
+            assertNotNull("Some file is found", file);
+        }
     }
 
     public void testReadAccess() throws Exception {
@@ -219,6 +269,7 @@ public class CachingAndExternalPathsTest extends NbTestCase {
         }
     }
 
+    @RandomlyFails
     public void testVerifyActivatorExecuted() {
         assertEquals("1", System.getProperty("activated.count"));
     }
@@ -248,5 +299,8 @@ public class CachingAndExternalPathsTest extends NbTestCase {
     
     protected interface SetExtDirProperty {
         public void setExtDirProperty(File value);
+    }
+    static Framework findFramework() throws Exception {
+        return NetigsoUtil.framework(Main.getModuleSystem().getManager());
     }
 }

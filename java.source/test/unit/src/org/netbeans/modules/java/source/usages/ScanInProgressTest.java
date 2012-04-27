@@ -62,7 +62,6 @@ import org.openide.nodes.NodeEvent;
 import org.openide.nodes.NodeListener;
 import org.openide.nodes.NodeMemberEvent;
 import org.openide.nodes.NodeReorderEvent;
-import org.openidex.search.SearchInfo;
 
 import java.awt.EventQueue;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -211,8 +210,6 @@ public class ScanInProgressTest extends NbTestCase implements PropertyChangeList
         for (Node n : logicalView.getChildren().getNodes()) {
             TestSupport.TestProject p = n.getLookup().lookup(TestSupport.TestProject.class);
             assertNotNull("Nodes have correct project of this type", p);
-            SearchInfo s = n.getLookup().lookup(SearchInfo.class);
-            assertNotNull("Nodes have correct project of this type", s);
         }
         assertFalse(IndexingManager.getDefault().isIndexing());
         assertTrue(result);

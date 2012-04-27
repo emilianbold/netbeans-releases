@@ -70,10 +70,10 @@ public class FindUsagesMethodTest extends FindUsagesTestCase {
                     "testFUMethod",
                     "testFUMethodInComment",
                     "testFUOverriding",
-                    "testFUFromBaseClass",
-                    "testFUAllOptions",
-                    "testNoOptions",
-                    "testCheckboxavailable",
+                    "testFUOverridingAndUsages",
+                    "testFUOverridingAndUsagesInComment",
+                    "testAllOptions",
+                    "testRadioButtonavailable",
                     "testCheckboxavailableStatic",
                     "testTabName",
                     "testFUConstructor"                    
@@ -81,26 +81,26 @@ public class FindUsagesMethodTest extends FindUsagesTestCase {
    }
 
     public void testFUMethod() {
-        findUsages("fumethod", "Test", 6, 19, FIND_USAGES_METHOD | NOT_SEARCH_IN_COMMENTS | NOT_SEARCH_FROM_BASECLASS);
+        findUsages("fumethod", "Test", 6, 19, FIND_USAGES_METHOD | NOT_SEARCH_IN_COMMENTS);
     }
 
     public void testFUMethodInComment() {
-        findUsages("fumethod", "Test", 6, 19, FIND_USAGES_METHOD | SEARCH_IN_COMMENTS | NOT_SEARCH_FROM_BASECLASS);
+        findUsages("fumethod", "Test", 6, 19, FIND_USAGES_METHOD | SEARCH_IN_COMMENTS );
     }
 
     public void testFUOverriding() {
-        findUsages("fumethod", "Test", 6, 19, FIND_OVERRIDING | NOT_SEARCH_IN_COMMENTS | NOT_SEARCH_FROM_BASECLASS);
+        findUsages("fumethod", "Test", 6, 19, FIND_OVERRIDING | NOT_SEARCH_IN_COMMENTS );
     }
 
-    public void testFUFromBaseClass() {
-        findUsages("fumethod", "Test", 6, 19, SEARCH_FROM_BASECLASS | NOT_SEARCH_IN_COMMENTS);
+    public void testFUOverridingAndUsages() {
+        findUsages("fumethod", "Test", 6, 19, FIND_OVERRIDING_AND_USAGES | NOT_SEARCH_IN_COMMENTS);
     }
 
-    public void testFUAllOptions() {
-        findUsages("fumethod", "Test", 6, 19, FIND_USAGES_METHOD | SEARCH_FROM_BASECLASS | FIND_OVERRIDING | NOT_SEARCH_IN_COMMENTS);
+    public void testFUOverridingAndUsagesInComment() {
+        findUsages("fumethod", "Test", 6, 19, FIND_OVERRIDING_AND_USAGES | SEARCH_IN_COMMENTS);
     }
 
-    public void testNoOptions() {
+    public void testAllOptions() {
         final String fileName = "Test";
         openSourceFile("fumethod", fileName);
         EditorOperator editor = new EditorOperator(fileName);
@@ -113,17 +113,19 @@ public class FindUsagesMethodTest extends FindUsagesTestCase {
         FindUsagesClassOperator findUsagesClassOperator = null;
         try {
             findUsagesClassOperator = new FindUsagesClassOperator();
-            findUsagesClassOperator.getFindMethodUsage().setSelected(false);
-            findUsagesClassOperator.getFindFromBaseClass().setSelected(false);
+            findUsagesClassOperator.getFindUsages().setSelected(true);
+            findUsagesClassOperator.getFindOverridding().setSelected(true);
+            findUsagesClassOperator.getFindMethodUsageAndOverriding().setSelected(true);
             new EventTool().waitNoEvent(500);
-            assertEquals(false, findUsagesClassOperator.getFind().isEnabled());
+            assertEquals(true, findUsagesClassOperator.getFind().isEnabled());
         } finally {
-            if (findUsagesClassOperator != null)
+            if (findUsagesClassOperator != null) {
                 findUsagesClassOperator.getCancel().push();
+            }
         }
     }
 
-    public void testCheckboxavailable() {
+    public void testRadioButtonavailable() {
         final String fileName = "Test";
         openSourceFile("fumethod", fileName);
         EditorOperator editor = new EditorOperator(fileName);
@@ -142,16 +144,19 @@ public class FindUsagesMethodTest extends FindUsagesTestCase {
             timeouts.setTimeout("ComponentOperator.WaitComponentTimeout", 3000);
             boolean found = true;
             try {
-                findUsagesClassOperator.getFindFromBaseClass();
+                findUsagesClassOperator.getFindUsages();
+                findUsagesClassOperator.getFindOverridding();
+                findUsagesClassOperator.getFindMethodUsageAndOverriding();
             } catch (TimeoutExpiredException tee) {
                 found = false;
             }
-            assertFalse("Check button is avaliable",found);
+            assertTrue("Some JRadioButton is unavailable",found);
         } finally {
             System.out.println("Waited "+(System.currentTimeMillis()-currentTimeMillis));
             timeouts.setTimeout("ComponentOperator.WaitComponentTimeout", origTimeout);
-            if (findUsagesClassOperator != null)
+            if (findUsagesClassOperator != null) {
                 findUsagesClassOperator.getCancel().push();
+            }
         }
     }
 
@@ -182,15 +187,16 @@ public class FindUsagesMethodTest extends FindUsagesTestCase {
         } finally {
             System.out.println("Waited "+(System.currentTimeMillis()-currentTimeMillis));
             timeouts.setTimeout("ComponentOperator.WaitComponentTimeout", origTimeout);
-            if (findUsagesClassOperator != null)
+            if (findUsagesClassOperator != null) {
                 findUsagesClassOperator.getCancel().push();
+            }
         }
     }
 
     public void testTabName() {
         setBrowseChild(false);
-        findUsages("fumethod", "Test", 6, 19, FIND_USAGES_METHOD | NOT_SEARCH_IN_COMMENTS | NOT_SEARCH_FROM_BASECLASS);
-        findUsages("fumethod", "Test", 6, 19, FIND_USAGES_METHOD | NOT_SEARCH_IN_COMMENTS | NOT_SEARCH_FROM_BASECLASS);
+        findUsages("fumethod", "Test", 6, 19, FIND_USAGES_METHOD | NOT_SEARCH_IN_COMMENTS );
+        findUsages("fumethod", "Test", 6, 19, FIND_USAGES_METHOD | NOT_SEARCH_IN_COMMENTS );
         setBrowseChild(true);
         RefactoringResultOperator furo = RefactoringResultOperator.getFindUsagesResult();
         JTabbedPane tabbedPane = furo.getTabbedPane();

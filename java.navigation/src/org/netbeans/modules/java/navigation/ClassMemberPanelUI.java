@@ -19,6 +19,7 @@ import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
@@ -28,6 +29,8 @@ import javax.swing.KeyStroke;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.tree.TreePath;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -297,7 +300,9 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
         return manager;
     }
     
-    protected ElementJavadoc getJavaDocFor( ElementNode node ) {
+    protected ElementJavadoc getJavaDocFor(
+            @NonNull final ElementNode node,
+            @NullAllowed final Callable<Boolean> cancel) {
         ElementNode root = getRootNode();
         if ( root == null ) {
             return null;
@@ -309,35 +314,37 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
         if (js == null) {
             return null;
         }
-        JavaDocCalculator calculator = new JavaDocCalculator( eh );
-        final CompilationInfo[] ci = new CompilationInfo[1];
-        
+        final JavaDocCalculator calculator = new JavaDocCalculator(eh, cancel);
         try {
             js.runUserActionTask( calculator, true );
         } catch( IOException ioE ) {
             Exceptions.printStackTrace( ioE );
             return null;
         }
-        
         return calculator.doc;
         
     }
     
     private static class JavaDocCalculator implements Task<CompilationController> {
 
-        private ElementHandle<? extends Element> handle;
+        private final ElementHandle<? extends Element> handle;
+        private final Callable<Boolean> cancel;
         private ElementJavadoc doc;
         
-        public JavaDocCalculator( ElementHandle<? extends Element> handle ) {
+        public JavaDocCalculator(
+                @NonNull final ElementHandle<? extends Element> handle,
+                @NullAllowed final Callable<Boolean> cancel) {
             this.handle = handle;
+            this.cancel = cancel;
         }
 
 
+        @Override
         public void run(CompilationController cc) throws Exception {
             cc.toPhase( JavaSource.Phase.UP_TO_DATE );
             
             Element e = handle.resolve( cc );
-            doc = ElementJavadoc.create( cc, e );
+            doc = ElementJavadoc.create(cc, e, cancel );
         }
     };
         
@@ -372,7 +379,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
                 return null;
             Node node = Visualizer.findNode( path.getLastPathComponent() );
             if( node instanceof ElementNode ) {
-                return getJavaDocFor( (ElementNode)node );
+                return getJavaDocFor((ElementNode)node, toolTipManager);
             }
             return null;
         }

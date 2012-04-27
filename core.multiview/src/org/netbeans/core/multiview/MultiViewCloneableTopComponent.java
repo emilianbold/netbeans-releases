@@ -355,6 +355,10 @@ public final class MultiViewCloneableTopComponent extends CloneableTopComponent
         return false;
     }
     
+    @Override
+    public SubComponent[] getSubComponents() {
+        return MultiViewTopComponent.getSubComponents( peer );
+    }
     
     /**
      * implementation of the MultiViewElement.ActionRequestObserver, manages activatation of the elements

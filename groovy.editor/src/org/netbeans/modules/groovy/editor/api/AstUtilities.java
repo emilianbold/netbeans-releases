@@ -45,40 +45,12 @@
 package org.netbeans.modules.groovy.editor.api;
 
 import groovyjarjarasm.asm.Opcodes;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
-import org.codehaus.groovy.ast.ASTNode;
-import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.FieldNode;
-import org.codehaus.groovy.ast.MethodNode;
-import org.codehaus.groovy.ast.ModuleNode;
-import org.codehaus.groovy.ast.Parameter;
-import org.codehaus.groovy.ast.ConstructorNode;
-import org.codehaus.groovy.ast.GroovyCodeVisitor;
-import org.codehaus.groovy.ast.PropertyNode;
-import org.codehaus.groovy.ast.Variable;
-import org.codehaus.groovy.ast.VariableScope;
-import org.codehaus.groovy.ast.expr.ClassExpression;
-import org.codehaus.groovy.ast.expr.ClosureExpression;
-import org.codehaus.groovy.ast.expr.ClosureListExpression;
-import org.codehaus.groovy.ast.expr.ConstantExpression;
-import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
-import org.codehaus.groovy.ast.expr.DeclarationExpression;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
-import org.codehaus.groovy.ast.expr.Expression;
-import org.codehaus.groovy.ast.expr.MethodCallExpression;
-import org.codehaus.groovy.ast.expr.VariableExpression;
+import org.codehaus.groovy.ast.*;
+import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.codehaus.groovy.ast.stmt.ForStatement;
@@ -87,20 +59,24 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.lexer.TokenUtilities;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.FinderFactory;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.groovy.editor.api.elements.AstElement;
-import org.netbeans.modules.groovy.editor.api.elements.IndexedElement;
+import org.netbeans.modules.groovy.editor.api.elements.ast.ASTElement;
+import org.netbeans.modules.groovy.editor.api.elements.index.IndexedElement;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
+import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -418,7 +394,7 @@ public class AstUtilities {
         return offset;
     }
 
-    public static ASTNode getForeignNode(final IndexedElement o/*, ASTNode[] foreignRootRet*/) {
+    public static ASTNode getForeignNode(final IndexedElement o) {
 
         final ASTNode[] nodes = new ASTNode[1];
         FileObject fileObject = o.getFileObject();
@@ -431,7 +407,7 @@ public class AstUtilities {
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
                     GroovyParserResult result = AstUtilities.getParseResult(resultIterator.getParserResult());
-
+                    
                     String signature = o.getSignature();
                     if (signature == null) {
                         return;
@@ -441,7 +417,7 @@ public class AstUtilities {
                     if (index != -1) {
                         signature = signature.substring(index + 1);
                     }
-                    for (AstElement element : result.getStructure().getElements()) {
+                    for (ASTElement element : result.getStructure().getElements()) {
                         ASTNode node = findBySignature(element, signature);
                         if (node != null) {
                             nodes[0] = node;
@@ -450,40 +426,18 @@ public class AstUtilities {
                     }
                 }
             });
-//            SourceUtils.runUserActionTask(fileObject, new CancellableTask<GroovyParserResult>() {
-//                public void run(GroovyParserResult result) throws Exception {
-//                    String signature = o.getSignature();
-//                    if (signature == null) {
-//                        return;
-//                    }
-//                    // strip class name from signature: Foo#method1() -> method1()
-//                    int index = signature.indexOf('#');
-//                    if (index != -1) {
-//                        signature = signature.substring(index + 1);
-//                    }
-//                    for (AstElement element : result.getStructure().getElements()) {
-//                        ASTNode node = findBySignature(element, signature);
-//                        if (node != null) {
-//                            nodes[0] = node;
-//                            return;
-//                        }
-//                    }
-//
-//                }
-//                public void cancel() {}
-//            });
         } catch (ParseException ex) {
             Exceptions.printStackTrace(ex);
         }
         return nodes[0];
     }
 
-    private static ASTNode findBySignature(AstElement root, String signature) {
+    private static ASTNode findBySignature(ASTElement root, String signature) {
 
         if (signature.equals(root.getSignature())) {
             return root.getNode();
         } else {
-            for (AstElement element : root.getChildren()) {
+            for (ASTElement element : root.getChildren()) {
                 ASTNode node = findBySignature(element, signature);
                 if (node != null) {
                     return node;

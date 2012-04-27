@@ -42,9 +42,9 @@
 package org.netbeans.modules.maven.indexer.spi;
 
 import java.util.List;
-import java.util.Set;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
+import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 
 /**
  * The basic set of queries. To be implemented by all index managers.
@@ -52,20 +52,20 @@ import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
  */
 public interface BaseQueries {
 
-    Set<String> getGroups(List<RepositoryInfo> repos);
+    RepositoryQueries.Result<String> getGroups(List<RepositoryInfo> repos);
 
-    Set<String> filterGroupIds(String prefix, List<RepositoryInfo> repos);
+    RepositoryQueries.Result<String> filterGroupIds(String prefix, List<RepositoryInfo> repos);
 
-    List<NBVersionInfo> getRecords(String groupId, String artifactId, String version, List<RepositoryInfo> repos);
+    RepositoryQueries.Result<NBVersionInfo> getRecords(String groupId, String artifactId, String version, List<RepositoryInfo> repos);
 
-    Set<String> getArtifacts(String groupId, List<RepositoryInfo> repos);
+    RepositoryQueries.Result<String> getArtifacts(String groupId, List<RepositoryInfo> repos);
 
-    List<NBVersionInfo> getVersions(String groupId, String artifactId, List<RepositoryInfo> repos);
+    RepositoryQueries.Result<NBVersionInfo> getVersions(String groupId, String artifactId, List<RepositoryInfo> repos);
 
-    Set<String> filterPluginArtifactIds(String groupId, String prefix, List<RepositoryInfo> repos);
+    RepositoryQueries.Result<String> filterPluginArtifactIds(String groupId, String prefix, List<RepositoryInfo> repos);
 
-    Set<String> filterPluginGroupIds(String prefix, List<RepositoryInfo> repos);
+    RepositoryQueries.Result<String> filterPluginGroupIds(String prefix, List<RepositoryInfo> repos);
 
-    Set<String> filterArtifactIdForGroupId(String groupId, String prefix, List<RepositoryInfo> repos);
+    RepositoryQueries.Result<String> filterArtifactIdForGroupId(String groupId, String prefix, List<RepositoryInfo> repos);
 
 }

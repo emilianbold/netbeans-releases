@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.html.parser;
 
+import org.netbeans.modules.html.parser.model.HtmlTagProvider;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
@@ -52,27 +53,21 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import nu.validator.htmlparser.impl.ErrorReportingTokenizer;
 import nu.validator.htmlparser.impl.Tokenizer;
 import nu.validator.htmlparser.io.Driver;
-import org.netbeans.editor.ext.html.parser.api.AstNode;
-import org.netbeans.editor.ext.html.parser.api.AstNodeFactory;
-import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
-import org.netbeans.editor.ext.html.parser.api.ParseException;
-import org.netbeans.editor.ext.html.parser.spi.DefaultHtmlParseResult;
-import org.netbeans.editor.ext.html.parser.spi.HelpResolver;
-import org.netbeans.editor.ext.html.parser.spi.HtmlModel;
-import org.netbeans.editor.ext.html.parser.spi.HtmlParseResult;
-import org.netbeans.editor.ext.html.parser.spi.HtmlParser;
-import org.netbeans.editor.ext.html.parser.api.HtmlSource;
-import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
-import org.netbeans.editor.ext.html.parser.spi.HtmlTag;
-import org.netbeans.editor.ext.html.parser.spi.NamedCharRef;
+import org.netbeans.modules.html.editor.lib.api.*;
+import org.netbeans.modules.html.editor.lib.api.elements.Element;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
+import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
+import org.netbeans.modules.html.editor.lib.api.model.HtmlModel;
+import org.netbeans.modules.html.editor.lib.api.elements.*;
+import org.netbeans.modules.html.editor.lib.api.model.*;
 import org.netbeans.modules.html.parser.model.ElementDescriptor;
 import org.netbeans.modules.html.parser.model.NamedCharacterReference;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.lookup.ServiceProviders;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -82,33 +77,42 @@ import org.xml.sax.SAXParseException;
  *
  * @author marekfukala
  */
-@ServiceProvider(service = HtmlParser.class, position = 100)
-public class Html5Parser implements HtmlParser {
+@ServiceProviders(value={
+    @ServiceProvider(service = HtmlParser.class, position = 100),
+    @ServiceProvider(service = HtmlModelProvider.class, position = 10)
+})
+public class Html5Parser implements HtmlParser, HtmlModelProvider {
 
     private static final String PARSER_NAME = String.format("validator.nu html5 parser (%s).", Html5Parser.class); //NOI18N
     private static final HtmlModel HTML5MODEL = new Html5Model();
 
-    private static final Pattern TEMPLATING_MARKS_PATTERN = Pattern.compile("@@@"); //NOI18N
-    private static final String TEMPLATING_MARKS_MASK = "   "; //NOI18N
-
     @Override
     public HtmlParseResult parse(HtmlSource source, HtmlVersion preferedVersion, Lookup lookup) throws ParseException {
-        String code = maskTemplatingMarks(source.getSourceCode().toString());
         try {
-            InputSource is = new InputSource(new StringReader(code));
-            final AstNodeTreeBuilder treeBuilder = new AstNodeTreeBuilder(AstNodeFactory.shared().createRootNode(0, code.length()));
+            CharSequence sourceCode = source.getSourceCode();
+            MaskedAreas maskedAreas = lookup.lookup(MaskedAreas.class);
+
+            InputSource is;
+            //backward compatibility
+            if(maskedAreas == null) {
+                //pre html.editor.lib/3.2
+                is = new InputSource(new StringReader(sourceCode.toString()));
+            } else {
+                is = new InputSource(new MaskingChSReader(sourceCode, maskedAreas.positions(), maskedAreas.lens()));
+            }
+            
+            final ParseTreeBuilder treeBuilder = new ParseTreeBuilder(sourceCode);
             final Tokenizer tokenizer = new ErrorReportingTokenizer(treeBuilder);
 
             Driver driver = new Driver(tokenizer);
             driver.setTransitionHandler(treeBuilder);
-            
+
             final Collection<ProblemDescription> problems = new ArrayList<ProblemDescription>();
             driver.setErrorHandler(new ErrorHandler() {
-
                 @Override
                 public void warning(SAXParseException saxpe) throws SAXException {
                     reportProblem(saxpe.getLocalizedMessage(), ProblemDescription.WARNING);
-                    
+
                 }
 
                 @Override
@@ -120,19 +124,18 @@ public class Html5Parser implements HtmlParser {
                 public void fatalError(SAXParseException saxpe) throws SAXException {
                     reportProblem(saxpe.getLocalizedMessage(), ProblemDescription.FATAL);
                 }
-                
+
                 private void reportProblem(String message, int type) {
                     problems.add(ProblemDescription.create(
-                            "html5.parser",  //NOI18N
-                            message, 
-                            type, 
-                            treeBuilder.getOffset(), 
+                            "html5.parser", //NOI18N
+                            message,
+                            type,
+                            treeBuilder.getOffset(),
                             treeBuilder.getOffset()));
                 }
-                
             });
             driver.tokenize(is);
-            AstNode root = treeBuilder.getRoot();
+            Node root = treeBuilder.getRoot();
 
             return new Html5ParserResult(source, root, problems, preferedVersion);
 
@@ -145,17 +148,18 @@ public class Html5Parser implements HtmlParser {
             //in these cases the problem is more likely in the parser itself than in netbeans
             //To minimalize the user impact on non-fcs version (assertions enabled), 
             //just log the assertion error and return fake parser result
-            
+
             StringBuilder msg = new StringBuilder();
             msg.append("An internal parser error occured"); //NOI18N
-            if(source.getSourceFileObject() != null) {
+            if (source.getSourceFileObject() != null) {
                 msg.append(" when parsing "); //NOI18N
                 msg.append(source.getSourceFileObject().getPath());
             }
-            
+
             Logger.getAnonymousLogger().log(Level.INFO, msg.toString(), e);
-            
-            return new Html5ParserResult(source, AstNodeFactory.shared().createRootNode(0, code.length()), 
+
+            ElementsFactory factory = new ElementsFactory(source.getSourceCode());
+            return new Html5ParserResult(source, factory.createRoot(),
                     Collections.<ProblemDescription>emptyList(), preferedVersion);
         }
     }
@@ -179,28 +183,28 @@ public class Html5Parser implements HtmlParser {
 
     @Override
     public HtmlModel getModel(HtmlVersion version) {
-        assert version == HtmlVersion.HTML5 || version == HtmlVersion.XHTML5;
-        return HTML5MODEL;
+        switch(version) {
+            case HTML5:
+            case XHTML5:
+                return HTML5MODEL;
+            default:
+                return null;
+        }
     }
 
     @Override
     public String getName() {
         return PARSER_NAME;
     }
-
-    static String maskTemplatingMarks(String code) {
-        return TEMPLATING_MARKS_PATTERN.matcher(code).replaceAll(TEMPLATING_MARKS_MASK);
-    }
-
     private static class Html5ParserResult extends DefaultHtmlParseResult {
 
-        public Html5ParserResult(HtmlSource source, AstNode root, Collection<ProblemDescription> problems, HtmlVersion version) {
+        public Html5ParserResult(HtmlSource source, Node root, Collection<ProblemDescription> problems, HtmlVersion version) {
             super(source, root, problems, version);
         }
 
         @Override
         public HtmlModel model() {
-            return HTML5MODEL;
+            return HtmlModelFactory.getModel(version());
         }
 
         public void addPossibleTags(HtmlTag tag, Collection<HtmlTag> possible) {
@@ -218,8 +222,14 @@ public class Html5Parser implements HtmlParser {
         }
 
         @Override
-        public Collection<HtmlTag> getPossibleOpenTags(AstNode afterNode) {
-            HtmlTag tag = model().getTag(afterNode.getNameWithoutPrefix());
+        public Collection<HtmlTag> getPossibleOpenTags(Element afterNode) {
+            if (afterNode.type() != ElementType.OPEN_TAG) {
+                return Collections.emptyList();
+            }
+
+            OpenTag openTag = (OpenTag) afterNode;
+
+            HtmlTag tag = model().getTag(openTag.unqualifiedName().toString());
             if (tag == null) {
                 return Collections.emptyList();
             }
@@ -232,7 +242,11 @@ public class Html5Parser implements HtmlParser {
                 if (afterNode == null) {
                     return Collections.emptyList();
                 }
-                tag = model().getTag(afterNode.getNameWithoutPrefix());
+                if (afterNode.type() != ElementType.OPEN_TAG) {
+                    return Collections.emptyList();
+                }
+                OpenTag ot = (OpenTag) afterNode;
+                tag = model().getTag(ot.unqualifiedName().toString());
             }
             if (tag == null) {
                 return Collections.emptyList();
@@ -244,36 +258,39 @@ public class Html5Parser implements HtmlParser {
         }
 
         @Override
-        public Map<HtmlTag, AstNode> getPossibleEndTags(AstNode node) {
+        public Map<HtmlTag, OpenTag> getPossibleCloseTags(Element node) {
             //Bug 197608 - Non-html tags offered as closing tags using code completion
             //XXX define of what type can be the node argument
-            if(node.type() != AstNode.NodeType.OPEN_TAG) {
+            if (node.type() != ElementType.OPEN_TAG) {
                 node = node.parent();
-                if(node == null) {
+                if (node == null) {
                     return Collections.emptyMap();
                 }
             }
             //<<<
-            
-            HtmlTag tag = model().getTag(node.getNameWithoutPrefix());
+
+            OpenTag openTag = (OpenTag) node;
+            String openTagName = openTag.unqualifiedName().toString();
+
+            HtmlTag tag = model().getTag(openTagName);
             if (tag == null) {
                 return Collections.emptyMap();
             }
 
-           Map<HtmlTag, AstNode> possible = new LinkedHashMap<HtmlTag, AstNode> ();
+            Map<HtmlTag, OpenTag> possible = new LinkedHashMap<HtmlTag, OpenTag>();
             //end tags
             do {
-                if(!node.isVirtual()) {
-                    tag = HtmlTagProvider.getTagForElement(node.name());
+                if (!ElementUtils.isVirtualNode(node)) {
+                    tag = HtmlTagProvider.getTagForElement(((OpenTag)node).unqualifiedName().toString());
                     if (!tag.isEmpty()) {
-                        possible.put(tag, node);
+                        possible.put(tag, (OpenTag)node);
                     }
-                    if(!tag.hasOptionalEndTag()) {
+                    if (!tag.hasOptionalEndTag()) {
                         //since the end tag is required, the parent elements cannot be closed here
                         break;
                     }
                 }
-            } while ((node = node.parent()) != null && !node.isRootNode());
+            } while ((node = node.parent()) != null && node.type() == ElementType.OPEN_TAG);
 
             return possible;
 
@@ -290,7 +307,7 @@ public class Html5Parser implements HtmlParser {
             if (ALL_TAGS == null) {
                 ALL_TAGS = new ArrayList<HtmlTag>();
                 for (ElementDescriptor element : ElementDescriptor.values()) {
-                    ALL_TAGS.add(HtmlTagProvider.getTagForElement(element.getName()));
+                    ALL_TAGS.add(HtmlTagProvider.forElementDescriptor(element));
                 }
             }
             return Collections.unmodifiableCollection(ALL_TAGS);

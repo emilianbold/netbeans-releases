@@ -73,7 +73,7 @@ public interface SearchProvider {
     
     /**
      * Method is called by infrastructure when search operation was requested.
-     * Implementors should evaluate given request and fill response object with apropriate results.
+     * Implementors should evaluate given request and fill response object with appropriate results.
      * 
      * Typical implementation would look like follows:
      * 

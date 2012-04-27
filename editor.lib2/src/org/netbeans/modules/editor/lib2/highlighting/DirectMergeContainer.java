@@ -201,7 +201,7 @@ public final class DirectMergeContainer implements HighlightsContainer, Highligh
             int lastHighlightEndOffset = mergedHighlightEndOffset;
             while ((topWrapper = nextMerge(lastHighlightEndOffset)) != null) {
                 int nextChangeOffset = topWrapper.mNextChangeOffset;
-                if (nextChangeOffset <= mergedHighlightEndOffset) { // Finished
+                if (nextChangeOffset <= lastHighlightEndOffset) { // No advance in change offset => Finished
                     finished = true;
                     return false;
                 }

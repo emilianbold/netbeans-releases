@@ -99,7 +99,7 @@ public class ProjectProfileHandlerImpl implements ProjectProfileHandler {
     private synchronized List<Model> getLineage() {
         if (lineage == null) {
             try {
-                lineage = EmbedderFactory.createModelLineage(nmp.getPOMFile(), nmp.getEmbedder());
+                lineage = nmp.getEmbedder().createModelLineage(nmp.getPOMFile());
             } catch (ModelBuildingException ex) {
                 Logger.getLogger(ProjectProfileHandlerImpl.class.getName()).log(Level.FINE, "Error reading model lineage", ex);//NOI18N
                 lineage = Collections.emptyList();

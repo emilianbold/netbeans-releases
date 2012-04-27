@@ -78,7 +78,7 @@ public final class LazyTryCatchStatementImpl extends LazyStatementImpl implement
     protected CsmParserResult resolveLazyStatement(TokenStream tokenStream) {
         CsmParser parser = CsmParserProvider.createParser(getContainingFile());
         if (parser != null) {
-            parser.init(this, tokenStream);
+            parser.init(this, tokenStream, null);
             return parser.parse(CsmParser.ConstructionKind.TRY_BLOCK);
         }
         assert false : "parser not found";

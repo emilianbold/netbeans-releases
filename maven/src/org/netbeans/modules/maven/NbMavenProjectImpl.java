@@ -51,7 +51,6 @@ import java.io.StringWriter;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -99,7 +98,6 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -125,6 +123,7 @@ public final class NbMavenProjectImpl implements Project {
     private FileObject folderFileObject;
     private final File projectFile;
     private final Lookup basicLookup;
+    private final Lookup completeLookup;
     private final Lookup lookup;
     private final Updater projectFolderUpdater;
     private final Updater userFolderUpdater;
@@ -144,7 +143,7 @@ public final class NbMavenProjectImpl implements Project {
         try {
             Class.forName(c.getName(), true, c.getClassLoader());
         } catch (Exception ex) {
-            ex.printStackTrace();
+            LOG.log(Level.SEVERE, "very wrong, very wrong, yes indeed", ex);
         }
     }
 
@@ -163,9 +162,22 @@ public final class NbMavenProjectImpl implements Project {
         this.projectFile = FileUtil.normalizeFile(FileUtil.toFile(projectFO));
         fileObject = projectFO;
         folderFileObject = folder;
+        lookup = Lookups.proxy(new Lookup.Provider() {
+            @Override
+            public Lookup getLookup() {
+                if (completeLookup == null) {
+                    //not fully initialized constructor
+                    LOG.log(Level.FINE, "accessing project's lookup before the instance is fully initialized", new Exception());
+                    assert basicLookup != null;
+                    return basicLookup;
+                } else {
+                    return completeLookup;
+                }
+            }
+        });
         watcher = ACCESSOR.createWatcher(this);
-        projectFolderUpdater = new Updater("nb-configuration.xml", "pom.xml");
-        userFolderUpdater = new Updater("settings.xml");
+        projectFolderUpdater = new Updater("nb-configuration.xml", "pom.xml"); //NOI18N
+        userFolderUpdater = new Updater("settings.xml");//NOI18N
         problemReporter = new ProblemReporterImpl(this);
         M2AuxilaryConfigImpl auxiliary = new M2AuxilaryConfigImpl(this);
         auxprops = new MavenProjectPropsImpl(auxiliary, this);
@@ -173,7 +185,8 @@ public final class NbMavenProjectImpl implements Project {
         configProvider = new M2ConfigProvider(this, auxiliary, profileHandler);
         // @PSP's and the like, and PackagingProvider impls, may check project lookup for e.g. NbMavenProject, so init lookup in two stages:
         basicLookup = createBasicLookup(projectState, auxiliary);
-        lookup = LookupProviderSupport.createCompositeLookup(new PackagingTypeDependentLookup(watcher, basicLookup), "Projects/org-netbeans-modules-maven/Lookup");
+        //here we akways load the MavenProject instance because we need to touch the packaging from pom.
+        completeLookup = LookupProviderSupport.createCompositeLookup(new PackagingTypeDependentLookup(watcher, basicLookup), "Projects/org-netbeans-modules-maven/Lookup");//NOI18N
     }
 
     public File getPOMFile() {
@@ -214,7 +227,7 @@ public final class NbMavenProjectImpl implements Project {
             // that will not be used in current pom anyway..
             // #135070
             req.setRecursive(false);
-            MavenExecutionResult res = embedder.readProjectWithDependencies(req);
+            MavenExecutionResult res = embedder.readProjectWithDependencies(req, true);
             if (!res.hasExceptions()) {
                 return res.getProject();
             } else {
@@ -285,6 +298,18 @@ public final class NbMavenProjectImpl implements Project {
         project = new SoftReference<MavenProject>(mp);
         return mp;
     }
+    
+    /**
+     * a marginally unreliable, non blocking method for figuring if the model is loaded or not.
+     * @return 
+     */
+    public boolean isMavenProjectLoaded() {
+        Reference<MavenProject> prj = project;
+        if (prj != null) {
+            return prj.get() != null;
+        }
+        return false;
+    }
 
     @Messages({
         "TXT_RuntimeException=RuntimeException occurred in Apache Maven embedder while loading",
@@ -314,7 +339,7 @@ public final class NbMavenProjectImpl implements Project {
             req.setRecursive(false);
             req.setOffline(true);
             req.setUserProperties(createSystemPropsForProjectLoading());
-             MavenExecutionResult res = getEmbedder().readProjectWithDependencies(req);
+             MavenExecutionResult res = getEmbedder().readProjectWithDependencies(req, true);
              newproject = res.getProject();
             if (res.hasExceptions()) {
                 problemReporter.reportExceptions(res);
@@ -475,13 +500,7 @@ public final class NbMavenProjectImpl implements Project {
             // XXX for a few purposes (listening) it is desirable to list these even before they exist, but usually it is just noise (cf. #196414 comment #2)
             FileObject root = getProjectDirectory().getFileObject("src/" + (test ? "test" : "main") + "/" + rp.kind());
             if (root != null && root.isFolder()) {
-                try {
-                    uris.add(root.getURL().toURI());
-                } catch (FileStateInvalidException x) {
-                    LOG.log(Level.WARNING, null, x);
-                } catch (URISyntaxException x) {
-                    LOG.log(Level.WARNING, null, x);
-                }
+                uris.add(root.toURI());
             }
         }
         return uris.toArray(new URI[uris.size()]);
@@ -493,9 +512,29 @@ public final class NbMavenProjectImpl implements Project {
         File[] roots = new File(uri).listFiles();
         if (roots != null) {
             for (File root : roots) {
+                if (!test && root.getName().startsWith("test-")) {
+                    continue;
+                }
                 File[] kids = root.listFiles();
                 if (kids != null && /* #190626 */kids.length > 0) {
                     uris.add(root.toURI());
+                } else {
+                    watcher.addWatchedPath(root.toURI());
+                }
+            }
+        }
+        if (test) { // MCOMPILER-167
+            roots = new File(FileUtilities.getDirURI(getProjectDirectory(), "target/generated-sources")).listFiles();
+            if (roots != null) {
+                for (File root : roots) {
+                    if (root.getName().startsWith("test-")) {
+                        File[] kids = root.listFiles();
+                        if (kids != null && kids.length > 0) {
+                            uris.add(root.toURI());
+                        } else {
+                            watcher.addWatchedPath(root.toURI());
+                        }
+                    }
                 }
             }
         }
@@ -610,7 +649,7 @@ public final class NbMavenProjectImpl implements Project {
 
     @Override
     public Lookup getLookup() {
-        return lookup != null ? lookup : basicLookup;
+        return lookup;
     }
 
     private static class PackagingTypeDependentLookup extends ProxyLookup implements PropertyChangeListener {

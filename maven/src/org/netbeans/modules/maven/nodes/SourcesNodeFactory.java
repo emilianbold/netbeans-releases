@@ -41,20 +41,20 @@
  */
 
 package org.netbeans.modules.maven.nodes;
-import org.netbeans.modules.maven.spi.nodes.AbstractMavenNodeList;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.maven.NbMavenProjectImpl;
+import org.netbeans.modules.maven.spi.nodes.AbstractMavenNodeList;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
@@ -75,6 +75,7 @@ public class SourcesNodeFactory implements NodeFactory {
     public SourcesNodeFactory() {
     }
     
+    @Override
     public NodeList createNodes(Project project) {
         NbMavenProjectImpl prj = project.getLookup().lookup(NbMavenProjectImpl.class);
         return  new NList(prj);
@@ -87,6 +88,7 @@ public class SourcesNodeFactory implements NodeFactory {
             project = prj;
         }
         
+        @Override
         public List<SourceGroup> keys() {
             List<SourceGroup> list = new ArrayList<SourceGroup>();
             Sources srcs = ProjectUtils.getSources(project);
@@ -97,12 +99,13 @@ public class SourcesNodeFactory implements NodeFactory {
             return list;
         }
         
+        @Override
         public Node node(SourceGroup group) {
             Project owner = FileOwnerQuery.getOwner(group.getRootFolder());
             if (owner != project) {
                 if (owner == null) {
                     //#152418 if project for folder is not found, just look the other way..
-                    Logger.getLogger(SourcesNodeFactory.class.getName()).log(Level.INFO, "Cannot find a project owner for folder " + group.getRootFolder()); //NOI18N
+                    Logger.getLogger(SourcesNodeFactory.class.getName()).log(Level.INFO, "Cannot find a project owner for folder {0}", group.getRootFolder()); //NOI18N
                     return null;
                 }
                 AbstractNode erroNode = new AbstractNode(Children.LEAF);
@@ -125,9 +128,11 @@ public class SourcesNodeFactory implements NodeFactory {
             srcs.removeChangeListener(this);
         }
 
+        @Override
         public void stateChanged(ChangeEvent arg0) {
             //#167372 break the stack trace chain to prevent deadlocks.
             RP.post(new Runnable() {
+                @Override
                 public void run() {
                     fireChange();
                 }

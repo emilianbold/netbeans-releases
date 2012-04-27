@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
-import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import java.util.*;
 
 import org.netbeans.modules.cnd.antlr.collections.AST;
@@ -52,6 +51,7 @@ import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
@@ -278,6 +278,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         private CharSequence name = CharSequences.empty();
         private String qName;
         private CsmFile file;
+        private FileContent fileContent;
         private int startOffset;
         private int endOffset;
         private NamespaceBuilder parent;
@@ -318,7 +319,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
             }
             MutableDeclarationsContainer container;
             if (parent == null) {
-                container = (FileImpl) file;
+                container = fileContent;
             } else {
                 container = parent.getNamespaceDefinitionInstance();
             }
@@ -351,7 +352,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
                 if(parent != null) {
                     parent.addDeclaration(ns);
                 } else {
-                    ((FileImpl)file).addDeclaration(ns);
+                    fileContent.addDeclaration(ns);
                 }
             }
             for (CsmOffsetableDeclaration decl : declarations) {

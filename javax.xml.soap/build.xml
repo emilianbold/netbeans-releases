@@ -8,6 +8,7 @@
                 <attribute name="Bundle-SymbolicName" value="javax.xml.soap"/>
                 <attribute name="Bundle-Version" value="1.2.0"/>
                 <attribute name="Export-Package" value="javax.xml.soap;version=&quot;1.2.0&quot;"/>
+                <attribute name="Import-Package" value="org.w3c.dom"/>
             </manifest>
         </jar>
     </target>

@@ -44,7 +44,7 @@
 package org.netbeans.modules.cnd.refactoring.codegen;
 
 import org.netbeans.modules.cnd.modelutil.ui.ElementNode.Description;
-import org.netbeans.modules.cnd.refactoring.support.CsmContext;
+import org.netbeans.modules.cnd.refactoring.api.CsmContext;
 import org.netbeans.modules.cnd.refactoring.support.GeneratorUtils;
 import java.awt.Dialog;
 import org.netbeans.modules.cnd.api.model.CsmObject;

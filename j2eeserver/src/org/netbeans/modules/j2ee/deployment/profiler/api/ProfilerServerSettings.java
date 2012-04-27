@@ -54,7 +54,10 @@ import org.openide.filesystems.FileUtil;
  * Settings that will be used for profiled server startup.
  *
  * @author sherold
+ * 
+ * @deprecated 
  */
+@Deprecated
 public final class ProfilerServerSettings {
 
     private JavaPlatform    javaPlatform;

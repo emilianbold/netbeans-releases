@@ -49,6 +49,7 @@ import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Frame;
+import java.awt.GraphicsEnvironment;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.ByteArrayInputStream;
@@ -59,9 +60,13 @@ import javax.swing.JButton;
 import java.util.Locale;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -72,6 +77,10 @@ import org.openide.NotifyDescriptor;
  */
 public class InstallerReadPageTest extends NbTestCase {
     
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(InstallerReadPageTest.class);
+    }
+
     public InstallerReadPageTest(String testName) {
         super(testName);
     }
@@ -112,6 +121,7 @@ public class InstallerReadPageTest extends NbTestCase {
         doEncodingTest("UTF-8", "<meta http-equiv='Content-Type' content='text/html; charset=utf-8'></meta>");
     }
 
+    @RandomlyFails // NB-Core-Build #7964
     public void testSendLogWithException() throws Exception {
         Logger uiLogger = Logger.getLogger("org.netbeans.ui");
         LogRecord log1 = new LogRecord(Level.SEVERE, "TESTING MESSAGE");
@@ -166,12 +176,14 @@ public class InstallerReadPageTest extends NbTestCase {
         
         assertEquals("It has the right localized text", kun, b.getText());
 
+        assertFalse(EventQueue.isDispatchThread());
         EventQueue.invokeAndWait(new Runnable() {
             @Override
             public void run() {
-                JScrollPane pane = (JScrollPane)DD.d.getMessage();
+                JPanel jp = (JPanel) DD.d.getMessage();
+                JScrollPane pane = (JScrollPane) jp.getComponent(0); //pane at idx 0
                 Component c = pane.getViewport().getView();
-                assertEquals("Dimension is small", new Dimension(450, 50), c.getPreferredSize());
+                assertEquals("Dimension is small", new Dimension(350, 50), c.getPreferredSize());
             }
         });
         

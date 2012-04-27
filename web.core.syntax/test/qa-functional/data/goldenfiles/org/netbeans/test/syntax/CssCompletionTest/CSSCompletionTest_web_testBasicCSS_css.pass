@@ -11,12 +11,16 @@ background-position-x
 background-position-y
 background-repeat
 background-size
+bar-chart
 baseline-shift
+bg-position
+bg-size
 bleed
 bookmark-label
 bookmark-level
 bookmark-state
 bookmark-target
+boolean
 border
 border-bottom
 border-bottom-color
@@ -59,10 +63,25 @@ break-before
 break-inside
 End cursor position = 154
 [c|, clip, clip:, 168]
+cancel
 caption-side
+cell-selection
+chart-area-symbol
+chart-bar
+chart-bubble
+chart-line-symbol
+chart-pie
+chart-pie-label
+chart-pie-label-line
+chart-series-area-fill
+chart-series-area-line
+chart-series-line
+chart-symbol
 clear
 clip
+collapsed
 color
+color-stop
 column-count
 column-fill
 column-gap
@@ -76,7 +95,6 @@ columns
 content
 counter-increment
 counter-reset
-crop
 cue
 cue-after
 cue-before
@@ -90,7 +108,9 @@ font-style
 font-synthesis
 End cursor position = 239
 [caption{co|}, color, caption{color: }, 279]
+collapsed
 color
+color-stop
 column-count
 column-fill
 column-gap
@@ -116,6 +136,8 @@ page-break-after
 page-break-before
 page-break-inside
 page-policy
+paint
+pannable
 pause
 pause-after
 pause-before
@@ -124,7 +146,9 @@ perspective-origin
 pitch
 pitch-range
 play-during
+point
 pointer-events
 position
 presentation-level
+pressed
 End cursor position = 387

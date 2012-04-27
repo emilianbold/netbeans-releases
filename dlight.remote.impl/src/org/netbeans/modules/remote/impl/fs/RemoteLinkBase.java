@@ -66,14 +66,18 @@ import org.openide.filesystems.FileRenameEvent;
  *
  * @author vk155633
  */
-public abstract class RemoteLinkBase extends RemoteFileObjectFile implements FileChangeListener {
+public abstract class RemoteLinkBase extends RemoteFileObjectBase implements FileChangeListener {
     
-    protected RemoteLinkBase(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, RemoteFileObjectBase parent, String remotePath) {
-        super(fileSystem, execEnv, parent, remotePath, null);
+    protected RemoteLinkBase(RemoteFileObject wrapper, RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, RemoteFileObjectBase parent, String remotePath) {
+        super(wrapper, fileSystem, execEnv, parent, remotePath, null);
     }
     
-    protected final void initListeners() {
-        getFileSystem().getFactory().addFileChangeListener(getDelegateNormalizedPath(), this);
+    protected final void initListeners(boolean add) {
+        if (add) {
+            getFileSystem().getFactory().addFileChangeListener(getDelegateNormalizedPath(), this);
+        } else {
+            getFileSystem().getFactory().removeFileChangeListener(getDelegateNormalizedPath(), this);
+        }
     }
 
     public abstract RemoteFileObjectBase getDelegate();
@@ -84,37 +88,43 @@ public abstract class RemoteLinkBase extends RemoteFileObjectFile implements Fil
     }
     
     @Override
-    public RemoteFileObjectBase[] getChildren() {
+    public RemoteFileObject[] getChildren() {
         RemoteFileObjectBase delegate = getDelegate();
         if (delegate != null) {
-            RemoteFileObjectBase[] children = delegate.getChildren();
+            RemoteFileObject[] children = delegate.getChildren();
             for (int i = 0; i < children.length; i++) {
                 children[i] = wrapFileObject(children[i], null);
             }
             return children;
         }
-        return new RemoteFileObjectBase[0];
+        return new RemoteFileObject[0];
     }
 
-    private RemoteFileObjectBase wrapFileObject(RemoteFileObjectBase fo, String relativePath) {
+    private RemoteFileObject wrapFileObject(RemoteFileObject fo, String relativePath) {
         String childAbsPath;
         if (relativePath == null) {
             childAbsPath = getPath() + '/' + fo.getNameExt();
         } else {
             childAbsPath = RemoteFileSystemUtils.normalize(getPath() + '/' + relativePath);
         }
-        RemoteLinkChild result = RemoteLinkChild.createNew(getFileSystem(), getExecutionEnvironment(), this, childAbsPath, fo);
-        result.initListeners();
-        return result;
+        // NB: here it can become not a remote link child (in the case it changed remotely and refreshed concurrently)
+        RemoteFileObjectBase result = getFileSystem().getFactory().createRemoteLinkChild(this, childAbsPath, fo.getImplementor());
+        return result.getOwnerFileObject();
     }
 
     // ------------ delegating methods -------------------
 
     @Override
-    public RemoteFileObjectBase getFileObject(String name, String ext) {
+    protected boolean hasCache() {
+        RemoteFileObjectBase delegate = getDelegate();
+        return (delegate == null) ? false : delegate.hasCache();
+    }
+
+    @Override
+    public RemoteFileObject getFileObject(String name, String ext) {
         RemoteFileObjectBase delegate = getDelegate();
         if (delegate != null) {
-            RemoteFileObjectBase fo = delegate.getFileObject(name, ext);
+            RemoteFileObject fo = delegate.getFileObject(name, ext);
             if (fo != null) {
                 fo = wrapFileObject(fo, null);
             }
@@ -124,10 +134,10 @@ public abstract class RemoteLinkBase extends RemoteFileObjectFile implements Fil
     }
 
     @Override
-    public RemoteFileObjectBase getFileObject(String relativePath) {
+    public RemoteFileObject getFileObject(String relativePath) {
         RemoteFileObjectBase delegate = getDelegate();
         if (delegate != null) {
-            RemoteFileObjectBase fo = delegate.getFileObject(relativePath);
+            RemoteFileObject fo = delegate.getFileObject(relativePath);
             if (fo != null) {
                 fo = wrapFileObject(fo, relativePath);
             }
@@ -173,6 +183,16 @@ public abstract class RemoteLinkBase extends RemoteFileObjectFile implements Fil
         }
     }
 
+    @Override
+    protected boolean checkLock(FileLock aLock) throws IOException {
+        RemoteFileObjectBase delegate = getDelegate();
+        if (delegate != null) {
+            return delegate.checkLock(aLock);
+        } else {
+            return super.checkLock(aLock);
+        }
+    }
+
     @SuppressWarnings("deprecation")
     @Override
     protected boolean isReadOnlyImpl(RemoteFileObjectBase orig) {
@@ -188,8 +208,16 @@ public abstract class RemoteLinkBase extends RemoteFileObjectFile implements Fil
         } else {
             throw fileNotFoundException("write"); //NOI18N
         }
-    }
-
+    }  
+  
+    @Override
+    protected final void refreshThisFileMetadataImpl(boolean recursive, Set<String> antiLoop, boolean expected) throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+        // TODO: this dummy implementation is far from optimal in terms of performance. It needs to be improved.
+        if (getParent() != null) {
+            getParent().refreshImpl(false, antiLoop, expected);
+        }
+    }    
+    
     @Override
     protected final void refreshImpl(boolean recursive, Set<String> antiLoop, boolean expected) throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
         if (antiLoop == null) {
@@ -201,6 +229,8 @@ public abstract class RemoteLinkBase extends RemoteFileObjectFile implements Fil
             antiLoop.add(getPath());
         }
         RemoteFileObjectBase delegate = getDelegate();
+        // For link we need to refresh both delegate and link metadata itself
+        refreshThisFileMetadataImpl(recursive, antiLoop, expected);
         if (delegate != null) {
             delegate.refreshImpl(recursive, antiLoop, expected);
         } else {
@@ -260,7 +290,9 @@ public abstract class RemoteLinkBase extends RemoteFileObjectFile implements Fil
 
     @Override
     public void fileDeleted(FileEvent fe) {
-        fireFileDeletedEvent(getListeners(), transform(fe));
+        if (!isCyclicLink()) {
+            fireFileDeletedEvent(getListeners(), transform(fe));
+        }
     }
 
     @Override
@@ -273,8 +305,27 @@ public abstract class RemoteLinkBase extends RemoteFileObjectFile implements Fil
         fireFileRenamedEvent(getListeners(), (FileRenameEvent)transform(fe));
     }
 
+    public boolean isCyclicLink() {
+        Set<RemoteFileObjectBase> antiCycle = new HashSet<RemoteFileObjectBase>();
+        RemoteFileObjectBase delegate = getDelegate();
+        if (delegate == null && getPath() != null) {
+            // self-referencing link
+            return true;
+        }
+        while (delegate != null) {
+            if (delegate instanceof RemoteLinkBase) {
+                if (antiCycle.contains(delegate)) return true;
+                antiCycle.add(delegate);
+                delegate = ((RemoteLinkBase) delegate).getDelegate();
+            } else {
+                break;
+            }
+        }        
+        return false;
+    }
+    
     private FileEvent transform(FileEvent fe) {
-        FileObject delegate = getDelegate();
+        RemoteFileObjectBase delegate = getDelegate();
         if (delegate != null) {
             FileObject src = transform((FileObject) fe.getSource(), delegate);
             FileObject file = transform(fe.getFile(), delegate);
@@ -293,16 +344,19 @@ public abstract class RemoteLinkBase extends RemoteFileObjectFile implements Fil
         return fe;
     }
 
-    private FileObject transform(FileObject originalFO, FileObject delegate) {
-        if (originalFO == delegate) {
-            return RemoteLinkBase.this;
+    private FileObject transform(FileObject fo, RemoteFileObjectBase delegate) {
+        if (fo instanceof RemoteFileObject) {
+            RemoteFileObjectBase originalFO = ((RemoteFileObject) fo).getImplementor();
+            if (originalFO == delegate) {
+                return this.getOwnerFileObject();
+            }
+            if (originalFO.getParent() == delegate) {
+                String path = RemoteLinkBase.this.getPath() + '/' + fo.getNameExt();
+                // NB: here it can become not a remote link child (in the case it changed remotely and refreshed concurrently)
+                RemoteFileObjectBase linkChild = getFileSystem().getFactory().createRemoteLinkChild(this, path, originalFO);
+                return linkChild.getOwnerFileObject();
+            }
         }
-        if (originalFO.getParent() == delegate) {
-            String path = RemoteLinkBase.this.getPath() + '/' + originalFO.getNameExt();
-            RemoteLinkChild result =  RemoteLinkChild.createNew(getFileSystem(), getExecutionEnvironment(), RemoteLinkBase.this, path, (RemoteFileObjectBase) originalFO);
-            // do we need to call result.initListeners() ?
-            return result;
-        }
-        return originalFO;
+        return fo;
     }
 }

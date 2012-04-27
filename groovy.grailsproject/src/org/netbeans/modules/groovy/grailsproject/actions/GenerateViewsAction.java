@@ -42,16 +42,26 @@
 
 package org.netbeans.modules.groovy.grailsproject.actions;
 
-import org.openide.util.NbBundle;
+import static org.netbeans.modules.groovy.editor.api.parser.GroovyLanguage.ACTIONS;
+import static org.netbeans.modules.groovy.grailsproject.actions.Bundle.*;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
  * @author Petr Hejl
  */
+@Messages("CTL_GenerateViewsAction=Generate Views")
+@ActionID(id = "org.netbeans.modules.groovy.grailsproject.actions.GenerateViewsAction", category = "Build")
+@ActionRegistration(lazy = false, displayName = "#CTL_GenerateViewsAction")
+@ActionReference(path = ACTIONS, position = 0,separatorBefore=-100)
+
 public final class GenerateViewsAction extends GenerateAction {
 
     public GenerateViewsAction() {
-        super("generate-views", NbBundle.getMessage(GenerateViewsAction.class, "CTL_GenerateViewsAction"));
+        super("generate-views", CTL_GenerateViewsAction());
     }
 
 }

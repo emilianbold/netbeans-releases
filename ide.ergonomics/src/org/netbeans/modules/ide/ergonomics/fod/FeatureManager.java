@@ -62,6 +62,8 @@ import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.Module;
 import org.netbeans.api.project.Project;
+import org.netbeans.core.startup.Main;
+import org.netbeans.core.startup.ModuleSystem;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.Dependency;
@@ -107,6 +109,9 @@ implements PropertyChangeListener, LookupListener {
     public RequestProcessor.Task create(Runnable r) {
         return RP.create(r);
     }
+    public RequestProcessor.Task create(Runnable r, boolean finished) {
+        return RP.create(r, finished);
+    }
 
 
     static void logUI(String msg, Object... params) {
@@ -119,8 +124,7 @@ implements PropertyChangeListener, LookupListener {
     }
 
     static boolean showInAU(ModuleInfo mi) {
-        final Object show = mi.getAttribute("AutoUpdate-Show-In-Client"); // NOI18N
-        return show == null || "true".equals(show); // NOI18N
+        return Main.getModuleSystem().isShowInAutoUpdateClient(mi);
     }
 
 
@@ -162,7 +166,7 @@ implements PropertyChangeListener, LookupListener {
      * @return
      */
     public static int dumpModules(Level withLevel, Level detailsLevel) {
-        if (!FoDFileSystem.LOG.isLoggable(withLevel)) {
+        if (!FoDLayersProvider.LOG.isLoggable(withLevel)) {
             return -1;
         }
         int cnt = 0;
@@ -180,26 +184,26 @@ implements PropertyChangeListener, LookupListener {
                 }
             }
             if (enabled.isEmpty() && disabled.isEmpty()) {
-                FoDFileSystem.LOG.log(withLevel, info.clusterName + " not present"); // NOTICES
+                FoDLayersProvider.LOG.log(withLevel, info.clusterName + " not present"); // NOTICES
                 continue;
             }
             if (enabled.isEmpty()) {
-                FoDFileSystem.LOG.log(withLevel, info.clusterName + " disabled"); // NOTICES
+                FoDLayersProvider.LOG.log(withLevel, info.clusterName + " disabled"); // NOTICES
                 continue;
             }
             if (disabled.isEmpty()) {
-                FoDFileSystem.LOG.log(withLevel, info.clusterName + " enabled"); // NOTICES
+                FoDLayersProvider.LOG.log(withLevel, info.clusterName + " enabled"); // NOTICES
                 cnt++;
                 continue;
             }
-            FoDFileSystem.LOG.log(withLevel,
+            FoDLayersProvider.LOG.log(withLevel,
                 info.clusterName + " enabled " + enabled.size() + " disabled " + disabled.size()); // NOTICES
             cnt++;
             for (String cnb : disabled) {
-                FoDFileSystem.LOG.log(detailsLevel, "- " + cnb); // NOI18N
+                FoDLayersProvider.LOG.log(detailsLevel, "- " + cnb); // NOI18N
             }
             for (String cnb : enabled) {
-                FoDFileSystem.LOG.log(detailsLevel, "+ " + cnb); // NOI18N
+                FoDLayersProvider.LOG.log(detailsLevel, "+ " + cnb); // NOI18N
             }
         }
         return cnt;
@@ -292,12 +296,12 @@ implements PropertyChangeListener, LookupListener {
     }
 
     private void fireChange() {
-        FoDFileSystem.LOG.fine("Firing FeatureManager change"); // NOI18N
+        FoDLayersProvider.LOG.fine("Firing FeatureManager change"); // NOI18N
         for (FeatureInfo f : features()) {
             f.clearCache();
         }
         support.fireChange();
-        FoDFileSystem.LOG.fine("FeatureManager change delivered"); // NOI18N
+        FoDLayersProvider.LOG.fine("FeatureManager change delivered"); // NOI18N
     }
 
     /** Useful for testing */

@@ -87,9 +87,12 @@ import org.netbeans.modules.cnd.debugger.common2.utils.FileMapper;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
 public class Gdb {
+    private static final boolean GDBINIT = Boolean.getBoolean("gdb.init.enable"); // NOI18N
+    
     protected class StartProgressManager extends ProgressManager {
         private final String[] levelLabels = new String[] {
             "",
@@ -403,10 +406,15 @@ public class Gdb {
 		    avec.add(gdbname);
 		}
                 
-		if (gdbInitFile != null) {
+		if (gdbInitFile != null && !gdbInitFile.isEmpty()) {
 		    avec.add("-x"); // NOI18N
 		    avec.add(gdbInitFile);
 		}
+                
+                // see IZ 207860 - disable sourceing gdbinit files other than the one specified 
+                if (!GDBINIT) {
+                    avec.add("-nx"); // NOI18N
+                }
                     
 		// flags to get gdb going as an MI service
 		avec.add("--interpreter"); // NOI18N
@@ -679,14 +687,18 @@ public class Gdb {
      * action, we're NOT asking dbx to do it - this we're actually doing
      * ourselves!!
      */
-    boolean pause(int pid, boolean silentStop) {
+    boolean pause(int pid, boolean silentStop, boolean interruptGdb) {
         // The following predicate is _not_ the same as isReceptive()
         if (debugger.state().isRunning && debugger.state().isProcess) {
-	    Executor signaller = Executor.getDefault("signaller", factory.host, 0); // NOI18N
 	    try {
                 signalled = true;
                 this.silentStop = silentStop;
-		signaller.interrupt(pid);
+                if (interruptGdb) {
+                    executor.interruptGroup();
+                } else {
+                    Executor signaller = Executor.getDefault("signaller", factory.host, 0); // NOI18N
+                    signaller.interrupt(pid);
+                }
 	    } catch(java.io.IOException e) {
 		ErrorManager.getDefault().annotate(e,
 		    "Sending kill signal to process failed"); // NOI18N
@@ -1041,8 +1053,13 @@ public class Gdb {
                     final String line = interceptedLines.removeFirst();
 
                     processingQueue.post(new Runnable() {
+                        @Override
                         public void run() {
-                            miProxy.processLine(line);
+                            try {
+                                miProxy.processLine(line);
+                            } catch (Exception e) {
+                                Exceptions.printStackTrace(new Exception("when processing line: " + line, e)); //NOI18N
+                            }
                         }
                     });
                 }
@@ -1132,7 +1149,11 @@ public class Gdb {
             if (record.token() == 0) {
                 if (record.cls().equals("thread-group-started")) { //NOI18N
                     debugger.session().setSessionEngine(GdbEngineCapabilityProvider.getGdbEngineType());
-                    debugger.session().setPid(Long.valueOf(record.results().valueOf("pid").asConst().value())); //NOI18N
+                    debugger.session().setPid(Long.valueOf(record.results().getConstValue("pid"))); //NOI18N
+                } else if (record.cls().equals("breakpoint-created")) { //NOI18N
+                    debugger.newAsyncBreakpoint(record);
+                } else if (record.cls().equals("breakpoint-modified")) { //NOI18N
+                } else if (record.cls().equals("breakpoint-deleted")) { //NOI18N
                 } else if (record.cls().equals("thread-group-added") || //NOI18N
                     record.cls().equals("thread-group-removed") || //NOI18N
                     record.cls().equals("thread-group-exited") || //NOI18N

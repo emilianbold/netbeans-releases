@@ -58,7 +58,7 @@ import org.netbeans.modules.editor.lib2.search.EditorFindSupport;
 *
 * @author Miloslav Metelka
 * @version 1.00
-* @deprecated Without any replacement.
+* @deprecated use org.netbeans.modules.editor.lib2.search.EditorFindSupport;
 */
 public class FindSupport {
 

@@ -328,9 +328,6 @@ public class DeclarativeHintsParserTest extends NbTestCase {
 
         for (int cntr = 0; cntr < code.length(); cntr++) {
             String currentpath = code.substring(0, cntr);
-
-            System.err.println("currentpath=" + currentpath);
-            
             TokenHierarchy<?> h = TokenHierarchy.create(currentpath, DeclarativeHintTokenId.language());
 
             new DeclarativeHintsParser().parse(file, currentpath, h.tokenSequence(DeclarativeHintTokenId.language()));

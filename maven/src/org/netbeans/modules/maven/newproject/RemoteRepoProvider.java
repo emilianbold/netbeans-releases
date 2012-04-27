@@ -54,6 +54,7 @@ import org.netbeans.modules.maven.api.archetype.Archetype;
 import org.netbeans.modules.maven.api.archetype.ArchetypeProvider;
 import org.openide.util.lookup.ServiceProvider;
 
+//TODO this is to be removed probably, replaced by the provider on top of catalog files.
 @ServiceProvider(service=ArchetypeProvider.class, position=400)
 public class RemoteRepoProvider implements ArchetypeProvider {
 
@@ -70,7 +71,7 @@ public class RemoteRepoProvider implements ArchetypeProvider {
     }
 
     private void search(RepositoryInfo info, List<Archetype> lst) {
-        for (NBVersionInfo art : RepositoryQueries.findArchetypes(Collections.singletonList(info))) {
+        for (NBVersionInfo art : RepositoryQueries.findArchetypesResult(Collections.singletonList(info)).getResults()) {
             Archetype arch = new Archetype(false);
             arch.setArtifactId(art.getArtifactId());
             arch.setGroupId(art.getGroupId());

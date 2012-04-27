@@ -35,8 +35,8 @@ import org.openide.util.NbBundle;
 
 public final class EjbFacadeVisualPanel2 extends JPanel implements DocumentListener {
     
-    private final String CLASSNAME_LOCAL = NbBundle.getMessage(EjbFacadeVisualPanel2.class, "LBL_GeneratedFacadeLocal");
-    private final String CLASSNAME_REMOTE = NbBundle.getMessage(EjbFacadeVisualPanel2.class, "LBL_GeneratedFacadeRemote");
+    private final String CLASSNAME_LOCAL = NbBundle.getMessage(EjbFacadeVisualPanel2.class, "LBL_GeneratedFacadeLocal"); //NOI18N
+    private final String CLASSNAME_REMOTE = NbBundle.getMessage(EjbFacadeVisualPanel2.class, "LBL_GeneratedFacadeRemote"); //NOI18N
     
     private WizardDescriptor wizard;
     private Project project;
@@ -180,9 +180,9 @@ public final class EjbFacadeVisualPanel2 extends JPanel implements DocumentListe
     private void handleCheckboxes() {
         createdFilesText.setText(NbBundle.getMessage(
             EjbFacadeVisualPanel2.class,
-            "LBL_CreatedFIles",
-            isLocal() ? CLASSNAME_LOCAL : "",
-            isRemote() ? CLASSNAME_REMOTE : ""
+            "LBL_CreatedFIles", //NOI18N
+            isLocal() ? ", " + CLASSNAME_LOCAL : "", //NOI18N
+            isRemote() ? ", " + CLASSNAME_REMOTE : "" //NOI18N
         )); 
     }
     
@@ -229,7 +229,6 @@ public final class EjbFacadeVisualPanel2 extends JPanel implements DocumentListe
             }
         });
 
-        localCheckBox.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(localCheckBox, org.openide.util.NbBundle.getMessage(EjbFacadeVisualPanel2.class, "LBL_Local")); // NOI18N
         localCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         localCheckBox.addActionListener(new java.awt.event.ActionListener() {
@@ -266,17 +265,19 @@ public final class EjbFacadeVisualPanel2 extends JPanel implements DocumentListe
                     .addComponent(locationComboBox, 0, 585, Short.MAX_VALUE)
                     .addComponent(packageComboBox, 0, 585, Short.MAX_VALUE)
                     .addComponent(createdFilesText, javax.swing.GroupLayout.DEFAULT_SIZE, 585, Short.MAX_VALUE)))
-            .addComponent(jLabel1)
-            .addComponent(jLabel6)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(localCheckBox)
-                .addContainerGap(615, Short.MAX_VALUE))
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(remoteCheckBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(inProjectCombo, 0, 521, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel1)
+                    .addComponent(jLabel6)
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(localCheckBox)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -345,6 +346,7 @@ public final class EjbFacadeVisualPanel2 extends JPanel implements DocumentListe
     private void updateCheckboxes() {
         //by default for ejb 3.1 no interfaces will be created
         localCheckBox.setSelected(!J2eeProjectCapabilities.forProject(project).isEjb31LiteSupported());
+        changeSupport.fireChange();
     }
     
     public Project getRemoteInterfaceProject() {

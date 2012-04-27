@@ -52,12 +52,16 @@ import java.util.concurrent.Future;
 import java.util.regex.Pattern;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.spring.api.Action;
 import org.netbeans.modules.spring.api.beans.SpringScope;
 import org.netbeans.modules.spring.api.beans.model.FileSpringBeans;
 import org.netbeans.modules.spring.api.beans.model.SpringBean;
 import org.netbeans.modules.spring.api.beans.model.SpringConfigModel;
 import org.netbeans.modules.spring.api.beans.model.SpringConfigModel.DocumentAccess;
+import org.netbeans.modules.spring.api.beans.model.SpringModel;
 import org.netbeans.modules.spring.beans.ProjectSpringScopeProvider;
 import org.netbeans.spi.jumpto.support.NameMatcher;
 import org.netbeans.spi.jumpto.support.NameMatcherFactory;
@@ -139,6 +143,8 @@ public class SpringBeansTypeProvider implements TypeProvider {
                     return;
                 }
                 final Set<File> processed = new HashSet<File>();
+
+                // getting entries from configuration files
                 List<SpringConfigModel> models = scope.getAllConfigModels();
                 for (SpringConfigModel model : models) {
                     try {
@@ -184,6 +190,30 @@ public class SpringBeansTypeProvider implements TypeProvider {
                     } catch (IOException ex) {
                         Exceptions.printStackTrace(ex);
                     }
+                }
+
+                // getting annotated beans
+                MetadataModel<SpringModel> springAnnotationModel =
+                        scope.getSpringAnnotationModel(project.getProjectDirectory());
+                try {
+                    springAnnotationModel.runReadAction(new MetadataModelAction<SpringModel, Void>() {
+
+                        @Override
+                        public Void run(SpringModel metadata) throws Exception {
+                            for (SpringBean springBean : metadata.getBeans()) {
+                                for (String name : springBean.getNames()) {
+                                    if (matcher.accept(name)) {
+                                        currCache.add(new BeanTypeDescriptor(name, springBean));
+                                    }
+                                }
+                            }
+                            return null;
+                        }
+                    });
+                } catch (MetadataModelException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
             }
 

@@ -76,6 +76,7 @@ import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.javaee.specs.support.api.JaxWs;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Endpoint;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Endpoints;
@@ -84,7 +85,6 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
 import org.netbeans.modules.websvc.jaxws.light.api.JAXWSLightSupport;
 import org.netbeans.modules.websvc.jaxws.light.api.JaxWsService;
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
-import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
 import org.netbeans.modules.xml.retriever.RetrieveEntry;
 import org.netbeans.modules.xml.retriever.Retriever;
 import org.openide.DialogDescriptor;
@@ -98,7 +98,11 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
+import org.openide.util.Lookup.Result;
 
 /**
  *
@@ -177,6 +181,35 @@ public class WSUtils {
                 }
             }
         });
+    }
+    
+    static final J2eeModuleProvider getModuleProvider(Project project){
+        Lookup lookup = project.getLookup();
+        final Result<J2eeModuleProvider> result = lookup.lookupResult(J2eeModuleProvider.class);
+        LookupListener listener = new LookupListener(){
+
+            @Override
+            public void resultChanged( LookupEvent event ) {
+                synchronized (result) {
+                    result.notifyAll();
+                }
+            }
+            
+        };
+        result.addLookupListener( listener );
+        synchronized (result) {
+            while (lookup.lookup(J2eeModuleProvider.class) == null) {
+                try {
+                    result.wait();
+                }
+                catch( InterruptedException e ){
+                    Logger.getLogger(MavenJAXWSSupportImpl.class.getName()).log(Level.INFO,
+                            "Lookup change wait is interrupted", e); //NOI18N
+                }
+            }
+        }
+        result.removeLookupListener( listener );
+        return lookup.lookup(J2eeModuleProvider.class);
     }
     
     private static String readResource(InputStream is) throws IOException {

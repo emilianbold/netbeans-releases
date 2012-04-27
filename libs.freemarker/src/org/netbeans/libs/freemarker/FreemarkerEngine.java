@@ -63,6 +63,7 @@ class FreemarkerEngine extends AbstractScriptEngine {
     public static final String FREEMARKER_PROPERTIES = "com.sun.script.freemarker.properties";
     public static final String FREEMARKER_TEMPLATE_DIR = "com.sun.script.freemarker.template.dir";
     public static final String FREEMARKER_TEMPLATE = "org.openide.filesystems.FileObject";
+    private static final String FREEMARKER_EXCEPTION_HANDLER = "org.netbeans.libs.freemarker.exceptionHandler";
     
     private static Map<FileObject,Template> templates = Collections.synchronizedMap(
         new WeakHashMap<FileObject, Template>()
@@ -117,6 +118,10 @@ class FreemarkerEngine extends AbstractScriptEngine {
             
             if (template == null) {
                 template = new MyTemplate(fo, fileName, reader, conf);
+                Object exceptionHandler = ctx.getAttribute(FREEMARKER_EXCEPTION_HANDLER);
+                if (exceptionHandler instanceof TemplateExceptionHandler) {
+                    template.setTemplateExceptionHandler((TemplateExceptionHandler) exceptionHandler);
+                }
             } else {
                 ((MyTemplate)template).conf = conf;
             }

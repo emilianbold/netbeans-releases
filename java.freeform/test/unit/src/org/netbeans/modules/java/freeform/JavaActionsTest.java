@@ -166,8 +166,10 @@ public class JavaActionsTest extends TestBase {
             Arrays.asList(new String[] {
                 ActionProvider.COMMAND_COMPILE_SINGLE,
                 ActionProvider.COMMAND_DEBUG,
+                ActionProvider.COMMAND_PROFILE,
                 ActionProvider.COMMAND_RUN_SINGLE,
-                ActionProvider.COMMAND_DEBUG_SINGLE
+                ActionProvider.COMMAND_DEBUG_SINGLE,
+                ActionProvider.COMMAND_PROFILE_SINGLE
             }),
             Arrays.asList(ja.getSupportedActions()));
         /* Not really necessary; once there is a binding, the main ant/freeform Actions will mask this anyway:
@@ -559,6 +561,63 @@ public class JavaActionsTest extends TestBase {
             "            <jvmarg value=\"-Xdebug\"/>\n" +
             "            <jvmarg value=\"-Xrunjdwp:transport=dt_socket,address=${jpda.address}\"/>\n" +
             "        </java>\n" +
+            "    </target>\n" +
+            "</project>\n";
+        assertEquals(expectedXml, xmlToString(doc.getDocumentElement()));
+    }
+    
+    public void testCreateProfileTargetFromScratch() throws Exception {
+        Document doc = XMLUtil.createDocument("project", null, null, null);
+        Element genTarget = ja.createProfileTargetFromScratch("profile", doc);
+        doc.getDocumentElement().appendChild(genTarget);
+        String expectedXml =
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "<project>\n" +
+            "    <target name=\"-profile-check\">\n" +
+            "        <startprofiler freeform=\"true\"/>\n" +
+            "    </target>\n" +
+            "    <target depends=\"-profile-check\" if=\"profiler.configured\" name=\"profile\">\n" +
+            "        <path id=\"cp\">\n" +
+            "            <!---->\n" +
+            "        </path>\n" +
+            "        <!---->\n" +
+            "        <java classname=\"some.main.Class\" fork=\"true\">\n" +
+            "            <classpath refid=\"cp\"/>\n" +
+            "            <jvmarg line=\"${agent.jvmargs}\"/>\n" +
+            "        </java>\n" +
+            "    </target>\n" +
+            "</project>\n";
+        assertEquals(expectedXml, xmlToString(doc.getDocumentElement()));
+    }
+    
+    public void testCreateProfileTargetFromTemplate() throws Exception {
+        Document doc = XMLUtil.createDocument("project", null, null, null);
+        Document origDoc = XMLUtil.createDocument("target", null, null, null);
+        Element origTarget = origDoc.getDocumentElement();
+        origTarget.setAttribute("name", "ignored");
+        origTarget.setAttribute("depends", "compile");
+        origTarget.appendChild(origDoc.createElement("task1"));
+        Element task = origDoc.createElement("java");
+        // XXX also test nested <classpath>:
+        task.setAttribute("classpath", "${cp}");
+        task.appendChild(origDoc.createElement("stuff"));
+        origTarget.appendChild(task);
+        origTarget.appendChild(origDoc.createElement("task2"));
+        Element genTarget = ja.createProfileTargetFromTemplate("profile", origTarget, task, doc);
+        doc.getDocumentElement().appendChild(genTarget);
+        String expectedXml =
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "<project>\n" +
+            "    <target name=\"-profile-check\">\n" +
+            "        <startprofiler freeform=\"true\"/>\n" +
+            "    </target>\n" +
+            "    <target depends=\"-profile-check\" if=\"profiler.configured\" name=\"profile\">\n" +
+            "        <task1/>\n" +
+            "        <java classpath=\"${cp}\" fork=\"true\">\n" +
+            "            <stuff/>\n" +
+            "            <jvmarg line=\"${agent.jvmargs}\"/>\n" +
+            "        </java>\n" +
+            "        <task2/>\n" +
             "    </target>\n" +
             "</project>\n";
         assertEquals(expectedXml, xmlToString(doc.getDocumentElement()));

@@ -126,6 +126,9 @@ public class AnnotationProcessorTestUtils {
         args.add("-s");
         File destG = new File(dest.getParentFile(), "generated-" + dest.getName());
         args.add(destG.getAbsolutePath());
+        args.add("-source");
+        args.add("6");
+        args.add("-Xlint:-options");
         dest.mkdirs();
         destG.mkdirs();
         scan(args, src, srcIncludes);
@@ -151,7 +154,7 @@ public class AnnotationProcessorTestUtils {
      */
     public static boolean searchClasspathBroken() {
         // Cannot just check for e.g. SourceVersion.RELEASE_7 because we might be running JDK 6 javac w/ JDK 7 boot CP, and that is in JRE.
-        // (Anyway libs.javacapi/external/javac-api-nb-7.0-b07.jar, in the test's normal boot CP, has this!)
+        // (Anyway libs.javacapi/external/nb-javac-api.jar, in the test's normal boot CP, has this!)
         // Filter.class added in 7ae4016c5938, not long after f3323b1c65ee which we rely on for this to work.
         // Also cannot just check Class.forName(...) since tools.jar not in CP but ToolProvider loads it specially.
         return new URLClassLoader(new URL[] {ToolProvider.getSystemJavaCompiler().getClass().getProtectionDomain().getCodeSource().getLocation()}).findResource("com/sun/tools/javac/util/Filter.class") == null;

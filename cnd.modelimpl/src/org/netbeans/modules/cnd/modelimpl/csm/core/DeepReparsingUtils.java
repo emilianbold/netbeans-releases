@@ -61,7 +61,8 @@ import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
-import org.netbeans.modules.cnd.modelimpl.csm.core.GraphContainer.ParentFiles;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileContentSignature;
+import org.netbeans.modules.cnd.modelimpl.content.project.GraphContainer.ParentFiles;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
@@ -73,59 +74,119 @@ import org.openide.filesystems.FileObject;
  * @author Alexander Simon
  */
 public final class DeepReparsingUtils {
-    private static final boolean TRACE = false;
     private static final Logger LOG = Logger.getLogger("DeepReparsingUtils"); // NOI18N
+    private static final boolean TRACE = LOG.isLoggable(Level.FINE);
 
     private DeepReparsingUtils() {
     }
 
     /**
-     * Reparse one file when fileImpl content changed.
+     * Reparse one file when fileImpl content changed. It could be
+     * File->Document, Document->Document, Document->File, File->File
      */
-    static void reparseOnEditingFile(ProjectImpl project, FileImpl fileImpl) {
+    private static void reparseOnlyOneFile(ProjectBase project, FileImpl fileImpl) {
         if (TRACE) {
-            LOG.log(Level.INFO, "reparseOnEditingFile {0}", fileImpl.getAbsolutePath());
+            LOG.log(Level.INFO, "reparseOnlyOneFile {0}", fileImpl.getAbsolutePath());
         }
         project.markAsParsingPreprocStates(fileImpl.getAbsolutePath());
         fileImpl.markReparseNeeded(false);
-        ParserQueue.instance().add(fileImpl, Collections.singleton(FileImpl.DUMMY_STATE),
-                ParserQueue.Position.HEAD, false, ParserQueue.FileAction.NOTHING);
+        ParserQueue.instance().addToBeParsedNext(fileImpl);
+    }
+
+    /**
+     * Reparse one file when fileImpl content changed as result of Undo operation.
+     */
+    static void reparseOnUndoEditedFile(ProjectBase project, FileImpl fileImpl) {
+        if (TRACE) {
+            LOG.log(Level.INFO, "reparseOnUndoEditedFile {0}", fileImpl.getAbsolutePath());
+        }
+        reparseOnlyOneFile(project, fileImpl);
+    }
+
+    /**
+     * Reparse one file when fileImpl content changed as result of typing in editor.
+     */
+    static void reparseOnEditingFile(ProjectBase project, FileImpl fileImpl) {
+        if (TRACE) {
+            LOG.log(Level.INFO, "reparseOnEditingFile {0}", fileImpl.getAbsolutePath());
+        }
+        reparseOnlyOneFile(project, fileImpl);
     }
 
     /**
      * Reparse including/included files at fileImpl content changed.
      */
-    public static void reparseOnChangedFile(FileImpl fileImpl, ProjectBase project) {
+    public static void tryPartialReparseOnChangedFile(final ProjectBase changedFileProject, final FileImpl fileImpl) {
+        if (TraceFlags.USE_PARTIAL_REPARSE) {
+            if (TRACE) {
+                LOG.log(Level.INFO, "tryPartialReparseOnChangedFile {0}", fileImpl.getAbsolutePath());
+            }
+            changedFileProject.markAsParsingPreprocStates(fileImpl.getAbsolutePath());
+            fileImpl.markReparseNeeded(false);
+            ParserQueue.instance().addForPartialReparse(fileImpl);
+        } else {
+            if (TraceFlags.DEEP_REPARSING_OPTIMISTIC) {
+                if (TRACE) LOG.log(Level.INFO, "OPTIMISTIC partial ReparseOnChangedFile {0}", fileImpl.getAbsolutePath());
+                reparseOnlyOneFile(changedFileProject, fileImpl);
+            } else {
+                reparseOnChangedFileImpl(changedFileProject, fileImpl, true);
+            }
+        }
+    }
+
+    static boolean finishPartialReparse(FileImpl fileImpl, FileContentSignature lastFileBasedSignature, FileContentSignature newSignature) {
+        if (newSignature.equals(lastFileBasedSignature)) {
+            if (TRACE) {
+                LOG.log(Level.INFO, "partial reparseOnChangedFile was enough for {0}", fileImpl.getAbsolutePath());
+            }
+            return true;
+        } else if (TRACE) {
+            LOG.log(Level.INFO, "partial reparseOnChangedFile results in changed signature for {0}:\n{1}", 
+                    new Object[] { fileImpl.getAbsolutePath(), FileContentSignature.testDifference(newSignature, lastFileBasedSignature)}
+                    );
+        }
+        // signature have changed => full reparse is needed
+        DeepReparsingUtils.fullReparseOnChangedFile(fileImpl.getProjectImpl(true), fileImpl);
+        return false;
+    }
+
+    static void fullReparseOnChangedFile(final ProjectBase changedFileProject, final FileImpl fileImpl) {
+        reparseOnChangedFileImpl(changedFileProject, fileImpl, false);
+    }
+
+    private static void reparseOnChangedFileImpl(final ProjectBase changedFileProject, final FileImpl changedFile, boolean contentChanged) {
         if (TRACE) {
-            LOG.log(Level.INFO, "reparseOnChangedFile {0}", fileImpl.getAbsolutePath());
+            LOG.log(Level.INFO, "full reparseOnChangedFile {0}", changedFile.getAbsolutePath());
         }
         // content of file was changed => invalidate cache
-        APTDriver.invalidateAPT(fileImpl.getBuffer());        
+        if (contentChanged) {
+            APTDriver.invalidateAPT(changedFile.getBuffer());
+        }
         boolean scheduleParsing = true;
-        ParentFiles top = project.getGraph().getTopParentFiles(fileImpl);
+        ParentFiles top = changedFileProject.getGraph().getTopParentFiles(changedFile);
         Set<CsmFile> cuStartFiles = top.getCompilationUnits();
         Set<CsmFile> parents = top.getParentFiles();
         if (cuStartFiles.size() > 0) {
-            fileImpl.clearStateCache();
-            Set<CsmFile> coherence = project.getGraph().getCoherenceFiles(fileImpl).getCoherenceFiles();
+            changedFile.clearStateCache();
+            Set<CsmFile> coherence = changedFileProject.getGraph().getCoherenceFiles(changedFile).getCoherenceFiles();
             updateStartFilesWithBestStartFiles(coherence, cuStartFiles);
             for (CsmFile file : coherence) {
                 if (cuStartFiles.contains(file)) {
                     ((FileImpl)file).clearStateCache();
                 } else if (parents.contains(file)) {
                     ((FileImpl)file).clearStateCache();
-                    invalidateFileAndPreprocState(project, file);
+                    invalidateFileAndPreprocState(changedFileProject, file);
                 } else {
-                    invalidateFileAndPreprocState(project, file);
+                    invalidateFileAndPreprocState(changedFileProject, file);
                 }
             }
             if (scheduleParsing) {
                 // coherence already invalidated, pass empty set
-                addToReparse(project, cuStartFiles, new HashSet<CsmFile>(0), false);
+                addToReparse(changedFileProject, cuStartFiles, new HashSet<CsmFile>(0), false);
             }
         } else {
             if (scheduleParsing) {
-                ParserQueue.instance().add(fileImpl, project.getPreprocHandlers(fileImpl.getAbsolutePath()), ParserQueue.Position.HEAD);
+                ParserQueue.instance().add(changedFile, changedFileProject.getPreprocHandlers(changedFile), ParserQueue.Position.HEAD);
             }
         }
     }
@@ -146,7 +207,7 @@ public final class DeepReparsingUtils {
                 coherence.addAll(project.getGraph().getCoherenceFiles(fileImpl).getCoherenceFilesUids());
             } else {
                 if (scheduleParsing) {
-                    ParserQueue.instance().add(fileImpl, project.getPreprocHandlers(fileImpl.getAbsolutePath()), ParserQueue.Position.HEAD);
+                    ParserQueue.instance().add(fileImpl, project.getPreprocHandlers(fileImpl), ParserQueue.Position.HEAD);
                 }
             }
         }
@@ -197,57 +258,63 @@ public final class DeepReparsingUtils {
     /**
      * Reparse including/included files at file properties changed.
      */
-    public static void reparseOnPropertyChanged(Collection<NativeFileItem> items, ProjectBase project) {
+    public static void reparseOnPropertyChanged(Collection<NativeFileItem> items, ProjectBase changedProject, boolean invalidateLibs) {
         if (TRACE) {
-            LOG.log(Level.INFO, "reparseOnPropertyChanged {0}", toString(items));
+            LOG.log(Level.INFO, "reparseOnPropertyChanged {0}{1}", new Object[] {invalidateLibs ? "With Invalidating Libs " : "", toString(items)});
         }        
         try {
-            ParserQueue.instance().onStartAddingProjectFiles(project);
+            ParserQueue.instance().onStartAddingProjectFiles(changedProject);
             Map<FileImpl, NativeFileItem> pairs = new HashMap<FileImpl, NativeFileItem>();
-            Set<CsmFile> top = new HashSet<CsmFile>();
+            Set<CsmFile> cuStartFiles = new HashSet<CsmFile>();
             Set<CsmFile> coherence = new HashSet<CsmFile>();
-            Set<CsmFile> coherenceLibrary = new HashSet<CsmFile>();
+            Set<CsmFile> coherenceLibrariesFiles = new HashSet<CsmFile>();
             for (NativeFileItem item : items) {
                 if (Utils.acceptNativeItem(item)) {
-                    FileImpl file = project.getFile(item.getAbsolutePath(), false);
+                    FileImpl file = changedProject.getFile(item.getAbsolutePath(), false);
                     if (file != null) {
                         file.clearStateCache();
                         pairs.put(file, item);
-                        top.addAll(project.getGraph().getTopParentFiles(file).getCompilationUnits());
-                        coherence.addAll(project.getGraph().getIncludedFiles(file));
+                        cuStartFiles.addAll(changedProject.getGraph().getTopParentFiles(file).getCompilationUnits());
+                        coherence.addAll(changedProject.getGraph().getIncludedFiles(file));
                     }
                 }
             }
-            updateStartFilesWithBestStartFiles(coherence, top);
-            for (CsmFile parent : coherence) {
-                if (!top.contains(parent)) {
-                    CsmProject parentPoject = parent.getProject();
-                    if (project.equals(parentPoject)) {
-                        invalidateFileAndPreprocState(project, parent);
+            updateStartFilesWithBestStartFiles(coherence, cuStartFiles);
+            for (CsmFile file : coherence) {
+                if (!cuStartFiles.contains(file)) {
+                    if (changedProject.equals(file.getProject())) {
+                        invalidateFileAndPreprocState(changedProject, file);
                     } else {
-                        coherenceLibrary.add(parent);
+                        coherenceLibrariesFiles.add(file);
                     }
                 }
             }
             if (!TraceFlags.DEEP_REPARSING_OPTIMISTIC) {
-                gatherCoherenceLibrary(coherenceLibrary);
-                invalidateFileAndPreprocState(coherenceLibrary);
+                gatherCoherenceLibrary(coherenceLibrariesFiles);
+                invalidateFileAndPreprocState(coherenceLibrariesFiles);
             }
-            for (CsmFile parent : top) {
-                if (parent.getProject() == project) {
-                    FileImpl parentImpl = (FileImpl) parent;
-                    if (pairs.containsKey(parentImpl)) {
-                        NativeFileItem item = pairs.get(parentImpl);
-                        addToReparse(project, item, parentImpl);
-                    } else {
-                        addToReparse(project, parentImpl, true);
-                    }
+            for (CsmFile parent : cuStartFiles) {
+                FileImpl parentImpl = (FileImpl) parent;
+                if (pairs.containsKey(parentImpl)) {
+                    NativeFileItem item = pairs.get(parentImpl);
+                    addToReparse(changedProject, item, parentImpl);
+                } else {
+                    addCompilationUnitToReparse(parentImpl, true);
                 }
+            }
+            if (invalidateLibs) {
+                if (TRACE) {
+                    LOG.log(Level.INFO, "reparseOnPropertyChanged invalidates all libraries for {0}", changedProject);
+                }
+                // invalide libraries when asked but after deep reparsing activity
+                // because this activity uses information about project dependency and library dependencies
+                assert (changedProject instanceof ProjectImpl): "should be ProjectImpl: " + changedProject;
+                LibraryManager.getInstance().onProjectPropertyChanged(changedProject);
             }
         } catch (Exception e) {
             DiagnosticExceptoins.register(e);
         } finally {
-            ParserQueue.instance().onEndAddingProjectFiles(project);
+            ParserQueue.instance().onEndAddingProjectFiles(changedProject);
         }
     }
 
@@ -323,37 +390,38 @@ public final class DeepReparsingUtils {
         addToReparse(project, topParents, coherence, false);
     }
 
-    private static void addToReparse(final ProjectBase project, final Set<CsmFile> topParents, final Set<CsmFile> coherence, boolean invalidateCache) {
+    private static void addToReparse(final ProjectBase changedFileProject, final Set<CsmFile> cuStartFiles, final Set<CsmFile> coherence, boolean invalidateCache) {
         for (CsmFile incl : coherence) {
-            if (!topParents.contains(incl)) {
-                invalidateFileAndPreprocState(project, incl);
+            if (!cuStartFiles.contains(incl)) {
+                if (incl.getProject() == changedFileProject) {
+                    invalidateFileAndPreprocState(changedFileProject, incl);
+                }
             }
         }
-        if (!topParents.isEmpty()) {
+        if (!cuStartFiles.isEmpty()) {
             try {
                 // send notifications
-                ParserQueue.instance().onStartAddingProjectFiles(project);
-                for (CsmFile parent : topParents) {
-                    if (parent.getProject() == project) {
-                        FileImpl parentImpl = (FileImpl) parent;
-                        addToReparse(project, parentImpl, invalidateCache);
-                    }
+                ParserQueue.instance().onStartAddingProjectFiles(changedFileProject);
+                for (CsmFile parent : cuStartFiles) {
+                    FileImpl parentImpl = (FileImpl) parent;
+                    addCompilationUnitToReparse(parentImpl, invalidateCache);
                 }
             } catch (Exception e) {
                 DiagnosticExceptoins.register(e);
             } finally {
                 // send notifications
-                ParserQueue.instance().onEndAddingProjectFiles(project);
+                ParserQueue.instance().onEndAddingProjectFiles(changedFileProject);
             }
         }
     }
 
-    private static void addToReparse(final ProjectBase project, final FileImpl parentImpl, final boolean invalidateCache) {
-        project.invalidatePreprocState(parentImpl.getAbsolutePath());
-        parentImpl.markReparseNeeded(invalidateCache);
-        ParserQueue.instance().add(parentImpl, project.getPreprocHandlers(parentImpl.getAbsolutePath()), ParserQueue.Position.HEAD);
+    private static void addCompilationUnitToReparse(final FileImpl fileImpl, final boolean invalidateCache) {
+        ProjectBase project = fileImpl.getProjectImpl(true);
+        project.invalidatePreprocState(fileImpl.getAbsolutePath());
+        fileImpl.markReparseNeeded(invalidateCache);
+        ParserQueue.instance().add(fileImpl, fileImpl.getPreprocHandlers(), ParserQueue.Position.HEAD);
         if (TraceFlags.USE_DEEP_REPARSING_TRACE) {
-            System.out.println("Add file to reparse " + parentImpl.getAbsolutePath()); // NOI18N
+            System.out.println("Add file to reparse " + fileImpl.getAbsolutePath()); // NOI18N
         }
     }
 
@@ -370,14 +438,19 @@ public final class DeepReparsingUtils {
         }
     }
 
-    private static void invalidateFileAndPreprocState(final ProjectBase project, final CsmFile parent) {
-        if (parent.getProject() == project) {
-            FileImpl parentImpl = (FileImpl) parent;
-            parentImpl.clearStateCache();
-            project.invalidatePreprocState(parentImpl.getAbsolutePath());
-            parentImpl.markReparseNeeded(false);
+    private static void invalidateFileAndPreprocState(final ProjectBase changedFileProject, final CsmFile file) {
+        FileImpl fileImpl = (FileImpl) file;
+        ProjectBase fileProject = fileImpl.getProjectImpl(true);
+        if (changedFileProject != null && changedFileProject != fileProject) {
+            // optimization....
+            return;
+        }
+        if (fileProject != null) {
+            fileImpl.clearStateCache();
+            fileProject.invalidatePreprocState(fileImpl.getAbsolutePath());
+            fileImpl.markReparseNeeded(false);
             if (TraceFlags.USE_DEEP_REPARSING_TRACE) {
-                System.out.println("Invalidate file to reparse " + parent.getAbsolutePath()); // NOI18N
+                System.out.println("Invalidate file to reparse " + file.getAbsolutePath()); // NOI18N
             }
         }
     }

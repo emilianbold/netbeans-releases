@@ -361,11 +361,8 @@ private void bypassRefactoringCheckBoxItemStateChanged(java.awt.event.ItemEvent 
             project = (Project) projectsComboBox.getSelectedItem();
             updateRoots();
             updatePackages();
-        } else 
-        if ( rootComboBox == e.getSource() ) {            
+        } else if ( rootComboBox == e.getSource() ) {            
             updatePackages();
-        }
-        else if ( packageComboBox == e.getSource() ) {
         }
     }    
     
@@ -405,6 +402,14 @@ private void bypassRefactoringCheckBoxItemStateChanged(java.awt.event.ItemEvent 
 
     public boolean isRefactoringBypassRequired() {
         return bypassRefactoringCheckBox.isVisible() && bypassRefactoringCheckBox.isSelected();
+    }
+
+    public void setRefactoringBypassRequired(boolean needsByPass) {
+        if(needsByPass) {
+            bypassRefactoringCheckBox.setVisible(true);
+        }
+        bypassRefactoringCheckBox.setSelected(needsByPass);
+        bypassRefactoringCheckBox.setEnabled(!needsByPass);
     }
     
     private void updateRoots() {

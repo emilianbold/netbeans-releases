@@ -72,6 +72,7 @@ import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource;
@@ -79,6 +80,7 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.java.source.support.ReferencesCount;
 import org.netbeans.api.java.source.ui.ElementIcons;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.java.editor.semantic.SemanticHighlighter;
@@ -275,6 +277,8 @@ public class JavaFixAllImports {
         int size = notFilteredCandidates.size();
         ImportData data = new ImportData(size);
 
+        ReferencesCount referencesCount = ReferencesCount.get(info.getClasspathInfo());
+        
         int index = 0;
 
         boolean shouldShowImportsPanel = false;
@@ -297,7 +301,7 @@ public class JavaFixAllImports {
                 for (TypeElement e : filteredVars) {
                     data.variants[index][++i] = e.getQualifiedName().toString();
                     data.icons[index][i] = ElementIcons.getElementIcon(e.getKind(), e.getModifiers());
-                    int level = Utilities.getImportanceLevel(data.variants[index][i]);
+                    int level = Utilities.getImportanceLevel(referencesCount, ElementHandle.create(e));
                     if (level < minImportanceLevel) {
                         data.defaults[index] = data.variants[index][i];
                         minImportanceLevel = level;
@@ -317,7 +321,7 @@ public class JavaFixAllImports {
 
                     data.variants[index][++i] = dn;
                     data.icons[index][i] = ElementIcons.getElementIcon(e.getKind(), e.getModifiers());
-                    int level = Utilities.getImportanceLevel(fqn);
+                    int level = Utilities.getImportanceLevel(referencesCount, ElementHandle.create(e));
                     if (level < minImportanceLevel) {
                         data.defaults[index] = data.variants[index][i];
                         minImportanceLevel = level;

@@ -53,6 +53,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
+import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTDefine;
 import org.netbeans.modules.cnd.apt.structure.APTError;
@@ -71,6 +72,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.IncludeImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.MacroImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ErrorDirectiveImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.SimpleOffsetableImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
@@ -92,23 +94,28 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
 
         void onStoppedDirective(APT apt);
     }
-    private boolean createMacroAndIncludes;
+    private FileContent fileContent;
     private final boolean triggerParsingActivity;
     private final EvalCallback evalCallback;
+    private static final EvalCallback EMPTY_EVAL_CALLBACK = new EvalCallback() {
+        @Override
+        public void onEval(APT apt, boolean result) { }
+        @Override
+        public void onStoppedDirective(APT apt) { }
+    };
 
     public APTParseFileWalker(ProjectBase base, APTFile apt, FileImpl file, APTPreprocHandler preprocHandler, boolean triggerParsingActivity, EvalCallback evalCallback, APTFileCacheEntry cacheEntry) {
         super(base, apt, file, preprocHandler, cacheEntry);
-        this.createMacroAndIncludes = false;
-        this.evalCallback = evalCallback;
+        this.evalCallback = evalCallback != null ? evalCallback : EMPTY_EVAL_CALLBACK;
         this.triggerParsingActivity = triggerParsingActivity;
     }
 
-    public void addMacroAndIncludes(boolean create) {
-        this.createMacroAndIncludes = create;
+    public void setFileContent(FileContent content) {
+        this.fileContent = content;
     }
 
     protected boolean needMacroAndIncludes() {
-        return this.createMacroAndIncludes;
+        return this.fileContent != null;
     }
 
     public final boolean isTriggerParsingActivity() {
@@ -117,7 +124,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
 
     @Override
     protected boolean needPPTokens() {
-        return true;
+        return APTTraceFlags.INCLUDE_TOKENS_IN_TOKEN_STREAM;
     }
 
     public TokenStream getFilteredTokenStream(APTLanguageFilter lang) {
@@ -134,7 +141,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
         // get original
         TokenStream ts = super.getTokenStream();
         // expand macros
-        ts = new APTMacroExpandedStream(ts, getMacroMap());
+        ts = new APTMacroExpandedStream(ts, getMacroMap(), !filtered);
         if (filtered) {
             // remove comments
             ts = new APTCommentsFilter(ts);
@@ -148,7 +155,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
         if (needMacroAndIncludes()) {
             MacroImpl macro = createMacro((APTDefine) apt);
             if (macro != null) {
-                getFile().addMacro(macro);
+                this.fileContent.addMacro(macro);
             }
         }
     }
@@ -157,10 +164,8 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
     protected void onErrorNode(APT apt) {
         super.onErrorNode(apt);
         if (needMacroAndIncludes()) {
-            getFile().addError(createError((APTError)apt));
-            if (evalCallback != null) {
-                evalCallback.onStoppedDirective(apt);
-            }
+            this.fileContent.addError(createError((APTError)apt));
+            evalCallback.onStoppedDirective(apt);
         }
     }
 
@@ -168,9 +173,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
     protected void onPragmaNode(APT apt) {
         super.onPragmaNode(apt);
         if (isStopped()) {
-            if (evalCallback != null) {
-                evalCallback.onStoppedDirective(apt);
-            }
+            evalCallback.onStoppedDirective(apt);
         }
     }
 
@@ -179,7 +182,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
     @Override
     protected void postInclude(APTInclude apt, FileImpl included, IncludeState pushIncludeState) {
         if (needMacroAndIncludes()) {
-            getFile().addInclude(createInclude(apt, included, pushIncludeState == IncludeState.Recursive), pushIncludeState != IncludeState.Success);
+            this.fileContent.addInclude(createInclude(apt, included, pushIncludeState == IncludeState.Recursive), pushIncludeState != IncludeState.Success);
         }
     }
 
@@ -193,7 +196,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
         try {
             return inclFileOwner.onFileIncluded(getStartProject(), inclPath, getPreprocHandler(), postIncludeState, mode, isTriggerParsingActivity());
         } catch (NullPointerException ex) {
-            APTUtils.LOG.log(Level.SEVERE, "NPE when processing file", ex);// NOI18N
+            APTUtils.LOG.log(Level.SEVERE, "NPE when processing file " + inclPath, ex);// NOI18N
             DiagnosticExceptoins.register(ex);
         } finally {
             getIncludeHandler().popInclude();
@@ -285,8 +288,6 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
 
     @Override
     protected void onEval(APT apt, boolean result) {
-        if (evalCallback != null) {
-            evalCallback.onEval(apt, result);
-        }
+        evalCallback.onEval(apt, result);
     }
 }

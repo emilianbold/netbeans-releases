@@ -50,8 +50,16 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.services.CsmStandaloneFileProvider;
 import org.netbeans.modules.cnd.api.model.util.CsmTracer;
+import org.netbeans.modules.cnd.api.project.NativeFileItem;
+import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
+import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.debug.CndDiagnosticProvider;
+import org.netbeans.modules.cnd.modelimpl.content.file.ReferencesIndex;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
+import org.netbeans.modules.cnd.utils.FSPath;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -77,7 +85,7 @@ public final class CodeModelDiagnostic {
                 if (sap instanceof CsmStandaloneFileProviderImpl) {
                     ((CsmStandaloneFileProviderImpl) sap).dumpInfo(printOut);
                 } else {
-                    printOut.printf("UKNOWN FOR ME [%s] %s\n", sap.getClass().getName(), sap.toString());// NOI18N 
+                    printOut.printf("UNKNOWN FOR ME [%s] %s\n", sap.getClass().getName(), sap.toString());// NOI18N
                 }
             }
         }
@@ -101,8 +109,52 @@ public final class CodeModelDiagnostic {
                 } else if (csmFile instanceof FileSnapshot) {
                     ((FileSnapshot) csmFile).dumpInfo(printOut);
                 } else {
-                    printOut.printf("UKNOWN FOR ME [%s] %s\n", csmFile.getClass().getName(), csmFile.toString());// NOI18N 
+                    printOut.printf("UNKNOWN FOR ME [%s] %s\n", csmFile.getClass().getName(), csmFile.toString());// NOI18N
                 }
+            }
+            DataObject dob = context.lookup(DataObject.class);
+            if (dob != null) {
+                NativeFileItemSet nfis = dob.getLookup().lookup(NativeFileItemSet.class);
+                if (nfis != null) {
+                    printOut.printf("NativeFileItemSet has %d elements\n", nfis.getItems().size());// NOI18N 
+                    int ind = 0;
+                    for (NativeFileItem item : nfis.getItems()) {
+                        printOut.printf("[%d] NativeFileItem %s of class %s\n", ++ind, item.getAbsolutePath(), item.getClass().getName());// NOI18N 
+                        NativeProject nativeProject = item.getNativeProject();
+                        printOut.printf(" from project %s [%s]\n", nativeProject.getProjectDisplayName(), nativeProject.getProjectRoot());// NOI18N 
+                        printOut.printf("\tLang=%s Flavor=%s excluded=%s\n", item.getLanguage(), item.getLanguageFlavor(), item.isExcluded());// NOI18N 
+                        printOut.print("\tUser Include Paths:\n");// NOI18N 
+                        for (FSPath path : item.getUserIncludePaths()) {
+                            String msg = CndFileUtils.isLocalFileSystem(path.getFileSystem()) ? path.getPath() : path.getURL().toString();
+                            FileObject valid = path.getFileObject();
+                            if (valid != null && !valid.isValid()) {
+                                valid = null;
+                            } 
+                            printOut.printf("\t\t%s%s\n", msg, valid == null ? "[invalid]" : "");// NOI18N 
+                        }
+                        printOut.print("\tUser Macros:\n");// NOI18N 
+                        for (String macro : item.getUserMacroDefinitions()) {
+                            printOut.printf("\t\t%s\n", macro);// NOI18N 
+                        }
+                        printOut.print("\tSystem Include Paths:\n");// NOI18N 
+                        for (FSPath path : item.getSystemIncludePaths()) {
+                            String msg = CndFileUtils.isLocalFileSystem(path.getFileSystem()) ? path.getPath() : path.getURL().toString();
+                            FileObject valid = path.getFileObject();
+                            if (valid != null && !valid.isValid()) {
+                                valid = null;
+                            }
+                            printOut.printf("\t\t%s%s\n", msg, valid == null ? "[invalid]" : "");// NOI18N 
+                        }
+                        printOut.print("\tSystem Macros:\n");// NOI18N 
+                        for (String macro : item.getSystemMacroDefinitions()) {
+                            printOut.printf("\t\t%s\n", macro);// NOI18N 
+                        }
+                    }
+                } else {
+                    printOut.printf("no NativeFileItemSet in %s\n", dob);// NOI18N 
+                }
+            } else {
+                printOut.printf("no file object in lookup\n");// NOI18N 
             }
         }
     }
@@ -123,12 +175,34 @@ public final class CodeModelDiagnostic {
                 if (csmFile instanceof FileImpl) {
                     ((FileImpl) csmFile).dumpPPStates(printOut);
                 } else {
-                    printOut.printf("UKNOWN FOR ME [%s] %s\n", csmFile.getClass().getName(), csmFile.toString());// NOI18N 
+                    printOut.printf("UNKNOWN FOR ME [%s] %s\n", csmFile.getClass().getName(), csmFile.toString());// NOI18N
                 }
             }
         }
     }
-      
+
+    @ServiceProvider(service = CndDiagnosticProvider.class, position = 1250)
+    public final static class IncludePPStatesTrace implements CndDiagnosticProvider {
+
+        @Override
+        public String getDisplayName() {
+            return "Included Preprocessor States";// NOI18N
+        }
+
+        @Override
+        public void dumpInfo(Lookup context, PrintWriter printOut) {
+            printOut.printf("====Files info:\nGlobal ParseCount=%d\n", FileImpl.getLongParseCount());// NOI18N
+            Collection<? extends CsmFile> allFiles = context.lookupAll(CsmFile.class);
+            for (CsmFile csmFile : allFiles) {
+                if (csmFile instanceof FileImpl) {
+                    ((FileImpl) csmFile).dumpIncludePPStates(printOut);
+                } else {
+                    printOut.printf("UNKOWN FOR ME [%s] %s\n", csmFile.getClass().getName(), csmFile.toString());// NOI18N
+                }
+            }
+        }
+    }
+
     @ServiceProvider(service = CndDiagnosticProvider.class, position = 1300)
     public final static class ModelProjectsTrace implements CndDiagnosticProvider {
 
@@ -196,7 +270,7 @@ public final class CodeModelDiagnostic {
                 } else if (csmFile instanceof FileSnapshot) {
                     ((FileSnapshot) csmFile).dumpIndex(printOut);
                 } else {
-                    printOut.printf("UKNOWN FOR ME [%s] %s\n", csmFile.getClass().getName(), csmFile.toString());// NOI18N 
+                    printOut.printf("UNKNOWN FOR ME [%s] %s\n", csmFile.getClass().getName(), csmFile.toString());// NOI18N
                 }
             }
         }
@@ -262,7 +336,7 @@ public final class CodeModelDiagnostic {
             PrintStream ps = CsmTracer.toPrintStream(printOut);
             for (CsmProject prj : projects) {
                 if (prj instanceof ProjectBase) {
-                    ((ProjectBase)prj).traceProjectContainers(ps);
+                    ProjectBase.dumpProjectContainers(ps, prj, false);
                 }
             }
         }

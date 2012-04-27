@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.subversion.notifications;
 
+import java.awt.EventQueue;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.util.Collection;
@@ -124,13 +125,13 @@ public class NotificationsManager {
      * @param file file to scan
      */
     public void scheduleFor(File file) {
-        if (isSeen(file) || !isUpToDate(file) || !isEnabled(file)) {
+        if (isSeen(file) || !isUpToDate(file) || !isEnabled(file, false)) {
             if (LOG.isLoggable(Level.FINER)) {
-                LOG.log(Level.FINER, "File {0} is {1} up to date, notifications enabled: {2}", new Object[]{file.getAbsolutePath(), isUpToDate(file) ? "" : "not ", isEnabled(file)}); //NOI18N
+                LOG.log(Level.FINER, "File {0} is {1} up to date, notifications enabled: {2}", new Object[]{file.getAbsolutePath(), isUpToDate(file) ? "" : "not ", isEnabled(file, false)}); //NOI18N
             }
             return;
         }
-        boolean refresh = false;
+        boolean refresh;
         // register the file for the scan
         synchronized (files) {
             int size = files.size();
@@ -177,19 +178,24 @@ public class NotificationsManager {
      * Notifications are enabled only for logged kenai users and unless disabled by a switch
      * @return
      */
-    private boolean isEnabled (File file) {
+    private boolean isEnabled (File file, boolean checkUrl) {
         if (enabled == null) {
             // let's leave a possibility to disable the notifications
             enabled = !"false".equals(System.getProperty("subversion.notificationsEnabled", "true")); //NOI18N
         }
         boolean retval = false;
         if (enabled.booleanValue()) {
-            SVNUrl url = null;
-            try {
-                url = SvnUtils.getRepositoryRootUrl(file);
-            } catch (SVNClientException ex) { }
-            if (url != null) {
-                retval = kenaiAccessor.isLogged(url.toString());
+            if (checkUrl) {
+                assert !EventQueue.isDispatchThread();
+                SVNUrl url = null;
+                try {
+                    url = SvnUtils.getRepositoryRootUrl(file);
+                } catch (SVNClientException ex) { }
+                if (url != null) {
+                    retval = kenaiAccessor.isLogged(url.toString());
+                }
+            } else {
+                retval = true;
             }
         }
         return retval;
@@ -219,6 +225,7 @@ public class NotificationsManager {
             }
             removeDirectories(filesToScan);
             removeSeenFiles(filesToScan);
+            removeNotEnabled(filesToScan);
             if (!filesToScan.isEmpty()) {
                 scanFiles(filesToScan);
             }
@@ -233,6 +240,18 @@ public class NotificationsManager {
             for (Iterator<File> it = filesToScan.iterator(); it.hasNext();) {
                 File file = it.next();
                 if (!file.isFile()) {
+                    it.remove();
+                }
+            }
+        }
+
+        private void removeNotEnabled (Collection<File> filesToScan) {
+            for (Iterator<File> it = filesToScan.iterator(); it.hasNext();) {
+                File file = it.next();
+                if (!isEnabled(file, true)) {
+                    if (LOG.isLoggable(Level.FINER)) {
+                        LOG.log(Level.FINER, "File {0} is probably not from kenai, notifications disabled", new Object[] { file.getAbsolutePath() } ); //NOI18N
+                    }
                     it.remove();
                 }
             }

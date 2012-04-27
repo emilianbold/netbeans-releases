@@ -53,13 +53,12 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenuItem;
 import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.modules.j2ee.ejbcore._RetoucheUtil;
+import org.netbeans.modules.j2ee.ejbcore.util._RetoucheUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.openide.util.RequestProcessor;
 import org.openide.util.actions.Presenter;
 
 /**
@@ -120,22 +119,16 @@ public abstract class AbstractAddMethodAction extends AbstractAction implements 
         final FileObject fileObject = activatedNodes[0].getLookup().lookup(FileObject.class);
 
             if (fileObject != null) {
-                RequestProcessor.getDefault().post(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        try {
-                            ElementHandle<TypeElement> elementHandle = _RetoucheUtil.getJavaClassFromNode(activatedNodes[0]);
-                            if (elementHandle != null) {
-                                if (strategy.supportsEjb(fileObject, elementHandle.getQualifiedName())) {
-                                    strategy.addMethod(fileObject, elementHandle.getQualifiedName());
-                                }
-                            }
-                        } catch (IOException ex) {
-                            Logger.getLogger(AbstractAddMethodAction.class.getName()).log(Level.WARNING, null, ex);
+                try {
+                    ElementHandle<TypeElement> elementHandle = _RetoucheUtil.getJavaClassFromNode(activatedNodes[0]);
+                    if (elementHandle != null) {
+                        if (strategy.supportsEjb(fileObject, elementHandle.getQualifiedName())) {
+                            strategy.addMethod(fileObject, elementHandle.getQualifiedName());
                         }
                     }
-                });
+                } catch (IOException ex) {
+                    Logger.getLogger(AbstractAddMethodAction.class.getName()).log(Level.WARNING, null, ex);
+                }
             }
     }
 

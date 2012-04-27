@@ -107,4 +107,21 @@ public final class EditorActionNames {
      */
     public static final String transposeLetters = "transpose-letters"; // NOI18N
 
+    /**
+     * Move entire code elements (statements and class members) up.
+     * @since 1.56
+     */
+    public static final String moveCodeElementUp = "move-code-element-up"; // NOI18N
+
+    /**
+     * Move entire code elements (statements and class members) down.
+     * @since 1.56
+     */
+    public static final String moveCodeElementDown = "move-code-element-down"; // NOI18N
+
+    /**
+     * Remove the enclosing parts of a nested statement.
+     * @since 1.57
+     */
+    public static final String removeSurroundingCode = "remove-surrounding-code"; // NOI18N
 }

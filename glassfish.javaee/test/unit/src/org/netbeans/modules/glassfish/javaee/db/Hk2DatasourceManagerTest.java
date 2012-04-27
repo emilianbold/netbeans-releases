@@ -97,7 +97,7 @@ public class Hk2DatasourceManagerTest {
         } catch (URISyntaxException x) {
             throw new Error(x);
         }
-        Set<Datasource> result = Hk2DatasourceManager.getDatasources(resourceDir,"sun-resources");
+        Set<Datasource> result = Hk2DatasourceManager.getDatasources(resourceDir);
 //        assertEquals(expResult, result);
         // TODO review the generated test code and remove the default call to fail.
         assert null != result : "null result";

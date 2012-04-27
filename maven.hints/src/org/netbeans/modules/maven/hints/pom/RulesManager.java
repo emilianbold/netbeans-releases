@@ -69,7 +69,7 @@ import org.openide.loaders.DataObject;
 public class RulesManager  {
 
     // The logger
-    public static Logger LOG = Logger.getLogger("org.netbeans.modules.maven.hints"); // NOI18N
+    public static final Logger LOG = Logger.getLogger("org.netbeans.modules.maven.hints"); // NOI18N
 
     // Extensions of files
     private static final String INSTANCE_EXT = ".instance";
@@ -170,7 +170,7 @@ public class RulesManager  {
     private static POMErrorFixBase instantiateRule( FileObject fileObject ) {
         try {
             DataObject dobj = DataObject.find(fileObject);
-            InstanceCookie ic = dobj.getCookie( InstanceCookie.class );
+            InstanceCookie ic = dobj.getLookup().lookup( InstanceCookie.class );
             Object instance = ic.instanceCreate();
             
             if (instance instanceof POMErrorFixBase) {

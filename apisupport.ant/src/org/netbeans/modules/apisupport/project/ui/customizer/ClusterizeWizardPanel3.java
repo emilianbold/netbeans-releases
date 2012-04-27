@@ -63,7 +63,7 @@ public class ClusterizeWizardPanel3 implements WizardDescriptor.Panel<Clusterize
 
     @Override
     public HelpCtx getHelp() {
-        return new HelpCtx(ClusterizeVisualPanel3.class);
+        return new HelpCtx("org.netbeans.modules.apisupport.project.ui.customizer.ClusterizeVisualPanel3");
     }
 
     @Override

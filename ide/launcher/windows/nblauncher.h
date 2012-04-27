@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -55,16 +55,23 @@ class NbLauncher {
 protected:
     static const char *NBEXEC_FILE_PATH;
     static const char *OPT_NB_DEFAULT_USER_DIR;
+    static const char *OPT_NB_DEFAULT_CACHE_DIR;
     static const char *OPT_NB_DEFAULT_OPTIONS;
     static const char *OPT_NB_EXTRA_CLUSTERS;
     static const char *OPT_NB_JDK_HOME;
     static const char *REG_SHELL_FOLDERS_KEY;
     static const char *HOME_TOKEN;
+    static const char *DEFAULT_USERDIR_ROOT_TOKEN;
+    static const char *DEFAULT_CACHEDIR_ROOT_TOKEN;
     static const char *CON_ATTACH_MSG;
+    static const char *NETBEANS_DIRECTORY;
+    static const char *NETBEANS_CACHES_DIRECTORY;
 
 private:
     static const char *ENV_USER_PROFILE;
     static const char *REG_DESKTOP_NAME;
+    static const char *REG_DEFAULT_USERDIR_ROOT;
+    static const char *REG_DEFAULT_CACHEDIR_ROOT;
     static const char* staticOptions[];
 
     typedef int (*StartPlatform)(int argc, char *argv[]);
@@ -82,8 +89,10 @@ protected:
     virtual bool areWeOn32bits();
     virtual void adjustHeapAndPermGenSize();
     virtual bool findUserDir(const char *str);
+    virtual bool findCacheDir(const char *str);
     virtual const char * getAppName();
     virtual const char * getDefUserDirOptName();
+    virtual const char * getDefCacheDirOptName();
     virtual const char * getDefOptionsOptName();
     virtual const char * getExtraClustersOptName();
     virtual const char * getJdkHomeOptName();
@@ -104,10 +113,16 @@ protected:
     std::string platformDir;
     std::string userHome;
     std::string userDir;
+    std::string cacheDir;
+    std::string defUserDirRoot;
+    std::string defCacheDirRoot;
     std::string clusters;
     std::string extraClusters;
     std::string nbOptions;
     std::string jdkHome;
+    
+private:
+    bool customUserDirFound;
 };
 
 #endif	/* _NBLAUNCHER_H */

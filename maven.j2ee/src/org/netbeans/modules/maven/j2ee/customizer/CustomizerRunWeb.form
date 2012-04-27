@@ -1,4 +1,4 @@
-<?xml version="1.1" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 
 <Form version="1.5" maxVersion="1.7" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <AuxValues>
@@ -23,42 +23,37 @@
                       <Component id="jCheckBoxDeployOnSave" min="-2" max="-2" attributes="0"/>
                       <EmptySpace pref="404" max="32767" attributes="0"/>
                   </Group>
-                  <Group type="102" alignment="1" attributes="0">
+                  <Component id="cbBrowser" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="lblHint1" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="lblRelativeUrl" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="1" attributes="0">
-                          <Component id="cbBrowser" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="lblHint1" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="lblRelativeUrl" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="1" attributes="0">
-                                  <Group type="102" attributes="0">
-                                      <Component id="lblHint2" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace pref="324" max="32767" attributes="0"/>
-                                  </Group>
-                                  <Component id="txtRelativeUrl" pref="431" max="32767" attributes="0"/>
-                              </Group>
+                          <Group type="102" attributes="0">
+                              <Component id="lblHint2" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace pref="324" max="32767" attributes="0"/>
                           </Group>
+                          <Component id="txtRelativeUrl" pref="431" max="32767" attributes="0"/>
+                      </Group>
+                  </Group>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="lblContextPath" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="lblJ2EEVersion" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="lblServer" alignment="0" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="comServer" alignment="1" pref="430" max="32767" attributes="0"/>
+                          <Component id="txtContextPath" alignment="0" pref="430" max="32767" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="lblContextPath" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="lblJ2EEVersion" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="lblServer" alignment="0" min="-2" max="-2" attributes="0"/>
-                              </Group>
+                              <Component id="txtJ2EEVersion" pref="189" max="32767" attributes="0"/>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="comServer" alignment="1" pref="430" max="32767" attributes="0"/>
-                                  <Component id="txtContextPath" alignment="0" pref="430" max="32767" attributes="0"/>
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <Component id="txtJ2EEVersion" pref="189" max="32767" attributes="0"/>
-                                      <EmptySpace min="-2" max="-2" attributes="0"/>
-                                      <Component id="lblProfile" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace min="-2" max="-2" attributes="0"/>
-                                      <Component id="comProfile" pref="199" max="32767" attributes="0"/>
-                                  </Group>
-                              </Group>
+                              <Component id="lblProfile" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" max="-2" attributes="0"/>
+                              <Component id="comProfile" pref="199" max="32767" attributes="0"/>
                           </Group>
                       </Group>
-                      <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
                   </Group>
               </Group>
           </Group>

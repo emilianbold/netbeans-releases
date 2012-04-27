@@ -244,11 +244,6 @@ made subject to such option by the copyright holder.
 </folder>
 
   <folder name="Actions">
-    <folder name="Build">
-      <file name="Set Request Parameters.instance">
-        <attr name="instanceClass" stringvalue="org.netbeans.modules.web.core.EditQueryStringAction"/>
-      </file>
-    </folder>
     <folder name="Edit">
         <file name="org-netbeans-modules-web-core-jsploader-EditServletAction.instance"/>
     </folder>
@@ -262,23 +257,6 @@ made subject to such option by the copyright holder.
             </file>
         </folder>
     </folder>
-
-  <folder name="Services">
-  <!--
-    <folder name="Hidden">
-	    <attr name="hidden" boolvalue="true" />
-	    <file name="org-netbeans-modules-web-core-resources-EntityCatalog.xml" url="entityCatalog.xml"/>
-    </folder>
-  -->
-    <!-- Recognize text/x-jsp -->
-    <folder name="MIMEResolver">
-      <file name="org-netbeans-modules-web-core-resources-mime-resolver.xml" url="jsp-mime-resolver.xml">
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
-        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/servletSettings.gif"/>
-        <attr name="position" intvalue="390"/>
-      </file>
-    </folder>
-  </folder>
 
 <!--  <folder name="J2EE">
     <folder name="JSPParser">
@@ -332,11 +310,7 @@ made subject to such option by the copyright holder.
         </folder>
   </folder>
     
-  <folder name="Shortcuts">
-    <file name="C-Q.shadow">
-        <attr name="originalFile" stringvalue="Actions/Build/Set Request Parameters.instance"/>
-    </file>
-  </folder>      
+        
 
     <folder name="Plugins">
       <!-- Register XML module catalog plugin -->

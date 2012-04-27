@@ -101,12 +101,49 @@ is the proper place.
     <!-- First, a list of API names you may use: -->
 <apidefs>
    <apidef name="tabcontrol">Tab Control APIs</apidef>
+   <apidef name="popupswitcher">Popup Switcher APIs</apidef>
    <!-- etc. -->
 </apidefs>
 
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+
+    <change id="documentswitcher">
+      <api name="popupswitcher"/>
+      <summary>Allow changes in SwitcherTable content.</summary>
+      <version major="1" minor="35"/>
+      <date day="22" month="2" year="2012"/>
+      <author login="saubrecht"/>
+      <compatibility addition="yes" binary="compatible" deprecation="no"/>
+      <description>
+        There's a new method <code>void setSwitcherItems(SwitcherTableItems[],int)</code> in
+        <code>SwitcherTable</code> class which allows to change the content of document switcher
+        popup.
+      </description>
+      <class package="org.netbeans.swing.popupswitcher" name="SwitcherTable"/>
+    </change>
+
+    <change id="busy_tabs">
+      <api name="tabcontrol"/>
+      <summary>Display notification that a tab is 'busy'.</summary>
+      <version major="1" minor="34"/>
+      <date day="14" month="2" year="2012"/>
+      <author login="saubrecht"/>
+      <compatibility addition="yes" binary="compatible" deprecation="no"/>
+      <description>
+        The look and feel for tabbed containers has been extended to support
+        notifications that a tab is 'busy', i.e. some lengthy process is being
+        run in it.<br/>
+        All supported look and feel implementations use an animated icon to indicate
+        the busy state.
+      </description>
+      <class package="org.netbeans.swing.tabcontrol.plaf" name="BusyTabsSupport"/>
+      <class package="org.netbeans.swing.tabcontrol" name="WinsysInfoForTabbedContainer"/>
+      <class package="org.netbeans.swing.tabcontrol" name="TabDisplayerUI"/>
+      <class package="org.netbeans.swing.tabcontrol.customtabs" name="Tabbed"/>
+      <issue number="208026"/>
+    </change>
 
     <change id="tabcontrol_factory">
       <api name="tabcontrol"/>

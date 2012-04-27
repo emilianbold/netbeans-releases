@@ -65,10 +65,6 @@ public class NbModuleSuiteClusterPathFinalTest extends NbTestCase {
         super(testName);
     }
 
-    protected @Override int timeOut() {
-        return 100000;
-    }
-    
     public void testClusterPathFinal() throws Exception{
         LinkedList<File> clusters = new LinkedList<File>();
         NbModuleSuite.S.findClusters(clusters, Collections.singletonList("ide"));

@@ -26,7 +26,7 @@ Microsystems, Inc. All Rights Reserved.
     <property name="appdir" value="${builddir}/app/${appname}.app"/>
     <property name="scriptsdir" value="${builddir}/scripts"/>
 
-    <target name="clean" depends="clean-servicetag">
+    <target name="clean">
         <delete dir="${builddir}"/>
     </target>
 
@@ -46,8 +46,9 @@ Microsystems, Inc. All Rights Reserved.
         </exec>
         
         <echo message="Delete launchers for another platforms"/>
-        <delete file="${appdir}/Contents/Resources/NetBeans/bin/nb.exe"/>
-        <delete file="${appdir}/Contents/Resources/NetBeans/bin/netbeans.exe"/>
+        <delete>
+            <fileset dir="${appdir}/Contents/Resources/NetBeans/bin" includes="*.exe"/>
+        </delete>
         
         <echo message="Copying the icon into the correct place" />
         <copy file="${appdir}/Contents/Resources/NetBeans/${nbClusterDir}/netbeans.icns" todir="${appdir}/Contents/Resources"/>
@@ -71,17 +72,7 @@ Microsystems, Inc. All Rights Reserved.
         </exec>
     </target>
     
-    <target name="build-servicetag" depends="clean-servicetag">
-        <ant dir="${basedir}/servicetag" target="jar"/>
-    </target>
-
-    <target name="clean-servicetag">
-        <ant dir="${basedir}/servicetag" target="clean"/>
-        <delete file="pkg/scripts/servicetag.jar"/>
-    </target>    
-    
-    
-    <target name="build-pkg" depends="init, build-app,build-servicetag">
+    <target name="build-pkg" depends="init, build-app">
         <echo file="${scriptsdir}/env.sh"><![CDATA[
 NETBEANS_INSTALL_DIR="${app.name}"
 NETBEANS_BUILDNUMBER="${buildnumber}"
@@ -91,6 +82,7 @@ TOMCAT_INSTALL_DIR="${tomcat.install.dir}"
 NB_CLUSTER_DIR="${nbClusterDir}"
 GLASSFISH_V3_INSTALL_DIR="${glassfish.v3.install.dir}"
 MYSQL_INSTALL_DIR="${mysql.install.dir}"
+DEFAULT_JDK7_HOME="${default.jdk7.home}"
 NB_ID="${nb.id}"
 GLASSFISHV3_ID="${glassfish.v3.id}"
 TOMCAT_ID="${tomcat.id}"
@@ -118,9 +110,9 @@ SJSAS_ID="${sjsas.id}"
         <!--copy file="${basedir}/servicetag/dist/servicetag.jar"   tofile="${scriptsdir}/servicetag.jar"/-->
 
 
-        <copy  todir="${scriptsdir}">
+        <copy todir="${scriptsdir}" verbose="yes">
             <fileset dir="${basedir}/pkg/scripts"/>
-        </copy>       
+        </copy>             
         <copy file="${basedir}/../../commonfiles/Description.plist" filtering="true" overwrite="true" tofile="${builddir}/Description.plist">
             <filterset>
                 <filter token="TITLE" value="${netbeans-Title}"/>

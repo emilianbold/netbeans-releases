@@ -67,6 +67,10 @@ public class ModuleLifecycleManager extends LifecycleManager {
 
     private final AtomicBoolean exiting = new AtomicBoolean(false);
     public void exit() {
+        exit(0);
+    }
+    
+    public void exit(int status) {
         if (exiting.getAndSet(true)) {
             return;
         }
@@ -90,7 +94,7 @@ public class ModuleLifecycleManager extends LifecycleManager {
                 Exceptions.printStackTrace(t);
             }
             if (System.getProperty("netbeans.close.no.exit") == null) {
-                TopSecurityManager.exit(0);
+                TopSecurityManager.exit(status);
             }
         }
     }

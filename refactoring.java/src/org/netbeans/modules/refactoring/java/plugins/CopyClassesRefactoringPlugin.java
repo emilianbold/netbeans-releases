@@ -123,7 +123,8 @@ public class CopyClassesRefactoringPlugin extends JavaRefactoringPlugin {
         Problem p = null;
         for (FileObject fileObject : sources) {
             if (fo.getFileObject(fileObject.getName(), fileObject.getExt()) != null) {
-                p = createProblem(p, true, new MessageFormat(NbBundle.getMessage(CopyClassesRefactoringPlugin.class, "ERR_ClassToCopyClashes")).format(new Object[]{fileObject.getName()}));
+                p = createProblem(p, false, NbBundle.getMessage(CopyClassesRefactoringPlugin.class, "ERR_ClassesToCopyClashes"));
+                break;
             }
         }
         return p;
@@ -137,6 +138,7 @@ public class CopyClassesRefactoringPlugin extends JavaRefactoringPlugin {
     @Override
     public Problem preCheck() {
         cancelRequest = false;
+        cancelRequested.set(false);
         return null;
     }
 
@@ -190,7 +192,8 @@ public class CopyClassesRefactoringPlugin extends JavaRefactoringPlugin {
                 FileObject[] fileObjects = refactoring.getContext().lookup(FileObject[].class);
                 FileObject newOne = null;
                 for (FileObject fileObject : fileObjects) {
-                    if(source.getNameExt().equals(fileObject.getNameExt())) {
+                    String orig = (String) fileObject.getAttribute("originalFile"); //NOI18N
+                    if(source.getNameExt().equals(orig)) {
                         newOne = fileObject;
                         break;
                     }
@@ -249,8 +252,17 @@ public class CopyClassesRefactoringPlugin extends JavaRefactoringPlugin {
                 ErrorManager.getDefault().log(ErrorManager.ERROR, "compiler.getCompilationUnit() is null " + compiler); // NOI18N
                 return;
             }
-
-            CopyTransformer findVisitor = new CopyTransformer(compiler, oldName, oldName, insertImport, oldPackage);
+            FileObject file = compiler.getFileObject();
+            FileObject folder = file.getParent();
+            
+            final String newName;
+            if(folder.getFileObject(oldName, file.getExt()) != null) {
+                newName = file.getName();
+            } else {
+                newName = oldName;
+            }
+            
+            CopyTransformer findVisitor = new CopyTransformer(compiler, oldName, newName, insertImport, oldPackage);
             findVisitor.scan(compiler.getCompilationUnit(), null);
         }
     }

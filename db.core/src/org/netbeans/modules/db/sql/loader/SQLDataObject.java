@@ -47,6 +47,7 @@ package org.netbeans.modules.db.sql.loader;
 import java.io.IOException;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
@@ -58,6 +59,12 @@ import org.openide.nodes.Node;
  *
  * @author Andrei Badea, John Baker
  */
+@MIMEResolver.ExtensionRegistration(
+    mimeType="text/x-sql",
+    position=196,
+    displayName="#SQLResolver",
+    extension={ "sql" }
+)
 public class SQLDataObject extends MultiDataObject {
 
     public SQLDataObject(FileObject primaryFile, MultiFileLoader loader) throws DataObjectExistsException {

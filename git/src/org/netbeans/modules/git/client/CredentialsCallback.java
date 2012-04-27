@@ -63,7 +63,19 @@ public class CredentialsCallback extends GitClientCallback {
     
     @Override
     public String askQuestion (String uri, String prompt) {
-        return null;
+        String retval;
+        if (prompt.toLowerCase().startsWith("password:")) { //NOI18N
+            char[] pwd = getPassword(uri, prompt);
+            retval = pwd == null ? null : String.valueOf(pwd);
+            Arrays.fill(pwd, (char) 0);
+        } else {
+            NotifyDescriptor.InputLine desc = new NotifyDescriptor.InputLine(prompt, 
+                    NbBundle.getMessage(CredentialsCallback.class, "LBL_CredentialsCallback.question.title", uri) //NOI18N
+            );
+            Object dlgResult = DialogDisplayer.getDefault().notify(desc);
+            retval = NotifyDescriptor.OK_OPTION == dlgResult ? desc.getInputText() : null;
+        }
+        return retval;
     }
 
     @Override

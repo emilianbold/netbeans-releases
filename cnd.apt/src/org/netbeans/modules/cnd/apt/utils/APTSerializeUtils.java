@@ -295,7 +295,6 @@ public class APTSerializeUtils {
 
     public static void writeStringToMacroMap(Map<CharSequence, APTMacro> macros, RepositoryDataOutput output) throws IOException {
         assert macros != null;
-        output.writeInt(macros.size());
         for (Entry<CharSequence, APTMacro> entry : macros.entrySet()) {
             assert entry != null;
             assert CharSequences.isCompact(entry.getKey());
@@ -317,7 +316,7 @@ public class APTSerializeUtils {
         }
     }
     
-    private static void writeMacro(APTMacro macro, RepositoryDataOutput output) throws IOException {
+    public static void writeMacro(APTMacro macro, RepositoryDataOutput output) throws IOException {
         assert macro != null;
         if (macro == APTMacroMapSnapshot.UNDEFINED_MACRO) {
             output.writeInt(UNDEFINED_MACRO);
@@ -327,7 +326,7 @@ public class APTSerializeUtils {
         }
     }
     
-    private static APTMacro readMacro(RepositoryDataInput input) throws IOException {
+    public static APTMacro readMacro(RepositoryDataInput input) throws IOException {
         int handler = input.readInt();
         APTMacro macro;
         if (handler == UNDEFINED_MACRO) {

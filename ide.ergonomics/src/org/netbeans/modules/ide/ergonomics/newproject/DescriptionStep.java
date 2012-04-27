@@ -68,7 +68,7 @@ import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.ide.ergonomics.ServerWizardProviderProxy;
 import org.netbeans.modules.ide.ergonomics.fod.ConfigurationPanel;
-import org.netbeans.modules.ide.ergonomics.fod.FoDFileSystem;
+import org.netbeans.modules.ide.ergonomics.fod.FoDLayersProvider;
 import org.netbeans.modules.ide.ergonomics.fod.FeatureInfo;
 import org.netbeans.modules.ide.ergonomics.fod.FeatureManager;
 import org.netbeans.spi.server.ServerWizardProvider;
@@ -84,10 +84,11 @@ import org.openide.loaders.TemplateWizard;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
-public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor> {
+public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>, Runnable {
 
     private ContentPanel panel;
     private ProgressHandle handle = null;
@@ -109,7 +110,7 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
             configPanel = new ConfigurationPanel(new Callable<JComponent>() {
                 @Override
                 public JComponent call() throws Exception {
-                    FoDFileSystem.getInstance().refresh();
+                    FoDLayersProvider.getInstance().refreshForce();
                     waitForDelegateWizard();
                     return new JLabel(" ");
                 }
@@ -137,11 +138,16 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
     }
 
     private void fireChange () {
-        ChangeEvent e = new ChangeEvent (this);
-        List<ChangeListener> templist;
+        Mutex.EVENT.readAccess(this);
+    }
+    
+    @Override
+    public void run() {
+        final List<ChangeListener> templist;
         synchronized (this) {
             templist = new ArrayList<ChangeListener> (listeners);
         }
+        ChangeEvent e = new ChangeEvent (DescriptionStep.this);
         for (ChangeListener l : templist) {
             l.stateChanged (e);
         }
@@ -182,7 +188,7 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
             forEnable = elems;
             fireChange ();
         } else {
-            FoDFileSystem.getInstance().refresh();
+            FoDLayersProvider.getInstance().refreshForce();
             waitForDelegateWizard ();
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
@@ -207,7 +213,7 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
         Object o = settings.getProperty (FeatureOnDemandWizardIterator.CHOSEN_TEMPLATE);
         assert o != null && o instanceof FileObject : o + " is not null and instanceof FileObject.";
         FileObject fileObject = (FileObject) o;
-        info = FoDFileSystem.getInstance ().whichProvides(fileObject);
+        info = FoDLayersProvider.getInstance ().whichProvides(fileObject);
         assert info != null : "No info for " + fileObject;
         finder = new FindComponentModules(info);
     }
@@ -228,8 +234,11 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
         WizardDescriptor.InstantiatingIterator<?> iterator = null;
         int i = 0;
         while (fo == null || iterator == null) {
-            FoDFileSystem.getInstance().refresh();
-            FoDFileSystem.getInstance().waitFinished();
+            try {
+                FoDLayersProvider.getInstance().refreshForce();
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
             // hot-fixed wizard providers - temporary
             if (templateResource.startsWith("Servers/WizardProvider")) {
                 try {
@@ -269,7 +278,7 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
             if (iterator instanceof FeatureOnDemandWizardIterator) {
                 Logger LOG = Logger.getLogger(DescriptionStep.class.getName());
                 LOG.warning(
-                    "There is still wrong interator " + // NOI18N
+                    "There is still wrong iterator " + // NOI18N
                     iterator.getClass().getName() +
                     " for file object " + fo // NOI18N
                 );
@@ -281,13 +290,13 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
                     boolean npe = false;
                     assert npe = true;
                     if (npe) {
-                        throw new NullPointerException("Send us the messages.log please!"); // NOI18N
+                        throw new NullPointerException("No iterator for " + fo); // NOI18N
                     }
                     return; // give up
                 }
                 LOG.info("Forcing refresh"); // NOI18N
                 // force refresh for the filesystem
-                FoDFileSystem.getInstance().refreshForce();
+                FoDLayersProvider.getInstance().refreshForce();
                 LOG.info("Done with refresh"); // NOI18N
 
                 FileObject fake = FileUtil.getConfigFile(templateResource);

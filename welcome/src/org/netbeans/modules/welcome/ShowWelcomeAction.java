@@ -44,24 +44,27 @@
 
 package org.netbeans.modules.welcome;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Set;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.CallableSystemAction;
+import org.openide.util.NbBundle.Messages;
 import org.openide.windows.TopComponent;
 
 /**
  * Show the welcome screen.
  * @author  Richard Gregor
  */
-public class ShowWelcomeAction extends CallableSystemAction {
+@ActionID(id = "org.netbeans.modules.welcome.ShowWelcomeAction", category = "Help")
+@ActionRegistration(displayName = "#LBL_Action", iconBase="org/netbeans/modules/welcome/resources/welcome.gif", iconInMenu=false)
+@ActionReference(path = "Menu/Help", name = "org-netbeans-modules-welcome-ShowWelcomeAction", position = 1400)
+@Messages("LBL_Action=Start &Page")
+public class ShowWelcomeAction implements ActionListener {
 
-    public ShowWelcomeAction() {
-        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
-    }
-
-    public void performAction() {
+    @Override public void actionPerformed(ActionEvent e) {
         WelcomeComponent topComp = null;
         Set<TopComponent> tcs = TopComponent.getRegistry().getOpened();
         for (TopComponent tc: tcs) {
@@ -78,19 +81,4 @@ public class ShowWelcomeAction extends CallableSystemAction {
         topComp.requestActive();
     }
     
-    public String getName() {
-        return NbBundle.getMessage(ShowWelcomeAction.class, "LBL_Action"); //NOI18N
-    }
-    
-    @Override protected String iconResource() {
-        return "org/netbeans/modules/welcome/resources/welcome.gif";  //NOI18N
-    }
-    
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-    
-    @Override protected boolean asynchronous(){
-        return false;
-    }
 }

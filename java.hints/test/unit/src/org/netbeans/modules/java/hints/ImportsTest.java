@@ -37,38 +37,42 @@
  */
 package org.netbeans.modules.java.hints;
 
-import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.hints.test.api.HintTest;
 
 /**
  *
  * @author lahvac
  */
-public class ImportsTest extends TestBase {
+public class ImportsTest extends NbTestCase {
 
     public ImportsTest(String name) {
-        super(name, Imports.class);
+        super(name);
     }
 
     public void testUnusedSimpleRemove() throws Exception {
-        performFixTest("test/Test.java",
-                       "package org.netbeans.modules.java.editor.semantic.data;\n" +
+        HintTest
+                .create()
+                .input("package test;\n" +
                        "import java.util.List;\n" +
                        "import java.util.ArrayList;\n" +
                        "import java.util.Collections;\n" +
-                       "public class SimpleRemoveImport {\n" +
+                       "public class Test {\n" +
                        "    public static void main(String[] args) {\n" +
                        "        List l = Collections.EMPTY_LIST;\n" +
                        "    }\n" +
-                       "}",
-                       "2:0-2:27:verifier:DN_Imports_UNUSED",
-                       "FixImpl",
-                       ("package org.netbeans.modules.java.editor.semantic.data;\n" +
-                       "import java.util.List;\n" +
-                       "import java.util.Collections;\n" +
-                       "public class SimpleRemoveImport {\n" +
-                       "    public static void main(String[] args) {\n" +
-                       "        List l = Collections.EMPTY_LIST;\n" +
-                       "    }\n" +
-                       "}").replaceAll("[ \t\n]+", " "));
+                       "}")
+                .run(Imports.class)
+                .findWarning("2:0-2:27:verifier:DN_Imports_UNUSED")
+                .applyFix("LBL_Imports_Fix_One_UNUSED")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "import java.util.List;\n" +
+                              "import java.util.Collections;\n" +
+                              "public class Test {\n" +
+                              "    public static void main(String[] args) {\n" +
+                              "        List l = Collections.EMPTY_LIST;\n" +
+                              "    }\n" +
+                              "}");
     }
 }

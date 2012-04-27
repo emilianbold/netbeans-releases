@@ -50,18 +50,14 @@ import java.awt.Frame;
 import java.awt.KeyboardFocusManager;
 import java.awt.Toolkit;
 import java.awt.Window;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.Action;
 import javax.swing.JFrame;
 import javax.swing.JRootPane;
 import javax.swing.SwingUtilities;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.netbeans.modules.sampler.Sampler;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
@@ -97,7 +93,7 @@ implements Runnable {
     private final RequestProcessor.Task WAIT_CURSOR_CHECKER;
     private volatile long ignoreTill;
     private volatile long start;
-    private volatile ActionListener stoppable;
+    private volatile Sampler stoppable;
     private volatile boolean isWaitCursor;
     static volatile Thread eq;
     private final Frame mainWindow;
@@ -197,9 +193,9 @@ implements Runnable {
         } else {
             LOG.log(Level.FINEST, "done, timer stopped, took {0}", time);
         }
-        ActionListener ss = stoppable;
+        Sampler ss = stoppable;
         if (ss != null) {
-            ss.actionPerformed(new ActionEvent(this, 0, "cancel")); // NOI18N
+            ss.cancel();
             stoppable = null;
         }
         return;
@@ -225,10 +221,10 @@ implements Runnable {
             LOG.log(Level.WARNING, "Still previous controller {0}", stoppable);
             return;
         }
-        Runnable selfSampler = (Runnable)createSelfSampler();
+        Sampler selfSampler = createSelfSampler();
         if (selfSampler != null) {
-            selfSampler.run();
-            stoppable = (ActionListener)selfSampler;
+            selfSampler.start();
+            stoppable = selfSampler;
         }
         isWaitCursor |= isWaitCursor();
         if (!isWaitCursor) {
@@ -236,7 +232,7 @@ implements Runnable {
         }
     }
 
-    private static void report(final ActionListener ss, final long time) {
+    private static void report(final Sampler ss, final long time) {
         if (ss == null) {
             return;
         }
@@ -246,7 +242,7 @@ implements Runnable {
                 try {
                     ByteArrayOutputStream out = new ByteArrayOutputStream();
                     DataOutputStream dos = new DataOutputStream(out);
-                    ss.actionPerformed(new ActionEvent(dos, 0, "write")); // NOI18N
+                    ss.stopAndWriteTo(dos);
                     dos.close();
                     if (dos.size() > 0) {
                         Object[] params = new Object[]{out.toByteArray(), time};
@@ -262,16 +258,8 @@ implements Runnable {
         RP.post(new R());
     }
 
-    private static Object createSelfSampler() {
-        FileObject fo = FileUtil.getConfigFile("Actions/Profile/org-netbeans-modules-profiler-actions-SelfSamplerAction.instance");
-        if (fo == null) {
-            return null;
-        }
-        Action a = (Action)fo.getAttribute("delegate"); // NOI18N
-        if (a == null) {
-            return null;
-        }
-        return a.getValue("logger-awt"); // NOI18N
+    private static Sampler createSelfSampler() {
+        return Sampler.createSampler("awt"); // NOI18N
     }
 
     private static boolean isWaitCursor() {

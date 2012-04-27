@@ -27,6 +27,7 @@ import org.netbeans.test.subversion.operators.NewJavaProjectNameLocationStepOper
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JCheckBoxMenuItemOperator;
@@ -122,7 +123,7 @@ public final class TestKit {
             try {
                 Node rootNode = new ProjectsTabOperator().getProjectRootNode(projectName);
                 rootNode.performPopupActionNoBlock("Close");
-//                new EventTool().waitNoEvent(2000);
+                new EventTool().waitNoEvent(2000);
             } catch (Exception e) {
             }
         } catch (Exception e) {

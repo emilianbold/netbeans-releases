@@ -363,7 +363,7 @@ public class BridgeImpl implements BridgeInterface {
                 String resource = cnb.replace('.', '/') + "/antlib.xml"; // NOI18N
                 URL antlib = l.getResource(resource);
                 if (antlib == null) {
-                    throw new IOException("Could not find " + antlib + " in ant/nblib/" + cnb.replace('.', '-') + ".jar"); // NOI18N
+                    throw new IOException("Could not find " + resource + " in ant/nblib/" + cnb.replace('.', '-') + ".jar"); // NOI18N
                 }
                 // Once with no namespaces.
                 NbAntlib.process(project, antlib, null, l);

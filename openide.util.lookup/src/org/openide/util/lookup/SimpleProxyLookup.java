@@ -307,6 +307,16 @@ final class SimpleProxyLookup extends org.openide.util.Lookup {
             LookupEvent ev = new LookupEvent(this);
             AbstractLookup.notifyListeners(listeners, ev, evAndListeners);
         }
+
+        @Override
+        protected Collection<? extends Object> allInstances(boolean callBeforeLookup) {
+            return allInstances();
+        }
+
+        @Override
+        protected Collection<? extends Item<T>> allItems(boolean callBeforeLookup) {
+            return allItems();
+        }
     }
      // end of ProxyResult
     private final class WeakResult<T> extends WaitableResult<T> implements LookupListener {
@@ -362,10 +372,20 @@ final class SimpleProxyLookup extends org.openide.util.Lookup {
             assert false;
             return null;
         }
+        @Override
+        protected Collection<? extends Item<T>> allItems(boolean callBeforeLookup) {
+            return allItems();
+        }
 
         public Set<Class<? extends T>> allClasses() {
             assert false;
             return null;
         }
+
+        @Override
+        protected Collection<? extends Object> allInstances(boolean callBeforeLookup) {
+            return allInstances();
+        }
+
     } // end of WeakResult
 }

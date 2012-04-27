@@ -53,6 +53,7 @@ import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
 import org.netbeans.modules.j2ee.deployment.impl.bridge.BridgingServerInstanceProvider;
 import org.netbeans.modules.j2ee.deployment.impl.bridge.ServerInstanceProviderLookup;
 import org.netbeans.modules.j2ee.deployment.impl.ui.wizard.AddServerInstanceWizard;
+import org.netbeans.modules.j2ee.deployment.plugins.api.CommonServerBridge;
 
 /**
  * ServerManager class provides access to the Server Manager dialog.
@@ -80,20 +81,7 @@ public final class ServerManager {
      */
     public static void showCustomizer(String serverInstanceID) {
         // bridge to new infrastructure (common server)
-        ServerInstance bridgingInstance = null;
-        org.netbeans.modules.j2ee.deployment.impl.ServerInstance j2eeInstance =
-                ServerRegistry.getInstance().getServerInstance(serverInstanceID);
-        if (j2eeInstance != null) {
-            Collection<? extends org.netbeans.spi.server.ServerInstanceProvider> providers = ServerInstanceProviderLookup.getInstance().lookupAll(org.netbeans.spi.server.ServerInstanceProvider.class);
-            for (org.netbeans.spi.server.ServerInstanceProvider provider : providers) {
-                if (provider instanceof BridgingServerInstanceProvider) {
-                    bridgingInstance = ((BridgingServerInstanceProvider) provider).getBridge(j2eeInstance);
-                    if (bridgingInstance != null) {
-                        break;
-                    }
-                }
-            }
-        }
+        ServerInstance bridgingInstance = CommonServerBridge.getCommonInstance(serverInstanceID);
         CommonServerUIs.showCustomizer(bridgingInstance);
     }
     

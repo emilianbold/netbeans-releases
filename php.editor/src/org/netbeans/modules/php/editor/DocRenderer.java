@@ -110,7 +110,7 @@ class DocRenderer {
     static String document(ParserResult info, ElementHandle element) {
         if (element instanceof PHPDOCTagElement) {
             PHPDOCTagElement pHPDOCTagElement = (PHPDOCTagElement) element;
-            return PHPDocExtractor.processPhpDoc(pHPDOCTagElement.getDoc());
+            return pHPDOCTagElement.getDoc();
         }
 
         if (element instanceof PredefinedSymbolElement) {

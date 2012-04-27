@@ -44,7 +44,6 @@ package org.netbeans.modules.java.hints;
 
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import javax.lang.model.element.Element;
@@ -55,21 +54,19 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
-import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
-import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Options;
-import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
-import org.netbeans.modules.java.hints.spi.support.FixFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.Severity;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.Hint.Options;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.TriggerTreeKind;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author vita
  */
-@Hint(category="logging", suppressWarnings={"ClassWithMultipleLoggers"}, options=Options.QUERY) //NOI18N
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.MultipleLoggers", description = "#DESC_org.netbeans.modules.java.hints.MultipleLoggers", category="logging", suppressWarnings={"ClassWithMultipleLoggers"}, options=Options.QUERY) //NOI18N
 public final class MultipleLoggers {
 
     public MultipleLoggers() {
@@ -124,8 +121,7 @@ public final class MultipleLoggers {
             for(VariableElement f : loggerFields) {
                 Tree path = ctx.getInfo().getTrees().getTree(f);
                 ErrorDescription ed = ErrorDescriptionFactory.forName(ctx, path,
-                    NbBundle.getMessage(MultipleLoggers.class, "MSG_MultipleLoggers_checkMultipleLoggers", loggers, cls), //NOI18N
-                    FixFactory.createSuppressWarningsFix(ctx.getInfo(), ctx.getPath(), "ClassWithMultipleLoggers")); //NOI18N
+                    NbBundle.getMessage(MultipleLoggers.class, "MSG_MultipleLoggers_checkMultipleLoggers", loggers, cls)); //NOI18N
                 errors.add(ed);
             }
             return errors;

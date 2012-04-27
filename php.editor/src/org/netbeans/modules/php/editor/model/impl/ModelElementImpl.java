@@ -64,7 +64,7 @@ import org.netbeans.modules.php.editor.index.PHPElement;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Union2;
 
@@ -127,6 +127,7 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
         return (retval != null) ? retval.getName() : null;
     }
 
+    @Override
     public final Scope getInScope() {
         return inScope;
     }
@@ -209,14 +210,17 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
     }
 
 
+    @Override
     public PhpElementKind getPhpElementKind() {
         return kind;
     }
 
+    @Override
     public int getOffset() {
         return getNameRange().getStart();
     }
 
+    @Override
     public Union2<String, FileObject> getFile() {
         return file;
     }
@@ -264,6 +268,7 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
         return retval;
     }
 
+    @Override
     public PhpModifiers getPhpModifiers() {
         return modifiers;
     }
@@ -279,6 +284,7 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
         return sb.toString();
     }
 
+    @Override
     public PHPElement getPHPElement() {
         return this;
     }
@@ -286,6 +292,7 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
     /**
      * @return the offsetRange
      */
+    @Override
     public OffsetRange getNameRange() {
         return offsetRange;
     }
@@ -324,14 +331,17 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
         return hash;
     }
 
+    @Override
     public OffsetRange getOffsetRange(ParserResult result) {
         return getNameRange();
     }
 
+    @Override
     public String getIndexSignature() {
         return null;
     }
 
+    @Override
     public QualifiedName getNamespaceName() {
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(this);
         if (namespaceScope != null) {
@@ -371,7 +381,7 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
         FileObject fo = getFileObject();
         if (fo != null) {
             try {
-                return Repository.getDefault().getDefaultFileSystem().equals(fo.getFileSystem());
+                return FileUtil.getConfigRoot().getFileSystem().equals(fo.getFileSystem());
             } catch (FileStateInvalidException ex) {
                 Exceptions.printStackTrace(ex);
             }

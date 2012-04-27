@@ -82,6 +82,12 @@ class ProfilerControlPanel2Support implements FileChangeListener {
         this.properties = properties;
         registerListener();
     }
+    
+    void setProperties(Properties p) {
+        if (this.script != null) {
+            this.properties = p;
+        }
+    }
 
     FileObject getScript() {
         return script;
@@ -118,8 +124,6 @@ class ProfilerControlPanel2Support implements FileChangeListener {
 
     public void fileDeleted(FileEvent fe) {
         this.nullAll();
-        CallableSystemAction.get(ModifyProfilingAction.class).updateAction();
-        CallableSystemAction.get(RerunAction.class).updateAction();
     }
 
     public void fileRenamed(FileRenameEvent fe) {

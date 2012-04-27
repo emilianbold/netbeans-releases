@@ -46,17 +46,10 @@ package org.netbeans.swing.tabcontrol;
 
 import java.awt.Point;
 import java.awt.event.ActionEvent;
-import java.util.Arrays;
-import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
-import javax.swing.event.ListDataEvent;
-import org.netbeans.swing.popupswitcher.SwitcherTableItem;
-import org.netbeans.swing.tabcontrol.event.ComplexListDataEvent;
-import org.netbeans.swing.tabcontrol.event.ComplexListDataListener;
-import org.openide.windows.TopComponent;
 
 /**
  * An action which, when invoked, displays a popup with an alphabetized table
@@ -72,15 +65,14 @@ public class TabListPopupAction extends AbstractAction {
         this.displayer = displayer;
     }
     
+    @Override
     public void actionPerformed(ActionEvent ae) {
-        if ("pressed".equals(ae.getActionCommand())) {
+        if ("pressed".equals(ae.getActionCommand())) { //NOI18N
             JComponent jc = (JComponent) ae.getSource();
             Point p = new Point(jc.getWidth(), jc.getHeight());
             SwingUtilities.convertPointToScreen(p, jc);
             if (!ButtonPopupSwitcher.isShown()) {
-                SwitcherTableItem[] items = createSwitcherItems(displayer);
-                Arrays.sort(items);
-                ButtonPopupSwitcher.selectItem(jc, items, p.x, p.y);
+                ButtonPopupSwitcher.showPopup(jc, displayer, p.x, p.y);
             } else {
                 ButtonPopupSwitcher.hidePopup();
             }
@@ -92,115 +84,6 @@ public class TabListPopupAction extends AbstractAction {
                 jb.getModel().setRollover(false);
                 jb.getModel().setArmed(false);
                 jb.repaint();
-            }
-        }
-    }
-
-    // #179146 - listen on changes in list of items and close popup when changed
-    private final ComplexListDataListener listListener = new ComplexListDataListener() {
-
-        private void changed() {
-            displayer.getModel().removeComplexListDataListener(this);
-            ButtonPopupSwitcher.hidePopup();
-        }
-
-        public void indicesAdded(ComplexListDataEvent e) {
-            changed();
-        }
-
-        public void indicesRemoved(ComplexListDataEvent e) {
-            changed();
-        }
-
-        public void indicesChanged(ComplexListDataEvent e) {
-            changed();
-        }
-
-        public void intervalAdded(ListDataEvent e) {
-            changed();
-        }
-
-        public void intervalRemoved(ListDataEvent e) {
-            changed();
-        }
-
-        public void contentsChanged(ListDataEvent e) {
-            changed();
-        }
-    };
-
-    private SwitcherTableItem[] createSwitcherItems(final TabDisplayer displayer) {
-        displayer.getModel().removeComplexListDataListener(listListener);
-        displayer.getModel().addComplexListDataListener(listListener);
-        List<TabData> tabs = displayer.getModel().getTabs();
-        SwitcherTableItem[] items = new SwitcherTableItem[tabs.size()];
-        int i = 0;
-        int selIdx = displayer.getSelectionModel().getSelectedIndex();
-        TabData selectedTab = selIdx >= 0 ? displayer.getModel().getTab(selIdx) : null;
-        for (TabData tab : tabs) {
-            String name;
-            String htmlName;
-            if (tab.getComponent() instanceof TopComponent) {
-                TopComponent tabTC = (TopComponent) tab.getComponent();
-                name = tabTC.getDisplayName();
-                // #68291 fix - some hostile top components have null display name 
-                if (name == null) {
-                    name = tabTC.getName();
-                }
-                htmlName = tabTC.getHtmlDisplayName();
-                if (htmlName == null) {
-                    htmlName = name;
-                }
-            } else {
-                name = htmlName = tab.getText();
-            }
-            items[i++] = new SwitcherTableItem(
-                    new ActivatableTab(tab),
-                    name,
-                    htmlName,
-                    tab.getIcon(),
-                    tab == selectedTab,
-                    tab.getTooltip());
-        }
-        return items;
-    }
-    
-    private class ActivatableTab implements SwitcherTableItem.Activatable {
-        private TabData tab;
-        
-        private ActivatableTab(TabData tab) {
-            this.tab = tab;
-        }
-        
-        public void activate() {
-            if (tab != null) {
-                selectTab(tab);
-            }
-        }
-        
-        /**
-         * Maps tab selected in quicklist to tab index in displayer to select
-         * correct tab
-         */
-        private void selectTab(TabData tab) {
-            //Find corresponding index in displayer
-            List<TabData> tabs = displayer.getModel().getTabs();
-            int ind = -1;
-            for (int i = 0; i < tabs.size(); i++) {
-                if (tab.equals(tabs.get(i))) {
-                    ind = i;
-                    break;
-                }
-            }
-            if (ind != -1) {
-                int old = displayer.getSelectionModel().getSelectedIndex();
-                displayer.getSelectionModel().setSelectedIndex(ind);
-                //#40665 fix start
-                if (displayer.getType() == TabbedContainer.TYPE_EDITOR
-                        && ind >= 0 && ind == old) {
-                    displayer.getUI().makeTabVisible(ind);
-                }
-                //#40665 fix end
             }
         }
     }

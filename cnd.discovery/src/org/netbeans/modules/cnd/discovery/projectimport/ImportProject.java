@@ -41,10 +41,6 @@
  */
 package org.netbeans.modules.cnd.discovery.projectimport;
 
-import org.netbeans.modules.cnd.discovery.buildsupport.BuildTraceSupport;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
-import java.util.concurrent.ExecutionException;
-import org.netbeans.modules.cnd.builds.ImportUtils;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
@@ -64,6 +60,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.WeakHashMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -74,7 +71,6 @@ import org.netbeans.modules.cnd.actions.CMakeAction;
 import org.netbeans.modules.cnd.actions.MakeAction;
 import org.netbeans.modules.cnd.actions.QMakeAction;
 import org.netbeans.modules.cnd.actions.ShellRunAction;
-import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.api.model.CsmListeners;
 import org.netbeans.modules.cnd.api.model.CsmModel;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
@@ -87,12 +83,13 @@ import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.builds.CMakeExecSupport;
+import org.netbeans.modules.cnd.builds.ImportUtils;
 import org.netbeans.modules.cnd.builds.MakeExecSupport;
 import org.netbeans.modules.cnd.builds.QMakeExecSupport;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface;
-import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
+import org.netbeans.modules.cnd.discovery.api.DiscoveryProviderFactory;
+import org.netbeans.modules.cnd.discovery.buildsupport.BuildTraceSupport;
 import org.netbeans.modules.cnd.discovery.services.DiscoveryManagerImpl;
 import org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.SelectConfigurationPanel;
@@ -100,10 +97,10 @@ import org.netbeans.modules.cnd.discovery.wizard.api.ConsolidationStrategy;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.api.FileConfiguration;
 import org.netbeans.modules.cnd.discovery.wizard.api.ProjectConfiguration;
-import org.netbeans.modules.cnd.discovery.wizard.support.impl.DiscoveryProjectGeneratorImpl;
 import org.netbeans.modules.cnd.discovery.wizard.api.support.ProjectBridge;
-import org.netbeans.modules.cnd.execution.ShellExecSupport;
+import org.netbeans.modules.cnd.discovery.wizard.support.impl.DiscoveryProjectGeneratorImpl;
 import org.netbeans.modules.cnd.execution.ExecutionSupport;
+import org.netbeans.modules.cnd.execution.ShellExecSupport;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
@@ -114,16 +111,20 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.remote.api.RfsListener;
 import org.netbeans.modules.cnd.remote.api.RfsListenerSupport;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -164,7 +165,6 @@ public class ImportProject implements PropertyChangeListener {
     private boolean runConfigure = false;
     private boolean manualCA = false;
     private boolean buildArifactWasAnalyzed = false;
-    private boolean setAsMain;
     private final String hostUID;
     private final ExecutionEnvironment executionEnvironment;
     private final ExecutionEnvironment fileSystemExecutionEnvironment;
@@ -226,7 +226,6 @@ public class ImportProject implements PropertyChangeListener {
             makefilePath = (String) wizard.getProperty(WizardConstants.PROPERTY_USER_MAKEFILE_PATH); 
         }
         runMake = Boolean.TRUE.equals(wizard.getProperty("buildProject"));  // NOI18N
-        setAsMain = Boolean.TRUE.equals(wizard.getProperty("setMain"));  // NOI18N
         toolchain = (CompilerSet)wizard.getProperty(WizardConstants.PROPERTY_TOOLCHAIN);
         defaultToolchain = Boolean.TRUE.equals(wizard.getProperty(WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT));
         
@@ -279,7 +278,6 @@ public class ImportProject implements PropertyChangeListener {
             runMake = "true".equals(wizard.getProperty(WizardConstants.PROPERTY_RUN_REBUILD)); // NOI18N
         }
         manualCA = "true".equals(wizard.getProperty(WizardConstants.PROPERTY_MANUAL_CODE_ASSISTANCE)); // NOI18N
-        setAsMain = Boolean.TRUE.equals(wizard.getProperty(WizardConstants.PROPERTY_SET_AS_MAIN));
         toolchain = (CompilerSet)wizard.getProperty(WizardConstants.PROPERTY_TOOLCHAIN);
         defaultToolchain = Boolean.TRUE.equals(wizard.getProperty(WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT));
     }
@@ -386,9 +384,6 @@ public class ImportProject implements PropertyChangeListener {
                     return;
                 }
                 OpenProjects.getDefault().removePropertyChangeListener(this);
-                //if (setAsMain) {
-                //    OpenProjects.getDefault().setMainProject(makeProject);
-                //}
                 RP.post(new Runnable() {
 
                     @Override
@@ -412,9 +407,6 @@ public class ImportProject implements PropertyChangeListener {
     private void doWork() {
         try {
             //OpenProjects.getDefault().open(new Project[]{makeProject}, false);
-            //if (setAsMain) {
-            //    OpenProjects.getDefault().setMainProject(makeProject);
-            //}
             if (makeProject instanceof Runnable) {
                 ((Runnable)makeProject).run();
             }
@@ -492,7 +484,7 @@ public class ImportProject implements PropertyChangeListener {
             // Add arguments to configure script?
             if (configureArguments != null) {
                 if (MIMENames.SHELL_MIME_TYPE.equals(mime)){
-                    ShellExecSupport ses = node.getCookie(ShellExecSupport.class);
+                    ShellExecSupport ses = node.getLookup().lookup(ShellExecSupport.class);
                     try {
                         // Keep user arguments as is in args[0]
                         ses.setArguments(new String[]{configureArguments});
@@ -511,7 +503,7 @@ public class ImportProject implements PropertyChangeListener {
                         Exceptions.printStackTrace(ex);
                     }
                 } else if (MIMENames.CMAKE_MIME_TYPE.equals(mime)){
-                    CMakeExecSupport ses = node.getCookie(CMakeExecSupport.class);
+                    CMakeExecSupport ses = node.getLookup().lookup(CMakeExecSupport.class);
                     try {
                         // extract configure variables in environment
                         List<String> vars = ImportUtils.parseEnvironment(configureArguments);
@@ -535,7 +527,7 @@ public class ImportProject implements PropertyChangeListener {
                         Exceptions.printStackTrace(ex);
                     }
                 } else if (MIMENames.QTPROJECT_MIME_TYPE.equals(mime)){
-                    QMakeExecSupport ses = node.getCookie(QMakeExecSupport.class);
+                    QMakeExecSupport ses = node.getLookup().lookup(QMakeExecSupport.class);
                     try {
                         ses.setArguments(new String[]{configureArguments});
                         if (configureRunFolder != null) {
@@ -741,7 +733,7 @@ public class ImportProject implements PropertyChangeListener {
                 try {
                     dObj = DataObject.find(makeFileObject);
                     Node node = dObj.getNodeDelegate();
-                    MakeExecSupport mes = node.getCookie(MakeExecSupport.class);
+                    MakeExecSupport mes = node.getLookup().lookup(MakeExecSupport.class);
                     if (mes != null) {
                         mes.setBuildDirectory(makeFileObject.getParent().getPath());
                     }
@@ -916,7 +908,7 @@ public class ImportProject implements PropertyChangeListener {
         if (buildCommand != null){
             arguments = getArguments(buildCommand);
         }
-        ExecutionSupport ses = node.getCookie(ExecutionSupport.class);
+        ExecutionSupport ses = node.getLookup().lookup(ExecutionSupport.class);
         List<String> vars = ImportUtils.parseEnvironment(configureArguments);
         if (ses != null) {
             try {
@@ -1022,17 +1014,6 @@ public class ImportProject implements PropertyChangeListener {
             return command.substring(i).trim();
         }
         return ""; // NOI18N
-    }
-
-    private DiscoveryProvider getProvider(String id) {
-        Lookup.Result<DiscoveryProvider> providers = Lookup.getDefault().lookup(new Lookup.Template<DiscoveryProvider>(DiscoveryProvider.class));
-        for (DiscoveryProvider provider : providers.allInstances()) {
-            provider.clean();
-            if (id.equals(provider.getID())) {
-                return provider;
-            }
-        }
-        return null;
     }
 
     private void waitConfigurationDescriptor() {
@@ -1184,6 +1165,7 @@ public class ImportProject implements PropertyChangeListener {
                         if (TRACE) {
                             logger.log(Level.FINE, "#fix macros for file {0}", fileConf.getFilePath()); // NOI18N
                         }
+                        ProjectBridge.setSourceStandard(item, fileConf.getLanguageStandard(), false);
                         ProjectBridge.fixFileMacros(fileConf.getUserMacros(), item);
                     }
                 }
@@ -1373,7 +1355,7 @@ public class ImportProject implements PropertyChangeListener {
                 logger.log(Level.INFO, "#start discovery by model"); // NOI18N
             }
             map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, nativeProjectPath);
-            DiscoveryProvider provider = getProvider("model-folder"); // NOI18N
+            DiscoveryProvider provider = DiscoveryProviderFactory.findProvider("model-folder"); // NOI18N
             provider.getProperty("folder").setValue(nativeProjectPath); // NOI18N
             if (manualCA) {
                 provider.getProperty("prefer-local").setValue(Boolean.TRUE); // NOI18N

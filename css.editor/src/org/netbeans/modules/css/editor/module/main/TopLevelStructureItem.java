@@ -104,6 +104,22 @@ public abstract class TopLevelStructureItem implements StructureItem {
     public ImageIcon getCustomIcon() {
         return null;
     }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        return true;
+    }
     
     public abstract static class ChildrenSetStructureItem extends TopLevelStructureItem {
         

@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.j2ee.persistence.editor.completion.db;
 
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -62,15 +61,10 @@ import javax.lang.model.util.ElementFilter;
 import javax.swing.text.BadLocationException;
 import org.eclipse.persistence.jpa.jpql.ContentAssistProposals;
 import org.eclipse.persistence.jpa.jpql.JPQLQueryHelper;
-import org.eclipse.persistence.jpa.jpql.JPQLQueryProblem;
 import org.eclipse.persistence.jpa.jpql.spi.IEntity;
 import org.eclipse.persistence.jpa.jpql.spi.IMapping;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.Task;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.dbschema.ColumnElement;
@@ -84,11 +78,8 @@ import org.netbeans.modules.j2ee.persistence.api.metadata.orm.OneToOne;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Table;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.editor.completion.AnnotationUtils;
-import org.netbeans.modules.j2ee.persistence.editor.completion.CCParser.CC;
-import org.netbeans.modules.j2ee.persistence.editor.completion.CCParser.NNAttr;
 import org.netbeans.modules.j2ee.persistence.editor.completion.CompletionContextResolver;
 import org.netbeans.modules.j2ee.persistence.editor.completion.CCParser;
-import org.netbeans.modules.j2ee.persistence.editor.completion.JPACodeCompletionProvider.Context;
 import org.netbeans.modules.j2ee.persistence.editor.completion.JPACompletionItem;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
 import org.netbeans.modules.j2ee.persistence.editor.completion.JPACodeCompletionProvider;
@@ -101,12 +92,11 @@ import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerU
 import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
  *
- * @author Marek Fukala
+ * @author Marek Fukala, Sergey Petrov
  */
 public class DBCompletionContextResolver implements CompletionContextResolver {
     
@@ -123,8 +113,7 @@ public class DBCompletionContextResolver implements CompletionContextResolver {
         "JoinTable", //5
         "PersistenceUnit", //6
         "PersistenceContext", //7
-        "ManyToMany",//8
-        "NamedQuery"//9
+        "ManyToMany"//8
     };
     
     private static final String PERSISTENCE_PKG = "javax.persistence";
@@ -150,9 +139,6 @@ public class DBCompletionContextResolver implements CompletionContextResolver {
             if(index == 6 || index == 7) {
                 //we do not need database connection for PU completion
                 completePersistenceUnitContext(ctx, parsedNN, nnattr, result);
-            } else if(index == 9) {
-                //do not need to connect for jpql
-                completeJPQLContext(ctx, parsedNN, nnattr, result);
             } else if(index != -1) {
                 //the completion has been invoked in supported annotation and there is no db connection initialized yet
                 //try to init the database connection
@@ -353,7 +339,6 @@ public class DBCompletionContextResolver implements CompletionContextResolver {
     
     private List completePrimaryKeyJoinColumn(JPACodeCompletionProvider.Context ctx, CCParser.CC nn, CCParser.NNAttr nnattr, List<JPACompletionItem> results) throws SQLException {
         String completedMember = nnattr.getName();
-        Map<String,Object> members = nn.getAttributes();
         
         if ("name".equals(completedMember)) { // NOI18N
             //XXX should I take into account the @SecondaryTable here???
@@ -469,8 +454,7 @@ public class DBCompletionContextResolver implements CompletionContextResolver {
             if(entity != null && entity.getAttributes() != null) {
                 String propertyName = ctx.getCompletedMemberName();
                 String resolvedClassName = ctx.getCompletedMemberClassName();
-//                JCClass resolvedClass = ctx.getSyntaxSupport().getClassFromName(resolvedClassName, true);
-                TypeElement type = null;//ctx.getSyntaxSupport().getTypeFromName(resolvedClassName, false, null, false);
+                TypeElement type = null;
                 
                 if(type == null) {
                     //show an error message
@@ -643,7 +627,6 @@ public class DBCompletionContextResolver implements CompletionContextResolver {
         Map<String,Object> members = nn.getAttributes();
         
         if ("mappedBy".equals(completedMember)) { // NOI18N
-            String resolvedClassName = ctx.getCompletedMemberClassName();
             Element type = null;//ctx.getSyntaxSupport().getTypeFromName(resolvedClassName, false, null, false);
             if(type != null && type instanceof TypeElement) {
                 TypeElement cdef = (TypeElement)type;
@@ -747,37 +730,6 @@ public class DBCompletionContextResolver implements CompletionContextResolver {
 
     private Set getMappingEntityTableNames(String javaClass) {
         throw new UnsupportedOperationException("Not yet implemented");
-    }
-
-    private List completeJPQLContext(JPACodeCompletionProvider.Context ctx, CCParser.CC nn, CCParser.NNAttr nnattr, List<JPACompletionItem> results) {
-        String completedMember = nnattr.getName();
-
-        if ("query".equals(completedMember)) { // NOI18N
-            String completedValue = nnattr.getValue().toString() == null ? "" : nnattr.getValue().toString();
-            JPQLQueryHelper helper = new JPQLQueryHelper();
-
-            Project project = FileOwnerQuery.getOwner(ctx.getFileObject());
-            helper.setQuery(new Query(null, completedValue, new ManagedTypeProvider(project, ctx.getEntityMappings())));
-            int offset = ctx.getCompletionOffset() - nnattr.getValueOffset() - (nnattr.isValueQuoted() ? 1 : 0);
-            ContentAssistProposals buildContentAssistProposals = helper.buildContentAssistProposals(offset);
-
-            if(buildContentAssistProposals!=null && buildContentAssistProposals.hasProposals()){
-                for (String var : buildContentAssistProposals.identificationVariables()) {
-                    results.add(new JPACompletionItem.JPQLElementItem(var, nnattr.isValueQuoted(), nnattr.getValueOffset(), offset, nnattr.getValue().toString(), buildContentAssistProposals));
-                }
-                for (IMapping mapping : buildContentAssistProposals.mappings()) {
-                    results.add(new JPACompletionItem.JPQLElementItem(mapping.getName(), nnattr.isValueQuoted(), nnattr.getValueOffset(), offset, nnattr.getValue().toString(), buildContentAssistProposals));
-                }
-                for (IEntity entity : buildContentAssistProposals.abstractSchemaTypes()) {
-                    results.add(new JPACompletionItem.JPQLElementItem(entity.getName(), nnattr.isValueQuoted(), nnattr.getValueOffset(), offset, nnattr.getValue().toString(), buildContentAssistProposals));
-                }
-                for (String ids : buildContentAssistProposals.identifiers()) {
-                    results.add(new JPACompletionItem.JPQLElementItem(ids, nnattr.isValueQuoted(), nnattr.getValueOffset(), offset, nnattr.getValue().toString(), buildContentAssistProposals));
-                }
-            }
-        }
-        
-        return results;
     }
     
     private static final class ResultItemsFilterList extends ArrayList {

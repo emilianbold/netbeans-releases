@@ -131,13 +131,17 @@ final class UndoRedoManager extends UndoRedo.Manager {
     CloneableEditorSupport support;
     
     /**
-     * Undo edit that is right after/before "save point" in undo manager's queue.
-     * <br/>
-     * Subsequent addEdit(), undo() and redo() operations will modify
-     * the field to point to neighbor edit of the save point.
+     * Undo edit which brings the undo manager into savepoint.
      * <br/>
      * The field may be set to SAVEPOINT special value in case the undo manager
      * is set right to the savepoint.
+     * <br/>
+     * Value of beforeSavepoint field defines whether savepointEdit will be undone
+     * to enter the savepoint (beforeSavepoint==false) or redone to enter the savepoint
+     * (beforeSavepoint==true).
+     * <br/>
+     * Subsequent addEdit(), undo() and redo() operations will modify
+     * the field to point to neighbor edit of the save point.
      */
     UndoableEdit savepointEdit;
     
@@ -157,9 +161,11 @@ final class UndoRedoManager extends UndoRedo.Manager {
      * <br/>
      * If UM.edits is empty (it could possibly happen when document is not saved
      * and discardAllEdits() was called for some reason) then the save actions edit
-     * is not added to UM.edits (just edit.die() is called).
+     * is not added to UM.edits (just edit.die() is called and the effect
+     * of the save actions cannot be undone/redone).
      * <br/>
-     * When the save actions edit is done in any other situation then it must be
+     * When the save actions edit is done in any other situation then it stands beside
+     * regular undo manager structures and is handled specially. It is:
      * <ul>
      *   <li>undone when the UM is at savepoint and UM.undo() or UM.redo() is done.</li>
      *   <li>redone when edit right before savepoint is redone.</li>
@@ -247,7 +253,7 @@ final class UndoRedoManager extends UndoRedo.Manager {
     void mergeSaveActionsToLastEdit(WrapUndoEdit lastWrapEdit) {
         if (saveActionsEdit != null) {
             checkLogOp("    mergeSaveActionsToLastEdit-lastWrapEdit", lastWrapEdit); // NOI18N
-            CompoundEdit compoundEdit = new CompoundEdit();
+            StableCompoundEdit compoundEdit = new StableCompoundEdit();
             compoundEdit.addEdit(lastWrapEdit.delegate());
             compoundEdit.addEdit(saveActionsEdit);
             compoundEdit.end();
@@ -262,16 +268,30 @@ final class UndoRedoManager extends UndoRedo.Manager {
         }
     }
 
-    void beforeUndoCheck(WrapUndoEdit edit) {
-        if (isAtSavepoint()) { // Undoing edit right before savepoint.
-            checkLogOp("beforeUndoCheck-atSavepoint", edit); // NOI18N
-            if (saveActionsEdit != null) {
-                checkLogOp("    saveActionsEdit.undo()", saveActionsEdit); // NOI18N
-                saveActionsEdit.undo();
-            }
+    void beforeUndoAtSavepoint(WrapUndoEdit edit) {
+        checkLogOp("beforeUndoAtSavepoint", edit); // NOI18N
+        undoSaveActions();
+    }
+        
+    private void undoSaveActions() {
+        if (saveActionsEdit != null) {
+            checkLogOp("    saveActionsEdit.undo()", saveActionsEdit); // NOI18N
+            saveActionsEdit.undo();
         }
     }
-    
+
+    void delegateUndoFailedAtSavepoint(WrapUndoEdit edit) {
+        checkLogOp("delegateUndoFailedAtSavepoint", edit); // NOI18N
+        redoSaveActions();
+    }
+        
+    private void redoSaveActions() {   
+        if (saveActionsEdit != null) {
+            checkLogOp("    saveActionsEdit.redo()", saveActionsEdit); // NOI18N
+            saveActionsEdit.redo();
+        }
+    }
+
     void afterUndoCheck(WrapUndoEdit edit) {
         if (isAtSavepoint()) { // Undoing edit right before savepoint.
             checkLogOp("afterUndoCheck-atSavepoint", edit); // NOI18N
@@ -290,16 +310,16 @@ final class UndoRedoManager extends UndoRedo.Manager {
         }
     }
     
-    void beforeRedoCheck(WrapUndoEdit edit) {
-        if (isAtSavepoint()) { // Redoing edit right before savepoint.
-            checkLogOp("beforeRedoCheck-atSavepoint", edit); // NOI18N
-            if (saveActionsEdit != null) {
-                checkLogOp("    saveActionsEdit.undo()", saveActionsEdit); // NOI18N
-                saveActionsEdit.undo();
-            }
-        }
+    void beforeRedoAtSavepoint(WrapUndoEdit edit) {
+        checkLogOp("beforeRedoAtSavepoint", edit); // NOI18N
+        undoSaveActions();
     }
 
+    void delegateRedoFailedAtSavepoint(WrapUndoEdit edit) {
+        checkLogOp("delegateRedoFailedAtSavepoint", edit); // NOI18N
+        redoSaveActions();
+    }
+        
     void afterRedoCheck(WrapUndoEdit edit) {
         if (isAtSavepoint()) { // Redoing edit right before savepoint.
             checkLogOp("afterRedoCheck-atSavepoint", edit); // NOI18N
@@ -432,7 +452,7 @@ final class UndoRedoManager extends UndoRedo.Manager {
 
     @Override
     public void discardAllEdits() {
-        new DocLockedRun(5, support.getDocument());
+        new DocLockedRun(5, support.getDocument(), 0, true);
     }
     
     private void clearSaveActionsEdit() {
@@ -544,6 +564,11 @@ final class UndoRedoManager extends UndoRedo.Manager {
         undoGroup = null;
     }
 
+    UndoableEdit editToBeUndoneRedone(boolean redone) { // Access for NbDocument
+        WrapUndoEdit wrapEdit = (WrapUndoEdit) (redone ? editToBeRedone() : editToBeUndone());
+        return (wrapEdit != null) ? wrapEdit.delegate() : null;
+    }
+
     static String editToString(UndoableEdit edit) {
         if (edit instanceof WrapUndoEdit) {
             return toStringTerse(edit) + "->" + toStringTerse(((WrapUndoEdit)edit).delegate()); // NOI18N
@@ -561,10 +586,15 @@ final class UndoRedoManager extends UndoRedo.Manager {
         }
     }
     
-    static void checkLogOp(String op, UndoableEdit edit) {
+    void checkLogOp(String op, UndoableEdit edit) {
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine(op + ": " + editToString(edit) + '\n'); // NOI18N
+            LOG.fine(thisToString() + "->" + op + ": " + editToString(edit) + '\n'); // NOI18N
         }
+    }
+    
+    String thisToString() {
+        String name = support.messageName();
+        return String.valueOf(name) + ":URM@" + System.identityHashCode(this); // NOI18N
     }
 
     private final class DocLockedRun implements Runnable {

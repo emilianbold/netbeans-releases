@@ -46,10 +46,10 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.*;
+import java.util.logging.Level;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Enumerations;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
 
 /** This class contains abstracted calls to OSGi provided by core.netigso
  * module. No other module can implement this class, except core.netigso.
@@ -57,9 +57,24 @@ import org.openide.util.lookup.Lookups;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public abstract class NetigsoFramework {
+    private ModuleManager mgr;
+    
     protected NetigsoFramework() {
         if (!getClass().getName().equals("org.netbeans.core.netigso.Netigso")) { // NOI18N
             throw new IllegalStateException();
+        }
+    }
+    
+    final NetigsoFramework bindTo(ModuleManager mgr) {
+        try {
+            NetigsoFramework nf = (NetigsoFramework)clone();
+            assert nf != this;
+            nf.mgr = mgr;
+            return nf;
+        } catch (CloneNotSupportedException ex) {
+            Util.err.log(Level.INFO, null, ex);
+            this.mgr = mgr;
+            return this;
         }
     }
 
@@ -152,144 +167,23 @@ public abstract class NetigsoFramework {
         return JarClassLoader.archive.getData(resources, name);
     }
 
-    //
-    // Implementation
-    //
-
-    private static NetigsoFramework framework;
-    private static List<NetigsoModule> toInit = new ArrayList<NetigsoModule>();
-    private static ArrayList<Module> toEnable = new ArrayList<Module>();
-
-    static NetigsoFramework getDefault() {
-        return framework;
-    }
-
-    static void willEnable(List<Module> newlyEnabling) {
-        toEnable.addAll(newlyEnabling);
-    }
-
-    static Set<Module> turnOn(ClassLoader findNetigsoFrameworkIn, Collection<Module> allModules) throws InvalidException {
-        boolean found = false;
-        if (framework == null) {
-            for (Module m : toEnable) {
-                if (m instanceof NetigsoModule) {
-                    found = true;
-                    break;
-                }
-            }
-        } else {
-            found = true;
-        }
-        if (!found) {
-            return Collections.emptySet();
-        }
-        final Lookup lkp = Lookups.metaInfServices(findNetigsoFrameworkIn);
-        framework = lkp.lookup(NetigsoFramework.class);
-        if (framework == null) {
-            throw new IllegalStateException("No NetigsoFramework found, is org.netbeans.core.netigso module enabled?"); // NOI18N
-        }
-        getDefault().prepare(lkp, allModules);
-        toEnable.clear();
-        toEnable.trimToSize();
-        delayedInit();
-        Set<String> cnbs = framework.start(allModules);
-        if (cnbs == null) {
-            return Collections.emptySet();
-        }
-
-        Set<Module> additional = new HashSet<Module>();
-        for (Module m : allModules) {
-            if (!m.isEnabled() && cnbs.contains(m.getCodeNameBase())) {
-                additional.add(m);
-            }
-        }
-        return additional;
-    }
-
-    private static boolean delayedInit() throws InvalidException {
-        List<NetigsoModule> init;
-        synchronized (NetigsoFramework.class) {
-            init = toInit;
-            toInit = null;
-            if (init == null || init.isEmpty()) {
-                return true;
-            }
-        }
-        InvalidException thrw = null;
-        for (NetigsoModule nm : init) {
-            try {
-                nm.start();
-            } catch (IOException ex) {
-                nm.setEnabled(false);
-                InvalidException invalid = new InvalidException(nm, ex.getMessage());
-                if (thrw == null) {
-                    invalid.initCause(ex);
-                } else {
-                    invalid.initCause(thrw);
-                }
-                thrw = invalid;
-            }
-        }
-        if (thrw != null) {
-            throw thrw;
-        }
-        return false;
-    }
-
-    static synchronized void classLoaderUp(NetigsoModule nm) throws IOException {
-        if (toInit != null) {
-            toInit.add(nm);
-            return;
-        }
-        if (!toEnable.isEmpty()) {
-            getDefault().prepare(Lookup.getDefault(), toEnable);
-            toEnable.clear();
-        }
-        nm.start();
-    }
-
-    static synchronized void classLoaderDown(NetigsoModule nm) {
-        if (toInit != null) {
-            toInit.remove(nm);
-            return;
-        }
-    }
-
-    static void startFramework() {
-        if (framework != null) {
-            framework.start();
-        }
-    }
-
-
-    /** Used on shutdown */
-    static void shutdownFramework() {
-        if (framework != null) {
-            framework.shutdown();
-        }
-        framework = null;
-        toInit = new ArrayList<NetigsoModule>();
-        toEnable.clear();
+    /** Creates a delegating loader for given module. The loader is suitable
+     * for use as a delegating loader for a fake OSGi bundle.
+     * @param cnb name of the bundle/module
+     * @return classloader or null if the module does not exist
+     * @since 2.50
+     */
+    protected final ClassLoader createClassLoader(String cnb) {
+        Module m = findModule(cnb);
+        return m == null ? null : new NetigsoLoader(m);
     }
     
-    static ClassLoader findFallbackLoader() {
-        NetigsoFramework f = framework;
-        if (f == null) {
-            return null;
-        }
-        
-        ClassLoader frameworkLoader = f.findFrameworkClassLoader();
-        
-        Class[] stack = TopSecurityManager.getStack();
-        for (int i = 0; i < stack.length; i++) {
-            ClassLoader sl = stack[i].getClassLoader();
-            if (sl == null) {
-                continue;
-            }
-            if (sl.getClass().getClassLoader() == frameworkLoader) {
-                return stack[i].getClassLoader();
-            }
-        }
-        return null;
+    /** Finds module for given name.
+     * @param cnb code name base of the module
+     * @return the module or null
+     * @since 2.50
+     */
+    protected final Module findModule(String cnb) {
+        return mgr.get(cnb);
     }
 }

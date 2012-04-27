@@ -54,6 +54,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
@@ -142,9 +143,9 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
 
     @Messages({
         "MSG_Create_Library=Create Library",
-        "MSG_Downloading=Maven: downloading {0}",
-        "MSG_Downloading_javadoc=Maven: downloading Javadoc {0}",
-        "MSG_Downloading_sources=Maven: downloading sources {0}"
+        "# {0} - Maven coordinates", "MSG_Downloading=Maven: downloading {0}",
+        "# {0} - Maven coordinates", "MSG_Downloading_javadoc=Maven: downloading Javadoc {0}",
+        "# {0} - Maven coordinates", "MSG_Downloading_sources=Maven: downloading sources {0}"
     })
     @SuppressWarnings("RV_RETURN_VALUE_IGNORED_BAD_PRACTICE") // baseFolder.mkdirs; will throw IOE later from getJarUri
     private static @CheckForNull Library createLibrary(LibraryManager libraryManager, String libraryName, List<Artifact> includeArtifacts, boolean allSourceAndJavadoc, MavenProject project, String copyTo) {
@@ -190,8 +191,16 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
             }
             for (Artifact a : includeArtifacts) {
                 handle.progress(MSG_Downloading(a.getId()), index);
+                
+                //XXX --------
+                //XXX project.getRemoteArtifactRepositories() might not be entirely reliable, we might want to use
+                //XXX     RepositoryPreferences.getInstance().getRepositoryInfos() as well..
                 try {
                     online.resolve(a, project.getRemoteArtifactRepositories(), online.getLocalRepository());
+                    AtomicBoolean cancel = ProgressTransferListener.activeListener().cancel;
+                    if (cancel != null && cancel.get()) {
+                        return null;
+                    }
                     classpathVolume.add(getJarUri(a, baseFolder, nonDefaultLibBase, ClassifierType.BINARY));
                     try {
                         if (allSourceAndJavadoc) {
@@ -203,6 +212,10 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
                                     a.getType(),
                                     "javadoc"); //NOI18N
                             online.resolve(javadoc, project.getRemoteArtifactRepositories(), online.getLocalRepository());
+                            cancel = ProgressTransferListener.activeListener().cancel;
+                            if (cancel != null && cancel.get()) {
+                                return null;
+                            }
                             if (javadoc.getFile().exists()) {
                                 URI javadocUri = getJarUri(javadoc, baseFolder, nonDefaultLibBase, ClassifierType.JAVADOC);
                                 javadocVolume.add(javadocUri);
@@ -216,6 +229,10 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
                                     a.getType(),
                                     "sources"); //NOI18N
                             online.resolve(sources, project.getRemoteArtifactRepositories(), online.getLocalRepository());
+                            cancel = ProgressTransferListener.activeListener().cancel;
+                            if (cancel != null && cancel.get()) {
+                                return null;
+                            }
                             if (sources.getFile().exists()) {
                                 sourceVolume.add(getJarUri(sources, baseFolder, nonDefaultLibBase, ClassifierType.SOURCES));
                             }

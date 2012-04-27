@@ -54,7 +54,9 @@ import java.util.List;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ListCellRenderer;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
+import static org.netbeans.modules.project.ui.Bundle.*;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
@@ -66,23 +68,17 @@ import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.AsyncGUIJob;
 import org.openide.util.ChangeSupport;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.Utilities;
 
-/** If you are looking for the non-GUI part of the panel please look
- * into new file wizard
- */
-
-
-    // #89393: GTK needs cell renderer to implement UIResource to look "natively"
 /**
  * Provides the GUI for the template chooser panel.
  * @author Jesse Glick
  */
 final class TemplateChooserPanelGUI extends javax.swing.JPanel implements PropertyChangeListener, AsyncGUIJob {
     
-    /** prefered dimmension of the panels */
-    private static final java.awt.Dimension PREF_DIM = new java.awt.Dimension (500, 340);
+    /** preferred dimension of the panels */
+    private static final Dimension PREF_DIM = new Dimension(500, 340);
     
     // private final String[] recommendedTypes = null;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
@@ -93,7 +89,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
     //GUI Builder
     private TemplatesPanelGUI.Builder builder;
     private Project project;
-    private String[] projectRecommendedTypes;
+    private @NonNull String[] projectRecommendedTypes;
     private String category;
     private String template;
     private boolean isWarmUp = true;
@@ -101,11 +97,12 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
     private boolean firstTime = true;
     private ActionListener defaultActionListener;
 
+    @Messages("LBL_TemplateChooserPanelGUI_Name=Choose File Type")
     public TemplateChooserPanelGUI() {
         this.builder = new FileChooserBuilder ();
         initComponents();
         setPreferredSize( PREF_DIM );
-        setName (org.openide.util.NbBundle.getMessage(TemplateChooserPanelGUI.class, "LBL_TemplateChooserPanelGUI_Name")); // NOI18N
+        setName(LBL_TemplateChooserPanelGUI_Name());
         projectCellRenderer = new ProjectCellRenderer ();
         projectsComboBox.setRenderer (projectCellRenderer);
      }
@@ -188,12 +185,12 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
         return ((TemplatesPanelGUI)this.templatesPanel).getSelectedTemplate ();
     }
     
-    public void propertyChange(PropertyChangeEvent evt) {
+    @Override public void propertyChange(PropertyChangeEvent evt) {
         fireChange();
     }
     
     
-    public java.awt.Dimension getPreferredSize() {
+    @Override public Dimension getPreferredSize() {
         return PREF_DIM;
     }
     
@@ -209,7 +206,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
         ((TemplatesPanelGUI)this.templatesPanel).setSelectedCategoryByName (category);
     }
     
-    public void addNotify () {
+    @Override public void addNotify () {
         if (firstTime) {
             //77244 prevent multiple initializations..
             Utilities.attachInitJob (this, this);
@@ -264,7 +261,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
 
     // private static final Comparator NATURAL_NAME_SORT = Collator.getInstance();
 
-    private final class TemplateKey {
+    private static final class TemplateKey {
         final DataObject d;
         final boolean leaf;
         TemplateKey(DataObject d, boolean leaf) {
@@ -371,24 +368,26 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
   
     final class FileChooserBuilder implements TemplatesPanelGUI.Builder {
         
-        public Children createCategoriesChildren(DataFolder folder) {
+        @Override public Children createCategoriesChildren(DataFolder folder) {
             return Children.create(new TemplateChildren(folder), true);
         }
         
-        public Children createTemplatesChildren(DataFolder folder) {
+        @Override public Children createTemplatesChildren(DataFolder folder) {
             return Children.create(new FileChildren(folder), true);
         }
-        
-        public void fireChange() {
+
+        @Override public void fireChange() {
             TemplateChooserPanelGUI.this.fireChange();
         }
-        
-        public String getCategoriesName() {
-            return NbBundle.getMessage (TemplateChooserPanelGUI.class,"CTL_Categories");
+
+        @Messages("CTL_Categories=&Categories:")
+        @Override public String getCategoriesName() {
+            return CTL_Categories();
         }
         
-        public String getTemplatesName() {
-            return NbBundle.getMessage (TemplateChooserPanelGUI.class,"CTL_Files");
+        @Messages("CTL_Files=&File Types:")
+        @Override public String getTemplatesName() {
+            return CTL_Files();
         }
 
         @Override
@@ -438,12 +437,12 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
         
     }
     
-    public void construct () {
+    @Override public void construct() {
         this.templatesFolder = FileUtil.getConfigFile("Templates");
         ((TemplatesPanelGUI)this.templatesPanel).warmUp(this.templatesFolder);
     }
     
-    public void finished () {
+    @Override public void finished() {
         //In the awt
         Cursor cursor = null;
         try {

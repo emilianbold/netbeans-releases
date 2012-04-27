@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.localhistory;
 
+import java.text.MessageFormat;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
@@ -55,9 +56,9 @@ public class LogHandler extends Handler {
     private long TIMEOUT = 30 * 1000;
     private final String messageToWaitFor;
     private String interceptedMessage;
-    private boolean done = false;
+    private int hits = 0;
     private final Compare compare;
-    private boolean block = false;
+    private long blockTO = -1;
 
     public enum Compare {
         STARTS_WITH,
@@ -79,23 +80,29 @@ public class LogHandler extends Handler {
 
     @Override
     public void publish(LogRecord record) {
-        if(!done) {
+        if(hits < 1) {
             String message = record.getMessage();
             if(message == null) {
                 return;
             }
+            message = MessageFormat.format(message, record.getParameters());
             switch (compare) {
                 case STARTS_WITH :
-                    done = message.startsWith(messageToWaitFor);
+                    if(message.startsWith(messageToWaitFor)) {
+                        hits++;
+                    }
                     break;
                 case ENDS_WITH :
-                    done = message.endsWith(messageToWaitFor);
+                    if(message.endsWith(messageToWaitFor)) {
+                        hits++;
+                    }
                     break;
                 default:
                     throw new IllegalStateException("wrong value " + compare);
             }
-            if(done) {
-                while(block) {
+            if(hits > 0) {
+                long t = System.currentTimeMillis();
+                while(blockTO > -1 && System.currentTimeMillis() - t < blockTO) {
                     try {
                         Thread.sleep(200);
                     } catch (InterruptedException ex) {
@@ -108,19 +115,23 @@ public class LogHandler extends Handler {
     }
 
     public void reset() {
-        done = false;
+        hits = 0;
     }
 
-    public void block() {
-        block = true;
+    public void block(long blockTO) {
+        this.blockTO = blockTO;
     }
     
     public void unblock() {
-        block = false;
+        this.blockTO = -1;
     }
     
     public boolean isDone() {
-        return done;
+        return hits > 0;
+    }
+
+    public int getHits() {
+        return hits;
     }
 
     public String getInterceptedMessage() {
@@ -134,9 +145,22 @@ public class LogHandler extends Handler {
 
     public void waitUntilDone() throws InterruptedException, TimeoutException {        
         long t = System.currentTimeMillis();
-        while(!done) {
+        while(hits < 1) {
             Thread.sleep(100);
             if(System.currentTimeMillis() - t > TIMEOUT) {
+                throw new TimeoutException("timout while waiting for log message containing '" + messageToWaitFor + "'");
+            }
+        }
+    }
+    
+    public void waitForHits(int hits, long timeout) throws InterruptedException, TimeoutException {        
+        if(timeout < 0) {
+            timeout = TIMEOUT;
+        }
+        long t = System.currentTimeMillis();
+        while(this.hits < hits) {
+            Thread.sleep(100);
+            if(System.currentTimeMillis() - t > timeout) {
                 throw new TimeoutException("timout while waiting for log message containing '" + messageToWaitFor + "'");
             }
         }

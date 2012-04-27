@@ -58,18 +58,20 @@ public class NexusRepositoryIndexerImplTest extends NexusTestBase {
 
     public void testFilterGroupIds() throws Exception {
         install(File.createTempFile("whatever", ".txt", getWorkDir()), "test", "spin", "1.1", "txt");
-        assertEquals(Collections.singleton("test"), nrii.filterGroupIds("", Collections.singletonList(info)));
+        nrii.indexRepo(info);
+        assertEquals("[test]", nrii.filterGroupIds("", Collections.singletonList(info)).getResults().toString());
     }
 
     public void testFind() throws Exception {
         installPOM("test", "plugin", "0", "maven-plugin");
         install(TestFileUtils.writeZipFile(new File(getWorkDir(), "plugin.jar"), "META-INF/maven/plugin.xml:<plugin><goalPrefix>stuff</goalPrefix></plugin>"), "test", "plugin", "0", "maven-plugin");
+        nrii.indexRepo(info);
         QueryField qf = new QueryField();
         qf.setField(ArtifactInfo.PLUGIN_PREFIX);
         qf.setValue("stuff");
         qf.setOccur(QueryField.OCCUR_MUST);
         qf.setMatch(QueryField.MATCH_EXACT);
-        assertEquals("[test:plugin:0:test]", nrii.find(Collections.singletonList(qf), Collections.singletonList(info)).toString());
+        assertEquals("[test:plugin:0:test]", nrii.find(Collections.singletonList(qf), Collections.singletonList(info)).getResults().toString());
     }
 
     public void testLastUpdated() throws Exception { // #197670
@@ -78,7 +80,8 @@ public class NexusRepositoryIndexerImplTest extends NexusTestBase {
         File empty = TestFileUtils.writeFile(new File(getWorkDir(), "empty"), "# placeholder\n");
         install(empty, "test", "art", "0", "pom.lastUpdated");
         install(empty, "test", "art", "0", "jar.lastUpdated");
-        List<NBVersionInfo> versions = nrii.getVersions("test", "art", Collections.singletonList(info));
+        nrii.indexRepo(info);
+        List<NBVersionInfo> versions = nrii.getVersions("test", "art", Collections.singletonList(info)).getResults();
         assertEquals(1, versions.size());
         NBVersionInfo v = versions.get(0);
         assertEquals("test:art:0:test", v.toString());

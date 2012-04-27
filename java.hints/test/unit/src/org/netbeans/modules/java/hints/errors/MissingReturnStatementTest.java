@@ -87,6 +87,54 @@ public class MissingReturnStatementTest extends ErrorHintsTestBase {
                         "}\n").replaceAll("[\t\n ]+", " "));
     }
 
+    public void test205020a() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "import java.util.Collection;\n" +
+                       "import java.util.List;\n" +
+                       "public class Test {\n" +
+                       "    public static Collection<String> join(String[] arr1, String[] arr2) {\n" +
+                       "        List<String> result \n" +
+                       "    |}\n" +
+                       "}\n",
+                       "FIX_AddReturnStatement",
+                       ("package test;\n" +
+                        "import java.util.Collection;\n" +
+                        "import java.util.List;\n" +
+                        "public class Test {\n" +
+                        "    public static Collection<String> join(String[] arr1, String[] arr2) {\n" +
+                        "        List<String> result \n" +
+                        "        return null;\n" +
+                        "    }\n" +
+                        "}\n").replaceAll("[ \t\n]+", " "));
+    }
+
+    public void test205020b() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "import java.util.Collection;\n" +
+                       "import java.util.List;\n" +
+                       "public class Test {\n" +
+                       "    public static Collection<String> join(String[] arr1, String[] arr2) {\n" +
+                       "        List<String> result;|}\n" +
+                       "}\n",
+                       "FIX_AddReturnStatement",
+                       "package test; import java.util.Collection; import java.util.List; public class Test { public static Collection<String> join(String[] arr1, String[] arr2) { List<String> result;return null; } } ");
+    }
+
+    public void test205020c() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "import java.util.Collection;\n" +
+                       "import java.util.List;\n" +
+                       "public class Test {\n" +
+                       "    public static Collection<String> join(String[] arr1, String[] arr2) {\n" +
+                       "        List<String> result; |}\n" +
+                       "}\n",
+                       "FIX_AddReturnStatement",
+                       "package test; import java.util.Collection; import java.util.List; public class Test { public static Collection<String> join(String[] arr1, String[] arr2) { List<String> result;return null; } } ");
+    }
+    
     @Override
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws Exception {
         return new MissingReturnStatement().run(info, null, pos, path, null);

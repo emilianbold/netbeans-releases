@@ -344,7 +344,7 @@ public class JavaTypeProvider implements TypeProvider {
                 if (c == null) return;
                 try {
                     //Perform queries in single readAccess to suspend RU for all queries.
-                    IndexManager.readAccess(new Action<Void>() {
+                    IndexManager.priorityAccess(new Action<Void>() {
                         @Override
                         public Void run() throws IOException, InterruptedException {
                             for (final CacheItem ci : getCache()) {
@@ -389,7 +389,7 @@ public class JavaTypeProvider implements TypeProvider {
 
     }
 
-    private static String removeNonJavaChars(String text) {
+    static String removeNonJavaChars(String text) {
        StringBuilder sb = new StringBuilder();
 
        for( int i = 0; i < text.length(); i++) {

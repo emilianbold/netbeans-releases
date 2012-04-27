@@ -50,6 +50,7 @@ import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
@@ -58,6 +59,7 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.spi.tasklist.TaskScanningScope;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -84,7 +86,7 @@ public class OpenedProjectsScanningScope extends TaskScanningScope
      * @param icon 
      */
     private OpenedProjectsScanningScope( String displayName, String description, Image icon ) {
-        super( displayName, description, icon, true );
+        super( displayName, description, icon );
         Map<String,String> labels = new HashMap<String,String>(1);
         labels.put( Utils.KEY_STATUS_BAR_LABEL, 
                 NbBundle.getMessage(OpenedProjectsScanningScope.class, "LBL_OpenedProjectsStatusBar") ); //NOI18N
@@ -133,11 +135,12 @@ public class OpenedProjectsScanningScope extends TaskScanningScope
     }
     
     public void attach( Callback newCallback ) {
+        Project[] openProjects = OpenProjects.getDefault().getOpenProjects();
         synchronized( this ) {
             if( null != newCallback && null == callback ) {
                 OpenProjects.getDefault().addPropertyChangeListener( this );
                 TopComponent.getRegistry().addPropertyChangeListener( this );
-                setLookupContent( OpenProjects.getDefault().getOpenProjects() );
+                setLookupContent( openProjects );
             } else if( null == newCallback && null != callback ) {
                 OpenProjects.getDefault().removePropertyChangeListener( this );
                 TopComponent.getRegistry().removePropertyChangeListener( this );
@@ -147,11 +150,12 @@ public class OpenedProjectsScanningScope extends TaskScanningScope
         }
     }
     
-    public synchronized void propertyChange( PropertyChangeEvent e ) {
+    public void propertyChange( PropertyChangeEvent e ) {
         if( OpenProjects.PROPERTY_OPEN_PROJECTS.equals( e.getPropertyName() ) ) {
+            Project[] projects = OpenProjects.getDefault().getOpenProjects();
             synchronized( this ) {
                 if( null != callback ) {
-                    setLookupContent( OpenProjects.getDefault().getOpenProjects() );
+                    setLookupContent( projects );
                     callback.refresh();
                 }
             }

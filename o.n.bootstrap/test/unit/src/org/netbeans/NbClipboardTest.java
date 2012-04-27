@@ -43,7 +43,7 @@
  */
 package org.netbeans;
 
-import java.awt.EventQueue;
+import java.awt.GraphicsEnvironment;
 import java.awt.KeyboardFocusManager;
 import java.awt.Window;
 import java.awt.datatransfer.Clipboard;
@@ -61,7 +61,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.util.Utilities;
 import org.openide.util.datatransfer.ClipboardEvent;
 import org.openide.util.datatransfer.ClipboardListener;
@@ -71,6 +74,10 @@ import org.openide.util.datatransfer.ClipboardListener;
  * @author Jaroslav Tulach
  */
 public class NbClipboardTest extends NbTestCase {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(NbClipboardTest.class);
+    }
 
     public NbClipboardTest(String testName) {
         super(testName);
@@ -115,7 +122,8 @@ public class NbClipboardTest extends NbTestCase {
         NbClipboard ec = new NbClipboard();
         assertFalse("MAC seems to have fast clipboard", ec.slowSystemClipboard);
     }
-    
+
+    @RandomlyFails // hung in NB-Core-Build #8042
     public void testMemoryLeak89844() throws Exception {
         class Safe implements Runnable {
             WeakReference<Object> ref;
@@ -207,7 +215,7 @@ public class NbClipboardTest extends NbTestCase {
         }
     }
     
-
+    @RandomlyFails // NB-Core-Build #7876: no new change expected:<1> but was:<2>
     public void testAddRemoveClipboardListener () throws Throwable {
         final NbClipboard clipboard = new NbClipboard(new Clipboard("testAddRemoveClipboardListener"));
         class L implements ClipboardListener, FlavorListener {

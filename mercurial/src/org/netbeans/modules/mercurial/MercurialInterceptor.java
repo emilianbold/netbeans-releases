@@ -44,7 +44,6 @@
 package org.netbeans.modules.mercurial;
 
 import java.util.Map;
-import javax.swing.SwingUtilities;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import java.io.File;
 import java.io.IOException;
@@ -72,6 +71,7 @@ import org.netbeans.modules.versioning.util.Utils;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 
 
 /**
@@ -158,10 +158,7 @@ public class MercurialInterceptor extends VCSInterceptor {
     @Override
     public void doMove(final File from, final File to) throws IOException {
         Mercurial.LOG.log(Level.FINE, "doMove {0}->{1}", new Object[]{from, to});
-        if (from == null || to == null || to.exists()) return;
-        if (SwingUtilities.isEventDispatchThread()) {
-            Mercurial.LOG.log(Level.INFO, "Warning: launching external process in AWT", new Exception().fillInStackTrace()); // NOI18N
-        }
+        if (from == null || to == null || to.exists() && !equalPathsIgnoreCase(from, to)) return;
         hgMoveImplementation(from, to);
     }
 
@@ -188,8 +185,17 @@ public class MercurialInterceptor extends VCSInterceptor {
         Mercurial.LOG.log(Level.FINE, "hgMoveImplementation(): File: {0} {1}", new Object[] {srcFile, dstFile}); // NOI18N
 
         boolean result = srcFile.renameTo(dstFile);
+        if (!result && equalPathsIgnoreCase(srcFile, dstFile)) {
+            Mercurial.LOG.log(Level.FINE, "hgMoveImplementation: magic workaround for filename case change {0} -> {1}", new Object[] { srcFile, dstFile }); //NOI18N
+            File temp = FileUtils.generateTemporaryFile(dstFile.getParentFile(), srcFile.getName());
+            Mercurial.LOG.log(Level.FINE, "hgMoveImplementation: magic workaround, step 1: {0} -> {1}", new Object[] { srcFile, temp }); //NOI18N
+            srcFile.renameTo(temp);
+            Mercurial.LOG.log(Level.FINE, "hgMoveImplementation: magic workaround, step 2: {0} -> {1}", new Object[] { temp, dstFile }); //NOI18N
+            result = temp.renameTo(dstFile);
+            Mercurial.LOG.log(Level.FINE, "hgMoveImplementation: magic workaround completed"); //NOI18N
+        }
         if (!result) {
-            Mercurial.LOG.log(Level.INFO, "Cannot rename file {0} to {1}", new Object[] {srcFile, dstFile});
+            Mercurial.LOG.log(Level.WARNING, "Cannot rename file {0} to {1}", new Object[] {srcFile, dstFile});
         }
         if (root == null) {
             return;
@@ -209,6 +215,13 @@ public class MercurialInterceptor extends VCSInterceptor {
         } finally {
             logger.closeLog();
         }
+    }
+
+    /**
+     * On Windows and Mac platforms files are the same if the paths equal with ignored case
+     */
+    private boolean equalPathsIgnoreCase(File srcFile, File dstFile) {
+        return Utilities.isWindows() && srcFile.equals(dstFile) || Utilities.isMac() && srcFile.getPath().equalsIgnoreCase(dstFile.getPath());
     }
 
     @Override

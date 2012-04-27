@@ -43,7 +43,10 @@
  */
 package org.netbeans.modules.cnd.test.base;
 
+import java.awt.EventQueue;
+import java.awt.event.KeyEvent;
 import javax.swing.JEditorPane;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
@@ -53,11 +56,11 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
-import javax.swing.text.JTextComponent;
-import org.netbeans.api.editor.mimelookup.MimePath;
+import junit.framework.TestCase;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
+import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  * Vladimir Voskresensky copied this class to prevent dependency on editor tests
@@ -77,8 +80,130 @@ public abstract class BaseDocumentUnitTestCase extends CndBaseTestCase {
     private Caret caret;
     
     private int loadCaretOffset = -1;
-    
-    
+
+    protected final static class Context {
+        private JEditorPane pane;
+
+        public Context(final EditorKit kit, final String textWithPipe) {
+            try {
+                SwingUtilities.invokeAndWait(new Runnable() {
+                    @Override
+                    public void run() {
+                        pane = new JEditorPane();
+                        pane.setEditorKit(kit);
+                        Document doc = pane.getDocument();
+                        // do we need language for default key typed?
+//                        doc.putProperty(Language.class, CppTokenId.language());
+//                        doc.putProperty("mimeType", mimeType);
+                        int caretOffset = textWithPipe.indexOf('|');
+                        String text;
+                        if (caretOffset != -1) {
+                            text = textWithPipe.substring(0, caretOffset) + textWithPipe.substring(caretOffset + 1);
+                        } else {
+                            text = textWithPipe;
+                        }
+                        pane.setText(text);
+                        pane.setCaretPosition((caretOffset != -1) ? caretOffset : doc.getLength());
+                    }
+                });
+            } catch (Exception e) {
+                throw new IllegalStateException(e);
+            }
+        }
+
+        public JEditorPane pane() {
+            return pane;
+        }
+
+        public Document document() {
+            return pane.getDocument();
+        }
+
+        public void typeChar(final char ch) {
+            try {
+                SwingUtilities.invokeAndWait(new Runnable() {
+                    @Override
+                    public void run() {
+                        KeyEvent keyEvent;
+                        switch (ch) {
+                            case '\n':
+                                keyEvent = new KeyEvent(pane, KeyEvent.KEY_PRESSED,
+                                        EventQueue.getMostRecentEventTime(),
+                                        0, KeyEvent.VK_ENTER, KeyEvent.CHAR_UNDEFINED); // Simulate pressing of Enter
+                                break;
+                            case '\b':
+                                keyEvent = new KeyEvent(pane, KeyEvent.KEY_PRESSED,
+                                        EventQueue.getMostRecentEventTime(),
+                                        0, KeyEvent.VK_BACK_SPACE, KeyEvent.CHAR_UNDEFINED); // Simulate pressing of BackSpace
+                                break;
+                            case '\f':
+                                keyEvent = new KeyEvent(pane, KeyEvent.KEY_PRESSED,
+                                        EventQueue.getMostRecentEventTime(),
+                                        0, KeyEvent.VK_DELETE, KeyEvent.CHAR_UNDEFINED); // Simulate pressing of Delete
+                                break;
+                            default:
+                                keyEvent = new KeyEvent(pane, KeyEvent.KEY_TYPED,
+                                        EventQueue.getMostRecentEventTime(),
+                                        0, KeyEvent.VK_UNDEFINED, ch);
+                        }
+                        SwingUtilities.processKeyBindings(keyEvent);
+                    }
+                });
+            } catch (Exception e) {
+                throw new IllegalStateException(e);
+            }
+        }
+
+        public void typeText(String text) {
+            for (int i = 0; i < text.length(); i++) {
+                typeChar(text.charAt(i));
+            }
+        }
+
+        public void assertDocumentTextEquals(final String textWithPipe) {
+            try {
+                SwingUtilities.invokeAndWait(new Runnable() {
+                    @Override
+                    public void run() {
+                        int caretOffset = textWithPipe.indexOf('|');
+                        String text;
+                        if (caretOffset != -1) {
+                            text = textWithPipe.substring(0, caretOffset) + textWithPipe.substring(caretOffset + 1);
+                        } else {
+                            text = textWithPipe;
+                        }
+                        try {
+                            // Use debug text to prefix special chars for easier readability
+                            text = CharSequenceUtilities.debugText(text);
+                            String docText = document().getText(0, document().getLength());
+                            docText = CharSequenceUtilities.debugText(docText);
+                            if (!text.equals(docText)) {
+                                int diffIndex = 0;
+                                int minLen = Math.min(docText.length(), text.length());
+                                while (diffIndex < minLen) {
+                                    if (text.charAt(diffIndex) != docText.charAt(diffIndex)) {
+                                        break;
+                                    }
+                                    diffIndex++;
+                                }
+                                TestCase.fail("Invalid document text - diff at index " + diffIndex
+                                        + "\nExpected: \"" + text
+                                        + "\"\n  Actual: \"" + docText + "\"");
+                            }
+                        } catch (BadLocationException e) {
+                            throw new IllegalStateException(e);
+                        }
+                        if (caretOffset != -1) {
+                            TestCase.assertEquals("Invalid caret offset", caretOffset, pane.getCaretPosition());
+                        }
+                    }
+                });
+            } catch (Exception e) {
+                throw new IllegalStateException(e);
+            }
+        }
+    }
+
     public BaseDocumentUnitTestCase(String testMethodName) {
         super(testMethodName);
         
@@ -116,7 +241,7 @@ public abstract class BaseDocumentUnitTestCase extends CndBaseTestCase {
     protected final String getLoadDocumentText() {
         return loadDocumentText;
     }
-    
+
     /**
      * Return caret offset based on the scanning of the text passed
      * to {@link #setLoadDocumentText(String)}.
@@ -136,7 +261,7 @@ public abstract class BaseDocumentUnitTestCase extends CndBaseTestCase {
      *
      * @return caret instance.
      */
-    protected synchronized final Caret getCaret () {
+    private synchronized Caret getCaret () {
         if (caret == null) {
             caret = new CaretImpl(getDocument(), loadCaretOffset);
         }
@@ -186,6 +311,7 @@ public abstract class BaseDocumentUnitTestCase extends CndBaseTestCase {
     protected void assertDocumentText(String msg, String expectedText) {
         String docText = getDocumentText();
         if (!docText.equals(expectedText)) {
+            CndUtils.threadsDump();
             StringBuffer sb = new StringBuffer();
             sb.append(msg);
             sb.append("\n----- expected text: -----\n");
@@ -199,17 +325,17 @@ public abstract class BaseDocumentUnitTestCase extends CndBaseTestCase {
                     startLine++;
                 }
                 if (expectedText.charAt(i) != docText.charAt(i)){
-                    sb.append("Diff starts in line "+startLine+"\n");
+                    sb.append("Diff starts in line ").append(startLine).append("\n");
                     String context = expectedText.substring(i);
                     if (context.length()>40){
                         context = context.substring(0, 40);
                     }
-                    sb.append("Expected:"+context+"\n");
+                    sb.append("Expected:").append(context).append("\n");
                     context = docText.substring(i);
                     if (context.length()>40){
                         context = context.substring(0, 40);
                     }
-                    sb.append("   Found:"+context+"\n");
+                    sb.append("   Found:").append(context).append("\n");
                     break;
                 }
             }
@@ -309,7 +435,7 @@ public abstract class BaseDocumentUnitTestCase extends CndBaseTestCase {
         return bd;
     }
 
-    class CaretImpl implements Caret, DocumentListener {
+    private static final class CaretImpl implements Caret, DocumentListener {
         
         private Document doc;
         
@@ -333,68 +459,84 @@ public abstract class BaseDocumentUnitTestCase extends CndBaseTestCase {
             setDot(dot);
         }
 
+        @Override
         public void deinstall (javax.swing.text.JTextComponent c) {
             fail("Not yet implemented");
         }
         
+        @Override
         public void install (javax.swing.text.JTextComponent c) {
             fail("Not yet implemented");
         }
         
+        @Override
         public java.awt.Point getMagicCaretPosition () {
             fail("Not yet implemented");
             return null;
         }
         
+        @Override
         public void setMagicCaretPosition (java.awt.Point p) {
             fail("Not yet implemented");
         }
         
+        @Override
         public int getDot () {
             return dot;
         }
         
+        @Override
         public int getMark () {
             return mark;
         }
         
+        @Override
        public void setDot (int dot) {
             this.mark = this.dot;
             changeCaretPosition(dot);
         }
         
+        @Override
         public void moveDot (int dot) {
             changeCaretPosition(dot);
         }
         
+        @Override
         public int getBlinkRate () {
             return blinkRate;
         }
         
+        @Override
         public void setBlinkRate (int rate) {
             this.blinkRate = rate;
         }
         
+        @Override
         public boolean isVisible () {
             return visible;
         }
         
+        @Override
         public void setVisible (boolean v) {
             this.visible = v;
         }
         
+        @Override
         public boolean isSelectionVisible () {
             return selectionVisible;
         }
         
+        @Override
         public void setSelectionVisible (boolean v) {
             this.selectionVisible = v;
         }
         
+        @Override
         public void addChangeListener (ChangeListener l) {
             listenerList.add(ChangeListener.class, l);
         }
         
+        @Override
         public void removeChangeListener (ChangeListener l) {
             listenerList.remove(ChangeListener.class, l);
         }
@@ -411,9 +553,11 @@ public abstract class BaseDocumentUnitTestCase extends CndBaseTestCase {
             }
         }
         
+        @Override
         public void paint (java.awt.Graphics g) {
         }
         
+        @Override
         public void insertUpdate(DocumentEvent e) {
             int offset = e.getOffset();
             int length = e.getLength();
@@ -444,6 +588,7 @@ public abstract class BaseDocumentUnitTestCase extends CndBaseTestCase {
             }
         }
         
+        @Override
         public void removeUpdate(DocumentEvent e) {
             int offs0 = e.getOffset();
             int offs1 = offs0 + e.getLength();
@@ -471,6 +616,7 @@ public abstract class BaseDocumentUnitTestCase extends CndBaseTestCase {
             }
         }
         
+        @Override
         public void changedUpdate(DocumentEvent e) {
             
         }

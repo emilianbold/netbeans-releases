@@ -48,6 +48,9 @@ import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.JFileChooser;
 import org.netbeans.modules.javafx2.scenebuilder.Home;
+import org.netbeans.modules.javafx2.scenebuilder.impl.SBHomeFactory;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 final class SBOptionsPanel extends javax.swing.JPanel {    
@@ -100,7 +103,7 @@ final class SBOptionsPanel extends javax.swing.JPanel {
     final private List<HomeDef> predefinedSBHomes = new ArrayList<HomeDef>();
     
     @NbBundle.Messages({
-        "MSG_InvalidHome=Please, select a valid SceneBuilder home...",
+        "MSG_InvalidHome=Please, select a valid Scene Builder home...",
         "LBL_Browse=Browse..."
     })
     SBOptionsPanel(SBOptionsPanelController controller) {
@@ -126,11 +129,15 @@ final class SBOptionsPanel extends javax.swing.JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
 
         sbHomeLabel = new javax.swing.JLabel();
         sbHomeInfo = new javax.swing.JLabel();
         saveAllModified = new javax.swing.JCheckBox();
         sbHome = new org.netbeans.modules.javafx2.scenebuilder.options.GrowingComboBox();
+        sepPanel = new javax.swing.JPanel();
+        sepLabel = new javax.swing.JLabel();
+        sep = new javax.swing.JSeparator();
 
         sbHomeLabel.setLabelFor(sbHome);
         org.openide.awt.Mnemonics.setLocalizedText(sbHomeLabel, org.openide.util.NbBundle.getMessage(SBOptionsPanel.class, "SBOptionsPanel.sbHomeLabel.text")); // NOI18N
@@ -151,24 +158,43 @@ final class SBOptionsPanel extends javax.swing.JPanel {
             }
         });
 
+        sepPanel.setLayout(new java.awt.GridBagLayout());
+
+        org.openide.awt.Mnemonics.setLocalizedText(sepLabel, org.openide.util.NbBundle.getMessage(SBOptionsPanel.class, "SBOptionsPanel.sepLabel.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        sepPanel.add(sepLabel, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
+        sepPanel.add(sep, gridBagConstraints);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(sepPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(sbHomeLabel)
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(sbHomeInfo, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(saveAllModified, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(sbHome, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(sbHome, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(saveAllModified, javax.swing.GroupLayout.DEFAULT_SIZE, 560, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
+                .addComponent(sepPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(sbHomeLabel)
                     .addComponent(sbHome, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -176,7 +202,7 @@ final class SBOptionsPanel extends javax.swing.JPanel {
                 .addComponent(sbHomeInfo)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(saveAllModified)
-                .addGap(0, 8, Short.MAX_VALUE))
+                .addContainerGap(264, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -227,7 +253,8 @@ final class SBOptionsPanel extends javax.swing.JPanel {
             userDefs.add(hd.home);
         }
         controller.setUserDefinedHomes(userDefs);
-        controller.setSbHome(((HomeDef)sbHome.getSelectedItem()).home);
+        HomeDef selectedHome = (HomeDef)sbHome.getSelectedItem();
+        controller.setSbHome(selectedHome != null ? selectedHome.home : null);
     }
 
     boolean valid() {
@@ -240,9 +267,15 @@ final class SBOptionsPanel extends javax.swing.JPanel {
     private org.netbeans.modules.javafx2.scenebuilder.options.GrowingComboBox sbHome;
     private javax.swing.JLabel sbHomeInfo;
     private javax.swing.JLabel sbHomeLabel;
+    private javax.swing.JSeparator sep;
+    private javax.swing.JLabel sepLabel;
+    private javax.swing.JPanel sepPanel;
     // End of variables declaration//GEN-END:variables
 
-    @NbBundle.Messages("LBL_BrowseSBHome=Select a Valid SceneBuilder Home")
+    @NbBundle.Messages({
+        "LBL_BrowseSBHome=Select a Valid Scene Builder Home",
+        "MSG_InvalidSBHome=<html>Selected location <p><b>{0}</b></p> does not represent a valid JavaFX Scene Builder installation."
+    })
     private void browseAddNewRuntime() {
         JFileChooser chooser = new JFileChooser();
         chooser.setDialogTitle(Bundle.LBL_BrowseSBHome());
@@ -259,10 +292,15 @@ final class SBOptionsPanel extends javax.swing.JPanel {
         if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
             File f = chooser.getSelectedFile();
             String newRuntimePath = f.getAbsolutePath();
-            String version = "?"; // TODO use a well known approach to determine the version here
-            HomeDef newHd = new HomeDef(new Home(newRuntimePath, version));
-            sbHome.getModel().addUserDefined(newHd);
-            sbHome.getModel().setSelectedItem(newHd);
+            Home h = SBHomeFactory.getDefault().loadHome(newRuntimePath);
+            if (h != null) {
+                HomeDef newHd = new HomeDef(h);
+                sbHome.getModel().addUserDefined(newHd);
+                sbHome.getModel().setSelectedItem(newHd);
+            } else {
+                NotifyDescriptor nd = new NotifyDescriptor.Message(Bundle.MSG_InvalidSBHome(newRuntimePath), NotifyDescriptor.ERROR_MESSAGE);
+                DialogDisplayer.getDefault().notifyLater(nd);
+            }
         }
     }
 }

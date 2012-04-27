@@ -170,7 +170,7 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel<WizardDes
             preselectedTarget = project.getProjectDirectory();
         }
         // Try to preserve the already entered target name
-        String targetName = Templates.getTargetName( wizard );
+        String targetName = isFolder ? null : Templates.getTargetName( wizard );
         // Init values
         gui.initValues( Templates.getTemplate( wizard ), preselectedTarget, targetName );
         

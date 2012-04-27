@@ -41,10 +41,15 @@
  */
 package org.netbeans.modules.netbinox;
 
+import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.logging.Level;
@@ -54,9 +59,13 @@ import org.netbeans.SetupHid;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.LocalFileSystem;
+import org.openide.modules.InstalledFileLocator;
+import org.openide.modules.Places;
 import org.openide.util.Lookup;
 
 /**
@@ -88,7 +97,7 @@ public class CachingPreventsFileTouchesTest extends NbTestCase {
         NbTestSuite suite = new NbTestSuite();
         Compile compile = new Compile("testCompile");
         suite.addTest(compile);
-        NbModuleSuite.Configuration common = NbModuleSuite.emptyConfiguration().clusters(".*").enableClasspathModules(false)
+        NbModuleSuite.Configuration common = NbModuleSuite.emptyConfiguration().clusters("(?!ergonomics).*").enableClasspathModules(false)
                 .gui(false).honorAutoloadEager(true);
         {
             NbModuleSuite.Configuration conf = common.reuseUserDir(false).addTest(CachingPreventsFileTouchesTest.class, "testInitUserDir");
@@ -98,13 +107,18 @@ public class CachingPreventsFileTouchesTest extends NbTestCase {
             NbModuleSuite.Configuration conf = common.reuseUserDir(true).addTest(CachingPreventsFileTouchesTest.class, "testStartAgain");
             suite.addTest(NbModuleSuite.create(conf));
         }
+        {
+            NbModuleSuite.Configuration conf = common.reuseUserDir(true).addTest(CachingPreventsFileTouchesTest.class, "testStartOnceMore");
+            suite.addTest(NbModuleSuite.create(conf));
+        }
 
         suite.addTest(new CachingPreventsFileTouchesTest("testInMiddle"));
 
         {
-            NbModuleSuite.Configuration conf = common.reuseUserDir(true).addTest(CachingPreventsFileTouchesTest.class, "testReadAccess", "testVerifyActivatorExecuted");
+            NbModuleSuite.Configuration conf = common.reuseUserDir(true).addTest(CachingPreventsFileTouchesTest.class, "testReadAccess", "testVerifyActivatorExecuted", "testRememberCacheDir");
             suite.addTest(NbModuleSuite.create(conf));
         }
+        suite.addTest(new CachingPreventsFileTouchesTest("testCachesDontUseAbsolutePaths"));
 
         return suite;
     }
@@ -170,6 +184,21 @@ public class CachingPreventsFileTouchesTest extends NbTestCase {
 
     public void testStartAgain() throws Exception {
         CachingAndExternalPathsTest.doNecessarySetup();
+        final String dirs = System.getProperty("netbeans.dirs");
+        for (String s : dirs.split(File.pathSeparator)) {
+            if (s.endsWith("ergonomics")) {
+                fail("There should be no ergonomics cluster in netbeans.dirs: " + dirs);
+            }
+        }
+        
+        // will be reset next time the system starts
+        System.getProperties().remove("netbeans.dirs");
+        // initializes counting, but waits till netbeans.dirs are provided
+        // by NbModuleSuite
+    }
+
+    public void testStartOnceMore() throws Exception {
+        CachingAndExternalPathsTest.doNecessarySetup();
         // will be reset next time the system starts
         System.getProperties().remove("netbeans.dirs");
         // initializes counting, but waits till netbeans.dirs are provided
@@ -184,6 +213,7 @@ public class CachingPreventsFileTouchesTest extends NbTestCase {
         System.setProperty("activated.count", "0");
     }
 
+    @RandomlyFails // NB-Core-Build #8003: expected:<0> but was:<2>
     public void testReadAccess() throws Exception {
         LOG.info("Inside testReadAccess");
         ClassLoader l = Lookup.getDefault().lookup(ClassLoader.class);
@@ -208,6 +238,62 @@ public class CachingPreventsFileTouchesTest extends NbTestCase {
         assertEquals("1", System.getProperty("activated.count"));
     }
 
+    public void testRememberCacheDir() {
+        File cacheDir = Places.getCacheDirectory();
+        assertTrue("It is a directory", cacheDir.isDirectory());
+        System.setProperty("mycache", cacheDir.getPath());
+        
+        File boot = InstalledFileLocator.getDefault().locate("lib/boot.jar", "org.netbeans.bootstrap", false);
+        assertNotNull("Boot.jar found", boot);
+        System.setProperty("myinstall", boot.getParentFile().getParentFile().getParentFile().getPath());
+    }
+
+    public void testCachesDontUseAbsolutePaths() throws Exception {
+        String cache = System.getProperty("mycache");
+        String install = System.getProperty("myinstall");
+        
+        assertNotNull("Cache found", cache);
+        assertNotNull("Install found", install);
+        
+        File cacheDir = new File(cache);
+        assertTrue("Cache dir is dir", cacheDir.isDirectory());
+        int cnt = 0;
+        final File[] arr = recursiveFiles(cacheDir, new ArrayList<File>());
+        Collections.shuffle(Arrays.asList(arr));
+        for (File f : arr) {
+            if (!f.isDirectory()) {
+                cnt++;
+                assertFileDoesNotContain(f, install);
+            }
+        }
+        assertTrue("Some cache files found", cnt > 4);
+    }
+    
+    private static File[] recursiveFiles(File dir, List<? super File> collect) {
+        File[] arr = dir.listFiles();
+        if (arr != null) {
+            for (File f : arr) {
+                if (f.isDirectory()) {
+                    recursiveFiles(f, collect);
+                } else {
+                    collect.add(f);
+                }
+            }
+        }
+        return collect.toArray(new File[0]);
+    }
+
+    private static void assertFileDoesNotContain(File file, String text) throws IOException, PropertyVetoException {
+        LocalFileSystem lfs = new LocalFileSystem();
+        lfs.setRootDirectory(file.getParentFile());
+        FileObject fo = lfs.findResource(file.getName());
+        assertNotNull("file object for " + file + " found", fo);
+        String content = fo.asText();
+        if (content.contains(text)) {
+            fail("File " + file + " seems to contain '" + text + "'!");
+        }
+    }
+    
     public static class Compile extends NbTestCase {
         private File simpleModule;
 

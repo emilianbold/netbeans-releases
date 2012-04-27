@@ -1762,6 +1762,9 @@ abstract class EntrySupport {
             visibleEntries = new ArrayList<Entry>();
             for (Entry entry : entries) {
                 EntryInfo info = entryToInfo.get(entry);
+                if (info == null) {
+                    continue;
+                }
                 boolean remove;
                 if (entriesToRemove != null) {
                     remove = entriesToRemove.remove(entry);

@@ -105,8 +105,8 @@ public class AutomaticInternationalizationTest extends ExtJellyTestCase {
      */
     public static Test suite() {
         return NbModuleSuite.create(NbModuleSuite.createConfiguration(AutomaticInternationalizationTest.class).addTest(
-                //"testAutomaticInternationalizationDisabled",
-                "testAutomaticInternationalizationEnabled").clusters(".*").enableModules(".*").gui(true));
+                "testAutomaticInternationalizationEnabled",
+                "testAutomaticInternationalizationDisabled").clusters(".*").enableModules(".*").gui(true));
     }
 
     /**
@@ -126,7 +126,7 @@ public class AutomaticInternationalizationTest extends ExtJellyTestCase {
         //add timeout
         waitNoEvent(1000);
 
-        options.selectCategory("Java"); // NOI18N
+        options.selectJava();
         //add timeout
         waitNoEvent(1000);
         JTabbedPaneOperator jtpo = new JTabbedPaneOperator(options);
@@ -178,11 +178,16 @@ public class AutomaticInternationalizationTest extends ExtJellyTestCase {
         //add timeout
         waitNoEvent(1000);
 
-        options.selectCategory("Java"); // NOI18N
+        options.selectJava();
+        waitNoEvent(1000);
+        JTabbedPaneOperator jtpo = new JTabbedPaneOperator(options);
+        jtpo.selectPage("GUI Builder");
+        waitNoEvent(1000);
+        
         //add timeout
         waitNoEvent(2000);
-
-        JComboBoxOperator jcbo = new JComboBoxOperator(options, 4);
+        
+        JComboBoxOperator jcbo = new JComboBoxOperator(options, 3);
 
         jcbo.selectItem("Off");
 
@@ -246,7 +251,7 @@ public class AutomaticInternationalizationTest extends ExtJellyTestCase {
         //add timeout
         waitNoEvent(1000);
 
-        options.selectCategory("Java"); // NOI18N
+        options.selectJava();
         //add timeout
         waitNoEvent(2000);
         options.pushKey(KeyEvent.VK_TAB);

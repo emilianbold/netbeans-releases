@@ -461,22 +461,27 @@ public class CommitAction extends ContextAction {
                 for (File f : fileSet) {
                     FileInformation fi = cache.getCachedStatus(f);
                     ISVNStatus st;
-                    if (fi != null && (FileInformation.STATUS_VERSIONED_DELETEDLOCALLY | FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY) != 0 && (st = fi.getEntry(null)) != null) {
-                        deletedCandidates.put(st.getUrl(), f);
+                    if (fi != null && (fi.getStatus() & (FileInformation.STATUS_VERSIONED_DELETEDLOCALLY | FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY)) != 0 && (st = fi.getEntry(null)) != null) {
+                        if (checkUrl(st, f)) {
+                            deletedCandidates.put(st.getUrl(), f);
+                        }
                     }
                 }
                 for (File f : fileSet) {
                     // try to locate a deleted source
                     FileInformation fi = cache.getCachedStatus(f);
                     ISVNStatus st;
+                    SVNUrl copiedUrl;
                     if (fi != null && (fi.getStatus() & FileInformation.STATUS_VERSIONED_ADDEDLOCALLY) != 0 && (st = fi.getEntry(f)) != null 
-                            && st.getUrlCopiedFrom() != null && !deletedCandidates.containsKey(st.getUrlCopiedFrom())) {
-                        // file is copied, it means it has a source file copied from
-                        File copiedFrom = getCopiedFromFile(st, f); 
-                        fi = cache.getCachedStatus(copiedFrom);
-                        // if the source is deleted add it into the candidate list
-                        if (fi != null && (fi.getStatus() & (FileInformation.STATUS_VERSIONED_DELETEDLOCALLY | FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY)) != 0) {
-                            deletedCandidates.put(st.getUrlCopiedFrom(), copiedFrom);
+                            && st.isCopied() && (copiedUrl = SvnUtils.getCopiedUrl(f)) != null && !deletedCandidates.containsKey(copiedUrl)) {
+                        if (checkUrl(st, f)) {
+                            // file is copied, it means it has a source file copied from
+                            File copiedFrom = getCopiedFromFile(st, f, copiedUrl); 
+                            fi = cache.getCachedStatus(copiedFrom);
+                            // if the source is deleted add it into the candidate list
+                            if (fi != null && (fi.getStatus() & (FileInformation.STATUS_VERSIONED_DELETEDLOCALLY | FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY)) != 0) {
+                                deletedCandidates.put(copiedUrl, copiedFrom);
+                            }
                         }
                     }
                 }
@@ -490,10 +495,10 @@ public class CommitAction extends ContextAction {
                 return added;
             }
 
-            private File getCopiedFromFile (ISVNStatus st, File f) {
+            private File getCopiedFromFile (ISVNStatus st, File f, SVNUrl copiedUrl) {
                 String relativized = "."; //NOI18N
                 String[] urlSegments = SvnUtils.decode(st.getUrl()).getPathSegments();
-                String[] copiedUrlSegments = SvnUtils.decode(st.getUrlCopiedFrom()).getPathSegments();
+                String[] copiedUrlSegments = SvnUtils.decode(copiedUrl).getPathSegments();
                 int i = 0;
                 for (; i < Math.min(urlSegments.length, copiedUrlSegments.length); ++i) {
                     if (!urlSegments[i].equals(copiedUrlSegments[i])) {
@@ -508,6 +513,14 @@ public class CommitAction extends ContextAction {
                 }
                 File copiedFrom = FileUtil.normalizeFile(new File(f, relativized.replace("/", File.separator))); //NOI18N
                 return copiedFrom;
+            }
+
+            private boolean checkUrl (ISVNStatus st, File f) {
+                if (st.getUrl() == null) {
+                    Subversion.LOG.log(Level.INFO, null, new IllegalStateException("Null URL for: " + f.getAbsolutePath() + ", " + st));
+                    return false;
+                }
+                return true;
             }
         };
         return support;
@@ -741,7 +754,7 @@ public class CommitAction extends ContextAction {
 
                 // one commit for each wc
                 List<File> commitList = itCandidates.next();
-                File[] commitedFiles = commitList.toArray(new File[commitFiles.size()]);
+                File[] commitedFiles = commitList.toArray(new File[commitList.size()]);
 
                 CommitCmd cmd = new CommitCmd(client, support, message, handleHooks ? logs : null);
                 // handle recursive commits - deleted and copied folders can't be commited non recursively
@@ -1002,7 +1015,7 @@ public class CommitAction extends ContextAction {
         }
         if(dirsToAdd.size() > 0) {
             for (File file : dirsToAdd) {
-                client.addFile(file);
+                client.addDirectory(file, false);
             }
         }
         if(support.isCanceled()) {

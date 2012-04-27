@@ -45,13 +45,16 @@
 package org.netbeans.spi.navigator;
 
 import java.beans.PropertyChangeEvent;
+import java.lang.reflect.Field;
 import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.navigator.NavigatorController;
 import org.netbeans.modules.navigator.NavigatorTC;
 import org.netbeans.modules.navigator.UnitTestUtils;
 import org.openide.util.ContextGlobalProvider;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.lookup.AbstractLookup;
@@ -84,6 +87,9 @@ public class NavigatorHandlerTest extends NbTestCase {
         ic.add(hint);
             
         final NavigatorTC navTC = NavigatorTC.getInstance();
+        Field field = NavigatorController.class.getDeclaredField("updateWhenNotShown");
+        field.setAccessible(true);
+        field.setBoolean(navTC.getController(), true);
         try {
             Mutex.EVENT.readAccess(new Mutex.ExceptionAction() {
                 @Override
@@ -93,7 +99,7 @@ public class NavigatorHandlerTest extends NbTestCase {
                     return null;
                 }
             });
-
+            waitForProviders(navTC);
             NavigatorPanel selPanel = navTC.getSelectedPanel();
             assertNotNull("Selected panel is null", selPanel);
 
@@ -120,6 +126,14 @@ public class NavigatorHandlerTest extends NbTestCase {
         } finally {
             navTC.getController().propertyChange(
                     new PropertyChangeEvent(navTC, TopComponent.Registry.PROP_TC_CLOSED, null, navTC));
+        }
+    }
+
+    private void waitForProviders(NavigatorTC navTC) throws NoSuchFieldException, SecurityException, InterruptedException, IllegalArgumentException, IllegalAccessException {
+        Field field = NavigatorController.class.getDeclaredField("inUpdate");
+        field.setAccessible(true);
+        while (field.getBoolean(navTC.getController())) {
+            Thread.sleep(100);
         }
     }
 

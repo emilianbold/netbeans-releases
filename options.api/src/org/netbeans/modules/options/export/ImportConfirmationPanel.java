@@ -58,9 +58,6 @@ public class ImportConfirmationPanel extends javax.swing.JPanel {
     /** Creates new form ImportConfirmationPanel */
     public ImportConfirmationPanel() {
         initComponents();
-        Mnemonics.setLocalizedText(cbRestart, NbBundle.getMessage(ImportConfirmationPanel.class, "ImportConfirmationPanel.cbRestart.text"));
-        String message = NbBundle.getMessage(ImportConfirmationPanel.class, "ImportConfirmationPanel.lblMessage.text"); // NOI18N
-        lblMessage.setText("<html>" + message + "</html>");  //NOI18N
     }
 
     /** Opens confirmation dialog. */
@@ -86,11 +83,6 @@ public class ImportConfirmationPanel extends javax.swing.JPanel {
         return confirmed;
     }
 
-    /** Returns true if the restart now check box is selected. */
-    boolean restartNow() {
-        return cbRestart.isSelected();
-    }
-
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -100,27 +92,17 @@ public class ImportConfirmationPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        cbRestart = new javax.swing.JCheckBox();
         lblMessage = new javax.swing.JLabel();
 
-        setMinimumSize(new java.awt.Dimension(450, 112));
-        setPreferredSize(new java.awt.Dimension(450, 112));
+        setMinimumSize(new java.awt.Dimension(450, 132));
+        setPreferredSize(new java.awt.Dimension(450, 132));
         setLayout(new java.awt.BorderLayout());
 
-        cbRestart.setSelected(true);
-        cbRestart.setText(org.openide.util.NbBundle.getMessage(ImportConfirmationPanel.class, "ImportConfirmationPanel.cbRestart.text")); // NOI18N
-        cbRestart.setMaximumSize(new java.awt.Dimension(900, 56));
-        cbRestart.setMinimumSize(new java.awt.Dimension(450, 56));
-        cbRestart.setPreferredSize(new java.awt.Dimension(450, 56));
-        add(cbRestart, java.awt.BorderLayout.SOUTH);
-        cbRestart.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ImportConfirmationPanel.class, "ImportConfirmationPanel.cbRestart.AN")); // NOI18N
-        cbRestart.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImportConfirmationPanel.class, "ImportConfirmationPanel.cbRestart.AD")); // NOI18N
-
         lblMessage.setText(org.openide.util.NbBundle.getMessage(ImportConfirmationPanel.class, "ImportConfirmationPanel.lblMessage.text")); // NOI18N
-        lblMessage.setMaximumSize(new java.awt.Dimension(900, 56));
-        lblMessage.setMinimumSize(new java.awt.Dimension(450, 56));
-        lblMessage.setPreferredSize(new java.awt.Dimension(450, 56));
-        add(lblMessage, java.awt.BorderLayout.NORTH);
+        lblMessage.setMaximumSize(new java.awt.Dimension(900, 66));
+        lblMessage.setMinimumSize(new java.awt.Dimension(450, 66));
+        lblMessage.setPreferredSize(new java.awt.Dimension(450, 66));
+        add(lblMessage, java.awt.BorderLayout.CENTER);
         lblMessage.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ImportConfirmationPanel.class, "ImportConfirmationPanel.lblMessage.text")); // NOI18N
         lblMessage.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImportConfirmationPanel.class, "ImportConfirmationPanel.lblMessage.AD")); // NOI18N
 
@@ -130,7 +112,6 @@ public class ImportConfirmationPanel extends javax.swing.JPanel {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JCheckBox cbRestart;
     private javax.swing.JLabel lblMessage;
     // End of variables declaration//GEN-END:variables
 

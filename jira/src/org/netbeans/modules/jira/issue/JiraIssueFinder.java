@@ -51,11 +51,20 @@ import org.openide.util.lookup.ServiceProviders;
  *
  * @author Marian Petras
  */
-@ServiceProviders({@ServiceProvider(service=IssueFinder.class),
-                   @ServiceProvider(service=JiraIssueFinder.class)})
 public class JiraIssueFinder extends IssueFinder {
 
+    private static JiraIssueFinder instance;
     private static final int[] EMPTY_INT_ARR = new int[0];
+
+    private JiraIssueFinder() {}
+
+
+    public synchronized static IssueFinder getInstance() {
+        if(instance == null) {
+            instance = new JiraIssueFinder();
+        }
+        return instance;
+    }
 
     @Override
     public int[] getIssueSpans(CharSequence text) {

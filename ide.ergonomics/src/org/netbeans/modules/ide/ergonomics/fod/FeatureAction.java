@@ -68,7 +68,7 @@ public class FeatureAction implements ActionListener {
     }
 
     public void actionPerformed(ActionEvent e) {
-        FeatureInfo info = FoDFileSystem.getInstance().whichProvides(fo);
+        FeatureInfo info = FoDLayersProvider.getInstance().whichProvides(fo);
         String n = Actions.cutAmpersand((String)fo.getAttribute("displayName")); // NOI18N
         boolean success = Utilities.featureDialog(info, n, n);
         if (!success) {

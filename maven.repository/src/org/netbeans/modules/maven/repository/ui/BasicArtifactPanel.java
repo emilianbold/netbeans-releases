@@ -75,6 +75,7 @@ import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
+import org.netbeans.modules.maven.indexer.api.RepositoryQueries.Result;
 import org.netbeans.modules.maven.indexer.api.RepositoryUtil;
 import org.netbeans.modules.maven.indexer.api.ui.ArtifactViewer;
 import static org.netbeans.modules.maven.repository.ui.Bundle.*;
@@ -92,6 +93,8 @@ import org.openide.windows.TopComponent;
 public class BasicArtifactPanel extends TopComponent implements MultiViewElement {
 
     private static final RequestProcessor RP = new RequestProcessor(BasicArtifactPanel.class);
+    
+    private boolean renderType = false;
     
     private JToolBar toolbar;
 
@@ -115,8 +118,11 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
                     }
                 }
             }
+            @Override
             public void mouseWheelMoved(MouseWheelEvent e) {}
+            @Override
             public void mouseDragged(MouseEvent e) {}
+            @Override
             public void mouseMoved(MouseEvent e) {}
         });
         lstVersions.setCellRenderer(new DefaultListCellRenderer() {
@@ -125,7 +131,12 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
                 Component c = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                 if (value instanceof NBVersionInfo) {
                     NBVersionInfo info = (NBVersionInfo)value;
-                    ((JLabel)c).setText(info.getVersion());
+                    if (renderType) {
+                    //often there are 2 or more types associated with a given version, list it, instead of just rendering 2 or more same versions
+                        ((JLabel)c).setText(info.getVersion() + "  [" + info.getType() + "]");
+                    } else {
+                        ((JLabel)c).setText(info.getVersion());
+                    }
                 }
                 return c;
             }
@@ -142,8 +153,11 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
     }
 
     @Messages({
+        "# {0} - number of bytes",
         "TXT_Bytes={0} bytes",
+        "# {0} - number of kilo bytes",
         "TXT_kb={0} kb",
+        "# {0} - number of mega bytes",
         "TXT_Mb={0} Mb"
     })
     private String computeSize(long size) {
@@ -231,22 +245,18 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(lblGroupId)
-                            .addComponent(lblArtifactId)
-                            .addComponent(lblVersion)
-                            .addComponent(lblPackaging))
-                        .addGap(18, 18, 18)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(txtArtifactId, javax.swing.GroupLayout.DEFAULT_SIZE, 316, Short.MAX_VALUE)
-                            .addComponent(txtGroupId, javax.swing.GroupLayout.DEFAULT_SIZE, 316, Short.MAX_VALUE)
-                            .addComponent(txtVersion, javax.swing.GroupLayout.DEFAULT_SIZE, 316, Short.MAX_VALUE)
-                            .addComponent(txtPackaging, javax.swing.GroupLayout.DEFAULT_SIZE, 316, Short.MAX_VALUE)))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(lblClassifier)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(txtClassifier, javax.swing.GroupLayout.DEFAULT_SIZE, 315, Short.MAX_VALUE)))
+                    .addComponent(lblGroupId)
+                    .addComponent(lblArtifactId)
+                    .addComponent(lblVersion)
+                    .addComponent(lblPackaging)
+                    .addComponent(lblClassifier))
+                .addGap(18, 18, 18)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(txtClassifier)
+                    .addComponent(txtArtifactId, javax.swing.GroupLayout.DEFAULT_SIZE, 316, Short.MAX_VALUE)
+                    .addComponent(txtGroupId, javax.swing.GroupLayout.DEFAULT_SIZE, 316, Short.MAX_VALUE)
+                    .addComponent(txtVersion, javax.swing.GroupLayout.DEFAULT_SIZE, 316, Short.MAX_VALUE)
+                    .addComponent(txtPackaging, javax.swing.GroupLayout.DEFAULT_SIZE, 316, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -445,10 +455,12 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
     private javax.swing.JTextField txtVersion;
     // End of variables declaration//GEN-END:variables
 
+    @Override
     public JComponent getVisualRepresentation() {
         return this;
     }
 
+    @Override
     public JComponent getToolbarRepresentation() {
         if (toolbar == null) {
             toolbar = new JToolBar();
@@ -467,9 +479,11 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
         return toolbar;
     }
 
+    @Override
     public void setMultiViewCallback(MultiViewElementCallback callback) {
     }
 
+    @Override
     public CloseOperationState canCloseElement() {
         return CloseOperationState.STATE_OK;
     }
@@ -497,7 +511,8 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
     @Messages({
         "TXT_Loading=Loading...",
         "MSG_FailedSHA1=<Failed to calculate SHA1>",
-        "MSG_NOSHA=<Cannot calculate SHA1, the artifact is not present locally>"
+        "MSG_NOSHA=<Cannot calculate SHA1, the artifact is not present locally>",
+        "TXT_INCOMPLETE=<Incomplete result, processing indices...>"
     })
     @Override
     public void componentOpened() {
@@ -526,16 +541,25 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
         dlm.addElement(TXT_Loading());
         lstVersions.setModel(dlm);
         RP.post(new Runnable() {
+            @Override
             public void run() {
-                final List<NBVersionInfo> infos = RepositoryQueries.getVersions(artifact.getGroupId(), artifact.getArtifactId(), RepositoryPreferences.getInstance().getRepositoryInfos());
+                final Result<NBVersionInfo> result = RepositoryQueries.getVersionsResult(artifact.getGroupId(), artifact.getArtifactId(), RepositoryPreferences.getInstance().getRepositoryInfos());
+                final List<NBVersionInfo> infos = result.getResults();
                 final ArtifactVersion av = new DefaultArtifactVersion(artifact.getVersion());
                 SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         dlm.removeAllElements();
                         for (NBVersionInfo ver : infos) {
                             if (!av.equals(new DefaultArtifactVersion(ver.getVersion()))) {
                                 dlm.addElement(ver);
                             }
+                            if (!artifact.getType().equals(ver.getType())) {
+                                renderType = true;
+                            }
+                        }
+                        if (result.isPartial()) {
+                            dlm.addElement(TXT_INCOMPLETE());
                         }
                     }
                 });
@@ -545,8 +569,10 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
         mdl.addElement(TXT_Loading());
         lstClassifiers.setModel(mdl);
         RP.post(new Runnable() {
+            @Override
             public void run() {
-                List<NBVersionInfo> infos = RepositoryQueries.getRecords(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(), RepositoryPreferences.getInstance().getRepositoryInfos());
+                final Result<NBVersionInfo> result = RepositoryQueries.getRecordsResult(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(), RepositoryPreferences.getInstance().getRepositoryInfos());
+                List<NBVersionInfo> infos = result.getResults();
                 final Set<String> classifiers = new TreeSet<String>();
                 boolean hasJavadoc = false;
                 boolean hasSource = false;
@@ -568,10 +594,14 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
                     classifiers.add("javadoc");
                 }
                 SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         mdl.removeAllElements();
                         for (String ver : classifiers) {
                             mdl.addElement(ver);
+                        }
+                        if (result.isPartial()) {
+                            mdl.addElement(TXT_INCOMPLETE());
                         }
                     }
                 });

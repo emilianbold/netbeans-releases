@@ -69,6 +69,8 @@ import javax.enterprise.deploy.spi.status.DeploymentStatus;
 import javax.enterprise.deploy.spi.status.ProgressListener;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.extexecution.startup.StartupExtender;
+import org.netbeans.modules.j2ee.deployment.plugins.api.CommonServerBridge;
 import org.netbeans.modules.tomcat5.progress.ProgressEventSupport;
 import org.netbeans.modules.tomcat5.progress.Status;
 import org.netbeans.modules.tomcat5.util.LogManager;
@@ -78,7 +80,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
-import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerServerSettings;
 import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerSupport;
 import org.netbeans.modules.tomcat5.TomcatManager;
 import org.netbeans.modules.tomcat5.util.TomcatProperties;
@@ -86,6 +87,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.EditableProperties;
 import org.openide.util.Utilities;
+import org.openide.util.lookup.Lookups;
 import org.xml.sax.SAXException;
 
 /** Extension to Deployment API that enables starting of Tomcat.
@@ -164,7 +166,7 @@ public final class StartTomcat extends StartServer implements ProgressObject {
     public ProgressObject startDeploymentManager () {
         LOGGER.log(Level.FINE, "StartTomcat.startDeploymentManager called on " + tm);    // NOI18N
         pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, CommandType.START, "", StateType.RUNNING));
-        SERVER_CONTROL_RP.post(new StartRunnable(MODE_RUN, CommandType.START, null),
+        SERVER_CONTROL_RP.post(new StartRunnable(MODE_RUN, CommandType.START),
                 0, Thread.NORM_PRIORITY);
         isDebugModeUri.remove(tm.getUri());
         return this;
@@ -227,7 +229,7 @@ public final class StartTomcat extends StartServer implements ProgressObject {
     public ProgressObject stopDeploymentManager() { 
         LOGGER.log(Level.FINE, "StartTomcat.stopDeploymentManager called on " + tm);    // NOI18N
         pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, CommandType.STOP, "", StateType.RUNNING));
-        SERVER_CONTROL_RP.post(new StartRunnable(MODE_RUN, CommandType.STOP, null),
+        SERVER_CONTROL_RP.post(new StartRunnable(MODE_RUN, CommandType.STOP),
                 0, Thread.NORM_PRIORITY);
         isDebugModeUri.remove(tm.getUri());
         return this;
@@ -243,19 +245,19 @@ public final class StartTomcat extends StartServer implements ProgressObject {
     public ProgressObject startDebugging(Target target) {
         LOGGER.log(Level.FINE, "StartTomcat.startDebugging called on " + tm);    // NOI18N
         pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, CommandType.START, "", StateType.RUNNING));
-        SERVER_CONTROL_RP.post(new StartRunnable(MODE_DEBUG, CommandType.START, null),
+        SERVER_CONTROL_RP.post(new StartRunnable(MODE_DEBUG, CommandType.START),
                 0, Thread.NORM_PRIORITY);
         return this;
     }
     
-    public ProgressObject startProfiling(Target target, ProfilerServerSettings settings) {
+    public ProgressObject startProfiling(Target target) {
         LOGGER.log(Level.FINE, "StartTomcat.startProfiling called on " + tm); // NOI18N
         pes.fireHandleProgressEvent(null, new Status(
                                                 ActionType.EXECUTE, 
                                                 CommandType.START, 
                                                 "",  // NOI18N
                                                 StateType.RUNNING));
-        SERVER_CONTROL_RP.post(new StartRunnable(MODE_PROFILE, CommandType.START, settings),
+        SERVER_CONTROL_RP.post(new StartRunnable(MODE_PROFILE, CommandType.START),
                 0, Thread.NORM_PRIORITY);
         return this;
     }
@@ -275,12 +277,10 @@ public final class StartTomcat extends StartServer implements ProgressObject {
         
         private int mode;
         private CommandType command = CommandType.START;
-        private ProfilerServerSettings profilerSettings;
         
-        public StartRunnable(int mode, CommandType command, ProfilerServerSettings profilerSettings) {
+        public StartRunnable(int mode, CommandType command) {
             this.mode = mode;
             this.command = command;
-            this.profilerSettings = profilerSettings;
         }
         
         public synchronized void run () {
@@ -398,11 +398,20 @@ public final class StartTomcat extends StartServer implements ProgressObject {
                         }
                     }
                 }
+
+
+                if (command == CommandType.START) {
+                    for (StartupExtender args : StartupExtender.getExtenders(
+                            Lookups.singleton(CommonServerBridge.getCommonInstance(tm.getUri())), getMode(mode))) {
+                        for (String singleArg : args.getArguments()) {
+                            sb.append(' ').append(singleArg);
+                        }
+                    }
+                }
                 javaOpts = sb.toString();
             }
             
-            JavaPlatform platform = mode == MODE_PROFILE ? profilerSettings.getJavaPlatform()
-                                                         : getJavaPlatform();
+            JavaPlatform platform = getJavaPlatform();
             String jdkVersion = platform.getSpecification().getVersion().toString();
             
             if (tm.isBundledTomcat()) {
@@ -451,54 +460,6 @@ public final class StartTomcat extends StartServer implements ProgressObject {
                         },
                         true,
                         new File (homeDir, "bin") // NOI18N
-                    );
-                    tm.setTomcatProcess(p);
-                    openLogs();
-                } catch (java.io.IOException ioe) {
-                    LOGGER.log(Level.FINE, null, ioe);
-                    fireCmdExecProgressEvent(command == CommandType.START ? "MSG_StartFailedIOE" : "MSG_StopFailedIOE",
-                            startupScript.getAbsolutePath(), StateType.FAILED);
-                    return;
-                }
-            } else if ((mode == MODE_PROFILE) && (command == CommandType.START)) {
-                NbProcessDescriptor pd  = null;
-                if (tp.getSecManager()) {
-                    pd = defaultExecDesc(TAG_EXEC_CMD, TAG_EXEC_STARTUP, TAG_SECURITY_OPT);
-                } else {
-                    pd = defaultExecDesc(TAG_EXEC_CMD, TAG_EXEC_STARTUP);
-                }
-                try {
-                    fireCmdExecProgressEvent("MSG_StartingInProfileMode", StateType.RUNNING);
-                    Process p = null;
-                    
-                    String[] profJvmArgs = profilerSettings.getJvmArgs();
-                    // TODO solve conflicts between profiler and tomcat vm args
-                    StringBuffer catalinaOpts = new StringBuffer();
-                    for (int i = 0; i < profJvmArgs.length; i++) {
-                        catalinaOpts.append(profJvmArgs[i]).append(" "); // NOI18N
-                    }
-                    String[] defaultEnv = new String[] {
-                        "JAVA_HOME="        + getJavaHome(platform),        // NOI18N
-                        "JRE_HOME=",  // NOI18N ensure that JRE_HOME system property won't be used instead of JAVA_HOME
-                        "JAVA_OPTS="        + javaOpts,             // NOI18N
-                        "CATALINA_OPTS="    + catalinaOpts.toString(),      // NOI18N
-                        "CATALINA_HOME="    + homeDir.getAbsolutePath(),    // NOI18N
-                        "CATALINA_BASE="    + baseDir.getAbsolutePath(),    // NOI18N
-                        // this is used in the setclasspath.sb/bat script for work-arounding 
-                        // problems caused by the compatibility pack when running on 1.5
-                        "NB_TOMCAT_JDK="    + jdkVersion,       // NOI18N
-                        TomcatManager.KEY_UUID + "=" + tm.getUri()
-                    };
-                    String[] profEnv = profilerSettings.getEnv();
-                    // merge Tomcat and profiler env properties
-                    String[] envp = new String[defaultEnv.length + profEnv.length];
-                    System.arraycopy(profEnv,       0, envp, 0,              profEnv.length);
-                    System.arraycopy(defaultEnv,    0, envp, profEnv.length, defaultEnv.length);
-                    p = pd.exec(
-                        new TomcatFormat(startupScript, homeDir),
-                        envp,
-                        true,
-                        new File(homeDir, "bin") // NOI18N
                     );
                     tm.setTomcatProcess(p);
                     openLogs();
@@ -573,7 +534,18 @@ public final class StartTomcat extends StartServer implements ProgressObject {
                                          StateType.FAILED);
             }
         }
-        
+
+        private StartupExtender.StartMode getMode(int mode) {
+            switch (mode) {
+                case MODE_PROFILE:
+                    return StartupExtender.StartMode.PROFILE;
+                case MODE_DEBUG:
+                    return StartupExtender.StartMode.DEBUG;
+                default:
+                    return StartupExtender.StartMode.NORMAL;
+            }
+        }
+
         /** Open JULI log and server output */
         private void openLogs() {
             LogManager logManager = tm.logManager();

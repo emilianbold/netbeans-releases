@@ -49,6 +49,9 @@ import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.io.File;
+import java.lang.ref.SoftReference;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -59,6 +62,7 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.Specification;
@@ -118,11 +122,13 @@ public class J2SEPlatformImpl extends JavaPlatform {
     /**
      * Holds bootstrap libraries for the platform
      */
-    Reference<ClassPath> bootstrap = new WeakReference<ClassPath>(null);
+    //@GuardedBy("this")
+    private Reference<ClassPath> bootstrap;
     /**
      * Holds standard libraries of the platform
      */
-    Reference<ClassPath> standardLibs = new WeakReference<ClassPath>(null);
+    //@GuardedBy("this")
+    private Reference<ClassPath> standardLibs;
 
     /**
      * Holds the specification of the platform
@@ -232,7 +238,7 @@ public class J2SEPlatformImpl extends JavaPlatform {
                 pathSpec = pathSpec + File.pathSeparator + extPathSpec;
             }
             cp = Util.createClassPath (pathSpec);
-            bootstrap = new WeakReference<ClassPath>(cp);
+            bootstrap = new SoftReference<ClassPath>(cp);
             return cp;
         }
     }
@@ -255,7 +261,7 @@ public class J2SEPlatformImpl extends JavaPlatform {
             else {
                 cp = Util.createClassPath (pathSpec);
             }
-            standardLibs = new WeakReference<ClassPath>(cp);
+            standardLibs = new SoftReference<ClassPath>(cp);
             return cp;
         }
     }
@@ -329,9 +335,8 @@ public class J2SEPlatformImpl extends JavaPlatform {
                 throw new IllegalArgumentException ("JavadocFolder must be a folder.");
             }
         }
-        final List<URL> oldJavaDoc = this.javadoc;
         if (c.isEmpty()) {
-            if (oldJavaDoc.equals(defaultJavadoc(this))) {
+            if (toURIList(this.javadoc).equals(toURIList(defaultJavadoc(this)))) {
                 //Set the PROP_NO_DEFAULT_JAVADOC
                 this.properties.put(PROP_NO_DEFAULT_JAVADOC, Boolean.TRUE.toString());
             }
@@ -415,6 +420,20 @@ public class J2SEPlatformImpl extends JavaPlatform {
      */
     private boolean shouldAddDefaultJavadoc() {
         return !Boolean.parseBoolean(getProperties().get(PROP_NO_DEFAULT_JAVADOC));
+    }
+    
+    @NonNull
+    private static List<? extends URI> toURIList(
+            @NonNull final List<? extends URL> original) {
+        final List<URI> result = new ArrayList<URI>(original.size());
+        for (URL url : original) {
+            try {
+                result.add(url.toURI());
+            } catch (URISyntaxException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return result;
     }
     
     /**

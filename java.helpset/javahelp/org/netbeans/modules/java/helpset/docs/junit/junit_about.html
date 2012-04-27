@@ -6,22 +6,32 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>About JUnit</title>
+<title>About Unit Testing</title>
 <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
 <body>
-<h2>About JUnit</h2>
+<h2>About Unit Testing</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
-<p>The IDE   provides built-in JUnit support for generating and executing
-  unit tests based on the JUnit framework. The JUnit framework is an open source
-  product that supports development of tests and provides a harness for running
-  these tests. </p>
-<p>The IDE supports JUnit 3 and JUnit 4 unit testing.
-For more information about JUnit, see:</p>
+<p>The IDE provides built-in support for generating and executing
+  unit tests based on the JUnit and TestNG frameworks. </p>
+  
+    <p>The JUnit framework is an open source
+    product that supports development of tests and provides a harness for running
+    these tests.
+    The IDE supports JUnit 3 and JUnit 4 unit testing.
+    For more information about JUnit, see the following site:</p>
   
 <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
          <param name="content" value="http://www.junit.org">
          <param name="text" value="<html><u>http://www.junit.org</u></html>"> 
+         <param name="textFontSize" value="medium">
+         <param name="textColor" value="blue">
+</object></p>
+
+<p>For more information about TestNG, see the following site:</p>
+<p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+         <param name="content" value="http://testng.org/doc/index.html">
+         <param name="text" value="<html><u>http://testng.org/doc/index.html</u></html>"> 
          <param name="textFontSize" value="medium">
          <param name="textColor" value="blue">
 </object></p>
@@ -37,20 +47,20 @@ For more information about JUnit, see:</p>
     an entire application or project.</li>
 </ul>
 <p>You can generate tests and test suites by selecting any class or package node 
-  in the Projects window and choosing Tools &gt; Create JUnit Tests from the main menu.</p>
-<h3>JUnit Test Structure</h3>
+  in the Projects window and choosing Tools &gt; Create Tests from the main menu.</p>
+<h3>Unit Test Structure</h3>
 <p>The IDE represents unit tests as subtrees which mirror the project's Java package 
   structure. By default, when the IDE generates tests each test class has the name of the class it is testing appended 
   by the word Test (for example, <tt>MyClassTest.java</tt>).</p>
-<p>Each standard project has a default test folder that is used to store the JUnit 
+<p>Each standard project has a default test folder that is used to store the unit 
   tests and test suites. This folder is displayed as the Test Packages node in the Projects window. 
   You can add any number of test folders to your project. 
   Test files and the source files they test cannot be located 
   in the same source tree.</p>
 <dl> 
     <dt><a name="seealso">See Also</a></dt>
-    <dd><a href="junit_overview.html">Working with JUnit</a></dd>
-    <dd><a href="junit_quickref.html">JUnit Tasks: Quick Reference</a></dd>
+    <dd><a href="junit_overview.html">Working with Unit Tests</a></dd>
+    <dd><a href="junit_quickref.html">Unit Testing Tasks: Quick Reference</a></dd>
     <dd><a href="../debug/debug_about.html">About Debugging Java Applications</a></dd>
     <dd><a href="nbdocs://org.netbeans.modules.mobility.javahelp/org/netbeans/modules/mobility/project/docs/jmunit/jmunit_about.html">Mobility Pack: About JMunit</a></dd>
     </dl>

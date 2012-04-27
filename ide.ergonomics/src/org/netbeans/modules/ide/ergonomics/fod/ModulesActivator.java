@@ -111,7 +111,7 @@ public class ModulesActivator {
             progressMonitor.onError(ex.getLocalizedMessage());
             Logger.getLogger(ModulesActivator.class.getName()).warning(ex.getMessage());
         } finally {
-            FoDFileSystem.getInstance().refresh();
+            FoDLayersProvider.getInstance().refreshForce();
         }
     }
     

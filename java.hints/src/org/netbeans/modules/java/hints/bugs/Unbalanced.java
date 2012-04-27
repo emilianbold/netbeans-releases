@@ -37,16 +37,23 @@
  */
 package org.netbeans.modules.java.hints.bugs;
 
+import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
@@ -60,14 +67,15 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
-import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
-import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Options;
-import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.Hint.Options;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.TriggerPattern;
+import org.netbeans.spi.java.hints.TriggerTreeKind;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -76,6 +84,7 @@ import org.openide.util.NbBundle;
 public class Unbalanced {
 
     private static final Map<CompilationInfo, Map<Element, Set<State>>> seen = new WeakHashMap<CompilationInfo, Map<Element, Set<State>>>();
+    private static final Set<Reference<CompilationInfo>> cleaning = Collections.newSetFromMap(new IdentityHashMap<Reference<CompilationInfo>, Boolean>());
 
     private static boolean isAcceptable(Element el) {
         return el != null && (el.getKind() == ElementKind.LOCAL_VARIABLE || (el.getKind() == ElementKind.FIELD && el.getModifiers().contains(Modifier.PRIVATE)));
@@ -86,6 +95,7 @@ public class Unbalanced {
 
         if (cache == null) {
             seen.put(info, cache = new HashMap<Element, Set<State>>());
+            cleaning.add(new CleaningReference(info));
         }
 
         Set<State> state = cache.get(el);
@@ -118,7 +128,7 @@ public class Unbalanced {
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), warning);
     }
 
-    @Hint(category="bugs", options=Options.QUERY)
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.bugs.Unbalanced.Array", description = "#DESC_org.netbeans.modules.java.hints.bugs.Unbalanced.Array", category="bugs", options=Options.QUERY, suppressWarnings="MismatchedReadAndWriteOfArray")
     public static final class Array {
         private static final Set<Kind> ARRAY_WRITE = EnumSet.of(
             Kind.AND_ASSIGNMENT, Kind.ASSIGNMENT, Kind.CONDITIONAL_AND, Kind.CONDITIONAL_OR,
@@ -148,7 +158,31 @@ public class Unbalanced {
             TreePath tp = ctx.getPath();
             
             if (tp.getParentPath().getLeaf().getKind() == Kind.ARRAY_ACCESS) {
-                record(ctx.getInfo(), var, ARRAY_WRITE.contains(tp.getParentPath().getParentPath().getLeaf().getKind()) ? State.WRITE : State.READ);
+                State accessType = State.READ;
+                Tree access = tp.getParentPath().getLeaf();
+                Tree assign = tp.getParentPath().getParentPath().getLeaf();
+                
+                switch (assign.getKind()) {
+                    case ASSIGNMENT:
+                        if (((AssignmentTree) assign).getVariable() == access) {
+                            accessType = State.WRITE;
+                        }
+                        break;
+                    case AND_ASSIGNMENT: case DIVIDE_ASSIGNMENT: case LEFT_SHIFT_ASSIGNMENT:
+                    case MINUS_ASSIGNMENT: case MULTIPLY_ASSIGNMENT: case OR_ASSIGNMENT:
+                    case PLUS_ASSIGNMENT: case REMAINDER_ASSIGNMENT: case RIGHT_SHIFT_ASSIGNMENT:
+                    case UNSIGNED_RIGHT_SHIFT_ASSIGNMENT: case XOR_ASSIGNMENT:
+                        if (((CompoundAssignmentTree) assign).getVariable() == access) {
+                            accessType = State.WRITE;
+                        }
+                        break;
+                    case POSTFIX_DECREMENT: case POSTFIX_INCREMENT: case PREFIX_DECREMENT:
+                    case PREFIX_INCREMENT:
+                        accessType = State.WRITE;
+                        break;
+                }
+                
+                record(ctx.getInfo(), var, accessType);
             } else {
                 record(ctx.getInfo(), var, State.WRITE, State.READ);
             }
@@ -158,21 +192,40 @@ public class Unbalanced {
 
         @TriggerPattern(value="$mods$ $type[] $name = $init$;")
         public static ErrorDescription after(HintContext ctx) {
-            if (testElement(ctx) == null) return null;
+            VariableElement var = testElement(ctx);
+
+            if (var == null) return null;
+
+            Tree parent = ctx.getPath().getParentPath().getLeaf();
+
+            if (parent.getKind() == Kind.ENHANCED_FOR_LOOP
+                && ((EnhancedForLoopTree) parent).getVariable() == ctx.getPath().getLeaf()) {
+                return null;
+            }
             
             TreePath init = ctx.getVariables().get("$init$");
 
-            if (init != null && init.getLeaf().getKind() == Kind.NEW_ARRAY) {
-                NewArrayTree nat = (NewArrayTree) init.getLeaf();
+            if (init != null) {
+                boolean asWrite = true;
+                
+                if (init.getLeaf().getKind() == Kind.NEW_ARRAY) {
+                    NewArrayTree nat = (NewArrayTree) init.getLeaf();
 
-                if (nat.getInitializers() != null && !nat.getInitializers().isEmpty()) return null;
+                    if (nat.getInitializers() == null || nat.getInitializers().isEmpty()) {
+                        asWrite = false;
+                    }
+                }
+                
+                if (asWrite) {
+                    record(ctx.getInfo(), var, State.WRITE);
+                }
             }
 
             return produceWarning(ctx, "ERR_UnbalancedArray");
         }
     }
 
-    @Hint(category="bugs", options=Options.QUERY)
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.bugs.Unbalanced.Collection", description = "#DESC_org.netbeans.modules.java.hints.bugs.Unbalanced.Collection", category="bugs", options=Options.QUERY, suppressWarnings="MismatchedQueryAndUpdateOfCollection")
     public static final class Collection {
         private static final Set<String> READ_METHODS = new HashSet<String>(Arrays.asList("get", "contains", "remove", "containsAll", "removeAll", "retain", "retainAll", "containsKey", "containsValue", "iterator", "isEmpty", "size", "toArray", "listIterator", "indexOf", "lastIndexOf"));
         private static final Set<String> WRITE_METHODS = new HashSet<String>(Arrays.asList("add", "addAll", "set"));
@@ -264,5 +317,15 @@ public class Unbalanced {
 
     public enum State {
         READ, WRITE;
+    }
+
+    private static class CleaningReference extends WeakReference<CompilationInfo> implements Runnable {
+        public CleaningReference(CompilationInfo referent) {
+            super(referent, Utilities.activeReferenceQueue());
+        }
+        @Override public void run() {
+            seen.size();
+            cleaning.remove(this);
+        }
     }
 }

@@ -74,7 +74,15 @@ import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 import org.eclipse.mylyn.tasks.core.sync.ISynchronizationSession;
+import org.netbeans.modules.bugtracking.APIAccessor;
+import org.netbeans.modules.bugtracking.QueryImpl;
+import org.netbeans.modules.bugtracking.RepositoryImpl;
+import org.netbeans.modules.bugtracking.api.Query;
+import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
+import org.netbeans.modules.jira.query.JiraQuery;
 import org.netbeans.modules.jira.repository.JiraRepository;
+import org.netbeans.modules.jira.util.JiraUtils;
 
 /**
  *
@@ -306,8 +314,22 @@ public class JiraTestUtil {
 
     public static JiraRepository getRepository() {
         if(repository == null) {
-            repository = new JiraRepository("jira", "jira", JiraTestUtil.REPO_URL, JiraTestUtil.REPO_USER, JiraTestUtil.REPO_PASSWD, null, null);
+            RepositoryInfo info = new RepositoryInfo("jira", JiraConnector.ID, JiraTestUtil.REPO_URL, "jira", "jira", JiraTestUtil.REPO_USER, null, JiraTestUtil.REPO_PASSWD.toCharArray() , null);
+            repository = new JiraRepository(info);
         }
         return repository;
     }
+    
+    public static Query getQuery(JiraQuery jiraQuery) {
+        return getQuery(JiraUtils.getRepository(jiraQuery.getRepository()), jiraQuery);
+    }        
+    
+    private static Query getQuery(Repository repository, JiraQuery q) {
+        RepositoryImpl repositoryImpl = APIAccessor.IMPL.getImpl(repository);
+        QueryImpl impl = repositoryImpl.getQuery(q);
+        if(impl == null) {
+            return null;
+        }
+        return impl.getQuery();
+    }        
 }

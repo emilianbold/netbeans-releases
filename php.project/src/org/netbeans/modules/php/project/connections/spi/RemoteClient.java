@@ -185,9 +185,21 @@ public interface RemoteClient {
     boolean setPermissions(int permissions, String path) throws RemoteException;
 
     /**
-     * Get the list of the {@link RemoteFile files} of the current directory.
+     * Get the list of the {@link RemoteFile files} (including hidden!) of the current directory.
      * @return the list of the {@link RemoteFile files} of the current directory, never <code>null</code>.
      * @throws RemoteException if any unexpected error occurs.
      */
     List<RemoteFile> listFiles() throws RemoteException;
+
+    /**
+     * Get {@link RemoteFile} if the the given path is file or <code>null</code>.
+     * <p>
+     * If the file is symbolic link then it is simply returned since cannot be decided
+     * whether it is a file or a directory.
+     * @param path <b>absolute</b> file path
+     * @return {@link RemoteFile} for the path if the path is file (or symbolic link) or <code>null</code>
+     * @throws RemoteException if any unexpected error occurs.
+     */
+    RemoteFile listFile(String absolutePath) throws RemoteException;
+
 }

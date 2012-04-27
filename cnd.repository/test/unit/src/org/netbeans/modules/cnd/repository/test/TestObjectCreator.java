@@ -67,10 +67,14 @@ public class TestObjectCreator {
         this.behavior = behavior;
     }
     
-    public Collection<TestObject> createTestObjects(String... args) {
+    public Collection<TestObject> createTestObjects(String... args) throws FileNotFoundException {
 	Collection<TestObject> objects = new ArrayList<TestObject>();
 	for (int i = 0; i < args.length; i++) {
-	    createTestObjects(new File(args[i]), objects);
+            final File file = new File(args[i]);
+            if (!file.exists()) {
+                throw new FileNotFoundException(file.getAbsolutePath());
+            }
+	    createTestObjects(file, objects);
 	}
 	return objects;
     }

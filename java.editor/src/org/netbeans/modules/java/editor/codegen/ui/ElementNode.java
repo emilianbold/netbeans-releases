@@ -72,7 +72,6 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 
 /** Node representing an Element
@@ -145,9 +144,10 @@ public class ElementNode extends AbstractNode {
     private static final class ElementChilren extends Children.Keys<Description> {
             
         public ElementChilren(List<Description> descriptions, boolean sortChildren) {
-            if( sortChildren )
+            if( sortChildren ) {
+                descriptions = new ArrayList<Description>(descriptions);
                 Collections.sort( descriptions, Description.ALPHA_COMPARATOR );
-
+            }
             setKeys(descriptions);            
         }
         

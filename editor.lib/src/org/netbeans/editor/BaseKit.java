@@ -191,16 +191,16 @@ public class BaseKit extends DefaultEditorKit {
     public static final String removeLineAction = "remove-line"; // NOI18N
     
     /** Move selection else line up */
-    /* package */ static final String moveSelectionElseLineUpAction = "move-selection-else-line-up"; // NOI18N
+    public static final String moveSelectionElseLineUpAction = "move-selection-else-line-up"; // NOI18N
     
     /** Move selection else line down */
-    /* package */ static final String moveSelectionElseLineDownAction = "move-selection-else-line-down"; // NOI18N
+    public static final String moveSelectionElseLineDownAction = "move-selection-else-line-down"; // NOI18N
     
     /** Copy selection else line up */
-    /* package */ static final String copySelectionElseLineUpAction = "copy-selection-else-line-up"; // NOI18N
+    public static final String copySelectionElseLineUpAction = "copy-selection-else-line-up"; // NOI18N
     
     /** Copy selection else line down */
-    /* package */ static final String copySelectionElseLineDownAction = "copy-selection-else-line-down"; // NOI18N
+    public static final String copySelectionElseLineDownAction = "copy-selection-else-line-down"; // NOI18N
 
     /** Toggle the typing mode to overwrite mode or back to insert mode */
     public static final String toggleTypingModeAction = "toggle-typing-mode"; // NOI18N
@@ -1150,6 +1150,23 @@ public class BaseKit extends DefaultEditorKit {
                             final Object [] result = new Object [] { Boolean.FALSE, "" }; //NOI18N
                             doc.runAtomicAsUser (new Runnable () {
                                 public void run () {
+                                    boolean alreadyBeeped = false;
+                                    if (Utilities.isSelectionShowing(target.getCaret())) { // valid selection
+                                        EditorUI editorUI = Utilities.getEditorUI(target);
+                                        Boolean overwriteMode = (Boolean) editorUI.getProperty(EditorUI.OVERWRITE_MODE_PROPERTY);
+                                        boolean ovr = (overwriteMode != null && overwriteMode.booleanValue());
+                                        try {
+                                            doc.putProperty(DOC_REPLACE_SELECTION_PROPERTY, true);
+                                            replaceSelection(target, insertionOffset.getOffset(), target.getCaret(), "", ovr);
+                                        } catch (BadLocationException ble) {
+                                            LOG.log(Level.FINE, null, ble);
+                                            target.getToolkit().beep();
+                                            alreadyBeeped = true;
+                                        }
+                                        finally {
+                                            doc.putProperty(DOC_REPLACE_SELECTION_PROPERTY, null);
+                                        }
+                                    }
                                     Object [] r = transaction.textTyped();
                                     String insertionText = r == null ? cmd : (String) r[0];
                                     int caretPosition = r == null ? -1 : (Integer) r[1];
@@ -1160,7 +1177,8 @@ public class BaseKit extends DefaultEditorKit {
                                         result[1] = insertionText;
                                     } catch (BadLocationException ble) {
                                         LOG.log(Level.FINE, null, ble);
-                                        target.getToolkit().beep();
+                                        if (!alreadyBeeped)
+                                            target.getToolkit().beep();
                                     }
                                 }
                             });
@@ -1291,7 +1309,7 @@ public class BaseKit extends DefaultEditorKit {
                 }
 
                 if (caretPosition != -1) {
-                    assert caretPosition >= 0 && caretPosition < insertionText.length();
+                    assert caretPosition >= 0 && (caretPosition < insertionText.length() || (insertionText.isEmpty() && caretPosition == 0));
                     caret.setDot(insertionOffset + caretPosition);
                 }
             } finally {
@@ -1773,7 +1791,7 @@ public class BaseKit extends DefaultEditorKit {
 		final Caret caret = target.getCaret();
 		final int dot = caret.getDot();
 		final int mark = caret.getMark();
-
+                
                 if (dot != mark) {
                     // remove selection
                     doc.runAtomicAsUser (new Runnable () {
@@ -3347,13 +3365,15 @@ public class BaseKit extends DefaultEditorKit {
 
                     int lineStartOffset = Utilities.getRowStart(doc, startPos );
                     int lineCount = Utilities.getRowCount(doc, startPos, end);
+                    Integer delta = null;
                     for (int i = lineCount - 1; i >= 0; i--) {
                         int indent = Utilities.getRowIndent(doc, lineStartOffset);
-                        int newIndent = (indent == -1) ? 0 : // Zero indent if row is white
-                                ((indent + indentDelta +
-                                    ((shiftCnt < 0) ? shiftWidth - 1 : 0))
-                                    / shiftWidth * shiftWidth);
-                                
+                        if (indent >= 0 && delta == null) {
+                            delta = ((indent + indentDelta + (shiftCnt < 0 ? shiftWidth - 1 : 0))
+                                        / shiftWidth * shiftWidth) - indent;
+                        }
+                        int newIndent = (indent < 0) ? 0 : // Zero indent if row is white
+                                indent + delta;                               
                         changeRowIndent(doc, lineStartOffset, Math.max(newIndent, 0));
                         lineStartOffset = Utilities.getRowStart(doc, lineStartOffset, +1);
                     }

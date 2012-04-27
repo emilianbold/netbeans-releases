@@ -70,6 +70,11 @@ public class SearchHistoryTopComponent extends TopComponent implements DiffSetup
         this(context, null, null);
     }
 
+    SearchHistoryTopComponent(File[] files) {
+        this();
+        initComponents(files, null, null);
+    }
+    
     public SearchHistoryTopComponent(Context context, Date from, Date to) {
         this();
         initComponents(context.getRootFiles(), from, to);

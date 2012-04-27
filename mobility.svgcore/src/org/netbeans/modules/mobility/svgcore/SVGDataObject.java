@@ -73,11 +73,7 @@ import org.netbeans.spi.xml.cookies.DataObjectAdapters;
 import org.netbeans.spi.xml.cookies.ValidateXMLSupport;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.filesystems.FileChangeListener;
-import org.openide.filesystems.FileLock;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.*;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.SaveAsCapable;
 import org.openide.nodes.Node;
@@ -92,6 +88,12 @@ import org.openide.windows.TopComponent;
  *
  * @author Pavel Benes
  */
+@MIMEResolver.ExtensionRegistration(
+    mimeType="image/svg+xml",
+    position=260,
+    displayName="#SVGResolver",
+    extension={ "svg", "SVG", "svgz", "SVGZ" }
+)
 @SuppressWarnings({"unchecked"})
 public final class SVGDataObject extends XmlMultiViewDataObject {
     private static final long  serialVersionUID = 123471457562776148L;

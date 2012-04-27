@@ -81,7 +81,7 @@ public class XMLIndentTask implements IndentTask {
             languagePath = languagePath.embedded(Language.find(mimePath.getMimeType(i)));
         }
         XMLLexerFormatter formatter = new XMLLexerFormatter(languagePath);
-        formatter.process(context);
+        formatter.reformat(context);
     }
 
     public ExtraLock indentLock() {

@@ -72,10 +72,12 @@ import javax.swing.text.Element;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.IssueLinker;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.StyledDocumentHyperlink;
 import org.netbeans.modules.versioning.util.VCSHyperlinkProvider;
+import org.openide.filesystems.FileObject;
 
 /**
  * Window displaying the line annotation with links to bugtracking in the commit message.
@@ -311,10 +313,12 @@ class MsgTooltipWindow implements AWTEventListener, MouseMotionListener, MouseLi
                 StyledDocumentHyperlink l = null;
                 List<VCSHyperlinkProvider> providers = History.getInstance().getHyperlinkProviders();
                 for (VCSHyperlinkProvider hp : providers) {
-                    l = IssueLinker.create(hp, hyperlinkStyle, file, doc, message);
-                    if (l != null) {
-                        linkerSupport.add(l, 0);
-                        break;
+                    if(file != null) { // XXX should work also with VCSFileProxy
+                        l = IssueLinker.create(hp, hyperlinkStyle, file, doc, message);
+                        if (l != null) {
+                            linkerSupport.add(l, 0);
+                            break;
+                        }
                     }
                 }
                 if(l != null) {

@@ -79,7 +79,7 @@ final class PlatformChooserWizardPanel extends BasicWizardPanel implements Wizar
     }
     
     public HelpCtx getHelp() {
-        return new HelpCtx(PlatformChooserWizardPanel.class);
+        return new HelpCtx("org.netbeans.modules.apisupport.project.ui.platform.PlatformChooserWizardPanel");
     }
     
     public boolean isFinishPanel() {

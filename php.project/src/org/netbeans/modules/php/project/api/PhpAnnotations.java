@@ -108,10 +108,7 @@ public final class PhpAnnotations implements PropertyChangeListener {
             ProjectPropertiesSupport.addWeakProjectPropertyChangeListener(phpProject, this);
             final PhpModule phpModule = phpProject.getPhpModule();
             for (PhpFrameworkProvider provider : phpProject.getFrameworks()) {
-                PhpAnnotationsProvider annotationsProvider = provider.getAnnotationsProvider(phpModule);
-                if (annotationsProvider != null) {
-                    result.add(annotationsProvider);
-                }
+                result.addAll(provider.getAnnotationsProviders(phpModule));
             }
         }
         return result;

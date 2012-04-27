@@ -66,9 +66,9 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
     // want to be polluted with NB dependencies
     // If we use cusom code and inline the Catalog.get() then there's
     // no opportunity to insert a // NOI18N.
-    static final String LBL_ChooseForegroundColor = Catalog.get("LBL_ChooseForegroundColor");	// NOI18N
-    static final String LBL_ChooseBackgroundColor = Catalog.get("LBL_ChooseBackgroundColor");	// NOI18N
-    static final String LBL_ChooseSelectionBackgroundColor = Catalog.get("LBL_ChooseSelectionBackgroundColor");	// NOI18N
+    //static final String LBL_ChooseForegroundColor = Catalog.get("LBL_ChooseForegroundColor");	// NOI18N
+    //static final String LBL_ChooseBackgroundColor = Catalog.get("LBL_ChooseBackgroundColor");	// NOI18N
+    //static final String LBL_ChooseSelectionBackgroundColor = Catalog.get("LBL_ChooseSelectionBackgroundColor");	// NOI18N
     static final String LBL_Options = Catalog.get("LBL_Options");	// NOI18N
     static final String CTL_Restore = Catalog.get("CTL_Restore");	// NOI18N
     static final String LBL_Font = Catalog.get("LBL_Font");	// NOI18N
@@ -273,7 +273,6 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
         ignoreKeymapCheckBox = new javax.swing.JCheckBox();
         previewLabel = new javax.swing.JLabel();
         previewPanel = new javax.swing.JPanel();
-        filler = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -294,7 +293,7 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 12);
@@ -471,8 +470,8 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 8;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 12);
         add(clickToTypeCheckBox, gridBagConstraints);
@@ -485,8 +484,8 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 9;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 12);
         add(scrollOnInputCheckBox, gridBagConstraints);
@@ -500,7 +499,7 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridy = 9;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 12);
         add(scrollOnOutputCheckBox, gridBagConstraints);
@@ -513,8 +512,8 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 8;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 12);
         add(lineWrapCheckBox, gridBagConstraints);
@@ -528,7 +527,7 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridy = 8;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 12);
         add(ignoreKeymapCheckBox, gridBagConstraints);
@@ -536,28 +535,25 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
         previewLabel.setDisplayedMnemonic(MNM_Preview);
         previewLabel.setLabelFor(previewPanel);
         previewLabel.setText(LBL_Preview);
-        add(previewLabel, new java.awt.GridBagConstraints());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 10;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        add(previewLabel, gridBagConstraints);
 
         previewPanel.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.LOWERED));
+        previewPanel.setPreferredSize(new java.awt.Dimension(400, 50));
         previewPanel.setLayout(new java.awt.BorderLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.gridy = 11;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 12);
         add(previewPanel, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 11, 11);
-        add(filler, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void restoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_restoreActionPerformed
@@ -671,7 +667,6 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
     private javax.swing.JLabel backgroundLabel;
     private javax.swing.JCheckBox clickToTypeCheckBox;
     private javax.swing.JLabel descriptionLabel;
-    private javax.swing.JPanel filler;
     private javax.swing.JButton fontButton;
     private javax.swing.JLabel fontLabel;
     private javax.swing.JLabel fontSizeLabel;

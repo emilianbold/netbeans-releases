@@ -46,6 +46,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Collection;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -53,6 +54,8 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
+import org.netbeans.modules.maven.api.Constants;
+import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.api.output.OutputProcessor;
 import org.netbeans.modules.maven.api.output.OutputUtils;
 import org.netbeans.modules.maven.api.output.OutputVisitor;
@@ -88,7 +91,7 @@ public class TestOutputListenerProvider implements OutputProcessor {
     private Pattern outDirPattern2;
     private Pattern runningPattern;
     
-    private static Logger LOG = Logger.getLogger(TestOutputListenerProvider.class.getName());
+    private static final Logger LOG = Logger.getLogger(TestOutputListenerProvider.class.getName());
 
     
     String outputDir;
@@ -109,6 +112,7 @@ public class TestOutputListenerProvider implements OutputProcessor {
         return TESTGOALS;
     }
     
+    @Override
     public void processLine(String line, OutputVisitor visitor) {
         if (delayedLine != null) {
             Matcher match = failWindowsPattern2.matcher(line);
@@ -149,16 +153,20 @@ public class TestOutputListenerProvider implements OutputProcessor {
         
     }
     
+    @Override
     public String[] getRegisteredOutputSequences() {
         return TESTGOALS;
     }
     
+    @Override
     public void sequenceStart(String sequenceId, OutputVisitor visitor) {
     }
     
+    @Override
     public void sequenceEnd(String sequenceId, OutputVisitor visitor) {
     }
     
+    @Override
     public void sequenceFail(String sequenceId, OutputVisitor visitor) {
     }
     
@@ -174,6 +182,7 @@ public class TestOutputListenerProvider implements OutputProcessor {
         /** Called when a line is selected.
          * @param ev the event describing the line
          */
+        @Override
         public void outputLineSelected(OutputEvent ev) {
         }
         
@@ -182,8 +191,10 @@ public class TestOutputListenerProvider implements OutputProcessor {
          */
         @Messages({
             "MSG_CannotFollowLink1=Cannot follow link. Test output directory is missing.",
-            "MSG_CannotFollowLink2=Cannot follow link. Test report file is missing."
+            "MSG_CannotFollowLink2=Cannot follow link. Test report file is missing.",
+            "MSG_CannotFollowLink3=Cannot follow link. Report file now owned by a maven project."
         })
+        @Override
         public void outputLineAction(OutputEvent ev) {
             FileObject outDir = null;
             if (outputDir != null) {
@@ -192,16 +203,38 @@ public class TestOutputListenerProvider implements OutputProcessor {
                 outDir = FileUtil.toFileObject(fl);
             } 
             if (outDir == null) {
-                LOG.info("Cannot find path " + outputDir + " to follow link in Output Window."); //NOI18N
+                LOG.log(Level.INFO, "Cannot find path {0} to follow link in Output Window.", outputDir); //NOI18N
                 StatusDisplayer.getDefault().setStatusText(MSG_CannotFollowLink1());
                 return;
             }
             outDir.refresh();
-            FileObject report = outDir.getFileObject(testname + ".txt"); //NOI18N
+
             Project prj = FileOwnerQuery.getOwner(outDir);
             if (prj != null) {
                 NbMavenProjectImpl nbprj = prj.getLookup().lookup(NbMavenProjectImpl.class);
-                File testDir = new File(nbprj.getOriginalMavenProject().getBuild().getTestSourceDirectory());
+                
+                if (nbprj == null) {
+                    LOG.log(Level.INFO, "Cannot find owning maven project for {0} to follow link in Output Window.", outputDir); //NOI18N
+                    StatusDisplayer.getDefault().setStatusText(MSG_CannotFollowLink3());                    
+                    return;
+                }
+            
+                String reportNameSuffix = PluginPropertyUtils.getPluginProperty(nbprj.getOriginalMavenProject(), Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_SUREFIRE, "reportNameSuffix", null);
+                String suffix = reportNameSuffix;
+                if (suffix == null) {
+                    suffix = "";
+                } else {
+                    //204480
+                    suffix = "-" + suffix;
+                }
+                FileObject report = outDir.getFileObject(testname + suffix + ".txt"); //NOI18N
+                String tsd = nbprj.getOriginalMavenProject().getBuild().getTestSourceDirectory();
+                if (tsd == null) {
+                    //#205722 while we were executing tests, someone broke the pom and we don't get the proper test source directory.
+                    //try getting away with the default location
+                    tsd = new File(FileUtil.toFile(prj.getProjectDirectory()), "src" + File.separator + "test" + File.separator + "java").getAbsolutePath();
+                }
+                File testDir = new File(tsd);
 
                 if (report != null) {
                     String nm = testname.lastIndexOf('.') > -1  //NOI18N
@@ -209,7 +242,7 @@ public class TestOutputListenerProvider implements OutputProcessor {
                             : testname;
                     openLog(report, nm, testDir);
                 } else {
-                    LOG.info("Cannot find report path " + outputDir + testname + ".txt to follow link in Output Window."); //NOI18N
+                    LOG.log(Level.INFO, "Cannot find report path {0}{1}.txt to follow link in Output Window.", new Object[]{outputDir, testname}); //NOI18N
                     StatusDisplayer.getDefault().setStatusText(MSG_CannotFollowLink2());
                 }
             }
@@ -218,6 +251,7 @@ public class TestOutputListenerProvider implements OutputProcessor {
         /** Called when a line is cleared from the buffer of known lines.
          * @param ev the event describing the line
          */
+        @Override
         public void outputLineCleared(OutputEvent ev) {
         }
         
@@ -235,7 +269,7 @@ public class TestOutputListenerProvider implements OutputProcessor {
                 public void run() {
                     BufferedReader reader = null;
                     OutputWriter writer = io.getOut();
-                    String line = null;
+                    String line;
                     Collection<? extends TestOutputObserver> observers = getObservers();
                     try {
                         reader = new BufferedReader(new InputStreamReader(fo.getInputStream()));

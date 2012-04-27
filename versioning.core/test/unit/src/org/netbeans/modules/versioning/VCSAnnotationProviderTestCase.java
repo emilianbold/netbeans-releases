@@ -54,6 +54,7 @@ import java.util.Map;
 import java.util.Set;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.versioning.core.VersioningAnnotationProvider;
+import org.netbeans.modules.versioning.core.VersioningManager;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.core.spi.VCSContext;
@@ -74,6 +75,7 @@ public class VCSAnnotationProviderTestCase extends NbTestCase {
     private String workDirPath;
     private static final BufferedImage IMAGE = new BufferedImage(10, 10, BufferedImage.TYPE_INT_ARGB);
     private static final BufferedImage IMAGE_ANNOTATION = new BufferedImage(6, 6, BufferedImage.TYPE_INT_ARGB);
+    private FileObject workDirFO;
 
     public VCSAnnotationProviderTestCase(String arg) {
         super(arg);
@@ -89,18 +91,20 @@ public class VCSAnnotationProviderTestCase extends NbTestCase {
         
         System.setProperty("versioning.asyncAnnotator", "true");
         workDirPath = getWorkDir().getParentFile().getName() + "/" + getWorkDir().getName();
+        
+        workDirFO = VCSFilesystemTestFactory.getInstance(this).createFolder(workDirPath);
+        // cleanup the owner cache, this folder just became versioned 
+        VersioningManager.getInstance().flushNullOwners(); 
+        DummyVCS.topmostFile = VCSFileProxy.createFileProxy(workDirFO);
     }
 
     public void testAnnotationChanged () throws Exception {
-        FileObject workDirFO = VCSFilesystemTestFactory.getInstance(this).createFolder(workDirPath);
-        DummyVCS.topmostFile = VCSFileProxy.createFileProxy(workDirFO);
         
         HashMap<FileObject, String> expectedLabelAnnotations = new HashMap<FileObject, String>();
         HashMap<FileObject, String> expectedIconToolTips = new HashMap<FileObject, String>();
         expectedLabelAnnotations.put(workDirFO, workDirFO.getNameExt() + " - annotated");
         expectedIconToolTips.put(workDirFO, workDirFO.getNameExt() + "<br>Annotated");
         FileObject f = workDirFO.createFolder("folder1");
-        FileObject f1 = workDirFO.createData("vole");
         expectedLabelAnnotations.put(f, f.getNameExt() + " - annotated");
         expectedIconToolTips.put(f, f.getNameExt() + "<br>Annotated");
         f = f.createFolder("folder1_1");

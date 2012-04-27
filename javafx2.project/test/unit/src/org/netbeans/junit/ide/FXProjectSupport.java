@@ -123,7 +123,7 @@ public class FXProjectSupport {
             File projectDir = new File(projectParentDir, name);
             JFXProjectGenerator.createProject(
                     projectDir, name, mainClass, 
-                    null, null, 
+                    null, null, null, 
                     platform.getProperties().get(JavaFXPlatformUtils.PLATFORM_ANT_NAME), 
                     null, 
                     WizardType.APPLICATION);

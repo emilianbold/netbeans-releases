@@ -44,9 +44,10 @@ package org.netbeans.modules.bugzilla;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.QueryNotifyListener;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
+import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
+import org.netbeans.modules.bugzilla.query.QueryNotifyListener;
 
 /**
  *
@@ -55,7 +56,7 @@ import org.netbeans.modules.bugzilla.query.BugzillaQuery;
 public class TestQueryNotifyListener implements QueryNotifyListener {
     public boolean started = false;
     public boolean finished = false;
-    public List<Issue> issues = new ArrayList<Issue>();
+    public List<BugzillaIssue> issues = new ArrayList<BugzillaIssue>();
     private BugzillaQuery q;
     public TestQueryNotifyListener(BugzillaQuery q) {
         this.q = q;
@@ -64,7 +65,7 @@ public class TestQueryNotifyListener implements QueryNotifyListener {
     public void started() {
         started = true;
     }
-    public void notifyData(Issue issue) {
+    public void notifyData(BugzillaIssue issue) {
         issues.add(issue);
     }
     public void finished() {
@@ -73,12 +74,12 @@ public class TestQueryNotifyListener implements QueryNotifyListener {
     public void reset() {
         started = false;
         finished = false;
-        issues = new ArrayList<Issue>();
+        issues = new ArrayList<BugzillaIssue>();
     }
-    public List<Issue> getIssues(int includeStatus) {
-        List<Issue> ret = new ArrayList<Issue>();
-        for (Issue issue : issues) {
-            if (q == null || (q.getIssueStatus(issue) & includeStatus) != 0) {
+    public List<BugzillaIssue> getIssues(int includeStatus) {
+        List<BugzillaIssue> ret = new ArrayList<BugzillaIssue>();
+        for (BugzillaIssue issue : issues) {
+            if (q == null || (q.getIssueStatus(issue.getID()) & includeStatus) != 0) {
                 ret.add(issue);
             }
         }

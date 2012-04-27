@@ -90,8 +90,10 @@ final class FileScopeImpl extends ScopeImpl implements FileScope  {
         return info.getModel().getIndexScope();
     }
 
+    @Override
     public Collection<? extends NamespaceScope> getDeclaredNamespaces() {
         return filter(getElements(), new ElementFilter<NamespaceScope>() {
+            @Override
             public boolean isAccepted(ModelElement element) {
                 return element.getPhpElementKind().equals(PhpElementKind.NAMESPACE_DECLARATION);
             }
@@ -99,8 +101,10 @@ final class FileScopeImpl extends ScopeImpl implements FileScope  {
     }
 
 
+    @Override
     public NamespaceScope getDefaultDeclaredNamespace() {
         return ModelUtils.getFirst(ModelUtils.filter(getDeclaredNamespaces(), new ModelUtils.ElementFilter<NamespaceScope>() {
+            @Override
             public boolean isAccepted(NamespaceScope ns) {
                 return ns.isDefaultNamespace();
             }

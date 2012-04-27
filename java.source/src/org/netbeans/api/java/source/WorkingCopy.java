@@ -63,7 +63,6 @@ import java.io.StringWriter;
 import java.lang.ref.Reference;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
@@ -75,9 +74,12 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Position.Bias;
 import javax.tools.JavaFileObject;
+
+import com.sun.source.tree.EnhancedForLoopTree;
+import com.sun.source.tree.ForLoopTree;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.annotations.common.NullUnknown;
@@ -95,16 +97,15 @@ import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.pretty.ImportAnalysis2;
 import org.netbeans.modules.java.source.save.CasualDiff;
 import org.netbeans.modules.java.source.save.DiffContext;
+import org.netbeans.modules.java.source.save.DiffUtilities;
 import org.netbeans.modules.java.source.save.ElementOverlay;
 import org.netbeans.modules.java.source.save.ElementOverlay.FQNComputer;
 import org.netbeans.modules.java.source.save.OverlayTemplateAttributesProvider;
 import org.netbeans.modules.java.source.transform.ImmutableTreeTranslator;
-import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.text.CloneableEditorSupport;
 import org.openide.util.NbBundle;
 
 /**XXX: extends CompilationController now, finish method delegation
@@ -116,7 +117,7 @@ public class WorkingCopy extends CompilationController {
     static Reference<WorkingCopy> instance;
     private Map<Tree, Tree> changes;
     private Map<JavaFileObject, CompilationUnitTree> externalChanges;
-    private Set<Diff> textualChanges;
+    private List<Diff> textualChanges;
     private Map<Integer, String> userInfo;
     private boolean afterCommit = false;
     private TreeMaker treeMaker;
@@ -136,12 +137,12 @@ public class WorkingCopy extends CompilationController {
         changes = new IdentityHashMap<Tree, Tree>();
         tree2Tag = new IdentityHashMap<Tree, Object>();
         externalChanges = null;
-        textualChanges = new HashSet<Diff>();
+        textualChanges = new ArrayList<Diff>();
         userInfo = new HashMap<Integer, String>();
 
-        if (getContext().get(ElementOverlay.class) == null) {
-            getContext().put(ElementOverlay.class, overlay);
-        }
+        //#208490: force the current ElementOverlay:
+        getContext().put(ElementOverlay.class, (ElementOverlay) null);
+        getContext().put(ElementOverlay.class, overlay);
     }
     
     private Context getContext() {
@@ -197,17 +198,29 @@ public class WorkingCopy extends CompilationController {
     
     /**
      * Replaces the original tree <code>oldTree</code> with the new one -
-     * <code>newTree</code>. <code>null</code> values are not allowed.
-     * Use methods in {@link TreeMaker} for tree element removal.
+     * <code>newTree</code>.
+     * <p>
+     * To create a new file, use
+     * <code>rewrite(null, compilationUnitTree)</code>. Use
+     * {@link GeneratorUtilities#createFromTemplate GeneratorUtilities.createFromTemplate()}
+     * to create a new compilation unit tree from a template.
+     * <p>
+     * <code>newTree</code> cannot be <code>null</code>, use methods in
+     * {@link TreeMaker} for tree element removal. If <code>oldTree</code> is
+     * null, <code>newTree</code> must be of kind
+     * {@link Kind#COMPILATION_UNIT COMPILATION_UNIT}.
+     * 
      * 
      * @param oldTree  tree to be replaced, use tree already represented in
-     *                 source code.
+     *                 source code. <code>null</code> to create a new file.
      * @param newTree  new tree, either created by <code>TreeMaker</code>
-     *                 or obtained from different place.
+     *                 or obtained from different place. <code>null</code>
+     *                 values are not allowed.
      * @throws IllegalStateException if <code>toPhase()</code> method was not
      *         called before.
      * @throws IllegalArgumentException when <code>null</code> was passed to the 
      *         method.
+     * @see GeneratorUtilities#createFromTemplate
      * @see TreeMaker
      */
     public synchronized void rewrite(@NullAllowed Tree oldTree, @NonNull Tree newTree) {
@@ -295,30 +308,36 @@ public class WorkingCopy extends CompilationController {
     public synchronized void tag(@NonNull Tree t, @NonNull Object tag) {
         tree2Tag.put(t, tag);
     }
+
+    /**Returns the tree into which the given tree was rewritten using the
+     * {@link #rewrite(com.sun.source.tree.Tree, com.sun.source.tree.Tree) } method,
+     * transitively.
+     * Will return the input tree if the input tree was never passed as the first
+     * parameter of the {@link #rewrite(com.sun.source.tree.Tree, com.sun.source.tree.Tree) }
+     * method.
+     *
+     * <p>Note that the returned tree will be exactly equivalent to a tree passed as
+     * the second parameter to {@link #rewrite(com.sun.source.tree.Tree, com.sun.source.tree.Tree) }.
+     * No attribution or other information will be added (or removed) to (or from) the tree.
+     *
+     * @param in the tree to inspect
+     * @return tree into which the given tree was rewritten using the
+     * {@link #rewrite(com.sun.source.tree.Tree, com.sun.source.tree.Tree) } method,
+     * transitively
+     * @since 0.102
+     */
+    public synchronized @NonNull Tree resolveRewriteTarget(@NonNull Tree in) {
+        Map<Tree, Tree> localChanges = new IdentityHashMap<Tree, Tree>(changes);
+
+        while (localChanges.containsKey(in)) {
+            in = localChanges.remove(in);
+        }
+
+        return in;
+    }
     
     // Package private methods -------------------------------------------------        
     
-    private static void commit(CompilationUnitTree topLevel, List<Diff> diffs, Rewriter out) throws IOException, BadLocationException {
-        String s = codeForCompilationUnit(topLevel);
-        char[] buf = s.toCharArray();
-
-        // Copy any leading comments.
-        for (Diff d : diffs) {
-            switch (d.type) {
-                case INSERT:
-                    out.copyTo(d.getPos());
-                    out.writeTo(d.getText());
-                    break;
-                case DELETE:
-                    out.copyTo(d.getPos());
-                    out.skipThrough(buf, d.getEnd());
-                    break;
-                default:
-                    throw new AssertionError("unknown CasualDiff type: " + d.type);
-            }
-        }
-    }
-
     private static String codeForCompilationUnit(CompilationUnitTree topLevel) throws IOException {
         return ((JCTree.JCCompilationUnit) topLevel).sourcefile.getCharContent(true).toString();
     }
@@ -386,6 +405,25 @@ public class WorkingCopy extends CompilationController {
                     addNonSyntheticTree(diffContext, node);
                     return super.scan(node, p);
                 }
+
+                @Override
+                public Void visitForLoop(ForLoopTree node, Void p) {
+                    try {
+                        return super.visitForLoop(node, p);
+                    } finally {
+                        oldTrees.removeAll(node.getInitializer());
+                    }
+                }
+
+                @Override
+                public Void visitEnhancedForLoop(EnhancedForLoopTree node, Void p) {
+                    try {
+                        return super.visitEnhancedForLoop(node, p);
+                    } finally {
+                        oldTrees.remove(node.getVariable());
+                    }
+                }
+                
             }.scan(diffContext.origUnit, null);
         } else {
             new TreeScanner<Void, Void>() {
@@ -404,7 +442,16 @@ public class WorkingCopy extends CompilationController {
                 private final FQNComputer fqn = new FQNComputer();
 
                 private TreePath getParentPath(TreePath tp, Tree t) {
-                    Tree parent = tp != null ? tp.getLeaf() : t;
+                    Tree parent;
+                    
+                    if (tp != null) {
+                        while (tp.getLeaf().getKind() != Kind.COMPILATION_UNIT && getTreeUtilities().isSynthetic(tp)) {
+                            tp = tp.getParentPath();
+                        }
+                        parent = tp.getLeaf();
+                    } else {
+                        parent = t;
+                    }
                     TreePath c = tree2Path.get(parent);
 
                     if (c == null) {
@@ -417,8 +464,8 @@ public class WorkingCopy extends CompilationController {
 
                 @Override
                 public Void scan(Tree tree, Void p) {
-                    boolean clearCurrentParent = false;
                     if (changes.containsKey(tree)) {
+                        boolean clearCurrentParent = false;
                         if (currentParent == null) {
                             clearCurrentParent = true;
                             currentParent = getParentPath(getCurrentPath(), tree);
@@ -530,17 +577,8 @@ public class WorkingCopy extends CompilationController {
         
         userInfo.putAll(this.userInfo);
         
-        Collections.sort(diffs, new Comparator<Diff>() {
-            public int compare(Diff o1, Diff o2) {
-                return o1.getPos() - o2.getPos();
-            }
-        });
-
         try {
-            Rewriter r = new Rewriter(diffContext.file, diffContext.positionConverter, userInfo);
-            commit(diffContext.origUnit, diffs, r);
-
-            return r.diffs;
+            return DiffUtilities.diff2ModificationResultDifference(diffContext.file, diffContext.positionConverter, userInfo, codeForCompilationUnit(diffContext.origUnit), diffs);
         } catch (IOException ex) {
             if (!diffContext.file.isValid()) {
                 Logger.getLogger(WorkingCopy.class.getName()).log(Level.FINE, null, ex);
@@ -561,12 +599,13 @@ public class WorkingCopy extends CompilationController {
             try {
                 FileObject targetFile = doCreateFromTemplate(t);
                 CompilationUnitTree templateCUT = impl.getJavacTask().parse(FileObjects.nbFileObject(targetFile, targetFile.getParent())).iterator().next();
+                CompilationUnitTree importComments = GeneratorUtilities.get(this).importComments(templateCUT, templateCUT);
 
-                changes.put(templateCUT, t);
+                changes.put(importComments, t);
 
                 StringWriter target = new StringWriter();
 
-                ModificationResult.commit(targetFile, processCurrentCompilationUnit(new DiffContext(this, templateCUT, codeForCompilationUnit(templateCUT), new PositionConverter(), targetFile, notSyntheticTrees), tag2Span), target);
+                ModificationResult.commit(targetFile, processCurrentCompilationUnit(new DiffContext(this, templateCUT, codeForCompilationUnit(templateCUT), new PositionConverter(), targetFile, notSyntheticTrees, getFileObject() != null ? getCompilationUnit() : null, getFileObject() != null ? getText() : null), tag2Span), target);
                 result.add(new CreateChange(t.getSourceFile(), target.toString()));
                 target.close();
             } catch (BadLocationException ex) {
@@ -579,25 +618,53 @@ public class WorkingCopy extends CompilationController {
         return result;
     }
 
-    private static String template(CompilationUnitTree cut) {
-        if ("package-info.java".equals(cut.getSourceFile().getName())) return "Templates/Classes/package-info.java";
-        if (cut.getTypeDecls().isEmpty()) return "Templates/Classes/Empty.java";
-
-        switch (cut.getTypeDecls().get(0).getKind()) {
+    String template(ElementKind kind) {
+        if(kind == null) {
+            return "Templates/Classes/Empty.java"; // NOI18N
+        }
+        switch (kind) {
             case CLASS: return "Templates/Classes/Class.java"; // NOI18N
             case INTERFACE: return "Templates/Classes/Interface.java"; // NOI18N
             case ANNOTATION_TYPE: return "Templates/Classes/AnnotationType.java"; // NOI18N
             case ENUM: return "Templates/Classes/Enum.java"; // NOI18N
+            case PACKAGE: return "Templates/Classes/package-info.java"; // NOI18N
             default:
-                Logger.getLogger(WorkingCopy.class.getName()).log(Level.SEVERE, "Cannot resolve template for {0}", cut.getTypeDecls().get(0).getKind());
-                return "Templates/Classes/Empty.java";
+                Logger.getLogger(WorkingCopy.class.getName()).log(Level.SEVERE, "Cannot resolve template for {0}", kind);
+                return "Templates/Classes/Empty.java"; // NOI18N
         }
     }
 
-    private static FileObject doCreateFromTemplate(CompilationUnitTree t) throws IOException {
-        FileObject scratchFolder = FileUtil.createMemoryFileSystem().getRoot();
+    FileObject doCreateFromTemplate(CompilationUnitTree cut) throws IOException {
+        ElementKind kind;
+        if ("package-info.java".equals(cut.getSourceFile().getName())) {
+            kind = ElementKind.PACKAGE;
+        } else if (cut.getTypeDecls().isEmpty()) {
+            kind = null;
+        } else {
+            switch (cut.getTypeDecls().get(0).getKind()) {
+                case CLASS:
+                    kind = ElementKind.CLASS;
+                    break;
+                case INTERFACE:
+                    kind = ElementKind.INTERFACE;
+                    break;
+                case ANNOTATION_TYPE:
+                    kind = ElementKind.ANNOTATION_TYPE;
+                    break;
+                case ENUM:
+                    kind = ElementKind.ENUM;
+                    break;
+                default:
+                    Logger.getLogger(WorkingCopy.class.getName()).log(Level.SEVERE, "Cannot resolve template for {0}", cut.getTypeDecls().get(0).getKind());
+                    kind = null;
+            }
+        }
+        FileObject template = FileUtil.getConfigFile(template(kind));
+        return doCreateFromTemplate(template, cut.getSourceFile());
+    }
 
-        FileObject template = FileUtil.getConfigFile(template(t));
+    FileObject doCreateFromTemplate(FileObject template, JavaFileObject sourceFile) throws IOException {
+        FileObject scratchFolder = FileUtil.createMemoryFileSystem().getRoot();
 
         if (template == null) {
             return scratchFolder.createData("out", "java");
@@ -609,7 +676,7 @@ public class WorkingCopy extends CompilationController {
             return scratchFolder.createData("out", "java");
         }
 
-        File pack = new File(t.getSourceFile().toUri()).getParentFile();
+        File pack = new File(sourceFile.toUri()).getParentFile();
 
         while (FileUtil.toFileObject(pack) == null) {
             pack = pack.getParentFile();
@@ -620,7 +687,8 @@ public class WorkingCopy extends CompilationController {
 
         scratchFolder.setAttribute(OverlayTemplateAttributesProvider.ATTR_ORIG_FILE, targetDataFolder);
 
-        DataObject newFile = templateDO.createFromTemplate(DataFolder.findFolder(scratchFolder));
+        String name = FileObjects.getName(sourceFile, true);
+        DataObject newFile = templateDO.createFromTemplate(DataFolder.findFolder(scratchFolder), name);
 
         return newFile.getPrimaryFile();
     }
@@ -675,54 +743,4 @@ public class WorkingCopy extends CompilationController {
         return;
     }
     
-    // Innerclasses ------------------------------------------------------------
-    private static class Rewriter {
-
-        private int offset = 0;
-        private CloneableEditorSupport ces;
-        private PositionConverter converter;
-        private List<Difference> diffs = new LinkedList<Difference>();
-        private Map<Integer, String> userInfo;
-
-        public Rewriter(FileObject fo, PositionConverter converter, Map<Integer, String> userInfo) throws IOException {
-            this.converter = converter;
-            this.userInfo = userInfo;
-            if (fo != null) {
-                DataObject dObj = DataObject.find(fo);
-                ces = dObj != null ? (CloneableEditorSupport)dObj.getCookie(EditorCookie.class) : null;
-            }
-            if (ces == null)
-                throw new IOException("Could not find CloneableEditorSupport for " + FileUtil.getFileDisplayName (fo)); //NOI18N
-        }
-
-        public void writeTo(String s) throws IOException, BadLocationException {                
-            Difference diff = diffs.size() > 0 ? diffs.get(diffs.size() - 1) : null;
-            if (diff != null && diff.getKind() == Difference.Kind.REMOVE && diff.getEndPosition().getOffset() == offset) {
-                diff.kind = Difference.Kind.CHANGE;
-                diff.newText = s;
-            } else {
-                int off = converter != null ? converter.getOriginalPosition(offset) : offset;
-                if (off >= 0)
-                    diffs.add(new Difference(Difference.Kind.INSERT, ces.createPositionRef(off, Bias.Forward), ces.createPositionRef(off, Bias.Backward), null, s, userInfo.get(offset)));
-            }
-        }
-
-        public void skipThrough(char[] in, int pos) throws IOException, BadLocationException {
-            String origText = new String(in, offset, pos - offset);
-            Difference diff = diffs.size() > 0 ? diffs.get(diffs.size() - 1) : null;
-            if (diff != null && diff.getKind() == Difference.Kind.INSERT && diff.getStartPosition().getOffset() == offset) {
-                diff.kind = Difference.Kind.CHANGE;
-                diff.oldText = origText;
-            } else {
-                int off = converter != null ? converter.getOriginalPosition(offset) : offset;
-                if (off >= 0)
-                    diffs.add(new Difference(Difference.Kind.REMOVE, ces.createPositionRef(off, Bias.Forward), ces.createPositionRef(off + origText.length(), Bias.Backward), origText, null, userInfo.get(offset)));
-            }
-            offset = pos;
-        }
-
-        public void copyTo(int pos) throws IOException {
-            offset = pos;
-        }
-    }
 }

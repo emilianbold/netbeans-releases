@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -44,16 +44,14 @@
 
 package org.netbeans.core.startup;
 
-import java.io.ByteArrayInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -62,6 +60,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
@@ -83,12 +82,14 @@ import org.netbeans.core.startup.layers.ModuleLayeredFileSystem;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.Dependency;
+import org.openide.modules.ModuleInfo;
 import org.openide.modules.ModuleInstall;
 import org.openide.modules.SpecificationVersion;
-import org.openide.util.Exceptions;
 import org.openide.util.NbCollections;
 import org.openide.util.SharedClassObject;
 import org.openide.util.NbBundle;
+import org.openide.util.Task;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.InstanceContent;
 import org.xml.sax.SAXException;
 
@@ -123,6 +124,10 @@ final class NbInstaller extends ModuleInstaller {
     private final Map<Module,List<Module.PackageExport>> hiddenClasspathPackages = new  HashMap<Module,List<Module.PackageExport>>();
     /** #164510: similar to {@link #hiddenClasspathPackages} but backwards for efficiency */
     private final Map<Module.PackageExport,List<Module>> hiddenClasspathPackagesReverse = new HashMap<Module.PackageExport,List<Module>>();
+    /** caches important values from module manifests */
+    private final Cache cache = new Cache();
+    /** Processing @OnStart/@OnStop calls */
+    private final NbStartStop onStartStop = new NbStartStop(null, null);
         
     /** Create an NbInstaller.
      * You should also call {@link #registerManager} and if applicable
@@ -144,14 +149,21 @@ final class NbInstaller extends ModuleInstaller {
     }
 
     // @SuppressWarnings("unchecked")
+    @Override
     public void prepare(Module m) throws InvalidException {
         ev.log(Events.PREPARE, m);
         checkForHiddenPackages(m);
         Set<ManifestSection> mysections = null;
         Class<?> clazz = null;
-        {
+        
+        String processSections = cache.findGlobalProperty("processSections", null, "false"); // NOI18N
+        if (!"false".equals(processSections)) { // NOI18N
             // Find and load manifest sections.
-            for (Map.Entry<String,Attributes> entry : m.getManifest().getEntries().entrySet()) {
+            Manifest mani = m.getManifest();
+            if (mani == null) {
+                throw new InvalidException(m, "no manifest");
+            }
+            for (Map.Entry<String,Attributes> entry : mani.getEntries().entrySet()) {
                 ManifestSection section = ManifestSection.create(entry.getKey(), entry.getValue(), m);
                 if (section != null) {
                     if (mysections == null) {
@@ -160,8 +172,11 @@ final class NbInstaller extends ModuleInstaller {
                     mysections.add(section);
                 }
             }
+            if (mysections != null) {
+                cache.findGlobalProperty("processSections", "false", "true"); // NOI18N
+            }
         }
-        String installClass = m.getManifest().getMainAttributes().getValue("OpenIDE-Module-Install"); // NOI18N
+        String installClass = cache.findProperty(m, "OpenIDE-Module-Install", false); // NOI18N
         if (installClass != null) {
             String installClassName;
             try {
@@ -215,15 +230,14 @@ final class NbInstaller extends ModuleInstaller {
         }
         // For layer & help set, validate only that the base-locale resource
         // exists, not its contents or anything.
-        String layerResource = m.getManifest().getMainAttributes().getValue("OpenIDE-Module-Layer"); // NOI18N
-        String osgi = m.getManifest().getMainAttributes().getValue("Bundle-SymbolicName"); // NOI18N
-        if (layerResource != null && osgi == null) {
+        String layerResource = cache.findProperty(m, "OpenIDE-Module-Layer", false); // NOI18N
+        if (layerResource != null && !m.isNetigso()) {
             URL layer = m.getClassLoader().getResource(layerResource);
             if (layer == null) throw new InvalidException(m, "Layer not found: " + layerResource); // NOI18N
         }
-        String helpSetName = m.getManifest().getMainAttributes().getValue("OpenIDE-Module-Description"); // NOI18N
+        String helpSetName = cache.findProperty(m, "OpenIDE-Module-Description", false); // NOI18N
         if (helpSetName != null) {
-            Util.err.warning("Use of OpenIDE-Module-Description in " + m.getCodeNameBase() + " is deprecated.");
+            Util.err.log(Level.WARNING, "Use of OpenIDE-Module-Description in {0} is deprecated.", m.getCodeNameBase());
             Util.err.warning("(Please install help using an XML layer instead.)");
         }
         // We are OK, commit everything to our cache.
@@ -235,7 +249,7 @@ final class NbInstaller extends ModuleInstaller {
         }
         if (layerResource != null) {
             layers.put(m, layerResource);
-        }
+        }   
     }
 
     private void checkForHiddenPackages(Module m) throws InvalidException {
@@ -250,7 +264,7 @@ final class NbInstaller extends ModuleInstaller {
             }
         }
         for (Module _m : mWithDeps) {
-            String hidden = (String) _m.getAttribute("OpenIDE-Module-Hide-Classpath-Packages"); // NOI18N
+            String hidden = cache.findProperty(_m, "OpenIDE-Module-Hide-Classpath-Packages", false); // NOI18N
             if (hidden != null) {
                 for (String piece : hidden.trim().split("[ ,]+")) { // NOI18N
                     try {
@@ -317,6 +331,10 @@ final class NbInstaller extends ModuleInstaller {
         MainLookup.systemClassLoaderChanged(cl);
         ev.log(Events.PERF_TICK, "META-INF/services/ additions registered"); // NOI18N
     }
+
+    final void waitOnStart() {
+        onStartStop.waitOnStart();
+    }
     
     @Override
     public void load(List<Module> modules) {
@@ -327,6 +345,9 @@ final class NbInstaller extends ModuleInstaller {
         loadLayers(modules, true);
         ev.log(Events.PERF_TICK, "layers loaded"); // NOI18N
 	
+        onStartStop.initialize();
+        ev.log(Events.PERF_TICK, "@OnStart"); // NOI18N
+
         ev.log(Events.PERF_START, "NbInstaller.load - sections"); // NOI18N
         ev.log(Events.LOAD_SECTION);
         CoreBridge.getDefault().loaderPoolTransaction(true);
@@ -375,6 +396,13 @@ final class NbInstaller extends ModuleInstaller {
         
         if (Boolean.getBoolean("netbeans.preresolve.classes")) {
             preresolveClasses(modules);
+        }
+    }
+    
+    final void preloadCache(Collection<Module> modules) {
+        for (Module m : modules) {
+            // initialize the cache
+            isShowInAutoUpdateClient(m);
         }
     }
     
@@ -609,7 +637,8 @@ final class NbInstaller extends ModuleInstaller {
     private void checkForDeprecations(List<Module> modules) {
         Map<String,Set<String>> depToUsers = new TreeMap<String,Set<String>>();
         for (Module m : modules) {
-            if (!Boolean.parseBoolean((String) m.getAttribute("OpenIDE-Module-Deprecated"))) { // NOI18N
+            String depr = cache.findProperty(m, "OpenIDE-Module-Deprecated", false); // NOI18N
+            if (!Boolean.parseBoolean(depr)) { 
                 for (Dependency dep : m.getDependencies()) {
                     if (dep.getType() == Dependency.TYPE_MODULE) {
                         String cnb = (String) Util.parseCodeName(dep.getName())[0];
@@ -627,8 +656,9 @@ final class NbInstaller extends ModuleInstaller {
             String dep = entry.getKey();
             Module o = mgr.get(dep);
             assert o != null : "No such module: " + dep;
-            if (Boolean.parseBoolean((String) o.getAttribute("OpenIDE-Module-Deprecated"))) { // NOI18N
-                String message = (String) o.getLocalizedAttribute("OpenIDE-Module-Deprecation-Message"); // NOI18N
+            String depr = cache.findProperty(o, "OpenIDE-Module-Deprecated", false); // NOI18N
+            if (Boolean.parseBoolean(depr)) {
+                String message = cache.findProperty(o, "OpenIDE-Module-Deprecation-Message", true); // NOI18N
                 // XXX use NbEvents? I18N?
                 // For now, assume this is a developer-oriented message that need not be localized or displayed in a pretty fashion.
                 Set<String> users = entry.getValue();
@@ -643,7 +673,7 @@ final class NbInstaller extends ModuleInstaller {
         
     public boolean closing(List<Module> modules) {
         Util.err.fine("closing: " + modules);
-	for (Module m: modules) {
+        for (Module m: modules) {
             Class<? extends ModuleInstall> instClazz = installs.get(m);
             if (instClazz != null) {
                 try {
@@ -660,13 +690,14 @@ final class NbInstaller extends ModuleInstaller {
                 }
             }
         }
-        return true;
+        return onStartStop.closing(modules);
     }
     
     public void close(List<Module> modules) {
         Util.err.fine("close: " + modules);
         ev.log(Events.CLOSE);
         moduleList.shutDown();
+        List<Task> waitFor = onStartStop.startClose(modules);
         // [PENDING] this may need to write out changed ModuleInstall externalized
         // forms...is that really necessary to do here, or isn't it enough to
         // do right after loading etc.? Currently these are only written when
@@ -687,6 +718,9 @@ final class NbInstaller extends ModuleInstaller {
                 }
             }
         }
+        for (Task t : waitFor) {
+            t.waitFinished();
+        }
     }
 
     private static String cacheCnb;
@@ -701,8 +735,6 @@ final class NbInstaller extends ModuleInstaller {
         cacheDeps = (Set<Dependency>)obj;
     }
 
-    
-    private AutomaticDependencies autoDepsHandler = null;
     
     /** Overridden to perform automatic API upgrades.
      * That is, should do nothing on new modules, but for older ones will
@@ -723,33 +755,7 @@ final class NbInstaller extends ModuleInstaller {
             // Skip them all - useful for unit tests.
             return;
         }
-        if (autoDepsHandler == null) {
-            FileObject depsFolder = FileUtil.getConfigFile("ModuleAutoDeps");
-            if (depsFolder != null) {
-                FileObject[] kids = depsFolder.getChildren();
-                List<URL> urls = new ArrayList<URL>(Math.max(kids.length, 1));
-                for (FileObject kid : kids) {
-                    if (kid.hasExt("xml")) { // NOI18N
-                        urls.add(kid.toURL());
-                    }
-                }
-                try {
-                    autoDepsHandler = AutomaticDependencies.parse(urls.toArray(new URL[urls.size()]));
-                } catch (IOException e) {
-                    Util.err.log(Level.WARNING, null, e);
-                } catch (SAXException e) {
-                    Util.err.log(Level.WARNING, null, e);
-                }
-            }
-            if (autoDepsHandler == null) {
-                // Parsing failed, or no files.
-                autoDepsHandler = AutomaticDependencies.empty();
-            }
-            if (Util.err.isLoggable(Level.FINE)) {
-                Util.err.fine("Auto deps: " + autoDepsHandler);
-            }
-        }
-        AutomaticDependencies.Report rep = autoDepsHandler.refineDependenciesAndReport(m.getCodeNameBase(), dependencies);
+        AutomaticDependencies.Report rep = AutomaticDependencies.getDefault().refineDependenciesAndReport(m.getCodeNameBase(), dependencies);
         if (rep.isModified()) {
             Util.err.warning(rep.toString());
         }
@@ -764,7 +770,7 @@ final class NbInstaller extends ModuleInstaller {
             arr.add("org.openide.modules.ModuleFormat1"); // NOI18N
             arr.add("org.openide.modules.ModuleFormat2"); // NOI18N
             
-            return arr.toArray (new String[0]);
+            return arr.toArray (new String[arr.size()]);
         }
         return null;
     }
@@ -1124,184 +1130,6 @@ final class NbInstaller extends ModuleInstaller {
         }
     }
     
-    // Manifest caching: #26786.
-
-    private static final Logger MANIFEST_LOG = Logger.getLogger(NbInstaller.class.getName() + ".manifestCache");
-
-    /** While true, try to use the manifest cache.
-     * So (non-reloadable) JARs scanned during startup will have their manifests cached.
-     * After the primary set of modules has been scanned, this will be set to false.
-     * Initially true, unless -J-Dnetbeans.cache.manifests=false is specified,
-     * or there is no available cache directory.
-     */
-    private boolean usingManifestCache;
-    private final Object MANIFEST_CACHE = new Object();
-
-    {
-        usingManifestCache = Boolean.valueOf(System.getProperty("netbeans.cache.manifests", "true")).booleanValue();
-        if (!usingManifestCache) {
-            MANIFEST_LOG.fine("Manifest cache disabled");
-        }
-    }
-    
-    /** Cache of known JAR manifests.
-     * Initially null. If the cache is read, it may be used to quickly serve JAR manifests.
-     */
-    private Map<File,DateAndManifest> manifestCache;
-    private static final class DateAndManifest {
-        /** modification date when last read */
-        public final long date;
-        public final Manifest manifest;
-        public DateAndManifest(long date, Manifest manifest) {
-            this.date = date;
-            this.manifest = manifest;
-        }
-    }
-    
-    /** Overrides superclass method to keep a cache of module manifests,
-     * so that their JARs do not have to be opened twice during startup.
-     */
-    public @Override Manifest loadManifest(File jar) throws IOException {
-        if (!usingManifestCache) {
-            return super.loadManifest(jar);
-        }
-        Map<File, DateAndManifest> cache;
-        synchronized (MANIFEST_CACHE) {
-            if (manifestCache == null) {
-                manifestCache = Collections.synchronizedMap(loadManifestCache());
-            }
-            cache = manifestCache;
-        }
-        DateAndManifest entry = cache.get(jar);
-        if (entry != null) {
-            // Cache hit.
-            MANIFEST_LOG.fine("Found manifest for " + jar + " in cache");
-            return entry.manifest;
-        } else {
-            MANIFEST_LOG.fine("No entry for " + jar + " in manifest cache");
-        }
-        // Cache miss.
-        Manifest m = super.loadManifest(jar);
-        // (If that threw IOException, we leave it out of the cache.)
-        cache.put(jar, new DateAndManifest(jar.lastModified(), m));
-        saveManifestCache();
-        return m;
-    }
-
-    class CacheFlusher implements Stamps.Updater {
-        public void flushCaches(DataOutputStream os) throws IOException {
-            updater = new CacheFlusher();
-            
-            MANIFEST_LOG.fine("Saving manifest cache");
-            HashMap<File, DateAndManifest> m;
-            synchronized (MANIFEST_CACHE) {
-                m = new HashMap<File, DateAndManifest>(manifestCache);
-            }
-            for (Map.Entry<File, DateAndManifest> entry : m.entrySet()) {
-                File jar = entry.getKey();
-                os.write(jar.getAbsolutePath().getBytes("UTF-8")); // NOI18N
-                os.write(0);
-                long time = entry.getValue().date;
-                for (int i = 7; i >= 0; i--) {
-                    os.write((int) ((time >> (i * 8)) & 0xFF));
-                }
-                entry.getValue().manifest.write(os);
-                os.write(0);
-            }
-            os.close();
-            MANIFEST_LOG.fine("Saving manifest cache - done");
-        }
-
-        public void cacheReady() {
-        }
-    }
-    CacheFlusher updater = new CacheFlusher();
-    
-    /** Really save the cache.
-     * @see #manifestCacheFile
-     */
-    private void saveManifestCache() throws IOException {
-        MANIFEST_LOG.fine("Schedule saving manifest cache");
-        Stamps.getModulesJARs().scheduleSave(updater, "all-manifest.dat", false);
-    }
-    
-    /** Load the cache if present.
-     * If not present, or there are problems with it,
-     * just create an empty cache.
-     * @see #manifestCacheFile
-     */
-    private Map<File,DateAndManifest> loadManifestCache() {
-        ev.log(Events.PERF_START, "NbInstaller - loadManifestCache"); // NOI18N
-        ByteBuffer bis = Stamps.getModulesJARs().asByteBuffer("all-manifest.dat");  // NOI18N
-        Map<File,DateAndManifest> m = new HashMap<File,DateAndManifest>(200);
-        try {
-            readManifestCacheEntries(bis, m);
-        } catch (IOException ex) {
-            MANIFEST_LOG.log(Level.WARNING, "Cannot read cache", ex); // NOI18N
-        } finally {
-            ev.log(Events.PERF_END, "NbInstaller - loadManifestCache"); // NOI18N
-        }
-        return m;
-    }
-    
-    private static int findNullByte(ByteBuffer data, int start) {
-        int len = data.limit();
-        for (int i = start; i < len; i++) {
-            if (data.get(i) == 0) {
-                return i;
-            }
-        }
-        return -1;
-    }
-    
-    private static void readManifestCacheEntries(ByteBuffer data, Map<File,DateAndManifest> m) throws IOException {
-        if (data == null) {
-            return;
-        }
-        
-        int pos = 0;
-        while (true) {
-            if (pos == data.limit()) {
-                return;
-            }
-            int end = findNullByte(data, pos);
-            if (end == -1) throw new IOException("Could not find next manifest JAR name from " + pos); // NOI18N
-            File jar = new File(new String(toArray(data, pos, end - pos), "UTF-8")); // NOI18N
-            long time = 0L;
-            if (end + 8 >= data.limit()) throw new IOException("Ran out of space for timestamp for " + jar); // NOI18N
-            for (int i = 0; i < 8; i++) {
-                long b = data.get(end + i + 1);
-                if (b < 0) b += 256;
-                int exponent = 7 - i;
-                long addin = b << (exponent * 8);
-                time |= addin;
-                //System.err.println("i=" + i + " b=0x" + Long.toHexString(b) + " exponent=" + exponent + " addin=0x" + Long.toHexString(addin) + " time=0x" + Long.toHexString(time));
-            }
-            pos = end + 9;
-            end = findNullByte(data, pos);
-            if (end == -1) throw new IOException("Could not find manifest body for " + jar); // NOI18N
-            Manifest mani;
-            try {
-                mani = new Manifest(new ByteArrayInputStream(toArray(data, pos, end - pos)));
-            } catch (IOException ioe) {
-                Exceptions.attachMessage(ioe, "While in entry for " + jar);
-                throw ioe;
-            }
-            m.put(jar, new DateAndManifest(time, mani));
-            if (MANIFEST_LOG.isLoggable(Level.FINE)) {
-                MANIFEST_LOG.fine("Manifest cache entry: jar=" + jar + " date=" + new Date(time) + " codename=" + mani.getMainAttributes().getValue("OpenIDE-Module"));
-            }
-            pos = end + 1;
-        }
-    }
-    
-    private static byte[] toArray(ByteBuffer bb, int pos, int len) {
-        byte[] manarr = new byte[len];
-        bb.position(pos);
-        bb.get(manarr, 0, len);
-        return manarr;
-    }
-    
     /** Check all module classes to make sure there are no unresolvable compile-time
      * dependencies. Turn on this mode with
      * <code>-J-Dnetbeans.preresolve.classes=true</code>
@@ -1346,5 +1174,95 @@ final class NbInstaller extends ModuleInstaller {
             }
         }
     }
+    
+    final boolean isShowInAutoUpdateClient(ModuleInfo m) {
+        String show = cache.findProperty(m, "AutoUpdate-Show-In-Client", false); // NOI18N
+        if (show != null) {
+            return Boolean.parseBoolean(show);
+        }
+        // OSGi bundles should be considered invisible by default since they are typically autoloads.
+        // (NB modules get AutoUpdate-Show-In-Client inserted into the JAR by the build process.)
+        if (m instanceof Module) {
+            return !((Module)m).isNetigso();
+        }
+        return true;
+    }
+    
+    /** Cache important attributes from module manifests */
+    static class Cache implements Stamps.Updater {
+        private static final String CACHE = "all-installer.dat"; // NOI18N
+        private final boolean modulePropertiesCached;
+        private final Properties moduleProperties;
 
+        public Cache() {
+            InputStream is = Stamps.getModulesJARs().asStream(CACHE);
+            IF:
+            if (is != null) {
+                Properties p = new Properties();
+                try {
+                    p.load(is);
+                    is.close();
+                } catch (IOException ex) {
+                    LOG.log(Level.INFO, "Can't load all-installer.dat", ex);
+                    break IF;
+                }
+                moduleProperties = p;
+                modulePropertiesCached = true;
+                return;
+            }
+            moduleProperties = new Properties();
+            modulePropertiesCached = false;
+        }
+
+        final String findProperty(ModuleInfo m, String name, boolean localized) {
+            final String fullName = m.getCodeNameBase() + '.' + name;
+            final String nullValue = "\u0000"; // NOI18N
+            if (modulePropertiesCached) {
+                String val = moduleProperties.getProperty(fullName);
+                if (nullValue.equals(val)) { 
+                    return null;
+                }
+                if (val != null) {
+                    return val;
+                }
+                LOG.log(Level.FINE, "not cached value: {0} for {1}", new Object[]{name, m});
+            } 
+            Object p = localized ? m.getLocalizedAttribute(name) : m.getAttribute(name);
+            if (p == null) {
+                moduleProperties.setProperty(fullName, nullValue);
+                Stamps.getModulesJARs().scheduleSave(this, CACHE, false);
+                return null;
+            }
+            String prop = p instanceof String ? (String)p : null;
+            if (prop != null) {
+                moduleProperties.setProperty(fullName, prop);
+                Stamps.getModulesJARs().scheduleSave(this, CACHE, false);
+            }
+            return prop;
+        }
+
+        final String findGlobalProperty(String name, String expValue, String replaceValue) {
+            assert name != null;
+            assert replaceValue != null;
+            if (modulePropertiesCached) {
+                return moduleProperties.getProperty(name);
+            } else {
+                final Object prevValue = moduleProperties.get(name);
+                if (Utilities.compareObjects(expValue, prevValue)) {
+                    moduleProperties.put(name, replaceValue);
+                }
+                Stamps.getModulesJARs().scheduleSave(this, CACHE, false);
+                return null;
+            }
+        }
+
+        @Override
+        public void flushCaches(DataOutputStream os) throws IOException {
+            moduleProperties.store(os, null);
+        }
+
+        @Override
+        public void cacheReady() {
+        }
+    } // end of Cache
 }

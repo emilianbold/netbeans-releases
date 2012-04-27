@@ -43,49 +43,35 @@
  */
 package org.netbeans.modules.j2ee.persistence.wizard.fromdb;
 
-import com.sun.source.tree.*;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
-import java.util.HashMap;
-import java.util.concurrent.ExecutionException;
-import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.progress.aggregate.ProgressContributor;
-import org.netbeans.modules.j2ee.core.api.support.java.SourceUtils;
-import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
-import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Table;
-import org.netbeans.spi.java.classpath.ClassPathProvider;
-import org.openide.filesystems.FileObject;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.lang.model.element.*;
-import javax.lang.model.type.*;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.Name;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.source.ClasspathInfo.PathKind;
-import org.netbeans.api.java.source.Comment;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.Task;
-import org.netbeans.api.java.source.TreeMaker;
-import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.*;
+import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.core.api.support.classpath.ContainerClassPathModifier;
 import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
+import org.netbeans.modules.j2ee.core.api.support.java.SourceUtils;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.persistence.api.EntityClassScope;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Table;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.CMPMappingModel;
@@ -103,9 +89,10 @@ import org.netbeans.modules.j2ee.persistence.util.JPAClassPathHelper;
 import org.netbeans.modules.j2ee.persistence.util.MetadataModelReadHelper;
 import org.netbeans.modules.j2ee.persistence.util.MetadataModelReadHelper.State;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
-import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerUtil;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
@@ -124,6 +111,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
     // XXX return 0, 1 in generated equals() - issue 90183
     // XXX empty line in generated equals() - issue 90186
     private final Map<String, String> entityName2TableName = new HashMap<String, String>();
+    private Project initProject;
     // options (not currently exposed in UI)
     // field vs. property access
     private static boolean fieldAccess = true;
@@ -284,9 +272,9 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
     @Override
     public void init(WizardDescriptor wiz) {
         // get the table names for all entities in the project
-        Project project = Templates.getProject(wiz);
+        initProject = Templates.getProject(wiz);
         final MetadataModelReadHelper<EntityMappingsMetadata, Set<Entity>> readHelper;
-        EntityClassScope entityClassScope = EntityClassScope.getEntityClassScope(project.getProjectDirectory());
+        EntityClassScope entityClassScope = EntityClassScope.getEntityClassScope(initProject.getProjectDirectory());
         if (entityClassScope == null) {
             return;
         }
@@ -330,6 +318,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
 
     @Override
     public void uninit() {
+        initProject = null;
     }
 
     @Override
@@ -396,6 +385,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             try {
                 runImpl();
             } catch (IOException e) {
+                Logger.getLogger(JavaPersistenceGenerator.class.getName()).log(Level.INFO, "IOException, remove generated."); //NOI18N 
                 for (FileObject generatedFO : generatedFOs) {
                     generatedFO.delete();
                 }
@@ -501,7 +491,16 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                     progressPanel.setText(progressMsg);
                 }
                 FileObject entityClassPackageFO = entityClass.getPackageFileObject();
-                final FileObject entityClassFO = entityClassPackageFO.getFileObject(entityClassName, "java"); // NOI18N
+                FileObject entityClassFO0 = entityClassPackageFO.getFileObject(entityClassName, "java"); // NOI18N
+                if(entityClassFO0 == null){
+                    //refresh parent
+                    entityClassPackageFO.refresh(true);
+                    entityClassFO0 = entityClassPackageFO.getFileObject(entityClassName, "java");
+                    if(entityClassFO0 == null){
+                        Logger.getLogger(JavaPersistenceGenerator.class.getName()).log(Level.INFO, "Can''t resolve fileobject in package {0} for entity {1}", new Object[]{entityClassPackageFO.getPath(), entityClassName});//NOI18N
+                    }
+                }
+                final FileObject entityClassFO = entityClassFO0;
                 final FileObject pkClassFO = entityClassPackageFO.getFileObject(createPKClassName(entityClassName), "java"); // NOI18N
                 try {
 
@@ -673,7 +672,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 String memberType = getMemberType(m);
 
                 String columnName = (String) dbMappings.getCMPFieldMapping().get(memberName);
-                if(!useDefaults || memberName.equalsIgnoreCase(columnName)){
+                if(!useDefaults || !memberName.equalsIgnoreCase(columnName)){
                     columnAnnArguments.add(genUtils.createAnnotationArgument("name", columnName)); //NOI18N
                 }
 
@@ -997,12 +996,14 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             private HashMap<TypeMirror, ArrayList<String>> existingJoinColumnss = new HashMap<TypeMirror, ArrayList<String>>();
             private HashMap<String, ArrayList<String>> existingJoinTables = new HashMap<String, ArrayList<String>>();
             private HashMap<String, Tree> existingMappings = new HashMap<String, Tree>();
+            private final boolean useDefaults;
 
             public EntityClassGenerator(WorkingCopy copy, EntityClass entityClass) throws IOException {
                 super(copy, entityClass);
                 entityClassName = entityClass.getClassName();
                 assert typeElement.getSimpleName().contentEquals(entityClassName);
                 entityFQClassName = entityClass.getPackage() + "." + entityClassName;
+                this.useDefaults = entityClass.getUseDefaults();
             }
 
             @Override
@@ -1027,7 +1028,11 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 } else {
                     newClassTree = genUtils.addAnnotation(newClassTree, genUtils.createAnnotation("javax.persistence.Entity")); // NOI18N
                     List<ExpressionTree> tableAnnArgs = new ArrayList<ExpressionTree>();
-                    tableAnnArgs.add(genUtils.createAnnotationArgument("name", dbMappings.getTableName())); // NOI18N
+                    if(useDefaults && entityClassName.equalsIgnoreCase(dbMappings.getTableName())){
+                        //skip
+                    } else {
+                        tableAnnArgs.add(genUtils.createAnnotationArgument("name", dbMappings.getTableName())); // NOI18N
+                    }
                     if (fullyQualifiedTableNames) {
                         String schemaName = entityClass.getSchemaName();
                         String catalogName = entityClass.getCatalogName();
@@ -1057,7 +1062,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                         tableAnnArgs.add(genUtils.createAnnotationArgument("uniqueConstraints", uniqueConstraintAnnotations)); // NOI18N
                     }
 
-                    newClassTree = genUtils.addAnnotation(newClassTree, genUtils.createAnnotation("javax.persistence.Table", tableAnnArgs));
+                    if(!useDefaults || !tableAnnArgs.isEmpty()) newClassTree = genUtils.addAnnotation(newClassTree, genUtils.createAnnotation("javax.persistence.Table", tableAnnArgs));
 
                     if (generateJAXBAnnotations) {
                         newClassTree = genUtils.addAnnotation(newClassTree, genUtils.createAnnotation("javax.xml.bind.annotation.XmlRootElement"));

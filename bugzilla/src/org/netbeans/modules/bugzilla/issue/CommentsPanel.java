@@ -84,7 +84,8 @@ import javax.swing.text.Caret;
 import javax.swing.text.DefaultCaret;
 import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
-import org.netbeans.modules.bugtracking.spi.Issue;
+import org.netbeans.modules.bugzilla.util.BugzillaUtil;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueSettingsStorage;
 import org.netbeans.modules.bugtracking.util.HyperlinkSupport;
@@ -112,7 +113,6 @@ public class CommentsPanel extends JPanel {
     private final static Color GREY_FOREGROUND = new Color(0x999999);
     
     private final JPopupMenu commentsPopup = new PopupMenu();
-    private final BugzillaIssueFinder issueFinder;
     private BugzillaIssue issue;
     private List<BugzillaIssue.Attachment> attachments;
     private List<String> attachmentIds;
@@ -127,20 +127,18 @@ public class CommentsPanel extends JPanel {
         issueLink = new HyperlinkSupport.Link() {
             @Override
             public void onClick(String linkText) {
-                final String issueKey = issueFinder.getIssueId(linkText);
+                final String issueKey = BugzillaIssueFinder.getInstance().getIssueId(linkText);
                 RP.post(new Runnable() {
                     @Override
                     public void run() {
-                        Issue is = issue.getRepository().getIssue(issueKey);
+                        BugzillaIssue is = issue.getRepository().getIssue(issueKey);
                         if (is != null) {
-                            is.open();
+                            BugzillaUtil.openIssue(is);
                         }
                     }
                 });
             }
         };
-        issueFinder = Lookup.getDefault().lookup(BugzillaIssueFinder.class);
-        assert issueFinder != null;
     }
 
     void setIssue(BugzillaIssue issue,
@@ -249,7 +247,7 @@ public class CommentsPanel extends JPanel {
             int index = author.indexOf('@'); // NOI18N
             String userName = (index == -1) ? author : author.substring(0,index);
             String host = ((KenaiRepository) issue.getRepository()).getHost();
-            stateLabel = KenaiUtil.createUserWidget(userName, host, KenaiUtil.getChatLink(issue));
+            stateLabel = KenaiUtil.createUserWidget(userName, host, KenaiUtil.getChatLink(issue.getID()));
             stateLabel.setText(null);
         }
         
@@ -269,7 +267,7 @@ public class CommentsPanel extends JPanel {
                     author); 
             replyButton.setOpaque(false);
         }
-        // Issue 172653 - JTextPane too big
+        // IssueProvider 172653 - JTextPane too big
         JComponent pane = textPane;
         if (textPane.getPreferredSize().height>Short.MAX_VALUE) {
             pane = new JScrollPane(textPane);
@@ -309,7 +307,7 @@ public class CommentsPanel extends JPanel {
         HyperlinkSupport.getInstance().registerForTypes(textPane);
         HyperlinkSupport.getInstance().registerForStacktraces(textPane);
         HyperlinkSupport.getInstance().registerForURLs(textPane);
-        HyperlinkSupport.getInstance().registerForIssueLinks(textPane, issueLink, issueFinder);
+        HyperlinkSupport.getInstance().registerForIssueLinks(textPane, issueLink, BugzillaIssueFinder.getInstance());
         
         Caret caret = textPane.getCaret();
         if (caret instanceof DefaultCaret) {

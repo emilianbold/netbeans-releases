@@ -309,4 +309,7 @@ public abstract class Variable {
 
     public abstract void postFormat(String format);
     public abstract String getFormat();
+    
+    // create a watch from a local variable
+    public abstract void createWatch();
 }

@@ -86,7 +86,6 @@ import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.websvc.api.jaxws.project.LogUtils;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
-import org.netbeans.modules.websvc.wsstack.api.WSStack;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -121,62 +120,7 @@ public class MavenProjectRestSupport extends WebRestSupport {
     public MavenProjectRestSupport(Project project) {
         super(project);
     }
-
-    @Override
-    public void upgrade() {
-        if (!isRestSupportOn()) {
-            return;
-        }
-        try {
-            //Fix issue#141595, 154378
-//            addSwdpLibrary();
-
-            FileObject ddFO = getDeploymentDescriptor();
-            if (ddFO == null) {
-                return;
-            }
-
-            WebApp webApp = findWebApp();
-            if (webApp == null) {
-                return;
-            }
-
-            Servlet adaptorServlet = getRestServletAdaptorByName(webApp, REST_SERVLET_ADAPTOR);
-            if (adaptorServlet != null) {
-                // Starting with jersey 0.8, the adaptor class is under 
-                // com.sun.jersey package instead of com.sun.we.rest package.
-                if (REST_SERVLET_ADAPTOR_CLASS_OLD.equals(adaptorServlet.getServletClass())) {
-                    boolean isSpring = hasSpringSupport();
-                    if (isSpring) {
-                        adaptorServlet.setServletClass(REST_SPRING_SERVLET_ADAPTOR_CLASS);
-                        InitParam initParam =
-                                (InitParam) adaptorServlet.findBeanByName("InitParam", //NOI18N
-                                "ParamName", //NOI18N
-                                JERSEY_PROP_PACKAGES);
-                        if (initParam == null) {
-                            try {
-                                initParam = (InitParam) adaptorServlet.createBean("InitParam"); //NOI18N
-                                initParam.setParamName(JERSEY_PROP_PACKAGES);
-                                initParam.setParamValue("."); //NOI18N
-                                initParam.setDescription(JERSEY_PROP_PACKAGES_DESC);
-                                adaptorServlet.addInitParam(initParam);
-                            } catch (ClassNotFoundException ex) {}
-                        }
-                    } else {
-                        adaptorServlet.setServletClass(REST_SERVLET_ADAPTOR_CLASS);
-                    }
-                    webApp.write(ddFO);
-                }
-            }
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
-        }
-    }
-
-    @Override
-    public void extendBuildScripts() throws IOException {
-    }
-
+    
     @Override
     public void ensureRestDevelopmentReady() throws IOException {
         String configType = getProjectProperty(PROP_REST_CONFIG_TYPE);
@@ -320,7 +264,7 @@ public class MavenProjectRestSupport extends WebRestSupport {
 
     @Override
     public boolean isRestSupportOn() {
-        return true;
+        return getProjectProperty(PROP_REST_CONFIG_TYPE) != null;
     }
     
     @Override
@@ -488,6 +432,11 @@ public class MavenProjectRestSupport extends WebRestSupport {
             return prefs.get(name, null);
         }
         return null;
+    }
+    
+    @Override
+    public void setPrivateProjectProperty(String name, String value) {
+        setProjectProperty(name, value);
     }
 
     @Override

@@ -44,6 +44,7 @@ package org.netbeans.modules.subversion;
 
 import java.awt.Image;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -135,7 +136,7 @@ public class TestAnnotationProvider extends AnnotationProvider {
         }
 
         @Override
-        public void fileLocked(FileObject fo) {
+        public void fileLocked(FileObject fo) throws IOException {
             events.add("fileLocked " + fo);
             super.fileLocked(fo);
         }

@@ -89,7 +89,7 @@ public class Hk2Configuration extends GlassfishConfiguration implements Deployme
     // ------------------------------------------------------------------------
     @Override
     public Set<Datasource> getDatasources() throws org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException {
-        return Hk2DatasourceManager.getDatasources(module.getResourceDirectory(),"sun-resources");
+        return Hk2DatasourceManager.getDatasources(module.getResourceDirectory());
     }
 
     @Override

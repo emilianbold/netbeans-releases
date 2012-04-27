@@ -49,11 +49,13 @@ import com.atlassian.connector.eclipse.internal.jira.core.model.filter.ProjectFi
 import com.atlassian.connector.eclipse.internal.jira.core.service.JiraException;
 import org.netbeans.modules.jira.*;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.tasks.core.RepositoryResponse;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.bugtracking.spi.Issue;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
+import org.netbeans.modules.jira.issue.NbJiraIssue;
 
 /**
  *
@@ -119,9 +121,9 @@ public class JiraQueryTest extends NbTestCase {
     private void executeFilter(JiraFilter fd, int issuesCount) {
         JiraQuery q = new JiraQuery("testfilter", JiraTestUtil.getRepository(), fd);
         q.refresh();        
-        Issue[] issues = q.getIssues();
+        Collection<NbJiraIssue> issues = q.getIssues();
         assertNotNull(issues);
-        assertEquals(issuesCount, issues.length);
+        assertEquals(issuesCount, issues.size());
     }
 
 }

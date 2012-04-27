@@ -96,15 +96,7 @@ public class ScriptingCreateFromTemplateTest extends NbTestCase {
         DataFolder folder = DataFolder.findFolder(FileUtil.createFolder(root, "target"));
         
         Map<String,String> parameters = Collections.emptyMap();
-        DataObject inst;
-        ClassLoader oldLoader = Thread.currentThread().getContextClassLoader();
-        Thread.currentThread().setContextClassLoader(ClassLoader.getSystemClassLoader().getParent());
-        try {
-            inst = obj.createFromTemplate(folder, "complex", parameters);
-        } finally {
-            Thread.currentThread().setContextClassLoader(oldLoader);
-        }
-        
+        DataObject inst = obj.createFromTemplate(folder, "complex", parameters);
         FileObject instFO = inst.getPrimaryFile();
         
         Charset targetEnc = FileEncodingQuery.getEncoding(instFO);
@@ -123,11 +115,7 @@ public class ScriptingCreateFromTemplateTest extends NbTestCase {
         Map<String,Object> parameters = new HashMap<String,Object>();
         parameters.put("license", "GPL");
         parameters.put(CreateFromTemplateHandler.FREE_FILE_EXTENSION, true);
-        ClassLoader oldLoader = Thread.currentThread().getContextClassLoader();
-        Thread.currentThread().setContextClassLoader(ClassLoader.getSystemClassLoader().getParent());
-        try {
-            FileObject inst;
-            inst = DataObject.find(template).createFromTemplate(DataFolder.findFolder(root), "nue", parameters).getPrimaryFile();
+            FileObject inst = DataObject.find(template).createFromTemplate(DataFolder.findFolder(root), "nue", parameters).getPrimaryFile();
             assertEquals("#!/usr/bin/perl\n# GPL\n# nue in nue.pl\n", inst.asText());
             assertEquals("nue.pl", inst.getPath());
             /* XXX perhaps irrelevant since typical wizards disable Finish in this condition
@@ -151,9 +139,6 @@ public class ScriptingCreateFromTemplateTest extends NbTestCase {
             assertEquals("#!/usr/bin/perl\n# GPL\n# explicit_1 in explicit_1.pl\n", inst.asText());
             assertEquals("explicit_1.pl", inst.getPath());
              */
-        } finally {
-            Thread.currentThread().setContextClassLoader(oldLoader);
-        }
     }
     
     //fix for this test was rolled back because of issue #120865

@@ -80,6 +80,8 @@ import org.netbeans.modules.web.project.ui.DocBaseNodeFactory.VisibilityQueryDat
 import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
+import org.netbeans.spi.search.SearchInfoDefinition;
+import org.netbeans.spi.search.SearchInfoDefinitionFactory;
 import org.openide.actions.FindAction;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
@@ -107,9 +109,6 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
-import org.openidex.search.FileObjectFilter;
-import org.openidex.search.SearchInfo;
-import org.openidex.search.SearchInfoFactory;
 
 /**
  *
@@ -179,23 +178,6 @@ public final class ConfFilesNodeFactory implements NodeFactory {
         }
     }
 
-    private static Lookup createLookup(Project project) {
-        if (project.getProjectDirectory().isValid()) {
-            DataFolder rootFolder = DataFolder.findFolder(project.getProjectDirectory());
-            SearchInfo searchInfo = SearchInfoFactory.createSearchInfo(
-                                rootFolder.getPrimaryFile(), true,
-                                new FileObjectFilter[] {
-                                        SearchInfoFactory.VISIBILITY_FILTER,
-                                        SearchInfoFactory.SHARABILITY_FILTER}
-            );
-
-            // XXX Remove root folder after FindAction rewrite
-            return Lookups.fixed(new Object[]{project, rootFolder, searchInfo});
-        } else {
-            return Lookups.fixed(new Object[0]);
-        }
-    }
-
     private static final class ConfFilesNode extends org.openide.nodes.AbstractNode implements Runnable, FileStatusListener, ChangeListener, PropertyChangeListener {
 
         private static final Image CONFIGURATION_FILES_BADGE = ImageUtilities.loadImage("org/netbeans/modules/web/project/ui/resources/config-badge.gif", true); // NOI18N
@@ -213,12 +195,26 @@ public final class ConfFilesNodeFactory implements NodeFactory {
         private  Node iconDelegate;
 
         public ConfFilesNode(Project prj) {
-            //super(ConfFilesChildren.forProject(prj), createLookup(prj));
-            super(Children.create(ConfFilesChildrenFactory.forProject(prj), true), 
-                    createLookup(prj));
+            this(prj, Children.create(ConfFilesChildrenFactory.forProject(prj), true));
+        }
+
+        private ConfFilesNode(Project prj, Children children) {
+            super(children, createLookup(prj, children));
             this.project = prj;
             setName("configurationFiles"); // NOI18N
             iconDelegate = DataFolder.findFolder (FileUtil.getConfigRoot()).getNodeDelegate();
+        }
+
+        private static Lookup createLookup(Project project,
+                Children children) {
+
+            if (project.getProjectDirectory().isValid()) {
+                SearchInfoDefinition searchInfo;
+                searchInfo = SearchInfoDefinitionFactory.createSearchInfoBySubnodes(children);
+                return Lookups.fixed(project, searchInfo);
+            } else {
+                return Lookups.fixed(project);
+            }
         }
 
         @Override

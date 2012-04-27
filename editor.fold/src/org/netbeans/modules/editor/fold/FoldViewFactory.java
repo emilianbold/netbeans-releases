@@ -132,8 +132,13 @@ public final class FoldViewFactory extends EditorViewFactory implements FoldHier
 
     private void refreshColors() {
         colorSettings = (FontColorSettings)colorSource.allInstances().iterator().next();
-        int end = document().getLength();
-        fireEvent(EditorViewFactoryChange.createList(0, end, EditorViewFactoryChange.Type.CHARACTER_CHANGE));
+        document().render(new Runnable() {
+            @Override
+            public void run() {
+                int end = document().getLength();
+                fireEvent(EditorViewFactoryChange.createList(0, end, EditorViewFactoryChange.Type.CHARACTER_CHANGE));
+            }
+        });
     }
 
     @Override

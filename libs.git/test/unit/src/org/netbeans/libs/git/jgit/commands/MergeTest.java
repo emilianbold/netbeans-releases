@@ -274,7 +274,8 @@ public class MergeTest extends AbstractGitTestCase {
         assertEquals(logs[1].getRevision(), branchInfo.getRevision());
         assertEquals(logs[2].getRevision(), masterInfo.getRevision());
         String logFileContent[] = read(new File(workDir, ".git/logs/HEAD")).split("\\n");
-        assertEquals("commit: Merge new_branch", logFileContent[logFileContent.length - 1].substring(logFileContent[logFileContent.length - 1].indexOf("commit: ")));
+        assertEquals("merge new_branch: Merge made by resolve.", 
+                logFileContent[logFileContent.length - 1].substring(logFileContent[logFileContent.length - 1].indexOf("merge new_branch")));
         
         client.reset("master~1", GitClient.ResetType.HARD, NULL_PROGRESS_MONITOR);
         result = client.merge(branchInfo.getRevision(), NULL_PROGRESS_MONITOR);
@@ -290,7 +291,7 @@ public class MergeTest extends AbstractGitTestCase {
         assertEquals(logs[1].getRevision(), branchInfo.getRevision());
         assertEquals(logs[2].getRevision(), masterInfo.getRevision());
         logFileContent = read(new File(workDir, ".git/logs/HEAD")).split("\\n");
-        assertEquals("commit: Merge commit '" + branchInfo.getRevision() + "'", logFileContent[logFileContent.length - 1].substring(logFileContent[logFileContent.length - 1].indexOf("commit: ")));
+        assertEquals("merge " + branchInfo.getRevision() + ": Merge made by resolve.", logFileContent[logFileContent.length - 1].substring(logFileContent[logFileContent.length - 1].indexOf("merge ")));
     }
     
     public void testMergeFailOnLocalChanges () throws Exception {

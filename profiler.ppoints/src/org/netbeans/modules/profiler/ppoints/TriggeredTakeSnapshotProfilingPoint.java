@@ -79,6 +79,7 @@ import org.netbeans.lib.profiler.ui.UIUtils;
 import org.netbeans.modules.profiler.api.ProfilerDialogs;
 import org.netbeans.modules.profiler.api.project.ProjectStorage;
 import org.netbeans.modules.profiler.api.ProjectUtilities;
+import org.netbeans.modules.profiler.ppoints.ui.ProfilingPointReport;
 import org.openide.util.Lookup;
 import org.openide.ErrorManager;
 
@@ -95,7 +96,6 @@ import org.openide.ErrorManager;
     "TriggeredTakeSnapshotProfilingPoint_NHitsString=<b>{0} hits</b>, last at {1}, <a href='#'>report</a>",
     "TriggeredTakeSnapshotProfilingPoint_NoResultsString=No results available",
     "TriggeredTakeSnapshotProfilingPoint_ReportAccessDescr=Report of {0}",
-    "TriggeredTakeSnapshotProfilingPoint_NoHitsString=no hits",
     "TriggeredTakeSnapshotProfilingPoint_HeaderTypeString=<b>Type:</b> {0}",
     "TriggeredTakeSnapshotProfilingPoint_HeaderEnabledString=<b>Enabled:</b> {0}",
     "TriggeredTakeSnapshotProfilingPoint_HeaderProjectString=<b>Project:</b> {0}",
@@ -117,7 +117,7 @@ import org.openide.ErrorManager;
 public final class TriggeredTakeSnapshotProfilingPoint extends TriggeredGlobalProfilingPoint implements PropertyChangeListener {
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------
 
-    private class Report extends TopComponent {
+    private class Report extends ProfilingPointReport {
         //~ Instance fields ------------------------------------------------------------------------------------------------------
 
         private HTMLTextArea dataArea;
@@ -128,20 +128,12 @@ public final class TriggeredTakeSnapshotProfilingPoint extends TriggeredGlobalPr
         public Report() {
             initDefaults();
             initComponents();
-            refreshData();
+            refresh();
         }
 
         //~ Methods --------------------------------------------------------------------------------------------------------------
 
-        public int getPersistenceType() {
-            return TopComponent.PERSISTENCE_NEVER;
-        }
-
-        protected String preferredID() {
-            return this.getClass().getName();
-        }
-
-        void refreshData() {
+        protected void refresh() {
             StringBuilder headerAreaTextBuilder = new StringBuilder();
 
             headerAreaTextBuilder.append(getHeaderName());
@@ -172,14 +164,17 @@ public final class TriggeredTakeSnapshotProfilingPoint extends TriggeredGlobalPr
             StringBuilder dataAreaTextBuilder = new StringBuilder();
 
             synchronized(resultsSync) {
-                if (!hasResults()) {
-                    dataAreaTextBuilder.append("&nbsp;&nbsp;&lt;").append(Bundle.TriggeredTakeSnapshotProfilingPoint_NoHitsString()).append("&gt;"); // NOI18N
+                if (results.isEmpty()) {
+                    dataAreaTextBuilder.append(ProfilingPointReport.getNoDataHint(TriggeredTakeSnapshotProfilingPoint.this));
                 } else {
                     for (int i = 0; i < results.size(); i++) {
                         dataAreaTextBuilder.append("&nbsp;&nbsp;");
                         dataAreaTextBuilder.append(getDataResultItem(i));
                         dataAreaTextBuilder.append("<br>"); // NOI18N
                     }
+                    ProfilingPointsManager m = ProfilingPointsManager.getDefault();
+                    if (!m.belowMaxHits(results.size()))
+                        dataAreaTextBuilder.append(m.getTruncatedResultsText());
                 }
             }
 
@@ -470,7 +465,7 @@ public final class TriggeredTakeSnapshotProfilingPoint extends TriggeredGlobalPr
                 report.refreshProperties();
             }
 
-            report.refreshData();
+            report.refresh();
         }
     }
 
@@ -553,7 +548,8 @@ public final class TriggeredTakeSnapshotProfilingPoint extends TriggeredGlobalPr
         }
 
         synchronized(resultsSync) {
-            results.add(new Result(currentTime, hitValue, snapshotFilename));
+            if (ProfilingPointsManager.getDefault().belowMaxHits(results.size()))
+                results.add(new Result(currentTime, hitValue, snapshotFilename));
         }
         getChangeSupport().firePropertyChange(PROPERTY_RESULTS, false, true);
     }

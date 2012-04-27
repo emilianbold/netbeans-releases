@@ -46,6 +46,7 @@ package org.netbeans.modules.refactoring.java.ui;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import java.text.MessageFormat;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -53,29 +54,35 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.type.TypeKind;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring;
+import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring.ParameterInfo;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
+import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author  Pavel Flaska, Jan Becicka
  */
-public class ChangeParametersUI implements RefactoringUI {
+public class ChangeParametersUI implements RefactoringUI, JavaRefactoringUIFactory {
     
     private TreePathHandle method;
     private ChangeParametersPanel panel;
     private ChangeParametersRefactoring refactoring;
     private String name;
     private boolean isMethod;
-    private final ChangeParametersRefactoring.ParameterInfo[] preConfiguration;
+    private ChangeParametersRefactoring.ParameterInfo[] preConfiguration;
+    private Lookup lookup;
     
     /** Creates a new instance of ChangeMethodSignatureRefactoring */
     private ChangeParametersUI(TreePathHandle refactoredObj, CompilationInfo info, ChangeParametersRefactoring.ParameterInfo[] preConfiguration) {
@@ -86,22 +93,45 @@ public class ChangeParametersUI implements RefactoringUI {
         this.name = element.getSimpleName().toString();
         this.isMethod = element.getKind() == ElementKind.METHOD;
     }
+
+    private ChangeParametersUI(Lookup lookup) {
+        this.lookup = lookup;
+    }
     
-    public static ChangeParametersUI create(TreePathHandle refactoredObj, CompilationInfo info, ChangeParametersRefactoring.ParameterInfo[] preConfiguration) {
-        TreePath path = refactoredObj.resolve(info);
+    @Override
+    public RefactoringUI create(CompilationInfo info, TreePathHandle[] handles, FileObject[] files, NonRecursiveFolder[] packages) {
+        assert handles.length == 1;
+
+        Collection<? extends ParameterInfo> params = lookup.lookupAll(ParameterInfo.class);
+        final ParameterInfo[] configuration = params.isEmpty()? null : new ParameterInfo[params.size()];
+        int index = 0;
+        for (ParameterInfo parameterInfo : params) {
+            configuration[index] = parameterInfo;
+            index++;
+        }
+
+        TreePath path = handles[0].resolve(info);
         Kind kind;
         while (path != null && (kind = path.getLeaf().getKind()) != Kind.METHOD && kind != Kind.METHOD_INVOCATION && kind != Kind.NEW_CLASS) {
             path = path.getParentPath();
         }
         
         if(path != null && ((kind = path.getLeaf().getKind()) == Kind.METHOD_INVOCATION || kind == Kind.NEW_CLASS)) {
-            ExecutableElement element = (ExecutableElement) info.getTrees().getElement(path);
-            path = info.getTrees().getPath(element);
+            Element element = info.getTrees().getElement(path);
+            if(element.asType().getKind() == TypeKind.ERROR) {
+                return null;
+            }
+            ExecutableElement method = (ExecutableElement) element;
+            path = info.getTrees().getPath(method);
         }
         
         return path != null
-                ? new ChangeParametersUI(TreePathHandle.create(path, info), info, preConfiguration)
+                ? new ChangeParametersUI(TreePathHandle.create(path, info), info, configuration)
                 : null;
+    }
+    
+    public static JavaRefactoringUIFactory factory(Lookup lookup) {
+        return new ChangeParametersUI(lookup);
     }
     
     @Override
@@ -183,6 +213,6 @@ public class ChangeParametersUI implements RefactoringUI {
     
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(ChangeParametersUI.class);
+        return new HelpCtx("org.netbeans.modules.refactoring.java.ui.ChangeParametersUI"); // NOI18N
     }
 }

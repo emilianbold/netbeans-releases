@@ -61,6 +61,7 @@ import javax.swing.border.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.debugger.Properties;
 
 import org.openide.awt.StatusDisplayer;
@@ -76,7 +77,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerUpdateCache;
 
-import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.DialogManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineDescriptor;
 import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineType;
@@ -196,7 +197,7 @@ public final class AttachPanel extends TopComponent {
         filterCombo.setSelectedItem(lastFilter);
         executableProjectPanel.initGui();
 
-        if (!DebuggerManager.isStandalone()) {
+        if (!NativeDebuggerManager.isStandalone()) {
             // ServerList has no change notifier so we resync everytime.
             updateRemoteHostList();
         }
@@ -206,8 +207,8 @@ public final class AttachPanel extends TopComponent {
     private void initRemoteHost() {
         updateRemoteHostList();
 
-        if (DebuggerManager.isStandalone()) {
-            CustomizableHostList hostlist = DebuggerManager.get().getHostList();
+        if (NativeDebuggerManager.isStandalone()) {
+            CustomizableHostList hostlist = NativeDebuggerManager.get().getHostList();
 
             // listen to host list model
             if (hostlist != null) {
@@ -376,7 +377,7 @@ public final class AttachPanel extends TopComponent {
             }
         });
 
-        if (!DebuggerManager.isStandalone()) {
+        if (!NativeDebuggerManager.isStandalone()) {
             hostsButton.setEnabled(false);	// IZ 147543
         }
         hostsButton.setText(Catalog.get("TITLE_Hosts"));	// NOI18N
@@ -595,15 +596,7 @@ public final class AttachPanel extends TopComponent {
         Object cmdobj = processModel.getValueAt(selectedRow, cmdIndex);
 
         if (cmdobj instanceof String) {
-            String cmdstring = (String) cmdobj;
-	    if ( cmdstring != null) {
-		int i = cmdstring.indexOf(" "); // NOI18N
-		if (i == -1) // EOL
-		    i = cmdstring.length();
-		String executablePath = cmdstring.substring(0,i);
-
-		executableProjectPanel.setExecutablePath(executablePath);
-	    }
+            executableProjectPanel.setExecutablePath((String) cmdobj);
 	}
     }
     
@@ -675,7 +668,7 @@ public final class AttachPanel extends TopComponent {
                 }
             }
 
-            DebuggerManager.get().attach(dt);
+            NativeDebuggerManager.get().attach(dt);
         }
     }
 
@@ -802,10 +795,18 @@ public final class AttachPanel extends TopComponent {
             final boolean getAllProcesses = false;
 
             tableInfo("MSG_Gathering_Data"); //NOI18N
-            
+
             CndRemote.validate(hostName, new Runnable() {
+
+                @Override
                 public void run() {
                     requestProcesses(fre, hostname, getAllProcesses);
+                }
+            }, new Runnable() {
+
+                @Override
+                public void run() {
+                    tableInfo("MSG_PS_Failed"); //NOI18N
                 }
             });
         } else {
@@ -1111,7 +1112,7 @@ public final class AttachPanel extends TopComponent {
     }
 
     private void hostsButtonActionPerformed(java.awt.event.ActionEvent evt) {
-        if (DebuggerManager.isStandalone()) {
+        if (NativeDebuggerManager.isStandalone()) {
             // It's effect will come back to us via
             // contentsChanged(RecordListEvent)
             HostListEditor editor = new HostListEditor();
@@ -1142,8 +1143,8 @@ public final class AttachPanel extends TopComponent {
     
     public static void fillHostsCombo(JComboBox combo) {
         String[] hostChoices = null;
-        if (DebuggerManager.isStandalone()) {
-            CustomizableHostList hostlist = DebuggerManager.get().getHostList();
+        if (NativeDebuggerManager.isStandalone()) {
+            CustomizableHostList hostlist = NativeDebuggerManager.get().getHostList();
             if (hostlist != null) {
                 hostChoices = hostlist.getRecordsDisplayName();
             }

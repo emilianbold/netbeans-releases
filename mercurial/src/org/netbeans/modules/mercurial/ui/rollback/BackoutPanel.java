@@ -64,7 +64,6 @@ public class BackoutPanel extends ChangesetPickerPanel {
         super(repo, null);
         this.repoRev = repoRev;
         initComponents();
-        loadRevisions();
     }
 
     public String getCommitMessage() {
@@ -81,6 +80,11 @@ public class BackoutPanel extends ChangesetPickerPanel {
         return repoRev;
     }
 
+    @Override
+    protected void loadRevisions () {
+        super.loadRevisions();
+    }
+
     private void initComponents() {
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(BackoutPanel.class, "BackoutPanel.infoLabel.text")); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(BackoutPanel.class, "BackoutPanel.infoLabel2.text")); // NOI18N
@@ -91,7 +95,7 @@ public class BackoutPanel extends ChangesetPickerPanel {
         commitMsgField = new javax.swing.JTextField();
         commitLabel = new javax.swing.JLabel();
         commitLabel.setLabelFor(commitMsgField);
-        commitMsgField.setText(NbBundle.getMessage(BackoutPanel.class, "BackoutPanel.commitMsgField.text") + BackoutAction.HG_BACKOUT_REVISION); // NOI18N
+        commitMsgField.setText(NbBundle.getMessage(BackoutPanel.class, "BackoutPanel.commitMsgField.text", BackoutAction.HG_BACKOUT_REVISION)); //NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(commitLabel, org.openide.util.NbBundle.getMessage(BackoutPanel.class, "BackoutPanel.commitLabel.text")); // NOI18N
         commitMsgField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BackoutPanel.class, "ACSD_commitMsgField")); // NOI18N
 

@@ -46,6 +46,7 @@ package org.apache.tools.ant.module;
 
 import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;
+import org.netbeans.modules.options.java.api.JavaOptions;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -56,11 +57,11 @@ import org.openide.util.Lookup;
  * @author Jan Jancura
  */
 @OptionsPanelController.SubRegistration(
-    location="Java",
+    location=JavaOptions.JAVA,
     id=AntPanelController.OPTIONS_SUBPATH,
     displayName="#Ant",
     keywords="#KW_AntOptions",
-    keywordsCategory="Java/Ant"
+    keywordsCategory=JavaOptions.JAVA + "/Ant"
 //    toolTip="#Ant_Tooltip"
 )
 public final class AntPanelController extends OptionsPanelController {

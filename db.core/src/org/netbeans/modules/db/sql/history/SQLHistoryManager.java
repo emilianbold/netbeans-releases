@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -41,31 +41,47 @@
  */
 package org.netbeans.modules.db.sql.history;
 
-
-import java.util.ArrayList;
-import java.util.List;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
 import org.netbeans.modules.db.sql.execute.ui.SQLHistoryPanel;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
  *
  * @author John Baker
  */
 public class SQLHistoryManager  {
-    public static final String SQL_HISTORY_FOLDER = "Databases/SQLHISTORY"; // NOI18N
-    public static final String SQL_HISTORY_FILE_NAME = "sql_history.xml";  // NOI18N
-    public static final String SAVE_STATEMENTS_MAX_LIMIT_ENTERED = "100"; // NOI18N
-    private static SQLHistoryManager _instance = null;    
-    private static final Logger LOGGER = Logger.getLogger(SQLHistory.class.getName());
-    private List<SQLHistory> sqlList = new ArrayList<SQLHistory>();
-    private int listSize;
-    private FileObject historyRoot;
 
-    private SQLHistoryManager() {
+    JAXBContext context;
+    private static final String SQL_HISTORY_DIRECTORY = "Databases/SQLHISTORY"; // NOI18N
+    private static final String SQL_HISTORY_FILE = "sql_history.xml"; // NOI18N
+    public static final String OPT_SQL_STATEMENTS_SAVED_FOR_HISTORY = "SQL_STATEMENTS_SAVED_FOR_HISTORY"; // NOI18N
+    public static final int DEFAULT_SQL_STATEMENTS_SAVED_FOR_HISTORY = 100;
+    public static final int MAX_SQL_STATEMENTS_SAVED_FOR_HISTORY = 10000;
+    private static SQLHistoryManager _instance = null;    
+    private static final Logger LOGGER = Logger.getLogger(SQLHistoryEntry.class.getName());
+    private SQLHistory sqlHistory;
+
+    protected SQLHistoryManager() {
+        ClassLoader orig = Thread.currentThread().getContextClassLoader();
+        Thread.currentThread().setContextClassLoader(SQLHistoryManager.class.getClassLoader());
+        try {
+            context = JAXBContext.newInstance("org.netbeans.modules.db.sql.history", SQLHistoryManager.class.getClassLoader());
+            loadHistory();
+        } catch (JAXBException ex) {
+            throw new RuntimeException(ex);
+        } finally {
+            Thread.currentThread().setContextClassLoader(orig);
+        }
     }
     
     public static SQLHistoryManager getInstance() {
@@ -75,107 +91,76 @@ public class SQLHistoryManager  {
         return _instance;
     }
 
-    /**
-     * Get the value of listSize
-     *
-     * @return the value of listSize
-     */
     public int getListSize() {
-        return listSize;
+        return NbPreferences.forModule(SQLHistoryPanel.class).getInt("OPT_SQL_STATEMENTS_SAVED_FOR_HISTORY", DEFAULT_SQL_STATEMENTS_SAVED_FOR_HISTORY);
+    }
+
+    protected FileObject getHistoryRoot(boolean create) throws IOException {
+        FileObject result = null;
+        FileObject historyRootDir = getConfigRoot().getFileObject(getRelativeHistoryPath());
+        if (historyRootDir != null || create) {
+            if (historyRootDir == null) {
+                historyRootDir = FileUtil.createFolder(getConfigRoot(), getRelativeHistoryPath());
+    }
+            FileObject historyRoot = historyRootDir.getFileObject(getHistoryFilename());
+
+            if (historyRoot != null || create) {
+                if(historyRoot == null) {
+                    historyRoot = historyRootDir.createData(getHistoryFilename());
+    }
+                result = historyRoot;
+    }
+        }
+        return result;
     }
     
-    public FileObject getHistoryRoot() {
-        return historyRoot;
+    protected FileObject getConfigRoot() {
+        return FileUtil.getConfigRoot();
+    }
+    
+    protected String getRelativeHistoryPath() {
+        return SQL_HISTORY_DIRECTORY;
     }
 
-    public void setHistoryRoot(FileObject root) {
-        historyRoot = root;
-    }
+    protected String getHistoryFilename() {
+        return SQL_HISTORY_FILE;
+                }
 
-    /**
-     * Set the value of listSize
-     *
-     * @param listSize new value of listSize
-     */
     public void setListSize(int listSize) {
-        this.listSize = listSize;
+        NbPreferences.forModule(SQLHistoryPanel.class).putInt("OPT_SQL_STATEMENTS_SAVED_FOR_HISTORY", listSize);
+        sqlHistory.setHistoryLimit(listSize);
     }
 
-    
-    public void saveSQL(SQLHistory sqlStored) {
-        sqlList.add(sqlStored);
+    public void saveSQL(SQLHistoryEntry sqlStored) {
+        sqlHistory.add(sqlStored);
+            }
+
+    private void loadHistory() {
+        try {
+            Unmarshaller unmarshaller = context.createUnmarshaller();
+            InputStream is = getHistoryRoot(false).getInputStream();
+            sqlHistory = (SQLHistory) unmarshaller.unmarshal(is);
+            sqlHistory.setHistoryLimit(getListSize());
+            is.close();
+        } catch (Exception ex) {
+            sqlHistory = new SQLHistory();
+            sqlHistory.setHistoryLimit(getListSize());
+            LOGGER.log(Level.INFO, ex.getMessage());
+        }
     }
     
-    public void save(FileObject userdirRoot) {
+    public void save() {
         try {
-            // create a folder in the userdir for sql_history.xml file that maintains a list of executed SQL
-            setHistoryRoot(userdirRoot.getFileObject(SQL_HISTORY_FOLDER));
-            if (null == historyRoot || !historyRoot.isValid()) {
-                historyRoot = FileUtil.createFolder(userdirRoot, SQL_HISTORY_FOLDER);
-            }
-            // Start managing the persistence of SQL statements that have been executed
-            SQLHistoryPersistenceManager.getInstance().create(historyRoot, sqlList);
-            sqlList.clear();
+            Marshaller marshaller = context.createMarshaller();
+            OutputStream os = getHistoryRoot(true).getOutputStream();
+            marshaller.marshal(sqlHistory, os);
+            os.close();
         } catch (Exception ex) {
             LOGGER.log(Level.INFO, ex.getMessage());
-            LOGGER.log(Level.INFO, NbBundle.getMessage(SQLHistoryManager.class, "MSG_ErrorParsingHistoryFile"));
-        }
-    }
-    
-    public List<SQLHistory> getSQLHistory() {
-        return sqlList;
-    }
-    
-    public List<SQLHistory> retrieve() {
-        return new ArrayList<SQLHistory>();
-        
-    }
-
-    public List<String> retrieve(String url) {
-        List<String> sqlAsString = new ArrayList<String>();
-        String sql;
-        if (!getUrlsUsed().isEmpty()) {
-            for (SQLHistory historyItem : sqlList) {
-                sql = historyItem.getSql();
-                if (url.equals(historyItem.getUrl())) {
-                    sqlAsString.add(sql);
-                }
             }
-        }
-        return sqlAsString;
-
-    }
-
-    private List<String> getUrlsUsed() {
-        List<String> urls = new ArrayList<String>();
-        String url;
-        for (SQLHistory historyItem : sqlList) {
-            url = historyItem.getUrl();
-            if (!urls.contains(url)) {
-                urls.add(url);
-            }
-        }
-        return urls;
-    }
-    
-    public int updateList(int limit, String historyFilePath, FileObject root) throws SQLHistoryException {
-        List<SQLHistory> updatedSQLHistoryList = new ArrayList<SQLHistory>();
-        int numItemsToRemove = 0;
-        try {
-            updatedSQLHistoryList = SQLHistoryPersistenceManager.getInstance().retrieve(root);
-            if (limit >= updatedSQLHistoryList.size()) {
-                // no changes needed to the current list
-                return -1;
-            }
-            // Remove elements from list based on the number of statements to save that is set in the SQL History dialog
-            numItemsToRemove = updatedSQLHistoryList.size() - limit;
-            for (int i = 0; i < numItemsToRemove; i++) {
-                updatedSQLHistoryList.remove(0);
-            }
-         } catch (ClassNotFoundException ex) {
-            LOGGER.log(Level.INFO, NbBundle.getMessage(SQLHistoryPanel.class, "MSG_RuntimeErrorRetrievingHistory") + ex);
         }    
-        sqlList = updatedSQLHistoryList;
-        return numItemsToRemove;
+
+    public SQLHistory getSQLHistory() {
+        return sqlHistory;
     }
 }

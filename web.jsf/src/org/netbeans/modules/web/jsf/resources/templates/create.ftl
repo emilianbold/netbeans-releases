@@ -72,7 +72,7 @@
                 <h:commandLink action="${r"#{"}${managedBean}${r".prepareList}"}" value="${r"#{"}bundle.Create${entityName}ShowAllLink${r"}"}" immediate="true"/>
                 <br />
                 <br />
-                <h:commandLink value="${r"#{"}bundle.Create${entityName}IndexLink${r"}"}" action="/index" immediate="true" />
+                <h:link outcome="/index" value="${r"#{"}bundle.Create${entityName}IndexLink${r"}"}"/>
             </h:form>
         </ui:define>
     </ui:composition>

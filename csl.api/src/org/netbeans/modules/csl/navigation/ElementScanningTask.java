@@ -66,13 +66,10 @@ import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.UserTask;
-import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.parsing.spi.Parser;
-import org.netbeans.modules.parsing.spi.ParserResultTask;
-import org.netbeans.modules.parsing.spi.Scheduler;
-import org.netbeans.modules.parsing.spi.SchedulerEvent;
+import org.netbeans.modules.parsing.spi.*;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
+import org.openide.util.RequestProcessor;
 
 /**
  * This file is originally from Retouche, the Java Support 
@@ -86,7 +83,7 @@ import org.openide.util.ImageUtilities;
  *
  * @author phrebejk
  */
-public final class ElementScanningTask extends ParserResultTask<ParserResult> {
+public final class ElementScanningTask extends IndexingAwareParserResultTask<ParserResult> {
 
     private static final Logger LOG = Logger.getLogger(ElementScanningTask.class.getName());
     
@@ -94,6 +91,7 @@ public final class ElementScanningTask extends ParserResultTask<ParserResult> {
     private boolean canceled;
 
     public ElementScanningTask(ClassMemberPanelUI ui) {
+        super(TaskIndexingMode.ALLOWED_DURING_SCAN);
         assert ui != null;
         this.ui = ui;
     }
@@ -184,7 +182,7 @@ public final class ElementScanningTask extends ParserResultTask<ParserResult> {
             });
         }
 
-        List<StructureItem> items = new ArrayList<StructureItem>();
+        final List<StructureItem> items = new ArrayList<StructureItem>();
         if (mimetypesWithElements[0] > 1) {
             //at least two languages provided some elements - use the root mimetype nodes
             for (MimetypeRootNode root : roots) {
@@ -197,9 +195,7 @@ public final class ElementScanningTask extends ParserResultTask<ParserResult> {
             }
         }
 
-        if (!isCancelled()) {
-            ui.refresh(new RootStructureItem(items), fileObject);
-        }
+        ui.refresh(new RootStructureItem(items), fileObject);
     }
 
     public @Override int getPriority() {
@@ -283,6 +279,8 @@ public final class ElementScanningTask extends ParserResultTask<ParserResult> {
         private static final String JAVASCRIPT_MIMETYPE = "text/javascript";//NOI18N
         private static final String RUBY_MIMETYPE = "text/x-ruby";//NOI18N
         private static final String YAML_MIMETYPE = "text/x-yaml";//NOI18N
+        private static final String PHP_MIME_TYPE = "text/x-php5"; // NOI18N
+        private static final String PHP_SORT_TEXT = "0";//NOI18N
         private static final String JAVASCRIPT_SORT_TEXT = "1";//NOI18N
         private static final String HTML_MIMETYPE = "text/html";//NOI18N
         private static final String HTML_SORT_TEXT = "3";//NOI18N
@@ -342,6 +340,8 @@ public final class ElementScanningTask extends ParserResultTask<ParserResult> {
                 return YAML_SORT_TEXT;
             } else if (language.getMimeType().equals(RUBY_MIMETYPE)) {
                 return RUBY_SORT_TEXT;
+            } else if (language.getMimeType().equals(PHP_MIME_TYPE)) {
+                return PHP_SORT_TEXT;
             } else {
                 return OTHER_SORT_TEXT + getName();
             }

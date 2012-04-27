@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -68,6 +68,7 @@ public class CellFocusCustomRenderer extends DefaultTableCellRenderer {
         } else {
             setBackground(table.getBackground());
         }
+        this.putClientProperty("html.disable", Boolean.TRUE);
         return this;
     }
 }

@@ -103,7 +103,7 @@ public class AdditionalProjectFactoryTest extends NbTestCase {
         Factory f = Lookup.getDefault().lookup(Factory.class);
         assertNotNull("Factory found", f);
         LOG.info("Factory found");
-        FoDFileSystem.getInstance().waitFinished();
+        FoDLayersProvider.getInstance().waitFinished();
         LOG.info("Refresh finished");
         
         for (int i = 0; i < 100; i++) {

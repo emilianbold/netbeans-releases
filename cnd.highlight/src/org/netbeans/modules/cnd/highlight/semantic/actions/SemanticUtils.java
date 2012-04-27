@@ -49,7 +49,7 @@ import org.netbeans.modules.cnd.highlight.semantic.MarkOccurrencesHighlighter;
 import org.netbeans.modules.cnd.model.tasks.CaretAwareCsmFileTaskFactory;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
-import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
+import org.netbeans.spi.editor.highlighting.support.PositionsBag;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -67,7 +67,7 @@ public class SemanticUtils {
 
     @SuppressWarnings("empty-statement")
     private static int findOccurrencePosition(boolean directionForward, Document doc, int curPos) {
-        OffsetsBag bag = MarkOccurrencesHighlighter.getHighlightsBag(doc);
+        PositionsBag bag = MarkOccurrencesHighlighter.getHighlightsBag(doc);
         HighlightsSequence hs = bag.getHighlights(0, doc.getLength());
         
         if (hs.moveNext()) {
@@ -117,7 +117,7 @@ public class SemanticUtils {
         FileObject fo = (dobj == null) ? null : dobj.getPrimaryFile();
         String mime = (fo == null) ? "" : fo.getMIMEType();
         if (MIMENames.isHeaderOrCppOrC(mime)) {
-            EditorCookie ec = dobj.getCookie(EditorCookie.class);
+            EditorCookie ec = dobj.getLookup().lookup(EditorCookie.class);
             Document doc = ec.getDocument();
 
             int position = CaretAwareCsmFileTaskFactory.getLastPosition(dobj.getPrimaryFile());

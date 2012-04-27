@@ -45,9 +45,12 @@
 package org.netbeans.core.startup;
 
 import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -63,7 +66,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.Stamps;
 import org.netbeans.Util;
+import org.netbeans.core.startup.preferences.RelPaths;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.lookup.ServiceProvider;
@@ -117,6 +122,8 @@ public final class InstalledFileLocatorImpl extends InstalledFileLocator {
      * in which the module appears to be installed.
      */
     private static Map<String,List<File>> clusterCache = null;
+    /** tells the system that previous cache was not correct */
+    private static boolean cacheMiss;
     
     /**
      * Called from <code>Main.run</code> early in the startup sequence to indicate
@@ -128,6 +135,78 @@ public final class InstalledFileLocatorImpl extends InstalledFileLocator {
         assert fileCache == null;
         fileCache = new HashMap<String,Map<File,Set<String>>>();
         clusterCache = new HashMap<String,List<File>>();
+        
+        try {
+            InputStream is = Stamps.getModulesJARs().asStream("all-files.dat");
+            if (is == null) {
+                return;
+            }
+            DataInputStream dis = new DataInputStream(is);
+            int filesSize = dis.readInt();
+            for (int i = 0; i < filesSize; i++) {
+                String key = dis.readUTF();
+                Map<File,Set<String>> fileToKids = new HashMap<File, Set<String>>();
+                int filesToKids = dis.readInt();
+                for (int j = 0; j < filesToKids; j++) {
+                    final String read = RelPaths.readRelativePath(dis);
+                    File f = new File(read);
+                    int kidsSize = dis.readInt();
+                    List<String> kids = new ArrayList<String>(kidsSize);
+                    for (int k = 0; k < kidsSize; k++) {
+                        kids.add(dis.readUTF());
+                    }
+                    fileToKids.put(f, new HashSet<String>(kids));
+                }
+                fileCache.put(key, fileToKids);
+            }
+            int clusterSize = dis.readInt();
+            for (int i = 0; i < clusterSize; i++) {
+                String key = dis.readUTF();
+                int valueSize = dis.readInt();
+                List<File> values = new ArrayList<File>(valueSize);
+                for (int j = 0; j < valueSize; j++) {
+                    values.add(new File(RelPaths.readRelativePath(dis)));
+                }
+                clusterCache.put(key, values);
+            }
+        } catch (IOException ex) {
+            LOG.log(Level.INFO, null, ex);
+            fileCache.clear();
+            clusterCache.clear();
+        }
+    }
+    
+    private static synchronized void persistCache(
+        DataOutputStream os, 
+        Map<String, Map<File, Set<String>>> fc,
+        Map<String,List<File>> cc
+    ) throws IOException {
+        os.writeInt(fc.size());
+        for (Map.Entry<String, Map<File, Set<String>>> entry : fc.entrySet()) {
+            os.writeUTF(entry.getKey());
+            final Map<File, Set<String>> map = entry.getValue();
+            os.writeInt(map.size());
+            for (Map.Entry<File, Set<String>> children : map.entrySet()) {
+                String[] parts = RelPaths.findRelativePath(children.getKey().getPath());
+                assert parts != null : "No relative for " + children.getKey();
+                os.writeUTF(parts[0]);
+                os.writeUTF(parts[1]);
+                os.writeInt(children.getValue().size());
+                for (String v : children.getValue()) {
+                    os.writeUTF(v);
+                }
+            }
+        }
+        os.writeInt(cc.size());
+        for (Map.Entry<String, List<File>> entry : cc.entrySet()) {
+            os.writeUTF(entry.getKey());
+            os.writeInt(entry.getValue().size());
+            for (File file : entry.getValue()) {
+                String[] parts = RelPaths.findRelativePath(file.getPath());
+                os.writeUTF(parts[0]);
+                os.writeUTF(parts[1]);
+            }
+        }
     }
     
     /**
@@ -143,6 +222,19 @@ public final class InstalledFileLocatorImpl extends InstalledFileLocator {
      */
     public static synchronized void discardCache() {
         assert fileCache != null;
+        if (cacheMiss) {
+            final Map<String, Map<File, Set<String>>> fc = fileCache;
+            final Map<String, List<File>> cc = clusterCache;
+            Stamps.getModulesJARs().scheduleSave(new Stamps.Updater() {
+                @Override
+                public void flushCaches(DataOutputStream os) throws IOException {
+                    persistCache(os, fc, cc);
+                }
+                @Override
+                public void cacheReady() {
+                }
+            }, "all-files.dat", false); // NOI18N
+        }
         fileCache = null;
         clusterCache = null;
     }
@@ -261,6 +353,7 @@ public final class InstalledFileLocatorImpl extends InstalledFileLocator {
             }
             if (clusterCache != null) {
                 clusterCache.put(codeNameBase, clusters);
+                scheduleSave();
             }
         }
         if (clusters.isEmpty()) {
@@ -318,6 +411,7 @@ public final class InstalledFileLocatorImpl extends InstalledFileLocator {
                 }
             }
             fileCache.put(prefix, fileCachePerPrefix);
+            scheduleSave();
         }
         return fileCachePerPrefix;
     }
@@ -417,5 +511,8 @@ public final class InstalledFileLocatorImpl extends InstalledFileLocator {
         }
         return "???"; // NOI18N
     }
-    
+
+    private static synchronized void scheduleSave() {
+        cacheMiss = true;
+    }
 }

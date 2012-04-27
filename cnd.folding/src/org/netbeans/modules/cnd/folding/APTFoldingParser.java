@@ -484,7 +484,7 @@ import org.openide.filesystems.FileSystem;
                 {
                     // enum is LITERAL_enum (ID)? { elems } IDs ;
                     consume();
-                    if (LA(1) == ID) {
+                    if (LA(1) == IDENT) {
                         // already checked token ref, just skip
                         consume();
                     }

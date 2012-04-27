@@ -55,6 +55,7 @@ import java.beans.*;
 import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.event.*;
+import org.openide.util.NbBundle;
 
 
 /** Table view of node properties. Table header displays property display names and each cell
@@ -96,10 +97,10 @@ class TableSheet extends JScrollPane {
         setRequestFocusEnabled(false);
 
         table.getAccessibleContext().setAccessibleName(
-            org.openide.util.NbBundle.getBundle(TableSheet.class).getString("ACS_TableSheet")
+            NbBundle.getMessage(TableSheet.class, "ACS_TableSheet")
         );
         table.getAccessibleContext().setAccessibleDescription(
-            org.openide.util.NbBundle.getBundle(TableSheet.class).getString("ACSD_TableSheet")
+            NbBundle.getMessage(TableSheet.class, "ACSD_TableSheet")
         );
     }
 
@@ -191,7 +192,7 @@ class TableSheet extends JScrollPane {
     }
 
     private static String getString(String key) {
-        return org.openide.util.NbBundle.getBundle(TableSheet.class).getString(key);
+        return NbBundle.getMessage(TableSheet.class, key);
     }
     
     @Override

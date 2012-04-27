@@ -44,8 +44,6 @@
 package org.netbeans.modules.php.project;
 
 import java.awt.Image;
-import org.netbeans.modules.php.project.copysupport.CopySupport;
-import org.netbeans.modules.php.project.ui.logicalview.PhpLogicalViewProvider;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -60,6 +58,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
@@ -70,22 +69,28 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.VisibilityQuery;
+import org.netbeans.api.search.SearchRoot;
+import org.netbeans.api.search.SearchScopeOptions;
+import org.netbeans.api.search.provider.SearchInfo;
+import org.netbeans.api.search.provider.SearchInfoUtils;
+import org.netbeans.api.search.provider.SearchListener;
 import org.netbeans.modules.php.api.phpmodule.BadgeIcon;
 import org.netbeans.modules.php.api.phpmodule.PhpFrameworks;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.project.api.PhpLanguageProperties;
-import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.modules.php.project.api.PhpSeleniumProvider;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.modules.php.project.classpath.BasePathSupport;
 import org.netbeans.modules.php.project.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.php.project.classpath.IncludePathClassPathProvider;
+import org.netbeans.modules.php.project.copysupport.CopySupport;
 import org.netbeans.modules.php.project.internalserver.InternalWebServer;
+import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.actions.support.ConfigAction;
 import org.netbeans.modules.php.project.ui.codecoverage.PhpCoverageProvider;
 import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.IgnorePathSupport;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
-import org.netbeans.modules.php.project.ui.Utils;
+import org.netbeans.modules.php.project.ui.logicalview.PhpLogicalViewProvider;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleIgnoredFilesExtender;
@@ -103,6 +108,10 @@ import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
+import org.netbeans.spi.search.SearchFilterDefinition;
+import org.netbeans.spi.search.SearchInfoDefinition;
+import org.netbeans.spi.search.SearchInfoDefinitionFactory;
+import org.netbeans.spi.search.SubTreeSearchOptions;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileAttributeEvent;
@@ -111,7 +120,6 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
 import org.openide.util.ChangeSupport;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -122,9 +130,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.openide.util.WeakSet;
 import org.openide.util.lookup.Lookups;
-import org.openidex.search.FileObjectFilter;
-import org.openidex.search.SearchInfo;
-import org.openidex.search.SearchInfoFactory;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -152,26 +157,29 @@ public final class PhpProject implements Project {
     private final SourceRoots testRoots;
     private final SourceRoots seleniumRoots;
 
-    private final FileObjectFilter fileObjectFilter = new PhpFileObjectFilter();
+    private final SearchFilterDefinition searchFilterDef = new PhpSearchFilterDef();
 
-    // all next properties are guarded by PhpProject.this lock as well so it could be possible to break this lock to individual locks
     // #165136
-    // @GuardedBy(ProjectManager.mutex())
-    volatile FileObject sourcesDirectory;
-    // @GuardedBy(ProjectManager.mutex())
-    volatile FileObject testsDirectory;
-    // @GuardedBy(ProjectManager.mutex())
-    volatile FileObject seleniumDirectory;
-    // @GuardedBy(ProjectManager.mutex())
+    // @GuardedBy("this")
+    private FileObject sourcesDirectory;
+    // @GuardedBy("this")
+    private FileObject testsDirectory;
+    // @GuardedBy("this")
+    private FileObject seleniumDirectory;
+    // ok to read it more times
     volatile FileObject webRootDirectory;
+
+    // try to restore missing test folders just once
+    volatile boolean testsDirectoryResolved = false;
+    volatile boolean seleniumDirectoryResolved = false;
 
     volatile String name;
     private final AntProjectListener phpAntProjectListener = new PhpAntProjectListener();
     private final PropertyChangeListener projectPropertiesListener = new ProjectPropertiesListener();
 
-    // @GuardedBy(ProjectManager.mutex())
-    volatile Set<BasePathSupport.Item> ignoredFolders;
-    final Object ignoredFoldersLock = new Object();
+    // @GuardedBy("ignoredFoldersLock")
+    private Set<BasePathSupport.Item> ignoredFolders;
+    private final Object ignoredFoldersLock = new Object();
     // changes in ignored files - special case because of PhpVisibilityQuery
     final ChangeSupport ignoredFoldersChangeSupport = new ChangeSupport(this);
 
@@ -242,8 +250,8 @@ public final class PhpProject implements Project {
         propertyChangeSupport.removePropertyChangeListener(listener);
     }
 
-    public FileObjectFilter getFileObjectFilter() {
-        return fileObjectFilter;
+    public SearchFilterDefinition getSearchFilterDefinition() {
+        return searchFilterDef;
     }
 
     private PropertyEvaluator createEvaluator() {
@@ -284,26 +292,25 @@ public final class PhpProject implements Project {
         return seleniumRoots;
     }
 
-    FileObject getSourcesDirectory() {
+    synchronized FileObject getSourcesDirectory() {
         if (sourcesDirectory == null) {
-            ProjectManager.mutex().readAccess(new Mutex.Action<Void>() {
-                @Override
-                public Void run() {
-                    synchronized (PhpProject.this) {
-                        if (sourcesDirectory == null) {
-                            sourcesDirectory = resolveSourcesDirectory();
-                            sourcesDirectory.addFileChangeListener(FileUtil.weakFileChangeListener(sourceDirectoryFileChangeListener, sourcesDirectory));
-                        }
-                    }
-                    return null;
-                }
-            });
+            sourcesDirectory = resolveSourcesDirectory();
+            sourcesDirectory.addFileChangeListener(FileUtil.weakFileChangeListener(sourceDirectoryFileChangeListener, sourcesDirectory));
         }
-        assert sourcesDirectory != null : "Sources directory cannot be null";
+        assert sourcesDirectory != null : "Sources directory cannot be null for " + helper.getProjectDirectory();
         return sourcesDirectory;
     }
 
+    synchronized void resetSourcesDirectory() {
+        sourcesDirectory = null;
+    }
+
     private FileObject resolveSourcesDirectory() {
+        FileObject sourceDir = resolveDirectory(PhpProjectProperties.SRC_DIR, "MSG_SourcesFolderTemporaryToProjectDirectory"); // NOI18N
+        if (sourceDir != null) {
+            return sourceDir;
+        }
+        // source dir not resolved?!
         String srcDirProperty = eval.getProperty(PhpProjectProperties.SRC_DIR);
         // #168390, #165494
         if (srcDirProperty == null) {
@@ -353,90 +360,85 @@ public final class PhpProject implements Project {
             buffer.append(eval.getProperties());
             throw new IllegalStateException(buffer.toString());
         }
-        FileObject srcDir = helper.resolveFileObject(srcDirProperty);
-        if (srcDir != null) {
-            return srcDir;
-        }
-        return restoreDirectory(PhpProjectProperties.SRC_DIR, "MSG_SourcesFolderRestored", "MSG_SourcesFolderTemporaryToProjectDirectory");
+        // temporarily return project directory (to avoid NPE)
+        return helper.getProjectDirectory();
     }
 
     /**
      * @return tests directory or <code>null</code>
      */
-    FileObject getTestsDirectory() {
+    synchronized FileObject getTestsDirectory() {
         if (testsDirectory == null) {
-            ProjectManager.mutex().readAccess(new Mutex.Action<Void>() {
-                @Override
-                public Void run() {
-                    synchronized (PhpProject.this) {
-                        if (testsDirectory == null) {
-                            testsDirectory = resolveTestsDirectory();
-                        }
-                    }
-                    return null;
-                }
-            });
+            if (testsDirectoryResolved) {
+                return null;
+            }
+            testsDirectoryResolved = true;
+            testsDirectory = resolveDirectory(PhpProjectProperties.TEST_SRC_DIR, "MSG_TestsFolderTemporaryToProjectDirectory"); // NOI18N
         }
         return testsDirectory;
     }
 
-    void setTestsDirectory(FileObject testsDirectory) {
-        assert testsDirectory != null && testsDirectory.isValid();
-        this.testsDirectory = testsDirectory;
+    synchronized void resetTestsDirectory() {
+        testsDirectory = null;
+        testsDirectoryResolved = false;
     }
 
-    private FileObject resolveTestsDirectory() {
-        // similar to source directory
-        String testsProperty = eval.getProperty(PhpProjectProperties.TEST_SRC_DIR);
-        if (testsProperty == null) {
-            // test directory not set yet
-            return null;
-        }
-        FileObject testDir = helper.resolveFileObject(testsProperty);
-        if (testDir != null) {
-            return testDir;
-        }
-        return restoreDirectory(PhpProjectProperties.TEST_SRC_DIR, "MSG_TestsFolderRestored", "MSG_TestsFolderTemporaryToProjectDirectory");
+    synchronized void setTestsDirectory(FileObject testsDirectory) {
+        assert testsDirectory != null && testsDirectory.isValid();
+        this.testsDirectory = testsDirectory;
+        testsDirectoryResolved = false;
     }
 
     /**
      * @return selenium tests directory or <code>null</code>
      */
-    FileObject getSeleniumDirectory() {
+    synchronized FileObject getSeleniumDirectory() {
         if (seleniumDirectory == null) {
-            ProjectManager.mutex().readAccess(new Mutex.Action<Void>() {
-                @Override
-                public Void run() {
-                    synchronized (PhpProject.this) {
-                        if (seleniumDirectory == null) {
-                            seleniumDirectory = resolveSeleniumDirectory();
-                        }
-                    }
-                    return null;
-                }
-            });
+            if (seleniumDirectoryResolved) {
+                return null;
+            }
+            seleniumDirectoryResolved = true;
+            seleniumDirectory = resolveDirectory(PhpProjectProperties.SELENIUM_SRC_DIR, "MSG_SeleniumFolderTemporaryToProjectDirectory"); // NOI18N
         }
         return seleniumDirectory;
     }
 
-    void setSeleniumDirectory(FileObject seleniumDirectory) {
+    synchronized void resetSeleniumDirectory() {
+        seleniumDirectory = null;
+        seleniumDirectoryResolved = false;
+    }
+
+    synchronized void setSeleniumDirectory(FileObject seleniumDirectory) {
         assert this.seleniumDirectory == null : "Project selenium directory already set to " + this.seleniumDirectory;
         assert seleniumDirectory != null && seleniumDirectory.isValid();
         this.seleniumDirectory = seleniumDirectory;
+        seleniumDirectoryResolved = false;
     }
 
-    private FileObject resolveSeleniumDirectory() {
-        // similar to source directory
-        String testsProperty = eval.getProperty(PhpProjectProperties.SELENIUM_SRC_DIR);
-        if (testsProperty == null) {
-            // test directory not set yet
+    private FileObject resolveDirectory(final String propertyName, final String messageKey) {
+        assert Thread.holdsLock(this);
+        String property = eval.getProperty(propertyName);
+        if (property == null) {
+            // directory not set
             return null;
         }
-        FileObject testDir = helper.resolveFileObject(testsProperty);
-        if (testDir != null) {
-            return testDir;
+        FileObject dirFo = helper.resolveFileObject(property);
+        if (dirFo != null) {
+            return dirFo;
         }
-        return restoreDirectory(PhpProjectProperties.SELENIUM_SRC_DIR, "MSG_SeleniumFolderRestored", "MSG_SeleniumFolderTemporaryToProjectDirectory");
+        File dir = FileUtil.normalizeFile(new File(helper.resolvePath(property)));
+        warnUser(NbBundle.getMessage(PhpProject.class, messageKey, dir.getAbsolutePath()));
+        return null;
+    }
+
+    private void warnUser(String message) {
+        DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor(
+                message,
+                getName(),
+                NotifyDescriptor.DEFAULT_OPTION,
+                NotifyDescriptor.WARNING_MESSAGE,
+                new Object[] {NotifyDescriptor.OK_OPTION},
+                NotifyDescriptor.OK_OPTION));
     }
 
     /**
@@ -444,17 +446,7 @@ public final class PhpProject implements Project {
      */
     FileObject getWebRootDirectory() {
         if (webRootDirectory == null) {
-            ProjectManager.mutex().readAccess(new Mutex.Action<Void>() {
-                @Override
-                public Void run() {
-                    synchronized (PhpProject.this) {
-                        if (webRootDirectory == null) {
-                            webRootDirectory = resolveWebRootDirectory();
-                        }
-                    }
-                    return null;
-                }
-            });
+            webRootDirectory = resolveWebRootDirectory();
         }
         return webRootDirectory;
     }
@@ -471,40 +463,6 @@ public final class PhpProject implements Project {
         }
         // web root directory not found, return sources
         return getSourcesDirectory();
-    }
-
-    private FileObject restoreDirectory(String propertyName, String infoMessageKey, String errorMessageKey) {
-        // #144371 - source folder probably deleted => so:
-        //  1. try to restore it - if it fails, then
-        //  2. just return the project directory & warn user about impossibility of creating src dir
-        String projectName = getName();
-        File dir = FileUtil.normalizeFile(new File(helper.resolvePath(eval.getProperty(propertyName))));
-        NotifyDescriptor notifyDescriptor = new NotifyDescriptor(
-                NbBundle.getMessage(PhpProject.class, "MSG_CanFolderRestore", dir.getAbsolutePath()),   //NOI18N
-                NbBundle.getMessage(PhpProject.class, "LBL_TitleCanFolderRestore", projectName),        //NOI18N
-                NotifyDescriptor.YES_NO_OPTION,
-                NotifyDescriptor.QUESTION_MESSAGE,
-                null, NotifyDescriptor.NO_OPTION);
-        if (DialogDisplayer.getDefault().notify(notifyDescriptor) == NotifyDescriptor.YES_OPTION) {
-            if (dir.mkdirs()) {
-                // original sources restored
-                informUser(projectName, NbBundle.getMessage(PhpProject.class, infoMessageKey, dir.getAbsolutePath()), NotifyDescriptor.INFORMATION_MESSAGE);
-                return FileUtil.toFileObject(dir);
-            }
-            // temporary set sources to project directory, do not store it anywhere
-            informUser(projectName, NbBundle.getMessage(PhpProject.class, errorMessageKey, dir.getAbsolutePath()), NotifyDescriptor.ERROR_MESSAGE);
-        }
-        return helper.getProjectDirectory();
-    }
-
-    private void informUser(String title, String message, int type) {
-        DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor(
-                message,
-                title,
-                NotifyDescriptor.DEFAULT_OPTION,
-                type,
-                new Object[] {NotifyDescriptor.OK_OPTION},
-                NotifyDescriptor.OK_OPTION));
     }
 
     public PhpModule getPhpModule() {
@@ -551,31 +509,24 @@ public final class PhpProject implements Project {
     }
 
     private void putIgnoredProjectFiles(Set<File> ignored) {
-        if (ignoredFolders == null) {
-            ProjectManager.mutex().readAccess(new Mutex.Action<Void>() {
-                @Override
-                public Void run() {
-                    synchronized (ignoredFoldersLock) {
-                        if (ignoredFolders == null) {
-                            ignoredFolders = resolveIgnoredFolders();
-                        }
-                    }
-                    return null;
-                }
-            });
-        }
-        assert ignoredFolders != null : "Ignored folders cannot be null";
+        synchronized (ignoredFoldersLock) {
+            if (ignoredFolders == null) {
+                ignoredFolders = resolveIgnoredFolders();
+            }
+            assert ignoredFolders != null : "Ignored folders cannot be null";
 
-        File projectDir = FileUtil.toFile(getProjectDirectory());
-        for (BasePathSupport.Item item : ignoredFolders) {
-            if (item.isBroken()) {
-                continue;
+            for (BasePathSupport.Item item : ignoredFolders) {
+                if (item.isBroken()) {
+                    continue;
+                }
+                ignored.add(new File(item.getAbsoluteFilePath(helper.getProjectDirectory())));
             }
-            File file = new File(item.getFilePath());
-            if (!file.isAbsolute()) {
-                file = helper.resolveFile(item.getFilePath());
-            }
-            ignored.add(file);
+        }
+    }
+
+    private void resetIgnoredFolders() {
+        synchronized (ignoredFoldersLock) {
+            ignoredFolders = null;
         }
     }
 
@@ -653,21 +604,17 @@ public final class PhpProject implements Project {
             ProjectManager.mutex().readAccess(new Mutex.Action<Void>() {
                 @Override
                 public Void run() {
-                    synchronized (PhpProject.this) {
-                        if (name == null) {
-                            Element data = getHelper().getPrimaryConfigurationData(true);
-                            NodeList nl = data.getElementsByTagNameNS(PhpProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
-                            if (nl.getLength() == 1) {
-                                nl = nl.item(0).getChildNodes();
-                                if (nl.getLength() == 1
-                                        && nl.item(0).getNodeType() == Node.TEXT_NODE) {
-                                    name = ((Text) nl.item(0)).getNodeValue();
-                                }
-                            }
+                    Element data = getHelper().getPrimaryConfigurationData(true);
+                    NodeList nl = data.getElementsByTagNameNS(PhpProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
+                    if (nl.getLength() == 1) {
+                        nl = nl.item(0).getChildNodes();
+                        if (nl.getLength() == 1
+                                && nl.item(0).getNodeType() == Node.TEXT_NODE) {
+                            name = ((Text) nl.item(0)).getNodeValue();
                         }
-                        if (name == null) {
-                            name = "???"; // NOI18N
-                        }
+                    }
+                    if (name == null) {
+                        name = "???"; // NOI18N
                     }
                     return null;
                 }
@@ -707,8 +654,6 @@ public final class PhpProject implements Project {
         buffer.append(getClass().getName());
         buffer.append(" [ project directory: ");
         buffer.append(getProjectDirectory());
-        buffer.append(", source directory: ");
-        buffer.append(sourcesDirectory);
         buffer.append(" ]");
         return buffer.toString();
     }
@@ -751,6 +696,7 @@ public final class PhpProject implements Project {
                 getHelper(),
                 getEvaluator(),
                 PhpSearchInfo.create(this),
+                new PhpSubTreeSearchOptions(),
                 InternalWebServer.createForProject(this),
                 new ProjectWebRootProviderImpl()
                 // ?? getRefHelper()
@@ -762,7 +708,7 @@ public final class PhpProject implements Project {
     }
 
     public void fireIgnoredFilesChange() {
-        ignoredFolders = null;
+        resetIgnoredFolders();
         ignoredFoldersChangeSupport.fireChange();
     }
 
@@ -836,22 +782,11 @@ public final class PhpProject implements Project {
     private final class PhpOpenedHook extends ProjectOpenedHook {
         @Override
         protected void projectOpened() {
-            // #165494 - moved from projectClosed() to projectOpened()
-            // clear references to ensure that all the dirs are read again
-            sourcesDirectory = null;
-            testsDirectory = null;
-            seleniumDirectory = null;
-            webRootDirectory = null;
-            ignoredFolders = null;
-            resetFrameworks();
+            reinitFolders();
 
-            // #139159 - we need to hold sources FO to prevent gc
-            getSourcesDirectory();
-            getWebRootDirectory();
-            LOGGER.log(Level.FINE, "Adding frameworks listener for {0}", sourcesDirectory);
+            resetFrameworks();
+            LOGGER.log(Level.FINE, "Adding frameworks listener for {0}", getSourcesDirectory());
             PhpFrameworks.addFrameworksListener(frameworksListener);
-            // do it in a background thread
-            getIgnoredFiles();
             List<PhpFrameworkProvider> frameworkProviders = getFrameworks();
             getName();
 
@@ -888,10 +823,12 @@ public final class PhpProject implements Project {
         @Override
         protected void projectClosed() {
             try {
-                assert sourcesDirectory != null;
-                sourcesDirectory.removeFileChangeListener(sourceDirectoryFileChangeListener);
-                LOGGER.log(Level.FINE, "Removing frameworks listener for {0}", sourcesDirectory);
+                FileObject sources = getSourcesDirectory();
+                assert sources != null;
+                sources.removeFileChangeListener(sourceDirectoryFileChangeListener);
+                LOGGER.log(Level.FINE, "Removing frameworks listener for {0}", sources);
                 PhpFrameworks.removeFrameworksListener(frameworksListener);
+
 
                 ClassPathProviderImpl cpProvider = lookup.lookup(ClassPathProviderImpl.class);
                 ClassPath[] bootClassPaths = cpProvider.getProjectClassPaths(PhpSourcePath.BOOT_CP);
@@ -917,6 +854,24 @@ public final class PhpProject implements Project {
                 LOGGER.finest("PROJECT_CLOSED_FINISHED");
             }
         }
+
+        private void reinitFolders() {
+            // #165494 - moved from projectClosed() to projectOpened()
+            // clear references to ensure that all the dirs are read again
+            resetSourcesDirectory();
+            resetTestsDirectory();
+            resetSeleniumDirectory();
+            webRootDirectory = null;
+            resetIgnoredFolders();
+
+            // #139159 - we need to hold sources FO to prevent gc
+            getSourcesDirectory();
+            getTestsDirectory();
+            getSeleniumDirectory();
+            getWebRootDirectory();
+            getIgnoredFiles();
+        }
+
     }
 
     private static final class ConfigPropertyProvider extends FilterPropertyProvider implements PropertyChangeListener {
@@ -975,7 +930,7 @@ public final class PhpProject implements Project {
             if (PhpProjectProperties.IGNORE_PATH.equals(propertyName)) {
                 fireIgnoredFilesChange();
             } else if (PhpProjectProperties.TEST_SRC_DIR.equals(propertyName)) {
-                testsDirectory = null;
+                resetTestsDirectory();
             } else if (PhpProjectProperties.WEB_ROOT.equals(propertyName)) {
                 FileObject oldWebRoot = webRootDirectory;
                 webRootDirectory = null;
@@ -1052,19 +1007,19 @@ public final class PhpProject implements Project {
         }
     }
 
-    private static final class PhpSearchInfo implements SearchInfo.Files, PropertyChangeListener {
+    private static final class PhpSearchInfo extends SearchInfoDefinition implements PropertyChangeListener {
 
         private static final Logger LOGGER = Logger.getLogger(PhpSearchInfo.class.getName());
 
         private final PhpProject project;
         // @GuardedBy(this)
-        private SearchInfo.Files delegate = null;
+        private SearchInfo delegate = null;
 
         private PhpSearchInfo(PhpProject project) {
             this.project = project;
         }
 
-        public static SearchInfo create(PhpProject project) {
+        public static SearchInfoDefinition create(PhpProject project) {
             PhpSearchInfo phpSearchInfo = new PhpSearchInfo(project);
             project.getSourceRoots().addPropertyChangeListener(phpSearchInfo);
             project.getTestRoots().addPropertyChangeListener(phpSearchInfo);
@@ -1072,11 +1027,11 @@ public final class PhpProject implements Project {
             return phpSearchInfo;
         }
 
-        private SearchInfo.Files createDelegate() {
-            SearchInfo searchInfo = SearchInfoFactory.createSearchInfo(getSearchRoots(), true, new FileObjectFilter[]{project.getFileObjectFilter()});
-            // XXX ugly, see #178634 for more info
-            assert searchInfo instanceof SearchInfo.Files : "Unknown type: " + searchInfo.getClass().getName();
-            return (SearchInfo.Files) searchInfo;
+        private SearchInfo createDelegate() {
+            SearchInfo searchInfo = SearchInfoUtils.createSearchInfoForRoots(
+                    getRoots(), false, project.getSearchFilterDefinition(),
+                    SearchInfoDefinitionFactory.SHARABILITY_FILTER);
+            return searchInfo;
         }
 
         @Override
@@ -1085,16 +1040,20 @@ public final class PhpProject implements Project {
         }
 
         @Override
-        public synchronized Iterator<DataObject> objectsToSearch() {
-            return getDelegate().objectsToSearch();
+        public Iterator<FileObject> filesToSearch(
+                SearchScopeOptions searchScopeOptions,
+                SearchListener listener,
+                AtomicBoolean terminated) {
+            return getDelegate().getFilesToSearch(searchScopeOptions,
+                    listener, terminated).iterator();
         }
 
         @Override
-        public Iterator<FileObject> filesToSearch() {
-            return getDelegate().filesToSearch();
+        public List<SearchRoot> getSearchRoots() {
+            return getDelegate().getSearchRoots();
         }
 
-        private FileObject[] getSearchRoots() {
+        private FileObject[] getRoots() {
             List<FileObject> roots = new LinkedList<FileObject>();
             addRoots(roots, project.getSourceRoots());
             addRoots(roots, project.getTestRoots());
@@ -1136,7 +1095,7 @@ public final class PhpProject implements Project {
         /**
          * @return the delegate
          */
-        private synchronized SearchInfo.Files getDelegate() {
+        private synchronized SearchInfo getDelegate() {
             if (delegate == null) {
                 delegate = createDelegate();
             }
@@ -1144,7 +1103,7 @@ public final class PhpProject implements Project {
         }
     }
 
-    private final class PhpFileObjectFilter implements FileObjectFilter {
+    private final class PhpSearchFilterDef extends SearchFilterDefinition {
 
         @Override
         public boolean searchFile(FileObject file) {
@@ -1155,15 +1114,37 @@ public final class PhpProject implements Project {
         }
 
         @Override
-        public int traverseFolder(FileObject folder) {
+        public FolderResult traverseFolder(FileObject folder) {
             if (!folder.isFolder()) {
                 throw new IllegalArgumentException("Folder expected");
             }
             if (PhpVisibilityQuery.forProject(PhpProject.this).isVisible(folder)) {
-                return TRAVERSE;
+                return FolderResult.TRAVERSE;
             }
-            return DO_NOT_TRAVERSE;
+            return FolderResult.DO_NOT_TRAVERSE;
         }
 
+    }
+
+    private final class PhpSubTreeSearchOptions extends SubTreeSearchOptions {
+
+        private List<SearchFilterDefinition> filterList;
+
+        public PhpSubTreeSearchOptions() {
+            this.filterList = this.createList();
+        }
+
+        @Override
+        public List<SearchFilterDefinition> getFilters() {
+            return filterList;
+        }
+
+        private List<SearchFilterDefinition> createList() {
+            List<SearchFilterDefinition> list =
+                    new ArrayList<SearchFilterDefinition>(2);
+            list.add(getSearchFilterDefinition());
+            list.add(SearchInfoDefinitionFactory.SHARABILITY_FILTER);
+            return Collections.unmodifiableList(list);
+        }
     }
 }

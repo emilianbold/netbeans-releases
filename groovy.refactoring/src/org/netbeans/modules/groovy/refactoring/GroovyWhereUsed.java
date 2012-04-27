@@ -44,28 +44,25 @@
 
 package org.netbeans.modules.groovy.refactoring;
 
+import org.netbeans.modules.groovy.refactoring.utils.GroovyProjectUtil;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.text.Position.Bias;
 import org.codehaus.groovy.ast.ASTNode;
-import org.codehaus.groovy.ast.ClassCodeVisitorSupport;
-import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.ModuleNode;
-import org.codehaus.groovy.ast.expr.DeclarationExpression;
-import org.codehaus.groovy.ast.expr.VariableExpression;
-import org.codehaus.groovy.control.SourceUnit;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.groovy.editor.api.AstUtilities;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
 import org.netbeans.modules.groovy.editor.api.parser.SourceUtils;
+import org.netbeans.modules.groovy.refactoring.findusages.FindUsagesVisitor;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.spi.ProgressProviderAdapter;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
+import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.text.CloneableEditorSupport;
@@ -77,13 +74,14 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author Martin Adamek
+ * @author Martin Adamek, Martin Janicek
  */
-public class GroovyWhereUsed extends ProgressProviderAdapter implements GroovyRefactoring {
+public class GroovyWhereUsed extends ProgressProviderAdapter implements RefactoringPlugin {
     
     private final WhereUsedQuery whereUsedQuery;
     private final FileObject fileObject;
     private final String fqn;
+
     
     public GroovyWhereUsed(FileObject fileObject, String fqn, WhereUsedQuery whereUsedQuery) {
         this.fqn = fqn;
@@ -96,39 +94,62 @@ public class GroovyWhereUsed extends ProgressProviderAdapter implements GroovyRe
         Set<FileObject> relevantFiles = getRelevantFiles();
         for (final FileObject fo : relevantFiles) {
             try {
-                SourceUtils.runUserActionTask(fo, new UserTask() {
-
-                    @Override
-                    public void run(ResultIterator resultIterator) throws Exception {
-                        GroovyParserResult result = AstUtilities.getParseResult(resultIterator.getParserResult());
-                        ModuleNode moduleNode = result.getRootElement().getModuleNode();
-                        Set<ASTNode> usages = new UsagesVisitor(moduleNode, fqn).findUsages();
-                        BaseDocument doc = Utils.getDocument(result, fo);
-                        for (ASTNode node : usages) {
-                            refactoringElements.add(whereUsedQuery,
-                                    new WhereUsedElement(new GroovyRefactoringElement(result, moduleNode, node, fo), doc));
-                        }
-                    }
-                });
+                SourceUtils.runUserActionTask(fo, new AddRefactoringElements(refactoringElements, fo));
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
             }
-
         }
 
         return null;
+    }
+
+    private Set<FileObject> getRelevantFiles() {
+        final Set<FileObject> set = new HashSet<FileObject>();
+        // XXX be more selective here
+        set.addAll(GroovyProjectUtil.getGroovyFilesInProject(fileObject));
+        return set;
     }
 
     @Override
     public Problem preCheck() {
         return null;
     }
-    
-    private Set<FileObject> getRelevantFiles() {
-        final Set<FileObject> set = new HashSet<FileObject>();
-        // XXX be more selective here
-        set.addAll(Utils.getGroovyFilesInProject(fileObject));
-        return set;
+
+    @Override
+    public Problem checkParameters() {
+        return null;
+    }
+
+    @Override
+    public Problem fastCheckParameters() {
+        return null;
+    }
+
+    @Override
+    public void cancelRequest() {
+    }
+
+    private class AddRefactoringElements extends UserTask {
+
+        private final RefactoringElementsBag refactoringElements;
+        private final FileObject fo;
+
+
+        public AddRefactoringElements(RefactoringElementsBag refactoringElements, FileObject fo) {
+            this.refactoringElements = refactoringElements;
+            this.fo = fo;
+        }
+
+        @Override
+        public void run(ResultIterator resultIterator) throws Exception {
+            GroovyParserResult result = AstUtilities.getParseResult(resultIterator.getParserResult());
+            ModuleNode moduleNode = result.getRootElement().getModuleNode();
+            Set<ASTNode> usages = new FindUsagesVisitor(moduleNode, fqn).findUsages();
+            BaseDocument doc = GroovyProjectUtil.getDocument(result, fo);
+            for (ASTNode node : usages) {
+                refactoringElements.add(whereUsedQuery, new WhereUsedElement(new GroovyRefactoringElement(result, moduleNode, node, fo), doc));
+            }
+        }
     }
     
     private static class WhereUsedElement extends SimpleRefactoringElementImplementation{
@@ -148,7 +169,7 @@ public class GroovyWhereUsed extends ProgressProviderAdapter implements GroovyRe
 
         @Override
         public String getDisplayText() {
-            Line line = Utils.getLine(element.getFileObject(), element.getNode().getLineNumber() - 1);
+            Line line = GroovyProjectUtil.getLine(element.getFileObject(), element.getNode().getLineNumber() - 1);
             return line.getText().trim();
         }
 
@@ -168,62 +189,15 @@ public class GroovyWhereUsed extends ProgressProviderAdapter implements GroovyRe
 
         @Override
         public PositionBounds getPosition() {
-
             OffsetRange range = AstUtilities.getRange(element.getNode(), doc);
             if (range == OffsetRange.NONE) {
                 return null;
             }
 
-            CloneableEditorSupport ces = Utils.findCloneableEditorSupport(element.getFileObject());
+            CloneableEditorSupport ces = GroovyProjectUtil.findCloneableEditorSupport(element.getFileObject());
             PositionRef ref1 = ces.createPositionRef(range.getStart(), Bias.Forward);
             PositionRef ref2 = ces.createPositionRef(range.getEnd(), Bias.Forward);
             return new PositionBounds(ref1, ref2);
         }
-        
     }
-
-    private static class UsagesVisitor extends ClassCodeVisitorSupport {
-
-        private final ModuleNode moduleNode;
-        private final String fqn;
-        private final Set<ASTNode> usages;
-
-        public UsagesVisitor(ModuleNode moduleNode, String fqn) {
-            this.moduleNode = moduleNode;
-            this.fqn = fqn;
-            this.usages = new HashSet<ASTNode>();
-        }
-
-        public Set<ASTNode> findUsages() {
-            for (Object object : moduleNode.getClasses()) {
-                visitClass((ClassNode) object);
-            }
-            return usages;
-        }
-
-        @Override
-        protected SourceUnit getSourceUnit() {
-            return moduleNode.getContext();
-        }
-
-        @Override
-        public void visitDeclarationExpression(DeclarationExpression expression) {
-            VariableExpression variable = expression.getVariableExpression();
-            ClassNode classNode = variable.getType();
-            if (fqn.equals(classNode.getName())) {
-                usages.add(variable);
-            }
-            super.visitDeclarationExpression(expression);
-        }
-
-        @Override
-        public void visitField(FieldNode node) {
-            if (fqn.equals(node.getType().getName())) {
-                usages.add(node);
-            }
-            super.visitField(node);
-        }
-
-    }
-
 }

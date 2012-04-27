@@ -57,6 +57,7 @@ import org.netbeans.editor.AnnotationTypes;
 import org.netbeans.lib.editor.bookmarks.api.Bookmark;
 import org.netbeans.lib.editor.bookmarks.api.BookmarkList;
 import org.openide.modules.ModuleInstall;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
 
@@ -73,9 +74,10 @@ class EditorBookmarksModule extends ModuleInstall {
     private PropertyChangeListener      annotationTypesListener;
 
     public void restored () {
-        BookmarksPersistence.init ();
+        BookmarksPersistence.get().initProjectsListening();
+
         bookmarksInitializer = new BookmarksInitializer ();
-        SwingUtilities.invokeLater (new Runnable () {
+        RequestProcessor.getDefault().post(new Runnable () {
             public void run () {
                 final Iterator<? extends JTextComponent> it = 
                     EditorRegistry.componentList ().iterator ();
@@ -127,7 +129,7 @@ class EditorBookmarksModule extends ModuleInstall {
     
     private void finish () {
         // Stop listening on projects closing
-        BookmarksPersistence.destroy ();
+        BookmarksPersistence.get().endProjectsListening();
         if (bookmarksInitializer != null)
             bookmarksInitializer.destroy();
     }

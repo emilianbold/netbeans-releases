@@ -46,7 +46,7 @@ import org.netbeans.modules.csl.api.ElementKind;
 public enum PhpElementKind {
 
     INDEX, PROGRAM, INCLUDE,
-    IFACE, CLASS,
+    IFACE, CLASS, USE_ALIAS,
     METHOD, FIELD, TYPE_CONSTANT,
     VARIABLE, CONSTANT, FUNCTION,
     NAMESPACE_DECLARATION, USE_STATEMENT, CONSTRUCTOR,

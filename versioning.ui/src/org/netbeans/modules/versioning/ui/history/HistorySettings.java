@@ -43,14 +43,13 @@
  */
 package org.netbeans.modules.versioning.ui.history;
 
-import java.io.File;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import org.openide.util.NbPreferences;
 
 /**
  *
- * Manages the Local History Settings
+ * Manages History Settings
  * 
  * @author Tomas Stupka
  */
@@ -58,14 +57,14 @@ public class HistorySettings {
     
     private static final HistorySettings INSTANCE = new HistorySettings();
     
-    private static final String LAST_SELECTED_ENTRY = "RevertFileChanges.lastSelected";         // NOI18N  
     private static final String PROP_TTL = "timeToLive";                                        // NOI18N  
     public static final String PROP_INCREMENTS = "history.increments";                          // NOI18N  
     private static final String PROP_CLEANUP_LABELED = "noLabelCleanUp";                        // NOI18N  
     private static final String PROP_KEEP_FOREVER = "keepForever";                              // NOI18N  
-    public static final String PROP_LOAD_ALL = "history.loadAll";                              // NOI18N  
-    private static final String PROP_KEEP_STORED = "filesToKeepStored";                         // NOI18N  
-    
+    public static final String PROP_LOAD_ALL = "history.loadAll";                               // NOI18N  
+    public static final String PROP_ALL_MODE = "history.AllMode";                               // NOI18N  
+    public static final String PROP_VCS_MODE = "history.VCSMode";                               // NOI18N  
+    public static final String PROP_LH_MODE = "history.LHMode";                               // NOI18N  
             
     /** Creates a new instance of HistorySettings */
     private HistorySettings() {
@@ -107,14 +106,6 @@ public class HistorySettings {
     public long getTTLMillis() {
         return ((long) getTTL()) * 24 * 60 * 60 * 1000;
     }   
-    
-    public void setLastSelectedEntry(File file, long ts) {
-        getPreferences().putLong(LAST_SELECTED_ENTRY + "#" + file.getAbsoluteFile(), ts);
-    }
-    
-    public long getLastSelectedEntry(File file) {
-        return getPreferences().getLong(LAST_SELECTED_ENTRY  + "#" + file.getAbsoluteFile(), -1);
-    }
 
     public boolean getKeepForever() {
         return getPreferences().getBoolean(PROP_KEEP_FOREVER, false);
@@ -138,6 +129,30 @@ public class HistorySettings {
     
     public void removePreferenceListener(PreferenceChangeListener l) {
         getPreferences().removePreferenceChangeListener(l);
+    }
+
+    void setAllMode(String name) {
+        getPreferences().put(PROP_ALL_MODE, name);
+    }
+    
+    void setVCSMode(String name) {
+        getPreferences().put(PROP_VCS_MODE, name);
+    }
+    
+    void setLHMode(String name) {
+        getPreferences().put(PROP_LH_MODE, name);
+    }
+    
+    String getAllMode(String def) {
+        return getPreferences().get(PROP_ALL_MODE, def);
+    }
+    
+    String getVCSMode(String def) {
+        return getPreferences().get(PROP_VCS_MODE, def);
+    }
+    
+    String getLHMode(String def) {
+        return getPreferences().get(PROP_LH_MODE, def);
     }
     
 }

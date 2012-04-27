@@ -155,8 +155,7 @@ class ConnectionPanel2 extends javax.swing.JPanel {
     private void updateActionList() {
         if (codeButton.isSelected()) {
             actionList.setListData(new String [] {
-                bundle.getString("CTL_CW_UserCodeText1"), // NOI18N
-                bundle.getString("CTL_CW_UserCodeText2") }); // NOI18N
+                bundle.getString("CTL_CW_UserCodeText") }); // NOI18N
             actionList.setEnabled(false);
             actionList.getAccessibleContext().setAccessibleName(codeButton.getText());
         } 

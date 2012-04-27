@@ -56,6 +56,7 @@ import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.EditorKit;
 import javax.accessibility.AccessibleContext;
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.util.*;
 import java.util.List;
 import org.openide.util.Lookup;
@@ -98,6 +99,12 @@ class DiffContentPanel extends JPanel implements HighlightsContainer,Lookup.Prov
         
         editorPane.putClientProperty(DiffHighlightsLayerFactory.HIGHLITING_LAYER_ID, this);
         if (!isFirst) {
+            // disable focus traversal, but permit just the up-cycle on ESC key
+            editorPane.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, Collections.EMPTY_SET);
+            editorPane.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, Collections.EMPTY_SET);
+            editorPane.setFocusTraversalKeys(KeyboardFocusManager.UP_CYCLE_TRAVERSAL_KEYS, Collections.singleton(
+                    KeyStroke.getAWTKeyStroke(KeyEvent.VK_ESCAPE, 0)));
+            
             editorPane.putClientProperty("errorStripeOnly", Boolean.TRUE);
             editorPane.putClientProperty("code-folding-enable", false);
         }
@@ -240,6 +247,8 @@ class DiffContentPanel extends JPanel implements HighlightsContainer,Lookup.Prov
             if (viewPort instanceof JScrollPane) {
                 scrollPane = (JScrollPane)viewPort;
                 add(c);
+                c.setFocusTraversalKeysEnabled(false);
+                c.setFocusTraversalPolicyProvider(true);
             }
         }
     }

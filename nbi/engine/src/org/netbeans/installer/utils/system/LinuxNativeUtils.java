@@ -101,8 +101,9 @@ public class LinuxNativeUtils extends UnixNativeUtils {
             return SystemUtils.getUserHomeDirectory();
         }
     }
+    
     @Override
-    public List<File> getFileSystemRoots() throws IOException {
+    public List<File> getFileSystemRoots(String... files) throws IOException {
         List <File> roots = super.getFileSystemRoots();
         final File mounts = new File(PROC_MOUNTS_FILE);
         try {
@@ -133,6 +134,7 @@ public class LinuxNativeUtils extends UnixNativeUtils {
         }
         return roots;
     }
+    
     @Override
     protected Platform getPlatform() {        
         final String osArch = System.getProperty("os.arch");

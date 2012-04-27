@@ -1,0 +1,8 @@
+token #0 AC_DIRECTIVE Redirect
+token #1 AC_WHITESPACE  
+token #2 AC_NUMBER 301
+token #3 AC_WHITESPACE  
+token #4 AC_DIRECTIVE_PARAM /d/file.html
+token #5 AC_WHITESPACE  
+token #6 AC_DIRECTIVE_PARAM http://www.htaccesselite.com/r/file.html
+token #7 AC_WHITESPACE \n

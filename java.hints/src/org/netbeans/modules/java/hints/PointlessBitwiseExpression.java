@@ -49,13 +49,14 @@ import java.util.Map;
 
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPatterns;
-import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
-import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
-import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.TriggerPattern;
+import org.netbeans.spi.java.hints.TriggerPatterns;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.JavaFix;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.java.hints.JavaFixUtilities;
 import org.openide.util.NbBundle;
 
 
@@ -63,7 +64,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Jancura
  */
-@Hint(category="bitwise_operations", suppressWarnings="PointlessBitwiseExpression")
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.PointlessBitwiseExpression", description = "#DESC_org.netbeans.modules.java.hints.PointlessBitwiseExpression", category="bitwise_operations", suppressWarnings="PointlessBitwiseExpression")
 public class PointlessBitwiseExpression {
 
     @TriggerPatterns ({
@@ -83,15 +84,15 @@ public class PointlessBitwiseExpression {
                 ctx,
                 treePath,
                 NbBundle.getMessage (PointlessBitwiseExpression.class, "MSG_PointlessBitwiseExpression"),
-                JavaFix.toEditorFix(new FixImpl (
-                    compilationInfo,
-                    treePath,
-                    NbBundle.getMessage (
-                        LoggerNotStaticFinal.class,
-                        "MSG_PointlessBitwiseExpression_fix"
-                    ),
-                    true
-                ))
+        new FixImpl (
+compilationInfo,
+treePath,
+NbBundle.getMessage (
+LoggerNotStaticFinal.class,
+"MSG_PointlessBitwiseExpression_fix"
+),
+true
+).toEditorFix()
             );
         return null;
     }
@@ -113,15 +114,15 @@ public class PointlessBitwiseExpression {
                 ctx,
                 treePath,
                 NbBundle.getMessage (PointlessBitwiseExpression.class, "MSG_PointlessBitwiseExpression"),
-                JavaFix.toEditorFix(new FixImpl (
-                    compilationInfo,
-                    treePath,
-                    NbBundle.getMessage (
-                        LoggerNotStaticFinal.class,
-                        "MSG_PointlessBitwiseExpression_fix"
-                    ),
-                    true
-                ))
+        new FixImpl (
+compilationInfo,
+treePath,
+NbBundle.getMessage (
+LoggerNotStaticFinal.class,
+"MSG_PointlessBitwiseExpression_fix"
+),
+true
+).toEditorFix()
             );
         tree = variables.get ("$v");
         value = IncompatibleMask.getConstant (tree, ctx);
@@ -132,15 +133,15 @@ public class PointlessBitwiseExpression {
                 ctx,
                 treePath,
                 NbBundle.getMessage (PointlessBitwiseExpression.class, "MSG_PointlessBitwiseExpression"),
-                JavaFix.toEditorFix(new FixImpl (
-                    compilationInfo,
-                    treePath,
-                    NbBundle.getMessage (
-                        LoggerNotStaticFinal.class,
-                        "MSG_PointlessBitwiseExpression_fix"
-                    ),
-                    false
-                ))
+        new FixImpl (
+compilationInfo,
+treePath,
+NbBundle.getMessage (
+LoggerNotStaticFinal.class,
+"MSG_PointlessBitwiseExpression_fix"
+),
+false
+).toEditorFix()
             );
         return null;
     }
@@ -167,7 +168,9 @@ public class PointlessBitwiseExpression {
         }
 
         @Override
-        protected void performRewrite(WorkingCopy wc, TreePath tp, boolean canShowUI) {
+        protected void performRewrite(TransformationContext ctx) {
+            WorkingCopy wc = ctx.getWorkingCopy();
+            TreePath tp = ctx.getPath();
             Tree vt = tp.getLeaf();
             BinaryTree e = (BinaryTree) vt;
             wc.rewrite (vt, right ? e.getLeftOperand () : e.getRightOperand ());

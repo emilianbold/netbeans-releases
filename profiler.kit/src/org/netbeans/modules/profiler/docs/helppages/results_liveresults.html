@@ -20,7 +20,7 @@
         <p>To open the Live Profiling Results window, do one of the following during a profiling session:</p>
         <ul>
             <li>Choose Window &gt; Profiling &gt; Live Results from the main menu.</li>
-            <li>Click Live Results in the Profiler window ( <img src="img/liveResults.png" alt="Live Results">&nbsp;).</li>
+            <li>Click the Live Results button in the Profiler window.</li>
         </ul>
         
         
@@ -30,30 +30,34 @@
             <th scope="col">Button</th>
             <th scope="col">Function</th>
             </tr>
-            <tr><td><img src="img/autoRefresh.png"></td><td><b>Update Results Automatically.</b> When enabled (default), results are updated at short intervals. 
+            <tr><td><img src="img/autoRefresh.png" alt="Update Results button"></td><td><b>Update Results Automatically.</b> When enabled (default), results are updated at short intervals. 
             When disabled, click Update Results Now to update the results.</td></tr>
-            <tr><td><img src="img/autorefresh-icon.png"></td><td><b>Update Results Now.</b> Click to update the results immediately.</td></tr>
-            <tr><td><img src="img/trash-icon.png"></td><td><b>Run Garbage Collection and Update Results.</b></td></tr>
-            <tr><td><img src="img/resetResults.png"></td><td><b>Reset Collected Results.</b> Click to discard the already accumulated profiling results.</td></tr>
-            <tr><td><img src="img/takeSnapshot.png"></td><td><b>Take Snapshot of Collected Results.</b> Click to save the results as snapshot.
+            <tr><td><img src="img/autorefresh-icon.png" alt="Update Results Now button"></td><td><b>Update Results Now.</b> Click to update the results immediately.</td></tr>
+            <tr><td><img src="img/trash-icon.png" alt="Collect Garbage button"></td><td><b>Run Garbage Collection and Update Results.</b></td></tr>
+            <tr><td><img src="img/resetResults.png" alt="Reset Results button"></td><td><b>Reset Collected Results.</b> Click to discard the already accumulated profiling results.</td></tr>
+            <tr><td><img src="img/takeSnapshot.png" alt="Take Snapshot button"></td><td><b>Take Snapshot of Collected Results.</b> Click to save the results as snapshot.
             The unsaved snapshot is opened in the Source Editor.</td></tr>
-            <tr><td><img src="img/saveView.png"></td><td><b>Save Current View.</b> Click this to save the displayed results as a .png image.</td></tr>
+            <tr><td><img src="img/saveAs.png" alt="Export to button"></td><td><b>Export to.</b> Click this to export the displayed results as a <tt>.xml</tt>, <tt>.csv</tt> or <tt>.html</tt> file.</td></tr>
+            <tr><td><img src="img/saveView.png" alt="Save View button"></td><td><b>Save Current View.</b> Click this to save the displayed results as a <tt>.png</tt> image.</td></tr>
         </table>
 
-        <p>You can also click the DrillDown button (&nbsp;<img src="img/pie.png" alt="DrillDown button image">&nbsp;) 
-        to open the <a href="csh/view_drilldown.html">DrillDown Window</a> which displays a graphic overview of the information in the 
-        Live Profiling Results window and enables you to explore profiled methods according to 
-        general predefined categories.</p>
+        <p>You can sort the results in the table by clicking on the respective column header.
+        You can right-click result entries in the table to choose commands from the popup menu.
+        The results that are displayed and the popup menu items that are available will depend upon the profiling task that is running.</p>
         
+        <ul class="note">
+            <li>If you are profiling application performance and instrumenting methods in your profiling session,
+            you can click the DrillDown button (&nbsp;<img src="img/pie.png" alt="DrillDown button image">&nbsp;) 
+            to open the DrillDown Window to view a graphic overview of the information in the 
+            Live Profiling Results window and explore the profiled methods according to 
+            general predefined categories.</li>
+        </ul>
                        
-        <p>You can sort the results by clicking on the respective column header or right-click result entries to
-        choose commands from the popup menu.
-        The results that are displayed and the popup menu items available depend on which of the following profiling tasks is running.</p>
         
-        <ul>
+<!--        <ul>
             <li><a href="csh/view_profiling_results_cpu.html">Live Profiling Results - Application Performance</a></li>
             <li><a href="csh/view_profiling_results_memory.html">Live Profiling Results - Memory Usage</a></li>
-        </ul>
+        </ul>-->
 
 
         

@@ -334,7 +334,11 @@ class TagManager implements ListSelectionListener, DocumentListener, ActionListe
             try {
                 fetchedTags = HgCommand.getTags(repository, logger);
             } catch (HgException ex) {
+                Mercurial.LOG.log(Level.INFO, null, ex);
                 fetchedTags = null;
+            }
+            if (fetchedTags == null) {
+                fetchedTags = new HgTag[0];
             }
 
             if (!supp.isCanceled() && fetchedTags.length > 0) {
@@ -346,9 +350,6 @@ class TagManager implements ListSelectionListener, DocumentListener, ActionListe
             }
 
             if (!supp.isCanceled()) {
-                if( fetchedTags == null) {
-                    fetchedTags = new HgTag[0];
-                }
                 Arrays.sort(fetchedTags, new Comparator<HgTag>() {
                     @Override
                     public int compare (HgTag t1, HgTag t2) {

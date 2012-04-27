@@ -70,7 +70,7 @@ import org.netbeans.junit.NbModuleSuite;
 public class ValidationTest extends JellyTestCase {
 
     public static final String MESDK_WIN_LOCATION = "C:\\space\\hudson\\mesdk";
-    public static final String MESDK_WIN_VERSION = "3.0";
+    public static final String MESDK_WIN_VERSION = "3.0.5";
     
     public static final String MESDK_LINUX_LOCATION = "/space/hudson/mesdk";
     public static final String MESDK_LINUX_VERSION = "2.5.2";
@@ -105,7 +105,7 @@ public class ValidationTest extends JellyTestCase {
             sdkpath = MESDK_LINUX_LOCATION;
         }
         System.setProperty("platform.home", sdkpath);
-        System.out.println("platform.home for tests set to " + sdkpath);
+        //System.out.println("platform.home for tests set to " + sdkpath);
     }
 
     /**
@@ -134,8 +134,14 @@ public class ValidationTest extends JellyTestCase {
         ajpw.stepsWaitSelectedValue("Platform Folders");
         //System.out.println("current step: " + ajpw.stepsGetSelectedIndex() + " - " + ajpw.stepsGetSelectedValue());
         
-        //MESDK folder selection is automatic on Windows
-        if (System.getProperty("os.name", "other").toLowerCase().indexOf("windows") == -1) {
+        //MESDK folder selection is automatic on Windows XP and Vista, on others it must be selected manually
+        if (System.getProperty("os.name", "other").toLowerCase().indexOf("windows xp") == -1 &&
+                System.getProperty("os.name", "other").toLowerCase().indexOf("windows vista") == -1) {
+            //File Browser isn't invoked automatically on Windows 7 hudson nodes
+            if (System.getProperty("os.name", "other").toLowerCase().indexOf("windows 7") == 0) {
+                new EventTool().waitNoEvent(2000);
+                (new JButtonOperator(ajpw, "Find More Java ME Platform Folders...")).pushNoBlock();
+            }
             DialogOperator cdtsfp = new DialogOperator("Choose directory to search for platforms"); //TODO I18N
             new JTextFieldOperator(cdtsfp, 0).setText(System.getProperty("platform.home"));
             (new JButtonOperator(cdtsfp, "Open")).pushNoBlock();
@@ -143,7 +149,7 @@ public class ValidationTest extends JellyTestCase {
         }
         
         DialogOperator sfjmep = new DialogOperator("Searching for Java ME platforms"); //TODO I18N
-        sfjmep.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+        sfjmep.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 60000);
         sfjmep.waitClosed();
 
         ajpw.next();
@@ -151,7 +157,7 @@ public class ValidationTest extends JellyTestCase {
         //System.out.println("current step: " + ajpw.stepsGetSelectedIndex() + " - " + ajpw.stepsGetSelectedValue());
 
         DialogOperator djmep = new DialogOperator("Detecting Java ME platforms"); //TODO I18N
-        djmep.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+        djmep.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 120000);
         djmep.waitClosed();
         
         ajpw.finish();
@@ -185,12 +191,15 @@ public class ValidationTest extends JellyTestCase {
         createNewFile(CATEGORY_MIDP, ITEM_MIDLET, "NewMIDlet", "myPackage"); // NOI18N
         createNewFile(CATEGORY_MIDP, ITEM_MIDPCANVAS, "MIDPCanvas", "myPackage"); // NOI18N
 
-        new EventTool().waitNoEvent(2000);
+        new EventTool().waitNoEvent(5000);
         
         //test that files are created and opened in editor
         new TopComponentOperator("NewVisualMidlet.java").close(); // NOI18N
+        new EventTool().waitNoEvent(2000);
         new EditorOperator("NewMIDlet.java").close(); // NOI18N
+        new EventTool().waitNoEvent(2000);
         new EditorOperator("MIDPCanvas.java").close();    // NOI18N
+        new EventTool().waitNoEvent(5000);
 
     }
 
@@ -206,7 +215,7 @@ public class ValidationTest extends JellyTestCase {
         step.txtProjectName().setText(PROJECT_TO_BE_CREATED);//NOI18N
         step.finish();
 
-        new EventTool().waitNoEvent(10000);
+        new EventTool().waitNoEvent(20000);
         
         new ProjectsTabOperator().getProjectRootNode(PROJECT_TO_BE_CREATED);
 

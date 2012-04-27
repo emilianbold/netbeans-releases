@@ -45,16 +45,19 @@
 package org.netbeans.api.java.source;
 
 import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.ImportTree;
+import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.PrimitiveTypeTree;
 import com.sun.source.tree.Scope;
@@ -81,6 +84,7 @@ import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
@@ -111,18 +115,21 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Elements;
-import javax.lang.model.util.Types;
 import javax.swing.text.Document;
+import javax.tools.JavaFileObject;
 
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.GuardedDocument;
 import org.netbeans.modules.java.source.builder.CommentHandlerService;
 import org.netbeans.modules.java.source.builder.CommentSetImpl;
+import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.SourceFileObject;
 import org.netbeans.modules.java.source.query.CommentSet.RelativePosition;
 import org.netbeans.modules.java.source.save.DiffContext;
 import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 
@@ -151,6 +158,32 @@ public final class GeneratorUtilities {
     }
 
     /**
+     * Create a new CompilationUnitTree from a template.
+     *
+     * @param sourceRoot a source root under which the new file is created
+     * @param path a relative path to file separated by '/'
+     * @param kind the kind of Element to use for the template, can be null or
+     * CLASS, INTERFACE, ANNOTATION_TYPE, ENUM, PACKAGE
+     * @return new CompilationUnitTree created from a template
+     * @throws IOException when an exception occurs while creating the template
+     * @since 0.101
+     */
+    public CompilationUnitTree createFromTemplate(FileObject sourceRoot, String path, ElementKind kind) throws IOException {
+        String[] nameComponent = FileObjects.getFolderAndBaseName(path, '/');
+        JavaFileObject sourceFile = FileObjects.templateFileObject(sourceRoot, nameComponent[0], nameComponent[1]);
+        FileObject template = FileUtil.getConfigFile(copy.template(kind));
+        FileObject targetFile = copy.doCreateFromTemplate(template, sourceFile);
+        CompilationUnitTree templateCUT = copy.impl.getJavacTask().parse(FileObjects.nbFileObject(targetFile, targetFile.getParent())).iterator().next();
+        CompilationUnitTree importComments = GeneratorUtilities.get(copy).importComments(templateCUT, templateCUT);
+        CompilationUnitTree result = copy.getTreeMaker().CompilationUnit(importComments.getPackageAnnotations(),
+                sourceRoot,
+                path,
+                importComments.getImports(),
+                importComments.getTypeDecls());
+        return result;
+    }
+
+    /**
      * Inserts a member to a class. Using the rules specified in the {@link CodeStyle}
      * it finds the proper place for the member and calls {@link TreeMaker.insertClassMember}
      *
@@ -162,32 +195,32 @@ public final class GeneratorUtilities {
     public ClassTree insertClassMember(ClassTree clazz, Tree member) {
         assert clazz != null && member != null;
         int idx = 0;
-        GuardedDocument gdoc = null;
-        SourcePositions sp = null;
+        Document doc = null;
         try {
-            Document doc = copy.getDocument();
+            doc = copy.getDocument();
             if (doc == null) {
                 DataObject data = DataObject.find(copy.getFileObject());
                 EditorCookie cookie = data.getCookie(EditorCookie.class);
                 doc = cookie.openDocument();
             }
-
-            if (doc != null && doc instanceof GuardedDocument) {
-                gdoc = (GuardedDocument)doc;
-                sp = copy.getTrees().getSourcePositions();
-            }
         } catch (IOException ioe) {}
+        CodeStyle codeStyle = DiffContext.getCodeStyle(copy);
+        ClassMemberComparator comparator = new ClassMemberComparator(codeStyle);
+        SourcePositions sp = copy.getTrees().getSourcePositions();
         TreeUtilities utils = copy.getTreeUtilities();
         CompilationUnitTree compilationUnit = copy.getCompilationUnit();
         Tree lastMember = null;
         for (Tree tree : clazz.getMembers()) {
             TreePath path = TreePath.getPath(compilationUnit, tree);
-            if ((path == null || !utils.isSynthetic(path)) && CLASS_MEMBER_COMPARATOR.compare(member, tree) < 0) {
-                if (gdoc == null)
+            if ((path == null || !utils.isSynthetic(path))
+                    && (codeStyle.getClassMemberInsertionPoint() == CodeStyle.InsertionPoint.FIRST_IN_CATEGORY && comparator.compare(member, tree) <= 0
+                    || comparator.compare(member, tree) < 0)) {
+                if (doc == null || !(doc instanceof GuardedDocument))
                     break;
                 int pos = (int)(lastMember != null ? sp.getEndPosition(compilationUnit, lastMember) : sp.getStartPosition( compilationUnit,clazz));
-                pos = gdoc.getGuardedBlockChain().adjustToBlockEnd(pos);
-                if (pos <= sp.getStartPosition(compilationUnit, tree))
+                pos = ((GuardedDocument)doc).getGuardedBlockChain().adjustToBlockEnd(pos);
+                long treePos = sp.getStartPosition(compilationUnit, tree);
+                if (treePos < 0 || pos <= treePos)
                     break;
             }
             idx++;
@@ -545,7 +578,20 @@ public final class GeneratorUtilities {
     public CompilationUnitTree addImports(CompilationUnitTree cut, Set<? extends Element> toImport) {
         assert cut != null && toImport != null && toImport.size() > 0;
 
-        ArrayList<Element> elementsToImport = new ArrayList<Element>(toImport);
+        ArrayList<Element> elementsToImport = new ArrayList<Element>(toImport.size());
+        Set<String> staticImportNames = new HashSet<String>();
+        for (Element e : toImport) {
+            switch (e.getKind()) {
+                case METHOD:
+                case ENUM_CONSTANT:
+                case FIELD:
+                    StringBuilder name = new StringBuilder(((TypeElement)e.getEnclosingElement()).getQualifiedName()).append('.').append(e.getSimpleName());
+                    if (!staticImportNames.add(name.toString()))
+                        break;
+                default:
+                    elementsToImport.add(e);
+            }
+        }
 
         Trees trees = copy.getTrees();
         Elements elements = copy.getElements();
@@ -557,9 +603,11 @@ public final class GeneratorUtilities {
         int treshold = cs.countForUsingStarImport();
         int staticTreshold = cs.countForUsingStaticStarImport();        
         Map<PackageElement, Integer> pkgCounts = new LinkedHashMap<PackageElement, Integer>();
-        pkgCounts.put(elements.getPackageElement("java.lang"), -2); //NOI18N
+        PackageElement pkg = elements.getPackageElement("java.lang"); //NOI18N
+        if (pkg != null)
+            pkgCounts.put(pkg, -2);
         ExpressionTree packageName = cut.getPackageName();
-        PackageElement pkg = packageName != null ? (PackageElement)trees.getElement(TreePath.getPath(cut, packageName)) : null;
+        pkg = packageName != null ? (PackageElement)trees.getElement(TreePath.getPath(cut, packageName)) : null;
         if (pkg == null && packageName != null)
             pkg = elements.getPackageElement(elements.getName(packageName.toString()));
         if (pkg == null)
@@ -674,8 +722,9 @@ public final class GeneratorUtilities {
                         }
                     }
                 }
-                importScope.importAll(((Symbol)entry.getKey()).members());
             }
+            if (entry.getValue() < 0 && entry.getKey() instanceof Symbol)
+                importScope.importAll(((Symbol)entry.getKey()).members());
         }
 
         // sort the elements to import
@@ -768,6 +817,14 @@ public final class GeneratorUtilities {
 
     static <T extends Tree> T importComments(CompilationInfo info, T original, CompilationUnitTree cut) {
         try {
+            CommentSetImpl comments = CommentHandlerService.instance(info.impl.getJavacTask().getContext()).getComments(original);
+
+            if (comments.areCommentsMapped()) {
+                //optimalization, if comments are already mapped, do not even try to
+                //map them again, would not be attached anyway:
+                return original;
+            }
+            
             JCTree.JCCompilationUnit unit = (JCCompilationUnit) cut;
             TokenSequence<JavaTokenId> seq = ((SourceFileObject) unit.getSourceFile()).getTokenHierarchy().tokenSequence(JavaTokenId.language());
             TreePath tp = TreePath.getPath(cut, original);
@@ -804,6 +861,201 @@ public final class GeneratorUtilities {
         } else {
             t.addComments(RelativePosition.INLINE, s.getComments(RelativePosition.INLINE));
             t.addComments(RelativePosition.TRAILING, s.getComments(RelativePosition.TRAILING));
+        }
+    }
+
+    /**Ensures that the given {@code modifiers} contains annotation of the given type,
+     * which has attribute name {@code attributeName}, which contains values {@code attributeValuesToAdd}.
+     * The annotation or the attribute will be added as needed, as will be the attribute value
+     * converted from a single value into an array.
+     *
+     * The typical trees passed as {@code attributeValuesToAdd} are:
+     * <table border="1">
+     *     <tr>
+     *         <th>attribute type</th>
+     *         <th>expected tree type</th>
+     *     </tr>
+     *     <tr>
+     *         <td>primitive type</td>
+     *         <td>{@link LiteralTree} created by {@link TreeMaker#Literal(java.lang.Object) }</td>
+     *     </tr>
+     *     <tr>
+     *         <td>{@code java.lang.String}</td>
+     *         <td>{@link LiteralTree} created by {@link TreeMaker#Literal(java.lang.Object) }</td>
+     *     </tr>
+     *     <tr>
+     *         <td>{@code java.lang.Class}</td>
+     *         <td>{@link MemberSelectTree} created by {@link TreeMaker#MemberSelect(com.sun.source.tree.ExpressionTree, java.lang.CharSequence)  },
+     *             with identifier {@code class} and expression created by {@link TreeMaker#QualIdent(javax.lang.model.element.Element) }</td>
+     *     </tr>
+     *     <tr>
+     *         <td>enum constant</td>
+     *         <td>{@link MemberSelectTree}, with identifier representing the enum constant
+     *             and expression created by {@link TreeMaker#QualIdent(javax.lang.model.element.Element) }</td>
+     *     </tr>
+     *     <tr>
+     *         <td>annotation type</td>
+     *         <td>{@link AnnotationTree} created by {@link TreeMaker#Annotation(com.sun.source.tree.Tree, java.util.List) }</td>
+     *     </tr>
+     *     <tr>
+     *         <td>array (of a supported type)</td>
+     *         <td>{@link NewArrayTree} created by {@link TreeMaker#NewArray(com.sun.source.tree.Tree, java.util.List, java.util.List) },
+     *             where {@code elemtype} is {@code null}, {@code dimensions} is {@code Collections.<ExpressionTree>emptyList()},
+     *             {@code initializers} should contain the elements that should appear in the array</td>
+     *     </tr>
+     * </table>
+     *
+     * @param modifiers into which the values should be added
+     * @param annotation the annotation type that should be added or augmented
+     * @param attributeName the attribute that should be added or augmented
+     * @param attributeValuesToAdd values that should be added into the given attribute of the given annotation
+     * @return {@code modifiers} augmented in such a way that it contains the given annotation, with the given values
+     * @since 0.99
+     */
+    public ModifiersTree appendToAnnotationValue(ModifiersTree modifiers, TypeElement annotation, String attributeName, ExpressionTree... attributeValuesToAdd) {
+        return (ModifiersTree) appendToAnnotationValue((Tree) modifiers, annotation, attributeName, attributeValuesToAdd);
+    }
+
+    /**Ensures that the given {@code compilationUnit} contains annotation of the given type,
+     * which has attribute name {@code attributeName}, which contains values {@code attributeValuesToAdd}.
+     * The annotation or the attribute will be added as needed, as will be the attribute value
+     * converted from a single value into an array. This method is intended to be called on
+     * {@link CompilationUnitTree} from {@code package-info.java}.
+     *
+     * The typical trees passed as {@code attributeValuesToAdd} are:
+     * <table border="1">
+     *     <tr>
+     *         <th>attribute type</th>
+     *         <th>expected tree type</th>
+     *     </tr>
+     *     <tr>
+     *         <td>primitive type</td>
+     *         <td>{@link LiteralTree} created by {@link TreeMaker#Literal(java.lang.Object) }</td>
+     *     </tr>
+     *     <tr>
+     *         <td>{@code java.lang.String}</td>
+     *         <td>{@link LiteralTree} created by {@link TreeMaker#Literal(java.lang.Object) }</td>
+     *     </tr>
+     *     <tr>
+     *         <td>{@code java.lang.Class}</td>
+     *         <td>{@link MemberSelectTree} created by {@link TreeMaker#MemberSelect(com.sun.source.tree.ExpressionTree, java.lang.CharSequence)  },
+     *             with identifier {@code class} and expression created by {@link TreeMaker#QualIdent(javax.lang.model.element.Element) }</td>
+     *     </tr>
+     *     <tr>
+     *         <td>enum constant</td>
+     *         <td>{@link MemberSelectTree}, with identifier representing the enum constant
+     *             and expression created by {@link TreeMaker#QualIdent(javax.lang.model.element.Element) }</td>
+     *     </tr>
+     *     <tr>
+     *         <td>annotation type</td>
+     *         <td>{@link AnnotationTree} created by {@link TreeMaker#Annotation(com.sun.source.tree.Tree, java.util.List) }</td>
+     *     </tr>
+     *     <tr>
+     *         <td>array (of a supported type)</td>
+     *         <td>{@link NewArrayTree} created by {@link TreeMaker#NewArray(com.sun.source.tree.Tree, java.util.List, java.util.List) },
+     *             where {@code elemtype} is {@code null}, {@code dimensions} is {@code Collections.<ExpressionTree>emptyList()},
+     *             {@code initializers} should contain the elements that should appear in the array</td>
+     *     </tr>
+     * </table>
+     *
+     * @param compilationUnit into which the values should be added
+     * @param annotation the annotation type that should be added or augmented
+     * @param attributeName the attribute that should be added or augmented
+     * @param attributeValuesToAdd values that should be added into the given attribute of the given annotation
+     * @return {@code compilationUnit} augmented in such a way that it contains the given annotation, with the given values
+     * @since 0.99
+     */
+    public CompilationUnitTree appendToAnnotationValue(CompilationUnitTree compilationUnit, TypeElement annotation, String attributeName, ExpressionTree... attributeValuesToAdd) {
+        return (CompilationUnitTree) appendToAnnotationValue((Tree) compilationUnit, annotation, attributeName, attributeValuesToAdd);
+    }
+
+    private Tree appendToAnnotationValue(Tree/*CompilationUnitTree|ModifiersTree*/ modifiers, TypeElement annotation, String attributeName, ExpressionTree... attributeValuesToAdd) {
+        TreeMaker make = copy.getTreeMaker();
+
+        //check for already existing SuppressWarnings annotation:
+        List<? extends AnnotationTree> annotations = null;
+
+        if (modifiers.getKind() == Kind.MODIFIERS) {
+            annotations = ((ModifiersTree) modifiers).getAnnotations();
+        } else if (modifiers.getKind() == Kind.COMPILATION_UNIT) {
+            annotations = ((CompilationUnitTree) modifiers).getPackageAnnotations();
+        } else {
+            throw new IllegalStateException();
+        }
+
+        for (AnnotationTree at : annotations) {
+            TreePath tp = new TreePath(new TreePath(copy.getCompilationUnit()), at.getAnnotationType());
+            Element  e  = copy.getTrees().getElement(tp);
+
+            if (annotation.equals(e)) {
+                //found SuppressWarnings:
+                List<? extends ExpressionTree> arguments = at.getArguments();
+
+                for (ExpressionTree et : arguments) {
+                    ExpressionTree expression;
+
+                    if (et.getKind() == Kind.ASSIGNMENT) {
+                        AssignmentTree assignment = (AssignmentTree) et;
+
+                        if (!((IdentifierTree) assignment.getVariable()).getName().contentEquals(attributeName)) continue;
+
+                        expression = assignment.getExpression();
+                    } else if ("value".equals(attributeName)) {
+                        expression = et;
+                    } else {
+                        continue;
+                    }
+
+                    List<? extends ExpressionTree> currentValues;
+
+                    if (expression.getKind() == Kind.NEW_ARRAY) {
+                        currentValues = ((NewArrayTree) expression).getInitializers();
+                    } else {
+                        currentValues = Collections.singletonList(expression);
+                    }
+
+                    assert currentValues != null;
+
+                    List<ExpressionTree> values = new ArrayList<ExpressionTree>(currentValues);
+
+                    values.addAll(Arrays.asList(attributeValuesToAdd));
+
+                    NewArrayTree newAssignment = make.NewArray(null, Collections.<ExpressionTree>emptyList(), values);
+
+                    return copy.getTreeUtilities().translate(modifiers, Collections.singletonMap(expression, newAssignment));
+                }
+
+                AnnotationTree newAnnotation = make.addAnnotationAttrValue(at, make.Assignment(make.Identifier(attributeName), make.NewArray(null, Collections.<ExpressionTree>emptyList(), Arrays.asList(attributeValuesToAdd))));
+
+                return copy.getTreeUtilities().translate(modifiers, Collections.singletonMap(at, newAnnotation));
+            }
+        }
+
+        ExpressionTree attribute;
+
+        if (attributeValuesToAdd.length > 1 ) {
+            attribute = make.NewArray(null, Collections.<ExpressionTree>emptyList(), Arrays.asList(attributeValuesToAdd));
+        }
+        else {
+            attribute = attributeValuesToAdd[0];
+        }
+
+        ExpressionTree attributeAssignmentTree;
+
+        if ("value".equals(attributeName)) {
+            attributeAssignmentTree = attribute;
+        } else {
+            attributeAssignmentTree = make.Assignment(make.Identifier(attributeName), attribute);
+        }
+        
+        AnnotationTree newAnnotation = make.Annotation(make.QualIdent(annotation), Collections.singletonList(attributeAssignmentTree));
+        
+        if (modifiers.getKind() == Kind.MODIFIERS) {
+            return make.addModifiersAnnotation((ModifiersTree) modifiers, newAnnotation);
+        } else if (modifiers.getKind() == Kind.COMPILATION_UNIT) {
+            return make.addPackageAnnotation((CompilationUnitTree) modifiers, newAnnotation);
+        } else {
+            throw new IllegalStateException();
         }
     }
     
@@ -1015,47 +1267,20 @@ public final class GeneratorUtilities {
 
     private static class ClassMemberComparator implements Comparator<Tree> {
 
+        private CodeStyle.MemberGroups groups;
+
+        public ClassMemberComparator(CodeStyle cs) {
+            this.groups = cs.getClassMemberGroups();
+        }
+
         @Override
         public int compare(Tree tree1, Tree tree2) {
             if (tree1 == tree2)
                 return 0;
-            return getSortPriority(tree1) - getSortPriority(tree2);
-        }
-
-        private static int getSortPriority(Tree tree) {
-            int ret = 0;
-            ModifiersTree modifiers = null;
-            switch (tree.getKind()) {
-            case ANNOTATION_TYPE:
-            case CLASS:
-            case ENUM:
-            case INTERFACE:
-                ret = 4000;
-                modifiers = ((ClassTree)tree).getModifiers();
-                break;
-            case METHOD:
-                MethodTree mt = (MethodTree)tree;
-                if (mt.getName().contentEquals("<init>"))
-                    ret = 200;
-                else
-                    ret = 300;
-                modifiers = mt.getModifiers();
-                break;
-            case VARIABLE:
-                ret = 100;
-                modifiers = ((VariableTree)tree).getModifiers();
-                break;
-            }
-            if (modifiers != null) {
-                if (!modifiers.getFlags().contains(Modifier.STATIC))
-                    ret += 1000;
-            }
-            return ret;
+            return groups.getGroupId(tree1) - groups.getGroupId(tree2);
         }
     }
     
-    private static ClassMemberComparator CLASS_MEMBER_COMPARATOR = new ClassMemberComparator();
-
     private static class ImportsComparator implements Comparator<Object> {
 
         private CodeStyle.ImportGroups groups;

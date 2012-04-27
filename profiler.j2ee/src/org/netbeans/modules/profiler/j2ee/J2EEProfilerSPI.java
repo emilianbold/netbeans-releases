@@ -170,8 +170,6 @@ public class J2EEProfilerSPI implements org.netbeans.modules.j2ee.deployment.pro
     private boolean refreshServerInstance = false;
     private boolean serverStartedFromIDE = false;
     private /*static final*/ int STARTING_STATE_TIMEOUT = 20000; // timeout for starting the agent [ms]
-    private int profilerAgentID = -111; // should differ from default J2EEProjectTypeProfiler.getLastAgentID()
-    private int profilerAgentPort = 0; // should differ from default J2EEProjectTypeProfiler.getLastAgentPort()
     private long profilerAgentStartingTime = -1;
 
     //~ Constructors -------------------------------------------------------------------------------------------------------------
@@ -349,6 +347,8 @@ public class J2EEProfilerSPI implements org.netbeans.modules.j2ee.deployment.pro
      * @return state of Profiler agent instance.
      */
     public synchronized int getState() {
+        int profilerAgentID = J2EEProjectProfilingSupportProvider.getLastAgentID();
+        int profilerAgentPort = J2EEProjectProfilingSupportProvider.getLastAgentPort();
         int agentState = checkState();
         ProfilerLogger.log(">>> Profiler agent [port=" + profilerAgentPort + ", id=" + profilerAgentID + "]: "
                            + getPublicAgentStateString(agentState)); // NOI18N
@@ -418,9 +418,7 @@ public class J2EEProfilerSPI implements org.netbeans.modules.j2ee.deployment.pro
      * allows the Profiler to correctly detect STATE_STARTING.
      */
     public void notifyStarting() {
-        profilerAgentID = J2EEProjectProfilingSupportProvider.getLastAgentID();
-        profilerAgentPort = J2EEProjectProfilingSupportProvider.getLastAgentPort();
-
+        int profilerAgentPort = J2EEProjectProfilingSupportProvider.getLastAgentPort();
         NetBeansProfiler.getDefaultNB().cleanForProfilingOnPort(profilerAgentPort); // try to kill an agent on port if some exists
 
         profilerAgentStartingTime = System.currentTimeMillis();
@@ -491,6 +489,8 @@ public class J2EEProfilerSPI implements org.netbeans.modules.j2ee.deployment.pro
 
                     // we only stop the agent if in STATE_BLOCKING state
                     if (getState() == ProfilerSupport.STATE_BLOCKING) {
+                        int profilerAgentID = J2EEProjectProfilingSupportProvider.getLastAgentID();
+                        int profilerAgentPort = J2EEProjectProfilingSupportProvider.getLastAgentPort();
                         Profiler.getDefault().shutdownBlockedAgent("localhost", profilerAgentPort, profilerAgentID); // NOI18N
 
                         for (int i = 0; i < 60; i++) { // 30sec timeout on profiled application shutdown (thread sleeps 500ms)
@@ -517,6 +517,7 @@ public class J2EEProfilerSPI implements org.netbeans.modules.j2ee.deployment.pro
                 } finally {
                     // reset the shutdown progress flag
                     profilerAgentShutdownProgress = false;
+                    J2EEProjectProfilingSupportProvider.resetLastValues();
                 }
             }
         };
@@ -614,6 +615,8 @@ public class J2EEProfilerSPI implements org.netbeans.modules.j2ee.deployment.pro
 
     // --- Private implementation ------------------------------------------------
     private int checkState() {
+        int profilerAgentID = J2EEProjectProfilingSupportProvider.getLastAgentID();
+        int profilerAgentPort = J2EEProjectProfilingSupportProvider.getLastAgentPort();
         int currentAgentState = NetBeansProfiler.getDefault().getAgentState("localhost", profilerAgentPort, profilerAgentID); // NOI18N
                                                                                                                               //System.err.println(">>> Detected internal agent state: " + getInternalAgentStateString(currentAgentState));
 

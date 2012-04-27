@@ -183,3 +183,5 @@ derby\.log
 \.conflict\~$
 ^nbbuild/jna\.keystore$
 ^nbi/engine/testData$
+^o\.n\.bootstrap/launcher/windows/nbexec_exe\.res$
+^installer/mac/newbuild/dist_dmg$

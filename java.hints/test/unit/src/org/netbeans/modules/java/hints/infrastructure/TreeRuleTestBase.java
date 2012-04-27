@@ -100,6 +100,11 @@ public abstract class TreeRuleTestBase extends NbTestCase {
 
         FileObject wd = FileUtil.toFileObject(wdFile);
         assertNotNull(wd);
+
+        if (subTest != null) {
+            wd = FileUtil.createFolder(wd, "st" + subTest);
+        }
+
         sourceRoot = FileUtil.createFolder(wd, "src");
         FileObject buildRoot = FileUtil.createFolder(wd, "build");
         FileObject cache = FileUtil.createFolder(wd, "cache");
@@ -154,7 +159,7 @@ public abstract class TreeRuleTestBase extends NbTestCase {
     protected void performAnalysisTest(String fileName, String code, String... golden) throws Exception {
         int[] offset = new int[1];
         
-        code = org.netbeans.modules.java.hints.TestUtilities.detectOffsets(code, offset);
+        code = org.netbeans.modules.java.hints.spiimpl.TestUtilities.detectOffsets(code, offset);
         
         performAnalysisTest(fileName, code, offset[0], golden);
     }
@@ -179,7 +184,7 @@ public abstract class TreeRuleTestBase extends NbTestCase {
     protected String performFixTest(String fileName, String code, String errorDescriptionToString, String fixDebugString, String golden) throws Exception {
         int[] offset = new int[1];
 
-        code = org.netbeans.modules.java.hints.TestUtilities.detectOffsets(code, offset);
+        code = org.netbeans.modules.java.hints.spiimpl.TestUtilities.detectOffsets(code, offset);
         
         return performFixTest(fileName, code, offset[0], errorDescriptionToString, fixDebugString, golden);
     }
@@ -191,7 +196,7 @@ public abstract class TreeRuleTestBase extends NbTestCase {
     protected String performFixTest(String fileName, String code, String errorDescriptionToString, String fixDebugString, String goldenFileName, String golden) throws Exception {
         int[] offset = new int[1];
 
-        code = org.netbeans.modules.java.hints.TestUtilities.detectOffsets(code, offset);
+        code = org.netbeans.modules.java.hints.spiimpl.TestUtilities.detectOffsets(code, offset);
 
         return performFixTest(fileName, code, offset[0], errorDescriptionToString, fixDebugString, goldenFileName, golden);
     }
@@ -258,6 +263,8 @@ public abstract class TreeRuleTestBase extends NbTestCase {
         return new FileObject[0];
     }
 
+    private Integer subTest;
+    
     // common tests to check nothing is reported
     public void testIssue105979() throws Exception {
         String before = "package test; class Test {" +
@@ -265,6 +272,7 @@ public abstract class TreeRuleTestBase extends NbTestCase {
                 "}\n";
 
         for (int i = 0; i < before.length(); i++) {
+            subTest = i;
             LOG.info("testing position " + i + " at " + before.charAt(i));
             SourceUtils.waitScanFinished();
             clearWorkDir();
@@ -279,6 +287,7 @@ public abstract class TreeRuleTestBase extends NbTestCase {
             "\n}\n";
 
         for (int i = 0; i < before.length(); i++) {
+            subTest = i;
             LOG.info("testing position " + i + " at " + before.charAt(i));
             SourceUtils.waitScanFinished();
             clearWorkDir();
@@ -293,6 +302,7 @@ public abstract class TreeRuleTestBase extends NbTestCase {
             "}\n";
 
         for (int i = 0; i < before.length(); i++) {
+            subTest = i;
             LOG.info("testing position " + i + " at " + before.charAt(i));
             SourceUtils.waitScanFinished();
             clearWorkDir();
@@ -308,6 +318,7 @@ public abstract class TreeRuleTestBase extends NbTestCase {
             "\n}\n}\n";
 
         for (int i = 0; i < before.length(); i++) {
+            subTest = i;
             LOG.info("testing position " + i + " at " + before.charAt(i));
             SourceUtils.waitScanFinished();
             clearWorkDir();

@@ -48,8 +48,9 @@ import org.eclipse.jgit.revwalk.RevObject;
 import org.eclipse.jgit.revwalk.RevTag;
 
 /**
- *
- * @author ondra
+ * Represents a git tag.
+ * 
+ * @author Ondra Vrabec
  */
 public final class GitTag {
     private final String id;
@@ -94,30 +95,52 @@ public final class GitTag {
         this.lightWeight = true;
     }
 
+    /**
+     * @return object id of this tag
+     */
     public String getTagId () {
         return id;
     }
 
+    /**
+     * @return name of this tag
+     */
     public String getTagName () {
         return name;
     }
     
+    /**
+     * @return object id of a tagged object, type of the object is returned by the <code>getType</code> method.
+     */
     public String getTaggedObjectId () {
         return taggedObject;
     }
 
+    /**
+     * @return message entered when the tag was created.
+     */
     public String getMessage () {
         return message;
     }
 
+    /**
+     * @return user who created this tag.
+     * Never <code>null</code>, an empty person is returned instead when no user can be identified.
+     */
     public GitUser getTagger () {
         return tagger;
     }
 
+    /**
+     * @return git object type this tag refers to
+     */
     public GitObjectType getTaggedObjectType () {
         return type;
     }
 
+    /**
+     * @return <code>true</code> if the tag is lightweight.
+     */
     public boolean isLightWeight () {
         return lightWeight;
     }

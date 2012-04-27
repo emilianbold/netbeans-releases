@@ -1664,6 +1664,19 @@ final class Central implements ControllerHandler {
                 mode, View.CHANGE_TOPCOMPONENT_ICON_CHANGED, null, tc));
         }
     }
+
+    /**
+     * 
+     * @param mode
+     * @param tc
+     * @param busy 
+     * @since 2.45
+     */
+    public void topComponentMakeBusy( ModeImpl mode, TopComponent tc, boolean busy ) {
+        String modeName = getModeName(mode);
+        viewRequestor.scheduleRequest (
+            new ViewRequest(modeName, busy ? View.TOPCOMPONENT_SHOW_BUSY : View.TOPCOMPONENT_HIDE_BUSY, tc, tc));
+    }
     
     public void resetModel() {
         model.reset();
@@ -2818,6 +2831,9 @@ final class Central implements ControllerHandler {
         } else {
             unSlide( tc, mode );
         }
+        //#207438 - make sure global minimize/dock actions get updated
+        WindowManagerImpl.getInstance().doFirePropertyChange(
+            WindowManager.PROP_MODES, null, null);
     }
 
     boolean isTopComponentMinimized( TopComponent tc ) {

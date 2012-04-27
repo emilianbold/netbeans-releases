@@ -100,6 +100,7 @@ public class I18nServiceImpl implements I18nService {
      * Creates I18nValue object for given key and value. Should not be added
      * to the bundle file yet. (For that purpose 'update' method is called later.)
      */
+    @Override
     public I18nValue create(String key, String value, DataObject srcDataObject) {
         FormI18nString i18nString = new FormI18nString(srcDataObject);
         i18nString.setKey(key);
@@ -114,6 +115,7 @@ public class I18nServiceImpl implements I18nService {
      * @param value I18nValue to be copied
      * @return the copied I18nValue
      */
+    @Override
     public I18nValue copy(I18nValue value) {
         FormI18nString i18nString = (FormI18nString) value;
         FormI18nString copy = new FormI18nString(i18nString);
@@ -131,6 +133,7 @@ public class I18nServiceImpl implements I18nService {
      * Creates a new I18nValue object with a new key. Should do no changes to
      * the bundle file at this moment.
      */
+    @Override
     public I18nValue changeKey(I18nValue prev, String newKey) {
         FormI18nString oldI18nString = (FormI18nString) prev;
         FormI18nString changedI18nString;
@@ -150,6 +153,7 @@ public class I18nServiceImpl implements I18nService {
      * Creates a new I18nValue object with changed value. Should not do any
      * changes to the bundle file.
      */
+    @Override
     public I18nValue changeValue(I18nValue prev, String value) {
         FormI18nString i18nString = new FormI18nString((FormI18nString)prev);
         i18nString.setValue(value);
@@ -160,6 +164,7 @@ public class I18nServiceImpl implements I18nService {
      * Creates a new I18nValue refering to given locale (both for reading and
      * writing from now).
      */
+    @Override
     public I18nValue switchLocale(I18nValue value, String localeSuffix) {
         if (value == null || value.getKey() == null)
             return value;
@@ -185,6 +190,7 @@ public class I18nServiceImpl implements I18nService {
      * are updated too if given key is not present in them. New properties file
      * is created if needed.
      */
+    @Override
     public void update(I18nValue oldValue, I18nValue newValue,
                        DataObject srcDataObject, String bundleName, String localeSuffix,
                        boolean canRemove)
@@ -300,6 +306,7 @@ public class I18nServiceImpl implements I18nService {
      * property of given type (e.g. String). If an existing suitable editor is
      * passed then it is returned and no new property editor is created.
      */
+    @Override
     public PropertyEditor getPropertyEditor(Class type, PropertyEditor existing) {
         return existing instanceof FormI18nStringEditor ? existing : new FormI18nStringEditor();
     }
@@ -315,12 +322,14 @@ public class I18nServiceImpl implements I18nService {
      * written to the given property editor (via setValue) as a resource name
      * string.
      */
+    @Override
     public Component getBundleSelectionComponent(final PropertyEditor prEd, FileObject srcFile) {
         try {
             final FileSelector fs = new FileSelector(srcFile, JavaResourceHolder.getTemplate());
             return fs.getDialog(NbBundle.getMessage(I18nServiceImpl.class, "CTL_SELECT_BUNDLE_TITLE"), // NOI18N
                                 new ActionListener()
             {
+                @Override
                 public void actionPerformed(ActionEvent ev) {
                     DataObject bundleDO = fs.getSelectedDataObject();
                     if (bundleDO != null) {
@@ -342,9 +351,12 @@ public class I18nServiceImpl implements I18nService {
 
     /**
      * Returns all currently available locales for given bundle in two arrays
-     * os strings. The first one containes locale suffixes, the second one
+     * of strings. The first one containes locale suffixes, the second one
      * corresponding display names for the user (should be unique).
+     * Returning null means that working with design locales is not supported
+     * by this service.
      */
+    @Override
     public String[][] getAvailableLocales(FileObject srcFile, String bundleName) {
         PropertiesDataObject dobj = null;
         try {
@@ -353,8 +365,9 @@ public class I18nServiceImpl implements I18nService {
         catch (IOException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
-        if (dobj == null)
-            return null;
+        if (dobj == null) {
+            return new String[][] {{},null};
+        }
 
         List list = new ArrayList();
         list.add(dobj.getPrimaryEntry());
@@ -374,6 +387,7 @@ public class I18nServiceImpl implements I18nService {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
         Collections.sort(list, new Comparator() {
+            @Override
             public int compare(Object o1, Object o2) {
                 MultiDataObject.Entry e1 = (MultiDataObject.Entry) o1;
                 MultiDataObject.Entry e2 = (MultiDataObject.Entry) o2;
@@ -397,6 +411,7 @@ public class I18nServiceImpl implements I18nService {
      * bundle name provided). The created locale should be written as a string
      * (locale suffix) to the given propery editor.
      */
+    @Override
     public Component getCreateLocaleComponent(final PropertyEditor prEd, FileObject srcFile, String bundleName) {
         final PropertiesDataObject propertiesDO;
         try {
@@ -416,6 +431,7 @@ public class I18nServiceImpl implements I18nService {
             DialogDescriptor.OK_CANCEL_OPTION,
             DialogDescriptor.OK_OPTION,
             new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent evt) {
                     if (evt.getSource() == DialogDescriptor.OK_OPTION) {
                         String locale = localePanel.getLocale().toString();
@@ -437,6 +453,7 @@ public class I18nServiceImpl implements I18nService {
      * is called when a form is being saved - so the corresponding bundle is
      * saved as well.
      */
+    @Override
     public void autoSave(DataObject srcDataObject) {
         Map/*<DataObject, ChangeInfo>*/ relatedMap = (Map) changesMap.remove(srcDataObject);
         if (relatedMap != null) {
@@ -461,6 +478,7 @@ public class I18nServiceImpl implements I18nService {
      * Called when a form is closed without saving changes. The changes in
      * corresponding properties file need to be discarded (reverted) as well.
      */
+    @Override
     public void close(DataObject srcDataObject) {
         Map/*<DataObject, ChangeInfo>*/ relatedMap = (Map) changesMap.remove(srcDataObject);
         if (relatedMap != null) {
@@ -502,6 +520,7 @@ public class I18nServiceImpl implements I18nService {
      * [If we decide all projects should be internationalized, we can remove
      *  this method.]
      */
+    @Override
     public boolean isDefaultInternationalizableProject(FileObject srcFile) {
         return isNbBundleAvailable(srcFile);
     }
@@ -525,6 +544,7 @@ public class I18nServiceImpl implements I18nService {
         return false;
     }
 
+    @Override
     public List<URL> getResourceFiles(FileObject srcFile, String bundleName) {
         PropertiesDataObject dobj = null;
         try {

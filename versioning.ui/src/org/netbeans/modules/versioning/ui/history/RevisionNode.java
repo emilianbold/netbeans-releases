@@ -54,8 +54,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.text.DateFormat;
 import java.util.*;
 import java.util.logging.Level;
-import org.netbeans.swing.etable.QuickFilter;
-import org.openide.nodes.Node;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.Lookup;
@@ -67,7 +66,7 @@ import org.openide.util.lookup.Lookups;
  * @author Tomas Stupka
  *
  */
-public class RevisionNode extends AbstractNode implements Comparable {
+class RevisionNode extends AbstractNode implements Comparable {
     
     static final String PROPERTY_NAME_LABEL = "label";                          // NOI18N        
     static final String PROPERTY_NAME_USER = "user";                            // NOI18N        
@@ -84,7 +83,18 @@ public class RevisionNode extends AbstractNode implements Comparable {
     }        
          
     static RevisionNode create(HistoryEntry entry) {
-        return new RevisionNode(entry, Lookups.fixed(new Object [] { entry }));
+        List<Object> lookup = new LinkedList<Object>();
+        VCSFileProxy[] proxies = entry.getFiles();
+        for (VCSFileProxy proxy : proxies) {
+            lookup.add(proxy);
+            File f = proxy.toFile();
+            if(f != null) {
+                lookup.add(f);
+            }
+        }
+        lookup.addAll(Arrays.asList(entry.getLookupObjects()));
+        lookup.add(entry);
+        return new RevisionNode(entry, Lookups.fixed(lookup.toArray(new Object[lookup.size()])));
     }
     
     private static Children createChildren(HistoryEntry entry) {
@@ -93,7 +103,7 @@ public class RevisionNode extends AbstractNode implements Comparable {
         } else {
             FileNode[] nodes = new FileNode[entry.getFiles().length];
             int i = 0;
-            for (File file : entry.getFiles()) {
+            for (VCSFileProxy file : entry.getFiles()) {
                 nodes[i++] = new FileNode(entry, file);            
             }
             Children.SortedArray children = new Children.SortedArray();            
@@ -204,7 +214,11 @@ public class RevisionNode extends AbstractNode implements Comparable {
                 }
                 @Override
                 public String getTooltip() {
-                    return entry.getMessage();
+                    String tooltip = entry.getMessage();
+                    if(tooltip == null || "".equals(tooltip.trim())) {                       // NOI18N
+                        tooltip = NbBundle.getMessage(RevisionNode.class, "LBL_SetTooltip"); // NOI18N
+                    }
+                    return tooltip;
                 }
             };   
         }
@@ -309,16 +323,28 @@ public class RevisionNode extends AbstractNode implements Comparable {
         }
     } 
 
-    private static class FileNode extends AbstractNode implements Comparable {        
+    static class FileNode extends AbstractNode implements Comparable {        
 
         private final HistoryEntry entry;
-        private final File file;
+        private final VCSFileProxy file;
         
-        FileNode(HistoryEntry entry, File file) {
-            super(Children.LEAF, Lookups.fixed(new Object [] { file, entry }));                        
+        FileNode(HistoryEntry entry, VCSFileProxy file) {
+            super(Children.LEAF, createLookup(file, entry)); 
             this.entry = entry;
             this.file = file;
         }
+    
+        private static Lookup createLookup(VCSFileProxy proxy, HistoryEntry entry) {
+            List<Object> lookup = new LinkedList<Object>();
+            lookup.add(proxy);
+            File f = proxy.toFile();
+            if(f != null) {
+                lookup.add(f);
+            }
+            lookup.add(entry);
+            lookup.addAll(Arrays.asList(entry.getLookupObjects()));
+            return Lookups.fixed(lookup.toArray(new Object[lookup.size()]));
+        }        
     
         @Override
         public Action[] getActions(boolean context) {
@@ -339,31 +365,5 @@ public class RevisionNode extends AbstractNode implements Comparable {
             return getName().compareTo(node.getName());            
         }        
     }    
-    
-    public static abstract class Filter implements QuickFilter {
-        public abstract String getDisplayName();
-        protected HistoryEntry getEntry(Object value) {
-            if(value instanceof Node) {
-                return getHistoryEntry((Node)value);
-        }
-            return null;
-        }
- 
-        private HistoryEntry getHistoryEntry(Node node) {
-            if(node instanceof RevisionNode) {
-                return ((RevisionNode)node).entry;
-            } else if (node instanceof FileNode) {
-                return ((FileNode)node).entry;
-            } else {
-                Node[] nodes = node.getChildren().getNodes();
-                return nodes != null && nodes.length > 0 ? getHistoryEntry(nodes[0]) : null;
-            }
-        }
-        
-        public String getRendererValue(String value) {
-            return value;
-        }
-    }
-
 }
 

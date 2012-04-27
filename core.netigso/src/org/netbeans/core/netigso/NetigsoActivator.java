@@ -42,16 +42,7 @@
 
 package org.netbeans.core.netigso;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.util.Collection;
-import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Set;
-import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.logging.Level;
-import org.openide.modules.ModuleInfo;
 import org.osgi.framework.Bundle;
 
 /**
@@ -59,9 +50,10 @@ import org.osgi.framework.Bundle;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 final class NetigsoActivator extends HashMap<Bundle,ClassLoader> {
-    private final Set<ModuleInfo> all = new CopyOnWriteArraySet<ModuleInfo>();
+    private final Netigso netigso;
 
-    public NetigsoActivator() {
+    public NetigsoActivator(Netigso netigso) {
+        this.netigso = netigso;
     }
 
     @Override
@@ -71,61 +63,9 @@ final class NetigsoActivator extends HashMap<Bundle,ClassLoader> {
             final String pref = "netigso://"; // NOI18N
             if (loc != null && loc.startsWith(pref)) {
                 String cnb = loc.substring(pref.length());
-                for (ModuleInfo mi : all) {
-                    if (cnb.equals(mi.getCodeNameBase())) {
-                        return new DelegateLoader(mi);
-                    }
-                }
+                return netigso.findClassLoader(cnb);
             }
         }
         return null;
     }
-
-    void register(Collection<? extends ModuleInfo> m) {
-        Netigso.LOG.log(Level.FINER, "register module {0}", m);
-        all.addAll(m);
-    }
-
-    boolean isUnderOurControl(String symbolicName) {
-        for (ModuleInfo mi : all) {
-            if (symbolicName.equals(mi.getCodeNameBase())) {
-                return mi.isEnabled();
-            }
-        }
-        return false;
-    }
-
-    private static final class DelegateLoader extends ClassLoader {
-
-        private final ModuleInfo mi;
-
-        public DelegateLoader(ModuleInfo mi) {
-            this.mi = mi;
-        }
-
-        @Override
-        public Class<?> loadClass(String string) throws ClassNotFoundException {
-            return getDelegate().loadClass(string);
-        }
-
-        @Override
-        public Enumeration<URL> getResources(String string) throws IOException {
-            return getDelegate().getResources(string);
-        }
-
-        @Override
-        public InputStream getResourceAsStream(String string) {
-            return getDelegate().getResourceAsStream(string);
-        }
-
-        @Override
-        public URL getResource(String string) {
-            return getDelegate().getResource(string);
-        }
-
-        private ClassLoader getDelegate() {
-            return mi.getClassLoader();
-        }
-
-    } // end of DelegateLoader
 }

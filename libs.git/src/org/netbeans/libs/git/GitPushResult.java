@@ -44,23 +44,30 @@ package org.netbeans.libs.git;
 import java.util.Map;
 
 /**
- *
- * @author ondra
+ * Usually returned by a git push command, represents its result.
+ * 
+ * @author Ondra Vrabec
  */
 public final class GitPushResult {
 
     private final Map<String, GitTransportUpdate> remoteRepositoryUpdates;
     private final Map<String, GitTransportUpdate> localRepositoryUpdates;
 
-    public GitPushResult (Map<String, GitTransportUpdate> remoteRepositoryUpdates, Map<String, GitTransportUpdate> localRepositoryUpdates) {
+    GitPushResult (Map<String, GitTransportUpdate> remoteRepositoryUpdates, Map<String, GitTransportUpdate> localRepositoryUpdates) {
         this.remoteRepositoryUpdates = remoteRepositoryUpdates;
         this.localRepositoryUpdates = localRepositoryUpdates;
     }
 
+    /**
+     * @return collection of reference updates in a local repository
+     */
     public Map<String, GitTransportUpdate> getLocalRepositoryUpdates () {
         return localRepositoryUpdates;
     }
 
+    /**
+     * @return collection of reference updates in a remote repository
+     */
     public Map<String, GitTransportUpdate> getRemoteRepositoryUpdates () {
         return remoteRepositoryUpdates;
     }

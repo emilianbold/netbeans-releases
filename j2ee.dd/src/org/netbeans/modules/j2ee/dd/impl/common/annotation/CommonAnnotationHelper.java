@@ -50,6 +50,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
@@ -62,6 +63,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.modules.j2ee.dd.api.common.EnvEntry;
 import org.netbeans.modules.j2ee.dd.api.common.MessageDestinationRef;
 import org.netbeans.modules.j2ee.dd.api.common.PortComponentRef;
@@ -111,7 +113,7 @@ public class CommonAnnotationHelper {
     private static final Set<String> MESSAGE_DESTINATION_TYPES = new HashSet<String>(Arrays.<String>asList(
             "javax.jms.Queue",
             "javax.jms.Topic"));
-    
+
     private CommonAnnotationHelper() {
     }
     
@@ -287,7 +289,35 @@ public class CommonAnnotationHelper {
         
         return serviceRefs.toArray(new ServiceRef[serviceRefs.size()]);
     }
-    
+
+    /**
+     * Get service endpoint for given class.
+     * Annotation {@link javax.jws.WebService @WebService} is searched.
+     * @param helper        annotation model helper
+     * @param typeElement   class that is searched
+     * @return              service name
+     */
+    public static String getServiceEndpoint(final AnnotationModelHelper helper, final TypeElement typeElement) {
+        assert helper != null;
+        assert typeElement != null;
+
+        Map<String, ? extends AnnotationMirror> ans = helper.getAnnotationsByType(typeElement.getAnnotationMirrors());
+        AnnotationMirror wsMirror = ans.get("javax.jws.WebService"); //NOI18N
+        if (wsMirror != null) {
+            for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry : wsMirror.getElementValues().entrySet()) {
+                ExecutableElement key = entry.getKey();
+                if (key.getSimpleName().contentEquals("endpointInterface")) { //NOI18N
+                    AnnotationValue value = entry.getValue();
+                    return value.toString();
+                }
+            }
+            return ElementUtilities.getBinaryName(typeElement);
+        }
+
+        return null;
+    }
+
+
     private static List<ResourceImpl> getResources(final AnnotationModelHelper helper, final TypeElement typeElement) {
         
         final List<ResourceImpl> result = new ArrayList<ResourceImpl>();

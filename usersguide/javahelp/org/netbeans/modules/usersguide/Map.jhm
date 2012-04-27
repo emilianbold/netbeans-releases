@@ -108,7 +108,7 @@ Other names may be trademarks of their respective owners.
 
 <mapID target="workspace.window.managing" url="configure/workspace/window_managing.html" />
 <mapID target="configure.tbcustomize" url="configure/workspace/toolbar_customize.html" />
-<mapID target="configure.tbcommands" url="configure/workspace/toolbar_commands.html" />
+
 
 <!-- TODO - plugin manager TOC topics -->
 <mapID target="ide.autoupdate" url="configure/modules/autoupdate.html" />
@@ -181,6 +181,8 @@ Other names may be trademarks of their respective owners.
 <!--Java and PHP shared Project Properties: Formatting panel -->
 <mapID target="org.netbeans.modules.editor.indent.project.FormattingCustomizerPanel" url="editing/csh/project_props_editor_format.html" />
 
+<!-- Customize Toolbars window -->
+<mapID target="org.netbeans.core.windows.view.ui.toolbars.ConfigureToolbarPanel" url="configure/workspace/csh_toolbar_customize.html" />
 
 <!-- Projects window nodes -->
 <!-- ====================== -->
@@ -278,7 +280,8 @@ Other names may be trademarks of their respective owners.
 <mapID target="org.netbeans.modules.search.SearchPanel.false" url="files/csh/search_projects.html" />    
 <mapID target="org.netbeans.modules.search.SearchPanel.true" url="files/csh/replace_in_projects.html" /> 
 
-        
+     <!--ID for Select The Diff Patch dialog box (Tools > Apply Diff patch); issue 208834:-->
+<mapID target="org.netbeans.modules.diff.PatchAction" url="files/csh/select_diff_patch_db.html" /> 
     
     
   <!--Remove ID; issue 54895:-->
@@ -299,19 +302,13 @@ Other names may be trademarks of their respective owners.
       <!-- Not used in NetBeans but target preserved for possible platform use 
    <mapID target="org.netbeans.core.ControlPanelNode" url="configure/configure_options.html" />
    -->
-  <!-- ALMOST CERTAINLY OBSOLETE-->  
-<!--OptionsAction is Options window, or may have been many many releases ago:
-
-   <mapID target="org.netbeans.core.actions.OptionsAction" url="configure/configure_options.html" /> 
--->
+  
    <!--root Options node + category nodes:
    TARGETS NOT FOUND IN IDE AS OF DEV BUILD 12 JAN 2012 -->
 <!--   <mapID target="org.netbeans.core.actions.OptionsAction$OptionsPanel$OptionsFilterNode" url="configure/configure_options.html" />
    <mapID target="org.netbeans.core.EnvironmentNode" url="files/csh/files_runtime.html" />-->
 
 
-    <!-- TARGET NOT FOUND AND NO HELP BUTTON FOR CUSTOMIZE TOOLBARS DIALOG, 12 JAN 2012 
-   <mapID target="org.netbeans.core.ToolbarFolderNode" url="configure/workspace/toolbar_customize.html" /> -->
 <!--possibly remap the following target to configure_options.html :-->
 
    <!-- Diff: options window help ids -->
@@ -322,17 +319,10 @@ Other names may be trademarks of their respective owners.
    <mapID target="org.netbeans.core.execution.ProcessNodeItem" url="files/csh/files_runtime.html" /> 
    <mapID target="org.netbeans.core.execution.ProcessNodeItem$TerminateProcessAction" url="files/csh/files_runtime.html" /> -->
    
-   <!-- TARGET NOT FOUND IN core.windows AND NO HELP BUTTON FOR TOOLBAR CONFIG DIALOG -->
-<!--   <mapID target="org.netbeans.core.windows.toolbars.ToolbarConfiguration" url="configure/workspace/toolbar_customize.html" /> -->
 
 <!-- Database Explorer node; both general container and instance node for databases -->
 <!-- SUSPECT DATABASE EXPLORER NODE OBSOLETE, NO DIALOG FOR 
 <mapID target="dbexpovew" url="files/csh/files_runtime.html" /> -->
-
- <!--TODO: add a CSH topic for these nodes; Look & Feel / Menu Bar; Toobars:--> 
- <!-- NO SUCH CLASS, NO SUCH TARGET IN PACKAGE core.windows 
-   <mapID target="org.netbeans.core.windows.services.ToolbarFolderNode" url="configure/workspace/toolbar_customize.html" /> -->
-
 
 
 <!--CSH ID for generic nodes -->
@@ -376,6 +366,7 @@ Other names may be trademarks of their respective owners.
   <mapID target="netbeans.optionsDialog.editor.markOccurences" url="configure/csh/editor/mark-occurrences.html" />
   <mapID target="netbeans.optionsDialog.editor.identation" url="configure/csh/editor/formatting.html" />
   <mapID target="netbeans.optionsDialog.editor.codeCompletion" url="configure/csh/editor/code-completion.html" />
+  <mapID target="netbeans.optionsDialog.editor.spellchecker" url="configure/csh/editor/spellchecker.html" />
 
   <!--ID for CSH in Options | Basic Options - Fonts and Colors Category: --> 
   <mapID target="netbeans.optionsDialog.fontAndColorsPanel" url="configure/csh/options_fontscolors.html" />
@@ -394,7 +385,10 @@ Other names may be trademarks of their respective owners.
   <mapID target="org.netbeans.core.actions.OptionsAction$Templates" url="pending.html" />
 
  <!-- Options | Misc | Files -->
-    <mapID target="netbeans.optionsDialog.advanced.files" url="configure/csh/misc/options_file_types.html" />
+  <mapID target="netbeans.optionsDialog.advanced.files" url="configure/csh/misc/options_file_types.html" />
+    
+ <!-- Options | Misc | Terminal -->
+  <mapID target="netbeans.optionsDialog.advanced.terminal" url="configure/csh/misc/options_terminal.html" />
   
   <mapID target="org.netbeans.core.ui.UINodes$TemplatesNode" url="pending.html" />
   <!--folder subnodes of Templates category; can be overridden in layer:-->
@@ -450,7 +444,7 @@ Other names may be trademarks of their respective owners.
 <mapID target="org.netbeans.modules.localhistory.ui.revert.RevertToAction" url="pending.html" />
 
 
-<mapID target="org.netbeans.modules.localhistory.ui.view.LocalHistoryTopComponent" url="local-history/csh/local_hist_tc.html" />
+<mapID target="org.netbeans.modules.localhistory.ui.view.LocalHistoryTopComponent" url="local-history/csh/about_hist_editor.html" />
 
 
 

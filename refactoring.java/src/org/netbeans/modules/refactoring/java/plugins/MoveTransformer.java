@@ -68,13 +68,12 @@ import org.openide.util.NbBundle;
 public class MoveTransformer extends RefactoringVisitor {
 
     private FileObject originalFolder;
-    private MoveRefactoringPlugin move;
+    private MoveFileRefactoringPlugin move;
     private Set<Element> elementsToImport;
     private Set<ImportTree> importToRemove;
     private Set<String> importToAdd;
     private boolean isThisFileMoving;
     private boolean isThisFileReferencingOldPackage = false;
-    private Set<Element> elementsAlreadyImported;
     private Problem problem;
     private boolean moveToDefaulPackageProblem = false;
     private String originalPackage;
@@ -85,7 +84,7 @@ public class MoveTransformer extends RefactoringVisitor {
         return problem;
     }
 
-    public MoveTransformer(MoveRefactoringPlugin move) {
+    public MoveTransformer(MoveFileRefactoringPlugin move) {
         this.move = move;
         classes2Move = move.classes;
     }
@@ -98,7 +97,6 @@ public class MoveTransformer extends RefactoringVisitor {
         isThisFileMoving = move.filesToMove.contains(workingCopy.getFileObject());
         elementsToImport = new HashSet<Element>();
         isThisFileReferencingOldPackage = false;
-        elementsAlreadyImported = new HashSet<Element>();
         importToRemove = new HashSet<ImportTree>();
         importToAdd = new HashSet<String>();
     }
@@ -109,7 +107,7 @@ public class MoveTransformer extends RefactoringVisitor {
             final Element el = workingCopy.getTrees().getElement(getCurrentPath());
             if (el != null) {
                 if (isElementMoving(el)) {
-                    elementsAlreadyImported.add(el);
+                    //elementsAlreadyImported.add(el);
                     String newPackageName = getTargetPackageName(el);
                     
                     if (!"".equals(newPackageName)) { //
@@ -128,10 +126,12 @@ public class MoveTransformer extends RefactoringVisitor {
                             
                             EnumSet<Modifier> neededMods = EnumSet.of(Modifier.PUBLIC);
                             TreePath enclosingClassPath = JavaRefactoringUtils.findEnclosingClass(workingCopy, getCurrentPath(), true, true, true, true, false);
-                            Element enclosingClass = workingCopy.getTrees().getElement(enclosingClassPath);
-                            if(enclosingTypeElement != null && enclosingClass != null
-                                    && workingCopy.getTypes().isSubtype(enclosingClass.asType(), enclosingTypeElement.asType())) {
-                                neededMods = EnumSet.of(Modifier.PUBLIC, Modifier.PROTECTED);
+                            if(enclosingClassPath != null) {
+                                Element enclosingClass = workingCopy.getTrees().getElement(enclosingClassPath);
+                                if(enclosingTypeElement != null && enclosingClass != null
+                                        && workingCopy.getTypes().isSubtype(enclosingClass.asType(), enclosingTypeElement.asType())) {
+                                    neededMods = EnumSet.of(Modifier.PUBLIC, Modifier.PROTECTED);
+                                }
                             }
                             
                             if(getPackageOf(el).toString().equals(originalPackage)
@@ -147,10 +147,12 @@ public class MoveTransformer extends RefactoringVisitor {
 
                             EnumSet<Modifier> neededMods = EnumSet.of(Modifier.PUBLIC);
                             TreePath enclosingClassPath = JavaRefactoringUtils.findEnclosingClass(workingCopy, getCurrentPath(), true, true, true, true, false);
-                            Element enclosingClass = workingCopy.getTrees().getElement(enclosingClassPath);
-                            if(enclosingTypeElement != null && enclosingClass != null
-                                    && workingCopy.getTypes().isSubtype(enclosingClass.asType(), enclosingTypeElement.asType())) {
-                                neededMods = EnumSet.of(Modifier.PUBLIC, Modifier.PROTECTED);
+                            if(enclosingClassPath != null) {
+                                Element enclosingClass = workingCopy.getTrees().getElement(enclosingClassPath);
+                                if(enclosingTypeElement != null && enclosingClass != null
+                                        && workingCopy.getTypes().isSubtype(enclosingClass.asType(), enclosingTypeElement.asType())) {
+                                    neededMods = EnumSet.of(Modifier.PUBLIC, Modifier.PROTECTED);
+                                }
                             }
 
                             if(getPackageOf(el).toString().equals(originalPackage)
@@ -183,20 +185,21 @@ public class MoveTransformer extends RefactoringVisitor {
             if (el != null) {
                 if (!isThisFileMoving) {
                     if (isElementMoving(el)) {
-                        if (!elementsAlreadyImported.contains(el)) {
-                            String targetPackageName = getTargetPackageName(el);
-                            if (!RefactoringUtils.getPackageName(workingCopy.getCompilationUnit()).equals(targetPackageName))
-                                elementsToImport.add(el);
+                        String targetPackageName = getTargetPackageName(el);
+                        if (!RefactoringUtils.getPackageName(workingCopy.getCompilationUnit()).equals(targetPackageName)) {
+                            elementsToImport.add(el);
                         }
                 } else if (el.getKind() != ElementKind.PACKAGE) {
                         Element enclosingTypeElement = workingCopy.getElementUtilities().enclosingTypeElement(el);
                         
                         EnumSet<Modifier> neededMods = EnumSet.of(Modifier.PUBLIC);
                         TreePath enclosingClassPath = JavaRefactoringUtils.findEnclosingClass(workingCopy, getCurrentPath(), true, true, true, true, false);
-                        Element enclosingClass = workingCopy.getTrees().getElement(enclosingClassPath);
-                        if(enclosingTypeElement != null && enclosingClass != null
-                                && workingCopy.getTypes().isSubtype(enclosingClass.asType(), enclosingTypeElement.asType())) {
-                            neededMods = EnumSet.of(Modifier.PUBLIC, Modifier.PROTECTED);
+                        if(enclosingClassPath != null) {
+                            Element enclosingClass = workingCopy.getTrees().getElement(enclosingClassPath);
+                            if(enclosingTypeElement != null && enclosingClass != null
+                                    && workingCopy.getTypes().isSubtype(enclosingClass.asType(), enclosingTypeElement.asType())) {
+                                neededMods = EnumSet.of(Modifier.PUBLIC, Modifier.PROTECTED);
+                            }
                         }
 
                         if (getPackageOf(el).toString().equals(originalPackage)
@@ -255,7 +258,7 @@ public class MoveTransformer extends RefactoringVisitor {
     
     private TypeElement getTypeElement(Element e) {
         TypeElement t = workingCopy.getElementUtilities().enclosingTypeElement(e);
-        if (t==null && e instanceof TypeElement) {
+        if (t==null && (e.getKind().isClass() || e.getKind().isInterface())) {
             return (TypeElement) e;
         }
         return t;
@@ -272,8 +275,9 @@ public class MoveTransformer extends RefactoringVisitor {
     
     private PackageElement getPackageOf(Element el) {
         //return workingCopy.getElements().getPackageOf(el);
-        while (el.getKind() != ElementKind.PACKAGE) 
+        while (el.getKind() != ElementKind.PACKAGE) {
             el = el.getEnclosingElement();
+        }
         return (PackageElement) el;
     }
 
@@ -371,8 +375,9 @@ public class MoveTransformer extends RefactoringVisitor {
 
     private CompilationUnitTree insertImport(CompilationUnitTree node, String imp, Element orig, String targetPkgOfOrig) {
         for (ImportTree tree: node.getImports()) {
-            if (tree.getQualifiedIdentifier().toString().equals(imp)) 
+            if (tree.getQualifiedIdentifier().toString().equals(imp) || tree.getQualifiedIdentifier().toString().equals(((TypeElement) orig).getQualifiedName().toString())) {
                 return node;
+            }
             if (orig!=null) {
                 if (tree.getQualifiedIdentifier().toString().equals(getPackageOf(orig).getQualifiedName()+".*") && isPackageRename()) { // NOI18N
                     rewrite(tree.getQualifiedIdentifier(), make.Identifier(targetPkgOfOrig + ".*")); // NOI18N

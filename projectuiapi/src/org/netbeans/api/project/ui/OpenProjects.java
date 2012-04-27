@@ -260,7 +260,7 @@ public final class OpenProjects {
     }
     
     /**Sets the main project.
-     *
+     * Should not generally be called programmatically; an exception would be when renaming a main project.
      * <div class="nonnormative">
      * <p><strong>Warning:</strong> the set of usecases that require invoking this method is
      * very limited and should be generally avoided if possible. In particular, this method

@@ -106,13 +106,12 @@ public class FileObj extends BaseFileObj {
         if (LOGGER.isLoggable(Level.FINE) && EventQueue.isDispatchThread()) {
             LOGGER.log(Level.WARNING, "writing " + this, new IllegalStateException("getOutputStream invoked in AWT"));
         }
+        final File f = getFileName().getFile();
         if (!isValid()) {
-            FileNotFoundException fnf = new FileNotFoundException("FileObject " + this + " is not valid."); //NOI18N
+            FileNotFoundException fnf = new FileNotFoundException("FileObject " + this + " is not valid; isFile=" + f.isFile()); //NOI18N
             Exceptions.attachLocalizedMessage(fnf, Bundle.EXC_INVALID_FILE(this));
             throw fnf;
         }
-
-        final File f = getFileName().getFile();
 
         if (!Utilities.isWindows() && !f.isFile()) {
             throw new IOException(f.getAbsolutePath());
@@ -357,8 +356,13 @@ public class FileObj extends BaseFileObj {
             FSException.io("EXC_CannotLock", me);
         }
         try {            
-            final FileLock result = LockForFile.tryLock(me);
-            getProvidedExtensions().fileLocked(this);
+            LockForFile result = LockForFile.tryLock(me);
+            try {
+                getProvidedExtensions().fileLocked(this);
+            } catch (IOException ex) {
+                result.releaseLock(false);
+                throw ex;
+            }
             return result;
         } catch (FileNotFoundException ex) {
             FileNotFoundException fex = ex;                        

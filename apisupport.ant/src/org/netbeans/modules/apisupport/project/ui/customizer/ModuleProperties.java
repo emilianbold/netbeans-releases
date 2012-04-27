@@ -54,6 +54,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.ProjectManager;
@@ -81,6 +82,7 @@ import org.openide.util.RequestProcessor;
 public abstract class ModuleProperties {
     
     public static final String PROPERTIES_REFRESHED = "propertiesRefreshed"; // NOI18N
+    public static final String JAVA_PLATFORM_PROPERTY = "nbjdk.active"; // NOI18N
     
     static final RequestProcessor RP = new RequestProcessor(ModuleProperties.class.getName());
     
@@ -332,12 +334,12 @@ public abstract class ModuleProperties {
         } else {
             EditableProperties props = helper.getProperties(NbModuleProjectGenerator.PLATFORM_PROPERTIES_PATH);
             if (platform == null || platform == JavaPlatform.getDefault()) {
-                if (props.containsKey("nbjdk.active")) { // NOI18N
+                if (props.containsKey(JAVA_PLATFORM_PROPERTY)) {
                     // Could also just remove it, but probably nicer to set it explicitly to 'default'.
-                    props.put("nbjdk.active", "default"); // NOI18N
+                    props.put(JAVA_PLATFORM_PROPERTY, "default"); // NOI18N
                 }
             } else {
-                props.put("nbjdk.active", getPlatformID(platform)); // NOI18N
+                props.put(JAVA_PLATFORM_PROPERTY, getPlatformID(platform));
             }
             helper.putProperties(NbModuleProjectGenerator.PLATFORM_PROPERTIES_PATH, props);
         }
@@ -363,7 +365,16 @@ public abstract class ModuleProperties {
         }
         return null;
     }
-    
+
+    public @CheckForNull JavaPlatform getJavaPlatform() {
+        String activeJdk = getEvaluator().getProperty(JAVA_PLATFORM_PROPERTY);
+        if (activeJdk != null) {
+            return findJavaPlatformByID(activeJdk); // NOI18N
+        } else {
+            String activeJdkHome = getEvaluator().getProperty("nbjdk.home"); // NOI18N
+            return findJavaPlatformByLocation(activeJdkHome);
+        }
+    }
     
     void addLazyStorage(LazyStorage st) {
         storages.add(st);

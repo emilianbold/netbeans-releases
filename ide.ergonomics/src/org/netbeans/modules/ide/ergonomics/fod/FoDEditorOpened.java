@@ -58,7 +58,7 @@ public final class FoDEditorOpened implements AnnotationProvider {
     public void annotate(Set set, Lookup context) {
         if (!anEditorIsOpened) {
             anEditorIsOpened = true;
-            FoDFileSystem.getInstance().resultChanged(null);
+            FoDLayersProvider.getInstance().resultChanged(null);
         }
     }
 

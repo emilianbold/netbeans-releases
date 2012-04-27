@@ -44,6 +44,8 @@ package org.netbeans.libs.git.jgit.commands;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.LogCommand;
@@ -51,19 +53,20 @@ import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.dircache.DirCacheBuilder;
 import org.eclipse.jgit.dircache.DirCacheEditor;
 import org.eclipse.jgit.dircache.DirCacheEntry;
-import org.eclipse.jgit.lib.Constants;
-import org.eclipse.jgit.lib.FileMode;
-import org.eclipse.jgit.lib.ObjectId;
-import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.lib.*;
 import org.eclipse.jgit.revwalk.RevCommit;
-import org.netbeans.libs.git.GitFileInfo;
+import org.eclipse.jgit.treewalk.TreeWalk;
+import org.eclipse.jgit.treewalk.WorkingTreeOptions;
+import org.eclipse.jgit.treewalk.filter.PathFilter;
+import org.eclipse.jgit.util.io.AutoCRLFOutputStream;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitStatus;
-import org.netbeans.libs.git.GitFileInfo.Status;
 import org.netbeans.libs.git.GitRevisionInfo;
+import org.netbeans.libs.git.GitRevisionInfo.GitFileInfo;
+import org.netbeans.libs.git.GitRevisionInfo.GitFileInfo.Status;
 import org.netbeans.libs.git.jgit.AbstractGitTestCase;
-import org.netbeans.libs.git.progress.ProgressMonitor;
+import org.netbeans.libs.git.jgit.Utils;
 
 /**
  *
@@ -545,5 +548,76 @@ public class CommitTest extends AbstractGitTestCase {
         }
 
         //TODO try to commit the whole WT, for that we need to create the real conflict, not just this fake ones
+    }
+    
+    public void testLineEndingsWindows () throws Exception {
+        if (!isWindows()) {
+            return;
+        }
+        // lets turn autocrlf on
+        StoredConfig cfg = repository.getConfig();
+        cfg.setString(ConfigConstants.CONFIG_CORE_SECTION, null, ConfigConstants.CONFIG_KEY_AUTOCRLF, "true");
+        cfg.save();
+        
+        File f = new File(workDir, "f");
+        write(f, "a\r\nb\r\n");
+        File[] roots = new File[] { f };
+        
+        GitClient client = getClient(workDir);
+        client.add(roots, NULL_PROGRESS_MONITOR);
+        DirCacheEntry e1 = repository.readDirCache().getEntry("f");
+        assertStatus(client.getStatus(roots, NULL_PROGRESS_MONITOR),
+                workDir, f, true, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_ADDED, false);
+        List<String> res = runExternally(workDir, Arrays.asList("git.cmd", "status", "-s"));
+        assertEquals(Arrays.asList("A  f"), res);
+        GitRevisionInfo info = client.commit(roots, "aaa", null, null, NULL_PROGRESS_MONITOR);
+        
+        assertStatus(client.getStatus(roots, NULL_PROGRESS_MONITOR),
+                workDir, f, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
+        res = runExternally(workDir, Arrays.asList("git.cmd", "status", "-s"));
+        assertEquals(0, res.size());
+        
+        RevCommit commit = Utils.findCommit(repository, info.getRevision());
+        TreeWalk walk = new TreeWalk(repository);
+        walk.reset();
+        walk.addTree(commit.getTree());
+        walk.setFilter(PathFilter.create("f"));
+        walk.setRecursive(true);
+        walk.next();
+        assertEquals("f", walk.getPathString());
+        ObjectLoader loader = repository.getObjectDatabase().open(walk.getObjectId(0));
+        assertEquals(4, loader.getSize());
+        assertEquals("a\nb\n", new String(loader.getBytes()));
+        assertEquals(e1.getObjectId(), walk.getObjectId(0));
+        
+        
+        File f2 = new File(workDir, "f2");
+        write(f2, "a\r\nb\r\n");
+        roots = new File[] { f2 };
+        
+        client.add(roots, NULL_PROGRESS_MONITOR);
+        assertStatus(client.getStatus(roots, NULL_PROGRESS_MONITOR),
+                workDir, f2, true, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_ADDED, false);
+        res = runExternally(workDir, Arrays.asList("git.cmd", "status", "-s"));
+        assertEquals(Arrays.asList("A  f2"), res);
+        info = client.commit(roots, "bbb", null, null, NULL_PROGRESS_MONITOR);
+        
+        assertStatus(client.getStatus(roots, NULL_PROGRESS_MONITOR),
+                workDir, f2, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
+        res = runExternally(workDir, Arrays.asList("git.cmd", "status", "-s"));
+        assertEquals(0, res.size());
+        
+        commit = Utils.findCommit(repository, info.getRevision());
+        walk = new TreeWalk(repository);
+        walk.reset();
+        walk.addTree(commit.getTree());
+        walk.setFilter(PathFilter.create("f"));
+        walk.setRecursive(true);
+        while(walk.next()) {
+            loader = repository.getObjectDatabase().open(walk.getObjectId(0));
+            assertEquals(4, loader.getSize());
+            assertEquals("a\nb\n", new String(loader.getBytes()));
+            assertEquals(e1.getObjectId(), walk.getObjectId(0));
+        }
     }
 }

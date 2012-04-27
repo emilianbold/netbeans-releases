@@ -52,6 +52,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.HistoryRegistry;
 import org.netbeans.modules.mercurial.Mercurial;
+import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.modules.versioning.util.Utils;
 
@@ -270,8 +271,18 @@ public class RepositoryRevision {
 
         @Override
         protected void perform () {
-            getLog().refreshChangedPaths(this, incoming);
-            HgLogMessageChangedPath [] paths = getLog().getChangedPaths();            
+            HistoryRegistry.ChangePathCollector coll = incoming
+                    ? new HistoryRegistry.ChangePathCollector() {
+                        @Override
+                        public HgLogMessageChangedPath[] getChangePaths () {
+                            HgLogMessage[] messages = HgCommand.getIncomingMessages(repositoryRoot, getLog().getCSetShortID(), true, true, false, 1, getLogger());
+                            return messages == null || messages.length == 0 ? new HgLogMessageChangedPath[0] : messages[0].getChangedPaths();
+                        }
+                    }
+                    : new HistoryRegistry.DefaultChangePathCollector(repositoryRoot, getLogger(), getLog().getCSetShortID());
+            List<HgLogMessageChangedPath> pathList = HistoryRegistry.getInstance().initializeChangePaths(
+                    repositoryRoot, coll, getLog(), false);
+            HgLogMessageChangedPath[] paths = pathList.toArray(new HgLogMessageChangedPath[pathList.size()]);
             final List<Event> logEvents = prepareEvents(paths);
             if (!isCanceled()) {
                 EventQueue.invokeLater(new Runnable() {

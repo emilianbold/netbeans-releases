@@ -66,7 +66,7 @@ import org.openide.text.PositionRef;
  * @author Dusan Balek
  * @author Vladimir Voskresensky
  */
-public final class ModificationResult {
+public final class ModificationResult implements org.netbeans.modules.refactoring.spi.ModificationResult {
 
     private final CsmProject project;
     Map<FileObject, Collection<Difference>> diffs = new HashMap<FileObject, Collection<Difference>>();

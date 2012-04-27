@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -45,6 +45,7 @@
 package org.netbeans.modules.dbschema.jdbcimpl.wizard;
 
 import java.awt.Component;
+import org.openide.util.HelpCtx;
 
 final public class DBSchemaConnectionWizardPanel extends DBSchemaPanel {
 
@@ -56,6 +57,7 @@ final public class DBSchemaConnectionWizardPanel extends DBSchemaPanel {
     }
 
     /** @return AWT component which represents UI of this wizard panel */
+    @Override
     public Component getComponent() {
         return getPanelUI();
     }
@@ -70,8 +72,14 @@ final public class DBSchemaConnectionWizardPanel extends DBSchemaPanel {
         return panelUI;
     }
     
+    @Override
     public boolean isValid () {
         return getPanelUI().isInputValid();
+    }
+
+    @Override
+    public HelpCtx getHelp() {
+        return new HelpCtx("dbschema_ctxhelp_wizard"); // NOI18N
     }
 
 }

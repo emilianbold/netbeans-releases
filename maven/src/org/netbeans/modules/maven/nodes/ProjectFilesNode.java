@@ -204,7 +204,7 @@ public class ProjectFilesNode extends AnnotatedAbstractNode {
                 FileObject temp = FileUtil.getConfigFile("Maven2Templates/settings.xml"); //NOI18N
                 DataObject dobj = DataObject.find(temp);
                 DataObject newOne = dobj.createFromTemplate(folder);
-                EditCookie cook = newOne.getCookie(EditCookie.class);
+                EditCookie cook = newOne.getLookup().lookup(EditCookie.class);
                 if (cook != null) {
                     cook.edit();
                 }

@@ -69,12 +69,10 @@ public class MIMESupportResolversTest extends TestCase {
     public void testWrongImplOfGetResolvers() throws Exception {
         MIMEResolver[] all = MIMESupport.getResolvers();
         assertTrue("Error manager race condition activated", ErrMgr.switchDone);
-        assertEquals("there is one", 1, all.length);
-        assertEquals("c1 the original one", Lkp.c1, all[0]);
+        MIMESupportHid.assertNonDeclarativeResolver("c1 is there", Lkp.c1, all);
         
         all = MIMESupport.getResolvers();
-        assertEquals("there is one", 1, all.length);
-        assertEquals("c2 the new one", Lkp.c2, all[0]);
+        MIMESupportHid.assertNonDeclarativeResolver("c2 is there", Lkp.c2, all);
     }
     
     

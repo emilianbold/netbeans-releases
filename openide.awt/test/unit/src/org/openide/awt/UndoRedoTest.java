@@ -79,6 +79,76 @@ public class UndoRedoTest extends NbTestCase implements ChangeListener {
         doUndoRedoTest(ur);
     }
 
+    public void testUndoRedoStable() {
+        class URManager extends UndoRedo.Manager {
+            @Override
+            public UndoableEdit editToBeUndone() {
+                return super.editToBeUndone();
+            }
+
+            @Override
+            public UndoableEdit lastEdit() {
+                return super.lastEdit();
+            }
+        }
+
+        URManager ur = new URManager();
+        MyEdit myEdit = new MyEdit();
+        ur.addEdit(myEdit);
+        assertTrue("Expected undo is possible:", ur.canUndo());
+        assertSame("Expected myEdit:", myEdit, ur.editToBeUndone());
+        ur.undo();
+        assertTrue("Expected redo is possible:", ur.canRedo());
+        ur.redo();
+        
+        // myEdit undo() will fail
+        assertSame("Expected myEdit:", myEdit, ur.editToBeUndone());
+        myEdit.setUndoFails(true);
+        try {
+            ur.undo();
+            fail("Expected CannotUndoException be thrown:");
+        } catch (CannotUndoException ex) {
+            // Expected
+        }
+        assertSame("Expected myEdit:", myEdit, ur.editToBeUndone());
+        
+        // Add extra two non-significant edits and test undo
+        MyEdit nse1 = new MyEdit();
+        nse1.setSignificant(false);
+        ur.addEdit(nse1);
+        MyEdit nse2 = new MyEdit();
+        nse2.setSignificant(false);
+        ur.addEdit(nse2);
+        assertSame("Expected nse2:", nse2, ur.lastEdit());
+        assertSame("Expected myEdit:", myEdit, ur.editToBeUndone());
+        
+        // two non-significant edits will be undone myEdit undo() will fail
+        assertSame("Expected myEdit:", myEdit, ur.editToBeUndone());
+        myEdit.setUndoFails(true);
+        try {
+            ur.undo();
+            fail("Expected CannotUndoException be thrown:");
+        } catch (CannotUndoException ex) {
+            // Expected
+        }
+        assertEquals("One undo expected in nse1", 1, nse1.undo);
+        assertEquals("One undo expected in nse2", 1, nse2.undo);
+        assertEquals("One redo expected in nse1", 1, nse1.redo);
+        assertEquals("One redo expected in nse2", 1, nse2.redo);
+        assertSame("Expected myEdit:", myEdit, ur.editToBeUndone());
+        
+        myEdit.setUndoFails(false);
+        ur.undo();
+        assertEquals("Two undos expected in nse1", 2, nse1.undo);
+        assertEquals("Two undos expected in nse2", 2, nse2.undo);
+        assertEquals("One redo expected in nse1", 1, nse1.redo);
+        assertEquals("One redo expected in nse2", 1, nse2.redo);
+        assertSame("Expected null:", null, ur.editToBeUndone());
+
+        ur.redo();
+        assertSame("Expected myEdit:", myEdit, ur.editToBeUndone());
+    }
+
     private void doUndoRedoTest(UndoRedo.Manager ur) {
         assertFalse("Nothing to undo", ur.canUndo());
         ur.addChangeListener(this);
@@ -113,6 +183,9 @@ public class UndoRedoTest extends NbTestCase implements ChangeListener {
         private int redo;
         private int cnt;
         private boolean ignore;
+        
+        private boolean undoFails;
+        private boolean significant;
 
         public MyEdit() {
             this(false);
@@ -120,6 +193,7 @@ public class UndoRedoTest extends NbTestCase implements ChangeListener {
 
         public MyEdit(boolean ignore) {
             this.ignore = ignore;
+            this.significant = true;
         }
 
         @Override
@@ -131,6 +205,9 @@ public class UndoRedoTest extends NbTestCase implements ChangeListener {
 
         @Override
         public void undo() throws CannotUndoException {
+            if (undoFails) {
+                throw new CannotUndoException();
+            }
             undo++;
         }
 
@@ -168,7 +245,7 @@ public class UndoRedoTest extends NbTestCase implements ChangeListener {
 
         @Override
         public boolean isSignificant() {
-            return true;
+            return significant;
         }
 
         @Override
@@ -185,6 +262,15 @@ public class UndoRedoTest extends NbTestCase implements ChangeListener {
         public String getRedoPresentationName() {
             return "My Redo";
         }
+        
+        void setUndoFails(boolean undoFails) {
+            this.undoFails = undoFails;
+        }
+
+        void setSignificant(boolean significant) {
+            this.significant = significant;
+        }
+
     }
 
 }

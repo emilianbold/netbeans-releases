@@ -218,6 +218,7 @@ public class GroovyVirtualSourceProviderTest extends GroovyTestBase {
                 "public java.lang.Object serviceMethod() throws PostException { return null;}\n" +
                 "public boolean getTransactional() { return (boolean)false;}\n" +
                 "public void setTransactional(boolean value) { }\n" +
+                "public boolean isTransactional() { return (boolean)false;}\n"+
                 "}\n", charSequence);
 
         charSequence = generator.generateClass(classNodes.get(1));

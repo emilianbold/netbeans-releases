@@ -116,6 +116,7 @@ public class SessionImpl extends PersistentObject implements Session {
     private EnvEntry[] envEntries = null;
     private MessageDestinationRef[] messageDestinationRefs = null;
     private boolean localBean = false;
+    private String serviceEndpoint = null;
 
     private PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
     
@@ -354,12 +355,18 @@ public class SessionImpl extends PersistentObject implements Session {
         envEntries = CommonAnnotationHelper.getEnvEntries(getHelper(), getTypeElement());
     }
     
-    
     private void initMessageDestinationRefs() {
         if (messageDestinationRefs != null) {
             return;
         }
         messageDestinationRefs = CommonAnnotationHelper.getMessageDestinationRefs(getHelper(), getTypeElement());
+    }
+
+    private void initServiceEndpoint() {
+        if (serviceEndpoint != null) {
+            return;
+        }
+        serviceEndpoint = CommonAnnotationHelper.getServiceEndpoint(getHelper(), getTypeElement());
     }
 
     public void addPropertyChangeListener(PropertyChangeListener pcl) {
@@ -486,8 +493,8 @@ public class SessionImpl extends PersistentObject implements Session {
     }
     
     public String getServiceEndpoint() throws VersionNotSupportedException {
-        // TODO
-        return null;
+        initServiceEndpoint();
+        return serviceEndpoint;
     }
     
     public String getDefaultDisplayName() {

@@ -45,9 +45,9 @@ package org.netbeans.modules.java.hints.errors;
 
 import com.sun.source.util.TreePath;
 import java.io.IOException;
-import org.netbeans.api.java.source.CompilationInfo;
 import java.util.LinkedList;
 import java.util.List;
+import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.hints.infrastructure.ErrorHintsTestBase;
 import org.netbeans.spi.editor.hints.Fix;
 

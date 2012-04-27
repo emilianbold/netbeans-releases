@@ -76,7 +76,14 @@ public final class Utils {
     private Utils() {
     }
 
-    public static boolean useCompilationPreprocessor(SpecificationVersion javacardVersion) {
+    /**
+     * Determines whether Java Card Classic Platform with given specification 
+     * version can use compilation preprocessor support.
+     * 
+     * @param javacardVersion specification version
+     * @return can use compilation preprocessor support
+     */
+    public static boolean canUseCompilationPreprocessor(SpecificationVersion javacardVersion) {
         return javacardVersion.compareTo(VERSION_PREPROCESSOR_SUPPORTS_FROM) >= 0;
     }
 

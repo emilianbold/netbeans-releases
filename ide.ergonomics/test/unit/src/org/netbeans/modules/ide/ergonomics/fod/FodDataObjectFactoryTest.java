@@ -52,6 +52,7 @@ import junit.framework.Test;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
@@ -154,12 +155,12 @@ public class FodDataObjectFactoryTest extends NbTestCase {
             ParseXMLContentTest.class.getResource("TestBundle.properties")
         );
         ic.add(info);
-        FoDFileSystem.getInstance().refresh();
-        FoDFileSystem.getInstance().waitFinished();
+        FoDLayersProvider.getInstance().refreshForce();
     }
 
 
 
+    @RandomlyFails // ergonomics #3485
     public void testCreateRecognize() throws Exception {
         assertFalse("Autoupdate is disabled", au.isEnabled());
         FileUtil.setMIMEType("huh", "text/x-huh");
@@ -180,9 +181,16 @@ public class FodDataObjectFactoryTest extends NbTestCase {
         assertEquals("Edit cookie is available and same as open one", oc, ec);
         ec.edit();
         assertTrue("Autoupdate is enabled", au.isEnabled());
-        DataObject newObj = DataObject.find(fo);
-        if (obj == newObj) {
-            fail("New object shall be created: " + newObj);
+        for (int i = 0; ; i++) {
+            DataObject newObj = DataObject.find(fo);
+            if (obj == newObj) {
+                if (i < 50) {
+                    Thread.sleep(1000);
+                    continue;
+                }
+                fail("New object shall be created: " + newObj);
+            }
+            break;
         }
         assertFalse("Old is no longer valid", obj.isValid());
 

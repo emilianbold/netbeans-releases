@@ -314,7 +314,9 @@ public class ExtractSuperclassPanel extends JPanel implements CustomRefactoringP
 
         private void initialize() {
             final TreePathHandle sourceType = refactoring.getSourceType();
-            if (sourceType == null) return;
+            if (sourceType == null) {
+                return;
+            }
             
             FileObject fo = sourceType.getFileObject();
             JavaSource js = JavaSource.forFileObject(fo);
@@ -349,17 +351,19 @@ public class ExtractSuperclassPanel extends JPanel implements CustomRefactoringP
             
             for (Tree member : sourceTree.getMembers()) {
                 TreePath memberTreePath = javac.getTrees().getPath(javac.getCompilationUnit(), member);
-                if (javac.getTreeUtilities().isSynthetic(memberTreePath))
-                    continue;
-                
-                Element memberElm = javac.getTrees().getElement(memberTreePath);
-                if (memberElm == null)
-                    continue;
-                
-                if (memberElm.getModifiers().contains(Modifier.PRIVATE)) {
-                    //ignore private members.
+                if (javac.getTreeUtilities().isSynthetic(memberTreePath)) {
                     continue;
                 }
+                
+                Element memberElm = javac.getTrees().getElement(memberTreePath);
+                if (memberElm == null) {
+                    continue;
+                }
+                
+//                if (memberElm.getModifiers().contains(Modifier.PRIVATE)) {
+//                    //ignore private members.
+//                    continue;
+//                }
                 if (memberElm.getKind() == ElementKind.FIELD) {
                     result.add(MemberInfo.create(memberElm, javac));
                 } else if (memberElm.getKind() == ElementKind.METHOD) {

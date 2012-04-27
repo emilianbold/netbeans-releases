@@ -59,8 +59,10 @@ import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.text.Document;
 import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
@@ -126,8 +128,8 @@ public class SourceMultiViewElement extends CloneableEditor
                 if(!(param instanceof ElementHandle)) return;
                 final ElementHandle handle = (ElementHandle)param;
                 try {
-                    JavaSource targetSource = JavaSource.forFileObject(getEditorSupport().getDataObject().getPrimaryFile());
-                    CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
+                    final JavaSource targetSource = JavaSource.forFileObject(getEditorSupport().getDataObject().getPrimaryFile());
+                    final CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
                        public void run(WorkingCopy workingCopy) throws java.io.IOException {
                             workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                             TypeElement webSvc = SourceUtils.
@@ -160,7 +162,14 @@ public class SourceMultiViewElement extends CloneableEditor
                         public void cancel() {
                         }
                     };
-                    targetSource.runModificationTask(task).commit();
+                    targetSource.runWhenScanFinished( new Task<CompilationController>() {
+                        
+                        @Override
+                        public void run( CompilationController arg0 ) throws Exception {
+                            targetSource.runModificationTask(task).commit();                            
+                        }
+                    }, true);
+                    
                 } catch (Exception ex) {
                 }
             }

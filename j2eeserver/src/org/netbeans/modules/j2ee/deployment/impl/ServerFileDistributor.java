@@ -72,7 +72,7 @@ public class ServerFileDistributor extends ServerProgress {
     // valued by RootedEntry's
     private Iterator rootModuleFiles;
     // keyed by child module URL, valued by collection of RootedEntry's
-    private Map childModuleFiles;
+    private Map<String,Iterator<J2eeModule.RootedEntry>> childModuleFiles;
     // keyed by child module URL, valued by collection of J2eeModule's
     private Map childModuleMap;
 
@@ -90,11 +90,11 @@ public class ServerFileDistributor extends ServerProgress {
             J2eeModule source = dtarget.getModule();
             rootModuleFiles = source.getArchiveContents();
             if (source instanceof J2eeApplication) {
-                childModuleFiles = new HashMap();
+                childModuleFiles = new HashMap<String,Iterator<J2eeModule.RootedEntry>>();
                 childModuleMap = new HashMap();
                 J2eeModule[] childModules = ((J2eeApplication)source).getModules();
                 for (int i=0; i<childModules.length; i++) {
-                    Iterator contents = childModules[i].getArchiveContents();
+                    Iterator<J2eeModule.RootedEntry> contents = childModules[i].getArchiveContents();
                     if (contents != null)
                         childModuleFiles.put(childModules[i].getUrl(), contents);
                     childModuleMap.put(childModules[i].getUrl(), childModules[i]);
@@ -154,7 +154,7 @@ public class ServerFileDistributor extends ServerProgress {
             // need to get the ModuleUrl for the child, not the root app... DUH
             String url = incremental.getModuleUrl(childModules[i]);
             destDir = incremental.getDirectoryForModule(childModules[i]);
-            Iterator source = (Iterator) childModuleFiles.get(url);
+            Iterator<J2eeModule.RootedEntry> source = childModuleFiles.get(url);
             if (destDir == null)
                 changes.record(_distribute(childModules[i], lastDeployTime));
             else if (null != source)
@@ -302,7 +302,7 @@ public class ServerFileDistributor extends ServerProgress {
         return mc;
     }
 
-    private AppChanges _distribute(Iterator source, File destDir, TargetModuleID target, long lastDeployTime) throws IOException {
+    private AppChanges _distribute(Iterator<J2eeModule.RootedEntry> source, File destDir, TargetModuleID target, long lastDeployTime) throws IOException {
         AppChanges mc = createModuleChangeDescriptor(target);
         if (source == null) {
             Logger.getLogger("global").log(Level.SEVERE, "There is no contents for " + target); //NOI18N
@@ -310,8 +310,6 @@ public class ServerFileDistributor extends ServerProgress {
         }
         setStatusDistributeRunning(NbBundle.getMessage(ServerFileDistributor.class, "MSG_RunningIncrementalDeploy", target));
         try {
-            //get relative-path-key map from FDL
-            File dir = incremental.getDirectoryForModule(target);
             // mkdirs()/toFileObject is not tolerated any more
             FileObject destRoot = FileUtil.createFolder(destDir);
 
@@ -325,8 +323,8 @@ public class ServerFileDistributor extends ServerProgress {
             }
 
             // iterate through source changes
-            for (Iterator j=source; j.hasNext();) {
-                J2eeModule.RootedEntry entry = (J2eeModule.RootedEntry) j.next();
+            for (Iterator<J2eeModule.RootedEntry> j=source; j.hasNext();) {
+                J2eeModule.RootedEntry entry = j.next();
                 String relativePath = entry.getRelativePath();
                 FileObject sourceFO = entry.getFileObject();
                 FileObject targetFO = (FileObject) destMap.get(relativePath);
@@ -348,7 +346,7 @@ public class ServerFileDistributor extends ServerProgress {
                 return mc;
 
             File[] paths = new File[rPaths.length];
-            for (int n=0; null != configFile && n<rPaths.length; n++) {
+            for (int n = 0; null != configFile && n < rPaths.length; n++) {
                 paths[n] = new File(FileUtil.toFile(destRoot), rPaths[n]);
                 if (null != paths[n] && paths[n].exists() && paths[n].lastModified() > configFile.lastModified())
                     // FIXME destdir
@@ -424,7 +422,7 @@ public class ServerFileDistributor extends ServerProgress {
                 return mc;
 
             File[] paths = new File[rPaths.length];
-            for (int n=0; n<rPaths.length; n++) {
+            for (int n = 0; null != configFile && n < rPaths.length; n++) {
                 File dest = FileUtil.toFile(destRoot);
                 assert dest != null;
                 paths[n] = new File(dest, rPaths[n]);

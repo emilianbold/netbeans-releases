@@ -63,11 +63,11 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.java.hints.declarative.test.TestParser.TestCase;
-import org.netbeans.modules.java.hints.jackpot.spi.HintDescription;
 import org.netbeans.modules.java.hints.jackpot.spi.HintsRunner;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.netbeans.modules.java.hints.providers.spi.HintDescription;
 import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -165,6 +165,7 @@ public class TestPerformer {
                 for (Fix f : ed.getFixes().getFixes()) {
                     //XXX: this fix is automatically added to all hints that do not have any fixes, filtering it out. Should be done more reliably:
                     if (f.getClass().getName().equals("org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory$TopLevelConfigureFix")) continue;
+                    if (f.getClass().getName().equals("org.netbeans.spi.java.hints.ErrorDescriptionFactory$TopLevelConfigureFix")) continue;
                     currentResults.add(getFixResult(src, f));
                 }
 

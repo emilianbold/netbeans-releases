@@ -1139,11 +1139,40 @@ public class Outline extends ETable {
                     } else if( !expanded && expand ) {
                         expandPath(selPath);
                         return;
+                    } else if (expanded && expand && getOutlineModel().getChildCount(selPath.getLastPathComponent()) > 0) {
+                        int row = getSelectedRow() + 1;
+                        if (row < getRowCount()) {
+                            selectCell(row, getSelectedColumn());
+                            return ;
+                        }
+                    } else if (!expanded && !expand) {
+                        TreePath parentPath = selPath.getParentPath();
+                        if (parentPath != null) {
+                            int row = convertRowIndexToView(getLayoutCache().getRowForPath(parentPath));
+                            selectCell(row, getSelectedColumn());
+                            return ;
+                        }
+                    }
+                } else if( null != selPath 
+                           && getOutlineModel().isLeaf(selPath.getLastPathComponent()) ) {
+                    if (!expand) {
+                        TreePath parentPath = selPath.getParentPath();
+                        if (parentPath != null) {
+                            int row = convertRowIndexToView(getLayoutCache().getRowForPath(parentPath));
+                            selectCell(row, getSelectedColumn());
+                            return ;
+                        }
                     }
                 }
+
             }
             if( null != origAction )
                 origAction.actionPerformed(e);
+        }
+        
+        private void selectCell(int row, int col) {
+            changeSelection(row, col, false, false);
+            scrollRectToVisible(getCellRect(row, col, false));
         }
     }
 }

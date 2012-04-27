@@ -132,10 +132,21 @@ public abstract class WinsysInfoForTabbedContainer implements WinsysInfoForTabbe
         return false;
     }
 
+    /**
+     * Check if the header of given TopComponent should be painted in a special
+     * way to indicate that some process is running in that TopComponent.
+     * @param tc
+     * @return True to indicate process being run in the TopComponent, false otherwise.
+     * @since 1.34
+     */
+    public boolean isTopComponentBusy( TopComponent tc ) {
+        return false;
+    }
+
     public static WinsysInfoForTabbedContainer getDefault( WinsysInfoForTabbed winsysInfo ) {
         return new DefaultWinsysInfoForTabbedContainer( winsysInfo );
     }
-    
+
     private static class DefaultWinsysInfoForTabbedContainer extends WinsysInfoForTabbedContainer {
         
         private WinsysInfoForTabbed delegate;

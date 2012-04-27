@@ -195,7 +195,11 @@ public class FilesViewRefTest extends JellyTestCase {
             }
             int result = TestKit.compareThem(expected, actual, false);
             assertEquals("Wrong files in Versioning View", expected.length, result);
-            expected = new String[]{"Locally Deleted", "Locally Deleted", "Locally Deleted", "Locally Deleted", "Locally Deleted", "Locally Deleted", "Locally Added", "Locally Added", "Locally Added", "Locally Added", "Locally Added", "Locally Added"};
+            if (TestKit.getOsName().indexOf("Win") > -1){
+                expected = new String[]{"Locally Deleted", "Locally Deleted", "Locally Deleted", "Locally Deleted", "Locally Deleted", "Locally Deleted", "Locally Added", "Locally Added", "Locally Added", "Locally Copied", "Locally Copied", "Locally Copied"};
+            }else{
+                expected = new String[]{"Locally Deleted", "Locally Deleted", "Locally Deleted", "Locally Deleted", "Locally Deleted", "Locally Deleted", "Locally Added", "Locally Added", "Locally Added", "Locally Added", "Locally Added", "Locally Added"};
+            }
             actual = new String[vo.tabFiles().getRowCount()];
             for (int i = 0; i < vo.tabFiles().getRowCount(); i++) {
                 actual[i] = vo.tabFiles().getValueAt(i, 1).toString().trim();

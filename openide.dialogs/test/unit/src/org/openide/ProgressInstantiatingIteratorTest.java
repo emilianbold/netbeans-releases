@@ -45,14 +45,16 @@ package org.openide;
 
 
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.junit.NbTestSuite;
 
 import java.awt.Component;
+import java.awt.GraphicsEnvironment;
 import java.io.IOException;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.JLabel;
 import javax.swing.event.ChangeListener;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.openide.InstantiatingIteratorTest.Listener;
 import org.openide.util.HelpCtx;
 
@@ -62,7 +64,10 @@ import org.openide.util.HelpCtx;
  */
 public class ProgressInstantiatingIteratorTest extends AsynchronousInstantiatingIteratorTest {
 
-    
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(ProgressInstantiatingIteratorTest.class);
+    }
+
     public ProgressInstantiatingIteratorTest (String name) {
         super(name);
     }

@@ -85,4 +85,26 @@ public final class PostIncludeData {
     public boolean hasDeadBlocks() {
         return deadBlocks != null;
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        if (deadBlocks == null) {
+            sb.append("null"); // NOI18N
+        } else {
+            sb.append("[");//NOI18N
+            for (int i = 0; i < deadBlocks.length; i += 2) {
+                if (i > 0) {
+                    sb.append("][");//NOI18N
+                }
+                sb.append(deadBlocks[i]);
+                sb.append("-");//NOI18N
+                sb.append(deadBlocks[i + 1]);
+            }
+            sb.append("]");//NOI18N
+        }
+        sb.append("\n state {").append(postIncludeMacroState).append("}"); // NOI18N
+        return sb.toString();
+    }
+
 }

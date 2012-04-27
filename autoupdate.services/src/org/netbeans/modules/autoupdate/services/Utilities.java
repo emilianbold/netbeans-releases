@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -63,6 +63,8 @@ import org.netbeans.ModuleManager;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
+import org.netbeans.core.startup.AutomaticDependencies;
+import org.netbeans.core.startup.Main;
 import org.netbeans.core.startup.TopLogging;
 import org.netbeans.modules.autoupdate.updateprovider.DummyModuleInfo;
 import org.netbeans.modules.autoupdate.updateprovider.InstalledModuleProvider;
@@ -102,7 +104,6 @@ public class Utilities {
     public static final String NBM_EXTENTSION = ".nbm";
     public static final String JAR_EXTENSION = ".jar"; //OSGi bundle
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat ("yyyy/MM/dd"); // NOI18N
-    public static final String ATTR_VISIBLE = "AutoUpdate-Show-In-Client";
     public static final String ATTR_ESSENTIAL = "AutoUpdate-Essential-Module";
 
     private static final String[] FIRST_CLASS_MODULES = new String [] {
@@ -663,6 +664,10 @@ public class Utilities {
             UpdateElement el,
             boolean agressive) {
         Set<Dependency> res = new HashSet<Dependency> ();
+        AutomaticDependencies.Report rep = AutomaticDependencies.getDefault().refineDependenciesAndReport(el.getCodeName(), original);
+        if (rep.isModified()) {
+            err.warning(rep.toString());
+        }
         for (Dependency dep : original) {
             Collection<UpdateElement> requestedElements = handleDependency (el, dep, availableInfos, brokenDependencies, agressive);
             if (requestedElements != null) {
@@ -902,7 +907,7 @@ public class Utilities {
         if (mi instanceof Module) {
             Module m = (Module)mi;
             if (specificationVersion == null) {
-                err.log(Level.FINE, "no module {0} for {1}", new Object[] { m, specificationVersion });
+                err.log(Level.FINE, "no module {0} for null version", m);
                 return m;
             } else {
                 SpecificationVersion version = m.getSpecificationVersion();
@@ -911,7 +916,7 @@ public class Utilities {
                     return null;
                 }
                 final int res = version.compareTo(specificationVersion);
-                err.log(Level.FINE, "Comparing versions: {0}.compareTo({1}) = {2}", new Object[]{version, specificationVersion, res});
+                err.log(Level.FINER, "Comparing versions: {0}.compareTo({1}) = {2}", new Object[]{version, specificationVersion, res});
                 return res >= 0 ? m : null;
             }
         }
@@ -1049,15 +1054,7 @@ public class Utilities {
     }
     
     public static boolean isKitModule (ModuleInfo mi) {
-        // XXX: it test can break simple modules mode
-        // should find corresponing UpdateElement and check its type
-        Object o = mi.getAttribute (ATTR_VISIBLE);
-        if (o != null) {
-            return Boolean.parseBoolean(o.toString());
-        }
-        // OSGi bundles should be considered invisible by default since they are typically autoloads.
-        // (NB modules get AutoUpdate-Show-In-Client inserted into the JAR by the build process.)
-        return mi.getAttribute("Bundle-SymbolicName") == null;
+        return Main.getModuleSystem().isShowInAutoUpdateClient(mi);
     }
     
     public static boolean isEssentialModule (ModuleInfo mi) {

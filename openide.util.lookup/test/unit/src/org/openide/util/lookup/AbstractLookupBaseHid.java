@@ -172,6 +172,42 @@ public class AbstractLookupBaseHid extends NbTestCase {
         }
     }
     
+    public void testBeforeLookupIsCalledToInvalidateCaches() {
+        class Before extends ProxyLookup {
+            Object toAdd;
+            
+            Before() {
+                super(instanceLookup);
+            }
+
+            @Override
+            protected void beforeLookup(Template<?> template) {
+                if (toAdd != null) {
+                    ic.add(toAdd);
+                    toAdd = null;
+                }
+            }
+            
+        }
+        Before before = new Before();
+        
+        Lookup query = createLookup(before);
+        
+        before.toAdd = Integer.valueOf(10);
+        
+        Lookup.Result<Long> res = query.lookupResult(Long.class);
+        assertTrue("empty", res.allItems().isEmpty());
+        
+        assertNull("beforeLookup called", before.toAdd);
+        
+        before.toAdd = Long.valueOf(3L);
+        
+        Collection<? extends Lookup.Item<Long>> c = res.allItems();
+        assertEquals("There is One: ", 1, c.size());
+        
+        assertEquals(Long.valueOf(3L), c.iterator().next().getInstance());
+    }
+    
     /** Test if first is really first.
      */
     public void testFirst () {
@@ -1582,7 +1618,8 @@ public class AbstractLookupBaseHid extends NbTestCase {
                 this.ic = ic;
             }
 
-            protected @Override void beforeLookup(Template template) {
+            // override the same method as MetaInfServicesLookup overrides
+            @Override void beforeLookupResult(Template template) {
                 if (ic != null) {
                     ic.add(am);
                     ic = null;
@@ -1595,7 +1632,7 @@ public class AbstractLookupBaseHid extends NbTestCase {
         // adding different Before, but returning the same instance
         // this happens with metaInfServices lookup often, moreover
         // it adds the instance in beforeLookup, which confuses a lot
-        p.setLookups(new Lookup[]{ lookup, new Before() });
+        p.setLookups(new Lookup[]{ lookup, s });
         assertEquals("No change in ActionMap 5", 0, ll.getCount());
         
         
@@ -1618,7 +1655,7 @@ public class AbstractLookupBaseHid extends NbTestCase {
             result.addLookupListener(listeners[i]);
         }
         // initialize listening
-        result.allItems();
+        result.allItems().toArray();
         
         ic.remove(object);
         

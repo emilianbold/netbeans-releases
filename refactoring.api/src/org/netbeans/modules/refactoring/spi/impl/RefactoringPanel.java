@@ -55,15 +55,18 @@ import java.io.Reader;
 import java.io.StringBufferInputStream;
 import java.io.StringReader;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.Collection;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.Map.Entry;
 import java.util.prefs.Preferences;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.parser.ParserDelegator;
-import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -80,15 +83,11 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.awt.Mnemonics;
-import org.openide.awt.StatusDisplayer;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionBounds;
-import org.openide.util.ImageUtilities;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
-import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
+import org.openide.util.*;
 import org.openide.windows.TopComponent;
 
 /**
@@ -96,7 +95,7 @@ import org.openide.windows.TopComponent;
  *
  * @author  Pavel Flaska, Martin Matula
  */
-public class RefactoringPanel extends JPanel implements InvalidationListener {
+public class RefactoringPanel extends JPanel {
     private static final RequestProcessor RP = new RequestProcessor(RefactoringPanel.class.getName(), 1, false, false);
     
     // PRIVATE FIELDS
@@ -130,13 +129,19 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
     private transient JToggleButton logicalViewButton = null;
     private transient JToggleButton physicalViewButton = null;
     private transient JToggleButton customViewButton = null;
+    private JButton stopButton;
+
     private transient ProgressListener progressListener;
+    private transient ProgressListener fuListener;
 
     private transient JButton prevMatch = null;
     private transient JButton nextMatch = null;
     private WeakReference<TopComponent> refCallerTC;
     private boolean inited = false;
     private Component customComponent;
+    private AtomicBoolean cancelRequest = new AtomicBoolean();
+    private int size = 0;
+
 
     
     static Image PACKAGE_BADGE = ImageUtilities.loadImage( "org/netbeans/spi/java/project/support/ui/packageBadge.gif" ); // NOI18N
@@ -150,6 +155,9 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
             refCallerTC = new WeakReference<TopComponent>(caller);
         this.ui = ui;
         this.isQuery = ui.isQuery();
+        if (isQuery) {
+            ui.getRefactoring().addProgressListener(fuListener = new FUListener());
+        }
         refresh(true);
     }
     
@@ -158,6 +166,9 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
         this.ui = ui;
         this.isQuery = ui.isQuery();
         this.callback = callback;
+        if (isQuery) {
+            ui.getRefactoring().addProgressListener(fuListener = new FUListener());
+        }
         initialize();
         refresh(false);
     }
@@ -328,16 +339,29 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
             NbBundle.getMessage(RefactoringPanel.class, "HINT_prevMatch") // NOI18N
         );
         prevMatch.addActionListener(getButtonListener());
+
+                stopButton = new JButton(
+            ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/api/resources/stop.png", false));
+        
+        stopButton.setMaximumSize(dim);
+        stopButton.setMinimumSize(dim);
+        stopButton.setPreferredSize(dim);
+        stopButton.setToolTipText(
+            NbBundle.getMessage(RefactoringPanel.class, "HINT_stop") // NOI18N
+        );
+        stopButton.addActionListener(getButtonListener());
+        
         
         toolBar.add(refreshButton);
-        toolBar.add(expandButton);
+        toolBar.add(prevMatch);
+        toolBar.add(nextMatch);
         toolBar.add(logicalViewButton);
         toolBar.add(physicalViewButton);
+        toolBar.add(expandButton);
         if (ui instanceof RefactoringCustomUI) {
             toolBar.add(customViewButton);
         }
-        toolBar.add(prevMatch);
-        toolBar.add(nextMatch);
+        toolBar.add(stopButton);
         
         return toolBar;
     }
@@ -445,9 +469,30 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
         String displayName = representedObject.getText(isLogical);
         Icon icon = representedObject.getIcon();
         
-        node = new CheckNode(representedObject, displayName, icon);
-        CheckNode parentNode = parent == null ? root : createNode(parent, nodes, root);
+        node = new CheckNode(representedObject, displayName, icon, isQuery);
+        final CheckNode parentNode = parent == null ? root : createNode(parent, nodes, root);
+ 
         parentNode.add(node);
+        
+        if (isQuery) {
+            final int childCount = parentNode.getChildCount();
+            try {
+                SwingUtilities.invokeAndWait(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        if (tree!=null) {
+                            ((DefaultTreeModel) tree.getModel()).nodesWereInserted(parentNode, new int[]{childCount-1});
+                            tree.expandPath(new TreePath(parentNode.getPath()));
+                        }
+                    }
+                });
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InvocationTargetException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
         
         if (representedObject instanceof SourceGroup) {
             //workaround for issue 52541
@@ -461,7 +506,7 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
     private static final String getString(String key) {
         return NbBundle.getMessage(RefactoringPanel.class, key);
     }
-
+    
     /**
      * Overrides default ExplorerPanel behaviour. Does nothing now.
      */
@@ -473,6 +518,18 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
      */
     private void refactor() {
         checkEventThread();
+        if (!checkTimeStamps()) {
+            if (JOptionPane.showConfirmDialog(
+                    this,
+                    NbBundle.getMessage(RefactoringPanel.class, "MSG_ConfirmRefresh"),
+                    NbBundle.getMessage(RefactoringPanel.class, "MSG_FileModified"),
+                    JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION) {
+                refresh(true);
+                return;
+            }   else {
+            return;
+            }
+        }
         disableComponents(RefactoringPanel.this);
         progressListener = new ProgressL();
         RP.post(new Runnable() {
@@ -574,7 +631,10 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
         requestFocus();
     }
     
-    @Override
+    /**
+     * TODO: probably useless
+     * remove
+     */
     public void invalidateObject() {
         if (isQuery) {
             return;
@@ -610,7 +670,7 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
                     close();
                 }
                 return;
-            } else if (tempSession.getRefactoringElements().isEmpty() && !scanning) {
+            } else if (tempSession.getRefactoringElements().isEmpty() && !scanning && !isQuery) {
                 DialogDescriptor nd = new DialogDescriptor(NbBundle.getMessage(ParametersPanel.class, "MSG_NoPatternsFound"),
                                         ui.getName(),
                                         true,
@@ -626,8 +686,13 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
             session = tempSession;
         }
         
+        final RefactoringPanelContainer cont = isQuery ? RefactoringPanelContainer.getUsagesComponent() : RefactoringPanelContainer.getRefactoringComponent();
+        cont.makeBusy(true);
         initialize();
 
+        cancelRequest.set(false);
+        stopButton.setVisible(isQuery);
+        stopButton.setEnabled(showParametersPanel);
         final String description = ui.getDescription();
         setToolTipText("<html>" + description + "</html>"); // NOI18N
         final Collection<RefactoringElement> elements = session.getRefactoringElements();
@@ -652,7 +717,8 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
             RP.post(new Runnable() {
                 @Override
                 public void run() {
-                    Set<CloneableEditorSupport> editorSupports = new HashSet<CloneableEditorSupport>();
+                    setTreeControlsEnabled(false);
+                    Set<FileObject> fileObjects = new HashSet<FileObject>();
                     int errorsNum = 0;
                     if (!isQuery) {
                         for (Iterator iter = elements.iterator(); iter.hasNext(); ) {
@@ -662,55 +728,70 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
                             }
                         }
                     }
-                    int occurencesNum = elements.size();
-                    StringBuffer errorsDesc = new StringBuffer();
-                    errorsDesc.append(" [" + occurencesNum); // NOI18N
-                    errorsDesc.append(' ');
-                    errorsDesc.append(occurencesNum == 1 ?
-                        NbBundle.getMessage(RefactoringPanel.class, "LBL_Occurence") :
-                        NbBundle.getMessage(RefactoringPanel.class, "LBL_Occurences")
-                        );
-                    if (errorsNum > 0) {
-                        errorsDesc.append(',');
-                        errorsDesc.append(' ');
-                        errorsDesc.append("<font color=#CC0000>" + errorsNum); // NOI18N
-                        errorsDesc.append(' ');
-                        errorsDesc.append(errorsNum == 1 ?
-                            NbBundle.getMessage(RefactoringPanel.class, "LBL_Error") :
-                            NbBundle.getMessage(RefactoringPanel.class, "LBL_Errors")
-                            );
-                        errorsDesc.append("</font>"); // NOI18N
+                    StringBuffer errorsDesc = getErrorDesc(errorsNum, isQuery?size:elements.size());
+                    final CheckNode root = new CheckNode(ui, description + errorsDesc.toString() + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;",ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/api/resources/" + (isQuery ? "findusages.png" : "refactoring.gif"), false), isQuery);
+                    final Map<Object, CheckNode> nodes = new HashMap<Object, CheckNode>();
+                    
+                    if (isQuery && showParametersPanel) {
+                        setupInstantTree(root, showParametersPanel);
                     }
-                    errorsDesc.append(']');
-                    final CheckNode root = new CheckNode(ui, description + errorsDesc.toString(),ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/api/resources/" + (isQuery ? "findusages.png" : "refactoring.gif"), false));
-                    Map<Object, CheckNode> nodes = new HashMap<Object, CheckNode>();
                     
-                    final Cursor old = getCursor();
-                    setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                    
-                    progressHandle.start(elements.size()/10);
+                    if (isQuery) {
+                        if (!showParametersPanel) {
+                            progressHandle.start();
+                        }
+                    } else {
+                        progressHandle.start(elements.size()/10);
+                    }
+
                     int i=0;
                     try {
                         //[retouche]                    JavaModel.getJavaRepository().beginTrans(false);
                         try {
                             // ui.getRefactoring().setClassPath();
                             for (Iterator it = elements.iterator(); it.hasNext();i++) {
-                                RefactoringElement e = (RefactoringElement) it.next();
+                                final RefactoringElement e = (RefactoringElement) it.next();
                                 createNode(TreeElementFactory.getTreeElement(e), nodes, root);
-                                PositionBounds pb = e.getPosition();
-                                if (pb != null) {
-                                    CloneableEditorSupport ces = pb.getBegin().getCloneableEditorSupport();
-                                    editorSupports.add(ces);
-                                }
                                 
-                                if (i % 10 == 0)
-                                    progressHandle.progress(i/10);
+                                if (isQuery && showParametersPanel) {
+                                    if (cancelRequest.get()) {
+                                        break;
+                                    }
+                                    tree.expandRow(0);
+
+                                    final int in = i;
+                                    final boolean last = !it.hasNext();
+                                    final int occurrences = i + 1;
+                                    size = occurrences;
+                                    if (occurrences % 10 == 0 || last) {
+                                        SwingUtilities.invokeLater(new Runnable() {
+
+                                            @Override
+                                            public void run() {
+                                                root.setNodeLabel(description + getErrorDesc(0, occurrences));
+                                                if (last) {
+                                                    tree.repaint();
+                                                }
+                                                
+                                            }
+                                        });
+                                    }
+                                }
+                                PositionBounds pb = e.getPosition();
+                                fileObjects.add(e.getParentFile());
+                                
+                                if (!isQuery) {
+                                    if (i % 10 == 0) {
+                                        progressHandle.progress(i / 10);
+                                    }
+                                }
                             }
                         } finally {
                             //[retouche]                        JavaModel.getJavaRepository().endTrans();
                         }
-                        UndoManager.getDefault().watch(editorSupports, RefactoringPanel.this);
-                        sortTree(root);
+                       
+                        //UndoManager.getDefault().watch(editorSupports, RefactoringPanel.this);
+                        storeTimeStamps(fileObjects);
                     } catch (RuntimeException t) {
                         cleanupTreeElements();
                         throw t;
@@ -719,68 +800,49 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
                         throw e;
                     } finally {
                         progressHandle.finish();
-                        setCursor(old);
+                        cont.makeBusy(false);
+                        setTreeControlsEnabled(true);
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                stopButton.setEnabled(false);
+                            }
+                        });
                     }
                     
-                    SwingUtilities.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (tree == null) {
-                                // add panel with appropriate content
-                                tree = new JTree(root);
-                                if ("Aqua".equals(UIManager.getLookAndFeel().getID())) { //NOI18N
-                                    tree.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
-                                }
-                                ToolTipManager.sharedInstance().registerComponent(tree);
-                                tree.setCellRenderer(new CheckRenderer(isQuery, tree.getBackground()));
-                                String s = NbBundle.getMessage(RefactoringPanel.class, "ACSD_usagesTree"); // NOI18N
-                                tree.getAccessibleContext().setAccessibleDescription(s);
-                                tree.getAccessibleContext().setAccessibleName(s);
-                                CheckNodeListener l = new CheckNodeListener(isQuery);
-                                tree.addMouseListener(l);
-                                tree.addKeyListener(l);
-                                tree.setToggleClickCount(0);
-                                tree.setTransferHandler(new TransferHandlerImpl());
-                                scrollPane = new JScrollPane(tree);
-                                    scrollPane.setBorder(new EmptyBorder(0,0,0,0));
-                                RefactoringPanel.this.left.add(scrollPane, BorderLayout.CENTER);
-                                RefactoringPanel.this.validate();
-                            } else {
-                                tree.setModel(new DefaultTreeModel(root));
-                            }
-                            tree.setRowHeight((int) ((CheckRenderer) tree.getCellRenderer()).getPreferredSize().getHeight());
-                            
-                            if (showParametersPanel) {
-                                splitPane.setDividerLocation(0.3);
-                                if (elements.size() < MAX_ROWS) {
-                                    expandAll();
-                                    if (!isQuery)
-                                        selectNextUsage();
-                                } else
-                                    expandButton.setSelected(false);
-                            } else {
-                                if (expandButton.isSelected()) {
-                                    expandAll();
-                                    if (!isQuery)
-                                        selectNextUsage();
-                                } else
-                                    expandButton.setSelected(false);
-                            }
-                            
-                            tree.setSelectionRow(0);
-                            requestFocus();
-                            setRefactoringEnabled(true, true);
-                            if (parametersPanel!=null && (Boolean) parametersPanel.getClientProperty(ParametersPanel.JUMP_TO_FIRST_OCCURENCE)) {
-                                selectNextUsage();
-                            }
-                        }
-                    });
+                    if (!(isQuery && showParametersPanel)) {
+                        setupTree(root, showParametersPanel, elements.size());
+                    }
+                    
                 }
+
+                private StringBuffer getErrorDesc(int errorsNum, int occurencesNum) throws MissingResourceException {
+                    StringBuffer errorsDesc = new StringBuffer();
+                    errorsDesc.append(" [").append(occurencesNum); // NOI18N
+                    errorsDesc.append(' ');
+                    errorsDesc.append(occurencesNum == 1 ?
+                        NbBundle.getMessage(RefactoringPanel.class, "LBL_Occurence") :
+                        NbBundle.getMessage(RefactoringPanel.class, "LBL_Occurences")
+                        );
+                    if (errorsNum > 0) {
+                        errorsDesc.append(',');
+                        errorsDesc.append(' ');
+                        errorsDesc.append("<font color=#CC0000>").append(errorsNum); // NOI18N
+                        errorsDesc.append(' ');
+                        errorsDesc.append(errorsNum == 1 ?
+                            NbBundle.getMessage(RefactoringPanel.class, "LBL_Error") :
+                            NbBundle.getMessage(RefactoringPanel.class, "LBL_Errors")
+                            );
+                        errorsDesc.append("</font>"); // NOI18N
+                    }
+                    errorsDesc.append(']');
+                    return errorsDesc;
+                }
+
             });
         }
         if (!isVisible) {
             // dock it into output window area and display
-            RefactoringPanelContainer cont = isQuery ? RefactoringPanelContainer.getUsagesComponent() : RefactoringPanelContainer.getRefactoringComponent();
             cont.open();
             cont.requestActive();
             if (isQuery && parametersPanel!=null && !parametersPanel.isCreateNewTab()) {
@@ -789,40 +851,135 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
             cont.addPanel(this);
             isVisible = true;
         }
-        setRefactoringEnabled(false, true);
+        if (!isQuery)
+            setRefactoringEnabled(false, true);
     }
     
-    private void sortTree(CheckNode root) {
-        ArrayList<CheckNode> nodes = new ArrayList<CheckNode>();
-        ArrayList<CheckNode> leaves = new ArrayList<CheckNode>();
-        for (int i = 0; i < root.getChildCount(); i++){
-                CheckNode node = (CheckNode) root.getChildAt(i);
-                if(!node.isLeaf()) {
-                        sortTree(node);
-                        nodes.add(node);
-                }
-        }
-        for (int i = 0; i < root.getChildCount(); i++){
-            CheckNode node = (CheckNode) root.getChildAt(i);
-            if (node.isLeaf()) {
-                leaves.add(node);
-            }
-        }
-        Collections.sort(nodes, new Comparator<CheckNode>() {
+    private void setTreeControlsEnabled(final boolean b) {
+        SwingUtilities.invokeLater(new Runnable() {
+
             @Override
-            public int compare(CheckNode o1, CheckNode o2) {
-                return o1.getLabel().compareTo(o2.getLabel());
+            public void run() {
+                expandButton.setEnabled(b);
+                logicalViewButton.setEnabled(b);
+                physicalViewButton.setEnabled(b);
+                if (customViewButton != null)
+                    customViewButton.setEnabled(b);
             }
         });
-        root.removeAllChildren();
-        for (CheckNode checkNode : nodes) {
-            root.add(checkNode);
-        }
-        for (CheckNode checkNode : leaves) {
-            root.add(checkNode);
-        }
     }
     
+    
+    private void setupTree(final CheckNode root, final boolean showParametersPanel, final int size) {
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                createTree(root);
+
+                if (showParametersPanel) {
+                    splitPane.setDividerLocation(0.3);
+                    if (size < MAX_ROWS) {
+                        expandAll();
+                        if (!isQuery) {
+                            selectNextUsage();
+                        }
+                    } else {
+                        expandButton.setSelected(false);
+                    }
+                } else {
+                    if (expandButton.isSelected()) {
+                        expandAll();
+                        if (!isQuery) {
+                            selectNextUsage();
+                        }
+                    } else {
+                        expandButton.setSelected(false);
+                    }
+                }
+
+                tree.setSelectionRow(0);
+                requestFocus();
+                setRefactoringEnabled(true, true);
+                if (parametersPanel != null && (Boolean) parametersPanel.getClientProperty(ParametersPanel.JUMP_TO_FIRST_OCCURENCE)) {
+                    selectNextUsage();
+                }
+            }
+        });
+    }
+    
+     private Map<FileObject, Long> timeStamps = new HashMap<FileObject, Long>();
+     
+     private void storeTimeStamps(Set<FileObject> fileObjects) {
+         timeStamps.clear();
+         for (FileObject fo:fileObjects) {
+             timeStamps.put(fo, fo.lastModified().getTime());
+         }
+     }
+     
+     /**
+      * @return true if timestamps are OK
+      */
+     private boolean checkTimeStamps() {
+         Set<FileObject> modified = getModifiedFileObjects();
+         for (Entry<FileObject, Long> entry: timeStamps.entrySet()) {
+             if (modified.contains(entry.getKey()))
+                 return false;
+             if (!entry.getKey().isValid())
+                 return false;
+             if (entry.getKey().lastModified().getTime() != entry.getValue())
+                 return false;
+         }
+         return true;
+     }
+     
+     private Set<FileObject> getModifiedFileObjects() {
+         Set<FileObject> result = new HashSet();
+         for (DataObject dob: DataObject.getRegistry().getModified()) {
+             result.add(dob.getPrimaryFile());
+         }
+         return result;
+     }
+    
+    private void createTree(TreeNode root) throws MissingResourceException {
+        if (tree == null) {
+            // add panel with appropriate content
+            tree = new JTree(root);
+            if ("Aqua".equals(UIManager.getLookAndFeel().getID())) { //NOI18N
+                tree.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
+            }
+            ToolTipManager.sharedInstance().registerComponent(tree);
+            tree.setCellRenderer(new CheckRenderer(isQuery, tree.getBackground()));
+            String s = NbBundle.getMessage(RefactoringPanel.class, "ACSD_usagesTree"); // NOI18N
+            tree.getAccessibleContext().setAccessibleDescription(s);
+            tree.getAccessibleContext().setAccessibleName(s);
+            CheckNodeListener l = new CheckNodeListener(isQuery);
+            tree.addMouseListener(l);
+            tree.addKeyListener(l);
+            tree.setToggleClickCount(0);
+            tree.setTransferHandler(new TransferHandlerImpl());
+            scrollPane = new JScrollPane(tree);
+            scrollPane.setBorder(new EmptyBorder(0, 0, 0, 0));
+            RefactoringPanel.this.left.add(scrollPane, BorderLayout.CENTER);
+            RefactoringPanel.this.validate();
+        } else {
+            tree.setModel(new DefaultTreeModel(root));
+        }
+        tree.setRowHeight((int) ((CheckRenderer) tree.getCellRenderer()).getPreferredSize().getHeight());
+    }
+
+    private void setupInstantTree(final CheckNode root, final boolean showParametersPanel) {
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                createTree(root);
+                tree.setSelectionRow(0);
+                requestFocus();
+            }
+        });
+    }    
+                
     @Override
     public void requestFocus() {
         super.requestFocus();
@@ -938,11 +1095,20 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
                 selectNextUsage();
             } else if (o == prevMatch) {
                 selectPrevUsage();
+            } else if (o == stopButton) {
+                stopSearch();
             }
         }
+
     } // end ButtonL
     ////////////////////////////////////////////////////////////////////////////
 
+    private void stopSearch() {
+        stopButton.setEnabled(false);
+        cancelRequest.set(true);
+        ui.getRefactoring().cancelRequest();
+    }
+    
     private static String normalize(String input) {
         int size = input.length();
         char[] c = new char[size];
@@ -998,19 +1164,23 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
     } */
     
     protected void closeNotify() {
-        UndoWatcher.stopWatching(this);
+        if (fuListener!=null) {
+            ui.getRefactoring().removeProgressListener(fuListener);
+        }
+        timeStamps.clear();
+        //UndoWatcher.stopWatching(this);
         if (tree!=null) {
             ToolTipManager.sharedInstance().unregisterComponent(tree);
             scrollPane.getViewport().remove(tree);
         }
         if (scrollPane!=null)
             scrollPane.setViewport(null);
-        if (refCallerTC != null) {
-            TopComponent tc = refCallerTC.get();
-            if (tc != null && tc.isShowing()) {
-                tc.requestActive();
-            }
-        }
+//        if (refCallerTC != null) {
+//            TopComponent tc = refCallerTC.get();
+//            if (tc != null && tc.isShowing()) {
+//                tc.requestActive();
+//            }
+//        }
         cleanupTreeElements();
         PreviewManager.getDefault().clean(this);
         tree = null;
@@ -1055,6 +1225,7 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
                     handle.start(event.getCount());
                     d.setVisible(true);
                 }
+
             });
         }
         
@@ -1083,6 +1254,64 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
                     d.setVisible(false);
                 }
             });
+        }
+    }
+   
+    private class FUListener implements ProgressListener, Cancellable {
+
+        private ProgressHandle handle;
+        private boolean isIndeterminate;
+
+        @Override
+        public void start(final ProgressEvent event) {
+            handle = ProgressHandleFactory.createHandle(getMessage(event), this);
+            if (event.getCount() == -1) {
+                handle.start();
+                handle.switchToIndeterminate();
+                isIndeterminate = true;
+            } else {
+                handle.start(event.getCount());
+                isIndeterminate = false;
+            }
+        }
+
+        @Override
+        public void step(ProgressEvent event) {
+            if (handle == null) {
+                return;
+            }
+
+            if (isIndeterminate && event.getCount() > 0) {
+                handle.switchToDeterminate(event.getCount());
+                handle.setDisplayName(getMessage(event));
+                isIndeterminate = false;
+            } else {
+                handle.progress(isIndeterminate ? -2 : event.getCount());
+            }
+        }
+
+        @Override
+        public void stop(final ProgressEvent event) {
+            handle.finish();
+        }
+
+        private String getMessage(ProgressEvent event) {
+            switch (event.getOperationType()) {
+                case AbstractRefactoring.PARAMETERS_CHECK:
+                    return NbBundle.getMessage(ParametersPanel.class, "LBL_ParametersCheck");
+                case AbstractRefactoring.PREPARE:
+                    return NbBundle.getMessage(ParametersPanel.class, "LBL_Prepare");
+                case AbstractRefactoring.PRE_CHECK:
+                    return NbBundle.getMessage(ParametersPanel.class, "LBL_PreCheck");
+                default:
+                    return NbBundle.getMessage(ParametersPanel.class, "LBL_Usages");
+            }
+        }
+
+        @Override
+        public boolean cancel() {
+            stopSearch();
+            return true;
         }
     }
 

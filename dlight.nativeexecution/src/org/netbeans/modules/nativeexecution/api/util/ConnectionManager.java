@@ -133,7 +133,7 @@ public final class ConnectionManager {
                 }
             });
         }
-        restoreRecentConnectionsList();
+        restoreRecentConnectionsList();        
     }
 
     public void addConnectionListener(ConnectionListener listener) {
@@ -284,20 +284,20 @@ public final class ConnectionManager {
     private void initiateConnection(final ExecutionEnvironment env, final JSch jsch) throws IOException, CancellationException {
         JSchConnectionTask connectionTask = connectionTasks.get(env);
         
-        if (connectionTask == null) {
-            JSchConnectionTask newTask = new JSchConnectionTask(jsch, env);
-            JSchConnectionTask oldTask = connectionTasks.putIfAbsent(env, newTask);
-            if (oldTask != null) {
-                connectionTask = oldTask;
-            } else {
-                connectionTask = newTask;
-                connectionTask.start();
-            }
-        }
-        
         try {
+            if (connectionTask == null) {
+                JSchConnectionTask newTask = new JSchConnectionTask(jsch, env);
+                JSchConnectionTask oldTask = connectionTasks.putIfAbsent(env, newTask);
+                if (oldTask != null) {
+                    connectionTask = oldTask;
+                } else {
+                    connectionTask = newTask;
+                    connectionTask.start();
+                }
+            }
+
             JSchChannelsSupport cs = connectionTask.getResult();
-            
+
             if (cs != null) {
                 if (!cs.isConnected()) {
                     throw new IOException("JSchChannelsSupport lost connection with " + env.getDisplayName() + "during initialization "); // NOI18N
@@ -315,6 +315,9 @@ public final class ConnectionManager {
                         // Note that AUTH_FAIL is generated not only on bad password,
                         // but on socket timeout as well. These cases are
                         // indistinguishable based on information from JSch.
+                        if (problem.cause instanceof Error) {
+                            log.log(Level.INFO, "Error when connecting " + env, problem.cause); //NOI18N
+                        }
                         throw new IOException(env.getDisplayName() + ": " + problem.type.name(), problem.cause); // NOI18N
                 }
             }
@@ -333,6 +336,7 @@ public final class ConnectionManager {
     }
 
     public static ConnectionManager getInstance() {
+        HostInfoCache.initializeIfNeeded();
         return instance;
     }
 
@@ -362,7 +366,7 @@ public final class ConnectionManager {
         return action;
     }
 
-    private void reconnect(ExecutionEnvironment env) throws IOException {
+    private void reconnect(ExecutionEnvironment env) throws IOException, InterruptedException {
         synchronized (channelsSupportLock) {
             if (channelsSupport.containsKey(env)) {
                 try {
@@ -492,7 +496,11 @@ public final class ConnectionManager {
 
         @Override
         public void reconnect(final ExecutionEnvironment env) throws IOException {
-            instance.reconnect(env);
+            try {
+                instance.reconnect(env);
+            } catch (InterruptedException ex) {
+                throw new IOException(ex);
+            }
         }
 
         @Override

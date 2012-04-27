@@ -71,7 +71,10 @@ public final class Doctrine2RunCommandAction extends RunCommandAction {
         Doctrine2PhpFrameworkProvider.getInstance().getFrameworkCommandSupport(phpModule).runCommand();
     }
 
-    @Messages("LBL_Doctrine2Action=Doctrine2: {0}")
+    @Messages({
+        "# {0} - command name",
+        "LBL_Doctrine2Action=Doctrine2: {0}"
+    })
     @Override
     protected String getFullName() {
         return Bundle.LBL_Doctrine2Action(getPureName());

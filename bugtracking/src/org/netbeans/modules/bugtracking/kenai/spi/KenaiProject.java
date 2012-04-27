@@ -43,8 +43,8 @@
 package org.netbeans.modules.bugtracking.kenai.spi;
 
 import java.net.URL;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiSupport.BugtrackingType;
-import org.netbeans.modules.bugtracking.spi.Query;
+import org.netbeans.modules.bugtracking.api.Query;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiBugtrackingConnector.BugtrackingType;
 
 /**
  * Wrapper for a KenaiProject instance returned by kenai

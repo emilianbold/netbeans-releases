@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
+import org.netbeans.modules.cnd.modelimpl.content.file.ReferencesIndex;
 import java.io.IOException;
 import java.io.PrintWriter;
 import org.netbeans.modules.cnd.api.model.*;
@@ -75,6 +76,7 @@ import org.netbeans.modules.cnd.modelimpl.textcache.UniqueNameCache;
 import org.netbeans.modules.cnd.modelimpl.repository.KeyManager;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDManager;
+import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -118,6 +120,24 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
 ////	    }
 ////	}
 //    }
+    static boolean isClosedProject(Key startFileProject) {
+        ModelImpl instance = ModelSupport.instance().getModel();
+        if (instance != null) {
+            return instance.isClosedImpl(startFileProject);
+        }
+        return true;
+    }
+
+    private boolean isClosedImpl(Key proj) {
+        Collection<CsmUID<CsmProject>> vals = new ArrayList<CsmUID<CsmProject>>(platf2csm.values());
+        for (CsmUID<CsmProject> csmUID : vals) {
+            if (proj.equals(RepositoryUtils.UIDtoKey(csmUID))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public CsmProject findProject(Object id) {
         ProjectBase prj = null;
         if (id != null) {
@@ -575,7 +595,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         }
     }
 
-    public void suspend() {
+    private void suspend() {
         if (TraceFlags.TRACE_MODEL_STATE) {
             System.err.println("ModelImpl.suspend");
         }
@@ -583,7 +603,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         ParserQueue.instance().suspend();
     }
 
-    public void resume() {
+    private void resume() {
         if (TraceFlags.TRACE_MODEL_STATE) {
             System.err.println("ModelImpl.resume");
         }
@@ -771,8 +791,10 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         Collection<Object> platformProjects = new ArrayList<Object>();
         for (ProjectBase projectBase : toReparse) {
             final Object platformProject = projectBase.getPlatformProject();
-            platformProjects.add(platformProject);
-            closeProject(platformProject, true);
+            if (platformProject != null) {
+                platformProjects.add(platformProject);
+                closeProject(platformProject, true);
+            }
         }
         for (LibProjectImpl lib : libs) {
             Object platformProject = lib.getPlatformProject();
@@ -839,7 +861,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
                     }
                 }
                 if (withContainers) {
-                    ((ProjectBase) prj).traceFileContainer(printOut);
+                    ProjectBase.dumpFileContainer(prj, printOut);
                 }
             } else {
                 printOut.printf("Project has unexpected class type %s\n", prj.getClass().getName());// NOI18N

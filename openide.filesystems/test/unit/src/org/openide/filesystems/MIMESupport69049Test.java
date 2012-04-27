@@ -46,7 +46,6 @@ package org.openide.filesystems;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import junit.framework.*;
 import java.util.*;
 import java.util.logging.Level;
 import org.netbeans.junit.NbTestCase;
@@ -145,9 +144,7 @@ public class MIMESupport69049Test extends NbTestCase {
                     throw ex;
                 }
 
-                assertNotNull("result was computed", all);
-                assertEquals("There is one", 1, all.length);
-                assertEquals("There is C1", Lkp.c1, all[0]);
+                MIMESupportHid.assertNonDeclarativeResolver("c1 is there", Lkp.c1, all);
             }
         }
         

@@ -56,6 +56,7 @@ import org.netbeans.modules.parsing.impl.indexing.CancelRequest;
 import org.netbeans.modules.parsing.impl.indexing.IndexFactoryImpl;
 import org.netbeans.modules.parsing.impl.indexing.LogContext;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
+import org.netbeans.modules.parsing.impl.indexing.lucene.LayeredDocumentIndex;
 import org.netbeans.modules.parsing.impl.indexing.lucene.LuceneIndexFactory;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
 import org.openide.filesystems.FileObject;
@@ -79,6 +80,7 @@ public final class Context {
     private final boolean checkForEditorModifications;
     private final boolean sourceForBinaryRoot;
     private final CancelRequest cancelRequest;
+    private final SuspendStatus suspendedStatus;
     private final LogContext logContext;
     private final Map<String,Object> props;
     private FileObject indexFolder;
@@ -94,7 +96,8 @@ public final class Context {
              final IndexFactoryImpl factory, boolean followUpJob,
              final boolean checkForEditorModifications,
              final boolean sourceForBinaryRoot,
-             final CancelRequest cancelRequest,
+             @NonNull final SuspendStatus suspendedStatus,
+             @NullAllowed final CancelRequest cancelRequest,
              @NullAllowed final LogContext logContext
     ) throws IOException {
         assert indexBaseFolder != null;
@@ -109,6 +112,7 @@ public final class Context {
         this.checkForEditorModifications = checkForEditorModifications;
         this.sourceForBinaryRoot = sourceForBinaryRoot;
         this.cancelRequest = cancelRequest;
+        this.suspendedStatus = suspendedStatus;
         this.logContext = logContext;
         this.props = new HashMap<String, Object>();
     }
@@ -186,7 +190,9 @@ public final class Context {
                 false,
                 true,
                 true,
-                LogContext.create(LogContext.EventType.INDEXER, null, logContext));
+                LogContext.create(LogContext.EventType.INDEXER, null, logContext).
+                    withRoot(root).addFiles(files)
+                );
     }
 
     /**
@@ -256,6 +262,17 @@ public final class Context {
     public boolean isCancelled() {
         return cancelRequest == null ? false : cancelRequest.isRaised();
     }
+    
+    /**
+     * Returns {@link SuspendStatus} providing information
+     * about indexing suspension.
+     * @return the {@link SuspendStatus}
+     * @since 1.52
+     */
+    @NonNull
+    public SuspendStatus getSuspendStatus() {
+        return suspendedStatus;
+    }
 
     // -----------------------------------------------------------------------
     // Package private implementation
@@ -276,6 +293,14 @@ public final class Context {
     void attachIndexingSupport(IndexingSupport support) {
         assert this.indexingSupport == null;
         this.indexingSupport = support;
+        try {
+            final LayeredDocumentIndex index = this.factory.getIndex(getIndexFolder());
+            if (index != null) {
+                index.begin();
+            }
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
+        }
     }
 
     IndexingSupport getAttachedIndexingSupport() {

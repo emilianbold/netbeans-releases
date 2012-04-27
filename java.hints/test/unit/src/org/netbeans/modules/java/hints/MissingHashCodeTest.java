@@ -43,39 +43,56 @@
  */
 package org.netbeans.modules.java.hints;
 
-import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.hints.test.api.HintTest;
 
 /**
  *
  * @author Jaroslav Tulach
  */
-public class MissingHashCodeTest extends TestBase {
+public class MissingHashCodeTest extends NbTestCase {
 
     public MissingHashCodeTest(String testName) {
-        super(testName, MissingHashCode.class);
+        super(testName);
     }
 
     public void testMissingHashCode() throws Exception {
         String before = "package test; public class Test extends Object {" + " public boolean ";
         String after = " equals(Object snd) {" + "  return snd != null && getClass().equals(snd.getClass());" + " }" + "}";
 
-        performAnalysisTest("test/Test.java", before + after, "0:65-0:71:verifier:Generate missing hashCode()");
+        HintTest
+                .create()
+                .input(before + after)
+                .run(MissingHashCode.class)
+                .assertWarnings("0:65-0:71:verifier:MSG_GenHashCode");
     }
 
     public void testMissingEquals() throws Exception {
         String before = "package test; public class Test extends Object {" + " public int ";
         String after = " hashCode() {" + "  return 1;" + " }" + "}";
 
-        performAnalysisTest("test/Test.java", before + after, "0:61-0:69:verifier:Generate missing equals(Object)");
+        HintTest
+                .create()
+                .input(before + after)
+                .run(MissingHashCode.class)
+                .assertWarnings("0:61-0:69:verifier:MSG_GenEquals");
     }
 
     public void testWhenNoFieldsGenerateHashCode() throws Exception {
         String before = "package test; public class Test extends Object {" + " public boolean equa";
         String after = "ls(Object snd) { return snd == this; } }";
 
-        String res = performFixTest("test/Test.java", before + after, "0:64-0:70:verifier:Generate missing hashCode()", "FixImpl", null);
+        String res = HintTest
+                .create()
+                .input(before + after)
+                .run(MissingHashCode.class)
+                .findWarning("0:64-0:70:verifier:MSG_GenHashCode")
+                .applyFix("MSG_GenHashCode")
+                .getOutput()
+                .replaceAll("[ \t\n]+", " ");
 
-        if (!res.matches(".*equals.*hashCode.*")) {
+        if (!res
+                .matches(".*equals.*hashCode.*")) {
             fail("We want equals and hashCode:\n" + res);
         }
     }
@@ -84,11 +101,18 @@ public class MissingHashCodeTest extends TestBase {
         String before = "package test; public class Test extends Object {" + " public int hash";
         String after = "Code() { return 1; } }";
 
-        String res = performFixTest("test/Test.java", before + after, "0:60-0:68:verifier:Generate missing equals(Object)", "FixImpl", null);
+        String res = HintTest
+                .create()
+                .input(before + after)
+                .run(MissingHashCode.class)
+                .findWarning("0:60-0:68:verifier:MSG_GenEquals")
+                .applyFix("MSG_GenEquals")
+                .getOutput()
+                .replaceAll("[ \t\n]+", " ");
 
-        if (!res.matches(".*hashCode.*equals.*")) {
+        if (!res
+                .matches(".*hashCode.*equals.*")) {
             fail("We want equals and hashCode:\n" + res);
         }
     }
-
 }

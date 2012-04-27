@@ -62,7 +62,9 @@ public final class BaseRunConfigValidator {
     }
 
     @NbBundle.Messages({
+        "# {0} - source of error",
         "BaseRunConfigValidator.error.relativeFile.missing={0} must be specified in order to run or debug project in command line.",
+        "# {0} - source of error",
         "BaseRunConfigValidator.error.relativeFile.invalid={0} must be a valid relative URL."
     })
     static String validateRelativeFile(File rootDirectory, String relativeFile, String errSource) {

@@ -133,7 +133,6 @@ import javax.swing.event.TreeSelectionListener;
 import javax.swing.event.TreeWillExpandListener;
 import javax.swing.plaf.TreeUI;
 import javax.swing.plaf.UIResource;
-import javax.swing.text.Position;
 import javax.swing.tree.ExpandVetoException;
 import javax.swing.tree.RowMapper;
 import javax.swing.tree.TreeCellEditor;
@@ -141,6 +140,7 @@ import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
+import org.openide.awt.QuickSearch;
 
 
 /**
@@ -224,8 +224,7 @@ public abstract class TreeView extends JScrollPane {
     transient private int allowedDropActions = DnDConstants.ACTION_COPY_OR_MOVE | DnDConstants.ACTION_REFERENCE;
     
     /** Quick Search support */
-    transient private boolean allowedQuickSearch = true;
-    transient private KeyAdapter quickSearchKeyAdapter;
+    transient private QuickSearch qs;
     
     /** wait cursor is shown automatically during expanding */
     transient private boolean autoWaitCursor = true;
@@ -448,32 +447,22 @@ public abstract class TreeView extends JScrollPane {
     }
 
     /**
-     * Get whether the quick search feature enable or not.
-     * Defaults enable (false).
+     * Test whether the quick search feature is enabled or not.
+     * Default is enabled (true).
      * @since 6.33
-     * @return true if quick search feature enabled, false
-     * otherwise.
+     * @return true if quick search feature is enabled, false otherwise.
      */
     public boolean isQuickSearchAllowed() {
-        return allowedQuickSearch;
+        return qs.isEnabled();
     }
     
     /**
-     * Set whether the quick search feature enable or not.
-     * Defaults enable (false).
+     * Set whether the quick search feature is enabled or not.
      * @since 6.33
      * @param allowedQuickSearch <code>true</code> if quick search shall be enabled
      */
     public void setQuickSearchAllowed(boolean allowedQuickSearch) {
-        this.allowedQuickSearch = allowedQuickSearch;
-         if (quickSearchKeyAdapter != null && tree != null) {
-            if (allowedQuickSearch) {
-               tree.addKeyListener(quickSearchKeyAdapter);
-            } else {
-               removeSearchField();
-               tree.removeKeyListener(quickSearchKeyAdapter);
-            }
-         }
+        qs.setEnabled(allowedQuickSearch);
     }
 
     
@@ -676,6 +665,7 @@ public abstract class TreeView extends JScrollPane {
     @Override
     public void validate() {
         Children.MUTEX.readAccess(new Runnable() {
+            @Override
             public void run() {
                 TreeView.super.validate();
             }
@@ -977,6 +967,7 @@ public abstract class TreeView extends JScrollPane {
             this.show = show;
         }
 
+        @Override
         public void run() {
             doShowWaitCursor(glassPane, show);
         }
@@ -1173,7 +1164,7 @@ public abstract class TreeView extends JScrollPane {
      * @param childIndices indexes of changed children
      * @return the tree path or null if there no changed children
      */
-    final static TreePath findSiblingTreePath(TreePath parentPath, int[] childIndices) {
+    static TreePath findSiblingTreePath(TreePath parentPath, int[] childIndices) {
         if (childIndices == null) {
             throw new IllegalArgumentException("Indexes of changed children are null."); // NOI18N
         }
@@ -1189,7 +1180,7 @@ public abstract class TreeView extends JScrollPane {
 
         TreeNode parent = (TreeNode) parentPath.getLastPathComponent();
         Object[] parentPaths = parentPath.getPath();
-        TreePath newSelection = null;
+        TreePath newSelection;
         
         int childCount = parent.getChildCount();
         if (childCount > 0) {
@@ -1253,6 +1244,7 @@ public abstract class TreeView extends JScrollPane {
         TreePropertyListener() {
         }
 
+        @Override
         public void vetoableChange(PropertyChangeEvent evt)
         throws PropertyVetoException {
             if (evt.getPropertyName().equals(ExplorerManager.PROP_SELECTED_NODES)) {
@@ -1320,6 +1312,7 @@ public abstract class TreeView extends JScrollPane {
                     this.path = path;
                 }
 
+                @Override
                 public void run() {
                     if (!SwingUtilities.isEventDispatchThread()) {
                         SwingUtilities.invokeLater(this);
@@ -1387,6 +1380,7 @@ public abstract class TreeView extends JScrollPane {
                     this.path = path;
                 }
 
+                @Override
                 public void run() {
                     if (!SwingUtilities.isEventDispatchThread()) {
                         SwingUtilities.invokeLater(this);
@@ -1446,6 +1440,7 @@ public abstract class TreeView extends JScrollPane {
         /* Called whenever the value of the selection changes.
         * @param ev the event that characterizes the change.
         */
+        @Override
         public void valueChanged(TreeSelectionEvent ev) {
             TreePath[] paths = tree.getSelectionPaths();
 
@@ -1468,6 +1463,7 @@ public abstract class TreeView extends JScrollPane {
 
         /** Called under Children.MUTEX to refresh the currently selected nodes.
         */
+        @Override
         public void run() {
             if (readAccessPaths == null) {
                 return;
@@ -1510,10 +1506,12 @@ public abstract class TreeView extends JScrollPane {
             return false;
         }
             
+        @Override
         public void treeWillCollapse(TreeExpansionEvent event)
         throws ExpandVetoException {
         }
 
+        @Override
         public void treeWillExpand(TreeExpansionEvent event)
         throws ExpandVetoException {
             // prepare wait cursor and optionally show it
@@ -1533,6 +1531,7 @@ public abstract class TreeView extends JScrollPane {
         PopupAdapter() {
         }
 
+        @Override
         protected void showPopup(MouseEvent e) {
             int selRow = tree.getRowForLocation(e.getX(), e.getY());
 
@@ -1559,6 +1558,7 @@ public abstract class TreeView extends JScrollPane {
 
     final class PopupSupport extends MouseAdapter implements Runnable, FocusListener, ActionListener {
         public final Action popup = new AbstractAction() {
+                @Override
                 public void actionPerformed(ActionEvent evt) {
                     SwingUtilities.invokeLater(PopupSupport.this);
                 }
@@ -1576,6 +1576,7 @@ public abstract class TreeView extends JScrollPane {
             };
 
         //CallbackSystemAction csa;
+        @Override
         public void run() {
             Point p = getPositionForPopup();
 
@@ -1587,6 +1588,7 @@ public abstract class TreeView extends JScrollPane {
             createPopup(p.x, p.y);
         }
 
+        @Override
         public void focusGained(java.awt.event.FocusEvent ev) {
             // unregister
             ev.getComponent().removeFocusListener(this);
@@ -1599,6 +1601,7 @@ public abstract class TreeView extends JScrollPane {
             }
         }
 
+        @Override
         public void focusLost(FocusEvent ev) {
         }
 
@@ -1638,6 +1641,7 @@ public abstract class TreeView extends JScrollPane {
         }
 
         /* VK_ENTER key processor */
+        @Override
         public void actionPerformed(ActionEvent evt) {
             Node[] nodes = manager.getSelectedNodes();
             performPreferredActionOnNodes(nodes);
@@ -1670,11 +1674,28 @@ public abstract class TreeView extends JScrollPane {
     }
 
     @Override
+    public void add(Component comp, Object constraints) {
+        if (constraints == searchConstraints) {
+            searchPanel = comp;
+            constraints = null;
+        }
+        super.add(comp, constraints);
+    }
+    
+    @Override
+    public void remove(Component comp) {
+        if (comp == searchPanel) {
+            searchPanel = null;
+        }
+        super.remove(comp);
+    }
+    
+    @Override
     public Insets getInsets() {
         Insets res = getInnerInsets();
         res = new Insets(res.top, res.left, res.bottom, res.right);
-        if( null != searchpanel && searchpanel.isVisible() ) {
-            res.bottom += searchpanel.getPreferredSize().height;
+        if( null != searchPanel && searchPanel.isVisible() ) {
+            res.bottom += searchPanel.getPreferredSize().height;
         }
         return res;
     }
@@ -1688,129 +1709,12 @@ public abstract class TreeView extends JScrollPane {
     }
 
     TreePath[] origSelectionPaths = null;
-    JPanel searchpanel = null;
-    // searchTextField manages focus because it handles VK_TAB key
-    private JTextField searchTextField = new JTextField() {
-        @Override
-        public boolean isManagingFocus() {
-            return true;
-        }
-
-        @Override
-        public void processKeyEvent(KeyEvent ke) {
-            //override the default handling so that
-            //the parent will never receive the escape key and
-            //close a modal dialog
-            if (ke.getKeyCode() == KeyEvent.VK_ESCAPE) {
-                removeSearchField();
-                ke.consume();
-
-                // bugfix #32909, reqest focus when search field is removed
-                SwingUtilities.invokeLater(
-                    new Runnable() {
-                        //additional bugfix - do focus change later or removing
-                        //the component while it's focused will cause focus to
-                        //get transferred to the next component in the
-                        //parent focusTraversalPolicy *after* our request
-                        //focus completes, so focus goes into a black hole - Tim
-                        public void run() {
-                            if( null != tree )
-                                tree.requestFocus();
-                        }
-                    }
-                );
-            } else {
-                super.processKeyEvent(ke);
-            }
-        }
-    };
-    private int originalScrollMode;
-
-    private static class SearchPanel extends JPanel {
-        public SearchPanel() {
-            if( ViewUtil.isAquaLaF )
-                setBorder(BorderFactory.createEmptyBorder(9,6,8,2));
-            else
-                setBorder(BorderFactory.createEmptyBorder(2,6,2,2));
-            setOpaque( true );
-        }
-
-        @Override
-        protected void paintComponent(Graphics g) {
-            if( ViewUtil.isAquaLaF && g instanceof Graphics2D ) {
-                Graphics2D g2d = (Graphics2D) g;
-                g2d.setPaint( new GradientPaint(0, 0, UIManager.getColor("NbExplorerView.quicksearch.background.top"),
-                        0, getHeight(), UIManager.getColor("NbExplorerView.quicksearch.background.bottom")));//NOI18N
-                g2d.fillRect(0, 0, getWidth(), getHeight());
-                g2d.setColor( UIManager.getColor("NbExplorerView.quicksearch.border") ); //NOI18N
-                g2d.drawLine(0, 0, getWidth(), 0);
-            } else {
-                super.paintComponent(g);
-            }
-        }
-    }
-
-
-    private void prepareSearchPanel() {
-        if( searchpanel == null ) {
-            searchpanel = new SearchPanel();
-
-            JLabel lbl = new JLabel(NbBundle.getMessage(TreeView.class, "LBL_QUICKSEARCH")); //NOI18N
-            searchpanel.setLayout(new BoxLayout(searchpanel, BoxLayout.X_AXIS));
-            searchpanel.add(lbl);
-            searchpanel.add(searchTextField);
-            lbl.setLabelFor(searchTextField);
-            searchTextField.setColumns(10);
-            searchTextField.setMaximumSize(searchTextField.getPreferredSize());
-            searchTextField.putClientProperty("JTextField.variant", "search"); //NOI18N
-            lbl.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 5));
-        }
-    }
-
-    /**
-     * Adds the search field to the tree.
-     */
-    private void displaySearchField() {
-        if( null != searchpanel || !isQuickSearchAllowed())
-            return;
-
-        TreeView previousSearchField = lastSearchField.get();
-        if (previousSearchField != null && previousSearchField != this) {
-            previousSearchField.removeSearchField();
-        }
-
-        JViewport vp = getViewport();
-        originalScrollMode = vp.getScrollMode();
-        vp.setScrollMode(JViewport.SIMPLE_SCROLL_MODE);
-        searchTextField.setFont(tree.getFont());
-        prepareSearchPanel();
-        add(searchpanel);
-        invalidate();
-        revalidate();
-        repaint();
-        searchTextField.requestFocus();
-
-        lastSearchField = new WeakReference<TreeView>(this);
-    }
-
-    /**
-     * Removes the search field from the tree.
-     */
-    private void removeSearchField() {
-        if( null == searchpanel )
-            return;
-
-        if (tree.getSelectionPaths() == null && origSelectionPaths != null) {
-            tree.setSelectionPaths(origSelectionPaths);
-        }
-
-        remove(searchpanel);
-        searchpanel = null;
-        origSelectionPaths = null;
-        getViewport().setScrollMode(originalScrollMode);
-        invalidate();
-        revalidate();
-        repaint();
+    private Component searchPanel = null;
+    private final Object searchConstraints = new Object();
+    
+    /** Called from tests */
+    Component getSearchPanel() {
+        return searchPanel;
     }
 
     private class ExplorerScrollPaneLayout extends ScrollPaneLayout {
@@ -1818,20 +1722,25 @@ public abstract class TreeView extends JScrollPane {
         @Override
         public void layoutContainer( Container parent ) {
             super.layoutContainer(parent);
-            if( null != searchpanel && searchpanel.isVisible() ) {
+            if( null != searchPanel && searchPanel.isVisible() ) {
                 Insets innerInsets = getInnerInsets();
-                Dimension prefSize = searchpanel.getPreferredSize();
-                searchpanel.setBounds(innerInsets.left, parent.getHeight()-innerInsets.bottom-prefSize.height,
+                Dimension prefSize = searchPanel.getPreferredSize();
+                searchPanel.setBounds(innerInsets.left, parent.getHeight()-innerInsets.bottom-prefSize.height,
                         parent.getWidth()-innerInsets.left-innerInsets.right, prefSize.height);
             }
         }
     }
 
-    private final class ExplorerTree extends JTree implements Autoscroll {
+    private final class ExplorerTree extends JTree implements Autoscroll, QuickSearch.Callback {
         AutoscrollSupport support;
         private String maxPrefix;
         int SEARCH_FIELD_SPACE = 3;
         private boolean firstPaint = true;
+        /** The last search searchResults */
+        private List<TreePath> searchResults = new ArrayList<TreePath>();
+        /** The last selected index from the search searchResults. */
+        private int currentSelectionIndex;
+        private String lastSearchText;
 
 
         ExplorerTree(TreeModel model) {
@@ -1933,16 +1842,19 @@ public abstract class TreeView extends JScrollPane {
         // not allow changes in nodes during the operation being executed
         //
         @Override
+        @SuppressWarnings("ResultOfObjectAllocationIgnored")
         public void paint(final Graphics g) {
             new GuardedActions(0, g);
         }
 
         @Override
+        @SuppressWarnings("ResultOfObjectAllocationIgnored")
         protected void validateTree() {
             new GuardedActions(1, null);
         }
 
         @Override
+        @SuppressWarnings("ResultOfObjectAllocationIgnored")
         public void doLayout() {
             new GuardedActions(2, null);
         }
@@ -1986,10 +1898,19 @@ public abstract class TreeView extends JScrollPane {
         }
 
         @Override
+        @SuppressWarnings("ResultOfObjectAllocationIgnored")
         protected void processFocusEvent(FocusEvent fe) {
             new GuardedActions(3, fe);
         }
 
+        @Override
+        protected void processKeyEvent(KeyEvent e) {
+            qs.processKeyEvent(e);
+            if (!e.isConsumed()) {
+                super.processKeyEvent(e);
+            }
+        }
+        
         private void repaintSelection() {
             int first = getSelectionModel().getMinSelectionRow();
             int last = getSelectionModel().getMaxSelectionRow();
@@ -2021,58 +1942,65 @@ public abstract class TreeView extends JScrollPane {
 
         private void setupSearch() {
             // Remove the default key listeners
-            KeyListener[] keyListeners = getListeners(KeyListener.class);
-
-            for (int i = 0; i < keyListeners.length; i++) {
-                removeKeyListener(keyListeners[i]);
-            }
-
-            // create new key listeners
-            quickSearchKeyAdapter = (
-                new KeyAdapter() {
-                @Override
-                    public void keyTyped(KeyEvent e) {
-                        int modifiers = e.getModifiers();
-                        int keyCode = e.getKeyCode();
-                        char c = e.getKeyChar();
-
-                        //#43617 - don't eat + and -
-                        //#98634 - and all its duplicates dont't react to space
-                        if ((c == '+') || (c == '-') || (c==' ')) return; // NOI18N
-
-                        if (((modifiers > 0) && (modifiers != KeyEvent.SHIFT_MASK)) || e.isActionKey()) {
-                            return;
-                        }
-
-                        if (Character.isISOControl(c) ||
-                              (keyCode == KeyEvent.VK_SHIFT) ||
-			      (keyCode == KeyEvent.VK_ESCAPE)) return;
-
-                        final KeyStroke stroke = KeyStroke.getKeyStrokeForEvent(e);
-                        origSelectionPaths = getSelectionPaths();
-                        if (origSelectionPaths != null && origSelectionPaths.length == 0) {
-                            origSelectionPaths = null;
-                        }
-                        searchTextField.setText(String.valueOf(stroke.getKeyChar()));
-
-                        displaySearchField();
-                        e.consume();
-                    }
-                }
-            );
-            if(isQuickSearchAllowed()){
-                addKeyListener(quickSearchKeyAdapter);
-            }
-            // Create a the "multi-event" listener for the text field. Instead of
-            // adding separate instances of each needed listener, we're using a
-            // class which implements them all. This approach is used in order 
-            // to avoid the creation of 4 instances which takes some time
-            SearchFieldListener searchFieldListener = new SearchFieldListener();
-            searchTextField.addKeyListener(searchFieldListener);
-            searchTextField.addFocusListener(searchFieldListener);
-            searchTextField.getDocument().addDocumentListener(searchFieldListener);
+//            KeyListener[] keyListeners = getListeners(KeyListener.class);
+//
+//            for (int i = 0; i < keyListeners.length; i++) {
+//                removeKeyListener(keyListeners[i]);
+//            }
+            
+            qs = QuickSearch.attach(TreeView.this, searchConstraints, this);
         }
-        
+
+        @Override
+        public void quickSearchUpdate(String searchText) {
+            lastSearchText = searchText;
+            currentSelectionIndex = 0;
+            searchResults.clear();
+            maxPrefix = null;
+
+            String text = searchText.toUpperCase();
+
+            if (text.length() > 0) {
+                searchResults = doSearch(text);
+            }
+            displaySearchResult();
+        }
+
+        @Override
+        public void showNextSelection(boolean forward) {
+            if (forward) {
+                currentSelectionIndex++;
+            } else {
+                currentSelectionIndex--;
+            }
+            displaySearchResult();
+        }
+
+        @Override
+        public String findMaxPrefix(String prefix) {
+            return maxPrefix;
+        }
+
+        @Override
+        public void quickSearchConfirmed() {
+            TreePath selectedTPath = getSelectionPath();
+            if (selectedTPath != null) {
+                TreeNode selectedTNode = (TreeNode) selectedTPath.getLastPathComponent();
+                Node selectedNode = Visualizer.findNode(selectedTNode);
+                performPreferredActionOnNodes(new Node[] { selectedNode });
+            }
+            origSelectionPaths = null;
+            searchResults.clear();
+            lastSearchText = null;
+        }
+
+        @Override
+        public void quickSearchCanceled() {
+            origSelectionPaths = null;
+            searchResults.clear();
+            lastSearchText = null;
+        }
+
         private List<TreePath> doSearch(String prefix) {
             List<TreePath> results = new ArrayList<TreePath>();
             Set<TreePath> resSet = new HashSet<TreePath>();
@@ -2091,7 +2019,7 @@ public abstract class TreeView extends JScrollPane {
             while (true) {
                 startIndex = startIndex % size;
 
-                SubstringSearchResult substringSearchResult = getNextSubstringMatch(prefix, startIndex, Position.Bias.Forward);
+                SubstringSearchResult substringSearchResult = getNextSubstringMatch(prefix, startIndex, true);
                 TreePath path = substringSearchResult != null? substringSearchResult.treePath: null;
 
                 if ((path != null) && !resSet.contains(path)) {
@@ -2116,7 +2044,7 @@ public abstract class TreeView extends JScrollPane {
                             maxPrefix = elementName;
                         }
 
-                        maxPrefix = findMaxPrefix(maxPrefix, elementName);
+                        maxPrefix = QuickSearch.findMaxPrefix(maxPrefix, elementName, true);
                     }
                     // try next element
                     startIndex++;
@@ -2128,16 +2056,6 @@ public abstract class TreeView extends JScrollPane {
             return results;
         }
 
-        private String findMaxPrefix(String str1, String str2) {
-            String res = null;
-
-            for (int i = 0; str1.regionMatches(true, 0, str2, 0, i); i++) {
-                res = str1.substring(0, i);
-            }
-
-            return res;
-        }
-        
         /**
          * Copied and adapted from JTree.getNextMatch(...).
          * 
@@ -2145,7 +2063,7 @@ public abstract class TreeView extends JScrollPane {
          *         and the index of the first occurrence of the substring in TreePath.
          */
         private SubstringSearchResult getNextSubstringMatch(
-                String substring, int startingRow, Position.Bias bias) {
+                String substring, int startingRow, boolean forward) {
 
             int max = getRowCount();
             if (substring == null) {
@@ -2158,7 +2076,7 @@ public abstract class TreeView extends JScrollPane {
 
             // start search from the next/previous element froom the 
             // selected element
-            int increment = (bias == Position.Bias.Forward) ? 1 : -1;
+            int increment = (forward) ? 1 : -1;
             int row = startingRow;
             do {
                 TreePath path = getPathForRow(row);
@@ -2175,7 +2093,31 @@ public abstract class TreeView extends JScrollPane {
             return null;
         }
 
+        private void displaySearchResult() {
+            int sz = searchResults.size();
+
+            if (sz > 0) {
+                if (currentSelectionIndex < 0) {
+                    currentSelectionIndex = sz - 1;
+                } else if (currentSelectionIndex >= sz) {
+                    currentSelectionIndex = 0;
+                }
+
+                TreePath path = searchResults.get(currentSelectionIndex);
+                setSelectionPath(path);
+                scrollPathToVisible(path);
+            } else {
+                if (lastSearchText.isEmpty() && origSelectionPaths != null) {
+                    setSelectionPaths(origSelectionPaths);
+                    scrollPathToVisible(origSelectionPaths[0]);
+                } else {
+                    clearSelection();
+                }
+            }
+        }
+
         /** notify the Component to autoscroll */
+        @Override
         public void autoscroll(Point cursorLoc) {
             getSupport().autoscroll(cursorLoc);
         }
@@ -2184,6 +2126,7 @@ public abstract class TreeView extends JScrollPane {
          * region or border relative to the geometry of the
          * implementing Component.
          */
+        @Override
         public Insets getAutoscrollInsets() {
             return getSupport().getAutoscrollInsets();
         }
@@ -2237,6 +2180,7 @@ public abstract class TreeView extends JScrollPane {
             private Object p1;
             final Object ret;
 
+            @SuppressWarnings({"OverridableMethodCallInConstructor", "LeakingThisInConstructor"})
             public GuardedActions(int type, Object p1) {
                 this.type = type;
                 this.p1 = p1;
@@ -2247,6 +2191,7 @@ public abstract class TreeView extends JScrollPane {
                 }
             }
 
+            @Override
             public Object run() {
                 switch (type) {
                 case 0:
@@ -2270,126 +2215,6 @@ public abstract class TreeView extends JScrollPane {
                 }
 
                 return null;
-            }
-        }
-
-        private class SearchFieldListener extends KeyAdapter implements DocumentListener, FocusListener {
-            /** The last search results */
-            private List<TreePath> results = new ArrayList<TreePath>();
-
-            /** The last selected index from the search results. */
-            private int currentSelectionIndex;
-
-            SearchFieldListener() {
-            }
-
-            public void changedUpdate(DocumentEvent e) {
-                searchForNode();
-            }
-
-            public void insertUpdate(DocumentEvent e) {
-                searchForNode();
-            }
-
-            public void removeUpdate(DocumentEvent e) {
-                searchForNode();
-            }
-
-            @Override
-            public void keyPressed(KeyEvent e) {
-                int keyCode = e.getKeyCode();
-
-                if (keyCode == KeyEvent.VK_ESCAPE) {
-                    removeSearchField();
-                    ExplorerTree.this.requestFocus();
-                } else if (keyCode == KeyEvent.VK_UP || (keyCode == KeyEvent.VK_F3 && e.isShiftDown())) {
-                    currentSelectionIndex--;
-                    displaySearchResult();
-
-                    // Stop processing the event here. Otherwise it's dispatched
-                    // to the tree too (which scrolls)
-                    e.consume();
-                } else if (keyCode == KeyEvent.VK_DOWN || keyCode == KeyEvent.VK_F3) {
-                    currentSelectionIndex++;
-                    displaySearchResult();
-
-                    // Stop processing the event here. Otherwise it's dispatched
-                    // to the tree too (which scrolls)
-                    e.consume();
-                } else if (keyCode == KeyEvent.VK_TAB) {
-                    if (maxPrefix != null) {
-                        searchTextField.setText(maxPrefix);
-                    }
-
-                    e.consume();
-                } else if (keyCode == KeyEvent.VK_ENTER) {
-                    removeSearchField();
-
-                    // bugfix #39607, don't expand selected node when default action invoked
-                    TreePath selectedTPath = getSelectionPath();
-
-                    if (selectedTPath != null) {
-                        TreeNode selectedTNode = (TreeNode) selectedTPath.getLastPathComponent();
-                        Node selectedNode = Visualizer.findNode(selectedTNode);
-
-                        if (
-                            (selectedNode.getPreferredAction() == null) ||
-                                !selectedNode.getPreferredAction().isEnabled()
-                        ) {
-                            expandPath(getSelectionPath());
-                        }
-                    }
-
-                    ExplorerTree.this.requestFocus();
-                    ExplorerTree.this.dispatchEvent(e);
-                }
-            }
-
-            /** Searches for a node in the tree. */
-            private void searchForNode() {
-                currentSelectionIndex = 0;
-                results.clear();
-                maxPrefix = null;
-
-                String text = searchTextField.getText().toUpperCase();
-
-                if (text.length() > 0) {
-                    results = doSearch(text);
-                }
-                displaySearchResult();
-            }
-
-            private void displaySearchResult() {
-                int sz = results.size();
-
-                if (sz > 0) {
-                    if (currentSelectionIndex < 0) {
-                        currentSelectionIndex = sz - 1;
-                    } else if (currentSelectionIndex >= sz) {
-                        currentSelectionIndex = 0;
-                    }
-
-                    TreePath path = results.get(currentSelectionIndex);
-                    setSelectionPath(path);
-                    scrollPathToVisible(path);
-                } else {
-                    if (searchTextField.getText().length() == 0 && origSelectionPaths != null) {
-                        setSelectionPaths(origSelectionPaths);
-                        scrollPathToVisible(origSelectionPaths[0]);
-                    } else {
-                        clearSelection();
-                    }
-                }
-            }
-
-            public void focusGained(FocusEvent e) {
-                // make sure nothing is selected
-                searchTextField.select(1, 1);
-            }
-
-            public void focusLost(FocusEvent e) {
-                results.clear();
-                removeSearchField();
             }
         }
 

@@ -195,4 +195,8 @@ public class APTMacroParamExpansion implements APTToken {
         return param+ "->" + original; //NOI18N
     }
 
+    @Override
+    public Object getProperty(Object key) {
+        return null;
+    }
 }

@@ -418,6 +418,9 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         }
         // XXX #168094 logging
         if (repository == null) {
+            if (context.getRoots().isEmpty()) {
+                return;
+            }
             Subversion.LOG.info("VersioningPanel.refreshStatuses: null repositoryUrl for " + context.getRootFiles()[0].getAbsolutePath()); //NOI18N
             boolean allUnmanaged = true;
             for (File root : context.getRootFiles()) {

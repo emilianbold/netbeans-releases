@@ -47,18 +47,20 @@ package org.netbeans.modules.remote.impl.fs;
  * @author Vladimir Kvashin
  */
 public class FormatException extends Exception {
-    private final boolean expexted;
+    private final boolean expected;
 
     public FormatException(String text, boolean expected) {
-        this.expexted = expected;
+        super(text);
+        this.expected = expected;
     }
 
     public FormatException(String string, Throwable thrwbl) {
-        expexted = false;
+        super(string, thrwbl);
+        expected = false;
     }
 
-    public boolean isExpexted() {
-        return expexted;
+    public boolean isExpected() {
+        return expected;
     }
 
 }

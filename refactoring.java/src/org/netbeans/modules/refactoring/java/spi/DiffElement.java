@@ -54,6 +54,7 @@ import org.openide.text.PositionBounds;
 import org.openide.text.PositionRef;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -72,7 +73,12 @@ import org.openide.util.lookup.Lookups;
     
     private DiffElement(Difference diff, PositionBounds bounds, FileObject parentFile, ModificationResult modification) {
         this.bounds = bounds;
-        this.displayText = diff.getDescription();
+        final String description = diff.getDescription();
+        if (description == null) {
+            displayText = NbBundle.getMessage(DiffElement.class, "LBL_NotAvailable");
+        } else {
+            this.displayText = description;
+        }
         this.parentFile = parentFile;
         this.diff = diff;
         this.modification = modification;
@@ -89,8 +95,9 @@ import org.openide.util.lookup.Lookups;
         if (bounds!=null) {
             composite = ElementGripFactory.getDefault().get(parentFile, bounds.getBegin().getOffset());
         }
-        if (composite==null) 
+        if (composite==null) {
             composite = parentFile;
+        }
         return Lookups.fixed(composite, diff);
     }
     
@@ -128,8 +135,9 @@ import org.openide.util.lookup.Lookups;
         String result;
         if (newFileContent !=null) {
             result = newFileContent.get();
-            if (result!=null)
+            if (result!=null) {
                 return result;
+            }
         }
         try {
             if (diff.getKind()==Difference.Kind.CREATE) {
@@ -156,8 +164,9 @@ import org.openide.util.lookup.Lookups;
         PositionRef start = diff.getStartPosition();
         PositionRef end = diff.getEndPosition();
         PositionBounds bounds = null;
-        if (diff.getKind() != Difference.Kind.CREATE)
+        if (diff.getKind() != Difference.Kind.CREATE) {
             bounds = new PositionBounds(start, end);
+        }
         return new DiffElement(diff, bounds, fileObject, modification);
     }    
 }

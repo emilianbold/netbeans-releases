@@ -142,6 +142,7 @@ public abstract class APTStringManager  {
          * @exception NullPointerException If the <code>text</code> parameter
          *                                 is <code>null</code>.
          */
+        @Override
         public final CharSequence getString(CharSequence text) {
             if (text == null) {
                 throw new NullPointerException("null string is illegal to share"); // NOI18N
@@ -156,6 +157,7 @@ public abstract class APTStringManager  {
             return outText;
         }
 
+        @Override
         public final void dispose() {
             if (CndTraceFlags.TRACE_SLICE_DISTIBUTIONS){
                 Object[] arr;
@@ -221,10 +223,12 @@ public abstract class APTStringManager  {
             return instances[index];
         }
         
+        @Override
         public final CharSequence getString(CharSequence text) {
             return getDelegate(text).getString(text);
         }
 
+        @Override
         public final void dispose() {
             for (int i = 0; i < instances.length; i++) {
                 instances[i].dispose();

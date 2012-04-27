@@ -124,6 +124,7 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
         System.setProperty("socket.connection.timeout", "30000");
         System.setProperty("sftp.put.retries", "5");
         System.setProperty("rfs.instable.sleep", "100");
+        System.setProperty("remote.throw.assertions", "true");
     }
 
     static {

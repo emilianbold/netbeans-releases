@@ -50,8 +50,9 @@ import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 
 /**
- *
- * @author ondra
+ * Result of a blame command, wraps line annotations for a given file.
+ * 
+ * @author Ondra Vrabec
  */
 public final class GitBlameResult {
 
@@ -87,14 +88,25 @@ public final class GitBlameResult {
         }
     }
     
+    /**
+     * @return annotated file
+     */
     public File getBlamedFile () {
         return blamedFile;
     }
 
+    /**
+     * @return number of collected line annotations
+     */
     public int getLineCount () {
         return lineCount;
     }
 
+    /**
+     * Returns a line annotation for a line specified by the given line number
+     * @param lineNumber line number
+     * @return line annotation or <code>null</code> if no line annotation is available for the given line number
+     */
     public GitLineDetails getLineDetails (int lineNumber) {
         return lineNumber < lineCount ? lineDetails[lineNumber] : null;
     }

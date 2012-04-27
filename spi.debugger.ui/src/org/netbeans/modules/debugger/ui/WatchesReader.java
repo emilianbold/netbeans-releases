@@ -62,18 +62,24 @@ public class WatchesReader implements Properties.Reader {
         };
     }
     public Object read (String typeID, Properties properties) {
-        if (typeID.equals (Watch.class.getName ()))
-            return DebuggerManager.getDebuggerManager ().createWatch (
+        if (typeID.equals (Watch.class.getName ())) {
+            Watch watch = DebuggerManager.getDebuggerManager ().createWatch (
                 properties.getString (Watch.PROP_EXPRESSION, null)
             );
+            watch.setEnabled(properties.getBoolean(Watch.PROP_ENABLED, true));
+            return watch;
+        }
         return null;
     }
     
     public void write (Object object, Properties properties) {
-        if (object instanceof Watch)
+        if (object instanceof Watch) {
             properties.setString (
                 Watch.PROP_EXPRESSION, 
                 ((Watch) object).getExpression ()
             );
+            properties.setBoolean(Watch.PROP_ENABLED, ((Watch) object).isEnabled());
+        }
     }
+    
 }

@@ -42,12 +42,23 @@
 
 package org.netbeans.libs.git.progress;
 
+import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitStatus;
 
 /**
- *
- * @author ondra
+ * The listener interface for receiving notifications triggered when a file's 
+ * status is processed by a certain git commands (e.g. the status command).
+ * The class that is interested in further processing such a notification
+ * implements this interface and registers itself with an instance 
+ * of {@link GitClient}. 
+ * When a file is processed and its status is identified by a git command,
+ * that object's <code>notifyStatus</code> method is invoked.
+ * 
+ * @see NotificationListener
  */
 public interface StatusListener extends NotificationListener {
+    /**
+     * Invoked when a file is processed and its status is identified.
+     */
     public void notifyStatus (GitStatus status);
 }

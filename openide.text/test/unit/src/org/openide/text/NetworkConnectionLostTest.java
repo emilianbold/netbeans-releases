@@ -43,10 +43,13 @@
  */
 
 package org.openide.text;
+import java.awt.GraphicsEnvironment;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import javax.swing.JEditorPane;
 import javax.swing.text.Document;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
 import org.netbeans.junit.*;
 
@@ -60,6 +63,11 @@ import org.openide.util.lookup.*;
  */
 public class NetworkConnectionLostTest extends NbTestCase
 implements CloneableEditorSupport.Env {
+
+    public static Test suite() {
+        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(NetworkConnectionLostTest.class);
+    }
+
     static {
         System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
     }

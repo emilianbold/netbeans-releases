@@ -59,6 +59,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.WeakHashMap;
+import javax.swing.JEditorPane;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.form.editors2.BorderDesignSupport;
 import org.netbeans.modules.form.editors2.TableColumnModelEditor;
@@ -914,8 +915,6 @@ public class ResourceSupport {
 
     private boolean isExcludedProperty1(FormProperty prop) {
         if (!Boolean.TRUE.equals(prop.getValue(EXCLUSION_DETERMINED))) {
-            if (getResourceService() == null)
-                return false;
 
             prop.setValue(EXCLUSION_DETERMINED, true);
             Object propOwner = prop.getPropertyContext().getOwner();
@@ -925,12 +924,9 @@ public class ResourceSupport {
             } else if (propOwner instanceof FormProperty) {
                 type = ((FormProperty)propOwner).getValueType();
             }
-            boolean excl;
-            if (type != null) {
-                excl = resourceService.isExcludedProperty(type, prop.getName());
-            } else {
-                excl = false;
-            }
+            String propName = prop.getName();
+            boolean excl = (Component.class.isAssignableFrom(type) && "name".equals(propName)) // NOI18N
+                    || (JEditorPane.class.isAssignableFrom(type) && "contentType".equals(propName)); // NOI18N
             prop.setValue(EXCLUDE_FROM_RESOURCING, excl);
             return excl;
         }
@@ -1304,6 +1300,13 @@ public class ResourceSupport {
                             col = collectNestedResourceProperties(prop, valueType, col);
                     }
                 }
+            }
+        }
+
+        // check accessibility properties
+        for (FormProperty prop : metacomp.getKnownAccessibilityProperties()) {
+            if (prop.isChanged() && isResourceableProperty(prop) && !isExcludedProperty0(prop)) {
+                col = collectNestedResourceProperties(prop, valueType, col);
             }
         }
 
@@ -1822,12 +1825,14 @@ public class ResourceSupport {
         List<Node.Property> props = new ArrayList<Node.Property>();
         props.add(autoNamingProp);
         if ((getI18nService() != null) || (getResourceService() != null)) {
-            int autoMode = getAutoMode();
             props.add(autoModeProp);
-            if (autoMode == AUTO_OFF || autoMode == AUTO_I18N) {
+            if (mode == AUTO_OFF || mode == AUTO_I18N) {
                 props.add(formBundleProp);
             }
-            props.add(localeProp);
+            if ((getI18nService() != null && getI18nService().getAvailableLocales(getSourceFile(), getI18nBundleName()) != null)
+                    || (projectUsesResources() && mode != AUTO_I18N)) {
+                props.add(localeProp);
+            }
         }
         return props.toArray(new Node.Property[props.size()]);
     }
@@ -1860,7 +1865,7 @@ public class ResourceSupport {
                         tags = resourceService.getAvailableLocales(srcFile);
                 }
             }
-            return tags != null ? tags[1] : null;
+            return tags != null && tags.length == 2 ? tags[1] : null;
         }
 
         @Override

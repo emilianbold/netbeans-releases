@@ -210,6 +210,15 @@ public final class RegistryImpl extends Object implements TopComponent.Registry 
             }
         }
     }
+
+    /**
+     * Called during 'Reset Windows' to re-add document windows that the Reset
+     * action does not close.
+     * @param tc
+     */
+    public synchronized void addTopComponent( TopComponent tc ) {
+        openSet.add( tc );
+    }
     
     /** Called when selected nodes changed. */
     public void selectedNodesChanged(TopComponent tc, Node[] newNodes) {
@@ -283,8 +292,8 @@ public final class RegistryImpl extends Object implements TopComponent.Registry 
             }
             
         }
-        
-        msm.clearSelectedPath();
+        if( path.length > 0 )
+            msm.clearSelectedPath();
     }
     
     

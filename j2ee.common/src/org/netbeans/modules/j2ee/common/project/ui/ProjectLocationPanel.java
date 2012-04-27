@@ -53,7 +53,6 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import org.netbeans.api.queries.CollocationQuery;
-import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
 import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
@@ -83,7 +82,6 @@ final class ProjectLocationPanel extends JPanel implements DocumentListener {
     public ProjectLocationPanel(Object j2eeModuleType, String name, String title, 
             ProjectLocationWizardPanel wizard, String defaultNameFormatter) {
         initComponents();
-        setAsMainCheckBox.setSelected(UserProjectSettings.getDefault().getSetAsMainProject(j2eeModuleType));
         this.wizard = wizard;
         this.j2eeModuleType = j2eeModuleType;
         this.nameFormatter = defaultNameFormatter;
@@ -120,7 +118,6 @@ final class ProjectLocationPanel extends JPanel implements DocumentListener {
         librariesLocation = new javax.swing.JTextField();
         browseLibraries = new javax.swing.JButton();
         sharableProject = new javax.swing.JCheckBox();
-        setAsMainCheckBox = new javax.swing.JCheckBox();
         jPanel1 = new javax.swing.JPanel();
         lblHint = new javax.swing.JLabel();
 
@@ -166,9 +163,6 @@ final class ProjectLocationPanel extends JPanel implements DocumentListener {
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(setAsMainCheckBox, org.openide.util.NbBundle.getMessage(ProjectLocationPanel.class, "LBL_NWP1_SetAsMain_CheckBox")); // NOI18N
-        setAsMainCheckBox.setMargin(new java.awt.Insets(2, 0, 2, 2));
-
         org.openide.awt.Mnemonics.setLocalizedText(lblHint, org.openide.util.NbBundle.getMessage(ProjectLocationPanel.class, "HINT_LibrariesFolder")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -196,9 +190,6 @@ final class ProjectLocationPanel extends JPanel implements DocumentListener {
                     .addComponent(createdFolderTextField))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(browseButton))
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(setAsMainCheckBox)
-                .addContainerGap(343, Short.MAX_VALUE))
             .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(sharableProject, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
@@ -228,9 +219,7 @@ final class ProjectLocationPanel extends JPanel implements DocumentListener {
                     .addComponent(librariesLocation, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(lblHint, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(setAsMainCheckBox)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(27, 27, 27)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 14, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
@@ -251,7 +240,6 @@ final class ProjectLocationPanel extends JPanel implements DocumentListener {
         librariesLocation.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectLocationPanel.class, "ACSD_ProjectLocationPanel_NA")); // NOI18N
         browseLibraries.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectLocationPanel.class, "ACSD_ProjectLocationPanel_NA")); // NOI18N
         sharableProject.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectLocationPanel.class, "ACSD_ProjectLocationPanel_NA")); // NOI18N
-        setAsMainCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectLocationPanel.class, "ACSD_ProjectLocationPanel_NA")); // NOI18N
         jPanel1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ProjectLocationPanel.class, "ACSD_ProjectLocationPanel_NA")); // NOI18N
         jPanel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectLocationPanel.class, "ACSD_ProjectLocationPanel_NA")); // NOI18N
         lblHint.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectLocationPanel.class, "ACSD_ProjectLocationPanel_NA")); // NOI18N
@@ -386,9 +374,7 @@ private void sharableProjectActionPerformed(java.awt.event.ActionEvent evt) {//G
         d.putProperty( ProjectLocationWizardPanel.PROJECT_DIR, new File( folder ));
         d.putProperty( ProjectLocationWizardPanel.NAME, name );
         
-        d.putProperty(ProjectLocationWizardPanel.SET_AS_MAIN, setAsMainCheckBox.isSelected() ? Boolean.TRUE : Boolean.FALSE );
         d.putProperty(ProjectLocationWizardPanel.SHARED_LIBRARIES, sharableProject.isSelected() ? librariesLocation.getText() : null);
-        UserProjectSettings.getDefault().setSetAsMainProject(setAsMainCheckBox.isSelected(), j2eeModuleType);
     }
     
     void read (WizardDescriptor settings) {
@@ -442,7 +428,6 @@ private void sharableProjectActionPerformed(java.awt.event.ActionEvent evt) {//G
     private javax.swing.JTextField projectLocationTextField;
     private javax.swing.JLabel projectNameLabel;
     protected javax.swing.JTextField projectNameTextField;
-    private javax.swing.JCheckBox setAsMainCheckBox;
     private javax.swing.JCheckBox sharableProject;
     // End of variables declaration//GEN-END:variables
     

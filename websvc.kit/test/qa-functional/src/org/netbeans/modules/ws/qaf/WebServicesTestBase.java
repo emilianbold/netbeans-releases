@@ -687,8 +687,11 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
     }
 
     private void performProjectAction(String projectName, String actionName) throws IOException {
-        ProjectRootNode node = new ProjectsTabOperator().getProjectRootNode(projectName);
+        ProjectsTabOperator pto = new ProjectsTabOperator();
+        pto.pressMouse(); // to get focus, otherwise performing popup action won't work
+        ProjectRootNode node = pto.getProjectRootNode(projectName);
         node.performPopupAction(actionName);
+        new ActionNoBlock("Window|Output|Output", null).performMenu(); // open output window
         OutputTabOperator oto = new OutputTabOperator(projectName);
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", 600000); //NOI18N
         if (!getProjectType().isAntBasedProject()) {
@@ -751,22 +754,8 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
             needToSetServer = true;
         }
         // Set as Main Project
-        String setAsMainProjectItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", "LBL_SetAsMainProjectAction_Name");
-        String unsetAsMainProjectItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", "LBL_UnSetAsMainProjectAction_Name");
+         new ActionNoBlock("Run|Set Main Project|"+project, null).performMenu();
 
-        JPopupMenuOperator jpmo = ProjectsTabOperator.invoke().getProjectRootNode(project).callPopup();
-        MenuElement[] mel = jpmo.getSubElements();
-        MenuElement me;
-        boolean alreadySetAsMain = false;
-        for (int q = 0; q < mel.length; q++) {
-            me = mel[q];
-            if (me instanceof JMenuItem && ((JMenuItem) me).getText().equals(unsetAsMainProjectItem)) {
-                alreadySetAsMain = true;
-            }
-        }
-        if (!alreadySetAsMain) {
-            new Action(null, setAsMainProjectItem).perform(new ProjectsTabOperator().getProjectRootNode(project));
-        }
         if (needToSetServer) {
             // open project properties
             ProjectsTabOperator.invoke().getProjectRootNode(project).properties();

@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.cnd.discovery.wizard;
 
-import org.netbeans.modules.cnd.utils.ui.EditableComboBox;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -64,13 +63,14 @@ import org.netbeans.modules.cnd.api.model.CsmListeners;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
+import org.netbeans.modules.cnd.discovery.api.DiscoveryProviderFactory;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
+import org.netbeans.modules.cnd.utils.ui.EditableComboBox;
+import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.openide.WizardDescriptor;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
@@ -298,7 +298,6 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
     // End of variables declaration//GEN-END:variables
     
     void read(final DiscoveryDescriptor wizardDescriptor) {
-        Lookup.Result<DiscoveryProvider> providers = Lookup.getDefault().lookup(new Lookup.Template<DiscoveryProvider>(DiscoveryProvider.class));
         DefaultComboBoxModel model = (DefaultComboBoxModel)prividersComboBox.getModel();
         model.removeAllElements();
         ProjectProxy proxy = new ProjectProxy() {
@@ -336,18 +335,22 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
                 return false;
             }
         };
+        DiscoveryProvider defProvider = (DiscoveryProvider) ((WizardDescriptor)wizardDescriptor).getProperty("PreferedProvider"); // NOI18N
+        ProviderItem def = null;
         List<ProviderItem> list = new ArrayList<ProviderItem>();
-        for(DiscoveryProvider provider : providers.allInstances()){
-            provider.clean();
+        for(DiscoveryProvider provider : DiscoveryProviderFactory.findAllProviders()){
             if (provider.isApplicable(proxy)) {
-                list.add(new ProviderItem(provider));
+                final ProviderItem providerItem = new ProviderItem(provider);
+                if (defProvider != null && defProvider.getID().equals(provider.getID())) {
+                    def = providerItem;
+                }
+                list.add(providerItem);
             }
         }
         Collections.<ProviderItem>sort(list);
         for(ProviderItem item:list){
             model.addElement(item);
         }
-        ProviderItem def = getDefaultProvider(list,proxy,wizardDescriptor);
         if (def != null){
             prividersComboBox.setSelectedItem(def);
         }
@@ -379,26 +382,6 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
         return null;
     }
 
-    private ProviderItem getDefaultProvider(List<ProviderItem> list, ProjectProxy proxy, DiscoveryDescriptor wizardDescriptor){
-        ProviderItem def = null;
-        int assurance = 0;
-        for(ProviderItem item:list){
-            if ("dwarf-executable".equals(item.getID())){ // NOI18N
-                // select executable if make project has output
-                // and output has debug information.
-                item.getProvider().getProperty("executable").setValue(wizardDescriptor.getBuildResult()); // NOI18N
-            } else if ("dwarf-folder".equals(item.getID())){ // NOI18N
-                item.getProvider().getProperty("folder").setValue(wizardDescriptor.getRootFolder()); // NOI18N
-            }
-            int i = item.getProvider().canAnalyze(proxy).getPriority();
-            if (i > assurance) {
-                def = item;
-                assurance = i;
-            }
-        }
-        return def;
-    }
-    
     void store(DiscoveryDescriptor wizardDescriptor) {
         ProviderItem provider = (ProviderItem)prividersComboBox.getSelectedItem();
         wizardDescriptor.setProvider(provider.getProvider());
@@ -461,7 +444,7 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
 
 
     private String getString(String key) {
-        return NbBundle.getBundle(SelectProviderPanel.class).getString(key);
+        return NbBundle.getMessage(SelectProviderPanel.class, key);
     }
 
     @Override
@@ -507,9 +490,9 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
     public void parserIdle() {
     }
 
-    private static class ProviderItem implements Comparable<ProviderItem> {
+    static class ProviderItem implements Comparable<ProviderItem> {
         private DiscoveryProvider provider;
-        private ProviderItem(DiscoveryProvider provider){
+        ProviderItem(DiscoveryProvider provider){
             this.provider = provider;
         }
         @Override

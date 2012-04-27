@@ -47,6 +47,7 @@ package org.netbeans.core.netigso;
 import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Collection;
 import java.util.Dictionary;
 import java.util.Enumeration;
 import java.util.List;
@@ -196,7 +197,8 @@ public class NetigsoSelfQueryTest extends NetigsoHid {
         assertTrue("org.test.pkg: " + set, set.contains("org.test.pkg"));
     }
 
-    public static final class MockFramework implements Framework, FrameworkFactory, BundleContext {
+    public static final class MockFramework 
+    implements Framework, FrameworkFactory, BundleContext, Comparable<Bundle> {
         private final List<MockBundle> bundles = new ArrayList<MockBundle>();
         NetigsoArchive archive;
 
@@ -447,9 +449,39 @@ public class NetigsoSelfQueryTest extends NetigsoHid {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        @Override
+        public Object adapt(Class type) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public int compareTo(Bundle o) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public ServiceRegistration registerService(Class type, Object s, Dictionary dctnr) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public ServiceReference getServiceReference(Class type) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public Collection getServiceReferences(Class type, String string) throws InvalidSyntaxException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public Bundle getBundle(String string) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
     }
 
-    private static final class MockBundle implements Bundle, BundleContent {
+    private static final class MockBundle implements Bundle, BundleContent, Comparable<Bundle> {
         private final String url;
         private final MockFramework f;
         private final NetigsoArchive archive;
@@ -616,5 +648,19 @@ public class NetigsoSelfQueryTest extends NetigsoHid {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        @Override
+        public Object adapt(Class type) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public File getDataFile(String string) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public int compareTo(Bundle o) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
     }
 }
