@@ -111,10 +111,9 @@ public class EntityClassInfo {
 
     /** Creates a new instance of ClassInfo */
     public EntityClassInfo(String entityFqn, Project project, 
-            EntityResourceModelBuilder builder, JavaSource source) 
+            EntityResourceModelBuilder builder)
     {
         this.entityFqn = entityFqn;
-        this.entitySource = source;
         this.fieldInfos = new ArrayList<FieldInfo>();
         this.builder = builder;
 
@@ -139,14 +138,16 @@ public class EntityClassInfo {
 
     protected void extractFields(Project project) {
         try {
-            final JavaSource source = entitySource;
+            final JavaSource source = getJavaSource(project);
             source.runUserActionTask(new AbstractTask<CompilationController>() {
 
                 public void run(CompilationController controller) throws IOException {
                     controller.toPhase(Phase.RESOLVED);
                     ClassTree tree = JavaSourceHelper.getTopLevelClassTree(controller);
-                    assert controller.getCompilationUnit() != null : source.getFileObjects().iterator().next().getPath();
-                    assert controller.getCompilationUnit().getPackageName() != null : "NULL package " + source.getFileObjects().iterator().next().getPath();
+                    assert controller.getCompilationUnit() != null : 
+                        source.getFileObjects().iterator().next().getPath();
+                    assert controller.getCompilationUnit().getPackageName() != null : 
+                        "NULL package " + source.getFileObjects().iterator().next().getPath();
                     packageName = controller.getCompilationUnit().getPackageName().toString();
                     name = tree.getSimpleName().toString();
                     type = packageName + "." + name;
@@ -303,6 +304,11 @@ public class EntityClassInfo {
             }
         }
         return null;
+    }
+    
+    private JavaSource getJavaSource(Project project) throws IOException {
+        return SourceGroupSupport.getJavaSourceFromClassName(
+                entityFqn, project);
     }
 
     private boolean useFieldAccess(TypeElement typeElement, 
