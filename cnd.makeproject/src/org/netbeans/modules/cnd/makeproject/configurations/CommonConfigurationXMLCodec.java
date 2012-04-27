@@ -60,6 +60,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ArchiverConfigura
 import org.netbeans.modules.cnd.makeproject.api.configurations.AssemblerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCompilerConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.CodeAssistanceConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configurations;
@@ -82,6 +83,9 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.RequiredProjectsC
  */
 /**
  * Change History:
+ * V83 - NB 7.2
+ *    Code Assistance general properties.
+ *    use build analyzer and tools list field introduced in configuration for unmanaged projects.
  * V82 - NB 7.2
  *    Hardcoded extension of dynamic library from project is replaced by macros.
  *    New flavor2 field introduced in item configuration for unmanaged projects.
@@ -234,7 +238,7 @@ public abstract class CommonConfigurationXMLCodec
         extends XMLDecoder
         implements XMLEncoder {
 
-    public final static int CURRENT_VERSION = 82;
+    public final static int CURRENT_VERSION = 83;
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
     protected final static String DEBUGGING_ELEMENT = "justfordebugging"; // NOI18N
@@ -289,6 +293,10 @@ public abstract class CommonConfigurationXMLCodec
     protected final static String INHERIT_INC_VALUES_ELEMENT = "inheritIncValues"; // NOI18N
     protected final static String INHERIT_PRE_VALUES_ELEMENT = "inheritPreValues"; // NOI18N
     protected final static String USE_LINKER_PKG_CONFIG_LIBRARIES = "useLinkerLibraries"; // NOI18N
+    // Code Assistance
+    protected final static String CODE_ASSISTANCE_ELEMENT = "codeAssistance"; // NOI18N
+    protected final static String BUILD_ANALAZYER_ELEMENT = "buildAnalyzer"; // NOI18N
+    protected final static String BUILD_ANALAZYER_TOOLS_ELEMENT = "buildAnalyzerTools"; // NOI18N
     // Compiler (Generic) Tool
     protected final static String INCLUDE_DIRECTORIES_ELEMENT = "includeDirectories"; // NOI18N
     protected final static String INCLUDE_DIRECTORIES_ELEMENT2 = "incDir"; // NOI18N
@@ -462,6 +470,7 @@ public abstract class CommonConfigurationXMLCodec
                     writeQmakeConfiguration(xes, makeConfiguration.getQmakeConfiguration());
                 }
                 if (makeConfiguration.isMakefileConfiguration()) {
+                    writeCodeAssistanceConfiguration(xes, makeConfiguration.getCodeAssistanceConfiguration());
                     writeMakefileProjectConfBlock(xes, makeConfiguration);
                 } else {
                     writeCompiledProjectConfBlock(xes, makeConfiguration);
@@ -1068,5 +1077,16 @@ public abstract class CommonConfigurationXMLCodec
             xes.element(listTag, dir);
         }
         xes.elementClose(tag);
+    }
+
+    private void writeCodeAssistanceConfiguration(XMLEncoderStream xes, CodeAssistanceConfiguration codeAssistanceConfiguration) {
+        xes.elementOpen(CODE_ASSISTANCE_ELEMENT);
+        if (codeAssistanceConfiguration.getBuildAnalyzer().getModified()) {
+            xes.element(BUILD_ANALAZYER_ELEMENT, "" + codeAssistanceConfiguration.getBuildAnalyzer().getValue()); // NOI18N
+        }
+        if (codeAssistanceConfiguration.getTools().getModified()) {
+            xes.element(BUILD_ANALAZYER_TOOLS_ELEMENT, "" + codeAssistanceConfiguration.getTools().getValue()); // NOI18N
+        }
+        xes.elementClose(CODE_ASSISTANCE_ELEMENT);
     }
 }

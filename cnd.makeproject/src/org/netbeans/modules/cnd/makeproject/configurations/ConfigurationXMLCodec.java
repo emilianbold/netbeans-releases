@@ -66,6 +66,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConf
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCompilerConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.CodeAssistanceConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CustomToolConfiguration;
@@ -116,6 +117,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     private AssemblerConfiguration currentAsmConfiguration = null;
     private CustomToolConfiguration currentCustomToolConfiguration = null;
     private LinkerConfiguration currentLinkerConfiguration = null;
+    private CodeAssistanceConfiguration currentCodeAssistanceConfiguration = null;
     private PackagingConfiguration currentPackagingConfiguration = null;
     private ArchiverConfiguration currentArchiverConfiguration = null;
     private LibrariesConfiguration currentLibrariesConfiguration = null;
@@ -300,6 +302,10 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             } else {
                 System.err.println("Not found folder: " + path);
                 // FIXUP
+            }
+        } else if (element.equals(CODE_ASSISTANCE_ELEMENT)) {
+            if (currentConf != null) {
+                currentCodeAssistanceConfiguration = ((MakeConfiguration) currentConf).getCodeAssistanceConfiguration();
             }
         } else if (element.equals(COMPILERTOOL_ELEMENT)) {
         } else if (element.equals(CCOMPILERTOOL_ELEMENT2) || element.equals(CCOMPILERTOOL_ELEMENT) || element.equals(SUN_CCOMPILERTOOL_OLD_ELEMENT)) { // FIXUP: <= 23
@@ -611,6 +617,17 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             if (currentFolderConfiguration != null) {
                 currentFolderConfiguration.clearChanged();
                 currentFolderConfiguration = null;
+            }
+        } else if (element.equals(CODE_ASSISTANCE_ELEMENT)) {
+            currentCCCCompilerConfiguration = null;
+        } else if (element.equals(BUILD_ANALAZYER_ELEMENT)) {
+            if (currentCodeAssistanceConfiguration != null) {
+                boolean ba = currentText.equals(TRUE_VALUE);
+                currentCodeAssistanceConfiguration.getBuildAnalyzer().setValue(ba);
+            }
+        } else if (element.equals(BUILD_ANALAZYER_TOOLS_ELEMENT)) {
+            if (currentCodeAssistanceConfiguration != null) {
+                currentCodeAssistanceConfiguration.getTools().setValue(getString(currentText));
             }
         } else if (element.equals(COMPILERTOOL_ELEMENT)) { // FIXUP: < 10
         } else if (element.equals(CCOMPILERTOOL_ELEMENT2) || element.equals(CCOMPILERTOOL_ELEMENT) || element.equals(SUN_CCOMPILERTOOL_OLD_ELEMENT)) { // FIXUP: <=23

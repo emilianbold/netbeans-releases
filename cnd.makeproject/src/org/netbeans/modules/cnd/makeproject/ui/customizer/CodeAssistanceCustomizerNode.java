@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,32 +37,37 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.makeproject.ui.customizer;
 
-package org.netbeans.modules.cnd.debugger.gdb2;
-
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.debugger.gdb2.mi.MIParserTestCase;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
+import org.openide.nodes.Sheet;
+import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 
 /**
  *
- * @author Egor Ushakov
+ * @author Alexander Simon
  */
-public class GdbUnitTest extends TestSuite {
-    
-    public GdbUnitTest() {
-        super("Gdb unit tests");
-        addTestSuite(MIParserTestCase.class);
-        addTestSuite(PidParserTestCase.class);
-        addTestSuite(MemParserTestCase.class);
-        addTestSuite(RedirectionPathTestCase.class);
+public class CodeAssistanceCustomizerNode extends CustomizerNode {
+     public CodeAssistanceCustomizerNode(String name, String displayName, CustomizerNode[] children, Lookup lookup) {
+        super(name, displayName, children, lookup);
+    }
+    @Override
+    public Sheet getSheet(Configuration configuration) {
+        switch (getContext().getKind()){
+            case Project:
+                return ((MakeConfiguration) configuration).getCodeAssistanceConfiguration().getGeneralSheet((MakeConfiguration) configuration);
+        }
+        return null;
     }
 
-    public static Test suite() {
-        TestSuite suite = new GdbUnitTest();
-        return suite;
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("ProjectPropsParser"); // NOI18N
     }
 
 }

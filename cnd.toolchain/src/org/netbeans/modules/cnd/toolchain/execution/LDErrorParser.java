@@ -50,16 +50,16 @@ import java.util.regex.Pattern;
 import javax.swing.JButton;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.extexecution.print.ConvertedLine;
-import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.remote.ServerListUI;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider;
 import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider.Result;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.cnd.api.remote.ServerListUI;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.spi.project.ui.CustomizerProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -88,11 +88,13 @@ public final class LDErrorParser implements ErrorParserProvider.ErrorParser {
     private static final Pattern LD_RFS_PRELOAD = Pattern.compile(".*ld\\.so.*rfs_preload.so"); //NOI18N
 
     private final ExecutionEnvironment execEnv;
+    private final Project project;
     private boolean checkBuildTrace = false;
     private boolean checkRfs = false;
 
     public LDErrorParser(Project project, CompilerFlavor flavor, ExecutionEnvironment execEnv, FileObject relativeTo) {
         this.execEnv = execEnv;
+        this.project = project;
         
         try {
             HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
@@ -130,7 +132,7 @@ public final class LDErrorParser implements ErrorParserProvider.ErrorParser {
                     @Override
                     public List<ConvertedLine> converted() {
                         List<ConvertedLine> lines = new ArrayList<ConvertedLine>();
-                        lines.add(ConvertedLine.forText(line, new OutputListenerBuildTrace(execEnv)));
+                        lines.add(ConvertedLine.forText(line, new OutputListenerBuildTrace(execEnv, project)));
                         return lines;
                     }
                 };
@@ -160,8 +162,10 @@ public final class LDErrorParser implements ErrorParserProvider.ErrorParser {
 
     private static final class OutputListenerBuildTrace implements OutputListener {
         private final ExecutionEnvironment execEnv;
-        private OutputListenerBuildTrace(ExecutionEnvironment execEnv) {
+        private final Project project;
+        private OutputListenerBuildTrace(ExecutionEnvironment execEnv, Project project) {
             this.execEnv = execEnv;
+            this.project = project;
         }
 
         @Override
@@ -189,7 +193,12 @@ public final class LDErrorParser implements ErrorParserProvider.ErrorParser {
 
                     @Override
                     public void run() {
-                        OptionsDisplayer.getDefault().open("CPlusPlus/ProjectsTab"); // NOI18N
+                        if (project != null) {
+                            CustomizerProvider cp = project.getLookup().lookup( CustomizerProvider.class );
+                            if (cp != null) {
+                                cp.showCustomizer();
+                            }
+                        }
                     }
                 });
             }
