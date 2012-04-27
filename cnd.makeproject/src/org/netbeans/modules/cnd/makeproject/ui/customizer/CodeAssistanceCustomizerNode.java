@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,30 +37,37 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.toolchain.execution;
+package org.netbeans.modules.cnd.makeproject.ui.customizer;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
-import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
+import org.openide.nodes.Sheet;
+import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author Alexander Simon
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider.class)
-public class ResolveConflictParserProvider extends ErrorParserProvider {
-
+public class CodeAssistanceCustomizerNode extends CustomizerNode {
+     public CodeAssistanceCustomizerNode(String name, String displayName, CustomizerNode[] children, Lookup lookup) {
+        super(name, displayName, children, lookup);
+    }
     @Override
-    public ErrorParser getErorParser(Project project,CompilerFlavor flavor, ExecutionEnvironment execEnv, FileObject relativeTo) {
-	return new LDErrorParser(project, flavor, execEnv, relativeTo);
+    public Sheet getSheet(Configuration configuration) {
+        switch (getContext().getKind()){
+            case Project:
+                return ((MakeConfiguration) configuration).getCodeAssistanceConfiguration().getGeneralSheet((MakeConfiguration) configuration);
+        }
+        return null;
     }
 
     @Override
-    public String getID() {
-	return ErrorParserProvider.UNIVERSAL_PROVIDER_ID;
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("ProjectPropsParser"); // NOI18N
     }
+
 }

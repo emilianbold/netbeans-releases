@@ -58,28 +58,28 @@ import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.makeproject.MakeProjectUtils;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectCustomizer;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PredefinedType;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionSupport;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
-import org.netbeans.modules.cnd.makeproject.platform.Platforms;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationMakefileWriter;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.CompilerSetNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.DevelopmentHostNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.RemoteSyncFactoryNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.RequiredProjectsNodeProp;
+import org.netbeans.modules.cnd.makeproject.platform.Platforms;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -159,6 +159,7 @@ public class MakeConfiguration extends Configuration {
     private boolean languagesDirty = true;
     private RemoteSyncFactory fixedRemoteSyncFactory;
     private volatile RemoteProject.Mode remoteMode;
+    private CodeAssistanceConfiguration codeAssistanceConfiguration;
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
     
     private String customizerId = null;
@@ -238,6 +239,7 @@ public class MakeConfiguration extends Configuration {
         qmakeConfiguration = new QmakeConfiguration(this);
 
         developmentHost.addPropertyChangeListener(compilerSet);
+        codeAssistanceConfiguration = new CodeAssistanceConfiguration(this);
         initAuxObjects();
     }
 
@@ -562,6 +564,7 @@ public class MakeConfiguration extends Configuration {
         getRequiredProjectsConfiguration().assign(makeConf.getRequiredProjectsConfiguration());
         getDebuggerChooserConfiguration().assign(makeConf.getDebuggerChooserConfiguration());
         getQmakeConfiguration().assign(makeConf.getQmakeConfiguration());
+        getCodeAssistanceConfiguration().assign(makeConf.getCodeAssistanceConfiguration());
 
         // do assign on all aux objects
         ConfigurationAuxObject[] auxs = getAuxObjects(); // from this profile
@@ -708,6 +711,7 @@ public class MakeConfiguration extends Configuration {
         clone.setRequiredProjectsConfiguration(getRequiredProjectsConfiguration().clone());
         clone.setDebuggerChooserConfiguration(getDebuggerChooserConfiguration().clone());
         clone.setQmakeConfiguration(getQmakeConfiguration().clone());
+        clone.setCodeAssistanceConfiguration(getCodeAssistanceConfiguration());
 
         dhconf.addPropertyChangeListener(csconf);
 
@@ -932,10 +936,18 @@ public class MakeConfiguration extends Configuration {
     /**
      * @param customizerId the customizerId to set
      */
-    public void setCustomizerId(String customizerId) {
+    public final void setCustomizerId(String customizerId) {
         this.customizerId = customizerId;
     }
 
+    public CodeAssistanceConfiguration getCodeAssistanceConfiguration() {
+        return codeAssistanceConfiguration;
+    }
+
+    public void setCodeAssistanceConfiguration(CodeAssistanceConfiguration codeAssistanceConfiguration) {
+        this.codeAssistanceConfiguration = codeAssistanceConfiguration;
+    }
+    
     public class LanguageBooleanConfiguration extends BooleanConfiguration {
 
         private boolean notYetSet = true;

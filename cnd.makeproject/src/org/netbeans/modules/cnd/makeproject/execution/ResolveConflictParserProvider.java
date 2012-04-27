@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,32 +37,30 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.makeproject.execution;
 
-package org.netbeans.modules.cnd.debugger.gdb2;
-
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.debugger.gdb2.mi.MIParserTestCase;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
+import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Egor Ushakov
+ * @author Alexander Simon
  */
-public class GdbUnitTest extends TestSuite {
-    
-    public GdbUnitTest() {
-        super("Gdb unit tests");
-        addTestSuite(MIParserTestCase.class);
-        addTestSuite(PidParserTestCase.class);
-        addTestSuite(MemParserTestCase.class);
-        addTestSuite(RedirectionPathTestCase.class);
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider.class)
+public class ResolveConflictParserProvider extends ErrorParserProvider {
+
+    @Override
+    public ErrorParser getErorParser(Project project,CompilerFlavor flavor, ExecutionEnvironment execEnv, FileObject relativeTo) {
+	return new LDErrorParser(project, flavor, execEnv, relativeTo);
     }
 
-    public static Test suite() {
-        TestSuite suite = new GdbUnitTest();
-        return suite;
+    @Override
+    public String getID() {
+	return ErrorParserProvider.UNIVERSAL_PROVIDER_ID;
     }
-
 }

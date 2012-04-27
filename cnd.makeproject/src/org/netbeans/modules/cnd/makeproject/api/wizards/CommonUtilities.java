@@ -48,12 +48,10 @@ import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.makeproject.ui.wizards.PanelConfigureProject;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
-import org.openide.WizardDescriptor;
 import org.openide.util.Exceptions;
 
 /**
@@ -125,12 +123,6 @@ public final class CommonUtilities {
         return ldLibPath;
     }
     
-    // Use smart build analyzer to configure code assistance
-    public static boolean isUseBuildTrace() {
-        // redirect method because it used in discovery
-        return MakeOptions.getInstance().isUseBuildTrace();
-    }
-
     public static String addSearchPaths(String ldLibPath, List<String> searchPaths, String binary) {
         if (searchPaths == null) {
             return ldLibPath;
