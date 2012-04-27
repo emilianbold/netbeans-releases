@@ -277,7 +277,11 @@ public class Folder implements FileChangeListener, ChangeListener {
     }
 
     public String getDiskName() {
-        return CndPathUtilitities.getBaseName(getAbsolutePath());
+        String diskName = getAbsolutePath();
+        if (diskName != null) {
+            return CndPathUtilitities.getBaseName(diskName);
+        }
+        return null;
     }
     
     public void attachListeners() {
@@ -1003,7 +1007,7 @@ public class Folder implements FileChangeListener, ChangeListener {
     }
 
     public String getAbsolutePath() {
-        String absRootPath = CndPathUtilitities.toAbsolutePath(configurationDescriptor.getBaseDir(), getRoot());
+        String absRootPath = CndPathUtilitities.toAbsolutePath(configurationDescriptor.getBaseDirFileObject(), getRoot());
         absRootPath = RemoteFileUtil.normalizeAbsolutePath(absRootPath, getProject());
         FileObject folderFile = RemoteFileUtil.getFileObject(absRootPath, getProject());
         if (folderFile != null) {
