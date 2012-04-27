@@ -283,7 +283,7 @@ public class ProjectNodeFactory {
         descriptions.add(ItemNodeFactory.createCCompilerDescription(lookup));
         descriptions.add(ItemNodeFactory.createCCCompilerDescription(lookup));
         String nodeLabel = getString("LBL_PARSER_NODE");
-        return new CodeAssistanceCustomizerNode("CodeAssistant", nodeLabel,  descriptions.toArray(new CustomizerNode[descriptions.size()]), lookup); // NOI18N
+        return new CodeAssistanceCustomizerNode("CodeAssistance", nodeLabel,  descriptions.toArray(new CustomizerNode[descriptions.size()]), lookup); // NOI18N
     }
 
     private static CustomizerNode createNotFoundNode(String nodeName) {

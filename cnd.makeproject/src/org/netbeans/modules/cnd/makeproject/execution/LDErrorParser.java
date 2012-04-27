@@ -40,7 +40,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.toolchain.execution;
+package org.netbeans.modules.cnd.makeproject.execution;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -53,6 +53,9 @@ import org.netbeans.api.extexecution.print.ConvertedLine;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.ServerListUI;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
+import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectCustomizer;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectCustomizerAdaptor;
 import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider;
 import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider.Result;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -195,8 +198,8 @@ public final class LDErrorParser implements ErrorParserProvider.ErrorParser {
                     public void run() {
                         if (project != null) {
                             CustomizerProvider cp = project.getLookup().lookup( CustomizerProvider.class );
-                            if (cp != null) {
-                                cp.showCustomizer();
+                            if (cp instanceof MakeCustomizerProvider) {
+                                ((MakeCustomizerProvider)cp).showCustomizer("CodeAssistance"); // NOI18N
                             }
                         }
                     }
