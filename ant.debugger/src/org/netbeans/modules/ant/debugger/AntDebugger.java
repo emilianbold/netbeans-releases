@@ -76,6 +76,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Annotatable;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.util.TaskListener;
 import org.w3c.dom.Element;
@@ -136,6 +137,7 @@ public class AntDebugger extends ActionsProviderSupport {
         this.execTask = execTask;
         if (execTask != null) {
             execTask.addTaskListener(new TaskListener() {
+                @Override
                 public void taskFinished(org.openide.util.Task task) {
                     // The ANT task was finished
                     finish();
@@ -157,10 +159,12 @@ public class AntDebugger extends ActionsProviderSupport {
         actions.add (ActionsManager.ACTION_STEP_OUT);
     }
     
+    @Override
     public Set getActions () {
         return actions;
     }
         
+    @Override
     public void doAction (Object action) {
         synchronized (LOCK_ACTIONS) {
             actionRunning = true;
@@ -201,6 +205,7 @@ public class AntDebugger extends ActionsProviderSupport {
             }
         }
         actionsRequestProcessor.post(new Runnable() {
+            @Override
             public void run() {
                 try {
                     doAction(action);
@@ -289,7 +294,11 @@ public class AntDebugger extends ActionsProviderSupport {
     
     void taskFinished (AntEvent event) {
         if (finished) return ;
-        callStackList.remove(0);//(callStackList.size() - 1);
+        if (callStackList.size() > 0) {
+            callStackList.remove(0);
+        } else {
+            logger.log(Level.CONFIG, "Empty call stack when task "+event.getTaskStructure().getName()+" finished.");
+        }
         if (taskEndToStopAt != null &&
             taskEndToStopAt.equals(event.getTaskStructure().getName()) &&
             event.getScriptLocation().equals(fileToStopAt)) {
@@ -388,6 +397,9 @@ public class AntDebugger extends ActionsProviderSupport {
             }
         }
         
+        if (target == null) {
+            Exceptions.printStackTrace(new IllegalStateException("Unable to find the target from "+event+", target name = "+targetName+", script location = "+event.getScriptLocation()));
+        }
         callStackList.addFirst(target);
         currentTargetName = targetName;
         currentTaskName = null;
@@ -396,7 +408,11 @@ public class AntDebugger extends ActionsProviderSupport {
     
     void targetFinished(AntEvent event) {
         if (finished) return ;
-        callStackList.remove(0);//(callStackList.size() - 1);
+        if (callStackList.size() > 0) {
+            callStackList.remove(0);
+        } else {
+            logger.log(Level.CONFIG, "Empty call stack when target "+event.getTargetName()+" finished.");
+        }
         if (targetEndToStopAt != null && targetEndToStopAt.equals(event.getTargetName()) &&
             fileToStopAt.equals(event.getScriptLocation())) {
                 targetEndToStopAt = null;
@@ -542,12 +558,17 @@ public class AntDebugger extends ActionsProviderSupport {
             if (frame instanceof TargetOriginating) {
                 frame = ((TargetOriginating) frame).getOriginatingTarget();
             }
-            Object line = frame instanceof Task ?
-                ((Task) frame).getLine () :
-                Utils.getLine (
-                    (TargetLister.Target) frame, 
-                    null
-                );
+            Object line;
+            if (frame == null) {
+                line = null;
+            } else {
+                line = frame instanceof Task ?
+                    ((Task) frame).getLine () :
+                    Utils.getLine (
+                        (TargetLister.Target) frame, 
+                        null
+                    );
+            }
             if (line != null) {
                 line = new Annotatable[] { ((Annotatable[]) line)[0] };
             }
@@ -751,9 +772,9 @@ public class AntDebugger extends ActionsProviderSupport {
             if (ll == null) continue;
             TargetOriginating to = (TargetOriginating) ll.getLast();
             if (to.getOriginatingTarget() == null) {
-                to.setOriginatingTarget(findTarget(start, file));
+                to.setOriginatingTarget(t);
             } else {
-                ll.addLast(new TargetOriginating(findTarget(start, file), to.getOriginatingTarget()));
+                ll.addLast(new TargetOriginating(t, to.getOriginatingTarget()));
             }
             return ll;
         }
@@ -782,8 +803,7 @@ public class AntDebugger extends ActionsProviderSupport {
             } catch (DataObjectNotFoundException donfex) {
                 throw new IllegalStateException(donfex.getLocalizedMessage());
             }
-            AntProjectCookie ant = (AntProjectCookie) dob.getCookie 
-                (AntProjectCookie.class);
+            AntProjectCookie ant = dob.getLookup().lookup(AntProjectCookie.class);
             if (ant != null) {
                 Element proj = ant.getProjectElement();
                 if (proj != null) {
@@ -800,6 +820,8 @@ public class AntDebugger extends ActionsProviderSupport {
                 } catch (IOException ioex) {
                     // Ignore - we'll have an empty map
                 }
+            } else {
+                logger.warning("No ant cookie from "+dob+", fo = "+fo);
             }
             nameToTargetByFiles.put(file, nameToTarget);
         }
