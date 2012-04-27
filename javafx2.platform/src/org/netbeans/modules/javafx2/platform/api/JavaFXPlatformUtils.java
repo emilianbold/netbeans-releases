@@ -102,7 +102,7 @@ public final class JavaFXPlatformUtils {
     /**
      * Default on-line location of FX2 JavaDoc
      */
-    private static final String JAVADOC_ONLINE_URL = "http://docs.oracle.com/javafx/2.0/api/"; // NOI18N
+    private static final String JAVADOC_ONLINE_URL = "http://docs.oracle.com/javafx/2/api/"; // NOI18N
     
     private JavaFXPlatformUtils() {
     }
