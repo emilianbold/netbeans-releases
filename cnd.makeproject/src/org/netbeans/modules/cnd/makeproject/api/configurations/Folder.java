@@ -1009,11 +1009,14 @@ public class Folder implements FileChangeListener, ChangeListener {
     }
 
     public String getAbsolutePath() {
-        String absRootPath = CndPathUtilitities.toAbsolutePath(configurationDescriptor.getBaseDirFileObject(), getRoot());
-        absRootPath = RemoteFileUtil.normalizeAbsolutePath(absRootPath, getProject());
-        FileObject folderFile = RemoteFileUtil.getFileObject(absRootPath, getProject());
-        if (folderFile != null) {
-            return folderFile.getPath();
+        String aRoot = getRoot();
+        if (aRoot != null) {
+            String absRootPath = CndPathUtilitities.toAbsolutePath(configurationDescriptor.getBaseDirFileObject(), getRoot());
+            absRootPath = RemoteFileUtil.normalizeAbsolutePath(absRootPath, getProject());
+            FileObject folderFile = RemoteFileUtil.getFileObject(absRootPath, getProject());
+            if (folderFile != null) {
+                return folderFile.getPath();
+            }
         }
         return null;
     }
