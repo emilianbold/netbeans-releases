@@ -63,6 +63,7 @@ import org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.StackFrameWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.models.CallStackFrameImpl;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.jpda.Evaluator;
@@ -110,7 +111,7 @@ public class JavaEvaluator implements Evaluator<JavaExpression> {
                               ObjectReference var, boolean canInvokeMethods,
                               Runnable methodInvokePreprocessor) throws InvalidExpressionException {
         // should be already synchronized on the frame's thread
-        if (frame == null)
+        if (csf == null)
             throw new InvalidExpressionException
                     (NbBundle.getMessage(JPDADebuggerImpl.class, "MSG_NoCurrentContext"));
 
@@ -118,12 +119,12 @@ public class JavaEvaluator implements Evaluator<JavaExpression> {
         List<String> imports = new ArrayList<String>();
         List<String> staticImports = new ArrayList<String>();
         imports.add ("java.lang.*");    // NOI18N
+        CallStackFrameImpl csfi = (CallStackFrameImpl) csf;
         try {
             imports.addAll (Arrays.asList (EditorContextBridge.getContext().getImports (
-                debugger.getEngineContext ().getURL (frame, "Java") // NOI18N
+                debugger.getEngineContext ().getURL (csfi.getStackFrame(), "Java") // NOI18N
             )));
-            final ThreadReference tr = StackFrameWrapper.thread(frame);
-            JPDAThreadImpl trImpl = debugger.getThread(tr);
+            JPDAThreadImpl trImpl = (JPDAThreadImpl) csf.getThread();
             EvaluationContext context;
             TreeEvaluator evaluator =
                 expression.evaluator(
