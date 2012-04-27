@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,50 +37,72 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.html.parser;
 
-package org.netbeans.modules.html.editor.lib.api;
-
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumSet;
+import org.netbeans.modules.html.editor.lib.api.HelpResolver;
+import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
 import org.netbeans.modules.html.editor.lib.api.model.HtmlModel;
-import org.openide.util.Lookup;
+import org.netbeans.modules.html.editor.lib.api.model.HtmlModelProvider;
+import org.netbeans.modules.html.editor.lib.api.model.HtmlTag;
+import org.netbeans.modules.html.editor.lib.api.model.NamedCharRef;
+import org.netbeans.modules.html.parser.model.ElementDescriptor;
+import org.netbeans.modules.html.parser.model.HtmlTagProvider;
+import org.netbeans.modules.html.parser.model.NamedCharacterReference;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author marekfukala
  */
-public interface HtmlParser {
+@ServiceProvider(service = HtmlModelProvider.class, position = 10)
+public final class Html5Model implements HtmlModel, HtmlModelProvider {
+
+    private static Collection<HtmlTag> ALL_TAGS;
+
+    @Override
+    public HtmlModel getModel(HtmlVersion version) {
+        switch (version) {
+            case HTML5:
+            case XHTML5:
+                return this;
+            default:
+                return null;
+        }
+    }
+
+    @Override
+    public synchronized Collection<HtmlTag> getAllTags() {
+        if (ALL_TAGS == null) {
+            ALL_TAGS = new ArrayList<HtmlTag>();
+            for (ElementDescriptor element : ElementDescriptor.values()) {
+                ALL_TAGS.add(HtmlTagProvider.forElementDescriptor(element));
+            }
+        }
+        return Collections.unmodifiableCollection(ALL_TAGS);
+    }
+
+    @Override
+    public HtmlTag getTag(String tagName) {
+        return HtmlTagProvider.getTagForElement(tagName); //cached in the provider
+    }
+
+    @Override
+    public Collection<? extends NamedCharRef> getNamedCharacterReferences() {
+        return EnumSet.allOf(NamedCharacterReference.class);
+    }
 
     /**
-     * Returns a name of the parser. 
      * 
-     * @return An internal identifier of the parser. Doesn't need to be localized, not presented to user.
+     * @deprecated 
      */
-    @Deprecated
-    public String getName();
-
-    /**
-     * Decides if the parser can parse parse html source of the given version.
-     * 
-     * @return true if the parser can parse given html version
-     */
-    public boolean canParse(HtmlVersion version);
-
-    /**
-     * Parses the given source.
-     * 
-     * @param source html source
-     * @param preferedVersion represents a preferred html version if the version cannot be determined from the source
-     * @param lookup contains some additional information necessary to the parser
-     * @return instance of {@link HtmlParseResult}
-     * @throws ParseException 
-     */
-    public HtmlParseResult parse(HtmlSource source, HtmlVersion preferedVersion, Lookup lookup) throws ParseException;
-
-    /**
-     * @deprecated Register an instance of {@link HtmlModelProvider} instead.
-     */
-    @Deprecated
-    public HtmlModel getModel(HtmlVersion version);
-
+    @Override
+    public String getModelId() {
+        return null;
+    }
 }
