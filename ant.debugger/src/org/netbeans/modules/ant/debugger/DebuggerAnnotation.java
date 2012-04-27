@@ -46,7 +46,6 @@ package org.netbeans.modules.ant.debugger;
 
 import org.openide.text.Annotatable;
 import org.openide.text.Annotation;
-import org.openide.text.Line;
 import org.openide.util.NbBundle;
 
 
@@ -78,26 +77,24 @@ public class DebuggerAnnotation extends Annotation {
         attach (annotatable);
     }
     
+    @Override
     public String getAnnotationType () {
         return type;
     }
     
+    @Override
     public String getShortDescription () {
         if (type == CURRENT_LINE_ANNOTATION_TYPE)
-            return NbBundle.getMessage 
-                (DebuggerAnnotation.class, "TOOLTIP_CURRENT_PC"); // NOI18N
+            return NbBundle.getMessage(DebuggerAnnotation.class, "TOOLTIP_CURRENT_PC");
         else
         if (type == CURRENT_LINE_ANNOTATION_TYPE2)
-            return NbBundle.getMessage 
-                (DebuggerAnnotation.class, "TOOLTIP_CURRENT_PC_2"); // NOI18N
+            return NbBundle.getMessage(DebuggerAnnotation.class, "TOOLTIP_CURRENT_PC_2");
         else
         if (type == CURRENT_LINE_PART_ANNOTATION_TYPE)
-            return NbBundle.getMessage
-                    (DebuggerAnnotation.class, "TOOLTIP_CURRENT_PC"); // NOI18N
+            return NbBundle.getMessage(DebuggerAnnotation.class, "TOOLTIP_CURRENT_PC");
         else
         if (type == CALL_STACK_FRAME_ANNOTATION_TYPE)
-            return NbBundle.getBundle (DebuggerAnnotation.class).getString 
-                ("TOOLTIP_CALLSITE"); // NOI18N
+            return NbBundle.getMessage(DebuggerAnnotation.class, "TOOLTIP_CALLSITE");
         return null;
     }
 }

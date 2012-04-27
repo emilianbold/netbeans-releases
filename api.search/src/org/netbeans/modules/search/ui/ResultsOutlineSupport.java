@@ -67,6 +67,7 @@ import javax.swing.event.TableColumnModelListener;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.table.TableColumn;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.modules.search.FindDialogMemory;
 import org.netbeans.modules.search.MatchingObject;
 import org.netbeans.modules.search.ResultModel;
@@ -95,6 +96,7 @@ import org.openide.util.lookup.Lookups;
  */
 public class ResultsOutlineSupport {
 
+    @StaticResource
     private static final String ROOT_NODE_ICON =
             "org/netbeans/modules/search/res/context.gif";              //NOI18N
     private static final int VERTICAL_ROW_SPACE = 2;
