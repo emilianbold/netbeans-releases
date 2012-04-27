@@ -93,13 +93,15 @@ public final class QueryImpl<Q, I>  {
     public RepositoryImpl getRepositoryImpl() {
         return repository;
     }
-
-    public Collection<IssueImpl> getIssues(int includeStatus) {
-        return getIssuesIntern(includeStatus);
-    }
     
     public Collection<IssueImpl> getIssues() {
-        return getIssuesIntern(~0);
+        Collection<I> issues = queryProvider.getIssues(data);
+        List<IssueImpl> ret = new ArrayList<IssueImpl>(issues.size());
+        for (I i : issues) {
+            IssueImpl issue = repository.getIssue(i);
+            ret.add(issue); // XXX API cache
+        }
+        return ret;
     }
 
     /**
@@ -159,19 +161,6 @@ public final class QueryImpl<Q, I>  {
         queryProvider.refresh(data);
     }
     
-    private Collection<IssueImpl> getIssuesIntern(int includeStatus) {
-        Collection<I> issues = queryProvider.getIssues(data);
-        List<IssueImpl> ret = new ArrayList<IssueImpl>(issues.size());
-        for (I i : issues) {
-            IssueImpl issue = repository.getIssue(i);
-            int status = IssueCacheUtils.getStatus(issue);
-            if((includeStatus & status) != 0) {
-                ret.add(issue); // XXX API cache
-            }
-        }
-        return ret;
-    }
-
     public String getDisplayName() {
         return queryProvider.getDisplayName(data);
     }
