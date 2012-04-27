@@ -240,8 +240,8 @@ public class CssCompletionTest extends CssModuleTestBase {
     public void testPropertyValueFontFamilyProblem2() throws ParseException {
         //completion doesn't offer items that can immediatelly follow
         //a valid token
-        checkCC("div { font-family: fantasy |}", arr(","), Match.EXACT);
-        checkCC("div { font-family: fantasy|}", arr(","), Match.EXACT);
+        checkCC("div { font-family: fantasy |}", arr(",", "identifier"), Match.EXACT);
+        checkCC("div { font-family: fantasy|}", arr(",", "identifier"), Match.EXACT);
     }
     
     public void testPropertyValueJustAfterRGB() throws ParseException {
