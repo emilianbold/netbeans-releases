@@ -457,7 +457,7 @@ public final class Main extends Object {
             
             /** Checks if licence was accepted already or not. */
             public boolean shouldDisplayLicense () {
-                File f = InstalledFileLocator.getDefault().locate("var/license_accepted","org.netbeans.core.startup",false); // NOI18N
+                File f = InstalledFileLocator.getDefault().locate("var/license_accepted",null,false); // NOI18N
                 if (f != null) {
                     return false;
                 }
