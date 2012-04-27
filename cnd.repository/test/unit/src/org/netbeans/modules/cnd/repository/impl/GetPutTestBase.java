@@ -44,7 +44,6 @@
 package org.netbeans.modules.cnd.repository.impl;
 
 import java.io.IOException;
-import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.modules.cnd.repository.api.Repository;
 import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
 import org.netbeans.modules.cnd.repository.spi.Key;
@@ -186,24 +185,25 @@ public abstract class GetPutTestBase extends CndBaseTestCase {
         public void write(RepositoryDataOutput out, Persistent obj) throws IOException {
             assert obj instanceof Value;
             out.writeUTF(((Value) obj).value);
+            onWriteHook(this, obj);
         }
 
         @Override
         public Persistent read(RepositoryDataInput in) throws IOException {
-            readFlag.set(true);
             String value = in.readUTF();
-            return new Value(value);
+            Value out = new Value(value);
+            onReadHook(this, out);
+            return out;
         }
+
     }
     protected PersistentFactory factory;
     protected Repository repository;
-    protected final AtomicBoolean readFlag = new AtomicBoolean(false);
 
     @Override
     protected void setUp() throws Exception {
         repository = RepositoryAccessor.getRepository();
         factory = new Factory();
-        readFlag.set(false);
         super.setUp();
     }
 
@@ -212,10 +212,10 @@ public abstract class GetPutTestBase extends CndBaseTestCase {
         super.tearDown();
     }
 
-    protected void sleep(long millis) {
-        try {
-            Thread.sleep(millis);
-        } catch (InterruptedException ex) {
-        }
+    protected void onReadHook(Factory factory, Persistent obj) {
+    }
+
+    protected void onWriteHook(Factory factory, Persistent obj) {
+
     }
 }
