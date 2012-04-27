@@ -69,6 +69,7 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
     private Part lp;
     private EditorCookie ec;
 
+    @Override
     public String getShortDescription () {
         DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager ().
             getCurrentEngine ();
@@ -82,8 +83,7 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
         Line line = lp.getLine ();
         DataObject dob = DataEditorSupport.findDataObject (line);
         if (dob == null) return null;
-        EditorCookie ec = 
-            dob.getCookie(EditorCookie.class);
+        EditorCookie ec = dob.getLookup().lookup(EditorCookie.class);
 
         if (ec == null) return null;
         this.lp = lp;
@@ -92,6 +92,7 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
         return null;
     }
 
+    @Override
     public void run () {
         //if (expression == null) return;
         if (lp == null || ec == null) return ;
@@ -125,6 +126,7 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
         firePropertyChange (PROP_SHORT_DESCRIPTION, null, toolTipText);
     }
 
+    @Override
     public String getAnnotationType () {
         return null; // Currently return null annotation type
     }
