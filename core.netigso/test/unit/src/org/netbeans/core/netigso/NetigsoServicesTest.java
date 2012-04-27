@@ -62,6 +62,7 @@ import org.netbeans.core.startup.Main;
 import org.netbeans.core.startup.ModuleSystem;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Item;
 import org.openide.util.Lookup.Result;
@@ -221,11 +222,10 @@ public class NetigsoServicesTest extends SetupHid implements LookupListener {
     }
 
     public static Framework findFramework() {
-        Object o = Lookup.getDefault().lookup(NetigsoFramework.class);
-        assertEquals("The right class", Netigso.class, o.getClass());
-        Netigso f = (Netigso)o;
-        final Framework frame = f.getFramework();
-        assertNotNull("Framework found", frame);
-        return frame;
+        try {
+            return NetigsoUtil.framework(Main.getModuleSystem().getManager());
+        } catch (Exception ex) {
+            throw new AssertionError(ex);
+        }
     }
 }

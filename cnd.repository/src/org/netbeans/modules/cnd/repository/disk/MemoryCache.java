@@ -67,6 +67,10 @@ import org.netbeans.modules.cnd.utils.CndUtils;
  * @author Vladimir Kvashin
  */
 public final class MemoryCache {
+    // marker to sign removed keys which can be in queue waiting for physical removal
+    // if we don't have such marker then previous object is read from storage
+    static final Persistent REMOVED = new Persistent() {};
+    
     private static final boolean STATISTIC = false;
     private static final int DEFAULT_SLICE_CAPACITY;
     private static final int SLICE_SIZE;
@@ -205,12 +209,28 @@ public final class MemoryCache {
         }
         return null;
     }
-    
-    public void remove(Key key) {
+
+    void removePhysically(Key key) {
         Slice s = cache.getSilce(key);
         s.w.lock();
         try {
-            s.storage.remove(key);
+            Object prev = s.storage.get(key);
+            if (prev == REMOVED) {
+                s.storage.remove(key);
+            }
+        } finally {
+            s.w.unlock();
+        }
+    }
+
+    void markRemoved(Key key) {
+        Slice s = cache.getSilce(key);
+        s.w.lock();
+        try {
+            s.storage.put(key, REMOVED);
+            // do not assert for now
+//            Object old = s.storage.put(key, REMOVED);
+//            assert old != null : " no value for removed key " + key;
         } finally {
             s.w.unlock();
         }

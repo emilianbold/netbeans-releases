@@ -50,7 +50,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.output.ContextOutputProcessorFactory;
@@ -82,7 +81,8 @@ public abstract class AbstractOutputHandler {
     protected Set<OutputProcessor> currentProcessors;
     protected Set<NotifyFinishOutputProcessor> toFinishProcessors;
     protected OutputVisitor visitor;
-    private final AtomicBoolean protectedMode = new AtomicBoolean(); // #211005
+    private IndexingBridge.Lock protectedMode; // #211005
+    private final Object protectedModeLock = new Object();
     private RequestProcessor.Task sleepTask;
     private static final int SLEEP_DELAY = 5000;
 
@@ -101,13 +101,18 @@ public abstract class AbstractOutputHandler {
     }
 
     private void enterProtectedMode() {
-        if (protectedMode.compareAndSet(false, true)) {
-            IndexingBridge.getDefault().enterProtectedMode();
+        synchronized (protectedModeLock) {
+            if (protectedMode == null) {
+                protectedMode = IndexingBridge.getDefault().protectedMode();
+            }
         }
     }
     private void exitProtectedMode() {
-        if (protectedMode.compareAndSet(true, false)) {
-            IndexingBridge.getDefault().exitProtectedMode();
+        synchronized (protectedModeLock) {
+            if (protectedMode != null) {
+                protectedMode.release();
+                protectedMode = null;
+            }
         }
     }
 

@@ -222,6 +222,12 @@ abstract class BackupFacility2 {
             BackupEntry backup = map.get(l);
             File f = new File(backup.path);
             FileObject fo = FileUtil.toFileObject(f);
+            if (fo==null) {
+                //deleted
+                backup.checkSum = new byte[16];
+                Arrays.fill(backup.checkSum, (byte)0);
+                return;
+            }
             DataObject dob = DataObject.find(fo);
             if (dob != null) {
                 CloneableEditorSupport ces = dob.getLookup().lookup(CloneableEditorSupport.class);

@@ -461,6 +461,11 @@ public final class MainWindow {
        );
    }
 
+   static void preInitMenuAndToolbar() {
+       createMenuBar();
+       ToolbarPool.getDefault();
+   }
+
    /** Creates menu bar. */
    private static JMenuBar createMenuBar() {
        JMenuBar menu = getCustomMenuBar();

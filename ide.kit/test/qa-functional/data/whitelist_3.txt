@@ -1,7 +1,5 @@
 #include whitelist_2.txt
 
-#include whitelist_bug_195029.txt
-
 #204449
 org.netbeans.modules.web.api.webmodule.WebModule
 org.netbeans.modules.web.beans.CdiOpenHook

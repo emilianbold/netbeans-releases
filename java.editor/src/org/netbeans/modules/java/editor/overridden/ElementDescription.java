@@ -44,6 +44,7 @@
 package org.netbeans.modules.java.editor.overridden;
 
 import java.awt.Image;
+import java.awt.Toolkit;
 import java.util.Collection;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -56,6 +57,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.ui.ElementIcons;
+import org.netbeans.api.java.source.ui.ElementOpen;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -166,6 +168,12 @@ public class ElementDescription {
             return SourceUtils.getFile(outtermostElement, ClasspathInfo.create(file));
         else
             return null;
+    }
+    
+    public void open() {
+        if (!ElementOpen.open(originalCPInfo, ElementDescription.this.getHandle())) {
+            Toolkit.getDefaultToolkit().beep();
+        }
     }
 
     public ElementHandle<Element> getHandle() {

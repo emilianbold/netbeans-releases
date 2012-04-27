@@ -69,6 +69,7 @@ import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.*;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
+import org.openide.util.RequestProcessor;
 
 /**
  * This file is originally from Retouche, the Java Support 
@@ -181,7 +182,7 @@ public final class ElementScanningTask extends IndexingAwareParserResultTask<Par
             });
         }
 
-        List<StructureItem> items = new ArrayList<StructureItem>();
+        final List<StructureItem> items = new ArrayList<StructureItem>();
         if (mimetypesWithElements[0] > 1) {
             //at least two languages provided some elements - use the root mimetype nodes
             for (MimetypeRootNode root : roots) {
@@ -194,9 +195,7 @@ public final class ElementScanningTask extends IndexingAwareParserResultTask<Par
             }
         }
 
-        if (!isCancelled()) {
-            ui.refresh(new RootStructureItem(items), fileObject);
-        }
+        ui.refresh(new RootStructureItem(items), fileObject);
     }
 
     public @Override int getPriority() {

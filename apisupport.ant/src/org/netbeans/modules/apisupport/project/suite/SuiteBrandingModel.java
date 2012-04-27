@@ -87,14 +87,15 @@ public class SuiteBrandingModel extends BrandingModel {
     }
 
     @Override protected boolean isBrandingEnabledRefresh() {
-        return suiteProps.getProperty(BRANDING_TOKEN_PROPERTY) != null;
+        return suiteProps.getPlatformProperty(BRANDING_TOKEN_PROPERTY) != null || suiteProps.getProperty(BRANDING_TOKEN_PROPERTY) != null;
     }
 
     @Override public void setName(String name) {
         super.setName(name);
         if (isBrandingEnabled()) {
-            suiteProps.setProperty(NAME_PROPERTY, getName());
-            suiteProps.setProperty(BRANDING_TOKEN_PROPERTY, "${" + NAME_PROPERTY + "}");//NOI18N
+            suiteProps.setProperty(NAME_PROPERTY, "${" + BRANDING_TOKEN_PROPERTY + "}");
+            suiteProps.removeProperty(BRANDING_TOKEN_PROPERTY);
+            suiteProps.setPlatformProperty(BRANDING_TOKEN_PROPERTY, getName());
         }
     }
 
@@ -105,7 +106,8 @@ public class SuiteBrandingModel extends BrandingModel {
     }
 
     @Override protected String loadName() {
-        return suiteProps.getProperty(NAME_PROPERTY);
+        String bt = suiteProps.getPlatformProperty(BRANDING_TOKEN_PROPERTY);
+        return bt != null ? bt : suiteProps.getProperty(NAME_PROPERTY);
     }
 
     @Override public void setTitle(String title) {
@@ -138,6 +140,7 @@ public class SuiteBrandingModel extends BrandingModel {
         super.store();
         if (!isBrandingEnabled() && brandingChanged) { // #115737
             suiteProps.removeProperty(BRANDING_TOKEN_PROPERTY);
+            suiteProps.setPlatformProperty(BRANDING_TOKEN_PROPERTY, null);
             suiteProps.removeProperty(NAME_PROPERTY);
             suiteProps.removeProperty(TITLE_PROPERTY);
             suiteProps.removeProperty(ICON_LOCATION_PROPERTY);

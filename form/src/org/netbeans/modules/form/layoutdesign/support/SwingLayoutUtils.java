@@ -191,7 +191,8 @@ public class SwingLayoutUtils {
                     && LayoutInterval.getNeighbor(seq, LayoutConstants.TRAILING, false, true, false) == null) {
                 for (Iterator<LayoutInterval> it=seq.getParent().getSubIntervals(); it.hasNext(); ) {
                     LayoutInterval sub = it.next();
-                    if (sub != seq && LayoutInterval.isAlignedAtBorder(sub, LayoutConstants.TRAILING)) {
+                    if (sub != seq && LayoutInterval.isAlignedAtBorder(sub, LayoutConstants.TRAILING)
+                            && (!sub.isSequential() || (sub.getSubIntervalCount() > 0 && !sub.getSubInterval(sub.getSubIntervalCount()-1).isEmptySpace()))) {
                         return gap;
                     }
                 }

@@ -58,6 +58,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.modules.search.MatchingObject;
 import org.netbeans.modules.search.MatchingObject.InvalidityStatus;
 import org.openide.cookies.EditCookie;
@@ -78,6 +79,13 @@ import org.openide.util.lookup.Lookups;
  * @author jhavlin
  */
 public class MatchingObjectNode extends AbstractNode {
+
+    @StaticResource
+    private static final String INVALID_ICON =
+            "org/netbeans/modules/search/res/invalid.png";              //NOI18N
+    @StaticResource
+    private static final String WARNING_ICON =
+            "org/netbeans/modules/search/res/warning.gif";              //NOI18N
 
     private MatchingObject matchingObject;
     private Node original;
@@ -138,16 +146,10 @@ public class MatchingObjectNode extends AbstractNode {
         if (valid) {
             return original.getIcon(type);
         } else {
-            String img;
             InvalidityStatus is = matchingObject.getInvalidityStatus();
-            switch (is == null ? InvalidityStatus.DELETED : is) {
-                case DELETED:
-                    img = "org/netbeans/modules/search/res/invalid.png";//NOI18N
-                    break;
-                default:
-                    img = "org/netbeans/modules/search/res/warning.gif";//NOI18N
-            }
-            return ImageUtilities.loadImage(img);
+            String icon = (is == null || is == InvalidityStatus.DELETED)
+                    ? INVALID_ICON : WARNING_ICON;
+            return ImageUtilities.loadImage(icon);
         }
     }
 

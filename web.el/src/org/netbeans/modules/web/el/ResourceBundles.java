@@ -46,14 +46,7 @@ import com.sun.el.parser.AstIdentifier;
 import com.sun.el.parser.AstString;
 import com.sun.el.parser.Node;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.MissingResourceException;
-import java.util.WeakHashMap;
+import java.util.*;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -66,11 +59,7 @@ import org.netbeans.modules.web.el.spi.ELPlugin;
 import org.netbeans.modules.web.el.spi.ResolverContext;
 import org.netbeans.modules.web.el.spi.ResourceBundle;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
-import org.openide.filesystems.FileChangeAdapter;
-import org.openide.filesystems.FileChangeListener;
-import org.openide.filesystems.FileEvent;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.URLMapper;
+import org.openide.filesystems.*;
 import org.openide.util.Parameters;
 import org.openide.util.WeakListeners;
 
@@ -274,7 +263,7 @@ public final class ResourceBundles {
      * Finds list of all ResourceBundles, which are registered in all
      * JSF configuration files in a web module.
      */
-     public synchronized List<ResourceBundle> getBundles(ResolverContext context) {
+    public List<ResourceBundle> getBundles(ResolverContext context) {
         List<ResourceBundle> bundles =  webModule != null ? ELPlugin.Query.getResourceBundles(webModule.getDocumentBase(), context) : Collections.<ResourceBundle>emptyList();
         return bundles;
     }
@@ -291,6 +280,7 @@ public final class ResourceBundles {
         } else {
             if(bundlesHash != currentBundlesHashCode) {
                 //refresh the resource bundle map
+                resetResourceBundleMap();
                 bundlesMap = createResourceBundleMapAndFileChangeListeners();
                 currentBundlesHashCode = bundlesHash;
                 LOGGER.fine("Resource bundle map recreated based on configuration changes."); //NOI18N
@@ -316,7 +306,7 @@ public final class ResourceBundles {
         LOGGER.fine("Resource bundle map released."); //NOI18N
     }
     
-    private synchronized long getBundlesHashCode() {
+    private long getBundlesHashCode() {
         //compute hashcode so we can compare if there are changes since the last time and possibly
         //reset the bundle map cache
         long hash = 3;

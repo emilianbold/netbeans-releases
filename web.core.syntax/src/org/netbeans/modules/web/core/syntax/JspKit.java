@@ -467,6 +467,11 @@ public class JspKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
         protected void insertString(BaseDocument doc, int dotPos,
                 Caret caret, String str,
                 boolean overwrite) throws BadLocationException {
+            // see issue #211036 - inserted string can be empty since #204450
+            if (str.isEmpty()) {
+                return;
+            }
+
             if (completionSettingEnabled()) {
                 KeystrokeHandler bracketCompletion = UiUtils.getBracketCompletion(doc, dotPos);
 
