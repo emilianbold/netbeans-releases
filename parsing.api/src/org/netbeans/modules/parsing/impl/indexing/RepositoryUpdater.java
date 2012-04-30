@@ -5223,7 +5223,10 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         Collections.reverse(sortedRoots);
 
                         for (URL url : sortedRoots) {
-                            todo.addAll(toSort.get(url));
+                            final List<FileListWork> flws = toSort.get(url);
+                            if (flws != null) {
+                                todo.addAll(flws);
+                            }
                         }
 
                         followUpWorksSorted = true;
