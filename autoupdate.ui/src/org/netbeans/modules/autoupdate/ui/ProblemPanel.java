@@ -49,11 +49,13 @@ import java.awt.event.ActionListener;
 import javax.swing.JButton;
 import org.netbeans.api.autoupdate.OperationException;
 import org.netbeans.api.options.OptionsDisplayer;
+import static org.netbeans.modules.autoupdate.ui.Bundle.*;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
@@ -63,9 +65,10 @@ public class ProblemPanel extends javax.swing.JPanel {
     private String problem;
     private JButton [] buttons = null;
     private boolean isWarning = false;
+    private OperationException ex;
 
-    public ProblemPanel(OperationException ex, boolean warning) {
-        this (ex, null, warning);
+    public ProblemPanel(OperationException ex, boolean warning, JButton... buttons) {
+        this (ex, null, warning, buttons);
     }
     
     public ProblemPanel (String problemDescription, JButton... buttons) {
@@ -73,28 +76,61 @@ public class ProblemPanel extends javax.swing.JPanel {
     }
     
     private ProblemPanel (OperationException ex, String problemDescription, boolean warning, JButton... buttons) {
+        this.ex = ex;
         this.buttons = buttons;
         this.isWarning = warning;
+        if (ex == null) {
+            initProxyProblem(problemDescription);
+        }
+        switch (ex.getErrorType()) {
+            case PROXY:
+                initProxyProblem(problemDescription);
+                break;
+            case WRITE_PERMISSION:
+                initWriteProblem(problemDescription);
+                break;
+            default:
+                assert false : "Unknown type " + ex;
+        }
+        for (JButton b : buttons) {
+            b.getAccessibleContext ().setAccessibleDescription (b.getText ());
+        }
+    }
+    
+    @Messages({"proxy_taTitle_Text=Unable to connect to the Update Center",
+        "proxy_taMessage_WarningTextWithReload=Check your proxy settings or try again later. The server may be unavailable at the moment. \n\nYou may also want to make sure that your firewall is not blocking network traffic. \n\nYour cache may be out of date. Please click Reload Catalog to refresh content.",
+        "proxy_taMessage_WarningText=Check your proxy settings or try again later. The server may be unavailable at the moment. \n\nYou may also want to make sure that your firewall is not blocking network traffic.",
+        "proxy_taMessage_ErrorText=Not all of the plugins have been successfully downloaded. The server may be unavailable at the moment. Try again later."})
+    private void initProxyProblem(String problemDescription) {
         if (ex != null) {
             problemDescription = ex.getLocalizedMessage();
         }
         problem = problemDescription == null ?
-            NbBundle.getMessage(ProblemPanel.class, "NetworkProblemPanel_taTitle_Text") : // NOI18N
+            proxy_taTitle_Text() : // NOI18N
             problemDescription;
         initComponents ();
         taTitle.setToolTipText (problem);
         if (isWarning) {
             if (buttons.length == 2) { // XXX: called from InstallStep
-                taMessage.setText (NbBundle.getMessage(ProblemPanel.class, "NetworkProblemPanel_taMessage_WarningTextWithReload")); // NOI18N
+                taMessage.setText (proxy_taMessage_WarningTextWithReload()); // NOI18N
             } else {
-                taMessage.setText(NbBundle.getMessage(ProblemPanel.class, "NetworkProblemPanel_taMessage_WarningText")); // NOI18N
+                taMessage.setText(proxy_taMessage_WarningText()); // NOI18N
             }
         } else {
-            taMessage.setText(NbBundle.getMessage(ProblemPanel.class, "NetworkProblemPanel_taMessage_ErrorText")); // NOI18N
+            taMessage.setText(proxy_taMessage_ErrorText()); // NOI18N
         }
-        for (JButton b : buttons) {
-            b.getAccessibleContext ().setAccessibleDescription (b.getText ());
-        }
+    }
+    
+    @Messages({"write_taTitle_Text=You don`t have permission to install plugin(s) into the installation directory.",
+        "write_taMessage_WarningText=To perform installation into the shared directory, you should run the application as a user with administrative privilege or install the plugin(s) into your user directory."})
+    private void initWriteProblem(String problemDescription) {
+        problem = problemDescription == null ?
+            write_taTitle_Text() : // NOI18N
+            problemDescription;
+        initComponents ();
+        taTitle.setToolTipText (problem);
+        assert isWarning : problem + " is just a warning";
+        taMessage.setText(write_taMessage_WarningText()); // NOI18N
     }
     
     /** This method is called from within the constructor to
@@ -110,8 +146,6 @@ public class ProblemPanel extends javax.swing.JPanel {
         spMessage = new javax.swing.JScrollPane();
         taMessage = new javax.swing.JTextArea();
 
-        setMinimumSize(new java.awt.Dimension(250, 200));
-
         spTitle.setBorder(null);
 
         taTitle.setEditable(false);
@@ -119,7 +153,7 @@ public class ProblemPanel extends javax.swing.JPanel {
         taTitle.setWrapStyleWord(true);
         taTitle.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         taTitle.setOpaque(false);
-        taTitle.setPreferredSize(new java.awt.Dimension(100, 40));
+        taTitle.setPreferredSize(new java.awt.Dimension(400, 60));
         spTitle.setViewportView(taTitle);
         taTitle.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ProblemPanel.class, "NetworkProblemPanel_taTitle_ACN")); // NOI18N
         taTitle.getAccessibleContext().setAccessibleDescription(problem);
@@ -132,6 +166,7 @@ public class ProblemPanel extends javax.swing.JPanel {
         taMessage.setWrapStyleWord(true);
         taMessage.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         taMessage.setOpaque(false);
+        taMessage.setPreferredSize(new java.awt.Dimension(400, 100));
         spMessage.setViewportView(taMessage);
         taMessage.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ProblemPanel.class, "NetworkProblemPanel_taMessage")); // NOI18N
         taMessage.getAccessibleContext().setAccessibleDescription(problem);
@@ -140,15 +175,15 @@ public class ProblemPanel extends javax.swing.JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(spTitle)
+            .addComponent(spTitle, javax.swing.GroupLayout.DEFAULT_SIZE, 433, Short.MAX_VALUE)
             .addComponent(spMessage)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addComponent(spTitle, javax.swing.GroupLayout.DEFAULT_SIZE, 103, Short.MAX_VALUE)
+                .addComponent(spTitle, javax.swing.GroupLayout.DEFAULT_SIZE, 142, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(spMessage, javax.swing.GroupLayout.DEFAULT_SIZE, 160, Short.MAX_VALUE))
+                .addComponent(spMessage, javax.swing.GroupLayout.DEFAULT_SIZE, 157, Short.MAX_VALUE))
         );
 
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProblemPanel.class, "NetworkProblemPanel_ACD")); // NOI18N
@@ -156,10 +191,10 @@ public class ProblemPanel extends javax.swing.JPanel {
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JScrollPane spMessage;
-    private javax.swing.JScrollPane spTitle;
-    private javax.swing.JTextArea taMessage;
-    private javax.swing.JTextArea taTitle;
+    javax.swing.JScrollPane spMessage;
+    javax.swing.JScrollPane spTitle;
+    javax.swing.JTextArea taMessage;
+    javax.swing.JTextArea taTitle;
     // End of variables declaration//GEN-END:variables
     
     public Object showNetworkProblemDialog () {
@@ -212,11 +247,17 @@ public class ProblemPanel extends javax.swing.JPanel {
     }
     
     private DialogDescriptor getWriteProblemDescriptor () {
+        Object [] options;
+        if (buttons == null || buttons.length == 0) {
+            options = new Object [] { DialogDescriptor.OK_OPTION };
+        } else {
+            options = buttons;
+        }
         DialogDescriptor descriptor = new DialogDescriptor(
              this,
              NbBundle.getMessage(ProblemPanel.class, "CTL_Warning"),
              true,                                  // Modal
-             new Object [] { DialogDescriptor.OK_OPTION, DialogDescriptor.CANCEL_OPTION }, // Option list
+             options, // Option list
              null,                         // Default
              DialogDescriptor.DEFAULT_ALIGN,        // Align
              null, // Help

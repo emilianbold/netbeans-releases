@@ -66,32 +66,34 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.InstallSupport.Installer;
-import org.netbeans.api.autoupdate.OperationSupport.Restarter;
 import org.netbeans.api.autoupdate.InstallSupport.Validator;
 import org.netbeans.api.autoupdate.OperationContainer;
+import org.netbeans.api.autoupdate.OperationException;
+import org.netbeans.api.autoupdate.OperationSupport.Restarter;
+import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.openide.WizardDescriptor;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.netbeans.api.autoupdate.OperationException;
-import org.netbeans.api.autoupdate.UpdateElement;
-import org.netbeans.modules.autoupdate.ui.ProblemPanel;
 import org.netbeans.modules.autoupdate.ui.PluginManagerUI;
+import org.netbeans.modules.autoupdate.ui.ProblemPanel;
 import org.netbeans.modules.autoupdate.ui.Utilities;
 import org.netbeans.modules.autoupdate.ui.actions.AutoupdateCheckScheduler;
 import org.netbeans.modules.autoupdate.ui.actions.AutoupdateSettings;
+import static org.netbeans.modules.autoupdate.ui.wizards.Bundle.*;
 import org.netbeans.modules.autoupdate.ui.wizards.LazyInstallUnitWizardIterator.LazyUnit;
 import org.netbeans.modules.autoupdate.ui.wizards.OperationWizardModel.OperationType;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.WizardDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.awt.Notification;
 import org.openide.awt.NotificationDisplayer;
 import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
+import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -703,19 +705,25 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
                 description, onMouseClickAction, NotificationDisplayer.Priority.HIGH);
     }
 
-    private void notifyWritePermissionProblem (final OperationException ex) {
+    @Messages({"inBackground_WritePermission=You don`t have permission to install plugin(s) into the installation directory.",
+        "inBackground_WritePermission_Details=details", "cancel=Cancel", "install=Install anyway"})
+    private void notifyWritePermissionProblem(final OperationException ex) {
         // lack of privileges for writing
         ActionListener onMouseClickAction = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                ProblemPanel problem = new ProblemPanel(ex, true);
-                problem.showNetworkProblemDialog ();
+                JButton cancel = new JButton();
+                Mnemonics.setLocalizedText(cancel, cancel());
+                JButton install = new JButton();
+                Mnemonics.setLocalizedText(install, install());
+                ProblemPanel problem = new ProblemPanel(ex, true, new JButton[]{install, cancel});
+                problem.showWriteProblemDialog();
             }
         };
-        String title = NbBundle.getMessage(InstallStep.class, "InstallSupport_InBackground_WritePermission");
-        String description = NbBundle.getMessage(InstallStep.class, "InstallSupport_InBackground_WritePermission_Details");
-        NotificationDisplayer.getDefault().notify(title, 
-                ImageUtilities.loadImageIcon("org/netbeans/modules/autoupdate/ui/resources/error.png", false), 
+        String title = inBackground_WritePermission();
+        String description = inBackground_WritePermission_Details();
+        NotificationDisplayer.getDefault().notify(title,
+                ImageUtilities.loadImageIcon("org/netbeans/modules/autoupdate/ui/resources/error.png", false), // NOI18N
                 description, onMouseClickAction, NotificationDisplayer.Priority.HIGH);
     }
 
