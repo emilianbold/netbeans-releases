@@ -53,6 +53,7 @@ import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
 import org.netbeans.modules.editor.java.GoToSupport;
 import org.netbeans.modules.java.editor.overridden.GoToImplementation;
+import org.openide.util.Utilities;
 
 /**
  * Implementation of the hyperlink provider for java language.
@@ -97,7 +98,7 @@ public final class JavaHyperlinkProvider implements HyperlinkProviderExt {
     }
 
     public String getTooltipText(Document doc, int offset, HyperlinkType type) {
-        return GoToSupport.getGoToElementTooltip(doc, offset, false, type == HyperlinkType.GO_TO_DECLARATION ? "TP_OverriddenTooltipSugg" : "TP_GoToOverriddenTooltipSugg");
+        return GoToSupport.getGoToElementTooltip(doc, offset, false, type == HyperlinkType.GO_TO_DECLARATION ? Utilities.isMac() ? "TP_Mac_OverriddenTooltipSugg" : "TP_OverriddenTooltipSugg" : "TP_GoToOverriddenTooltipSugg");
     }
 
 }
