@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -57,6 +57,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -94,6 +95,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -113,6 +115,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
     private boolean indeterminateProgress = false;
     private int processedUnits = 0;
     private int totalUnits = 0;
+    private boolean userdirAsFallback;
     private static Notification restartNotification = null;
     private static  final Logger log = Logger.getLogger (InstallStep.class.getName ());
     private final List<ChangeListener> listeners = new ArrayList<ChangeListener> ();
@@ -154,6 +157,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
         this.model = model;
         this.clearLazyUnits = clearLazyUnits;
         this.allowRunInBackground = allowRunInBackground;
+        this.userdirAsFallback = getPreferences().getBoolean(Utilities.PLUGIN_MANAGER_DONT_CARE_WRITE_PERMISSION, false);
     }
     
     @Override
@@ -331,7 +335,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
             handle.setInitialDelay (0);
             panel.waitAndSetProgressComponents (mainLabel, progressComponent, detailLabel);
 
-            validator = support.doDownload (handle, Utilities.isGlobalInstallation());
+            validator = support.doDownload (handle, Utilities.isGlobalInstallation(), userdirAsFallback);
             if (validator == null) return true;
             if (validator == null) return true;
             panel.waitAndSetProgressComponents (mainLabel, progressComponent, new JLabel (getBundle ("InstallStep_Done")));
@@ -364,16 +368,17 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
                     handleCancel();
                     notifyWritePermissionProblem(ex);
                 } else {
-                    JButton tryAgain = new JButton();
-                    Mnemonics.setLocalizedText(tryAgain, getBundle("InstallStep_NetworkProblem_Continue")); // NOI18N
-                    ProblemPanel problem = new ProblemPanel(
-                            getBundle("InstallStep_NetworkProblem_Text", ex.getLocalizedMessage()), // NOI18N
-                            new JButton[]{tryAgain, model.getCancelButton(wd)});
-                    Object ret = problem.showNetworkProblemDialog();
-                    if (tryAgain.equals(ret)) {
-                        // try again
+                    JButton cancel = new JButton();
+                    Mnemonics.setLocalizedText(cancel, cancel());
+                    JButton install = new JButton();
+                    Mnemonics.setLocalizedText(install, install());
+                    ProblemPanel problem = new ProblemPanel(ex, true, new JButton[] {install, cancel});
+                    Object ret = problem.showWriteProblemDialog();
+                    if (install.equals(ret)) {
+                        // install anyway
+                        userdirAsFallback = true;
                         return false;
-                    } else if (DialogDescriptor.CLOSED_OPTION.equals(ret)) {
+                    } else {
                         model.getCancelButton(wd).doClick();
                     }
                 }
@@ -712,11 +717,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
         ActionListener onMouseClickAction = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JButton cancel = new JButton();
-                Mnemonics.setLocalizedText(cancel, cancel());
-                JButton install = new JButton();
-                Mnemonics.setLocalizedText(install, install());
-                ProblemPanel problem = new ProblemPanel(ex, true, new JButton[]{install, cancel});
+                ProblemPanel problem = new ProblemPanel(ex, true);
                 problem.showWriteProblemDialog();
             }
         };
@@ -853,4 +854,9 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
             AutoupdateSettings.setLastCheck (null);
         }
     }
+    
+    private static Preferences getPreferences() {
+        return NbPreferences.forModule(Utilities.class);
+    }
+    
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -101,6 +101,7 @@ public class Utilities {
     private static String PLUGIN_MANAGER_SHARED_INSTALLATION = "plugin_manager_shared_installation";
     
     public static String PLUGIN_MANAGER_CHECK_INTERVAL = "plugin.manager.check.interval";
+    public static String PLUGIN_MANAGER_DONT_CARE_WRITE_PERMISSION = "plugin_manager_dont_care_write_permission";
     
     public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat ("yyyy/MM/dd"); // NOI18N
     public static final String TIME_OF_MODEL_INITIALIZATION = "time_of_model_initialization"; // NOI18N
@@ -699,8 +700,16 @@ public class Utilities {
         }
     }
         
-    public static boolean isGlobalInstallation() {
-        return getPreferences ().getBoolean (PLUGIN_MANAGER_SHARED_INSTALLATION, Boolean.valueOf (System.getProperty ("plugin.manager.install.global")));
+    public static Boolean isGlobalInstallation() {
+        String s = getPreferences().get(PLUGIN_MANAGER_SHARED_INSTALLATION, System.getProperty("plugin.manager.install.global")); // NOI18N
+        
+        if (Boolean.parseBoolean(s)) {
+            return Boolean.TRUE;
+        } else if (Boolean.FALSE.toString().equalsIgnoreCase(s)) {
+            return Boolean.FALSE;
+        } else {
+            return null;
+        }
     }
 
     public static void setGlobalInstallation(boolean isGlobal) {

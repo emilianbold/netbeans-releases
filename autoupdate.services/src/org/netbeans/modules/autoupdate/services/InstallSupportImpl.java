@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -63,11 +63,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.CRC32;
 import org.netbeans.Module;
+import org.netbeans.api.autoupdate.*;
 import org.netbeans.api.autoupdate.InstallSupport.Installer;
 import org.netbeans.api.autoupdate.InstallSupport.Validator;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
 import org.netbeans.api.autoupdate.OperationSupport.Restarter;
-import org.netbeans.api.autoupdate.*;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.autoupdate.updateprovider.NetworkAccess;
 import org.netbeans.modules.autoupdate.updateprovider.NetworkAccess.Task;
@@ -96,7 +96,8 @@ public class InstallSupportImpl {
     
     private Map<UpdateElementImpl, File> element2Clusters = null;
     private final Set<File> downloadedFiles = new HashSet<File> ();
-    private boolean isGlobal;
+    private Boolean isGlobal;
+    private boolean useUserdirAsFallback;
     private int wasDownloaded = 0;
     
     private Future<Boolean> runningTask;
@@ -126,8 +127,9 @@ public class InstallSupportImpl {
         support = installSupport;
     }
     
-    public boolean doDownload (final ProgressHandle progress/*or null*/, boolean isGlobal) throws OperationException {
+    public boolean doDownload (final ProgressHandle progress/*or null*/, Boolean isGlobal, boolean useUserdirAsFallback) throws OperationException {
         this.isGlobal = isGlobal;
+        this.useUserdirAsFallback = useUserdirAsFallback;
         Callable<Boolean> downloadCallable = new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
@@ -344,7 +346,7 @@ public class InstallSupportImpl {
                     
                     // find target dir
                     UpdateElement installed = moduleImpl.getUpdateUnit ().getInstalled ();
-                    targetCluster = getTargetCluster (installed, moduleImpl, isGlobal);
+                    targetCluster = getTargetCluster (installed, moduleImpl, isGlobal, useUserdirAsFallback);
                     
                     URL source = moduleImpl.getInstallInfo ().getDistribution ();
                     LOG.log (Level.FINE, "Source URL for " + moduleImpl.getCodeName () + " is " + source);
@@ -703,7 +705,7 @@ public class InstallSupportImpl {
         UpdateElement installed = toUpdateImpl.getUpdateUnit ().getInstalled ();
         
         // find target dir
-        File targetCluster = getTargetCluster (installed, toUpdateImpl, isGlobal);
+        File targetCluster = getTargetCluster (installed, toUpdateImpl, isGlobal, useUserdirAsFallback);
         assert targetCluster != null : "Target cluster for " + toUpdateImpl + " must exist.";
         if (targetCluster == null) {
             targetCluster = InstallManager.getUserDir ();
@@ -827,7 +829,7 @@ public class InstallSupportImpl {
         UpdateElement installed = toUpdateImpl.getUpdateUnit ().getInstalled ();
         
         // find target dir
-        File targetCluster = getTargetCluster (installed, toUpdateImpl, isGlobal);
+        File targetCluster = getTargetCluster (installed, toUpdateImpl, isGlobal, useUserdirAsFallback);
 
         URL source = toUpdateImpl.getInstallInfo().getDistribution();
         File dest = getDestination (targetCluster, toUpdateImpl.getCodeName(), source);
@@ -1203,10 +1205,10 @@ public class InstallSupportImpl {
         LOG.log(Level.FINE, "Time stamp changed succcessfully {0}", f);
     }
 
-    private File getTargetCluster(UpdateElement installed, UpdateElementImpl update, boolean isGlobal) throws OperationException {
+    private File getTargetCluster(UpdateElement installed, UpdateElementImpl update, Boolean isGlobal, boolean useUserdirAsFallback) throws OperationException {
         File cluster = getElement2Clusters ().get (update);
         if (cluster == null) {
-            cluster = InstallManager.findTargetDirectory (installed, update, isGlobal);
+            cluster = InstallManager.findTargetDirectory (installed, update, isGlobal, useUserdirAsFallback);
             if (cluster != null) {
                 getElement2Clusters ().put(update, cluster);
             }

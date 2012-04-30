@@ -82,13 +82,19 @@ public class InstallManager extends InstalledFileLocator{
     private static final Logger ERR = Logger.getLogger ("org.netbeans.modules.autoupdate.services.InstallManager");
     private static List<File> clusters = new ArrayList<File>();
     
-    static File findTargetDirectory (UpdateElement installed, UpdateElementImpl update, boolean isGlobal) throws OperationException {
+    static File findTargetDirectory (UpdateElement installed, UpdateElementImpl update, Boolean globalOrLocal, boolean useUserdirAsFallback) throws OperationException {
         File res;
+        boolean isGlobal = globalOrLocal == null;
+        
+        if (Boolean.FALSE.equals(globalOrLocal)) {
+            ERR.log(Level.INFO, "Forced installation in userdir only for " + update.getUpdateElement());
+            return getUserDir();
+        }
         
         // if an update, overwrite the existing location, wherever that is.
         if (installed != null) {
             
-            res = getInstallDir (installed, update);
+                res = getInstallDir (installed, update);
             
         } else {
 
@@ -102,13 +108,13 @@ public class InstallManager extends InstalledFileLocator{
 
             // global or local
             if ((targetCluster != null && targetCluster.length () > 0) || isGlobal) {
-                res = checkTargetCluster(update, targetCluster);
+                res = checkTargetCluster(update, targetCluster, useUserdirAsFallback);
                 
                 // handle non-existing clusters
                 if (res == null && targetCluster != null) {
                     res = createNonExistingCluster (targetCluster);
                     if (res != null) {
-                        res = checkTargetCluster(update, targetCluster);
+                        res = checkTargetCluster(update, targetCluster, useUserdirAsFallback);
                     }
                 }
                 
@@ -118,10 +124,10 @@ public class InstallManager extends InstalledFileLocator{
                     // create UpdateTracking.EXTRA_CLUSTER_NAME
                     res = createNonExistingCluster (UpdateTracking.EXTRA_CLUSTER_NAME);
                     if (res != null) {
-                        res = checkTargetCluster(update, UpdateTracking.EXTRA_CLUSTER_NAME);
+                        res = checkTargetCluster(update, UpdateTracking.EXTRA_CLUSTER_NAME, useUserdirAsFallback);
                     } else {
                         // check writable installation
-                        res = checkTargetCluster(update, UpdateTracking.EXTRA_CLUSTER_NAME);
+                        res = checkTargetCluster(update, UpdateTracking.EXTRA_CLUSTER_NAME, useUserdirAsFallback);
                     }
                     
                     // no new cluster was created => use userdir
@@ -145,7 +151,7 @@ public class InstallManager extends InstalledFileLocator{
         return res;
     }
 
-    private static File checkTargetCluster(UpdateElementImpl update, String targetCluster) throws OperationException {
+    private static File checkTargetCluster(UpdateElementImpl update, String targetCluster, boolean useUserdirAsFallback) throws OperationException {
         if (targetCluster == null || targetCluster.length () == 0) {
             return null;
         }
@@ -163,7 +169,9 @@ public class InstallManager extends InstalledFileLocator{
                     res = cluster;
                 } else {
                     ERR.log (Level.WARNING, "There is no write permission to write in target cluster " + targetCluster + " for " + update.getUpdateElement ());
-                    throw new OperationException(OperationException.ERROR_TYPE.WRITE_PERMISSION);
+                    if (! useUserdirAsFallback) {
+                        throw new OperationException(OperationException.ERROR_TYPE.WRITE_PERMISSION);
+                    }
                 }
                 break;
             }

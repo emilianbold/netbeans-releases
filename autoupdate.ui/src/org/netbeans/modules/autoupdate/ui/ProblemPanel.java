@@ -46,6 +46,7 @@ package org.netbeans.modules.autoupdate.ui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.prefs.Preferences;
 import javax.swing.JButton;
 import org.netbeans.api.autoupdate.OperationException;
 import org.netbeans.api.options.OptionsDisplayer;
@@ -56,6 +57,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.NbPreferences;
 
 /**
  *
@@ -81,16 +83,17 @@ public class ProblemPanel extends javax.swing.JPanel {
         this.isWarning = warning;
         if (ex == null) {
             initProxyProblem(problemDescription);
-        }
-        switch (ex.getErrorType()) {
-            case PROXY:
-                initProxyProblem(problemDescription);
-                break;
-            case WRITE_PERMISSION:
-                initWriteProblem(problemDescription);
-                break;
-            default:
-                assert false : "Unknown type " + ex;
+        } else {
+            switch (ex.getErrorType()) {
+                case PROXY:
+                    initProxyProblem(problemDescription);
+                    break;
+                case WRITE_PERMISSION:
+                    initWriteProblem(problemDescription);
+                    break;
+                default:
+                    assert false : "Unknown type " + ex;
+            }
         }
         for (JButton b : buttons) {
             b.getAccessibleContext ().setAccessibleDescription (b.getText ());
@@ -109,6 +112,7 @@ public class ProblemPanel extends javax.swing.JPanel {
             proxy_taTitle_Text() : // NOI18N
             problemDescription;
         initComponents ();
+        cbShowAgain.setVisible(false);
         taTitle.setToolTipText (problem);
         if (isWarning) {
             if (buttons.length == 2) { // XXX: called from InstallStep
@@ -128,6 +132,7 @@ public class ProblemPanel extends javax.swing.JPanel {
             write_taTitle_Text() : // NOI18N
             problemDescription;
         initComponents ();
+        cbShowAgain.setVisible(true);
         taTitle.setToolTipText (problem);
         assert isWarning : problem + " is just a warning";
         taMessage.setText(write_taMessage_WarningText()); // NOI18N
@@ -145,6 +150,7 @@ public class ProblemPanel extends javax.swing.JPanel {
         taTitle = new javax.swing.JTextArea (problem);
         spMessage = new javax.swing.JScrollPane();
         taMessage = new javax.swing.JTextArea();
+        cbShowAgain = new javax.swing.JCheckBox();
 
         spTitle.setBorder(null);
 
@@ -171,26 +177,42 @@ public class ProblemPanel extends javax.swing.JPanel {
         taMessage.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ProblemPanel.class, "NetworkProblemPanel_taMessage")); // NOI18N
         taMessage.getAccessibleContext().setAccessibleDescription(problem);
 
+        org.openide.awt.Mnemonics.setLocalizedText(cbShowAgain, org.openide.util.NbBundle.getMessage(ProblemPanel.class, "ProblemPanel.cbShowAgain.text")); // NOI18N
+        cbShowAgain.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cbShowAgainActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(spTitle, javax.swing.GroupLayout.DEFAULT_SIZE, 433, Short.MAX_VALUE)
+            .addComponent(spTitle, javax.swing.GroupLayout.DEFAULT_SIZE, 425, Short.MAX_VALUE)
             .addComponent(spMessage)
+            .addComponent(cbShowAgain, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addComponent(spTitle, javax.swing.GroupLayout.DEFAULT_SIZE, 142, Short.MAX_VALUE)
+                .addComponent(spTitle, javax.swing.GroupLayout.PREFERRED_SIZE, 106, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(spMessage, javax.swing.GroupLayout.DEFAULT_SIZE, 157, Short.MAX_VALUE))
+                .addComponent(spMessage, javax.swing.GroupLayout.PREFERRED_SIZE, 169, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(cbShowAgain))
         );
 
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProblemPanel.class, "NetworkProblemPanel_ACD")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
+
+    private void cbShowAgainActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbShowAgainActionPerformed
+        // TODO add your handling code here:
+        getPreferences().putBoolean(Utilities.PLUGIN_MANAGER_DONT_CARE_WRITE_PERMISSION, cbShowAgain.isSelected());
+    }//GEN-LAST:event_cbShowAgainActionPerformed
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    javax.swing.JCheckBox cbShowAgain;
     javax.swing.JScrollPane spMessage;
     javax.swing.JScrollPane spTitle;
     javax.swing.JTextArea taMessage;
@@ -269,4 +291,7 @@ public class ProblemPanel extends javax.swing.JPanel {
         return descriptor;
     }
     
+    private static Preferences getPreferences() {
+        return NbPreferences.forModule(Utilities.class);
+    }
 }
