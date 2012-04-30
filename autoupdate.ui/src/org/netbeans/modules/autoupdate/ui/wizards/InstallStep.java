@@ -364,7 +364,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
                     }
                 }
             } else if (OperationException.ERROR_TYPE.WRITE_PERMISSION == ex.getErrorType()) {
-                if (true || runInBackground()) {
+                if (runInBackground()) {
                     handleCancel();
                     notifyWritePermissionProblem(ex);
                 } else {
