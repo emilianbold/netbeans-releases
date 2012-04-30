@@ -127,6 +127,7 @@ public class JavaHintDataPanel extends BasicWizardIterator.Panel {
         add(automaticFix, gridBagConstraints);
 
         description.setColumns(20);
+        description.setLineWrap(true);
         description.setRows(5);
         jScrollPane1.setViewportView(description);
 

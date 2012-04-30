@@ -302,7 +302,7 @@ public class SourceUtils {
     @NonNull
     public static String[] getJVMSignature(@NonNull final ElementHandle<?> handle) {
         Parameters.notNull("handle", handle);   //NOI18N
-        return ElementHandleAccessor.INSTANCE.getJVMSignature(handle);
+        return ElementHandleAccessor.getInstance().getJVMSignature(handle);
     }
 
 
