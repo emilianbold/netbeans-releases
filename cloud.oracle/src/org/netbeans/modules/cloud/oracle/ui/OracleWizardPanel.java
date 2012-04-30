@@ -159,7 +159,7 @@ public class OracleWizardPanel implements WizardDescriptor.AsynchronousValidatin
         } else if (component.getAdminUrl().trim().length() == 0) {
             return NbBundle.getMessage(OracleWizardPanel.class, "OracleWizardPanel.missingAdminUrl");
         } else if (OracleInstanceManager.getDefault().exist(component.getAdminUrl(), component.getIdentityDomain(), 
-                component.getJavaServiceName(), component.getUserName())) {
+                component.getJavaServiceName(), OracleWizardComponent.getPrefixedUserName(component.getIdentityDomain(), component.getUserName()))) {
             return NbBundle.getMessage(OracleWizardPanel.class, "OracleWizardPanel.alreadyRegistered");
         }
         return "";
