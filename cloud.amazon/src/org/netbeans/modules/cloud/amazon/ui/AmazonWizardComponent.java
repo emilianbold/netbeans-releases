@@ -51,7 +51,7 @@ import org.openide.util.NbBundle;
 /**
  *
  */
-public class AmazonWizardComponent extends javax.swing.JPanel implements DocumentListener, HelpCtx.Provider {
+public class AmazonWizardComponent extends javax.swing.JPanel implements DocumentListener {
 
     private AmazonWizardPanel panel;
     
@@ -152,10 +152,5 @@ public class AmazonWizardComponent extends javax.swing.JPanel implements Documen
         if (panel != null) {
             panel.fireChange();
         }
-    }
-
-    @Override
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx(AmazonWizardComponent.class.getName());
     }
 }

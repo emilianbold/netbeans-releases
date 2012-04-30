@@ -55,13 +55,14 @@ import org.netbeans.modules.cloud.oracle.OracleInstance;
 import org.netbeans.modules.cloud.oracle.OracleInstanceManager;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Petr Hejl
  */
-public class CustomizerCloudGeneral extends javax.swing.JPanel {
+public class CustomizerCloudGeneral extends javax.swing.JPanel implements HelpCtx.Provider {
 
     private final OracleInstance instance;
     
@@ -288,4 +289,9 @@ public class CustomizerCloudGeneral extends javax.swing.JPanel {
     private javax.swing.JTextField usernameField;
     private javax.swing.JLabel usernameLabel;
     // End of variables declaration//GEN-END:variables
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(CustomizerCloudGeneral.class.getName());
+    }
 }
