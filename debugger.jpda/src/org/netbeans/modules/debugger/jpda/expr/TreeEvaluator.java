@@ -61,7 +61,6 @@ import com.sun.jdi.StackFrame;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.Value;
-import com.sun.jdi.VirtualMachine;
 
 import java.util.List;
 import java.util.logging.Level;
@@ -72,16 +71,12 @@ import org.netbeans.modules.debugger.jpda.EditorContextBridge;
 import org.netbeans.modules.debugger.jpda.JDIExceptionReporter;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.SourcePath;
-import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.LocationWrapper;
-import org.netbeans.modules.debugger.jpda.jdi.MirrorWrapper;
-import org.netbeans.modules.debugger.jpda.jdi.NativeMethodExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectReferenceWrapper;
-import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.StackFrameWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ThreadReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
@@ -99,12 +94,6 @@ public class TreeEvaluator {
 
     private JavaExpression expression;
     private EvaluationContext evaluationContext;
-
-    private StackFrame frame;
-    private VirtualMachine vm;
-    private ThreadReference frameThread;
-    private int frameIndex;
-    private String currentPackage;
 
     private static final Logger loggerMethod = Logger.getLogger("org.netbeans.modules.debugger.jpda.invokeMethod"); // NOI18N
 
@@ -124,11 +113,12 @@ public class TreeEvaluator {
      */
     public Value evaluate() throws EvaluationException, IncompatibleThreadStateException, InvalidExpressionException, InternalExceptionWrapper, VMDisconnectedExceptionWrapper, InvalidStackFrameExceptionWrapper, ObjectCollectedExceptionWrapper
     {
-        frame = evaluationContext.getFrame();
-        vm = MirrorWrapper.virtualMachine(evaluationContext.getFrame());
-        frameThread = StackFrameWrapper.thread(frame);
+        //StackFrame frame = evaluationContext.getFrame();
+        ThreadReference frameThread = StackFrameWrapper.thread(evaluationContext.getFrame());
+        int frameIndex;
         try {
-            frameIndex = indexOf(ThreadReferenceWrapper.frames(frameThread), frame);
+            StackFrame currentFrame = evaluationContext.getFrame();
+            frameIndex = indexOf(ThreadReferenceWrapper.frames(frameThread), currentFrame);
         } catch (ObjectCollectedExceptionWrapper ocex) {
             throw new InvalidExpressionException(NbBundle.getMessage(
                 TreeEvaluator.class, "CTL_EvalError_collected"));
@@ -139,10 +129,12 @@ public class TreeEvaluator {
         if (frameIndex == -1) {
             throw new IncompatibleThreadStateException("Thread does not contain current frame");
         }
-        currentPackage = ReferenceTypeWrapper.name(LocationWrapper.declaringType(
-                StackFrameWrapper.location(evaluationContext.getFrame())));
+        /*
+        String currentPackage = ReferenceTypeWrapper.name(LocationWrapper.declaringType(
+                StackFrameWrapper.location(frame)));
         int idx = currentPackage.lastIndexOf('.');
         currentPackage = (idx > 0) ? currentPackage.substring(0, idx + 1) : "";
+        */
         int line;
         String url;
         ObjectReference contextVar =  evaluationContext.getContextVariable();
@@ -152,8 +144,8 @@ public class TreeEvaluator {
             url = evaluationContext.getDebugger().getEngineContext().getURL(relPath, true);
             line = EditorContextBridge.getContext().getFieldLineNumber(url, className, null);
         } else {
-            line = LocationWrapper.lineNumber(StackFrameWrapper.location(frame));
-            url = evaluationContext.getDebugger().getEngineContext().getURL(frame, "Java");//evaluationContext.getDebugger().getSession().getCurrentLanguage());
+            line = LocationWrapper.lineNumber(StackFrameWrapper.location(evaluationContext.getFrame()));
+            url = evaluationContext.getDebugger().getEngineContext().getURL(evaluationContext.getFrame(), "Java");//evaluationContext.getDebugger().getSession().getCurrentLanguage());
             if (url == null) {
                 // Debugger suspended in an unknown location. Evaluator will not work without some context.
                 // Try to define some context that should work...

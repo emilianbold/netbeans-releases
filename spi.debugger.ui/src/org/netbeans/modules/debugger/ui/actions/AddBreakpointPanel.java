@@ -75,15 +75,15 @@ public class AddBreakpointPanel extends javax.swing.JPanel implements HelpCtx.Pr
 
     public static final String PROP_TYPE = "type";
     
-    private static Object lastSelectedCategory;
+    private static String lastSelectedCategory;
     
     // variables ...............................................................
     
     private boolean                 doNotRefresh = false;
-    /** List of cathegories. */
-    private Set                     cathegories = new TreeSet ();
-    /** Types in currently selected cathegory. */
-    private ArrayList               types = new ArrayList ();
+    /** List of categories. */
+    private Set<String>             cathegories = new TreeSet<String>();
+    /** Types in currently selected category. */
+    private ArrayList<BreakpointType> types = new ArrayList<BreakpointType>();
     /** Currently selected type. */
     private BreakpointType          type;
 
@@ -159,26 +159,26 @@ public class AddBreakpointPanel extends javax.swing.JPanel implements HelpCtx.Pr
     // other methods ...........................................................
     
     private void initComponents () {
-        getAccessibleContext().setAccessibleDescription(NbBundle.getBundle (AddBreakpointPanel.class).getString ("ACSD_AddBreakpointPanel")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (AddBreakpointPanel.class, "ACSD_AddBreakpointPanel"));
         setLayout (new java.awt.GridBagLayout ());
         java.awt.GridBagConstraints gridBagConstraints1;
 
         if (cathegories.size () > 1) {
                 jLabel1 = new javax.swing.JLabel ();
-                Mnemonics.setLocalizedText(jLabel1, NbBundle.getBundle (AddBreakpointPanel.class).
-                    getString ("CTL_Breakpoint_cathegory")); // NOI18N
+                Mnemonics.setLocalizedText(jLabel1, NbBundle.getMessage (AddBreakpointPanel.class, "CTL_Breakpoint_cathegory"));
                 gridBagConstraints1 = new java.awt.GridBagConstraints ();
                 gridBagConstraints1.gridwidth = 2;
                 gridBagConstraints1.insets = new java.awt.Insets (12, 12, 0, 0);
             add (jLabel1, gridBagConstraints1);
 
                 cbCathegory.addActionListener (new java.awt.event.ActionListener () {
+                    @Override
                     public void actionPerformed (java.awt.event.ActionEvent evt) {
                         cbCathegoryActionPerformed (evt);
                     }
                 });
                 cbCathegory.getAccessibleContext().setAccessibleDescription(
-                NbBundle.getBundle (AddBreakpointPanel.class).getString ("ACSD_CTL_Breakpoint_cathegory")); // NOI18N
+                    NbBundle.getMessage (AddBreakpointPanel.class, "ACSD_CTL_Breakpoint_cathegory"));
                 jLabel1.setLabelFor (cbCathegory);
                 gridBagConstraints1 = new java.awt.GridBagConstraints ();
                 gridBagConstraints1.gridwidth = 2;
@@ -188,8 +188,7 @@ public class AddBreakpointPanel extends javax.swing.JPanel implements HelpCtx.Pr
         }
 
             jLabel2 = new javax.swing.JLabel ();
-            Mnemonics.setLocalizedText(jLabel2, NbBundle.getBundle (AddBreakpointPanel.class).
-                getString ("CTL_Breakpoint_type")); // NOI18N
+            Mnemonics.setLocalizedText(jLabel2, NbBundle.getMessage (AddBreakpointPanel.class, "CTL_Breakpoint_type"));
             gridBagConstraints1 = new java.awt.GridBagConstraints ();
             gridBagConstraints1.gridwidth = 2;
             gridBagConstraints1.insets = new java.awt.Insets (12, 12, 0, 0);
@@ -197,12 +196,12 @@ public class AddBreakpointPanel extends javax.swing.JPanel implements HelpCtx.Pr
             
             cbEvents = new javax.swing.JComboBox ();
             cbEvents.addActionListener (new java.awt.event.ActionListener () {
+                @Override
                 public void actionPerformed (java.awt.event.ActionEvent evt) {
                     cbEventsActionPerformed ();
                 }
             });
-            cbEvents.getAccessibleContext().setAccessibleDescription(
-                NbBundle.getBundle (AddBreakpointPanel.class).getString ("ACSD_CTL_Breakpoint_type")); // NOI18N
+            cbEvents.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (AddBreakpointPanel.class, "ACSD_CTL_Breakpoint_type"));
             cbEvents.setMaximumRowCount (12);
             gridBagConstraints1 = new java.awt.GridBagConstraints ();
             gridBagConstraints1.gridwidth = 0;
@@ -225,13 +224,15 @@ public class AddBreakpointPanel extends javax.swing.JPanel implements HelpCtx.Pr
         // Add your handling code here:
         if (doNotRefresh) return;
         SwingUtilities.invokeLater (new Runnable () {
+            @Override
             public void run () {
                 boolean pv = cbEvents.isPopupVisible ();
                 int j = cbEvents.getSelectedIndex ();
                 if (j < 0) return;
-                update ((BreakpointType) types.get (j));
+                update (types.get (j));
                 if (pv)
                     SwingUtilities.invokeLater (new Runnable () {
+                        @Override
                         public void run () {
                             cbEvents.setPopupVisible (true);
                         }
@@ -253,7 +254,7 @@ public class AddBreakpointPanel extends javax.swing.JPanel implements HelpCtx.Pr
         lastSelectedCategory = c;
         doNotRefresh = true;
         cbEvents.removeAllItems ();
-        types = new ArrayList ();
+        types.clear();
         int defIndex = 0;
         for (BreakpointType bt : breakpointTypes) {
             if (!bt.getCategoryDisplayName ().equals (c))
@@ -276,6 +277,7 @@ public class AddBreakpointPanel extends javax.swing.JPanel implements HelpCtx.Pr
     // Make getHelpCtx() method public to correctly implement HelpCtx.Provider
     // HelpCtx getHelpCtx() {
     // ====
+    @Override
     public HelpCtx getHelpCtx() {
     // </RAVE>
         return helpCtx;
