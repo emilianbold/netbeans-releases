@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -45,6 +45,7 @@
 package org.netbeans.modules.autoupdate.services;
 
 import java.io.IOException;
+import org.netbeans.api.autoupdate.OperationException;
 
 /**
  *
@@ -61,7 +62,7 @@ public class TargetClusterWhenGlobalUndeclaredTest extends TargetClusterTestCase
         return "org.yourorghere.testupdatemodule";
     }
     
-    public void testUpdateGlobalUndeclared () throws IOException {
+    public void testUpdateGlobalUndeclared () throws IOException, OperationException {
         // Otherwise (no cluster name specified), if marked global, maybe put it into an "extra" cluster
         assertEquals ("Goes into extraDir", "extra", getTargetCluster (null, Boolean.TRUE).getName ());
     }

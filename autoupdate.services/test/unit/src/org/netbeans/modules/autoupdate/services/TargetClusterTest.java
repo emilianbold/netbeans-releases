@@ -46,6 +46,7 @@ package org.netbeans.modules.autoupdate.services;
 
 import java.io.IOException;
 import java.util.logging.Level;
+import org.netbeans.api.autoupdate.OperationException;
 import org.netbeans.junit.RandomlyFails;
 import org.netbeans.updater.UpdateTracking;
 
@@ -67,43 +68,43 @@ public class TargetClusterTest extends TargetClusterTestCase {
         return "org.netbeans.modules.autoupdate";
     }
     
-    public void testInstallGloballyNewIntoDeclaredPlatform () throws IOException {
+    public void testInstallGloballyNewIntoDeclaredPlatform () throws IOException, OperationException {
         // Otherwise (new module), if a cluster name is specified in NBM, put it there
         assertEquals ("Goes into " + platformDir.getName (), platformDir.getName (), getTargetCluster (platformDir.getName (), true).getName ());
     }
 
     @RandomlyFails // org.yourorghere.platform.null - UpdateUnit found.
-    public void testInstallNewIntoDeclaredPlatform () throws IOException {
+    public void testInstallNewIntoDeclaredPlatform () throws IOException, OperationException {
         // Otherwise (new module), if a cluster name is specified in NBM, put it there
         assertEquals ("Goes into " + platformDir.getName (), platformDir.getName (), getTargetCluster (platformDir.getName (), null).getName ());
     }
     
     @RandomlyFails
-    public void testInstallNewIntoDeclaredNextCluster () throws IOException {
+    public void testInstallNewIntoDeclaredNextCluster () throws IOException, OperationException {
         // Otherwise (new module), if a cluster name is specified in NBM, put it there
         assertEquals ("Goes into " + nextDir.getName (), nextDir.getName (), getTargetCluster (nextDir.getName (), null).getName ());
     }
     
-    public void testInstallNewIntoDeclaredNextClusterAndFalseGlobal () throws IOException {
+    public void testInstallNewIntoDeclaredNextClusterAndFalseGlobal () throws IOException, OperationException {
         // target cluster has precedence than global
-        assertEquals ("Goes into " + nextDir.getName (), nextDir.getName (), getTargetCluster (nextDir.getName (), false).getName ());
+        assertEquals ("Goes into " + nextDir.getName (), nextDir.getName (), getTargetCluster (nextDir.getName (), null).getName ());
     }
     
-    public void testInstallGloballyNew () throws IOException {
+    public void testInstallGloballyNew () throws IOException, OperationException {
         // Otherwise (no cluster name specified), if marked global, maybe put it into an "extra" cluster
         assertEquals ("Goes into " + UpdateTracking.EXTRA_CLUSTER_NAME,
                 UpdateTracking.EXTRA_CLUSTER_NAME,
                 getTargetCluster (null, true).getName ());
     }
     
-    public void testInstallLocallyNew () throws IOException {
+    public void testInstallLocallyNew () throws IOException, OperationException {
         // Otherwise (global="false" or unspecified), put it in user dir
         assertEquals ("Goes into " + userDir.getName (),
                 userDir.getName (),
                 getTargetCluster (null, false).getName ());
     }
     
-    public void testInstallNoDeclaredGlobalNew () throws IOException {
+    public void testInstallNoDeclaredGlobalNew () throws IOException, OperationException {
         // Otherwise (global="false" or unspecified), put it in user dir
         assertEquals ("Goes into " + userDir.getName (),
                 userDir.getName (),

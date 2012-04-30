@@ -84,7 +84,7 @@ public class InstallManager extends InstalledFileLocator{
     
     static File findTargetDirectory (UpdateElement installed, UpdateElementImpl update, Boolean globalOrLocal, boolean useUserdirAsFallback) throws OperationException {
         File res;
-        boolean isGlobal = globalOrLocal == null;
+        boolean isGlobal = globalOrLocal == null ? false : globalOrLocal;
         
         if (Boolean.FALSE.equals(globalOrLocal)) {
             ERR.log(Level.INFO, "Forced installation in userdir only for " + update.getUpdateElement());
