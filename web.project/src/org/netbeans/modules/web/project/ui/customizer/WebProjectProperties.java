@@ -154,6 +154,7 @@ final public class WebProjectProperties {
     public static final String DISPLAY_BROWSER = "display.browser"; //NOI18N
     public static final String J2EE_DEPLOY_ON_SAVE = "j2ee.deploy.on.save"; //NOI18N
     public static final String J2EE_COMPILE_ON_SAVE = "j2ee.compile.on.save"; //NOI18N
+    public static final String J2EE_COPY_STATIC_FILES_ON_SAVE = "j2ee.copy.static.files.on.save"; //NOI18N
     public static final String CONTEXT_PATH = "context.path"; //NOI18N
     public static final String J2EE_SERVER_INSTANCE = "j2ee.server.instance"; //NOI18N
     public static final String J2EE_SERVER_TYPE = "j2ee.server.type"; //NOI18N
@@ -253,6 +254,7 @@ final public class WebProjectProperties {
     ButtonModel ENABLE_ANNOTATION_PROCESSING_IN_EDITOR_MODEL;
     DefaultListModel ANNOTATION_PROCESSORS_MODEL;
     JToggleButton.ToggleButtonModel COMPILE_ON_SAVE_MODEL;
+    JToggleButton.ToggleButtonModel COPY_STATIC_RESOURCE_ON_SAVE_MODEL;
     
     // CustomizerWar
     Document WAR_NAME_MODEL; 
@@ -445,11 +447,13 @@ final public class WebProjectProperties {
                 }
             }
         });
+        COPY_STATIC_RESOURCE_ON_SAVE_MODEL = projectGroup.createToggleButtonModel(evaluator, J2EE_COPY_STATIC_FILES_ON_SAVE);
         DEPLOY_ON_SAVE_MODEL.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (DEPLOY_ON_SAVE_MODEL.isSelected()) {
                     COMPILE_ON_SAVE_MODEL.setSelected(true);
+                    COPY_STATIC_RESOURCE_ON_SAVE_MODEL.setSelected(true);
                 }
             }
         });
