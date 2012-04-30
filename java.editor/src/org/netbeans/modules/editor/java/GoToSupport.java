@@ -580,13 +580,13 @@ public class GoToSupport {
         }
 
         if (el.getKind().isClass() || el.getKind().isInterface()) {
-            return 0;
+            return el.getModifiers().contains(Modifier.ABSTRACT) ? 0 : 1;
         }
 
         if (   el.getKind() == ElementKind.METHOD
             && !el.getModifiers().contains(Modifier.STATIC)
             && !el.getEnclosingElement().getModifiers().contains(Modifier.FINAL)) {
-            return 1;
+            return el.getModifiers().contains(Modifier.ABSTRACT) ? 2 : 3;
         }
 
         return -1;
