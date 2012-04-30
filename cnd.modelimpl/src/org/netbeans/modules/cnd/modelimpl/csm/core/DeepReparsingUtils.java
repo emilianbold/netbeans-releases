@@ -417,7 +417,7 @@ public final class DeepReparsingUtils {
 
     private static void addCompilationUnitToReparse(final FileImpl fileImpl, final boolean invalidateCache) {
         ProjectBase project = fileImpl.getProjectImpl(true);
-        project.invalidatePreprocState(fileImpl.getAbsolutePath());
+        project.markAsParsingPreprocStates(fileImpl.getAbsolutePath());
         fileImpl.markReparseNeeded(invalidateCache);
         ParserQueue.instance().add(fileImpl, fileImpl.getPreprocHandlers(), ParserQueue.Position.HEAD);
         if (TraceFlags.USE_DEEP_REPARSING_TRACE) {
