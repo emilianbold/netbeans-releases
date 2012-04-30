@@ -322,7 +322,7 @@ class ModuleData {
         if (semicolon >= 0) {
             dep = dep.substring(0, semicolon);
         }
-        return dep;
+        return dep.replace('-', '_');
     }
     
     private String[] computeExported(boolean useOSGi, Collection<String> arr, Attributes attr) {
