@@ -44,6 +44,8 @@ package org.netbeans.modules.cloud.oracle.ui;
 import java.awt.Component;
 import java.beans.BeanInfo;
 import java.io.File;
+import java.lang.reflect.Field;
+import java.net.Authenticator;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -61,11 +63,7 @@ import org.netbeans.modules.cloud.oracle.OracleInstanceManager;
 import org.netbeans.modules.cloud.oracle.serverplugin.OracleJ2EEInstance;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
-import org.openide.util.ChangeSupport;
-import org.openide.util.HelpCtx;
-import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
+import org.openide.util.*;
 
 /**
  *
@@ -201,6 +199,7 @@ public class OracleWizardPanel implements WizardDescriptor.AsynchronousValidatin
             OracleInstance ai = new OracleInstance("Oracle Cloud", OracleWizardComponent.getPrefixedUserName(component.getIdentityDomain(), component.getUserName()), 
                     component.getPassword(), component.getAdminUrl(),
                     component.getIdentityDomain(), component.getJavaServiceName(), component.getDatabaseServiceName(), null, component.getSDKFolder());
+            Authenticator auth = resetCurrentAuthenticator();
             try {
                 ai.testConnection();
             } catch (SDKException ex) {
@@ -218,6 +217,10 @@ public class OracleWizardPanel implements WizardDescriptor.AsynchronousValidatin
                 asynchError = NbBundle.getMessage(OracleWizardPanel.class, "OracleWizardPanel.something.wrong");
                 throw new WizardValidationException((JComponent)getComponent(), 
                         "connection exception", asynchError);
+            } finally {
+                if (auth != null) {
+                    Authenticator.setDefault(auth);
+                }
             }
             OracleJ2EEInstance instance = ai.readJ2EEServerInstance();
             OracleJ2EEInstanceNode n = new OracleJ2EEInstanceNode(instance, true);
@@ -226,6 +229,54 @@ public class OracleWizardPanel implements WizardDescriptor.AsynchronousValidatin
             component.setCursor(null);
             component.disableModifications(false);
         }
+    }
+    
+    public static boolean testPassword(String identityDomain, String user, String pwd, 
+            String adminURL, String sdkFolder) {
+        OracleInstance ai = new OracleInstance("Oracle Cloud", 
+                OracleWizardComponent.getPrefixedUserName(identityDomain, user), 
+                pwd, adminURL, identityDomain, "", "", null, sdkFolder);
+        Authenticator auth = resetCurrentAuthenticator();
+        try {
+            ai.testConnection();
+            return true;
+        } catch (SDKException ex) {
+            LOG.log(Level.FINE, "cannot access SDK", ex);
+        } catch (ManagerException ex) {
+            LOG.log(Level.FINE, "cannot connect to oracle cloud", ex);
+        } catch (Throwable t) {
+            LOG.log(Level.FINE, "cannot connect", t);
+        } finally {
+            if (auth != null) {
+                Authenticator.setDefault(auth);
+            }
+        }
+        return false;
+    }
+    
+    /**
+     * Uses reflection to retrieve current Authenticator. 
+     * 
+     * @return null can have two meanings - the original authentication could not
+     *  have been read or is null; do nothing in such case
+     */
+    private static Authenticator resetCurrentAuthenticator() {
+        try {
+            Field f = Authenticator.class.getDeclaredField("theAuthenticator"); // NOI18N
+            f.setAccessible(true);
+            Authenticator current = (Authenticator)f.get(null);
+            Authenticator.setDefault(null);
+            return current;
+        } catch (IllegalArgumentException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IllegalAccessException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (NoSuchFieldException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (SecurityException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
     }
 
     @Override

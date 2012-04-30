@@ -53,12 +53,15 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.libs.oracle.cloud.api.CloudSDKHelper;
 import org.netbeans.modules.cloud.oracle.OracleInstance;
 import org.netbeans.modules.cloud.oracle.OracleInstanceManager;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Petr Hejl
  */
-public class CustomizerCloudGeneral extends javax.swing.JPanel implements DocumentListener {
+public class CustomizerCloudGeneral extends javax.swing.JPanel {
 
     private final OracleInstance instance;
     
@@ -77,63 +80,62 @@ public class CustomizerCloudGeneral extends javax.swing.JPanel implements Docume
         passwordField.setText(instance.getPassword());
         sdkTextField.setText(instance.getSDKFolder());
         dbServiceNameTextField.setText(instance.getDatabaseServiceName());
-        
-        adminUrlField.getDocument().addDocumentListener(this);
-        usernameField.getDocument().addDocumentListener(this);
-        passwordField.getDocument().addDocumentListener(this);
-        sdkTextField.getDocument().addDocumentListener(this);
-        dbServiceNameTextField.getDocument().addDocumentListener(this);
     }
 
     @Override
-    public void changedUpdate(DocumentEvent e) {
-        update(e);
+    public void removeNotify() {
+        super.removeNotify();
+        update();
     }
+    
 
-    @Override
-    public void insertUpdate(DocumentEvent e) {
-        update(e);
-    }
-
-    @Override
-    public void removeUpdate(DocumentEvent e) {
-        update(e);
-    }
-
-    private void update(DocumentEvent e) {
-        if (adminUrlField.getDocument().equals(e.getDocument())
-                && !adminUrlField.getText().equals(instance.getAdminURL())) {
+    private void update() {
+        boolean someChange = false;
+        boolean pwdChange = false;
+        if (!adminUrlField.getText().equals(instance.getAdminURL())) {
             instance.setAdminURL(adminUrlField.getText());
-            OracleInstanceManager.getDefault().update(instance);
-            return;
+            someChange = true;
         }
         
-        if (usernameField.getDocument().equals(e.getDocument())
-                && !usernameField.getText().equals(instance.getUser())) {
+        if (!usernameField.getText().equals(instance.getUser())) {
             instance.setUser(OracleWizardComponent.getPrefixedUserName(identityDomainField.getText(), usernameField.getText()));
-            OracleInstanceManager.getDefault().update(instance);
-            return;
+            someChange = true;
+            pwdChange = true;
         }
         
-        if (passwordField.getDocument().equals(e.getDocument())
-                && !String.valueOf(passwordField.getPassword()).equals(instance.getPassword())) {
+        if (!String.valueOf(passwordField.getPassword()).equals(instance.getPassword())) {
             instance.setPassword(String.valueOf(passwordField.getPassword()));
-            OracleInstanceManager.getDefault().update(instance);
-            return;
+            someChange = true;
+            pwdChange = true;
         }
         
-        if (dbServiceNameTextField.getDocument().equals(e.getDocument())
-                && !dbServiceNameTextField.getText().equals(instance.getDatabaseServiceName())) {
+        if (!dbServiceNameTextField.getText().equals(instance.getDatabaseServiceName())) {
             instance.setDatabaseServiceName(dbServiceNameTextField.getText());
-            OracleInstanceManager.getDefault().update(instance);
-            return;
+            someChange = true;
         }
         
-        if (sdkTextField.getDocument().equals(e.getDocument())
-                && !sdkTextField.getText().equals(instance.getSDKFolder())) {
+        if (!sdkTextField.getText().equals(instance.getSDKFolder())) {
             instance.setSDKFolder(sdkTextField.getText());
+            someChange = true;
+        }
+        
+        if (someChange) {
             OracleInstanceManager.getDefault().update(instance);
-            return;
+        }
+        if (pwdChange) {
+            OracleInstance.ORACLE_RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (!OracleWizardPanel.testPassword(identityDomainField.getText(), 
+                            usernameField.getText(), 
+                            String.valueOf(passwordField.getPassword()), 
+                            adminUrlField.getText(), 
+                            sdkTextField.getText())) {
+                        DialogDisplayer.getDefault().notify(new DialogDescriptor.Message(
+                            NbBundle.getMessage(CustomizerCloudGeneral.class, "CustomizerCloudGeneral.wrongPwd")));
+                    }
+                }
+            });
         }
     }
     
