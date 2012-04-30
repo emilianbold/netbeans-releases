@@ -191,7 +191,7 @@ public class OracleJ2eePlatformImpl2 extends J2eePlatformImpl2 implements Change
     public Set<Profile> getSupportedProfiles() {
         // enabling EE 6 profile would cause many problems (eg. lite EJBs in Web Project,
         // no web.xml created by default, Servlet 3.0 spec, etc.) so it is better to stick with EE 5 here
-        return new HashSet(Arrays.asList(new Profile[]{/*Profile.JAVA_EE_6_FULL,*/ Profile.JAVA_EE_5}));
+        return new HashSet<Profile>(Arrays.<Profile>asList(new Profile[]{/*Profile.JAVA_EE_6_FULL,*/ Profile.JAVA_EE_5}));
     }
 
     @Override
@@ -220,6 +220,7 @@ public class OracleJ2eePlatformImpl2 extends J2eePlatformImpl2 implements Change
     }
 
     @Override
+    @Deprecated
     public boolean isToolSupported(String toolName) {
         return false;
     }

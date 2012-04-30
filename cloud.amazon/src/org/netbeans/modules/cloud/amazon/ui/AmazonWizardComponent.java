@@ -130,7 +130,7 @@ public class AmazonWizardComponent extends javax.swing.JPanel implements Documen
     }
     
     public String getKey() {
-        return secret.getText();
+        return String.valueOf(secret.getPassword());
     }
 
     @Override
@@ -156,6 +156,6 @@ public class AmazonWizardComponent extends javax.swing.JPanel implements Documen
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(AmazonWizardComponent.class);
+        return new HelpCtx(AmazonWizardComponent.class.getName());
     }
 }
