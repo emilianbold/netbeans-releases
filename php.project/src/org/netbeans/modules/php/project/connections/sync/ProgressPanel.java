@@ -42,7 +42,6 @@
 package org.netbeans.modules.php.project.connections.sync;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -56,7 +55,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.DialogDescriptor;
@@ -102,6 +100,8 @@ public class ProgressPanel extends JPanel {
         progressHandle = ProgressHandleFactory.createHandle(Bundle.ProgressPanel_progress_title());
         // #211494
         progressMessageLabel = ProgressHandleFactory.createDetailLabelComponent(progressHandle);
+        // set correct height of the component
+        progressMessageLabel.setText(" "); // NOI18N
 
         initComponents();
         summaryPanelHolder.add(summaryPanel, BorderLayout.CENTER);
@@ -113,8 +113,7 @@ public class ProgressPanel extends JPanel {
 
     @NbBundle.Messages({
         "ProgressPanel.title=Synchronization",
-        "ProgressPanel.button.cancel=&Cancel",
-        "ProgressPanel.details.output=Details can be reviewed in Output window."
+        "ProgressPanel.button.cancel=&Cancel"
     })
     public void createPanel(AtomicBoolean cancel) {
         assert SwingUtilities.isEventDispatchThread();
@@ -155,23 +154,22 @@ public class ProgressPanel extends JPanel {
     }
 
     @NbBundle.Messages({
-        "# {0} - details info",
-        "ProgressPanel.cancel=<html><b>Synchronization cancelled.</b><br>{0}"
+        "ProgressPanel.cancel=<html><b>Synchronization cancelled.</b>"
     })
     public void cancel() {
-        finishInternal(Bundle.ProgressPanel_cancel(getNormalHtmlText(Bundle.ProgressPanel_details_output())), true);
+        finishInternal(Bundle.ProgressPanel_cancel(), true);
     }
 
     @NbBundle.Messages({
-        "# {0} - details info",
-        "ProgressPanel.success=<html><b>Synchronization successfully finished.</b><br>{0}"
+        "ProgressPanel.success=<html><b>Synchronization successfully finished.</b>"
     })
     public void finish() {
-        finishInternal(Bundle.ProgressPanel_success(Bundle.ProgressPanel_details_output()), false);
+        finishInternal(Bundle.ProgressPanel_success(), false);
     }
 
     @NbBundle.Messages({
-        "ProgressPanel.button.ok=&OK"
+        "ProgressPanel.button.ok=&OK",
+        "ProgressPanel.details.output=Details can be reviewed in Output window."
     })
     private void finishInternal(final String message, final boolean cancel) {
         syncRunning = false;
@@ -179,8 +177,7 @@ public class ProgressPanel extends JPanel {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                // #211494
-                progressMessageLabel.setText(" "); // NOI18N
+                progressMessageLabel.setText(Bundle.ProgressPanel_details_output());
                 Mnemonics.setLocalizedText(actionButton, Bundle.ProgressPanel_button_ok());
                 if (!error) {
                     if (autoCloseCheckBox.isSelected()) {
@@ -213,8 +210,7 @@ public class ProgressPanel extends JPanel {
     }
 
     @NbBundle.Messages({
-        "# {0} - details info",
-        "ProgressPanel.error=<html><b>Error occurred during synchronization.</b><br>{0}"
+        "ProgressPanel.error=<html><b>Error occurred during synchronization.</b>"
     })
     private void errorOccurred() {
         if (error) {
@@ -225,21 +221,9 @@ public class ProgressPanel extends JPanel {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                notificationLineSupport.setErrorMessage(Bundle.ProgressPanel_error(getNormalHtmlText(Bundle.ProgressPanel_details_output())));
+                notificationLineSupport.setErrorMessage(Bundle.ProgressPanel_error());
             }
         });
-    }
-
-    @NbBundle.Messages({
-        "# {0} - red",
-        "# {1} - green",
-        "# {2} - blue",
-        "# {3} - text message",
-        "ProgressPanel.html.normal=<span style=\"color: rgb({0}, {1}, {2});\">{3}</span>"
-    })
-    private String getNormalHtmlText(String message) {
-        Color color = UIManager.getColor("Label.foreground"); // NOI18N
-        return Bundle.ProgressPanel_html_normal(color.getRed(), color.getGreen(), color.getBlue(), message);
     }
 
     @NbBundle.Messages({
@@ -339,7 +323,7 @@ public class ProgressPanel extends JPanel {
             layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
                 .addContainerGap()
 
-                .addComponent(summaryPanelHolder, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addPreferredGap(ComponentPlacement.UNRELATED).addComponent(progressPanelHolder, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addPreferredGap(ComponentPlacement.RELATED).addComponent(progressMessagePanelHolder, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addContainerGap(20, Short.MAX_VALUE))
+                .addComponent(summaryPanelHolder, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addPreferredGap(ComponentPlacement.UNRELATED).addComponent(progressPanelHolder, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addPreferredGap(ComponentPlacement.RELATED).addComponent(progressMessagePanelHolder, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addGap(0, 0, 0))
         );
     }// </editor-fold>//GEN-END:initComponents
 

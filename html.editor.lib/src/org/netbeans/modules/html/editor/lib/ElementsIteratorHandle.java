@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,26 +37,19 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.html.editor.lib;
 
-package org.netbeans.modules.html.editor.lib.api.model;
-
-import java.util.Collection;
+import java.util.Iterator;
+import org.netbeans.modules.html.editor.lib.api.elements.Element;
 
 /**
  *
  * @author marekfukala
  */
-public interface HtmlModel {
-
-    @Deprecated
-    public String getModelId();
-
-    public Collection<HtmlTag> getAllTags();
-
-    public HtmlTag getTag(String tagName);
-
-    public Collection<? extends NamedCharRef> getNamedCharacterReferences();
-
+public interface ElementsIteratorHandle {
+    
+    public Iterator<Element> getIterator();
+    
 }
