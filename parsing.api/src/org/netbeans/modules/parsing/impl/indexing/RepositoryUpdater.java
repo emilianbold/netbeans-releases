@@ -647,7 +647,13 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
             if (source == null || source.booleanValue()) {
                 root = getOwningSourceRoot(fo);
                 if (root != null && isVisible(fo, root.second)) {
-                    assert root.second != null : "Expecting both owningSourceRootUrl=" + root.first + " and owningSourceRoot=" + root.second; //NOI18N
+                    if (root.second == null) {
+                        LOGGER.log(
+                            Level.INFO,
+                            "Ignoring event from non existing FileObject {0}",  //NOI18N
+                            root.first);
+                        return;
+                    }
                     boolean sourcForBinaryRoot = sourcesForBinaryRoots.contains(root.first);
                     ClassPath.Entry entry = sourcForBinaryRoot ? null : getClassPathEntry(root.second);
                     if (entry == null || entry.includes(fo)) {
@@ -748,7 +754,13 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
             if (source == null || source.booleanValue()) {
                 root = getOwningSourceRoot (fo);
                 if (root != null && isVisible(fo,root.second)) {
-                    assert root.second != null : "Expecting both owningSourceRootUrl=" + root.first + " and owningSourceRoot=" + root.second; //NOI18N
+                    if (root.second == null) {
+                        LOGGER.log(
+                            Level.INFO,
+                            "Ignoring event from non existing FileObject {0}",  //NOI18N
+                            root.first);
+                        return;
+                    }
                     boolean sourceForBinaryRoot = sourcesForBinaryRoots.contains(root.first);
                     ClassPath.Entry entry = sourceForBinaryRoot ? null : getClassPathEntry(root.second);
                     if (entry == null || entry.includes(fo)) {
@@ -886,7 +898,13 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
             if (source == null || source.booleanValue()) {
                 root = getOwningSourceRoot(newFile);
                 if (root != null) {
-                    assert root.second != null : "Expecting both owningSourceRootUrl=" + root.first + " and owningSourceRoot=" + root.second; //NOI18N
+                    if (root.second == null) {
+                        LOGGER.log(
+                            Level.INFO,
+                            "Ignoring event from non existing FileObject {0}",  //NOI18N
+                            root.first);
+                        return;
+                    }
                     FileObject rootFo = root.second;
                     String ownerPath = FileUtil.getRelativePath(rootFo, newFile.getParent());
                     String oldFilePath =  ownerPath.length() == 0 ? oldNameExt : ownerPath + "/" + oldNameExt; //NOI18N
@@ -1313,7 +1331,13 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
 
         Pair<URL, FileObject> root = getOwningSourceRoot(document);
         if (root != null) {
-            assert root.second != null : "Expecting both owningSourceRootUrl=" + root.first + " and owningSourceRoot=" + root.second; //NOI18N
+            if (root.second == null) {
+                LOGGER.log(
+                    Level.INFO,
+                    "Ignoring event from non existing FileObject {0}",  //NOI18N
+                    root.first);
+                return;
+            }
             if (activeDocument == document) {
                 long version = DocumentUtilities.getDocumentVersion(activeDocument);
                 Long lastDirtyVersion = (Long) activeDocument.getProperty(PROP_LAST_DIRTY_VERSION);
@@ -5199,7 +5223,10 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         Collections.reverse(sortedRoots);
 
                         for (URL url : sortedRoots) {
-                            todo.addAll(toSort.get(url));
+                            final List<FileListWork> flws = toSort.get(url);
+                            if (flws != null) {
+                                todo.addAll(flws);
+                            }
                         }
 
                         followUpWorksSorted = true;
