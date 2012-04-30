@@ -47,6 +47,7 @@ import java.io.File;
 import java.lang.reflect.Field;
 import java.net.Authenticator;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -61,6 +62,7 @@ import org.netbeans.modules.cloud.common.spi.support.ui.ServerResourceDescriptor
 import org.netbeans.modules.cloud.oracle.OracleInstance;
 import org.netbeans.modules.cloud.oracle.OracleInstanceManager;
 import org.netbeans.modules.cloud.oracle.serverplugin.OracleJ2EEInstance;
+import org.netbeans.modules.j2ee.weblogic9.DomainSupport;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.util.*;
@@ -123,11 +125,16 @@ public class OracleWizardPanel implements WizardDescriptor.AsynchronousValidatin
             settings.putProperty(DB_SERVICE_NAME, component.getDatabaseServiceName());
             settings.putProperty(SDK, component.getSDKFolder());
             settings.putProperty(CloudResourcesWizardPanel.PROP_SERVER_RESOURCES, servers);
+            setWarningMessage("");
         }
     }
 
     public void setErrorMessage(String message) {
         wd.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
+    }
+    
+    public void setWarningMessage(String message) {
+        wd.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, message);
     }
     
     @Override
@@ -136,8 +143,14 @@ public class OracleWizardPanel implements WizardDescriptor.AsynchronousValidatin
             return false;
         }
         String error = performValidation();
-        setErrorMessage(error);
-        return error.length() == 0;
+        if (error.length() > 0) {
+            setErrorMessage(error);
+            return false;
+        }
+        if (DomainSupport.getUsableDomainInstances(null).isEmpty()) {
+            setWarningMessage(NbBundle.getMessage(OracleWizardPanel.class, "OracleWizardPanel.noWeblogic"));
+        }    
+        return true;
     }
     
     private String performValidation() {
