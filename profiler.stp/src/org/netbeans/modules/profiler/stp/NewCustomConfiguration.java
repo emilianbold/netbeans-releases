@@ -55,7 +55,6 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.HierarchyEvent;
 import java.awt.event.HierarchyListener;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.ButtonGroup;
@@ -79,6 +78,7 @@ import org.netbeans.lib.profiler.ui.UIUtils;
 import org.netbeans.modules.profiler.api.icons.Icons;
 import org.netbeans.modules.profiler.api.icons.ProfilerIcons;
 import org.openide.DialogDisplayer;
+import org.openide.NotificationLineSupport;
 import org.openide.util.HelpCtx;
 
 
@@ -105,7 +105,8 @@ import org.openide.util.HelpCtx;
     "NewCustomConfiguration_DefaultRadioAccessDescr=Use default settings for the configuration",
     "NewCustomConfiguration_ExistingRadioText=&From Existing Configuration:",
     "NewCustomConfiguration_ExistingRadioAccessDescr=Copy settings from existing configuration",
-    "NewCustomConfiguration_OkButtonText=OK"
+    "NewCustomConfiguration_OkButtonText=OK",
+    "NewCustomConfiguration_Notification_DuplicateName=Duplicate configuration name.",
 })
 public class NewCustomConfiguration extends JPanel implements ChangeListener, ListSelectionListener, DocumentListener, HelpCtx.Provider {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
@@ -147,6 +148,7 @@ public class NewCustomConfiguration extends JPanel implements ChangeListener, Li
     private ProfilingSettings originalSettings = null;
     private ProfilingSettings[] availableSettings;
     private int mode;
+    private NotificationLineSupport notificationLineSupport;
 
     //~ Constructors -------------------------------------------------------------------------------------------------------------
 
@@ -283,13 +285,14 @@ public class NewCustomConfiguration extends JPanel implements ChangeListener, Li
         final DialogDescriptor dd = new DialogDescriptor(ncc, title, true,
                 new Object[]{ncc.okButton, DialogDescriptor.CANCEL_OPTION}, ncc.okButton, 
                 0, null, null);
+        ncc.notificationLineSupport = dd.createNotificationLineSupport();                
         final Dialog d = DialogDisplayer.getDefault().createDialog(dd);
         d.pack();
-        d.setVisible(true);
+        d.setVisible(true);        
         ProfilingSettings settings = null;
         if (dd.getValue() == ncc.okButton) {
             settings = ncc.getProfilingSettings();
-        }
+        }                        
         return settings;            
     }
     
@@ -673,17 +676,39 @@ public class NewCustomConfiguration extends JPanel implements ChangeListener, Li
     }
 
     private void updateOKButton() {
+        String reason = null;
         String name = nameTextfield.getText().trim();
-        boolean enabled = name.length() > 0
-                    && (mode == MODE_RENAME || 
-                        defaultSettingsRadio.isSelected() || 
-                        existingSettingsList.getSelectedIndex() != -1);
+        boolean enabled = false;
+        if (name.length() > 0) {
+            switch(mode) {
+                case MODE_RENAME:
+                    //solved direclty here to prevent the dialog to display
+                    //error from the start - which looks ugly
+                    enabled = !name.equals(originalSettings.getSettingsName());
+                    break;
+                case MODE_NEW_ANY:
+                case MODE_NEW_TYPE:
+                    enabled = defaultSettingsRadio.isSelected() || 
+                        existingSettingsList.getSelectedIndex() != -1;
+                    break;
+                default:
+                    enabled = true;
+            }
+        }
         if (enabled) {        
             for (ProfilingSettings settings : availableSettings) {
                 if (name.equals(settings.getSettingsName())) {
-                    enabled = false;
+                    enabled = false;                    
+                    reason = Bundle.NewCustomConfiguration_Notification_DuplicateName();
                     break;
                 }
+            }
+        }
+        if(notificationLineSupport != null) {
+            if (reason == null) {
+                notificationLineSupport.clearMessages();
+            } else {
+                notificationLineSupport.setErrorMessage(reason);
             }
         }
         okButton.setEnabled(enabled);
