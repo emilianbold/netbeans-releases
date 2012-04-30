@@ -52,13 +52,11 @@ import org.openide.util.NbBundle;
 
 public class PanelConfigureProjectVisual extends JPanel implements HelpCtx.Provider {
 
-    private PanelConfigureProject panel;
 
     private PanelProjectLocationVisual projectLocationPanel;
 
     /** Creates new form PanelInitProject */
     public PanelConfigureProjectVisual(PanelConfigureProject panel, String title) {
-        this.panel = panel;
         initComponents();
         this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PanelConfigureProjectVisual.class, "ACS_NWP1_NamePanel_A11YDesc"));  // NOI18N
         
@@ -92,6 +90,7 @@ public class PanelConfigureProjectVisual extends JPanel implements HelpCtx.Provi
         java.awt.GridBagConstraints gridBagConstraints;
 
         locationContainer = new javax.swing.JPanel();
+        fill = new javax.swing.JPanel();
 
         setPreferredSize(new java.awt.Dimension(500, 340));
         setRequestFocusEnabled(false);
@@ -103,9 +102,16 @@ public class PanelConfigureProjectVisual extends JPanel implements HelpCtx.Provi
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         add(locationContainer, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        add(fill, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel fill;
     private javax.swing.JPanel locationContainer;
     // End of variables declaration//GEN-END:variables
 
