@@ -83,7 +83,8 @@ public class TargetClusterTest extends TargetClusterTestCase {
         // Otherwise (new module), if a cluster name is specified in NBM, put it there
         assertEquals ("Goes into " + nextDir.getName (), nextDir.getName (), getTargetCluster (nextDir.getName (), null).getName ());
     }
-    
+
+    @RandomlyFails
     public void testInstallNewIntoDeclaredNextClusterAndFalseGlobal () throws IOException {
         // target cluster has precedence than global
         assertEquals ("Goes into " + nextDir.getName (), nextDir.getName (), getTargetCluster (nextDir.getName (), false).getName ());
