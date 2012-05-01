@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,31 +37,19 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.libs.jna;
 
-package org.netbeans.modules.cnd.modelimpl.csm.core;
+import org.openide.modules.ModuleInstall;
 
-import java.io.File;
-import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+public class Installer extends ModuleInstall {
 
-/**
- *
- * @author vv159170
- */
-public class ModifyMultiIncludedHeaderTestCase extends ModifyDocumentTestCaseBase {
-    public ModifyMultiIncludedHeaderTestCase(String testName) {
-        super(testName);
-//        System.setProperty("cnd.modelimpl.trace191307", "true");
-    }
+    @Override
+    public void validate() {
+        super.validate();
+        //#211655
+        System.setProperty( "jna.boot.library.name", "jninbdispatch" ); //NOI18N
 
-    public void test174007() throws Exception {
-        // #174007:  (Sometimes) Incorrect processing of #ifndef .. #define
-        if (TraceFlags.TRACE_191307_BUG) {
-            System.err.printf("TEST MULTI INCLUSION\n");
-        }
-        final File sourceFile = getDataFile("multiIncludedFileForModification.h");
-        super.insertTextThenSaveAndCheck(sourceFile, 12 + 1, "void foo();\n", 
-                sourceFile, new DeclarationsNumberChecker(3, 4), true);
     }
 }

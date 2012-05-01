@@ -106,7 +106,7 @@ void initMainWindow(LauncherProperties * props, HINSTANCE hInstance) {
         int systemHeight = GetSystemMetrics(SM_CYSCREEN);
         
         int w = 436;
-        int h = 178;
+        int h = 174;
         int x = (systemWidth - w)/2;
         int y = (systemHeight - h)/2;
 
@@ -152,7 +152,7 @@ void initErrorDetailWindow(LauncherProperties *props, HINSTANCE hInstance) {
         cyVScroll = GetSystemMetrics(SM_CYVSCROLL);
         GetClientRect(hwndMain, &rcClient);
         hwndErrorDetail = CreateWindowExW(0,  WC_STATICW,  WC_STATICW, WS_CHILD  ,
-                rcClient.left + 10,  40, rcClient.right - 20, 70,
+                rcClient.left + 10,  40, rcClient.right - 20, 80,
                 hwndMain, NULL, hInstance, NULL);
         if (hwndErrorDetail)  {
             LOGFONT lfDetail;
