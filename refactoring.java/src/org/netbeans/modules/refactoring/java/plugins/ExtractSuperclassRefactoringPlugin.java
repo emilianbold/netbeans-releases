@@ -536,6 +536,7 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
                             modifiers = make.removeModifiersModifier(modifiers, Modifier.PRIVATE);
                             modifiers = make.addModifiersModifier(modifiers, Modifier.PROTECTED);
                         }
+                    methodTree = genUtils.importComments(methodTree, wc.getTrees().getPath(elm).getCompilationUnit());
                     if (member.isMakeAbstract() && !elm.getModifiers().contains(Modifier.ABSTRACT)) {
                         methodTree = make.Method(
                                 RefactoringUtils.makeAbstract(make, modifiers),
@@ -546,11 +547,7 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
                                 methodTree.getThrows(),
                                 (BlockTree) null,
                                 null);
-                        methodTree = genUtils.importFQNs(methodTree);
-                        RefactoringUtils.copyJavadoc(elm, methodTree, wc);
                     } else {
-                        methodTree = genUtils.importComments(methodTree, wc.getTrees().getPath(elm).getCompilationUnit());
-                        methodTree = genUtils.importFQNs(methodTree);
                         methodTree = make.Method(modifiers,
                                 methodTree.getName(),
                                 methodTree.getReturnType(),
@@ -560,6 +557,8 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
                                 methodTree.getBody(),
                                 (ExpressionTree) methodTree.getDefaultValue());
                     }
+                    methodTree = genUtils.importFQNs(methodTree);
+                    RefactoringUtils.copyJavadoc(elm, methodTree, wc);
                     makeAbstract |= methodTree.getModifiers().getFlags().contains(Modifier.ABSTRACT);
                     members.add(methodTree);
                 } else if (member.getGroup() == MemberInfo.Group.IMPLEMENTS) {
