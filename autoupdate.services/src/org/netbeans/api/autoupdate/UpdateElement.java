@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -45,8 +45,8 @@
 package org.netbeans.api.autoupdate;
 
 import java.awt.Image;
-import org.netbeans.modules.autoupdate.services.UpdateElementImpl;
 import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
+import org.netbeans.modules.autoupdate.services.UpdateElementImpl;
 import org.netbeans.modules.autoupdate.services.UpdateManagerImpl;
 import org.netbeans.modules.autoupdate.updateprovider.ProviderCategory;
 
@@ -208,6 +208,15 @@ public final class UpdateElement {
         return impl.getDate ();
     }
 
+    /** Returns ID of license agreement if the <code>UpdateElement</code> has a copyright.
+     * 
+     * @return String or null
+     * @since 1.31
+     */
+    public String getLicenceId () {                
+        return impl.getLicenceId ();
+    }
+    
     /** Returns text of license agreement if the <code>UpdateElement</code> has a copyright.
      * 
      * @return String or null
