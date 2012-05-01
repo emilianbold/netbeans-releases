@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.project.ui.actions;
 
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -62,24 +63,27 @@ import javax.swing.JMenuItem;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.project.ui.OpenProjectList;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.project.ui.OpenProjectList;
 import org.netbeans.modules.project.ui.ProjectTab;
 import org.netbeans.modules.project.ui.ProjectUtilities;
+import static org.netbeans.modules.project.ui.actions.Bundle.*;
 import org.netbeans.modules.project.ui.api.UnloadedProjectInformation;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.StatusDisplayer;
-import org.openide.nodes.Node;
-import org.openide.util.NbBundle;
-import org.openide.util.WeakListeners;
-import org.openide.util.actions.Presenter;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
+import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
+import org.openide.util.actions.Presenter;
 
 public class RecentProjects extends AbstractAction implements Presenter.Menu, Presenter.Popup, PropertyChangeListener {
     
@@ -192,15 +196,21 @@ public class RecentProjects extends AbstractAction implements Presenter.Menu, Pr
     // Innerclasses ------------------------------------------------------------
     
     private static class MenuItemActionListener implements ActionListener {
+
+        private static final RequestProcessor RP = new RequestProcessor(MenuItemActionListener.class); // #205652
         
+        @Messages({
+            "# {0} - URL to project directory", "STATUS_loading_recent=Loading project at {0}...",
+            "ERR_InvalidProject=The project is either not valid or deleted"
+        })
         public void actionPerformed( ActionEvent e ) {
             
             if ( e.getSource() instanceof JMenuItem ) {
                 JMenuItem jmi = (JMenuItem)e.getSource();
-
-                StatusDisplayer.getDefault().setStatusText("");
-
-                URL url = (URL)jmi.getClientProperty( PROJECT_URL_KEY );                
+                final URL url = (URL)jmi.getClientProperty( PROJECT_URL_KEY );
+                StatusDisplayer.getDefault().setStatusText(STATUS_loading_recent(url));
+                RP.post(new Runnable() {
+                    @Override public void run() {
                 Project project = null;
 
                 FileObject dir = URLMapper.findFileObject( url );
@@ -215,9 +225,11 @@ public class RecentProjects extends AbstractAction implements Presenter.Menu, Pr
                 
                 if ( project != null ) {
                     OpenProjectList.getDefault().open( new Project[] {project}, false, true );
+                    final String name = ProjectUtils.getInformation(project).getName();
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override public void run() {
                     ProjectTab ptLogical = ProjectTab.findDefault(ProjectTab.ID_LOGICAL);
                     Node root = ptLogical.getExplorerManager ().getRootContext ();
-                    String name = ProjectUtils.getInformation(project).getName();
                     Node projNode = root.getChildren().findChild(name);
                     if (projNode != null) {
                         try {
@@ -230,12 +242,13 @@ public class RecentProjects extends AbstractAction implements Presenter.Menu, Pr
                                 new Object[] {name, Arrays.asList(root.getChildren().getNodes())});
                     }
                     ProjectUtilities.makeProjectTabVisible();
+                        }
+                    });
                 } else {
-                    String msg = NbBundle.getMessage(RecentProjects.class, "ERR_InvalidProject"); //NOI18N
-                    NotifyDescriptor nd = new NotifyDescriptor.Message(msg);
-                    DialogDisplayer.getDefault().notify(nd);
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(ERR_InvalidProject()));
                 }
-                
+                    }
+                });
             }
             
         }
