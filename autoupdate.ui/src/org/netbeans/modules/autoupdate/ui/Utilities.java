@@ -51,6 +51,7 @@ import java.net.URL;
 import java.text.Collator;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -69,24 +70,18 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-import org.netbeans.api.autoupdate.InstallSupport;
-import org.netbeans.api.autoupdate.OperationContainer;
+import org.netbeans.api.autoupdate.*;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
-import org.netbeans.api.autoupdate.UpdateElement;
-import org.netbeans.api.autoupdate.UpdateManager;
-import org.netbeans.api.autoupdate.UpdateUnit;
-import org.netbeans.api.autoupdate.UpdateUnitProvider;
-import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.autoupdate.ui.actions.Installer;
+import org.netbeans.modules.autoupdate.ui.actions.ShowNotifications;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.Mnemonics;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
-import org.netbeans.modules.autoupdate.ui.actions.Installer;
-import org.netbeans.modules.autoupdate.ui.actions.ShowNotifications;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
 
@@ -95,7 +90,7 @@ import org.openide.util.TaskListener;
  * @author Jiri Rechtacek
  */
 public class Utilities {
-    private static Logger logger = Logger.getLogger(Utilities.class.getName());
+    private static final Logger logger = Logger.getLogger(Utilities.class.getName());
     private static Boolean isModulesOnly;
     private static String PLUGIN_MANAGER_MODULES_ONLY = "plugin_manager_modules_only";
     private static String PLUGIN_MANAGER_SHARED_INSTALLATION = "plugin_manager_shared_installation";
@@ -121,31 +116,77 @@ public class Utilities {
     
     private static Collection<String> first_class_modules = null;
     
+    private static Set<String> acceptedLicenseIDs;
+    public static final String PLUGIN_MANAGER_ACCEPTED_LICENSE_IDS = "plugin_manager_accepted_license_ids"; // NOI18N
+    
     @SuppressWarnings ("deprecation")
     public static List<UnitCategory> makeInstalledCategories (List<UpdateUnit> units) {
         //units = filterUneditable(units);
-            List<UnitCategory> res = new ArrayList<UnitCategory> ();
-            List<String> names = new ArrayList<String> ();
-            for (UpdateUnit u : units) {
-                UpdateElement el = u.getInstalled();
-                if (el != null || u.isPending ()) {
-                    String catName = el == null && u.isPending () ? u.getAvailableUpdates ().get (0).getCategory () : el.getCategory ();
-                    Unit.Installed i = new Unit.Installed (u, catName);
-                    if (names.contains(catName)) {
-                        UnitCategory cat = res.get(names.indexOf(catName));
-                        cat.addUnit (i);
-                    } else {
-                        UnitCategory cat = new UnitCategory(catName);
-                        cat.addUnit (i);
-                        res.add(cat);
-                        names.add(catName);
-                    }
+        List<UnitCategory> res = new ArrayList<UnitCategory> ();
+        List<String> names = new ArrayList<String> ();
+        for (UpdateUnit u : units) {
+            UpdateElement el = u.getInstalled();
+            if (el != null || u.isPending ()) {
+                String catName = el == null && u.isPending () ? u.getAvailableUpdates ().get (0).getCategory () : el.getCategory ();
+                Unit.Installed i = new Unit.Installed (u, catName);
+                if (names.contains(catName)) {
+                    UnitCategory cat = res.get(names.indexOf(catName));
+                    cat.addUnit (i);
+                } else {
+                    UnitCategory cat = new UnitCategory(catName);
+                    cat.addUnit (i);
+                    res.add(cat);
+                    names.add(catName);
+                }
+                String licenseId = el.getLicenseId();
+                if (licenseId != null && getAcceptedLicenseIds().add(licenseId)) {
+                    logger.fine("License ID - Yet another license " + licenseId + " was accepted during installation.");
                 }
             }
-            logger.log(Level.FINER, "makeInstalledCategories (" + units.size() + ") returns " + res.size());
-            return res;
-        };
+        }
+        logger.log(Level.FINER, "makeInstalledCategories (" + units.size() + ") returns " + res.size());
+        return res;
+    }
+    
+    private static Set<String> getAcceptedLicenseIds() {
+        if (acceptedLicenseIDs == null) {
+            loadAcceptedLicenseIDs(0);
+        }
+        return acceptedLicenseIDs;
+    }
 
+    public static boolean isLicenseIdApproved(String licenseId) {
+        logger.finest("License ID - Was " + licenseId + " accepted? " + getAcceptedLicenseIds().contains(licenseId));
+        return getAcceptedLicenseIds().contains(licenseId);
+    }
+    
+    public static void addAcceptedLicenseIDs(Collection licenseIds) {
+        if (licenseIds != null && getAcceptedLicenseIds().addAll(licenseIds)) {
+            logger.fine("License ID - License ID " + licenseIds + " was accepted.");
+        }
+    }
+    
+    public static void storeAcceptedLicenseIDs() {
+        StringBuilder sb = new StringBuilder();
+        for(String licenseId : acceptedLicenseIDs) {
+            sb.append(licenseId).append(",");
+        }
+        getPreferences().put(PLUGIN_MANAGER_ACCEPTED_LICENSE_IDS, sb.substring(0, sb.length() - 1));
+        logger.fine("License IDs - Stored: " + sb.substring(0, sb.length() - 1));
+        acceptedLicenseIDs = null;
+    }
+    
+    public static void loadAcceptedLicenseIDs(int capacity) {
+        if (acceptedLicenseIDs == null) {
+            acceptedLicenseIDs = new HashSet<String> (capacity);
+        }
+        String storedIds = getPreferences().get(PLUGIN_MANAGER_ACCEPTED_LICENSE_IDS, null);
+        if (storedIds != null) {
+            acceptedLicenseIDs.addAll(Arrays.asList(storedIds.split(",")));
+        }
+        logger.fine("License IDs - Loaded: " + acceptedLicenseIDs);
+    }
+            
     public static List<UnitCategory> makeUpdateCategories (final List<UpdateUnit> units, boolean isNbms) {
         long start = System.currentTimeMillis();
         if (! isNbms && ! units.isEmpty ()) {
@@ -174,22 +215,17 @@ public class Utilities {
                 }
                 coveredByVisible.add(u);
 
-                List<UpdateElement> list = new ArrayList<UpdateElement>();
                 OperationContainer<InstallSupport> container = OperationContainer.createForUpdate();
                 OperationInfo<InstallSupport> info = container.add(updates.get(0));
                 Set <UpdateElement> required = info.getRequiredElements();
                 for(UpdateElement ue : required){
                     if(!ue.getUpdateUnit().isPending()) {
                         coveredByVisible.add(ue.getUpdateUnit());
-                        list.add(ue);
                     }
                 }
                 for(OperationInfo <InstallSupport> i : container.listAll()) {
                     if(!i.getUpdateUnit().isPending()) {
                         coveredByVisible.add((i.getUpdateUnit()));
-                        if(!u.equals(i.getUpdateUnit())) {
-                            list.add(i.getUpdateElement());
-                        }
                     }
                 }
                 //coveredByVisibleMap.put(u,list);
@@ -281,7 +317,7 @@ public class Utilities {
             
             if (add) {
                 String catName = update.getCategory();
-                UnitCategory cat = null;
+                UnitCategory cat;
 
                 if (names.contains(catName)) {
                     cat = res.get(names.indexOf(catName));
@@ -357,7 +393,7 @@ public class Utilities {
         }
 
         UpdateUnit result = null;
-        if(candidates.size()==0) {
+        if(candidates.isEmpty()) {
             logger.log(Level.FINE,
                     "Have not found visible module for invisible " + invisible.getCodeName());
         } else {
@@ -395,7 +431,7 @@ public class Utilities {
         int length1 = cn1sp.length;
         int length2 = cn2sp.length;
         int min = Math.min(length1, length2);
-        int i = 0;
+        int i;
         for(i=0;i<min;i++) {
             if(!cn1sp[i].equals(cn2sp[i])) {
                 break;
@@ -475,7 +511,7 @@ public class Utilities {
             UpdateElement el = u.getInstalled ();
             if (! u.isPending() && el == null) {
                 List<UpdateElement> updates = u.getAvailableUpdates ();
-                if (updates == null || updates.size() == 0) {
+                if (updates == null || updates.isEmpty()) {
                     continue;
                 }
                 UpdateElement upEl = updates.get (0);
@@ -614,6 +650,7 @@ public class Utilities {
             final String progressDisplayName,
             final long estimatedTime) {
         startAsWorkerThread(new Runnable() {
+            @Override
             public void run() {
                 final ProgressHandle handle = ProgressHandleFactory.createHandle(progressDisplayName); // NOI18N                
                 JComponent progressComp = ProgressHandleFactory.createProgressComponent(handle);
@@ -635,6 +672,7 @@ public class Utilities {
                         final RequestProcessor.Task runnableTask = Installer.RP.post (runnableCode);
                         RequestProcessor.Task post = Installer.RP.post (new Runnable () {
                             @Override
+                            @SuppressWarnings("SleepWhileInLoop")
                              public void run () {
                                  int i = 0;
                                  while (! runnableTask.isFinished ()) {
@@ -654,6 +692,7 @@ public class Utilities {
                              }
                          });
                         runnableTask.addTaskListener (new TaskListener () {
+                            @Override
                             public void taskFinished (Task task) {
                                 task.removeTaskListener (this);
                                 handle.finish ();
@@ -805,6 +844,7 @@ public class Utilities {
 
     public static Comparator<String> getCategoryComparator () {
         return new Comparator<String> () {
+            @Override
             public int compare (String o1, String o2) {
                 /*
                 // Libraries always put in the last place.

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -126,6 +126,7 @@ public class PluginManagerUI extends javax.swing.JPanel  {
         postInitComponents ();
         //start initialize method as soon as possible
         initTask = Utilities.startAsWorkerThread (new Runnable () {
+            @Override
             public void run () {
                 initialize ();
             }
@@ -190,6 +191,7 @@ public class PluginManagerUI extends javax.swing.JPanel  {
                     setWaitingState (true);
                     Utilities.startAsWorkerThread (PluginManagerUI.this,
                             new Runnable () {
+                        @Override
                                 public void run () {
                                     try {
                                         initTask.waitFinished ();
@@ -206,6 +208,7 @@ public class PluginManagerUI extends javax.swing.JPanel  {
         }
         HelpCtx.setHelpIDString (this, PluginManagerUI.class.getName ());
         tpTabs.addChangeListener (new ChangeListener () {
+            @Override
             public void stateChanged (ChangeEvent evt) {
                 HelpCtx.setHelpIDString (PluginManagerUI.this, getHelpCtx ().getHelpID ());
             }
@@ -226,6 +229,7 @@ public class PluginManagerUI extends javax.swing.JPanel  {
     private void initialize () {
         try {
             final List<UpdateUnit> uu = UpdateManager.getDefault().getUpdateUnits(Utilities.getUnitTypes ());
+            Utilities.loadAcceptedLicenseIDs(uu.size());
             List<UnitCategory> precompute1 = Utilities.makeUpdateCategories (uu, false);
             List<UnitCategory> precompute2 = Utilities.makeUpdateCategories (uu, true);
             // postpone later
@@ -247,9 +251,11 @@ public class PluginManagerUI extends javax.swing.JPanel  {
     //workaround of #96282 - Memory leak in org.netbeans.core.windows.services.NbPresenter
     private void unitilialize () {
         Utilities.startAsWorkerThread (new Runnable () {
+            @Override
             public void run () {
                 //ensures that uninitialization runs after initialization
                 initTask.waitFinished ();
+                Utilities.storeAcceptedLicenseIDs();
                 AutoupdateCheckScheduler.runCheckAvailableUpdates (0);
                 //ensure exclusivity between this uninitialization code and refreshUnits (which can run even after this dialog is disposed)
                 synchronized(initLock) {
@@ -268,6 +274,7 @@ public class PluginManagerUI extends javax.swing.JPanel  {
             setProgressComponentInAwt (detail, progressComponent);
         } else {
             SwingUtilities.invokeLater (new Runnable () {
+                @Override
                 public void run () {
                     setProgressComponentInAwt (detail, progressComponent);
                 }
@@ -313,6 +320,7 @@ public class PluginManagerUI extends javax.swing.JPanel  {
             unsetProgressComponentInAwt (detail, progressComponent);
         } else {
             SwingUtilities.invokeLater (new Runnable () {
+                @Override
                 public void run () {
                     unsetProgressComponentInAwt (detail, progressComponent);
                 }
@@ -441,6 +449,7 @@ private void tpTabsStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:
             final UnitCategoryTableModel availableModel = (UnitCategoryTableModel) (availableTable).getModel ();
             final Map<String, Boolean> availableState = UnitCategoryTableModel.captureState (availableModel.getUnits ());
             ((SettingsTab) tpTabs.getComponentAt (INDEX_OF_SETTINGS_TAB)).doLazyRefresh (new Runnable () { // get SettingsTab
+                    @Override
                 public void run () {
                     UnitCategoryTableModel.restoreState (availableModel.getUnits (), availableState, false);
                 }

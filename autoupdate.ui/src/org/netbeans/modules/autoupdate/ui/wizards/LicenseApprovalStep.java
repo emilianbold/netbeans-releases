@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -56,6 +56,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.autoupdate.OperationException;
+import org.netbeans.modules.autoupdate.ui.Utilities;
 import org.netbeans.modules.autoupdate.ui.actions.Installer;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
@@ -81,10 +82,12 @@ public class LicenseApprovalStep implements WizardDescriptor.FinishablePanel<Wiz
     public LicenseApprovalStep (InstallUnitWizardModel model) {
         this.model = model;
     }
+    @Override
     public boolean isFinishPanel() {
         return false;
     }
 
+    @Override
     public Component getComponent() {
         if (component == null) {
             JPanel tmp = new LicenseApprovalPanel (null, isApproved);
@@ -105,12 +108,14 @@ public class LicenseApprovalStep implements WizardDescriptor.FinishablePanel<Wiz
             public void run () {
                 panel = new LicenseApprovalPanel (model, isApproved);
                 panel.addPropertyChangeListener (LicenseApprovalPanel.LICENSE_APPROVED, new PropertyChangeListener () {
+                    @Override
                         public void propertyChange (PropertyChangeEvent arg0) {
                             isApproved = panel.isApproved ();
                             fireChange ();
                         }
                 });
                 SwingUtilities.invokeLater (new Runnable () {
+                    @Override
                     public void run () {
                         component.setBody (panel);
                         component.setWaitingState (false);
@@ -121,10 +126,12 @@ public class LicenseApprovalStep implements WizardDescriptor.FinishablePanel<Wiz
         });
     }
     
+    @Override
     public HelpCtx getHelp() {
         return null;
     }
 
+    @Override
     public void readSettings (WizardDescriptor wd) {
         this.wd = wd;
         if (panel != null) {
@@ -132,9 +139,11 @@ public class LicenseApprovalStep implements WizardDescriptor.FinishablePanel<Wiz
         }
     }
 
+    @Override
     public void storeSettings (WizardDescriptor wd) {
         if (WizardDescriptor.NEXT_OPTION.equals (wd.getValue ())) {
             model.addApprovedLicenses (panel.getLicenses ());
+            Utilities.addAcceptedLicenseIDs(panel.getLicenseIds());
         } else {
             model.modifyOptionsForStartWizard (wd);
         }
@@ -150,14 +159,17 @@ public class LicenseApprovalStep implements WizardDescriptor.FinishablePanel<Wiz
         }
     }
 
+    @Override
     public boolean isValid() {
         return isApproved;
     }
 
+    @Override
     public synchronized void addChangeListener(ChangeListener l) {
         listeners.add(l);
     }
 
+    @Override
     public synchronized void removeChangeListener(ChangeListener l) {
         listeners.remove(l);
     }

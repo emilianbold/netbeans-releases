@@ -59,7 +59,7 @@ import org.openide.util.RequestProcessor;
  */
 public class LicenseApprovalPanel extends javax.swing.JPanel {
     public static final String LICENSE_APPROVED = "license-approved";
-	private List<UpdateElement> license4plugins;
+    private List<UpdateElement> license4plugins;
     
     /** Creates new form LicenseApprovalPanel */
     public LicenseApprovalPanel (InstallUnitWizardModel model, boolean isApproved) {
@@ -84,6 +84,18 @@ public class LicenseApprovalPanel extends javax.swing.JPanel {
 		}
 		return licenses;
 	}
+
+    Collection<String> getLicenseIds() {
+        assert license4plugins != null : "Licenses must found.";
+        if (license4plugins == null && license4plugins.isEmpty()) {
+            return Collections.emptyList();
+        }
+        Set<String> licenseIds = new HashSet<String>();
+        for (UpdateElement el : license4plugins) {
+            licenseIds.add(el.getLicenseId());
+        }
+        return licenseIds;
+    }
 
     private void goOverLicenses (InstallUnitWizardModel model) {
         for (UpdateElement el : model.getAllUpdateElements()) {

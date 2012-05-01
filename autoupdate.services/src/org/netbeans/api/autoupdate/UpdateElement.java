@@ -213,8 +213,8 @@ public final class UpdateElement {
      * @return String or null
      * @since 1.31
      */
-    public String getLicenceId () {                
-        return impl.getLicenceId ();
+    public String getLicenseId () {                
+        return impl.getLicenseId ();
     }
     
     /** Returns text of license agreement if the <code>UpdateElement</code> has a copyright.
@@ -252,5 +252,6 @@ public final class UpdateElement {
     public String toString () {
         return impl.getDisplayName() + "[" + impl.getCodeName () + "/" + impl.getSpecificationVersion () + "]";
     }
+
 }
 
