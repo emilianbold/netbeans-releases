@@ -45,26 +45,16 @@
 package org.netbeans.modules.ant.debugger.breakpoints;
 
 import java.util.Vector;
-import javax.swing.Action;
 
-import org.apache.tools.ant.module.api.support.TargetLister;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.ant.debugger.AntDebugger;
 import org.netbeans.modules.ant.debugger.Utils;
-import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.viewmodel.ModelEvent;
-import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.NodeModel;
-import org.netbeans.spi.viewmodel.TableModel;
-import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
-import org.netbeans.spi.debugger.ui.Constants;
 import org.openide.filesystems.FileObject;
-import org.openide.text.Annotatable;
-
-import org.openide.text.Line;
 
 /**
  *
@@ -93,6 +83,7 @@ public class BreakpointModel implements NodeModel {
      *          able to resolve display name for given node type
      * @return  display name for given node
      */
+    @Override
     public String getDisplayName (Object node) throws UnknownTypeException {
         if (node instanceof AntBreakpoint) {
             AntBreakpoint breakpoint = (AntBreakpoint) node;
@@ -113,6 +104,7 @@ public class BreakpointModel implements NodeModel {
      *          able to resolve icon for given node type
      * @return  icon for given node
      */
+    @Override
     public String getIconBase (Object node) throws UnknownTypeException {
         if (node instanceof AntBreakpoint) {
             AntBreakpoint breakpoint = (AntBreakpoint) node;
@@ -140,6 +132,7 @@ public class BreakpointModel implements NodeModel {
      *          able to resolve tooltip for given node type
      * @return  tooltip for given node
      */
+    @Override
     public String getShortDescription (Object node) 
     throws UnknownTypeException {
         if (node instanceof AntBreakpoint) {
@@ -154,6 +147,7 @@ public class BreakpointModel implements NodeModel {
      * 
      * @param l the listener to add
      */
+    @Override
     public void addModelListener (ModelListener l) {
         listeners.add (l);
     }
@@ -163,6 +157,7 @@ public class BreakpointModel implements NodeModel {
      *
      * @param l the listener to remove
      */
+    @Override
     public void removeModelListener (ModelListener l) {
         listeners.remove (l);
     }

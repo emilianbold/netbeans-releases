@@ -61,6 +61,7 @@ import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreePath;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.openide.awt.HtmlRenderer;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
@@ -73,6 +74,12 @@ import org.openide.xml.XMLUtil;
  */
 final class NodeRenderer extends JComponent implements TreeCellRenderer {
 
+    @StaticResource
+    private static final String FIND_ICON =
+            "org/netbeans/modules/search/res/find.gif";                 //NOI18N
+    @StaticResource
+    private static final String INVALID_ICON =
+            "org/netbeans/modules/search/res/invalid.png";              //NOI18N
     /** */
     private static Rectangle checkBounds;
     
@@ -98,9 +105,7 @@ final class NodeRenderer extends JComponent implements TreeCellRenderer {
      */
     NodeRenderer(final boolean withCheckBox) {
         nodeRenderer = HtmlRenderer.createRenderer();
-        rootIconImage = ImageUtilities.loadImage(
-                            "org/netbeans/modules/search/res/find.gif", //NOI18N
-                            true);                       //localized
+        rootIconImage = ImageUtilities.loadImage(FIND_ICON, true); //localized
         
         setLayout(null);
         if (!withCheckBox) {
@@ -340,8 +345,7 @@ final class NodeRenderer extends JComponent implements TreeCellRenderer {
     private Image getDeletedObjectIconImage() {
         if (deletedObjectIconImage == null) {
             deletedObjectIconImage = ImageUtilities.loadImage(
-                    "org/netbeans/modules/search/res/invalid.png",      //NOI18N
-                    true);                       //localized
+                    INVALID_ICON, true); //localized
         }
         return deletedObjectIconImage;
     }

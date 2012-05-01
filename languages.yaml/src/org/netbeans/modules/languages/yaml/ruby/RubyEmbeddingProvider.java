@@ -107,7 +107,9 @@ public class RubyEmbeddingProvider extends EmbeddingProvider {
             TokenHierarchy<Document> tokenHierarchy = TokenHierarchy.get((Document) d);
             TokenSequence<YamlTokenId> tokenSequence = tokenHierarchy.tokenSequence(YamlTokenId.language()); //get top level token sequence
 
-            translate(snapshot, tokenHierarchy, tokenSequence, embeddings);
+            if (tokenSequence != null) {
+                translate(snapshot, tokenHierarchy, tokenSequence, embeddings);
+            }
         } finally {
             d.readUnlock();
         }

@@ -77,7 +77,7 @@ public class ModifyUndoTestCase extends ModifyDocumentTestCaseBase {
             System.err.printf("TEST UNDO AFTER SAVE\n");
         }
         final File sourceFile = getDataFile("fileForModification.cc");
-        super.insertTextThenSave(sourceFile, 12 + 1, "void foo() {}\n", 3, 4, true);
-                
+        super.insertTextThenSaveAndCheck(sourceFile, 12 + 1, "void foo() {}\n", 
+                sourceFile, new DeclarationsNumberChecker(3, 4), true);
     }    
 }

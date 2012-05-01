@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,30 +37,19 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.toolchain.execution;
+package org.netbeans.libs.jna;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
-import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.filesystems.FileObject;
+import org.openide.modules.ModuleInstall;
 
-/**
- *
- * @author Alexander Simon
- */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider.class)
-public class ResolveConflictParserProvider extends ErrorParserProvider {
+public class Installer extends ModuleInstall {
 
     @Override
-    public ErrorParser getErorParser(Project project,CompilerFlavor flavor, ExecutionEnvironment execEnv, FileObject relativeTo) {
-	return new LDErrorParser(project, flavor, execEnv, relativeTo);
-    }
+    public void validate() {
+        super.validate();
+        //#211655
+        System.setProperty( "jna.boot.library.name", "jninbdispatch" ); //NOI18N
 
-    @Override
-    public String getID() {
-	return ErrorParserProvider.UNIVERSAL_PROVIDER_ID;
     }
 }

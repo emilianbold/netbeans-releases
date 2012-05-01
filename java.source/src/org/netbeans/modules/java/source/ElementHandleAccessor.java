@@ -56,15 +56,34 @@ import org.netbeans.api.java.source.ElementHandle;
  */
 public abstract class ElementHandleAccessor {
 
-    public static ElementHandleAccessor INSTANCE;
+    private static volatile ElementHandleAccessor INSTANCE;
 
-    static {
-        Class c = ElementHandle.class;
-        try {
-            Class.forName(c.getName(), true, c.getClassLoader());
-        } catch (Exception ex) {
-            ex.printStackTrace();
+    public static ElementHandleAccessor getInstance() {
+        ElementHandleAccessor result = INSTANCE;
+        
+        if (result == null) {
+            synchronized (ElementHandleAccessor.class) {
+                if (INSTANCE == null) {
+                    Class c = ElementHandle.class;
+                    try {
+                        Class.forName(c.getName(), true, c.getClassLoader());
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                    
+                    assert INSTANCE != null;
+                }
+                
+                return INSTANCE;
+            }
         }
+        
+        return result;
+    }
+    
+    public static void setInstance(ElementHandleAccessor instance) {
+        assert instance != null;
+        INSTANCE = instance;
     }
 
     /** Creates a new instance of ElementHandleAccessor */
