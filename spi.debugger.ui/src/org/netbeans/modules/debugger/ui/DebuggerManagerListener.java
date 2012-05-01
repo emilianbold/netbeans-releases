@@ -240,7 +240,7 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
             if (modesWithVisibleTC.add(mode)) {
                 TopComponent tcSel = mode.getSelectedTopComponent();
                 if (tcSel != null && tcSel != tc) {
-                    WeakReference<TopComponent> lastSelectedTCRef = new WeakReference(tcSel);
+                    WeakReference<TopComponent> lastSelectedTCRef = new WeakReference<TopComponent>(tcSel);
                     lastSelectedTopComponents.put(mode, lastSelectedTCRef);
                 }
                 String side = null;

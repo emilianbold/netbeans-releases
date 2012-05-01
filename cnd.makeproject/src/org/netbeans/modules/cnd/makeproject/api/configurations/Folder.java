@@ -411,8 +411,6 @@ public class Folder implements FileChangeListener, ChangeListener {
         // as Folders instances are always updated and it is impossible
         // to provide them with the right name.
         if (isDiskFolder() && getRoot() != null) {
-            return displayName;
-        } else {
             String diskName = getDiskName();
             if (diskName != null) {
                 return diskName;
@@ -1011,11 +1009,14 @@ public class Folder implements FileChangeListener, ChangeListener {
     }
 
     public String getAbsolutePath() {
-        String absRootPath = CndPathUtilitities.toAbsolutePath(configurationDescriptor.getBaseDirFileObject(), getRoot());
-        absRootPath = RemoteFileUtil.normalizeAbsolutePath(absRootPath, getProject());
-        FileObject folderFile = RemoteFileUtil.getFileObject(absRootPath, getProject());
-        if (folderFile != null) {
-            return folderFile.getPath();
+        String aRoot = getRoot();
+        if (aRoot != null) {
+            String absRootPath = CndPathUtilitities.toAbsolutePath(configurationDescriptor.getBaseDirFileObject(), getRoot());
+            absRootPath = RemoteFileUtil.normalizeAbsolutePath(absRootPath, getProject());
+            FileObject folderFile = RemoteFileUtil.getFileObject(absRootPath, getProject());
+            if (folderFile != null) {
+                return folderFile.getPath();
+            }
         }
         return null;
     }

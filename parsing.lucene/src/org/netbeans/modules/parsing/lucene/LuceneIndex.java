@@ -649,14 +649,27 @@ public class LuceneIndex implements Index.Transactional, Runnable {
             if (writer == null) {
                 return;
             }
+            boolean success = false;
             try {
                 writer.close();
+                success = true;
             } finally {
                 if (txWriter.get() == writer) {
                     LOGGER.log(Level.FINE, "TX writer cleared for {0}", this);
                     txWriter.remove();
                     owner.clear();
-                    refreshReader();
+                    try {
+                        if (!success && IndexWriter.isLocked(fsDir)) {
+                            IndexWriter.unlock(fsDir);
+                        }
+                    } catch (IOException ioe) {
+                        LOGGER.log(
+                           Level.WARNING,
+                           "Cannot unlock index {0} while recovering.",  //NOI18N
+                           folder.getAbsolutePath());
+                    } finally {
+                        refreshReader();
+                    }
                 }
             }
         }
@@ -897,9 +910,6 @@ public class LuceneIndex implements Index.Transactional, Runnable {
 
 
         void refreshReader() throws IOException {
-            if (IndexWriter.isLocked(fsDir)) {
-                IndexWriter.unlock(fsDir);
-            }
             try {
                 if (cachePolicy.hasMemCache()) {
                     close(false);
