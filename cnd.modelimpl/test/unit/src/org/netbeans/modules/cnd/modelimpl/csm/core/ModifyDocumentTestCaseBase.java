@@ -466,8 +466,8 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
         final AtomicReference<CountDownLatch> condRef = new AtomicReference<CountDownLatch>(parse1);
         Semaphore waitParseSemaphore = new Semaphore(0);
         final AtomicReference<Semaphore> semRef = new AtomicReference<Semaphore>(waitParseSemaphore);
-        final CsmProject project = super.getProject();
         final FileImpl fileToModifyImpl = (FileImpl) getCsmFile(modifiedFile);
+        final CsmProject project = fileToModifyImpl.getProject();
         final FileImpl fileToCheckImpl = (FileImpl) getCsmFile(checkedFile);
         assertNotNull(fileToModifyImpl);
         final BaseDocument modifiedDoc = getBaseDocument(modifiedFile);
