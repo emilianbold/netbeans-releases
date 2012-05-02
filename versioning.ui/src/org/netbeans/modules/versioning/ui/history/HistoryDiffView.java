@@ -219,11 +219,18 @@ public class HistoryDiffView implements PropertyChangeListener {
 
         @Override
         public void run() {
+            
+            History.LOG.log(
+                Level.FINE, 
+                "preparing current diff for: {0} - {1}", // NOI18N        
+                new Object[]{entry, file}); 
+            
             DiffController dv = getView(entry);
             if(isCancelled()) {
                 return;
             }            
             if(dv != null) {
+                History.LOG.log(Level.FINE, "setting cached diff view for {0} - {1}", new Object[]{entry.getRevision(), file});
                 setDiffView(dv, selectLast);
                 return;
             }
@@ -237,6 +244,7 @@ public class HistoryDiffView implements PropertyChangeListener {
                 File tempFolder = Utils.getTempFolder();
                 tmpFile = new File(tempFolder, file.getName()); // XXX
                 entry.getRevisionFile(file, VCSFileProxy.createFileProxy(tmpFile));
+                History.LOG.log(Level.FINE, "retrieved revision file for {0} {1}", new Object[]{entry.getRevision(), file});
                 if(isCancelled()) {
                     return;
                 }                
@@ -256,6 +264,7 @@ public class HistoryDiffView implements PropertyChangeListener {
                 return;
             }            
             if(dv != null) {
+                History.LOG.log(Level.FINE, "setting diff view for {0} - {1}", new Object[]{entry.getRevision(), file});
                 setDiffView(dv, selectLast);
                 putView(dv, entry);
             }
@@ -316,6 +325,12 @@ public class HistoryDiffView implements PropertyChangeListener {
 
         @Override
         public void run() {
+            
+            History.LOG.log(
+                Level.FINE, 
+                "preparing previous diff for: {0} - {1} and {2} - {3}", // NOI18N        
+                new Object[]{entry1, file1, entry2, file2}); 
+            
             getPreparingDiffHandler().start();
             
             if(isCancelled()) {
@@ -348,15 +363,21 @@ public class HistoryDiffView implements PropertyChangeListener {
                     return;
                 }                
                 if(dv != null) {
+                    History.LOG.log(
+                        Level.FINE, 
+                        "setting cached diff view for: {0} - {1} and {2} - {3}", // NOI18N        
+                        new Object[]{entry1, file1, entry2, file2}); 
                     setDiffView(dv, selectLast);
                     return;
                 }
                 
                 revisionFile1 = getRevisionFile(entry1, file1);
+                History.LOG.log(Level.FINE, "retrieved revision file for {0} - {1}", new Object[]{entry1.getRevision(), file1});
                 if(isCancelled()) {
                     return;
                 }                
                 revisionFile2 = getRevisionFile(entry2, file2);
+                History.LOG.log(Level.FINE, "retrieved revision file for {0} - {1}", new Object[]{entry2.getRevision(), file2});
                 if(isCancelled()) {
                     return;
                 }                
@@ -371,6 +392,10 @@ public class HistoryDiffView implements PropertyChangeListener {
                 return;
             }            
             if(dv != null) {
+                History.LOG.log(
+                    Level.FINE, 
+                    "setting diff view for: {0} - {1} and {2} - {3}", // NOI18N        
+                    new Object[]{entry1, file1, entry2, file2}); 
                 setDiffView(dv, selectLast);
                 putView(dv, entry1, entry2);
             }    
@@ -422,6 +447,11 @@ public class HistoryDiffView implements PropertyChangeListener {
     }
 
     private DiffController prepareDiffView(final VCSFileProxy file1, final VCSFileProxy file2, final String title1, final String title2, final boolean editable, final boolean selectLast) {
+        
+        History.LOG.log(
+                Level.FINE, 
+                "preparing diff view for: {0} - {1} and {2} - {3}", // NOI18N        
+                new Object[]{title1, file1, title2, file2}); // NOI18N
         
         StreamSource ss1 = new LHStreamSource(file1, title1, getMimeType(file2), editable);
 
@@ -497,7 +527,10 @@ public class HistoryDiffView implements PropertyChangeListener {
     private void setDiffComponent(Component component) {
         if(diffComponent != null) {
             panel.diffPanel.remove(diffComponent);     
-        }       
+            History.LOG.finer("replaced current diff component"); // NOI18N
+        } else {
+            History.LOG.finer("added diff component"); // NOI18N
+        }
         panel.diffPanel.add(component, BorderLayout.CENTER);
         diffComponent = component;   
         panel.diffPanel.revalidate();
@@ -614,6 +647,7 @@ public class HistoryDiffView implements PropertyChangeListener {
                 task.cancel();
                 getPreparingDiffHandler().finish();
             }
+            History.LOG.finer("cancelling DiffTask");
             return true;
         }
 
@@ -623,6 +657,9 @@ public class HistoryDiffView implements PropertyChangeListener {
         }
         
         protected boolean isCancelled() {
+            if(cancelled) {
+                History.LOG.finer("DiffTask is cancelled");
+            }
             return cancelled;
         }
         
@@ -646,6 +683,7 @@ public class HistoryDiffView implements PropertyChangeListener {
         }
         
         void start() {
+            History.LOG.fine("starting prepare diff handler");
             timer.start();
         }
         
@@ -658,6 +696,7 @@ public class HistoryDiffView implements PropertyChangeListener {
         }
         
         synchronized void finish() {
+            History.LOG.fine("finishing prepare diff handler");
             timer.stop();
             if(handle != null) {
                 handle.finish();
