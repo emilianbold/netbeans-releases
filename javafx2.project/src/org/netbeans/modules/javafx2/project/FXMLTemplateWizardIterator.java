@@ -40,10 +40,12 @@
  */
 package org.netbeans.modules.javafx2.project;
 
+import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.*;
+import javax.swing.JComponent;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileFilter;
@@ -129,6 +131,23 @@ public class FXMLTemplateWizardIterator implements WizardDescriptor.Instantiatin
 
         index = 0;
         panels = createPanels(project, groups);
+        String[] steps = createSteps();
+        for (int i = 0; i < panels.length; i++) {
+            Component c = panels[i].getComponent();
+            if (steps[i] == null) {
+                // Default step name to component name of panel.
+                // Mainly useful for getting the name of the target
+                // chooser to appear in the list of steps.
+                steps[i] = c.getName();
+            }
+            if (c instanceof JComponent) { // assume Swing components
+                JComponent jc = (JComponent)c;
+                // Step #.
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, i);
+                // Step name (actually the whole list for reference).
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);
+            }
+        }
     }
 
     private WizardDescriptor.Panel[] createPanels(Project project, SourceGroup[] groups) {
@@ -139,6 +158,22 @@ public class FXMLTemplateWizardIterator implements WizardDescriptor.Instantiatin
                 };
     }
 
+    private String[] createSteps() {
+//        switch (type) {
+//            case EXT:
+                return new String[] {
+                    NbBundle.getMessage(FXMLTemplateWizardIterator.class,"LAB_FXMLStep0"),
+                    NbBundle.getMessage(FXMLTemplateWizardIterator.class,"LAB_FXMLStep1"),
+                    NbBundle.getMessage(FXMLTemplateWizardIterator.class,"LAB_FXMLStep2"),
+                    NbBundle.getMessage(FXMLTemplateWizardIterator.class,"LAB_FXMLStep3"),
+                };
+//            default:
+//                return new String[] {
+//                    NbBundle.getMessage(NewJ2SEProjectWizardIterator.class,"LAB_ConfigureProject"),
+//                };
+//        }
+    }
+    
     @Override
     public void uninitialize(WizardDescriptor wizard) {
     }
@@ -148,7 +183,20 @@ public class FXMLTemplateWizardIterator implements WizardDescriptor.Instantiatin
         Set<FileObject> set = new HashSet<FileObject>(3);
         FileObject dir = Templates.getTargetFolder(wizard);
         DataFolder df = DataFolder.findFolder(dir);
-
+        
+        Project project = Templates.getProject(wizard);
+        String rel = FileUtil.getRelativePath(project.getProjectDirectory(), dir);
+        if(rel != null) {
+            rel = rel.replace("\\", "."); //NOI18N
+            rel = rel.replace("/", "."); //NOI18N
+            if(rel.startsWith("src.")) { //NOI18N
+                rel = rel.substring("src.".length()); //NOI18N
+            }
+            rel += "."; //NOI18N
+        } else {
+            rel = ""; //NOI18N
+        }
+        
         String targetName = Templates.getTargetName(wizard);
         boolean createController = (Boolean) wizard.getProperty(FXMLTemplateWizardIterator.PROP_JAVA_CONTROLLER_CREATE);
         String controller = (String) wizard.getProperty(FXMLTemplateWizardIterator.PROP_JAVA_CONTROLLER_NAME_PROPERTY);
@@ -157,7 +205,7 @@ public class FXMLTemplateWizardIterator implements WizardDescriptor.Instantiatin
         
         Map<String, String> params = new HashMap<String, String>();
         if (controller != null) {
-            params.put("controller", controller); // NOI18N
+            params.put("controller", rel + controller); // NOI18N
         }
         if (css != null) {
             //remove file extension from name

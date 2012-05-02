@@ -97,6 +97,7 @@ public class ConfigureFXMLPanelVisual extends JPanel implements ActionListener, 
             srcRoots[i] = FileUtil.toFile(groups[i].getRootFolder());
         }
         
+        setName(NbBundle.getMessage(ConfigureFXMLPanelVisual.class,"TXT_FXMLNameAndLoc")); // NOI18N
         initComponents(); // Matisse
         initComponents2(); // My own
     }
