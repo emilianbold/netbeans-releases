@@ -130,7 +130,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
     private static String CSS_FOLDER2 = "resources/css"; //NOI18N
     private static String DEFAULT_CSS = "default.css"; //NOI18N
     private static String FORWARD_JSF = "forwardToJSF.jsp"; //NOI18N
-    private static String RESOURCE_FOLDER = "org/netbeans/modules/web/jsf/resources/"; //NOI18N
+    private static String RESOURCE_FOLDER = "/org/netbeans/modules/web/jsf/resources/"; //NOI18N
     private static String FL_RESOURCE_FOLDER = "org/netbeans/modules/web/jsf/facelets/resources/templates/"; //NOI18N
     private static String DEFAULT_MAPPING = "/faces/*";  //NOI18N
 
@@ -534,7 +534,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                             welcomeFileList.add(FORWARD_JSF);
                             //copy forwardToJSF.jsp
                             if (facesMapping.charAt(0) != '/' && canCreateNewFile(webModule.getDocumentBase(), FORWARD_JSF)) { //NOI18N
-                                String content = readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + FORWARD_JSF), "UTF-8"); //NOI18N
+                                String content = readResource(getClass().getResourceAsStream(RESOURCE_FOLDER + FORWARD_JSF), "UTF-8"); //NOI18N
                                 content = content.replace("__FORWARD__", ConfigurationUtils.translateURI(facesMapping, WELCOME_JSF));
                                 Charset encoding = FileEncodingQuery.getDefaultEncoding();
                                 content = content.replaceAll("__ENCODING__", encoding.name());
@@ -605,7 +605,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                     }
                 }
                 if (createFacesConfig) {
-                    String content = readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + facesConfigTemplate), "UTF-8"); //NOI18N
+                    String content = readResource(getClass().getResourceAsStream(RESOURCE_FOLDER + facesConfigTemplate), "UTF-8"); //NOI18N
                     FileObject target = FileUtil.createData(webModule.getWebInf(), "faces-config.xml");//NOI18N
                     createFile(target, content, "UTF-8"); //NOI18N
                 }
@@ -729,7 +729,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
             }
             //copy Welcome.jsp
             if (!panel.isEnableFacelets() && createWelcome && canCreateNewFile(webModule.getDocumentBase(), WELCOME_JSF)) {
-                String content = readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + WELCOME_JSF), "UTF-8"); //NOI18N
+                String content = readResource(getClass().getResourceAsStream(RESOURCE_FOLDER + WELCOME_JSF), "UTF-8"); //NOI18N
                 Charset encoding = FileEncodingQuery.getDefaultEncoding();
                 content = content.replaceAll("__ENCODING__", encoding.name());
                 FileObject target = FileUtil.createData(webModule.getDocumentBase(), WELCOME_JSF);

@@ -110,62 +110,64 @@ abstract public class ManagedType implements IManagedType {
         return element;
     }
     
-    private Map<String, IMapping> initMappings() {
+    Map<String, IMapping> initMappings() {
         mappings = new HashMap<String, IMapping>();
         Attributes atrs = getAttributes();
-        ManyToMany[] mms = atrs.getManyToMany();
-        if(mms != null){
-            for(ManyToMany mm1:mms){
-                mappings.put(mm1.getName(), new Mapping(this, new JPAAttribute(element, mm1)));
-            }
-        }
-        ManyToOne[] mos = atrs.getManyToOne();
-        if(mos != null){
-            for(ManyToOne mo1:mos){
-                mappings.put(mo1.getName(), new Mapping(this, new JPAAttribute(element, mo1)));
-            }
-        }
-        OneToOne[] oos = atrs.getOneToOne();
-        if(oos != null){
-            for(OneToOne oo1:oos){
-                mappings.put(oo1.getName(), new Mapping(this, new JPAAttribute(element, oo1)));
-            }
-        }
-        OneToMany[] oms = atrs.getOneToMany();
-        if(oms != null){
-            for(OneToMany om1:oms){
-                mappings.put(om1.getName(), new Mapping(this, new JPAAttribute(element, om1)));
-            }
-        }
-        Basic[] bs = atrs.getBasic();
-        if(bs != null){
-            for(Basic b1:bs){
-                mappings.put(b1.getName(), new Mapping(this, new JPAAttribute(element, b1)));
-            }
-        }
-        Id[] ids = atrs.getId();
-        if(ids != null){
-            for(Id id1:ids){
-                mappings.put(id1.getName(), new Mapping(this, new JPAAttribute(element, id1)));
-            }
-        }
-        try {
-            Embedded[] es = atrs.getEmbedded();
-            if(es != null){
-                for(Embedded e1:es){
-                    mappings.put(e1.getName(), new Mapping(this, new JPAAttribute(element, e1)));
+        if(atrs != null){
+            ManyToMany[] mms = atrs.getManyToMany();
+            if(mms != null){
+                for(ManyToMany mm1:mms){
+                    mappings.put(mm1.getName(), new Mapping(this, new JPAAttribute(element, mm1)));
                 }
             }
-        } catch (UnsupportedOperationException ex){
-            //TODO: implements embedded in attributes
-        }
-        try {
-            EmbeddedId eds = atrs.getEmbeddedId();
-            if(eds != null){
-                mappings.put(eds.getName(), new Mapping(this, new JPAAttribute(element, eds)));
+            ManyToOne[] mos = atrs.getManyToOne();
+            if(mos != null){
+                for(ManyToOne mo1:mos){
+                    mappings.put(mo1.getName(), new Mapping(this, new JPAAttribute(element, mo1)));
+                }
             }
-        } catch (UnsupportedOperationException ex){
-            //TODO: implements embedded in attributes
+            OneToOne[] oos = atrs.getOneToOne();
+            if(oos != null){
+                for(OneToOne oo1:oos){
+                    mappings.put(oo1.getName(), new Mapping(this, new JPAAttribute(element, oo1)));
+                }
+            }
+            OneToMany[] oms = atrs.getOneToMany();
+            if(oms != null){
+                for(OneToMany om1:oms){
+                    mappings.put(om1.getName(), new Mapping(this, new JPAAttribute(element, om1)));
+                }
+            }
+            Basic[] bs = atrs.getBasic();
+            if(bs != null){
+                for(Basic b1:bs){
+                    mappings.put(b1.getName(), new Mapping(this, new JPAAttribute(element, b1)));
+                }
+            }
+            Id[] ids = atrs.getId();
+            if(ids != null){
+                for(Id id1:ids){
+                    mappings.put(id1.getName(), new Mapping(this, new JPAAttribute(element, id1)));
+                }
+            }
+            try {
+                Embedded[] es = atrs.getEmbedded();
+                if(es != null){
+                    for(Embedded e1:es){
+                        mappings.put(e1.getName(), new Mapping(this, new JPAAttribute(element, e1)));
+                    }
+                }
+            } catch (UnsupportedOperationException ex){
+                //TODO: implements embedded in attributes
+            }
+            try {
+                EmbeddedId eds = atrs.getEmbeddedId();
+                if(eds != null){
+                    mappings.put(eds.getName(), new Mapping(this, new JPAAttribute(element, eds)));
+                }
+            } catch (UnsupportedOperationException ex){
+                //TODO: implements embedded in attributes
+            }
         }
         return mappings;
     }
