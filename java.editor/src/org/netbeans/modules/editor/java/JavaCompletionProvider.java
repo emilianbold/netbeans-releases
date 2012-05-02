@@ -642,6 +642,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                 case MEMBER_REFERENCE:
                     insideMemberReference(env);
                     break;
+                case LAMBDA_EXPRESSION:
+                    insideLambdaExpression(env);
+                    break;
                 case METHOD_INVOCATION:
                     insideMethodInvocation(env);
                     break;
@@ -1779,6 +1782,15 @@ public class JavaCompletionProvider implements CompletionProvider {
                     addMethodReferences(env, type, e);
                     addKeyword(env, NEW_KEYWORD, SPACE);
                 }
+            }
+        }
+        
+        private void insideLambdaExpression(Env env) throws IOException {
+            TreePath path = env.getPath();
+            LambdaExpressionTree let = (LambdaExpressionTree) path.getLeaf();
+            TokenSequence<JavaTokenId> ts = findLastNonWhitespaceToken(env, let, env.getOffset());
+            if (ts != null && ts.token().id() == JavaTokenId.ARROW) {
+                localResult(env);
             }
         }
         
@@ -4988,6 +5000,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                             break;
                         case CASE:
                             stmts = ((CaseTree)path.getLeaf()).getStatements();
+                            break;
+                        case LAMBDA_EXPRESSION:
+                            stmts = ((LambdaExpressionTree)path.getLeaf()).getParameters();
                             break;
                     }
                     if (stmts != null) {
