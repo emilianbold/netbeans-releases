@@ -603,6 +603,8 @@ public final class PhpProject implements Project {
         List<PhpFrameworkProvider> newFrameworkProviders = getFrameworks();
         if (!oldFrameworkProviders.equals(newFrameworkProviders)) {
             propertyChangeSupport.firePropertyChange(PROP_FRAMEWORKS, null, null);
+            // #209206 - also, likely some files are newly hidden/visible
+            ignoredFoldersChangeSupport.fireChange();
         }
     }
 
