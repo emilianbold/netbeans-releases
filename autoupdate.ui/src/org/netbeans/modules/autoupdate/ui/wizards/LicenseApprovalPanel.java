@@ -50,6 +50,8 @@ import java.util.*;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.autoupdate.UpdateElement;
+import org.netbeans.modules.autoupdate.ui.Utilities;
+import org.netbeans.modules.autoupdate.ui.wizards.OperationWizardModel.OperationType;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -104,7 +106,9 @@ public class LicenseApprovalPanel extends javax.swing.JPanel {
                     license4plugins = new ArrayList<UpdateElement>();
                 }
 
-                license4plugins.add(el);
+                if (! OperationType.UPDATE.equals(model.getOperation()) || Utilities.isLicenseIdApproved(el.getLicenseId())) {
+                    license4plugins.add(el);
+                }
             }
         }
     }

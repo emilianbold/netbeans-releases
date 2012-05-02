@@ -50,40 +50,20 @@ import java.io.IOException;
 import java.net.URL;
 import java.text.Collator;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.StringTokenizer;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
-import org.netbeans.api.autoupdate.*;
+import javax.swing.*;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
+import org.netbeans.api.autoupdate.*;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.autoupdate.ui.actions.Installer;
 import org.netbeans.modules.autoupdate.ui.actions.ShowNotifications;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.Mnemonics;
-import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
-import org.openide.util.RequestProcessor;
-import org.openide.util.Task;
-import org.openide.util.TaskListener;
+import org.openide.util.*;
 
 /**
  *
@@ -156,6 +136,9 @@ public class Utilities {
     }
 
     public static boolean isLicenseIdApproved(String licenseId) {
+        if (licenseId == null) {
+            return false;
+        }
         logger.finest("License ID - Was " + licenseId + " accepted? " + getAcceptedLicenseIds().contains(licenseId));
         return getAcceptedLicenseIds().contains(licenseId);
     }
