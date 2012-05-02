@@ -389,6 +389,7 @@ public class UpdateAction extends ContextAction {
         }
 
         public void logError(String str) {
+            if (str == null) return;
             catchMessage(str);
         }
 
@@ -428,6 +429,7 @@ public class UpdateAction extends ContextAction {
             catchMessage(msg);
         }
         public void logError(String msg) {
+            if (msg == null) return;
             catchMessage(msg);
         }
         public void setCommand(int arg0)                    { /* boring */  }
