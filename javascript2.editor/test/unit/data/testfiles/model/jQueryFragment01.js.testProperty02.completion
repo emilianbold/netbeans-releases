@@ -3,3 +3,145 @@ jQuery.|event.customEvent.test();
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 CLASS      event                           [PUBLIC]   jQueryFragment01.js
+METHOD     add(jQuery object): jQuery      [PUBLIC]   add
+METHOD     addClass(className): jQuery     [PUBLIC]   addClass
+METHOD     after(content): jQuery          [PUBLIC]   after
+METHOD     ajaxComplete(handler(event, XM  [PUBLIC]   ajaxComplete
+METHOD     ajaxError(handler(event, jqXHR  [PUBLIC]   ajaxError
+METHOD     ajaxSend(handler(event, jqXHR,  [PUBLIC]   ajaxSend
+METHOD     ajaxStart(handler()): jQuery    [PUBLIC]   ajaxStart
+METHOD     ajaxStop(handler()): jQuery     [PUBLIC]   ajaxStop
+METHOD     ajaxSuccess(handler(event, XML  [PUBLIC]   ajaxSuccess
+METHOD     andSelf(): jQuery               [PUBLIC]   andSelf
+METHOD     animate(properties, options):   [PUBLIC]   animate
+METHOD     append(function(index, html)):  [PUBLIC]   append
+METHOD     appendTo(target): jQuery        [PUBLIC]   appendTo
+METHOD     attr(map): jQuery               [PUBLIC]   attr
+METHOD     before(function): jQuery        [PUBLIC]   before
+METHOD     bind(events): jQuery            [PUBLIC]   bind
+METHOD     blur(eventData, handler(eventO  [PUBLIC]   blur
+METHOD     change(eventData, handler(even  [PUBLIC]   change
+METHOD     children(selector): jQuery      [PUBLIC]   children
+METHOD     clearQueue(queueName): jQuery   [PUBLIC]   clearQueue
+METHOD     click(): jQuery                 [PUBLIC]   click
+METHOD     clone(withDataAndEvents): jQue  [PUBLIC]   clone
+METHOD     closest(selectors, context): A  [PUBLIC]   closest
+METHOD     contents(): jQuery              [PUBLIC]   contents
+METHOD     css(propertyName, function(ind  [PUBLIC]   css
+METHOD     data(obj): jQuery               [PUBLIC]   data
+METHOD     dblclick(): jQuery              [PUBLIC]   dblclick
+METHOD     delay(duration, queueName): jQ  [PUBLIC]   delay
+METHOD     delegate(selector, eventType,   [PUBLIC]   delegate
+METHOD     dequeue(queueName): jQuery      [PUBLIC]   dequeue
+METHOD     detach(selector): jQuery        [PUBLIC]   detach
+METHOD     die(): jQuery                   [PUBLIC]   die
+METHOD     each(function(index, Element))  [PUBLIC]   each
+METHOD     empty(): jQuery                 [PUBLIC]   empty
+METHOD     end(): jQuery                   [PUBLIC]   end
+METHOD     eq(index): jQuery               [PUBLIC]   eq
+METHOD     error(eventData, handler(event  [PUBLIC]   error
+METHOD     fadeIn(duration, callback): jQ  [PUBLIC]   fadeIn
+METHOD     fadeOut(duration, easing, call  [PUBLIC]   fadeOut
+METHOD     fadeTo(duration, opacity, call  [PUBLIC]   fadeTo
+METHOD     fadeToggle(duration, easing, c  [PUBLIC]   fadeToggle
+METHOD     filter(jQuery object): jQuery   [PUBLIC]   filter
+METHOD     find(selector): jQuery          [PUBLIC]   find
+METHOD     first(): jQuery                 [PUBLIC]   first
+METHOD     focus(eventData, handler(event  [PUBLIC]   focus
+METHOD     focusin(handler(eventObject)):  [PUBLIC]   focusin
+METHOD     focusout(handler(eventObject))  [PUBLIC]   focusout
+METHOD     get(index): Element, Array      [PUBLIC]   get
+METHOD     has(contained): jQuery          [PUBLIC]   has
+METHOD     hasClass(className): Boolean    [PUBLIC]   hasClass
+METHOD     height(value): jQuery           [PUBLIC]   height
+METHOD     hide(duration, callback): jQue  [PUBLIC]   hide
+METHOD     hover(handlerInOut(eventObject  [PUBLIC]   hover
+METHOD     html(function(index, oldhtml))  [PUBLIC]   html
+METHOD     index(element): Number          [PUBLIC]   index
+METHOD     innerHeight(): Integer          [PUBLIC]   innerHeight
+METHOD     innerWidth(): Integer           [PUBLIC]   innerWidth
+METHOD     insertAfter(target): jQuery     [PUBLIC]   insertAfter
+METHOD     insertBefore(target): jQuery    [PUBLIC]   insertBefore
+METHOD     is(selector): Boolean           [PUBLIC]   is
+METHOD     jQuery(html, props): jQuery     [PUBLIC]   jQuery
+METHOD     keydown(eventData, handler(eve  [PUBLIC]   keydown
+METHOD     keypress(eventData, handler(ev  [PUBLIC]   keypress
+METHOD     keyup(eventData, handler(event  [PUBLIC]   keyup
+METHOD     last(): jQuery                  [PUBLIC]   last
+METHOD     link(target, settings): jQuery  [PUBLIC]   link
+METHOD     live(events-map): jQuery        [PUBLIC]   live
+METHOD     load(url, data, complete(respo  [PUBLIC]   load
+METHOD     map(callback(index, domElement  [PUBLIC]   map
+METHOD     mousedown(eventData, handler(e  [PUBLIC]   mousedown
+METHOD     mouseenter(): jQuery            [PUBLIC]   mouseenter
+METHOD     mouseleave(): jQuery            [PUBLIC]   mouseleave
+METHOD     mousemove(): jQuery             [PUBLIC]   mousemove
+METHOD     mouseout(): jQuery              [PUBLIC]   mouseout
+METHOD     mouseover(): jQuery             [PUBLIC]   mouseover
+METHOD     mouseup(eventData, handler(eve  [PUBLIC]   mouseup
+METHOD     next(selector): jQuery          [PUBLIC]   next
+METHOD     nextAll(selector): jQuery       [PUBLIC]   nextAll
+METHOD     nextUntil(selector, filter): j  [PUBLIC]   nextUntil
+METHOD     not(jQuery object): jQuery      [PUBLIC]   not
+METHOD     off(events-map, selector): jQu  [PUBLIC]   off
+METHOD     offset(): Object                [PUBLIC]   offset
+METHOD     offsetParent(): jQuery          [PUBLIC]   offsetParent
+METHOD     on(events-map, selector, data)  [PUBLIC]   on
+METHOD     one(events, data, handler(even  [PUBLIC]   one
+METHOD     outerHeight(includeMargin): In  [PUBLIC]   outerHeight
+METHOD     outerWidth(includeMargin): Int  [PUBLIC]   outerWidth
+METHOD     parent(selector): jQuery        [PUBLIC]   parent
+METHOD     parents(selector): jQuery       [PUBLIC]   parents
+METHOD     parentsUntil(element, filter):  [PUBLIC]   parentsUntil
+METHOD     position(): Object              [PUBLIC]   position
+METHOD     prepend(content): jQuery        [PUBLIC]   prepend
+METHOD     prependTo(target): jQuery       [PUBLIC]   prependTo
+METHOD     prev(selector): jQuery          [PUBLIC]   prev
+METHOD     prevAll(selector): jQuery       [PUBLIC]   prevAll
+METHOD     prevUntil(element, filter): jQ  [PUBLIC]   prevUntil
+METHOD     promise(type, target): Promise  [PUBLIC]   promise
+METHOD     prop(propertyName, function(in  [PUBLIC]   prop
+METHOD     pushStack(elements, name, argu  [PUBLIC]   pushStack
+METHOD     queue(queueName, callback( nex  [PUBLIC]   queue
+METHOD     ready(handler): jQuery          [PUBLIC]   ready
+METHOD     remove(selector): jQuery        [PUBLIC]   remove
+METHOD     removeAttr(attributeName): jQu  [PUBLIC]   removeAttr
+METHOD     removeClass(className): jQuery  [PUBLIC]   removeClass
+METHOD     removeData(name): jQuery        [PUBLIC]   removeData
+METHOD     removeProp(propertyName): jQue  [PUBLIC]   removeProp
+METHOD     replaceAll(target): jQuery      [PUBLIC]   replaceAll
+METHOD     replaceWith(function): jQuery   [PUBLIC]   replaceWith
+METHOD     resize(eventData, handler(even  [PUBLIC]   resize
+METHOD     scroll(eventData, handler(even  [PUBLIC]   scroll
+METHOD     scrollLeft(value): jQuery       [PUBLIC]   scrollLeft
+METHOD     scrollTop(value): jQuery        [PUBLIC]   scrollTop
+METHOD     select(): jQuery                [PUBLIC]   select
+METHOD     serialize(): String             [PUBLIC]   serialize
+METHOD     serializeArray(): Array         [PUBLIC]   serializeArray
+METHOD     show(duration, callback): jQue  [PUBLIC]   show
+METHOD     siblings(selector): jQuery      [PUBLIC]   siblings
+METHOD     size(): Number                  [PUBLIC]   size
+METHOD     slice(start, end): jQuery       [PUBLIC]   slice
+METHOD     slideDown(duration, callback):  [PUBLIC]   slideDown
+METHOD     slideToggle(duration, callback  [PUBLIC]   slideToggle
+METHOD     slideUp(duration, callback): j  [PUBLIC]   slideUp
+METHOD     stop(queue, clearQueue, jumpTo  [PUBLIC]   stop
+METHOD     submit(): jQuery                [PUBLIC]   submit
+METHOD     template(name): function        [PUBLIC]   template
+METHOD     text(function(index, text)): j  [PUBLIC]   text
+METHOD     tmplItem(): tmplItem            [PUBLIC]   tmplItem
+METHOD     toArray(): Array                [PUBLIC]   toArray
+METHOD     toggle(duration, easing, callb  [PUBLIC]   toggle
+METHOD     toggleClass(className): jQuery  [PUBLIC]   toggleClass
+METHOD     trigger(eventType, extraParame  [PUBLIC]   trigger
+METHOD     triggerHandler(eventType, extr  [PUBLIC]   triggerHandler
+METHOD     unbind(event): jQuery           [PUBLIC]   unbind
+METHOD     undelegate(namespace): jQuery   [PUBLIC]   undelegate
+METHOD     unlink(target): jQuery          [PUBLIC]   unlink
+METHOD     unload(handler(eventObject)):   [PUBLIC]   unload
+METHOD     unwrap(): jQuery                [PUBLIC]   unwrap
+METHOD     val(function(index, value)): j  [PUBLIC]   val
+METHOD     width(value): jQuery            [PUBLIC]   width
+METHOD     wrap(wrappingElement): jQuery   [PUBLIC]   wrap
+METHOD     wrapAll(wrappingElement): jQue  [PUBLIC]   wrapAll
+METHOD     wrapInner(function(index)): jQ  [PUBLIC]   wrapInner
