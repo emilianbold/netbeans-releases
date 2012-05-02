@@ -421,7 +421,7 @@ public final class DeepReparsingUtils {
         fileImpl.markReparseNeeded(invalidateCache);
         ParserQueue.instance().add(fileImpl, fileImpl.getPreprocHandlers(), ParserQueue.Position.HEAD);
         if (TraceFlags.USE_DEEP_REPARSING_TRACE) {
-            System.out.println("Add file to reparse " + fileImpl.getAbsolutePath()); // NOI18N
+            System.out.println("Add file to reparse " + fileImpl.getAbsolutePath() + " from " + project); // NOI18N
         }
     }
 
@@ -430,7 +430,7 @@ public final class DeepReparsingUtils {
             file.markReparseNeeded(true);
             APTPreprocHandler.State state = project.setChangedFileState(nativeFile);
             if (TraceFlags.USE_DEEP_REPARSING_TRACE) {
-                System.out.println("Add file to reparse " + file.getAbsolutePath()); // NOI18N
+                System.out.println("Add file to reparse " + file.getAbsolutePath() + " from " + project); // NOI18N
             }
             ParserQueue.instance().add(file, state, ParserQueue.Position.HEAD);
         } else {
@@ -450,7 +450,7 @@ public final class DeepReparsingUtils {
             fileProject.invalidatePreprocState(fileImpl.getAbsolutePath());
             fileImpl.markReparseNeeded(false);
             if (TraceFlags.USE_DEEP_REPARSING_TRACE) {
-                System.out.println("Invalidate file to reparse " + file.getAbsolutePath()); // NOI18N
+                System.out.println("Invalidate file to reparse " + file.getAbsolutePath() + " from " + fileProject); // NOI18N
             }
         }
     }
@@ -464,7 +464,7 @@ public final class DeepReparsingUtils {
                 ((ProjectBase) project).invalidatePreprocState(parentImpl.getAbsolutePath());
                 parentImpl.markReparseNeeded(false);
                 if (TraceFlags.USE_DEEP_REPARSING_TRACE) {
-                    System.out.println("Invalidate file to reparse " + parent.getAbsolutePath()); // NOI18N
+                    System.out.println("Invalidate file to reparse " + parent.getAbsolutePath() + " from " + project); // NOI18N
                 }
             }
         }
