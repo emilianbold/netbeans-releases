@@ -43,15 +43,18 @@ package org.netbeans.modules.cnd.search.impl.spi;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.search.SearchRoot;
 import org.netbeans.api.search.provider.SearchListener;
-import org.netbeans.modules.cnd.search.Searcher;
 import org.netbeans.modules.cnd.search.MatchingFileData;
 import org.netbeans.modules.cnd.search.SearchParams;
 import org.netbeans.modules.cnd.search.SearchResult;
+import org.netbeans.modules.cnd.search.Searcher;
 import org.netbeans.modules.cnd.search.impl.UnixFindBasedSearcher;
 import org.netbeans.modules.cnd.search.ui.SearchResultNode;
+import org.netbeans.modules.cnd.search.ui.SearchResultPropertySet;
+import org.netbeans.modules.cnd.search.util.OutlineSupport;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
@@ -59,13 +62,13 @@ import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
+import org.netbeans.spi.search.provider.DefaultSearchResultsDisplayer;
 import org.netbeans.spi.search.provider.SearchComposition;
 import org.netbeans.spi.search.provider.SearchProvider;
 import org.netbeans.spi.search.provider.SearchProvider.Presenter;
 import org.netbeans.spi.search.provider.SearchResultsDisplayer;
 import org.netbeans.spi.search.provider.SearchResultsDisplayer.NodeDisplayer;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
+import org.openide.explorer.view.OutlineView;
 import org.openide.nodes.Node;
 import org.openide.util.Cancellable;
 import org.openide.util.RequestProcessor;
@@ -80,7 +83,7 @@ public final class CNDSearchComposition extends SearchComposition<SearchResult> 
     private static final RequestProcessor RP = new RequestProcessor(CNDSearchComposition.class.getName(), 1);
     private final AtomicBoolean terminated = new AtomicBoolean(false);
     private final SearchParams params;
-    private SearchResultsDisplayer<SearchResult> displayer;
+    private DefaultSearchResultsDisplayer<SearchResult> displayer;
     private final String title;
     private final Presenter presenter;
     private Cancellable cancel;
@@ -123,11 +126,15 @@ public final class CNDSearchComposition extends SearchComposition<SearchResult> 
     public synchronized SearchResultsDisplayer<SearchResult> getSearchResultsDisplayer() {
         if (displayer == null) {
             displayer = SearchResultsDisplayer.createDefault(new DisplayerHelper(), this, presenter, title);
+            displayer.getVisualComponent();
+            OutlineView view = displayer.getOutlineView();
+            view.setPropertyColumns(SearchResultPropertySet.getNamesAndDisplayNames());
+            OutlineSupport.get(CNDSearchComposition.class).installFor(view.getOutline());
         }
         return displayer;
     }
 
-    private void searchInRoot(SearchRoot root, SearchListener listener) {
+    private void searchInRoot(SearchRoot root, final SearchListener listener) {
         if (isTerminated()) {
             return;
         }
@@ -138,7 +145,7 @@ public final class CNDSearchComposition extends SearchComposition<SearchResult> 
             return;
         }
 
-        if (!HostInfoUtils.isHostInfoAvailable(env)) {
+        if (env.isRemote() && HostInfoUtils.isHostInfoAvailable(env)) {
             return;
         }
 
@@ -177,7 +184,7 @@ public final class CNDSearchComposition extends SearchComposition<SearchResult> 
                             }
                         }
                     } catch (IOException ex) {
-                        displayer.addMatchingObject(new SearchResult(ex));
+                        listener.generalError(ex);
                     }
                 }
             };
@@ -196,16 +203,16 @@ public final class CNDSearchComposition extends SearchComposition<SearchResult> 
             int status = process.waitFor();
 
             if (status != 0) {
-                String error = ProcessUtils.readProcessErrorLine(process);
-                Throwable ex = new Throwable(error);
-                listener.generalError(ex);
-                displayer.addMatchingObject(new SearchResult(ex));
+                List<String> lines = ProcessUtils.readProcessError(process);
+                for (String line : lines) {
+                    Throwable ex = new Throwable(line);
+                    listener.generalError(ex);
+                }
             }
         } catch (InterruptedException ex) {
             // Exceptions.printStackTrace(ex);
         } catch (IOException ex) {
             listener.generalError(ex);
-            displayer.addMatchingObject(new SearchResult(ex));
         }
     }
 
@@ -213,17 +220,7 @@ public final class CNDSearchComposition extends SearchComposition<SearchResult> 
 
         @Override
         public Node matchToNode(final SearchResult result) {
-            if (result.exception == null) {
-                return new SearchResultNode(result);
-            } else {
-                return new AbstractNode(Children.LEAF) {
-
-                    @Override
-                    public String getName() {
-                        return result.exception.getMessage();
-                    }
-                };
-            }
+            return new SearchResultNode(result);
         }
     }
 }

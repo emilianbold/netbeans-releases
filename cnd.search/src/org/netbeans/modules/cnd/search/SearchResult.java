@@ -53,18 +53,10 @@ public final class SearchResult {
 
     public final ExecutionEnvironment env;
     public final MatchingFileData data;
-    public final Throwable exception;
 
     public SearchResult(ExecutionEnvironment env, MatchingFileData matchingFile) {
         this.env = env;
         this.data = matchingFile;
-        this.exception = null;
-    }
-
-    public SearchResult(Throwable exception) {
-        this.exception = exception;
-        this.env = null;
-        this.data = null;
     }
 
     public FileObject getFileObject() {

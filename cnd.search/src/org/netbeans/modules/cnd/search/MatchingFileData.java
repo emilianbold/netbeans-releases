@@ -70,7 +70,7 @@ public final class MatchingFileData {
         return fname;
     }
 
-    void setSize(Integer size) {
+    public void setFileSize(Integer size) {
         this.size = size;
     }
 

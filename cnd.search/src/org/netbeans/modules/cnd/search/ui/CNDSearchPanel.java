@@ -48,10 +48,13 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.api.search.SearchHistory;
+import org.netbeans.api.search.SearchPattern;
 import org.netbeans.api.search.provider.SearchInfo;
 import org.netbeans.api.search.ui.ComponentUtils;
 import org.netbeans.api.search.ui.FileNameController;
 import org.netbeans.api.search.ui.ScopeController;
+import org.netbeans.api.search.ui.SearchPatternController;
 import org.netbeans.modules.cnd.search.impl.SearchBrowseHostScope;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
@@ -67,6 +70,7 @@ public final class CNDSearchPanel extends javax.swing.JPanel {
 
     private final ScopeController scopeController;
     private FileNameController fileNameController;
+    private SearchPatternController searchPatternController;
     private volatile ValidationStatus validationStatus;
     private final ChangesListener listener;
     private final ChangeSupport cs = new ChangeSupport(this);
@@ -81,8 +85,11 @@ public final class CNDSearchPanel extends javax.swing.JPanel {
         scopeController = ComponentUtils.adjustComboForScope(cbScope, null, getAdditionalSearchScopes());
         fileNameController = ComponentUtils.adjustComboForFileName(cbFilename);
         fileNameController.addChangeListener(listener);
-        fldText.getDocument().addDocumentListener(listener);
-        validationStatus = ValidationStatus.NO_PARAMS;
+        searchPatternController = ComponentUtils.adjustComboForSearchPattern(cbSearchPattern);
+        searchPatternController.bind(SearchPatternController.Option.MATCH_CASE, cbCaseSensitive);
+        searchPatternController.bind(SearchPatternController.Option.WHOLE_WORDS, cbWholeWords);
+        searchPatternController.addChangeListener(listener);
+        validationStatus = null;
     }
 
     /**
@@ -95,20 +102,20 @@ public final class CNDSearchPanel extends javax.swing.JPanel {
     private void initComponents() {
 
         lblText = new javax.swing.JLabel();
-        fldText = new javax.swing.JTextField();
+        cbSearchPattern = new javax.swing.JComboBox();
         cbCaseSensitive = new javax.swing.JCheckBox();
-        cdWholeWords = new javax.swing.JCheckBox();
+        cbWholeWords = new javax.swing.JCheckBox();
         lblScope = new javax.swing.JLabel();
         cbScope = new javax.swing.JComboBox();
         lblFilename = new javax.swing.JLabel();
         cbFilename = new javax.swing.JComboBox();
 
-        lblText.setLabelFor(fldText);
+        lblText.setLabelFor(cbSearchPattern);
         org.openide.awt.Mnemonics.setLocalizedText(lblText, org.openide.util.NbBundle.getMessage(CNDSearchPanel.class, "CNDSearchPanel.lblText.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(cbCaseSensitive, org.openide.util.NbBundle.getMessage(CNDSearchPanel.class, "CNDSearchPanel.cbCaseSensitive.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(cdWholeWords, org.openide.util.NbBundle.getMessage(CNDSearchPanel.class, "CNDSearchPanel.cdWholeWords.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(cbWholeWords, org.openide.util.NbBundle.getMessage(CNDSearchPanel.class, "CNDSearchPanel.cbWholeWords.text")); // NOI18N
 
         lblScope.setLabelFor(cbScope);
         org.openide.awt.Mnemonics.setLocalizedText(lblScope, org.openide.util.NbBundle.getMessage(CNDSearchPanel.class, "CNDSearchPanel.lblScope.text")); // NOI18N
@@ -123,19 +130,19 @@ public final class CNDSearchPanel extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(fldText)
                     .addComponent(cbScope, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(cbFilename, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(cbSearchPattern, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(lblText)
-                            .addComponent(lblScope)
-                            .addComponent(lblFilename)
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(cbCaseSensitive)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(cdWholeWords)))
-                        .addGap(0, 177, Short.MAX_VALUE)))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(cbWholeWords))
+                            .addComponent(lblText)
+                            .addComponent(lblScope)
+                            .addComponent(lblFilename))
+                        .addGap(0, 181, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -144,11 +151,11 @@ public final class CNDSearchPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .addComponent(lblText)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(fldText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(cbSearchPattern, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(cbCaseSensitive)
-                    .addComponent(cdWholeWords))
+                    .addComponent(cbWholeWords))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(lblScope)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -164,8 +171,8 @@ public final class CNDSearchPanel extends javax.swing.JPanel {
     private javax.swing.JCheckBox cbCaseSensitive;
     private javax.swing.JComboBox cbFilename;
     private javax.swing.JComboBox cbScope;
-    private javax.swing.JCheckBox cdWholeWords;
-    private javax.swing.JTextField fldText;
+    private javax.swing.JComboBox cbSearchPattern;
+    private javax.swing.JCheckBox cbWholeWords;
     private javax.swing.JLabel lblFilename;
     private javax.swing.JLabel lblScope;
     private javax.swing.JLabel lblText;
@@ -179,20 +186,8 @@ public final class CNDSearchPanel extends javax.swing.JPanel {
         cs.removeChangeListener(listener);
     }
 
-    public String getTextToFind() {
-        return fldText.getText();
-    }
-
     public String getFileName() {
         return fileNameController.getFileNamePattern();
-    }
-
-    public boolean isCaseSensitive() {
-        return cbCaseSensitive.isSelected();
-    }
-
-    public boolean isWholeWords() {
-        return cdWholeWords.isSelected();
     }
 
     public SearchInfo getSearchInfo() {
@@ -200,16 +195,22 @@ public final class CNDSearchPanel extends javax.swing.JPanel {
     }
 
     public ValidationStatus getValidationStatus() {
+        if (validationStatus == null) {
+            updateValidationStatus();
+        }
+
         return validationStatus;
     }
 
     private void updateValidationStatus() {
-        if (getTextToFind().isEmpty() && getFileName().isEmpty()) {
+        SearchPattern searchPattern = searchPatternController.getSearchPattern();
+        String pattern = searchPattern.getSearchExpression();
+        if (pattern.isEmpty() && getFileName().isEmpty()) {
             this.validationStatus = ValidationStatus.NO_PARAMS;
         } else {
             this.validationStatus = ValidationStatus.OK;
             try {
-                Pattern.compile(getTextToFind());
+                Pattern.compile(pattern);
             } catch (Exception ex) {
                 this.validationStatus = ValidationStatus.WRONG_REGEXPR;
             }
@@ -230,6 +231,14 @@ public final class CNDSearchPanel extends javax.swing.JPanel {
         }
 
         return result.toArray(new SearchScopeDefinition[result.size()]);
+    }
+
+    public SearchPattern getSearchPattern() {
+        return searchPatternController.getSearchPattern();
+    }
+
+    public void storeSettings() {
+        SearchHistory.getDefault().add(getSearchPattern());
     }
 
     private class ChangesListener implements ChangeListener, DocumentListener {
