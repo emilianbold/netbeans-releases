@@ -1774,6 +1774,10 @@ public class FormatVisitor extends DefaultVisitor {
             FormatToken.AssignmentAnchorToken aaToken = new FormatToken.AssignmentAnchorToken(ts.offset());
             aaToken.setLenght(length);
             aaToken.setPrevious(previousGroupToken);
+            aaToken.setIsInGroup(true);
+            if (!previousGroupToken.isInGroup()) {
+                previousGroupToken.setIsInGroup(true);
+            }
             if (previousGroupToken.getMaxLength() < length) {
                 // if the length of the current identifier is bigger, then is in
                 // the group so far, change max length for all items in the group

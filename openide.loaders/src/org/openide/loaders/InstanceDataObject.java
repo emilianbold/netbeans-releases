@@ -45,6 +45,7 @@
 package org.openide.loaders;
 
 
+import java.beans.PropertyVetoException;
 import java.io.*;
 import java.lang.ref.*;
 import java.lang.reflect.*;
@@ -372,8 +373,28 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
             } else {
                 attachWithSave = true;
             }
-
-            ido = (InstanceDataObject)DataObject.find (newFile);
+            
+            DataObject created = null;
+            for (int i = 0; i < 2; i++) {
+                created = DataObject.find (newFile);
+                if (created instanceof InstanceDataObject) {
+                    break;
+                }
+                final FileObject pf = created.getPrimaryFile();
+                if (!pf.getFileSystem().isDefault()) {
+                    DataLoaderPool.setPreferredLoader(pf, DataLoaderPool.getInstanceLoader());
+                }
+                try {
+                    created.setValid(false);
+                } catch (PropertyVetoException ex) {
+                    LOG.log(Level.INFO, "Cannot invalidate " + created, ex); // NOI18N
+                }
+            }
+            if (created instanceof InstanceDataObject) {
+                ido = (InstanceDataObject)created;
+            } else {
+                throw new IOException("Cannot create InstanceDataObject for " + created); // NOI18N
+            }
             // attachToConvertor will store the object
             ido.attachToConvertor(obj, attachWithSave);
         } finally {

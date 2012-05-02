@@ -52,6 +52,7 @@ import javax.accessibility.AccessibleContext;
 import javax.swing.JButton;
 import javax.swing.JToggleButton;
 import javax.swing.UIManager;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.modules.search.BasicComposition;
 import org.netbeans.modules.search.BasicSearchCriteria;
 import org.netbeans.modules.search.FindDialogMemory;
@@ -77,10 +78,13 @@ import org.openide.util.NbBundle;
 public abstract class BasicAbstractResultsPanel
         extends AbstractSearchResultsPanel {
 
+    @StaticResource
     private static final String SHOW_DETAILS_ICON =
             "org/netbeans/modules/search/res/search.gif";               //NOI18N
+    @StaticResource
     private static final String FOLDER_VIEW_ICON =
             "org/netbeans/modules/search/res/logical_view.png";         //NOI18N
+    @StaticResource
     private static final String FLAT_VIEW_ICON =
             "org/netbeans/modules/search/res/file_view.png";            //NOI18N
     private static final String MODE_FLAT = "flat";                     //NOI18N

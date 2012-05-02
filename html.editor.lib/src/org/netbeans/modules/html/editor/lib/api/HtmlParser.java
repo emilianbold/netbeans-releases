@@ -56,6 +56,7 @@ public interface HtmlParser {
      * 
      * @return An internal identifier of the parser. Doesn't need to be localized, not presented to user.
      */
+    @Deprecated
     public String getName();
 
     /**

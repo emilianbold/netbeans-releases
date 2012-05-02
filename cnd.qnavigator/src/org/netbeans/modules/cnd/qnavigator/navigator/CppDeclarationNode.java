@@ -52,6 +52,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.MissingResourceException;
 import javax.swing.Action;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmCompoundClassifier;
@@ -358,9 +360,16 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
                     return createMemberHtmlDisplayName();
                 }
             } else if (csmObject instanceof CsmFile) {
-                //Restricted code assistance
-                return CharSequences.create("<font color='"+CsmDisplayUtilities.getHTMLColor(Color.red)+">"+ // NOI18N
-                        NbBundle.getMessage(CppDeclarationNode.class, "StandAloneFile")); // NOI18N
+                if (model.getUnopenedProject() != null) {
+                    // unopened project
+                    return CharSequences.create("<font color='"+CsmDisplayUtilities.getHTMLColor(Color.red)+">"+ // NOI18N
+                            NbBundle.getMessage(CppDeclarationNode.class, "UnopenedProject",  // NOI18N
+                            ProjectUtils.getInformation(model.getUnopenedProject()).getDisplayName()));
+                } else {
+                    //Restricted code assistance
+                    return CharSequences.create("<font color='"+CsmDisplayUtilities.getHTMLColor(Color.red)+">"+ // NOI18N
+                            NbBundle.getMessage(CppDeclarationNode.class, "StandAloneFile")); // NOI18N
+                }
             } else if (CsmKindUtilities.isFunction(csmObject) && CsmKindUtilities.isSpecialization(csmObject)) {
                 if (scopeName.length() > 0) {
                     if (isSpecialization) {
@@ -423,6 +432,11 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
     public Action getPreferredAction() {
         if (CsmKindUtilities.isOffsetable(object)){
             return new GoToDeclarationAction((CsmOffsetable) object);
+        } else if (object instanceof CsmFile) {
+            Project project = model.getUnopenedProject();
+            if (project != null) {
+                return new OpenContainingProjectAction(project);
+            }
         }
         return null;
     }

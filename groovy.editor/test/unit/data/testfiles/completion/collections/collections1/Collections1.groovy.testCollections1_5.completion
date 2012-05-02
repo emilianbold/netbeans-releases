@@ -17,13 +17,21 @@ METHOD     asList()                                   List
 METHOD     asSynchronized()                           List
 METHOD     asType(Class)                              Object
 METHOD     clear()                         [PUBLIC]   void
+METHOD     collate(int)                               List
+METHOD     collate(int,  boolean)                     List
+METHOD     collate(int,  int)                         List
+METHOD     collate(int,  int,  boolean)               List
+METHOD     collect()                                  List
 METHOD     collect(Closure)                           List
 METHOD     collect(Collection, Closure)               Collection
 METHOD     collectAll(Closure)                        List
 METHOD     collectAll(Collection, Closure             Collection
+METHOD     collectEntries()                           Map
 METHOD     collectEntries(Closure)                    Map
+METHOD     collectEntries(Map)                        Map
 METHOD     collectEntries(Map, Closure)               Map
-METHOD     collectMany(Closure)                       Collection
+METHOD     collectMany(Closure)                       List
+METHOD     collectMany(Collection, Closur             Collection
 METHOD     collectNested(Closure)                     List
 METHOD     collectNested(Collection, Clos             Collection
 METHOD     combinations()                             List
@@ -194,7 +202,6 @@ METHOD     wait()                          [PUBLIC]   void
 METHOD     wait(long)                      [PUBLIC]   void
 METHOD     wait(long, int)                 [PUBLIC]   void
 METHOD     with(Closure)                              Object
-FIELD      class                                      Class
 FIELD      empty                                      boolean
 FIELD      from                                       Comparable
 FIELD      reverse                                    boolean

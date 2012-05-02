@@ -50,7 +50,6 @@ import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerEngine;
 
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.DebuggerManagerListener;
 import org.netbeans.api.debugger.LazyDebuggerManagerListener;
 import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.debugger.Session;
@@ -66,6 +65,7 @@ import org.netbeans.api.debugger.Watch;
  */
 public class PersistenceManager implements LazyDebuggerManagerListener {
     
+    @Override
     public Breakpoint[] initBreakpoints () {
         Properties p = Properties.getDefault ().getProperties ("debugger").
             getProperties (DebuggerManager.PROP_BREAKPOINTS);
@@ -89,9 +89,11 @@ public class PersistenceManager implements LazyDebuggerManagerListener {
         return breakpoints;
     }
     
+    @Override
     public void initWatches () {
     }
     
+    @Override
     public String[] getProperties () {
         return new String [] {
             DebuggerManager.PROP_BREAKPOINTS_INIT,
@@ -99,6 +101,7 @@ public class PersistenceManager implements LazyDebuggerManagerListener {
         };
     }
     
+    @Override
     public void breakpointAdded (Breakpoint breakpoint) {
         if (breakpoint instanceof AntBreakpoint) {
             Properties p = Properties.getDefault ().getProperties ("debugger").
@@ -111,6 +114,7 @@ public class PersistenceManager implements LazyDebuggerManagerListener {
         }
     }
 
+    @Override
     public void breakpointRemoved (Breakpoint breakpoint) {
         if (breakpoint instanceof AntBreakpoint) {
             Properties p = Properties.getDefault ().getProperties ("debugger").
@@ -122,12 +126,15 @@ public class PersistenceManager implements LazyDebuggerManagerListener {
             breakpoint.removePropertyChangeListener(this);
         }
     }
+    @Override
     public void watchAdded (Watch watch) {
     }
     
+    @Override
     public void watchRemoved (Watch watch) {
     }
     
+    @Override
     public void propertyChange (PropertyChangeEvent evt) {
         if (evt.getSource() instanceof Breakpoint) {
             Properties.getDefault ().getProperties ("debugger").
@@ -138,9 +145,13 @@ public class PersistenceManager implements LazyDebuggerManagerListener {
         }
     }
     
+    @Override
     public void sessionAdded (Session session) {}
+    @Override
     public void sessionRemoved (Session session) {}
+    @Override
     public void engineAdded (DebuggerEngine engine) {}
+    @Override
     public void engineRemoved (DebuggerEngine engine) {}
     
     

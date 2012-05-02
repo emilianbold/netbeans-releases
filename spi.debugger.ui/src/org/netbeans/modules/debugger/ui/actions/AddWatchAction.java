@@ -46,22 +46,18 @@ package org.netbeans.modules.debugger.ui.actions;
 
 import java.awt.Dialog;
 import java.util.ResourceBundle;
-import java.util.prefs.Preferences;
-import javax.swing.*;
+import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.Watch;
 import org.netbeans.modules.debugger.ui.WatchPanel;
-
 import org.netbeans.modules.debugger.ui.views.VariablesViewButtons;
-import org.netbeans.spi.debugger.ContextProvider;
 import org.openide.DialogDisplayer;
-import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 import org.openide.util.actions.CallableSystemAction;
@@ -86,10 +82,12 @@ public class AddWatchAction extends CallableSystemAction {
         putValue("noIconInMenu", Boolean.TRUE);
     }
 
+    @Override
     protected boolean asynchronous () {
         return false;
     }
 
+    @Override
     public String getName () {
         return NbBundle.getMessage (
             AddWatchAction.class,
@@ -97,6 +95,7 @@ public class AddWatchAction extends CallableSystemAction {
         );
     }
     
+    @Override
     public HelpCtx getHelpCtx () {
         return new HelpCtx (AddWatchAction.class);
 
@@ -105,10 +104,12 @@ public class AddWatchAction extends CallableSystemAction {
     /** The action's icon location.
     * @return the action's icon location
     */
+    @Override
     protected String iconResource () {
         return "org/netbeans/modules/debugger/resources/actions/NewWatch.gif"; // NOI18N
     }
     
+    @Override
     public void performAction () {
         final AddWatchListener addWatchListener = performEngineAddWatchAction();
         if (addWatchListener != null) {

@@ -283,16 +283,7 @@ public class ProjectNodeFactory {
         descriptions.add(ItemNodeFactory.createCCompilerDescription(lookup));
         descriptions.add(ItemNodeFactory.createCCCompilerDescription(lookup));
         String nodeLabel = getString("LBL_PARSER_NODE");
-        return new CustomizerNode(
-                "CodeAssistant", nodeLabel,  descriptions.toArray(new CustomizerNode[descriptions.size()]), lookup); // NOI18N
-    }
-
-    private static CustomizerNode getAdvancedCustomizerNode(List<CustomizerNode> descriptions, Lookup lookup) {
-        if (descriptions.isEmpty()) {
-            return null;
-        }
-        return new CustomizerNode(
-                "advanced", getString("ADVANCED_CUSTOMIZER_NODE"), descriptions.toArray(new CustomizerNode[descriptions.size()]), lookup); // NOI18N
+        return new CodeAssistanceCustomizerNode("CodeAssistance", nodeLabel,  descriptions.toArray(new CustomizerNode[descriptions.size()]), lookup); // NOI18N
     }
 
     private static CustomizerNode createNotFoundNode(String nodeName) {
@@ -301,6 +292,6 @@ public class ProjectNodeFactory {
 
 
     private static String getString(String s) {
-        return NbBundle.getBundle(MakeCustomizer.class).getString(s);
+        return NbBundle.getMessage(MakeCustomizer.class, s);
     }
 }

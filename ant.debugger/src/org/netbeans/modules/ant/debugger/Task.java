@@ -46,7 +46,6 @@ package org.netbeans.modules.ant.debugger;
 
 import java.io.File;
 import org.apache.tools.ant.module.spi.TaskStructure;
-import org.openide.text.Line;
 
 /**
  *
