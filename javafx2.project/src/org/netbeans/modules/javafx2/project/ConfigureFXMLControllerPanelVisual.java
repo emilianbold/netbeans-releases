@@ -72,6 +72,7 @@ public class ConfigureFXMLControllerPanelVisual extends JPanel implements Docume
 
     private ConfigureFXMLControllerPanelVisual(Panel observer) {
         this.observer = observer;
+        setName(NbBundle.getMessage(ConfigureFXMLControllerPanelVisual.class,"TXT_ControllerNameAndLoc")); // NOI18N
         initComponents(); // Matisse
         initComponents2(); // My own
     }
@@ -149,6 +150,7 @@ public class ConfigureFXMLControllerPanelVisual extends JPanel implements Docume
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
 
         buttonGroup1 = new javax.swing.ButtonGroup();
         controllerCheckBox = new javax.swing.JCheckBox();
@@ -161,8 +163,10 @@ public class ConfigureFXMLControllerPanelVisual extends JPanel implements Docume
         existingNameLabel = new javax.swing.JLabel();
         existingNameTextField = new javax.swing.JTextField();
         chooseButton = new javax.swing.JButton();
+        filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(32767, 32767));
 
         setPreferredSize(new java.awt.Dimension(500, 340));
+        setLayout(new java.awt.GridBagLayout());
 
         org.openide.awt.Mnemonics.setLocalizedText(controllerCheckBox, org.openide.util.NbBundle.getMessage(ConfigureFXMLControllerPanelVisual.class, "ConfigureFXMLControllerPanelVisual.controllerCheckBox.text")); // NOI18N
         controllerCheckBox.addItemListener(new java.awt.event.ItemListener() {
@@ -170,18 +174,55 @@ public class ConfigureFXMLControllerPanelVisual extends JPanel implements Docume
                 controllerCheckBoxItemStateChanged(evt);
             }
         });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        add(controllerCheckBox, gridBagConstraints);
 
         createdNameLabel.setLabelFor(createdNameTextField);
         org.openide.awt.Mnemonics.setLocalizedText(createdNameLabel, org.openide.util.NbBundle.getMessage(ConfigureFXMLControllerPanelVisual.class, "ConfigureFXMLControllerPanelVisual.createdNameLabel.text")); // NOI18N
         createdNameLabel.setEnabled(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
+        gridBagConstraints.insets = new java.awt.Insets(5, 40, 0, 0);
+        add(createdNameLabel, gridBagConstraints);
 
         createdNameTextField.setEnabled(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
+        gridBagConstraints.weightx = 0.1;
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
+        add(createdNameTextField, gridBagConstraints);
 
         fileLabel.setLabelFor(fileTextField);
         org.openide.awt.Mnemonics.setLocalizedText(fileLabel, org.openide.util.NbBundle.getMessage(ConfigureFXMLControllerPanelVisual.class, "ConfigureFXMLControllerPanelVisual.resultLabel.text")); // NOI18N
         fileLabel.setEnabled(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
+        gridBagConstraints.insets = new java.awt.Insets(25, 15, 0, 0);
+        add(fileLabel, gridBagConstraints);
 
         fileTextField.setEnabled(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
+        gridBagConstraints.weightx = 0.1;
+        gridBagConstraints.insets = new java.awt.Insets(25, 5, 0, 0);
+        add(fileTextField, gridBagConstraints);
 
         buttonGroup1.add(createNewRadioButton);
         createNewRadioButton.setSelected(true);
@@ -192,6 +233,13 @@ public class ConfigureFXMLControllerPanelVisual extends JPanel implements Docume
                 createNewRadioButtonItemStateChanged(evt);
             }
         });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 15, 0, 0);
+        add(createNewRadioButton, gridBagConstraints);
 
         buttonGroup1.add(useExistingRadioButton);
         org.openide.awt.Mnemonics.setLocalizedText(useExistingRadioButton, org.openide.util.NbBundle.getMessage(ConfigureFXMLControllerPanelVisual.class, "ConfigureFXMLControllerPanelVisual.useExistingRadioButton.text")); // NOI18N
@@ -201,12 +249,34 @@ public class ConfigureFXMLControllerPanelVisual extends JPanel implements Docume
                 useExistingRadioButtonItemStateChanged(evt);
             }
         });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 15, 0, 0);
+        add(useExistingRadioButton, gridBagConstraints);
 
         existingNameLabel.setLabelFor(existingNameTextField);
         org.openide.awt.Mnemonics.setLocalizedText(existingNameLabel, org.openide.util.NbBundle.getMessage(ConfigureFXMLControllerPanelVisual.class, "ConfigureFXMLControllerPanelVisual.existingNameLabel.text")); // NOI18N
         existingNameLabel.setEnabled(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
+        gridBagConstraints.insets = new java.awt.Insets(5, 40, 0, 0);
+        add(existingNameLabel, gridBagConstraints);
 
         existingNameTextField.setEnabled(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
+        gridBagConstraints.weightx = 0.1;
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
+        add(existingNameTextField, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(chooseButton, org.openide.util.NbBundle.getMessage(ConfigureFXMLControllerPanelVisual.class, "ConfigureFXMLControllerPanelVisual.chooseButton.text")); // NOI18N
         chooseButton.setEnabled(false);
@@ -215,63 +285,18 @@ public class ConfigureFXMLControllerPanelVisual extends JPanel implements Docume
                 chooseButtonActionPerformed(evt);
             }
         });
-
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(controllerCheckBox)
-                .addContainerGap())
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(21, 21, 21)
-                                .addComponent(existingNameLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 88, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(existingNameTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 315, Short.MAX_VALUE))
-                            .addComponent(useExistingRadioButton))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(chooseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(21, 21, 21)
-                        .addComponent(createdNameLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 88, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(createdNameTextField))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(createNewRadioButton)
-                        .addContainerGap())
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(fileLabel)
-                        .addGap(50, 50, 50)
-                        .addComponent(fileTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 377, Short.MAX_VALUE))))
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(controllerCheckBox)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(createNewRadioButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(createdNameLabel)
-                    .addComponent(createdNameTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(useExistingRadioButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(existingNameLabel)
-                    .addComponent(existingNameTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(chooseButton))
-                .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(fileLabel)
-                    .addComponent(fileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(179, Short.MAX_VALUE))
-        );
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
+        add(chooseButton, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weighty = 0.1;
+        add(filler1, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void controllerCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_controllerCheckBoxItemStateChanged
@@ -334,6 +359,7 @@ public class ConfigureFXMLControllerPanelVisual extends JPanel implements Docume
     private javax.swing.JTextField existingNameTextField;
     private javax.swing.JLabel fileLabel;
     private javax.swing.JTextField fileTextField;
+    private javax.swing.Box.Filler filler1;
     private javax.swing.JRadioButton useExistingRadioButton;
     // End of variables declaration//GEN-END:variables
 

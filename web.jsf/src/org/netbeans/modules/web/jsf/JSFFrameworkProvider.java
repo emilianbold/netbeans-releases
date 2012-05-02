@@ -107,6 +107,7 @@ import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.loaders.DataObject;
+import org.openide.text.DataEditorSupport;
 import org.openide.util.NbBundle;
 
 /**
@@ -649,7 +650,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                             if (!isJSF20 && !isMyFaces) {
                                 ViewHandler viewHandler = model.getFactory().createViewHandler();
                                 viewHandler.setFullyQualifiedClassType(HANDLER);
-                                application.addViewHandler(viewHandler);
+                                application.addViewHandler(viewHandler);                                
                             }
 //                            // A component library may require a render kit
 //                            if (isJSF20Plus && panel.getJsfComponentDescriptor() != null) {
@@ -682,6 +683,9 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                             }
                             model.endTransaction();
                             model.sync();
+                            DataEditorSupport editorSupport =
+                                    DataObject.find(files[0]).getLookup().lookup(DataEditorSupport.class);
+                            editorSupport.saveDocument();
                         }
                     }
                 }
