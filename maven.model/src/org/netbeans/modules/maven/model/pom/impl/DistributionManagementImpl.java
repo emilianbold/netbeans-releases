@@ -65,7 +65,13 @@ public class DistributionManagementImpl extends POMComponentImpl implements Dist
     // child elements
     @Override
     public DeploymentRepository getRepository() {
-        return getChild(DeploymentRepository.class);
+        List<DeploymentRepository> childs = getChildren(DeploymentRepository.class);
+        for (DeploymentRepository repo : childs) {
+            if (getModel().getPOMQNames().DIST_REPOSITORY.getName().equals(repo.getPeer().getLocalName())) {
+                return repo;
+            }
+        }
+        return null;
     }
 
     @Override
@@ -76,7 +82,13 @@ public class DistributionManagementImpl extends POMComponentImpl implements Dist
 
     @Override
     public DeploymentRepository getSnapshotRepository() {
-        return getChild(DeploymentRepository.class);
+        List<DeploymentRepository> childs = getChildren(DeploymentRepository.class);
+        for (DeploymentRepository repo : childs) {
+            if (getModel().getPOMQNames().DIST_SNAPSHOTREPOSITORY.getName().equals(repo.getPeer().getLocalName())) {
+                return repo;
+            }
+        }
+        return null;
     }
 
     @Override
