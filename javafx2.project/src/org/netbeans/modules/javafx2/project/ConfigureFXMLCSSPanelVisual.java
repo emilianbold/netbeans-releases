@@ -71,6 +71,7 @@ public class ConfigureFXMLCSSPanelVisual extends JPanel implements DocumentListe
 
     ConfigureFXMLCSSPanelVisual(Panel observer) {
         this.observer = observer;
+        setName(NbBundle.getMessage(ConfigureFXMLCSSPanelVisual.class,"TXT_CSSNameAndLoc")); // NOI18N
         initComponents(); // Matisse
         initComponents2(); // My own
     }
