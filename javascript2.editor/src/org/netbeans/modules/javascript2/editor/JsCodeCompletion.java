@@ -534,7 +534,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                 if (jsObject != null) {
                     lastResolvedObjects.add(jsObject);
                 }
-                if (jsObject == null) {
+                //if (jsObject == null) {
                     for (JsObject libGlobal : getLibrariesGlobalObjects()) {
                         for (JsObject object : libGlobal.getProperties().values()) {
                             if (object.getName().equals(typeUsage.getType())) {
@@ -547,7 +547,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                             break;
                         }
                     }
-                }
+                //}
                 if(jsObject == null || !jsObject.isDeclared()){
                     // look at the index
                     if (exp.get(1).equals("@pro")) {

@@ -44,7 +44,6 @@ package org.netbeans.modules.javascript2.editor.jquery;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.lexer.Token;
