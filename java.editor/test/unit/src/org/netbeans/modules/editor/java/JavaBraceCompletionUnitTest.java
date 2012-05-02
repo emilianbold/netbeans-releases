@@ -118,6 +118,16 @@ public class JavaBraceCompletionUnitTest extends NbTestCase {
                 "m();|"
         );
     }
+    
+    public void testSemicolonOnTheEnd() { // #146139
+        Context ctx = new Context(new JavaKit(),
+                "m()| "
+        );
+        ctx.typeChar(';');
+        ctx.assertDocumentTextEquals(
+                "m();| "
+        );
+    }
 
     public void testTypeRightParenWithinBraces() { // #146139
         Context ctx = new Context(new JavaKit(),
@@ -128,7 +138,7 @@ public class JavaBraceCompletionUnitTest extends NbTestCase {
                 "{(()); }"
         );
     }
-
+    
     public void testTypeLeftParen() {
         Context ctx = new Context(new JavaKit(), "m|");
         ctx.typeChar('(');
