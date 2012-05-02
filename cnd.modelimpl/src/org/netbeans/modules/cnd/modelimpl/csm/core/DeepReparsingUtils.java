@@ -441,9 +441,10 @@ public final class DeepReparsingUtils {
     private static void invalidateFileAndPreprocState(final ProjectBase changedFileProject, final CsmFile file) {
         FileImpl fileImpl = (FileImpl) file;
         ProjectBase fileProject = fileImpl.getProjectImpl(true);
-        if (changedFileProject != null && changedFileProject != fileProject) {
-            // optimization....
-            return;
+        if (changedFileProject != null && fileProject != null) {
+            if (changedFileProject != fileProject && fileProject.isArtificial()) {
+                return;
+            }
         }
         if (fileProject != null) {
             fileImpl.clearStateCache();
