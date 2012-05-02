@@ -252,7 +252,10 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
                 for (ServerLibraryDependency serverLibraryDependency : deps) {
                     if (serverLibraryDependency.getName().startsWith("jsf")) { //NOI18N
                         for (final ServerLibraryItem serverLibraryItem : serverJsfLibraries) {
-                            if (serverLibraryItem.getLibrary().getImplementationVersion().equals(serverLibraryDependency.getImplementationVersion())) {
+                            Version implVersion = serverLibraryItem.getLibrary().getImplementationVersion();
+                            Version specVersion = serverLibraryItem.getLibrary().getSpecificationVersion();
+                            if ((implVersion != null && implVersion.equals(serverLibraryDependency.getImplementationVersion()))
+                                    || specVersion != null && specVersion.equals(serverLibraryDependency.getSpecificationVersion())) {
                                 Mutex.EVENT.readAccess(new Runnable() {
                                     @Override
                                     public void run() {
