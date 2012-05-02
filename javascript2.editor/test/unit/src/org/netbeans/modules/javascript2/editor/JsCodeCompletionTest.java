@@ -50,22 +50,11 @@ import org.openide.util.test.MockLookup;
  *
  * @author Petr Pisl
  */
-public class JsCodeCompletionTest extends JsTestBase {
+public class JsCodeCompletionTest extends JsCodeComplationBase {
 
     public JsCodeCompletionTest(String testName) {
         super(testName);
     }
-
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        List lookupAll = new ArrayList();
-        lookupAll.addAll(MockLookup.getDefault().lookupAll(Object.class));
-        lookupAll.add(new IFL());
-        MockLookup.setInstances(lookupAll.toArray());
-        OpenProjects.getDefault().getOpenProjects();    }
-    
-    
   
     public void testPrefix1() throws Exception {
         checkPrefix("testfiles/completion/cc-prefix1.js");

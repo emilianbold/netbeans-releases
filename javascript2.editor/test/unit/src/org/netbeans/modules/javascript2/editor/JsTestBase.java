@@ -237,21 +237,5 @@ public abstract class JsTestBase extends CslTestBase {
 //        assertNotNull(pr.getIncrementalParse().newFunction);
 //    }
     
-    public static final class IFL extends InstalledFileLocator {
-
-        public IFL() {
-        }
-
-        @Override
-        public File locate(String relativePath, String codeNameBase, boolean localized) {
-            if (relativePath.equals("docs/jquery-api.xml")) {
-                String path = System.getProperty("test.jquery.api.file");
-                System.err.println(path);
-                assertNotNull("must set test.jquery.api.file", path);
-                return new File(path);
-            }
-
-            return null;
-        }
-    }
+    
 }

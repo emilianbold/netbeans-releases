@@ -39,26 +39,52 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.jquery;
+package org.netbeans.modules.javascript2.editor;
 
-import org.netbeans.modules.javascript2.editor.JsCodeComplationBase;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.api.project.ui.OpenProjects;
+import org.openide.modules.InstalledFileLocator;
+import org.openide.util.test.MockLookup;
 
 /**
  *
  * @author Petr Pisl
  */
-public class JQueryCodeCompletionTest extends JsCodeComplationBase {
+public class JsCodeComplationBase extends JsTestBase {
 
-    public JQueryCodeCompletionTest(String testName) {
+    public JsCodeComplationBase(String testName) {
         super(testName);
     }
-    
-    public void testMethods01() throws Exception {
-        checkCompletion("testfiles/completion/jQuery/simple.js", "jQuery('#test').a^ddClass('.myClass');", false);
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        List lookupAll = new ArrayList();
+        lookupAll.addAll(MockLookup.getDefault().lookupAll(Object.class));
+        lookupAll.add(new IFL());
+        MockLookup.setInstances(lookupAll.toArray());
+        OpenProjects.getDefault().getOpenProjects();    
     }
     
-    public void testMethods02() throws Exception {
-        checkCompletion("testfiles/completion/jQuery/simple.js", "$('#test').ad^dClass('.myClass');", false);
+    
+    public static final class IFL extends InstalledFileLocator {
+
+        public IFL() {
+        }
+
+        @Override
+        public File locate(String relativePath, String codeNameBase, boolean localized) {
+            if (relativePath.equals("docs/jquery-api.xml")) {
+                String path = System.getProperty("test.jquery.api.file");
+                System.err.println(path);
+                assertNotNull("must set test.jquery.api.file", path);
+                return new File(path);
+            }
+
+            return null;
+        }
     }
     
 }
