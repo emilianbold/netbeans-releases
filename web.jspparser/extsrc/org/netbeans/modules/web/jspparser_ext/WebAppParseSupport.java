@@ -785,7 +785,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
                         // the web-inf folder is mapped somewhere else
                         path = "/WEB-INF/" + ContextUtil.findRelativePath(webInf, fo); //NOI18N
                     }
-                    returnMap.put(path, new String[] {path, null});
+                    returnMap.put(path, new String[] {path, wmRoot.getPath() + path});
                 }
             }
         }
