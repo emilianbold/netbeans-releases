@@ -76,6 +76,8 @@ public class PositionRefresherHelperImpl extends PositionRefresherHelper<Documen
 
         int[] selection = SelectionAwareJavaSourceTaskFactory.getLastSelection(file);
 
+        if (selection == null) return false;
+        
         return oldVersion.introduceSelStart != selection[0] || oldVersion.introduceSelEnd != selection[1];
     }
 
