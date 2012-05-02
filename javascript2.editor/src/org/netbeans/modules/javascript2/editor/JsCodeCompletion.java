@@ -61,11 +61,7 @@ import org.netbeans.modules.javascript2.editor.jquery.JQueryCodeCompletion;
 import org.netbeans.modules.javascript2.editor.jquery.JQueryModel;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
-import org.netbeans.modules.javascript2.editor.model.JsElement;
-import org.netbeans.modules.javascript2.editor.model.JsFunction;
-import org.netbeans.modules.javascript2.editor.model.JsObject;
-import org.netbeans.modules.javascript2.editor.model.Type;
-import org.netbeans.modules.javascript2.editor.model.TypeUsage;
+import org.netbeans.modules.javascript2.editor.model.*;
 import org.netbeans.modules.javascript2.editor.model.impl.*;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
@@ -80,6 +76,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
     private static final Logger LOGGER = Logger.getLogger(JsCodeCompletion.class.getName());
 
     private boolean caseSensitive;
+    private final JQueryCodeCompletion jqueryCC = new JQueryCodeCompletion();
     
     @Override
     public CodeCompletionResult complete(CodeCompletionContext ccContext) {
@@ -222,7 +219,6 @@ class JsCodeCompletion implements CodeCompletionHandler {
         
         long end = System.currentTimeMillis();
         LOGGER.log(Level.FINE, "Counting JS CC took {0}ms ",  (end - start));
-        JQueryCodeCompletion jqueryCC = new JQueryCodeCompletion();
         resultList.addAll(jqueryCC.complete(ccContext, context, pref));
         if (!resultList.isEmpty()) {
             return new DefaultCompletionResult(resultList, false);
@@ -232,7 +228,6 @@ class JsCodeCompletion implements CodeCompletionHandler {
 
     @Override
     public String document(ParserResult info, ElementHandle element) {
-        JQueryCodeCompletion jqueryCC = new JQueryCodeCompletion();
         String help = jqueryCC.getHelpDocumentation(info, element);
         return help;
     }
