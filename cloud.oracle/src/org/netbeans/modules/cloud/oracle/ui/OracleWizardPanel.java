@@ -143,8 +143,8 @@ public class OracleWizardPanel implements WizardDescriptor.AsynchronousValidatin
             return false;
         }
         String error = performValidation();
+        setErrorMessage(error);
         if (error.length() > 0) {
-            setErrorMessage(error);
             return false;
         }
         if (DomainSupport.getUsableDomainInstances(null).isEmpty()) {
