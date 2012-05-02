@@ -41,6 +41,11 @@
  */
 package org.netbeans.modules.javascript2.editor;
 
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.api.project.ui.OpenProjects;
+import org.openide.util.test.MockLookup;
+
 /**
  *
  * @author Petr Pisl
@@ -51,14 +56,25 @@ public class JsCodeCompletionTest extends JsTestBase {
         super(testName);
     }
 
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        List lookupAll = new ArrayList();
+        lookupAll.addAll(MockLookup.getDefault().lookupAll(Object.class));
+        lookupAll.add(new IFL());
+        MockLookup.setInstances(lookupAll.toArray());
+        OpenProjects.getDefault().getOpenProjects();    }
+    
+    
+  
     public void testPrefix1() throws Exception {
         checkPrefix("testfiles/completion/cc-prefix1.js");
     }
-    
+
     public void testPrefix2() throws Exception {
         checkPrefix("testfiles/completion/cc-prefix2.js");
     }
-    
+
     public void testProperty01() throws Exception {
         checkCompletion("testfiles/model/jQueryFragment01.js", "^jQuery.event.customEvent.test();", false);
     }
@@ -86,16 +102,16 @@ public class JsCodeCompletionTest extends JsTestBase {
     public void testTypeInferenceNew03() throws Exception {
         checkCompletion("testfiles/completion/typeInferenceNew.js", "formatter.println(\"town: \" + object.^town);", false);
     }
-    
+
     public void testMethodsOfUndefinedObjects() throws Exception {
         checkCompletion("testfiles/completion/typeInferenceNew.js", "formatter.^println(\"town: \" + object.town);", false);
     }
-    
+
     public void test129036() throws Exception {
         // needs to be displayed also return types
         checkCompletion("testfiles/completion/test129036.js", "my^ //Foo", false);
     }
-    
+
     public void testSimpleObject01() throws Exception {
         checkCompletion("testfiles/model/simpleObject.js", "this.called = this.^called + 1;", false);
     }
@@ -103,15 +119,15 @@ public class JsCodeCompletionTest extends JsTestBase {
     public void testSimpleObject02() throws Exception {
         checkCompletion("testfiles/model/simpleObject.js", "this.called = this.cal^led + 1;", false);
     }
-    
+
     public void testSimpleObject03() throws Exception {
         checkCompletion("testfiles/model/simpleObject.js", "if (this.^color === \"red\") {", false);
     }
-    
+
     public void testSimpleObject04() throws Exception {
         checkCompletion("testfiles/model/simpleObject.js", "formatter.println(Carrot.isVegi^table());", false);
     }
-    
+
     public void testGetterSettterInObjectLiteral() throws Exception {
         checkCompletion("testfiles/model/getterSettterInObjectLiteral.js", "formatter.println(\"The dos is old \" + Dog.^years + \" years.\");", false);
     }

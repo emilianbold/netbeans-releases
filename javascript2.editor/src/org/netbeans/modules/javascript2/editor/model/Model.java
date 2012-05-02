@@ -85,8 +85,6 @@ public final class Model {
         if (visitor == null) {
             long start = System.currentTimeMillis();
             visitor = new ModelVisitor(parserResult, docSupport);
-            JQueryModel jQuery = new JQueryModel();
-            jQuery.getGlobalProperties(getGlobalObject());
             FunctionNode root = parserResult.getRoot();
             if (root != null) {
                 root.accept(visitor);

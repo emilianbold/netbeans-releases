@@ -42,7 +42,6 @@
 package org.netbeans.modules.javascript2.editor;
 
 import java.util.*;
-import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
@@ -59,6 +58,7 @@ import org.netbeans.modules.javascript2.editor.JsCompletionItem.CompletionReques
 import org.netbeans.modules.javascript2.editor.index.IndexedElement;
 import org.netbeans.modules.javascript2.editor.index.JsIndex;
 import org.netbeans.modules.javascript2.editor.jquery.JQueryCodeCompletion;
+import org.netbeans.modules.javascript2.editor.jquery.JQueryModel;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
@@ -66,9 +66,7 @@ import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Type;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
-import org.netbeans.modules.javascript2.editor.model.impl.JsObjectReference;
-import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
-import org.netbeans.modules.javascript2.editor.model.impl.TypeUsageImpl;
+import org.netbeans.modules.javascript2.editor.model.impl.*;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
@@ -160,6 +158,16 @@ class JsCodeCompletion implements CodeCompletionHandler {
             switch (context) {
                 case GLOBAL:
                     HashMap<String, JsElement> addedProperties = new HashMap<String, JsElement>();
+                    for (JsObject libGlobal : getLibrariesGlobalObjects()) {
+                        for (JsObject object : libGlobal.getProperties().values()) {
+                            if (startsWith(object.getName(), request.prefix)) {
+                                if (object.isDeclared()) {
+                                    resultList.add(JsCompletionItem.Factory.create(object, request));
+                                }
+                                addedProperties.put(object.getName(), object);
+                            }
+                        }
+                    }
                     for (JsObject object : request.result.getModel().getVariables(caretOffset)) {
                         if (!(object instanceof JsFunction && ((JsFunction) object).isAnonymous())
                                 && startsWith(object.getName(), request.prefix)) {
@@ -331,6 +339,15 @@ class JsCodeCompletion implements CodeCompletionHandler {
             }
         }
         
+        // from libraries
+        for (JsObject libGlobal : getLibrariesGlobalObjects()) {
+            for (JsObject object : libGlobal.getProperties().values()) {
+                if (startsWith(object.getName(), request.prefix)) {
+                    foundObjects.put(object.getName(), object);
+                }
+            }
+        }
+        
         // from model
         for(JsObject object : request.result.getModel().getVariables(request.anchor)) {
             if (!(object instanceof JsFunction && ((JsFunction) object).isAnonymous())
@@ -412,7 +429,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                 token = ts.token();
             }
             
-            JsObject type = null;
+            List<JsObject> types = new ArrayList<JsObject>();
             List<JsObject> lastResolvedObjects = new ArrayList<JsObject>();
             List<TypeUsage> lastResolvedTypes = new ArrayList<TypeUsage>();
             for (int i = exp.size() - 1; i > -1; i--) {
@@ -422,59 +439,70 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     // resolving the first part of expression
                     for (JsObject object : request.result.getModel().getVariables(request.anchor)) {
                         if (object.getName().equals(name)) {
-                            type = object;
+                            types.add(object);
                             break;
                         }
                     }
-                    if(type == null || type.getAssignmentForOffset(request.anchor).isEmpty()) {
-                        // also check, whether the same type is not in the index
-                        if (type instanceof JsObjectReference) {
-                            name = ((JsObjectReference)type).getOriginal().getDeclarationName().getName();
-                        }
-                        lastResolvedTypes.add(new TypeUsageImpl(name, -1, true));
-                    } 
-                    
-                    if (type != null) {
-                        if ("@mtd".equals(kind)) {  //NOI18N
-                            if (type.getJSKind().isFunction()) {
-                                lastResolvedTypes.addAll(((JsFunction) type).getReturnTypes());
-                            }
-                        } else {
-                            // just property
-                            Collection<? extends Type> lastTypeAssignment = type.getAssignmentForOffset(request.anchor);
-
-                            if (lastTypeAssignment.isEmpty()) {
-                                lastResolvedObjects.add(type);
-                            } else {
-                                for (Type typeName : lastTypeAssignment) {
-                                    boolean wasFound = false;
-                                    for (JsObject object : request.result.getModel().getVariables(request.anchor)) {
-                                        if (object.getName().equals(typeName.getType())) {
-                                            lastResolvedObjects.add(object);
-                                            wasFound = true;
-                                            break;
-                                        }
-                                    }
-                                    if (!wasFound) {
-                                        lastResolvedTypes.add(new TypeUsageImpl(typeName.getType(), -1, true));
-                                    }
-                                }
+                    for (JsObject libGlobal : getLibrariesGlobalObjects()) {
+                        for (JsObject object : libGlobal.getProperties().values()) {
+                            if (object.getName().equals(name)) {
+                                types.add(object);
                                 break;
                             }
                         }
                     }
+                    
+                    if(!types.isEmpty()){
+                        for(JsObject type : types) {
+                            if(type.getAssignmentForOffset(request.anchor).isEmpty()) {
+                                // also check, whether the same type is not in the index
+                                if (type instanceof JsObjectReference) {
+                                    name = ((JsObjectReference)type).getOriginal().getDeclarationName().getName();
+                                }
+                                lastResolvedTypes.add(new TypeUsageImpl(name, -1, true));
+                            }
+                            if ("@mtd".equals(kind)) {  //NOI18N
+                                if (type.getJSKind().isFunction()) {
+                                    lastResolvedTypes.addAll(((JsFunction) type).getReturnTypes());
+                                }
+                            } else {
+                                // just property
+                                Collection<? extends Type> lastTypeAssignment = type.getAssignmentForOffset(request.anchor);
 
+                                if (lastTypeAssignment.isEmpty()) {
+                                    lastResolvedObjects.add(type);
+                                } else {
+                                    for (Type typeName : lastTypeAssignment) {
+                                        boolean wasFound = false;
+                                        for (JsObject object : request.result.getModel().getVariables(request.anchor)) {
+                                            if (object.getName().equals(typeName.getType())) {
+                                                lastResolvedObjects.add(object);
+                                                wasFound = true;
+                                                break;
+                                            }
+                                        }
+                                        if (!wasFound) {
+                                            lastResolvedTypes.add(new TypeUsageImpl(typeName.getType(), -1, true));
+                                        }
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+                    } 
                 } else {
                     List<JsObject> newResolvedObjects = new ArrayList<JsObject>();
                     List<TypeUsage> newResolvedTypes = new ArrayList<TypeUsage>();
                     for (JsObject resolved : lastResolvedObjects) {
                         JsObject property = ((JsObject) resolved).getProperty(name);
-                        if ("@mtd".equals(kind)) {  //NOI18N
-                            if (property.getJSKind().isFunction()) {
-                                newResolvedTypes.addAll(((JsFunction) property).getReturnTypes());
+                        if (property != null) {
+                            if ("@mtd".equals(kind)) {  //NOI18N
+                                if (property.getJSKind().isFunction()) {
+                                    newResolvedTypes.addAll(((JsFunction) property).getReturnTypes());
+                                }
+                            } else {
+                                newResolvedObjects.add(property);
                             }
-                        } else {
-                            newResolvedObjects.add(property);
                         }
                     }
                     for (TypeUsage typeUsage : lastResolvedTypes) {
@@ -505,6 +533,20 @@ class JsCodeCompletion implements CodeCompletionHandler {
                 JsObject jsObject = ModelUtils.findJsObjectByName(request.result.getModel(), typeUsage.getType());
                 if (jsObject != null) {
                     lastResolvedObjects.add(jsObject);
+                }
+                if (jsObject == null) {
+                    for (JsObject libGlobal : getLibrariesGlobalObjects()) {
+                        for (JsObject object : libGlobal.getProperties().values()) {
+                            if (object.getName().equals(typeUsage.getType())) {
+                                jsObject = object;
+                                lastResolvedObjects.add(jsObject);
+                                break;
+                            }
+                        }
+                        if (jsObject != null) {
+                            break;
+                        }
+                    }
                 }
                 if(jsObject == null || !jsObject.isDeclared()){
                     // look at the index
@@ -660,5 +702,13 @@ class JsCodeCompletion implements CodeCompletionHandler {
                 }
             }
         }
+    }
+    
+    private Collection<JsObject> getLibrariesGlobalObjects() {
+        Collection<JsObject> result = new ArrayList<JsObject>();
+        JsObject libGlobal = new JsFunctionImpl(null, null, new IdentifierImpl("Library", OffsetRange.NONE), Collections.EMPTY_LIST, OffsetRange.NONE);
+        JQueryModel.getGlobalProperties(libGlobal);
+        result.add(libGlobal);
+        return result;
     }
 }

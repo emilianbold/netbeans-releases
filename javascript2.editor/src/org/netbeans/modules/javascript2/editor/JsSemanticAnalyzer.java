@@ -112,7 +112,7 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
                 case CONSTRUCTOR:
                 case METHOD:
                 case FUNCTION:
-                    if(object.isDeclared() && !object.isAnonymous()) {
+                    if(object.isDeclared() && !object.isAnonymous() && !object.getDeclarationName().getOffsetRange().isEmpty()) {
                         highlights.put(object.getDeclarationName().getOffsetRange(), ColoringAttributes.METHOD_SET);
                     }
                     for(JsObject param: ((JsFunction)object).getParameters()) {

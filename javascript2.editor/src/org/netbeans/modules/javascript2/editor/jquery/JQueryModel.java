@@ -42,12 +42,20 @@
 package org.netbeans.modules.javascript2.editor.jquery;
 
 import java.io.File;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
-import org.netbeans.modules.javascript2.editor.model.impl.*;
+import org.netbeans.modules.javascript2.editor.model.impl.IdentifierImpl;
+import org.netbeans.modules.javascript2.editor.model.impl.JsFunctionImpl;
+import org.netbeans.modules.javascript2.editor.model.impl.JsFunctionReference;
 import org.openide.modules.InstalledFileLocator;
 
 /**
@@ -56,14 +64,72 @@ import org.openide.modules.InstalledFileLocator;
  */
 public class JQueryModel {
 
-    public void getGlobalProperties(JsObject globalObject) {
-        JsFunctionImpl jQuery =  new JsFunctionImpl((DeclarationScope)globalObject, globalObject, new IdentifierImpl("jQuery", OffsetRange.NONE), Collections.<Identifier>emptyList(), OffsetRange.NONE);
-        globalObject.addProperty("jQuery", jQuery);
-        JsObject jQuery2 = new JsFunctionReference(globalObject, new IdentifierImpl("$", OffsetRange.NONE), jQuery, false);
-        globalObject.addProperty("$", jQuery2);
-        File apiFile = InstalledFileLocator.getDefault().locate(JQueryCodeCompletion.HELP_LOCATION, null, false); //NoI18N
-        SelectorsLoader.addToModel(apiFile, jQuery);
+    private static JQFunctionImpl jQuery = null;
+    private static JsFunctionReference rjQuery = null;
+    
+    public static boolean skipInTest = false;
+    
+    public static  void getGlobalProperties(JsObject globalObject) {
+        Map<String, JsObject> result = new HashMap<String, JsObject>();
+        if (skipInTest) {
+            return;
+        }
+        if (jQuery == null) {
+            jQuery =  new JQFunctionImpl((DeclarationScope)globalObject, globalObject, new IdentifierImpl("jQuery", OffsetRange.NONE), Collections.<Identifier>emptyList(), OffsetRange.NONE); // NOI18N
+            rjQuery = new JQFunctionReference(new IdentifierImpl("$", OffsetRange.NONE), jQuery, false); // NOI18N
+            File apiFile = InstalledFileLocator.getDefault().locate(JQueryCodeCompletion.HELP_LOCATION, null, false); //NoI18N
+            if(apiFile == null) {
+                System.out.println("pozor je null");
+            } else {
+                SelectorsLoader.addToModel(apiFile, jQuery);
+            }
+        } else {
+            jQuery.setInScope((DeclarationScope)globalObject);
+            jQuery.setParent(globalObject);
+        }
+        globalObject.addProperty("jQuery", jQuery); // NOI18N
+        globalObject.addProperty("$", rjQuery);     // NOI18N
+    }
+    
+    private static class JQFunctionImpl extends JsFunctionImpl {
+        private DeclarationScope inScope;
+        private JsObject parent;
         
+        public JQFunctionImpl(DeclarationScope scope, JsObject parentObject, Identifier name, List<Identifier> parameters, OffsetRange offsetRange) {
+            super(scope, parentObject, name, parameters, offsetRange);
+            this.inScope = scope;
+            this.parent = parentObject;
+        }
+
+        @Override
+        public DeclarationScope getInScope() {
+            return this.inScope;
+        }
+        
+        protected void setInScope(DeclarationScope inScope) {
+            this.inScope = inScope;
+        }
+
+        @Override
+        public JsObject getParent() {
+            return this.parent;
+        }
+        
+        protected void setParent(JsObject parent) {
+            this.parent = parent;
+        }    
+    }
+    
+    private static class JQFunctionReference extends JsFunctionReference {
+
+        public JQFunctionReference(Identifier declarationName, JsFunctionImpl original, boolean isDeclared) {
+            super(original.getParent(), declarationName, original, isDeclared);
+        }
+
+        @Override
+        public JsObject getParent() {
+            return getOriginal().getParent();
+        }
     }
     
 }

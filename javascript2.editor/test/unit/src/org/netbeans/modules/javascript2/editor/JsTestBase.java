@@ -44,20 +44,31 @@
 
 package org.netbeans.modules.javascript2.editor;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
+import org.junit.BeforeClass;
 import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.junit.MockServices;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
 import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
+import org.openide.modules.InstalledFileLocator;
+import org.openide.util.test.MockLookup;
 
 /**
  * @author Tor Norbye
  */
 public abstract class JsTestBase extends CslTestBase {
-
+    
     public static String JS_SOURCE_ID = "classpath/js-source"; // NOI18N
     
     public JsTestBase(String testName) {
@@ -112,7 +123,17 @@ public abstract class JsTestBase extends CslTestBase {
     protected void setUp() throws Exception {        
         TestLanguageProvider.register(getPreferredLanguage().getLexerLanguage());
         super.setUp();//        JsIndexer.setClusterUrl("file:/bogus"); // No translation
+//
+
     }
+
+    
+
+    
+    
+    
+    
+  
     
 //    @Override
 //    public Formatter getFormatter(IndentPrefs preferences) {
@@ -215,4 +236,22 @@ public abstract class JsTestBase extends CslTestBase {
 //        assertNotNull(pr.getIncrementalParse());
 //        assertNotNull(pr.getIncrementalParse().newFunction);
 //    }
+    
+    public static final class IFL extends InstalledFileLocator {
+
+        public IFL() {
+        }
+
+        @Override
+        public File locate(String relativePath, String codeNameBase, boolean localized) {
+            if (relativePath.equals("docs/jquery-api.xml")) {
+                String path = System.getProperty("test.jquery.api.file");
+                System.err.println(path);
+                assertNotNull("must set test.jquery.api.file", path);
+                return new File(path);
+            }
+
+            return null;
+        }
+    }
 }

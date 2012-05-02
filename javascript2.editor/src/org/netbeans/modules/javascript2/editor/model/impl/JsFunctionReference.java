@@ -42,7 +42,10 @@
 package org.netbeans.modules.javascript2.editor.model.impl;
 
 import java.util.Collection;
-import org.netbeans.modules.javascript2.editor.model.*;
+import org.netbeans.modules.javascript2.editor.model.Identifier;
+import org.netbeans.modules.javascript2.editor.model.JsFunction;
+import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 
 /**
  *

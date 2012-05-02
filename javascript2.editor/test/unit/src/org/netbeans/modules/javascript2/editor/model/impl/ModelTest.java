@@ -46,6 +46,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.javascript2.editor.JsTestBase;
+import org.netbeans.modules.javascript2.editor.jquery.JQueryModel;
 import org.netbeans.modules.javascript2.editor.model.*;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
@@ -63,7 +64,14 @@ public class ModelTest extends JsTestBase {
     public ModelTest(String testName) {
         super(testName);
     }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        JQueryModel.skipInTest = true;
+    }
         
+    
     private Model getModel(String file) throws Exception {
         final Model[] globals = new Model[1];
         Source source = getTestSource(getTestFile(file));
