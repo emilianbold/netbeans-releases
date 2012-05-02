@@ -363,8 +363,12 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
         };
         return listener;
     }
-        
-    private static List<CsmOffsetable> checkDeadBlocks(final CsmProject project, final FileImpl fileImpl, String docMsg, final BaseDocument doc, String msg, int expectedDeadBlocks) throws BadLocationException {
+
+    protected static void checkDeclarationNumber(int num, final FileImpl fileImpl) {
+        assertEquals("different number of declarations", num, fileImpl.getDeclarationsSize());
+    }
+
+    protected static List<CsmOffsetable> checkDeadBlocks(final CsmProject project, final FileImpl fileImpl, String docMsg, final BaseDocument doc, String msg, int expectedDeadBlocks) throws BadLocationException {
         project.waitParse();
         List<CsmOffsetable> unusedCodeBlocks = CsmFileInfoQuery.getDefault().getUnusedCodeBlocks(fileImpl);
         if (TraceFlags.TRACE_182342_BUG) {
@@ -387,6 +391,7 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
         void checkAfterModifyingFile(FileImpl modifiedFile, FileImpl fileToCheck, CsmProject project, BaseDocument doc) throws BadLocationException;
         void checkAfterParseFinished(FileImpl modifiedFile, FileImpl fileToCheck, CsmProject project, BaseDocument doc) throws BadLocationException;
         void checkAfterUndo(FileImpl modifiedFile, FileImpl fileToCheck, CsmProject project, BaseDocument doc) throws BadLocationException;
+        void checkAfterUndoAndParseFinished(FileImpl modifiedFile, FileImpl fileToCheck, CsmProject project, BaseDocument doc) throws BadLocationException;
     }
     
     protected static final class DeclarationsNumberChecker implements Checker {
@@ -418,8 +423,9 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
             checkBeforeModifyingFile(modifiedFile, fileToCheck, project, doc);
         }
 
-        private void checkDeclarationNumber(int num, final FileImpl fileImpl) {
-            assertEquals("different number of declarations", num, fileImpl.getDeclarationsSize());
+        @Override
+        public void checkAfterUndoAndParseFinished(FileImpl modifiedFile, FileImpl fileToCheck, CsmProject project, BaseDocument doc) throws BadLocationException {
+            checkAfterParseFinished(modifiedFile, fileToCheck, project, doc);
         }
     };
     
@@ -449,6 +455,11 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
         @Override
         public void checkAfterUndo(FileImpl modifiedFile, final FileImpl fileToCheck, final CsmProject project, final BaseDocument doc) throws BadLocationException {
             checkBeforeModifyingFile(modifiedFile, fileToCheck, project, doc);
+        }
+
+        @Override
+        public void checkAfterUndoAndParseFinished(FileImpl modifiedFile, FileImpl fileToCheck, CsmProject project, BaseDocument doc) throws BadLocationException {
+            checkAfterParseFinished(modifiedFile, fileToCheck, project, doc);
         }
     };
 
