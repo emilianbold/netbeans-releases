@@ -83,11 +83,6 @@ public class LibrariesContentHyperlinkTestCase extends HyperlinkBaseTestCase {
         return new File[] {srcDir};
     }
 
-    private void checkDir(File srcDir) {
-        assertTrue("Not existing directory" + srcDir, srcDir.exists());
-        assertTrue("Not directory" + srcDir, srcDir.isDirectory());
-    }
-
     public void testTwoLevelsStructRedirection() throws Exception {
         performTest("src/format1.c", 17, 15, "src/format1.c", 7, 5);
         performTest("src/format1.c", 18, 15, "src/format1.c", 8, 5);
