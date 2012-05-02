@@ -769,7 +769,7 @@ public class TokenFormatter {
                                                 }
                                                 break;
                                             case WRAP_IF_LONG:
-                                                if (column + 1 + countLengthOfNextSequence(formatTokens, index + 1) > docOptions.margin) {
+                                                if (isAfterLineComment(formatTokens, index) || column + 1 + countLengthOfNextSequence(formatTokens, index + 1) > docOptions.margin) {
                                                     newLines = 1;
                                                     countSpaces = docOptions.alignMultilineCallArgs ? lastAnchor.getAnchorColumn() : indent;
                                                 }
