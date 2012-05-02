@@ -314,6 +314,7 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
                 for (ActionsProvider ap : actionsProviderList) {
                     engineActions.addAll(ap.getActions());
                 }
+                ToolbarPool.getDefault().waitFinished();
                 SwingUtilities.invokeLater (new Runnable () {
                     @Override
                     public void run () {
@@ -464,6 +465,7 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
                     return ;
                 }
                 final Toolbar debugToolbar = ToolbarPool.getDefault ().findToolbar("Debug");
+                if (debugToolbar == null) return ;
                 if (!doCloseToolbar) {
                     // An engine is removed, but there remain others =>
                     // actions that remained enabled because of this are disabled unless needed by other engines.
@@ -513,8 +515,12 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
                 @Override
                 public void run () {
                     Toolbar debugToolbar = ToolbarPool.getDefault ().findToolbar("Debug");
-                    unregisterToolbarListener(debugToolbar);
-                    ToolbarPool.getDefault ().setConfiguration(ToolbarPool.DEFAULT_CONFIGURATION); // NOI18N
+                    if (debugToolbar != null) {
+                        unregisterToolbarListener(debugToolbar);
+                    }
+                    if (ToolbarPool.getDefault().getConfiguration().equals("Debugging")) { // NOI18N
+                        ToolbarPool.getDefault().setConfiguration(ToolbarPool.DEFAULT_CONFIGURATION);
+                    }
                 }
             });
         }
