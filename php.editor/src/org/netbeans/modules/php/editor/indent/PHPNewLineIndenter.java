@@ -168,7 +168,7 @@ public class PHPNewLineIndenter {
                     if (movePrevious){
                         ts.movePrevious();
                     }
-                    if (ts.token().id() == PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING && offset > ts.offset()) {
+                    if ((ts.token().id() == PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE || ts.token().id() == PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING) && offset > ts.offset()) {
 
                         int stringLineStart = Utilities.getRowStart(doc, ts.offset());
 
