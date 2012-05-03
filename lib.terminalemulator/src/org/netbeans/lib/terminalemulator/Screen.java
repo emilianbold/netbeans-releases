@@ -52,13 +52,11 @@ package org.netbeans.lib.terminalemulator;
 
 import java.awt.*;
 import java.awt.event.*;
-
-import javax.swing.*;
-// import javax.swing.FocusManager; // override java.awt.FocusManager if present
 import javax.accessibility.*;
+import javax.swing.*;
 import javax.swing.text.AttributeSet;
-import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.MutableAttributeSet;
+import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 
 // We can _almost_ inherit from awt.Canvas, except that then we lose various
@@ -236,13 +234,13 @@ class Screen extends JComponent implements Accessible {
                 return null;
             }
             BCoord b = c.toBCoord(term.firsta);
-            int attr = 0;
+            int attr;
             try {
                 Line l = term.buf.lineAt(b.row);
                 int[] attrs = l.attrArray();
                 attr = attrs[b.col];
             } catch (Exception x) {
-                //
+                return null;
             }
 
             if (attr == last_attr) {
