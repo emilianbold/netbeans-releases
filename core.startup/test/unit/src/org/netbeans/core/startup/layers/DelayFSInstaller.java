@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,52 +37,26 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.test.php.cc;
+package org.netbeans.core.startup.layers;
 
-import java.awt.event.InputEvent;
-import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.junit.NbModuleSuite;
-import junit.framework.Test;
-import org.netbeans.jemmy.EventTool;
+import org.openide.modules.ModuleInstall;
 
 /**
- * This test checks code completion for aliases
- * @author Lada Riha, vriha@netbeans.org
+ *
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class testCCAliases extends cc {
-
-    static final String TEST_PHP_NAME = "PhpProject_cc_alias";
-
-    public testCCAliases(String arg0) {
-        super(arg0);
+public class DelayFSInstaller extends ModuleInstall {
+    @Override
+    public void restored() {
+        System.setProperty("installer.done", "true");
     }
 
-    public static Test suite() {
-        return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(testCCAliases.class).addTest(
-                "VerifyAliases").enableModules(".*").clusters(".*"));
+    @Override
+    public void uninstalled() {
+        System.setProperty("installer.done", "true");
     }
-
-    public void VerifyAliases() {
-        startTest();
-        // create new application
-        CreatePHPApplicationInternal(TEST_PHP_NAME);
-
-        // Create new file
-        CreatePHPFile(TEST_PHP_NAME, "PHP File", "test_aliases");
-
-        // Include first file
-        EditorOperator eoPHP = new EditorOperator("test_aliases.php");
-        eoPHP.setCaretPosition("*/\n", false);
-        // type sample source
-        TypeCode(eoPHP, "function reallyLongNameForUselessFunction(){\n");
-        eoPHP.setCaretPosition("}", false);
-        TypeCode(eoPHP,"\n use reallyLongNameForUselessFunction as fooFunction;\n\n fooF");
-        eoPHP.typeKey(' ', InputEvent.CTRL_MASK);
-        new EventTool().waitNoEvent(1000);
-        CheckResult(eoPHP, "fooFunction");
-        endTest();
-    }
+    
+    
 }

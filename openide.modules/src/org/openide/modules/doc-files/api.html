@@ -1308,22 +1308,22 @@ beneath the directory where the module JAR resides). If your native library file
 names for different architectures or operating systems clash, you may create
 subdirectories under <samp>modules/lib</samp> for each supported platform and
 nested subdirectories for each supported operating system. The directory names
-must match <code>System.getProperty ("os.arch")</code> and
-<code>System.getProperty ("os.name").toLowerCase ()</code> respectively.
+must match <code>System.getProperty("os.arch")</code> and
+<code>System.getProperty("os.name").toLowerCase(Locale.ENGLISH)</code> respectively.
 The <code>System.loadLibrary</code> call originating from the module code
 will try to locate the library file in the following order of directories:</p><ul>
     <li><samp>modules/lib/</samp></li>
     <li><samp>modules/lib/&lt;arch&gt;/</samp></li>
     <li><samp>modules/lib/&lt;arch&gt;/&lt;os&gt;/</samp></li>
 </ul>
-<p>so you may place e.g. 64bit linux version of a <samp>foo</samp> library in a file
+<p>so you may place e.g. 64-bit Linux version of a <samp>foo</samp> library in a file
 <samp>modules/lib/amd64/linux/libfoo.so</samp>.
 The module may distinguish additional library variants itself or even override
 the platform selection logic by naming the library <em>file</em> appropriately
 and calling System.loadLibrary with such a name. Use of JNI is of course not
 recommended and should be restricted to cases where it is unavoidable.</p>
 
-<p>Example of usage: if on Linux a module located in <samp>/home/app/cluster/modules/something.jar</samp> calls
+<p>Example of usage with a fully specified library name: if on Linux a module located in <samp>/home/app/cluster/modules/something.jar</samp> calls
 <samp>System.loadLibrary("stuff-linux-i386-gnome")</samp>, the library should be in
 <samp>/home/app/cluster/modules/lib/libstuff-linux-i386-gnome.so</samp>. On 64bit Windows, if
 <samp>C:\app\cluster\modules\something.jar</samp> calls <samp>System.loadLibrary("stuff")</samp>, the library
@@ -1344,7 +1344,7 @@ reloaded, so it may be possible to include the native-dependent
 classes in such a JAR and make use of it from a module JAR.</p>
 
 <p class="nonnormative">NetBeans currently includes a <a
-href="https://jna.dev.java.net/">JNA</a> wrapper module which can also be used
+href="https://github.com/twall/jna">JNA</a> wrapper module which can also be used
 for native access. As of this writing, however, this module exports only a
 friend API, so it is not available for use from arbitrary modules.<p>
 

@@ -83,20 +83,26 @@ class Setup extends AbstractDiffSetup {
         String firstTitle;
         String secondTitle;
         info = node.getFileNode().getInformation();
+        File originalFile = null;
+        if (info != null && (info.isCopied() || info.isRenamed())) {
+            originalFile = info.getOldFile();
+        }
 
         // <editor-fold defaultstate="collapsed" desc="left panel">
         switch (mode) {
             case HEAD_VS_WORKING_TREE:
             case HEAD_VS_INDEX:
-                firstRevision = info.containsStatus(EnumSet.of(FileInformation.Status.NEW_HEAD_WORKING_TREE, FileInformation.Status.NEW_HEAD_INDEX)) ? null : GitUtils.HEAD;
-                firstTitle = MessageFormat.format(loc.getString("MSG_DiffPanel_HeadRevision"), new Object[]{firstRevision}); // NOI18N
+                firstRevision = originalFile == null && info.containsStatus(EnumSet.of(FileInformation.Status.NEW_HEAD_WORKING_TREE, FileInformation.Status.NEW_HEAD_INDEX)) ? null : GitUtils.HEAD;
+                firstTitle = originalFile == null
+                        ? loc.getString("MSG_DiffPanel_HeadRevision") //NOI18N
+                        : MessageFormat.format(loc.getString("MSG_DiffPanel_HeadRevision.file"), new Object[] { originalFile.getName() } ); //NOI18N
                 break;
             case INDEX_VS_WORKING_TREE:
                 firstRevision = GitUtils.INDEX;
                 firstTitle = MessageFormat.format(loc.getString("MSG_DiffPanel_IndexRevision"), new Object[]{firstRevision}); // NOI18N
                 break;
             default:
-                throw new IllegalArgumentException("Unknow diff type: " + mode); // NOI18N
+                throw new IllegalArgumentException("Unknown diff type: " + mode); // NOI18N
         }// </editor-fold>
 
         // <editor-fold defaultstate="collapsed" desc="right panel">
@@ -105,7 +111,15 @@ class Setup extends AbstractDiffSetup {
             case INDEX_VS_WORKING_TREE:
                 if (info.containsStatus(FileInformation.Status.NEW_HEAD_WORKING_TREE)) {
                     secondRevision = GitUtils.CURRENT;
-                    secondTitle = loc.getString("MSG_DiffPanel_LocalNew"); //NOI18N
+                    if (originalFile != null) {
+                        if (info.isRenamed()) {
+                            secondTitle = loc.getString("MSG_DiffPanel_LocalRenamed"); //NOI18N
+                        } else {
+                            secondTitle = loc.getString("MSG_DiffPanel_LocalCopied"); //NOI18N
+                        }
+                    } else {
+                        secondTitle = loc.getString("MSG_DiffPanel_LocalNew"); //NOI18N
+                    }
                 } else if (info.containsStatus(FileInformation.Status.REMOVED_HEAD_WORKING_TREE)) {
                     secondRevision = null;
                     secondTitle = loc.getString("MSG_DiffPanel_LocalDeleted"); // NOI18N
@@ -117,7 +131,15 @@ class Setup extends AbstractDiffSetup {
             case HEAD_VS_INDEX:
                 if (info.containsStatus(FileInformation.Status.NEW_HEAD_INDEX)) {
                     secondRevision = GitUtils.INDEX;
-                    secondTitle = loc.getString("MSG_DiffPanel_IndexNew"); //NOI18N
+                    if (originalFile != null) {
+                        if (info.isRenamed()) {
+                            secondTitle = loc.getString("MSG_DiffPanel_IndexRenamed"); //NOI18N
+                        } else {
+                            secondTitle = loc.getString("MSG_DiffPanel_IndexCopied"); //NOI18N
+                        }
+                    } else {
+                        secondTitle = loc.getString("MSG_DiffPanel_IndexNew"); //NOI18N
+                    }
                 } else if (info.containsStatus(FileInformation.Status.REMOVED_HEAD_INDEX)) {
                     secondRevision = null;
                     secondTitle = loc.getString("MSG_DiffPanel_IndexDeleted"); // NOI18N
@@ -127,10 +149,10 @@ class Setup extends AbstractDiffSetup {
                 }
                 break;
             default:
-                throw new IllegalArgumentException("Unknow diff type: " + mode); // NOI18N
+                throw new IllegalArgumentException("Unknown diff type: " + mode); // NOI18N
         }// </editor-fold>
 
-        firstSource = new DiffStreamSource(baseFile, firstRevision, firstTitle);
+        firstSource = new DiffStreamSource(originalFile == null || mode == Mode.INDEX_VS_WORKING_TREE ? baseFile : originalFile, firstRevision, firstTitle);
         secondSource = new DiffStreamSource(baseFile, secondRevision, secondTitle);
         title = "<html>" + info.annotateNameHtml(baseFile.getName()); // NOI18N
     }

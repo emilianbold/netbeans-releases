@@ -49,6 +49,7 @@ package org.openide.text;
 import java.io.IOException;
 
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.util.Exceptions;
 
 
@@ -84,7 +85,7 @@ implements CloneableEditorSupport.Env {
         support = new CES (this, org.openide.util.Lookup.EMPTY);
     }
     
-    
+    @RandomlyFails // NB-Core-Build #8241
     public void testTheStarvation37045 () throws Exception {
         org.openide.util.Task task;
         

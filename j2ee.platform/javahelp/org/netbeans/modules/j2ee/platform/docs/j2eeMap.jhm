@@ -451,6 +451,7 @@ Other names may be trademarks of their respective owners.
     <mapID target="AS_CFG_Application"                  url="server/glassfish/appconfigeditors/sunapplication.html" />
 <!-- End Glassfish CSH topics -->
 
-
+<!-- Cloud support CSH topics -->
+<mapID target="org.netbeans.modules.cloud.oracle.ui.OracleWizardPanel" url="cloud/csh/add-cloud-provider-oracle.html" />
 </map>
 
