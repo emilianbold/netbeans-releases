@@ -42,9 +42,8 @@
 package org.netbeans.modules.maven.model.pom.impl;
 
 import java.util.*;
+import org.netbeans.modules.maven.model.pom.*;
 import org.w3c.dom.Element;
-import org.netbeans.modules.maven.model.pom.*;	
-import org.netbeans.modules.maven.model.pom.POMComponentVisitor;	
 
 /**
  *
@@ -63,6 +62,7 @@ public class ReportPluginImpl extends VersionablePOMComponentImpl implements Rep
     // attributes
 
     // child elements
+    @Override
     public java.util.List<ReportSet> getReportSets() {
         ModelList<ReportSet> childs = getChild(ReportSetImpl.List.class);
         if (childs != null) {
@@ -71,6 +71,7 @@ public class ReportPluginImpl extends VersionablePOMComponentImpl implements Rep
         return null;
     }
 
+    @Override
     public void addReportSet(ReportSet reportSet) {
         ModelList<ReportSet> childs = getChild(ReportSetImpl.List.class);
         if (childs == null) {
@@ -84,6 +85,7 @@ public class ReportPluginImpl extends VersionablePOMComponentImpl implements Rep
         childs.addListChild(reportSet);
     }
 
+    @Override
     public void removeReportSet(ReportSet reportSet) {
         ModelList<ReportSet> childs = getChild(ReportSetImpl.List.class);
         if (childs != null) {
@@ -92,6 +94,7 @@ public class ReportPluginImpl extends VersionablePOMComponentImpl implements Rep
     }
 
 
+    @Override
     public Boolean isInherited() {
         String str = getChildElementText(getModel().getPOMQNames().INHERITED.getQName());
         if (str != null) {
@@ -100,21 +103,25 @@ public class ReportPluginImpl extends VersionablePOMComponentImpl implements Rep
         return null;
     }
 
+    @Override
     public void setInherited(Boolean inherited) {
         setChildElementText(getModel().getPOMQNames().INHERITED.getName(),
                 inherited == null ? null : inherited.toString(),
                 getModel().getPOMQNames().INHERITED.getQName());
     }
 
+    @Override
     public Configuration getConfiguration() {
         return getChild(Configuration.class);
     }
 
+    @Override
     public void setConfiguration(Configuration config) {
         java.util.List<Class<? extends POMComponent>> empty = Collections.emptyList();
         setChild(Configuration.class, getModel().getPOMQNames().CONFIGURATION.getName(), config, empty);
     }
 
+    @Override
     public void accept(POMComponentVisitor visitor) {
         visitor.visit(this);
     }

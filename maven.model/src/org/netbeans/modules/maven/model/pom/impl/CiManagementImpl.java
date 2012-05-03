@@ -42,9 +42,8 @@
 package org.netbeans.modules.maven.model.pom.impl;
 
 import java.util.*;
+import org.netbeans.modules.maven.model.pom.*;
 import org.w3c.dom.Element;
-import org.netbeans.modules.maven.model.pom.*;	
-import org.netbeans.modules.maven.model.pom.POMComponentVisitor;	
 
 /**
  *
@@ -63,37 +62,45 @@ public class CiManagementImpl extends POMComponentImpl implements CiManagement {
     // attributes
 
     // child elements
+    @Override
     public List<Notifier> getNotifiers() {
         return getChildren(Notifier.class);
-        }
+    }
 
+    @Override
     public void addNotifier(Notifier notifier) {
         appendChild(getModel().getPOMQNames().NOTIFIER.getName(), notifier);
-        }
+    }
 
+    @Override
     public void removeNotifier(Notifier notifier) {
         removeChild(getModel().getPOMQNames().NOTIFIER.getName(), notifier);
     }
 
 
+    @Override
     public String getSystem() {
         return getChildElementText(getModel().getPOMQNames().CIMANAG_SYSTEM.getQName());
     }
 
+    @Override
     public void setSystem(String system) {
         setChildElementText(getModel().getPOMQNames().CIMANAG_SYSTEM.getName(), system,
                 getModel().getPOMQNames().CIMANAG_SYSTEM.getQName());
     }
 
+    @Override
     public String getUrl() {
         return getChildElementText(getModel().getPOMQNames().URL.getQName());
     }
 
+    @Override
     public void setUrl(String url) {
         setChildElementText(getModel().getPOMQNames().URL.getName(), url,
                 getModel().getPOMQNames().URL.getQName());
     }
 
+    @Override
     public void accept(POMComponentVisitor visitor) {
         visitor.visit(this);
     }

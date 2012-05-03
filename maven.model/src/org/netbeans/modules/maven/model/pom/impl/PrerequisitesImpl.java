@@ -41,9 +41,8 @@
  */
 package org.netbeans.modules.maven.model.pom.impl;
 
+import org.netbeans.modules.maven.model.pom.*;
 import org.w3c.dom.Element;
-import org.netbeans.modules.maven.model.pom.*;	
-import org.netbeans.modules.maven.model.pom.POMComponentVisitor;	
 
 /**
  *
@@ -62,14 +61,17 @@ public class PrerequisitesImpl extends POMComponentImpl implements Prerequisites
     // attributes
 
     // child elements
+    @Override
     public void accept(POMComponentVisitor visitor) {
         visitor.visit(this);
     }
 
+    @Override
     public String getMaven() {
         return getChildElementText(getModel().getPOMQNames().MAVEN.getQName());
     }
 
+    @Override
     public void setMaven(String maven) {
         setChildElementText(getModel().getPOMQNames().MAVEN.getName(), maven,
                 getModel().getPOMQNames().MAVEN.getQName());

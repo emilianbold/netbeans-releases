@@ -41,9 +41,8 @@
  */
 package org.netbeans.modules.maven.model.pom.impl;
 
+import org.netbeans.modules.maven.model.pom.*;
 import org.w3c.dom.Element;
-import org.netbeans.modules.maven.model.pom.*;	
-import org.netbeans.modules.maven.model.pom.POMComponentVisitor;	
 
 /**
  *
@@ -67,6 +66,7 @@ public class ReportSetImpl extends IdPOMComponentImpl implements ReportSet {
     // attributes
 
 
+    @Override
     public Boolean isInherited() {
         String str = getChildElementText(getModel().getPOMQNames().INHERITED.getQName());
         if (str != null) {
@@ -75,21 +75,25 @@ public class ReportSetImpl extends IdPOMComponentImpl implements ReportSet {
         return Boolean.TRUE;
     }
 
+    @Override
     public void setInherited(Boolean inherited) {
         setChildElementText(getModel().getPOMQNames().INHERITED.getName(),
                 inherited == null ? null : inherited.toString(),
                 getModel().getPOMQNames().INHERITED.getQName());
     }
 
+    @Override
     public Configuration getConfiguration() {
         return getChild(Configuration.class);
     }
 
+    @Override
     public void setConfiguration(Configuration config) {
         setChild(Configuration.class, getModel().getPOMQNames().CONFIGURATION.getName(), config,
                 getClassesBefore(ORDER, Configuration.class));
     }
 
+    @Override
     public java.util.List<String> getReports() {
         java.util.List<StringList> lists = getChildren(StringList.class);
         for (StringList list : lists) {
@@ -100,6 +104,7 @@ public class ReportSetImpl extends IdPOMComponentImpl implements ReportSet {
         return null;
     }
 
+    @Override
     public void addReport(String report) {
         java.util.List<StringList> lists = getChildren(StringList.class);
         for (StringList list : lists) {
@@ -121,6 +126,7 @@ public class ReportSetImpl extends IdPOMComponentImpl implements ReportSet {
         }
     }
 
+    @Override
     public void removeReport(String report) {
         java.util.List<StringList> lists = getChildren(StringList.class);
         for (StringList list : lists) {
@@ -132,6 +138,7 @@ public class ReportSetImpl extends IdPOMComponentImpl implements ReportSet {
     }
 
     // child elements
+    @Override
     public void accept(POMComponentVisitor visitor) {
         visitor.visit(this);
     }

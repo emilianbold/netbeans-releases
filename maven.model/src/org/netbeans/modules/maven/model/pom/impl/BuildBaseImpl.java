@@ -41,9 +41,9 @@
  */
 package org.netbeans.modules.maven.model.pom.impl;
 
-import java.util.List;
+import java.util.List;	
+import org.netbeans.modules.maven.model.pom.*;
 import org.w3c.dom.Element;
-import org.netbeans.modules.maven.model.pom.*;	
 
 /**
  *
@@ -71,6 +71,7 @@ public class BuildBaseImpl extends POMComponentImpl implements BuildBase {
     // attributes
 
     // child elements
+    @Override
     public List<Resource> getResources() {
         ModelList<Resource> childs = getChild(ResourceImpl.ResList.class);
         if (childs != null) {
@@ -79,6 +80,7 @@ public class BuildBaseImpl extends POMComponentImpl implements BuildBase {
         return null;
     }
 
+    @Override
     public void addResource(Resource res) {
         ModelList<Resource> childs = getChild(ResourceImpl.ResList.class);
         if (childs == null) {
@@ -92,6 +94,7 @@ public class BuildBaseImpl extends POMComponentImpl implements BuildBase {
         childs.addListChild(res);
     }
 
+    @Override
     public void removeResource(Resource res) {
         ModelList<Resource> childs = getChild(ResourceImpl.ResList.class);
         if (childs != null) {
@@ -99,6 +102,7 @@ public class BuildBaseImpl extends POMComponentImpl implements BuildBase {
         }
     }
 
+    @Override
     public List<Resource> getTestResources() {
         ModelList<Resource> childs = getChild(ResourceImpl.TestResList.class);
         if (childs != null) {
@@ -107,6 +111,7 @@ public class BuildBaseImpl extends POMComponentImpl implements BuildBase {
         return null;
     }
 
+    @Override
     public void addTestResource(Resource res) {
         ModelList<Resource> childs = getChild(ResourceImpl.TestResList.class);
         if (childs == null) {
@@ -120,6 +125,7 @@ public class BuildBaseImpl extends POMComponentImpl implements BuildBase {
         childs.addListChild(res);
     }
 
+    @Override
     public void removeTestResource(Resource res) {
         ModelList<Resource> childs = getChild(ResourceImpl.TestResList.class);
         if (childs != null) {
@@ -127,15 +133,18 @@ public class BuildBaseImpl extends POMComponentImpl implements BuildBase {
         }
     }
 
+    @Override
     public PluginManagement getPluginManagement() {
         return getChild(PluginManagement.class);
     }
 
+    @Override
     public void setPluginManagement(PluginManagement pluginManagement) {
         setChild(PluginManagement.class, getModel().getPOMQNames().PLUGINMANAGEMENT.getName(), pluginManagement,
                 getClassesBefore(getOrder(), PluginManagement.class));
     }
 
+    @Override
     public List<Plugin> getPlugins() {
         ModelList<Plugin> childs = getChild(PluginImpl.List.class);
         if (childs != null) {
@@ -144,6 +153,7 @@ public class BuildBaseImpl extends POMComponentImpl implements BuildBase {
         return null;
     }
 
+    @Override
     public void addPlugin(Plugin plugin) {
         ModelList<Plugin> childs = getChild(PluginImpl.List.class);
         if (childs == null) {
@@ -157,6 +167,7 @@ public class BuildBaseImpl extends POMComponentImpl implements BuildBase {
         childs.addListChild(plugin);
     }
 
+    @Override
     public void removePlugin(Plugin plugin) {
         ModelList<Plugin> childs = getChild(PluginImpl.List.class);
         if (childs != null) {
@@ -164,6 +175,7 @@ public class BuildBaseImpl extends POMComponentImpl implements BuildBase {
         }
     }
 
+    @Override
     public Plugin findPluginById(String groupId, String artifactId) {
         assert groupId != null;
         assert artifactId != null;
@@ -182,34 +194,41 @@ public class BuildBaseImpl extends POMComponentImpl implements BuildBase {
         return null;
     }
 
+    @Override
     public String getDefaultGoal() {
         return getChildElementText(getModel().getPOMQNames().DEFAULTGOAL.getQName());
     }
 
+    @Override
     public void setDefaultGoal(String goal) {
         setChildElementText(getModel().getPOMQNames().DEFAULTGOAL.getName(), goal,
                 getModel().getPOMQNames().DEFAULTGOAL.getQName());
     }
 
+    @Override
     public String getDirectory() {
         return getChildElementText(getModel().getPOMQNames().DIRECTORY.getQName());
     }
 
+    @Override
     public void setDirectory(String directory) {
         setChildElementText(getModel().getPOMQNames().DIRECTORY.getName(), directory,
                 getModel().getPOMQNames().DIRECTORY.getQName());
     }
 
 
+    @Override
     public String getFinalName() {
         return getChildElementText(getModel().getPOMQNames().FINALNAME.getQName());
     }
 
+    @Override
     public void setFinalName(String finalName) {
         setChildElementText(getModel().getPOMQNames().FINALNAME.getName(), finalName,
                 getModel().getPOMQNames().FINALNAME.getQName());
     }
 
+    @Override
     public void accept(POMComponentVisitor visitor) {
         visitor.visit(this);
     }

@@ -65,19 +65,23 @@ public class ProxyImpl extends SettingsComponentImpl implements Proxy {
     // child elements
 
 
+    @Override
     public void accept(SettingsComponentVisitor visitor) {
         visitor.visit(this);
     }
 
+    @Override
     public String getId() {
         return getChildElementText(getModel().getSettingsQNames().ID.getQName());
     }
 
+    @Override
     public void setId(String id) {
         setChildElementText(getModel().getSettingsQNames().ID.getName(), id,
                 getModel().getSettingsQNames().ID.getQName());
     }
 
+    @Override
     public Boolean getActive() {
         String str = getChildElementText(getModel().getSettingsQNames().ACTIVE.getQName());
         if (str != null) {
@@ -86,61 +90,74 @@ public class ProxyImpl extends SettingsComponentImpl implements Proxy {
         return null;
     }
 
+    @Override
     public void setActive(Boolean active) {
         setChildElementText(getModel().getSettingsQNames().ACTIVE.getName(),
                 active == null ? null : active.toString(),
                 getModel().getSettingsQNames().ACTIVE.getQName());
     }
 
+    @Override
     public String getProtocol() {
         return getChildElementText(getModel().getSettingsQNames().PROTOCOL.getQName());
     }
 
+    @Override
     public void setProtocol(String protocol) {
         setChildElementText(getModel().getSettingsQNames().PROTOCOL.getName(), protocol,
                 getModel().getSettingsQNames().PROTOCOL.getQName());
     }
 
+    @Override
     public String getUsername() {
         return getChildElementText(getModel().getSettingsQNames().USERNAME.getQName());
     }
 
+    @Override
     public void setUsername(String username) {
         setChildElementText(getModel().getSettingsQNames().USERNAME.getName(), username,
                 getModel().getSettingsQNames().USERNAME.getQName());
     }
 
+    @Override
     public String getPassword() {
         return getChildElementText(getModel().getSettingsQNames().PASSWORD.getQName());
     }
 
+    @Override
     public void setPassword(String password) {
         setChildElementText(getModel().getSettingsQNames().PASSWORD.getName(), password,
                 getModel().getSettingsQNames().PASSWORD.getQName());
     }
 
+    @Override
     public String getPort() {
         return getChildElementText(getModel().getSettingsQNames().PORT.getQName());
     }
 
+    @Override
     public void setPort(String port) {
         setChildElementText(getModel().getSettingsQNames().PORT.getName(), port,
                 getModel().getSettingsQNames().PORT.getQName());
     }
 
+    @Override
     public String getHost() {
         return getChildElementText(getModel().getSettingsQNames().HOST.getQName());
     }
 
+    @Override
     public void setHost(String host) {
         setChildElementText(getModel().getSettingsQNames().HOST.getName(), host,
                 getModel().getSettingsQNames().HOST.getQName());
     }
 
+    @Override
     public String getNonProxyHosts() {
         return getChildElementText(getModel().getSettingsQNames().NONPROXYHOSTS.getQName());
     }
 
+    @Override
     public void setNonProxyHosts(String nonProxyHosts) {
         setChildElementText(getModel().getSettingsQNames().NONPROXYHOSTS.getName(), nonProxyHosts,
                 getModel().getSettingsQNames().NONPROXYHOSTS.getQName());

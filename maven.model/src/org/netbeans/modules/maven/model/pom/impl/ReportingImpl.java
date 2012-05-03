@@ -42,9 +42,8 @@
 package org.netbeans.modules.maven.model.pom.impl;
 
 import java.util.*;
+import org.netbeans.modules.maven.model.pom.*;
 import org.w3c.dom.Element;
-import org.netbeans.modules.maven.model.pom.*;	
-import org.netbeans.modules.maven.model.pom.POMComponentVisitor;	
 
 /**
  *
@@ -63,6 +62,7 @@ public class ReportingImpl extends POMComponentImpl implements Reporting {
     // attributes
 
     // child elements
+    @Override
     public List<ReportPlugin> getReportPlugins() {
         ModelList<ReportPlugin> childs = getChild(ReportPluginImpl.List.class);
         if (childs != null) {
@@ -71,6 +71,7 @@ public class ReportingImpl extends POMComponentImpl implements Reporting {
         return null;
     }
 
+    @Override
     public void addReportPlugin(ReportPlugin plugin) {
         ModelList<ReportPlugin> childs = getChild(ReportPluginImpl.List.class);
         if (childs == null) {
@@ -84,6 +85,7 @@ public class ReportingImpl extends POMComponentImpl implements Reporting {
         childs.addListChild(plugin);
     }
 
+    @Override
     public void removeReportPlugin(ReportPlugin plugin) {
         ModelList<ReportPlugin> childs = getChild(ReportPluginImpl.List.class);
         if (childs != null) {
@@ -91,6 +93,7 @@ public class ReportingImpl extends POMComponentImpl implements Reporting {
         }
     }
 
+    @Override
     public ReportPlugin findReportPluginById(String groupId, String artifactId) {
         assert groupId != null;
         assert artifactId != null;
@@ -105,6 +108,7 @@ public class ReportingImpl extends POMComponentImpl implements Reporting {
         return null;
     }
 
+    @Override
     public Boolean isExcludeDefaults() {
         String str = getChildElementText(getModel().getPOMQNames().EXCLUDEDEFAULTS.getQName());
         if (str != null) {
@@ -113,21 +117,25 @@ public class ReportingImpl extends POMComponentImpl implements Reporting {
         return null;
     }
 
+    @Override
     public void setExcludeDefaults(Boolean exclude) {
         setChildElementText(getModel().getPOMQNames().EXCLUDEDEFAULTS.getName(),
                 exclude == null ? null : exclude.toString(),
                 getModel().getPOMQNames().EXCLUDEDEFAULTS.getQName());
     }
 
+    @Override
     public String getOutputDirectory() {
         return getChildElementText(getModel().getPOMQNames().OUTPUTDIRECTORY.getQName());
     }
 
+    @Override
     public void setOutputDirectory(String directory) {
         setChildElementText(getModel().getPOMQNames().OUTPUTDIRECTORY.getName(), directory,
                 getModel().getPOMQNames().OUTPUTDIRECTORY.getQName());
     }
 
+    @Override
     public void accept(POMComponentVisitor visitor) {
         visitor.visit(this);
     }

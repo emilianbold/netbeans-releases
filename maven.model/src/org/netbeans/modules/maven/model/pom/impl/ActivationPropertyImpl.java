@@ -41,9 +41,8 @@
  */
 package org.netbeans.modules.maven.model.pom.impl;
 
-import org.w3c.dom.Element;
 import org.netbeans.modules.maven.model.pom.*;	
-import org.netbeans.modules.maven.model.pom.POMComponentVisitor;	
+import org.w3c.dom.Element;
 
 /**
  *
@@ -63,24 +62,29 @@ public class ActivationPropertyImpl extends POMComponentImpl implements Activati
 
     // child elements
 
+    @Override
     public String getName() {
         return getChildElementText(getModel().getPOMQNames().NAME.getQName());
     }
 
+    @Override
     public void setName(String name) {
         setChildElementText(getModel().getPOMQNames().NAME.getName(), name,
                 getModel().getPOMQNames().NAME.getQName());
     }
 
+    @Override
     public String getValue() {
         return getChildElementText(getModel().getPOMQNames().VALUE.getQName());
     }
 
+    @Override
     public void setValue(String value) {
         setChildElementText(getModel().getPOMQNames().VALUE.getName(), value,
                 getModel().getPOMQNames().VALUE.getQName());
     }
 
+    @Override
     public void accept(POMComponentVisitor visitor) {
         visitor.visit(this);
     }

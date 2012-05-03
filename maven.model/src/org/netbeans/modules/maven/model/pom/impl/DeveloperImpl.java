@@ -59,65 +59,79 @@ public class DeveloperImpl extends IdPOMComponentImpl implements Developer {
     public DeveloperImpl(POMModel model) {
         this(model, createElementNS(model, model.getPOMQNames().DEVELOPER));
     }
+    @Override
     public String getUrl() {
         return getChildElementText(getModel().getPOMQNames().URL.getQName());
     }
 
+    @Override
     public void setUrl(String url) {
         setChildElementText(getModel().getPOMQNames().URL.getName(), url,
                 getModel().getPOMQNames().URL.getQName());
     }
 
+    @Override
     public String getName() {
         return getChildElementText(getModel().getPOMQNames().NAME.getQName());
     }
 
+    @Override
     public void setName(String name) {
         setChildElementText(getModel().getPOMQNames().NAME.getName(), name,
                 getModel().getPOMQNames().NAME.getQName());
     }
 
+    @Override
     public String getEmail() {
         return getChildElementText(getModel().getPOMQNames().EMAIL.getQName());
     }
 
+    @Override
     public void setEmail(String email) {
         setChildElementText(getModel().getPOMQNames().EMAIL.getName(), email,
                 getModel().getPOMQNames().EMAIL.getQName());
     }
 
+    @Override
     public String getOrganization() {
         return getChildElementText(getModel().getPOMQNames().ORGANIZATION.getQName());
     }
 
+    @Override
     public void setOrganization(String organization) {
         setChildElementText(getModel().getPOMQNames().ORGANIZATION.getName(), organization,
                 getModel().getPOMQNames().ORGANIZATION.getQName());
     }
 
+    @Override
     public String getOrganizationUrl() {
         return getChildElementText(getModel().getPOMQNames().ORGANIZATIONURL.getQName());
     }
 
+    @Override
     public void setOrganizationUrl(String url) {
         setChildElementText(getModel().getPOMQNames().ORGANIZATIONURL.getName(), url,
                 getModel().getPOMQNames().ORGANIZATIONURL.getQName());
     }
 
+    @Override
     public String getTimezone() {
         return getChildElementText(getModel().getPOMQNames().TIMEZONE.getQName());
     }
 
+    @Override
     public void setTimezone(String zone) {
         setChildElementText(getModel().getPOMQNames().TIMEZONE.getName(), zone,
                 getModel().getPOMQNames().TIMEZONE.getQName());
     }
 
+    @Override
     public java.util.List<String> getRoles() {
         StringList list = getRolesList();
         return list != null ? list.getListChildren() : null;
     }
 
+    @Override
     public void addRole(String role) {
         StringList list = getRolesList();
         if (list != null) {
@@ -131,10 +145,10 @@ public class DeveloperImpl extends IdPOMComponentImpl implements Developer {
         list = getRolesList();
         if (list != null) {
             list.addListChild(role);
-            return;
         }
     }
 
+    @Override
     public void removeRole(String role) {
         StringList list = getRolesList();
         if (list != null) {
@@ -155,6 +169,7 @@ public class DeveloperImpl extends IdPOMComponentImpl implements Developer {
     // attributes
 
     // child elements
+    @Override
     public void accept(POMComponentVisitor visitor) {
         visitor.visit(this);
     }
