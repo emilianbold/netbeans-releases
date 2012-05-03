@@ -49,8 +49,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.text.Collator;
 import java.util.ArrayList;
@@ -84,7 +82,7 @@ public class IndexBuilder implements Runnable, ChangeListener {
     private static final ErrorManager err =
             ErrorManager.getDefault().getInstance("org.netbeans.modules.javadoc.search.IndexBuilder"); // NOI18N;
     
-    private Reference<List<Index>> cachedData;
+    private List<Index> cachedData;
     
     private JavadocRegistry jdocRegs;
 
@@ -128,7 +126,6 @@ public class IndexBuilder implements Runnable, ChangeListener {
     }
     
     public @Override void run() {
-        cachedData = null;
         refreshIndex();
     }
     
@@ -172,26 +169,7 @@ public class IndexBuilder implements Runnable, ChangeListener {
         } else if (!task.isFinished()) {
             return null;
         }
-        if (cachedData != null) {
-            List<Index> data = cachedData.get();
-            if (data != null) {
-                err.log("getIndices (cached)");
-                return data;
-            }
-        }
-        err.log("getIndices");
-        List<Index> data = new ArrayList<Index>();
-        for (Map.Entry<URL,Info> entry : filesystemInfo.entrySet()) {
-            Info info = entry.getValue();
-            URL fo = URLUtils.findOpenable(entry.getKey(), info.indexFileName);
-            if (fo == null) {
-                continue;
-            }
-            data.add(new Index(info.title, fo));
-        }
-        Collections.sort(data);
-        cachedData = new WeakReference<List<Index>>(data);
-        return data;
+        return cachedData;
     }
 
     private void refreshIndex() {
@@ -277,6 +255,17 @@ public class IndexBuilder implements Runnable, ChangeListener {
                 this.filesystemInfo = m;
             }
         }
+        List<Index> data = new ArrayList<Index>();
+        for (Map.Entry<URL,Info> entry : filesystemInfo.entrySet()) {
+            Info info = entry.getValue();
+            URL fo = URLUtils.findOpenable(entry.getKey(), info.indexFileName);
+            if (fo == null) {
+                continue;
+            }
+            data.add(new Index(info.title, fo));
+        }
+        Collections.sort(data);
+        cachedData = data;
 
 //        long elapsedTime = System.nanoTime() - startTime;
 //        System.out.println("\nElapsed time[nano]: " + elapsedTime);
