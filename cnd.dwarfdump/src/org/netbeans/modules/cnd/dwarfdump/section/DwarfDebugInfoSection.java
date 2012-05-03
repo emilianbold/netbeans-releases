@@ -170,7 +170,7 @@ public class DwarfDebugInfoSection extends ElfSection {
         }
     }
     
-    private class ListIterator implements CompilationUnitIterator {
+    private static class ListIterator implements CompilationUnitIterator {
         private final Iterator<CompilationUnit> it;
         private ListIterator(Iterator<CompilationUnit> it) {
             this.it = it;

@@ -946,27 +946,6 @@ public class LogReader {
         }
     }
 
-    // java -cp main/nbbuild/netbeans/cnd/modules/org-netbeans-modules-cnd-dwarfdiscovery.jar:main/nbbuild/netbeans/cnd/modules/org-netbeans-modules-cnd-discovery.jar:main/nbbuild/netbeans/cnd/modules/org-netbeans-modules-cnd-apt.jar:main/nbbuild/netbeans/cnd/modules/org-netbeans-modules-cnd-utils.jar:main/nbbuild/netbeans/platform/core/org-openide-filesystems.jar:main/nbbuild/netbeans/platform/lib/org-openide-util.jar org.netbeans.modules.cnd.dwarfdiscovery.provider.LogReader filename root
-    public static void main(String[] args) {
-        if (args.length < 2) {
-            System.err.println("Not enough parameters. Format: bla-bla-bla filename root");
-            return;
-        }
-        String objFileName = args[0];
-        String root = args[1];
-        DwarfSource.LOG.setLevel(Level.ALL);
-        LogReader clrf = new LogReader(objFileName, root, null);
-        List<SourceFileProperties> list = clrf.getResults(null, new AtomicBoolean(false), null);
-        DwarfSource.LOG.log(Level.FINE, "\n*** Results: ");
-        for (SourceFileProperties sourceFileProperties : list) {
-            String fileName = sourceFileProperties.getItemName();
-            while (fileName.indexOf("../") == 0) { //NOI18N
-                fileName = fileName.substring(3);
-            }
-            DwarfSource.LOG.log(Level.FINE, "{0} ", fileName);
-        }
-    }
-
     private List<String> getFiles(String name){
         getSubfolders();
         return findBase.get(name);
