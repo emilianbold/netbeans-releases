@@ -5563,7 +5563,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         private FileChangeListener binariesListener = null;
         private final Map<URL, File> sourceRoots = new HashMap<URL, File>();
         private final Map<URL, Pair<File, Boolean>> binaryRoots = new HashMap<URL, Pair<File, Boolean>>();
-        private final AtomicBoolean noRecursiveListenerLogged = new AtomicBoolean();
+        private volatile boolean listens;
 
         public RootsListeners() {
         }
@@ -5585,6 +5585,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     if (!useRecursiveListeners) {
                         FileUtil.addFileChangeListener(sourcesListener);
                     }
+                    listens = true;
                 } else {
                     assert this.sourcesListener != null : "RootsListeners are already dormant"; //NOI18N
 
@@ -5605,6 +5606,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     binaryRoots.clear();
                     this.sourcesListener = null;
                     this.binariesListener = null;
+                    listens = false;
                 }
             }
         }
@@ -5655,7 +5657,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     }
                 }
             }
-            return sourcesListener != null && binariesListener != null;
+            return listens;
         }
 
         @org.netbeans.api.annotations.common.SuppressWarnings(
@@ -5711,9 +5713,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         new Callable<Boolean>() {
                             @Override
                             public Boolean call() throws Exception {
-                                synchronized (RootsListeners.this) {
-                                    return sourcesListener == null || binariesListener == null;
-                                }
+                                return !listens;
                             }
                         });
                 } catch (ThreadDeath td) {
