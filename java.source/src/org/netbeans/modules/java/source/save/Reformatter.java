@@ -3353,6 +3353,7 @@ public class Reformatter implements ReformatTask {
                 int identStart = -1;
                 boolean afterText = false;
                 boolean insideTag = false;
+                int nestedParenCnt = 0;
                 Pair<Integer, Integer> toAdd = null;
                 while (javadocTokens.moveNext()) {
                     switch (javadocTokens.token().id()) {
@@ -3425,9 +3426,15 @@ public class Reformatter implements ReformatTask {
                                         } else {
                                             addNow = true;
                                         }
-                                        if (insideTag && c == '}') {
-                                            insideTagEndOffset = javadocTokens.offset() + i - offset - 1;
-                                            insideTag = false;
+                                        if (insideTag) {
+                                            if (c == '{') {
+                                                nestedParenCnt++;
+                                            } else if (c == '}') {
+                                                if (nestedParenCnt-- == 0) {
+                                                    insideTagEndOffset = javadocTokens.offset() + i - offset - 1;
+                                                    insideTag = false;
+                                                }
+                                            }
                                         }
                                         if (lastWSOffset == -2)
                                             lastWSOffset = javadocTokens.offset() + i - offset;
