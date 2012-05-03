@@ -285,16 +285,29 @@ public class Offset2LineService {
     }
 
     public static abstract class AbstractFunctionToLine {
+        protected final int baseLine;
+        protected final String filePath;
+        
+        protected AbstractFunctionToLine(int baseLine, String filePath, String compDir, DwarfEntry entry, Map<String, String> onePath) throws IOException {
+            this.baseLine = baseLine;
+            this.filePath = initPath(filePath, compDir, entry, onePath);
+        }
+
+        protected AbstractFunctionToLine(int baseLine, String filePath, Map<String, String> onePath) {
+            this.baseLine = baseLine;
+            this.filePath = getPath(filePath, onePath);
+        }
+        
         public abstract SourceLineInfo getLine(int offset);
 
         protected abstract void dump(PrintStream out);
 
-        protected String initPath(String filePath, String compDir, DwarfEntry entry, Map<String, String> onePath) throws IOException{
+        private String initPath(String filePath, String compDir, DwarfEntry entry, Map<String, String> onePath) throws IOException{
             String res = _initPath(filePath, compDir, entry);
             return getPath(res, onePath);
         }
 
-        protected String getPath(String path, Map<String, String> onePath) {
+        private String getPath(String path, Map<String, String> onePath) {
             String cached = onePath.get(path);
             if (cached == null) {
                 onePath.put(path, path);
@@ -321,21 +334,44 @@ public class Offset2LineService {
                 }
             }
         }
+
+        @Override
+        public int hashCode() {
+            int hash = 3;
+            hash = 29 * hash + this.baseLine;
+            hash = 29 * hash + (this.filePath != null ? this.filePath.hashCode() : 0);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (!(obj instanceof AbstractFunctionToLine)) {
+                return false;
+            }
+            final AbstractFunctionToLine other = (AbstractFunctionToLine) obj;
+            if (this.baseLine != other.baseLine) {
+                return false;
+            }
+            if ((this.filePath == null) ? (other.filePath != null) : !this.filePath.equals(other.filePath)) {
+                return false;
+            }
+            return true;
+        }
+        
     }
 
     private static final class DeclarationToLine extends AbstractFunctionToLine {
-        private final int baseLine;
-        private final String filePath;
 
         public DeclarationToLine(String filePath, String compDir, DwarfEntry entry, Map<String, String> onePath) throws IOException {
+            super(entry.getLine(), filePath, compDir, entry, onePath);
             assert entry.getKind() == TAG.DW_TAG_subprogram;
-            baseLine = entry.getLine();
-            this.filePath = initPath(filePath, compDir, entry, onePath);
         }
 
         public DeclarationToLine(String filePath, int baseLine, Map<String, String> onePath) {
-            this.baseLine = baseLine;
-            this.filePath = getPath(filePath, onePath);
+            super(baseLine, filePath, onePath);
         }
 
         @Override
@@ -355,45 +391,17 @@ public class Offset2LineService {
             out.println(filePath);
             out.println(""+baseLine); // NOI18N
         }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj instanceof DeclarationToLine) {
-                DeclarationToLine other = (DeclarationToLine) obj;
-                if (!filePath.equals(other.filePath)) {
-                    return false;
-                }
-                if (baseLine != other.baseLine) {
-                    return false;
-                }
-                return true;
-            } else if (obj instanceof FunctionToLine) {
-                FunctionToLine other = (FunctionToLine) obj;
-                if (!filePath.equals(other.filePath)) {
-                    return false;
-                }
-                if (baseLine != other.baseLine) {
-                    return false;
-                }
-                return other.endOffsetStorage.length == 0;
-            }
-            return false;
-        }
     }
 
     private static final class FunctionToLine extends AbstractFunctionToLine {
         private final int[] lineStorage;
         private final int[] startOffsetStorage;
         private final int[] endOffsetStorage;
-        private final int baseLine;
-        private final String filePath;
-        //boolean print;
 
         public FunctionToLine(String filePath, String compDir, DwarfEntry entry, TreeSet<LineNumber> numbers, Map<String, String> onePath) throws IOException {
+            super(entry.getLine(), filePath, compDir, entry, onePath);
             assert entry.getKind() == TAG.DW_TAG_subprogram;
             assert entry.getLowAddress() != 0;
-            baseLine = entry.getLine();
-            this.filePath = initPath(filePath, compDir, entry, onePath);
             long base =entry.getLowAddress();
             long baseHihg =entry.getHighAddress();
             //print = entry.getName().equals("threadfunc");
@@ -422,9 +430,8 @@ public class Offset2LineService {
         }
 
         public FunctionToLine(String filePath, int baseLine, List<Integer> lines, List<Integer> startOffsets, List<Integer> endOffsets, Map<String, String> onePath) {
+            super(baseLine, filePath, onePath);
             assert lines.size() == startOffsets.size();
-            this.baseLine = baseLine;
-            this.filePath = getPath(filePath, onePath);
             lineStorage = new int[lines.size()];
             startOffsetStorage = new int[startOffsets.size()];
             endOffsetStorage = new int[endOffsets.size()];
@@ -485,41 +492,6 @@ public class Offset2LineService {
             for(int i = 0; i < lineStorage.length; i++) {
                 out.println(""+lineStorage[i]+","+startOffsetStorage[i]+","+endOffsetStorage[i]); // NOI18N
             }
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj instanceof FunctionToLine) {
-                FunctionToLine other = (FunctionToLine) obj;
-                if (!filePath.equals(other.filePath)) {
-                    return false;
-                }
-                if (baseLine != other.baseLine) {
-                    return false;
-                }
-                if (lineStorage.length != other.lineStorage.length) {
-                    return false;
-                }
-                for (int i = 0; i < lineStorage.length; i++) {
-                    if (lineStorage[i] != other.lineStorage[i]) {
-                        return false;
-                    }
-                    if (startOffsetStorage[i] != other.startOffsetStorage[i]) {
-                        return false;
-                    }
-                }
-                return true;
-            } else if (obj instanceof DeclarationToLine) {
-                DeclarationToLine other = (DeclarationToLine) obj;
-                if (!filePath.equals(other.filePath)) {
-                    return false;
-                }
-                if (baseLine != other.baseLine) {
-                    return false;
-                }
-                return lineStorage.length == 0;
-            }
-            return false;
         }
     }
 }

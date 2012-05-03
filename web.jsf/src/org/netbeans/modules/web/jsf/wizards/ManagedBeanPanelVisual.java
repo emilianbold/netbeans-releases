@@ -83,6 +83,7 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
      */
     public ManagedBeanPanelVisual(Project proj) {
         initComponents();
+        boolean addToFacesConfig = false;
 
         WebModule wm = WebModule.getWebModule(proj.getProjectDirectory());
         if (wm != null){
@@ -104,6 +105,7 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
             } else {
                 Profile profile = wm.getJ2eeProfile();
                 if (profile != Profile.JAVA_EE_6_FULL && profile!=Profile.JAVA_EE_6_WEB) {
+                    addToFacesConfig = true;
                     jCheckBox1.setSelected(true);
                     jCheckBox1.setEnabled(false);
                 }
@@ -111,7 +113,7 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
         }
         Object[] scopes;
         isCDIEnabled = JSFUtils.isCDIEnabled(wm);
-        if (isCDIEnabled) {
+        if (isCDIEnabled && !addToFacesConfig) {
             scopes = ManagedBeanIterator.NamedScope.values();
         } else {
             scopes = ManagedBean.Scope.values();

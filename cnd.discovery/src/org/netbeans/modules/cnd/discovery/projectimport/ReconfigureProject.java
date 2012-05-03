@@ -42,11 +42,8 @@
 
 package org.netbeans.modules.cnd.discovery.projectimport;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -248,8 +245,8 @@ public class ReconfigureProject {
                     @Override
                     public void executionFinished(int rc) {
                         res.set(rc);
-                        finished.set(true);
                         synchronized(finished) {
+                            finished.set(true);
                             finished.notifyAll();
                         }
                     }
@@ -541,14 +538,6 @@ public class ReconfigureProject {
                 }
             }
         };
-        Writer outputListener = null;
-        if (makeLog != null) {
-            try {
-                outputListener = new BufferedWriter(new FileWriter(makeLog));
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
         Node node = make.getNodeDelegate();
         ExecutionSupport ses = node.getLookup().lookup(ExecutionSupport.class);
         List<String> vars = ImportUtils.parseEnvironment(arguments);
@@ -646,29 +635,29 @@ public class ReconfigureProject {
         String mime = dao.getPrimaryFile().getMIMEType();
         CompilerOptions options = new CompilerOptions();
         if (MIMENames.SHELL_MIME_TYPE.equals(mime)){
-            options.CFlags = getFlags(lastFlags, "CFLAGS="); // NOI18N
-            options.CppFlags = getFlags(lastFlags, "CXXFLAGS="); // NOI18N
-            options.CCompiler = getFlags(lastFlags, "CC="); // NOI18N
-            options.CppCompiler = getFlags(lastFlags, "CXX="); // NOI18N
-            options.LinkerFlags = getFlags(lastFlags, "LDFLAGS="); // NOI18N
+            options.cFlags = getFlags(lastFlags, "CFLAGS="); // NOI18N
+            options.cppFlags = getFlags(lastFlags, "CXXFLAGS="); // NOI18N
+            options.cCompiler = getFlags(lastFlags, "CC="); // NOI18N
+            options.cppCompiler = getFlags(lastFlags, "CXX="); // NOI18N
+            options.linkerFlags = getFlags(lastFlags, "LDFLAGS="); // NOI18N
         } else if (MIMENames.CMAKE_MIME_TYPE.equals(mime)){
-            options.CFlags = getFlags(lastFlags, "-DCMAKE_C_FLAGS_DEBUG="); // NOI18N
-            options.CppFlags = getFlags(lastFlags, "-DCMAKE_CXX_FLAGS_DEBUG="); // NOI18N
-            options.CCompiler = getFlags(lastFlags, "-DCMAKE_C_COMPILER="); // NOI18N
-            options.CppCompiler = getFlags(lastFlags, "-DCMAKE_CXX_COMPILER="); // NOI18N
-            options.LinkerFlags = getFlags(lastFlags, "-DCMAKE_EXE_LINKER_FLAGS_DEBUG="); // NOI18N
+            options.cFlags = getFlags(lastFlags, "-DCMAKE_C_FLAGS_DEBUG="); // NOI18N
+            options.cppFlags = getFlags(lastFlags, "-DCMAKE_CXX_FLAGS_DEBUG="); // NOI18N
+            options.cCompiler = getFlags(lastFlags, "-DCMAKE_C_COMPILER="); // NOI18N
+            options.cppCompiler = getFlags(lastFlags, "-DCMAKE_CXX_COMPILER="); // NOI18N
+            options.linkerFlags = getFlags(lastFlags, "-DCMAKE_EXE_LINKER_FLAGS_DEBUG="); // NOI18N
         } else if (MIMENames.QTPROJECT_MIME_TYPE.equals(mime)){
-            options.CFlags = getFlags(lastFlags, "QMAKE_CFLAGS="); // NOI18N
-            options.CppFlags = getFlags(lastFlags, "QMAKE_CXXFLAGS="); // NOI18N
-            options.CCompiler = getFlags(lastFlags, "QMAKE_CC="); // NOI18N
-            options.CppCompiler = getFlags(lastFlags, "QMAKE_CXX="); // NOI18N
-            options.LinkerFlags = getFlags(lastFlags, "QMAKE_LDFLAGS="); // NOI18N
+            options.cFlags = getFlags(lastFlags, "QMAKE_CFLAGS="); // NOI18N
+            options.cppFlags = getFlags(lastFlags, "QMAKE_CXXFLAGS="); // NOI18N
+            options.cCompiler = getFlags(lastFlags, "QMAKE_CC="); // NOI18N
+            options.cppCompiler = getFlags(lastFlags, "QMAKE_CXX="); // NOI18N
+            options.linkerFlags = getFlags(lastFlags, "QMAKE_LDFLAGS="); // NOI18N
         } else if (MIMENames.MAKEFILE_MIME_TYPE.equals(mime)){
-            options.CFlags = getFlags(lastFlags, "CFLAGS="); // NOI18N
-            options.CppFlags = getFlags(lastFlags, "CXXFLAGS="); // NOI18N
-            options.CCompiler = getFlags(lastFlags, "CC="); // NOI18N
-            options.CppCompiler = getFlags(lastFlags, "CXX="); // NOI18N
-            options.LinkerFlags = getFlags(lastFlags, "LDFLAGS="); // NOI18N
+            options.cFlags = getFlags(lastFlags, "CFLAGS="); // NOI18N
+            options.cppFlags = getFlags(lastFlags, "CXXFLAGS="); // NOI18N
+            options.cCompiler = getFlags(lastFlags, "CC="); // NOI18N
+            options.cppCompiler = getFlags(lastFlags, "CXX="); // NOI18N
+            options.linkerFlags = getFlags(lastFlags, "LDFLAGS="); // NOI18N
         }
         return options;
     }
@@ -906,10 +895,10 @@ public class ReconfigureProject {
     }
 
     public static final class CompilerOptions {
-        public String CFlags;
-        public String CppFlags;
-        public String CCompiler;
-        public String CppCompiler;
-        public String LinkerFlags;
+        public String cFlags;
+        public String cppFlags;
+        public String cCompiler;
+        public String cppCompiler;
+        public String linkerFlags;
     }
 }
