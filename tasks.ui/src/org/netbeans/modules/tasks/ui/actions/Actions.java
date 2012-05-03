@@ -75,8 +75,8 @@ public class Actions {
         }
         actions.add(new SetCategoryAction(taskNode));
         actions.add(new ScheduleTaskAction(task));
-        actions.add(new RefreshTaskAction(task));
         actions.add(new NotificationTaskAction(task));
+        actions.add(new RefreshTaskAction(task));
         return actions;
     }
 
@@ -140,7 +140,7 @@ public class Actions {
     private static class NotificationTaskAction extends AbstractAction {
 
         public NotificationTaskAction(Issue task) {
-            super("Notification"); //NOI18N
+            super(NbBundle.getMessage(Actions.class, "CTL_Notification")); //NOI18N
         }
 
         @Override
@@ -151,10 +151,10 @@ public class Actions {
 
     public static List<Action> getCategoryPopupActions(Category category) {
         List<Action> actions = new ArrayList<Action>();
-        actions.add(new RenameCategoryAction(category));
         actions.add(new DeleteCategoryAction(category));
-        actions.add(new RefreshCategoryAction(category));
+        actions.add(new RenameCategoryAction(category));
         actions.add(new NotificationCategoryAction(category));
+        actions.add(new RefreshCategoryAction(category));
         return actions;
     }
 
@@ -176,7 +176,7 @@ public class Actions {
     private static class NotificationCategoryAction extends AbstractAction {
 
         public NotificationCategoryAction(Category category) {
-            super("Notification"); //NOI18N
+            super(NbBundle.getMessage(Actions.class, "CTL_Notification")); //NOI18N
         }
 
         @Override
@@ -188,7 +188,7 @@ public class Actions {
     private static class RefreshCategoryAction extends AbstractAction {
 
         public RefreshCategoryAction(Category category) {
-            super("Refresh"); //NOI18N
+            super(NbBundle.getMessage(Actions.class, "CTL_Refresh")); //NOI18N
         }
 
         @Override
@@ -215,11 +215,12 @@ public class Actions {
     public static List<Action> getRepositoryPopupActions(RepositoryNode repositoryNode) {
         Repository repository = repositoryNode.getRepository();
         List<Action> actions = new ArrayList<Action>();
-        actions.add(new EditRepositoryAction(repository));
         actions.add(new RemoveRepositoryAction(repositoryNode));
+        actions.add(new RefreshRepositoryAction(repositoryNode));
+        actions.add(new PropertiesRepositoryAction(repository));
+        actions.add(null);
         actions.add(new CreateTaskAction(repository));
         actions.add(new SearchRepositoryAction(repository));
-        actions.add(new RefreshRepositoryAction(repositoryNode));
         return actions;
     }
 
@@ -241,7 +242,7 @@ public class Actions {
     private static class RefreshRepositoryAction extends AbstractAction {
 
         public RefreshRepositoryAction(RepositoryNode repositoryNode) {
-            super("Refresh"); //NOI18N
+            super(NbBundle.getMessage(Actions.class, "CTL_Refresh")); //NOI18N
         }
 
         @Override
@@ -250,12 +251,12 @@ public class Actions {
         }
     }
 
-    private static class EditRepositoryAction extends AbstractAction {
+    private static class PropertiesRepositoryAction extends AbstractAction {
 
         private final Repository repository;
 
-        public EditRepositoryAction(Repository repository) {
-            super(NbBundle.getMessage(Actions.class, "CTL_Edit")); //NOI18N
+        public PropertiesRepositoryAction(Repository repository) {
+            super(NbBundle.getMessage(Actions.class, "CTL_Properties")); //NOI18N
             this.repository = repository;
         }
 
@@ -271,8 +272,8 @@ public class Actions {
         actions.add(new OpenQueryAction(query));
         //actions.add(new EditQueryAction(query));
         actions.add(new DeleteQueryAction(query));
-        actions.add(new RefreshQueryAction(queryNode));
         actions.add(new NotificationQueryAction(query));
+        actions.add(new RefreshQueryAction(queryNode));
         return actions;
     }
 
@@ -329,7 +330,7 @@ public class Actions {
     private static class NotificationQueryAction extends AbstractAction {
 
         public NotificationQueryAction(Query query) {
-            super("Notification"); //NOI18N
+            super(NbBundle.getMessage(Actions.class, "CTL_Notification")); //NOI18N
         }
 
         @Override

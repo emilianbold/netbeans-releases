@@ -61,7 +61,7 @@ public class OpenQueryAction extends AbstractAction {
     }
 
     public OpenQueryAction(Query query, QueryMode mode) {
-        super(NbBundle.getMessage(DeactivateTaskAction.class, "CTL_OpenQuery")); //NOI18N
+        super(NbBundle.getMessage(DeactivateTaskAction.class, "CTL_Open")); //NOI18N
         this.query = query;
         this.mode = mode;
     }
