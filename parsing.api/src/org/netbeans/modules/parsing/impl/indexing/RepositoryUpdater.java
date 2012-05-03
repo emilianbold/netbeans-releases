@@ -4681,7 +4681,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 // no indexing.
                 return nopCustomIndexers(root, indexers, sourceForBinaryRoot);
             } else {
-                final FileObject rootFo = URLMapper.findFileObject(root);
+                final FileObject rootFo = URLCache.getInstance().findFileObject(root);
                 if (rootFo != null) {
                     URL indexURL;
                     if (!rootSeen && (indexURL=getRemoteIndexURL(root))!=null) {
@@ -5451,60 +5451,6 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         }
 
     } // End of Controller class
-
-    public static final class URLCache {
-
-        public static synchronized URLCache getInstance() {
-            if (instance == null) {
-                instance = new URLCache();
-            }
-            return instance;
-        }
-
-        @CheckForNull
-        public FileObject findFileObject(final @NonNull URL url) {
-            URI uri = null;
-            try {
-                uri  = url.toURI();
-            } catch (URISyntaxException e) {
-                Exceptions.printStackTrace(e);
-            }
-            FileObject f = null;
-            if (uri != null) {
-                synchronized (cache) {
-                    Reference<FileObject> ref = cache.get(uri);
-                    if (ref != null) {
-                        f = ref.get();
-                    }
-                }
-
-                if (f != null && f.isValid() && url.equals(f.toURL())) {
-                    return f;
-                }
-            }
-
-            f = URLMapper.findFileObject(url);
-
-            if (uri != null) {
-                synchronized (cache) {
-                    if (f != null && f.isValid()) {
-                        cache.put(uri, new WeakReference<FileObject>(f));
-                    }
-                }
-            }
-            
-            return f;
-        }
-
-        private static URLCache instance = null;
-        private final Map<URI, Reference<FileObject>> cache = new WeakHashMap<URI, Reference<FileObject>>();
-
-        private URLCache() {
-
-        }
-
-    } // End of URLCache class
-
 
     @ServiceProvider(service=IndexingActivityInterceptor.class)
     public static final class FSRefreshInterceptor implements IndexingActivityInterceptor {
