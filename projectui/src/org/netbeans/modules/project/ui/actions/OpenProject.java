@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.project.ui.actions;
 
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.ArrayList;
@@ -60,6 +61,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.windows.WindowManager;
 
@@ -67,6 +69,7 @@ public class OpenProject extends BasicAction {
     
     private static final String DISPLAY_NAME = NbBundle.getMessage( OpenProject.class, "LBL_OpenProjectAction_Name" ); // NOI18N
     private static final String _SHORT_DESCRIPTION = NbBundle.getMessage( OpenProject.class, "LBL_OpenProjectAction_Tooltip" ); // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor(OpenProject.class);
         
     public OpenProject() {
         super( DISPLAY_NAME, ImageUtilities.loadImageIcon("org/netbeans/modules/project/ui/resources/openProject.png", false));
@@ -75,7 +78,6 @@ public class OpenProject extends BasicAction {
     }
 
     public @Override void actionPerformed(ActionEvent evt) {
-        Project projectToExpand = null;
         JFileChooser chooser = ProjectChooserAccessory.createProjectChooser( true ); // Create the jFileChooser
         chooser.setMultiSelectionEnabled( true );
         
@@ -93,12 +95,10 @@ public class OpenProject extends BasicAction {
                 }
             }
         }
-        
-        OpenProjectListSettings opls = OpenProjectListSettings.getInstance();
-        
-        while( true ) {  // Cycle while users does some reasonable action e.g.
-                         // select project dir or cancel the chooser
-        
+        show(chooser);
+    }
+
+    private static void show(final JFileChooser chooser) {
             int option = chooser.showOpenDialog( WindowManager.getDefault().getMainWindow() ); // Sow the chooser
               
             if ( option == JFileChooser.APPROVE_OPTION ) {
@@ -110,8 +110,9 @@ public class OpenProject extends BasicAction {
                 else {
                     projectDirs = new File[] { chooser.getSelectedFile() };
                 }
-                
-                // Project project = OpenProjectList.fileToProject( projectDir ); 
+
+                RP.post(new Runnable() {
+                    @Override public void run() {
                 ArrayList<Project> projects = new ArrayList<Project>( projectDirs.length );
                 for (File d : projectDirs) {
                     Project p = OpenProjectList.fileToProject(FileUtil.normalizeFile(d));
@@ -123,38 +124,39 @@ public class OpenProject extends BasicAction {
                 if ( projects.isEmpty() ) {
                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                                 NbBundle.getMessage( OpenProject.class, "MSG_notProjectDir"), // NOI18N
-                                NotifyDescriptor.WARNING_MESSAGE));                    
+                                NotifyDescriptor.WARNING_MESSAGE));
+                    EventQueue.invokeLater(new Runnable() {
+                            @Override public void run() {
+                                show(chooser);
+                            }
+                        });
                 }
                 else {
                     Project projectsArray[] = new Project[ projects.size() ];
                     projects.toArray( projectsArray );
                     
-                    if (projectsArray.length == 1) {
-                        projectToExpand = projectsArray[0];
-                    }
+                    final Project projectToExpand = projectsArray.length == 1 ? projectsArray[0] : null;
 
+                    OpenProjectListSettings opls = OpenProjectListSettings.getInstance();
                     OpenProjectList.getDefault().open( 
                         projectsArray,                    // Put the project into OpenProjectList
                         opls.isOpenSubprojects(),         // And optionaly open subprojects
                         true,                             // open asynchronously
                         null);
+                    opls.setLastOpenProjectDir( chooser.getCurrentDirectory().getPath() );
                     
+                    EventQueue.invokeLater(new Runnable() {
+                            @Override public void run() {
                     ProjectUtilities.makeProjectTabVisible();
-                    break; // and exit the loop
+                    if (projectToExpand != null) {
+                        ProjectUtilities.selectAndExpandProject(projectToExpand);
+                    }
+                            }
+                        });
                 }
+                    }
+                });
             }
-            else {
-                return ; // OK user changed his mind and won't open anything
-                         // Don't remeber the last selected dir
-            }
-        }
-
-        if (projectToExpand != null) {
-            ProjectUtilities.selectAndExpandProject(projectToExpand);
-        }
-        opls.setLastOpenProjectDir( chooser.getCurrentDirectory().getPath() );
-        
     }
-    
         
 }
