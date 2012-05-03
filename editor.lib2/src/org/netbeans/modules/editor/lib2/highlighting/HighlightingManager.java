@@ -544,16 +544,19 @@ public final class HighlightingManager {
                 HighlightsLayerAccessor layerAccessor = 
                     HighlightingSpiPackageAccessor.get().getHighlightsLayerAccessor(layer);
                 
+                boolean matchesExcludes = false;
                 for(Pattern pattern : patterns) {
                     boolean matches = pattern.matcher(layerAccessor.getLayerTypeId()).matches();
                     
                     if (matches && includeMatches) {
                         filtered.add(layer);
                     }
-                    
-                    if (!matches && !includeMatches) {
-                        filtered.add(layer);
-                    }
+                                     
+                    matchesExcludes = matches ? true : matchesExcludes;
+                }
+                
+                if (!patterns.isEmpty() && !matchesExcludes && !includeMatches) {
+                    filtered.add(layer);
                 }
             }
             
