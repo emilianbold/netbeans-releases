@@ -38,8 +38,8 @@ then
     cp -v * "$nb_dir"/Contents/Resources/NetBeans/nb/var/cache/
 
     # copy IDE log to var/log/populate_caches.log
-    mkdir -p "$nb_dir"/Contents/Resources/NetBeans/nb/var/cache/
-    cp -v ../log/messages.log "$nb_dir"/Contents/Resources/NetBeans/nb/var/cache/populate_caches.log
+    mkdir -p "$nb_dir"/Contents/Resources/NetBeans/nb/var/log/
+    cp -v ../log/messages.log "$nb_dir"/Contents/Resources/NetBeans/nb/var/log/populate_caches.log
 
     # remove tmpnb
     cd "$nb_dir" 
