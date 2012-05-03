@@ -539,6 +539,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                     }
                     ExecSource res = new ExecSource(storage);
                     res.compilePath = compilePath;
+                    res.compiler = compiler;
                     res.sourceName = sourceName;
                     res.fullName = fullName;
                     res.language = language;
