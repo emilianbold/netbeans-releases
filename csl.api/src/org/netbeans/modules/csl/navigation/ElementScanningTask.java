@@ -43,12 +43,16 @@
  */
 package org.netbeans.modules.csl.navigation;
 
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
@@ -65,6 +69,7 @@ import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.*;
 import org.openide.filesystems.FileObject;
@@ -89,11 +94,33 @@ public final class ElementScanningTask extends IndexingAwareParserResultTask<Par
     
     private final ClassMemberPanelUI ui;
     private boolean canceled;
+    
+    /**
+     * Reference to the last result of parsing processed into structure.
+     */
+    private final Map<Snapshot, Reference<Parser.Result>> lastResults = 
+            new WeakHashMap<Snapshot, Reference<Parser.Result>>();
 
     public ElementScanningTask(ClassMemberPanelUI ui) {
         super(TaskIndexingMode.ALLOWED_DURING_SCAN);
         assert ui != null;
         this.ui = ui;
+    }
+    
+    // not synchronized as the Task invocation itself is synced by parsing API
+    private boolean isProcessed(Snapshot s, Parser.Result r) {
+        Reference<Parser.Result> previousRef;
+        previousRef = lastResults.get(s);
+        if (previousRef == null) {
+            return false;
+        }
+        Parser.Result prevResult = previousRef.get();
+        return prevResult == r;
+    }
+    
+    // not synchronized as the Task invocation itself is synced by parsing API
+    private void markProcessed(Parser.Result r) {
+        lastResults.put(r.getSnapshot(), new WeakReference(r));
     }
 
     public @Override void run(ParserResult result, SchedulerEvent event) {
@@ -118,8 +145,9 @@ public final class ElementScanningTask extends IndexingAwareParserResultTask<Par
                         if (scanner != null) {
                             long startTime = System.currentTimeMillis();
                             Parser.Result r = resultIterator.getParserResult();
-                            if (r instanceof ParserResult) {
+                            if (r instanceof ParserResult && !isProcessed(resultIterator.getSnapshot(), r)) {
                                 List<? extends StructureItem> children = scanner.scan((ParserResult) r);
+                                markProcessed(r);
                                 long endTime = System.currentTimeMillis();
                                 Logger.getLogger("TIMER").log(Level.FINE, "Structure (" + language.getMimeType() + ")",
                                         new Object[]{fileObject, endTime - startTime});

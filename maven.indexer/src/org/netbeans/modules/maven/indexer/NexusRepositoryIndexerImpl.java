@@ -59,6 +59,7 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.index.*;
 import org.apache.maven.index.artifact.ArtifactPackagingMapper;
+import org.apache.maven.index.context.DefaultIndexingContext;
 import org.apache.maven.index.context.IndexCreator;
 import org.apache.maven.index.context.IndexingContext;
 import org.apache.maven.index.expr.StringSearchExpression;
@@ -136,8 +137,8 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         public abstract void setClassResults(Result<RepositoryQueries.ClassUsage> result, Collection<RepositoryQueries.ClassUsage> newResults);
     }
     
-    
-    
+    private static final Logger LOGGER = Logger.getLogger(NexusRepositoryIndexerImpl.class.getName());
+       
     public static Accessor ACCESSOR = null;
 
     static {
@@ -147,7 +148,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         try {
             Class.forName(c.getName(), true, c.getClassLoader());
         } catch (Exception ex) {
-            ex.printStackTrace();
+            LOGGER.log(Level.WARNING, "", ex);
         }
     }     
 
@@ -157,7 +158,6 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
     private IndexUpdater remoteIndexUpdater;
     private ArtifactContextProducer contextProducer;
     private boolean inited = false;
-    private static final Logger LOGGER = Logger.getLogger(NexusRepositoryIndexerImpl.class.getName());
     /**
      * any reads, writes from/to index shal be done under mutex access.
      */
@@ -241,10 +241,10 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 //try to figure if context reload is necessary
                 if (!Utilities.compareObjects(contexturl, indexUpdateUrl)) {
                     LOGGER.log(Level.FINE, "Remote context changed: {0}, unload/load", info.getId());
-                    unloadIndexingContext(info);
+                    unloadIndexingContext(info.getId());
                 } else if (!Utilities.compareObjects(contextfile, repofile)) {
                     LOGGER.log(Level.FINE, "Local context changed: {0}, unload/load", info.getId());
-                    unloadIndexingContext(info);
+                    unloadIndexingContext(info.getId());
                 } else {
                     LOGGER.log(Level.FINER, "Skipping Context: {0}, already loaded.", info.getId());
                     break LOAD; // XXX does it suffice to just return here, or is code after block needed?
@@ -314,23 +314,6 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         return index;
     }
 
-    /**
-     * get the IndexingContext instances for the given RepositoryInfo instances.
-     */
-    private Collection<IndexingContext> getContexts(RepositoryInfo[] allrepos) {
-        List<IndexingContext> toRet = new ArrayList<IndexingContext>();
-        for (RepositoryInfo info : allrepos) {
-            assert getRepoMutex(info).isWriteAccess();
-            IndexingContext context = indexer.getIndexingContexts().get(info.getId());
-            if (context != null) {
-                toRet.add(context);
-            } else {
-                LOGGER.log(Level.WARNING, "The context ''{0}'' is not loaded.", info.getId());
-            }
-        }
-        return toRet;
-    }
-
     private FlatSearchResponse repeatedFlatSearch(FlatSearchRequest fsr, final Collection<IndexingContext> contexts, boolean shouldThrow) throws IOException {
 
         int MAX_MAX_CLAUSE = 1<<11;  // conservative maximum for too general queries, like "c:*class*"
@@ -379,20 +362,6 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
             BooleanQuery.setMaxClauseCount(oldMax);
         }
     }
-
-
-    //always call from mutex.writeAccess
-    private void unloadIndexingContext(final RepositoryInfo... repos) throws IOException {
-        for (RepositoryInfo repo : repos) {
-            assert getRepoMutex(repo).isWriteAccess();
-            LOGGER.log(Level.FINER, "Unloading Context: {0}", repo.getId());
-            IndexingContext ic = indexer.getIndexingContexts().get(repo.getId());
-            if (ic != null) {
-                indexer.removeIndexingContext(ic, false);
-            }
-        }
-    }
-
 
     //always call from mutex.writeAccess
     private void unloadIndexingContext(final String repo) throws IOException {
@@ -597,13 +566,18 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                         }
                         File art = new File(absolutePath);
                         if (art.exists()) {
-                            ArtifactContext ac = contextProducer.getArtifactContext(indexingContext, art);
+                            lock(indexingContext, true);
+                            try {
+                                ArtifactContext ac = contextProducer.getArtifactContext(indexingContext, art);
 //                            System.out.println("ac gav=" + ac.getGav());
 //                            System.out.println("ac pom=" + ac.getPom());
 //                            System.out.println("ac art=" + ac.getArtifact());
 //                            System.out.println("ac info=" + ac.getArtifactInfo());
-                            assert indexingContext.getIndexSearcher() != null;
-                            indexer.addArtifactToIndex(ac, indexingContext);
+                                assert indexingContext.getIndexSearcher() != null;
+                                indexer.addArtifactToIndex(ac, indexingContext);
+                            } finally {
+                                unlock(indexingContext, true);
+                            }
                         }
 
                     }
@@ -617,6 +591,33 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         }
         fireChangeIndex(repo);
     }
+    
+    /**
+     * issue 204706 related
+     * @param indexingContext
+     * @param exclusive 
+     */
+    private void lock(IndexingContext indexingContext, boolean exclusive) {
+        if (exclusive && indexingContext instanceof DefaultIndexingContext) {
+            ((DefaultIndexingContext) indexingContext).lockExclusively();
+        } else {
+            indexingContext.lock();
+        }
+
+    }
+
+    /**
+     * issue 204706 related
+     * @param indexingContext
+     * @param exclusive 
+     */
+    private void unlock(IndexingContext indexingContext, boolean exclusive) {
+        if (exclusive && indexingContext instanceof DefaultIndexingContext) {
+            ((DefaultIndexingContext) indexingContext).unlockExclusively();
+        } else {
+            indexingContext.unlock();
+        }
+    }    
 
     @Override
     public void deleteArtifactFromIndex(final RepositoryInfo repo, final Artifact artifact) {
@@ -660,7 +661,12 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                     pomPath += "pom"; //NOI18N
                     File pom = new File(pomPath);
                     if (pom.exists()) {
-                        indexer.deleteArtifactFromIndex(contextProducer.getArtifactContext(indexingContext, pom), indexingContext);
+                        lock(indexingContext, true);
+                        try {
+                            indexer.deleteArtifactFromIndex(contextProducer.getArtifactContext(indexingContext, pom), indexingContext);
+                        } finally {
+                            unlock(indexingContext, true);
+                        }
                     }
                     return null;
                 }
@@ -703,10 +709,10 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
     }
 
     private interface RepoAction {
-        void run(RepositoryInfo repo) throws IOException;
+        void run(RepositoryInfo repo, IndexingContext context) throws IOException;
     }
     
-    private void iterate(List<RepositoryInfo> repos, final RepoAction action, final RepoAction actionSkip, boolean skipUnIndexed) {
+    private void iterate(List<RepositoryInfo> repos, final RepoAction action, final RepoAction actionSkip, final boolean skipUnIndexed) {
         if (repos == null) {
             repos = RepositoryPreferences.getInstance().getRepositoryInfos();
         }
@@ -714,7 +720,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
             Mutex mutex = getRepoMutex(repo);
             if (skipUnIndexed && isIndexing(repo, mutex)) {
                 try {
-                    actionSkip.run(repo);
+                    actionSkip.run(repo, null);
                 } catch (IOException ex) {
                     LOGGER.log(Level.FINER, "could not skip " + repo.getId(), ex);
                 }
@@ -722,7 +728,24 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 mutex.writeAccess(new Mutex.Action<Void>() {
                 public @Override Void run() {
                     try {
-                        action.run(repo);
+                        boolean index = loadIndexingContext2(repo);
+                        if (skipUnIndexed && index) {
+                            actionSkip.run(repo, null);
+                            spawnIndexLoadedRepo(repo);
+                            return null;
+                        }
+                        IndexingContext context = indexer.getIndexingContexts().get(repo.getId());
+                        if (context == null) {
+                            actionSkip.run(repo, null);
+                            return null;
+                        }
+                        lock(context, false);
+                        try {
+                            action.run(repo, context);
+                        } 
+                        finally {
+                            unlock(context, false);
+                        }
                     } catch (IOException x) {
                         LOGGER.log(Level.INFO, "could not process " + repo.getId(), x);
                     }
@@ -751,18 +774,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         
         final SkippedAction skipAction = new SkippedAction(result);
         iterate(repos, new RepoAction() {
-            @Override public void run(RepositoryInfo repo) throws IOException {
-                boolean index = loadIndexingContext2(repo);
-                if (skipUnIndexed && index) {
-                    skipAction.run(repo);
-                    spawnIndexLoadedRepo(repo);
-                    return;
-                }
-                IndexingContext context = indexer.getIndexingContexts().get(repo.getId());
-                if (context == null) {
-                    skipAction.run(repo);
-                    return;
-                }
+            @Override public void run(RepositoryInfo repo, IndexingContext context) throws IOException {
                 Set<String> all= context.getAllGroups();
                 if (all.size() > 0) {
                     if (prefix.length() == 0) {
@@ -783,7 +795,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         
         //the slow check kicking in is nowadays very rare, used to be a workaround for old versions of indexing data..
         iterate(slowCheck, new RepoAction() {
-            @Override public void run(RepositoryInfo repo) throws IOException {
+            @Override public void run(RepositoryInfo repo, IndexingContext context) throws IOException {
                 BooleanQuery bq = new BooleanQuery();
                 bq.add(new BooleanClause(new PrefixQuery(new Term(ArtifactInfo.UINFO, prefix)), BooleanClause.Occur.MUST));
                 GroupedSearchRequest gsr = new GroupedSearchRequest(bq, new GGrouping(), new Comparator<String>() {
@@ -791,7 +803,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                         return o1.compareTo(o2);
                     }
                 });
-                GroupedSearchResponse response = searcher.searchGrouped(gsr, getContexts(new RepositoryInfo[] {repo}));
+                GroupedSearchResponse response = searcher.searchGrouped(gsr, Collections.singletonList(context));
                 groups.addAll(response.getResults().keySet());
             }
         }, skipAction, skipUnIndexed);
@@ -819,19 +831,13 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         final List<NBVersionInfo> infos = new ArrayList<NBVersionInfo>(result.getResults());
         final SkippedAction skipAction = new SkippedAction(result);
         iterate(repos, new RepoAction() {
-            @Override public void run(RepositoryInfo repo) throws IOException {
-                boolean index = loadIndexingContext2(repo);
-                if (skipUnIndexed && index) {
-                    skipAction.run(repo);
-                    spawnIndexLoadedRepo(repo);
-                    return;
-                }
+            @Override public void run(RepositoryInfo repo, IndexingContext context) throws IOException {
                 BooleanQuery bq = new BooleanQuery();
                 String id = groupId + ArtifactInfo.FS + artifactId + ArtifactInfo.FS + version + ArtifactInfo.FS;
                 bq.add(new BooleanClause(new PrefixQuery(new Term(ArtifactInfo.UINFO, id)), BooleanClause.Occur.MUST));
                 FlatSearchRequest fsr = new FlatSearchRequest(bq, ArtifactInfo.VERSION_COMPARATOR);
                 fsr.setCount(MAX_RESULT_COUNT);
-                FlatSearchResponse response = searcher.searchFlatPaged(fsr, getContexts(new RepositoryInfo[] {repo}));
+                FlatSearchResponse response = searcher.searchFlatPaged(fsr, Collections.singletonList(context));
                 infos.addAll(convertToNBVersionInfo(response.getResults()));
             }
         }, skipAction, skipUnIndexed);
@@ -855,18 +861,12 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         final Set<String> artifacts = new TreeSet<String>(result.getResults());
         final SkippedAction skipAction = new SkippedAction(result);
         iterate(repos, new RepoAction() {
-            @Override public void run(RepositoryInfo repo) throws IOException {
-                boolean index = loadIndexingContext2(repo);
-                if (skipUnIndexed && index) {
-                    skipAction.run(repo);
-                    spawnIndexLoadedRepo(repo);
-                    return;
-                }
+            @Override public void run(RepositoryInfo repo, IndexingContext context) throws IOException {
                 BooleanQuery bq = new BooleanQuery();
                 String id = groupId + ArtifactInfo.FS;
                 bq.add(new BooleanClause(setBooleanRewrite(new PrefixQuery(new Term(ArtifactInfo.UINFO, id))), BooleanClause.Occur.MUST));
                 FlatSearchRequest fsr = new FlatSearchRequest(bq, ArtifactInfo.VERSION_COMPARATOR);
-                FlatSearchResponse response = repeatedFlatSearch(fsr, getContexts(new RepositoryInfo[] {repo}), false);
+                FlatSearchResponse response = repeatedFlatSearch(fsr, Collections.singletonList(context), false);
                 if (response != null) {
                     for (ArtifactInfo artifactInfo : response.getResults()) {
                         artifacts.add(artifactInfo.artifactId);
@@ -892,18 +892,12 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         final List<NBVersionInfo> infos = new ArrayList<NBVersionInfo>(result.getResults());
         final SkippedAction skipAction = new SkippedAction(result);
         iterate(repos, new RepoAction() {
-            @Override public void run(RepositoryInfo repo) throws IOException {
-                boolean index = loadIndexingContext2(repo);
-                if (skipUnIndexed && index) {
-                    skipAction.run(repo);
-                    spawnIndexLoadedRepo(repo);
-                    return;
-                }
+            @Override public void run(RepositoryInfo repo, IndexingContext context) throws IOException {
                 BooleanQuery bq = new BooleanQuery();
                 String id = groupId + ArtifactInfo.FS + artifactId + ArtifactInfo.FS;
                 bq.add(new BooleanClause(setBooleanRewrite(new PrefixQuery(new Term(ArtifactInfo.UINFO, id))), BooleanClause.Occur.MUST));
                 FlatSearchRequest fsr = new FlatSearchRequest(bq, ArtifactInfo.VERSION_COMPARATOR);
-                FlatSearchResponse response = repeatedFlatSearch(fsr, getContexts(new RepositoryInfo[] {repo}), false);
+                FlatSearchResponse response = repeatedFlatSearch(fsr, Collections.singletonList(context), false);
                 if (response != null) {
                     infos.addAll(convertToNBVersionInfo(response.getResults()));
                 }
@@ -929,19 +923,13 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         final List<NBVersionInfo> infos = new ArrayList<NBVersionInfo>(result.getResults());
         final SkippedAction skipAction = new SkippedAction(result);
         iterate(repos, new RepoAction() {
-            @Override public void run(RepositoryInfo repo) throws IOException {
-                boolean index = loadIndexingContext2(repo);
-                if (skipUnIndexed && index) {
-                    skipAction.run(repo);
-                    spawnIndexLoadedRepo(repo);
-                    return;
-                }
+            @Override public void run(RepositoryInfo repo, IndexingContext context) throws IOException {
                 String clsname = className.replace(".", "/");
                 FlatSearchRequest fsr = new FlatSearchRequest(setBooleanRewrite(
                         indexer.constructQuery(MAVEN.CLASSNAMES, new StringSearchExpression(clsname.toLowerCase()))),
                         ArtifactInfo.VERSION_COMPARATOR);
                 fsr.setCount(MAX_RESULT_COUNT);
-                FlatSearchResponse response = repeatedFlatSearch(fsr, getContexts(new RepositoryInfo[] {repo}), false);
+                FlatSearchResponse response = repeatedFlatSearch(fsr, Collections.singletonList(context), false);
                 if (response != null) {
                     infos.addAll(convertToNBVersionInfo(postProcessClasses(response.getResults(),
                             clsname)));
@@ -978,14 +966,8 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         final List<RepositoryQueries.ClassUsage> results = new ArrayList<RepositoryQueries.ClassUsage>(result.getResults());
         final SkippedAction skipAction = new SkippedAction(result);
         iterate(localRepos, new RepoAction() {
-            @Override public void run(RepositoryInfo repo) throws IOException {
-                boolean index = loadIndexingContext2(repo);
-                if (skipUnIndexed && index) {
-                    skipAction.run(repo);
-                    spawnIndexLoadedRepo(repo);
-                    return;
-                }
-                ClassDependencyIndexCreator.search(className, indexer, getContexts(new RepositoryInfo[] {repo}), results);
+            @Override public void run(RepositoryInfo repo, IndexingContext context) throws IOException {
+                ClassDependencyIndexCreator.search(className, indexer, Collections.singletonList(context), results);
             }
         }, skipAction, skipUnIndexed);
         Collections.sort(results, new Comparator<RepositoryQueries.ClassUsage>() {
@@ -1012,16 +994,10 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         final List<NBVersionInfo> infos = new ArrayList<NBVersionInfo>(result.getResults());
         final SkippedAction skipAction = new SkippedAction(result);
         iterate(repos, new RepoAction() {
-            @Override public void run(RepositoryInfo repo) throws IOException {
-                boolean index = loadIndexingContext2(repo);
-                if (skipUnIndexed && index) {
-                    skipAction.run(repo);
-                    spawnIndexLoadedRepo(repo);
-                    return;
-                }
+            @Override public void run(RepositoryInfo repo, IndexingContext context) throws IOException {
                 FlatSearchRequest fsr = new FlatSearchRequest(q, ArtifactInfo.VERSION_COMPARATOR);
                 fsr.setCount(MAX_RESULT_COUNT);
-                FlatSearchResponse response = repeatedFlatSearch(fsr, getContexts(new RepositoryInfo[] {repo}), false);
+                FlatSearchResponse response = repeatedFlatSearch(fsr, Collections.singletonList(context), false);
                 if (response != null) {
                     infos.addAll(convertToNBVersionInfo(response.getResults()));
                 }
@@ -1106,18 +1082,12 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         final List<NBVersionInfo> infos = new ArrayList<NBVersionInfo>(result.getResults());
         final SkippedAction skipAction = new SkippedAction(result);
         iterate(repos, new RepoAction() {
-            @Override public void run(RepositoryInfo repo) throws IOException {
-                boolean index = loadIndexingContext2(repo);
-                if (skipUnIndexed && index) {
-                    skipAction.run(repo);
-                    spawnIndexLoadedRepo(repo);
-                    return;
-                }
+            @Override public void run(RepositoryInfo repo, IndexingContext context) throws IOException {
                 BooleanQuery bq = new BooleanQuery();
                 bq.add(new BooleanClause((setBooleanRewrite(indexer.constructQuery(MAVEN.SHA1, new StringSearchExpression(sha1)))), BooleanClause.Occur.SHOULD));
                 FlatSearchRequest fsr = new FlatSearchRequest(bq, ArtifactInfo.VERSION_COMPARATOR);
                 fsr.setCount(MAX_RESULT_COUNT);
-                FlatSearchResponse response = repeatedFlatSearch(fsr, getContexts(new RepositoryInfo[] {repo}), false);
+                FlatSearchResponse response = repeatedFlatSearch(fsr, Collections.singletonList(context), false);
                 if (response != null) {
                     infos.addAll(convertToNBVersionInfo(response.getResults()));
                 }
@@ -1143,13 +1113,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         final List<NBVersionInfo> infos = new ArrayList<NBVersionInfo>(result.getResults());
         final SkippedAction skipAction = new SkippedAction(result);
         iterate(repos, new RepoAction() {
-            @Override public void run(RepositoryInfo repo) throws IOException {
-                boolean index = loadIndexingContext2(repo);
-                if (skipUnIndexed && index) {
-                    skipAction.run(repo);
-                    spawnIndexLoadedRepo(repo);
-                    return;
-                }
+            @Override public void run(RepositoryInfo repo, IndexingContext context) throws IOException {
                 BooleanQuery bq = new BooleanQuery();
                 // XXX also consider using NexusArchetypeDataSource
                 bq.add(new BooleanClause(new TermQuery(new Term(ArtifactInfo.PACKAGING, "maven-archetype")), BooleanClause.Occur.MUST)); //NOI18N
@@ -1157,7 +1121,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 /* There are >512 archetypes in Central, and we want them all in ChooseArchetypePanel
                 fsr.setCount(MAX_RESULT_COUNT);
                 */
-                FlatSearchResponse response = repeatedFlatSearch(fsr, getContexts(new RepositoryInfo[] {repo}), false);
+                FlatSearchResponse response = repeatedFlatSearch(fsr, Collections.singletonList(context), false);
                 if (response != null) {
                     List<NBVersionInfo> results = convertToNBVersionInfo(response.getResults());
                     infos.addAll(results);
@@ -1184,20 +1148,14 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         final Set<String> artifacts = new TreeSet<String>(result.getResults());
         final SkippedAction skipAction = new SkippedAction(result);
         iterate(repos, new RepoAction() {
-            @Override public void run(RepositoryInfo repo) throws IOException {
-                boolean index = loadIndexingContext2(repo);
-                if (skipUnIndexed && index) {
-                    skipAction.run(repo);
-                    spawnIndexLoadedRepo(repo);
-                    return;
-                }
+            @Override public void run(RepositoryInfo repo, IndexingContext context) throws IOException {
                 BooleanQuery bq = new BooleanQuery();
                 String id = groupId + ArtifactInfo.FS + prefix;
                 bq.add(new BooleanClause(new TermQuery(new Term(ArtifactInfo.PACKAGING, "maven-plugin")), BooleanClause.Occur.MUST));
                 bq.add(new BooleanClause(setBooleanRewrite(new PrefixQuery(new Term(ArtifactInfo.UINFO, id))), BooleanClause.Occur.MUST));
                 FlatSearchRequest fsr = new FlatSearchRequest(bq, ArtifactInfo.VERSION_COMPARATOR);
                 fsr.setCount(MAX_RESULT_COUNT);
-                FlatSearchResponse response = repeatedFlatSearch(fsr, getContexts(new RepositoryInfo[] {repo}), false);
+                FlatSearchResponse response = repeatedFlatSearch(fsr, Collections.singletonList(context), false);
                 if (response != null) {
                     for (ArtifactInfo artifactInfo : response.getResults()) {
                         artifacts.add(artifactInfo.artifactId);
@@ -1224,13 +1182,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         final Set<String> artifacts = new TreeSet<String>(result.getResults());
         final SkippedAction skipAction = new SkippedAction(result);
         iterate(repos, new RepoAction() {
-            @Override public void run(RepositoryInfo repo) throws IOException {
-                boolean index = loadIndexingContext2(repo);
-                if (skipUnIndexed && index) {
-                    skipAction.run(repo);
-                    spawnIndexLoadedRepo(repo);
-                    return;
-                }
+            @Override public void run(RepositoryInfo repo, IndexingContext context) throws IOException {
                 BooleanQuery bq = new BooleanQuery();
                 bq.add(new BooleanClause(new TermQuery(new Term(ArtifactInfo.PACKAGING, "maven-plugin")), BooleanClause.Occur.MUST));
                 if (prefix.length() > 0) { //heap out of memory otherwise
@@ -1238,7 +1190,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 }
                 FlatSearchRequest fsr = new FlatSearchRequest(bq, ArtifactInfo.VERSION_COMPARATOR);
                 fsr.setCount(MAX_RESULT_COUNT);
-                FlatSearchResponse response = repeatedFlatSearch(fsr, getContexts(new RepositoryInfo[] {repo}), false);
+                FlatSearchResponse response = repeatedFlatSearch(fsr, Collections.singletonList(context), false);
                 if (response != null) {
                     for (ArtifactInfo artifactInfo : response.getResults()) {
                         artifacts.add(artifactInfo.groupId);
@@ -1264,19 +1216,13 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         final Set<String> artifacts = new TreeSet<String>(result.getResults());
         final SkippedAction skipAction = new SkippedAction(result);
         iterate(repos, new RepoAction() {
-            @Override public void run(RepositoryInfo repo) throws IOException {
-                boolean index = loadIndexingContext2(repo);
-                if (skipUnIndexed && index) {
-                    skipAction.run(repo);
-                    spawnIndexLoadedRepo(repo);
-                    return;
-                }
+            @Override public void run(RepositoryInfo repo, IndexingContext context) throws IOException {
                 BooleanQuery bq = new BooleanQuery();
                 String id = groupId + ArtifactInfo.FS + prefix;
                 bq.add(new BooleanClause(setBooleanRewrite(new PrefixQuery(new Term(ArtifactInfo.UINFO, id))), BooleanClause.Occur.MUST));
                 FlatSearchRequest fsr = new FlatSearchRequest(bq, ArtifactInfo.VERSION_COMPARATOR);
                 fsr.setCount(MAX_RESULT_COUNT);
-                FlatSearchResponse response = repeatedFlatSearch(fsr, getContexts(new RepositoryInfo[] {repo}), false);
+                FlatSearchResponse response = repeatedFlatSearch(fsr, Collections.singletonList(context), false);
                 if (response != null) {
                     for (ArtifactInfo artifactInfo : response.getResults()) {
                         artifacts.add(artifactInfo.artifactId);
@@ -1302,13 +1248,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         final List<NBVersionInfo> infos = new ArrayList<NBVersionInfo>(result.getResults());
         final SkippedAction skipAction = new SkippedAction(result);
         iterate(repos, new RepoAction() {
-            @Override public void run(RepositoryInfo repo) throws IOException {
-                boolean index = loadIndexingContext2(repo);
-                if (skipUnIndexed && index) {
-                    skipAction.run(repo);
-                    spawnIndexLoadedRepo(repo);
-                    return;
-                }
+            @Override public void run(RepositoryInfo repo, IndexingContext context) throws IOException {
                 BooleanQuery bq = new BooleanQuery();
                 for (QueryField field : fields) {
                     BooleanClause.Occur occur = field.getOccur() == QueryField.OCCUR_SHOULD ? BooleanClause.Occur.SHOULD : BooleanClause.Occur.MUST;
@@ -1354,7 +1294,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                     }
                 }
                 FlatSearchRequest fsr = new FlatSearchRequest(bq, ArtifactInfo.VERSION_COMPARATOR);
-                FlatSearchResponse response = repeatedFlatSearch(fsr, getContexts(new RepositoryInfo[] {repo}), false);
+                FlatSearchResponse response = repeatedFlatSearch(fsr, Collections.singletonList(context), false);
                 if (response != null) {
                     infos.addAll(convertToNBVersionInfo(response.getResults()));
                 }
@@ -1462,7 +1402,8 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
 }
         
         @Override
-        public void run(RepositoryInfo repo) throws IOException {
+        public void run(RepositoryInfo repo, IndexingContext context) throws IOException {
+            //indexing context is always null here..
             ACCESSOR.addSkipped(result, repo);
         }
         

@@ -1456,7 +1456,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
         FileImpl csmFile = findFile(file, true, FileImpl.FileType.HEADER_FILE, preprocHandler, false, null, null);
 
-        if (isDisposing() || startProject.isDisposing()) {
+        if (csmFile == null || isDisposing() || startProject.isDisposing()) {
             return csmFile;
         }
         APTPreprocHandler.State newState = preprocHandler.getState();
@@ -2276,6 +2276,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             assert preprocHandler != null : "null preprocHandler for " + absPath;
             FileObject fo = CndFileUtils.toFileObject(fileSystem, absPath);
             CndUtils.assertTrueInConsole(fo != null, "file object not found ", absPath); // + " in fs=" + fileSystem); // NOI18N
+            if (fo == null) {
+                return null;
+            }
             FileBuffer fileBuffer = ModelSupport.createFileBuffer(fo);
             // and all other under lock again
             synchronized (fileContainerLock) {

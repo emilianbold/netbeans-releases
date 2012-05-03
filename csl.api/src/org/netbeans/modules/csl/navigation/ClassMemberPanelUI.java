@@ -230,7 +230,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
         else {
             //System.out.println("REFRES =====" + description.fileObject.getName() );
             // New fileobject => refresh completely
-            SwingUtilities.invokeLater(new Runnable() {
+            RP.post(new Runnable() {
 
                 public void run() {
                     long startTime = System.currentTimeMillis();

@@ -172,7 +172,12 @@ public abstract class ProjectBasedTestCase extends ModelBasedTestCase {
     protected File[] changeDefProjectDirBeforeParsingProjectIfNeeded(File projectDir) {
         return new File[] {projectDir};
     }
-    
+
+    protected void checkDir(File srcDir) {
+        assertTrue("Not existing directory" + srcDir, srcDir.exists());
+        assertTrue("Not directory" + srcDir, srcDir.isDirectory());
+    }
+
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();

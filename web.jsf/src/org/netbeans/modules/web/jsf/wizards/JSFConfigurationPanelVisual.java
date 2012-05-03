@@ -57,6 +57,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -94,13 +95,16 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
 import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibrary;
+import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibraryDependency;
 import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.netbeans.modules.web.api.webmodule.ExtenderController.Properties;
 import org.netbeans.modules.web.jsf.JSFUtils;
@@ -213,6 +217,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         Runnable jsfLibararyUiSwitcher = new Runnable() {
             @Override
             public void run() {
+                // searching in IDE registered JSF libraries
                 Project project = FileOwnerQuery.getOwner(panel.getWebModule().getDocumentBase());
                 ClassPathProvider cpp = project.getLookup().lookup(ClassPathProvider.class);
                 ClassPath compileClassPath = cpp.findClassPath(panel.getWebModule().getDocumentBase(), ClassPath.COMPILE);
@@ -240,10 +245,42 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
                         }
                     }
                 }
+
+                // searching in server registered JSF libraries
+                J2eeModuleProvider jmp = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
+                Set<ServerLibraryDependency> deps = getServerDependencies(jmp);
+                for (ServerLibraryDependency serverLibraryDependency : deps) {
+                    if (serverLibraryDependency.getName().startsWith("jsf")) { //NOI18N
+                        for (final ServerLibraryItem serverLibraryItem : serverJsfLibraries) {
+                            Version implVersion = serverLibraryItem.getLibrary().getImplementationVersion();
+                            Version specVersion = serverLibraryItem.getLibrary().getSpecificationVersion();
+                            if ((implVersion != null && implVersion.equals(serverLibraryDependency.getImplementationVersion()))
+                                    || specVersion != null && specVersion.equals(serverLibraryDependency.getSpecificationVersion())) {
+                                Mutex.EVENT.readAccess(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        rbServerLibrary.setSelected(true);
+                                        enableComponents(false);
+                                        serverLibraries.setSelectedItem(serverLibraryItem);
+                                    }
+                                });
+                                return;
+                            }
+                        }
+                    }
+                }
             }
         };
 
         RP.post(jsfLibararyUiSwitcher);
+    }
+
+    private static Set<ServerLibraryDependency> getServerDependencies(J2eeModuleProvider jmp) {
+        try {
+            return jmp.getConfigSupport().getLibraries();
+        } catch (ConfigurationException e) {
+            return Collections.emptySet();
+        }
     }
 
     public void addChangeListener(ChangeListener listener) {
