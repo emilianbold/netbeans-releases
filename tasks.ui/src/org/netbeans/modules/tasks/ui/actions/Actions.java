@@ -49,6 +49,7 @@ import javax.swing.Action;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.api.RepositoryManager;
 import org.netbeans.modules.tasks.ui.DashboardTopComponent;
 import org.netbeans.modules.tasks.ui.dashboard.DashboardViewer;
 import org.netbeans.modules.tasks.ui.dashboard.QueryNode;
@@ -251,13 +252,16 @@ public class Actions {
 
     private static class EditRepositoryAction extends AbstractAction {
 
+        private final Repository repository;
+
         public EditRepositoryAction(Repository repository) {
-            super("Edit"); //NOI18N
+            super(NbBundle.getMessage(Actions.class, "CTL_Edit")); //NOI18N
+            this.repository = repository;
         }
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            new DummyAction().actionPerformed(e);
+            RepositoryManager.getInstance().editRepository(repository);
         }
     }
 
@@ -265,7 +269,7 @@ public class Actions {
         Query query = queryNode.getQuery();
         List<Action> actions = new ArrayList<Action>();
         actions.add(new OpenQueryAction(query));
-        actions.add(new EditQueryAction(query));
+        //actions.add(new EditQueryAction(query));
         actions.add(new DeleteQueryAction(query));
         actions.add(new RefreshQueryAction(queryNode));
         actions.add(new NotificationQueryAction(query));
@@ -273,9 +277,11 @@ public class Actions {
     }
 
     private static class DeleteQueryAction extends AbstractAction {
+
         private final Query query;
+
         public DeleteQueryAction(Query query) {
-            super("Delete"); //NOI18N
+            super(NbBundle.getMessage(Actions.class, "CTL_Delete")); //NOI18N
             this.query = query;
         }
 
@@ -292,13 +298,16 @@ public class Actions {
 
     private static class EditQueryAction extends AbstractAction {
 
+        private final Query query;
+
         public EditQueryAction(Query query) {
-            super("Edit"); //NOI18N
+            super(NbBundle.getMessage(Actions.class, "CTL_Edit")); //NOI18N
+            this.query = query;
         }
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            new DummyAction().actionPerformed(e);
+            query.open(Query.QueryMode.EDIT);
         }
     }
 
