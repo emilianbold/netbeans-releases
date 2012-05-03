@@ -58,6 +58,7 @@ import java.net.ConnectException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
@@ -70,10 +71,10 @@ import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.remote.api.ui.ConnectionNotifier;
-import org.netbeans.modules.remote.spi.FileSystemCacheProvider;
 import org.netbeans.modules.remote.impl.RemoteLogger;
-import org.netbeans.modules.remote.impl.fileoperations.spi.FileOperationsProvider;
 import org.netbeans.modules.remote.impl.fileoperations.spi.AnnotationProvider;
+import org.netbeans.modules.remote.impl.fileoperations.spi.FileOperationsProvider;
+import org.netbeans.modules.remote.spi.FileSystemCacheProvider;
 import org.netbeans.modules.remote.spi.FileSystemProvider.FileSystemProblemListener;
 import org.openide.filesystems.*;
 import org.openide.util.*;
@@ -108,9 +109,9 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     private final File cache;
     private final RemoteFileObjectFactory factory;
     /** File transfer statistics */
-    private static int fileCopyCount;
+    private final AtomicInteger fileCopyCount = new AtomicInteger(0);
     /** Directory synchronization statistics */
-    private static int dirSyncCount;
+    private final AtomicInteger dirSyncCount = new AtomicInteger(0);
     private static final Object mainLock = new Object();
     private static final Map<File, WeakReference<ReadWriteLock>> locks = new HashMap<File, WeakReference<ReadWriteLock>>();
     private AtomicBoolean readOnlyConnectNotification = new AtomicBoolean(false);
@@ -160,7 +161,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
                 WindowManager.getDefault().getMainWindow().addWindowFocusListener(windowFocusListener);
             }
         });
-        ConnectionManager.getInstance().addConnectionListener(this);
+        ConnectionManager.getInstance().addConnectionListener(RemoteFileSystem.this);
     }
 
     /*package*/ void dispose() {
@@ -227,24 +228,24 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     }
 
     /*package-local test method*/ final void resetStatistic() {
-        dirSyncCount = 0;
-        fileCopyCount = 0;
+        dirSyncCount.set(0);
+        fileCopyCount.set(0);
     }
 
     /*package-local test method*/ final int getDirSyncCount() {
-        return dirSyncCount;
+        return dirSyncCount.get();
     }
 
     /*package-local test method*/ final int getFileCopyCount() {
-        return fileCopyCount;
+        return fileCopyCount.get();
     }
 
     /*package-local test method*/ final void incrementDirSyncCount() {
-        dirSyncCount++;
+        dirSyncCount.incrementAndGet();
     }
 
     /*package-local test method*/ final void incrementFileCopyCount() {
-        fileCopyCount++;
+        fileCopyCount.incrementAndGet();
     }
 
     @Override

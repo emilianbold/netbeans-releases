@@ -3337,15 +3337,15 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             Map<CharSequence, CsmClassifier> map = null;
             switch (phase) {
                 case 0:
-                    printStream.println("\n========== Dumping Dump Project Classifiers");//NOI18N
+                    printStream.printf("\n========== Dumping %s Project Classifiers\n", project.getName());//NOI18N
                     map = container.getTestClassifiers();
                     break;
                 case 1:
-                    printStream.println("\n========== Dumping Dump Project Short Classifiers");//NOI18N
+                    printStream.printf("\n========== Dumping %s Project Short Classifiers\n", project.getName());//NOI18N
                     map = container.getTestShortClassifiers();
                     break;
                 case 2:
-                    printStream.println("\n========== Dumping Dump Project Typedefs");//NOI18N
+                    printStream.printf("\n========== Dumping %s Project Typedefs\n", project.getName());//NOI18N
                     map = container.getTestTypedefs();
                     break;
             }
