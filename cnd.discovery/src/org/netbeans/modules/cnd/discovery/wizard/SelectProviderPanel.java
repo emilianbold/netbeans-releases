@@ -491,7 +491,7 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
     }
 
     static class ProviderItem implements Comparable<ProviderItem> {
-        private DiscoveryProvider provider;
+        private final DiscoveryProvider provider;
         ProviderItem(DiscoveryProvider provider){
             this.provider = provider;
         }
@@ -511,7 +511,20 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
         
         @Override
         public int compareTo(ProviderItem o) {
-            return toString().compareTo( o.toString() );
+            return toString().compareTo(o.toString());
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof ProviderItem)) {
+                return false;
+            }
+            return provider.toString().equals(((ProviderItem)obj).toString());
+        }
+
+        @Override
+        public int hashCode() {
+           return provider.toString().hashCode();
         }
     }
 }
