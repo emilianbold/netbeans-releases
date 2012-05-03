@@ -59,9 +59,7 @@ import org.netbeans.modules.css.indexing.api.CssIndex;
 import org.netbeans.modules.html.editor.lib.api.HtmlParser;
 import org.netbeans.modules.html.editor.lib.api.HtmlParserFactory;
 import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
-import org.netbeans.modules.html.editor.lib.api.model.HtmlModel;
-import org.netbeans.modules.html.editor.lib.api.model.HtmlTag;
-import org.netbeans.modules.html.editor.lib.api.model.HtmlTagAttribute;
+import org.netbeans.modules.html.editor.lib.api.model.*;
 import org.netbeans.modules.javascript2.editor.CompletionContextFinder;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
@@ -139,7 +137,8 @@ public class JQueryCodeCompletion {
             return SelectorsLoader.getDocumentation(apiFile, name);
         } else if (element.getKind() == ElementKind.METHOD) {
             if (isJQuery(info, lastTsOffset)) {
-                return "jquery method";
+                File apiFile = InstalledFileLocator.getDefault().locate(HELP_LOCATION, null, false); //NoI18N
+                return SelectorsLoader.getMethodDocumentation(apiFile, element.getName());
             }
         }
         return null;
@@ -368,8 +367,7 @@ public class JQueryCodeCompletion {
 
     private Collection<HtmlTagAttribute> getHtmlAttributes(final String tagName, final String prefix) {
         Collection<HtmlTagAttribute> result = Collections.emptyList();
-        HtmlParser htmlParser = HtmlParserFactory.findParser(HtmlVersion.HTML5);
-        HtmlModel htmlModel = htmlParser.getModel(HtmlVersion.HTML5);
+        HtmlModel htmlModel = HtmlModelFactory.getModel(HtmlVersion.HTML5);
         HtmlTag htmlTag = htmlModel.getTag(tagName);
         if (htmlTag != null) {
             if (prefix.isEmpty()) {
@@ -389,8 +387,7 @@ public class JQueryCodeCompletion {
 
     private Collection<HtmlTag> getHtmlTags(String prefix) {
         Collection<HtmlTag> result = Collections.emptyList();
-        HtmlParser htmlParser = HtmlParserFactory.findParser(HtmlVersion.HTML5);
-        HtmlModel htmlModel = htmlParser.getModel(HtmlVersion.HTML5);
+        HtmlModel htmlModel = HtmlModelFactory.getModel(HtmlVersion.HTML5);
         Collection<HtmlTag> allTags = htmlModel.getAllTags();
         if (prefix.isEmpty()) {
             result = allTags;

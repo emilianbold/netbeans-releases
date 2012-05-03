@@ -14315,7 +14315,7 @@ request.fail(function(jqXHR, textStatus) {
                     <desc>A string representing a selector expression to find additional elements to add to the set of matched elements.</desc>
                 </argument>
                 <argument name="context" type="Element">
-                    <desc>The point in the document at which the selector should begin matching; similar to the context argument of the <code>$(selector, context)</code> method.</desc>
+                    <desc><![CDATA[The point in the document at which the selector should begin matching; similar to the context argument of the <code>$(selector, context)</code> method.]]></desc>
                 </argument>
               </signature>
               <desc>Add elements to the set of matched elements.</desc>
