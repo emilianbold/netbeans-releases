@@ -484,9 +484,9 @@ public final class FileImpl implements CsmFile,
             FileContentSignature newSignature = null;
             FileContentSignature oldSignature = null;
             boolean tryPartialReparse = false;
-            boolean oneFileActivity = false;
+            boolean triggerParsingActivity = true;
             if (handlers == DUMMY_HANDLERS || handlers == PARTIAL_REPARSE_HANDLERS) {
-                oneFileActivity = true;
+                triggerParsingActivity = false;
                 tryPartialReparse = handlers == PARTIAL_REPARSE_HANDLERS;
                 handlers = getPreprocHandlers();
             }
@@ -500,7 +500,7 @@ public final class FileImpl implements CsmFile,
                     }
                     if (reportParse || logState || TraceFlags.DEBUG) {
                         if (traceFile(getAbsolutePath())) {
-                            System.err.printf("#ensureParsed %s is %s, has %d handlers, state %s %s oneFileActivity=%s\n", getAbsolutePath(), fileType, handlers.size(), curState, parsingState, oneFileActivity); // NOI18N
+                            System.err.printf("#ensureParsed %s is %s, has %d handlers, state %s %s triggerParsingActivity=%s\n", getAbsolutePath(), fileType, handlers.size(), curState, parsingState, triggerParsingActivity); // NOI18N
                             int i = 0;
                             for (APTPreprocHandler aPTPreprocHandler : handlers) {
                                 logParse("EnsureParsed handler " + (i++), aPTPreprocHandler); // NOI18N
@@ -521,7 +521,7 @@ public final class FileImpl implements CsmFile,
                             }
                             time = System.currentTimeMillis();
                             try {
-                                ParseDescriptor parseParams = new ParseDescriptor(this, fullAPT, null, false);
+                                ParseDescriptor parseParams = new ParseDescriptor(this, fullAPT, null, false, triggerParsingActivity);
                                 for (APTPreprocHandler preprocHandler : handlers) {
                                     parseParams.setCurrentPreprocHandler(preprocHandler);
                                     _parse(parseParams);
@@ -549,7 +549,7 @@ public final class FileImpl implements CsmFile,
                             boolean first = true;
                             time = System.currentTimeMillis();
                             try {
-                                ParseDescriptor parseParams = new ParseDescriptor(this, fullAPT, null, true);
+                                ParseDescriptor parseParams = new ParseDescriptor(this, fullAPT, null, true, triggerParsingActivity);
                                 if (lastFileBasedSignature == null) {
                                     if (tryPartialReparse ||  !fileBuffer.isFileBased()) {
                                         // initialize file-based content signature
@@ -661,7 +661,7 @@ public final class FileImpl implements CsmFile,
                 if (parseLevel > 1 && TraceFlags.TIMING_PARSE_PER_FILE_FLAT) {
                     System.err.printf(parseLevel + ((curState == State.PARSED) ? " additional " : " ") + "include parse with curState " + curState + "for %s\n", getAbsolutePath()); // NOI18N
                 }
-                ParseDescriptor parseParams = new ParseDescriptor(this, fullAPT, semaHandler, false);
+                ParseDescriptor parseParams = new ParseDescriptor(this, fullAPT, semaHandler, false, false);
                 for (APTPreprocHandler preprocHandler : handlers) {
                     parseParams.setCurrentPreprocHandler(preprocHandler);
                     _parse(parseParams);
@@ -942,14 +942,15 @@ public final class FileImpl implements CsmFile,
         private final APTFile fullAPT;
         private APTPreprocHandler curPreprocHandler;
         private final FileImpl fileImpl;
+        private final boolean triggerParsingActivity;
 
-        public ParseDescriptor(FileImpl fileImpl, APTFile fullAPT, CsmParserProvider.CsmParseCallback callback, boolean emptyFileContent) {
-            this(fileImpl, fullAPT, callback, TraceFlags.EXCLUDE_COMPOUND, emptyFileContent);
+        public ParseDescriptor(FileImpl fileImpl, APTFile fullAPT, CsmParserProvider.CsmParseCallback callback, boolean emptyFileContent, boolean triggerParsingActivity) {
+            this(fileImpl, fullAPT, callback, TraceFlags.EXCLUDE_COMPOUND, emptyFileContent, triggerParsingActivity);
         }
 
         public ParseDescriptor(FileImpl fileImpl, APTFile fullAPT,
                 CsmParserProvider.CsmParseCallback callback,
-                boolean lazyCompound, boolean emptyFileContent) {
+                boolean lazyCompound, boolean emptyFileContent, boolean triggerParsingActivity) {
             assert fileImpl != null : "null file is not allowed";
             assert fullAPT != null : "null APTFile is not allowed";
             this.fileImpl = fileImpl;
@@ -957,6 +958,7 @@ public final class FileImpl implements CsmFile,
             this.fullAPT = fullAPT;
             this.callback = callback;
             this.lazyCompound = lazyCompound;
+            this.triggerParsingActivity = triggerParsingActivity;
         }
 
         private void setCurrentPreprocHandler(APTPreprocHandler preprocHandler) {
@@ -986,7 +988,7 @@ public final class FileImpl implements CsmFile,
             return null;
         }
         final APTFile fullAPT = getFileAPT(true);
-        ParseDescriptor params = new ParseDescriptor(this, fullAPT, null, false, false);
+        ParseDescriptor params = new ParseDescriptor(this, fullAPT, null, false, false, false);
         params.setCurrentPreprocHandler(handlers.iterator().next());
         synchronized (stateLock) {
             CsmParserResult parsing = _parse(params);
@@ -1352,7 +1354,7 @@ public final class FileImpl implements CsmFile,
             FilePreprocessorConditionState.Builder pcBuilder = new FilePreprocessorConditionState.Builder(getAbsolutePath());
             // ask for concurrent entry if absent
             APTFileCacheEntry aptCacheEntry = getAPTCacheEntry(preprocHandler, Boolean.FALSE);
-            APTParseFileWalker walker = new APTParseFileWalker(startProject, aptFull, this, preprocHandler, true, pcBuilder,aptCacheEntry);
+            APTParseFileWalker walker = new APTParseFileWalker(startProject, aptFull, this, preprocHandler, parseParams.triggerParsingActivity, pcBuilder,aptCacheEntry);
             walker.setFileContent(parseParams.content);
             if (TraceFlags.DEBUG) {
                 System.err.println("doParse " + getAbsolutePath() + " with " + ParserQueue.tracePreprocState(ppState));
