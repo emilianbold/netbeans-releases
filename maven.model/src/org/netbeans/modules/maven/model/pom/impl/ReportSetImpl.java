@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.maven.model.pom.impl;
 
+import java.util.ArrayList;
 import org.netbeans.modules.maven.model.pom.*;
 import org.w3c.dom.Element;
 
@@ -50,10 +51,12 @@ import org.w3c.dom.Element;
  */
 public class ReportSetImpl extends IdPOMComponentImpl implements ReportSet {
 
-    private static final Class<? extends POMComponent>[] ORDER = new Class[] {
-        Configuration.class,
-        StringList.class //reports
-    };
+    private static final java.util.List<Class<? extends POMComponent>> ORDER;
+    static {
+        ORDER = new ArrayList<Class<? extends POMComponent>>();
+        ORDER.add(Configuration.class);
+        ORDER.add(StringList.class); //reports
+    }
 
     public ReportSetImpl(POMModel model, Element element) {
         super(model, element);

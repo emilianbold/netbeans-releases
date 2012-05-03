@@ -194,7 +194,7 @@ public abstract class POMComponentImpl extends AbstractDocumentComponent<POMComp
         }
         if (text != null) {
             POMExtensibilityElement el = getModel().getFactory().createPOMExtensibilityElement(qname);
-            addBefore(qname.getLocalPart(), el, Collections.EMPTY_LIST);
+            addBefore(qname.getLocalPart(), el, Collections.<Class<? extends POMComponent>>emptySet());
             if (!text.isEmpty()) {
                 el.setElementText(text);
             }
@@ -212,10 +212,12 @@ public abstract class POMComponentImpl extends AbstractDocumentComponent<POMComp
         return -1;
     }
 
-    protected final Collection<Class<? extends POMComponent>> getClassesBefore(Class<? extends POMComponent>[] ordering, Class current) {
+    protected final Collection<Class<? extends POMComponent>> getClassesBefore(List<Class<? extends POMComponent>> ordering, Class<? extends POMComponent> current) {
         ArrayList<Class<? extends POMComponent>> toRet = new ArrayList<Class<? extends POMComponent>>();
         for (Class<? extends POMComponent> ord : ordering) {
-            if (ord.equals(current)) break;
+            if (ord.equals(current)) {
+                break;
+            }
             toRet.add(ord);
         }
         return toRet;
