@@ -108,6 +108,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilterBuilder;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmTemplateBasedReferencedObject;
+import org.netbeans.modules.cnd.completion.cplusplus.NbCsmCompletionQuery.NbCsmItemFactory;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletion.BaseType;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem.TemplateParameterResultItem;
 import org.netbeans.modules.cnd.completion.csm.CompletionResolver;
@@ -169,9 +170,7 @@ abstract public class CsmCompletionQuery {
         GLOBAL_QUERY,
     };
 
-    public CsmCompletionQuery(CsmItemFactory itemFactory) {
-        super();
-        CsmCompletionQuery.itemFactory = itemFactory;
+    public CsmCompletionQuery() {
     }
 
     public CsmCompletionResult query(JTextComponent component, int offset, boolean instantiateTypes) {
@@ -2695,6 +2694,10 @@ abstract public class CsmCompletionQuery {
     }
 
     //========================== Items Factory ===============================
+    protected static void setCsmItemFactory(NbCsmItemFactory factory) {
+        itemFactory = factory;
+    }
+
     public static CsmItemFactory getCsmItemFactory() {
         return itemFactory;
     }
