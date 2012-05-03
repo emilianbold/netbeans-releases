@@ -59,9 +59,7 @@ import org.netbeans.modules.css.indexing.api.CssIndex;
 import org.netbeans.modules.html.editor.lib.api.HtmlParser;
 import org.netbeans.modules.html.editor.lib.api.HtmlParserFactory;
 import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
-import org.netbeans.modules.html.editor.lib.api.model.HtmlModel;
-import org.netbeans.modules.html.editor.lib.api.model.HtmlTag;
-import org.netbeans.modules.html.editor.lib.api.model.HtmlTagAttribute;
+import org.netbeans.modules.html.editor.lib.api.model.*;
 import org.netbeans.modules.javascript2.editor.CompletionContextFinder;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
@@ -77,21 +75,23 @@ public class JQueryCodeCompletion {
 
     private static final Logger LOGGER = Logger.getLogger(JQueryCodeCompletion.class.getName());
 
+    private int lastTsOffset = 0;
+    
     public List<CompletionProposal> complete(CodeCompletionContext ccContext, CompletionContextFinder.CompletionContext jsCompletionContext, String prefix) {
         long start = System.currentTimeMillis();
         List<CompletionProposal> result = new ArrayList<CompletionProposal>();
         ParserResult parserResult = ccContext.getParserResult();
         int offset = ccContext.getCaretOffset();
-        int tsOffset = ccContext.getParserResult().getSnapshot().getEmbeddedOffset(offset);
+        lastTsOffset = ccContext.getParserResult().getSnapshot().getEmbeddedOffset(offset);
         switch (jsCompletionContext) {
             case GLOBAL:
             case EXPRESSION:
-                if (isJQuery(parserResult, tsOffset)) {
-                    addSelectors(result, parserResult, prefix, tsOffset);
+                if (isJQuery(parserResult, lastTsOffset)) {
+                    addSelectors(result, parserResult, prefix, lastTsOffset);
                 }
                 break;
             case OBJECT_PROPERTY:
-                if (isJQuery(parserResult, tsOffset)) {
+                if (isJQuery(parserResult, lastTsOffset)) {
                     
                 }
         }
@@ -119,8 +119,10 @@ public class JQueryCodeCompletion {
             token = ts.token();
             tokenId = token.id();
         }
-        return (lastToken.id() == JsTokenId.IDENTIFIER && "$".equals(lastToken.text().toString()))
-                || (!ts.movePrevious() && "$".equals(token.text().toString()));
+        return (lastToken.id() == JsTokenId.IDENTIFIER 
+                && ("$".equals(lastToken.text().toString()) || "jQuery".equals(lastToken.text().toString()))
+                || (!ts.movePrevious() 
+                && ("$".equals(token.text().toString()) || "jQuery".equals(lastToken.text().toString()))));
     }
 
     public String getHelpDocumentation(ParserResult info, ElementHandle element) {
@@ -133,6 +135,11 @@ public class JQueryCodeCompletion {
             }
             File apiFile = InstalledFileLocator.getDefault().locate(HELP_LOCATION, null, false); //NoI18N
             return SelectorsLoader.getDocumentation(apiFile, name);
+        } else if (element.getKind() == ElementKind.METHOD) {
+            if (isJQuery(info, lastTsOffset)) {
+                File apiFile = InstalledFileLocator.getDefault().locate(HELP_LOCATION, null, false); //NoI18N
+                return SelectorsLoader.getMethodDocumentation(apiFile, element.getName());
+            }
         }
         return null;
     }
@@ -360,8 +367,7 @@ public class JQueryCodeCompletion {
 
     private Collection<HtmlTagAttribute> getHtmlAttributes(final String tagName, final String prefix) {
         Collection<HtmlTagAttribute> result = Collections.emptyList();
-        HtmlParser htmlParser = HtmlParserFactory.findParser(HtmlVersion.HTML5);
-        HtmlModel htmlModel = htmlParser.getModel(HtmlVersion.HTML5);
+        HtmlModel htmlModel = HtmlModelFactory.getModel(HtmlVersion.HTML5);
         HtmlTag htmlTag = htmlModel.getTag(tagName);
         if (htmlTag != null) {
             if (prefix.isEmpty()) {
@@ -381,8 +387,7 @@ public class JQueryCodeCompletion {
 
     private Collection<HtmlTag> getHtmlTags(String prefix) {
         Collection<HtmlTag> result = Collections.emptyList();
-        HtmlParser htmlParser = HtmlParserFactory.findParser(HtmlVersion.HTML5);
-        HtmlModel htmlModel = htmlParser.getModel(HtmlVersion.HTML5);
+        HtmlModel htmlModel = HtmlModelFactory.getModel(HtmlVersion.HTML5);
         Collection<HtmlTag> allTags = htmlModel.getAllTags();
         if (prefix.isEmpty()) {
             result = allTags;

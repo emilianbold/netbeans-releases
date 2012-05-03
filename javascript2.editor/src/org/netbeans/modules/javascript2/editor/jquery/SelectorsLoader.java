@@ -75,12 +75,15 @@ public class SelectorsLoader extends DefaultHandler {
     public static final String TYPE = "type";   //NOI18N
     public static final String NAME = "name";   //NOI18N
     public static final String SELECTOR = "selector";   //NOI18N
+    public static final String METHOD = "method";   //NOI18N
+    public static final String RETURN = "return";   //NOI18N
         
     private static final Logger LOGGER = Logger.getLogger(SelectorsLoader.class.getName());
-    
+
     private SelectorsLoader() {
         
     }
+    
     private static List<JQueryCodeCompletion.SelectorItem> result = new ArrayList<JQueryCodeCompletion.SelectorItem>();
     
     public static Collection<JQueryCodeCompletion.SelectorItem> getSelectors(File file) {
@@ -107,6 +110,11 @@ public class SelectorsLoader extends DefaultHandler {
     public static String getDocumentation(File file, String selectorName) {
         DocumentationBuilder documentationBuilder = new DocumentationBuilder(file);
         return documentationBuilder.buildForSelector(selectorName);
+    }
+    
+    static String getMethodDocumentation(File file, String name) {
+        DocumentationBuilder documentationBuilder = new DocumentationBuilder(file);
+        return documentationBuilder.buildForMethod(name);
     }
 
     public static void addToModel(File apiFile, JsObject jQuery) {
@@ -163,6 +171,17 @@ public class SelectorsLoader extends DefaultHandler {
         }
     }
     
+    private static class Signature {
+        List<Argument> arguments;
+        String fromVersion;
+
+        public Signature() {
+            this.arguments = new ArrayList<Argument>();
+            this.fromVersion = null;
+        }
+        
+    }
+    
     private static class Argument {
         String name;
         String type;
@@ -177,38 +196,61 @@ public class SelectorsLoader extends DefaultHandler {
     
     private static class DocumentationBuilder extends DefaultHandler {
 
-        
         private static final String TABLE_STYLE= "style=\"border: 0px; width: 100%;\""; //NOI18N
         private static final String TD_STYLE = "style=\"text-aling:left; border-width: 0px;padding: 1px;padding:3px;\" ";  //NOI18N
         private static final String TD_STYLE_MAX_WIDTH = "style=\"text-aling:left; border-width: 0px;padding: 1px;padding:3px;width:80%;\" ";  //NOI18N
         
         private StringBuilder documentation;
-        private boolean inSelector;
-        private String selectorName;
+        private boolean inTag;
+        private String interestedInTypeTag;
+        private String elementName;
         private File file;
         private List<Tag> tagPath;
         
         private String sample;
+        private String returns;
         private String description;
         private List<String> notes;
         private String exampleDesc;
         private String longDescription;
-        private String fromVersion;
         private String argName;
         private String argType;
-        private List<Argument> arguments;
+        private List<Signature> signatures;
         
         public DocumentationBuilder(File file) {
-            inSelector = false;
+            inTag = false;
             this.file = file;
             tagPath = new ArrayList<Tag>();
+        }
+        
+        public String buildForMethod(String name) {
+            documentation = new StringBuilder();
+            try {
+                long start = System.currentTimeMillis();
+                elementName = name;
+                interestedInTypeTag = METHOD;
+                SAXParserFactory factory = SAXParserFactory.newInstance();
+                SAXParser parser = factory.newSAXParser();
+                parser.parse(file, this);
+                long end = System.currentTimeMillis();
+                LOGGER.log(Level.FINE, "Loading selectors from API file took {0}ms ", (end - start)); //NOI18N
+
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (ParserConfigurationException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (SAXException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            return documentation.toString();
         }
         
         public String buildForSelector(String name) {
             documentation = new StringBuilder();
             try {
                 long start = System.currentTimeMillis();
-                selectorName = name;
+                elementName = name;
+                interestedInTypeTag = SELECTOR;
                 SAXParserFactory factory = SAXParserFactory.newInstance();
                 SAXParser parser = factory.newSAXParser();
                 parser.parse(file, this);
@@ -227,7 +269,7 @@ public class SelectorsLoader extends DefaultHandler {
         
         @Override
         public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-            if (inSelector) {
+            if (inTag) {
 
                 Tag current;
                 try {
@@ -236,22 +278,33 @@ public class SelectorsLoader extends DefaultHandler {
                     current = Tag.notinterested;
                 }
                 tagPath.add(0, current);
+                switch(current) {
+                    case argument:
+                        argName = attributes.getValue(NAME);
+                        argType = attributes.getValue(TYPE);
+                        break;
+                    case signature:
+                        signatures.add(new Signature());
+                        break;
+                }
                 if (current == Tag.argument) {
-                    argName = attributes.getValue(NAME);
-                    argType = attributes.getValue(TYPE);
+                    
                 }
             } else if (qName.equals(Tag.entry.name())) {
                 String type = attributes.getValue(TYPE);
-                if (type.equals(SELECTOR)) {
+                if (type.equals(interestedInTypeTag)) {
                     String name = attributes.getValue(NAME);
-                    if (name.equals(selectorName)) {
-                        inSelector = true;
+                    
+                    if (name.equals(elementName)) {
+                        tagPath.add(Tag.entry);
+                        returns = attributes.getValue(RETURN);
+                        inTag = true;
                         description = "";
                         longDescription = "";
                         sample = "";
-                        fromVersion = longDescription = "";
+                        longDescription = "";
                         notes = new ArrayList<String>();
-                        arguments = new ArrayList<Argument>();
+                        signatures = new ArrayList<Signature>();
                     }
                 }
             }
@@ -260,75 +313,42 @@ public class SelectorsLoader extends DefaultHandler {
 
         @Override
         public void endElement(String uri, String localName, String qName) throws SAXException {
-            if (inSelector) {
-                if (qName.equals(Tag.entry.name())) {
-                    inSelector = false;
-                    createHtmlDoc();
-                } else if (tagPath.size() > 0) {
-                    tagPath.remove(0);
-
+            if (inTag) {
+                if (tagPath.size() > 0) {
+                    Tag removed = tagPath.remove(0);
+                    switch (removed) {
+                        case entry:
+                            inTag = false;
+                            if (METHOD.equals(interestedInTypeTag)) {
+                                createMethodHtmlDoc();
+                            } else {
+                                createSelectorHtmlDoc();
+                            }
+                            break;
+                        case signature:
+                    }
+                }
+                if (tagPath.isEmpty() && qName.equals(Tag.entry.name())) {
+                    
                 }
             }
-        }
-
-        private void createHtmlDoc() {
-            documentation.append("<html>\n");
-            documentation.append("<head>\n");
-
-            documentation.append("</head>\n");
-            documentation.append("<body style='font-family: Arial; font-size: 11px'>\n");
-            documentation.append("<table width='100%'><tr>\n");
-            documentation.append("<td style='font-weight: bold; font-size: large'>jQuery('").append(sample).append("')</td>\n");
-            documentation.append("<td style='vertical-align: bottom; text-align: right; font-weight: bold;font-size: small'>version added: ").append(fromVersion).append("</td>\n");
-            documentation.append("</tr></table>\n");
-            documentation.append("<hr/>\n");
-            documentation.append("<p style='font-size: 12px'>\n");
-            documentation.append("<span style='font-weight: bold'>").append(NbBundle.getMessage(SelectorsLoader.class, "LBL_Description")).append(" </span>\n");
-            documentation.append("<span>").append(description).append("</span>\n");
-            documentation.append("</p> \n");
-            if (!arguments.isEmpty()) {
-                documentation.append("<p style='font-size: 12px'>\n");
-                documentation.append("<span style='font-weight: bold'>").append(NbBundle.getMessage(SelectorsLoader.class, "LBL_Arguments")).append("</span>\n");
-                documentation.append("<table cellspacing=0 " + TABLE_STYLE + ">\n");
-                for (Argument arg : arguments) {
-                    documentation.append(String.format("<tr><td>&nbsp;</td><td valign=\"top\" %s><nobr>%s</nobr></td><td valign=\"top\" %s><nobr><b>%s</b></nobr></td><td valign=\"top\" %s>%s</td></tr>\n", //NOI18N
-                            TD_STYLE, arg.type, TD_STYLE, arg.name, TD_STYLE_MAX_WIDTH, arg.description));
-                }
-                documentation.append("</table>\n"); //NOI18N
-                documentation.append("</p> \n");
-            }
-            if (!longDescription.isEmpty()) {
-                documentation.append("<div style='font-size: small'>").append(longDescription).append("</div>\n");
-            }
-            if (!notes.isEmpty()) {
-                documentation.append("<p style='font-size: 12px'>\n");
-                documentation.append("<span style='font-weight: bold'>Additional Notes: </span>\n");
-                documentation.append("<ul>\n");
-                for (String note : notes) {
-                    documentation.append("<li>").append(note).append("</li>\n");
-                }
-                documentation.append("</ul>\n");
-                documentation.append("</p> \n");
-
-            }
-            documentation.append("</body>\n");
-            documentation.append("</html>\n");
         }
 
         @Override
         public void characters(char[] ch, int start, int length) throws SAXException {
-            if (inSelector && tagPath.size() > 0) {
+            if (inTag && tagPath.size() > 0) {
                 switch (tagPath.get(0)) {
                     case added:
-                        fromVersion = new String(ch, start, length);
+                        signatures.get(signatures.size() - 1).fromVersion = new String(ch, start, length);
                         break;
                     case desc:
-                        if (tagPath.size() == 1) {
-                            description = new String(ch, start, length);
-                        } else {
-                            if (tagPath.get(1) == Tag.argument) {
-                                arguments.add(new Argument(argName, argType, new String(ch, start, length)));
-                            }
+                        switch(tagPath.get(1)) {
+                            case entry:
+                                description = new String(ch, start, length);
+                                break;
+                            case argument:
+                                signatures.get(signatures.size()-1).arguments.add(new Argument(argName, argType, new String(ch, start, length)));
+                                break;
                         }
                         break;
                     case longdesc:
@@ -343,6 +363,163 @@ public class SelectorsLoader extends DefaultHandler {
                 }
             }
         }
+        
+        private void createMethodHtmlDoc() {
+            htmlDocStart();
+            htmlDocMethodTitle();
+            htmlDocDescription();
+            htmlSignatures();
+            htmlDocLongDescription();
+            htmlDocEnd();
+        }
+        
+        private void createSelectorHtmlDoc() {
+            htmlDocStart();
+            htmlDocSelectorTitle();
+            htmlDocDescription();
+            htmlDocSelectorSignatures();
+            htmlDocLongDescription();
+            htmlDocNotes();
+            htmlDocEnd();
+        }
+        
+        private String createSignatureText(Signature signature, boolean link) {
+            StringBuilder sb = new StringBuilder();
+            sb.append('.'); // NOI18N
+            if(link) {
+                sb.append(String.format("<a style='color: white' href='http://api.jquery.com/%s/'>%s</a>", elementName, elementName)); // NOI18N
+            } else {
+                sb.append(elementName);
+            }
+            sb.append("( ");                                                    // NOI18N
+            if(signature.arguments.isEmpty()) {
+                sb.append(")");                                                 // NOI18N
+            } else {
+                boolean addComma = false;
+                for(Argument argument : signature.arguments) {
+                    if(addComma) {
+                        sb.append(", ");                                        // NOI18N
+                    } else {
+                        addComma = true;
+                    }
+                    sb.append(argument.name);
+                }
+                sb.append(" )");                                                // NOI18N
+            }
+            return sb.toString();
+        }
+        
+        private String addStyles(String text) {
+            String result = text.replace("<pre>", "<pre style='margin: 1em 0px; display: block; font-family: monospace;white-space: pre;background-color: #fefeca; padding:6px;'>"); // NOI18N
+            return result;
+        }
+
+        private void htmlDocStart() {
+            documentation.append("<html>\n");                                   // NOI18N
+            documentation.append("<head>\n");                                   // NOI18N
+            documentation.append("</head>\n");                                  // NOI18N
+            documentation.append("<body style='font-family: Arial; font-size: 11px'>\n"); // NOI18N      
+        }
+
+        private void htmlDocEnd() {
+            documentation.append("</body>\n");                                  // NOI18N
+            documentation.append("</html>\n");                                  // NOI18N
+        }
+        private void htmlDocMethodTitle(){
+            documentation.append("<table style='width:100%; background-color:#1f6fb4; color:white; margin:0px; padding:3px;font-weight: bold; font-size: 12px'><tr>\n"); // NOI18N
+            String firstSignature;
+            if(signatures.isEmpty()) {
+                firstSignature = String.format(".<a style='color: white' href='http://api.jquery.com/%s/'>%s</a>( )", elementName, elementName); // NOI18N
+            } else {
+                firstSignature = createSignatureText(signatures.get(0), true);
+            }
+            documentation.append("<td>").append(firstSignature).append("</td>\n"); // NOI18N
+            documentation.append("<td style='text-align: right;font-style: italic;'>").append(String.format("Returns: <a style='color:white;' href='http://api.jquery.com/Types/#'%s> %s</a>",returns, returns)).append("</td>\n"); // NOI18N
+            documentation.append("</tr></table>");                              // NOI18N
+        }
+        
+        private void htmlDocSelectorTitle(){
+            documentation.append("<table style='width:100%; background-color:#1f6fb4; color:white; margin:0px; padding:3px;font-weight: bold; font-size: 12px'><tr>\n");// NOI18N
+            String title= String.format("<a style='color: white' href='http://api.jquery.com/%s-selector/'>%s</a> selector", elementName, elementName); // NOI18N
+            documentation.append("<td>").append(title).append("</td>\n");       // NOI18N
+            documentation.append("</tr></table>");                              // NOI18N
+        }
+             
+        private void htmlDocDescription() {
+            if (description != null && !description.isEmpty()) {
+                documentation.append("<div style='margin: 6px'>\n");            // NOI18N
+                documentation.append(description);
+                documentation.append("</div> \n");                              // NOI18N
+            }
+        }
+        
+        private void htmlDocLongDescription() {
+            if (longDescription != null && !longDescription.isEmpty()) {
+                documentation.append("<div style='margin: 6px'>\n");            // NOI18N
+                documentation.append(addStyles(longDescription));
+                documentation.append("</div> \n");                              // NOI18N
+            }
+        }
+        
+        private void htmlDocNotes() {
+            if (!notes.isEmpty()) {
+                documentation.append("<p style='font-size: 12px'>\n");          // NOI18N
+                documentation.append("<span style='font-weight: bold'>Additional Notes: </span>\n");// NOI18N
+                documentation.append("<ul>\n");                                 // NOI18N
+                for (String note : notes) {
+                    documentation.append("<li>").append(note).append("</li>\n");    // NOI18N
+                }
+                documentation.append("</ul>\n");                                // NOI18N
+                documentation.append("</p> \n");                                // NOI18N
+            }
+        }
+        
+        private void htmlSignatures() {    
+            if (!signatures.isEmpty()) {
+                documentation.append("<table align='right' style='width:95%; background-color:#d1d1d1; padding:12px;margin-right:6px;'><tr><td>"); // NOI18N
+                for(Signature signature : signatures) {
+                    documentation.append("<table width='100%' style='font-weight: bold;font-size: small; color:#666666'><tr>\n"); // NOI18N
+                    documentation.append("<td>");                               // NOI18N
+                    documentation.append(createSignatureText(signature, false));
+                    documentation.append("</td><td style='vertical-align: bottom; text-align: right;'>"); // NOI18N
+                    documentation.append(String.format("version added: <a style='color: #5DB0E6;' href='http://api.jquery.com/category/version/%s/'>%s</a>", signature.fromVersion, signature.fromVersion));// NOI18N
+                    documentation.append("</td>");                              // NOI18N    
+                    documentation.append("</tr></table>\n");                    // NOI18N
+                    documentation.append("<hr style='width: 100%; height: 2px'/>"); // NOI18N
+                    for(Argument argument: signature.arguments) {
+                        documentation.append("<p style='font-size: small; margin-bottom:6px'>");// NOI18N
+                        documentation.append("<b>").append(argument.name).append("</b>: "); // NOI18N
+                        documentation.append(argument.description);
+                        documentation.append("</p>");                           // NOI18N
+                    }
+                }
+                documentation.append("</td></tr></table>");                     // NOI18N
+            }
+        }
+        
+        private void htmlDocSelectorSignatures() {    
+            if (!signatures.isEmpty()) {
+                documentation.append("<table align='right' style='width:95%; background-color:#d1d1d1; padding:12px;margin-right:6px;'><tr><td>"); // NOI18N
+                for(Signature signature : signatures) {
+                    documentation.append("<table width='100%' style='font-weight: bold;font-size: small; color:#666666'><tr>\n"); // NOI18N
+                    documentation.append("<td>");                               // NOI18N
+                    documentation.append(String.format("jQuery('%s')", sample));// NOI18N
+                    documentation.append("</td><td style='vertical-align: bottom; text-align: right;'>");   // NOI18N
+                    documentation.append(String.format("version added: <a style='color: #5DB0E6;' href='http://api.jquery.com/category/version/%s/'>%s</a>", signature.fromVersion, signature.fromVersion));// NOI18N
+                    documentation.append("</td>");                              // NOI18N
+                    documentation.append("</tr></table>\n");                    // NOI18N
+                    documentation.append("<hr style='width: 100%; height: 2px'/>"); // NOI18N
+                    for(Argument argument: signature.arguments) {
+                        documentation.append("<p style='font-size: small; margin-bottom:6px'>"); // NOI18N
+                        documentation.append("<b>").append(argument.name).append("</b>: "); // NOI18N
+                        documentation.append(argument.description);
+                        documentation.append("</p>");                           // NOI18N
+                    }
+                }
+                documentation.append("</td></tr></table>");                     // NOI18N
+            }
+        }
+        
     }
     
     private static class JQueryModelBuilder extends DefaultHandler {
@@ -379,21 +556,14 @@ public class SelectorsLoader extends DefaultHandler {
             switch (current) {
                 case entry:
                     String type = attributes.getValue(TYPE);
-                    if (type.equals("method")) {
+                    if (type.equals(METHOD)) {
                         isMethod = true;
-                    } else if (type.equals("property")) {
+                    } else if (type.equals("property")) { // NOI18N
                         isProperty = true;
                     }
                     if (isMethod || isProperty) {
                         name = attributes.getValue(NAME);
-                        returns = attributes.getValue("return");
-//                        if (name.indexOf(".") == -1) {
-//                            if (type.equals("method")) {
-//                                lastFunction = new JsFunctionImpl(null, jQuery, new IdentifierImpl(name, OffsetRange.NONE), Collections.<Identifier>emptyList(), OffsetRange.NONE);
-//                                lastFunction.addReturnType(new TypeUsageImpl(returns, -1, true));
-//                                jQuery.addProperty(name, lastFunction);
-//                            }
-//                        }
+                        returns = attributes.getValue(RETURN);
                     }
                     break;
                 case argument : 
