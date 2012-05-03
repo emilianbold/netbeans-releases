@@ -165,23 +165,19 @@ public class MakeSharabilityQuery implements SharabilityQueryImplementation2 {
         inited = false;
         init();
     }
-    private void init() {
-        if (!inited) {
-            synchronized (this) {
-                if (!inited && this.projectDescriptorProvider.gotDescriptor()) {
-                    MakeConfigurationDescriptor cd = this.projectDescriptorProvider.getConfigurationDescriptor();
-                    if (cd != null) {
-                        Configurations confs = cd.getConfs();
-                        Set<String> newSet = new HashSet<String>();
-                        for (Configuration conf : confs.getConfigurations()) {
-                            if (conf instanceof MakeConfiguration) {
-                                newSet.add(CndFileUtils.normalizeAbsolutePath(((MakeConfiguration) conf).getAbsoluteOutputValue()));
-                            }
-                        }
-                        skippedFiles = newSet;
-                        inited = true;
+    private synchronized void init() {
+        if (!inited && this.projectDescriptorProvider.gotDescriptor()) {
+            MakeConfigurationDescriptor cd = this.projectDescriptorProvider.getConfigurationDescriptor();
+            if (cd != null) {
+                Configurations confs = cd.getConfs();
+                Set<String> newSet = new HashSet<String>();
+                for (Configuration conf : confs.getConfigurations()) {
+                    if (conf instanceof MakeConfiguration) {
+                        newSet.add(CndFileUtils.normalizeAbsolutePath(((MakeConfiguration) conf).getAbsoluteOutputValue()));
                     }
                 }
+                skippedFiles = newSet;
+                inited = true;
             }
         }
     }

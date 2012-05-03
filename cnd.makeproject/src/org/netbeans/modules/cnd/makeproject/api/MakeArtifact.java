@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.cnd.makeproject.api;
 
-import java.io.File;
 import java.io.IOException;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -58,10 +57,9 @@ import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
-public class MakeArtifact {
+public class MakeArtifact implements Cloneable {
     public static final int TYPE_UNKNOWN = 0;
     public static final int TYPE_APPLICATION = 1;
     public static final int TYPE_DYNAMIC_LIB = 2;

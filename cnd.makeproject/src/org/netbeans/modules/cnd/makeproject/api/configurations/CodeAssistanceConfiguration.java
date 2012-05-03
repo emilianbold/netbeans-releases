@@ -50,7 +50,7 @@ import org.openide.util.NbBundle;
  *
  * @author Alexander Simon
  */
-public class CodeAssistanceConfiguration {
+public class CodeAssistanceConfiguration implements Cloneable {
     private MakeConfiguration makeConfiguration;
     private BooleanConfiguration buildAnalyzer;
     private StringConfiguration tools;
