@@ -74,7 +74,7 @@ import org.openide.windows.WindowManager;
 autostore = false)
 @TopComponent.Description(preferredID = AnalysisResultTopComponent.PREFERRED_ID,
 //iconBase="SET/PATH/TO/ICON/HERE", 
-persistenceType = TopComponent.PERSISTENCE_NEVER)
+persistenceType = TopComponent.PERSISTENCE_ALWAYS)
 @TopComponent.Registration(mode = "output", openAtStartup = false, position=12000)
 @ActionID(category = "Window", id = "org.netbeans.modules.analysis.ui.AnalysisResultTopComponent")
 @ActionReference(path = "Menu/Window/Output", position = 330)
