@@ -93,14 +93,17 @@ public abstract class CndPanelGUI  extends javax.swing.JPanel implements Documen
     protected abstract void updateCreatedFile();
     public abstract void initValues( FileObject template, FileObject preselectedFolder, String documentName );
 
+    @Override
     public void changedUpdate(javax.swing.event.DocumentEvent e) {
         updateCreatedFile();
     }    
     
+    @Override
     public void insertUpdate(javax.swing.event.DocumentEvent e) {
         updateCreatedFile();
     }
     
+    @Override
     public void removeUpdate(javax.swing.event.DocumentEvent e) {
         updateCreatedFile();
     }
@@ -171,12 +174,13 @@ public abstract class CndPanelGUI  extends javax.swing.JPanel implements Documen
         return NbBundle.getMessage( CndPanelGUI.class, name);
     }
 
-    protected class GroupCellRenderer extends JLabel implements ListCellRenderer {
+    protected static class GroupCellRenderer extends JLabel implements ListCellRenderer {
     
         public GroupCellRenderer() {
             setOpaque( true );
         }
         
+        @Override
         public Component getListCellRendererComponent( JList list, Object value, int index, boolean isSelected, boolean cellHasFocus ) {
             if (value instanceof SourceGroup) {
                 SourceGroup group = (SourceGroup)value;

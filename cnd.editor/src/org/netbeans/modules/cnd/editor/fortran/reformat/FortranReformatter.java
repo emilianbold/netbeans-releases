@@ -63,8 +63,8 @@ public class FortranReformatter implements ReformatTask {
     private Context context;
     private Document doc;
     private FortranCodeStyle codeStyle;
-    private static boolean expandTabToSpaces = true;
-    private static int tabSize = 8;
+    private boolean expandTabToSpaces = true;
+    private int tabSize = 8;
 
     public FortranReformatter(Context context) {
         this.context = context;
@@ -84,6 +84,9 @@ public class FortranReformatter implements ReformatTask {
         codeStyle.setupLexerAttributes(doc);
         expandTabToSpaces = codeStyle.expandTabToSpaces();
         tabSize = codeStyle.getTabSize();
+        if (tabSize <= 1) {
+            tabSize = 8;
+        }
         if (context != null) {
             if (MIMENames.FORTRAN_MIME_TYPE.equals(context.mimePath())) {
                 for (Context.Region region : context.indentRegions()) {
@@ -114,7 +117,7 @@ public class FortranReformatter implements ReformatTask {
             if (startOffset > curEnd || endOffset < curStart) {
                 continue;
             }
-            String curText = diff.getText();
+            String curText = diff.getText(expandTabToSpaces, tabSize);
             if (endOffset < curEnd) {
                 if (curText != null && curText.length() > 0) {
                     curText = curEnd - endOffset >= curText.length() ? null :
@@ -217,8 +220,8 @@ public class FortranReformatter implements ReformatTask {
             return end;
         }
 
-        public String getText() {
-            return repeatChar(newLines, '\n', false) + repeatChar(spaces, ' ', isIndent); // NOI18N
+        public String getText(boolean expandTabToSpaces, int tabSize) {
+            return repeatChar(newLines, '\n', false, expandTabToSpaces, tabSize) + repeatChar(spaces, ' ', isIndent, expandTabToSpaces, tabSize); // NOI18N
         }
 
         public void setText(int newLines, int spaces, boolean isIndent) {
@@ -245,7 +248,7 @@ public class FortranReformatter implements ReformatTask {
             return "Diff<" + start + "," + end + ">: newLines=" + newLines + " spaces=" + spaces; //NOI18N
         }
 
-        public static String repeatChar(int length, char c, boolean indent) {
+        private static String repeatChar(int length, char c, boolean indent, boolean expandTabToSpaces, int tabSize) {
             if (length == 0) {
                 return ""; //NOI18N
             } else if (length == 1) {
@@ -256,10 +259,10 @@ public class FortranReformatter implements ReformatTask {
                 }
             }
             StringBuilder buf = new StringBuilder(length);
-            if (c == ' ' && indent && !FortranReformatter.expandTabToSpaces && FortranReformatter.tabSize > 1) {
-                while (length >= FortranReformatter.tabSize) {
+            if (c == ' ' && indent && !expandTabToSpaces && tabSize > 1) {
+                while (length >= tabSize) {
                     buf.append('\t'); //NOI18N
-                    length -= FortranReformatter.tabSize;
+                    length -= tabSize;
                 }
             }
             for (int i = 0; i < length; i++) {
@@ -268,8 +271,8 @@ public class FortranReformatter implements ReformatTask {
             return buf.toString();
         }
 
-        public static boolean equals(String text, int newLines, int spaces, boolean isIndent) {
-            String space = repeatChar(newLines, '\n', false) + repeatChar(spaces, ' ', isIndent); // NOI18N
+        public static boolean equals(String text, int newLines, int spaces, boolean isIndent, boolean expandTabToSpaces, int tabSize) {
+            String space = repeatChar(newLines, '\n', false, expandTabToSpaces, tabSize) + repeatChar(spaces, ' ', isIndent, expandTabToSpaces, tabSize); // NOI18N
             return text.equals(space);
         }
     }

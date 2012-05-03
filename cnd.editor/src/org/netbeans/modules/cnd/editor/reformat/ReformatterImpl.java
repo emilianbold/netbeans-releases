@@ -68,16 +68,19 @@ public class ReformatterImpl {
     private final int startOffset;
     private final int endOffset;
     private PreprocessorFormatter preprocessorFormatter;
-    private int tabSize;
+    final int tabSize;
+    final boolean expandTabToSpaces;
     private QtExtension qtExtension = new QtExtension();
     
     ReformatterImpl(TokenSequence<CppTokenId> ts, int startOffset, int endOffset, CodeStyle codeStyle){
         braces = new BracesStack(codeStyle);
-        tabSize = codeStyle.getTabSize();
-        if (tabSize <= 1) {
-            tabSize = 8;
+        int aTabSize = codeStyle.getTabSize();
+        if (aTabSize <= 1) {
+            aTabSize = 8;
         }
-        this.ts = new ContextDetector(ts, diffs, braces, tabSize);
+        tabSize = aTabSize;
+        expandTabToSpaces = codeStyle.expandTabToSpaces();
+        this.ts = new ContextDetector(ts, diffs, braces, tabSize, expandTabToSpaces);
         this.startOffset = startOffset;
         this.endOffset = endOffset;
         this.codeStyle = codeStyle;
@@ -1090,7 +1093,6 @@ public class ReformatterImpl {
                         break;
                 }
             }
-            return;
         } finally {
             ts.moveIndex(index);
             ts.moveNext();
@@ -2107,7 +2109,6 @@ public class ReformatterImpl {
                 }
                 spaceBefore(previous, codeStyle.spaceBeforeMethodCallParen(), codeStyle.spaceKeepExtra());
                 spaceAfter(current, codeStyle.spaceWithinMethodCallParens(), codeStyle.spaceKeepExtra());
-                return;
             } else if (p != null && 
                        (KEYWORD_CATEGORY.equals(p.id().primaryCategory()) ||
                         KEYWORD_DIRECTIVE_CATEGORY.equals(p.id().primaryCategory()))){
@@ -2139,10 +2140,8 @@ public class ReformatterImpl {
                         }
                         return;
                 }
-                return;
             } else if (ts.isTypeCast()){
                 spaceAfter(current, codeStyle.spaceWithinTypeCastParens(), codeStyle.spaceKeepExtra());
-                return;
             } else {
                 spaceAfter(current, codeStyle.spaceWithinParens(), codeStyle.spaceKeepExtra());
             }
@@ -2187,11 +2186,9 @@ public class ReformatterImpl {
                     }
                 }
                 spaceBefore(previous, codeStyle.spaceWithinMethodCallParens(), codeStyle.spaceKeepExtra());
-                return;
             } else if (ts.isTypeCast()){
                 spaceBefore(previous, codeStyle.spaceWithinTypeCastParens(), codeStyle.spaceKeepExtra());
                 spaceAfter(current, codeStyle.spaceAfterTypeCast(), codeStyle.spaceKeepExtra());
-                return;
             } else {
                 spaceBefore(previous, codeStyle.spaceWithinParens(), codeStyle.spaceKeepExtra());
             }
