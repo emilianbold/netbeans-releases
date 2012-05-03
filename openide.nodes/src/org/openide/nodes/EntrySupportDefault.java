@@ -65,6 +65,8 @@ import org.openide.util.Utilities;
  * for simple mappings.
  */
 class EntrySupportDefault extends EntrySupport {
+    private List<Entry> entries = Collections.emptyList();
+
     private static final Reference<ChildrenArray> EMPTY = new WeakReference<ChildrenArray>(null);
     /** array of children Reference (ChildrenArray) */
     private Reference<ChildrenArray> array = EMPTY;
@@ -759,6 +761,11 @@ class EntrySupportDefault extends EntrySupport {
         } finally {
             Children.PR.exitWriteAccess();
         }
+    }
+
+    @Override
+    protected List<Entry> getEntries() {
+        return new ArrayList<Entry>(entries);
     }
 
     /** Information about an entry. Contains number of nodes,

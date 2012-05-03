@@ -41,25 +41,9 @@
  */
 package org.openide.nodes;
 
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
-import java.util.AbstractList;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.openide.nodes.Children.Entry;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -69,8 +53,6 @@ abstract class EntrySupport {
 
     /** children we are attached to */
     public final Children children;
-
-    protected List<Entry> entries = Collections.emptyList();
 
     /** Creates a new instance of EntrySupport */
     protected EntrySupport(Children children) {
@@ -105,9 +87,7 @@ abstract class EntrySupport {
     /** Access to copy of current entries.
      * @return copy of entries in the objects
      */
-    protected final List<Entry> getEntries() {
-        return new ArrayList<Entry>(this.entries);
-    }
+    protected abstract List<Entry> getEntries();
 
     /** Abililty to create a snaphshot
      * @return immutable and unmodifiable list of Nodes that represent the children at current moment

@@ -62,6 +62,7 @@ import org.openide.util.Utilities;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 class EntrySupportLazy extends EntrySupport {
+    private List<Entry> entries = Collections.emptyList();
     private Map<Entry, EntryInfo> entryToInfo = new HashMap<Entry, EntryInfo>();
     /** entries with node*/
     private List<Entry> visibleEntries = Collections.emptyList();
@@ -598,6 +599,11 @@ class EntrySupportLazy extends EntrySupport {
             }
         }
         return sb.toString();
+    }
+
+    @Override
+    protected List<Entry> getEntries() {
+        return new ArrayList<Entry>(this.entries);
     }
 
     /** holds node for entry; 1:1 mapping */
