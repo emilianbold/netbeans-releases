@@ -61,13 +61,15 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author Anton Chechel <anton.chechel@oracle.com>
+ * @author Anton Chechel
+ * @author Petr Somol
  */
 public class ConfigureFXMLControllerPanelVisual extends JPanel implements DocumentListener {
     
     private Panel observer;
     private File[] srcRoots;
     private File rootFolder;
+    private FileObject targetFolder;
     private String fxmlName;
 
     private ConfigureFXMLControllerPanelVisual(Panel observer) {
@@ -86,13 +88,19 @@ public class ConfigureFXMLControllerPanelVisual extends JPanel implements Docume
         existingNameTextField.getDocument().addDocumentListener(this);
     }
 
-    public void initValues(FileObject template, String fxmlName, File[] srcRoots, File rootFolder) {
+    public void initValues(FileObject template, FileObject targetFolder, String fxmlName, File[] srcRoots, File rootFolder) {
         if (template == null) {
                 throw new IllegalArgumentException(
                         NbBundle.getMessage(ConfigureFXMLControllerPanelVisual.class,
                             "MSG_ConfigureFXMLPanel_Template_Error")); // NOI18N
         }
         
+        if (targetFolder == null) {
+                throw new IllegalArgumentException(
+                        NbBundle.getMessage(ConfigureFXMLControllerPanelVisual.class,
+                            "MSG_ConfigureFXMLPanel_Target_Error")); // NOI18N
+        }
+
         if (srcRoots == null || srcRoots.length < 1) {
                 throw new IllegalArgumentException(
                         NbBundle.getMessage(ConfigureFXMLControllerPanelVisual.class,
@@ -108,6 +116,7 @@ public class ConfigureFXMLControllerPanelVisual extends JPanel implements Docume
         }
         putClientProperty("NewFileWizard_Title", displayName); // NOI18N
 
+        this.targetFolder = targetFolder;
         this.fxmlName = fxmlName;
         this.srcRoots = srcRoots;
         this.rootFolder = rootFolder;
@@ -127,6 +136,35 @@ public class ConfigureFXMLControllerPanelVisual extends JPanel implements Docume
     String getExistingControllerName() {
         String text = existingNameTextField.getText().trim();
         return text.length() == 0 ? null : text;
+    }
+    
+    FileObject getTargetFolder() {
+        return targetFolder;
+    }
+
+    FileObject getSourceRootFolder() {
+        if(srcRoots != null && srcRoots[0] != null && srcRoots[0].exists()) {
+            return FileUtil.toFileObject(srcRoots[0]);
+        }
+        return null;
+    }
+    
+    String getNewControllerFXMLName() {
+        String text = getNewControllerName();
+        if(text != null) {
+            FileObject targetFO = getTargetFolder();
+            FileObject rootFO = getSourceRootFolder();
+            if(targetFO != null && rootFO != null) {
+                String rel = FileUtil.getRelativePath(rootFO, targetFO);
+                if(rel != null) {
+                    rel = rel.replace("\\", "."); // NOI18N
+                    rel = rel.replace("/", "."); // NOI18N
+                    return rel.length() > 0 ? rel + "." + text : text; // NOI18N
+                }
+            }
+            return text;
+        }
+        return null;
     }
 
     private void radioButtonsStateChanged() {
@@ -322,9 +360,11 @@ public class ConfigureFXMLControllerPanelVisual extends JPanel implements Docume
         chooser.setFileFilter(FXMLTemplateWizardIterator.FXMLTemplateFileFilter.createJavaFilter());
         String existingPath = existingNameTextField.getText();
         if (existingPath.length() > 0) {
-            File f = new File(existingPath);
+            File f = new File(rootFolder.getPath() + File.pathSeparator + existingPath);
             if (f.exists()) {
                 chooser.setSelectedFile(f);
+            } else {
+                chooser.setCurrentDirectory(rootFolder);
             }
         } else {
             chooser.setCurrentDirectory(rootFolder);
@@ -462,7 +502,7 @@ public class ConfigureFXMLControllerPanelVisual extends JPanel implements Docume
             String fxmlName = Templates.getTargetName(settings);
             File[] srcRoots = (File[]) settings.getProperty(FXMLTemplateWizardIterator.PROP_SRC_ROOTS);
             File rootFolder = (File) settings.getProperty(FXMLTemplateWizardIterator.PROP_ROOT_FOLDER);
-            component.initValues(Templates.getTemplate(settings), fxmlName, srcRoots, rootFolder);
+            component.initValues(Templates.getTemplate(settings), Templates.getTargetFolder(settings), fxmlName, srcRoots, rootFolder);
 
             // XXX hack, TemplateWizard in final setTemplateImpl() forces new wizard's title
             // this name is used in NewFileWizard to modify the title
@@ -483,7 +523,9 @@ public class ConfigureFXMLControllerPanelVisual extends JPanel implements Docume
             if (isValid()) {
                 settings.putProperty(FXMLTemplateWizardIterator.PROP_JAVA_CONTROLLER_CREATE, component.shouldCreateController());
                 settings.putProperty(FXMLTemplateWizardIterator.PROP_JAVA_CONTROLLER_NAME_PROPERTY, 
-                    component.shouldCreateController() ? component.getNewControllerName() : component.getExistingControllerName());
+                    component.shouldCreateController() ? component.getNewControllerName() : null);
+                settings.putProperty(FXMLTemplateWizardIterator.PROP_JAVA_CONTROLLER_FULLNAME_PROPERTY, 
+                    component.shouldCreateController() ? component.getNewControllerFXMLName() : component.getExistingControllerName());
             }
             settings.putProperty("NewFileWizard_Title", null); // NOI18N
         }
