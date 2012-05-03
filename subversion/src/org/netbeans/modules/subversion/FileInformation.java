@@ -304,7 +304,7 @@ public class FileInformation implements Serializable {
      * is not versioned or its entry is invalid
      */
     public ISVNStatus getEntry(File file) {
-        if (entry == null && file != null) {
+        if (file != null && (entry == null || !entry.getFile().equals(file))) {
             readEntry(file);
         }
         return entry;

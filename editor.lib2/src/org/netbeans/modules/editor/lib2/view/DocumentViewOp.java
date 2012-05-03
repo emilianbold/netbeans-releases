@@ -1324,21 +1324,22 @@ public final class DocumentViewOp
         }
        
         Keymap keymap = docView.getTextComponent().getKeymap();
-        if (evt.getWheelRotation() < 0) {
+        int wheelRotation = evt.getWheelRotation();
+        if (wheelRotation < 0) {
             Action action = keymap.getAction(KeyStroke.getKeyStroke(0x290, modifiers)); //WHEEL_UP constant
             if (action != null) {
                 action.actionPerformed(new ActionEvent(docView.getTextComponent(),0,""));
-                return;
+            } else {
+                origMouseWheelListener.mouseWheelMoved(evt);
             }
-            origMouseWheelListener.mouseWheelMoved(evt);
-        } else {
+        } else if (wheelRotation > 0) {
             Action action = keymap.getAction(KeyStroke.getKeyStroke(0x291, modifiers)); //WHEEL_DOWN constant
             if (action != null) {
                 action.actionPerformed(new ActionEvent(docView.getTextComponent(),0,""));
-                return;
+            } else {
+                origMouseWheelListener.mouseWheelMoved(evt);
             }
-            origMouseWheelListener.mouseWheelMoved(evt);
-        }   
+        } // else: wheelRotation == 0 => do nothing
     }
 
     StringBuilder appendInfo(StringBuilder sb) {

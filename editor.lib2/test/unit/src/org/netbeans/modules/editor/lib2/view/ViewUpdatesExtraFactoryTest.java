@@ -93,6 +93,11 @@ public class ViewUpdatesExtraFactoryTest extends NbTestCase {
     }
 
     @Override
+    protected int timeOut() {
+        return 10000000; //super.timeOut();
+    }
+
+    @Override
     protected Level logLevel() {
         return Level.INFO; // null;
 //        return Level.FINEST;

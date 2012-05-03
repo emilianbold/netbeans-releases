@@ -245,6 +245,9 @@ public abstract class CookieAction extends NodeAction {
 
         /** Removes itself as a listener from given nodes */
         void detachListeners(List<Reference<Node>> nodes) {
+            if (nodes == null) {
+                return;
+            }
             Iterator<Reference<Node>> it = nodes.iterator();
 
             while (it.hasNext()) {

@@ -2335,24 +2335,28 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
             } else {
                 comps = cont.getComponents();
             }
+            boolean contains = false;
             for (int i=0; i < comps.length; i++) {
                 Component comp = comps[i];
-                Rectangle bounds = convertRectangleFromComponent(
-                                       comps[i].getBounds(), cont);
-                boolean intersects = selRect.intersects(bounds);
-
-                RADComponent metacomp = formDesigner.getMetaComponent(comp);
-                if (metacomp != null && intersects) {
-                    toSelect.add(metacomp);
+                Rectangle bounds = convertRectangleFromComponent(comp.getBounds(), cont);
+                if (selRect.intersects(bounds)) {
+                    if (selRect.contains(bounds)) {
+                        contains = true;
+                    }
+                    RADComponent metacomp = formDesigner.getMetaComponent(comp);
+                    if (metacomp != null) {
+                        toSelect.add(metacomp);
+                    }
+                    if (comp instanceof Container) {
+                        subContainers.add(comp);
+                    }
                 }
-
-                if (intersects && comp instanceof Container)
-                    subContainers.add(comp);
             }
 
             if (toSelect.size() > 1
-                    || (toSelect.size() == 1 && subContainers.isEmpty()))
+                    || (toSelect.size() == 1 && (subContainers.isEmpty() || contains))) {
                 return true;
+            }
 
             RADComponent theOnlyOne = toSelect.size() == 1 ? toSelect.get(0) : null;
 

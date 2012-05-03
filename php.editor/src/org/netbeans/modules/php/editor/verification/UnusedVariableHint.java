@@ -285,7 +285,7 @@ public class UnusedVariableHint extends AbstractRule implements PHPRuleWithPrefe
         public void visit(FunctionInvocation node) {
             forceVariableAsUsed = true;
             String functionName = CodeUtils.extractFunctionName(node);
-            if (functionName.equals("compact")) { //NOI18N
+            if ("compact".equals(functionName)) { //NOI18N
                 handleCompactFunction(node);
             }
             super.visit(node);

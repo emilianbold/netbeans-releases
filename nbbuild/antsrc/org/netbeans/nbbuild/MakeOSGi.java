@@ -935,6 +935,7 @@ public class MakeOSGi extends Task {
     ));
 
     private static final Set<String> SKIPPED_PSEUDO_MODULES = new HashSet<String>(Arrays.asList(
+            "org.eclipse.osgi",
             "org.netbeans.core.netigso",
             "org.netbeans.modules.netbinox",
             "org.netbeans.libs.osgi",

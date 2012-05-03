@@ -42,14 +42,10 @@
 package org.netbeans.modules.profiler.freeform;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.profiler.api.project.AntProjectSupport;
 import org.netbeans.modules.profiler.nbimpl.project.AbstractAntProjectSupportProvider;
-import org.netbeans.modules.profiler.nbimpl.project.ProjectUtilities;
 import org.netbeans.spi.project.LookupProvider.Registration.ProjectType;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
-import org.w3c.dom.Element;
 
 /**
  *
@@ -58,52 +54,6 @@ import org.w3c.dom.Element;
 @ProjectServiceProvider(service=org.netbeans.modules.profiler.spi.project.AntProjectSupportProvider.class, 
                         projectTypes={@ProjectType(id="org-netbeans-modules-ant-freeform", position=1220)}) // NOI18N
 public final class FreeFormAntProjectSupportProvider extends AbstractAntProjectSupportProvider {    
-
-    @Override
-    public String getProfilerTargetName(FileObject buildScript, int type, FileObject profiledClassFile) {
-        Project project = getProject();
-        final Element e = ProjectUtils.getAuxiliaryConfiguration(project).getConfigurationFragment("data", // NOI18N
-                ProjectUtilities.PROFILER_NAME_SPACE,
-                false);
-        String profileTarget = e.getAttribute(FreeFormProjectsSupport.PROFILE_TARGET_ATTRIBUTE);
-        String profileSingleTarget = e.getAttribute(FreeFormProjectsSupport.PROFILE_SINGLE_TARGET_ATTRIBUTE);
-
-        switch (type) {
-            case AntProjectSupport.TARGET_PROFILE:
-                profileTarget = FreeFormProjectsSupport.selectProfilingTarget(project, buildScript, AntProjectSupport.TARGET_PROFILE, profileTarget);
-
-                if (profileTarget == null) {
-                    return null; // cancelled by the user
-                }
-
-                FreeFormProjectsSupport.saveProfilerConfig(project, profileTarget, profileSingleTarget);
-
-                return profileTarget;
-            case AntProjectSupport.TARGET_PROFILE_SINGLE:
-                profileSingleTarget = FreeFormProjectsSupport.selectProfilingTarget(project, buildScript, AntProjectSupport.TARGET_PROFILE_SINGLE, profileSingleTarget);
-
-                if (profileSingleTarget == null) {
-                    return null; // cancelled by the user
-                }
-
-                FreeFormProjectsSupport.saveProfilerConfig(project, profileTarget, profileSingleTarget);
-
-                return profileSingleTarget;
-            case AntProjectSupport.TARGET_PROFILE_TEST_SINGLE:
-                profileSingleTarget = FreeFormProjectsSupport.selectProfilingTarget(project, buildScript, type, profileSingleTarget);
-
-                if (profileSingleTarget == null) {
-                    return null; // cancelled by the user
-                }
-
-                FreeFormProjectsSupport.saveProfilerConfig(project, profileTarget, profileSingleTarget);
-
-                return profileSingleTarget;
-            default:
-                return null;
-        }
-    }
-
     @Override
     public FileObject getProjectBuildScript() {
         return Util.getProjectBuildScript(getProject());

@@ -277,7 +277,11 @@ public class Folder implements FileChangeListener, ChangeListener {
     }
 
     public String getDiskName() {
-        return CndPathUtilitities.getBaseName(getAbsolutePath());
+        String diskName = getAbsolutePath();
+        if (diskName != null) {
+            return CndPathUtilitities.getBaseName(diskName);
+        }
+        return null;
     }
     
     public void attachListeners() {
@@ -406,11 +410,13 @@ public class Folder implements FileChangeListener, ChangeListener {
         // This is dirty fix for #201152. Do not see other way to do this,
         // as Folders instances are always updated and it is impossible
         // to provide them with the right name.
-        if (!isDiskFolder() || getRoot() == null) {
-            return displayName;
-        } else {
-            return getDiskName();
+        if (isDiskFolder() && getRoot() != null) {
+            String diskName = getDiskName();
+            if (diskName != null) {
+                return diskName;
+            }
         }
+        return displayName;
     }
 
     public void setDisplayName(String displayName) {
@@ -1003,11 +1009,14 @@ public class Folder implements FileChangeListener, ChangeListener {
     }
 
     public String getAbsolutePath() {
-        String absRootPath = CndPathUtilitities.toAbsolutePath(configurationDescriptor.getBaseDir(), getRoot());
-        absRootPath = RemoteFileUtil.normalizeAbsolutePath(absRootPath, getProject());
-        FileObject folderFile = RemoteFileUtil.getFileObject(absRootPath, getProject());
-        if (folderFile != null) {
-            return folderFile.getPath();
+        String aRoot = getRoot();
+        if (aRoot != null) {
+            String absRootPath = CndPathUtilitities.toAbsolutePath(configurationDescriptor.getBaseDirFileObject(), getRoot());
+            absRootPath = RemoteFileUtil.normalizeAbsolutePath(absRootPath, getProject());
+            FileObject folderFile = RemoteFileUtil.getFileObject(absRootPath, getProject());
+            if (folderFile != null) {
+                return folderFile.getPath();
+            }
         }
         return null;
     }

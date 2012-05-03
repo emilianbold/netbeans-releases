@@ -44,12 +44,14 @@
 
 package org.netbeans.modules.apisupport.project;
 
-import org.netbeans.modules.apisupport.project.api.ManifestManager;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.TreeSet;
 import java.util.jar.Manifest;
+import org.netbeans.modules.apisupport.project.api.ManifestManager;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.test.TestFileUtils;
 
@@ -132,11 +134,12 @@ public class NetigsoManifestManagerTest extends NbTestCase {
         assertFalse("not recursiveb", mm.getPublicPackages()[1].isRecursive());
         assertFalse("not recursivec", mm.getPublicPackages()[2].isRecursive());
 
-        assertEquals("Provides four: " + Arrays.toString(mm.getProvidedTokens()), 4, mm.getProvidedTokens().length);
-        assertEquals("Bundle name first", "org.netbeans.modules.sendopts", mm.getProvidedTokens()[0]);
-        assertEquals("Packages then", "a", mm.getProvidedTokens()[1]);
-        assertEquals("Packages then", "b", mm.getProvidedTokens()[2]);
-        assertEquals("Packages then", "c", mm.getProvidedTokens()[3]);
+        List<String> pt = assertProvidedTokens(mm);
+        assertEquals("Provides four: " + pt, 4, pt.size());
+        assertEquals("Bundle name first", "org.netbeans.modules.sendopts", pt.get(0));
+        assertEquals("Packages then", "a", pt.get(1));
+        assertEquals("Packages then", "b", pt.get(2));
+        assertEquals("Packages then", "c", pt.get(3));
         assertEquals("Requires two: " + Arrays.toString(mm.getRequiredTokens()), 2, mm.getRequiredTokens().length);
         assertEquals("Needs core", "test.core", mm.getRequiredTokens()[0]);
         assertEquals("Needs tasks", "test.tasks", mm.getRequiredTokens()[1]);
@@ -170,13 +173,14 @@ public class NetigsoManifestManagerTest extends NbTestCase {
         assertEquals("javax.mail.util", mm.getPublicPackages()[2].getPackage());
         assertEquals("javax.mail.internet", mm.getPublicPackages()[3].getPackage());
         assertEquals("javax.mail", mm.getPublicPackages()[4].getPackage());
-        assertEquals("Five tokens: " + Arrays.asList(mm.getProvidedTokens()), 6, mm.getProvidedTokens().length);
-        assertEquals("org.netbeans.modules.sendopts", mm.getProvidedTokens()[0]);
-        assertEquals("javax.mail.search", mm.getProvidedTokens()[1]);
-        assertEquals("javax.mail.event", mm.getProvidedTokens()[2]);
-        assertEquals("javax.mail.util", mm.getProvidedTokens()[3]);
-        assertEquals("javax.mail.internet", mm.getProvidedTokens()[4]);
-        assertEquals("javax.mail", mm.getProvidedTokens()[5]);
+        List<String> pt = assertProvidedTokens(mm);
+        assertEquals("Six tokens: " + pt, 6, pt.size());
+        assertEquals("org.netbeans.modules.sendopts", pt.get(0));
+        assertEquals("javax.mail.search", pt.get(1));
+        assertEquals("javax.mail.event", pt.get(2));
+        assertEquals("javax.mail.util", pt.get(3));
+        assertEquals("javax.mail.internet", pt.get(4));
+        assertEquals("javax.mail", pt.get(5));
         assertEquals("Two required tokens: " + Arrays.asList(mm.getRequiredTokens()), 2, mm.getRequiredTokens().length);
         assertEquals("client.prefs", mm.getRequiredTokens()[0]);
         assertEquals("admin.cli", mm.getRequiredTokens()[1]);
@@ -194,7 +198,7 @@ public class NetigsoManifestManagerTest extends NbTestCase {
                 "Bundle-SymbolicName: super.container; singleton:=true\n" +
                 "Export-Package: super.container.features;version=\"1.0\"\n");
         assertEquals("[org.osgi.framework.launch.FrameworkFactory, super.container, super.container.features]",
-                new TreeSet<String>(Arrays.asList(ManifestManager.getInstanceFromJAR(wrapperJar).getProvidedTokens())).toString());
+                new TreeSet<String>(assertProvidedTokens(ManifestManager.getInstanceFromJAR(wrapperJar))).toString());
     }
 
     public void testImportJREPackage() throws Exception {
@@ -206,4 +210,11 @@ public class NetigsoManifestManagerTest extends NbTestCase {
                 new TreeSet<String>(Arrays.asList(ManifestManager.getInstance(m, true).getRequiredTokens())).toString());
     }
 
+    private static List<String> assertProvidedTokens(ManifestManager mm) {
+        List<String> arr = new ArrayList<String>(Arrays.asList(mm.getProvidedTokens()));
+        if (!arr.remove("cnb." + mm.getCodeNameBase())) {
+            fail("There should be cnb." + mm.getCodeNameBase() + " in " + arr);
+        }
+        return arr;
+    }
 }

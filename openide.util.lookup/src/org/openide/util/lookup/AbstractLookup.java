@@ -852,6 +852,9 @@ public class AbstractLookup extends Lookup implements Serializable {
 
         /** Tests whether this item can produce object
         * of class c.
+        * <p>Typically this will produce the same result as
+        * {@code c.isAssignableFrom(}{@link #getType() getType}{@code ())}
+        * but may avoid loading the concrete type's class in doing so.
         */
         protected abstract boolean instanceOf(Class<?> c);
 

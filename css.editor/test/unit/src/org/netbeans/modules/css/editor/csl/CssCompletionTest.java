@@ -240,8 +240,8 @@ public class CssCompletionTest extends CssModuleTestBase {
     public void testPropertyValueFontFamilyProblem2() throws ParseException {
         //completion doesn't offer items that can immediatelly follow
         //a valid token
-        checkCC("div { font-family: fantasy |}", arr(","), Match.EXACT);
-        checkCC("div { font-family: fantasy|}", arr(","), Match.EXACT);
+        checkCC("div { font-family: fantasy |}", arr(",", "identifier"), Match.EXACT);
+        checkCC("div { font-family: fantasy|}", arr(",", "identifier"), Match.EXACT);
     }
     
     public void testPropertyValueJustAfterRGB() throws ParseException {
@@ -250,6 +250,15 @@ public class CssCompletionTest extends CssModuleTestBase {
     
     public void testPropertyValueOfferItemsJustAfterUnit() throws ParseException {
         checkCC("div { animation: cubic-bezier(20| }", arr(","), Match.EXACT);
+    }
+    
+    //Bug 204821 - Incorrect completion for vendor specific properties
+    public void testVendorSpecificProperties() throws ParseException, BadLocationException {
+        checkCC("div { -| }", arr("-moz-animation"), Match.CONTAINS);
+        
+        assertComplete("div { -| }", "div { -moz-animation: | }", "-moz-animation");
+        
+        
     }
     
 }

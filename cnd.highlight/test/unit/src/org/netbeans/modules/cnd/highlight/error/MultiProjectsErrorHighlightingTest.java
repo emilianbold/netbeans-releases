@@ -107,11 +107,6 @@ public class MultiProjectsErrorHighlightingTest extends ErrorHighlightingBaseTes
         return new File[] {srcDir1, srcDir2, srcDir3, srcDir4, srcDir5};
     }
     
-    private void checkDir(File srcDir) {
-        assertTrue("Not existing directory" + srcDir, srcDir.exists());
-        assertTrue("Not directory" + srcDir, srcDir.isDirectory());
-    }
-    
     public void test210384() throws Exception {
         // #210384 - unresolved "using namespace std"
         CsmModel model = super.getModel();

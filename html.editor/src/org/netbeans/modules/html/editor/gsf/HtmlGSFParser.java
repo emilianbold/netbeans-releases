@@ -46,17 +46,12 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.csl.api.ElementHandle;
-import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.lib.api.HtmlSource;
 import org.netbeans.modules.html.editor.lib.api.SyntaxAnalyzer;
 import org.netbeans.modules.html.editor.lib.api.SyntaxAnalyzerResult;
 import org.netbeans.modules.html.editor.lib.api.UndeclaredContentResolver;
-import org.netbeans.modules.html.editor.lib.api.elements.Element;
-import org.netbeans.modules.html.editor.lib.api.elements.ElementUtils;
-import org.netbeans.modules.html.editor.lib.api.elements.Node;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -146,70 +141,4 @@ public class HtmlGSFParser extends Parser {
         return result;
     }
 
-    public static ElementHandle resolveHandle(ParserResult info, ElementHandle oldElementHandle) {
-        if (oldElementHandle instanceof HtmlElementHandle) {
-            HtmlElementHandle element = (HtmlElementHandle) oldElementHandle;
-            Element oldNode = element.node();
-
-            Node oldRoot = ElementUtils.getRoot(oldNode);
-
-            HtmlParserResult newResult = (HtmlParserResult) info;
-
-            Node newRoot = newResult.root();
-
-            if (newRoot == null) {
-                return null;
-            }
-
-            // Find newNode
-            Element newNode = find(oldRoot, oldNode, newRoot);
-
-            if (newNode != null) {
-                return new HtmlElementHandle(newNode, info.getSnapshot().getSource().getFileObject());
-            }
-        }
-
-        return null;
-    }
-
-    private static Element find(Element oldRoot, Element oldObject, Element newRoot) {
-        // Walk down the tree to locate oldObject, and in the process, pick the same child for newRoot
-        if (oldRoot == oldObject) {
-            // Found it!
-            return newRoot;
-        }
-
-        List<Element> oChildren = (oldRoot instanceof Node)
-                ? new ArrayList<Element>(((Node)oldRoot).children())
-                : Collections.<Element>emptyList();
-     
-        List<Element> nChildren = (newRoot instanceof Node)
-                ? new ArrayList<Element>(((Node)newRoot).children())
-                : Collections.<Element>emptyList();
-        
-        for (int i = 0; i < oChildren.size(); i++) {
-
-            Element oCh = oChildren.get(i);
-            if (i == nChildren.size()) {
-                //no more new children
-                return null;
-            }
-            Element nCh = nChildren.get(i);
-
-            if (oCh == oldObject) {
-                // Found it!
-                return nCh;
-            }
-
-            // Recurse
-            Element match = find(oCh, oldObject, nCh);
-
-            if (match != null) {
-                return match;
-            }
-
-        }
-
-        return null;
-    }
 }

@@ -45,7 +45,6 @@ package org.netbeans.modules.cnd.discovery.projectimport;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
-import static java.util.logging.Logger.getLogger;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
@@ -53,12 +52,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import static java.util.logging.Logger.getLogger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.actions.CMakeAction;
@@ -68,23 +67,24 @@ import org.netbeans.modules.cnd.actions.ShellRunAction;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.ExecutionListener;
+import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.builds.ImportUtils;
-import org.netbeans.modules.cnd.execution.ShellExecSupport;
+import org.netbeans.modules.cnd.discovery.buildsupport.BuildTraceSupport;
+import org.netbeans.modules.cnd.discovery.services.DiscoveryManagerImpl;
 import org.netbeans.modules.cnd.execution.ExecutionSupport;
+import org.netbeans.modules.cnd.execution.ShellExecSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.api.toolchain.Tool;
-import org.netbeans.modules.cnd.discovery.buildsupport.BuildTraceSupport;
-import org.netbeans.modules.cnd.discovery.services.DiscoveryManagerImpl;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.remote.api.RfsListenerSupport;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -289,7 +289,7 @@ public class ReconfigureProject {
         this.linkerFlags = linkerFlags;
         if (cmake != null && make != null) {
             String arguments = getConfigureArguments(cmake.getPrimaryFile().getPath(), otherOptions, cFlags, cxxFlags, linkerFlags, isSunCompiler());
-            ExecutionSupport ses = cmake.getNodeDelegate().getCookie(ExecutionSupport.class);
+            ExecutionSupport ses = cmake.getNodeDelegate().getLookup().lookup(ExecutionSupport.class);
             if (ses != null) {
                 try {
                     List<String> vars = ImportUtils.parseEnvironment(arguments);
@@ -337,7 +337,7 @@ public class ReconfigureProject {
             }
         } else if (qmake != null && make != null){
             String arguments = getConfigureArguments(qmake.getPrimaryFile().getPath(), otherOptions, cFlags, cxxFlags, linkerFlags, isSunCompiler());
-            ExecutionSupport ses = qmake.getNodeDelegate().getCookie(ExecutionSupport.class);
+            ExecutionSupport ses = qmake.getNodeDelegate().getLookup().lookup(ExecutionSupport.class);
             if (ses != null) {
                 try {
                     ses.setArguments(new String[]{arguments});
@@ -377,7 +377,7 @@ public class ReconfigureProject {
             }
         } else if (configure != null && make != null) {
             String arguments = getConfigureArguments(configure.getPrimaryFile().getPath(), otherOptions, cFlags, cxxFlags, linkerFlags, isSunCompiler());
-            ShellExecSupport ses = configure.getNodeDelegate().getCookie(ShellExecSupport.class);
+            ShellExecSupport ses = configure.getNodeDelegate().getLookup().lookup(ShellExecSupport.class);
             if (ses != null) {
                 try {
                     ses.setArguments(new String[]{arguments});
@@ -463,11 +463,12 @@ public class ReconfigureProject {
             logger.log(Level.INFO, "#make -f {0}", make.getPrimaryFile().getPath()); // NOI18N
         }
         if (configureCodeAssistance) {
+            MakeConfiguration activeConfiguration = null;
             ConfigurationDescriptorProvider provider = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
             if (provider != null && provider.gotDescriptor()) {
                 MakeConfigurationDescriptor descriptor = provider.getConfigurationDescriptor();
                 if (descriptor != null) {
-                    MakeConfiguration activeConfiguration = descriptor.getActiveConfiguration();
+                    activeConfiguration = descriptor.getActiveConfiguration();
                     if (activeConfiguration != null) {
                         executionEnvironment = activeConfiguration.getDevelopmentHost().getExecutionEnvironment();
                     }
@@ -475,13 +476,10 @@ public class ReconfigureProject {
             }
             if (executionEnvironment != null) {
                 makeLog = ImportProject.createTempFile("make"); // NOI18N
-                if(BuildTraceSupport.useBuildTrace()) {
+                if(BuildTraceSupport.useBuildTrace(activeConfiguration)) {
                     try {
                         HostInfo hostInfo = HostInfoUtils.getHostInfo(executionEnvironment);
-                        switch (hostInfo.getOSFamily()) {
-                        case MACOSX:
-                        case SUNOS:
-                        case LINUX:
+                        if (BuildTraceSupport.supportedPlatforms(executionEnvironment)) {
                             execLog = ImportProject.createTempFile("exec"); // NOI18N
                             execLog.deleteOnExit();
                             if (executionEnvironment.isRemote()) {
@@ -552,13 +550,22 @@ public class ReconfigureProject {
             }
         }
         Node node = make.getNodeDelegate();
-        ExecutionSupport ses = node.getCookie(ExecutionSupport.class);
+        ExecutionSupport ses = node.getLookup().lookup(ExecutionSupport.class);
         List<String> vars = ImportUtils.parseEnvironment(arguments);
         if (ses != null) {
             try {
                 ses.setEnvironmentVariables(vars.toArray(new String[vars.size()]));
                 if (execLog != null) {
-                    vars.add(BuildTraceSupport.CND_TOOLS+"="+BuildTraceSupport.CND_TOOLS_VALUE); // NOI18N
+                    ConfigurationDescriptorProvider provider = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
+                    if (provider != null && provider.gotDescriptor()) {
+                        MakeConfigurationDescriptor descriptor = provider.getConfigurationDescriptor();
+                        if (descriptor != null) {
+                            MakeConfiguration activeConfiguration = descriptor.getActiveConfiguration();
+                            if (activeConfiguration != null) {
+                                vars.add(BuildTraceSupport.CND_TOOLS+"="+BuildTraceSupport.getTools(activeConfiguration)); // NOI18N
+                            }
+                        }
+                    }
                     if (executionEnvironment.isLocal()) {
                         vars.add(BuildTraceSupport.CND_BUILD_LOG+"="+execLog.getAbsolutePath()); // NOI18N
                     } else {
@@ -854,7 +861,7 @@ public class ReconfigureProject {
 
     public String getLastFlags(){
         if (cmake != null && make != null) {
-            ExecutionSupport ses = cmake.getNodeDelegate().getCookie(ExecutionSupport.class);
+            ExecutionSupport ses = cmake.getNodeDelegate().getLookup().lookup(ExecutionSupport.class);
             if (ses != null) {
                 String[] args = ses.getArguments();
                 if (args != null && args.length > 0) {
@@ -862,7 +869,7 @@ public class ReconfigureProject {
                 }
             }
         } else if (qmake != null && make != null){
-            ExecutionSupport ses = qmake.getNodeDelegate().getCookie(ExecutionSupport.class);
+            ExecutionSupport ses = qmake.getNodeDelegate().getLookup().lookup(ExecutionSupport.class);
             if (ses != null) {
                 String[] args = ses.getArguments();
                 if (args != null && args.length > 0) {
@@ -870,7 +877,7 @@ public class ReconfigureProject {
                 }
             }
         } else if (configure != null && make != null) {
-            ShellExecSupport ses = configure.getNodeDelegate().getCookie(ShellExecSupport.class);
+            ShellExecSupport ses = configure.getNodeDelegate().getLookup().lookup(ShellExecSupport.class);
             if (ses != null) {
                 String[] args = ses.getArguments();
                 if (args != null && args.length > 0) {
@@ -878,7 +885,7 @@ public class ReconfigureProject {
                 }
             }
         } else if (make != null) {
-            ExecutionSupport ses = make.getNodeDelegate().getCookie(ExecutionSupport.class);
+            ExecutionSupport ses = make.getNodeDelegate().getLookup().lookup(ExecutionSupport.class);
             if (ses != null) {
                 String[] args = ses.getEnvironmentVariables();
                 if (args != null && args.length > 0) {

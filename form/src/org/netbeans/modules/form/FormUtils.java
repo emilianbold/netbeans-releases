@@ -384,7 +384,8 @@ public class FormUtils
     /** Table defining order of dependent properties. */
     private static Object[][] propertyOrder = {
         { "javax.swing.text.JTextComponent",
-            "document", "text" },
+            "document", "text",
+            "editable", "background" },
         { "javax.swing.JSpinner",
             "model", "editor" },
         { "javax.swing.AbstractButton",

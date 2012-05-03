@@ -58,13 +58,14 @@ import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
 /**
  *
  */
-public class OracleWizardComponent extends javax.swing.JPanel implements DocumentListener {
+public class OracleWizardComponent extends javax.swing.JPanel implements DocumentListener, HelpCtx.Provider {
 
     private ChangeListener l;
     private static final String ADMIN_URL = "https://javaservices.cloud.oracle.com"; // NOI18N
@@ -335,5 +336,10 @@ private void jLabel1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:eve
         if (l != null) {
             l.stateChanged(new ChangeEvent(this));
         }
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(OracleWizardComponent.class.getName());
     }
 }

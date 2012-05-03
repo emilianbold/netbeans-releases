@@ -257,7 +257,7 @@ public final class FindDialogMemory {
      * 
      * @param  pattern  pattern to be stored
      */
-    void storeFileNamePattern(String pattern) {
+    public void storeFileNamePattern(String pattern) {
         int index = fileNamePatterns.indexOf(pattern);
         if (index != -1) {
             if (index == fileNamePatterns.size() - 1) {
@@ -370,7 +370,7 @@ public final class FindDialogMemory {
         prefs.put(PROP_SCOPE_TYPE_ID, scopeTypeId);
     }
 
-    boolean isTextPatternSpecified() {
+    public boolean isTextPatternSpecified() {
         return textPatternSpecified;
     }
 
@@ -382,7 +382,7 @@ public final class FindDialogMemory {
         return fileNamePatternSpecified;
     }
 
-    void setFileNamePatternSpecified(boolean specified) {
+    public void setFileNamePatternSpecified(boolean specified) {
         fileNamePatternSpecified = specified;
         prefs.putBoolean(PROP_FILENAME_PATTERN_SPECIFIED, specified);
     }
