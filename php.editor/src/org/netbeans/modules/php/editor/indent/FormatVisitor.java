@@ -494,6 +494,21 @@ public class FormatVisitor extends DefaultVisitor {
     }
 
     @Override
+    public void visit(TraitDeclaration node) {
+        addAllUntilOffset(node.getStartOffset());
+        if (includeWSBeforePHPDoc) {
+            formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_CLASS, ts.offset()));
+        } else {
+            includeWSBeforePHPDoc = true;
+        }
+        while (ts.moveNext() && ts.token().id() != PHPTokenId.PHP_CURLY_OPEN) {
+            addFormatToken(formatTokens);
+        }
+        ts.movePrevious();
+        super.visit(node);
+    }
+
+    @Override
     public void visit(ClassInstanceCreation node) {
         scan(node.getClassName());
         if (node.ctorParams() != null && node.ctorParams().size() > 0) {
