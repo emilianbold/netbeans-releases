@@ -44,6 +44,7 @@ package org.netbeans.modules.tasks.ui.actions;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import org.netbeans.modules.bugtracking.api.Query;
+import org.netbeans.modules.bugtracking.api.Query.QueryMode;
 import org.openide.util.NbBundle;
 
 /**
@@ -53,14 +54,22 @@ import org.openide.util.NbBundle;
 public class OpenQueryAction extends AbstractAction {
 
     private Query query;
+    private QueryMode mode;
 
     public OpenQueryAction(Query query) {
+        this(query, Query.QueryMode.SHOW_ALL);
+    }
+
+    public OpenQueryAction(Query query, QueryMode mode) {
         super(NbBundle.getMessage(DeactivateTaskAction.class, "CTL_OpenQuery")); //NOI18N
         this.query = query;
+        this.mode = mode;
     }
+
+
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        query.open(Query.QueryMode.SHOW_ALL);
+        query.open(mode);
     }
 }
