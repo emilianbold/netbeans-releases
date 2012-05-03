@@ -48,9 +48,9 @@ import java.util.List;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.maven.model.pom.POMComponent;
 import org.netbeans.modules.maven.model.pom.POMComponentFactory;
+import org.netbeans.modules.maven.model.pom.POMExtensibilityElement;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.POMQName;
-import org.netbeans.modules.maven.model.pom.POMExtensibilityElement;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.modules.xml.xam.dom.Attribute;
 import org.w3c.dom.Element;
@@ -78,6 +78,7 @@ public abstract class POMComponentImpl extends AbstractDocumentComponent<POMComp
         return (POMModel) super.getModel();
     }
     
+    @Override
     protected void populateChildren(List<POMComponent> children) {
         //System.out.println("populateChildren: " + getPeer().getNodeName());
         NodeList nl = getPeer().getChildNodes();
@@ -96,6 +97,7 @@ public abstract class POMComponentImpl extends AbstractDocumentComponent<POMComp
         }
     }
 
+    @Override
     protected Object getAttributeValueOf(Attribute attribute, String stringValue) {
         return stringValue;
     }  
@@ -110,18 +112,22 @@ public abstract class POMComponentImpl extends AbstractDocumentComponent<POMComp
                 rq.getNamespaceURI(), qualified);
     }
         
+    @Override
     public void removeExtensibilityElement(POMExtensibilityElement ee) {
         removeChild(EXTENSIBILITY_ELEMENT_PROPERTY, ee);
     }
     
+    @Override
     public void addExtensibilityElement(POMExtensibilityElement ee) {
         appendChild(EXTENSIBILITY_ELEMENT_PROPERTY, ee);
     }
     
+    @Override
     public List<POMExtensibilityElement> getExtensibilityElements() {
         return getChildren(POMExtensibilityElement.class);
     }
     
+    @Override
     public <T extends POMExtensibilityElement> List<T> getExtensibilityElements(Class<T> type) {
         return getChildren(type);
     }
@@ -195,6 +201,7 @@ public abstract class POMComponentImpl extends AbstractDocumentComponent<POMComp
         }
     }
 
+    @Override
     public int findChildElementPosition(QName qname) {
         List<POMExtensibilityElement> els = getChildren(POMExtensibilityElement.class);
         for (POMExtensibilityElement el : els) {

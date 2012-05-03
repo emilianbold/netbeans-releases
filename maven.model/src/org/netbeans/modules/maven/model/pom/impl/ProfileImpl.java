@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.maven.model.pom.impl;
 
-import org.netbeans.modules.maven.model.pom.*;	
+import org.netbeans.modules.maven.model.pom.*;
 import org.netbeans.modules.maven.model.util.ModelImplUtils;
 import org.w3c.dom.Element;
 

@@ -41,10 +41,9 @@
  */
 package org.netbeans.modules.maven.model.pom.impl;
 
-import java.util.List;
+import java.util.List;	
+import org.netbeans.modules.maven.model.pom.*;
 import org.w3c.dom.Element;
-import org.netbeans.modules.maven.model.pom.*;	
-import org.netbeans.modules.maven.model.pom.POMComponentVisitor;	
 
 /**
  *
@@ -75,6 +74,7 @@ public class BuildImpl extends BuildBaseImpl implements Build {
     // attributes
 
     // child elements
+    @Override
     public List<Extension> getExtensions() {
         ModelList<Extension> childs = getChild(ExtensionImpl.List.class);
         if (childs != null) {
@@ -83,6 +83,7 @@ public class BuildImpl extends BuildBaseImpl implements Build {
         return null;
     }
 
+    @Override
     public void addExtension(Extension extension) {
         ModelList<Extension> childs = getChild(ExtensionImpl.List.class);
         if (childs == null) {
@@ -96,6 +97,7 @@ public class BuildImpl extends BuildBaseImpl implements Build {
         childs.addListChild(extension);
     }
 
+    @Override
     public void removeExtension(Extension extension) {
         ModelList<Extension> childs = getChild(ExtensionImpl.List.class);
         if (childs != null) {
@@ -109,46 +111,56 @@ public class BuildImpl extends BuildBaseImpl implements Build {
         visitor.visit(this);
     }
 
+    @Override
     public String getSourceDirectory() {
         return getChildElementText(getModel().getPOMQNames().SOURCEDIRECTORY.getQName());
     }
 
+    @Override
     public void setSourceDirectory(String directory) {
         setChildElementText(getModel().getPOMQNames().SOURCEDIRECTORY.getName(), directory,
                 getModel().getPOMQNames().SOURCEDIRECTORY.getQName());
     }
 
+    @Override
     public String getScriptSourceDirectory() {
         return getChildElementText(getModel().getPOMQNames().SCRIPTSOURCEDIRECTORY.getQName());
     }
 
+    @Override
     public void setScriptSourceDirectory(String directory) {
         setChildElementText(getModel().getPOMQNames().SCRIPTSOURCEDIRECTORY.getName(), directory,
                 getModel().getPOMQNames().SCRIPTSOURCEDIRECTORY.getQName());
     }
 
+    @Override
     public String getTestSourceDirectory() {
         return getChildElementText(getModel().getPOMQNames().TESTSOURCEDIRECTORY.getQName());
     }
 
+    @Override
     public void setTestSourceDirectory(String directory) {
         setChildElementText(getModel().getPOMQNames().TESTSOURCEDIRECTORY.getName(), directory,
                 getModel().getPOMQNames().TESTSOURCEDIRECTORY.getQName());
     }
 
+    @Override
     public String getOutputDirectory() {
         return getChildElementText(getModel().getPOMQNames().OUTPUTDIRECTORY.getQName());
     }
 
+    @Override
     public void setOutputDirectory(String directory) {
         setChildElementText(getModel().getPOMQNames().OUTPUTDIRECTORY.getName(), directory,
                 getModel().getPOMQNames().OUTPUTDIRECTORY.getQName());
     }
 
+    @Override
     public String getTestOutputDirectory() {
         return getChildElementText(getModel().getPOMQNames().TESTOUTPUTDIRECTORY.getQName());
     }
 
+    @Override
     public void setTestOutputDirectory(String directory) {
         setChildElementText(getModel().getPOMQNames().TESTOUTPUTDIRECTORY.getName(), directory,
                 getModel().getPOMQNames().TESTOUTPUTDIRECTORY.getQName());
