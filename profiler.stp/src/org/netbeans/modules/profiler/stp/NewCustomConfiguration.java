@@ -106,7 +106,7 @@ import org.openide.util.HelpCtx;
     "NewCustomConfiguration_ExistingRadioText=&From Existing Configuration:",
     "NewCustomConfiguration_ExistingRadioAccessDescr=Copy settings from existing configuration",
     "NewCustomConfiguration_OkButtonText=OK",
-    "NewCustomConfiguration_Notification_DuplicateName=Duplicate configuration name.",
+    "NewCustomConfiguration_Notification_DuplicateName=Duplicate configuration name."
 })
 public class NewCustomConfiguration extends JPanel implements ChangeListener, ListSelectionListener, DocumentListener, HelpCtx.Provider {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
