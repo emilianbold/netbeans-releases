@@ -1349,7 +1349,7 @@ public class Term extends JComponent implements Accessible {
 
         } else if (delta_row < 0) {
             // we shrunk
-            int orows = st.rows - delta_row;	// reconstruct orows
+            // int orows = st.rows - delta_row;	// reconstruct orows
 
             // First attempt to remove lines from the bottom of the buffer.
             // This comes into play mostly when you have just started Term
@@ -1669,7 +1669,7 @@ public class Term extends JComponent implements Accessible {
 
 	    @Override
             public void adjustmentValueChanged(AdjustmentEvent e) {
-                JScrollBar sb = (JScrollBar) e.getAdjustable();
+                // JScrollBar sb = (JScrollBar) e.getAdjustable();
                 switch (e.getAdjustmentType()) {
                     case AdjustmentEvent.TRACK:
 
@@ -1716,7 +1716,7 @@ public class Term extends JComponent implements Accessible {
 
 	    @Override
             public void adjustmentValueChanged(AdjustmentEvent e) {
-                JScrollBar sb = (JScrollBar) e.getAdjustable();
+                // JScrollBar sb = (JScrollBar) e.getAdjustable();
                 switch (e.getAdjustmentType()) {
                     case AdjustmentEvent.TRACK:
 
@@ -1945,7 +1945,7 @@ public class Term extends JComponent implements Accessible {
 
 	    @Override
             public void mouseClicked(MouseEvent e) {
-                BCoord bcoord = toBufCoords(toViewCoord(e.getPoint()));
+                // BCoord bcoord = toBufCoords(toViewCoord(e.getPoint()));
 
                 if (SwingUtilities.isLeftMouseButton(e)) {
                     /* DEBUG
