@@ -296,16 +296,16 @@ public class testCC extends cc {
 //        jCompl.listItself.setTimeouts(t);
         System.out.println("==== go to click on item ====");
 
-        WindowOperator jdDoc = new WindowOperator(1);
+        WindowOperator jdDoc = new WindowOperator(0);
+        jCompl.listItself.pressKey( KeyEvent.VK_DOWN );
         JEditorPaneOperator jeEdit = new JEditorPaneOperator(jdDoc);
     
 //        try {
 //            Dumper.dumpAll("/Users/filipzamboj/dump.txt");
 //        } catch (IOException ex) {
 //        }
-
+     
         String sCompleteContent = jeEdit.getText();
-        //jCompl.listItself.pressKey( KeyEvent.VK_DOWN );
         System.out.println("=== check done ===");
         //back to original values
         t.setTimeout("JScrollBarOperator.OneScrollClickTimeout", lBack1);
