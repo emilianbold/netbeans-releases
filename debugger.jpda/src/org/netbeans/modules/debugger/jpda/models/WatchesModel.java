@@ -512,7 +512,11 @@ public class WatchesModel implements TreeModel {
         /** Tells whether the variable is fully initialized and getValue()
          *  returns the value immediately. */
         public synchronized boolean isCurrent() {
-            return evaluatedWatch != null;
+            if (!w.isEnabled()) {
+                return true;
+            } else {
+                return evaluatedWatch != null;
+            }
         }
         
         private int cloneNumber = 1;

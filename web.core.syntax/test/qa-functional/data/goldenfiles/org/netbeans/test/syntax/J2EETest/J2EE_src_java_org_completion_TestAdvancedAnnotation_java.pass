@@ -8,6 +8,7 @@ FieldResult
 NamedNativeQuery
 Override
 RequestForEnhancement
+SafeVarargs
 SuppressWarnings
 Temporal
 TestAdvancedAnnotation
@@ -18,6 +19,7 @@ javanet
 javassist
 javax
 jp
+oracle
 org
 sun
 sunw
@@ -39,8 +41,10 @@ ArithmeticException
 ArrayIndexOutOfBoundsException
 ArrayStoreException
 AssertionError
+AutoCloseable
 Basic
 Boolean
+BootstrapMethodError
 Byte
 CharSequence
 Character
@@ -50,6 +54,7 @@ ClassCircularityError
 ClassFormatError
 ClassLoader
 ClassNotFoundException
+ClassValue <T>
 CloneNotSupportedException
 Cloneable
 Column
@@ -100,11 +105,13 @@ Package
 Process
 ProcessBuilder
 Readable
+ReflectiveOperationException
 RequestForEnhancement
 Runnable
 Runtime
 RuntimeException
 RuntimePermission
+SafeVarargs
 SecurityException
 SecurityManager
 Short
@@ -140,6 +147,7 @@ javanet
 javassist
 javax
 jp
+oracle
 org
 sun
 sunw
@@ -162,8 +170,10 @@ ArithmeticException
 ArrayIndexOutOfBoundsException
 ArrayStoreException
 AssertionError
+AutoCloseable
 Basic
 Boolean
+BootstrapMethodError
 Byte
 CharSequence
 Character
@@ -173,6 +183,7 @@ ClassCircularityError
 ClassFormatError
 ClassLoader
 ClassNotFoundException
+ClassValue <T>
 CloneNotSupportedException
 Cloneable
 Column
@@ -223,11 +234,13 @@ Package
 Process
 ProcessBuilder
 Readable
+ReflectiveOperationException
 RequestForEnhancement
 Runnable
 Runtime
 RuntimeException
 RuntimePermission
+SafeVarargs
 SecurityException
 SecurityManager
 Short
@@ -263,6 +276,7 @@ javanet
 javassist
 javax
 jp
+oracle
 org
 sun
 sunw
@@ -277,6 +291,7 @@ FieldResult
 NamedNativeQuery
 Override
 RequestForEnhancement
+SafeVarargs
 SuppressWarnings
 Temporal
 TestAdvancedAnnotation
@@ -287,6 +302,7 @@ javanet
 javassist
 javax
 jp
+oracle
 org
 sun
 sunw
