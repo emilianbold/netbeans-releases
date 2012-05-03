@@ -874,7 +874,7 @@ public class CssCompletion implements CodeCompletionHandler {
             if (parent != null && (parent.type() == NodeType.ruleSet || parent.type() == NodeType.moz_document)) {
                 
                 //>>> Bug 204821 - Incorrect completion for vendor specific properties
-                int insertionOffset = cc.getCaretOffset();
+                boolean bug204821 = false;
                 if (prefix.length() == 0) {
                     //
                     //If the vendor specific property name is completed with the - (MINUS)
@@ -883,15 +883,21 @@ public class CssCompletion implements CodeCompletionHandler {
                     if (cc.getActiveTokenNode().type() == NodeType.token) {
                         CssTokenId tokenId = NodeUtil.getTokenNodeTokenId(cc.getActiveTokenNode());
                         if (tokenId == CssTokenId.MINUS) {
-                            prefix = "-";
-                            insertionOffset--;
+                            bug204821 = true;
                         }
                     }
                 }
-                //<<<
-
-                Collection<Property> possibleProps = filterProperties(CssModuleSupport.getProperties(), prefix);
-                completionProposals.addAll(Utilities.wrapProperties(possibleProps, insertionOffset));
+                if(bug204821) {
+                    //get all "-" prefixed props
+                    Collection<Property> possibleProps = 
+                            filterProperties(CssModuleSupport.getProperties(), "-");
+                    //and add them to the result with the "-" prefix stripped
+                    completionProposals.addAll(Utilities.wrapProperties(possibleProps, cc.getCaretOffset(), 1));
+                } else {
+                    Collection<Property> possibleProps = 
+                            filterProperties(CssModuleSupport.getProperties(), prefix);
+                    completionProposals.addAll(Utilities.wrapProperties(possibleProps, cc.getCaretOffset()));
+                }
             }
         }
         

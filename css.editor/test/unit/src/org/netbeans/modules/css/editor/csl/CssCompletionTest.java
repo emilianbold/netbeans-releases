@@ -255,6 +255,7 @@ public class CssCompletionTest extends CssModuleTestBase {
     //Bug 204821 - Incorrect completion for vendor specific properties
     public void testVendorSpecificProperties() throws ParseException, BadLocationException {
         checkCC("div { -| }", arr("-moz-animation"), Match.CONTAINS);
+        checkCC("div { -| }", arr("adding"), Match.DOES_NOT_CONTAIN);
         
         assertComplete("div { -| }", "div { -moz-animation: | }", "-moz-animation");
         
