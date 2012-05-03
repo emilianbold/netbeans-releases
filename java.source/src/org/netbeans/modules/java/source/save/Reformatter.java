@@ -3436,7 +3436,9 @@ public class Reformatter implements ReformatTask {
                                             if (c == '{') {
                                                 nestedParenCnt++;
                                             } else if (c == '}') {
-                                                if (nestedParenCnt-- == 0) {
+                                                if (nestedParenCnt > 0) {
+                                                    nestedParenCnt--;
+                                                } else {
                                                     insideTagEndOffset = javadocTokens.offset() + i - offset - 1;
                                                     insideTag = false;
                                                 }
