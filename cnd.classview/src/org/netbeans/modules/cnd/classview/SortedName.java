@@ -64,6 +64,7 @@ public class SortedName implements Comparable<SortedName> {
         return prefix;
     }
     
+    @Override
     public int compareTo(SortedName o) {
         int i = prefix - o.prefix;
         if (i == 0){
@@ -74,5 +75,36 @@ public class SortedName implements Comparable<SortedName> {
         }
         return i;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final SortedName other = (SortedName) obj;
+        if (this.prefix != other.prefix) {
+            return false;
+        }
+        if (this.name != other.name && (this.name == null || !this.name.equals(other.name))) {
+            return false;
+        }
+        if (this.suffix != other.suffix) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 61 * hash + this.prefix;
+        hash = 61 * hash + (this.name != null ? this.name.hashCode() : 0);
+        hash = 61 * hash + this.suffix;
+        return hash;
+    }
+    
 }
 
