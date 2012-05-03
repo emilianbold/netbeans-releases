@@ -54,19 +54,19 @@ import org.netbeans.modules.cnd.repository.testbench.Stats;
 public class TickingRepositoryQueue extends RepositoryQueue {
     
     protected int currentTick = 0;
-    protected final int tickShift;
+//    protected final int tickShift;
     
     public static final int queueTickShift = Stats.getInteger("cnd.repository.queue.tickshift", 8); //NOI18N
 //    public static final int queueTickDelay = Stats.getInteger("cnd.repository.queue.tickdelay", 20); //NOI18N
     
     
-    public TickingRepositoryQueue(int tickShift) {
-        this.tickShift = tickShift;
-    }
+//    public TickingRepositoryQueue(int tickShift) {
+//        this.tickShift = tickShift;
+//    }
     
-    public TickingRepositoryQueue() {
-        this(queueTickShift);
-    }
+//    public TickingRepositoryQueue() {
+//        this(queueTickShift);
+//    }
     
     @Override
     protected void doReplaceAddLast(Key key, Persistent value, Entry<Key, Persistent> existent) {

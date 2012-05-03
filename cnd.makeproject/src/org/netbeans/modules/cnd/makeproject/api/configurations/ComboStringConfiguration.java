@@ -45,7 +45,7 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import org.netbeans.modules.cnd.api.picklist.DefaultPicklistModel;
 
-public class ComboStringConfiguration {
+public class ComboStringConfiguration implements Cloneable {
 
     private ComboStringConfiguration master;
     private String def;

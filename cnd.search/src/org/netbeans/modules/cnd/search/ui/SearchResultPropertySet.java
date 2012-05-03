@@ -46,6 +46,7 @@ import org.netbeans.modules.cnd.search.SearchResult;
 import org.openide.nodes.Node;
 import org.openide.nodes.Node.Property;
 import org.openide.nodes.PropertySupport;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -54,8 +55,10 @@ import org.openide.nodes.PropertySupport;
 public final class SearchResultPropertySet extends Node.PropertySet {
 
     private static final String[] namesAndDisplayNames = new String[]{
-        "path", "Full Path",
-        "size", "File Size"
+        NbBundle.getMessage(SearchResultPropertySet.class, "SearchResultPropertySet.column.path.name"), // NOI18N
+        NbBundle.getMessage(SearchResultPropertySet.class, "SearchResultPropertySet.column.path.desc"), // NOI18N
+        NbBundle.getMessage(SearchResultPropertySet.class, "SearchResultPropertySet.column.size.name"), // NOI18N
+        NbBundle.getMessage(SearchResultPropertySet.class, "SearchResultPropertySet.column.size.desc"), // NOI18N
     };
     private final Property[] properties;
     private final SearchResult result;

@@ -48,6 +48,7 @@ import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.*;
 
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
@@ -59,6 +60,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionListener;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
@@ -78,6 +80,8 @@ import org.netbeans.modules.web.api.webmodule.WebFrameworks;
 import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.WizardDescriptor;
+import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 /**
  * 
@@ -125,24 +129,11 @@ public class CustomizerFrameworks extends JPanel implements ApplyChangesCustomiz
 
     @Override
     public void applyChanges() {
-        final WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
-        // Called in EDT to prevent deadlocks, see issue #204427 for more details.
-        SwingUtilities.invokeLater(new Runnable() {
-
-            @Override
-            public void run() {
-                for (int i = 0; i < newExtenders.size(); i++) {
-                    newExtenders.get(i).extend(webModule);
-                }
-            }
-        });
         doUIandUsageLogging();
 
-        for (WebModuleExtender webModuleExtender : existingExtenders) {
-            if (webModuleExtender instanceof WebModuleExtender.Savable) {
-                ((WebModuleExtender.Savable) webModuleExtender).save(webModule);
-            }
-        }
+        // see issue #211768 for more details.
+        handleExtenders();
+
         existingExtenders.clear();
     }
 
@@ -427,6 +418,90 @@ public class CustomizerFrameworks extends JPanel implements ApplyChangesCustomiz
             }
         } else {
             hideConfigPanel();
+        }
+    }
+
+    @NbBundle.Messages({
+        "CustomizerFrameworks.label.adding.project.frameworks=Adding project frameworks",
+        "CustomizerFrameworks.label.saving.project.frameworks=Saving project frameworks"
+    })
+    private void handleExtenders() {
+        final List<WebModuleExtender> includedExtenders = new LinkedList<WebModuleExtender>(existingExtenders);
+        final WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
+        if (newExtenders != null && !newExtenders.isEmpty()) {
+            // in case that new extenders should be included
+            RequestProcessor.getDefault().post(new Runnable() {
+                @Override
+                public void run() {
+                    // it mostly results into lenghty opperation, show progress dialog
+                    ProgressUtils.showProgressDialogAndRun(new Runnable() {
+                        @Override
+                        public void run() {
+                            // include newly added extenders into webmodule
+                            for (int i = 0; i < newExtenders.size(); i++) {
+                                ((WebModuleExtender) newExtenders.get(i)).extend(webModule);
+                            }
+                            newExtenders.clear();
+
+                            // save all already included extenders
+                            saveExistingExtenders(webModule, includedExtenders);
+                        }
+                    }, Bundle.CustomizerFrameworks_label_adding_project_frameworks());
+                }
+            });
+        } else if (includedExtenders != null && !includedExtenders.isEmpty()) {
+            // in case that webModule contains some extenders which should be saved
+            RequestProcessor.getDefault().post(new Runnable() {
+
+                @Override
+                public void run() {
+                    final FutureTask<Void> future = new FutureTask<Void>(new Callable<Void>() {
+                        @Override
+                        public Void call() throws Exception {
+                            // save all already included extenders
+                            saveExistingExtenders(webModule, includedExtenders);
+                            return null;
+                        }
+                    });
+                    try {
+                        // start the extenders saving task
+                        RequestProcessor.getDefault().post(future);
+                        // When the task doesn't finish shortly, run it with progress dialog to inform user
+                        // that lenghty opperation is happening. BTW, initial waiting time is used to prevent
+                        // dialogs flickering.
+                        future.get(300, TimeUnit.MILLISECONDS);
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (ExecutionException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (TimeoutException ex) {
+                        // End of the 300ms period, continue in processing but display progress dialog
+                        ProgressUtils.showProgressDialogAndRun(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    // Wait for finishing of the future
+                                    future.get();
+                                } catch (InterruptedException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                } catch (ExecutionException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                }
+                            }
+                        }, Bundle.CustomizerFrameworks_label_saving_project_frameworks());
+                    }
+                }
+            });
+        }
+    }
+
+    private void saveExistingExtenders(WebModule webModule, List<WebModuleExtender> existingExtenders) {
+        if (existingExtenders != null) {
+            for (WebModuleExtender webModuleExtender : existingExtenders) {
+                if (webModuleExtender instanceof WebModuleExtender.Savable) {
+                    ((WebModuleExtender.Savable) webModuleExtender).save(webModule);
+                }
+            }
         }
     }
 
