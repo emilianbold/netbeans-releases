@@ -85,10 +85,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.ChangeSupport;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
+import org.openide.util.*;
 import org.openide.util.lookup.Lookups;
 
 
@@ -115,6 +112,8 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
     // prevent j2eeserver from stopping an authenticated domain that
     // the IDE did not start.
     private boolean stopDisabled = false;
+    
+    private Process localStartProcess;
 
     CommonServerSupport(Lookup lookup, Map<String, String> ip, GlassfishInstanceProvider instanceProvider) {
         this.lookup = lookup;
@@ -397,14 +396,19 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
                 } else if(newState == OperationState.COMPLETED) {
                     setServerState(ServerState.STOPPED);
                 } else if(newState == OperationState.FAILED) {
+                    // possible bug - what if server was started in other mode than RUNNING
                     setServerState(ServerState.RUNNING);
                 }
             }
         };
         FutureTask<OperationState> task = null;
         if (!isRemote() || !Util.isDefaultOrServerTarget(properties)) {
-            task = new FutureTask<OperationState>(
-                new StopTask(this, stopServerListener, stateListener));
+            if (getServerState() == ServerState.STOPPED_JVM_PROFILER) {
+                task = new FutureTask<OperationState>(new StopProfilingTask(this, stateListener));
+            } else {
+                task = new FutureTask<OperationState>(
+                    new StopTask(this, stopServerListener, stateListener));
+            }
         // prevent j2eeserver from stopping a server it did not start.
         } else {
             task = new FutureTask<OperationState>(new NoopTask(this,stopServerListener,stateListener));
@@ -792,6 +796,19 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
 
     void disableStop() {
         stopDisabled = true;
+    }
+    
+    void setLocalStartProcess(Process process) {
+        this.localStartProcess = process;
+    }
+    
+    Process getLocalStartProcess() {
+        return localStartProcess;
+    }
+    
+    void stopLocalStartProcess() {
+        localStartProcess.destroy();
+        localStartProcess = null;
     }
 
     @Override
