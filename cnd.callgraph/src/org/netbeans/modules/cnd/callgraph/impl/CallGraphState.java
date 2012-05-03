@@ -57,11 +57,11 @@ import org.netbeans.modules.cnd.callgraph.api.Function;
 public class CallGraphState {
     private CallModel model;
     private CallGraphScene scene;
-    private Action[] actions;
+    private List<Action> actions;
     private Map<Function, Boolean> calleesExpanded = new ConcurrentHashMap<Function, Boolean>();
     private Map<Function, Boolean> callersExpanded = new ConcurrentHashMap<Function, Boolean>();
     
-    public CallGraphState(CallModel model, CallGraphScene scene, Action[] actions){
+    public CallGraphState(CallModel model, CallGraphScene scene, List<Action> actions){
         this.model = model;
         this.scene = scene;
         this.actions = actions;
@@ -118,6 +118,6 @@ public class CallGraphState {
     }
 
     public Action[] getActions() {
-        return actions;
+        return actions.toArray(new Action[actions.size()]);
     }
 }
