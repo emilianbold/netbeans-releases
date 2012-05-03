@@ -78,7 +78,7 @@ public class ReportingImpl extends POMComponentImpl implements Reporting {
             setChild(ReportPluginImpl.List.class,
                     getModel().getPOMQNames().REPORTPLUGINS.getName(),
                     getModel().getFactory().create(this, getModel().getPOMQNames().REPORTPLUGINS.getQName()),
-                    Collections.EMPTY_LIST);
+                    Collections.<Class<? extends POMComponent>>emptySet());
             childs = getChild(ReportPluginImpl.List.class);
             assert childs != null;
         }

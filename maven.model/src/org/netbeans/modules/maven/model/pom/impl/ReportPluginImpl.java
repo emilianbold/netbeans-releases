@@ -78,7 +78,7 @@ public class ReportPluginImpl extends VersionablePOMComponentImpl implements Rep
             setChild(ReportSetImpl.List.class,
                     getModel().getPOMQNames().REPORTSETS.getName(),
                     getModel().getFactory().create(this, getModel().getPOMQNames().REPORTSETS.getQName()),
-                    Collections.EMPTY_LIST);
+                    Collections.<Class<? extends POMComponent>>emptySet());
             childs = getChild(ReportSetImpl.List.class);
             assert childs != null;
         }

@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.maven.model.pom.impl;
 
+import java.util.ArrayList;
 import org.netbeans.modules.maven.model.pom.*;
 import org.netbeans.modules.maven.model.util.ModelImplUtils;
 import org.w3c.dom.Element;
@@ -51,13 +52,15 @@ import org.w3c.dom.Element;
  */
 public class PluginImpl extends VersionablePOMComponentImpl implements Plugin {
 
-    private static final Class<? extends POMComponent>[] ORDER = new Class[] {
-        POMExtensibilityElement.class,
-        PluginExecutionImpl.List.class,
-        DependencyImpl.List.class,
-        StringList.class, //goals
-        Configuration.class
-    };
+    private static final java.util.List<Class<? extends POMComponent>> ORDER;
+    static {
+        ORDER = new ArrayList<Class<? extends POMComponent>>();
+        ORDER.add(POMExtensibilityElement.class);
+        ORDER.add(PluginExecutionImpl.List.class);
+        ORDER.add(DependencyImpl.List.class);
+        ORDER.add(StringList.class); //goals
+        ORDER.add(Configuration.class);
+    }
     
     public PluginImpl(POMModel model, Element element) {
         super(model, element);

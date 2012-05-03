@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.maven.model.pom.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.maven.model.pom.*;
 import org.netbeans.modules.maven.model.util.ModelImplUtils;
@@ -52,10 +53,12 @@ import org.w3c.dom.Element;
  */
 public class ResourceImpl extends POMComponentImpl implements Resource {
 
-    private static final Class<POMComponent>[] ORDER = new Class[] {
-        POMExtensibilityElement.class,
-        StringListImpl.class, //resources
-    };
+    private static final List<Class<? extends POMComponent>> ORDER;
+    static {
+        ORDER = new ArrayList<Class<? extends POMComponent>>();
+        ORDER.add(POMExtensibilityElement.class);
+        ORDER.add(StringListImpl.class); //resources
+    }
 
     public ResourceImpl(POMModel model, Element element) {
         super(model, element);

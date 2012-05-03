@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.maven.model.pom.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.maven.model.pom.*;
 import org.netbeans.modules.maven.model.util.ModelImplUtils;
@@ -52,29 +53,31 @@ import org.w3c.dom.Element;
  */
 public class ProjectImpl extends VersionablePOMComponentImpl implements Project {
 
-    private static final Class<POMComponent>[] ORDER = new Class[] {
-        Parent.class,
-        POMExtensibilityElement.class,
-        Prerequisites.class,
-        IssueManagement.class,
-        CiManagement.class,
-        MailingListImpl.List.class,
-        DeveloperImpl.List.class,
-        ContributorImpl.List.class,
-        LicenseImpl.List.class,
-        Scm.class,
-        Organization.class,
-        Build.class,
-        ProfileImpl.List.class,
-        StringListImpl.class, //modules
-        RepositoryImpl.RepoList.class,
-        RepositoryImpl.PluginRepoList.class,
-        DependencyImpl.List.class,
-        Reporting.class,
-        DependencyManagement.class,
-        DistributionManagement.class,
-        Properties.class
-    };
+    private static final List<Class<? extends POMComponent>> ORDER;
+    static {
+        ORDER = new ArrayList<Class<? extends POMComponent>>();
+        ORDER.add(Parent.class);
+        ORDER.add(POMExtensibilityElement.class);
+        ORDER.add(Prerequisites.class);
+        ORDER.add(IssueManagement.class);
+        ORDER.add(CiManagement.class);
+        ORDER.add(MailingListImpl.List.class);
+        ORDER.add(DeveloperImpl.List.class);
+        ORDER.add(ContributorImpl.List.class);
+        ORDER.add(LicenseImpl.List.class);
+        ORDER.add(Scm.class);
+        ORDER.add(Organization.class);
+        ORDER.add(Build.class);
+        ORDER.add(ProfileImpl.List.class);
+        ORDER.add(StringListImpl.class); //modules
+        ORDER.add(RepositoryImpl.RepoList.class);
+        ORDER.add(RepositoryImpl.PluginRepoList.class);
+        ORDER.add(DependencyImpl.List.class);
+        ORDER.add(Reporting.class);
+        ORDER.add(DependencyManagement.class);
+        ORDER.add(DistributionManagement.class);
+        ORDER.add(Properties.class);
+    }
 
     public ProjectImpl(POMModel model, Element element) {
         super(model, element);

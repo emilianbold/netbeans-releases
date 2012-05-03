@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.maven.model.pom.impl;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;	
 import org.netbeans.modules.maven.model.pom.*;
 import org.w3c.dom.Element;
@@ -60,14 +62,11 @@ public class BuildImpl extends BuildBaseImpl implements Build {
     }
 
     @Override
-    protected Class<? extends POMComponent>[] getOrder() {
-        return new Class[] {
-            ExtensionImpl.List.class,
-            ResourceImpl.ResList.class,
-            ResourceImpl.TestResList.class,
-            PluginManagement.class,
-            PluginImpl.List.class
-        };
+    protected List<Class<? extends POMComponent>> getOrder() {
+        List<Class<? extends POMComponent>> order = new ArrayList<Class<? extends POMComponent>>();
+        order.add(ExtensionImpl.List.class);
+        order.addAll(super.getOrder());
+        return order;
     }
 
 

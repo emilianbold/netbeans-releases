@@ -149,7 +149,7 @@ public class ContributorImpl extends POMComponentImpl implements Contributor {
         setChild(StringListImpl.class,
                  getModel().getPOMQNames().ROLES.getName(),
                  getModel().getFactory().create(this, getModel().getPOMQNames().ROLES.getQName()),
-                 Collections.EMPTY_LIST);
+                 Collections.<Class<? extends POMComponent>>emptySet());
         list = getRolesList();
         if (list != null) {
             list.addListChild(role);

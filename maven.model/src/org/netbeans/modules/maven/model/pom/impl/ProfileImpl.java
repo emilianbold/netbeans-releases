@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.maven.model.pom.impl;
 
+import java.util.ArrayList;
 import org.netbeans.modules.maven.model.pom.*;
 import org.netbeans.modules.maven.model.util.ModelImplUtils;
 import org.w3c.dom.Element;
@@ -51,19 +52,21 @@ import org.w3c.dom.Element;
  */
 public class ProfileImpl extends IdPOMComponentImpl implements Profile {
 
-    private static final Class<? extends POMComponent>[] ORDER = new Class[] {
-        POMExtensibilityElement.class,
-        Activation.class,
-        BuildBase.class,
-        StringList.class, //modules
-        RepositoryImpl.RepoList.class,
-        RepositoryImpl.PluginRepoList.class,
-        DependencyImpl.List.class,
-        Reporting.class,
-        DependencyManagement.class,
-        DistributionManagement.class,
-        Properties.class
-    };
+    private static final java.util.List<Class<? extends POMComponent>> ORDER;
+    static {
+        ORDER = new ArrayList<Class<? extends POMComponent>>();
+        ORDER.add(POMExtensibilityElement.class);
+        ORDER.add(Activation.class);
+        ORDER.add(BuildBase.class);
+        ORDER.add(StringList.class); //modules
+        ORDER.add(RepositoryImpl.RepoList.class);
+        ORDER.add(RepositoryImpl.PluginRepoList.class);
+        ORDER.add(DependencyImpl.List.class);
+        ORDER.add(Reporting.class);
+        ORDER.add(DependencyManagement.class);
+        ORDER.add(DistributionManagement.class);
+        ORDER.add(Properties.class);
+    }
 
     public ProfileImpl(POMModel model, Element element) {
         super(model, element);

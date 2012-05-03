@@ -141,7 +141,7 @@ public class DeveloperImpl extends IdPOMComponentImpl implements Developer {
         setChild(StringListImpl.class,
                  getModel().getPOMQNames().ROLES.getName(),
                  getModel().getFactory().create(this, getModel().getPOMQNames().ROLES.getQName()),
-                 Collections.EMPTY_LIST);
+                 Collections.<Class<? extends POMComponent>>emptySet());
         list = getRolesList();
         if (list != null) {
             list.addListChild(role);
