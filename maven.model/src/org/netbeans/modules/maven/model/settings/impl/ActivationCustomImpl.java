@@ -63,6 +63,7 @@ public class ActivationCustomImpl extends SettingsComponentImpl implements Activ
     // attributes
 
     // child elements
+    @Override
     public void accept(SettingsComponentVisitor visitor) {
         visitor.visit(this);
     }

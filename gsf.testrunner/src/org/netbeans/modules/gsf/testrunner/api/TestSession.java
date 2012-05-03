@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -257,15 +257,6 @@ public class TestSession {
      */
     public void addTestCase(Testcase testCase) {
         assert !testSuites.isEmpty() : "No suites running";
-        //XXX: is this really needed?
-        if (testCase.getClassName() != null) {
-            for (Testcase each : getAllTestCases()) {
-                if (testCase.getClassName().equals(each.getClassName())
-                        && testCase.getName().equals(each.getName())) {
-                    return;
-                }
-            }
-        }
         // add pending output to the newly created testcase
         testCase.addOutputLines(output);
         output.clear();

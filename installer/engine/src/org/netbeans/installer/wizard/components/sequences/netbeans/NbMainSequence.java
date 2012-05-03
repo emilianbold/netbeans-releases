@@ -123,6 +123,15 @@ public class NbMainSequence extends WizardSequence {
 
         @Override
         public void execute() {
+            File tmpUserDir = new File(SystemUtils.getTempDirectory(), "tmpnb"); // NOI18N
+            LogManager.log("try temporary directory for sure : ");
+            try {                    
+                if (tmpUserDir.exists()) {
+                    FileUtils.deleteFile(tmpUserDir, true);
+                }
+            } catch (IOException ioe) {
+                LogManager.log("    .... exception " + ioe.getMessage());
+            }
             LogManager.log("running headless NetBeans IDE : ");
             getWizardUi().setProgress(compositeProgress);
             compositeProgress.setTitle(ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.title")); // NOI18N
@@ -140,7 +149,6 @@ public class NbMainSequence extends WizardSequence {
                 runIDE += File.separator + "netbeans"; // NOI18N
             }
             
-            File tmpUserDir = new File(SystemUtils.getTempDirectory(), "tmpnb"); // NOI18N
             File tmpCacheDir = new File(tmpUserDir, "var" + File.separator + "cache"); // NOI18N
             
             String[] commands = new String [] {
@@ -226,6 +234,31 @@ public class NbMainSequence extends WizardSequence {
             Progress deleteTempDirProgress = new Progress();
             compositeProgress.addChild(deleteTempDirProgress, 9);
                         
+            File populateLogDir = new File(nbInstallLocation, "nb"/*nb cluster*/ + File.separator + "var" + File.separator + "log");
+            File tmpMessagesLog = new File(tmpUserDir, "var" + File.separator + "log" + File.separator + "messages.log");
+            LogManager.log("    pupulate log location = " + populateLogDir);
+            try {                
+                FileUtils.copyFile(tmpMessagesLog, populateLogDir, true, populeteCacheDirProgress);
+            } catch (IOException ioe) {
+                LogManager.log("    .... exception " + ioe.getMessage());
+                return ;
+            } finally {
+                LogManager.log("    .... done. ");
+            }
+            
+            // adding log into list of installed files
+            LogManager.log("add pupulate caches in installed list: ");
+            try {
+                for (File f : populateLogDir.listFiles()) {
+                    nbBase.getInstalledFiles().add(f);
+                }
+                nbBase.getInstalledFiles().add(populateLogDir);
+            } catch (IOException ioe) {
+                LogManager.log("    .... exception " + ioe.getMessage());
+            } finally {
+                LogManager.log("    .... done. ");
+            }
+            
             File populateCacheDir = new File(nbInstallLocation, "nb"/*nb cluster*/ + File.separator + "var" + File.separator + "cache");
             LogManager.log("    pupulate cache location = " + populateCacheDir);
             try {                

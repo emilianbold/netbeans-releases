@@ -41,9 +41,8 @@
  */
 package org.netbeans.modules.maven.model.pom.impl;
 
+import org.netbeans.modules.maven.model.pom.*;
 import org.w3c.dom.Element;
-import org.netbeans.modules.maven.model.pom.*;	
-import org.netbeans.modules.maven.model.pom.POMComponentVisitor;	
 
 /**
  *
@@ -62,41 +61,50 @@ public class ScmImpl extends POMComponentImpl implements Scm {
     // attributes
 
     // child elements
+    @Override
     public void accept(POMComponentVisitor visitor) {
         visitor.visit(this);
     }
 
+    @Override
     public String getConnection() {
         return getChildElementText(getModel().getPOMQNames().CONNECTION.getQName());
     }
 
+    @Override
     public void setConnection(String connection) {
         setChildElementText(getModel().getPOMQNames().CONNECTION.getName(), connection,
                 getModel().getPOMQNames().CONNECTION.getQName());
     }
 
+    @Override
     public String getDeveloperConnection() {
         return getChildElementText(getModel().getPOMQNames().DEVELOPERCONNECTION.getQName());
     }
 
+    @Override
     public void setDeveloperConnection(String connection) {
         setChildElementText(getModel().getPOMQNames().DEVELOPERCONNECTION.getName(), connection,
                 getModel().getPOMQNames().DEVELOPERCONNECTION.getQName());
     }
 
+    @Override
     public String getUrl() {
         return getChildElementText(getModel().getPOMQNames().URL.getQName());
     }
 
+    @Override
     public void setUrl(String url) {
         setChildElementText(getModel().getPOMQNames().URL.getName(), url,
                 getModel().getPOMQNames().URL.getQName());
     }
 
+    @Override
     public String getTag() {
         return getChildElementText(getModel().getPOMQNames().TAG.getQName());
     }
 
+    @Override
     public void setTag(String tag) {
         setChildElementText(getModel().getPOMQNames().TAG.getName(), tag,
                 getModel().getPOMQNames().TAG.getQName());

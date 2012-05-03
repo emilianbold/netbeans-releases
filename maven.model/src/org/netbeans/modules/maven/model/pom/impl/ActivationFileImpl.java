@@ -62,23 +62,28 @@ public class ActivationFileImpl extends POMComponentImpl implements ActivationFi
     // attributes
 
     // child elements
+    @Override
     public void accept(POMComponentVisitor visitor) {
         visitor.visit(this);
     }
 
+    @Override
     public String getExists() {
         return getChildElementText(getModel().getPOMQNames().EXISTS.getQName());
     }
 
+    @Override
     public void setExists(String exists) {
         setChildElementText(getModel().getPOMQNames().EXISTS.getName(), exists,
                 getModel().getPOMQNames().EXISTS.getQName());
     }
 
+    @Override
     public String getMissing() {
         return getChildElementText(getModel().getPOMQNames().MISSING.getQName());
     }
 
+    @Override
     public void setMissing(String missing) {
         setChildElementText(getModel().getPOMQNames().MISSING.getName(), missing,
                 getModel().getPOMQNames().MISSING.getQName());
