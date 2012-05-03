@@ -251,7 +251,7 @@ public class BuildProjectActionHandler implements ProjectActionHandler {
             this.execEnv = execEnv;
         }
 
-        private synchronized void downloadExecLog() {
+        private void downloadExecLog() {
             if (execLog != null && !downloadedExecLog.get()) {
                 if (execEnv.isRemote()) {
                     try {
@@ -280,7 +280,7 @@ public class BuildProjectActionHandler implements ProjectActionHandler {
             return buildLog;
         }
         
-        public String getExecLog() {
+        public synchronized String getExecLog() {
             downloadExecLog();
             if (execLog != null) {
                 return execLog.getAbsolutePath();
