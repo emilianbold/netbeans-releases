@@ -51,7 +51,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerRoot
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.PrioritizedCustomizerNode;
 import org.openide.util.Lookup;
 
-public class DebuggerChooserConfiguration {
+public class DebuggerChooserConfiguration implements Cloneable {
 
     private static List<CustomizerNode>  nodes = null;
     private static String[] names;

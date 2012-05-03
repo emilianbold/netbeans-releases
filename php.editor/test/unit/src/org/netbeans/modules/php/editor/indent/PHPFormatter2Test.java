@@ -1348,4 +1348,74 @@ public class PHPFormatter2Test extends PHPCodeCompletionTestBase {
         reformatFileContents("testfiles/formatting/wrapping/issue211933_03.php", options);
     }
 
+    public void testIssue202940_01() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.catchBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.forBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.ifBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.otherBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.switchBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.useTraitBodyBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.whileBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        reformatFileContents("testfiles/formatting/spaces/issue202940_01.php", options);
+    }
+
+    public void testIssue202940_02() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.catchBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.forBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.ifBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.otherBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.switchBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.useTraitBodyBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.whileBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        reformatFileContents("testfiles/formatting/spaces/issue202940_02.php", options);
+    }
+
+    public void testIssue202940_03() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.catchBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.forBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.ifBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.otherBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.switchBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.useTraitBodyBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.whileBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        reformatFileContents("testfiles/formatting/spaces/issue202940_03.php", options);
+    }
+
+    public void testIssue202940_04() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.catchBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.forBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.ifBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.otherBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.switchBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.useTraitBodyBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.whileBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        reformatFileContents("testfiles/formatting/spaces/issue202940_04.php", options);
+    }
+
+    public void testIssue202940_05() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.catchBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.forBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.ifBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.otherBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.switchBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.useTraitBodyBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.whileBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        reformatFileContents("testfiles/formatting/spaces/issue202940_05.php", options);
+    }
+
 }

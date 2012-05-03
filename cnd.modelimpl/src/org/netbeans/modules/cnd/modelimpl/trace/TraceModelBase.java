@@ -59,6 +59,7 @@ public class TraceModelBase {
     private CsmUID<CsmProject> projectUID;
     private List<String> quoteIncludePaths = new ArrayList<String>();
     private List<String> systemIncludePaths = new ArrayList<String>();
+    private List<String> libProjectsPaths = new ArrayList<String>();
     private List<File> files = new ArrayList<File>();
     private List<String> currentIncludePaths = null;
     private List<String> macros = new ArrayList<String>();
@@ -84,10 +85,11 @@ public class TraceModelBase {
         currentIncludePaths = quoteIncludePaths;
     }
 
-    protected final void setIncludePaths(List<String> sysIncludes, List<String> usrIncludes) {
+    protected final void setIncludePaths(List<String> sysIncludes, List<String> usrIncludes, List<String> libProjectsPaths) {
         this.quoteIncludePaths = usrIncludes;
         this.systemIncludePaths = sysIncludes;
         this.currentIncludePaths = this.quoteIncludePaths;
+        this.libProjectsPaths = libProjectsPaths;
     }
 
     protected final void shutdown(boolean clearCache) {
@@ -229,6 +231,7 @@ public class TraceModelBase {
             String projectRoot = files.isEmpty() ? File.separator
                     : files.get(0).getParentFile().getAbsolutePath();
             np = NativeProjectProvider.createProject(projectRoot, files,
+                    libProjectsPaths,
                     getSystemIncludes(), quoteIncludePaths, getSysMacros(),
                     macros, pathsRelCurFile);
         }

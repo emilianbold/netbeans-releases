@@ -86,13 +86,15 @@ import org.openide.text.NbDocument;
  *
  */
 public class NbCsmCompletionQuery extends CsmCompletionQuery {
+    static {
+        CsmCompletionQuery.setCsmItemFactory(new NbCsmItemFactory());
+    }
     private CsmFile csmFile;
     private Integer offsetInFile;
     private final QueryScope queryScope;
     private final FileReferencesContext fileReferencesContext;
     
     protected NbCsmCompletionQuery(CsmFile csmFile, QueryScope localContext, FileReferencesContext fileReferencesContext) {
-        super(new NbCsmItemFactory());
         this.csmFile = csmFile;
         this.queryScope = localContext;
         this.fileReferencesContext = fileReferencesContext;

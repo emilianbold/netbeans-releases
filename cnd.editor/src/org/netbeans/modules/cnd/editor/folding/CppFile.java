@@ -120,8 +120,7 @@ public class CppFile {
 //        int curCount = getCount();
 //        System.out.println("CppFile.startParsing: Parsing " + curCount);
         if (log.isLoggable(Level.FINE)) {
-            log.log(Level.FINE, "CppFile.startParsing: Parsing " + getShortName(doc) +
-                    " [" + Thread.currentThread().getName() + "]"); // NOI18N
+            log.log(Level.FINE, "CppFile.startParsing: Parsing {0} [{1}]", new Object[]{getShortName(doc), Thread.currentThread().getName()}); // NOI18N
         }
         state = PARSING_STARTED;
         //this.doc = doc;
@@ -131,9 +130,9 @@ public class CppFile {
                 state = FOLD_PARSING_COMPLETE;
             }
         } catch (NoSuchMethodError er) {
-            log.log(Level.FINE, "CppFile.startParsing: NoSuchMethodError: " + er.getMessage());
+            log.log(Level.FINE, "CppFile.startParsing: NoSuchMethodError: {0}", er.getMessage());
         } catch (UnsatisfiedLinkError ule) {
-            log.log(Level.FINE, "CppFile.startParsing: UnsatisfiedLinkError: " + ule.getMessage());
+            log.log(Level.FINE, "CppFile.startParsing: UnsatisfiedLinkError: {0}", ule.getMessage());
         } finally {
             if (state != FOLD_PARSING_COMPLETE) {
                 state = PARSING_FAILED;
@@ -153,7 +152,6 @@ public class CppFile {
             blockFoldRecords.clear();
             initialCommentFoldRecord = null;
             includesFoldRecords.clear();
-            List<CppFoldRecord> folds = null;
 
             final Object[] res = new Object[]{null, null};
             doc.render(new Runnable() {
@@ -172,16 +170,15 @@ public class CppFile {
             });
 
             if (res[1] != null) {
-                ((BadLocationException)res[1]).printStackTrace();
+                ((BadLocationException)res[1]).printStackTrace(System.err);
                 return false;
             }
             if (res[0] == null) {
                 return false;
             }
 
-            String name = (String) doc.getProperty(Document.TitleProperty);
             FileObject fo = NbEditorUtilities.getFileObject(doc);
-            folds = p.parse(fo, (char[])res[0]);
+            List<CppFoldRecord> folds = p.parse(fo, (char[])res[0]);
             if (folds == null) {
                 return false;
             }
@@ -257,7 +254,7 @@ public class CppFile {
      */
     private void addNewFold(StyledDocument doc, CppFoldRecord fold) {
         if (log.isLoggable(Level.FINEST)) {
-            log.log(Level.FINEST, "CppFile.addNewFold: " + fold.toString());
+            log.log(Level.FINEST, "CppFile.addNewFold: {0}", fold.toString());
         }
         switch (fold.getType()) {
             case INITIAL_COMMENT_FOLD:

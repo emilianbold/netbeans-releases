@@ -45,7 +45,7 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import java.util.StringTokenizer;
 
-public class StringConfiguration {
+public class StringConfiguration implements Cloneable {
 
     private StringConfiguration master;
     private String def;

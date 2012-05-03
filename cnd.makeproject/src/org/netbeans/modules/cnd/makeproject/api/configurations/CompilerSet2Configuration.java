@@ -48,18 +48,18 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.Map;
-import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
-import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.CompilerSetNodeProp;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
-public class CompilerSet2Configuration implements PropertyChangeListener {
+public class CompilerSet2Configuration implements PropertyChangeListener, Cloneable {
     public static final String DEFAULT_CS = "default"; // NOI18N
     private DevelopmentHostConfiguration dhconf;
     private StringConfiguration compilerSetName;
@@ -284,7 +284,7 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
 
     @Override
     public void propertyChange(final PropertyChangeEvent evt) {
-        CompilerSet ocs = null;
+        CompilerSet ocs;
         String hkey = ((DevelopmentHostConfiguration) evt.getNewValue()).getHostKey();
         final ExecutionEnvironment env = ExecutionEnvironmentFactory.fromUniqueID(hkey);
         final String oldName = oldNameMap.get(hkey);

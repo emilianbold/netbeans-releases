@@ -54,12 +54,9 @@ import java.util.Map;
  * copied from editor/options.
  * @author theofanis
  */
-class ColorValue {
+final class ColorValue {
 
-    public static final ColorValue  CUSTOM_COLOR =
-            new ColorValue (loc ("Custom"), null); //NOI18N
-
-    private static Map<Color, String> colorMap = new HashMap<Color, String>();
+    private final static Map<Color, String> colorMap = new HashMap<Color, String>();
     static {
         colorMap.put (Color.BLACK,      loc ("Black"));         //NOI18N
         colorMap.put (Color.BLUE,       loc ("Blue"));          //NOI18N
@@ -76,6 +73,9 @@ class ColorValue {
         colorMap.put (Color.YELLOW,     loc ("Yellow"));        //NOI18N
     }
     
+    public static final ColorValue  CUSTOM_COLOR =
+            new ColorValue (loc ("Custom"), null); //NOI18N
+    
     String text;
     Color color;
 
@@ -83,7 +83,7 @@ class ColorValue {
         this.color = color;
         text = colorMap.get (color);
         if (text != null) return;
-        StringBuffer sb = new StringBuffer ();
+        StringBuilder sb = new StringBuilder ();
         sb.append ('[').append (color.getRed ()).
             append (',').append (color.getGreen ()).
             append (',').append (color.getBlue ()).

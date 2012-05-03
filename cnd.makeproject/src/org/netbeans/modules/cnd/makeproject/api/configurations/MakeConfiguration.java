@@ -87,7 +87,7 @@ import org.openide.nodes.Sheet;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
-public class MakeConfiguration extends Configuration {
+public class MakeConfiguration extends Configuration implements Cloneable {
 
     public static final String NBPROJECT_FOLDER = "nbproject"; // NOI18N
     public static final String NBPROJECT_PRIVATE_FOLDER = "nbproject/private"; // NOI18N
@@ -948,7 +948,7 @@ public class MakeConfiguration extends Configuration {
         this.codeAssistanceConfiguration = codeAssistanceConfiguration;
     }
     
-    public class LanguageBooleanConfiguration extends BooleanConfiguration {
+    public class LanguageBooleanConfiguration extends BooleanConfiguration implements Cloneable {
 
         private boolean notYetSet = true;
 
