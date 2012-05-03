@@ -50,6 +50,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
+import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
@@ -81,10 +83,11 @@ public final class NativeProjectProvider {
     }
     
     public static NativeProject createProject(String projectRoot, List<File> files,
+            List<String> libProjectsPaths,
 	    List<String> sysIncludes, List<String> usrIncludes,
 	    List<String> sysMacros, List<String> usrMacros, boolean pathsRelCurFile) throws IOException {
 	
-        NativeProjectImpl project = new NativeProjectImpl(projectRoot, 
+        NativeProjectImpl project = new NativeProjectImpl(projectRoot, libProjectsPaths,
 		sysIncludes, usrIncludes, sysMacros, usrMacros, pathsRelCurFile);
 	
 	project.addFiles(files);
@@ -171,16 +174,36 @@ public final class NativeProjectProvider {
 	private final boolean pathsRelCurFile;
 	private final String name;
 	private List<NativeProjectItemsListener> listeners = new ArrayList<NativeProjectItemsListener>();
+        private final List<NativeProject> libProjects;
 
         private static final class Lock {}
         private final Object listenersLock = new Lock();
 	
 	public NativeProjectImpl(String projectRoot,
+                List<String> libProjectsPaths,
 		List<String> sysIncludes, List<String> usrIncludes, 
 		List<String> sysMacros, List<String> usrMacros,
 		boolean pathsRelCurFile) {
 
 	    this.projectRoot = projectRoot;
+            List<NativeProject> libs = new ArrayList<NativeProject>();
+            Collection<CsmProject> projects = CsmModelAccessor.getModel().projects();
+            for (String libPath : libProjectsPaths) {
+                boolean found = false;
+                for (CsmProject csmProject : projects) {
+                    Object platformProject = csmProject.getPlatformProject();
+                    if (platformProject instanceof NativeProjectProvider.NativeProjectImpl) {
+                        if (((NativeProjectProvider.NativeProjectImpl) platformProject).projectRoot.equals(libPath)) {
+                            assert !found : "two projects for the same root " + libPath + libs + csmProject;
+                            found = true;
+                            libs.add((NativeProjectProvider.NativeProjectImpl) platformProject);
+                        }
+                    }
+                }
+                assert found : " not found project for " + libPath + " in " + projects;
+            }
+            this.libProjects = libs;
+
 	    this.pathsRelCurFile = pathsRelCurFile;
 	    
 	    this.sysIncludes = createIncludes(sysIncludes);
@@ -367,7 +390,7 @@ public final class NativeProjectProvider {
 	
         @Override
         public List<NativeProject> getDependences() {
-            return Collections.<NativeProject>emptyList();
+            return libProjects;
         }
 
         @Override

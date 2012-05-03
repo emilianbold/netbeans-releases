@@ -48,7 +48,7 @@ import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 
-public class CustomToolConfiguration implements ConfigurationBase {
+public class CustomToolConfiguration implements ConfigurationBase, Cloneable {
     // Custom tool
     private StringConfiguration commandLine;
     private StringConfiguration description;

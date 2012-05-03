@@ -42,6 +42,9 @@
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.io.File;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import javax.swing.text.BadLocationException;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmProject;
@@ -53,6 +56,10 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 public class ModifyMultiIncludedLibraryHeaderTestCase extends ModifyDocumentTestCaseBase {
     public ModifyMultiIncludedLibraryHeaderTestCase(String testName) {
         super(testName);
+//        System.setProperty("DeepReparsingUtils.level", "FINEST");
+//        System.setProperty("cnd.modelimpl.use.deep.reparsing.trace", "true");
+//        System.setProperty("cnd.modelimpl.timing.per.file.flat", "true");
+//        System.setProperty("cnd.modelimpl.timing", "true");
     }
 
     @Override
@@ -67,15 +74,29 @@ public class ModifyMultiIncludedLibraryHeaderTestCase extends ModifyDocumentTest
         //
         // so, adjust used folders
 
-        File srcDir1 = new File(projectDir, "mainSources");
-        File srcDir2 = new File(projectDir, "libraryFolder");
-        checkDir(srcDir1);
-        checkDir(srcDir2);
-        return new File[]{srcDir1, srcDir2};
+        File libraryDir = new File(projectDir, "libraryFolder");
+        File srcDir = new File(projectDir, "mainSources");
+        checkDir(libraryDir);
+        checkDir(srcDir);
+        super.setSysIncludes(srcDir.getAbsolutePath(), Collections.singletonList(libraryDir.getAbsolutePath()));
+        super.setLibProjectsPaths(srcDir.getAbsolutePath(), Collections.singletonList(libraryDir.getAbsolutePath()));
+        return new File[]{libraryDir, srcDir};
     }
 
     public void test210816() throws Exception {
         // #210816 - unresolved identifiers due to partial reparse
+        ProjectBase libProject = (ProjectBase) super.getProject("project_libraryFolder");
+        assertNotNull(libProject);
+        assertEquals("two files are expected " + libProject.getAllFiles(), 2, libProject.getAllFiles().size());
+        ProjectBase srcProject = (ProjectBase) super.getProject("project_mainSources");
+        assertNotNull(srcProject);
+        assertEquals("only one file is expected " + srcProject.getAllFiles(), 1, srcProject.getAllFiles().size());
+        List<CsmProject> srcLibs = srcProject.getLibraries();
+        Collection<ProjectBase> dependentProjects = libProject.getDependentProjects();
+        assertEquals("one dependent Project is expected " + dependentProjects, 1, dependentProjects.size());
+        assertEquals("one library is expected " + srcLibs, 1, srcLibs.size());
+        assertEquals("mainSources project have to be in dependent list of library" + dependentProjects, srcProject, dependentProjects.iterator().next());
+        assertEquals("library is expected to be in list of mainSources dependencies" + srcLibs, libProject, srcLibs.iterator().next());
         final File sourceFile = getDataFile("mainSources/main.cpp");
         final File file2Check = getDataFile("libraryFolder/hello1.h");
         super.insertTextThenSaveAndCheck(sourceFile, 1, "#define EMPTY_MACRO\n",

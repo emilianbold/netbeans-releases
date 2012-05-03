@@ -168,7 +168,7 @@ public final class CppSwitchAction extends BaseAction {
 
     private static NodeKind getTargetNodeKind(DataObject dobj) {
         if (dobj != null) {
-            FileObject fo = (dobj == null) ? null : dobj.getPrimaryFile();
+            FileObject fo = dobj.getPrimaryFile();
             String mime = (fo == null) ? "" : fo.getMIMEType();
             if (MIMENames.HEADER_MIME_TYPE.equals(mime)) {
                 return NodeKind.SOURCE;
@@ -247,7 +247,7 @@ public final class CppSwitchAction extends BaseAction {
 
     private static void doToggle(final DataObject toggled) {
         // check if the data object has possibility to be opened in editor
-        final OpenCookie oc = toggled.getCookie(OpenCookie.class);
+        final OpenCookie oc = toggled.getLookup().lookup(OpenCookie.class);
         if (oc != null) {
             // remember current caret position
             JTextComponent textComponent = EditorRegistry.lastFocusedComponent();

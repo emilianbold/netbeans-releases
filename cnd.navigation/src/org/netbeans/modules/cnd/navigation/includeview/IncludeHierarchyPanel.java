@@ -358,16 +358,18 @@ public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Pro
         }
     }
         
-    public void setFile(CsmFile file){
-        object = UIDs.get(file);
-        if (file.isHeaderFile()) {
-            recursive = false;
-            plain = true;
-            whoIncludes = true;
-        } else {
-            recursive = true;
-            plain = false;
-            whoIncludes = false;
+    public void setFile(CsmFile file) {
+        if (file != null) {
+            object = UIDs.get(file);
+            if (file.isHeaderFile()) {
+                recursive = false;
+                plain = true;
+                whoIncludes = true;
+            } else {
+                recursive = true;
+                plain = false;
+                whoIncludes = false;
+            }
         }
         update(file);
     }
@@ -433,7 +435,7 @@ public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Pro
     }
 
     @Override
-    public ExplorerManager getExplorerManager() {
+    public final ExplorerManager getExplorerManager() {
         return explorerManager;
     }
 

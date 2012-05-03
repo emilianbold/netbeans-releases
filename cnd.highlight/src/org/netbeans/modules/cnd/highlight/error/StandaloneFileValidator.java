@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,77 +34,26 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.makeproject.api.configurations;
+package org.netbeans.modules.cnd.highlight.error;
 
-public class BooleanConfiguration implements Cloneable {
+import org.netbeans.modules.cnd.api.model.services.CsmStandaloneFileProvider;
+import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
 
-    private boolean def;
-    private boolean value;
-    private boolean modified;
-    private boolean dirty = false;
-
-    public BooleanConfiguration(boolean def) {
-        this.def = def;
-        reset();
-    }
-
-    public void setValue(boolean b) {
-        this.value = b;
-        setModified(b != getDefault());
-    }
-
-    public boolean getValue() {
-        return value;
-    }
-
-    public final void setModified(boolean b) {
-        this.modified = b;
-    }
-
-    public boolean getModified() {
-        return modified;
-    }
-
-    public void setDirty(boolean dirty) {
-        this.dirty = dirty;
-    }
-
-    public boolean getDirty() {
-        return dirty;
-    }
-
-    public boolean getDefault() {
-        return def;
-    }
-
-    public void setDefault(boolean b) {
-        def = b;
-        setModified(value != def);
-    }
-
-    public final void reset() {
-        value = getDefault();
-        setModified(false);
-    }
-
-    // Clone and Assign
-    public void assign(BooleanConfiguration conf) {
-        dirty |= conf.getValue() ^ getValue();
-        setValue(conf.getValue());
-        setModified(conf.getModified());
-    }
+/**
+ * Disables error highlighting on standalone files.
+ * @author Vladimir Voskresensky
+ */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider.RequestValidator.class)
+public class StandaloneFileValidator implements CsmErrorProvider.RequestValidator {
 
     @Override
-    public BooleanConfiguration clone() {
-        BooleanConfiguration clone = new BooleanConfiguration(def);
-        clone.setValue(getValue());
-        clone.setModified(getModified());
-        return clone;
+    public boolean isValid(CsmErrorProvider provider, CsmErrorProvider.Request request) {
+        return !CsmStandaloneFileProvider.getDefault().isStandalone(request.getFile());
     }
 
-    @Override
-    public String toString() {
-        return "{value=" + value + " modified=" + modified + " dirty=" + dirty +  '}'; // NOI18N
-    }
 }
