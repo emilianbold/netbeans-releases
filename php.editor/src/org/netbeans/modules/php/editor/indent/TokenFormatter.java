@@ -769,7 +769,7 @@ public class TokenFormatter {
                                                 }
                                                 break;
                                             case WRAP_IF_LONG:
-                                                if (column + 1 + countLengthOfNextSequence(formatTokens, index + 1) > docOptions.margin) {
+                                                if (isAfterLineComment(formatTokens, index) || column + 1 + countLengthOfNextSequence(formatTokens, index + 1) > docOptions.margin) {
                                                     newLines = 1;
                                                     countSpaces = docOptions.alignMultilineCallArgs ? lastAnchor.getAnchorColumn() : indent;
                                                 }
@@ -803,7 +803,7 @@ public class TokenFormatter {
                                         if (index > 0 && docOptions.groupMulitilineAssignment
                                                 && formatTokens.get(index - 1).getId() == FormatToken.Kind.ASSIGNMENT_ANCHOR) {
                                             FormatToken.AssignmentAnchorToken aaToken = (FormatToken.AssignmentAnchorToken)formatTokens.get(index - 1);
-                                            countSpaces = aaToken.getMaxLength() - aaToken.getLenght();
+                                            countSpaces = new SpacesCounter(docOptions).count(aaToken);
                                         }
                                         countSpaces = countSpaces + (docOptions.spaceAroundAssignOps ? 1 : 0);
                                         break;
@@ -812,7 +812,7 @@ public class TokenFormatter {
                                         if (index > 0 && docOptions.groupMulitilineArrayInit
                                                 && formatTokens.get(index - 1).getId() == FormatToken.Kind.ASSIGNMENT_ANCHOR) {
                                             FormatToken.AssignmentAnchorToken aaToken = (FormatToken.AssignmentAnchorToken)formatTokens.get(index - 1);
-                                            countSpaces = aaToken.getMaxLength() - aaToken.getLenght();
+                                            countSpaces = new SpacesCounter(docOptions).count(aaToken);
                                         }
                                         countSpaces = countSpaces + (docOptions.spaceAroundKeyValueOps ? 1 : 0);
                                         break;
@@ -2064,5 +2064,82 @@ public class TokenFormatter {
         }
 
 	return sb.toString();
+    }
+
+    private class SpacesCounter {
+
+        private final DocumentOptions documentOptions;
+
+        private SpacesCounter(final DocumentOptions documentOptions) {
+            this.documentOptions = documentOptions;
+        }
+
+        public int count(final FormatToken.AssignmentAnchorToken token) {
+            int spaces = 0;
+            if (token.isInGroup()) {
+                spaces = countSpacesForGroupedToken(token);
+            }
+            return spaces;
+        }
+
+        private int countSpacesForGroupedToken(final FormatToken.AssignmentAnchorToken token) {
+            int spaces = 0;
+            if (documentOptions.expandTabsToSpaces) {
+                spaces = token.getMaxLength() - token.getLenght();
+            } else {
+                spaces = countSpacesWhenNotExpandingTabs(token);
+            }
+            return spaces;
+        }
+
+        private int countSpacesWhenNotExpandingTabs(final FormatToken.AssignmentAnchorToken token) {
+            int spaces = 0;
+            // 1 tabSize will be reduced to tabWidthToComplete...
+            int tabWidthToCompleteMaxLengthToTab = documentOptions.tabSize - (token.getMaxLength() % documentOptions.tabSize);
+            int tabWidthToCompleteLengthToTab = documentOptions.tabSize - (token.getLenght() % documentOptions.tabSize);
+            if (tabWidthToCompleteMaxLengthToTab == documentOptions.tabSize) {
+                // the biggest item of the group doesn't have to be expanded by one Tab
+                tabWidthToCompleteMaxLengthToTab = 0;
+            }
+            if (tabWidthToCompleteLengthToTab == documentOptions.tabSize) {
+                // current item is on the Tab offset
+                tabWidthToCompleteLengthToTab = 0;
+            }
+
+            if (token.getLenght() == token.getMaxLength()) {
+                spaces = countSpacesForBiggestItem(tabWidthToCompleteLengthToTab);
+            } else {
+                spaces = countSpacesForCommonItem(token, tabWidthToCompleteLengthToTab, tabWidthToCompleteMaxLengthToTab);
+            }
+            return spaces;
+        }
+
+        private int countSpacesForBiggestItem(final int tabWidthToCompleteLengthToTab) {
+            int spaces = 0;
+            if (tabWidthToCompleteLengthToTab != 0) {
+                // and this biggest item has to be expanded by one tab
+                spaces = documentOptions.tabSize;
+            }
+            return spaces;
+        }
+
+        private int countSpacesForCommonItem(final FormatToken.AssignmentAnchorToken token, final int tabWidthToCompleteLengthToTab, final int tabWidthToCompleteMaxLengthToTab) {
+            int spaces = 0;
+            if (tabWidthToCompleteMaxLengthToTab == 0) {
+                if (tabWidthToCompleteLengthToTab == 0) {
+                    spaces = token.getMaxLength() - token.getLenght();
+                } else {
+                    spaces = (token.getMaxLength() - token.getLenght()) - tabWidthToCompleteLengthToTab + documentOptions.tabSize;
+                }
+            } else {
+                if (tabWidthToCompleteLengthToTab == 0) {
+                    spaces = (token.getMaxLength() + tabWidthToCompleteMaxLengthToTab) - token.getLenght();
+                } else {
+                    spaces = (token.getMaxLength() + tabWidthToCompleteMaxLengthToTab) - (token.getLenght() + tabWidthToCompleteLengthToTab) + documentOptions.tabSize;
+                }
+            }
+            return spaces;
+        }
+
     }
 }

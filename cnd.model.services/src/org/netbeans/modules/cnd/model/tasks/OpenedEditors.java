@@ -53,7 +53,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import javax.swing.JEditorPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
@@ -71,6 +70,8 @@ import org.openide.util.Parameters;
  * @author Vladimir Kvashin
  */
 public final class OpenedEditors {
+    // marker for non standard editor components where semantic services are expected to work
+    public static final String CND_EDITOR_COMPONENT = "CND_EDITOR_COMPONENT"; // NOI18N
 
     private List<JTextComponent> visibleEditors = new ArrayList<JTextComponent>();
     private Map<JTextComponent, FileObject> visibleEditors2Files = new HashMap<JTextComponent, FileObject>();
@@ -163,7 +164,7 @@ public final class OpenedEditors {
 
         for(JTextComponent editor : EditorRegistry.componentList()) {
             // skip non-editor components
-            if (editor != null && editor.getClass().getName().equals("org.openide.text.QuietEditorPane")) { // NOI18N
+            if (isHandledEditor(editor)) {
                 FileObject fo = getFileObject(editor);
 
                 if (isSupported(fo)) {
@@ -298,5 +299,15 @@ public final class OpenedEditors {
         }
 
         return result;
+    }
+
+    private boolean isHandledEditor(JTextComponent editor) {
+        if (editor == null) {
+            return false;
+        }
+        if (editor.getClientProperty(OpenedEditors.CND_EDITOR_COMPONENT) != null) {
+            return true;
+        }
+        return editor.getClass().getName().equals("org.openide.text.QuietEditorPane"); // NOI18N
     }
 }

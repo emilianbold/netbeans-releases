@@ -535,7 +535,7 @@ public class GrammarResolverTest extends CssModuleTestBase {
         assertEquals("[S0|font]/[S1]/[L2]/[S7|font-size]/!length (20px)", itr.next().toString());
         assertEquals("[S0|font]/[S1]/[L2]/[L10]// (/)", itr.next().toString());
         assertEquals("[S0|font]/[S1]/[L2]/[L10]/[S11|line-height]/!length (20px)", itr.next().toString());
-        assertEquals("[S0|font]/[S1]/[L2]/[S12|font-family]/[L13]/[S14]/[S18|@generic-family]/fantasy (fantasy)", itr.next().toString());
+        assertEquals("[S0|font]/[S1]/[L2]/[S12|font-family]/[L13]/[S14]/[S17|@generic-family]/fantasy (fantasy)", itr.next().toString());
         
     }
 
@@ -551,7 +551,9 @@ public class GrammarResolverTest extends CssModuleTestBase {
 
         assertTrue(new PropertyValue(p, "serif").isResolved());
         assertTrue(new PropertyValue(p, "cursive, serif").isResolved());
-        assertFalse(new PropertyValue(p, "cursive serif").isResolved());
+        
+        //resolves since the "cursive serif" can be considered as unquoted custom family name
+        assertTrue(new PropertyValue(p, "cursive serif").isResolved());
 
     }
 

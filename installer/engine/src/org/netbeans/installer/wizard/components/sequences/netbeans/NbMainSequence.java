@@ -184,10 +184,13 @@ public class NbMainSequence extends WizardSequence {
                 countdownProgress.stop();
             }
             
+            
             // remove useless files
             LogManager.log("    remove useless files from cache");
+            
             Progress removeUselessFileProgress = new Progress();
-            compositeProgress.addChild(removeUselessFileProgress, 25);
+            compositeProgress.addChild(removeUselessFileProgress, 8);                       
+            
             removeUselessFileProgress.setDetail((ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.cleaning"))); // NOI18N
             try {
                 FileUtils.deleteFile(new File(tmpCacheDir, "netigso"), true, removeUselessFileProgress);
@@ -213,24 +216,33 @@ public class NbMainSequence extends WizardSequence {
                 LogManager.log("    .... done. ");
             }
             
+            
+            // copy populate caches and delete temp files
             LogManager.log("copying pupulate caches : ");
+            
+            Progress populeteCacheDirProgress = new Progress();
+            compositeProgress.addChild(populeteCacheDirProgress, 8);
+            
+            Progress deleteTempDirProgress = new Progress();
+            compositeProgress.addChild(deleteTempDirProgress, 9);
+                        
             File populateCacheDir = new File(nbInstallLocation, "nb"/*nb cluster*/ + File.separator + "var" + File.separator + "cache");
             LogManager.log("    pupulate cache location = " + populateCacheDir);
-            try {
-                FileUtils.copyFile(tmpCacheDir, populateCacheDir, true, removeUselessFileProgress);
+            try {                
+                FileUtils.copyFile(tmpCacheDir, populateCacheDir, true, populeteCacheDirProgress);
             } catch (IOException ioe) {
                 LogManager.log("    .... exception " + ioe.getMessage());
                 return ;
             } finally {
                 LogManager.log("    .... done. ");
-                try {
-                    FileUtils.deleteFile(tmpUserDir, true, removeUselessFileProgress);
+                try {                    
+                    FileUtils.deleteFile(tmpUserDir, true, deleteTempDirProgress);
                 } catch (IOException ioe) {
                     LogManager.log("    .... exception " + ioe.getMessage());
                 }
             }
             
-            
+                        
             // adding files into list of installed files
             LogManager.log("add pupulate caches in installed list: ");
             try {
@@ -264,6 +276,7 @@ public class NbMainSequence extends WizardSequence {
                 Executors.newScheduledThreadPool(1);
         private int current;
         private ScheduledFuture<?> ticTac;
+        private Progress countdown;
 
         public CountdownProgress(CompositeProgress main, long time, int percentage, String title) {
             this.main = main;
@@ -274,7 +287,7 @@ public class NbMainSequence extends WizardSequence {
         }
 
         public void countdown() {
-            final Progress countdown = new Progress();
+            countdown = new Progress();
             countdown.setDetail(title);
             main.addChild(countdown, percentage);
             current = 0;
@@ -292,6 +305,7 @@ public class NbMainSequence extends WizardSequence {
 
                 @Override
                 public void run() {
+                    countdown.setPercentage(Progress.COMPLETE);
                     ticTac.cancel(true);
                 }
             }, time, TimeUnit.MILLISECONDS);
@@ -301,6 +315,7 @@ public class NbMainSequence extends WizardSequence {
 
         public void stop() {
             if (!ticTac.isDone() && !ticTac.isCancelled()) {
+                countdown.setPercentage(Progress.COMPLETE);
                 ticTac.cancel(true);
             }
         }

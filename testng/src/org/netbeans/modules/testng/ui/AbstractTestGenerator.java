@@ -395,7 +395,7 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
      * @throws IllegalStateException
      */
     @NbBundle.Messages({"TestCreator.variantMethods.defaultFailMsg=The test case is a prototype.",
-        "TestCreator.variantMethods.defaultComment=TODO review the generated test code and remove the default call to Assert.fail."})
+        "TestCreator.variantMethods.defaultComment=TODO review the generated test code and remove the default call to fail."})
     private ExpressionStatementTree generateDefMethodBody(TreeMaker maker)
                         throws MissingResourceException, IllegalStateException {
 //        String failMsg = NbBundle.getMessage(TestCreator.class,
@@ -404,7 +404,7 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
         MethodInvocationTree failMethodCall =
             maker.MethodInvocation(
                 Collections.<ExpressionTree>emptyList(),
-                maker.Identifier("Assert.fail"),
+                maker.Identifier("fail"),
                 Collections.<ExpressionTree>singletonList(
                                                        maker.Literal(failMsg)));
         ExpressionStatementTree exprStatement =
@@ -1487,15 +1487,15 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
                             methodCall);
 
                     List<ExpressionTree> comparisonArgs = new ArrayList<ExpressionTree>(2);
-                    comparisonArgs.add(maker.Identifier(expectedValue.getName().toString()));
                     comparisonArgs.add(maker.Identifier(actualValue.getName().toString()));
+                    comparisonArgs.add(maker.Identifier(expectedValue.getName().toString()));
                     if ((retTypeKind == TypeKind.DOUBLE) || (retTypeKind == TypeKind.FLOAT)){
                         comparisonArgs.add(maker.Identifier(new Double(0).toString()));
                     }
 
                     MethodInvocationTree comparison = maker.MethodInvocation(
                             Collections.<ExpressionTree>emptyList(),    //type args.
-                            maker.Identifier("Assert.assertEquals"),               //NOI18N
+                            maker.Identifier("assertEquals"),               //NOI18N
                             comparisonArgs);
                     StatementTree comparisonStmt = maker.ExpressionStatement(
                             comparison);

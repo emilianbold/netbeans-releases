@@ -76,6 +76,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -729,24 +730,6 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
             }
         }
         
-        // Automatically add a help button if needed.
-        
-        if (!dontShowHelp && (currentHelp != null || helpButtonShown)) {
-            if (currentPrimaryButtons == null) currentPrimaryButtons = new Component[] { };
-            Component[] cPB2 = new Component[currentPrimaryButtons.length + 1];
-            if (isAqua) { //NOI18N
-                //Mac default dlg button should be rightmost, not the help button
-                System.arraycopy(currentPrimaryButtons, 0, cPB2, 1, currentPrimaryButtons.length);
-                cPB2[0] = stdHelpButton;
-            } else {
-                System.arraycopy(currentPrimaryButtons, 0, cPB2, 0, currentPrimaryButtons.length);
-                cPB2[currentPrimaryButtons.length] = stdHelpButton;
-            }
-            currentPrimaryButtons = cPB2;
-
-            stdHelpButton.setEnabled(currentHelp != null);
-        }
-        
         if ((secondaryOptions != null) && (secondaryOptions.length != 0)) {
             currentSecondaryButtons = new Component [secondaryOptions.length];
             Arrays.sort (secondaryOptions, this);
@@ -775,6 +758,31 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
             }
         }
         
+        // Automatically add a help button if needed.
+        
+        if (!dontShowHelp && (currentHelp != null || helpButtonShown)) {
+            if (helpButtonLeft()) {
+                if (currentSecondaryButtons == null) currentSecondaryButtons = new Component[] { };
+                Component[] cSB2 = new Component[currentSecondaryButtons.length + 1];
+                System.arraycopy(currentSecondaryButtons, 0, cSB2, 1, currentSecondaryButtons.length);
+                cSB2[0] = stdHelpButton;
+                currentSecondaryButtons = cSB2;
+            } else {
+                if (currentPrimaryButtons == null) currentPrimaryButtons = new Component[] { };
+                Component[] cPB2 = new Component[currentPrimaryButtons.length + 1];
+                if (isAqua) { //NOI18N
+                    //Mac default dlg button should be rightmost, not the help button
+                    System.arraycopy(currentPrimaryButtons, 0, cPB2, 1, currentPrimaryButtons.length);
+                    cPB2[0] = stdHelpButton;
+                } else {
+                    System.arraycopy(currentPrimaryButtons, 0, cPB2, 0, currentPrimaryButtons.length);
+                    cPB2[currentPrimaryButtons.length] = stdHelpButton;
+                }
+                currentPrimaryButtons = cPB2;
+            }
+            stdHelpButton.setEnabled(currentHelp != null);
+        }
+        
         // -----------------------------------------------------------------------------
         // Create panels for main (primary) and additional (secondary) buttons and add to content pane
         
@@ -786,7 +794,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
 
             if (currentPrimaryButtons != null) {
                 panelForPrimary = new JPanel();
-                
+
                 if (currentAlign == -1) {
                     panelForPrimary.setLayout(new org.openide.awt.EqualFlowLayout());
                 } else {
@@ -875,6 +883,19 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
         if (fo != focusOwner && focusOwner != null) {
             focusOwner.requestFocus();
         }
+    }
+    
+    /** @return returns true if the Help button should be at the left side
+     */
+    private boolean helpButtonLeft() {
+        boolean result = false;
+        try {
+            String resValue = NbBundle.getMessage(NbPresenter.class, "HelpButtonAtTheLeftSide" ); //NOI18N
+            result = "true".equals( resValue.toLowerCase() ); //NOI18N
+        } catch( MissingResourceException e ) {
+            //ignore
+        }
+        return result;
     }
     
     /** Checks default button and updates it
@@ -1076,6 +1097,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
     
     private void doShow () {
         NbPresenter prev = null;
+        MenuSelectionManager.defaultManager().clearSelectedPath();
         if (isModal()) {
             prev = currentModalDialog;
             currentModalDialog = this;

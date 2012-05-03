@@ -860,9 +860,11 @@ public class CssCompletion implements CodeCompletionHandler {
     private void completePropertyName(CompletionContext cc, List<CompletionProposal> completionProposals) {
         NodeType nodeType = cc.getActiveNode().type();
 
+        String prefix = cc.getPrefix();
+        
         //1. css property name completion with prefix
-        if (nodeType == NodeType.property && (cc.getPrefix().length() > 0 || cc.getEmbeddedCaretOffset() == cc.getActiveNode().from())) {
-            Collection<Property> possibleProps = filterProperties(CssModuleSupport.getProperties(), cc.getPrefix());
+        if (nodeType == NodeType.property && (prefix.length() > 0 || cc.getEmbeddedCaretOffset() == cc.getActiveNode().from())) {
+            Collection<Property> possibleProps = filterProperties(CssModuleSupport.getProperties(), prefix);
             completionProposals.addAll(Utilities.wrapProperties(possibleProps, cc.getSnapshot().getOriginalOffset(cc.getActiveNode().from())));
         }
 
@@ -870,11 +872,29 @@ public class CssCompletion implements CodeCompletionHandler {
         if (nodeType == NodeType.recovery || nodeType == NodeType.error) {
             Node parent = cc.getActiveNode().parent();
             if (parent != null && (parent.type() == NodeType.ruleSet || parent.type() == NodeType.moz_document)) {
-                Collection<Property> possibleProps = filterProperties(CssModuleSupport.getProperties(), cc.getPrefix());
-                completionProposals.addAll(Utilities.wrapProperties(possibleProps, cc.getCaretOffset()));
+                
+                //>>> Bug 204821 - Incorrect completion for vendor specific properties
+                int insertionOffset = cc.getCaretOffset();
+                if (prefix.length() == 0) {
+                    //
+                    //If the vendor specific property name is completed with the - (MINUS)
+                    //prefix the cc.getPrefix() is empty since minus is operator
+                    //But particulary in this case the prefix must count
+                    if (cc.getActiveTokenNode().type() == NodeType.token) {
+                        CssTokenId tokenId = NodeUtil.getTokenNodeTokenId(cc.getActiveTokenNode());
+                        if (tokenId == CssTokenId.MINUS) {
+                            prefix = "-";
+                            insertionOffset--;
+                        }
+                    }
+                }
+                //<<<
+
+                Collection<Property> possibleProps = filterProperties(CssModuleSupport.getProperties(), prefix);
+                completionProposals.addAll(Utilities.wrapProperties(possibleProps, insertionOffset));
             }
         }
-
+        
         //3. in empty rule (NodeType.ruleSet)
         //h1 { | }
         //

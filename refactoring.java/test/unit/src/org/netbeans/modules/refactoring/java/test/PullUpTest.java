@@ -69,6 +69,13 @@ public class PullUpTest extends RefactoringTestBase {
     public PullUpTest(String name) {
         super(name);
    }
+    
+    public void test206683() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("pullup/A.java", "package pullup; public class A extends B { public int i; }"),
+                new File("pullup/B.java", "package pullup; public class B { private int i; }"));
+        performPullUp(src.getFileObject("pullup/A.java"), 1, Boolean.FALSE, new Problem(true, "ERR_PullUp_MemberAlreadyExists"));
+    }
 
     public void testPullUpField() throws Exception {
         writeFilesAndWaitForScan(src,
@@ -881,13 +888,17 @@ public class PullUpTest extends RefactoringTestBase {
                 MemberInfo[] members;
                 if(position < 0) {
                     List<? extends Tree> classMembers = classTree.getMembers();
-                    members = new MemberInfo[classMembers.size()];
+                    List<MemberInfo> selectedMembers = new LinkedList<MemberInfo>();
                     for (int i = 0; i < classMembers.size(); i++) {
                         Tree tree = classMembers.get(i);
-                        Element el = info.getTrees().getElement(new TreePath(classPath, tree));
-                        members[i] = MemberInfo.create(el, info);
-                        members[i].setMakeAbstract(makeAbstract);
+                        if(!info.getTreeUtilities().isSynthetic(new TreePath(classPath, tree)) ) {
+                            Element el = info.getTrees().getElement(new TreePath(classPath, tree));
+                            MemberInfo<ElementHandle<Element>> memberInfo = MemberInfo.create(el, info);
+                            memberInfo.setMakeAbstract(makeAbstract);
+                            selectedMembers.add(memberInfo);
+                        }
                     }
+                    members = selectedMembers.toArray(new MemberInfo[selectedMembers.size()]);
                 } else {
                     members = new MemberInfo[1];
                     Tree member = classTree.getMembers().get(position);

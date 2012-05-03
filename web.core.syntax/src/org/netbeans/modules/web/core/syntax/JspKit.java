@@ -53,12 +53,11 @@ import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.web.core.syntax.deprecated.Jsp11Syntax;
 import java.awt.event.ActionEvent;
 import java.beans.*;
-import java.util.WeakHashMap;
-import javax.lang.model.type.NullType;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import javax.swing.text.*;
-import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -67,7 +66,6 @@ import org.netbeans.editor.Syntax;
 import org.netbeans.editor.ext.java.JavaSyntax;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.spi.jsp.lexer.JspParseData;
-import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.WeakListeners;
 import org.openide.filesystems.FileObject;
@@ -77,13 +75,12 @@ import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.web.core.api.JspColoringData;
 import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.InputAttributes;
+import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseKit.InsertBreakAction;
 import org.netbeans.editor.ext.ExtKit.ExtDefaultKeyTypedAction;
 import org.netbeans.editor.ext.ExtKit.ExtDeleteCharAction;
-import org.netbeans.modules.csl.api.InstantRenameAction;
-import org.netbeans.modules.csl.api.SelectCodeElementAction;
-import org.netbeans.modules.csl.api.ToggleBlockCommentAction;
-import org.netbeans.modules.csl.api.UiUtils;
+import org.netbeans.modules.csl.api.*;
+import org.netbeans.modules.web.core.syntax.gsf.JspCommentHandler;
 import org.netbeans.spi.lexer.MutableTextInput;
 
 /**
@@ -187,7 +184,7 @@ public class JspKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
             new SelectCodeElementAction(SelectCodeElementAction.selectNextElementAction, true),
             new SelectCodeElementAction(SelectCodeElementAction.selectPreviousElementAction, false),
             new InstantRenameAction(),
-            new ToggleBlockCommentAction(),
+            new ToggleCommentAction("//"), // NOI18N
             new ExtKit.CommentAction(""), //NOI18N
             new ExtKit.UncommentAction("") //NOI18N
         };
@@ -241,6 +238,106 @@ public class JspKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
         }
     }
 
+    public static class ToggleCommentAction extends ExtKit.ToggleCommentAction {
+
+        static final long serialVersionUID = -1L;
+
+        public ToggleCommentAction(String lineCommentString) {
+            super("//");
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent evt, JTextComponent target) {
+            try {
+                boolean toggled = false;
+                BaseDocument doc = (BaseDocument) target.getDocument();
+
+                // inside scriptlet
+                int startPos = org.netbeans.editor.Utilities.getRowStart(doc, target.getSelectionStart());
+                TokenHierarchy th = TokenHierarchy.create(target.getText(), JspTokenId.language());
+                List<TokenSequence> ets = th.embeddedTokenSequences(startPos, false);
+                if (ets.get(ets.size() - 1).languagePath().mimePath().endsWith("text/x-java")) { //NOI18N
+                    super.actionPerformed(evt, target);
+                    toggled = true;
+                }
+
+                // inside one line scriptlet
+                if (!toggled) {
+                    List<TokenSequence> ets2 = th.embeddedTokenSequences(target.getCaretPosition(), false);
+                    if (ets.get(ets.size() - 1).languagePath().mimePath().endsWith("text/html") //NOI18N
+                            && ets2.get(ets2.size() - 1).languagePath().mimePath().endsWith("text/x-java")) { //NOI18N
+                        commentUncomment(th, evt, target);
+                    }
+                }
+
+                // try common comment
+                if (!toggled) {
+                    (new ToggleBlockCommentAction()).actionPerformed(evt, target);
+                }
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    }
+
+    public static void commentUncomment(TokenHierarchy th, ActionEvent evt, JTextComponent target) {
+        if (target != null) {
+            if (!target.isEditable() || !target.isEnabled() || !(target.getDocument() instanceof BaseDocument)) {
+                target.getToolkit().beep();
+                return;
+            }
+            int caretOffset = org.netbeans.editor.Utilities.isSelectionShowing(target) ? target.getSelectionStart() : target.getCaretPosition();
+            final BaseDocument doc = (BaseDocument) target.getDocument();
+            TokenSequence<JspTokenId> ts = th.tokenSequence();
+            if (ts != null) {
+                ts.move(caretOffset);
+                ts.moveNext();
+                boolean newLine = false;
+                if (isNewLineBeforeCaretOffset(ts, caretOffset)) {
+                    newLine = true;
+                }
+                while (!newLine && ts.movePrevious() && ts.token().id() != JspTokenId.SYMBOL2) {
+                    if(isNewLineBeforeCaretOffset(ts, caretOffset)) {
+                        newLine = true;
+                    }
+                }
+                if (!newLine && ts.token().id() == JspTokenId.SYMBOL2) {
+                    final int changeOffset = ts.offset() + ts.token().length();
+                    ts.moveNext();
+                    // application.getAttribute("  ") %>
+                    String scriptlet = ts.token().text().toString();
+                    final boolean lineComment = scriptlet.matches("^(\\s)*//.*"); //NOI18N
+                    final int length = lineComment ? scriptlet.indexOf("//") + 2 : 0; //NOI18N
+                    doc.runAtomic(new Runnable() {
+
+                        public @Override
+                        void run() {
+                            try {
+                                if (!lineComment) {
+                                    doc.insertString(changeOffset, " //", null);
+                                } else {
+                                    doc.remove(changeOffset, length);
+                                }
+
+                            } catch (BadLocationException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+                    });
+                }
+            }
+        }
+    }
+
+    private static boolean isNewLineBeforeCaretOffset(final TokenSequence<JspTokenId> ts, final int caretOffset) {
+        boolean result = false;
+        int indexOfNewLine = ts.token().text().toString().indexOf("\n"); //NOI18N
+        if (indexOfNewLine != -1) {
+            int absoluteIndexOfNewLine = ts.offset() + indexOfNewLine;
+            result = caretOffset > absoluteIndexOfNewLine;
+        }
+        return result;
+    }
 
     private static class LexerColoringListener implements PropertyChangeListener {
 
@@ -467,6 +564,11 @@ public class JspKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
         protected void insertString(BaseDocument doc, int dotPos,
                 Caret caret, String str,
                 boolean overwrite) throws BadLocationException {
+            // see issue #211036 - inserted string can be empty since #204450
+            if (str.isEmpty()) {
+                return;
+            }
+
             if (completionSettingEnabled()) {
                 KeystrokeHandler bracketCompletion = UiUtils.getBracketCompletion(doc, dotPos);
 

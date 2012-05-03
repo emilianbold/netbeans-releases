@@ -260,7 +260,9 @@ public class ClobFieldTableCellEditor extends AbstractCellEditor
     }
 
     /**
-     * @return true if transfer is complete and not iterrupted 
+     * Note: The character streams will be closed after this method was invoked
+     * 
+     * @return true if transfer is complete and not interrupted 
      */
     private boolean doTransfer(Reader in, Writer out, Integer size, String title, boolean sizeEstimated) throws IOException {
         // Only pass size if it is _not_ estimated
@@ -272,6 +274,8 @@ public class ClobFieldTableCellEditor extends AbstractCellEditor
         } else {
             t = ft.run(null);
         }
+        in.close();
+        out.close();
         if (t != null && t instanceof RuntimeException) {
             throw (RuntimeException) t;
         } else if (t != null && t instanceof IOException) {

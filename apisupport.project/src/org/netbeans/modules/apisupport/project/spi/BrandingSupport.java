@@ -61,6 +61,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
@@ -247,8 +249,8 @@ public abstract class BrandingSupport {
             try {
                 loadLocalizedBundlesFromPlatform(moduleEntry, bundleEntry, keys, retval);
             } catch (IOException ex) {
-                //ex.printStackTrace();
-                throw new IllegalStateException();
+                Logger.getLogger(BrandingSupport.class.getName()).log(Level.WARNING, "#211911", ex);
+                return null;
             }
         }
                     

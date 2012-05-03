@@ -215,7 +215,7 @@ class HtmlLabelUI extends LabelUI {
         Color bg = getBackgroundFor((HtmlRendererImpl) c);
         HtmlRendererImpl h = (HtmlRendererImpl) c;
 
-        if (bg != null) {
+        if (bg != null && !(isNimbus() && h.getType() == HtmlRendererImpl.Type.TREE)) {
             int x;
             if (h.getType() == HtmlRendererImpl.Type.TABLE) {
                 x = 0; // in a table we want to have the whole row selected

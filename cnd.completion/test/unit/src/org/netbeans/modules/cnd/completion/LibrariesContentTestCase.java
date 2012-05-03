@@ -69,11 +69,6 @@ public class LibrariesContentTestCase extends CompletionBaseTestCase {
         return new File[] {srcDir};
     }
 
-    private void checkDir(File srcDir) {
-        assertTrue("Not existing directory" + srcDir, srcDir.exists());
-        assertTrue("Not directory" + srcDir, srcDir.isDirectory());
-    }
-
     public void testGlobalFunsWithPrefix() throws Exception {
         super.performTest("src/main.cc", 6, 5, "f");
         super.performTest("src/main.cc", 6, 5, "::f");

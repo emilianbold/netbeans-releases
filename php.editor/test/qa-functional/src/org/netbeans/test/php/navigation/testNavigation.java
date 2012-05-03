@@ -106,7 +106,7 @@ public class testNavigation extends navigation
     eoPHP.clickForPopup( );
     JPopupMenuOperator menu = new JPopupMenuOperator( );
     menu.pushMenuNoBlock( "Navigate|Go to Line or Bookmark ..." );
-    JDialogOperator jdGoto = new JDialogOperator( "Go To Line" );
+    JDialogOperator jdGoto = new JDialogOperator( "Go to Line or Bookmark" );
     JComboBoxOperator jcLine = new JComboBoxOperator( jdGoto, 0 );
     JTextFieldOperator jtTemp = jcLine.getTextField( );
     jtTemp.setText( "" + iLineToGo );

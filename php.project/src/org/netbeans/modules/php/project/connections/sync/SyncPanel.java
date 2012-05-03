@@ -44,6 +44,7 @@ package org.netbeans.modules.php.project.connections.sync;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dialog;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -66,7 +67,9 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextPane;
@@ -78,6 +81,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
@@ -85,10 +90,10 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import org.netbeans.api.annotations.common.StaticResource;
+import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.connections.RemoteClient;
-import org.netbeans.modules.php.project.connections.sync.SyncItem.ValidationResult;
 import org.netbeans.modules.php.project.connections.sync.diff.DiffPanel;
 import org.netbeans.modules.php.project.ui.HintArea;
 import org.netbeans.modules.php.project.ui.Utils;
@@ -136,6 +141,10 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
     final List<SyncItem> displayedItems;
     // @GuardedBy(AWT)
     final FileTableModel tableModel;
+    // @GuardedBy(AWT)
+    final JPopupMenu popupMenu = new JPopupMenu();
+    // @GuardedBy(AWT)
+    Point popupMenuPoint = new Point(); // XXX is there a better way?
 
 
     private final PhpProject project;
@@ -343,9 +352,11 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
                 }
                 updateSyncInfo();
                 setEnabledOperationButtons(itemTable.getSelectedRows());
-                setEnabledDiffButton(itemTable.getSelectedRowCount());
+                setEnabledDiffButton();
             }
         });
+        // popup menu
+        initTablePopupMenu();
         // actions
         itemTable.addMouseListener(new MouseAdapter() {
             @Override
@@ -356,9 +367,97 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
                         cycleOperations();
                     }
                 } else if (e.getClickCount() == 2
-                        && diffButton.isEnabled()) {
+                        && isDiffActionPossible(false)) {
                     openDiffPanel();
                 }
+            }
+            @Override
+            public void mousePressed(MouseEvent e) {
+                showPopup(e);
+            }
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                showPopup(e);
+            }
+            private void showPopup(MouseEvent e) {
+                if (e.isPopupTrigger()) {
+                    popupMenuPoint.x = e.getX();
+                    popupMenuPoint.y = e.getY();
+                    popupMenu.show(e.getComponent(), e.getX(), e.getY());
+                }
+            }
+        });
+    }
+
+    @NbBundle.Messages({
+        "SyncPanel.popupMenu.resetItem=Reset Operation",
+        "SyncPanel.popupMenu.disable.download=Disable Downloads",
+        "SyncPanel.popupMenu.disable.upload=Disable Uploads",
+        "SyncPanel.popupMenu.disable.delete=Disable Deletions",
+        "SyncPanel.popupMenu.diffItem=Diff..."
+    })
+    private void initTablePopupMenu() {
+        // reset
+        JMenuItem resetMenuItem = new JMenuItem(Bundle.SyncPanel_popupMenu_resetItem(), ImageUtilities.loadImageIcon(RESET_ICON_PATH, false));
+        resetMenuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                List<SyncItem> selectedItems = getSelectedItems(true);
+                for (SyncItem item : selectedItems) {
+                    item.resetOperation();
+                }
+                updateDisplayedItems();
+                reselectItems(selectedItems);
+            }
+        });
+        popupMenu.add(resetMenuItem);
+        popupMenu.addSeparator();
+        // set operations
+        List<SyncItem.Operation> setOperations = Arrays.asList(
+                SyncItem.Operation.NOOP,
+                SyncItem.Operation.DOWNLOAD,
+                SyncItem.Operation.UPLOAD,
+                SyncItem.Operation.DELETE);
+        for (SyncItem.Operation operation : setOperations) {
+            JMenuItem operationMenuItem = new JMenuItem(operation.getToolTip(), operation.getIcon());
+            operationMenuItem.addActionListener(new PopupMenuItemListener(operation));
+            popupMenu.add(operationMenuItem);
+        }
+        popupMenu.addSeparator();
+        // disable operations
+        @SuppressWarnings("unchecked")
+        List<Pair<SyncItem.Operation, String>> disableOperations = Arrays.asList(
+                Pair.of(SyncItem.Operation.DOWNLOAD, Bundle.SyncPanel_popupMenu_disable_download()),
+                Pair.of(SyncItem.Operation.UPLOAD, Bundle.SyncPanel_popupMenu_disable_upload()),
+                Pair.of(SyncItem.Operation.DELETE, Bundle.SyncPanel_popupMenu_disable_delete()));
+        for (Pair<SyncItem.Operation, String> pair : disableOperations) {
+            JMenuItem operationMenuItem = new JMenuItem(pair.second);
+            operationMenuItem.addActionListener(new PopupMenuItemListener(pair.first, SyncItem.Operation.NOOP));
+            popupMenu.add(operationMenuItem);
+        }
+        popupMenu.addSeparator();
+        // diff
+        final JMenuItem diffMenuItem = new JMenuItem(Bundle.SyncPanel_popupMenu_diffItem(), ImageUtilities.loadImageIcon(DIFF_ICON_PATH, false));
+        diffMenuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                openDiffPanel();
+            }
+        });
+        popupMenu.add(diffMenuItem);
+        // listener
+        popupMenu.addPopupMenuListener(new PopupMenuListener() {
+            @Override
+            public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+                diffMenuItem.setEnabled(isDiffActionPossible(true));
+            }
+            @Override
+            public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+                // noop
+            }
+            @Override
+            public void popupMenuCanceled(PopupMenuEvent e) {
+                // noop
             }
         });
     }
@@ -458,17 +557,26 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
         return true;
     }
 
-    void setEnabledDiffButton(int selectedRowCount) {
-        if (selectedRowCount != 1) {
-            diffButton.setEnabled(false);
-            return;
+    boolean isDiffActionPossible(boolean includingMousePosition) {
+        List<SyncItem> selectedItems = getSelectedItems(includingMousePosition);
+        if (selectedItems.size() != 1) {
+            return false;
         }
-        diffButton.setEnabled(getSelectedItem().isDiffPossible());
+        return selectedItems.get(0).isDiffPossible();
     }
 
-    SyncItem getSelectedItem() {
+    void setEnabledDiffButton() {
+        diffButton.setEnabled(isDiffActionPossible(false));
+    }
+
+    SyncItem getSelectedItem(boolean includingMousePosition) {
         assert SwingUtilities.isEventDispatchThread();
-        return displayedItems.get(itemTable.getSelectedRow());
+        List<SyncItem> selectedItems = getSelectedItems(includingMousePosition);
+        if (selectedItems.size() == 1) {
+            return selectedItems.get(0);
+        }
+        assert false : "Any row should be selected";
+        return null;
     }
 
     void reselectItem(SyncItem syncItem) {
@@ -478,10 +586,13 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
         }
     }
 
-    List<SyncItem> getSelectedItems() {
+    List<SyncItem> getSelectedItems(boolean includingMousePosition) {
         assert SwingUtilities.isEventDispatchThread();
         int[] selectedRows = itemTable.getSelectedRows();
         if (selectedRows.length == 0) {
+            if (includingMousePosition) {
+                return Collections.singletonList(displayedItems.get(itemTable.rowAtPoint(popupMenuPoint)));
+            }
             return Collections.emptyList();
         }
         List<SyncItem> selectedItems = new ArrayList<SyncItem>(selectedRows.length);
@@ -573,10 +684,10 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
             + "{3} no-ops, {4} errors, {5} warnings."
     })
     void updateSyncInfo() {
-        List<SyncItem> selectedItems = getSelectedItems();
+        List<SyncItem> selectedItems = getSelectedItems(false);
         if (selectedItems.size() == 1) {
             SyncItem syncItem = selectedItems.get(0);
-            ValidationResult result = syncItem.validate();
+            SyncItem.ValidationResult result = syncItem.validate();
             if (result.hasError()) {
                 syncInfoLabel.setForeground(UIManager.getColor("nb.errorForeground")); // NOI18N
                 syncInfoLabel.setText(Bundle.SyncPanel_info_prefix_error(syncItem.getName(), result.getMessage()));
@@ -611,7 +722,7 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
         assert SwingUtilities.isEventDispatchThread();
         SyncInfo syncInfo = new SyncInfo();
         for (SyncItem syncItem : items) {
-            ValidationResult validationResult = syncItem.validate();
+            SyncItem.ValidationResult validationResult = syncItem.validate();
             if (validationResult.hasError()) {
                 syncInfo.errors++;
             } else if (validationResult.hasWarning()) {
@@ -648,9 +759,12 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
 
     void openDiffPanel() {
         assert SwingUtilities.isEventDispatchThread();
-        assert diffButton.isEnabled() : "Diff button has to be enabled";
 
-        SyncItem syncItem = getSelectedItem();
+        SyncItem syncItem = getSelectedItem(true);
+        if (syncItem == null) {
+            // should not happen
+            return;
+        }
         DiffPanel diffPanel = new DiffPanel(remoteClient, syncItem, ProjectPropertiesSupport.getEncoding(project));
         try {
             if (diffPanel.open()) {
@@ -667,8 +781,11 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
     }
 
     void cycleOperations() {
-        List<SyncItem> selectedItems = getSelectedItems();
-        SyncItem syncItem = getSelectedItem();
+        SyncItem syncItem = getSelectedItem(false);
+        if (syncItem == null) {
+            // should not happen
+            return;
+        }
         int index = OPERATIONS.indexOf(syncItem.getOperation());
         if (index != -1) {
             if (index == OPERATIONS.size() - 1) {
@@ -679,8 +796,8 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
             syncItem.setOperation(OPERATIONS.get(index));
             // need to redraw table
             updateDisplayedItems();
+            reselectItem(syncItem);
         }
-        reselectItems(selectedItems);
     }
 
     void setViewCheckBoxesSelected(boolean selected) {
@@ -1084,7 +1201,7 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
         @Override
         public void actionPerformed(ActionEvent e) {
             assert SwingUtilities.isEventDispatchThread();
-            List<SyncItem> selectedItems = getSelectedItems();
+            List<SyncItem> selectedItems = getSelectedItems(false);
             for (SyncItem syncItem : selectedItems) {
                 if (operation == null) {
                     syncItem.resetOperation();
@@ -1172,6 +1289,35 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
         @Override
         public void itemStateChanged(ItemEvent e) {
             updateDisplayedItems();
+        }
+
+    }
+
+    private class PopupMenuItemListener implements ActionListener {
+
+        private final SyncItem.Operation fromOperation;
+        private final SyncItem.Operation toOperation;
+
+        public PopupMenuItemListener(SyncItem.Operation toOperation) {
+            this(null, toOperation);
+        }
+
+        public PopupMenuItemListener(SyncItem.Operation fromOperation, SyncItem.Operation toOperation) {
+            this.fromOperation = fromOperation;
+            this.toOperation = toOperation;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            List<SyncItem> selectedItems = getSelectedItems(true);
+            for (SyncItem item : selectedItems) {
+                if (fromOperation == null
+                        || fromOperation == item.getOperation()) {
+                    item.setOperation(toOperation);
+                }
+            }
+            updateDisplayedItems();
+            reselectItems(selectedItems);
         }
 
     }

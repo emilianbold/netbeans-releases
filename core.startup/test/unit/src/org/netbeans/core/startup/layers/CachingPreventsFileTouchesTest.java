@@ -47,9 +47,11 @@ package org.netbeans.core.startup.layers;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -183,15 +185,30 @@ public class CachingPreventsFileTouchesTest extends NbTestCase {
         File cacheDir = new File(cache);
         assertTrue("Cache dir is dir", cacheDir.isDirectory());
         int cnt = 0;
-        final File[] arr = cacheDir.listFiles();
+        final File[] arr = recursiveFiles(cacheDir, new ArrayList<File>());
         Collections.shuffle(Arrays.asList(arr));
         for (File f : arr) {
             if (!f.isDirectory()) {
+                System.err.println("checking " + f);
                 cnt++;
                 assertFileDoesNotContain(f, install);
             }
         }
         assertTrue("Some cache files found", cnt > 4);
+    }
+    
+    private static File[] recursiveFiles(File dir, List<? super File> collect) {
+        File[] arr = dir.listFiles();
+        if (arr != null) {
+            for (File f : arr) {
+                if (f.isDirectory()) {
+                    recursiveFiles(f, collect);
+                } else {
+                    collect.add(f);
+                }
+            }
+        }
+        return collect.toArray(new File[0]);
     }
     
     public void testDontLoadManifests() {

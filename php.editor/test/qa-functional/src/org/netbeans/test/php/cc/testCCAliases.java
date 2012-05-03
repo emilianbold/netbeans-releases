@@ -45,6 +45,7 @@ import java.awt.event.InputEvent;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.junit.NbModuleSuite;
 import junit.framework.Test;
+import org.netbeans.jemmy.EventTool;
 
 /**
  * This test checks code completion for aliases
@@ -76,10 +77,11 @@ public class testCCAliases extends cc {
         EditorOperator eoPHP = new EditorOperator("test_aliases.php");
         eoPHP.setCaretPosition("*/\n", false);
         // type sample source
-        TypeCode(eoPHP, "function reallyLongNameForUselessFunction(){\n\n}\n\n use reallyLongNameForUselessFunction as fooFunction;\n\n fooF");
-
+        TypeCode(eoPHP, "function reallyLongNameForUselessFunction(){\n");
+        eoPHP.setCaretPosition("}", false);
+        TypeCode(eoPHP,"\n use reallyLongNameForUselessFunction as fooFunction;\n\n fooF");
         eoPHP.typeKey(' ', InputEvent.CTRL_MASK);
-        Sleep(1000);
+        new EventTool().waitNoEvent(1000);
         CheckResult(eoPHP, "fooFunction");
         endTest();
     }

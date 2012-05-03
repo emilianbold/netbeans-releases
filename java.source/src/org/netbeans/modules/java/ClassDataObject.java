@@ -56,7 +56,6 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.progress.ProgressUtils;
-import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.OpenCookie;
@@ -129,7 +128,7 @@ public final class ClassDataObject extends MultiDataObject {
                             return;
                         }
                         FileObject resource = null;
-                        final ElementHandle<TypeElement> handle = resourceName != null ? ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, resourceName.replace('/', '.')) : null;
+                        final ElementHandle<TypeElement> handle = resourceName != null ? ElementHandle.createTypeElementHandle(ElementKind.CLASS, resourceName.replace('/', '.')) : null;
                         final ClasspathInfo cpInfo = cp != null && bootPath != null ? ClasspathInfo.create(bootPath, cp, ClassPathSupport.createClassPath(new URL[0])) : null;
                         if (binaryRoot != null) {
                             //Todo: Ideally it should do the same as ElementOpen.open () but it will require a copy of it because of the reverese module dep.
@@ -149,7 +148,7 @@ public final class ClassDataObject extends MultiDataObject {
                         } else {
                             BinaryElementOpen beo = Lookup.getDefault().lookup(BinaryElementOpen.class);
 
-                            if (beo == null || handle == null || cpInfo == null || !beo.open(cpInfo, handle)) {
+                            if (beo == null || handle == null || cpInfo == null || !beo.open(cpInfo, handle, new AtomicBoolean())) {
                                 if (resourceName == null) {
                                     resourceName = fo.getName();
                                 }

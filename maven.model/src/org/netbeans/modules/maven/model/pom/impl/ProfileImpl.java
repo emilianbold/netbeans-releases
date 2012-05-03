@@ -41,9 +41,9 @@
  */
 package org.netbeans.modules.maven.model.pom.impl;
 
-import org.w3c.dom.Element;
 import org.netbeans.modules.maven.model.pom.*;	
 import org.netbeans.modules.maven.model.util.ModelImplUtils;
+import org.w3c.dom.Element;
 
 /**
  *
@@ -76,24 +76,29 @@ public class ProfileImpl extends IdPOMComponentImpl implements Profile {
     // attributes
 
     // child elements
+    @Override
     public Activation getActivation() {
         return getChild(Activation.class);
     }
 
+    @Override
     public void setActivation(Activation activation) {
         setChild(Activation.class, getModel().getPOMQNames().ACTIVATION.getName(), activation,
                 getClassesBefore(ORDER, Activation.class));
     }
 
+    @Override
     public BuildBase getBuildBase() {
         return getChild(BuildBase.class);
     }
 
+    @Override
     public void setBuildBase(BuildBase buildBase) {
         setChild(BuildBase.class, getModel().getPOMQNames().BUILD.getName(), buildBase,
                 getClassesBefore(ORDER, BuildBase.class));
     }
 
+    @Override
     public java.util.List<Repository> getRepositories() {
         ModelList<Repository> childs = getChild(RepositoryImpl.RepoList.class);
         if (childs != null) {
@@ -102,6 +107,7 @@ public class ProfileImpl extends IdPOMComponentImpl implements Profile {
         return null;
     }
 
+    @Override
     public void addRepository(Repository repo) {
         ModelList<Repository> childs = getChild(RepositoryImpl.RepoList.class);
         if (childs == null) {
@@ -115,6 +121,7 @@ public class ProfileImpl extends IdPOMComponentImpl implements Profile {
         childs.addListChild(repo);
     }
 
+    @Override
     public void removeRepository(Repository repo) {
         ModelList<Repository> childs = getChild(RepositoryImpl.RepoList.class);
         if (childs != null) {
@@ -122,6 +129,7 @@ public class ProfileImpl extends IdPOMComponentImpl implements Profile {
         }
     }
 
+    @Override
     public java.util.List<Repository> getPluginRepositories() {
         ModelList<Repository> childs = getChild(RepositoryImpl.PluginRepoList.class);
         if (childs != null) {
@@ -130,6 +138,7 @@ public class ProfileImpl extends IdPOMComponentImpl implements Profile {
         return null;
     }
 
+    @Override
     public void addPluginRepository(Repository repo) {
         ModelList<Repository> childs = getChild(RepositoryImpl.PluginRepoList.class);
         if (childs == null) {
@@ -143,6 +152,7 @@ public class ProfileImpl extends IdPOMComponentImpl implements Profile {
         childs.addListChild(repo);
     }
 
+    @Override
     public void removePluginRepository(Repository repo) {
         ModelList<Repository> childs = getChild(RepositoryImpl.PluginRepoList.class);
         if (childs != null) {
@@ -150,6 +160,7 @@ public class ProfileImpl extends IdPOMComponentImpl implements Profile {
         }
     }
 
+    @Override
     public java.util.List<Dependency> getDependencies() {
         ModelList<Dependency> childs = getChild(DependencyImpl.List.class);
         if (childs != null) {
@@ -158,6 +169,7 @@ public class ProfileImpl extends IdPOMComponentImpl implements Profile {
         return null;
     }
 
+    @Override
     public void addDependency(Dependency dep) {
         ModelList<Dependency> childs = getChild(DependencyImpl.List.class);
         if (childs == null) {
@@ -171,6 +183,7 @@ public class ProfileImpl extends IdPOMComponentImpl implements Profile {
         childs.addListChild(dep);
     }
 
+    @Override
     public void removeDependency(Dependency dep) {
         ModelList<Dependency> childs = getChild(DependencyImpl.List.class);
         if (childs != null) {
@@ -178,46 +191,56 @@ public class ProfileImpl extends IdPOMComponentImpl implements Profile {
         }
     }
 
+    @Override
     public Reporting getReporting() {
         return getChild(Reporting.class);
     }
 
+    @Override
     public void setReporting(Reporting reporting) {
         setChild(Reporting.class, getModel().getPOMQNames().REPORTING.getName(), reporting,
                 getClassesBefore(ORDER, Reporting.class));
     }
 
+    @Override
     public DependencyManagement getDependencyManagement() {
         return getChild(DependencyManagement.class);
     }
 
+    @Override
     public void setDependencyManagement(DependencyManagement dependencyManagement) {
         setChild(DependencyManagement.class, getModel().getPOMQNames().DEPENDENCYMANAGEMENT.getName(), dependencyManagement,
                 getClassesBefore(ORDER, DependencyManagement.class));
     }
 
+    @Override
     public DistributionManagement getDistributionManagement() {
         return getChild(DistributionManagement.class);
     }
 
+    @Override
     public void setDistributionManagement(DistributionManagement distributionManagement) {
         setChild(DistributionManagement.class, getModel().getPOMQNames().DISTRIBUTIONMANAGEMENT.getName(), distributionManagement,
                 getClassesBefore(ORDER, DistributionManagement.class));
     }
 
+    @Override
     public void accept(POMComponentVisitor visitor) {
         visitor.visit(this);
     }
 
+    @Override
     public Properties getProperties() {
         return getChild(Properties.class);
     }
 
+    @Override
     public void setProperties(Properties props) {
         setChild(Properties.class, getModel().getPOMQNames().PROPERTIES.getName(), props,
                 getClassesBefore(ORDER, Properties.class));
     }
 
+    @Override
     public java.util.List<String> getModules() {
         java.util.List<StringList> lists = getChildren(StringList.class);
         for (StringList list : lists) {
@@ -228,6 +251,7 @@ public class ProfileImpl extends IdPOMComponentImpl implements Profile {
         return null;
     }
 
+    @Override
     public void addModule(String module) {
         java.util.List<StringList> lists = getChildren(StringList.class);
         for (StringList list : lists) {
@@ -249,6 +273,7 @@ public class ProfileImpl extends IdPOMComponentImpl implements Profile {
         }
     }
 
+    @Override
     public void removeModule(String module) {
         java.util.List<StringList> lists = getChildren(StringList.class);
         for (StringList list : lists) {
@@ -259,6 +284,7 @@ public class ProfileImpl extends IdPOMComponentImpl implements Profile {
         }
     }
 
+    @Override
     public Dependency findDependencyById(String groupId, String artifactId, String classifier) {
         assert groupId != null;
         assert artifactId != null;

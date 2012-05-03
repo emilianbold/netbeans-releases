@@ -152,7 +152,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         NameHolder nameHolder = NameHolder.createFunctionName(ast);
         CharSequence name = QualifiedNameCache.getManager().getString(nameHolder.getName());
         if (name.length() == 0) {
-            throw AstRendererException.createAstRendererException((FileImpl) file, ast, startOffset, "Empty function name."); // NOI18N
+            throw AstRendererException.throwAstRendererException((FileImpl) file, ast, startOffset, "Empty function name."); // NOI18N
         }
         CharSequence rawName = initRawName(ast);
         

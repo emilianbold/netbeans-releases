@@ -8,6 +8,7 @@ FieldResult
 NamedNativeQuery
 Override
 RequestForEnhancement
+SafeVarargs
 SuppressWarnings
 Temporal
 TestAdvancedAnnotation
@@ -18,6 +19,7 @@ javanet
 javassist
 javax
 jp
+oracle
 org
 sun
 sunw
@@ -39,8 +41,10 @@ ArithmeticException
 ArrayIndexOutOfBoundsException
 ArrayStoreException
 AssertionError
+AutoCloseable
 Basic
 Boolean
+BootstrapMethodError
 Byte
 CharSequence
 Character
@@ -50,6 +54,7 @@ ClassCircularityError
 ClassFormatError
 ClassLoader
 ClassNotFoundException
+ClassValue <T>
 CloneNotSupportedException
 Cloneable
 Column
@@ -100,11 +105,13 @@ Package
 Process
 ProcessBuilder
 Readable
+ReflectiveOperationException
 RequestForEnhancement
 Runnable
 Runtime
 RuntimeException
 RuntimePermission
+SafeVarargs
 SecurityException
 SecurityManager
 Short
@@ -140,6 +147,7 @@ javanet
 javassist
 javax
 jp
+oracle
 org
 sun
 sunw
@@ -151,6 +159,7 @@ Collections
 Comparator <T>
 ConcurrentModificationExceptio
 Currency
+concurrent
 End cursor position = 1195
 [@Column(unique=|, false, @Column(unique=false, 1236]
 false
@@ -161,8 +170,10 @@ ArithmeticException
 ArrayIndexOutOfBoundsException
 ArrayStoreException
 AssertionError
+AutoCloseable
 Basic
 Boolean
+BootstrapMethodError
 Byte
 CharSequence
 Character
@@ -172,6 +183,7 @@ ClassCircularityError
 ClassFormatError
 ClassLoader
 ClassNotFoundException
+ClassValue <T>
 CloneNotSupportedException
 Cloneable
 Column
@@ -180,7 +192,7 @@ Compiler
 Deprecated
 Double
 Enum <E>
-EnumConstantNotPresentException
+EnumConstantNotPresentExceptio
 Enumerated
 Error
 Exception
@@ -222,11 +234,13 @@ Package
 Process
 ProcessBuilder
 Readable
+ReflectiveOperationException
 RequestForEnhancement
 Runnable
 Runtime
 RuntimeException
 RuntimePermission
+SafeVarargs
 SecurityException
 SecurityManager
 Short
@@ -236,7 +250,7 @@ StrictMath
 String
 StringBuffer
 StringBuilder
-StringIndexOutOfBoundsException
+StringIndexOutOfBoundsExceptio
 SuppressWarnings
 System
 Temporal
@@ -255,11 +269,14 @@ UnsupportedOperationException
 VerifyError
 VirtualMachineError
 Void
+ch
 com
 java
 javanet
+javassist
 javax
 jp
+oracle
 org
 sun
 sunw
@@ -274,21 +291,25 @@ FieldResult
 NamedNativeQuery
 Override
 RequestForEnhancement
+SafeVarargs
 SuppressWarnings
 Temporal
 TestAdvancedAnnotation
+ch
 com
 java
 javanet
+javassist
 javax
 jp
+oracle
 org
 sun
 sunw
-End cursor position = 1360
+End cursor position = 1356
 [@RequestForEnhancement(|), int id, @RequestForEnhancement(id=), 1412]
-String date = "[unimplemented]"
-String engineer = "[unassigned]"
+String date = "[unimplemented]
+String engineer = "[unassigned
 int id
 String synopsis
-End cursor position = 1439
+End cursor position = 1435

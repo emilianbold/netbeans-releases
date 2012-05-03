@@ -363,9 +363,12 @@ public class RADComponentNode extends FormNode
         if (DesignParentAction.isParentEditableComponent(component)) {
             actions.add(SystemAction.get(DesignParentAction.class));
         }
-        if (component instanceof RADVisualComponent && component.getParentComponent() == null) {
-            actions.add(SystemAction.get(DefaultSizeAction.class));
-            if (!((RADVisualContainer)component).hasDedicatedLayoutSupport()) {
+        if (component.getParentComponent() == null) {
+            if (component instanceof RADVisualComponent) {
+                actions.add(SystemAction.get(DefaultSizeAction.class));
+            }
+            if (component instanceof RADVisualContainer
+                    && !((RADVisualContainer)component).hasDedicatedLayoutSupport()) {
                 actions.add(SystemAction.get(CustomizeEmptySpaceAction.class));
             }
         }

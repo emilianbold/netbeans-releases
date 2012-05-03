@@ -801,10 +801,41 @@ public class VisualState implements LayoutConstants {
         gapInfo.minSize = minSize;
         gapInfo.currentSize = resizing ? wholeSize : prefSize;
 
-        int la = LayoutInterval.getEffectiveAlignmentInParent(gap, null, LEADING);
-        gapInfo.resizeLeading = la != LEADING
-                && (la != TRAILING || LayoutDesigner.shouldAbsorbExplicitSizeChange(gap));
-        gapInfo.resizeTrailing = la != TRAILING || !gapInfo.resizeLeading;
+        // determine position of the resize handle - in which direction the gap would grow
+        gapInfo.resizeLeading = false;
+        gapInfo.resizeTrailing = false;
+        LayoutInterval parParent = parent.getParent();
+        LayoutInterval li = gap;
+        do {
+            int align = LayoutInterval.getEffectiveAlignmentInParent(li, null, LEADING);
+            if (align != LEADING && li == gap && LayoutDesigner.shouldAbsorbExplicitSizeChange(gap)) {
+                // fixed gap with some resizing neighbor to absorb size change
+                gapInfo.resizeLeading = true;
+                if (align != TRAILING) { // resizing intervals on both sides
+                    gapInfo.resizeTrailing = true;
+                }
+                break;
+            }
+            LayoutInterval inPar = li.getParent().isSequential() ? li.getParent() : li;
+            if (align == TRAILING) {
+                if (!LayoutInterval.isAlignedAtBorder(inPar, parParent, LEADING)
+                        && !LayoutInterval.isPlacedAtBorder(inPar, parParent, dimension, LEADING)) {
+                    // there's a space to grow in leading direction
+                    gapInfo.resizeLeading = true;
+                    break;
+                }
+            } else if (LayoutInterval.isAlignedAtBorder(inPar, parParent, TRAILING)
+                       || LayoutInterval.isPlacedAtBorder(inPar, parParent, dimension, TRAILING)) {
+                // would grow to trailing side
+                break;
+            }
+            li = parParent;
+            parParent = LayoutInterval.getFirstParent(li, PARALLEL);
+        } while (parParent != null);
+
+        if (!gapInfo.resizeLeading) {
+            gapInfo.resizeTrailing = true;
+        }
 
         // determine suitable space in the orthogonal dimension to visualize the gap
         int[] ortPos = { Integer.MAX_VALUE, Integer.MIN_VALUE };

@@ -155,7 +155,7 @@ public enum YamlTokenId implements TokenId {
     }
 
     /**
-     * MIME type for JavaScript. Don't change this without also consulting the various XML files
+     * MIME type for YAML. Don't change this without also consulting the various XML files
      * that cannot reference this value directly.
      */
     public static final String YAML_MIME_TYPE = "text/x-yaml"; // NOI18N

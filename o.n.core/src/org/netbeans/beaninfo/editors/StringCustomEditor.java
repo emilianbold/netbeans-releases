@@ -118,7 +118,7 @@ public class StringCustomEditor extends javax.swing.JPanel implements PropertyCh
         }
 
         textArea.setText (s);
-        if (textArea instanceof JTextArea && s.length () < 1024) {
+        if (textArea instanceof JTextArea && s.length () < 1E4) {
             ((JTextArea) textArea).setWrapStyleWord( true );
             ((JTextArea)textArea).setLineWrap( true );
             setPreferredSize (new java.awt.Dimension(500, 300));
