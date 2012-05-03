@@ -136,8 +136,6 @@ public class GeneralPHP extends JellyTestCase {
     }
 
     protected String CreateSamplePHPApplication(String type) {
-        NewProjectWizardOperator.invoke().cancel();
-
         NewProjectWizardOperator opNewProjectWizard = NewProjectWizardOperator.invoke();
 
         opNewProjectWizard.selectCategory(SAMPLES + "|" + PHP_CATEGORY_NAME);
