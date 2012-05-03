@@ -120,6 +120,10 @@ public class NetbinoxFactory implements FrameworkFactory {
         String rest = System.getProperty("netbeans.dirs"); // NOI18N
         if (rest != null) {
             for (String c : rest.split(File.pathSeparator)) {
+                File cf = new File(c);
+                if (!cf.isAbsolute() || !cf.exists()) {
+                    continue;
+                }
                 int prefix = findCommonPrefix(ia, c);
                 if (prefix <= 3) {
                     LOG.log(Level.WARNING, "Cannot compute install area. No common prefix between {0} and {1}", new Object[]{ia, c});
