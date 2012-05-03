@@ -484,9 +484,9 @@ public final class FileImpl implements CsmFile,
             FileContentSignature newSignature = null;
             FileContentSignature oldSignature = null;
             boolean tryPartialReparse = false;
-            boolean wasDummy = false;
+            boolean oneFileActivity = false;
             if (handlers == DUMMY_HANDLERS || handlers == PARTIAL_REPARSE_HANDLERS) {
-                wasDummy = true;
+                oneFileActivity = true;
                 tryPartialReparse = handlers == PARTIAL_REPARSE_HANDLERS;
                 handlers = getPreprocHandlers();
             }
@@ -500,7 +500,7 @@ public final class FileImpl implements CsmFile,
                     }
                     if (reportParse || logState || TraceFlags.DEBUG) {
                         if (traceFile(getAbsolutePath())) {
-                            System.err.printf("#ensureParsed %s is %s, has %d handlers, state %s %s dummy=%s\n", getAbsolutePath(), fileType, handlers.size(), curState, parsingState, wasDummy); // NOI18N
+                            System.err.printf("#ensureParsed %s is %s, has %d handlers, state %s %s oneFileActivity=%s\n", getAbsolutePath(), fileType, handlers.size(), curState, parsingState, oneFileActivity); // NOI18N
                             int i = 0;
                             for (APTPreprocHandler aPTPreprocHandler : handlers) {
                                 logParse("EnsureParsed handler " + (i++), aPTPreprocHandler); // NOI18N
