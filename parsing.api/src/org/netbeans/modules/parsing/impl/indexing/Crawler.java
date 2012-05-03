@@ -61,6 +61,11 @@ import org.openide.filesystems.FileObject;
  * @author Tomas Zezula
  */
 abstract class Crawler {
+    
+    enum TimeStampAction {
+        CHECK,
+        UPDATE
+    }
 
     /**
      *
@@ -75,14 +80,16 @@ abstract class Crawler {
      */
     protected Crawler(
             @NonNull final URL root,
-            final boolean checkTimeStamps,
+            final Set<? extends TimeStampAction> checkTimeStamps,
             final boolean detectDeletedFiles,
             final boolean supportsAllFiles,            
             @NonNull final CancelRequest cancelRequest,
             @NonNull final SuspendStatus suspendStatus) throws IOException {
         this.root = root;
         this.checkTimeStamps = checkTimeStamps;
-        this.timeStamps = TimeStamps.forRoot(root, detectDeletedFiles);
+        this.timeStamps = checkTimeStamps.contains(TimeStampAction.UPDATE) ?
+                TimeStamps.forRoot(root, detectDeletedFiles) :
+                TimeStamps.changedTransient();
         this.supportsAllFiles = supportsAllFiles;
         this.cancelRequest = cancelRequest;
         this.suspendStatus = suspendStatus;
@@ -107,7 +114,7 @@ abstract class Crawler {
      */
     public final @CheckForNull Collection<IndexableImpl> getAllResources() throws IOException {
         init ();        
-        return checkTimeStamps || !supportsAllFiles ? allResources : resources;
+        return checkTimeStamps.contains(TimeStampAction.CHECK) || !supportsAllFiles ? allResources : resources;
     }
 
     public final @NonNull Collection<IndexableImpl> getDeletedResources () throws IOException {
@@ -133,7 +140,7 @@ abstract class Crawler {
     protected final boolean isUpToDate(@NonNull FileObject f, @NullAllowed String relativePath) {
         // always call this in order to update the file's timestamp
         boolean upToDate = timeStamps.checkAndStoreTimestamp(f, relativePath);
-        return checkTimeStamps ? upToDate : false;
+        return checkTimeStamps.contains(TimeStampAction.CHECK) ? upToDate : false;
     }
 
     protected final boolean isCancelled() {
@@ -163,7 +170,7 @@ abstract class Crawler {
     // -----------------------------------------------------------------------
 
     private final URL root;
-    private final boolean checkTimeStamps;
+    private final Set<? extends TimeStampAction> checkTimeStamps;
     private final boolean supportsAllFiles;
     private final TimeStamps timeStamps;
     private final CancelRequest cancelRequest;
@@ -182,10 +189,11 @@ abstract class Crawler {
         if (!initialized) {
             try {
                 Collection<IndexableImpl> _resources = new LinkedHashSet<IndexableImpl>();
-                Collection<IndexableImpl> _allResources = checkTimeStamps && supportsAllFiles ? new LinkedHashSet<IndexableImpl>() : new NullCollection<IndexableImpl>();
+                Collection<IndexableImpl> _allResources = checkTimeStamps.contains(TimeStampAction.CHECK) && supportsAllFiles ?
+                        new LinkedHashSet<IndexableImpl>() : new NullCollection<IndexableImpl>();
                 this.finished = collectResources(_resources, _allResources);
                 this.resources = Collections.unmodifiableCollection(_resources);
-                this.allResources = checkTimeStamps && supportsAllFiles ? Collections.unmodifiableCollection(_allResources) : null;
+                this.allResources = checkTimeStamps.contains(TimeStampAction.CHECK) && supportsAllFiles ? Collections.unmodifiableCollection(_allResources) : null;
                 changed = !_resources.isEmpty();
 
                 final Set<String> unseen = timeStamps.getUnseenFiles();                
