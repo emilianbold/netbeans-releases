@@ -62,35 +62,35 @@ import org.openide.util.Utilities;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 class EntrySupportLazy extends EntrySupport {
-    private List<Entry> entries = Collections.emptyList();
-    private Map<Entry, EntryInfo> entryToInfo = new HashMap<Entry, EntryInfo>();
-    /** entries with node*/
-    private List<Entry> visibleEntries = Collections.emptyList();
-    private static final Logger LOGGER = Logger.getLogger(EntrySupportLazy.class.getName());
-    //private static final boolean LOG_ENABLED = LOGGER.isLoggable(Level.FINER);
     private static final int prefetchCount = Math.max(Integer.getInteger("org.openide.explorer.VisualizerNode.prefetchCount", 50), 0); // NOI18N
+    private static final Logger LOGGER = Logger.getLogger(EntrySupportLazy.class.getName());
+        
+    /** represents state of this object. The state itself should not 
+     * mutate, the reference to different states, however may -
+     * in future.
+     */
+    private EntrySupportLazyState state = new EntrySupportLazyState();
+    
+    //private static final boolean LOG_ENABLED = LOGGER.isLoggable(Level.FINER);
 
     public EntrySupportLazy(Children ch) {
         super(ch);
     }
     /** lock to guard creation of snapshots */
     protected final Object LOCK = new Object();
-    private boolean initInProgress = false;
-    private boolean inited = false;
-    private Thread initThread;
     /** @GuardedBy("LOCK")*/
     private int snapshotCount;
 
     public boolean checkInit() {
-        if (inited) {
+        if (state.inited) {
             return true;
         }
         boolean doInit = false;
         synchronized (LOCK) {
-            if (!initInProgress) {
+            if (!state.initInProgress) {
                 doInit = true;
-                initInProgress = true;
-                initThread = Thread.currentThread();
+                state.initInProgress = true;
+                state.initThread = Thread.currentThread();
             }
         }
         final boolean LOG_ENABLED = LOGGER.isLoggable(Level.FINER);
@@ -106,13 +106,13 @@ class EntrySupportLazy extends EntrySupport {
 
                     public void run() {
                         synchronized (LOCK) {
-                            initThread = null;
+                            state.initThread = null;
                             LOCK.notifyAll();
                         }
                     }
                 }
                 Notify notify = new Notify();
-                inited = true;
+                state.inited = true;
                 if (Children.MUTEX.isReadAccess()) {
                     Children.MUTEX.postWriteRequest(notify);
                 } else {
@@ -120,9 +120,9 @@ class EntrySupportLazy extends EntrySupport {
                 }
             }
         } else {
-            if (Children.MUTEX.isReadAccess() || Children.MUTEX.isWriteAccess() || (initThread == Thread.currentThread())) {
+            if (Children.MUTEX.isReadAccess() || Children.MUTEX.isWriteAccess() || (state.initThread == Thread.currentThread())) {
                 if (LOG_ENABLED) {
-                    LOGGER.log(Level.FINER, "Cannot wait for finished initialization " + this + " on " + Thread.currentThread() + " read access: " + Children.MUTEX.isReadAccess() + " write access: " + Children.MUTEX.isWriteAccess() + " initThread: " + initThread);
+                    LOGGER.log(Level.FINER, "Cannot wait for finished initialization " + this + " on " + Thread.currentThread() + " read access: " + Children.MUTEX.isReadAccess() + " write access: " + Children.MUTEX.isWriteAccess() + " initThread: " + state.initThread);
                 }
                 // we cannot wait
                 notifySetEntries();
@@ -130,7 +130,7 @@ class EntrySupportLazy extends EntrySupport {
             }
             // otherwise we can wait
             synchronized (LOCK) {
-                while (initThread != null) {
+                while (state.initThread != null) {
                     try {
                         LOCK.wait();
                     } catch (InterruptedException ex) {
@@ -178,8 +178,8 @@ class EntrySupportLazy extends EntrySupport {
                     boolean found = false;
                     cnt += getSnapshotCount();
                     if (cnt == 0) {
-                        for (Entry entry : notNull(visibleEntries)) {
-                            EntryInfo info = entryToInfo.get(entry);
+                        for (Entry entry : notNull(state.visibleEntries)) {
+                            EntryInfo info = state.entryToInfo.get(entry);
                             if (info.currentNode() != null) {
                                 cnt++;
                                 break;
@@ -191,9 +191,9 @@ class EntrySupportLazy extends EntrySupport {
                     }
                     zero = cnt == 0 && (found || who == null);
                     if (zero) {
-                        inited = false;
-                        initThread = null;
-                        initInProgress = false;
+                        state.inited = false;
+                        state.initThread = null;
+                        state.initInProgress = false;
                         if (children.getEntrySupport() == this) {
                             if (LOGGER.isLoggable(Level.FINER)) {
                                 LOGGER.finer("callRemoveNotify() " + this); // NOI18N
@@ -217,12 +217,12 @@ class EntrySupportLazy extends EntrySupport {
         while (true) {
             try {
                 Children.PR.enterReadAccess();
-                List<Entry> e = notNull(visibleEntries);
+                List<Entry> e = notNull(state.visibleEntries);
                 if (index >= e.size()) {
                     return node;
                 }
                 Entry entry = e.get(index);
-                EntryInfo info = entryToInfo.get(entry);
+                EntryInfo info = state.entryToInfo.get(entry);
                 node = info.getNode();
                 if (!isDummyNode(node)) {
                     return node;
@@ -253,10 +253,10 @@ class EntrySupportLazy extends EntrySupport {
             Node[] tmpNodes = null;
             try {
                 Children.PR.enterReadAccess();
-                List<Entry> e = notNull(visibleEntries);
+                List<Entry> e = notNull(state.visibleEntries);
                 List<Node> toReturn = new ArrayList<Node>(e.size());
                 for (Entry entry : e) {
-                    EntryInfo info = entryToInfo.get(entry);
+                    EntryInfo info = state.entryToInfo.get(entry);
                     assert !info.isHidden();
                     Node node = info.getNode();
                     if (isDummyNode(node)) {
@@ -283,14 +283,14 @@ class EntrySupportLazy extends EntrySupport {
 
     @Override
     public Node[] testNodes() {
-        if (!inited) {
+        if (!state.inited) {
             return null;
         }
         List<Node> created = new ArrayList<Node>();
         try {
             Children.PR.enterReadAccess();
-            for (Entry entry : notNull(visibleEntries)) {
-                EntryInfo info = entryToInfo.get(entry);
+            for (Entry entry : notNull(state.visibleEntries)) {
+                EntryInfo info = state.entryToInfo.get(entry);
                 Node node = info.currentNode();
                 if (node != null) {
                     created.add(node);
@@ -307,7 +307,7 @@ class EntrySupportLazy extends EntrySupport {
         checkInit();
         try {
             Children.PR.enterReadAccess();
-            return notNull(visibleEntries).size();
+            return notNull(state.visibleEntries).size();
         } finally {
             Children.PR.exitReadAccess();
         }
@@ -315,11 +315,11 @@ class EntrySupportLazy extends EntrySupport {
 
     @Override
     public boolean isInitialized() {
-        return inited;
+        return state.inited;
     }
 
     Entry entryForNode(Node key) {
-        for (Map.Entry<Entry, EntryInfo> entry : entryToInfo.entrySet()) {
+        for (Map.Entry<Entry, EntryInfo> entry : state.entryToInfo.entrySet()) {
             if (entry.getValue().currentNode() == key) {
                 return entry.getKey();
             }
@@ -339,10 +339,10 @@ class EntrySupportLazy extends EntrySupport {
             LOGGER.finer("refreshEntry() " + this);
             LOGGER.finer("    entry: " + entry); // NOI18N
         }
-        if (!inited) {
+        if (!state.inited) {
             return;
         }
-        EntryInfo info = entryToInfo.get(entry);
+        EntryInfo info = state.entryToInfo.get(entry);
         if (info == null) {
             if (LOG_ENABLED) {
                 LOGGER.finer("    no such entry: " + entry); // NOI18N
@@ -373,7 +373,7 @@ class EntrySupportLazy extends EntrySupport {
         }
         if (newInfo != null) {
             info = newInfo;
-            entryToInfo.put(entry, info);
+            state.entryToInfo.put(entry, info);
         }
         if (newIsDummy) {
             return;
@@ -382,24 +382,23 @@ class EntrySupportLazy extends EntrySupport {
         int index = 0;
         info.setIndex(-1);
         List<Entry> arr = new ArrayList<Entry>();
-        for (Entry tmpEntry : entries) {
-            EntryInfo tmpInfo = entryToInfo.get(tmpEntry);
+        for (Entry tmpEntry : state.entries) {
+            EntryInfo tmpInfo = state.entryToInfo.get(tmpEntry);
             if (tmpInfo.isHidden()) {
                 continue;
             }
             tmpInfo.setIndex(index++);
             arr.add(tmpEntry);
         }
-        visibleEntries = arr;
+        state.visibleEntries = arr;
         fireSubNodesChangeIdx(true, new int[]{info.getIndex()}, entry, createSnapshot(), null);
     }
-    private boolean mustNotifySetEntries = false;
 
     void notifySetEntries() {
         if (LOGGER.isLoggable(Level.FINER)) {
             LOGGER.finer("notifySetEntries() " + this); // NOI18N
         }
-        mustNotifySetEntries = true;
+        state.mustNotifySetEntries = true;
     }
 
     @Override
@@ -408,34 +407,34 @@ class EntrySupportLazy extends EntrySupport {
         final boolean LOG_ENABLED = LOGGER.isLoggable(Level.FINER);
         if (LOG_ENABLED) {
             LOGGER.finer("setEntries(): " + this); // NOI18N
-            LOGGER.finer("    inited: " + inited); // NOI18N
-            LOGGER.finer("    mustNotifySetEnties: " + mustNotifySetEntries); // NOI18N
+            LOGGER.finer("    inited: " + state.inited); // NOI18N
+            LOGGER.finer("    mustNotifySetEnties: " + state.mustNotifySetEntries); // NOI18N
             LOGGER.finer("    newEntries size: " + newEntries.size() + " data:" + newEntries); // NOI18N
-            LOGGER.finer("    entries size: " + entries.size() + " data:" + entries); // NOI18N
-            LOGGER.finer("    visibleEntries size: " + notNull(visibleEntries).size() + " data:" + visibleEntries); // NOI18N
-            LOGGER.finer("    entryToInfo size: " + entryToInfo.size()); // NOI18N
+            LOGGER.finer("    entries size: " + state.entries.size() + " data:" + state.entries); // NOI18N
+            LOGGER.finer("    visibleEntries size: " + notNull(state.visibleEntries).size() + " data:" + state.visibleEntries); // NOI18N
+            LOGGER.finer("    entryToInfo size: " + state.entryToInfo.size()); // NOI18N
         }
         int entriesSize = 0;
         int entryToInfoSize = 0;
-        assert (entriesSize = entries.size()) >= 0;
-        assert (entryToInfoSize = entryToInfo.size()) >= 0;
-        assert entries.size() == entryToInfo.size() : "Entries: " + entries.size() + "; vis. entries: " + notNull(visibleEntries).size() + "; Infos: " + entryToInfo.size() + "; entriesSize: " + entriesSize + "; entryToInfoSize: " + entryToInfoSize + dumpEntriesInfos(entries, entryToInfo); // NOI18N
-        if (!mustNotifySetEntries && !inited) {
-            entries = new ArrayList<Entry>(newEntries);
-            visibleEntries = new ArrayList<Entry>(newEntries);
-            entryToInfo.keySet().retainAll(entries);
-            for (int i = 0; i < entries.size(); i++) {
-                Entry entry = entries.get(i);
-                EntryInfo info = entryToInfo.get(entry);
+        assert (entriesSize = state.entries.size()) >= 0;
+        assert (entryToInfoSize = state.entryToInfo.size()) >= 0;
+        assert state.entries.size() == state.entryToInfo.size() : "Entries: " + state.entries.size() + "; vis. entries: " + notNull(state.visibleEntries).size() + "; Infos: " + state.entryToInfo.size() + "; entriesSize: " + entriesSize + "; entryToInfoSize: " + entryToInfoSize + dumpEntriesInfos(state.entries, state.entryToInfo); // NOI18N
+        if (!state.mustNotifySetEntries && !state.inited) {
+            state.entries = new ArrayList<Entry>(newEntries);
+            state.visibleEntries = new ArrayList<Entry>(newEntries);
+            state.entryToInfo.keySet().retainAll(state.entries);
+            for (int i = 0; i < state.entries.size(); i++) {
+                Entry entry = state.entries.get(i);
+                EntryInfo info = state.entryToInfo.get(entry);
                 if (info == null) {
                     info = new EntryInfo(entry);
-                    entryToInfo.put(entry, info);
+                    state.entryToInfo.put(entry, info);
                 }
                 info.setIndex(i);
             }
             return;
         }
-        Set<Entry> entriesToRemove = new HashSet<Entry>(entries);
+        Set<Entry> entriesToRemove = new HashSet<Entry>(state.entries);
         entriesToRemove.removeAll(newEntries);
         if (!entriesToRemove.isEmpty()) {
             removeEntries(entriesToRemove, null, null, false, false);
@@ -444,18 +443,18 @@ class EntrySupportLazy extends EntrySupport {
         // it and again brings children to up-to-date state, recomputes indexes
         Collection<Entry> toAdd = updateOrder(newEntries);
         if (!toAdd.isEmpty()) {
-            entries = new ArrayList<Entry>(newEntries);
+            state.entries = new ArrayList<Entry>(newEntries);
             int[] idxs = new int[toAdd.size()];
             int addIdx = 0;
             int inx = 0;
             boolean createNodes = toAdd.size() == 2 && prefetchCount > 0;
-            visibleEntries = new ArrayList<Entry>();
-            for (int i = 0; i < entries.size(); i++) {
-                Entry entry = entries.get(i);
-                EntryInfo info = entryToInfo.get(entry);
+            state.visibleEntries = new ArrayList<Entry>();
+            for (int i = 0; i < state.entries.size(); i++) {
+                Entry entry = state.entries.get(i);
+                EntryInfo info = state.entryToInfo.get(entry);
                 if (info == null) {
                     info = new EntryInfo(entry);
-                    entryToInfo.put(entry, info);
+                    state.entryToInfo.put(entry, info);
                     if (createNodes) {
                         Node n = info.getNode();
                         if (isDummyNode(n)) {
@@ -470,7 +469,7 @@ class EntrySupportLazy extends EntrySupport {
                     continue;
                 }
                 info.setIndex(inx++);
-                visibleEntries.add(entry);
+                state.visibleEntries.add(entry);
             }
             if (addIdx == 0) {
                 return;
@@ -494,13 +493,13 @@ class EntrySupportLazy extends EntrySupport {
     private List<Entry> updateOrder(Collection<? extends Entry> newEntries) {
         assert Children.MUTEX.isWriteAccess();
         List<Entry> toAdd = new LinkedList<Entry>();
-        int[] perm = new int[visibleEntries.size()];
+        int[] perm = new int[state.visibleEntries.size()];
         int currentPos = 0;
         int permSize = 0;
         List<Entry> reorderedEntries = null;
         List<Entry> newVisible = null;
         for (Entry entry : newEntries) {
-            EntryInfo info = entryToInfo.get(entry);
+            EntryInfo info = state.entryToInfo.get(entry);
             if (info == null) {
                 // this entry has to be added
                 toAdd.add(entry);
@@ -538,8 +537,8 @@ class EntrySupportLazy extends EntrySupport {
                 }
             }
             // reorderedEntries are not null
-            entries = reorderedEntries;
-            visibleEntries = newVisible;
+            state.entries = reorderedEntries;
+            state.visibleEntries = newVisible;
             Node p = children.parent;
             if (p != null) {
                 p.fireReorderChange(perm);
@@ -552,7 +551,7 @@ class EntrySupportLazy extends EntrySupport {
         checkInit();
         try {
             Children.PR.enterReadAccess();
-            EntryInfo info = entryToInfo.get(entry);
+            EntryInfo info = state.entryToInfo.get(entry);
             if (info == null) {
                 if (LOGGER.isLoggable(Level.FINER)) {
                     LOGGER.finer("getNode() " + this);
@@ -603,7 +602,7 @@ class EntrySupportLazy extends EntrySupport {
 
     @Override
     protected List<Entry> getEntries() {
-        return new ArrayList<Entry>(this.entries);
+        return new ArrayList<Entry>(state.entries);
     }
 
     /** holds node for entry; 1:1 mapping */
@@ -781,13 +780,13 @@ class EntrySupportLazy extends EntrySupport {
         int removedNodesIdx = 0;
         int expectedSize = entriesToRemove != null ? entriesToRemove.size() : 1;
         int[] idxs = new int[expectedSize];
-        List<Entry> previousEntries = visibleEntries;
+        List<Entry> previousEntries = state.visibleEntries;
         Map<Entry, EntryInfo> previousInfos = null;
         List<Entry> newEntries = justHide ? null : new ArrayList<Entry>();
         Node[] removedNodes = null;
-        visibleEntries = new ArrayList<Entry>();
-        for (Entry entry : entries) {
-            EntryInfo info = entryToInfo.get(entry);
+        state.visibleEntries = new ArrayList<Entry>();
+        for (Entry entry : state.entries) {
+            EntryInfo info = state.entryToInfo.get(entry);
             if (info == null) {
                 continue;
             }
@@ -800,13 +799,13 @@ class EntrySupportLazy extends EntrySupport {
             if (remove) {
                 if (info.isHidden()) {
                     if (!justHide) {
-                        entryToInfo.remove(entry);
+                        state.entryToInfo.remove(entry);
                     }
                     continue;
                 }
                 idxs[removedIdx++] = info.getIndex();
                 if (previousInfos == null) {
-                    previousInfos = new HashMap<Entry, EntryInfo>(entryToInfo);
+                    previousInfos = new HashMap<Entry, EntryInfo>(state.entryToInfo);
                 }
                 Node node = info.currentNode();
                 if (!info.isHidden() && node != null && !isDummyNode(node)) {
@@ -817,15 +816,15 @@ class EntrySupportLazy extends EntrySupport {
                 }
                 if (justHide) {
                     EntryInfo dup = newEntryInfo != null ? newEntryInfo : info.duplicate(null);
-                    entryToInfo.put(info.entry, dup);
+                    state.entryToInfo.put(info.entry, dup);
                     // mark as hidden
                     dup.setIndex(-2);
                 } else {
-                    entryToInfo.remove(entry);
+                    state.entryToInfo.remove(entry);
                 }
             } else {
                 if (!info.isHidden()) {
-                    visibleEntries.add(info.entry);
+                    state.visibleEntries.add(info.entry);
                     info.setIndex(index++);
                 }
                 if (!justHide) {
@@ -834,7 +833,7 @@ class EntrySupportLazy extends EntrySupport {
             }
         }
         if (!justHide) {
-            entries = newEntries;
+            state.entries = newEntries;
         }
         if (removedIdx == 0) {
             return;
@@ -842,7 +841,7 @@ class EntrySupportLazy extends EntrySupport {
         if (removedIdx < idxs.length) {
             idxs = (int[]) resizeArray(idxs, removedIdx);
         }
-        List<Node> curSnapshot = createSnapshot(visibleEntries, new HashMap<Entry, EntryInfo>(entryToInfo), delayed);
+        List<Node> curSnapshot = createSnapshot(state.visibleEntries, new HashMap<Entry, EntryInfo>(state.entryToInfo), delayed);
         List<Node> prevSnapshot = createSnapshot(previousEntries, previousInfos, false);
         fireSubNodesChangeIdx(false, idxs, entryToRemove, curSnapshot, prevSnapshot);
         if (removedNodesIdx > 0) {
@@ -871,7 +870,7 @@ class EntrySupportLazy extends EntrySupport {
     }
 
     LazySnapshot createSnapshot() {
-        return createSnapshot(visibleEntries, new HashMap<Entry, EntryInfo>(entryToInfo), false);
+        return createSnapshot(state.visibleEntries, new HashMap<Entry, EntryInfo>(state.entryToInfo), false);
     }
 
     protected LazySnapshot createSnapshot(List<Entry> entries, Map<Entry, EntryInfo> e2i, boolean delayed) {
