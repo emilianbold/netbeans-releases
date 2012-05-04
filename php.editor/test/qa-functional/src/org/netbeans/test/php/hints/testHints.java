@@ -44,8 +44,11 @@ package org.netbeans.test.php.hints;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.EventTool;
+import org.netbeans.jemmy.Waitable;
+import org.netbeans.jemmy.Waiter;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.php.GeneralPHP;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -193,19 +196,40 @@ public class testHints extends GeneralPHP {
     }
 
     private void checkNumberOfAnnotationsContains(String annotation, int expectedOccurences, String failMsg, EditorOperator file) {
-        int numberOfErrors = 0;
-        int lines = file.getText().split(System.getProperty("line.separator")).length;
-        Object[] ann;
-        int lineCounter = 1;
-        while (lineCounter <= lines) {
-            ann = file.getAnnotations(lineCounter);
-            for (Object o : ann) {
-                if (EditorOperator.getAnnotationShortDescription(o).toString().contains(annotation) && !EditorOperator.getAnnotationShortDescription(o).toString().contains("HTML error checking")) {
-                    numberOfErrors++;
-                }
-            }
-            lineCounter++;
+        
+        final EditorOperator eo = new EditorOperator(file.getName());
+        final int limit = expectedOccurences;
+        try {
+            new Waiter(new Waitable() {
+
+              @Override
+              public Object actionProduced(Object oper) {
+                  return eo.getAnnotations().length > limit ? Boolean.TRUE : null;
+              }
+
+              @Override
+              public String getDescription() {
+                  return ("Wait parser annotations."); // NOI18N
+              }
+          }).waitAction(null);
+          
+          
+          int numberOfErrors = 0;
+          int lines = file.getText().split(System.getProperty("line.separator")).length;
+          Object[] ann;
+          int lineCounter = 1;
+          while (lineCounter <= lines) {
+              ann = file.getAnnotations(lineCounter);
+              for (Object o : ann) {
+                  if (EditorOperator.getAnnotationShortDescription(o).toString().contains(annotation) && !EditorOperator.getAnnotationShortDescription(o).toString().contains("HTML error checking")) {
+                      numberOfErrors++;
+                  }
+              }
+              lineCounter++;
+          }
+          assertEquals(failMsg, expectedOccurences, numberOfErrors);
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
         }
-        assertEquals(failMsg, expectedOccurences, numberOfErrors);
     }
 }
