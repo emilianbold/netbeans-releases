@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,80 +37,38 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.languages.yaml;
+package org.netbeans.modules.html.editor.hints;
 
-import org.netbeans.api.lexer.Language;
-import org.netbeans.modules.csl.api.CodeCompletionHandler;
-import org.netbeans.modules.csl.api.InstantRenamer;
-import org.netbeans.modules.csl.api.KeystrokeHandler;
-import org.netbeans.modules.csl.api.SemanticAnalyzer;
-import org.netbeans.modules.csl.api.StructureScanner;
-import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
-import org.netbeans.modules.csl.spi.LanguageRegistration;
-import org.netbeans.modules.parsing.spi.Parser;
-import org.openide.filesystems.MIMEResolver;
+import java.util.regex.Pattern;
+import org.netbeans.modules.csl.api.HintSeverity;
 
 /**
- * GSF Configuration for YAML
  *
- * @author Tor Norbye
+ * @author marekfukala
  */
-@MIMEResolver.ExtensionRegistration(displayName = "#YAMLResolver",
-extension = {"yml", "yaml"},
-mimeType = "text/x-yaml",
-position = 280)
-@LanguageRegistration(mimeType = "text/x-yaml") //NOI18N
-public class YamlLanguage extends DefaultLanguageConfig {
+public class HeadContent extends PatternRule {
 
     @Override
-    public Language getLexerLanguage() {
-        return YamlTokenId.language();
+    public HintSeverity getDefaultSeverity() {
+        return HintSeverity.INFO;
     }
 
     @Override
-    public String getDisplayName() {
-        return "YAML";
+    public boolean getDefaultEnabled() {
+        return false;
     }
+    
+    private static final String[] PATTERNS_SOURCES = new String[]{
+        "Required children missing from element \"head\"."
+    }; //NOI18N
+    
+    private final static Pattern[] PATTERNS = buildPatterns(PATTERNS_SOURCES);
 
     @Override
-    public String getLineCommentPrefix() {
-        return "#"; // NOI18N
+    public Pattern[] getPatterns() {
+        return PATTERNS;
     }
-
-    @Override
-    public Parser getParser() {
-        return new YamlParser();
-    }
-
-    @Override
-    public boolean hasStructureScanner() {
-        return true;
-    }
-
-    @Override
-    public StructureScanner getStructureScanner() {
-        return new YamlScanner();
-    }
-
-    @Override
-    public SemanticAnalyzer getSemanticAnalyzer() {
-        return new YamlSemanticAnalyzer();
-    }
-
-    @Override
-    public KeystrokeHandler getKeystrokeHandler() {
-        return new YamlKeystrokeHandler();
-    }
-
-    @Override
-    public CodeCompletionHandler getCompletionHandler() {
-        return new YamlCompletion();
-    }
-
-    @Override
-    public InstantRenamer getInstantRenamer() {
-        return null;
-    }
+    
 }

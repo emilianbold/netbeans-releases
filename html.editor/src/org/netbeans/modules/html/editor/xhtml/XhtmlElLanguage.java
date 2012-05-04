@@ -49,10 +49,7 @@ import java.util.Map;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.modules.csl.api.Error;
-import org.netbeans.modules.csl.api.KeystrokeHandler;
-import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.api.StructureItem;
-import org.netbeans.modules.csl.api.StructureScanner;
+import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.csl.spi.LanguageRegistration;
 import org.netbeans.modules.csl.spi.ParserResult;
@@ -86,6 +83,16 @@ public class XhtmlElLanguage extends DefaultLanguageConfig {
     }
 
     @Override
+    public HintsProvider getHintsProvider() {
+        return new EmptyHintsProvider();
+    }
+
+    @Override
+    public boolean hasHintsProvider() {
+        return true;
+    }
+    
+    @Override
     public StructureScanner getStructureScanner() {
         return new Scanner();
     }
@@ -103,6 +110,40 @@ public class XhtmlElLanguage extends DefaultLanguageConfig {
     @Override
     public KeystrokeHandler getKeystrokeHandler() {
         return new HtmlKeystrokeHandler();
+    }
+    
+    private static class EmptyHintsProvider implements HintsProvider {
+
+        @Override
+        public void computeHints(HintsManager manager, RuleContext context, List<Hint> hints) {
+        }
+
+        @Override
+        public void computeSuggestions(HintsManager manager, RuleContext context, List<Hint> suggestions, int caretOffset) {
+        }
+
+        @Override
+        public void computeSelectionHints(HintsManager manager, RuleContext context, List<Hint> suggestions, int start, int end) {
+        }
+
+        @Override
+        public void computeErrors(HintsManager manager, RuleContext context, List<Hint> hints, List<Error> unhandled) {
+        }
+
+        @Override
+        public void cancel() {
+        }
+
+        @Override
+        public List<Rule> getBuiltinRules() {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public RuleContext createRuleContext() {
+            return new RuleContext();
+        }
+        
     }
 
     private static class XhtmlELParser extends Parser {
