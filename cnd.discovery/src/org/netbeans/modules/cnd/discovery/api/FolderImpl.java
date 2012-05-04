@@ -63,6 +63,7 @@ public final class FolderImpl implements FolderProperties {
     private Set<String> userIncludes = new LinkedHashSet<String>();
     private Set<String> systemIncludes = new LinkedHashSet<String>();
     private Map<String, String> userMacros = new HashMap<String,String>();
+    private Set<String> undefinedMacros = new LinkedHashSet<String>();
     private List<SourceFileProperties> files = new ArrayList<SourceFileProperties>();
     
     public FolderImpl(String path, SourceFileProperties source) {
@@ -79,6 +80,7 @@ public final class FolderImpl implements FolderProperties {
         }
         systemIncludes.addAll(source.getSystemInludePaths());
         userMacros.putAll(source.getUserMacros());
+        undefinedMacros.addAll(source.getUndefinedMacros());
     }
     
     @Override
@@ -104,6 +106,11 @@ public final class FolderImpl implements FolderProperties {
     @Override
     public Map<String, String> getUserMacros() {
         return userMacros;
+    }
+
+    @Override
+    public List<String> getUndefinedMacros() {
+        return new ArrayList<String>(undefinedMacros);
     }
     
     @Override

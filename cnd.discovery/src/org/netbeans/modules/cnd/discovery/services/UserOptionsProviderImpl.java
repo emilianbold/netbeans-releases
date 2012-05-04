@@ -128,10 +128,40 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
             if (s.startsWith("-")) { //NOI18N
                 for(ToolchainManager.PredefinedMacro macro : predefinedMacros){
                     if (macro.getFlags() != null && macro.getFlags().equals(s)) {
-                        if (macro.isHidden()) {
-                            // TODO remove macro
-                        } else {
+                        if (!macro.isHidden()) {
                             // add macro
+                            res.add(macro.getMacro());
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @Override
+    public List<String> getItemUserUndefinedMacros(List<String> macros, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
+        List<String> res =new ArrayList<String>(macros);
+        if (makeConfiguration.getConfigurationType().getValue() != MakeConfiguration.TYPE_MAKEFILE){
+            String options = compilerOptions.getAllOptions(compiler);
+            convertOptionsToUndefinedMacros(compiler, options, res);
+        }
+        return res;
+    }
+
+    private void convertOptionsToUndefinedMacros(AbstractCompiler compiler, String options, List<String> res) {
+        if (compiler == null || compiler.getDescriptor() == null) {
+            return;
+        }
+        final List<PredefinedMacro> predefinedMacros = compiler.getDescriptor().getPredefinedMacros();
+        if (predefinedMacros == null || predefinedMacros.isEmpty()) {
+            return;
+        }
+        String[] split = options.split(" "); //NOI18N
+        for(String s : split) {
+            if (s.startsWith("-")) { //NOI18N
+                for(ToolchainManager.PredefinedMacro macro : predefinedMacros){
+                    if (macro.getFlags() != null && macro.getFlags().equals(s)) {
+                        if (macro.isHidden()) {
                             res.add(macro.getMacro());
                         }
                     }

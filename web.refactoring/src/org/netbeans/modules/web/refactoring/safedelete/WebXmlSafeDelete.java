@@ -58,8 +58,8 @@ public class WebXmlSafeDelete extends WebXmlRefactoring{
     private final SafeDeleteRefactoring safeDelete;
     private final List<String> classes;
     
-    public WebXmlSafeDelete(FileObject webDD, WebApp webModel, SafeDeleteRefactoring safeDelete) {
-        super(webDD, webModel);
+    public WebXmlSafeDelete(FileObject webDD, SafeDeleteRefactoring safeDelete) {
+        super(webDD);
         this.safeDelete = safeDelete;
         this.classes = RefactoringUtil.getRefactoredClasses(safeDelete);
     }
@@ -68,21 +68,21 @@ public class WebXmlSafeDelete extends WebXmlRefactoring{
     public Problem prepare(RefactoringElementsBag refactoringElements) {
         for (String clazzFqn : classes) {
             for (Servlet servlet : getServlets(clazzFqn)) {
-                refactoringElements.add(safeDelete, new ServletRemoveElement(webModel, webDD, servlet));
+                refactoringElements.add(safeDelete, new ServletRemoveElement(getWebModel(), webDD, servlet));
                 for (ServletMapping mapping : getServletMappings(servlet)) {
-                    refactoringElements.add(safeDelete, new ServletMappingRemoveElement(webModel, webDD, mapping));
+                    refactoringElements.add(safeDelete, new ServletMappingRemoveElement(getWebModel(), webDD, mapping));
                 }
             }
 
             for (Filter filter : getFilters(clazzFqn)) {
-                refactoringElements.add(safeDelete, new FilterRemoveElement(webModel, webDD, filter));
+                refactoringElements.add(safeDelete, new FilterRemoveElement(getWebModel(), webDD, filter));
                 for (FilterMapping mapping : getFilterMappings(filter)) {
-                    refactoringElements.add(safeDelete, new FilterMappingRemoveElement(webModel, webDD, mapping));
+                    refactoringElements.add(safeDelete, new FilterMappingRemoveElement(getWebModel(), webDD, mapping));
                 }
             }
 
             for (Listener listener : getListeners(clazzFqn)) {
-                refactoringElements.add(safeDelete, new ListenerRemoveElement(webModel, webDD, listener));
+                refactoringElements.add(safeDelete, new ListenerRemoveElement(getWebModel(), webDD, listener));
             }
         }
 
@@ -91,7 +91,7 @@ public class WebXmlSafeDelete extends WebXmlRefactoring{
     
     private List<ServletMapping> getServletMappings(Servlet servlet){
         List<ServletMapping> result = new ArrayList<ServletMapping>();
-        for (ServletMapping mapping : webModel.getServletMapping()){
+        for (ServletMapping mapping : getWebModel().getServletMapping()){
             if (mapping.getServletName().equals(servlet.getServletName())){
                 result.add(mapping);
             }
@@ -101,7 +101,7 @@ public class WebXmlSafeDelete extends WebXmlRefactoring{
     
     private List<FilterMapping> getFilterMappings(Filter filter){
         List<FilterMapping> result = new ArrayList<FilterMapping>();
-        for (FilterMapping mapping : webModel.getFilterMapping()){
+        for (FilterMapping mapping : getWebModel().getFilterMapping()){
             if (mapping.getFilterName().equals(filter.getFilterName())){
                 result.add(mapping);
             }

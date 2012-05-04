@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.languages.yaml.ruby;
 
 import java.util.ArrayList;
@@ -66,14 +65,13 @@ import org.netbeans.modules.parsing.spi.TaskFactory;
 public class RubyEmbeddingProvider extends EmbeddingProvider {
 
     public static final String RUBY_MIME_TYPE = "text/x-ruby"; // NOI18N
-
     private static final Logger LOG = Logger.getLogger(RubyEmbeddingProvider.class.getName());
 
     @Override
     public List<Embedding> getEmbeddings(Snapshot snapshot) {
         if (YamlTokenId.YAML_MIME_TYPE.equals(snapshot.getMimeType())) {
             List<Embedding> embeddings = translate(snapshot);
-            if(embeddings.isEmpty()) {
+            if (embeddings.isEmpty()) {
                 return Collections.<Embedding>emptyList();
             } else {
                 return Collections.singletonList(Embedding.create(embeddings));
@@ -116,10 +114,12 @@ public class RubyEmbeddingProvider extends EmbeddingProvider {
         return embeddings;
     }
 
-    /** Perform eruby translation
+    /**
+     * Perform eruby translation
+     *
      * @param outputBuffer The buffer to emit the translation to
      * @param tokenHierarchy The token hierarchy for the yaml code
-     * @param tokenSequence  The token sequence for the yaml code
+     * @param tokenSequence The token sequence for the yaml code
      */
     private void translate(Snapshot snapshot, TokenHierarchy<Document> tokenHierarchy,
             TokenSequence<? extends YamlTokenId> tokenSequence, List<Embedding> embeddings) {
@@ -130,10 +130,10 @@ public class RubyEmbeddingProvider extends EmbeddingProvider {
         embeddings.add(snapshot.create("_buf='';", RUBY_MIME_TYPE));
 
         boolean skipNewline = false;
-        while(tokenSequence.moveNext()) {
+        while (tokenSequence.moveNext()) {
             Token<? extends YamlTokenId> token = tokenSequence.token();
 
-            if (token.id() == YamlTokenId.TEXT || token.id() == YamlTokenId.COMMENT){
+            if (token.id() == YamlTokenId.TEXT || token.id() == YamlTokenId.COMMENT) {
                 int sourceStart = token.offset(tokenHierarchy);
 
                 String text = token.text().toString();
@@ -183,13 +183,13 @@ public class RubyEmbeddingProvider extends EmbeddingProvider {
                 //buffer.append("';\n"); // NOI18N
 
                 skipNewline = false;
-            } else if (token.id() == YamlTokenId.RUBY){
+            } else if (token.id() == YamlTokenId.RUBY) {
                 int sourceStart = token.offset(tokenHierarchy);
 
                 String text = token.text().toString();
                 skipNewline = false;
                 if (text.endsWith("-")) { // NOI18N
-                    text = text.substring(0, text.length()-1);
+                    text = text.substring(0, text.length() - 1);
                     skipNewline = true;
                 }
 
@@ -204,7 +204,7 @@ public class RubyEmbeddingProvider extends EmbeddingProvider {
                 String text = token.text().toString();
                 skipNewline = false;
                 if (text.endsWith("-")) { // NOI18N
-                    text = text.substring(0, text.length()-1);
+                    text = text.substring(0, text.length() - 1);
                     skipNewline = true;
                 }
                 embeddings.add(snapshot.create(sourceStart, text.length(), RUBY_MIME_TYPE));
@@ -222,13 +222,15 @@ public class RubyEmbeddingProvider extends EmbeddingProvider {
 //            codeBlocks.add(new CodeBlockData(doc.getLength(), doc.getLength(), buffer.length()-end.length(), buffer.length()));
 //        }
     }
-   
+
     public static final class Factory extends TaskFactory {
+
         public Factory() {
             // no-op
         }
 
-        public @Override Collection<? extends SchedulerTask> create(Snapshot snapshot) {
+        public @Override
+        Collection<? extends SchedulerTask> create(Snapshot snapshot) {
             if (!YamlTokenId.YAML_MIME_TYPE.equals(snapshot.getMimeType())) {
                 return Collections.<SchedulerTask>emptyList();
             }
