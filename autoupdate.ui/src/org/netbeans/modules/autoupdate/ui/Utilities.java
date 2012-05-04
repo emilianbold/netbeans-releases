@@ -55,8 +55,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.*;
-import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
 import org.netbeans.api.autoupdate.*;
+import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.autoupdate.ui.actions.Installer;
@@ -119,8 +119,17 @@ public class Utilities {
                     names.add(catName);
                 }
                 String licenseId = el.getLicenseId();
-                if (licenseId != null && getAcceptedLicenseIds().add(licenseId)) {
-                    logger.fine("License ID - Yet another license " + licenseId + " was accepted during installation.");
+                if (licenseId != null) {
+                    if (licenseId.contains(",")) {
+                        if (getAcceptedLicenseIds().addAll(Arrays.asList(licenseId.split(",")))) {
+                            logger.fine("License ID - Yet another licenses " + licenseId + " was accepted during installation.");
+                        }
+
+                    } else {
+                        if (getAcceptedLicenseIds().add(licenseId)) {
+                            logger.fine("License ID - Yet another license " + licenseId + " was accepted during installation.");
+                        }
+                    }
                 }
             }
         }
@@ -154,8 +163,8 @@ public class Utilities {
         for(String licenseId : acceptedLicenseIDs) {
             sb.append(licenseId).append(",");
         }
-        getPreferences().put(PLUGIN_MANAGER_ACCEPTED_LICENSE_IDS, sb.substring(0, sb.length() - 1));
-        logger.fine("License IDs - Stored: " + sb.substring(0, sb.length() - 1));
+        getPreferences().put(PLUGIN_MANAGER_ACCEPTED_LICENSE_IDS, sb.length() == 0 ? null : sb.substring(0, sb.length() - 1));
+        logger.fine("License IDs - Stored: " + (sb.length() == 0 ? null : sb.substring(0, sb.length() - 1)));
         acceptedLicenseIDs = null;
     }
     
