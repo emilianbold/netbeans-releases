@@ -467,6 +467,9 @@ made subject to such option by the copyright holder.
                         <file name="org-netbeans-modules-html-editor-hints-Form.instance">
                            <attr name="position" intvalue="80"/>                            
                         </file>
+                        <file name="org-netbeans-modules-html-editor-hints-HeadContent.instance">
+                           <attr name="position" intvalue="85"/>                            
+                        </file>
                         <file name="org-netbeans-modules-html-editor-hints-Ids.instance">
                            <attr name="position" intvalue="90"/>                            
                         </file>
