@@ -145,6 +145,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
     private boolean canceled = false;
     private OperationException installException;
     private final boolean allowRunInBackground;
+    private final boolean runInBackground;
     
     /** Creates a new instance of OperationDescriptionStep */
     public InstallStep (InstallUnitWizardModel model) {
@@ -153,10 +154,16 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
     public InstallStep (InstallUnitWizardModel model, boolean clearLazyUnits) {
         this(model, clearLazyUnits, true);
     }
+    
     public InstallStep (InstallUnitWizardModel model, boolean clearLazyUnits, boolean allowRunInBackground) {
+        this(model, clearLazyUnits, allowRunInBackground, false);
+    }
+
+    public InstallStep (InstallUnitWizardModel model, boolean clearLazyUnits, boolean allowRunInBackground, boolean runInBackground) {
         this.model = model;
         this.clearLazyUnits = clearLazyUnits;
         this.allowRunInBackground = allowRunInBackground;
+        this.runInBackground = runInBackground;
         this.userdirAsFallback = getPreferences().getBoolean(Utilities.PLUGIN_MANAGER_DONT_CARE_WRITE_PERMISSION, false);
     }
     
@@ -168,7 +175,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
     @Override
     public PanelBodyContainer getComponent() {
         if (component == null) {
-            panel = new OperationPanel(allowRunInBackground);
+            panel = new OperationPanel(allowRunInBackground, runInBackground);
             panel.addPropertyChangeListener (new PropertyChangeListener () {
                 @Override
                 public void propertyChange (PropertyChangeEvent evt) {
@@ -198,14 +205,14 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
     }
     
     private void doDownloadAndVerificationAndInstall () {
-        Validator v = null;
+        Validator v;
         // download
         if ((v = handleDownload ()) != null) {
-            Installer i = null;
+            Installer i;
             // verifation
             if ((i = handleValidation (v)) != null) {
                 // installation
-                Restarter r = null;
+                Restarter r;
                 if ((r = handleInstall (i)) != null) {
                     presentInstallNeedsRestart (r);
                 } else {
@@ -457,7 +464,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
         if (spareHandle != null && spareHandleStarted) {
             spareHandle.finish ();
         }
-        Installer tmpInst = null;
+        Installer tmpInst;
         
         try {
             tmpInst = support.doValidate (v, handle);
@@ -775,7 +782,6 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
                     log.log (Level.INFO, x.getMessage (), x);
                 }
                 notifyInstallRestartNeeded (support, restarter); // NOI18N
-                return ;
             }
         } else {
             try {
