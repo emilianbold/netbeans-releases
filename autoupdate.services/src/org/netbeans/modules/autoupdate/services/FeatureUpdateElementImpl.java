@@ -206,8 +206,17 @@ public class FeatureUpdateElementImpl extends UpdateElementImpl {
     
     @Override
     public String getLicenseId() {
-        assert false : "Not supported yet.";
-        return null;
+        String res = "";
+        Set<String> ids = new HashSet<String>();
+        for (ModuleUpdateElementImpl impl : getContainedModuleElements()) {
+            if (!impl.getUpdateUnit().getAvailableUpdates().isEmpty()) {
+                String id = impl.getUpdateUnit().getAvailableUpdates().get(0).getLicenseId();
+                if (ids.add(id)) {
+                    res += res.length() == 0 ? id : "," + id; // NOI18N
+                }
+            }
+        }
+        return res;
     }
     
     @Override
