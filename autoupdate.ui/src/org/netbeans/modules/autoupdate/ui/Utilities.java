@@ -152,9 +152,10 @@ public class Utilities {
         return getAcceptedLicenseIds().contains(licenseId);
     }
     
-    public static void addAcceptedLicenseIDs(Collection licenseIds) {
-        if (licenseIds != null && getAcceptedLicenseIds().addAll(licenseIds)) {
-            logger.fine("License ID - License ID " + licenseIds + " was accepted.");
+    public static void addAcceptedLicenseIDs(Collection<String> licenseIds) {
+        logger.fine("License ID - License ID " + licenseIds + " was accepted.");
+        if (licenseIds != null) {
+            getAcceptedLicenseIds().addAll(licenseIds);
         }
     }
     
@@ -377,7 +378,7 @@ public class Utilities {
         for(UpdateUnit unit : map.keySet()) {
             for (UpdateElement ue : map.get(unit)) {
                 if (ue.getUpdateUnit().equals(invisible)) {
-                    logger.log(Level.FINE,
+                    logger.log(Level.FINEST,
                             "... found candidate visible module " + unit.getCodeName() + " for invisible " + invisible.getCodeName());
                     candidates.add(unit);
                 }
@@ -386,7 +387,7 @@ public class Utilities {
 
         UpdateUnit result = null;
         if(candidates.isEmpty()) {
-            logger.log(Level.FINE,
+            logger.log(Level.FINEST,
                     "Have not found visible module for invisible " + invisible.getCodeName());
         } else {
             
@@ -410,7 +411,7 @@ public class Utilities {
                     }
                 }
             }
-            logger.log(Level.FINE,
+            logger.log(Level.FINEST,
                     "Found visible module " + candidates.get(0).getCodeName() + " for invisible " + invisible.getCodeName());
         }
 

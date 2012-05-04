@@ -47,6 +47,7 @@ package org.netbeans.modules.autoupdate.ui.wizards;
 import java.awt.event.ActionEvent;
 import java.text.MessageFormat;
 import java.util.*;
+import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.autoupdate.UpdateElement;
@@ -107,6 +108,7 @@ public class LicenseApprovalPanel extends javax.swing.JPanel {
                 }
 
                 if (! OperationType.UPDATE.equals(model.getOperation()) || ! Utilities.isLicenseIdApproved(el.getLicenseId())) {
+                    Logger.getLogger(LicenseApprovalPanel.class.getName()).fine(el + "[" + el.getLicenseId() + "] hasn't been accepted yet.");
                     license4plugins.add(el);
                 }
             }
