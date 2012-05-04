@@ -1394,6 +1394,7 @@ public abstract class Children extends Object {
                     nodesEntry = null;
                 } else {
                     nodesEntry = createNodesEntry();
+                    entries = new ArrayList<Entry>(entries);
                     entries.add(before ? 0 : entries.size(), nodesEntry);
                 }
 
