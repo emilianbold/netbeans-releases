@@ -49,7 +49,6 @@ import java.io.InputStream;
 import java.net.HttpRetryException;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -75,16 +74,13 @@ import static org.netbeans.modules.hudson.constants.HudsonJobConstants.*;
 import static org.netbeans.modules.hudson.constants.HudsonXmlApiConstants.*;
 import static org.netbeans.modules.hudson.impl.Bundle.*;
 import org.netbeans.modules.hudson.api.Utilities;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 /**
@@ -131,8 +127,9 @@ public class HudsonConnector {
                 "&exclude=//upstreamProject&exclude=//downstreamProject&exclude=//queueItem&exclude=//scm&exclude=//concurrentBuild" +
                 "&exclude=//job/lastUnstableBuild&exclude=//job/lastUnsuccessfulBuild"), authentication); // NOI18N
         
-        if (null == docInstance)
+        if (null == docInstance) {
             return new ArrayList<HudsonJob>();
+        }
         
         // Clear cache
         cache.clear();
@@ -143,13 +140,13 @@ public class HudsonConnector {
         return getJobs(docInstance);
     }
 
-    @Messages("MSG_Starting=Starting {0}")
+    @Messages({"# {0} - job name", "MSG_Starting=Starting {0}"})
     public synchronized void startJob(final HudsonJob job) {
         ProgressHandle handle = ProgressHandleFactory.createHandle(
                 MSG_Starting(job.getName()));
         handle.start();
         try {
-            new ConnectionBuilder().instance(instance).url(job.getUrl() + "build").postData("delay=0sec".getBytes()).followRedirects(false).connection(); // NOI18N
+            new ConnectionBuilder().instance(instance).url(job.getUrl() + "build").postData("delay=0sec".getBytes("UTF-8")).followRedirects(false).connection(); // NOI18N
         } catch (IOException e) {
             LOG.log(Level.FINE, "Could not start {0}: {1}", new Object[] {job, e});
         } finally {
@@ -185,7 +182,7 @@ public class HudsonConnector {
                 String nodeName = detail.getNodeName();
                 Node firstChild = detail.getFirstChild();
                 if (firstChild == null) {
-                    LOG.warning("#170267: unexpected empty <build> child: " + nodeName);
+                    LOG.log(Level.WARNING, "#170267: unexpected empty <build> child: {0}", nodeName);
                     continue;
                 }
                 String text = firstChild.getTextContent();
@@ -196,7 +193,7 @@ public class HudsonConnector {
                 } else if (nodeName.equals("result")) { // NOI18N
                     result = Result.valueOf(text);
                 } else {
-                    LOG.warning("unexpected <build> child: " + nodeName);
+                    LOG.log(Level.WARNING, "unexpected <build> child: {0}", nodeName);
                 }
             }
             builds.add(new HudsonJobBuildImpl(this, job, number, building, result));
@@ -287,7 +284,7 @@ public class HudsonConnector {
                         if (nodeName.equals(XML_API_NAME_ELEMENT)) {
                             cache.put(view.getName() + "/" + e.getFirstChild().getTextContent(), view); // NOI18N
                         } else {
-                            LOG.fine("unexpected view <job> child: " + nodeName);
+                            LOG.log(Level.FINE, "unexpected view <job> child: {0}", nodeName);
                         }
                     }
                 }
@@ -370,10 +367,10 @@ public class HudsonConnector {
                             } else if (nodeName2.equals("color")) { // NOI18N
                                 color = Color.find(text);
                             } else {
-                                LOG.fine("unexpected <module> child: " + nodeName);
+                                LOG.log(Level.FINE, "unexpected <module> child: {0}", nodeName);
                             }
                         } else {
-                            LOG.fine("#178360: unexpected empty <module> child: " + nodeName);
+                            LOG.log(Level.FINE, "#178360: unexpected empty <module> child: {0}", nodeName);
                         }
                     }
                     if (name != null && url != null && color != null) {
@@ -386,14 +383,15 @@ public class HudsonConnector {
                         LOG.log(Level.FINE, "#202671: missing name/url/color in {0}", job);
                     }
                 } else {
-                    LOG.fine("unexpected global <job> child: " + nodeName);
+                    LOG.log(Level.FINE, "unexpected global <job> child: {0}", nodeName);
                 }
             }
 
             for (HudsonView v : instance.getViews()) {
                 if (/* https://github.com/hudson/hudson/commit/105f2b09cf1376f9fe4dbf80c5bdb7a0d30ba1c1#commitcomment-447142 */secured ||
-                        null != cache.get(v.getName() + "/" + job.getName())) // NOI18N
+                        null != cache.get(v.getName() + "/" + job.getName())) {
                     job.addView(v);
+                }
             }
 
             jobs.add(job);
@@ -425,7 +423,7 @@ public class HudsonConnector {
             }
             return result;
         } else {
-            LOG.warning("Anomalous URL " + suggested + " not ending with " + relativePattern + " from " + instance);
+            LOG.log(Level.WARNING, "Anomalous URL {0} not ending with {1} from {2}", new Object[] {suggested, relativePattern, instance});
             return suggested;
         }
     }
@@ -466,26 +464,15 @@ public class HudsonConnector {
             // Parse document
             InputSource source = new InputSource(stream);
             source.setSystemId(url);
-            doc = XMLUtil.parse(source, false, false, new ErrorHandler() {
-                public void warning(SAXParseException exception) throws SAXException {
-                    LOG.log(Level.FINE, "{0}:{1}: {2}", new Object[] {
-                        exception.getSystemId(), exception.getLineNumber(), exception.getMessage()});
-                }
-                public void error(SAXParseException exception) throws SAXException {
-                    warning(exception);
-                }
-                public void fatalError(SAXParseException exception) throws SAXException {
-                    warning(exception);
-                    throw exception;
-                }
-            }, null);
+            doc = XMLUtil.parse(source, false, false, XMLUtil.defaultErrorHandler(), null);
             
             // Check for right version
             if (!Utilities.isSupportedVersion(getHudsonVersion(authentication))) {
                 HudsonVersion v = retrieveHudsonVersion(authentication);
                 
-                if (!Utilities.isSupportedVersion(v))
+                if (!Utilities.isSupportedVersion(v)) {
                     return null;
+                }
                 
                 version = v;
             }
