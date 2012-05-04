@@ -576,17 +576,17 @@ public final class ClasspathInfo {
                         new File (AptCacheForSourceQuery.getClassFolder(sourceRootURL).toURI()):
                         JavaIndex.getClassFolder(sourceRoot);
                     if (!srcOutput.isEmpty()) {
-                        final StringBuilder sb = new StringBuilder();
-                        final URL aptRootURL = AptCacheForSourceQuery.getAptFolder(sourceRootURL);
-                        for (URL url : srcOutput) {
-                            sb.append(FileObjects.getRelativePath(aptRootURL, url));
-                            sb.append('\n');    //NOI18N
-                        }
                         final File sourceFile = new File(source.toURI());
                         final String relativePath = FileObjects.stripExtension(FileObjects.getRelativePath(sourceRoot, sourceFile));
                         final File cacheFile = new File (classCache, relativePath+'.'+FileObjects.RAPT);
                         if (!cacheFile.getParentFile().exists()) {
                             cacheFile.getParentFile().mkdirs();
+                        }
+                        final StringBuilder sb = readFile(cacheFile, null);
+                        final URL aptRootURL = AptCacheForSourceQuery.getAptFolder(sourceRootURL);
+                        for (URL url : srcOutput) {
+                            sb.append(FileObjects.getRelativePath(aptRootURL, url));
+                            sb.append('\n');    //NOI18N
                         }
                         writeFile(cacheFile, sb, null);
                     }
@@ -656,7 +656,9 @@ public final class ClasspathInfo {
                     sb = new StringBuilder();
                 }
             }
-            currentResources.addAll(Arrays.asList(sb.toString().split("\n")));  //NOI18N
+            if (currentResources != null) {
+                currentResources.addAll(Arrays.asList(sb.toString().split("\n")));  //NOI18N
+            }
             return sb;
         }
 

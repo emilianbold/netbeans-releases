@@ -87,13 +87,17 @@ public class ServletConnectionAuthenticator implements ConnectionAuthenticator {
             String[] auth = aa.authorize(home);
             if (auth != null) {
                 LOGGER.log(Level.FINE, "Got authorization for {0} on {1} from {2}", new Object[] {auth[0], home, aa});
+                // Do we need j_spring_security_check, which seems to be used by current Hudson (SecurityRealm.getAuthenticationGatewayUrl), or does j_acegi_security_check suffice?
                 for (String realmURI : new String[] {"j_acegi_security_check", "j_security_check"}) { // NOI18N
                     try {
                         LOGGER.log(Level.FINER, "Posting authentication to {0}", realmURI);
+                        if (realmURI.equals("j_security_check")) { // #193066: indulge org.apache.catalina.authenticator.FormAuthenticator
+                            new ConnectionBuilder().url(new URL(home, "loginEntry")).homeURL(home).authentication(false).connection();
+                        }
                         new ConnectionBuilder().url(new URL(home, realmURI)).
                                 postData(("j_username=" + URLEncoder.encode(auth[0], "UTF-8") + "&j_password=" + // NOI18N
                                 URLEncoder.encode(auth[1], "UTF-8")).getBytes("UTF-8")). // NOI18N
-                                homeURL(home).authentication(false).followRedirects(false).connection();
+                                homeURL(home).authentication(false).connection();
                         LOGGER.log(Level.FINER, "Posted authentication to {0} worked", realmURI);
                         try {
                             InputStream is = new ConnectionBuilder().url(new URL(home, "crumbIssuer/api/xml?xpath=concat(//crumbRequestField,'=',//crumb)")).homeURL(home).connection().getInputStream();

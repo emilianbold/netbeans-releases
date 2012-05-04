@@ -164,7 +164,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         Mnemonics.setLocalizedText(next, NbBundle.getMessage(ParametersPanel.class, rui.isQuery() ? "CTL_Find" : "CTL_Finish"));
 
         //TODO: Ugly Hack
-        forcePreview = "org.netbeans.modules.java.hints.jackpot.impl.refactoring.InspectAndRefactorUI".equals(rui.getClass().getName());
+        forcePreview = "org.netbeans.modules.java.hints.spiimpl.refactoring.InspectAndRefactorUI".equals(rui.getClass().getName());
         //cancel.setEnabled(false);
         next.setVisible(!forcePreview);
         validate();
