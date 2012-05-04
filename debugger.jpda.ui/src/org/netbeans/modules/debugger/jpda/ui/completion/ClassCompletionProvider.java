@@ -123,6 +123,11 @@ public class ClassCompletionProvider implements CompletionProvider {
                         if (!className.startsWith(classFilter)) {
                             continue;
                         }
+                    } else {
+                        int packageDotIndex = type.getBinaryName().lastIndexOf('.');
+                        if (packageDotIndex > 0) {
+                            className = className.substring(packageDotIndex + 1);
+                        }
                     }
                     int dot = className.indexOf('.');
                     if (dot > 0) className = className.substring(0, dot);
