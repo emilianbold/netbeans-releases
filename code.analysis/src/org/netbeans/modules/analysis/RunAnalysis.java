@@ -77,6 +77,7 @@ import org.netbeans.modules.analysis.spi.Analyzer.AnalyzerFactory;
 import org.netbeans.modules.analysis.spi.Analyzer.Context;
 import org.netbeans.modules.analysis.spi.Analyzer.MissingPlugin;
 import org.netbeans.modules.analysis.ui.AdjustConfigurationPanel;
+import org.netbeans.modules.analysis.ui.AnalysisProblemNode;
 import org.netbeans.modules.analysis.ui.AnalysisResultTopComponent;
 import org.netbeans.modules.analysis.ui.RequiredPluginsNode;
 import org.netbeans.modules.parsing.spi.indexing.PathRecognizer;
@@ -139,22 +140,28 @@ public class RunAnalysis {
 
                         final Map<AnalyzerFactory, List<ErrorDescription>> result = new HashMap<AnalyzerFactory, List<ErrorDescription>>();
                         Collection<MissingPlugin> missingPlugins = new ArrayList<MissingPlugin>();
-                        final Collection<Node> extraNodes = new ArrayList<Node>();
+                        Collection<AnalysisProblem> additionalProblems = new ArrayList<AnalysisProblem>();
                         
                         if (toRun == null) {
                             int doneSoFar = 0;
                             int bucketSize = MAX_WORK / analyzers.size();
                             for (AnalyzerFactory analyzer : analyzers) {
                                 if (doCancel.get()) break;
-                                doRunAnalyzer(analyzer, scope, progress, doneSoFar, bucketSize, result, missingPlugins);
+                                doRunAnalyzer(analyzer, scope, progress, doneSoFar, bucketSize, result, missingPlugins, additionalProblems);
                                 doneSoFar += bucketSize;
                             }
                         } else if (!doCancel.get()) {
-                            doRunAnalyzer(toRun, scope, progress, 0, MAX_WORK, result, missingPlugins);
+                            doRunAnalyzer(toRun, scope, progress, 0, MAX_WORK, result, missingPlugins, additionalProblems);
                         }
 
+                        final Collection<Node> extraNodes = new ArrayList<Node>();
+                        
                         if (!missingPlugins.isEmpty()) {
                             extraNodes.add(new RequiredPluginsNode(missingPlugins));
+                        }
+                        
+                        for (AnalysisProblem p : additionalProblems) {
+                            extraNodes.add(new AnalysisProblemNode(p));
                         }
                         
                         SwingUtilities.invokeLater(new Runnable() {
@@ -171,7 +178,7 @@ public class RunAnalysis {
                         });
                     }
 
-                    private void doRunAnalyzer(AnalyzerFactory analyzer, Scope scope, ProgressHandle handle, int bucketStart, int bucketSize, final Map<AnalyzerFactory, List<ErrorDescription>> result, Collection<MissingPlugin> missingPlugins) {
+                    private void doRunAnalyzer(AnalyzerFactory analyzer, Scope scope, ProgressHandle handle, int bucketStart, int bucketSize, final Map<AnalyzerFactory, List<ErrorDescription>> result, Collection<MissingPlugin> missingPlugins, Collection<AnalysisProblem> additionalProblems) {
                         List<ErrorDescription> current = new ArrayList<ErrorDescription>();
                         Preferences settings = configuration != null ? getConfigurationSettingsRoot(configuration).node(SPIAccessor.ACCESSOR.getAnalyzerId(analyzer)) : null;
                         Context context = SPIAccessor.ACCESSOR.createContext(scope, settings, singleWarningId, handle, bucketStart, bucketSize);
@@ -189,6 +196,7 @@ public class RunAnalysis {
                         currentlyRunning.set(null);
                         if (!current.isEmpty())
                             result.put(analyzer, current);
+                        additionalProblems.addAll(SPIAccessor.ACCESSOR.getAnalysisProblems(context));
                     }
                 });
             }

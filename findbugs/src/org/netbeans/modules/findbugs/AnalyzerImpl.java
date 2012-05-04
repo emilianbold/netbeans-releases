@@ -46,15 +46,14 @@ import edu.umd.cs.findbugs.BugPattern;
 import edu.umd.cs.findbugs.DetectorFactory;
 import edu.umd.cs.findbugs.DetectorFactoryCollection;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.analysis.spi.Analyzer;
 import org.netbeans.modules.findbugs.options.FindBugsPanel;
+import org.netbeans.modules.parsing.spi.indexing.ErrorsCache;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.HintsController;
 import org.openide.filesystems.FileObject;
@@ -81,13 +80,14 @@ public class AnalyzerImpl implements Analyzer {
     @Override
     public Iterable<? extends ErrorDescription> analyze() {
         List<ErrorDescription> result = new ArrayList<ErrorDescription>();
+        AtomicBoolean warnedAboutUncompilable = new AtomicBoolean();
         int i = 0;
 
         ctx.start(ctx.getScope().getSourceRoots().size() + ctx.getScope().getFolders().size() + ctx.getScope().getFiles().size());
 
         for (FileObject sr : ctx.getScope().getSourceRoots()) {
             if (cancel.get()) return Collections.emptyList();
-            result.addAll(doRunFindBugs(sr));
+            result.addAll(doRunFindBugs(sr, warnedAboutUncompilable));
             ctx.progress(++i);
         }
 
@@ -99,7 +99,7 @@ public class AnalyzerImpl implements Analyzer {
                 //XXX: what can be done?
                 continue;
             }
-            for (ErrorDescription ed : doRunFindBugs(sr)) {
+            for (ErrorDescription ed : doRunFindBugs(sr, warnedAboutUncompilable)) {
                 if (FileUtil.isParentOf(file, ed.getFile()) || file == ed.getFile()) {
                     result.add(ed);
                 }
@@ -115,7 +115,7 @@ public class AnalyzerImpl implements Analyzer {
                 //XXX: what can be done?
                 continue;
             }
-            for (ErrorDescription ed : doRunFindBugs(sr)) {
+            for (ErrorDescription ed : doRunFindBugs(sr, warnedAboutUncompilable)) {
                 if (nrf.getFolder() == ed.getFile().getParent()) {
                     result.add(ed);
                 }
@@ -128,7 +128,14 @@ public class AnalyzerImpl implements Analyzer {
         return result;
     }
 
-    private List<ErrorDescription> doRunFindBugs(FileObject sourceRoot) {
+    @Messages({"ERR_CompiledWithErrors=Some Files Compiled with Errors",
+               "DESC_CompiledWithErrors=Some of the analyzed files were compiled with errors. This may lead to incorrect or missing warnings from FindBugs."
+    })
+    private List<ErrorDescription> doRunFindBugs(FileObject sourceRoot, AtomicBoolean warnedAboutUncompilable) {
+        if (ErrorsCache.isInError(sourceRoot, true) && !warnedAboutUncompilable.get()) {
+            warnedAboutUncompilable.set(true);
+            ctx.reportAnalysisProblem(Bundle.ERR_CompiledWithErrors(), Bundle.DESC_CompiledWithErrors());
+        }
         Thread.interrupted();//clear interrupted flag
         synchronized (this) {
             processingThread = Thread.currentThread();

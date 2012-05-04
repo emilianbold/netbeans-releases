@@ -98,7 +98,7 @@ public class Nodes {
             return new AbstractNode(constructSemiLogicalViewChildren(sortErrors(errors.provider2Hints, BY_FILE), errors.extraNodes));
         } else {
             Map<String, Map<AnalyzerFactory, List<ErrorDescription>>> byCategoryId = sortErrors(errors.provider2Hints, BY_CATEGORY);
-            List<Node> categoryNodes = new ArrayList<Node>(byCategoryId.size());
+            List<Node> categoryNodes = new ArrayList<Node>(byCategoryId.size() + errors.extraNodes.size());
 
             for (Entry<String, Map<AnalyzerFactory, List<ErrorDescription>>> categoryEntry : byCategoryId.entrySet()) {
                 Map<String, Map<AnalyzerFactory, List<ErrorDescription>>> byId = sortErrors(categoryEntry.getValue(), BY_ID);
@@ -117,7 +117,7 @@ public class Nodes {
                     }
 
                     final String typeHtmlDisplayName = (typeDisplayName != null ? translate(typeDisplayName) : "Unknown") + " <b>(" + typeWarnings + ")</b>";
-                    AbstractNode typeNode = new AbstractNode(constructSemiLogicalViewChildren(sortErrors(typeEntry.getValue(), BY_FILE), errors.extraNodes)) {
+                    AbstractNode typeNode = new AbstractNode(constructSemiLogicalViewChildren(sortErrors(typeEntry.getValue(), BY_FILE), Collections.<Node>emptyList())) {
                         @Override public Image getIcon(int type) {
                             return icon;
                         }
@@ -162,6 +162,14 @@ public class Nodes {
                     return o1.getDisplayName().compareTo(o2.getDisplayName());
                 }
             });
+
+            List<Node> extraNodesCopy = new ArrayList<Node>(errors.extraNodes.size());
+            
+            for (Node n : errors.extraNodes) {
+                extraNodesCopy.add(n.cloneNode());
+            }
+            
+            categoryNodes.addAll(0, extraNodesCopy);
 
             return new AbstractNode(new DirectChildren(categoryNodes));
         }
@@ -238,7 +246,9 @@ public class Nodes {
     private static Children constructSemiLogicalViewChildren(final Map<FileObject, Map<AnalyzerFactory, List<ErrorDescription>>> errors, final Collection<Node> extraNodes) {
         return Children.create(new ChildFactory<Node>() {
             @Override protected boolean createKeys(List<Node> toPopulate) {
-                toPopulate.addAll(extraNodes);
+                for (Node n : extraNodes) {
+                    toPopulate.add(n.cloneNode());
+                }
                 toPopulate.addAll(constructSemiLogicalViewNodes(errors));
                 return true;
             }

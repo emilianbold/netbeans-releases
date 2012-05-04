@@ -569,6 +569,7 @@ public class RunFindBugs {
 
         private final FileObject sourceCode;
         private final String bugId;
+        //TODO: should probably keep Position or PositionRef
         private final int line;
         private final int pos;
         
