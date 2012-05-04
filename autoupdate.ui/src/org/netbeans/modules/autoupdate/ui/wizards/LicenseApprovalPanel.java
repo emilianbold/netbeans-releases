@@ -106,7 +106,7 @@ public class LicenseApprovalPanel extends javax.swing.JPanel {
                     license4plugins = new ArrayList<UpdateElement>();
                 }
 
-                if (! OperationType.UPDATE.equals(model.getOperation()) || Utilities.isLicenseIdApproved(el.getLicenseId())) {
+                if (! OperationType.UPDATE.equals(model.getOperation()) || ! Utilities.isLicenseIdApproved(el.getLicenseId())) {
                     license4plugins.add(el);
                 }
             }
