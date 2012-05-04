@@ -97,7 +97,7 @@ public class UIDManager {
         if (uid == null) {
             throw new NullPointerException("null string is illegal to share"); // NOI18N
         }
-        CsmUID<T> outUID = null;
+        CsmUID<T> outUID;
         synchronized (lock) {
             outUID = storage.getSharedUID(uid);
         }
@@ -145,7 +145,7 @@ public class UIDManager {
         }
 
         @SuppressWarnings("unchecked")
-        public final <T> CsmUID<T> getSharedUID(CsmUID<T> uid) {
+        private <T> CsmUID<T> getSharedUID(CsmUID<T> uid) {
             return (CsmUID<T>) getDelegate(uid).putIfAbsent(uid);
         }
 
@@ -168,7 +168,7 @@ public class UIDManager {
             }
         }
 
-        public final void dispose() {
+        private void dispose() {
             for (int i = 0; i < instances.length; i++) {
                 if (instances[i].size() > 0) {
                     if (CndTraceFlags.TRACE_SLICE_DISTIBUTIONS) {
