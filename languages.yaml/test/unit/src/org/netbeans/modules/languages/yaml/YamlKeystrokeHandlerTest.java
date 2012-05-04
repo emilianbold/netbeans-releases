@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.languages.yaml;
 
 import javax.swing.text.BadLocationException;
@@ -116,6 +115,7 @@ public class YamlKeystrokeHandlerTest extends YamlTestBase {
     public void testInsertTag5b() throws Exception {
         insertChar("<%#%^ ", '>', "<%#%>^ ");
     }
+
     public void testInsertTag6() throws Exception {
         insertChar("<%^% ", '%', "<%%^% ");
     }

@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.languages.yaml;
 
 import java.util.Collections;
@@ -61,13 +60,12 @@ import org.netbeans.modules.parsing.spi.SchedulerEvent;
 
 /**
  * Semantic Analyzer for YAML
- * 
+ *
  * @author Tor Norbye
  */
 public class YamlSemanticAnalyzer extends SemanticAnalyzer {
-    
+
     private boolean cancelled;
-    
     private Map<OffsetRange, Set<ColoringAttributes>> semanticHighlights;
 
     public Map<OffsetRange, Set<ColoringAttributes>> getHighlights() {
@@ -115,7 +113,7 @@ public class YamlSemanticAnalyzer extends SemanticAnalyzer {
         Map<OffsetRange, Set<ColoringAttributes>> highlights =
                 new HashMap<OffsetRange, Set<ColoringAttributes>>(100);
 
-        IdentityHashMap<Object,Boolean> seen = new IdentityHashMap<Object,Boolean>(100);
+        IdentityHashMap<Object, Boolean> seen = new IdentityHashMap<Object, Boolean>(100);
         for (Node root : rootNodes) {
             addHighlights(ypr, root, highlights, seen, 0);
         }
@@ -123,7 +121,7 @@ public class YamlSemanticAnalyzer extends SemanticAnalyzer {
         this.semanticHighlights = highlights;
     }
 
-    private void addHighlights(YamlParserResult ypr, Node node, Map<OffsetRange, Set<ColoringAttributes>> highlights, IdentityHashMap<Object,Boolean> seen, int depth) {
+    private void addHighlights(YamlParserResult ypr, Node node, Map<OffsetRange, Set<ColoringAttributes>> highlights, IdentityHashMap<Object, Boolean> seen, int depth) {
         if (depth > 10 || node == null) {
             // Avoid boundless recursion; some datastructures from YAML appear to be recursive
             return;
@@ -135,55 +133,55 @@ public class YamlSemanticAnalyzer extends SemanticAnalyzer {
         seen.put(value, Boolean.TRUE);
 
         if (value instanceof Map) {
-            Map map = (Map)value;
+            Map map = (Map) value;
             Set<Map.Entry> entrySet = map.entrySet();
 
             for (Map.Entry entry : entrySet) {
                 Object key = entry.getKey();
                 if (key instanceof PositionedSequenceNode) {
-                    PositionedSequenceNode psn = (PositionedSequenceNode)key;
+                    PositionedSequenceNode psn = (PositionedSequenceNode) key;
                     Object keyValue = psn.getValue();
                     assert keyValue instanceof List;
-                    List<Node> list = (List<Node>)keyValue;
+                    List<Node> list = (List<Node>) keyValue;
                     for (Node child : list) {
                         if (child == node) {
                             // Circularity??
                             return;
                         }
-                        addHighlights(ypr, child, highlights, seen, depth+1);
+                        addHighlights(ypr, child, highlights, seen, depth + 1);
                     }
                     Object entryValue = entry.getValue();
                     if (entryValue instanceof PositionedSequenceNode) {
-                        psn = (PositionedSequenceNode)entryValue;
+                        psn = (PositionedSequenceNode) entryValue;
                         keyValue = psn.getValue();
                         assert keyValue instanceof List;
-                        list = (List<Node>)keyValue;
+                        list = (List<Node>) keyValue;
                         for (Node o : list) {
                             if (o == node) {
                                 // Circularity??
                                 return;
                             }
-                            addHighlights(ypr, o, highlights, seen, depth+1);
+                            addHighlights(ypr, o, highlights, seen, depth + 1);
                         }
                     }
                 } else {
                     assert key instanceof PositionedScalarNode;
-                    PositionedScalarNode scalar = (PositionedScalarNode)key;
+                    PositionedScalarNode scalar = (PositionedScalarNode) key;
                     Range r = scalar.getRange();
                     OffsetRange range = ypr.getAstRange(r);
                     highlights.put(range, ColoringAttributes.METHOD_SET);
                     Node child = (Node) entry.getValue();
-                    addHighlights(ypr, child, highlights, seen, depth+1);
+                    addHighlights(ypr, child, highlights, seen, depth + 1);
                 }
             }
         } else if (value instanceof List) {
-            List<Node> list = (List<Node>)value;
+            List<Node> list = (List<Node>) value;
             for (Node child : list) {
                 if (child == node) {
                     // Circularity??
                     return;
                 }
-                addHighlights(ypr, child, highlights, seen, depth+1);
+                addHighlights(ypr, child, highlights, seen, depth + 1);
             }
         }
     }
