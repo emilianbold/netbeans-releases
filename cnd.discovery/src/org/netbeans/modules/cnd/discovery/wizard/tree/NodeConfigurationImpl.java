@@ -58,15 +58,19 @@ import org.netbeans.modules.cnd.discovery.wizard.api.NodeConfiguration;
 public abstract class NodeConfigurationImpl implements NodeConfiguration {
     private boolean isOverrideIncludes;
     private boolean isOverrideMacros;
+    private boolean isOverrideUndefinedMacros;
     private NodeConfigurationImpl parent;
     private Set<String> userIncludes;
     private Map<String, String> userMacros;
+    private Set<String> undefinedMacros;
 
     public NodeConfigurationImpl() {
         userIncludes = new LinkedHashSet<String>();
         userMacros = new HashMap<String,String>();
+        undefinedMacros = new LinkedHashSet<String>();
     }
 
+    @Override
     public boolean overrideIncludes() {
         return isOverrideIncludes;
     }
@@ -75,12 +79,22 @@ public abstract class NodeConfigurationImpl implements NodeConfiguration {
         isOverrideIncludes = overrideIncludes;
     }
 
+    @Override
     public boolean overrideMacros() {
         return isOverrideMacros;
     }
 
     public void setOverrideMacros(boolean overrideMacros) {
         isOverrideMacros = overrideMacros;
+    }
+
+    @Override
+    public boolean overrideUndefinedMacros() {
+        return isOverrideUndefinedMacros;
+    }
+
+    public void setOverrideUndefinedMacros(boolean isOverrideUndefinedMacros) {
+        this.isOverrideUndefinedMacros = isOverrideUndefinedMacros;
     }
 
     public void setParent(NodeConfigurationImpl parent) {
@@ -91,6 +105,7 @@ public abstract class NodeConfigurationImpl implements NodeConfiguration {
         return parent;
     }
 
+    @Override
     public Set<String> getUserInludePaths(boolean resulting) {
         if (resulting) {
             return countUserInludePaths();
@@ -106,6 +121,7 @@ public abstract class NodeConfigurationImpl implements NodeConfiguration {
          }
     }
 
+    @Override
     public Map<String, String> getUserMacros(boolean resulting) {
         if (resulting) {
             return countUserMacros();
@@ -119,6 +135,22 @@ public abstract class NodeConfigurationImpl implements NodeConfiguration {
         if (map != null) {
             userMacros.putAll(map);
         }
+    }
+
+    @Override
+    public Set<String> getUndefinedMacros(boolean resulting) {
+        if (resulting) {
+            return countUndefinedMacros();
+        } else {
+            return undefinedMacros;
+        }
+    }
+
+    public void setUndefinedMacros(Collection<String> set) {
+         undefinedMacros.clear();
+         if (set != null) {
+            undefinedMacros.addAll(set);
+         }
     }
     
     public Set<String> countUserInludePaths() {
@@ -148,6 +180,22 @@ public abstract class NodeConfigurationImpl implements NodeConfiguration {
             if (current.overrideMacros()){
                 break;
             }
+            current = current.getParent();
+        }
+        return result;
+    }
+
+    public Set<String> countUndefinedMacros() {
+        if (overrideUndefinedMacros()) {
+            return undefinedMacros;
+        }
+        Set<String> result = new LinkedHashSet<String>();
+        NodeConfigurationImpl current = this;
+        while(current != null){
+            result.addAll(current.getUndefinedMacros(false));
+             if (current.overrideUndefinedMacros()) {
+                break;
+             }
             current = current.getParent();
         }
         return result;

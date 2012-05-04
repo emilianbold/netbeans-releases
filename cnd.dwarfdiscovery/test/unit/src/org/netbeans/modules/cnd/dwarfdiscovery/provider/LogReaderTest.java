@@ -663,7 +663,7 @@ public class LogReaderTest extends TestCase {
         line = LogReader.trimBackApostropheCalls(line, null);
         Pattern pattern = Pattern.compile(";|\\|\\||&&"); // ;, ||, && //NOI18N
         String[] cmds = pattern.split(line);
-        String what = DiscoveryUtils.gatherCompilerLine(cmds[0], isScriptOutput, userIncludes, userMacros,null, null, null, false).get(0);
+        String what = DiscoveryUtils.gatherCompilerLine(cmds[0], isScriptOutput, userIncludes, userMacros, null,null, null, null, false).get(0);
         StringBuilder res = new StringBuilder();
         res.append("Source:").append(what).append("\n");
         res.append("Macros:");
@@ -730,7 +730,7 @@ public class LogReaderTest extends TestCase {
         List<String> userIncludes = new ArrayList<String>();
         Map<String, String> userMacros = new HashMap<String, String>();
         List<String> languageArtifacts = new ArrayList<String>();
-        List<String> sourcesList = DiscoveryUtils.gatherCompilerLine(line, DiscoveryUtils.LogOrigin.BuildLog, userIncludes, userMacros, null, languageArtifacts, null, false);
+        List<String> sourcesList = DiscoveryUtils.gatherCompilerLine(line, DiscoveryUtils.LogOrigin.BuildLog, userIncludes, userMacros, null, null, languageArtifacts, null, false);
         assertTrue(sourcesList.size() == size);
         for(String what :sourcesList) {
             CommandLineSource cs = new CommandLineSource(li, languageArtifacts, "/", what, userIncludes, userMacros, null);
@@ -742,7 +742,7 @@ public class LogReaderTest extends TestCase {
         List<String> userIncludes = new ArrayList<String>();
         Map<String, String> userMacros = new HashMap<String, String>();
         List<String> languageArtifacts = new ArrayList<String>();
-        DiscoveryUtils.gatherCompilerLine(line, DiscoveryUtils.LogOrigin.BuildLog, userIncludes, userMacros, null, languageArtifacts, null, false);
+        DiscoveryUtils.gatherCompilerLine(line, DiscoveryUtils.LogOrigin.BuildLog, userIncludes, userMacros, null, null, languageArtifacts, null, false);
         assert languageArtifacts.contains(artifact);
     }
 }

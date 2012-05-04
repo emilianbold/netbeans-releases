@@ -318,13 +318,14 @@ public class DiscoveryProjectGeneratorImpl {
         if (cccc != null) {
             List<String> commonFoldersIncludes = cccc.getIncludeDirectories().getValue();
             List<String> commonFoldersMacros = cccc.getPreprocessorConfiguration().getValue();
-            projectBridge.setupProject(commonFoldersIncludes, commonFoldersMacros, lang);
-            projectBridge.setupFolder(Collections.<String>emptyList(), true, Collections.<String>emptyList(), true, lang, folder);
-            downConfiguration(folder, lang, commonFoldersIncludes, commonFoldersMacros);
+            List<String> commonFoldersUndefs = cccc.getUndefinedPreprocessorConfiguration().getValue();
+            projectBridge.setupProject(commonFoldersIncludes, commonFoldersMacros, commonFoldersUndefs, lang);
+            projectBridge.setupFolder(Collections.<String>emptyList(), true, Collections.<String>emptyList(), true, Collections.<String>emptyList(), true, lang, folder);
+            downConfiguration(folder, lang, commonFoldersIncludes, commonFoldersMacros, commonFoldersUndefs);
         }
     }
 
-    private void downConfiguration(Folder folder, ItemProperties.LanguageKind lang, List<String> commonFoldersIncludes, List<String> commonFoldersMacros) {
+    private void downConfiguration(Folder folder, ItemProperties.LanguageKind lang, List<String> commonFoldersIncludes, List<String> commonFoldersMacros, List<String> commonFoldersUndefs) {
         for(Folder subFolder : folder.getFoldersAsArray()){
             CCCCompilerConfiguration cccc = projectBridge.getFolderConfiguration(lang, subFolder);
             if (cccc == null) {
@@ -332,8 +333,10 @@ public class DiscoveryProjectGeneratorImpl {
             }
             List<String> aCommonFoldersIncludes = new ArrayList<String>(commonFoldersIncludes);
             List<String> cCommonFoldersMacros = new ArrayList<String>(commonFoldersMacros);
+            List<String> cCommonFoldersUndefs = new ArrayList<String>(commonFoldersUndefs);
             List<String> foldersIncludes = new ArrayList<String>();
             List<String> foldersMacros = new ArrayList<String>();
+            List<String> foldersUndefs = new ArrayList<String>();
             for(String s : cccc.getIncludeDirectories().getValue()){
                 if (!aCommonFoldersIncludes.contains(s)) {
                     foldersIncludes.add(s);
@@ -346,8 +349,14 @@ public class DiscoveryProjectGeneratorImpl {
                     cCommonFoldersMacros.add(s);
                 }
             }
-            projectBridge.setupFolder(foldersIncludes, true, foldersMacros, true, lang, subFolder);
-            downConfiguration(subFolder, lang, aCommonFoldersIncludes, cCommonFoldersMacros);
+            for(String s : cccc.getUndefinedPreprocessorConfiguration().getValue()){
+                if (!cCommonFoldersUndefs.contains(s)) {
+                    foldersUndefs.add(s);
+                    cCommonFoldersUndefs.add(s);
+                }
+            }
+            projectBridge.setupFolder(foldersIncludes, true, foldersMacros, true, foldersUndefs, true, lang, subFolder);
+            downConfiguration(subFolder, lang, aCommonFoldersIncludes, cCommonFoldersMacros, commonFoldersUndefs);
         }
     }
 
@@ -764,18 +773,16 @@ public class DiscoveryProjectGeneratorImpl {
         if (ConsolidationStrategy.PROJECT_LEVEL.equals(level)){ // NOI18N
             Set<String> set = new HashSet<String>();
             Map<String,String> macros = new HashMap<String,String>();
+            Set<String> undefs = new HashSet<String>();
             for(FileConfiguration file : config.getFiles()){
                 reConsolidatePaths(set, file);
                 macros.putAll(file.getUserMacros());
+                undefs.addAll(file.getUndefinedMacros());
             }
-            List<String> vector = new ArrayList<String>(set);
-            List<String> buf = buildMacrosString(macros);
-            projectBridge.setupProject(vector, buf, config.getLanguageKind());
+            projectBridge.setupProject(new ArrayList<String>(set), buildMacrosString(macros), new ArrayList<String>(undefs), config.getLanguageKind());
         } else {
             // cleanup project configuration
-            List<String> vector = Collections.<String>emptyList();
-            List<String> buf = Collections.<String>emptyList();
-            projectBridge.setupProject(vector, buf, config.getLanguageKind());
+            projectBridge.setupProject(Collections.<String>emptyList(), Collections.<String>emptyList(), Collections.<String>emptyList(), config.getLanguageKind());
         }
     }
 
@@ -870,13 +877,13 @@ public class DiscoveryProjectGeneratorImpl {
                 Set<FileConfiguration> confs = entry.getValue();
                 Set<String> inludes = new HashSet<String>();
                 Map<String,String> macros = new HashMap<String,String>();
+                Set<String> undefs = new HashSet<String>();
                 for(FileConfiguration file : confs){
                     reConsolidatePaths(inludes, file);
                     macros.putAll(file.getUserMacros());
+                    undefs.addAll(file.getUndefinedMacros());
                 }
-                List<String> buf = buildMacrosString(macros);
-                List<String> vector = new ArrayList<String>(inludes);
-                projectBridge.setupFolder(vector, false,  buf, false, conf.getLanguageKind(), folder);
+                projectBridge.setupFolder(new ArrayList<String>(inludes), false,  buildMacrosString(macros), false, new ArrayList<String>(undefs), false, conf.getLanguageKind(), folder);
             }
         } else {
             // cleanup folder configurations
@@ -891,9 +898,7 @@ public class DiscoveryProjectGeneratorImpl {
                 }
             }
             for(Folder folder : folders){
-                List<String> buf = Collections.<String>emptyList();
-                List<String> vector = Collections.<String>emptyList();
-                projectBridge.setupFolder(vector, true, buf, true, conf.getLanguageKind(), folder);
+                projectBridge.setupFolder(Collections.<String>emptyList(), true, Collections.<String>emptyList(), true, Collections.<String>emptyList(), true, conf.getLanguageKind(), folder);
             }
         }
         for(Set<Pair> set : configurationStructure.values()){

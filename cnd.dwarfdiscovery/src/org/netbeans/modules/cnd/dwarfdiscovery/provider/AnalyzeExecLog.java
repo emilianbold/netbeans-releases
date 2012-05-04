@@ -478,8 +478,10 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
             }
             List<String> aUserIncludes = new ArrayList<String>();
             Map<String,String> aUserMacros = new HashMap<String, String>();
+            List<String> aUndefinedMacros= new ArrayList<String>();
             List<String> languageArtifacts = new ArrayList<String>();
-            List<String> sourcesList = DiscoveryUtils.gatherCompilerLine(iterator, DiscoveryUtils.LogOrigin.ExecLog, aUserIncludes, aUserMacros, null, languageArtifacts, compilerSettings.getProjectBridge(), language == LanguageKind.CPP);
+            List<String> sourcesList = DiscoveryUtils.gatherCompilerLine(iterator, DiscoveryUtils.LogOrigin.ExecLog, aUserIncludes, aUserMacros, aUndefinedMacros,
+                    null, languageArtifacts, compilerSettings.getProjectBridge(), language == LanguageKind.CPP);
             for (String what : sourcesList) {
                 if (what == null) {
                     continue;
@@ -585,6 +587,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
         private List<String> userIncludes;
         private List<String> systemIncludes = Collections.<String>emptyList();
         private Map<String, String> userMacros;
+        private List<String> undefinedMacros;
         private Map<String, String> systemMacros = Collections.<String, String>emptyMap();
         private Set<String> includedFiles = Collections.<String>emptySet();
         private final CompileLineStorage storage;
@@ -631,6 +634,11 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
         @Override
         public Map<String, String> getUserMacros() {
             return userMacros;
+        }
+
+        @Override
+        public List<String> getUndefinedMacros() {
+            return undefinedMacros;
         }
 
         @Override

@@ -96,6 +96,7 @@ public class DwarfSource implements SourceFileProperties{
     private List<String> systemIncludes;
     private boolean haveSystemIncludes;
     private Map<String, String> userMacros;
+    private List<String> undefinedMacros;
     private Map<String, String> systemMacros;
     private boolean haveSystemMacros;
     private Set<String> includedFiles;
@@ -258,6 +259,11 @@ public class DwarfSource implements SourceFileProperties{
     public Map<String, String> getUserMacros() {
         return userMacros;
     }
+
+    @Override
+    public List<String> getUndefinedMacros() {
+        return undefinedMacros;
+    }
     
     @Override
     public Map<String, String> getSystemMacros() {
@@ -413,6 +419,7 @@ public class DwarfSource implements SourceFileProperties{
     private void initSourceSettings(CompilationUnit cu, ItemProperties.LanguageKind lang) throws IOException{
         userIncludes = new ArrayList<String>();
         userMacros = new HashMap<String,String>();
+        undefinedMacros = new ArrayList<String>();
         includedFiles = new HashSet<String>();
         countFileName(cu);
         compilerName = PathCache.getString(extractCompilerName(cu, lang));
@@ -466,10 +473,15 @@ public class DwarfSource implements SourceFileProperties{
         List<String> aUserIncludes = new ArrayList<String>();
         Map<String, String> aUserMacros = new HashMap<String, String>();
         List<String> languageArtifacts = new ArrayList<String>();
-        DiscoveryUtils.gatherCompilerLine(line, DiscoveryUtils.LogOrigin.DwarfCompileLine, aUserIncludes, aUserMacros, null, languageArtifacts, compilerSettings.getProjectBridge(), this.language == LanguageKind.CPP);
+        List<String> aUndefinedMacros = new ArrayList<String>();
+        DiscoveryUtils.gatherCompilerLine(line, DiscoveryUtils.LogOrigin.DwarfCompileLine, aUserIncludes, aUserMacros, aUndefinedMacros,
+                null, languageArtifacts, compilerSettings.getProjectBridge(), this.language == LanguageKind.CPP);
         for(String s : aUserIncludes) {
             String include = PathCache.getString(s);
             addUserIncludePath(include);
+        }
+        for(String s : aUndefinedMacros) {
+            undefinedMacros.add(PathCache.getString(s));
         }
         for(Map.Entry<String, String> entry : aUserMacros.entrySet()) {
             userMacros.put(PathCache.getString(entry.getKey()), entry.getValue());

@@ -55,7 +55,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.LanguageFlavor;
-import org.netbeans.modules.cnd.api.toolchain.*;
+import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
+import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetUtils;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.PredefinedMacro;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
@@ -462,7 +467,7 @@ public class ProjectBridge {
     }
     
 
-    public void setupProject(List<String> includes, List<String> macros, ItemProperties.LanguageKind lang){
+    public void setupProject(List<String> includes, List<String> macros, List<String> undefs, ItemProperties.LanguageKind lang){
         MakeConfiguration extConf = makeConfigurationDescriptor.getActiveConfiguration();
         if (extConf != null) {
             for(int i = 0; i < includes.size(); i++) {
@@ -474,13 +479,17 @@ public class ProjectBridge {
             if (lang == ItemProperties.LanguageKind.CPP) {
                 extConf.getCCCompilerConfiguration().getIncludeDirectories().setValue(includes);
                 extConf.getCCCompilerConfiguration().getPreprocessorConfiguration().setValue(macros);
+                extConf.getCCCompilerConfiguration().getUndefinedPreprocessorConfiguration().setValue(undefs);
                 extConf.getCCCompilerConfiguration().getIncludeDirectories().setDirty(true);
                 extConf.getCCCompilerConfiguration().getPreprocessorConfiguration().setDirty(true);
+                extConf.getCCCompilerConfiguration().getUndefinedPreprocessorConfiguration().setDirty(true);
             } else if (lang == ItemProperties.LanguageKind.C) {
                 extConf.getCCompilerConfiguration().getIncludeDirectories().setValue(includes);
                 extConf.getCCompilerConfiguration().getPreprocessorConfiguration().setValue(macros);
+                extConf.getCCompilerConfiguration().getUndefinedPreprocessorConfiguration().setValue(undefs);
                 extConf.getCCompilerConfiguration().getIncludeDirectories().setDirty(true);
                 extConf.getCCompilerConfiguration().getPreprocessorConfiguration().setDirty(true);
+                extConf.getCCompilerConfiguration().getUndefinedPreprocessorConfiguration().setDirty(true);
             } else if (lang == ItemProperties.LanguageKind.Fortran) {
                 // not supported includes and macros
             }
@@ -506,7 +515,7 @@ public class ProjectBridge {
         return null;
     }
 
-    public void setupFolder(List<String> includes, boolean inheriteIncludes, List<String> macros, boolean inheriteMacros, ItemProperties.LanguageKind lang, Folder folder) {
+    public void setupFolder(List<String> includes, boolean inheriteIncludes, List<String> macros, boolean inheriteMacros, List<String> undefs, boolean inheriteUndefs, ItemProperties.LanguageKind lang, Folder folder) {
         CCCCompilerConfiguration cccc = getFolderConfiguration(lang, folder);
         if (cccc == null) {
             return;
@@ -521,6 +530,8 @@ public class ProjectBridge {
         cccc.getInheritIncludes().setValue(inheriteIncludes);
         cccc.getPreprocessorConfiguration().setValue(macros);
         cccc.getInheritPreprocessor().setValue(inheriteMacros);
+        cccc.getUndefinedPreprocessorConfiguration().setValue(undefs);
+        cccc.getInheritUndefinedPreprocessor().setValue(inheriteUndefs);
     }
     
     public static void setExclude(Item item, boolean exclude){
@@ -818,10 +829,7 @@ public class ProjectBridge {
                 if (predefinedMacros != null) {
                     for(ToolchainManager.PredefinedMacro macro : predefinedMacros){
                         if (macro.getFlags() != null) {
-                            if (macro.isHidden()) {
-                                // TODO remove macro
-                            } else {
-                                // add macro
+                            if (!macro.isHidden()) {
                                 List<String> list = macros.get(macro.getFlags());
                                 if (list == null) {
                                     list = new ArrayList<String>();
@@ -837,6 +845,51 @@ public class ProjectBridge {
                 optionToMacrosCpp = macros;
             } else {
                 optionToMacrosC = macros;
+            }
+        }
+        return macros.get(option);
+    }
+
+    
+    private Map<String, List<String>> optionToUndefinedMacrosC;
+    private Map<String, List<String>> optionToUndefinedMacrosCpp;
+    public List<String> getOptionToUndefinedMacros(String option, boolean isCPP) {
+        Map<String, List<String>> macros;
+        if (isCPP) {
+            macros = optionToUndefinedMacrosCpp;
+        } else {
+            macros = optionToUndefinedMacrosC;
+        }
+        if (macros == null) {
+            macros = new HashMap<String,List<String>>();
+            CompilerSet compilerSet = getCompilerSet();
+            AbstractCompiler compiler;
+            if (isCPP) {
+                compiler = (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCCompiler);
+            } else {
+                compiler = (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCompiler);
+            }
+            if (compiler != null && compiler.getDescriptor() != null) {
+                final List<PredefinedMacro> predefinedMacros = compiler.getDescriptor().getPredefinedMacros();
+                if (predefinedMacros != null) {
+                    for(ToolchainManager.PredefinedMacro macro : predefinedMacros){
+                        if (macro.getFlags() != null) {
+                            if (macro.isHidden()) {
+                                List<String> list = macros.get(macro.getFlags());
+                                if (list == null) {
+                                    list = new ArrayList<String>();
+                                    macros.put(option, list);
+                                }
+                                list.add(macro.getMacro());
+                            }
+                        }
+                    }
+                }
+            }
+            if (isCPP) {
+                optionToUndefinedMacrosCpp = macros;
+            } else {
+                optionToUndefinedMacrosC = macros;
             }
         }
         return macros.get(option);
