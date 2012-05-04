@@ -167,9 +167,10 @@ public class RunAnalysis {
                         SwingUtilities.invokeLater(new Runnable() {
                             @Override public void run() {
                                 if (!doCancel.get()) {
-                                    AnalysisResultTopComponent.findInstance().setData(Lookups.fixed(), new AnalysisResult(result, extraNodes));
-                                    AnalysisResultTopComponent.findInstance().open();
-                                    AnalysisResultTopComponent.findInstance().requestActive();
+                                    AnalysisResultTopComponent resultWindow = AnalysisResultTopComponent.findInstance();
+                                    resultWindow.setData(Lookups.fixed(), new AnalysisResult(result, extraNodes));
+                                    resultWindow.open();
+                                    resultWindow.requestActive();
                                 }
 
                                 d.setVisible(false);

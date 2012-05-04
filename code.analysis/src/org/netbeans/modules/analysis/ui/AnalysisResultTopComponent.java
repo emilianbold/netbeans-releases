@@ -46,6 +46,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Logger;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkEvent.EventType;
 import javax.swing.event.HyperlinkListener;
@@ -65,6 +66,7 @@ import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
+import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -75,7 +77,7 @@ import org.openide.windows.WindowManager;
 autostore = false)
 @TopComponent.Description(preferredID = AnalysisResultTopComponent.PREFERRED_ID,
 //iconBase="SET/PATH/TO/ICON/HERE", 
-persistenceType = TopComponent.PERSISTENCE_NEVER)
+persistenceType = TopComponent.PERSISTENCE_ALWAYS)
 @TopComponent.Registration(mode = "output", openAtStartup = false, position=12000)
 @ActionID(category = "Window", id = "org.netbeans.modules.analysis.ui.AnalysisResultTopComponent")
 @ActionReference(path = "Menu/Window/Output", position = 330)
@@ -344,13 +346,25 @@ public final class AnalysisResultTopComponent extends TopComponent implements Ex
 
     public static synchronized AnalysisResultTopComponent findInstance() {
         TopComponent win = WindowManager.getDefault().findTopComponent(PREFERRED_ID);
-        if (win == null) {
-            return new AnalysisResultTopComponent();
-        }
         if (win instanceof AnalysisResultTopComponent) {
             return (AnalysisResultTopComponent) win;
         }
-            throw new IllegalStateException();
+        if (win == null) {
+            Logger.getLogger(AnalysisResultTopComponent.class.getName()).warning(
+                    "Cannot find " + PREFERRED_ID + " component. It will not be located properly in the window system.");
+        } else {
+            Logger.getLogger(AnalysisResultTopComponent.class.getName()).warning(
+                    "There seem to be multiple components with the '" + PREFERRED_ID +
+                    "' ID. That is a potential source of errors and unexpected behavior.");
+        }
+        
+        AnalysisResultTopComponent result = new AnalysisResultTopComponent();
+        Mode outputMode = WindowManager.getDefault().findMode("output");
+        
+        if (outputMode != null) {
+            outputMode.dockInto(result);
+        }
+        return result;
     }
 
 
