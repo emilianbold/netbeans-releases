@@ -48,6 +48,10 @@ import java.io.*;
 import java.util.Enumeration;
 import java.lang.ref.WeakReference;
 import java.beans.PropertyChangeEvent;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetEncoder;
+import java.nio.charset.CodingErrorAction;
+import java.nio.charset.UnmappableCharacterException;
 
 import java.util.Collection;
 import javax.swing.Timer;
@@ -55,6 +59,7 @@ import javax.swing.event.*;
 import javax.swing.text.*;
 
 import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.modules.xml.api.EncodingUtil;
@@ -88,34 +93,34 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
         OpenCookie, EditCookie, CloseCookie, PrintCookie {
 // ToDo:
 // + extend CloneableEditorSupport instead of DataEditorSupport which is associated with DataObject
-    
+
     /**
      * Swings document property added by this support.
      */
     public static final String PROP_DOCUMENT_URL = "doc-url";
-    
+
     /**
      * Timer which countdowns the auto-reparsing time.
      */
     private Timer timer;
-    
+
     /**
      * Used as lock object in close and openCloneableTopComponent.
      */
     private static java.awt.Container awtLock;
-        
+
     private Representation rep;  //it is my representation
-    
+
     private String mimeType;
-    
+
     /**
      * public jsu for backward compatibility purposes.
      */
     protected TextEditorSupport(XMLDataObjectLook xmlDO, Env env, String mime_type) {
-        super((DataObject)xmlDO, null, env);        
-        this.mimeType = mime_type;      
-        initTimer();        
-        initListeners();        
+        super((DataObject)xmlDO, null, env);
+        this.mimeType = mime_type;
+        initTimer();
+        initListeners();
     }
 
     @Override
@@ -123,20 +128,20 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
         super.setMIMEType(s);
         this.mimeType = s;
     }
-    
-    
-    
+
+
+
     /**
      * public jsu for backward compatibility purposes.
      */
     public TextEditorSupport(XMLDataObjectLook xmlDO, String mime_type) {
         this(xmlDO, new Env(xmlDO), mime_type);
     }
-    
+
     private final void syncMimeType() {
         super.setMIMEType(mimeType);
     }
-    
+
     /**
      * Initialize timers and handle their ticks.
      */
@@ -145,7 +150,7 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
             // we are called from the AWT thread so put itno other one
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("$$ TextEditorSupport::initTimer::actionPerformed: event = " + e);
-                
+
                 RequestProcessor.postRequest( new Runnable() {
                     public void run() {
                         syncDocument(false);
@@ -153,7 +158,7 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
                 });
             }
         });
-        
+
         timer.setInitialDelay(getAutoParsingDelay());
         timer.setRepeats(false);
     }
@@ -168,15 +173,15 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
             !hasMultiTextEditor()) {
             return createCloneableEditor();
         }
-        return (CloneableEditorSupport.Pane)MultiViews.createCloneableMultiView(mimeType, 
+        return (CloneableEditorSupport.Pane)MultiViews.createCloneableMultiView(mimeType,
                 getDataObject());
     }
-    
+
     /**
      * Detects whether XML source editor is registered: must start with 'xml.text'. If
      * a module registers such multiview, it's responsible for displaying source in this
      * pane.
-     * 
+     *
      * @return true, if multiview source editor is available and multiview pane should be created
      */
     boolean hasMultiTextEditor() {
@@ -188,56 +193,56 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
         }
         return false;
     }
-    
+
     /*
      * Add listeners at Document and document memory status (loading).
      */
-    private void initListeners() {        
-        // create document listener        
+    private void initListeners() {
+        // create document listener
         final DocumentListener docListener = new DocumentListener() {
             public void insertUpdate(DocumentEvent e) {
-                if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("** TextEditorSupport::DocumentListener::insertUpdate: event = " + e);                
+                if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("** TextEditorSupport::DocumentListener::insertUpdate: event = " + e);
                 restartTime();
             }
-            
+
             public void changedUpdate(DocumentEvent e) {
-                if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("** TextEditorSupport::DocumentListener::changedUpdate: event = " + e);                
+                if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("** TextEditorSupport::DocumentListener::changedUpdate: event = " + e);
                 // not interested in attribute changes
             }
-            
+
             public void removeUpdate(DocumentEvent e) {
-                if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("** TextEditorSupport::DocumentListener::removeUpdate: event = " + e);                
+                if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("** TextEditorSupport::DocumentListener::removeUpdate: event = " + e);
                 restartTime();
             }
-            
+
             private void restartTime() {
                 if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("** TextEditorSupport::DocumentListener::restartTime: isInSync = " +
                 getXMLDataObjectLook().getSyncInterface().isInSync());
-                
+
                 if (getXMLDataObjectLook().getSyncInterface().isInSync()) {
                     return;
                 }
                 restartTimer(false);
             }
         };
-        
+
         // listen for document loading then register to it the docListener as weak
-        
+
         addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent evt) {
-                
+
                 if (isDocumentLoaded()) {
-                    
+
                     Document doc = getDocument();
                     // when the document is not yet loaded, do nothing
                     if (doc == null)
                         return;
                     doc.addDocumentListener(WeakListeners.document(docListener, doc));
-                    
+
                     if (rep == null) {
                         XMLDataObjectLook dobj = (XMLDataObjectLook) getDataObject();
                         Synchronizator sync = dobj.getSyncInterface();
-                        
+
                         //!!! What does this hardcoding mean???
                         //[DEPENDENCY] it introduces really ugly core to it's client dependencies!!!
                         if (dobj instanceof org.netbeans.modules.xml.XMLDataObject) {
@@ -247,7 +252,7 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
                         } else if (dobj instanceof EntityDataObject) {
                             rep = new EntityTextRepresentation(TextEditorSupport.this, sync);
                         }
-                        
+
                         if (rep != null) {
                             sync.addRepresentation(rep);
                         }
@@ -255,20 +260,20 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
                 }
             }
         });
-        
+
     }
-    
-    
+
+
     /**
      * It simply calls super.notifyClosed() for all instances except
      * TextEditorSupport.class == this.getClass().
      */
     protected void notifyClosed() {
         super.notifyClosed();
-        
+
         // #15756 following code handles synchronization on text editor closing only!
         if (this.getClass() != TextEditorSupport.class) return;
-        
+
         XMLDataObjectLook dobj = (XMLDataObjectLook) getDataObject();
         Synchronizator sync = dobj.getSyncInterface();
         Representation oldRep = rep;
@@ -276,26 +281,26 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
         if ( oldRep != null ) { // because of remove modified document
             sync.removeRepresentation(oldRep);
         }
-        
+
 //          if ( isModified() ) { // possible way to remove needless closeDocument followed by open
 //              Task reload = reloadDocument();
 //              reload.waitFinished();
 //          }
     }
-    
+
     /**
      */
     Env getEnv() {
         return (Env) env;
     }
-    
-    
+
+
     /**
      */
     protected XMLDataObjectLook getXMLDataObjectLook() {
         return getEnv().getXMLDataObjectLook();
     }
-    
+
     /*
      * Update presence of SaveCookie on first keystroke.
      */
@@ -306,10 +311,10 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
         if (!super.notifyModified()) {
             return false;
         }
-        
+
         CookieManagerCookie manager = getEnv().getXMLDataObjectLook().getCookieManager();
         manager.addCookie(getEnv());
-        XMLDataObjectLook obj = (XMLDataObjectLook) getDataObject();        
+        XMLDataObjectLook obj = (XMLDataObjectLook) getDataObject();
         if (obj.getCookie(SaveCookie.class) == null) {
             obj.getCookieManager().addCookie(new SaveCookie() {
                 public void save() throws java.io.IOException {
@@ -321,117 +326,93 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
                 }
             });
         }
-        
+
         return true;
     }
-    
+
     /*
      * Update presence of SaveCookie after save.
      */
     protected void notifyUnmodified() {
         if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("Notifing unmodified"); // NOI18N
-        
+
         super.notifyUnmodified();
         CookieManagerCookie manager = getEnv().getXMLDataObjectLook().getCookieManager();
         manager.removeCookie(getEnv());
     }
-    
-//~~~~~~~~~~~~~~~~~~~~~~~~~ I/O ENCODING HANDLING ~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    
-    //indicates than document has wrong encoding @see #edit
-    private volatile boolean encodingErr = false;
-    
-    /**
-     * Read the file from the stream, detect right encoding.
-     */
-    @Override
-    protected void loadFromStreamToKit(StyledDocument doc, InputStream in, EditorKit kit) throws IOException, BadLocationException {
-        // predetect it to get optimalized XmlReader if utf-8
-        String enc = EncodingUtil.detectEncoding(in);
-        if (enc == null) {
-            enc = "UTF8";  //!!! // NOI18N
-        }
-        Reader reader = null;
-        try {
-            reader = EncodingUtil.getUnicodeReader(in, enc);
-            kit.read(reader, doc, 0);
-        } catch (CharConversionException ex) {
-            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("\n!!! TextEditorSupport.loadFromStreamToKit: enc = '" + enc + "'", ex);            
-            encodingErr = true;
-        } catch (UnsupportedEncodingException ex) {
-            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("\n!!! TextEditorSupport.loadFromStreamToKit: enc = '" + enc + "'", ex);            
-            encodingErr = true;
-        } finally {
-            if(reader != null)
-                reader.close();
-        }
-        
-    }
-    
-    /** Store the document in proper encoding.
+
+   /** Store the document in proper encoding.
      */
     protected void saveFromKitToStream(StyledDocument doc, EditorKit kit, OutputStream out) throws IOException, BadLocationException {
+        // not calling super.
         String enc = EncodingUtil.detectEncoding(doc);
-        if (enc == null) {
-            enc = "UTF8"; //!!! // NOI18N
+        Charset cs;
+
+        if (enc != null) {
+            cs = Charset.forName(enc);
+        } else {
+            // fallback to the original encoding, no encoding in document istelf.
+            cs = FileEncodingQuery.getEncoding(getDataObject().getPrimaryFile());
         }
-        try {            
-            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("Saving using encoding");//, new RuntimeException (enc)); // NOI18N
-            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("!!! TextEditorSupport::saveFromKitToStream: enc = " + enc);            
-            //test encoding on dummy stream
-            new OutputStreamWriter(new ByteArrayOutputStream(1), enc);            
-            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("!!!                  ::saveFromKitToStream: after first test -> OK");            
-            Writer writer = new OutputStreamWriter(out, enc);            
-            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("!!!                  ::saveFromKitToStream: writer = " + writer);            
-            kit.write(writer, doc, 0, doc.getLength());
-        } catch (UnsupportedEncodingException ex) {
-            //!!! just write nothing //?? save say as UTF-8            
-            ErrorManager emgr = ErrorManager.getDefault();
-            IOException ioex = new IOException("Unsupported encoding " + enc); // NOI18N
-            emgr.annotate(ioex, Util.THIS.getString(
-                    TextEditorSupport.class, "MSG_unsupported_encoding", enc));
-            throw ioex;
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("Saving using encoding");//, new RuntimeException (enc)); // NOI18N
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("!!! TextEditorSupport::saveFromKitToStream: enc = " + enc);
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("!!!                  ::saveFromKitToStream: after first test -> OK");
+
+        FilterOutputStream fos = new FilterOutputStream(out) {
+            @Override
+            public void close() throws IOException {
+                flush();
+            }
+        };
+        CharsetEncoder encoder = cs.newEncoder();
+        encoder.onUnmappableCharacter(CodingErrorAction.REPORT);
+        Writer w = new OutputStreamWriter (fos, encoder);
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("!!!                  ::saveFromKitToStream: writer = " + w);
+        try {
+            kit.write(w, doc, 0, doc.getLength());
+        } finally {
+            w.close();
         }
     }
-    
+
+
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~ I/O ENCODING HANDLING ~~~~~~~~~~~~~~~~~~~~~~~~~~~
     /*
      * Save document using encoding declared in XML prolog if possible otherwise
      * at UTF-8 (in such case it updates the prolog).
      */
     public void saveDocument() throws IOException {
-        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("saveDocument()..."); // NOI18N        
-        final StyledDocument doc = getDocument();        
-        String enc = EncodingUtil.detectEncoding(doc);        
-        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("!!! TextEditorSupport::saveDocument: enc = " + enc);        
-        if (enc == null) {
-            enc = "UTF8"; //!!! // NOI18N
-        }        
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("saveDocument()..."); // NOI18N
+        final StyledDocument doc = getDocument();
+        String enc = EncodingUtil.detectEncoding(doc);
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("!!! TextEditorSupport::saveDocument: enc = " + enc);
         try {
-            //test encoding on dummy stream
-            new OutputStreamWriter(new ByteArrayOutputStream(1), enc);
-            if (!checkCharsetConversion(EncodingUtil.getJava2IANAMapping(enc))){
-                if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("Let unsaved."); // NOI18N
-                return;
-            }
             super.saveDocument();
             //moved from Env.save()
             getDataObject().setModified(false);
-            getXMLDataObjectLook().getSyncInterface().representationChanged(Document.class);            
+            getXMLDataObjectLook().getSyncInterface().representationChanged(Document.class);
+        } catch (UnmappableCharacterException ex) {
+            handleUnsupportedEncoding(doc, enc);
         } catch (UnsupportedEncodingException ex) {
-            //ask user what next?
-            NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(
-                    java.text.MessageFormat.format(Util.THIS.getString(
-                    TextEditorSupport.class, "TEXT_SAVE_AS_UTF"), new Object[] {enc}));
-            Object res = DialogDisplayer.getDefault().notify(descriptor);
-            if (res.equals(NotifyDescriptor.YES_OPTION)) {
-                updateDocumentWithNewEncoding(doc);
-            } else { // NotifyDescriptor != YES_OPTION
-                if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("Let unsaved."); // NOI18N
-                throw new UserCancelException();
-            }
+            handleUnsupportedEncoding(doc, enc);
         } // of catch UnsupportedEncodingException
     }
-    
+
+    private void handleUnsupportedEncoding(StyledDocument doc, String enc) throws IOException {
+        //ask user what next?
+        NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(
+                java.text.MessageFormat.format(Util.THIS.getString(
+                TextEditorSupport.class, enc == null ? "TEXT_SAVE_AS_UTF_DEFAULT" : "TEXT_SAVE_AS_UTF"), enc));
+        Object res = DialogDisplayer.getDefault().notify(descriptor);
+        if (res.equals(NotifyDescriptor.YES_OPTION)) {
+            updateDocumentWithNewEncoding(doc);
+        } else { // NotifyDescriptor != YES_OPTION
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("Let unsaved."); // NOI18N
+            throw new UserCancelException("Content could not be saved using the current encoding");
+        }
+    }
+
     /**
      * update prolog to new valid encoding
      */
@@ -440,7 +421,7 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
             final int MAX_PROLOG = 1000;
             int maxPrologLen = Math.min(MAX_PROLOG, doc.getLength());
             final char prolog[] = doc.getText(0, maxPrologLen).toCharArray();
-            int prologLen = 0;  // actual prolog length
+            int prologLen = -1;  // actual prolog length
             //parse prolog and get prolog end
             if (prolog[0] == '<' && prolog[1] == '?' && prolog[2] == 'x') {
                 // look for delimitting ?>
@@ -455,8 +436,12 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
             Runnable edit = new Runnable() {
                 public void run() {
                     try {
-                        doc.remove(0, passPrologLen + 1); // +1 it removes exclusive
-                        doc.insertString(0, "<?xml version='1.0' encoding='UTF-8' ?> \n<!-- was: " + new String(prolog, 0, passPrologLen + 1) + " -->", null); // NOI18N
+                        if (passPrologLen > 0) {
+                            doc.remove(0, passPrologLen + 1); // +1 it removes exclusive
+                            doc.insertString(0, "<?xml version='1.0' encoding='UTF-8' ?> \n<!-- was: " + new String(prolog, 0, passPrologLen + 1) + " -->", null); // NOI18N
+                        } else {
+                            doc.insertString(0, "<?xml version='1.0' encoding='UTF-8' ?> \n<!-- was: no XML declaration present -->\n", null); // NOI18N
+                        }
                     } catch (BadLocationException e) {
                         if (System.getProperty("netbeans.debug.exceptions") != null) // NOI18N
                             e.printStackTrace();
@@ -469,96 +454,72 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
             getDataObject().setModified(false);
             getXMLDataObjectLook().getSyncInterface().representationChanged(Document.class);
             if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("Saved."); // NOI18N
-        } catch (BadLocationException lex) {                    
+        } catch (BadLocationException lex) {
             ErrorManager.getDefault().notify(lex);
-        }        
-    }    
-    
-    private boolean checkCharsetConversion(String encoding) /*throws UnsupportedEncodingException*/{
-        boolean value = true;
-        try {
-            java.nio.charset.CharsetEncoder coder = java.nio.charset.Charset.forName(encoding).newEncoder();
-            if (!coder.canEncode(getDocument().getText(0, getDocument().getLength()))){
-                NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
-                        NbBundle.getMessage(TextEditorSupport.class, "MSG_BadCharConversion", //NOI18N
-                        new Object [] { getDataObject().getPrimaryFile().getNameExt(),
-                                encoding}),
-                                        NotifyDescriptor.YES_NO_OPTION,
-                                        NotifyDescriptor.WARNING_MESSAGE);
-                                nd.setValue(NotifyDescriptor.NO_OPTION);
-                                DialogDisplayer.getDefault().notify(nd);
-                                if(nd.getValue() != NotifyDescriptor.YES_OPTION)
-                                    value = false;
-            }
-        } catch (javax.swing.text.BadLocationException e){
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
         }
-        /*catch (java.nio.charset.UnsupportedCharsetException e){
-            throw new UnsupportedEncodingException();
-        }*/
-        return value;
     }
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~ SYNC ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    
+
     /**
      * TEXT changed -> update TREE.
      */
     protected void syncDocument(boolean fromFocus) {
         if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("@@ TextEditorSupport::syncDocument: fromFocus = " + fromFocus);
         if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("@@                  ::syncDocument: timer.isRunning = " + timer.isRunning());
-        
+
         if (fromFocus && !timer.isRunning())
             return;
         if (timer.isRunning())
             timer.stop();
-        
+
         XMLDataObjectLook sync = getXMLDataObjectLook();
         if (sync != null) { // && isModified()) {
             sync.getSyncInterface().representationChanged(Document.class);
         }
-        
+
     }
-    
+
     int getAutoParsingDelay () {
         return 3000;
     }
-    
+
     /** Restart the timer which starts the parser after the specified delay.
      * @param onlyIfRunning Restarts the timer only if it is already running
      */
     void restartTimer(boolean onlyIfRunning) {
         if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("## TextEditorSupport::restartTimer: onlyIfRunning = " + onlyIfRunning);
         if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("##                  ::restartTimer: timer.isRunning = " + timer.isRunning());
-        
+
         if (onlyIfRunning && !timer.isRunning())
             return;
-        
+
         int delay = getAutoParsingDelay();
         if (delay > 0) {
             timer.setInitialDelay(delay);
             timer.restart();
         }
     }
-    
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    
-    
+
+
     /*
      * Simply open for an cloneable editor. It at first tries to locate
      * existing component in <code>allEditors</code> then if it fails create new one
      * and registers it with <code>allEditors>/code>.
      */
     protected final CloneableEditor openCloneableEditor() {
-        
+
         CloneableEditor ret = null;
-        
+
         synchronized (getLock()) {
-            
+
             String msg = messageOpening();
             if (msg != null) {
                 StatusDisplayer.getDefault().setStatusText(msg);
             }
-            
+
             Enumeration en = allEditors.getComponents();
             while ( en.hasMoreElements() ) {
                 CloneableTopComponent editor = (CloneableTopComponent)en.nextElement();
@@ -567,26 +528,26 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
                     ret = (CloneableEditor) editor;
                 }
             }
-            
+
             // no opened editor, create a new one
-            
+
             if (ret == null) {
                 CloneableEditor editor = (CloneableEditor)createCloneableTopComponent(); // this is important -- see final createCloneableTopComponent
                 editor.setReference(allEditors);
                 editor.open();
                 ret = editor;
             }
-            
+
             msg = messageOpened();
             if (msg == null) {
                 msg = ""; // NOI18N
             }
             StatusDisplayer.getDefault().setStatusText(msg);
-            
+
             return ret;
         }
     }
-    
+
     /**
      * Creates lock object used in close and openCloneableTopComponent.
      * @return never null
@@ -597,7 +558,7 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
         }
         return awtLock.getTreeLock();
     }
-    
+
     /*
      * @return component visualizing this support.
      */
@@ -605,83 +566,83 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
         syncMimeType();
         return new TextEditorComponent(this);
     }
-    
+
     // This must call super createCloneableTopComponent because it prepare document, create cloneable editor and initialize it. See super.
     protected final CloneableTopComponent createCloneableTopComponent() {
         syncMimeType();
         return super.createCloneableTopComponent(); // creates CloneableEditor (calling createCloneableEditor)
     }
-    
+
     /**
      */
     public static final TextEditorSupportFactory findEditorSupportFactory(XMLDataObjectLook xmlDO, String mime) {
         return new TextEditorSupportFactory(xmlDO, mime);
     }
-    
-    
+
+
     // used from unit tests
     String getMIMEType() {
         return mimeType;
     }
-    
+
     //
     // class Env
     //
-    
+
     /**
      *
      */
     protected static class Env extends DataEditorSupport.Env implements SaveCookie {
-        
+
         /** Serial Version UID */
         private static final long serialVersionUID=-5285524519399090028L;
-        
+
         /** */
         public Env(XMLDataObjectLook obj) {
             super((DataObject)obj);
         }
-        
+
         /**
          */
         protected XMLDataObjectLook getXMLDataObjectLook() {
             return (XMLDataObjectLook) getDataObject();
         }
-        
+
         /**
          */
         protected FileObject getFile() {
             return getDataObject().getPrimaryFile();
         }
-        
+
         /**
          */
         protected FileLock takeLock() throws IOException {
             return ((MultiDataObject)getDataObject()).getPrimaryEntry().takeLock();
         }
-        
-        
+
+
         /**
          */
         public synchronized void save() throws IOException {
             findTextEditorSupport().saveDocument();
         }
-        
+
         /**
          */
         public CloneableOpenSupport findCloneableOpenSupport() {
             return findTextEditorSupport();
         }
-        
+
         /**
          */
         public TextEditorSupport findTextEditorSupport() {
             EditCookie cookie = getDataObject().getCookie(EditCookie.class);
             if(cookie instanceof TextEditorSupport)
                 return (TextEditorSupport)cookie;
-            
+
             return null;
         }
-        
+
         // copy pasted, do not get it
         public void propertyChange(PropertyChangeEvent ev) {
             if (DataObject.PROP_PRIMARY_FILE.equals(ev.getPropertyName())) {
@@ -689,15 +650,15 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
             }
             super.propertyChange(ev);
         }
-        
-        
+
+
     } // end: class Env
-    
-    
+
+
     //
     // class TextEditorSupportFactory
     //
-    
+
     /**
      *
      */
@@ -708,11 +669,11 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
         private final XMLDataObjectLook dataObject; // used while creating the editor
         /** */
         private String mime;                  // used while creating the editor
-        
+
         //
         // init
         //
-        
+
         /** Create new TextEditorSupportFactory. */
         public TextEditorSupportFactory(XMLDataObjectLook dobj, String mime) {
             if (mime == null && !(dobj instanceof DataObject)) {
@@ -721,12 +682,12 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
             this.dataObject = dobj;
             this.mime       = mime;
         }
-        
-        
+
+
         /**
          */
         protected Class[] supportedCookies() {
-            return new Class[] { 
+            return new Class[] {
                     EditorCookie.Observable.class,
                     OpenCookie.class,
                     EditCookie.class,
@@ -735,13 +696,13 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
                     CloneableEditorSupport.class
             };
         }
-        
+
         /**
          */
         public final void registerCookies(CookieSet cookieSet) {
             cookieSet.add(supportedCookies(), this);
         }
-        
+
         /** Creates a Node.Cookie of given class. The method
          * may be called more than once.
          */
@@ -754,12 +715,12 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
             }
             return null;
         }
-        
+
         /**
          */
         public final TextEditorSupport createEditor() { // atomic test and set
             TextEditorSupport editorSupport = null;
-            
+
             synchronized (this) {
                 if ( editorRef != null ) {
                     editorSupport = (TextEditorSupport) editorRef.get();
@@ -773,21 +734,21 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
             editorSupport.syncMimeType();
             return editorSupport;
         }
-        
+
         /**
          */
         protected TextEditorSupport prepareEditor() {
             if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("Initializing TextEditorSupport ..."); // NOI18N
-            
+
             return new TextEditorSupport(getDataObject(), getMIMEType());
         }
-        
+
         /**
          */
         protected final XMLDataObjectLook getDataObject() {
             return dataObject;
         }
-        
+
         /**
          */
         protected final String getMIMEType() {
@@ -797,11 +758,11 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
             }
             return mime;
         }
-        
+
         private String findMIMEtype() {
             FileObject fo = ((DataObject)dataObject).getPrimaryFile();
             String mimetype = null;
-                    
+
              if (fo.isValid()) {
                  mimetype = fo.getMIMEType();
              }
@@ -818,7 +779,7 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
             }
             return mimetype;
         }
-        
+
     } // end of class TextEditorSupportFactory
-    
+
 }
