@@ -74,14 +74,19 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.analysis.spi.Analyzer;
 import org.netbeans.modules.analysis.spi.Analyzer.AnalyzerFactory;
+import org.netbeans.modules.analysis.spi.Analyzer.Context;
+import org.netbeans.modules.analysis.spi.Analyzer.MissingPlugin;
 import org.netbeans.modules.analysis.ui.AdjustConfigurationPanel;
+import org.netbeans.modules.analysis.ui.AnalysisProblemNode;
 import org.netbeans.modules.analysis.ui.AnalysisResultTopComponent;
+import org.netbeans.modules.analysis.ui.RequiredPluginsNode;
 import org.netbeans.modules.parsing.spi.indexing.PathRecognizer;
 import org.netbeans.modules.refactoring.api.Scope;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
+import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -105,8 +110,8 @@ public class RunAnalysis {
                "TL_Inspect=Inspect"})
     public static void showDialogAndRunAnalysis() {
         final ProgressHandle progress = ProgressHandleFactory.createHandle("Analyzing...", null, null);
-        final RunAnalysisPanel rap = new RunAnalysisPanel(progress, Utilities.actionsGlobalContext());
         final JButton runAnalysis = new JButton(Bundle.BN_Inspect());
+        final RunAnalysisPanel rap = new RunAnalysisPanel(progress, Utilities.actionsGlobalContext(), runAnalysis);
         JButton cancel = new JButton(Bundle.BN_Cancel());
         HelpCtx helpCtx = new HelpCtx("org.netbeans.modules.analysis.RunAnalysis");
         DialogDescriptor dd = new DialogDescriptor(rap, Bundle.TL_Inspect(), true, new Object[] {runAnalysis, cancel}, runAnalysis, DialogDescriptor.DEFAULT_ALIGN, helpCtx, null);
@@ -134,25 +139,38 @@ public class RunAnalysis {
                         progress.switchToDeterminate(MAX_WORK);
 
                         final Map<AnalyzerFactory, List<ErrorDescription>> result = new HashMap<AnalyzerFactory, List<ErrorDescription>>();
-
+                        Collection<MissingPlugin> missingPlugins = new ArrayList<MissingPlugin>();
+                        Collection<AnalysisProblem> additionalProblems = new ArrayList<AnalysisProblem>();
+                        
                         if (toRun == null) {
                             int doneSoFar = 0;
                             int bucketSize = MAX_WORK / analyzers.size();
                             for (AnalyzerFactory analyzer : analyzers) {
                                 if (doCancel.get()) break;
-                                doRunAnalyzer(analyzer, scope, progress, doneSoFar, bucketSize, result);
+                                doRunAnalyzer(analyzer, scope, progress, doneSoFar, bucketSize, result, missingPlugins, additionalProblems);
                                 doneSoFar += bucketSize;
                             }
                         } else if (!doCancel.get()) {
-                            doRunAnalyzer(toRun, scope, progress, 0, MAX_WORK, result);
+                            doRunAnalyzer(toRun, scope, progress, 0, MAX_WORK, result, missingPlugins, additionalProblems);
                         }
 
+                        final Collection<Node> extraNodes = new ArrayList<Node>();
+                        
+                        if (!missingPlugins.isEmpty()) {
+                            extraNodes.add(new RequiredPluginsNode(missingPlugins));
+                        }
+                        
+                        for (AnalysisProblem p : additionalProblems) {
+                            extraNodes.add(new AnalysisProblemNode(p));
+                        }
+                        
                         SwingUtilities.invokeLater(new Runnable() {
                             @Override public void run() {
                                 if (!doCancel.get()) {
-                                    AnalysisResultTopComponent.findInstance().setData(Lookups.fixed(), result);
-                                    AnalysisResultTopComponent.findInstance().open();
-                                    AnalysisResultTopComponent.findInstance().requestActive();
+                                    AnalysisResultTopComponent resultWindow = AnalysisResultTopComponent.findInstance();
+                                    resultWindow.setData(Lookups.fixed(), new AnalysisResult(result, extraNodes));
+                                    resultWindow.open();
+                                    resultWindow.requestActive();
                                 }
 
                                 d.setVisible(false);
@@ -161,10 +179,16 @@ public class RunAnalysis {
                         });
                     }
 
-                    private void doRunAnalyzer(AnalyzerFactory analyzer, Scope scope, ProgressHandle handle, int bucketStart, int bucketSize, final Map<AnalyzerFactory, List<ErrorDescription>> result) {
+                    private void doRunAnalyzer(AnalyzerFactory analyzer, Scope scope, ProgressHandle handle, int bucketStart, int bucketSize, final Map<AnalyzerFactory, List<ErrorDescription>> result, Collection<MissingPlugin> missingPlugins, Collection<AnalysisProblem> additionalProblems) {
                         List<ErrorDescription> current = new ArrayList<ErrorDescription>();
                         Preferences settings = configuration != null ? getConfigurationSettingsRoot(configuration).node(SPIAccessor.ACCESSOR.getAnalyzerId(analyzer)) : null;
-                        Analyzer a = analyzer.createAnalyzer(SPIAccessor.ACCESSOR.createContext(scope, settings, singleWarningId, handle, bucketStart, bucketSize));
+                        Context context = SPIAccessor.ACCESSOR.createContext(scope, settings, singleWarningId, handle, bucketStart, bucketSize);
+                        Collection<? extends MissingPlugin> requiredPlugins = analyzer.requiredPlugins(context);
+                        if (!requiredPlugins.isEmpty()) {
+                            missingPlugins.addAll(requiredPlugins);
+                            return ;
+                        }
+                        Analyzer a = analyzer.createAnalyzer(context);
                         currentlyRunning.set(a);
                         if (doCancel.get()) return;
                         for (ErrorDescription ed : a.analyze()) {
@@ -173,6 +197,7 @@ public class RunAnalysis {
                         currentlyRunning.set(null);
                         if (!current.isEmpty())
                             result.put(analyzer, current);
+                        additionalProblems.addAll(SPIAccessor.ACCESSOR.getAnalysisProblems(context));
                     }
                 });
             }
