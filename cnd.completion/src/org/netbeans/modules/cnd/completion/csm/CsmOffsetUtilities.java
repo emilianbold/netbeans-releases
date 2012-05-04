@@ -54,12 +54,14 @@ import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmFunctionParameterList;
 import org.netbeans.modules.cnd.api.model.CsmInitializerListContainer;
+import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.api.model.deep.CsmIfStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmLoopStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
+import org.netbeans.modules.cnd.api.model.services.CsmObjectAttributeQuery;
 
 /**
  * utilities method for working with offsets of Csm objects
@@ -81,6 +83,13 @@ public class CsmOffsetUtilities {
         CsmOffsetable offs = (CsmOffsetable)obj;
         if ((offs.getStartOffset() <= offset) &&
                 (offset <= offs.getEndOffset())) {
+            if (CsmKindUtilities.isNamespaceDefinition(obj)) {
+                CsmNamespaceDefinition nsd = (CsmNamespaceDefinition) obj;
+                // return false if we're not inside the namespace scope
+                if (offset <= CsmObjectAttributeQuery.getDefault().getLeftBracketOffset(nsd)) {
+                    return false;
+                }
+            }
             if (offset == offs.getEndOffset()) {
                 if (CsmKindUtilities.isType(obj)) {
                     CsmType type = (CsmType)obj;
