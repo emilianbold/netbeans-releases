@@ -236,7 +236,11 @@ public class JavaFXPlatformJavadoc implements JavadocForBinaryQueryImplementatio
                                     final FileObject rootFo = JavadocAndSourceRootDetection.findJavadocRoot(
                                             URLMapper.findFileObject(root));
                                     if (rootFo != null) {
-                                        res.add(rootFo.toURL());
+                                        try {
+                                            res.add(rootFo.getURL());
+                                        } catch (FileStateInvalidException ex) {
+                                            LOG.log(Level.WARNING, null, ex);
+                                        }
                                     }
                                 }
                             }
