@@ -170,7 +170,11 @@ public class RunFindBugs {
                 addCompileRoot(p, compileRoot);
             }
 
-            BugCollectionBugReporter r = new BugCollectionBugReporter(p);
+            BugCollectionBugReporter r = new BugCollectionBugReporter(p) {
+                @Override protected void emitLine(String line) {
+                    LOG.log(Level.FINE, line);
+                }                
+            };
 
             r.setPriorityThreshold(Integer.MAX_VALUE);
             r.setRankThreshold(Integer.MAX_VALUE);
@@ -200,7 +204,7 @@ public class RunFindBugs {
             engine.setUserPreferences(preferences);
             engine.setDetectorFactoryCollection(DetectorFactoryCollection.instance());
 
-            LOG.log(Level.INFO, "Running FindBugs");
+            LOG.log(Level.FINE, "Running FindBugs");
             
             engine.execute();
 
