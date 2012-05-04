@@ -120,7 +120,7 @@ import org.openide.util.NbBundle;
  */
 public final class AnnotationHolder implements ChangeListener, DocumentListener {
 
-    private static final Logger LOG = Logger.getLogger(AnnotationHolder.class.getName());
+    static final Logger LOG = Logger.getLogger(AnnotationHolder.class.getName());
     
     // mimte-type --> coloring
     private static Map<String, Map<Severity, AttributeSet>> COLORINGS =

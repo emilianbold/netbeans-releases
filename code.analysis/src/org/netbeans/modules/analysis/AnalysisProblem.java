@@ -41,51 +41,18 @@
  */
 package org.netbeans.modules.analysis;
 
-import java.util.Collection;
-import java.util.prefs.Preferences;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.modules.analysis.spi.Analyzer;
-import org.netbeans.modules.analysis.spi.Analyzer.AnalyzerFactory;
-import org.netbeans.modules.analysis.spi.Analyzer.Context;
-import org.netbeans.modules.analysis.spi.Analyzer.CustomizerContext;
-import org.netbeans.modules.analysis.spi.Analyzer.MissingPlugin;
-import org.netbeans.modules.analysis.spi.Analyzer.WarningDescription;
-import org.netbeans.modules.refactoring.api.Scope;
-import org.openide.util.Exceptions;
-
 /**
  *
  * @author lahvac
  */
-public abstract class SPIAccessor {
+public class AnalysisProblem {
+    
+    public final String displayName;
+    public final CharSequence description;
 
-    public static SPIAccessor ACCESSOR;
-
-    static {
-        try {
-            Class.forName(Analyzer.Context.class.getName(), true, Analyzer.Context.class.getClassLoader());
-        } catch (ClassNotFoundException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+    public AnalysisProblem(String displayName, CharSequence description) {
+        this.displayName = displayName;
+        this.description = description;
     }
-
-    public abstract Context createContext(Scope scope, Preferences settings, String singleWarningId, ProgressHandle progress, int bucketStart, int bucketSize);
-
-    public abstract String getDisplayName(MissingPlugin missing);
-
-    public abstract String getCNB(MissingPlugin missing);
-
-    public abstract String getWarningId(WarningDescription description);
-    public abstract String getWarningDisplayName(WarningDescription description);
-    public abstract String getWarningCategoryId(WarningDescription description);
-    public abstract String getWarningCategoryDisplayName(WarningDescription description);
-
-    public abstract String getSelectedId(CustomizerContext<?, ?> cc);
-
-    public abstract String getAnalyzerId(AnalyzerFactory selected);
-    public abstract String getAnalyzerDisplayName(AnalyzerFactory a);
-    public abstract String getAnalyzerIconPath(AnalyzerFactory analyzer);
-
-    public abstract Collection<? extends AnalysisProblem> getAnalysisProblems(Context context);
-
+    
 }

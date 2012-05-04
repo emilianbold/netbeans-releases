@@ -39,53 +39,28 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.analysis;
+package org.netbeans.modules.analysis.ui;
 
-import java.util.Collection;
-import java.util.prefs.Preferences;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.modules.analysis.spi.Analyzer;
-import org.netbeans.modules.analysis.spi.Analyzer.AnalyzerFactory;
-import org.netbeans.modules.analysis.spi.Analyzer.Context;
-import org.netbeans.modules.analysis.spi.Analyzer.CustomizerContext;
-import org.netbeans.modules.analysis.spi.Analyzer.MissingPlugin;
-import org.netbeans.modules.analysis.spi.Analyzer.WarningDescription;
-import org.netbeans.modules.refactoring.api.Scope;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.analysis.AnalysisProblem;
+import org.netbeans.modules.analysis.DescriptionReader;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
  * @author lahvac
  */
-public abstract class SPIAccessor {
+public class AnalysisProblemNode extends AbstractNode {
 
-    public static SPIAccessor ACCESSOR;
-
-    static {
-        try {
-            Class.forName(Analyzer.Context.class.getName(), true, Analyzer.Context.class.getClassLoader());
-        } catch (ClassNotFoundException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+    public AnalysisProblemNode(final AnalysisProblem p) {
+        super(Children.LEAF, Lookups.fixed(new DescriptionReader() {
+            @Override public CharSequence getDescription() {
+                return p.description;
+            }
+        }));
+        setDisplayName(p.displayName);
+        setIconBaseWithExtension("org/netbeans/modules/analysis/ui/resources/warning.gif");
     }
-
-    public abstract Context createContext(Scope scope, Preferences settings, String singleWarningId, ProgressHandle progress, int bucketStart, int bucketSize);
-
-    public abstract String getDisplayName(MissingPlugin missing);
-
-    public abstract String getCNB(MissingPlugin missing);
-
-    public abstract String getWarningId(WarningDescription description);
-    public abstract String getWarningDisplayName(WarningDescription description);
-    public abstract String getWarningCategoryId(WarningDescription description);
-    public abstract String getWarningCategoryDisplayName(WarningDescription description);
-
-    public abstract String getSelectedId(CustomizerContext<?, ?> cc);
-
-    public abstract String getAnalyzerId(AnalyzerFactory selected);
-    public abstract String getAnalyzerDisplayName(AnalyzerFactory a);
-    public abstract String getAnalyzerIconPath(AnalyzerFactory analyzer);
-
-    public abstract Collection<? extends AnalysisProblem> getAnalysisProblems(Context context);
-
+    
 }
