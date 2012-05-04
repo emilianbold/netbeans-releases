@@ -113,20 +113,23 @@ public class ModifyMultiIncludedLibraryHeaderTestCase extends ModifyDocumentTest
 
         @Override
         public void checkAfterModifyingFile(FileImpl modifiedFile, FileImpl fileToCheck, CsmProject project, BaseDocument doc) throws BadLocationException {
-            // here state can be intermediate, we will not check it
+            // should be the same as before start of modifications
+            checkBeforeModifyingFile(modifiedFile, fileToCheck, project, doc);
         }
 
         @Override
         public void checkAfterParseFinished(FileImpl modifiedFile, FileImpl fileToCheck, CsmProject project, BaseDocument doc) throws BadLocationException {
             CsmProject libProject = fileToCheck.getProject();
+            assertNotSame(libProject, project);
             libProject.waitParse();
+            assertSame("PARSED", fileToCheck.getStateFromTest());
             checkDeclarationNumber(1, fileToCheck);
             checkDeadBlocks(fileToCheck.getProject(), fileToCheck, "2. text after:", doc, "File must have " + 0 + " dead code block ", 0);
         }
 
         @Override
         public void checkAfterUndo(FileImpl modifiedFile, FileImpl fileToCheck, CsmProject project, BaseDocument doc) throws BadLocationException {
-            // here state can be intermediate, we will not check it
+            checkAfterParseFinished(modifiedFile, fileToCheck, project, doc);
         }
 
         @Override
