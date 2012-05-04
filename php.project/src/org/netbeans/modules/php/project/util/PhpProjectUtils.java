@@ -187,7 +187,7 @@ public final class PhpProjectUtils {
      */
     public static void reformatFile(final File file) throws IOException {
         FileObject fileObject = FileUtil.toFileObject(file);
-        assert fileObject != null : "No fileobject for " + file;
+        assert fileObject != null : "No fileobject for " + file + " (file exists: " + file.exists() + ")";
 
         reformatFile(DataObject.find(fileObject));
     }
