@@ -2814,9 +2814,18 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
             if (rootFo != null) {
                 try {
                     final ClassPath.Entry entry = sourceForBinaryRoot ? null : getClassPathEntry(rootFo);
+                    final Set<Crawler.TimeStampAction> checkTimeStamps = EnumSet.noneOf(Crawler.TimeStampAction.class);
+                    final boolean permanentUpdate = !TransientUpdateSupport.isTransientUpdate();
+                    assert permanentUpdate || (forceRefresh && !files.isEmpty());
+                    if (!forceRefresh) {
+                        checkTimeStamps.add(Crawler.TimeStampAction.CHECK);
+                    }
+                    if (permanentUpdate) {
+                        checkTimeStamps.add(Crawler.TimeStampAction.UPDATE);
+                    }
                     final Crawler crawler = files.isEmpty() ?
-                        new FileObjectCrawler(rootFo, !forceRefresh, entry, getShuttdownRequest(), getSuspendStatus()) : // rescan the whole root (no timestamp check)
-                        new FileObjectCrawler(rootFo, files.toArray(new FileObject[files.size()]), !forceRefresh, entry, getShuttdownRequest(), getSuspendStatus()); // rescan selected files (no timestamp check)
+                        new FileObjectCrawler(rootFo, checkTimeStamps, entry, getShuttdownRequest(), getSuspendStatus()) : // rescan the whole root (no timestamp check)
+                        new FileObjectCrawler(rootFo, files.toArray(new FileObject[files.size()]), checkTimeStamps, entry, getShuttdownRequest(), getSuspendStatus()); // rescan selected files (no timestamp check)
 
                     final Collection<IndexableImpl> resources = crawler.getResources();
                     if (crawler.isFinished()) {
@@ -2831,11 +2840,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         try {
                             indexResult=index(resources, crawler.getAllResources(), root, sourceForBinaryRoot, indexers, invalidatedMap, ctxToFinish, usedIterables);
                             if (indexResult) {
-                                final boolean permanentUpdate = !TransientUpdateSupport.isTransientUpdate();
-                                assert permanentUpdate || (forceRefresh && !files.isEmpty());
-                                if (permanentUpdate) {
-                                    crawler.storeTimestamps();
-                                }
+                                crawler.storeTimestamps();
                                 return true;
                             }
                         } finally {
@@ -3425,7 +3430,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     if (rootFo != null) {
                         boolean sourceForBinaryRoot = sourcesForBinaryRoots.contains(root);
                         final ClassPath.Entry entry = sourceForBinaryRoot ? null : getClassPathEntry(rootFo);
-                        Crawler crawler = new FileObjectCrawler(rootFo, false, entry, getShuttdownRequest(), getSuspendStatus());
+                        Crawler crawler = new FileObjectCrawler(rootFo, EnumSet.of(Crawler.TimeStampAction.UPDATE), entry, getShuttdownRequest(), getSuspendStatus());
                         final Collection<IndexableImpl> resources = crawler.getResources();
                         final Collection<IndexableImpl> deleted = crawler.getDeletedResources();
 
@@ -3584,7 +3589,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     if (rootFo != null) {
                         boolean sourceForBinaryRoot = sourcesForBinaryRoots.contains(root);
                         final ClassPath.Entry entry = sourceForBinaryRoot ? null : getClassPathEntry(rootFo);
-                        Crawler crawler = new FileObjectCrawler(rootFo, false, entry, getShuttdownRequest(), getSuspendStatus());
+                        Crawler crawler = new FileObjectCrawler(rootFo, EnumSet.of(Crawler.TimeStampAction.UPDATE), entry, getShuttdownRequest(), getSuspendStatus());
                         final Collection<IndexableImpl> resources = crawler.getResources();
                         final Collection<IndexableImpl> deleted = crawler.getDeletedResources();
 
@@ -4676,7 +4681,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 // no indexing.
                 return nopCustomIndexers(root, indexers, sourceForBinaryRoot);
             } else {
-                final FileObject rootFo = URLMapper.findFileObject(root);
+                final FileObject rootFo = URLCache.getInstance().findFileObject(root);
                 if (rootFo != null) {
                     URL indexURL;
                     if (!rootSeen && (indexURL=getRemoteIndexURL(root))!=null) {
@@ -4724,7 +4729,11 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     }
                     //todo: optimize for java.io.Files
                     final ClassPath.Entry entry = sourceForBinaryRoot ? null : getClassPathEntry(rootFo);
-                    final Crawler crawler = new FileObjectCrawler(rootFo, !fullRescan, entry, getShuttdownRequest(), getSuspendStatus());
+                    final Set<Crawler.TimeStampAction> checkTimeStamps = EnumSet.of(Crawler.TimeStampAction.UPDATE);
+                    if (!fullRescan) {
+                        checkTimeStamps.add(Crawler.TimeStampAction.CHECK);
+                    }
+                    final Crawler crawler = new FileObjectCrawler(rootFo, checkTimeStamps, entry, getShuttdownRequest(), getSuspendStatus());
                     final Collection<IndexableImpl> resources = crawler.getResources();
                     final Collection<IndexableImpl> allResources = crawler.getAllResources();
                     final Collection<IndexableImpl> deleted = crawler.getDeletedResources();
@@ -5442,60 +5451,6 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         }
 
     } // End of Controller class
-
-    public static final class URLCache {
-
-        public static synchronized URLCache getInstance() {
-            if (instance == null) {
-                instance = new URLCache();
-            }
-            return instance;
-        }
-
-        @CheckForNull
-        public FileObject findFileObject(final @NonNull URL url) {
-            URI uri = null;
-            try {
-                uri  = url.toURI();
-            } catch (URISyntaxException e) {
-                Exceptions.printStackTrace(e);
-            }
-            FileObject f = null;
-            if (uri != null) {
-                synchronized (cache) {
-                    Reference<FileObject> ref = cache.get(uri);
-                    if (ref != null) {
-                        f = ref.get();
-                    }
-                }
-
-                if (f != null && f.isValid() && url.equals(f.toURL())) {
-                    return f;
-                }
-            }
-
-            f = URLMapper.findFileObject(url);
-
-            if (uri != null) {
-                synchronized (cache) {
-                    if (f != null && f.isValid()) {
-                        cache.put(uri, new WeakReference<FileObject>(f));
-                    }
-                }
-            }
-            
-            return f;
-        }
-
-        private static URLCache instance = null;
-        private final Map<URI, Reference<FileObject>> cache = new WeakHashMap<URI, Reference<FileObject>>();
-
-        private URLCache() {
-
-        }
-
-    } // End of URLCache class
-
 
     @ServiceProvider(service=IndexingActivityInterceptor.class)
     public static final class FSRefreshInterceptor implements IndexingActivityInterceptor {
