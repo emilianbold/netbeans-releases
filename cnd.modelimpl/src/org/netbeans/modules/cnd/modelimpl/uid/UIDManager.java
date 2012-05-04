@@ -107,7 +107,9 @@ public class UIDManager {
     }
 
     public final void dispose() {
-        storage.dispose();
+        synchronized (lock) {
+            storage.dispose();
+        }
     }
 
     public final void clearProjectCache(Key key) {
