@@ -1724,7 +1724,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
 
     private String watchCommand(NativeWatch watch) {
 	String watch_cmd;
-	if (watch != null) {
+	if (watch.watch() != null) {
             WatchVariable wv = watch.findByDebugger(this);
 	    watch_cmd = "watch";				// NOI18N
 	    if (watch.isReplaced())
