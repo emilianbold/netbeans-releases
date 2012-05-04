@@ -85,7 +85,7 @@ public final class JFXProjectOpenedHook extends ProjectOpenedHook {
     @Override
     protected synchronized void projectOpened() {
         if(JFXProjectProperties.isTrue(this.eval.evaluator().getProperty(JFXProjectProperties.JAVAFX_ENABLED))) {
-            logUsage(JFXProjectGenerator.PROJECT_OPEN);
+            JFXProjectGenerator.logUsage(JFXProjectGenerator.Action.OPEN);
 
             // create Default JavaFX platform if necessary
             // #205341
@@ -156,15 +156,10 @@ public final class JFXProjectOpenedHook extends ProjectOpenedHook {
     @Override
     protected void projectClosed() {
         if(JFXProjectProperties.isTrue(this.eval.evaluator().getProperty(JFXProjectProperties.JAVAFX_ENABLED))) {
-            logUsage(JFXProjectGenerator.PROJECT_CLOSE);
+            JFXProjectGenerator.logUsage(JFXProjectGenerator.Action.CLOSE);
         }
     }
 
-    private static void logUsage(@NonNull final String msg) {
-        final LogRecord logRecord = new LogRecord(Level.INFO, msg);
-        logRecord.setLoggerName(JFXProjectGenerator.METRICS_LOGGER);
-        Logger.getLogger(JFXProjectGenerator.METRICS_LOGGER).log(logRecord);
-    }
 
     private boolean missingJFXPlatform() {
         return !JavaFXPlatformUtils.isThereAnyJavaFXPlatform();
