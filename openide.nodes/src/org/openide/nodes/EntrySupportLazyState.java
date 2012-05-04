@@ -56,6 +56,7 @@ final class EntrySupportLazyState implements Cloneable {
     private boolean inited;
     private Thread initThread;
     private boolean initInProgress;
+    private boolean mustNotifySetEntries;
     
     
     final boolean isInited() {
@@ -69,8 +70,11 @@ final class EntrySupportLazyState implements Cloneable {
         return initThread;
     }
     
+    final boolean isMustNotify() {
+        return mustNotifySetEntries;
+    }
+    
     List<Entry> entries = Collections.emptyList();
-    boolean mustNotifySetEntries = false;
     /** entries with node*/
     List<Entry> visibleEntries = Collections.emptyList();
     Map<Entry, EntryInfo> entryToInfo = new HashMap<Entry, EntryInfo>();
@@ -98,6 +102,11 @@ final class EntrySupportLazyState implements Cloneable {
     final EntrySupportLazyState changeProgress(boolean b) {
         EntrySupportLazyState s = cloneState();
         s.initInProgress = b;
+        return s;
+    }
+    final EntrySupportLazyState changeMustNotify(boolean b) {
+        EntrySupportLazyState s = cloneState();
+        s.mustNotifySetEntries = b;
         return s;
     }
     

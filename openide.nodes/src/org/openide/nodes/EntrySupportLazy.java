@@ -402,7 +402,9 @@ class EntrySupportLazy extends EntrySupport {
         if (LOGGER.isLoggable(Level.FINER)) {
             LOGGER.finer("notifySetEntries() " + this); // NOI18N
         }
-        state.mustNotifySetEntries = true;
+        synchronized (LOCK) {
+            setState(state.changeMustNotify(true));
+        }
     }
 
     @Override
@@ -412,7 +414,7 @@ class EntrySupportLazy extends EntrySupport {
         if (LOG_ENABLED) {
             LOGGER.finer("setEntries(): " + this); // NOI18N
             LOGGER.finer("    inited: " + state.isInited()); // NOI18N
-            LOGGER.finer("    mustNotifySetEnties: " + state.mustNotifySetEntries); // NOI18N
+            LOGGER.finer("    mustNotifySetEnties: " + state.isMustNotify()); // NOI18N
             LOGGER.finer("    newEntries size: " + newEntries.size() + " data:" + newEntries); // NOI18N
             LOGGER.finer("    entries size: " + state.entries.size() + " data:" + state.entries); // NOI18N
             LOGGER.finer("    visibleEntries size: " + notNull(state.visibleEntries).size() + " data:" + state.visibleEntries); // NOI18N
@@ -423,7 +425,7 @@ class EntrySupportLazy extends EntrySupport {
         assert (entriesSize = state.entries.size()) >= 0;
         assert (entryToInfoSize = state.entryToInfo.size()) >= 0;
         assert state.entries.size() == state.entryToInfo.size() : "Entries: " + state.entries.size() + "; vis. entries: " + notNull(state.visibleEntries).size() + "; Infos: " + state.entryToInfo.size() + "; entriesSize: " + entriesSize + "; entryToInfoSize: " + entryToInfoSize + dumpEntriesInfos(state.entries, state.entryToInfo); // NOI18N
-        if (!state.mustNotifySetEntries && !state.isInited()) {
+        if (!state.isMustNotify() && !state.isInited()) {
             state.entries = new ArrayList<Entry>(newEntries);
             state.visibleEntries = new ArrayList<Entry>(newEntries);
             state.entryToInfo.keySet().retainAll(state.entries);
