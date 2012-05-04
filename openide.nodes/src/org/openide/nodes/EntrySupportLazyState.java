@@ -58,6 +58,11 @@ final class EntrySupportLazyState implements Cloneable {
     private boolean initInProgress;
     private boolean mustNotifySetEntries;
     
+    private List<Entry> entries = Collections.emptyList();
+    /** entries with node*/
+    private List<Entry> visibleEntries = Collections.emptyList();
+    private Map<Entry, EntryInfo> entryToInfo = new HashMap<Entry, EntryInfo>();
+    
     
     final boolean isInited() {
         return inited;
@@ -73,11 +78,15 @@ final class EntrySupportLazyState implements Cloneable {
     final boolean isMustNotify() {
         return mustNotifySetEntries;
     }
-    
-    List<Entry> entries = Collections.emptyList();
-    /** entries with node*/
-    List<Entry> visibleEntries = Collections.emptyList();
-    Map<Entry, EntryInfo> entryToInfo = new HashMap<Entry, EntryInfo>();
+    final List<Entry> getEntries() {
+        return Collections.unmodifiableList(entries);
+    }
+    final List<Entry> getVisibleEntries() {
+        return Collections.unmodifiableList(visibleEntries);
+    }
+    final Map<Entry, EntryInfo> getEntryToInfo() {
+        return Collections.unmodifiableMap(entryToInfo);
+    }
     
     private EntrySupportLazyState cloneState() {
         try {
@@ -108,6 +117,28 @@ final class EntrySupportLazyState implements Cloneable {
         EntrySupportLazyState s = cloneState();
         s.mustNotifySetEntries = b;
         return s;
+    }
+    final EntrySupportLazyState changeEntries(
+        List<Entry> entries, 
+        List<Entry> visibleEntries,
+        Map<Entry, EntryInfo> entryToInfo
+    ) {
+        EntrySupportLazyState state = cloneState();
+        if (entries != null) {
+            state.entries = entries;
+        }
+        if (visibleEntries != null) {
+            state.visibleEntries = visibleEntries;
+        }
+        if (entryToInfo != null) {
+            state.entryToInfo = entryToInfo;
+        }
+        int entriesSize = 0;
+        int entryToInfoSize = 0;
+        assert (entriesSize = state.getEntries().size()) >= 0;
+        assert (entryToInfoSize = state.getEntryToInfo().size()) >= 0;
+        assert state.getEntries().size() == state.getEntryToInfo().size() : "Entries: " + state.getEntries().size() + "; vis. entries: " + EntrySupportLazy.notNull(state.getVisibleEntries()).size() + "; Infos: " + state.getEntryToInfo().size() + "; entriesSize: " + entriesSize + "; entryToInfoSize: " + entryToInfoSize + EntrySupportLazy.dumpEntriesInfos(state.getEntries(), state.getEntryToInfo()); // NOI18N
+        return state;
     }
     
 }
