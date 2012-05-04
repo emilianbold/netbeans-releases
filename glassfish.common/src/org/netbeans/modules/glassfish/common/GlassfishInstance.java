@@ -42,22 +42,8 @@
 
 package org.netbeans.modules.glassfish.common;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.io.*;
+import java.util.*;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -67,15 +53,18 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.glassfish.common.nodes.Hk2InstanceNode;
+import org.glassfish.tools.ide.data.GlassFishAdminInterface;
+import org.glassfish.tools.ide.data.GlassFishServer;
+import org.glassfish.tools.ide.data.GlassFishVersion;
 import org.netbeans.api.server.ServerInstance;
+import org.netbeans.modules.glassfish.common.nodes.Hk2InstanceNode;
 import org.netbeans.modules.glassfish.common.ui.InstanceCustomizer;
 import org.netbeans.modules.glassfish.common.ui.VmCustomizer;
 import org.netbeans.modules.glassfish.spi.CustomizerCookie;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
-import org.netbeans.modules.glassfish.spi.GlassfishModuleFactory;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.ServerState;
+import org.netbeans.modules.glassfish.spi.GlassfishModuleFactory;
 import org.netbeans.modules.glassfish.spi.RemoveCookie;
 import org.netbeans.spi.server.ServerInstanceFactory;
 import org.netbeans.spi.server.ServerInstanceImplementation;
@@ -93,7 +82,11 @@ import org.openide.windows.InputOutput;
  *
  * @author Peter Williams
  */
-public class GlassfishInstance implements ServerInstanceImplementation, Lookup.Provider, LookupListener {
+public class GlassfishInstance implements ServerInstanceImplementation, Lookup.Provider, LookupListener, GlassFishServer {
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Class attributes                                                       //
+    ////////////////////////////////////////////////////////////////////////////
 
     // Reasonable default values for various server parameters.  Note, don't use
     // these unless the server's actual setting cannot be determined in any way.
@@ -107,10 +100,109 @@ public class GlassfishInstance implements ServerInstanceImplementation, Lookup.P
     public static final String DEFAULT_DOMAIN_NAME = "domain1"; // NOI18N
 
     
+    ////////////////////////////////////////////////////////////////////////////
+    // Static methods                                                         //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Build and update copy of GlassFish properties to be stored in <code>this</code>
+     * object.
+     * <p/>
+     * Constructor helper method.
+     * <p/>
+     * @param properties Source GlassFish properties.
+     * @return Updated copy of GlassFish properties to be stored.
+     */
+    private static Map<String, String> prepareProperties(
+            Map<String, String> properties) {
+        boolean isRemote = properties.get(GlassfishModule.DOMAINS_FOLDER_ATTR) == null;
+        String deployerUri = properties.get(GlassfishModule.URL_ATTR);
+        updateString(properties, GlassfishModule.HOSTNAME_ATTR,
+                DEFAULT_HOST_NAME);
+        updateString(properties, GlassfishModule.GLASSFISH_FOLDER_ATTR, "");
+        updateInt(properties, GlassfishModule.HTTPPORT_ATTR,
+                DEFAULT_HTTP_PORT);
+        updateString(properties, GlassfishModule.DISPLAY_NAME_ATTR,
+                "Bogus display name");
+        updateInt(properties, GlassfishModule.ADMINPORT_ATTR,
+                DEFAULT_ADMIN_PORT);
+        updateString(properties, GlassfishModule.SESSION_PRESERVATION_FLAG, "true");
+        updateString(properties, GlassfishModule.START_DERBY_FLAG,
+                isRemote ? "false" : "true");
+        updateString(properties, GlassfishModule.USE_IDE_PROXY_FLAG, "true");
+        updateString(properties, GlassfishModule.DRIVER_DEPLOY_FLAG, "true");
+        updateString(properties, GlassfishModule.HTTPHOST_ATTR, "localhost");
+        properties.put(GlassfishModule.JVM_MODE,
+                isRemote && !deployerUri.contains("deployer:gfv3ee6wc")
+                ? GlassfishModule.DEBUG_MODE : GlassfishModule.NORMAL_MODE);
+        Map<String, String> newProperties =  Collections.synchronizedMap(
+                new HashMap<String, String>(properties));
+        // Asume a local instance is in NORMAL_MODE
+        // Assume remote Prelude and 3.0 instances are in DEBUG (we cannot change them)
+        // Assume a remote 3.1 instance is in NORMAL_MODE... we can restart it into debug mode
+        // XXX username/password handling at some point.
+        properties.put(GlassfishModule.USERNAME_ATTR, DEFAULT_ADMIN_NAME);
+        properties.put(GlassfishModule.PASSWORD_ATTR, DEFAULT_ADMIN_PASSWORD);
+        return newProperties;
+    }
+
+    /**
+     * Add new <code>String</code> storedValue into <code>Map</code> when storedValue
+     * with specified key does not exist.
+     * <p/>
+     * @param map   Map to be checked and updated.
+     * @param key   Key used to search for already existing storedValue.
+     * @param value Value to be added when nothing is found.
+     * @return Value stored in <code>Map</code> or <code>value</code> argument
+     *         when no value was stored int the <code>Map</code>
+     */
+    private static String updateString(Map<String, String> map, String key,
+            String value) {
+        String result = map.get(key);
+        if(result == null) {
+            map.put(key, value);
+            result = value;
+        }
+        return result;
+    }
+
+    /**
+     * Add new <code>Integer</code> storedValue into <code>Map</code> when storedValue
+     * with specified key does not exist.
+     * <p/>
+     * @param map   Map to be checked and updated.
+     * @param key   Key used to search for already existing storedValue.
+     * @param value Value to be added when nothing is found.
+     * @return Value stored in <code>Map</code> or <code>value</code> argument
+     *         when no value was stored int the <code>Map</code>
+     */
+    private static int updateInt(Map<String, String> map, String key, int value) {
+        int result;
+        String storedValue = map.get(key);
+        try {
+            // Throws NumberFormatException also when storedValue is null.
+            result = Integer.parseInt(storedValue);
+        } catch(NumberFormatException ex) {
+            map.put(key, Integer.toString(value));
+            result = value;
+        }
+        return result;
+    }
+    ////////////////////////////////////////////////////////////////////////////
+    // Instance attributes                                                    //
+    ////////////////////////////////////////////////////////////////////////////
+
     // Server properties
     private boolean removable = true;
     
-    // Implementation details
+    /** GlassFish properties. */
+    private transient Map<String, String> properties;
+
+    /** GlassFish server version. Initial storedValue is <code>null</code>. Proper
+     *  GlassFish server version is set after first <code>version</code>
+     *  administration command response is received. */
+    private transient GlassFishVersion version;
+
     private transient CommonServerSupport commonSupport;
     private transient InstanceContent ic;
     private transient Lookup lookup;
@@ -118,12 +210,17 @@ public class GlassfishInstance implements ServerInstanceImplementation, Lookup.P
     final private transient Lookup.Result<GlassfishModuleFactory> lookupResult = Lookups.forPath(Util.GF_LOOKUP_PATH).lookupResult(GlassfishModuleFactory.class);;
     private transient Collection<? extends GlassfishModuleFactory> currentFactories = Collections.emptyList();
     
-    // api instance
+    // API instance
     private ServerInstance commonInstance;
     private GlassfishInstanceProvider instanceProvider;
     
+    ////////////////////////////////////////////////////////////////////////////
+    // Constructors                                                           //
+    ////////////////////////////////////////////////////////////////////////////
+
     private GlassfishInstance(Map<String, String> ip, GlassfishInstanceProvider instanceProvider, boolean updateNow) {
         String deployerUri = null;
+        this.version = null;
         try {
             ic = new InstanceContent();
             lookup = new AbstractLookup(ic);
@@ -139,10 +236,11 @@ public class GlassfishInstance implements ServerInstanceImplementation, Lookup.P
                     ip.put(GlassfishModule.HTTPPORT_ATTR, Integer.toString(pc.getHttpPort()));
                 }
             }
-            commonSupport = new CommonServerSupport(lookup, ip, instanceProvider);
+            this.properties = prepareProperties(ip);
+            commonSupport = new CommonServerSupport(lookup, this, instanceProvider);
 
             // Flag this server URI as under construction
-            deployerUri = commonSupport.getDeployerUri();
+            deployerUri = getDeployerUri();
             GlassfishInstanceProvider.activeRegistrationSet.add(deployerUri);
             if (null == instanceProvider.getInstance(deployerUri)) {
                 ic.add(this); // Server instance in lookup (to find instance from node lookup)
@@ -163,10 +261,235 @@ public class GlassfishInstance implements ServerInstanceImplementation, Lookup.P
         }
     }
 
+
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Getters and Setters                                                    //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Get GlassFish properties.
+     * <p/>
+     * @return GlassFish properties.
+     */
+    public Map<String, String> getProperties() {
+        return properties;
+    }
+
+    /**
+     * Set GlassFish properties.
+     * <p/>
+     * @param properties GlassFish properties to set
+     */
+    public void setProperties(Map<String, String> properties) {
+        this.properties = properties;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Fake Getters from GlassFishServer interface                            //
+    ////////////////////////////////////////////////////////////////////////////
+
+    @Override
+    public String getName() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    /**
+     * Get GlassFish server host from stored properties.
+     * <p/>
+     * @return lassFish server host.
+     */
+    @Override
+    public String getHost() {
+        return properties.get(GlassfishModule.HOSTNAME_ATTR);
+    }
+
+    /**
+     * Get GlassFish server port from stored properties.
+     * <p/>
+     * @return GlassFish server port.
+     */
+    @Override
+    public int getPort() {
+        return intProperty(GlassfishModule.HTTPPORT_ATTR);
+    }
+
+    /**
+     * Get GlassFish server administration port from stored properties.
+     * <p/>
+     * @return GlassFish server administration port.
+     */
+    @Override
+    public int getAdminPort() {
+        return intProperty(GlassfishModule.ADMINPORT_ATTR);
+    }
+
+    /**
+     * Get GlassFish server administration user name from stored properties.
+     * <p/>
+     * @return GlassFish server administration user name.
+     */
+    @Override
+    public String getAdminUser() {
+        return properties.get(GlassfishModule.USERNAME_ATTR);
+    }
+
+    /**
+     * Get GlassFish server administration user's password from
+     * stored properties.
+     * <p/>
+     * @return GlassFish server administration user's password.
+     */
+    @Override
+    public String getAdminPassword() {
+        return properties.get(GlassfishModule.PASSWORD_ATTR);
+    }
+
+    /**
+     * Get GlassFish server domains folder from stored properties.
+     * <p/>
+     * @return GlassFish server domains folder.
+     */
+    @Override
+    public String getDomainsFolder() {
+        return properties.get(GlassfishModule.DOMAINS_FOLDER_ATTR);
+    }
+
+    /**
+     * Set GlassFish server domain name from stored properties.
+     * <p/>
+     * @param domainsFolder GlassFish server domain name.
+     */
+    @Override
+    public String getDomainName() {
+        return properties.get(GlassfishModule.DOMAIN_NAME_ATTR);
+    }
+
+    /**
+     * Get GlassFish server URL from stored properties.
+     * <p/>
+     * @return GlassFish server URL.
+     */
+    @Override
+    public String getUrl() {
+        return properties.get(GlassfishModule.URL_ATTR);
+    }
+
+    /**
+     * Get GlassFish server installation root.
+     * <p/>
+     * @return Server installation root.
+     */
+    @Override
+    public String getServerHome() {
+        return properties.get(GlassfishModule.GLASSFISH_FOLDER_ATTR);
+    }
+
+    /**
+     * Get GlassFish server version.
+     * <p/>
+     * @return GlassFish server version or <code>null</code> when version is
+     *         not known.
+     */
+    @Override
+    public GlassFishVersion getVersion() {
+        return version;
+    }
+
+    /**
+     * Get GlassFish server administration interface type.
+     * <p/>
+     * @return GlassFish server administration interface type.
+     */
+    @Override
+    public GlassFishAdminInterface getAdminInterface() {
+        return GlassFishAdminInterface.HTTP;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Fake Getters                                                           //
+    ////////////////////////////////////////////////////////////////////////////
+    
+    public String getInstallRoot() {
+        return properties.get(GlassfishModule.INSTALL_FOLDER_ATTR);
+    }
+
+    public String getGlassfishRoot() {
+        return properties.get(GlassfishModule.GLASSFISH_FOLDER_ATTR);
+    }
+
+    @Override
+    public String getDisplayName() {
+        return properties.get(GlassfishModule.DISPLAY_NAME_ATTR);
+    }
+
+    public String getDeployerUri() {
+        return properties.get(GlassfishModule.URL_ATTR);
+    }
+
+    public String getUserName() {
+        return properties.get(GlassfishModule.USERNAME_ATTR);
+    }
+
+    /**
+     * Returns property value to which the specified <code>key</code> is mapped,
+     * or <code>null</code> if this map contains no mapping for the
+     * <code>key</code>.
+     * <p/>
+     * @param key Key whose associated value is to be returned.
+     */
+    public String getProperty(String key) {
+        return properties.get(key);
+    }
+
+    /**
+     * Associates the specified <code>value</code> with the specified
+     * <code>key</code> in this map.
+     * <p/>
+     * If the map previously contained a mapping for the key, the old value
+     * is replaced by the specified value.
+     * @param key   Key with which the specified value is to be associated.
+     * @param value Value to be associated with the specified key.
+     */
+    public void putProperty(String key, String value) {
+        properties.put(key, value);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Methods                                                           //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Get property storedValue with given <code>name</code> as <code>int</code>
+     * storedValue.
+     * <p/>
+     * Works for positive values only because <code>-1</code> storedValue is reserved
+     * for error conditions.
+     * <p/>
+     * @param name Name of property to be retrieved.
+     * @return Property storedValue as <code>int</code> or <code>-1</code>
+     *         if property cannot be converted to integer storedValue.
+     */
+    private int intProperty(String name) {
+        String property = properties.get(name);
+        if (property == null) {
+            Logger.getLogger("glassfish").log(Level.WARNING,
+                    "Cannot convert null value to a number");
+            return -1;
+        }
+        try {
+            return Integer.parseInt(property);
+        } catch (NumberFormatException nfe) {
+            Logger.getLogger("glassfish").log(Level.WARNING, "Cannot convert "+
+                    property +" to a number: ", nfe);
+            return -1;
+        }
+    }
+
     private void updateFactories() {
         // !PW FIXME should read asenv.bat on windows.
         Properties asenvProps = new Properties();
-        String homeFolder = commonSupport.getGlassfishRoot();
+        String homeFolder = getGlassfishRoot();
         File asenvConf = new File(homeFolder, "config/asenv.conf"); // NOI18N
         if(asenvConf.exists()) {
             InputStream is = null;
@@ -281,18 +604,7 @@ public class GlassfishInstance implements ServerInstanceImplementation, Lookup.P
         return commonSupport;
     }
     
-    public String getDeployerUri() {
-        return commonSupport.getDeployerUri();
-    }
-    
-    public String getInstallRoot() {
-        return commonSupport.getInstallRoot();
-    }
-    
-    public String getGlassfishRoot() {
-        return commonSupport.getGlassfishRoot();
-    }
-    
+    @Override
     public Lookup getLookup() {
         synchronized (lookupResult) {
             return full;
@@ -340,15 +652,11 @@ public class GlassfishInstance implements ServerInstanceImplementation, Lookup.P
     // ------------------------------------------------------------------------
     // ServerInstance interface implementation
     // ------------------------------------------------------------------------
-    @Override
-    public String getDisplayName() {
-        return commonSupport.getDisplayName();
-    }
 
     // TODO -- this should be done differently
     @Override
     public String getServerDisplayName() {
-        return commonSupport.getInstanceProvider().getDisplayName(commonSupport.getDeployerUri());
+        return commonSupport.getInstanceProvider().getDisplayName(getDeployerUri());
     }
 
     @Override
@@ -406,7 +714,7 @@ public class GlassfishInstance implements ServerInstanceImplementation, Lookup.P
         stopIfStartedByIde(3000L);
         
         // close the server io window
-        String uri = commonSupport.getDeployerUri();
+        String uri = getDeployerUri();
         InputOutput io = LogViewMgr.getServerIO(uri);
         if(io != null && !io.isClosed()) {
             io.closeInputOutput();

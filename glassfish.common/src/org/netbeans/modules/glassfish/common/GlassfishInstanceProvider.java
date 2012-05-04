@@ -231,7 +231,6 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
      * @return <code>true</code> when at least one of the providers
      *         is initialized or <code>false</code> otherwise.
      */
-    @SuppressWarnings("NestedSynchronizedStatement")
     public static synchronized boolean initialized() {
         return preludeProvider != null || ee6Provider != null;
     }

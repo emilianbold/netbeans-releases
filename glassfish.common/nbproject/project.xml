@@ -192,6 +192,10 @@
                 <friend>org.netbeans.modules.jbi.fuji.server.plugin</friend>
                 <package>org.netbeans.modules.glassfish.spi</package>
             </friend-packages>
+            <class-path-extension>
+                <runtime-relative-path>ext/sdk-0.1-SNAPSHOT.jar</runtime-relative-path>
+                <binary-origin>external/sdk-0.1-SNAPSHOT.jar</binary-origin>
+            </class-path-extension>
         </data>
     </configuration>
 </project>
