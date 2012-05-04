@@ -110,7 +110,7 @@ public class YamlScanner implements StructureScanner {
 
         Map<String, List<OffsetRange>> folds = new HashMap<String, List<OffsetRange>>();
         List<OffsetRange> codeblocks = new ArrayList<OffsetRange>();
-        folds.put("codeblocks", codeblocks); // NOI18N
+        folds.put("tags", codeblocks); // NOI18N
         BaseDocument doc = (BaseDocument) result.getSnapshot().getSource().getDocument(false);
 
         if (doc != null) {
