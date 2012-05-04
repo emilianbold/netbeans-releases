@@ -211,7 +211,7 @@ public final class UpdateElement {
     /** Returns ID of license agreement if the <code>UpdateElement</code> has a copyright.
      * 
      * @return String or null
-     * @since 1.31
+     * @since 1.33
      */
     public String getLicenseId () {                
         return impl.getLicenseId ();
