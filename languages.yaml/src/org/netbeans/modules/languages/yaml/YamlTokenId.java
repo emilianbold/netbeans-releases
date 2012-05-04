@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,12 +34,11 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.languages.yaml;
 
 import java.util.Collection;
@@ -62,22 +61,30 @@ import org.openide.util.Lookup;
 
 /**
  * Token type definitions for YAML
- * 
+ *
  * @author Tor Norbye
  */
 public enum YamlTokenId implements TokenId {
+
     TEXT("identifier"),
     COMMENT("comment"),
-    /** Contents inside <%# %> */
+    /**
+     * Contents inside <%# %>
+     */
     RUBYCOMMENT("comment"),
-    /** Contents inside <%= %> */
+    /**
+     * Contents inside <%= %>
+     */
     RUBY_EXPR("ruby"),
-    /** Contents inside <% %> */
+    /**
+     * Contents inside <% %>
+     */
     RUBY("ruby"),
-    /** <% or %> */
+    /**
+     * <% or %>
+     */
     DELIMITER("ruby-delimiter"),
     PHP("php");
-
     private final String primaryCategory;
 
     YamlTokenId(String primaryCategory) {
@@ -91,9 +98,9 @@ public enum YamlTokenId implements TokenId {
     public static boolean isRuby(TokenId id) {
         return id == RUBY || id == RUBY_EXPR || id == RUBYCOMMENT;
     }
-
     private static final Language<YamlTokenId> language =
-        new LanguageHierarchy<YamlTokenId>() {
+            new LanguageHierarchy<YamlTokenId>() {
+
                 protected String mimeType() {
                     return YamlTokenId.YAML_MIME_TYPE;
                 }
@@ -105,7 +112,7 @@ public enum YamlTokenId implements TokenId {
                 @Override
                 protected Map<String, Collection<YamlTokenId>> createTokenCategories() {
                     Map<String, Collection<YamlTokenId>> cats =
-                        new HashMap<String, Collection<YamlTokenId>>();
+                            new HashMap<String, Collection<YamlTokenId>>();
                     return cats;
                 }
 
@@ -115,16 +122,15 @@ public enum YamlTokenId implements TokenId {
 
                 @Override
                 protected LanguageEmbedding<? extends TokenId> embedding(Token<YamlTokenId> token,
-                                          LanguagePath languagePath, InputAttributes inputAttributes) {
-                    switch(token.id()) {
+                        LanguagePath languagePath, InputAttributes inputAttributes) {
+                    switch (token.id()) {
                         case RUBY_EXPR:
                         case RUBY:
                             // No dependency on the Ruby module:
                             //Language rubyLanguage = RubyTokenId.language();
                             Language<? extends TokenId> rubyLanguage = null;
 
-                            @SuppressWarnings("unchecked")
-                            Collection<LanguageProvider> providers = (Collection<LanguageProvider>) Lookup.getDefault().lookupAll(LanguageProvider.class);
+                            @SuppressWarnings("unchecked") Collection<LanguageProvider> providers = (Collection<LanguageProvider>) Lookup.getDefault().lookupAll(LanguageProvider.class);
                             for (LanguageProvider provider : providers) {
                                 rubyLanguage = (Language<? extends TokenId>) provider.findLanguage(RubyEmbeddingProvider.RUBY_MIME_TYPE);
                                 if (rubyLanguage != null) {
@@ -153,10 +159,9 @@ public enum YamlTokenId implements TokenId {
     public static Language<YamlTokenId> language() {
         return language;
     }
-
     /**
-     * MIME type for YAML. Don't change this without also consulting the various XML files
-     * that cannot reference this value directly.
+     * MIME type for YAML. Don't change this without also consulting the various
+     * XML files that cannot reference this value directly.
      */
     public static final String YAML_MIME_TYPE = "text/x-yaml"; // NOI18N
 }

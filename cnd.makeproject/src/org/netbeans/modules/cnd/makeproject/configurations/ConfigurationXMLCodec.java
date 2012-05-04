@@ -375,6 +375,10 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             if (currentCCCCompilerConfiguration != null) {
                 currentList = currentCCCCompilerConfiguration.getPreprocessorConfiguration().getValue();
             }
+        } else if (element.equals(UNDEFS_LIST_ELEMENT)) {
+            if (currentCCCCompilerConfiguration != null) {
+                currentList = currentCCCCompilerConfiguration.getUndefinedPreprocessorConfiguration().getValue();
+            }
         } else if (element.equals(LINKER_ADD_LIB_ELEMENT)) {
             if (currentLinkerConfiguration != null) {
                 currentList = currentLinkerConfiguration.getAdditionalLibs().getValue();
@@ -573,6 +577,8 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             ((MakeProject) projectDescriptor.getProject()).setSourceEncoding(getString(currentText));
         } else if (element.equals(PREPROCESSOR_LIST_ELEMENT)) {
             currentList = null;
+        } else if (element.equals(UNDEFS_LIST_ELEMENT)) {
+            currentList = null;
         } else if (element.equals(ITEM_PATH_ELEMENT)) {
             String path = currentText;
             path = getString(adjustOffset(path));
@@ -659,8 +665,6 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             }
             currentArchiverConfiguration = null;
         } else if (element.equals(INCLUDE_DIRECTORIES_ELEMENT2) || element.equals(INCLUDE_DIRECTORIES_ELEMENT)) {
-            currentList = null;
-        } else if (element.equals(PREPROCESSOR_LIST_ELEMENT)) {
             currentList = null;
         } else if (element.equals(LINKER_ADD_LIB_ELEMENT)) {
             currentList = null;

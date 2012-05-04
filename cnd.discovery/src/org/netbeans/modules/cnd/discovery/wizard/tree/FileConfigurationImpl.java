@@ -90,6 +90,11 @@ public class FileConfigurationImpl extends NodeConfigurationImpl implements File
     public Map<String,String> getUserMacros() {
         return sourceFile.getUserMacros();
     }
+    
+    @Override
+    public List<String> getUndefinedMacros() {
+        return sourceFile.getUndefinedMacros();
+    }
 
     @Override
     public LanguageStandard getLanguageStandard() {

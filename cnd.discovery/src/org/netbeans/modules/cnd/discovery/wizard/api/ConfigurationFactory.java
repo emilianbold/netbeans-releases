@@ -125,32 +125,41 @@ public final class ConfigurationFactory {
         FolderConfigurationImpl root = (FolderConfigurationImpl)project.getRoot();
         Set<String> userIncludes = new LinkedHashSet<String>();
         Map<String,String> userMacros = new HashMap<String,String>();
-        consolidateProject(root, userIncludes, userMacros);
+        Set<String> undefinedMacros = new LinkedHashSet<String>();
+        consolidateProject(root, userIncludes, userMacros, undefinedMacros);
         root.setOverrideIncludes(false);
         root.setOverrideMacros(false);
+        root.setOverrideUndefinedMacros(false);
         root.setUserInludePaths(null);
         root.setUserMacros(null);
+        root.setUndefinedMacros(null);
         ((ProjectConfigurationImpl)project).setUserInludePaths(userIncludes);
         ((ProjectConfigurationImpl)project).setUserMacros(userMacros);
+        ((ProjectConfigurationImpl)project).setUndefinedMacros(undefinedMacros);
     }
     
-    private static void consolidateProject(FolderConfigurationImpl folder, Set<String> userIncludes, Map<String,String> userMacros){
+    private static void consolidateProject(FolderConfigurationImpl folder, Set<String> userIncludes, Map<String,String> userMacros, Set<String> undefinedMacros){
         for(FolderConfiguration f : folder.getFolders()){
             FolderConfigurationImpl sub = (FolderConfigurationImpl)f;
-            consolidateProject(sub, userIncludes, userMacros);
+            consolidateProject(sub, userIncludes, userMacros, undefinedMacros);
             sub.setOverrideIncludes(false);
             sub.setOverrideMacros(false);
+            sub.setOverrideUndefinedMacros(false);
             sub.setUserInludePaths(null);
             sub.setUserMacros(null);
+            sub.setUndefinedMacros(null);
         }
         for(FileConfiguration f : folder.getFiles()){
             FileConfigurationImpl file =((FileConfigurationImpl)f);
             userIncludes.addAll(file.getUserInludePaths());
             userMacros.putAll(file.getUserMacros());
+            undefinedMacros.addAll(file.getUndefinedMacros());
             file.setOverrideIncludes(false);
             file.setOverrideMacros(false);
+            file.setOverrideUndefinedMacros(false);
             file.setUserInludePaths(null);
             file.setUserMacros(null);
+            file.setUndefinedMacros(null);
         }
     }
     
@@ -159,6 +168,7 @@ public final class ConfigurationFactory {
         consolidateFolder(root);
         ((ProjectConfigurationImpl)project).setUserInludePaths(null);
         ((ProjectConfigurationImpl)project).setUserMacros(null);
+        ((ProjectConfigurationImpl)project).setUndefinedMacros(null);
     }
     
     private static void consolidateFolder(FolderConfigurationImpl folder){
@@ -168,27 +178,35 @@ public final class ConfigurationFactory {
         }
         Set<String> userIncludes = new LinkedHashSet<String>();
         Map<String,String> userMacros = new HashMap<String,String>();
+        Set<String> undefinedMacros = new LinkedHashSet<String>();
         boolean hasFiles = false;
         for(FileConfiguration f : folder.getFiles()){
             hasFiles = true;
             FileConfigurationImpl file =((FileConfigurationImpl)f);
             userIncludes.addAll(file.getUserInludePaths());
             userMacros.putAll(file.getUserMacros());
+            undefinedMacros.addAll(file.getUndefinedMacros());
             file.setOverrideIncludes(false);
             file.setOverrideMacros(false);
+            file.setOverrideUndefinedMacros(false);
             file.setUserInludePaths(null);
             file.setUserMacros(null);
+            file.setUndefinedMacros(null);
         }
         if (hasFiles){
             folder.setOverrideIncludes(true);
             folder.setOverrideMacros(true);
+            folder.setOverrideUndefinedMacros(true);
             folder.setUserInludePaths(userIncludes);
             folder.setUserMacros(userMacros);
+            folder.setUndefinedMacros(undefinedMacros);
         } else {
             folder.setOverrideIncludes(false);
             folder.setOverrideMacros(false);
+            folder.setOverrideUndefinedMacros(false);
             folder.setUserInludePaths(null);
             folder.setUserMacros(null);
+            folder.setUndefinedMacros(null);
         }
     }
     
@@ -197,11 +215,13 @@ public final class ConfigurationFactory {
         consolidateFile(root);
         ((ProjectConfigurationImpl)project).setUserInludePaths(root.getUserInludePaths(false));
         ((ProjectConfigurationImpl)project).setUserMacros(root.getUserMacros(false));
+        ((ProjectConfigurationImpl)project).setUndefinedMacros(root.getUndefinedMacros(false));
     }
     
     private static void consolidateFile(FolderConfigurationImpl folder){
         Set<String> commonFoldersIncludes = new HashSet<String>();
         Map<String,String> commonFoldersMacros = new HashMap<String,String>();
+        Set<String> commonFoldersUndefinedMacros = new HashSet<String>();
         boolean haveSubFolders = false;
         for(FolderConfiguration f : folder.getFolders()){
             FolderConfigurationImpl subFolder = (FolderConfigurationImpl) f;
@@ -209,6 +229,7 @@ public final class ConfigurationFactory {
             if (!haveSubFolders) {
                 commonFoldersIncludes.addAll(subFolder.getUserInludePaths(false));
                 commonFoldersMacros.putAll(subFolder.getUserMacros(false));
+                commonFoldersUndefinedMacros.addAll(subFolder.countUndefinedMacros());
                 haveSubFolders = true;
             } else {
                 if (commonFoldersIncludes.size() > 0) {
@@ -227,23 +248,30 @@ public final class ConfigurationFactory {
                     }
                     commonFoldersMacros = newcommonFoldersMacros;
                 }
+                if (commonFoldersUndefinedMacros.size() > 0) {
+                    commonFoldersUndefinedMacros.retainAll(subFolder.getUndefinedMacros(false));
+                }
             }
         }
         Set<String> commonFilesIncludes = new HashSet<String>();
         Map<String,String> commonFilesMacros = new HashMap<String,String>();
+        Set<String> commonFilesUndefinedMacros = new HashSet<String>();
         boolean first = true;
         if (haveSubFolders) {
             commonFilesIncludes = new HashSet<String>(commonFoldersIncludes);
             commonFilesMacros = new HashMap<String,String>(commonFoldersMacros);
+            commonFilesUndefinedMacros = new HashSet<String>(commonFoldersUndefinedMacros);
             first = false;
         }
         for(FileConfiguration f : folder.getFiles()){
             FileConfigurationImpl file =((FileConfigurationImpl)f);
             file.setOverrideIncludes(false);
             file.setOverrideMacros(false);
+            file.setOverrideUndefinedMacros(false);
             if (first) {
                 commonFilesIncludes.addAll(file.getUserInludePaths());
                 commonFilesMacros.putAll(file.getUserMacros());
+                commonFilesUndefinedMacros.addAll(file.getUndefinedMacros());
                 first = false;
             } else {
                 if (commonFilesIncludes.size() > 0) {
@@ -262,12 +290,17 @@ public final class ConfigurationFactory {
                     }
                     commonFilesMacros = newCommonMacros;
                 }
+                if (commonFilesUndefinedMacros.size() > 0) {
+                    commonFilesUndefinedMacros.retainAll(file.getUndefinedMacros());
+                }
             }
             file.setUserInludePaths(file.getUserInludePaths());
             file.setUserMacros(file.getUserMacros());
+            file.setUndefinedMacros(file.getUndefinedMacros());
         }
         folder.setOverrideIncludes(false);
         folder.setOverrideMacros(false);
+        folder.setOverrideUndefinedMacros(false);
         if (commonFilesIncludes.size() > 0) {
             folder.setUserInludePaths(commonFilesIncludes);
         } else {
@@ -277,6 +310,11 @@ public final class ConfigurationFactory {
             folder.setUserMacros(commonFilesMacros);
         } else {
             folder.setUserMacros(null);
+        }
+        if (commonFilesUndefinedMacros.size() > 0) {
+            folder.setUndefinedMacros(commonFilesUndefinedMacros);
+        } else {
+            folder.setUndefinedMacros(null);
         }
     }
 }

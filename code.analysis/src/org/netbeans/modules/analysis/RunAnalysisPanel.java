@@ -68,6 +68,7 @@ import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -118,8 +119,10 @@ public class RunAnalysisPanel extends javax.swing.JPanel implements LookupListen
     private       Collection<? extends AnalyzerFactory> analyzers;
     private final Lookup.Result<AnalyzerFactory> analyzersResult;
     private final Map<String, AnalyzerAndWarning> warningId2Description = new HashMap<String, AnalyzerAndWarning>();
+    private final JButton runAnalysis;
 
-    public RunAnalysisPanel(ProgressHandle handle, Lookup context) {
+    public RunAnalysisPanel(ProgressHandle handle, Lookup context, JButton runAnalysis) {
+        this.runAnalysis = runAnalysis;
         this.analyzersResult = Lookup.getDefault().lookupResult(AnalyzerFactory.class);
         this.analyzersResult.addLookupListener(this);
         
@@ -326,17 +329,22 @@ public class RunAnalysisPanel extends javax.swing.JPanel implements LookupListen
 
         Context ctx = SPIAccessor.ACCESSOR.createContext(null, null, null, null, -1, -1);
         Set<MissingPlugin> plugins = new HashSet<MissingPlugin>();
+        boolean someOk = false;
 
         for (AnalyzerFactory a : toRun) {
-            plugins.addAll(a.requiredPlugins(ctx));
+            Collection<? extends MissingPlugin> req = a.requiredPlugins(ctx);
+            plugins.addAll(req);
+            someOk |= req.isEmpty();
         }
 
         if (plugins.isEmpty()) {
             ((CardLayout) progress.getLayout()).show(progress, "empty");
         } else {
-            requiredPlugins.setRequiredPlugins(plugins);
+            requiredPlugins.setRequiredPlugins(plugins, !someOk);
             ((CardLayout) progress.getLayout()).show(progress, "plugins");
         }
+        
+        runAnalysis.setEnabled(someOk);
     }
 
     public Scope getSelectedScope(AtomicBoolean cancel) {

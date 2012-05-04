@@ -265,7 +265,7 @@ public class HtmlHintsProvider implements HintsProvider {
         for (HtmlExtension ext : HtmlExtension.getRegisteredExtensions(context.parserResult.getSnapshot().getSource().getMimeType())) {
             ext.computeErrors(manager, context, hints, unhandled);
         }
-
+        
     }
 
     //possibly reenable later once hint fixes are implementd for validator.nu errors

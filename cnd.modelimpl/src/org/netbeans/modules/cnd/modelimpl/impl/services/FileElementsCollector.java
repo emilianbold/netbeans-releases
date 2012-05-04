@@ -60,6 +60,7 @@ import org.netbeans.modules.cnd.api.model.CsmUsingDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUsingDirective;
 import org.netbeans.modules.cnd.api.model.deep.CsmDeclarationStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpressionStatement;
+import org.netbeans.modules.cnd.api.model.services.CsmObjectAttributeQuery;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
@@ -320,7 +321,9 @@ public class FileElementsCollector {
                     }
                 }
             }
-            if (endOffset < end) {
+            // skip if we're not inside the namespace scope
+            if (endOffset > CsmObjectAttributeQuery.getDefault().getLeftBracketOffset(nsd) &&
+                    endOffset < end) {
                 // put in the end of list
                 if (namespace != null) {
                     localDirectVisibleNamespaces.remove(namespace);

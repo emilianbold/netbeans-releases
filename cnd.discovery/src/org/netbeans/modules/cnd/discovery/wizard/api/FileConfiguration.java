@@ -81,4 +81,5 @@ public interface FileConfiguration extends NodeConfiguration {
 
     Map<String,String> getUserMacros();
     
+    List<String> getUndefinedMacros();
 }

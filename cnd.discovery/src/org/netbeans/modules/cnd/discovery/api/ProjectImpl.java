@@ -79,6 +79,7 @@ public final class ProjectImpl implements ProjectProperties {
     private Set<String> userIncludes = new LinkedHashSet<String>();
     private Set<String> systemIncludes = new LinkedHashSet<String>();
     private Map<String,String> userMacros = new HashMap<String,String>();
+    private Set<String> undefinedMacros = new LinkedHashSet<String>();
     private Map<String,FolderProperties> folders = new HashMap<String,FolderProperties>();
     
     /** Creates a new instance of DwarfProject */
@@ -96,6 +97,7 @@ public final class ProjectImpl implements ProjectProperties {
             userIncludes.add(DiscoveryUtils.convertRelativePathToAbsolute(source,path));
         }
         userMacros.putAll(source.getUserMacros());
+        undefinedMacros.addAll(source.getUndefinedMacros());
         if (gatherFolders) {
             updateFolder(source);
         }
@@ -180,7 +182,15 @@ public final class ProjectImpl implements ProjectProperties {
         if (m1.size() != m2.size()) {
             return false;
         }
-        return new HashMap<String, String>(m1).equals(m2);
+        if (!new HashMap<String, String>(m1).equals(m2)) {
+            return false;
+        }
+        Set<String> u1 = new HashSet<String>(newSource.getUndefinedMacros());
+        Set<String> u2 = new HashSet<String>(oldSource.getUndefinedMacros());
+        if (u1.size() != u2.size()) {
+            return false;
+        }
+        return u1.equals(u2);
     }
     
     private static List<SourceFileProperties> getExistingProjectItems(ProjectProxy project) {
@@ -266,6 +276,11 @@ public final class ProjectImpl implements ProjectProperties {
     public Map<String, String> getUserMacros() {
         return userMacros;
     }
+
+    @Override
+    public List<String> getUndefinedMacros() {
+        return new ArrayList<String>(undefinedMacros);
+    }
     
     @Override
     public Map<String, String> getSystemMacros() {
@@ -292,11 +307,13 @@ public final class ProjectImpl implements ProjectProperties {
         private final Item item;
         private final List<String> userIncludePaths;
         private final Map<String, String> userMacroDefinitions;
+        private final List<String> userUndefinesMacros;
         
         private ItemWrapper(Item item) {
             this.item = item;
             userIncludePaths = convertFSPaths(item.getUserIncludePaths());
             userMacroDefinitions =  convertToMap(item.getUserMacroDefinitions());
+            userUndefinesMacros =  new ArrayList<String>(item.getUndefinedMacros());
         }
 
         private List<String> convertFSPaths(List<FSPath> list) {
@@ -353,6 +370,11 @@ public final class ProjectImpl implements ProjectProperties {
         @Override
         public Map<String, String> getUserMacros() {
             return userMacroDefinitions;
+        }
+
+        @Override
+        public List<String> getUndefinedMacros() {
+            return userUndefinesMacros;
         }
 
         @Override
