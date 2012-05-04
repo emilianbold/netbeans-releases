@@ -195,7 +195,6 @@ public class FilterPanel extends javax.swing.JPanel {
                 }
             }
         });
-        rbAllStatuses.setSelected(true);
         groupStatus.add(rbAllStatuses);
         popup.add(rbAllStatuses);
 
@@ -213,6 +212,7 @@ public class FilterPanel extends javax.swing.JPanel {
                 }
             }
         });
+        rbOpenedStatus.setSelected(true);
         groupStatus.add(rbOpenedStatus);
         popup.add(rbOpenedStatus);
 

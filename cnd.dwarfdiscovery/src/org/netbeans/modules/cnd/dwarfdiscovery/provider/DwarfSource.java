@@ -463,7 +463,6 @@ public class DwarfSource implements SourceFileProperties{
         if (DwarfSource.LOG.isLoggable(Level.FINE)) {
             DwarfSource.LOG.log(Level.FINE, "Process command line {0}", line); // NOI18N
         }
-        Iterator<String> st = DiscoveryUtils.scanCommandLine(line).iterator();
         List<String> aUserIncludes = new ArrayList<String>();
         Map<String, String> aUserMacros = new HashMap<String, String>();
         List<String> languageArtifacts = new ArrayList<String>();

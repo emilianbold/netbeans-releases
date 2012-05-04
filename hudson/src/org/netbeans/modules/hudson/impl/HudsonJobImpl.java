@@ -57,6 +57,7 @@ import static org.netbeans.modules.hudson.impl.Bundle.*;
 import org.netbeans.modules.hudson.ui.interfaces.OpenableInBrowser;
 import org.netbeans.modules.hudson.util.HudsonPropertiesSupport;
 import org.openide.filesystems.FileSystem;
+import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle.Messages;
@@ -88,53 +89,55 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
         properties.putProperty(name, o);
     }
     
-    @NonNull public String getDisplayName() {
+    @NonNull @Override public String getDisplayName() {
         return properties.getProperty(JOB_DISPLAY_NAME, String.class, getName());
     }
     
-    @NonNull public String getName() {
-        return properties.getProperty(JOB_NAME, String.class);
+    @NonNull @Override public String getName() {
+        String n = properties.getProperty(JOB_NAME, String.class);
+        assert n != null;
+        return n;
     }
     
-    @NonNull public String getUrl() {
+    @NonNull @Override public String getUrl() {
         String url = properties.getProperty(JOB_URL, String.class);
-        assert url.endsWith("/") : url;
+        assert url != null && url.endsWith("/") : url;
         return url;
     }
     
-    @NonNull public Color getColor() {
+    @NonNull @Override public Color getColor() {
         return properties.getProperty(JOB_COLOR, Color.class, Color.grey);
     }
     
-    public boolean isInQueue() {
+    @Override public boolean isInQueue() {
         return properties.getProperty(JOB_IN_QUEUE, Boolean.class, false);
     }
     
-    public boolean isBuildable() {
+    @Override public boolean isBuildable() {
         return properties.getProperty(JOB_BUILDABLE, Boolean.class, false);
     }
     
-    public int getLastBuild() {
+    @Override public int getLastBuild() {
         return properties.getProperty(JOB_LAST_BUILD, Integer.class, -1);
     }
     
-    public int getLastStableBuild() {
+    @Override public int getLastStableBuild() {
         return properties.getProperty(JOB_LAST_STABLE_BUILD, Integer.class, -1);
     }
     
-    public int getLastSuccessfulBuild() {
+    @Override public int getLastSuccessfulBuild() {
         return properties.getProperty(JOB_LAST_SUCCESSFUL_BUILD, Integer.class, -1);
     }
     
-    public int getLastFailedBuild() {
+    @Override public int getLastFailedBuild() {
         return properties.getProperty(JOB_LAST_FAILED_BUILD, Integer.class, -1);
     }
     
-    public int getLastCompletedBuild() {
+    @Override public int getLastCompletedBuild() {
         return properties.getProperty(JOB_LAST_COMPLETED_BUILD, Integer.class, -1);
     }
 
-    public Collection<HudsonView> getViews() {
+    @Override public Collection<HudsonView> getViews() {
         return views;
     }
     
@@ -142,7 +145,7 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
         views.add(view);
     }
     
-    public void start() {
+    @Override public void start() {
         instance.getConnector().startJob(this);
     }
 
@@ -162,7 +165,7 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
             set.setDisplayName(getDisplayName());
             
             // Put properties in
-            set.put(new PropertySupport[] {
+            set.put(new Node.Property<?>[] {
                 new HudsonJobProperty(JOB_NAME,
                         TXT_Job_Prop_Name(),
                         DESC_Job_Prop_Name()),
@@ -172,10 +175,10 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
                 new PropertySupport.ReadWrite<Boolean>("salient", Boolean.TYPE, // NOI18N
                         HudsonJobImpl_watched(),
                         HudsonJobImpl_watched_desc()) {
-                    public Boolean getValue() {
+                    @Override public Boolean getValue() {
                         return isSalient();
                     }
-                    public void setValue(Boolean val) {
+                    @Override public void setValue(Boolean val) {
                         if (!getValue().equals(val)) {
                             setSalient(val);
                         }
@@ -187,13 +190,14 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
         return set;
     }
 
-    public FileSystem getRemoteWorkspace() {
+    @Override public FileSystem getRemoteWorkspace() {
         return instance.getRemoteWorkspace(this);
     }
     
     public @Override boolean equals(Object o) {
-        if (!(o instanceof HudsonJobImpl))
+        if (!(o instanceof HudsonJobImpl)) {
             return false;
+        }
         
         final HudsonJobImpl j = (HudsonJobImpl) o;
         
@@ -209,10 +213,12 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
         if (!Utilities.compareObjects(getColor(), j.getColor())) {
             return false;
         }
-        if (isInQueue() != j.isInQueue())
+        if (isInQueue() != j.isInQueue()) {
             return false;
-        if (isBuildable() != j.isBuildable())
+        }
+        if (isBuildable() != j.isBuildable()) {
             return false;
+        }
         if (!Utilities.compareObjects(views, j.views)) {
             return false;
         }
@@ -230,7 +236,7 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
         return getName().hashCode();
     }
     
-    public int compareTo(HudsonJob o) {
+    @Override public int compareTo(HudsonJob o) {
         return getDisplayName().compareTo(o.getDisplayName());
     }
 
@@ -240,22 +246,22 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
     }
 
     private Collection<? extends HudsonJobBuild> builds;
-    public synchronized Collection<? extends HudsonJobBuild> getBuilds() {
+    @Override public synchronized Collection<? extends HudsonJobBuild> getBuilds() {
         if (builds == null) {
             builds = instance.getConnector().getBuilds(this);
         }
         return builds;
     }
 
-    public HudsonInstanceImpl getInstance() {
+    @Override public HudsonInstanceImpl getInstance() {
         return instance;
     }
 
-    public boolean isSalient() {
+    @Override public boolean isSalient() {
         return instance.isSalient(this);
     }
 
-    public void setSalient(boolean b) {
+    @Override public void setSalient(boolean b) {
         instance.setSalient(this, b);
     }
 
@@ -290,7 +296,7 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
     }
 
     private class HudsonJobProperty extends PropertySupport.ReadOnly<String> {
-        public HudsonJobProperty(String key, String name, String desc) {
+        HudsonJobProperty(String key, String name, String desc) {
             super(key, String.class, name, desc);
         }
         public @Override String getValue() {

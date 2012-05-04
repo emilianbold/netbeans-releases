@@ -60,6 +60,7 @@ public abstract class VersionablePOMComponentImpl extends POMComponentImpl imple
     // attributes
 
 
+    @Override
     public String getGroupId() {
         POMModel model = getModel();
         assert model != null;
@@ -70,24 +71,29 @@ public abstract class VersionablePOMComponentImpl extends POMComponentImpl imple
         return getChildElementText(groupid.getQName());
     }
 
+    @Override
     public void setGroupId(String groupId) {
         setChildElementText(getModel().getPOMQNames().GROUPID.getName(), groupId,
                 getModel().getPOMQNames().GROUPID.getQName());
     }
 
+    @Override
     public String getArtifactId() {
         return getChildElementText(getModel().getPOMQNames().ARTIFACTID.getQName());
     }
 
+    @Override
     public void setArtifactId(String artifactId) {
         setChildElementText(getModel().getPOMQNames().ARTIFACTID.getName(), artifactId,
                 getModel().getPOMQNames().ARTIFACTID.getQName());
     }
 
+    @Override
     public String getVersion() {
         return getChildElementText(getModel().getPOMQNames().VERSION.getQName());
     }
 
+    @Override
     public void setVersion(String version) {
         setChildElementText(getModel().getPOMQNames().VERSION.getName(), version,
                 getModel().getPOMQNames().VERSION.getQName());

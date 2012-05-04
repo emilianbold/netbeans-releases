@@ -239,8 +239,10 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
         readProjectExtension(data, CPP_EXTENSIONS, cppExtensions);
         sourceEncoding = getSourceEncodingFromProjectXml();
 
-        if (templateListener == null) {
-            DataLoaderPool.getDefault().addOperationListener(templateListener = new MakeTemplateListener());
+        synchronized(MakeProject.class) {
+            if (templateListener == null) {
+                DataLoaderPool.getDefault().addOperationListener(templateListener = new MakeTemplateListener());
+            }
         }
         LOGGER.log(Level.FINE, "End of creation MakeProject@{0} {1}", new Object[]{System.identityHashCode(MakeProject.this), helper.getProjectDirectory().getNameExt()}); // NOI18N
     }

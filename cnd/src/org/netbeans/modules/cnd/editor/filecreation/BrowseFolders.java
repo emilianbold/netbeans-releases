@@ -67,10 +67,10 @@ import org.openide.explorer.view.BeanTreeView;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
 import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
+import org.openide.nodes.Node;
 import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
 import org.openide.util.NbBundle;
@@ -82,18 +82,14 @@ import org.openide.util.NbCollections;
  */
 public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager.Provider {
     
-    private ExplorerManager manager;
-    private SourceGroup[] folders;
-    private BeanTreeView btv;
-    private Project project;
+    private final ExplorerManager manager;
+    private final BeanTreeView btv;
     
     private static JScrollPane SAMPLE_SCROLL_PANE = new JScrollPane();
     
     /** Creates new form BrowseFolders */
     public BrowseFolders( SourceGroup[] folders, Project project, String preselectedFileName ) {
         initComponents();
-        this.folders = folders;
-        this.project = project;
         
         manager = new ExplorerManager();        
         AbstractNode rootNode = new AbstractNode( new SourceGroupsChildren( folders, project ) );
@@ -114,6 +110,7 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
         
     // ExplorerManager.Provider implementation ---------------------------------
     
+    @Override
     public ExplorerManager getExplorerManager() {
         return manager;
     }
@@ -338,6 +335,7 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
             }
             Collections.sort(l, new Comparator<FileObject>() { // #116545
                 Collator COLL = Collator.getInstance();
+                @Override
                 public int compare(FileObject f1, FileObject f2) {
                     return COLL.compare(f1.getNameExt(), f2.getNameExt());
                 }
@@ -375,6 +373,7 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
             this.browsePanel = browsePanel;
         }
         
+        @Override
         public void actionPerformed( ActionEvent e ) {
             String command = e.getActionCommand();
 

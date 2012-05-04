@@ -41,9 +41,8 @@
  */
 package org.netbeans.modules.maven.model.pom.impl;
 
+import org.netbeans.modules.maven.model.pom.*;
 import org.w3c.dom.Element;
-import org.netbeans.modules.maven.model.pom.*;	
-import org.netbeans.modules.maven.model.pom.POMComponentVisitor;	
 
 /**
  *
@@ -62,32 +61,39 @@ public class DeploymentRepositoryImpl extends IdPOMComponentImpl implements Depl
     // attributes
 
     // child elements
+    @Override
     public void accept(POMComponentVisitor visitor) {
         visitor.visit(this);
     }
 
+    @Override
     public String getUrl() {
         return getChildElementText(getModel().getPOMQNames().URL.getQName());
     }
 
+    @Override
     public void setUrl(String url) {
         setChildElementText(getModel().getPOMQNames().URL.getName(), url,
                 getModel().getPOMQNames().URL.getQName());
     }
 
+    @Override
     public String getName() {
         return getChildElementText(getModel().getPOMQNames().NAME.getQName());
     }
 
+    @Override
     public void setName(String name) {
         setChildElementText(getModel().getPOMQNames().NAME.getName(), name,
                 getModel().getPOMQNames().NAME.getQName());
     }
 
+    @Override
     public String getLayout() {
         return getChildElementText(getModel().getPOMQNames().LAYOUT.getQName());
     }
 
+    @Override
     public void setLayout(String layout) {
         setChildElementText(getModel().getPOMQNames().LAYOUT.getName(), layout,
                 getModel().getPOMQNames().LAYOUT.getQName());

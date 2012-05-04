@@ -214,7 +214,9 @@ public class BlobFieldTableCellEditor extends AbstractCellEditor
     }
 
     /**
-     * @return true if transfer is complete and not iterrupted 
+     * Note: The streams will be closed after this method was invoked
+     * 
+     * @return true if transfer is complete and not interrupted 
      */
     private boolean doTransfer(InputStream is, OutputStream os, Integer size, String title) throws IOException {
         MonitorableStreamTransfer ft = new MonitorableStreamTransfer(is, os, size);
@@ -225,6 +227,8 @@ public class BlobFieldTableCellEditor extends AbstractCellEditor
         } else {
             t = ft.run(null);
         }
+        is.close();
+        os.close();
         if (t != null && t instanceof RuntimeException) {
             throw (RuntimeException) t;
         } else if (t != null && t instanceof IOException) {

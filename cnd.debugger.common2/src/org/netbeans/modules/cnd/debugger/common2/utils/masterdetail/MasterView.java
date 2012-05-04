@@ -44,21 +44,19 @@
 
 package org.netbeans.modules.cnd.debugger.common2.utils.masterdetail;
 
-import javax.swing.JList;
 import java.awt.Component;
-import javax.swing.JPanel;
 import java.awt.event.KeyEvent;
-
-import javax.swing.event.ListSelectionListener;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.ListSelectionModel;
-import javax.swing.ListCellRenderer;
-import javax.swing.JLabel;
-import javax.swing.JButton;
 import javax.accessibility.AccessibleContext;
-
-import org.openide.NotifyDescriptor;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.ListCellRenderer;
+import javax.swing.ListSelectionModel;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.HelpCtx;
 
 /**
@@ -80,7 +78,7 @@ public class MasterView<R extends Record> extends JPanel implements Validator {
 
     // How many elements will be shown in the pick-list menu
     // The MasterView can show more but it will mark the boundry 
-    public static int MAX_VISIBLE_IN_MENU = 20;
+    public final static int MAX_VISIBLE_IN_MENU = 20;
 
     /** Creates new form Make */
     public MasterView (RecordList<R> recordList, DetailView<R> detailView) {
@@ -103,6 +101,7 @@ public class MasterView<R extends Record> extends JPanel implements Validator {
 	// We'll get these as the list gets modified as well.
 
 	list.addListSelectionListener(new ListSelectionListener() {
+            @Override
 	    public void valueChanged(ListSelectionEvent e) {
 		if (e.getValueIsAdjusting())
 		    return;
@@ -131,6 +130,7 @@ public class MasterView<R extends Record> extends JPanel implements Validator {
 
 	// Arrange to update ourselves when our model changes
 	recordList.addRecordListListener(new RecordListListener() {
+            @Override
 	    public void contentsChanged(RecordListEvent e) {
 		updateView();
 	    }
@@ -229,6 +229,7 @@ public class MasterView<R extends Record> extends JPanel implements Validator {
         duplicateButton.setMnemonic(Catalog.get("LISTEDITDIALOG_DUPLICATE_BUTTON_MN").charAt(0)); // NOI18N
         duplicateButton.setText(Catalog.get("LISTEDITDIALOG_DUPLICATE_BUTTON_TXT")); // NOI18N
         duplicateButton.addActionListener(new java.awt.event.ActionListener() {
+            @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 duplicateButtonActionPerformed(evt);
             }
@@ -242,6 +243,7 @@ public class MasterView<R extends Record> extends JPanel implements Validator {
 	deleteButton.setEnabled(false);
         deleteButton.setText(Catalog.get("LISTEDITDIALOG_DELETE_BUTTON_TXT")); // NOI18N
         deleteButton.addActionListener(new java.awt.event.ActionListener() {
+            @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 deleteButtonActionPerformed(evt);
             }
@@ -257,6 +259,7 @@ public class MasterView<R extends Record> extends JPanel implements Validator {
         deleteAllButton.setMnemonic(Catalog.get("LISTEDITDIALOG_DELETE_ALL_BUTTON_MN").charAt(0)); // NOI18N
         deleteAllButton.setText(Catalog.get("LISTEDITDIALOG_DELETE_ALL_BUTTON_TXT")); // NOI18N
         deleteAllButton.addActionListener(new java.awt.event.ActionListener() {
+            @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 deleteAllButtonActionPerformed(evt);
             }
@@ -345,7 +348,7 @@ public class MasterView<R extends Record> extends JPanel implements Validator {
     // Variables declaration - do not modify//GEN-BEGIN:variables
 
     private javax.swing.JPanel listButtonPanel;
-    private javax.swing.JButton cancelButton;
+//    private javax.swing.JButton cancelButton;
     private javax.swing.JButton deleteAllButton;
     private javax.swing.JButton deleteButton;
     private javax.swing.JButton duplicateButton;
@@ -404,7 +407,7 @@ public class MasterView<R extends Record> extends JPanel implements Validator {
 	}
     }
 
-    public void updateView() {
+    public final void updateView() {
 	if (Log.MasterDetail.debug) {
 	    System.out.printf("MasterView.updateView(): targetSelection=%d\n", // NOI18N
 		targetSelection);
@@ -442,6 +445,7 @@ public class MasterView<R extends Record> extends JPanel implements Validator {
     }
 
     class MyCellRenderer extends JLabel implements ListCellRenderer {
+        @Override
 	public Component getListCellRendererComponent(
 	JList list,
 	Object value,            // value to display
@@ -519,17 +523,20 @@ public class MasterView<R extends Record> extends JPanel implements Validator {
     }
 
     // implement Validator
+    @Override
     public void fireChanged() {
 	if (validator != null)
 	    validator.fireChanged();
     }
 
     // implement Validator
+    @Override
     public boolean isRecordValid() {
 	return true;
     }
 
     // implement Validator
+    @Override
     public boolean isDirty() {
 	return dirty;
     }

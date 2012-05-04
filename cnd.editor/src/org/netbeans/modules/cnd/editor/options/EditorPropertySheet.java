@@ -711,6 +711,28 @@ private void manageStylesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
         public int compareTo(EntryWrapper o) {
             return this.displayName.compareTo(o.displayName);
         }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 89 * hash + (this.displayName != null ? this.displayName.hashCode() : 0);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final EntryWrapper other = (EntryWrapper) obj;
+            if ((this.displayName == null) ? (other.displayName != null) : !this.displayName.equals(other.displayName)) {
+                return false;
+            }
+            return true;
+        }
     }
 
     private static class DummyNode extends AbstractNode {

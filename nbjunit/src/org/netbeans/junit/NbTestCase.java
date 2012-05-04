@@ -264,9 +264,12 @@ public abstract class NbTestCase extends TestCase implements NbTest {
     private static void appendThread(StringBuffer sb, String indent, Thread t, Map<Thread,StackTraceElement[]> data) {
         sb.append(indent).append("Thread ").append(t.getName()).append('\n');
         indent = indent.concat("  ");
-        for (StackTraceElement e : data.get(t)) {
+        StackTraceElement[] stack = data.get(t);
+        if (stack != null) {
+        for (StackTraceElement e : stack) {
             sb.append("\tat ").append(e.getClassName()).append('.').append(e.getMethodName())
                     .append('(').append(e.getFileName()).append(':').append(e.getLineNumber()).append(")\n");
+        }
         }
     }
     

@@ -75,24 +75,29 @@ public class ProfileImpl extends SettingsComponentImpl implements Profile {
     // attributes
 
     // child elements
+    @Override
     public Activation getActivation() {
         return getChild(Activation.class);
     }
 
+    @Override
     public void setActivation(Activation activation) {
         setChild(Activation.class, getModel().getSettingsQNames().ACTIVATION.getName(), activation,
                 getClassesBefore(ORDER, Activation.class));
     }
 
+    @Override
     public String getId() {
         return getChildElementText(getModel().getSettingsQNames().ID.getQName());
     }
 
+    @Override
     public void setId(String id) {
         setChildElementText(getModel().getSettingsQNames().ID.getName(), id,
                 getModel().getSettingsQNames().ID.getQName());
     }
 
+    @Override
     public java.util.List<Repository> getRepositories() {
         ModelList<Repository> childs = getChild(RepositoryImpl.RepoList.class);
         if (childs != null) {
@@ -101,6 +106,7 @@ public class ProfileImpl extends SettingsComponentImpl implements Profile {
         return null;
     }
 
+    @Override
     public void addRepository(Repository repo) {
         ModelList<Repository> childs = getChild(RepositoryImpl.RepoList.class);
         if (childs == null) {
@@ -114,6 +120,7 @@ public class ProfileImpl extends SettingsComponentImpl implements Profile {
         childs.addListChild(repo);
     }
 
+    @Override
     public void removeRepository(Repository repo) {
         ModelList<Repository> childs = getChild(RepositoryImpl.RepoList.class);
         if (childs != null) {
@@ -121,6 +128,7 @@ public class ProfileImpl extends SettingsComponentImpl implements Profile {
         }
     }
 
+    @Override
     public java.util.List<Repository> getPluginRepositories() {
         ModelList<Repository> childs = getChild(RepositoryImpl.PluginRepoList.class);
         if (childs != null) {
@@ -129,6 +137,7 @@ public class ProfileImpl extends SettingsComponentImpl implements Profile {
         return null;
     }
 
+    @Override
     public void addPluginRepository(Repository repo) {
         ModelList<Repository> childs = getChild(RepositoryImpl.PluginRepoList.class);
         if (childs == null) {
@@ -142,6 +151,7 @@ public class ProfileImpl extends SettingsComponentImpl implements Profile {
         childs.addListChild(repo);
     }
 
+    @Override
     public void removePluginRepository(Repository repo) {
         ModelList<Repository> childs = getChild(RepositoryImpl.PluginRepoList.class);
         if (childs != null) {
@@ -151,16 +161,19 @@ public class ProfileImpl extends SettingsComponentImpl implements Profile {
 
 
 
+    @Override
     public Properties getProperties() {
         return getChild(Properties.class);
     }
 
+    @Override
     public void setProperties(Properties props) {
         setChild(Properties.class, getModel().getSettingsQNames().PROPERTIES.getName(), props,
                 getClassesBefore(ORDER, Properties.class));
     }
 
 
+    @Override
     public void accept(SettingsComponentVisitor visitor) {
         visitor.visit(this);
     }

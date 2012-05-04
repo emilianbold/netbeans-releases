@@ -69,6 +69,7 @@ public class MoreDeclarations extends AbstractAction implements Presenter.Popup 
     public MoreDeclarations(Collection<? extends CsmOffsetableDeclaration> arr) {
         this.arr = arr;
     }
+    @Override
     public JMenuItem getPopupPresenter() {
         JMenu result = new JMenu();
         List<ItemWrapper> list = new ArrayList<ItemWrapper>();
@@ -100,7 +101,7 @@ public class MoreDeclarations extends AbstractAction implements Presenter.Popup 
                 if (first != null && last != null){
                     current.setText(first.getContainingFile().getName()+" ... "+last.getContainingFile().getName()); // NOI18N
                     result.add(current);
-                } else {
+                } else if (first != null) {
                     result.add(createItem(first));
                 }
             }
@@ -117,6 +118,7 @@ public class MoreDeclarations extends AbstractAction implements Presenter.Popup 
         return item;
     }
 
+    @Override
     public void actionPerformed(ActionEvent ae) {
         JMenuItem item = (JMenuItem) ae.getSource();
         CsmOffsetableDeclaration decl = (CsmOffsetableDeclaration) item.getClientProperty(PROP_DECLARATION);
@@ -131,8 +133,31 @@ public class MoreDeclarations extends AbstractAction implements Presenter.Popup 
             this.decl = decl;
             name = decl.getContainingFile().getName();
         }
+        @Override
         public int compareTo(MoreDeclarations.ItemWrapper o) {
             return CharSequences.comparator().compare(name,o.name);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final ItemWrapper other = (ItemWrapper) obj;
+            if (this.name != other.name && (this.name == null || !this.name.equals(other.name))) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 61 * hash + (this.name != null ? this.name.hashCode() : 0);
+            return hash;
         }
     }
 }

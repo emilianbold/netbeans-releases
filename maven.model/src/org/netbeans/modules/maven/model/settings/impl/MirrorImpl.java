@@ -41,11 +41,7 @@
  */
 package org.netbeans.modules.maven.model.settings.impl;
 
-import org.netbeans.modules.maven.model.settings.Activation;
 import org.netbeans.modules.maven.model.settings.Mirror;
-import org.netbeans.modules.maven.model.settings.ModelList;
-import org.netbeans.modules.maven.model.settings.Properties;
-import org.netbeans.modules.maven.model.settings.Repository;
 import org.netbeans.modules.maven.model.settings.SettingsComponent;
 import org.netbeans.modules.maven.model.settings.SettingsComponentVisitor;
 import org.netbeans.modules.maven.model.settings.SettingsModel;
@@ -73,14 +69,17 @@ public class MirrorImpl extends SettingsComponentImpl implements Mirror {
     // child elements
 
 
+    @Override
     public void accept(SettingsComponentVisitor visitor) {
         visitor.visit(this);
     }
 
+    @Override
     public String getName() {
         return getChildElementText(getModel().getSettingsQNames().NAME.getQName());
     }
 
+    @Override
     public void setName(String name) {
         setChildElementText(getModel().getSettingsQNames().NAME.getName(), name,
                 getModel().getSettingsQNames().NAME.getQName());
@@ -88,28 +87,34 @@ public class MirrorImpl extends SettingsComponentImpl implements Mirror {
 
 
 
+    @Override
     public String getUrl() {
         return getChildElementText(getModel().getSettingsQNames().URL.getQName());
     }
 
+    @Override
     public void setUrl(String url) {
         setChildElementText(getModel().getSettingsQNames().URL.getName(), url,
                 getModel().getSettingsQNames().URL.getQName());
     }
 
+    @Override
     public String getMirrorOf() {
         return getChildElementText(getModel().getSettingsQNames().MIRROROF.getQName());
     }
 
+    @Override
     public void setMirrorOf(String mirrorof) {
         setChildElementText(getModel().getSettingsQNames().MIRROROF.getName(), mirrorof,
                 getModel().getSettingsQNames().MIRROROF.getQName());
     }
 
+    @Override
     public String getId() {
         return getChildElementText(getModel().getSettingsQNames().ID.getQName());
     }
 
+    @Override
     public void setId(String id) {
         setChildElementText(getModel().getSettingsQNames().ID.getName(), id,
                 getModel().getSettingsQNames().ID.getQName());

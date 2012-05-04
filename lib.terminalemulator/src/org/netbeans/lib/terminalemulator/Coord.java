@@ -59,7 +59,7 @@ package org.netbeans.lib.terminalemulator;
  * </ul>
  */
 
-public class Coord implements Comparable {
+public final class Coord implements Comparable {
     public int row;
     public int col;
 
@@ -107,16 +107,12 @@ public class Coord implements Comparable {
 
     // Overrides of Object:
 
+    @Override
     public Object clone() {
 	return new Coord(row, col);
     } 
 
-    public boolean equals(Coord target) { // XXX param should be Object and also hashCode should be overriden
-	if (row != target.row)
-	    return false;
-	return col == target.col;
-    } 
-
+    @Override
     public String toString() {
 	return "(r=" + row + ",c=" + col + ")";	// NOI18N
     } 
@@ -130,6 +126,7 @@ public class Coord implements Comparable {
      * a &gt= b	=== a.compareTo(b) &gt= 0
      * </pre>
      */
+    @Override
     public int compareTo(Object o) throws ClassCastException {
 	Coord target = (Coord) o;
 

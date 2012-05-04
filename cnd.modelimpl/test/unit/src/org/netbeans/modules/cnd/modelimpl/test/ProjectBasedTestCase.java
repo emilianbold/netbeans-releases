@@ -50,9 +50,7 @@ import java.util.*;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmModel;
 import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImplTest;
-import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.trace.TestModelHelper;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
 
@@ -73,10 +71,11 @@ import org.netbeans.modules.cnd.test.CndCoreTestUtils;
  */
 public abstract class ProjectBasedTestCase extends ModelBasedTestCase {
 
-    private Map<String, TestModelHelper> projectHelpers = new HashMap<String, TestModelHelper>();
-    private List<String>    sysIncludes = Collections.<String>emptyList();
-    private List<String>    usrIncludes = Collections.<String>emptyList();
-    
+    private final Map<String, TestModelHelper> projectHelpers = new HashMap<String, TestModelHelper>();
+    private final Map<String, List<String>>    sysIncludes = new HashMap<String, List<String>>();
+    private final Map<String, List<String>>    usrIncludes = new HashMap<String, List<String>>();
+    private final Map<String, List<String>> projectDependencies = new HashMap<String, List<String>>();
+
     protected PrintWriter outputWriter  = null;
     
     protected PrintWriter logWriter = null;
@@ -100,20 +99,28 @@ public abstract class ProjectBasedTestCase extends ModelBasedTestCase {
         this.performInWorkDir = performInWorkDir;
     }
 
-    protected final List<String> getSysIncludes() {
-        return sysIncludes;
+    protected final List<String> getSysIncludes(String prjPath) {
+        return getProjectPaths(this.sysIncludes, prjPath);
     }
 
-    protected void setSysIncludes(List<String> sysIncludes) {
-        this.sysIncludes = sysIncludes;
+    protected void setSysIncludes(String prjPath, List<String> sysIncludes) {
+        this.sysIncludes.put(prjPath, sysIncludes);
     }
 
-    protected final List<String> getUsrIncludes() {
-        return usrIncludes;
+    protected final List<String> getUsrIncludes(String prjPath) {
+        return getProjectPaths(this.usrIncludes, prjPath);
     }
 
-    protected void setUsrIncludes(List<String> usrIncludes) {
-        this.usrIncludes = usrIncludes;
+    protected void setLibProjectsPaths(String prjPath, List<String> dependentProjects) {
+        this.projectDependencies.put(prjPath, dependentProjects);
+    }
+
+    protected List<String> getLibProjectsPaths(String prjPath) {
+        return getProjectPaths(this.projectDependencies, prjPath);
+    }
+
+    protected void setUsrIncludes(String prjPath, List<String> usrIncludes) {
+        this.usrIncludes.put(prjPath, usrIncludes);
     }
     
 //    protected final void initDocumentSettings() {
@@ -155,8 +162,9 @@ public abstract class ProjectBasedTestCase extends ModelBasedTestCase {
         for (int i = 0; i < changedDirs.length; i++) {
             File file = changedDirs[i];
             TestModelHelper projectHelper = new TestModelHelper(i==0);
-            projectHelper.initParsedProject(file.getAbsolutePath(), getSysIncludes(), getUsrIncludes());
-            projectHelpers.put(file.getAbsolutePath(), projectHelper);
+            String prjPath = file.getAbsolutePath();
+            projectHelper.initParsedProject(prjPath, getSysIncludes(prjPath), getUsrIncludes(prjPath), getLibProjectsPaths(prjPath));
+            projectHelpers.put(prjPath, projectHelper);
         }
         log("setUp finished preparing project.");
         log("Test "+getName()+  "started");
@@ -194,8 +202,9 @@ public abstract class ProjectBasedTestCase extends ModelBasedTestCase {
             logWriter.flush();
             logWriter.close();
         }
-        sysIncludes = Collections.<String>emptyList();
-        usrIncludes = Collections.<String>emptyList();
+        sysIncludes.clear();
+        usrIncludes.clear();
+        projectDependencies.clear();
     }
 
     @Override
@@ -264,5 +273,13 @@ public abstract class ProjectBasedTestCase extends ModelBasedTestCase {
         assert doc != null;
         int offset = CndCoreTestUtils.getDocumentOffset(doc, lineIndex, colIndex);  
         return offset;
+    }
+
+    private List<String> getProjectPaths(Map<String, List<String>> map, String prjPath) {
+        List<String> dependentProjects = map.get(prjPath);
+        if (dependentProjects == null) {
+            return Collections.emptyList();
+        }
+        return dependentProjects;
     }
 }
