@@ -1418,6 +1418,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         Collection<ProjectBase> dependentProjects = getDependentProjects();
         synchronized (stateLock) {
             fileContainer.invalidatePreprocState(absPath);
+            this.invalidateIncludedPreprocState(stateLock, this, absPath);
             for (ProjectBase projectBase : dependentProjects) {
                 projectBase.invalidateIncludedPreprocState(stateLock, this, absPath);
             }
@@ -1545,9 +1546,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     statesToParse.add(newState);
                     AtomicBoolean clean = new AtomicBoolean(false);
                     thisProjectUpdateResult = updateFileEntryBasedOnIncludedStatePair(entry, newStatePair, file, csmFile, clean, statesToParse);
-                    if (thisProjectUpdateResult && startProject != this) {
-                        // we found the "best from the bests" for the current lib
-                        // have to be considered as the best in start project lib storage as well
+                    if (thisProjectUpdateResult) {
+                        // start project can be this project or another project, but
+                        // we found the "best from the bests" for the current lib;
+                        // it have to be considered as the best in start project lib storage as well
                         if (!startProjectUpdateResult) {
                             CndUtils.assertTrueInConsole(false, " this project " + this + " thinks that new state for " + file + " is the best but start project does not take it " + startProject);
                         }
