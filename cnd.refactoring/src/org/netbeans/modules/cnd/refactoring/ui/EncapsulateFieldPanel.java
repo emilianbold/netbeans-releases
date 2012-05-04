@@ -164,6 +164,7 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
         jComboField.setEnabled(false && EXPERIMENTAL);
         // *** initialize table
         // set renderer for the column "Field" to display name of the feature (with icon)
+        jTableFields.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE); // NOI18N
         jTableFields.setDefaultRenderer(CsmField.class, new EncapsulateCsmFieldTableCellRenderer());
         jTableFields.setDefaultRenderer(AccessorInfo.class, new AccessorInfoRenderer());
         jTableFields.setDefaultEditor(AccessorInfo.class, new AccessorInfoTableEditor());
