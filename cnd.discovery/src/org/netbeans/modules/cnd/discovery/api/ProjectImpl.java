@@ -182,7 +182,15 @@ public final class ProjectImpl implements ProjectProperties {
         if (m1.size() != m2.size()) {
             return false;
         }
-        return new HashMap<String, String>(m1).equals(m2);
+        if (!new HashMap<String, String>(m1).equals(m2)) {
+            return false;
+        }
+        Set<String> u1 = new HashSet<String>(newSource.getUndefinedMacros());
+        Set<String> u2 = new HashSet<String>(oldSource.getUndefinedMacros());
+        if (u1.size() != u2.size()) {
+            return false;
+        }
+        return u1.equals(u2);
     }
     
     private static List<SourceFileProperties> getExistingProjectItems(ProjectProxy project) {

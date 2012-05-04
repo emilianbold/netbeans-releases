@@ -774,7 +774,7 @@ public class LogReader {
                 if (DwarfSource.LOG.isLoggable(Level.FINE)) {
                     DwarfSource.LOG.log(Level.FINE, "**** Gotcha: {0}", file);
                 }
-                result.add(new CommandLineSource(li, languageArtifacts, workingDir, what, userIncludesCached, userMacrosCached, storage));
+                result.add(new CommandLineSource(li, languageArtifacts, workingDir, what, userIncludesCached, userMacrosCached, undefinedMacros, storage));
                 continue;
             }
             if (guessWorkingDir != null && !what.startsWith("/")) { //NOI18N
@@ -783,7 +783,7 @@ public class LogReader {
                     if (DwarfSource.LOG.isLoggable(Level.FINE)) {
                         DwarfSource.LOG.log(Level.FINE, "**** Gotcha guess: {0}", file);
                     }
-                    result.add(new CommandLineSource(li, languageArtifacts, guessWorkingDir, what, userIncludesCached, userMacrosCached, storage));
+                    result.add(new CommandLineSource(li, languageArtifacts, guessWorkingDir, what, userIncludesCached, userMacrosCached, undefinedMacros, storage));
                     continue;
                 }
             }
@@ -798,7 +798,7 @@ public class LogReader {
                     }
                 } else {
                     if (res.size() == 1) {
-                        result.add(new CommandLineSource(li, languageArtifacts, res.get(0), what, userIncludes, userMacros, storage));
+                        result.add(new CommandLineSource(li, languageArtifacts, res.get(0), what, userIncludes, userMacros, undefinedMacros, storage));
                         if (DwarfSource.LOG.isLoggable(Level.FINE)) {
                             DwarfSource.LOG.log(Level.FINE, "** Gotcha: {0}{1}{2}", new Object[]{res.get(0), File.separator, what});
                         }
@@ -836,7 +836,7 @@ public class LogReader {
         private int handler = -1;
 
         CommandLineSource(LineInfo li, List<String> languageArtifacts, String compilePath, String sourcePath,
-                List<String> userIncludes, Map<String, String> userMacros, CompileLineStorage storage) {
+                List<String> userIncludes, Map<String, String> userMacros, List<String>undefs, CompileLineStorage storage) {
             language = li.getLanguage();
             if (languageArtifacts.contains("c")) { // NOI18N
                 language = ItemProperties.LanguageKind.C;
@@ -879,6 +879,7 @@ public class LogReader {
             fullName = PathCache.getString(fullName);
             this.userIncludes = userIncludes;
             this.userMacros = userMacros;
+            this.undefinedMacros = undefs;
             this.storage = storage;
             if (storage != null) {
                 handler = storage.putCompileLine(li.compileLine);

@@ -717,19 +717,17 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         AbstractCompiler compiler = (AbstractCompiler) compilerSet.getTool(itemConfiguration.getTool());
         BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
         if (compilerConfiguration instanceof CCCCompilerConfiguration) {
-            Map<String, String> res = new LinkedHashMap<String, String>();
             CCCCompilerConfiguration cccCompilerConfiguration = (CCCCompilerConfiguration) compilerConfiguration;
             CCCCompilerConfiguration master = (CCCCompilerConfiguration) cccCompilerConfiguration.getMaster();
             while (master != null && cccCompilerConfiguration.getInheritUndefinedPreprocessor().getValue()) {
-                addToMap(res, master.getPreprocessorConfiguration().getValue(), false);
+                vec.addAll(master.getUndefinedPreprocessorConfiguration().getValue());
                 if (master.getInheritUndefinedPreprocessor().getValue()) {
                     master = (CCCCompilerConfiguration) master.getMaster();
                 } else {
                     master = null;
                 }
             }
-            addToMap(res, cccCompilerConfiguration.getUndefinedPreprocessorConfiguration().getValue(), true);
-            addToList(res, vec);
+            vec.addAll(cccCompilerConfiguration.getUndefinedPreprocessorConfiguration().getValue());
             vec = SPI_ACCESSOR.getItemUndefinedUserMacros(vec, cccCompilerConfiguration, compiler, makeConfiguration);
         }
         return vec;

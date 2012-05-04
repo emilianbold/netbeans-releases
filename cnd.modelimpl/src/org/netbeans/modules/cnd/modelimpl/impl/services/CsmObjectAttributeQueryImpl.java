@@ -39,33 +39,25 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.modelimpl.csm.core;
+package org.netbeans.modules.cnd.modelimpl.impl.services;
 
-import java.io.File;
+import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
+import org.netbeans.modules.cnd.api.model.services.CsmObjectAttributeQuery;
+import org.netbeans.modules.cnd.modelimpl.csm.NamespaceDefinitionImpl;
 
 /**
  *
  * @author Egor Ushakov
  */
-public class ModifyIncludedHeaderTestCase extends ModifyDocumentTestCaseBase {
-    public ModifyIncludedHeaderTestCase(String testName) {
-        super(testName);
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.services.CsmObjectAttributeQuery.class)
+public class CsmObjectAttributeQueryImpl extends CsmObjectAttributeQuery {
+    @Override
+    public int getLeftBracketOffset(CsmNamespaceDefinition nsd) {
+        if (nsd instanceof NamespaceDefinitionImpl) {
+            NamespaceDefinitionImpl ndi = (NamespaceDefinitionImpl) nsd;
+            return ndi.getLeftBracketOffset();
+        } else {
+            return nsd.getStartOffset();
+        }
     }
-
-    public void test207091() throws Exception {
-        // #207091: Definitions in include file not reflected in .c file
-        final File sourceFile = getDataFile("headerForModification.h");
-        final File checkedFile = getDataFile("fileToBeChecked.cc");
-        super.insertTextThenSaveAndCheck(sourceFile, 1, "#define ABC\n", 
-                checkedFile, new DeadBlocksNumberChecker(1, 0), false);
-    }
-
-    public void testOwnIncludedStorageInvalidation() throws Exception {
-        // 
-        final File sourceFile = getDataFile("headerForModification.h");
-        final File checkedFile = getDataFile("fileToBeChecked.cc");
-        super.insertTextThenSaveAndCheck(sourceFile, 1, "#define ABC\n",
-                checkedFile, new DeadBlocksNumberChecker(1, 0), false);
-    }
-
 }

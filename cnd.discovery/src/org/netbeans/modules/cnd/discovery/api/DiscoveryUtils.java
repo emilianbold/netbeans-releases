@@ -514,7 +514,7 @@ public class DiscoveryUtils {
                     st.next();
                 }
             } else if (option.startsWith("-")){ // NOI18N
-                addMacrosByFlags(option, userMacros, null, bridge, isCpp);
+                addMacrosByFlags(option, userMacros, undefinedMacros, bridge, isCpp);
             } else if (option.startsWith("ccfe")){ // NOI18N
                 // Skip option
             } else if (option.startsWith(">")){ // NOI18N

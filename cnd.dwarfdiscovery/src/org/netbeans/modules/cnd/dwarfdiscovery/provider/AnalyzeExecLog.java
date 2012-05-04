@@ -547,6 +547,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                     res.language = language;
                     res.userIncludes = userIncludes;
                     res.userMacros = userMacros;
+                    res.undefinedMacros = aUndefinedMacros;
                     for(String lang : languageArtifacts) {
                         if ("c89".equals(lang)) { //NOI18N
                             res.standard = ItemProperties.LanguageStandard.C89;

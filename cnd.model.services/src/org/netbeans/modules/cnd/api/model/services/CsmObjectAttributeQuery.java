@@ -39,33 +39,44 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.modelimpl.csm.core;
+package org.netbeans.modules.cnd.api.model.services;
 
-import java.io.File;
+import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author Egor Ushakov
  */
-public class ModifyIncludedHeaderTestCase extends ModifyDocumentTestCaseBase {
-    public ModifyIncludedHeaderTestCase(String testName) {
-        super(testName);
+public abstract class CsmObjectAttributeQuery {
+    /** A dummy query that never returns any results.
+     */
+    private static final CsmObjectAttributeQuery EMPTY = new Empty();
+    
+    /** default instance */
+    private static CsmObjectAttributeQuery defaultQuery;
+    
+    protected CsmObjectAttributeQuery() {
+    }
+    
+    /** Static method to obtain the auery.
+     * @return the query
+     */
+    public static CsmObjectAttributeQuery getDefault() {
+        /*no need for sync synchronized access*/
+        if (defaultQuery != null) {
+            return defaultQuery;
+        }
+        defaultQuery = Lookup.getDefault().lookup(CsmObjectAttributeQuery.class);
+        return defaultQuery == null ? EMPTY : defaultQuery;
     }
 
-    public void test207091() throws Exception {
-        // #207091: Definitions in include file not reflected in .c file
-        final File sourceFile = getDataFile("headerForModification.h");
-        final File checkedFile = getDataFile("fileToBeChecked.cc");
-        super.insertTextThenSaveAndCheck(sourceFile, 1, "#define ABC\n", 
-                checkedFile, new DeadBlocksNumberChecker(1, 0), false);
+    public abstract int getLeftBracketOffset(CsmNamespaceDefinition nsd);
+    
+    private static final class Empty extends CsmObjectAttributeQuery {
+        @Override
+        public int getLeftBracketOffset(CsmNamespaceDefinition nsd) {
+            return nsd.getStartOffset();
+        }
     }
-
-    public void testOwnIncludedStorageInvalidation() throws Exception {
-        // 
-        final File sourceFile = getDataFile("headerForModification.h");
-        final File checkedFile = getDataFile("fileToBeChecked.cc");
-        super.insertTextThenSaveAndCheck(sourceFile, 1, "#define ABC\n",
-                checkedFile, new DeadBlocksNumberChecker(1, 0), false);
-    }
-
 }

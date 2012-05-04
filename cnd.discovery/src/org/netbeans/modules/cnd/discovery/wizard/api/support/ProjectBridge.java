@@ -681,12 +681,12 @@ public class ProjectBridge {
         return null;
     }
 
-    public void setupFile(String compilepath, List<String> includes, boolean inheriteIncludes, List<String> macros, boolean inheriteMacros, Item item) {
+    public void setupFile(String compilepath, List<String> includes, boolean inheriteIncludes, List<String> macros, boolean inheriteMacros, List<String> undefs, boolean inheriteUndefs, Item item) {
         ItemConfiguration itemConfiguration = getOrCreateItemConfiguration(item);
         if (itemConfiguration == null || !itemConfiguration.isCompilerToolConfiguration()) {
             return;
         }
-        BooleanConfiguration excl =itemConfiguration.getExcluded();
+        BooleanConfiguration excl = itemConfiguration.getExcluded();
         if (excl.getValue()){
             excl.setValue(false);
         }
@@ -703,6 +703,8 @@ public class ProjectBridge {
             cccCompilerConfiguration.getInheritIncludes().setValue(inheriteIncludes);
             cccCompilerConfiguration.getPreprocessorConfiguration().setValue(macros);
             cccCompilerConfiguration.getInheritPreprocessor().setValue(inheriteMacros);
+            cccCompilerConfiguration.getUndefinedPreprocessorConfiguration().setValue(undefs);
+            cccCompilerConfiguration.getInheritUndefinedPreprocessor().setValue(inheriteUndefs);
         }
     }
 
@@ -833,7 +835,7 @@ public class ProjectBridge {
                                 List<String> list = macros.get(macro.getFlags());
                                 if (list == null) {
                                     list = new ArrayList<String>();
-                                    macros.put(option, list);
+                                    macros.put(macro.getFlags(), list);
                                 }
                                 list.add(macro.getMacro());
                             }
@@ -878,7 +880,7 @@ public class ProjectBridge {
                                 List<String> list = macros.get(macro.getFlags());
                                 if (list == null) {
                                     list = new ArrayList<String>();
-                                    macros.put(option, list);
+                                    macros.put(macro.getFlags(), list);
                                 }
                                 list.add(macro.getMacro());
                             }
