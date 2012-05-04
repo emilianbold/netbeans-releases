@@ -87,8 +87,7 @@ public class ServletConnectionAuthenticator implements ConnectionAuthenticator {
             String[] auth = aa.authorize(home);
             if (auth != null) {
                 LOGGER.log(Level.FINE, "Got authorization for {0} on {1} from {2}", new Object[] {auth[0], home, aa});
-                // Do we need j_spring_security_check, which seems to be used by current Hudson (SecurityRealm.getAuthenticationGatewayUrl), or does j_acegi_security_check suffice?
-                for (String realmURI : new String[] {"j_acegi_security_check", "j_security_check"}) { // NOI18N
+                for (String realmURI : new String[] {"j_spring_security_check", "j_acegi_security_check", "j_security_check"}) { // NOI18N
                     try {
                         LOGGER.log(Level.FINER, "Posting authentication to {0}", realmURI);
                         if (realmURI.equals("j_security_check")) { // #193066: indulge org.apache.catalina.authenticator.FormAuthenticator
