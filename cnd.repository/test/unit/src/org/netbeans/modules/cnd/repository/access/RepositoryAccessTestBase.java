@@ -97,7 +97,7 @@ public class RepositoryAccessTestBase  extends ModelImplBaseTestCase {
 	NativeProject nativeProject = NativeProjectProvider.createProject(name, files, 
                 Collections.<String>emptyList(), 
 		Collections.<String>emptyList(), Collections.<String>emptyList(), 
-                Collections.<String>emptyList(), Collections.<String>emptyList(), true);
+                Collections.<String>emptyList(), Collections.<String>emptyList(), Collections.<String>emptyList(), true);
 	ProjectBase result = traceModel.getModel().addProject(nativeProject, name, true); // NOI18N
 	return result;
     }

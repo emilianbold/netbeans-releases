@@ -59,4 +59,13 @@ public class ModifyIncludedHeaderTestCase extends ModifyDocumentTestCaseBase {
         super.insertTextThenSaveAndCheck(sourceFile, 1, "#define ABC\n", 
                 checkedFile, new DeadBlocksNumberChecker(1, 0), false);
     }
+
+    public void testOwnIncludedStorageInvalidation() throws Exception {
+        // 
+        final File sourceFile = getDataFile("headerForModification.h");
+        final File checkedFile = getDataFile("fileToBeChecked.cc");
+        super.insertTextThenSaveAndCheck(sourceFile, 1, "#define ABC\n",
+                checkedFile, new DeadBlocksNumberChecker(1, 0), false);
+    }
+
 }

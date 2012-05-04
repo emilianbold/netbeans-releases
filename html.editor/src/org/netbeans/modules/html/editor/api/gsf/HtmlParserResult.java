@@ -44,9 +44,11 @@ package org.netbeans.modules.html.editor.api.gsf;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.html.editor.lib.api.HtmlParsingResult;
@@ -62,6 +64,7 @@ import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.csl.spi.DefaultError;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.html.editor.HtmlErrorFilter;
 import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
 import org.netbeans.modules.html.editor.lib.api.validation.ValidationContext;
 import org.netbeans.modules.html.editor.lib.api.validation.ValidationResult;
@@ -229,12 +232,13 @@ public class HtmlParserResult extends ParserResult implements HtmlParsingResult 
     }
     
     @Override
-    public synchronized List<? extends Error> getDiagnostics() {
-        if (errors == null) {
-            errors = new ArrayList<Error>();
-            errors.addAll(getValidationResults());
-        }
-        return errors;
+    public List<? extends Error> getDiagnostics() {
+        //provide the validator errors to the parser results' diagnostic only 
+        //if they really are severe and *real* errors, e.g. only fatal errors and
+        //not in embedded html
+        return getSnapshot().getMimePath().size() == 1 
+                ? getDiagnostics(EnumSet.of(Severity.FATAL))
+                : Collections.<Error>emptyList();
     }
 
     @Override
@@ -242,7 +246,25 @@ public class HtmlParserResult extends ParserResult implements HtmlParsingResult 
         this.isValid = false;
     }
 
-    private Collection<Error> getValidationResults() {
+    public List<Error> getDiagnostics(Set<Severity> severities) {
+        List<Error> filtered = new ArrayList<Error>();
+        for(Error e : getValidationResults()) {
+            if(severities.contains(e.getSeverity())) {
+                filtered.add(e);
+            }
+        }
+        return filtered;
+    }
+    
+    private synchronized List<Error> getValidationResults() {
+        if(errors == null) {
+            errors = new ArrayList<Error>();
+            errors.addAll(getErrorsFromValidatorService());
+        }
+        return errors;
+    }
+    
+    private List<Error> getErrorsFromValidatorService() {
         FileObject file = getSnapshot().getSource().getFileObject();
         try {
             //use the filtered snapshot or use the namespaces filtering facility in the nu.validator
@@ -257,7 +279,7 @@ public class HtmlParserResult extends ParserResult implements HtmlParsingResult 
             
             ValidationResult res = validator.validate(context);
 
-            Collection<Error> errs = new ArrayList<Error>();
+            List<Error> errs = new ArrayList<Error>();
             for (ProblemDescription pd : res.getProblems()) {
                 DefaultError error = new DefaultError(pd.getKey(),
                         pd.getText(), //NOI18N
