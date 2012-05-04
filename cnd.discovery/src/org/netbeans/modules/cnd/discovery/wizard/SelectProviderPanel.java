@@ -519,12 +519,12 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
             if (!(obj instanceof ProviderItem)) {
                 return false;
             }
-            return provider.toString().equals(((ProviderItem)obj).toString());
+            return toString().equals(obj.toString());
         }
 
         @Override
         public int hashCode() {
-           return provider.toString().hashCode();
+           return toString().hashCode();
         }
     }
 }
