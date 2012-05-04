@@ -52,14 +52,53 @@ import org.openide.nodes.EntrySupportLazy.EntryInfo;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-final class EntrySupportLazyState {
+final class EntrySupportLazyState implements Cloneable {
+    private boolean inited;
+    private Thread initThread;
+    private boolean initInProgress;
+    
+    
+    final boolean isInited() {
+        return inited;
+    }
+    
+    final boolean isInitInProgress() {
+        return initInProgress;
+    }
+    final Thread initThread() {
+        return initThread;
+    }
+    
     List<Entry> entries = Collections.emptyList();
     boolean mustNotifySetEntries = false;
     /** entries with node*/
     List<Entry> visibleEntries = Collections.emptyList();
-    Thread initThread;
-    boolean initInProgress = false;
-    boolean inited = false;
     Map<Entry, EntryInfo> entryToInfo = new HashMap<Entry, EntryInfo>();
+    
+    private EntrySupportLazyState cloneState() {
+        try {
+            return (EntrySupportLazyState)clone();
+        } catch (CloneNotSupportedException ex) {
+            throw new IllegalStateException(ex);
+        }
+    }
+
+    final EntrySupportLazyState changeInited(boolean newInited) {
+        EntrySupportLazyState newESLS = cloneState();
+        newESLS.inited = newInited;
+        return newESLS;
+    }
+
+    final EntrySupportLazyState changeThread(Thread t) {
+        EntrySupportLazyState s = cloneState();
+        s.initThread = t;
+        return s;
+    }
+
+    final EntrySupportLazyState changeProgress(boolean b) {
+        EntrySupportLazyState s = cloneState();
+        s.initInProgress = b;
+        return s;
+    }
     
 }

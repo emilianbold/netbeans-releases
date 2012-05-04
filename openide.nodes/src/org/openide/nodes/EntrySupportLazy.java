@@ -80,17 +80,21 @@ class EntrySupportLazy extends EntrySupport {
     protected final Object LOCK = new Object();
     /** @GuardedBy("LOCK")*/
     private int snapshotCount;
+    
+    private void setState(EntrySupportLazyState s) {
+        assert Thread.holdsLock(LOCK);
+        state = s;
+    }
 
     public boolean checkInit() {
-        if (state.inited) {
+        if (state.isInited()) {
             return true;
         }
         boolean doInit = false;
         synchronized (LOCK) {
-            if (!state.initInProgress) {
+            if (!state.isInitInProgress()) {
                 doInit = true;
-                state.initInProgress = true;
-                state.initThread = Thread.currentThread();
+                setState(state.changeProgress(true).changeThread(Thread.currentThread()));
             }
         }
         final boolean LOG_ENABLED = LOGGER.isLoggable(Level.FINER);
@@ -102,27 +106,29 @@ class EntrySupportLazy extends EntrySupport {
             try {
                 children.callAddNotify();
             } finally {
-                class Notify implements Runnable {
-
-                    public void run() {
-                        synchronized (LOCK) {
-                            state.initThread = null;
-                            LOCK.notifyAll();
+                synchronized (LOCK) {
+                    class Notify implements Runnable {
+                        @Override
+                        public void run() {
+                            synchronized (LOCK) {
+                                setState(state.changeThread(null));
+                                LOCK.notifyAll();
+                            }
                         }
                     }
-                }
-                Notify notify = new Notify();
-                state.inited = true;
-                if (Children.MUTEX.isReadAccess()) {
-                    Children.MUTEX.postWriteRequest(notify);
-                } else {
-                    notify.run();
+                    Notify notify = new Notify();
+                    setState(state.changeInited(true));
+                    if (Children.MUTEX.isReadAccess()) {
+                        Children.MUTEX.postWriteRequest(notify);
+                    } else {
+                        notify.run();
+                    }
                 }
             }
         } else {
-            if (Children.MUTEX.isReadAccess() || Children.MUTEX.isWriteAccess() || (state.initThread == Thread.currentThread())) {
+            if (Children.MUTEX.isReadAccess() || Children.MUTEX.isWriteAccess() || (state.initThread() == Thread.currentThread())) {
                 if (LOG_ENABLED) {
-                    LOGGER.log(Level.FINER, "Cannot wait for finished initialization " + this + " on " + Thread.currentThread() + " read access: " + Children.MUTEX.isReadAccess() + " write access: " + Children.MUTEX.isWriteAccess() + " initThread: " + state.initThread);
+                    LOGGER.log(Level.FINER, "Cannot wait for finished initialization " + this + " on " + Thread.currentThread() + " read access: " + Children.MUTEX.isReadAccess() + " write access: " + Children.MUTEX.isWriteAccess() + " initThread: " + state.initThread());
                 }
                 // we cannot wait
                 notifySetEntries();
@@ -130,7 +136,7 @@ class EntrySupportLazy extends EntrySupport {
             }
             // otherwise we can wait
             synchronized (LOCK) {
-                while (state.initThread != null) {
+                while (state.initThread() != null) {
                     try {
                         LOCK.wait();
                     } catch (InterruptedException ex) {
@@ -191,9 +197,7 @@ class EntrySupportLazy extends EntrySupport {
                     }
                     zero = cnt == 0 && (found || who == null);
                     if (zero) {
-                        state.inited = false;
-                        state.initThread = null;
-                        state.initInProgress = false;
+                        state = state.changeInited(false).changeThread(null).changeProgress(false);
                         if (children.getEntrySupport() == this) {
                             if (LOGGER.isLoggable(Level.FINER)) {
                                 LOGGER.finer("callRemoveNotify() " + this); // NOI18N
@@ -283,7 +287,7 @@ class EntrySupportLazy extends EntrySupport {
 
     @Override
     public Node[] testNodes() {
-        if (!state.inited) {
+        if (!state.isInited()) {
             return null;
         }
         List<Node> created = new ArrayList<Node>();
@@ -315,7 +319,7 @@ class EntrySupportLazy extends EntrySupport {
 
     @Override
     public boolean isInitialized() {
-        return state.inited;
+        return state.isInited();
     }
 
     Entry entryForNode(Node key) {
@@ -339,7 +343,7 @@ class EntrySupportLazy extends EntrySupport {
             LOGGER.finer("refreshEntry() " + this);
             LOGGER.finer("    entry: " + entry); // NOI18N
         }
-        if (!state.inited) {
+        if (!state.isInited()) {
             return;
         }
         EntryInfo info = state.entryToInfo.get(entry);
@@ -407,7 +411,7 @@ class EntrySupportLazy extends EntrySupport {
         final boolean LOG_ENABLED = LOGGER.isLoggable(Level.FINER);
         if (LOG_ENABLED) {
             LOGGER.finer("setEntries(): " + this); // NOI18N
-            LOGGER.finer("    inited: " + state.inited); // NOI18N
+            LOGGER.finer("    inited: " + state.isInited()); // NOI18N
             LOGGER.finer("    mustNotifySetEnties: " + state.mustNotifySetEntries); // NOI18N
             LOGGER.finer("    newEntries size: " + newEntries.size() + " data:" + newEntries); // NOI18N
             LOGGER.finer("    entries size: " + state.entries.size() + " data:" + state.entries); // NOI18N
@@ -419,7 +423,7 @@ class EntrySupportLazy extends EntrySupport {
         assert (entriesSize = state.entries.size()) >= 0;
         assert (entryToInfoSize = state.entryToInfo.size()) >= 0;
         assert state.entries.size() == state.entryToInfo.size() : "Entries: " + state.entries.size() + "; vis. entries: " + notNull(state.visibleEntries).size() + "; Infos: " + state.entryToInfo.size() + "; entriesSize: " + entriesSize + "; entryToInfoSize: " + entryToInfoSize + dumpEntriesInfos(state.entries, state.entryToInfo); // NOI18N
-        if (!state.mustNotifySetEntries && !state.inited) {
+        if (!state.mustNotifySetEntries && !state.isInited()) {
             state.entries = new ArrayList<Entry>(newEntries);
             state.visibleEntries = new ArrayList<Entry>(newEntries);
             state.entryToInfo.keySet().retainAll(state.entries);
