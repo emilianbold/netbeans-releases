@@ -320,7 +320,9 @@ public class DiscoveryProjectGeneratorImpl {
             List<String> commonFoldersMacros = cccc.getPreprocessorConfiguration().getValue();
             List<String> commonFoldersUndefs = cccc.getUndefinedPreprocessorConfiguration().getValue();
             projectBridge.setupProject(commonFoldersIncludes, commonFoldersMacros, commonFoldersUndefs, lang);
-            projectBridge.setupFolder(Collections.<String>emptyList(), true, Collections.<String>emptyList(), true, Collections.<String>emptyList(), true, lang, folder);
+            projectBridge.setupFolder(Collections.<String>emptyList(), true,
+                    Collections.<String>emptyList(), true,
+                    Collections.<String>emptyList(), true, lang, folder);
             downConfiguration(folder, lang, commonFoldersIncludes, commonFoldersMacros, commonFoldersUndefs);
         }
     }
@@ -805,14 +807,14 @@ public class DiscoveryProjectGeneratorImpl {
             Map<String,String> macros = new HashMap<String,String>();
             reConsolidatePaths(set, config);
             macros.putAll(config.getUserMacros());
-            List<String> vector = new ArrayList<String>(set);
-            List<String> buf = buildMacrosString(macros);
-            projectBridge.setupFile(config.getCompilePath(), vector, !config.overrideIncludes(), buf, !config.overrideMacros(), item);
+            projectBridge.setupFile(config.getCompilePath(), new ArrayList<String>(set), !config.overrideIncludes(),
+                    buildMacrosString(macros), !config.overrideMacros(),
+                    new ArrayList<String>(config.getUndefinedMacros()), !config.overrideUndefinedMacros(), item);
         } else {
             // cleanup file configuration
-            List<String> vector = Collections.<String>emptyList();
-            List<String> buf = Collections.<String>emptyList();
-            projectBridge.setupFile(config.getCompilePath(), vector, true, buf, true, item);
+            projectBridge.setupFile(config.getCompilePath(), Collections.<String>emptyList(), true,
+                    Collections.<String>emptyList(), true,
+                    Collections.<String>emptyList(), true, item);
         }
     }
 

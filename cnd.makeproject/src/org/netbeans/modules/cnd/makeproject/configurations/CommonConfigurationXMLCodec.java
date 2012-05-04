@@ -83,6 +83,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.RequiredProjectsC
  */
 /**
  * Change History:
+ * V84 - NB 7.2
+ *    Support undefined macros
  * V83 - NB 7.2
  *    Code Assistance general properties.
  *    use build analyzer and tools list field introduced in configuration for unmanaged projects.
@@ -238,7 +240,7 @@ public abstract class CommonConfigurationXMLCodec
         extends XMLDecoder
         implements XMLEncoder {
 
-    public final static int CURRENT_VERSION = 83;
+    public final static int CURRENT_VERSION = 84;
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
     protected final static String DEBUGGING_ELEMENT = "justfordebugging"; // NOI18N
@@ -292,6 +294,7 @@ public abstract class CommonConfigurationXMLCodec
     public final static String OUTPUT_ELEMENT = "output"; // NOI18N
     protected final static String INHERIT_INC_VALUES_ELEMENT = "inheritIncValues"; // NOI18N
     protected final static String INHERIT_PRE_VALUES_ELEMENT = "inheritPreValues"; // NOI18N
+    protected final static String INHERIT_UNDEF_VALUES_ELEMENT = "inheritUndefValues"; // NOI18N
     protected final static String USE_LINKER_PKG_CONFIG_LIBRARIES = "useLinkerLibraries"; // NOI18N
     // Code Assistance
     protected final static String CODE_ASSISTANCE_ELEMENT = "codeAssistance"; // NOI18N
@@ -311,6 +314,7 @@ public abstract class CommonConfigurationXMLCodec
     protected final static String STANDARD_ELEMENT = "standard"; // NOI18N
     protected final static String PREPROCESSOR_ELEMENT = "preprocessor"; // NOI18N
     protected final static String PREPROCESSOR_LIST_ELEMENT = "preprocessorList"; // NOI18N
+    protected final static String UNDEFS_LIST_ELEMENT = "undefinedList"; // NOI18N
     protected final static String SUPRESS_WARNINGS_ELEMENT = "supressWarnings"; // NOI18N
     protected final static String WARNING_LEVEL_ELEMENT = "warningLevel"; // NOI18N
     protected final static String MT_LEVEL_ELEMENT = "mtLevel"; // NOI18N
@@ -726,6 +730,14 @@ public abstract class CommonConfigurationXMLCodec
         if (cCompilerConfiguration.getInheritPreprocessor().getModified()) {
             xes.element(INHERIT_PRE_VALUES_ELEMENT, "" + cCompilerConfiguration.getInheritPreprocessor().getValue()); // NOI18N
         }
+        if (cCompilerConfiguration.getUndefinedPreprocessorConfiguration().getModified()) {
+            List<String> sortedList = new ArrayList<String>(cCompilerConfiguration.getUndefinedPreprocessorConfiguration().getValue());
+            Collections.sort(sortedList);
+            writeList(xes, UNDEFS_LIST_ELEMENT, sortedList);
+        }
+        if (cCompilerConfiguration.getInheritUndefinedPreprocessor().getModified()) {
+            xes.element(INHERIT_UNDEF_VALUES_ELEMENT, "" + cCompilerConfiguration.getInheritUndefinedPreprocessor().getValue()); // NOI18N
+        }
         if (cCompilerConfiguration.getUseLinkerLibraries().getModified()) {
             xes.element(USE_LINKER_PKG_CONFIG_LIBRARIES, "" + cCompilerConfiguration.getUseLinkerLibraries().getValue()); // NOI18N
         }
@@ -785,6 +797,14 @@ public abstract class CommonConfigurationXMLCodec
         }
         if (ccCompilerConfiguration.getInheritPreprocessor().getModified()) {
             xes.element(INHERIT_PRE_VALUES_ELEMENT, "" + ccCompilerConfiguration.getInheritPreprocessor().getValue()); // NOI18N
+        }
+        if (ccCompilerConfiguration.getUndefinedPreprocessorConfiguration().getModified()) {
+            List<String> sortedList = new ArrayList<String>(ccCompilerConfiguration.getUndefinedPreprocessorConfiguration().getValue());
+            Collections.sort(sortedList);
+            writeList(xes, UNDEFS_LIST_ELEMENT, sortedList);
+        }
+        if (ccCompilerConfiguration.getInheritUndefinedPreprocessor().getModified()) {
+            xes.element(INHERIT_UNDEF_VALUES_ELEMENT, "" + ccCompilerConfiguration.getInheritUndefinedPreprocessor().getValue()); // NOI18N
         }
         if (ccCompilerConfiguration.getUseLinkerLibraries().getModified()) {
             xes.element(USE_LINKER_PKG_CONFIG_LIBRARIES, "" + ccCompilerConfiguration.getUseLinkerLibraries().getValue()); // NOI18N

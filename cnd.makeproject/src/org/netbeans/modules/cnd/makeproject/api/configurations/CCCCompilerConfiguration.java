@@ -135,6 +135,7 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
                 inheritIncludes.getModified() ||
                 preprocessorConfiguration.getModified() ||
                 inheritPreprocessor.getModified() ||
+                preprocessorUndefinedConfiguration.getModified() ||
                 inheritUndefinedPreprocessor.getModified() ||
                 useLinkerPkgConfigLibraries.getModified();
     }
@@ -266,6 +267,7 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
         getInheritIncludes().assign(conf.getInheritIncludes());
         getPreprocessorConfiguration().assign(conf.getPreprocessorConfiguration());
         getInheritPreprocessor().assign(conf.getInheritPreprocessor());
+        getUndefinedPreprocessorConfiguration().assign(conf.getUndefinedPreprocessorConfiguration());
         getInheritUndefinedPreprocessor().assign(conf.getInheritUndefinedPreprocessor());
         getUseLinkerLibraries().assign(conf.getUseLinkerLibraries());
     }
