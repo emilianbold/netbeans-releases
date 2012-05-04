@@ -736,8 +736,10 @@ public class LogReader {
         String line = li.compileLine;
         List<String> userIncludes = new ArrayList<String>();
         Map<String, String> userMacros = new HashMap<String, String>();
+        List<String> undefinedMacros = new ArrayList<String>();
         List<String> languageArtifacts = new ArrayList<String>();
-        List<String> sourcesList = DiscoveryUtils.gatherCompilerLine(line, DiscoveryUtils.LogOrigin.BuildLog, userIncludes, userMacros, null, languageArtifacts, compilerSettings.getProjectBridge(), li.compilerType == CompilerType.CPP);
+        List<String> sourcesList = DiscoveryUtils.gatherCompilerLine(line, DiscoveryUtils.LogOrigin.BuildLog, userIncludes, userMacros, undefinedMacros,
+                null, languageArtifacts, compilerSettings.getProjectBridge(), li.compilerType == CompilerType.CPP);
         for(String what : sourcesList) {
             if (what == null){
                 continue;
@@ -827,6 +829,7 @@ public class LogReader {
         private List<String> userIncludes;
         private List<String> systemIncludes = Collections.<String>emptyList();
         private Map<String, String> userMacros;
+        private List<String> undefinedMacros;
         private Map<String, String> systemMacros = Collections.<String, String>emptyMap();
         private Set<String> includedFiles = Collections.<String>emptySet();
         private CompileLineStorage storage;
@@ -923,6 +926,11 @@ public class LogReader {
         @Override
         public Map<String, String> getUserMacros() {
             return userMacros;
+        }
+
+        @Override
+        public List<String> getUndefinedMacros() {
+            return undefinedMacros;
         }
 
         @Override

@@ -52,14 +52,14 @@ import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.netbeans.modules.cnd.utils.FSPath;
+import org.netbeans.modules.cnd.api.project.NativeExitStatus;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.api.project.NativeFileSearch;
 import org.netbeans.modules.cnd.api.project.NativeProject;
-import org.netbeans.modules.cnd.api.project.NativeExitStatus;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.MIMESupport;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
@@ -85,10 +85,10 @@ public final class NativeProjectProvider {
     public static NativeProject createProject(String projectRoot, List<File> files,
             List<String> libProjectsPaths,
 	    List<String> sysIncludes, List<String> usrIncludes,
-	    List<String> sysMacros, List<String> usrMacros, boolean pathsRelCurFile) throws IOException {
+	    List<String> sysMacros, List<String> usrMacros, List<String> undefinedMacros, boolean pathsRelCurFile) throws IOException {
 	
         NativeProjectImpl project = new NativeProjectImpl(projectRoot, libProjectsPaths,
-		sysIncludes, usrIncludes, sysMacros, usrMacros, pathsRelCurFile);
+		sysIncludes, usrIncludes, sysMacros, usrMacros, undefinedMacros, pathsRelCurFile);
 	
 	project.addFiles(files);
 	
@@ -115,7 +115,7 @@ public final class NativeProjectProvider {
         if (dobj != null) {
             fo = dobj.getPrimaryFile();
         }
-        String mimeType = "";
+        String mimeType;
         if (fo != null) {
             mimeType = MIMESupport.getSourceFileMIMEType(fo);
         } else {
@@ -167,6 +167,7 @@ public final class NativeProjectProvider {
 	private final List<String> usrIncludes;
 	private final List<String> sysMacros;
 	private final List<String> usrMacros;
+        private final List<String> undefinedMacros;
 	    
         private final List<NativeFileItem> files  = new ArrayList<NativeFileItem>();
 	
@@ -182,7 +183,7 @@ public final class NativeProjectProvider {
 	public NativeProjectImpl(String projectRoot,
                 List<String> libProjectsPaths,
 		List<String> sysIncludes, List<String> usrIncludes, 
-		List<String> sysMacros, List<String> usrMacros,
+		List<String> sysMacros, List<String> usrMacros, List<String> undefinedMacros,
 		boolean pathsRelCurFile) {
 
 	    this.projectRoot = projectRoot;
@@ -210,6 +211,7 @@ public final class NativeProjectProvider {
 	    this.usrIncludes = createIncludes(usrIncludes);
 	    this.sysMacros = new ArrayList<String>(sysMacros);
 	    this.usrMacros = new ArrayList<String>(usrMacros);
+	    this.undefinedMacros = new ArrayList<String>(undefinedMacros);
             this.name = initName(projectRoot);
 	}
 	
@@ -376,6 +378,11 @@ public final class NativeProjectProvider {
         public List<String> getUserMacroDefinitions() {
             return this.usrMacros;
         }
+
+        @Override
+        public List<String> getUndefinedMacros() {
+            return this.undefinedMacros;
+        }
         
 	private NativeFileItem addFile(FileObject fo) {
             File file = FileUtil.toFile(fo);
@@ -491,6 +498,11 @@ public final class NativeProjectProvider {
         @Override
         public List<String> getUserMacroDefinitions() {
             return project.getUserMacroDefinitions();
+        }
+
+        @Override
+        public List<String> getUndefinedMacros() {
+            return project.getUndefinedMacros();
         }
 
         @Override

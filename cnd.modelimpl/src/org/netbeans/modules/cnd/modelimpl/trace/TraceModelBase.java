@@ -18,9 +18,12 @@ package org.netbeans.modules.cnd.modelimpl.trace;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
@@ -63,6 +66,7 @@ public class TraceModelBase {
     private List<File> files = new ArrayList<File>();
     private List<String> currentIncludePaths = null;
     private List<String> macros = new ArrayList<String>();
+    private List<String> undefinedMacros = new ArrayList<String>();
 
     // if true, then relative include paths oin -I option are considered
     // to be based on the file that we currently compile rather then current dir
@@ -150,6 +154,10 @@ public class TraceModelBase {
                 macros.add(argRest);
                 result = ProcessFlagResult.ALL_PROCESSED;
                 break;
+            case 'U':
+                undefinedMacros.add(argRest);
+                result = ProcessFlagResult.ALL_PROCESSED;
+                break;
             default:
                 result = ProcessFlagResult.NONE_PROCESSED;
         }
@@ -233,7 +241,7 @@ public class TraceModelBase {
             np = NativeProjectProvider.createProject(projectRoot, files,
                     libProjectsPaths,
                     getSystemIncludes(), quoteIncludePaths, getSysMacros(),
-                    macros, pathsRelCurFile);
+                    macros, undefinedMacros, pathsRelCurFile);
         }
         ProjectBase out = model.addProject(np, np.getProjectDisplayName(), true);
         waitProjectParsed(out, false);
