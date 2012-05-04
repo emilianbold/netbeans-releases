@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -47,22 +47,19 @@ package org.netbeans.modules.autoupdate.ui.wizards;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.InstallSupport.Installer;
-import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
-import org.netbeans.api.autoupdate.OperationException;
-import org.netbeans.api.autoupdate.OperationSupport;
-import org.netbeans.api.autoupdate.UpdateElement;
+import org.netbeans.api.autoupdate.*;
 import org.netbeans.modules.autoupdate.ui.Containers;
 import org.netbeans.modules.autoupdate.ui.PluginManagerUI;
+import org.netbeans.modules.autoupdate.ui.Utilities;
 import org.openide.util.Exceptions;
 
 /**
  *
  * @author Jiri Rechtacek
  */
-public class InstallUnitWizardModel extends OperationWizardModel {
+public final class InstallUnitWizardModel extends OperationWizardModel {
     private Installer installer = null;
     private OperationType doOperation;
     private static Set<String> approvedLicences = new HashSet<String> ();
@@ -84,6 +81,7 @@ public class InstallUnitWizardModel extends OperationWizardModel {
         updateContainer = getBaseContainer ();
     }
     
+    @Override
     public OperationType getOperation () {
         return doOperation;
     }
@@ -131,6 +129,7 @@ public class InstallUnitWizardModel extends OperationWizardModel {
         return c;
     }
     
+    @Override
     public OperationContainer<OperationSupport> getCustomHandledContainer () {
         return customContainer;
     }
@@ -138,9 +137,12 @@ public class InstallUnitWizardModel extends OperationWizardModel {
     public boolean allLicensesApproved () {
         boolean res = true;
         for (UpdateElement el : getAllUpdateElements ()) {
-            if (el.getLicence () != null && ! approvedLicences.contains (el.getLicence ())) {
-                res = false;
-                break;
+            if (! OperationType.UPDATE.equals(getOperation()) || ! Utilities.isLicenseIdApproved(el.getLicenseId())) {
+                String lic = el.getLicence ();
+                if (lic != null && ! approvedLicences.contains (lic)) {
+                    res = false;
+                    break;
+                }
             }
         }
         allLicensesTouched = true;

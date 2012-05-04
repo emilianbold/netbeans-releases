@@ -50,6 +50,8 @@ import java.util.*;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.autoupdate.UpdateElement;
+import org.netbeans.modules.autoupdate.ui.Utilities;
+import org.netbeans.modules.autoupdate.ui.wizards.OperationWizardModel.OperationType;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -59,7 +61,7 @@ import org.openide.util.RequestProcessor;
  */
 public class LicenseApprovalPanel extends javax.swing.JPanel {
     public static final String LICENSE_APPROVED = "license-approved";
-	private List<UpdateElement> license4plugins;
+    private List<UpdateElement> license4plugins;
     
     /** Creates new form LicenseApprovalPanel */
     public LicenseApprovalPanel (InstallUnitWizardModel model, boolean isApproved) {
@@ -85,6 +87,18 @@ public class LicenseApprovalPanel extends javax.swing.JPanel {
 		return licenses;
 	}
 
+    Collection<String> getLicenseIds() {
+        assert license4plugins != null : "Licenses must found.";
+        if (license4plugins == null && license4plugins.isEmpty()) {
+            return Collections.emptyList();
+        }
+        Set<String> licenseIds = new HashSet<String>();
+        for (UpdateElement el : license4plugins) {
+            licenseIds.add(el.getLicenseId());
+        }
+        return licenseIds;
+    }
+
     private void goOverLicenses (InstallUnitWizardModel model) {
         for (UpdateElement el : model.getAllUpdateElements()) {
             if (el.getLicence() != null) {
@@ -92,7 +106,9 @@ public class LicenseApprovalPanel extends javax.swing.JPanel {
                     license4plugins = new ArrayList<UpdateElement>();
                 }
 
-                license4plugins.add(el);
+                if (! OperationType.UPDATE.equals(model.getOperation()) || Utilities.isLicenseIdApproved(el.getLicenseId())) {
+                    license4plugins.add(el);
+                }
             }
         }
     }

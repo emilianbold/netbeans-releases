@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -44,18 +44,18 @@
 
 package org.netbeans.modules.autoupdate.services;
 
-import org.netbeans.api.autoupdate.UpdateManager.TYPE;
-import org.netbeans.modules.autoupdate.updateprovider.InstallInfo;
-import org.netbeans.modules.autoupdate.updateprovider.InstalledModuleItem;
-import org.netbeans.modules.autoupdate.updateprovider.ModuleItem;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
+import org.netbeans.api.autoupdate.UpdateManager.TYPE;
+import org.netbeans.modules.autoupdate.updateprovider.InstallInfo;
+import org.netbeans.modules.autoupdate.updateprovider.InstalledModuleItem;
+import org.netbeans.modules.autoupdate.updateprovider.ModuleItem;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.SpecificationVersion;
-import org.openide.util.Lookup;
 
 /**
  *
@@ -72,7 +72,7 @@ public class ModuleUpdateElementImpl extends UpdateElementImpl {
     private int downloadSize;
     private String category;
     private InstallInfo installInfo;
-    private Logger log = null;
+    private static final Logger log = Logger.getLogger (ModuleUpdateElementImpl.class.getName ());
     private ModuleInfo moduleInfo;
     private ModuleItem item;
     private String providerName;
@@ -96,26 +96,30 @@ public class ModuleUpdateElementImpl extends UpdateElementImpl {
         isAutoload = item.isAutoload ();
     }
     
+    @Override
     public String getCodeName () {
         return codeName;
     }
     
+    @Override
     public String getDisplayName () {
         if (displayName == null) {
             String dn = moduleInfo.getDisplayName ();
             assert dn != null : "Module " + codeName + " doesn't provider display name. Value of \"OpenIDE-Module-Name\" cannot be null.";
             if (dn == null) {
-                getLogger ().log (Level.WARNING, "Module " + codeName + " doesn't provider display name. Value of \"OpenIDE-Module-Name\" cannot be null.");
+                log.log (Level.WARNING, "Module " + codeName + " doesn't provider display name. Value of \"OpenIDE-Module-Name\" cannot be null.");
             }
             displayName = dn == null ? codeName : dn;
         }
         return displayName;
     }
     
+    @Override
     public SpecificationVersion getSpecificationVersion () {
         return specVersion;
     }
     
+    @Override
     public String getDescription () {
         if (description == null) {
             description = (String) moduleInfo.getLocalizedAttribute ("OpenIDE-Module-Long-Description");
@@ -123,6 +127,7 @@ public class ModuleUpdateElementImpl extends UpdateElementImpl {
         return description;
     }
     
+    @Override
     public String getNotification() {
         String notification = item.getModuleNotification ();
         if (notification != null)
@@ -130,18 +135,22 @@ public class ModuleUpdateElementImpl extends UpdateElementImpl {
         return notification;
     }
     
+    @Override
     public String getAuthor () {
         return author;
     }
     
+    @Override
     public String getHomepage () {
         return homepage;
     }
     
+    @Override
     public int getDownloadSize () {
         return downloadSize;
     }
     
+    @Override
     public String getSource () {
         if (source == null) {
             source = item instanceof InstalledModuleItem ? ((InstalledModuleItem) item).getSource () : providerName;
@@ -152,10 +161,12 @@ public class ModuleUpdateElementImpl extends UpdateElementImpl {
         return source;
     }
     
+    @Override
     public String getDate () {
         return date;
     }
     
+    @Override
     public String getCategory () {
         if (category == null) {
             category = item.getCategory ();
@@ -173,14 +184,35 @@ public class ModuleUpdateElementImpl extends UpdateElementImpl {
         return category;
     }
     
+    @Override
+    public String getLicenseId() {
+        if (item instanceof InstalledModuleItem) {
+            // find the same item from UC
+            UpdateUnitImpl impl = Trampoline.API.impl(getUpdateUnit());
+            UpdateElement elWithSameVersion = impl.findUpdateSameAsInstalled();
+            if (elWithSameVersion != null) {
+                return elWithSameVersion.getLicenseId();
+            }
+        } else {
+            assert item.getUpdateLicenseImpl() != null : item + " has UpdateLicenseImpl.";
+            if (item.getUpdateLicenseImpl() != null) {
+                return item.getUpdateLicenseImpl().getName();
+            }
+        }
+        return null;
+    }
+    
+    @Override
     public String getLicence () {
         return item.getAgreement ();
     }
 
+    @Override
     public InstallInfo getInstallInfo () {
         return installInfo;
     }
     
+    @Override
     public List<ModuleInfo> getModuleInfos () {
         return Collections.singletonList (getModuleInfo ());
     }
@@ -199,22 +231,27 @@ public class ModuleUpdateElementImpl extends UpdateElementImpl {
         return this.moduleInfo;
     }
     
+    @Override
     public TYPE getType () {
         return UpdateManager.TYPE.MODULE;
     }
 
+    @Override
     public boolean isEnabled () {
         return getModuleInfo ().isEnabled ();
     }            
     
+    @Override
     public boolean isAutoload () {
         return isAutoload;
     }
 
+    @Override
     public boolean isEager () {
         return isEager;
     }
     
+    @Override
     public boolean isFixed () {
         return Utilities.toModule(getCodeName (), null) == null ? false : Utilities.toModule(getCodeName (), null).isFixed ();
     }
@@ -252,13 +289,6 @@ public class ModuleUpdateElementImpl extends UpdateElementImpl {
     @Override
     public String toString () {
         return "Impl[" + getUpdateElement () + "]"; // NOI18N
-    }
-    
-    private Logger getLogger () {
-        if (log == null) {
-            log = Logger.getLogger (ModuleUpdateElementImpl.class.getName ());
-        }
-        return log;
     }
     
 }
