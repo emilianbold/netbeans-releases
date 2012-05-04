@@ -283,8 +283,7 @@ public class YamlScanner implements StructureScanner {
                                 }
                             }
                         }
-                    } else {
-                        assert key instanceof PositionedScalarNode;
+                    } else if (key instanceof PositionedScalarNode) {
                         //ScalarNode scalar = (ScalarNode)key;
                         PositionedScalarNode scalar = (PositionedScalarNode) key;
                         String childName = scalar.getValue().toString();
