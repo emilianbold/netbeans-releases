@@ -52,7 +52,10 @@ import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyException;
+import org.netbeans.jemmy.Waitable;
+import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.*;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -294,10 +297,27 @@ public class GeneralGroovy extends JellyTestCase {
             }
         }
     }
-    
-    protected Object[] getAnnotations(EditorOperator eOp) {
+
+    protected Object[] getAnnotations(EditorOperator eOp, int limit) {
         eOp.makeComponentVisible();
         evt.waitNoEvent(1000);
+        try {
+            final EditorOperator eo = new EditorOperator(eOp.getName());
+            final int _limit = limit;
+            new Waiter(new Waitable() {
+                @Override
+                public Object actionProduced(Object oper) {
+                    return eo.getAnnotations().length > _limit ? Boolean.TRUE : null;
+                }
+
+                @Override
+                public String getDescription() {
+                    return ("Wait parser annotations."); // NOI18N
+                }
+            }).waitAction(null);
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        }
         Object[] anns = eOp.getAnnotations();
         return anns;
     }

@@ -82,7 +82,7 @@ public class testFixImport extends GeneralGroovy {
         type(file, "extends AEADBadTagException");
         waitScanFinished();
         new EventTool().waitNoEvent(1000);
-        Object[] anns = getAnnotations(file);
+        Object[] anns = getAnnotations(file,0);
         
         assertEquals("More annotations than expected", 1, anns.length);
         String ideal = "Add import for javax.crypto.AEADBadTagException\n"
