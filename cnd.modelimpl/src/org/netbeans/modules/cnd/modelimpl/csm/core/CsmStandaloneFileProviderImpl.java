@@ -62,18 +62,18 @@ import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.services.CsmStandaloneFileProvider;
 import org.netbeans.modules.cnd.api.project.DefaultSystemSettings;
-import org.netbeans.modules.cnd.utils.FSPath;
+import org.netbeans.modules.cnd.api.project.NativeExitStatus;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.api.project.NativeFileSearch;
 import org.netbeans.modules.cnd.api.project.NativeProject;
-import org.netbeans.modules.cnd.api.project.NativeExitStatus;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.trace.NativeProjectProvider;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.cookies.EditorCookie;
@@ -233,7 +233,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         try {
             DataObject dao = DataObject.find(fo);
             if (dao != null) {
-                EditorCookie editorCookie = dao.getCookie(EditorCookie.class);
+                EditorCookie editorCookie = dao.getLookup().lookup(EditorCookie.class);
                 if (editorCookie != null) {
                     return CsmUtilities.findRecentEditorPaneInEQ(editorCookie) != null;
                 }
@@ -318,6 +318,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         private final List<FSPath> usrIncludes;
         private final List<String> sysMacros;
         private final List<String> usrMacros;
+        private final List<String> undefinedMacros;
         private final List<NativeFileItemImpl> files = new ArrayList<NativeFileItemImpl>();
         private final FileObject projectRoot;
         private final FileSystem fileSystem;
@@ -341,6 +342,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
             List<FSPath> usrIncludes = new ArrayList<FSPath>();
             List<String> sysMacros = new ArrayList<String>();
             List<String> usrMacros = new ArrayList<String>();
+            List<String> undefinedMacros = new ArrayList<String>();
             NativeFileItem.Language lang = NativeProjectProvider.getLanguage(file, dao);
             NativeProject prototype = null;            
             for (CsmProject csmProject : model.projects()) {
@@ -382,8 +384,9 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
                 sysMacros.addAll(prototype.getSystemMacroDefinitions());
                 usrIncludes.addAll(prototype.getUserIncludePaths());
                 usrMacros.addAll(prototype.getUserMacroDefinitions());
+                usrMacros.addAll(prototype.getUndefinedMacros());
             }
-            NativeProjectImpl impl = new NativeProjectImpl(file, sysIncludes, usrIncludes, sysMacros, usrMacros);
+            NativeProjectImpl impl = new NativeProjectImpl(file, sysIncludes, usrIncludes, sysMacros, usrMacros, undefinedMacros);
             impl.addFile(file);
             set.add(impl.findFileItem(file));
             return impl;
@@ -391,7 +394,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
 
         private NativeProjectImpl(FileObject projectRoot,
                 List<FSPath> sysIncludes, List<FSPath> usrIncludes,
-                List<String> sysMacros, List<String> usrMacros) {
+                List<String> sysMacros, List<String> usrMacros, List<String> undefinedMacros) {
 
             this.projectRoot = projectRoot;
             this.fileSystem = getFileSystem(projectRoot);
@@ -399,6 +402,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
             this.usrIncludes = createIncludes(usrIncludes);
             this.sysMacros = new ArrayList<String>(sysMacros);
             this.usrMacros = new ArrayList<String>(usrMacros);
+            this.undefinedMacros = new ArrayList<String>(undefinedMacros);
         }
         
         private static FileSystem getFileSystem(FileObject fo) {
@@ -521,6 +525,11 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         }
 
         @Override
+        public List<String> getUndefinedMacros() {
+            return this.undefinedMacros;
+        }
+
+        @Override
         public List<NativeProject> getDependences() {
             return Collections.<NativeProject>emptyList();
         }
@@ -612,6 +621,11 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         @Override
         public List<String> getUserMacroDefinitions() {
             return project.getUserMacroDefinitions();
+        }
+
+        @Override
+        public List<String> getUndefinedMacros() {
+            return project.getUndefinedMacros();
         }
 
         @Override
