@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,49 +34,42 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.makeproject.ui.options;
 
-package org.netbeans.modules.cnd.remote.support;
-
-import java.util.Map;
-import java.util.logging.Level;
-import org.netbeans.modules.cnd.api.remote.CommandProvider;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
+import org.openide.util.NbBundle;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
- * Run a non-interactive command. Output from the command will be available via the toString() method.
- * 
- * @author gordonp
+ *
+ * @author Alexander Simon
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.remote.CommandProvider.class)
-public class RemoteCommandProvider implements CommandProvider {
-    
-    private RemoteCommandSupport support;
+@ServiceProvider(service=MakeProjectOptions.MakeOptionNamedEntity.class, position=700)
+public class FullFileIndexer extends MakeProjectOptions.MakeOptionNamedEntity {
+    public static final String FULL_FILE_INDEXER = "fullFileIndexer"; // NOI18N
 
-    public RemoteCommandProvider() {
-        RemoteUtil.LOGGER.log(Level.FINEST, "{0} .ctor", getClass().getSimpleName());
+    @Override
+    public String getName() {
+        return FULL_FILE_INDEXER;
     }
 
     @Override
-    public int run(ExecutionEnvironment execEnv, String cmd, Map<String, String> env) {
-        RemoteUtil.LOGGER.log(Level.FINEST, "{0} running {1} on {2}", new Object[]{getClass().getSimpleName(), cmd, execEnv});
-        support = new RemoteCommandSupport(execEnv, cmd, env);
-        return support.run();
+    public String getDisplayName() {
+        return NbBundle.getMessage(FullFileIndexer.class, "FullFileIndexerName"); //NOI18N
     }
 
     @Override
-    public int run(ExecutionEnvironment execEnv, String cmd, Map<String, String> env, String... args) {
-        RemoteUtil.LOGGER.log(Level.FINEST, "{0} running {1} on {2}", new Object[]{getClass().getSimpleName(), cmd, execEnv});
-        support = new RemoteCommandSupport(execEnv, cmd, env, args);
-        return support.run();
+    public String getDescription() {
+        return null;
     }
 
     @Override
-    public String getOutput() {
-        return support.getOutput();
+    public boolean isEnabledByDefault() {
+        return false;
     }
 }

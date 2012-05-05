@@ -167,7 +167,6 @@ public final class NativeProjectProvider {
 	private final List<String> usrIncludes;
 	private final List<String> sysMacros;
 	private final List<String> usrMacros;
-        private final List<String> undefinedMacros;
 	    
         private final List<NativeFileItem> files  = new ArrayList<NativeFileItem>();
 	
@@ -211,7 +210,6 @@ public final class NativeProjectProvider {
 	    this.usrIncludes = createIncludes(usrIncludes);
 	    this.sysMacros = new ArrayList<String>(sysMacros);
 	    this.usrMacros = new ArrayList<String>(usrMacros);
-	    this.undefinedMacros = new ArrayList<String>(undefinedMacros);
             this.name = initName(projectRoot);
 	}
 	
@@ -379,11 +377,6 @@ public final class NativeProjectProvider {
             return this.usrMacros;
         }
 
-        @Override
-        public List<String> getUndefinedMacros() {
-            return this.undefinedMacros;
-        }
-        
 	private NativeFileItem addFile(FileObject fo) {
             File file = FileUtil.toFile(fo);
             DataObject dobj = getDataObject(fo);
@@ -498,11 +491,6 @@ public final class NativeProjectProvider {
         @Override
         public List<String> getUserMacroDefinitions() {
             return project.getUserMacroDefinitions();
-        }
-
-        @Override
-        public List<String> getUndefinedMacros() {
-            return project.getUndefinedMacros();
         }
 
         @Override

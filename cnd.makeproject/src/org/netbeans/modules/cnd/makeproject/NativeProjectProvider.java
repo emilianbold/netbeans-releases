@@ -631,7 +631,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
      **/
     @Override
     public List<String> getSystemMacroDefinitions() {
-        ArrayList<String> vec = new ArrayList<String>();
+        List<String> vec = new ArrayList<String>();
         MakeConfiguration makeConfiguration = getMakeConfiguration();
         if (makeConfiguration != null) {
             CompilerSet compilerSet = makeConfiguration.getCompilerSet().getCompilerSet();
@@ -642,6 +642,24 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             if (compiler != null) {
                 vec.addAll(compiler.getSystemPreprocessorSymbols());
             }
+        }
+        List<String> undefinedMacros = getUndefinedMacros();
+        if (undefinedMacros.size() > 0) {
+            List<String> out = new ArrayList<String>();
+            for(String macro : vec) {
+                boolean remove = true;
+                for(String undef : undefinedMacros) {
+                    if (macro.equals(undef) ||
+                        macro.startsWith(undef+"=")) { //NOI18N
+                        remove = false;
+                        break;
+                    }
+                }
+                if (remove) {
+                    out.add(macro);
+                }
+            }
+            vec = out;
         }
         return vec;
     }
@@ -665,8 +683,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         return vec;
     }
 
-    @Override
-    public List<String> getUndefinedMacros() {
+    private List<String> getUndefinedMacros() {
         ArrayList<String> vec = new ArrayList<String>();
         MakeConfiguration makeConfiguration = getMakeConfiguration();
         if (makeConfiguration != null) {

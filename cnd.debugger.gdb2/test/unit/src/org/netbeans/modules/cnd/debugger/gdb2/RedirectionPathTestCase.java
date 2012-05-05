@@ -118,4 +118,12 @@ public class RedirectionPathTestCase extends TestCase {
                 "\"/xxx",
                 "\"${OUTPUT_PATH}\" arg ");
     }
+    
+    @Test
+    public void testRedirectionPathWithoutRedirections() {
+        assertRedirPaths("\"${OUTPUT_PATH}\" \"arg 1\" \"arg 2\" \"arg 3\" \"arg 4\"",
+                null,
+                null,
+                "\"${OUTPUT_PATH}\" \"arg 1\" \"arg 2\" \"arg 3\" \"arg 4\"");
+    }
 }

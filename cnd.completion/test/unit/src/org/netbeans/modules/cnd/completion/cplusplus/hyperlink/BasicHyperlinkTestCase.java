@@ -902,6 +902,11 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug211265.cpp", 22, 10, "bug211265.cpp", 16, 9);
         performTest("bug211265.cpp", 10, 9, "bug211265.cpp", 3, 9);
     }
+
+    public void testBug211534() throws Exception {
+        // Bug 211534 - Code model does not handle some implicit type conversions
+        performTest("bug211534.cpp", 236, 59, "bug211534.cpp", 36, 5);
+    }
     
     @Test
     public void testBug211971() throws Exception {

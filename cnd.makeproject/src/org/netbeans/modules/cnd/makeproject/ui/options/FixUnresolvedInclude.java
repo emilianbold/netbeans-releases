@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,51 +34,42 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.makeproject.ui.options;
 
-package org.netbeans.modules.cnd.api.remote;
-
-import java.util.Map;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
+import org.openide.util.NbBundle;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
- * An interface to allow cnd modules to run a RemoteCommandSupport from cnd.remote.
- * 
- * @author gordonp
+ *
+ * @author Alexander Simon
  */
-public interface CommandProvider {
-   
-    /**
-     * Run a remote commane via cnd.remote's RemoteCommandSupport.
-     * NB: it is recommended to use a version with explicit parameters!
-     *
-     * @param env The user and remote host (user@host)
-     * @param cmd The command to run
-     * @param env Environment
-     * @return The exit status of the command
-     */
-    public int run(ExecutionEnvironment executionEnvironment, String cmd, Map<String, String> env);
+@ServiceProvider(service=MakeProjectOptions.MakeOptionNamedEntity.class, position=800)
+public class FixUnresolvedInclude extends MakeProjectOptions.MakeOptionNamedEntity {
+    public static final String FIX_UNRESOLVED_INCLUDE = "fixUnresolvedInclude"; // NOI18N
 
-    /**
-     * Run a remote commane via cnd.remote's RemoteCommandSupport.
-     * NB: THIS IS PREFERRABLE OVER run(ExecutionEnvironment, String, Map<String, String>)
-     *
-     * @param env The user and remote host (user@host)
-     * @param cmd The command to run
-     * @param env Environment
-     * @param args arguments
-     * @return The exit status of the command
-     */
-    public int run(ExecutionEnvironment executionEnvironment, String cmd, Map<String, String> env, String... args);
+    @Override
+    public String getName() {
+        return FIX_UNRESOLVED_INCLUDE;
+    }
 
-    /**
-     * Return the output of the remote command.
-     *
-     * @return The output in a continuous string.
-     */
-    public String getOutput();
+    @Override
+    public String getDisplayName() {
+        return NbBundle.getMessage(FixUnresolvedInclude.class, "fixUnresolvedInclude"); //NOI18N
+    }
+
+    @Override
+    public String getDescription() {
+        return null;
+    }
+
+    @Override
+    public boolean isEnabledByDefault() {
+        return true;
+    }
 }
