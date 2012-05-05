@@ -655,6 +655,24 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
                 vec.addAll(compiler.getSystemPreprocessorSymbols());
             }
         }
+        List<String> undefinedMacros = getUndefinedMacros();
+        if (undefinedMacros.size() > 0) {
+            List<String> out = new ArrayList<String>();
+            for(String macro : vec) {
+                boolean remove = true;
+                for(String undef : undefinedMacros) {
+                    if (macro.equals(undef) ||
+                        macro.startsWith(undef+"=")) { //NOI18N
+                        remove = false;
+                        break;
+                    }
+                }
+                if (remove) {
+                    out.add(macro);
+                }
+            }
+            vec = out;
+        }
         return vec;
     }
 
@@ -701,7 +719,6 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         return vec;
     }
     
-    @Override
     public List<String> getUndefinedMacros() {
         List<String> vec = new ArrayList<String>();
         MakeConfiguration makeConfiguration = getMakeConfiguration();

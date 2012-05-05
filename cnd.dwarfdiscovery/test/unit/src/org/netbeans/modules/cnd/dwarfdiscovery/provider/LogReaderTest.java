@@ -301,6 +301,9 @@ public class LogReaderTest extends TestCase {
                 "_KERNEL\n" +
                 "_SYSCALL32\n" +
                 "_SYSCALL32_IMPL\n" +
+                "Undefs:\n" +
+                "i386\n" +
+                "__i386\n" +
                 "Paths:\n" +
                 "../../i86pc\n" +
                 "/export/opensolaris/testws77/usr/src/common\n" +
@@ -310,6 +313,72 @@ public class LogReaderTest extends TestCase {
         assertDocumentText(line, expResult, result);
     }
 
+    
+    /**
+     * Test of undef
+     */
+    public void testUndef() {
+        String line = "gcc -E -v -DA -UA file.cc 2>/dev/null";
+        String expResult = "Source:file.cc\n" +
+                "Macros:\n" +
+                "Paths:";
+        String result = processLine(line, DiscoveryUtils.LogOrigin.DwarfCompileLine);
+        assertDocumentText(line, expResult, result);
+    }
+    
+    /**
+     * Test of undef
+     */
+    public void testUndef2() {
+        String line = "gcc -E -v -DA -UA -DA file.cc 2>/dev/null";
+        String expResult = "Source:file.cc\n" +
+                "Macros:\n" +
+                "A\n" +
+                "Paths:";
+        String result = processLine(line, DiscoveryUtils.LogOrigin.DwarfCompileLine);
+        assertDocumentText(line, expResult, result);
+    }
+    
+    /**
+     * Test of undef
+     */
+    public void testUndef3() {
+        String line = "gcc -E -v -UA -DA file.cc 2>/dev/null";
+        String expResult = "Source:file.cc\n" +
+                "Macros:\n" +
+                "A\n" +
+                "Paths:";
+        String result = processLine(line, DiscoveryUtils.LogOrigin.DwarfCompileLine);
+        assertDocumentText(line, expResult, result);
+    }
+
+    /**
+     * Test of undef
+     */
+    public void testUndef4() {
+        String line = "gcc -E -v -UA -UA -DA file.cc 2>/dev/null";
+        String expResult = "Source:file.cc\n" +
+                "Macros:\n" +
+                "A\n" +
+                "Paths:";
+        String result = processLine(line, DiscoveryUtils.LogOrigin.DwarfCompileLine);
+        assertDocumentText(line, expResult, result);
+    }
+
+    /**
+     * Test of undef
+     */
+    public void testUndef5() {
+        String line = "gcc -E -v -DA -DA -UA -UA file.cc 2>/dev/null";
+        String expResult = "Source:file.cc\n" +
+                "Macros:\n" +
+                "Undefs:\n" +
+                "A\n" +
+                "Paths:";
+        String result = processLine(line, DiscoveryUtils.LogOrigin.DwarfCompileLine);
+        assertDocumentText(line, expResult, result);
+    }
+    
     /**
      * Test of scanCommandLine method, of class DwarfSource.
      */
@@ -360,6 +429,9 @@ public class LogReaderTest extends TestCase {
                 "_TS_ERRNO\n" +
                 "_XOPEN_SOURCE=600\n" +
                 "__EXTENSIONS__=1\n" +
+                "Undefs:\n" +
+                "i386\n" +
+                "__i386\n" +
                 "Paths:\n" +
                 "src/cmd/ksh93\n" +
                 "../common/include\n" +
@@ -674,6 +746,13 @@ public class LogReaderTest extends TestCase {
             if (entry.getValue() != null) {
                 res.append("=");
                 res.append(entry.getValue());
+            }
+        }
+        if (!undefs.isEmpty()) {
+            res.append("\nUndefs:");
+            for (String undef : undefs) {
+                res.append("\n");
+                res.append(undef);
             }
         }
         res.append("\nPaths:");
