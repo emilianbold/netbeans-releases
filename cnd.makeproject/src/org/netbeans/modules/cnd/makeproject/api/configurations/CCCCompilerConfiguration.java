@@ -305,7 +305,23 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
             }
         }
         set1.put(new StringListNodeProp(getPreprocessorConfiguration(), getMaster() != null ? getInheritPreprocessor() : null, new String[]{"preprocessor-definitions", getString("PreprocessorDefinitionsTxt"), getString("PreprocessorDefinitionsHint"), getString("PreprocessorDefinitionsLbl"), inheritedValues.toString()}, true, new HelpCtx("preprocessor-definitions"))); // NOI18N
-
+     
+        // Undefined Macros
+        inheritedValues = new StringBuilder();
+        master = (CCCCompilerConfiguration) getMaster();
+        while (master != null) {
+            inheritedValues.append(master.getUndefinedPreprocessorConfiguration().toString(visitor));
+            if (master.getInheritUndefinedPreprocessor().getValue()) {
+                master = (CCCCompilerConfiguration) master.getMaster();
+            } else {
+                master = null;
+            }
+        }
+        set1.put(new StringListNodeProp(getUndefinedPreprocessorConfiguration(),
+                getMaster() != null ? getInheritUndefinedPreprocessor() : null,
+                new String[]{"preprocessor-undefined", getString("PreprocessorUndefinedTxt"), getString("PreprocessorUndefinedHint"), getString("PreprocessorUndefinedLbl"), inheritedValues.toString()},
+                true, new HelpCtx("preprocessor-undefined"))); // NOI18N
+        
         if (this.getMaster() == null) {            
             final IntConfiguration configurationType = this.getOwner() == null ? null : this.getOwner().getConfigurationType();
             if (configurationType == null || (configurationType.getValue() != MakeConfiguration.TYPE_MAKEFILE)) {

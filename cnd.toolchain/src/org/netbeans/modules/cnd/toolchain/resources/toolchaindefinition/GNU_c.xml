@@ -52,6 +52,9 @@ made subject to such option by the copyright holder.
         <system_macros flags="-x c -E -dM" parser="GNU">
             <macro stringvalue="__STDC__=1"/>
             <macro stringvalue="_OPENMP=200505" flags="-fopenmp"/>
+            <macro stringvalue="__SSP__=1" flags="-fstack-protector"/>
+            <macro stringvalue="__SSP_ALL__=2" flags="-fstack-protector-all"/>
+            <macro stringvalue="__NO_INLINE__" flags="-fno-inline"/>
         </system_macros>
         <user_include flags="-I"/>
         <user_macro flags="-D"/>
