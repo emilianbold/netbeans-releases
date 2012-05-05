@@ -1227,7 +1227,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         // Temporary work around
         if (undefinedMacros.size() > 0) {
             List<String> out = new ArrayList<String>();
-            for(String macro : userMacros) {
+            for(String macro : sysMacros) {
                 boolean add = true;
                 for(String undef : undefinedMacros) {
                     if (macro.equals(undef) ||
