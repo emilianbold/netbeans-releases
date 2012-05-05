@@ -234,19 +234,17 @@ public class CndFileSystemProviderImpl extends CndFileSystemProvider {
         return null;
     }
 
-    private String getPrefix() {
-        synchronized (this) {
-            if (cachePrefix == null) {
-                String cacheRoot = FileSystemCacheProvider.getCacheRoot(ExecutionEnvironmentFactory.getLocal());
-                if (cacheRoot != null) {
-                    String prefix = new File(cacheRoot).getParent();
-                    if (prefix != null) {
-                        prefix= prefix.replace("\\", "/"); //NOI18N
-                        if (!prefix.endsWith("/")) { //NOI18N
-                            prefix += '/';
-                        }
-                        cachePrefix = prefix;
+    private synchronized String getPrefix() {
+        if (cachePrefix == null) {
+            String cacheRoot = FileSystemCacheProvider.getCacheRoot(ExecutionEnvironmentFactory.getLocal());
+            if (cacheRoot != null) {
+                String prefix = new File(cacheRoot).getParent();
+                if (prefix != null) {
+                    prefix= prefix.replace("\\", "/"); //NOI18N
+                    if (!prefix.endsWith("/")) { //NOI18N
+                        prefix += '/';
                     }
+                    cachePrefix = prefix;
                 }
             }
         }
