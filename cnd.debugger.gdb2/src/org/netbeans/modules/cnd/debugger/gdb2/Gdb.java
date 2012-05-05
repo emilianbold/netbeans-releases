@@ -488,7 +488,9 @@ public class Gdb {
 		tentativeGdb.setExecutor(executor);
 	    }
 
-	    /* OLD
+            tentativeGdb.myMIProxy.logInfo();
+	    
+            /* OLD
 	    Moved to start()
 
 	    boolean havePio = false;
