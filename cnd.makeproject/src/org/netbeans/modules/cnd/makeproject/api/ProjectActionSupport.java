@@ -764,7 +764,7 @@ public class ProjectActionSupport {
                             LOGGER.log(Level.SEVERE, "Path Mapper not found for project {0} - using local path {1}", new Object[]{pae.getProject(), executable}); //NOI18N
                         }
                     }
-                    ExitStatus res = ProcessUtils.execute(execEnv, "test", "-x", executable, "-a", "-f", executable);
+                    ExitStatus res = ProcessUtils.execute(execEnv, "test", "-x", executable, "-a", "-f", executable); // NOI18N
                     ok = res.isOK();
                 } else {
                     // FIXUP: getExecutable should really return fully qualified name to executable including .exe
