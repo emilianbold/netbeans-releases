@@ -67,13 +67,14 @@ public final class DbxThread extends Thread {
 
     DbxThread(NativeDebugger debugger, ModelListener updater, GPDbxThread thread) {
    	super(debugger, updater);
-	this.thread = thread;
 
-	if (this.thread == null) {
+	if (thread == null) {
 	    // Assign a dummy so we don't have to check for null all over.
 	    // SHOULD assign a better-fleshed out dummy
-	    this.thread = new GPDbxThread();
+	    thread = new GPDbxThread();
 	}
+        
+	this.thread = thread;
 	tid = thread.tid;
 	htid = thread.htid;
 	current_function = thread.current_function;
