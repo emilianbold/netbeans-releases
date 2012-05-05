@@ -137,7 +137,7 @@ public final class TargetChooserPanel<T> implements WizardDescriptor.Panel {
             return false;
         }
 
-        String folderName = myGui.getTargetFolder();
+        String folderName = myGui.getNormalizedFolder();
         if (INVALID_FOLDERNAME_CHARACTERS.matcher(folderName).find()) {
                 myTemplateWizard.putProperty (WizardDescriptor.PROP_ERROR_MESSAGE, 
                         NbBundle.getMessage(TargetChooserPanel.class, 
