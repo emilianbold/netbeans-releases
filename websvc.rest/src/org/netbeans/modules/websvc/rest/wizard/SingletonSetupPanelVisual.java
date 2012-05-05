@@ -169,6 +169,11 @@ public class SingletonSetupPanelVisual extends javax.swing.JPanel
 
         packageComboBox.setEditable(true);
         packageComboBox.setMinimumSize(new java.awt.Dimension(4, 20));
+        packageComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                packageChanged(evt);
+            }
+        });
         packageComboBox.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 packageComboBoxKeyReleased(evt);
@@ -225,7 +230,7 @@ public class SingletonSetupPanelVisual extends javax.swing.JPanel
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(selectClassButton))
                     .addComponent(uriTextField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 329, Short.MAX_VALUE)
-                    .addComponent(locationComboBox, javax.swing.GroupLayout.Alignment.TRAILING, 0, 329, Short.MAX_VALUE)
+                    .addComponent(locationComboBox, javax.swing.GroupLayout.Alignment.TRAILING, 0, 327, Short.MAX_VALUE)
                     .addComponent(packageComboBox, javax.swing.GroupLayout.Alignment.TRAILING, 0, 329, Short.MAX_VALUE)
                     .addComponent(projectTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 329, Short.MAX_VALUE))
                 .addContainerGap())
@@ -358,6 +363,11 @@ private void uriTextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:e
     }
     fireChange();
 }//GEN-LAST:event_uriTextFieldKeyReleased
+
+    private void packageChanged(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_packageChanged
+        fireChange();
+    }//GEN-LAST:event_packageChanged
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel classLabel;
     private javax.swing.JTextField classTextField;

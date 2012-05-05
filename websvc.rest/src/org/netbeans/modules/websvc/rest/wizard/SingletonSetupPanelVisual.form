@@ -50,7 +50,7 @@
                       <Component id="selectClassButton" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Component id="uriTextField" alignment="1" pref="329" max="32767" attributes="0"/>
-                  <Component id="locationComboBox" alignment="1" pref="329" max="32767" attributes="1"/>
+                  <Component id="locationComboBox" alignment="1" pref="327" max="32767" attributes="1"/>
                   <Component id="packageComboBox" alignment="1" pref="329" max="32767" attributes="1"/>
                   <Component id="projectTextField" alignment="0" pref="329" max="32767" attributes="1"/>
               </Group>
@@ -273,6 +273,7 @@
         </Property>
       </AccessibilityProperties>
       <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="packageChanged"/>
         <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="packageComboBoxKeyReleased"/>
       </Events>
     </Component>
