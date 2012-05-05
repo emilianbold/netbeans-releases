@@ -61,7 +61,7 @@
                   <Component id="representationClassTextField" alignment="0" pref="215" max="32767" attributes="0"/>
                   <Component id="containerRepresentationClassTextField" alignment="0" pref="215" max="32767" attributes="1"/>
                   <Component id="containerUriTextField" alignment="0" pref="215" max="32767" attributes="1"/>
-                  <Component id="medaTypeComboBox" alignment="0" pref="215" max="32767" attributes="1"/>
+                  <Component id="medaTypeComboBox" alignment="0" pref="211" max="32767" attributes="1"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" max="-2" attributes="0">
@@ -276,6 +276,7 @@
         </Property>
       </AccessibilityProperties>
       <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="packageChanged"/>
         <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="packageComboBoxKeyReleased"/>
       </Events>
     </Component>

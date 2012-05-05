@@ -216,6 +216,11 @@ public class ContainerItemSetupPanelVisual extends javax.swing.JPanel
         packageComboBox.setEditable(true);
         packageComboBox.setInheritsPopupMenu(true);
         packageComboBox.setPreferredSize(new java.awt.Dimension(4, 20));
+        packageComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                packageChanged(evt);
+            }
+        });
         packageComboBox.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 packageComboBoxKeyReleased(evt);
@@ -329,7 +334,7 @@ public class ContainerItemSetupPanelVisual extends javax.swing.JPanel
                     .addComponent(representationClassTextField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 215, Short.MAX_VALUE)
                     .addComponent(containerRepresentationClassTextField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 215, Short.MAX_VALUE)
                     .addComponent(containerUriTextField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 215, Short.MAX_VALUE)
-                    .addComponent(medaTypeComboBox, javax.swing.GroupLayout.Alignment.LEADING, 0, 215, Short.MAX_VALUE))
+                    .addComponent(medaTypeComboBox, javax.swing.GroupLayout.Alignment.LEADING, 0, 211, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                     .addComponent(selectClassButton)
@@ -537,6 +542,10 @@ private void representationClassChanged(java.awt.event.KeyEvent evt) {//GEN-FIRS
     private void packageComboBoxKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_packageComboBoxKeyReleased
         fireChange();
     }//GEN-LAST:event_packageComboBoxKeyReleased
+
+    private void packageChanged(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_packageChanged
+        fireChange();
+    }//GEN-LAST:event_packageChanged
                 
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
