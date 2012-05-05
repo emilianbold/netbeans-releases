@@ -1790,6 +1790,22 @@ abstract public class CsmCompletionQuery {
                                     if (filtered.size() > 0) {
                                         mtdList = filtered;
                                         lastType = extractFunctionType(mtdList, null);
+                                    } else if (item.getParameterCount() > 1) {
+                                        CsmType type0 = resolveType(item.getParameter(0));
+                                        CsmType type1 = resolveType(item.getParameter(1));
+                                        if(type0 != null && type1 != null) {
+                                            lastType = sup.getCommonType(type1, type0);
+                                            if(lastType == null) {
+                                                if(type0.isBuiltInBased(true)) {
+                                                    lastType = type1;
+                                                } else {
+                                                    lastType = type0;
+                                                }
+                                            }
+                                        } else {
+                                            lastType = type0;
+                                        }
+                                        staticOnly = false;
                                     } else if (item.getParameterCount() > 0) {
                                         lastType = resolveType(item.getParameter(0));
                                         staticOnly = false;
