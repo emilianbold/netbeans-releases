@@ -608,7 +608,12 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
         if (NativeDebuggerManager.isStartModel() && (getJavaMode() == 0)) {
             // For load and run
             if ((ddi.getAction() & NativeDebuggerManager.RUN) != 0) {
-                rerun();
+                // if we're in attach - just cont
+                if (ddi.getPid() != -1) {
+                    go();
+                } else {
+                    rerun();
+                }
                 ddi.removeAction(NativeDebuggerManager.RUN);
                 manager().removeAction(NativeDebuggerManager.RUN);
             } else // For load and step
