@@ -36,7 +36,9 @@ import java.io.PrintStream;
 import java.util.List;
 
 /**
- *
+ * This test parses project on hard refs and dumps it's full model and internals.
+ * Model is dumped as ModelBuiltFromRepository.out/ModelBuiltFromRepository.err files.
+ * This test does not persist model into repository.
  * @author sg155630
  */
 public class RepositoryValidationGoldens extends RepositoryValidationBase {
