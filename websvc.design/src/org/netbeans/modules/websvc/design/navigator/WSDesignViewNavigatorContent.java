@@ -126,7 +126,12 @@ public class WSDesignViewNavigatorContent extends JPanel
         protected boolean createKeys(List<MethodModel> list){
             if(implClass != null){
                 ServiceModel model = ServiceModel.getServiceModel(implClass.getPrimaryFile());
-                list.addAll(model.getOperations());
+                if ( model != null ){
+                    List<MethodModel> operations = model.getOperations();
+                    if ( operations != null ){
+                        list.addAll(model.getOperations());
+                    }
+                }
             }
             return true;
         }
