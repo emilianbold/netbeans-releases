@@ -344,9 +344,9 @@ public class DiscoveryUtils {
                             // do nothing
                             break;
                     }
-                    userMacros.put(macro.substring(0,i), value);
+                    addDef(macro.substring(0,i), value, userMacros, undefinedMacros);
                 } else {
-                    userMacros.put(macro, null);
+                    addDef(macro, null, userMacros, undefinedMacros);
                 }
             } else if (option.startsWith("-U")){ // NOI18N
                 String macro = option.substring(2);
@@ -354,7 +354,7 @@ public class DiscoveryUtils {
                     macro = st.next();
                 }
                 macro = removeQuotes(macro);
-                undefinedMacros.add(macro);
+                addUndef(macro, userMacros, undefinedMacros);
             } else if (option.startsWith("-I")){ // NOI18N
                 String path = option.substring(2);
                 if (path.length()==0 && st.hasNext()){
@@ -547,6 +547,21 @@ public class DiscoveryUtils {
         return what;
     }
 
+    private static void addDef(String macro, String value, Map<String, String> userMacros, List<String> undefinedMacros) {
+        undefinedMacros.remove(macro);
+        userMacros.put(macro, value);
+    }
+
+    private static void addUndef(String macro, Map<String, String> userMacros, List<String> undefinedMacros) {
+        if (userMacros.containsKey(macro)) {
+            userMacros.remove(macro);
+        } else {
+            if (!undefinedMacros.contains(macro)) {
+                undefinedMacros.add(macro);
+            }
+        }
+    }
+    
     private static void addMacrosByFlags(String option, Map<String, String> userMacros, List<String> undefinedMacros, ProjectBridge bridge, boolean isCpp) {
         if (bridge != null) {
             List<String> optionToMacros = bridge.getOptionToMacros(option, isCpp);
@@ -554,16 +569,16 @@ public class DiscoveryUtils {
                 for(String macro : optionToMacros) {
                     int i = macro.indexOf('=');
                     if (i > 0) {
-                        userMacros.put(macro.substring(0, i), macro.substring(i+1));
+                        addDef(macro.substring(0, i), macro.substring(i+1), userMacros, undefinedMacros);
                     } else {
-                        userMacros.put(macro, null);
+                        addDef(macro, null, userMacros, undefinedMacros);
                     }
                 }
             }
             optionToMacros = bridge.getOptionToUndefinedMacros(option, isCpp);
             if (optionToMacros != null) {
                 for(String macro : optionToMacros) {
-                    undefinedMacros.add(macro);
+                    addUndef(macro, userMacros, undefinedMacros);
                 }
             }
         }

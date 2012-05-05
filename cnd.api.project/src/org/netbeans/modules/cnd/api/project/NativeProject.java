@@ -144,13 +144,6 @@ public interface NativeProject {
     public List<String> getUserMacroDefinitions();
 
     /**
-     * Returns a list <String> of user undefined defined macros used when parsing 'orpan' source files.
-     * @return a list <String> of user undefined macro.
-     * Macro definitions are not prefixed with the compiler option (usually -U).
-     */
-    public List<String> getUndefinedMacros();
-    
-    /**
      * Returns a list <NativeProject> of libraries.
      * @return a list <NativeProject> of libraries.
      */

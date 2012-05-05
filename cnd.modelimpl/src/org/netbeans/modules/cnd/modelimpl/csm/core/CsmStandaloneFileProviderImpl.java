@@ -318,7 +318,6 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         private final List<FSPath> usrIncludes;
         private final List<String> sysMacros;
         private final List<String> usrMacros;
-        private final List<String> undefinedMacros;
         private final List<NativeFileItemImpl> files = new ArrayList<NativeFileItemImpl>();
         private final FileObject projectRoot;
         private final FileSystem fileSystem;
@@ -384,7 +383,6 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
                 sysMacros.addAll(prototype.getSystemMacroDefinitions());
                 usrIncludes.addAll(prototype.getUserIncludePaths());
                 usrMacros.addAll(prototype.getUserMacroDefinitions());
-                usrMacros.addAll(prototype.getUndefinedMacros());
             }
             NativeProjectImpl impl = new NativeProjectImpl(file, sysIncludes, usrIncludes, sysMacros, usrMacros, undefinedMacros);
             impl.addFile(file);
@@ -402,7 +400,6 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
             this.usrIncludes = createIncludes(usrIncludes);
             this.sysMacros = new ArrayList<String>(sysMacros);
             this.usrMacros = new ArrayList<String>(usrMacros);
-            this.undefinedMacros = new ArrayList<String>(undefinedMacros);
         }
         
         private static FileSystem getFileSystem(FileObject fo) {
@@ -525,11 +522,6 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         }
 
         @Override
-        public List<String> getUndefinedMacros() {
-            return this.undefinedMacros;
-        }
-
-        @Override
         public List<NativeProject> getDependences() {
             return Collections.<NativeProject>emptyList();
         }
@@ -621,11 +613,6 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         @Override
         public List<String> getUserMacroDefinitions() {
             return project.getUserMacroDefinitions();
-        }
-
-        @Override
-        public List<String> getUndefinedMacros() {
-            return project.getUndefinedMacros();
         }
 
         @Override

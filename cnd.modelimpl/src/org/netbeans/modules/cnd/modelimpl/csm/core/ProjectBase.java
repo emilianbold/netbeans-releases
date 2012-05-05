@@ -1222,26 +1222,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
         List<String> userMacros = nativeFile.getUserMacroDefinitions();
         List<String> sysMacros = nativeFile.getSystemMacroDefinitions();
-        List<String> undefinedMacros = nativeFile.getUndefinedMacros();
-        // TODO: support undefinedMacros
-        // Temporary work around
-        if (undefinedMacros.size() > 0) {
-            List<String> out = new ArrayList<String>();
-            for(String macro : sysMacros) {
-                boolean add = true;
-                for(String undef : undefinedMacros) {
-                    if (macro.equals(undef) ||
-                        macro.startsWith(undef+"=")) { //NOI18N
-                        add = false;
-                        break;
-                    }
-                }
-                if (add) {
-                    out.add(macro);
-                }
-            }
-            sysMacros = out;
-        }
         APTMacroMap map = APTHandlersSupport.createMacroMap(getSysMacroMap(sysMacros), userMacros);
         return map;
     }
@@ -3048,11 +3028,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             if (project != null) {
                 return project.getUserMacroDefinitions();
             }
-            return Collections.<String>emptyList();
-        }
-
-        @Override
-        public List<String> getUndefinedMacros() {
             return Collections.<String>emptyList();
         }
 

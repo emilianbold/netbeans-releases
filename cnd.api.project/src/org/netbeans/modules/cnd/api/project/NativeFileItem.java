@@ -140,14 +140,6 @@ public interface NativeFileItem {
     public List<String> getUserMacroDefinitions();
 
     /**
-     * Returns a list <String> of undefined macro definitions.
-     * @return a list <String> of undefined macro definitions.
-     * Macro definitions are not prefixed with the compiler option (usually -U).
-     * It looks like MACRO
-     */
-    public List<String> getUndefinedMacros();    
-    
-    /**
      * Returns the language of the file. 
      * @return the language of the file
      */
