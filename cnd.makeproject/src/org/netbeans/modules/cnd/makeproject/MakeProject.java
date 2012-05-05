@@ -99,6 +99,7 @@ import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectHelper;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectListener;
 import org.netbeans.modules.cnd.makeproject.ui.FolderSearchInfo.FileObjectNameMatcherImpl;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
+import org.netbeans.modules.cnd.makeproject.ui.options.FullFileIndexer;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.spi.toolchain.ToolchainProject;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
@@ -1675,7 +1676,7 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if (MakeOptions.FULL_FILE_INDEXER.equals(evt.getPropertyName())) {
+            if (FullFileIndexer.FULL_FILE_INDEXER.equals(evt.getPropertyName())) {
                 registerClassPath(Boolean.TRUE.equals(evt.getNewValue()));
             }
         }

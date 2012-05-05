@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,68 +34,43 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.cnd.makeproject.ui.options;
 
-import java.beans.PropertyChangeListener;
-import javax.swing.JComponent;
-import org.netbeans.modules.cnd.utils.ui.CndUIConstants;
-import org.netbeans.spi.options.OptionsPanelController;
-import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
+import org.openide.util.NbBundle;
+import org.openide.util.lookup.ServiceProvider;
 
-@OptionsPanelController.SubRegistration(
-    id=CndUIConstants.TOOLS_OPTIONS_CND_PROJECTS_ID,
-    location=CndUIConstants.TOOLS_OPTIONS_CND_CATEGORY_ID,
-    displayName="#TAB_ProjectsTab", // NOI18N
-    position=200
-)
-public final class ProjectOptionsPanelController extends OptionsPanelController {
-
-    private ProjectOptionsPanel panel = new ProjectOptionsPanel();
-
+/**
+ *
+ * @author Alexander Simon
+ */
+@ServiceProvider(service=MakeProjectOptions.MakeOptionNamedEntity.class, position=200)
+public class SaveModifiedBeforBuild extends MakeProjectOptions.MakeOptionNamedEntity {
+    // Save
+    public static final String SAVE = "save";  // NOI18N
+    
     @Override
-    public void update() {
-        panel.update();
+    public String getName() {
+        return SAVE;
     }
 
     @Override
-    public void applyChanges() {
-        panel.applyChanges();
+    public String getDisplayName() {
+        return NbBundle.getMessage(SaveModifiedBeforBuild.class, "SAVE_CHECKBOX_TXT"); //NOI18N
     }
 
     @Override
-    public void cancel() {
-        panel.cancel();
+    public String getDescription() {
+        return NbBundle.getMessage(SaveModifiedBeforBuild.class, "SAVE_CHECKBOX_AD"); //NOI18N
     }
 
     @Override
-    public boolean isValid() {
-        return panel.dataValid();
-    }
-
-    @Override
-    public boolean isChanged() {
-        return panel.isChanged();
-    }
-
-    @Override
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx("cnd.optionsDialog"); // NOI18N
-    }
-
-    @Override
-    public JComponent getComponent(Lookup masterLookup) {
-        return panel;
-    }
-
-    @Override
-    public void addPropertyChangeListener(PropertyChangeListener l) {
-        panel.addPropertyChangeListener(l);
-    }
-
-    @Override
-    public void removePropertyChangeListener(PropertyChangeListener l) {
-        panel.removePropertyChangeListener(l);
+    public boolean isEnabledByDefault() {
+        return true;
     }
 }
