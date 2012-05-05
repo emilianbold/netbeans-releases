@@ -42,7 +42,6 @@
 package org.netbeans.modules.profiler.nbimpl.providers;
 
 import org.netbeans.modules.profiler.nbimpl.javac.JavacClassInfo;
-import java.io.IOException;
 import java.lang.reflect.Modifier;
 import java.util.logging.Level;
 import org.netbeans.modules.profiler.categorization.spi.CategoryDefinitionProcessor;
@@ -54,10 +53,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 import javax.lang.model.element.TypeElement;
-import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.Task;
 import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.marker.ClassMarker;
 import org.netbeans.lib.profiler.marker.CompositeMarker;
@@ -180,6 +177,9 @@ final public class MarkerProcessor extends CategoryDefinitionProcessor implement
         for (SourceClassInfo sci : ci.getSubclasses()) {
             for(SourceMethodInfo smi : applicableMethods) {
                 marker.addMethodMark(sci.getQualifiedName(), smi.getName(), smi.getSignature(), mark);
+                if (LOGGER.isLoggable(Level.FINEST)) {
+                    LOGGER.log(Level.FINEST, "marking method: {0}#{1}{2}", new Object[]{sci.getQualifiedName(), smi.getName(), smi.getSignature()});
+                }
             }
 //            addTypeMarker(marker, sci, restrictorSet, inclusive, mark);
         }
