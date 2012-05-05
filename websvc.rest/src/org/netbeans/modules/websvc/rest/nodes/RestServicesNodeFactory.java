@@ -53,6 +53,9 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
@@ -137,7 +140,8 @@ public class RestServicesNodeFactory implements NodeFactory {
                         fireChange();
                     }
                 } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+                    Logger.getLogger( RestServiceChildFactory.class.getName()).
+                        log(Level.INFO, null , ex);
                 }
             }
         });
