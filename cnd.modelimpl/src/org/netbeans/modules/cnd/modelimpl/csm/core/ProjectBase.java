@@ -203,6 +203,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         GraphContainer graphContainer = new GraphContainer(this);
         CndUtils.assertTrue(graphStorageKey.equals(graphContainer.getKey()));
         weakGraphContainer.clear();
+        includedFileContainer.clear();
         FAKE_GLOBAL_NAMESPACE = NamespaceImpl.create(this, true);
     }
 

@@ -47,7 +47,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -105,6 +104,12 @@ public final class IncludedFileContainer {
             factory.writeUID(entry.prjUID, aStream);
             entry.getStorage().write(aStream);
 //            keyFactory.writeKey(entry.storageKey, aStream);
+        }
+    }
+
+    public void clear() {
+        synchronized (list) {
+            list.clear();
         }
     }
 
