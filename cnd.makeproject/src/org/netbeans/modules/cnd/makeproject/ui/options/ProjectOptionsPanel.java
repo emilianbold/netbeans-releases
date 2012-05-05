@@ -180,7 +180,6 @@ public class ProjectOptionsPanel extends JPanel {
             cb.setToolTipText(entry.getDescription());
         }
         cb.setOpaque(false);
-        MakeOptions.getInstance().getShowProfiling();
         cb.setSelected(MakeOptions.getInstance().getBooleanProperty(entry));
         cb.putClientProperty("MakeOptionNamedEntity", entry); //NOI18N
         return cb;

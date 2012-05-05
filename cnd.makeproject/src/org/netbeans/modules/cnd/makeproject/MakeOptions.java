@@ -69,8 +69,6 @@ public class MakeOptions extends SharedClassObject implements PropertyChangeList
     // Default Path mode
     private static final String PATH_MODE = "pathMode"; // NOI18N
     //
-    private static final String SHOW_PROFILING = "showProfiling"; // NOI18N
-    //
     // packaging Defaults
     private static final String DEF_EXE_PERM = "defexeperm"; // NOI18N
     private static final String DEF_FILE_PERM = "deffileperm"; // NOI18N
@@ -155,17 +153,9 @@ public class MakeOptions extends SharedClassObject implements PropertyChangeList
         return getBooleanProperty(findEntity(DependencyChecking.DEPENDENCY_CHECKING));
     }
 
-    public void setDepencyChecking(boolean dependencyChecking) {
-        setBooleanProperty(findEntity(DependencyChecking.DEPENDENCY_CHECKING), dependencyChecking);
-    }
-
     // Dependency Checking
     public boolean getRebuildPropChanged() {
         return getBooleanProperty(findEntity(RebuildPropsChanged.REBUILD_PROP_CHANGED));
-    }
-
-    public void setRebuildPropChanged(boolean rebuildPropChanged) {
-        setBooleanProperty(findEntity(RebuildPropsChanged.REBUILD_PROP_CHANGED), rebuildPropChanged);
     }
 
     // Display binary files
@@ -173,39 +163,14 @@ public class MakeOptions extends SharedClassObject implements PropertyChangeList
         return getBooleanProperty(findEntity(ViewBinaryFiles.VIEW_BINARY_FILES));
     }
 
-    public void setViewBinaryFiles(boolean viewBinaryFiles) {
-        setBooleanProperty(findEntity(ViewBinaryFiles.VIEW_BINARY_FILES), viewBinaryFiles);
-    }
-
     // Save
     public boolean getSave() {
         return getBooleanProperty(findEntity(SaveModifiedBeforBuild.SAVE));
     }
 
-    public void setSave(boolean save) {
-        setBooleanProperty(findEntity(SaveModifiedBeforBuild.SAVE), save);
-    }
-
     // Reuse
     public boolean getReuse() {
         return getBooleanProperty(findEntity(ReuseOutputTab.REUSE));
-    }
-
-    public void setReuse(boolean reuse) {
-        setBooleanProperty(findEntity(ReuseOutputTab.REUSE), reuse);
-    }
-
-    // Show Profiling
-    public boolean getShowProfiling() {
-        return getPreferences().getBoolean(SHOW_PROFILING, true);
-    }
-
-    public void setShowProfiling(boolean reuse) {
-        boolean oldValue = getShowProfiling();
-        getPreferences().putBoolean(SHOW_PROFILING, reuse);
-        if (oldValue != reuse) {
-            firePropertyChange(SHOW_PROFILING, Boolean.valueOf(oldValue), Boolean.valueOf(reuse));
-        }
     }
 
     // Show Configuration warning
@@ -285,10 +250,6 @@ public class MakeOptions extends SharedClassObject implements PropertyChangeList
     // Is full file indexer available
     public boolean isFullFileIndexer() {
         return getBooleanProperty(findEntity(FullFileIndexer.FULL_FILE_INDEXER));
-    }
-
-    public void setFullFileIndexer(boolean value) {
-        setBooleanProperty(findEntity(FullFileIndexer.FULL_FILE_INDEXER), value);
     }
 
     // Fix unresolved include directive by file indexer
