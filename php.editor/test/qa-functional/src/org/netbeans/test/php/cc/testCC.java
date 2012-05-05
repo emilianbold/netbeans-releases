@@ -79,7 +79,7 @@ public class testCC extends cc {
                 "Verify_variable_from_included_file_code_completion",
                 "Verify_variable_from_required_file_code_completion",
                 "Verify_code_completion_inside_the_identifier",
-                "Verify_documentation_hints_for_built_in_identifiers",
+//                "Verify_documentation_hints_for_built_in_identifiers",
 //                "Verify_documentation_hints_for_keywords",
                 "Verify_keywords_code_completion",
                 "Verify_code_completion_after_extends_keyword",
