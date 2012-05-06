@@ -50,6 +50,8 @@ import java.awt.event.FocusListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.net.URL;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 
 
 /**
@@ -106,6 +108,14 @@ public class HyperlinkLabel extends HTMLLabel {
         value = value.replace("<code>", "<code style=\"font-size: " + font.getSize() + "pt;\">"); //NOI18N
         super.setText("<html><body style=\"font-size: " + font.getSize() + "pt; font-family: " + font.getName() + ";\">" + value
                       + "</body></html>"); //NOI18N
+        Document d = getDocument();
+        if (d != null) {
+            String accesibleName = value;
+            try {
+                accesibleName = d.getText(0, d.getLength());
+            } catch (BadLocationException ex) {}
+            getAccessibleContext().setAccessibleName(accesibleName);
+        }
     }
 
     protected void showURL(URL url) {

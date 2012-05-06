@@ -48,6 +48,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Filter;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
 
 import org.netbeans.lib.profiler.ProfilerClient;
 import org.netbeans.lib.profiler.ProfilerEngineSettings;
@@ -57,7 +62,6 @@ import org.netbeans.lib.profiler.results.RuntimeCCTNode;
 import org.netbeans.lib.profiler.results.cpu.cct.nodes.MarkedCPUCCTNode;
 import org.netbeans.lib.profiler.results.cpu.cct.nodes.MethodCPUCCTNode;
 import org.netbeans.lib.profiler.results.cpu.cct.nodes.RuntimeCPUCCTNode;
-import org.netbeans.lib.profiler.results.cpu.cct.nodes.RuntimeCPUCCTNode.Children;
 import org.netbeans.lib.profiler.results.cpu.cct.nodes.SimpleCPUCCTNode;
 import org.netbeans.modules.profiler.categorization.api.Category;
 
@@ -70,7 +74,40 @@ public class CategoryMarkTestBase extends TestBase {
 
     public CategoryMarkTestBase( String name ) {
         super(name);
+        ch = new ConsoleHandler();
+        ch.setLevel(Level.FINEST);
     }
+
+    private Logger log;
+    private ConsoleHandler ch;
+    private Level level;
+    private Filter filter;
+    
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        log = Logger.getLogger("org.netbeans.modules.profiler.nbimpl.providers.MarkerProcessor"); // NOI18N
+        if (log != null) {
+            level = log.getLevel();
+            filter = log.getFilter();
+
+            log.setLevel(Level.FINEST);
+            log.addHandler(ch);
+            log.setFilter(null);
+        }
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        if (log != null) {
+            log.removeHandler(ch);
+            log.setLevel(level);
+            log.setFilter(filter);
+        }
+        super.tearDown();
+    }
+    
+    
     
     protected void doTestCodec( Category category ){
         resetMarkMappings();
