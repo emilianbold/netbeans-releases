@@ -237,6 +237,15 @@ public class JsCompletionItem implements CompletionProposal {
                 formatter.type(false);
             }
         }
+
+        @Override
+        public String getCustomInsertTemplate() {
+            StringBuilder template = new StringBuilder();
+            template.append(getName());
+            template.append("(${cursor})");
+            return template.toString();
+        }
+        
     }
 
     static class KeywordItem extends JsCompletionItem {
