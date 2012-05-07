@@ -172,6 +172,42 @@ public class AbstractLookupBaseHid extends NbTestCase {
         }
     }
     
+    public void testBeforeLookupIsCalledToInvalidateCaches() {
+        class Before extends ProxyLookup {
+            Object toAdd;
+            
+            Before() {
+                super(instanceLookup);
+            }
+
+            @Override
+            protected void beforeLookup(Template<?> template) {
+                if (toAdd != null) {
+                    ic.add(toAdd);
+                    toAdd = null;
+                }
+            }
+            
+        }
+        Before before = new Before();
+        
+        Lookup query = createLookup(before);
+        
+        before.toAdd = Integer.valueOf(10);
+        
+        Lookup.Result<Long> res = query.lookupResult(Long.class);
+        assertTrue("empty", res.allItems().isEmpty());
+        
+        assertNull("beforeLookup called", before.toAdd);
+        
+        before.toAdd = Long.valueOf(3L);
+        
+        Collection<? extends Lookup.Item<Long>> c = res.allItems();
+        assertEquals("There is One: ", 1, c.size());
+        
+        assertEquals(Long.valueOf(3L), c.iterator().next().getInstance());
+    }
+    
     /** Test if first is really first.
      */
     public void testFirst () {

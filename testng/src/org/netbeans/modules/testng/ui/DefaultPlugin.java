@@ -225,6 +225,9 @@ public final class DefaultPlugin extends TestNGPlugin {
         }
         
         String baseResName = srcCp.getResourceName(fileObj, '/', false);
+        if (baseResName == null) {
+            return null;
+        }
         String srcResName = getSrcResName(baseResName, fileObj.getExt());
         if (srcResName == null) {
             return null;     //if the selectedFO is not a test class (by name)

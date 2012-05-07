@@ -120,6 +120,9 @@ public final class UnitImpl implements Unit {
         // Use another way to control the assertion. For example by flag in unit tests.
         //assert getName().equals(key.getUnit().toString());
         Persistent data = cache.get(key);
+        if (data == MemoryCache.REMOVED) {
+            return null;
+        }
         if (data == null) {
             data = getDiskStorage(key).read(key);
             if (data != null) {
@@ -156,7 +159,11 @@ public final class UnitImpl implements Unit {
     public Persistent tryGet(Key key) {
         assert key != null;
         assert getName().equals(key.getUnit());
-        return cache.get(key);
+        Persistent obj = cache.get(key);
+        if (obj == MemoryCache.REMOVED) {
+            obj = null;
+        }
+        return obj;
     }
 
     @Override
@@ -164,13 +171,14 @@ public final class UnitImpl implements Unit {
         assert key != null;
         assert getName().equals(key.getUnit());
         getDiskStorage(key).remove(key);
+        cache.removePhysically(key);
     }
     
     @Override
     public void removeFromCache(Key key) {
         assert key != null;
         assert getName().equals(key.getUnit());
-        cache.remove(key);
+        cache.markRemoved(key);
     }
 
     @Override

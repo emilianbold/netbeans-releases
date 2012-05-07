@@ -43,16 +43,16 @@ package org.netbeans.modules.html.editor.hints;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.EnumSet;
 import java.util.List;
-import java.util.Map;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.css.indexing.api.CssIndex;
-import org.netbeans.modules.html.editor.lib.api.SyntaxAnalyzerResult;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.HintFix;
+import org.netbeans.modules.csl.api.Severity;
+import org.netbeans.modules.css.indexing.api.CssIndex;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
+import org.netbeans.modules.html.editor.lib.api.SyntaxAnalyzerResult;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.common.api.DependenciesGraph;
 import org.openide.filesystems.FileObject;
@@ -74,7 +74,7 @@ public class HtmlRuleContext {
         this.parserResult = parserResult;
         this.syntaxAnalyzerResult = syntaxAnalyzerResult;
         this.defaultFixes = defaultFixes;
-        this.leftDiagnostics = new ArrayList<Error>(parserResult.getDiagnostics());
+        this.leftDiagnostics = new ArrayList<Error>(parserResult.getDiagnostics(EnumSet.allOf(Severity.class)));
     }
 
     public HtmlParserResult getHtmlParserResult() {

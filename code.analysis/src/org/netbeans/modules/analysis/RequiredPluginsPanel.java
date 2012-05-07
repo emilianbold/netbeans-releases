@@ -41,10 +41,12 @@
  */
 package org.netbeans.modules.analysis;
 
+import java.awt.Color;
 import java.util.HashSet;
 import java.util.Set;
+import javax.swing.UIManager;
 import org.netbeans.modules.analysis.spi.Analyzer.MissingPlugin;
-import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 
 /**
  *
@@ -67,10 +69,10 @@ public class RequiredPluginsPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel1 = new javax.swing.JLabel();
+        warning = new javax.swing.JLabel();
         install = new javax.swing.JButton();
 
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(RequiredPluginsPanel.class, "RequiredPluginsPanel.jLabel1.text")); // NOI18N
+        warning.setText(org.openide.util.NbBundle.getMessage(RequiredPluginsPanel.class, "RequiredPluginsPanel.warning.text")); // NOI18N
 
         install.setText(org.openide.util.NbBundle.getMessage(RequiredPluginsPanel.class, "RequiredPluginsPanel.install.text")); // NOI18N
         install.addActionListener(new java.awt.event.ActionListener() {
@@ -84,36 +86,49 @@ public class RequiredPluginsPanel extends javax.swing.JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(jLabel1)
+                .addComponent(warning)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(install))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                .addComponent(jLabel1)
+                .addComponent(warning)
                 .addComponent(install))
         );
     }// </editor-fold>//GEN-END:initComponents
 
     private void installActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_installActionPerformed
-        Set<MissingPlugin> plugins = new HashSet<MissingPlugin>(this.plugins);
-
-        for (MissingPlugin missing : plugins) {
-            try {
-                new ModuleInstallerSupport().download(SPIAccessor.ACCESSOR.getCNB(missing), SPIAccessor.ACCESSOR.getDisplayName(missing));
-            } catch (Exception ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
+        Utils.installMissingPlugins(this.plugins);
     }//GEN-LAST:event_installActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton install;
-    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel warning;
     // End of variables declaration//GEN-END:variables
 
-    public void setRequiredPlugins(Set<MissingPlugin> plugins) {
+    public void setRequiredPlugins(Set<MissingPlugin> plugins, boolean critical) {
         this.plugins = plugins;
+        
+        if (critical) {
+            //copied from DialogDisplayer
+            Color nbErrorForeground = UIManager.getColor("nb.errorForeground"); //NOI18N
+            if (nbErrorForeground == null) {
+                //nbErrorForeground = new Color(89, 79, 191); // RGB suggested by Bruce in #28466
+                nbErrorForeground = new Color(255, 0, 0); // RGB suggested by jdinga in #65358
+            }
+
+            warning.setForeground(nbErrorForeground);
+            warning.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/dialogs/error.gif", false));
+        } else {
+            //copied from DialogDisplayer
+            Color nbWarningForeground = UIManager.getColor("nb.warningForeground"); //NOI18N
+            if (nbWarningForeground == null) {
+                nbWarningForeground = new Color(51, 51, 51); // Label.foreground
+            }
+
+            warning.setForeground(nbWarningForeground);
+            warning.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/dialogs/warning.gif", false));
+        }
     }
 }

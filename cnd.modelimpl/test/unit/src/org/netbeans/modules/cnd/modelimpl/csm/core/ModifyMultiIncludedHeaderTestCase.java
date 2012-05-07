@@ -61,6 +61,7 @@ public class ModifyMultiIncludedHeaderTestCase extends ModifyDocumentTestCaseBas
             System.err.printf("TEST MULTI INCLUSION\n");
         }
         final File sourceFile = getDataFile("multiIncludedFileForModification.h");
-        super.insertTextThenSave(sourceFile, 12 + 1, "void foo();\n", 3, 4, true);
+        super.insertTextThenSaveAndCheck(sourceFile, 12 + 1, "void foo();\n", 
+                sourceFile, new DeclarationsNumberChecker(3, 4), true);
     }
 }

@@ -45,10 +45,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.api.search.SearchPattern;
 import org.netbeans.api.search.SearchRoot;
-import org.netbeans.modules.cnd.search.Searcher;
 import org.netbeans.modules.cnd.search.MatchingFileData;
 import org.netbeans.modules.cnd.search.SearchParams;
+import org.netbeans.modules.cnd.search.Searcher;
 
 /**
  *
@@ -87,15 +88,17 @@ public final class UnixFindBasedSearcher implements Searcher {
             args.add("-name"); // NOI18N
             args.add(fileNamePattern);
         }
-
-        String searchText = params.getSearchText();
+        
+        SearchPattern sp = params.getSearchPattern();
+        
+        String searchText = sp.getSearchExpression();
         if (searchText != null && !searchText.isEmpty()) {
             args.add("-exec"); // NOI18N
             args.add("grep"); // NOI18N
-            if (!params.isCaseSensitive()) {
+            if (!sp.isMatchCase()) {
                 args.add("-i"); // NOI18N
             }
-            if (params.isWholeWords()) {
+            if (sp.isWholeWords()) {
                 args.add("-w"); // NOI18N
             }
             args.add("-n"); // NOI18N
@@ -137,6 +140,14 @@ public final class UnixFindBasedSearcher implements Searcher {
         }
 
         MatchingFileData result = new MatchingFileData(params, fname);
+        
+        int fileSize = -1;
+        try {
+            fileSize = Integer.parseInt(data[6]);
+        } catch (NumberFormatException ex) {
+        }
+        
+        result.setFileSize(fileSize);
 
         result.setEntries(entries);
         entries = null;

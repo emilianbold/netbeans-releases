@@ -148,11 +148,11 @@ public class AmazonJ2EEServerWizardComponent extends javax.swing.JPanel implemen
     }
     
     public String getEnvironmentName() {
-        return (String)envNameTextField.getText();
+        return envNameTextField.getText();
     }
     
     public String getURL() {
-        return (String)envURLTextField.getText();
+        return envURLTextField.getText();
     }
     
     public AmazonInstance getAmazonInstance() {
@@ -366,7 +366,7 @@ public class AmazonJ2EEServerWizardComponent extends javax.swing.JPanel implemen
         if (appName != null) {
             List<String> templateNames = templates.get(appName);
             if (templateNames != null && templateNames.size() > 0) {
-                templateNames = new ArrayList(templateNames);
+                templateNames = new ArrayList<String>(templateNames);
                 templateNames.add(0, "");
                 templateComboBox.setModel(new DefaultComboBoxModel(templateNames.toArray(new String[templateNames.size()])));
                 templateComboBox.setSelectedIndex(0);

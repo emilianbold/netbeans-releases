@@ -3,6 +3,7 @@ pa|r
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 CLASS      Package                                    null
+CLASS      PackageScope                               null
 CLASS      ParameterArray                             null
 CLASS      PasswordAuthentication                     null
 VARIABLE   param                                      Properties

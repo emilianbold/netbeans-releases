@@ -67,55 +67,67 @@ public class RepositoryImpl extends SettingsComponentImpl implements Repository 
     // attributes
 
     // child elements
+    @Override
     public RepositoryPolicy getReleases() {
         return getChild(RepositoryPolicy.class);
     }
 
+    @Override
     public void setReleases(RepositoryPolicy releases) {
         setChild(RepositoryPolicy.class, getModel().getSettingsQNames().RELEASES.getName(), releases,
                 Collections.<Class<? extends SettingsComponent>>emptyList());
     }
 
+    @Override
     public RepositoryPolicy getSnapshots() {
         return getChild(RepositoryPolicy.class);
     }
 
+    @Override
     public void setSnapshots(RepositoryPolicy snapshots) {
         setChild(RepositoryPolicy.class, getModel().getSettingsQNames().SNAPSHOTS.getName(), snapshots,
                 Collections.<Class<? extends SettingsComponent>>emptyList());
     }
 
+    @Override
     public String getId() {
         return getChildElementText(getModel().getSettingsQNames().ID.getQName());
     }
 
+    @Override
     public void setId(String id) {
         setChildElementText(getModel().getSettingsQNames().ID.getName(), id,
                 getModel().getSettingsQNames().ID.getQName());
     }
 
+    @Override
     public String getName() {
         return getChildElementText(getModel().getSettingsQNames().NAME.getQName());
     }
 
+    @Override
     public void setName(String name) {
         setChildElementText(getModel().getSettingsQNames().NAME.getName(), name,
                 getModel().getSettingsQNames().NAME.getQName());
     }
 
+    @Override
     public String getUrl() {
         return getChildElementText(getModel().getSettingsQNames().URL.getQName());
     }
 
+    @Override
     public void setUrl(String url) {
         setChildElementText(getModel().getSettingsQNames().URL.getName(), url,
                 getModel().getSettingsQNames().URL.getQName());
     }
 
+    @Override
     public String getLayout() {
         return getChildElementText(getModel().getSettingsQNames().LAYOUT.getQName());
     }
 
+    @Override
     public void setLayout(String layout) {
         setChildElementText(getModel().getSettingsQNames().LAYOUT.getName(), layout,
                 getModel().getSettingsQNames().LAYOUT.getQName());
@@ -131,6 +143,7 @@ public class RepositoryImpl extends SettingsComponentImpl implements Repository 
         }
     }
 
+    @Override
     public void accept(SettingsComponentVisitor visitor) {
         visitor.visit(this);
     }

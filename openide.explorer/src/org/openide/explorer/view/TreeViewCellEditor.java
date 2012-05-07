@@ -59,12 +59,7 @@ import java.awt.event.MouseMotionListener;
 
 import java.util.EventObject;
 
-import javax.swing.DefaultCellEditor;
-import javax.swing.JComponent;
-import javax.swing.JTextField;
-import javax.swing.JTree;
-import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.event.CellEditorListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.tree.DefaultTreeCellEditor;
@@ -191,7 +186,13 @@ class TreeViewCellEditor extends DefaultTreeCellEditor implements CellEditorList
                     requestFocus();
                 }
             };
-
+        //#137454 - text not visible in in-place editor
+        String laf = UIManager.getLookAndFeel().getID();
+        if( "GTK".equals( laf ) ) { //NOI18N
+            tf.setBorder( BorderFactory.createEmptyBorder() );
+        } else if( "Nimbus".equals( laf ) ) { //NOI18N
+            tf.setBorder( BorderFactory.createLineBorder( new JTree().getBackground() ) );
+        }
         tf.registerKeyboardAction( //TODO update to use inputMap/actionMap
             this, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, true), JComponent.WHEN_FOCUSED);
 

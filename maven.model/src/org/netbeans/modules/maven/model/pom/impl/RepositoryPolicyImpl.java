@@ -41,9 +41,8 @@
  */
 package org.netbeans.modules.maven.model.pom.impl;
 
+import org.netbeans.modules.maven.model.pom.*;
 import org.w3c.dom.Element;
-import org.netbeans.modules.maven.model.pom.*;	
-import org.netbeans.modules.maven.model.pom.POMComponentVisitor;
 
 /**
  *
@@ -64,10 +63,12 @@ public class RepositoryPolicyImpl extends POMComponentImpl implements Repository
     // child elements
 
     // child elements
+    @Override
     public void accept(POMComponentVisitor visitor) {
         visitor.visit(this);
     }
 
+    @Override
     public Boolean isEnabled() {
         String str = getChildElementText(getModel().getPOMQNames().ENABLED.getQName());
         if (str != null) {
@@ -76,25 +77,30 @@ public class RepositoryPolicyImpl extends POMComponentImpl implements Repository
         return null;
     }
 
+    @Override
     public void setEnabled(Boolean enabled) {
         setChildElementText(getModel().getPOMQNames().ENABLED.getName(),
                 enabled == null ? null : enabled.toString(),
                 getModel().getPOMQNames().ENABLED.getQName());
     }
 
+    @Override
     public String getUpdatePolicy() {
         return getChildElementText(getModel().getPOMQNames().UPDATEPOLICY.getQName());
     }
 
+    @Override
     public void setUpdatePolicy(String updatePolicy) {
         setChildElementText(getModel().getPOMQNames().UPDATEPOLICY.getName(), updatePolicy,
                 getModel().getPOMQNames().UPDATEPOLICY.getQName());
     }
 
+    @Override
     public String getChecksumPolicy() {
         return getChildElementText(getModel().getPOMQNames().CHECKSUMPOLICY.getQName());
     }
 
+    @Override
     public void setChecksumPolicy(String checksumPolicy) {
         setChildElementText(getModel().getPOMQNames().CHECKSUMPOLICY.getName(), checksumPolicy,
                 getModel().getPOMQNames().CHECKSUMPOLICY.getQName());

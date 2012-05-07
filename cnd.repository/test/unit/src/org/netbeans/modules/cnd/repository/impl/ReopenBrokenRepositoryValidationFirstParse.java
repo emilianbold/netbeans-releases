@@ -38,8 +38,8 @@
 package org.netbeans.modules.cnd.repository.impl;
 
 /**
- *
- * @author vv159170
+ * This test parses project, compare model with golden and persist model in repository.
+ * @author Vladimir Voskresensky
  */
 public class ReopenBrokenRepositoryValidationFirstParse extends RepositoryValidationFirstParse {
 

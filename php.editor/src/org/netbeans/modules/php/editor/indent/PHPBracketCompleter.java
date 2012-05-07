@@ -1554,175 +1554,47 @@ public class PHPBracketCompleter implements KeystrokeHandler {
      */
     private boolean isSkipClosingBracket(BaseDocument doc, int caretOffset, char bracket)
         throws BadLocationException {
-        // First check whether the caret is not after the last char in the document
-        // because no bracket would follow then so it could not be skipped.
         if (caretOffset == doc.getLength()) {
-            return false; // no skip in this case
+            return false;
         }
-
-        boolean skipClosingBracket = false; // by default do not remove
-
         TokenSequence<?extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, caretOffset);
-
         if (ts == null) {
             return false;
         }
-
-        // XXX BEGIN TOR MODIFICATIONS
-        //ts.move(caretOffset+1);
         ts.move(caretOffset);
-
         if (!ts.moveNext()) {
             return false;
         }
-
         Token<?extends PHPTokenId> token = ts.token();
-
+        boolean skipClosingBracket = false;
         // Check whether character follows the bracket is the same bracket
         if ((token != null) && (LexUtilities.textEquals(token.text(), bracket))) {
-//            int bracketIntId = bracketId.ordinal();
-//            int leftBracketIntId =
-//                (bracketIntId == PHPTokenId.PHP_RPAREN.ordinal()) ? PHPTokenId.PHP_LPAREN.ordinal()
-//                                                               : PHPTokenId.PHP_LBRACKET.ordinal();
-
             char leftBracket = bracket == ')' ? '(' : (bracket == ']' ? '[' : '{');
-
-            // Skip all the brackets of the same type that follow the last one
-            ts.moveNext();
-
-            Token<?extends PHPTokenId> nextToken = ts.token();
-
-            while ((nextToken != null) && (LexUtilities.textEquals(nextToken.text(), bracket))) {
-                token = nextToken;
-
-                if (!ts.moveNext()) {
-                    break;
-                }
-
-                nextToken = ts.token();
+            int bracketBalanceWithNewBracket = 0;
+            ts.moveStart();
+            if (!ts.moveNext()) {
+                return false;
             }
-
-            // token var points to the last bracket in a group of two or more right brackets
-            // Attempt to find the left matching bracket for it
-            // Search would stop on an extra opening left brace if found
-            int braceBalance = 0; // balance of '{' and '}'
-            int bracketBalance = -1; // balance of the brackets or parenthesis
-            Token<?extends PHPTokenId> lastRBracket = token;
-            ts.movePrevious();
             token = ts.token();
-
-            boolean finished = false;
-
-            while (!finished && (token != null)) {
+            while (token != null) {
                 if ((LexUtilities.textEquals(token.text(), '(')) || (LexUtilities.textEquals(token.text(), '['))) {
                     if (LexUtilities.textEquals(token.text(), leftBracket)) {
-                        bracketBalance++;
-
-                        if (bracketBalance == 0) {
-                            if (braceBalance != 0) {
-                                // Here the bracket is matched but it is located
-                                // inside an unclosed brace block
-                                // e.g. ... ->( } a()|)
-                                // which is in fact illegal but it's a question
-                                // of what's best to do in this case.
-                                // We chose to leave the typed bracket
-                                // by setting bracketBalance to 1.
-                                // It can be revised in the future.
-                                bracketBalance = 1;
-                            }
-
-                            finished = true;
-                        }
+                        bracketBalanceWithNewBracket++;
                     }
                 } else if ((LexUtilities.textEquals(token.text(), ')')) || (LexUtilities.textEquals(token.text(), ']'))) {
                     if (LexUtilities.textEquals(token.text(), bracket)) {
-                        bracketBalance--;
+                        bracketBalanceWithNewBracket--;
                     }
-                } else if (token.id() == PHPTokenId.PHP_CURLY_OPEN) {
-                    braceBalance++;
-
-                    if (braceBalance > 0) { // stop on extra left brace
-                        finished = true;
-                    }
-                } else if (token.id() == PHPTokenId.PHP_CURLY_CLOSE) {
-                    braceBalance--;
                 }
-
-                if (!ts.movePrevious()) {
+                if (!ts.moveNext()) {
                     break;
                 }
-
                 token = ts.token();
             }
-
-            if (bracketBalance > 0) { // not found matching bracket
-                                       // Remove the typed bracket as it's unmatched
+            if (bracketBalanceWithNewBracket == 0) {
+                skipClosingBracket = false;
+            } else {
                 skipClosingBracket = true;
-            } else { // the bracket is matched
-                     // Now check whether the bracket would be matched
-                     // when the closing bracket would be removed
-                     // i.e. starting from the original lastRBracket token
-                     // and search for the same bracket to the right in the text
-                     // The search would stop on an extra right brace if found
-                braceBalance = 0;
-                bracketBalance = 0; // simulate one extra left bracket
-
-                //token = lastRBracket.getNext();
-                TokenHierarchy<BaseDocument> th = TokenHierarchy.get(doc);
-
-                int ofs = lastRBracket.offset(th);
-
-                ts.move(ofs);
-                ts.movePrevious();
-                token = ts.token();
-                finished = false;
-
-                while (!finished && (token != null)) {
-                    //int tokenIntId = token.getTokenID().getNumericID();
-                    if ((LexUtilities.textEquals(token.text(), '(')) || (LexUtilities.textEquals(token.text(), '['))) {
-                        if (LexUtilities.textEquals(token.text(), leftBracket)) {
-                            bracketBalance++;
-                        }
-                    } else if ((LexUtilities.textEquals(token.text(), ')')) || (LexUtilities.textEquals(token.text(), ']'))) {
-                        if (LexUtilities.textEquals(token.text(), bracket)) {
-                            bracketBalance--;
-
-                            if (bracketBalance == 0) {
-                                if (braceBalance != 0) {
-                                    // Here the bracket is matched but it is located
-                                    // inside an unclosed brace block
-                                    // which is in fact illegal but it's a question
-                                    // of what's best to do in this case.
-                                    // We chose to leave the typed bracket
-                                    // by setting bracketBalance to -1.
-                                    // It can be revised in the future.
-                                    bracketBalance = -1;
-                                }
-
-                                finished = true;
-                            }
-                        }
-                    } else if (token.id() == PHPTokenId.PHP_CURLY_OPEN) {
-                        braceBalance++;
-                    } else if (token.id() == PHPTokenId.PHP_CURLY_CLOSE) {
-                        braceBalance--;
-
-                        if (braceBalance < 0) { // stop on extra right brace
-                            finished = true;
-                        }
-                    }
-
-                    //token = token.getPrevious(); // done regardless of finished flag state
-                    if (!ts.movePrevious()) {
-                        break;
-                    }
-
-                    token = ts.token();
-                }
-
-                // If bracketBalance == 0 the bracket would be matched
-                // by the bracket that follows the last right bracket.
-                skipClosingBracket = (bracketBalance == 0);
             }
         }
 

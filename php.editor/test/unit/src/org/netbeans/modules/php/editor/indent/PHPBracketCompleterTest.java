@@ -1461,5 +1461,13 @@ public class PHPBracketCompleterTest extends PHPCodeCompletionTestBase {
     public void testIssue198708_04() throws Exception {
         insertChar("if (($a=($i+1^)))", ')', "if (($a=($i+1)^))");
     }
+    
+    public void testIssue209638() throws Exception {
+        insertChar("$test = array(\n"
+                + "    array(^)\n"
+                + ");", ')', "$test = array(\n"
+                + "    array()^\n"
+                + ");");
+    }
 
 }

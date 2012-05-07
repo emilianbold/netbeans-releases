@@ -103,13 +103,11 @@ public class MultiProjectsErrorHighlightingTest extends ErrorHighlightingBaseTes
         checkDir(incl1);
         checkDir(incl2);
         List<String> sysIncludes = Arrays.asList(incl1.getAbsolutePath(), incl2.getAbsolutePath());
-        super.setSysIncludes(sysIncludes);
-        return new File[] {srcDir1, srcDir2, srcDir3, srcDir4, srcDir5};
-    }
-    
-    private void checkDir(File srcDir) {
-        assertTrue("Not existing directory" + srcDir, srcDir.exists());
-        assertTrue("Not directory" + srcDir, srcDir.isDirectory());
+        File[] outPrjDirs = new File[] {srcDir1, srcDir2, srcDir3, srcDir4, srcDir5};
+        for (File prjDir : outPrjDirs) {
+            super.setSysIncludes(prjDir.getAbsolutePath(), sysIncludes);
+        }
+        return outPrjDirs;
     }
     
     public void test210384() throws Exception {

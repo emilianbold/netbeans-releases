@@ -295,6 +295,10 @@ public class SafeDeleteUI implements RefactoringUI, RefactoringUIBypass, JavaRef
         if (handles.length == 0 || (files!=null && files.length > 1)) {
             return new SafeDeleteUI(files, Arrays.asList(handles), b);
         }
+        
+        if (b && files!=null && files.length == 1) {
+            return new SafeDeleteUI(files, Arrays.asList(handles), b);
+        }
         TreePathHandle selectedElement = handles[0];
         Element selected = selectedElement.resolveElement(info);
         if (selected == null) {
@@ -308,7 +312,7 @@ public class SafeDeleteUI implements RefactoringUI, RefactoringUIBypass, JavaRef
             }
             if (file.getName().equals(selected.getSimpleName().toString())) {
                 return new SafeDeleteUI(new FileObject[]{file}, Collections.singleton(selectedElement), b);
-            }
+        }
         }
         return new SafeDeleteUI(new TreePathHandle[]{selectedElement});
     }

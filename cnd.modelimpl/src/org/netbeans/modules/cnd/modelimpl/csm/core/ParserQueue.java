@@ -53,6 +53,7 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.api.model.CsmProject;
@@ -329,7 +330,7 @@ public final class ParserQueue {
 
     // do not need UIDs for ProjectBase in parsing data collection
     private final Map<ProjectBase, ProjectData> projectData = new HashMap<ProjectBase, ProjectData>();
-    private final Map<CsmProject, Object> projectLocks = new HashMap<CsmProject, Object>();
+    private final Map<CsmProject, ProjectWaitLatch> projectsAwaitLatches = new HashMap<CsmProject, ProjectWaitLatch>();
     private final AtomicInteger serial = new AtomicInteger(0);
     private static final class Lock {}
     private final Object lock = new Lock();
@@ -725,23 +726,40 @@ public final class ParserQueue {
     }
 
     public boolean hasPendingProjectRelatedWork(ProjectBase project, FileImpl skipFile) {
+        return getPendingProjectRelatedLatch(project, skipFile) != null;
+    }
+
+    private ProjectWaitLatch getPendingProjectRelatedLatch(ProjectBase project, FileImpl skipFile) {
         synchronized (lock) {
+            ProjectWaitLatch latch = null;
+            boolean hasProjectActivity;
             ProjectData data = getProjectData(project, false);
             if (data == null || data.noActivity()) {
                 // nothing in queue and nothing in progress => no files
-                return false;
+                hasProjectActivity = false;
             } else {
                 if (skipFile == null) {
                     // not empty, but nothing to skip => has files
-                    return true;
+                    hasProjectActivity = true;
                 } else {
                     if (data.filesBeingParsed.contains(skipFile) ||
                             data.filesInQueue.contains(skipFile)) {
-                        return data.filesBeingParsed.size() + data.filesInQueue.size() + data.pendingActivity > 1;
+                        hasProjectActivity = (data.filesBeingParsed.size() + data.filesInQueue.size() + data.pendingActivity) > 1;
+                    } else {
+                        hasProjectActivity = !data.noActivity();
                     }
-                    return !data.noActivity();
                 }
             }
+            if (hasProjectActivity) {
+                synchronized (projectsAwaitLatches) {
+                    latch = projectsAwaitLatches.get(project);
+                    if (latch == null) {
+                        latch = new ProjectWaitLatch();
+                        projectsAwaitLatches.put(project, latch);
+                    }
+                }
+            }
+            return latch;
         }
     }
 
@@ -880,41 +898,33 @@ public final class ParserQueue {
     }
 
     private void notifyWaitEmpty(ProjectBase project) {
-        Object prjWaitEmptyLock;
-        synchronized (projectLocks) {
-            prjWaitEmptyLock = projectLocks.remove(project);
-        }
-        if (prjWaitEmptyLock != null) {
-            synchronized (prjWaitEmptyLock) {
-                prjWaitEmptyLock.notifyAll();
+        synchronized (projectsAwaitLatches) {
+            CountDownLatch latch = projectsAwaitLatches.remove(project);
+            if (latch != null) {
+                latch.countDown();
             }
         }
     }
 
-    private static final class ProjectWaitLock {}
+    private static final class ProjectWaitLatch extends CountDownLatch {
+        public ProjectWaitLatch() {
+            super(1);
+        }
+    }
 
     /*package*/ void waitEmpty(ProjectBase project) {
         if (TraceFlags.TRACE_CLOSE_PROJECT) {
             System.err.println("Waiting Empty Project " + project.getName()); // NOI18N
         }
-        while (hasPendingProjectRelatedWork(project, null)) {
+        CountDownLatch latch;
+        while ((latch = getPendingProjectRelatedLatch(project, null)) != null) {
             if (TraceFlags.TRACE_CLOSE_PROJECT) {
                 System.err.println("Waiting Empty Project 2 " + project.getName()); // NOI18N
             }
-            Object prjWaitEmptyLock;
-            synchronized (projectLocks) {
-                prjWaitEmptyLock = projectLocks.get(project);
-                if (prjWaitEmptyLock == null) {
-                    prjWaitEmptyLock = new ProjectWaitLock();
-                    projectLocks.put(project, prjWaitEmptyLock);
-                }
-            }
-            synchronized (prjWaitEmptyLock) {
-                try {
-                    prjWaitEmptyLock.wait();
-                } catch (InterruptedException ex) {
-                    // nothing
-                }
+            try {
+                latch.await();
+            } catch (InterruptedException ex) {
+                // nothing
             }
         }
         if (TraceFlags.TRACE_CLOSE_PROJECT) {

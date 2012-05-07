@@ -102,7 +102,7 @@ public final class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendCl
         this.parentUID = UIDs.get(parent);
         qid = (qid != null) ? qid : AstUtil.findSiblingOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
         if (qid == null) {
-            throw AstRendererException.createAstRendererException(file, ast, startOffset, "Invalid friend class declaration."); // NOI18N
+            throw AstRendererException.throwAstRendererException(file, ast, startOffset, "Invalid friend class declaration."); // NOI18N
         }
         name = QualifiedNameCache.getManager().getString(AstRenderer.getQualifiedName(qid));
         nameParts = initNameParts(qid);

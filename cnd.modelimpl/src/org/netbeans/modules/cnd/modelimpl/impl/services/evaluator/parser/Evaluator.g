@@ -41,7 +41,7 @@ multExpr returns [int value]
     ;
 
 atom returns [int value]
-    :   DECIMALINT {$value = Integer.parseInt($DECIMALINT.text);}
+    :   DECIMALINT {$value = (($DECIMALINT.text) == null) ? 0 : Integer.parseInt(($DECIMALINT.text).replaceAll("[a-z,A-Z,_].*", "")) ;}
     |   id = qualified_id
         {
             $value = vp==null?0:vp.getValue($id.q);

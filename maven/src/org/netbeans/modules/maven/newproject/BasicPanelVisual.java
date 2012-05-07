@@ -623,6 +623,9 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
                 Map<String, String> props = ArchetypeWizardUtils.getAdditionalProperties(art);
                 for (String key : props.keySet()) {
                     String defVal = props.get(key);
+                    if ("groupId".equals(key) || "artifactId".equals(key) || "version".equals(key)) {
+                        continue; //don't show the basic props as additionals..
+                    }
                     dtm.addRow(new Object[] {key, defVal == null ? "" : defVal });
                 }
             }

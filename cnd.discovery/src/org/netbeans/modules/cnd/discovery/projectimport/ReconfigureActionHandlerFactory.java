@@ -75,12 +75,10 @@ public class ReconfigureActionHandlerFactory implements ProjectActionHandlerFact
     @Override
     public ProjectActionHandler createHandler() {
         return new ProjectActionHandler() {
-            private ProjectActionEvent pae;
             private ReconfigureProject reconfigure;
 
             @Override
             public void init(ProjectActionEvent pae, ProjectActionEvent[] paes, Collection<OutputStreamHandler> outputHandlers) {
-                this.pae = pae;
                 reconfigure = new ReconfigureProject(pae.getProject());
             }
 

@@ -61,7 +61,7 @@ public class OSGiLifecycleManagerTest extends NbTestCase {
         new OSGiProcess(getWorkDir()).newModule().clazz(ModuleInstallClosingInstall.class).manifest(
                 "OpenIDE-Module: custom",
                 "OpenIDE-Module-Install: " + ModuleInstallClosingInstall.class.getName(),
-                "OpenIDE-Module-Module-Dependencies: org.openide.modules").done().run();
+                "OpenIDE-Module-Module-Dependencies: org.openide.modules").done().run(false);
         assertTrue(Boolean.getBoolean("my.bundle.was.closing"));
         assertTrue(Boolean.getBoolean("my.bundle.closed"));
     }

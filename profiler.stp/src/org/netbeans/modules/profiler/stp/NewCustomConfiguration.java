@@ -474,7 +474,7 @@ public class NewCustomConfiguration extends JPanel implements ChangeListener, Li
         // nameTextfield
         nameTextfield = new JTextField();
         nameTextfield.getDocument().addDocumentListener(this);
-        nameTextfield.setPreferredSize(new Dimension(250, nameTextfield.getPreferredSize().height));
+        nameTextfield.setPreferredSize(new Dimension(280, nameTextfield.getPreferredSize().height));
         nameTextfield.getAccessibleContext().setAccessibleDescription(Bundle.NewCustomConfiguration_NameLabelAccessDescr());
         nameLabel.setLabelFor(nameTextfield);
         constraints = new GridBagConstraints();

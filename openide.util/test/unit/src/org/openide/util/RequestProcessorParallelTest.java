@@ -62,7 +62,7 @@ public class RequestProcessorParallelTest extends NbTestCase {
         CharSequence log = Log.enable("org.openide.util.RequestProcessor", Level.WARNING);
         rp.post(p).waitFinished();
         if (log.length() == 0) {
-            fail("There shall be a warning about parallel execution");
+            fail("There shall be a warning about parallel execution(len=" + log.length() + "):\n'" + log + "'");
         }
     }
 

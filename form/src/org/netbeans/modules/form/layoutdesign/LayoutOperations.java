@@ -61,6 +61,7 @@ class LayoutOperations implements LayoutConstants {
     private VisualMapper visualMapper;
 
     private static final boolean PREFER_ZERO_GAPS = true;
+    private static final boolean SYMETRIC_ZERO_GAPS = true;
 
     LayoutOperations(LayoutModel model, VisualMapper mapper) {
         layoutModel = model;
@@ -1675,6 +1676,7 @@ class LayoutOperations implements LayoutConstants {
                                                       IntervalSet[] unalignedFixedGaps,
                                                       IntervalSet[] unalignedResGaps) {
         IntervalSet[] sets = new IntervalSet[2];
+        int[] alignedGapSizes = new int[2];
         for (int a=LEADING; a <= TRAILING; a++) {
             int gapSize = Integer.MIN_VALUE;
             for (LayoutInterval li : alignedGaps[a].intervals()) {
@@ -1695,24 +1697,49 @@ class LayoutOperations implements LayoutConstants {
                         iSet.add(li, false);
                     }
                 }
-                if (iSet.resizing && PREFER_ZERO_GAPS) {
-                    // Allow resizing gaps to combine with aligned gaps (if they
-                    // have same min size, typically default). A common fixed gap
-                    // will be separated out of the group, and min. size of the
-                    // resizing gap set to 0.
-                    for (LayoutInterval li : unalignedResGaps[a].intervals()) {
-                        LayoutInterval gap = li.getSubInterval(a==LEADING ? 0 : li.getSubIntervalCount()-1);
-                        int minSize = gap.getMinimumSize();
-                        if (minSize == USE_PREFERRED_SIZE) {
-                            minSize = gap.getPreferredSize();
+            }
+            alignedGapSizes[a] = gapSize;
+            sets[a] = iSet;
+        }
+
+        for (int a=LEADING; a <= TRAILING; a++) {
+            int gapSize = alignedGapSizes[a];
+            if (gapSize == Integer.MIN_VALUE || !sets[a].resizing || !PREFER_ZERO_GAPS) {
+                continue;
+            }
+            // Allow resizing gaps to combine with aligned gaps (if they
+            // have same min size, typically default). A common fixed gap
+            // will be separated out of the group, and min. size of the
+            // resizing gap set to 0.
+            for (LayoutInterval li : unalignedResGaps[a].intervals()) {
+                LayoutInterval gap = li.getSubInterval(a==LEADING ? 0 : li.getSubIntervalCount()-1);
+                int minSize = gap.getMinimumSize();
+                if (minSize == USE_PREFERRED_SIZE) {
+                    minSize = gap.getPreferredSize();
+                }
+                if (minSize == gapSize) {
+                    boolean add = true;
+                    if (SYMETRIC_ZERO_GAPS) { // do that only if there's not an opposite gap that is not going to combine
+                        LayoutInterval otherGap = li.getSubInterval(a==LEADING ? li.getSubIntervalCount()-1 : 0);
+                        if (otherGap.isEmptySpace()) { // we have a gap on the opposite side
+                            if (sets[a^1].count() == 0 || (sets[a^1].count() == 1 && sets[a^1].intervals.contains(li))) {
+                                add = false; // there is no aligned gap on the other side to combine with
+                            } else {
+                                int otherMinSize = otherGap.getMinimumSize();
+                                if (otherMinSize == USE_PREFERRED_SIZE) {
+                                    otherMinSize = otherGap.getPreferredSize();
+                                }
+                                if (otherMinSize != alignedGapSizes[a^1]) {
+                                    add = false; // the gap on the other side is different, not going to combine
+                                }
+                            }
                         }
-                        if (minSize == gapSize) {
-                            iSet.add(li, true);
-                        }
+                    }
+                    if (add) {
+                        sets[a].add(li, true);
                     }
                 }
             }
-            sets[a] = iSet;
         }
         return sets;
     }
@@ -1844,7 +1871,7 @@ class LayoutOperations implements LayoutConstants {
             }
             for (int i=0; i < seq.getSubIntervalCount(); i++) {
                 LayoutInterval sub = seq.getSubInterval(i);
-                if (sub != gap && LayoutInterval.wantResize(sub)) {
+                if (sub != gap && !sub.isEmptySpace() && LayoutInterval.wantResize(sub)) {
                     return false; // resizing zero gap in resizing sequence does not make sense
                                   // (see bug 202636, attachment 111677)
                 }

@@ -142,6 +142,7 @@ public class OutputLogger implements ISVNNotifyListener {
     
     @Override
     public void logError(final String message) {
+        if (message == null) return;
         rp.post(new Runnable() {
             @Override
             public void run() {                

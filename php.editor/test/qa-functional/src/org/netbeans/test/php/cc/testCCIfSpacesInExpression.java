@@ -106,7 +106,7 @@ public class testCCIfSpacesInExpression extends cc
     eoPHP.typeKey( '>' );
 
     // Check code completion list
-
+    waitScanFinished();
     String[] asIdeals = { "xx" };
 
     CompletionInfo jCompl = GetCompletion( );

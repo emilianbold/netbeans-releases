@@ -83,7 +83,7 @@ public class AmazonJ2EEServerWizardIterator implements WizardDescriptor.Asynchro
     }
 
     @Override
-    public Panel current() {
+    public Panel<WizardDescriptor> current() {
         if (panel == null) {
             panel = new AmazonJ2EEServerWizardPanel();
         }

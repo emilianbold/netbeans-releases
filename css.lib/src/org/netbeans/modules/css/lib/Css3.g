@@ -305,13 +305,13 @@ styleSheet
     :   charSet?
     	WS*
         (imports WS*)*  
-        namespace*
+        (namespace WS*)*
         bodylist
      EOF
     ;
 
 namespace
-  : NAMESPACE_SYM WS* (namespace_prefix WS*)? (resourceIdentifier) WS* ';' WS*
+  : NAMESPACE_SYM WS* (namespace_prefix WS*)? (resourceIdentifier) WS* ';'
   ;
 
 namespace_prefix

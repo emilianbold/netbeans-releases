@@ -96,7 +96,7 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
 
     private ExplorerManager explorerManager = new ExplorerManager();
     private AbstractNode root;
-    private Action[] actions;
+    private List<Action> actions;
     private CallModel model;
     private boolean showGraph;
     private boolean isCalls;
@@ -109,7 +109,7 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
     
     private CallGraphScene scene;
     private static double dividerLocation = 0.5;
-    private FocusTraversalPolicy newPolicy;
+    private transient FocusTraversalPolicy newPolicy;
     private static final boolean isMacLaf = "Aqua".equals(UIManager.getLookAndFeel().getID()); // NOI18N
     private static final Color macBackground = UIManager.getColor("NbExplorerView.background"); // NOI18N
     
@@ -122,22 +122,25 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
         getTreeView().setRootVisible(false);
         Children.Array children = new Children.SortedArray();
         this.showGraph = showGraph;
+        actions = new ArrayList<Action>();
+        actions.add(new RefreshAction());
+        actions.add(new FocusOnAction());
+        actions.add(null);
+        actions.add(new WhoIsCalledAction());
+        actions.add(new WhoCallsAction());
+        actions.add(new ShowOverridingAction());
+        actions.add(null);
+        actions.add(new ShowFunctionParameters());
         if (showGraph) {
             scene = new CallGraphScene();
-            actions = new Action[]{new RefreshAction(), new FocusOnAction(),
-                                   null, new WhoIsCalledAction(), new WhoCallsAction(), new ShowOverridingAction(),
-                                   null, new ShowFunctionParameters(), new ExportAction(scene, this)};
-            scene.setExportAction(actions[actions.length-1]);
-        } else {
-            actions = new Action[]{new RefreshAction(), new FocusOnAction(),
-                                   null, new WhoIsCalledAction(), new WhoCallsAction(), new ShowOverridingAction(), 
-                                   null, new ShowFunctionParameters()};
-            
+            ExportAction exportAction = new ExportAction(scene, this);
+            actions.add(exportAction);
+            scene.setExportAction(exportAction);
         }
         root = new AbstractNode(children){
             @Override
             public Action[] getActions(boolean context) {
-                return actions;
+                return actions.toArray(new Action[actions.size()]);
             }
         };
         getExplorerManager().setRootContext(root);

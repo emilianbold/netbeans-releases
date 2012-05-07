@@ -54,6 +54,8 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
+import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
@@ -78,12 +80,13 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
     // only one of namespaceRef/namespaceUID must be used (based on USE_REPOSITORY/USE_UID_TO_CONTAINER)
     private /*final*/ NamespaceImpl namespaceRef;// can be set in onDispose or contstructor only
     private final CsmUID<CsmNamespace> namespaceUID;
+    private final int leftBracketPos;
     
     private NamespaceDefinitionImpl(AST ast, CsmFile file, NamespaceImpl parent) {
-        this(NameCache.getManager().getString(AstUtil.getText(ast)), parent, file, getStartOffset(ast), getEndOffset(ast));
+        this(NameCache.getManager().getString(AstUtil.getText(ast)), parent, file, getStartOffset(ast), getEndOffset(ast), calcLeftBracketPos(ast));
     }
 
-    private NamespaceDefinitionImpl(CharSequence name, NamespaceImpl parent, CsmFile file, int startOffset, int endOffset) {
+    private NamespaceDefinitionImpl(CharSequence name, NamespaceImpl parent, CsmFile file, int startOffset, int endOffset, int leftBracketPos) {
         super(file, startOffset, endOffset);
         declarations = new ArrayList<CsmUID<CsmOffsetableDeclaration>>();
         this.name = name;
@@ -93,6 +96,8 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         namespaceUID = UIDCsmConverter.namespaceToUID(nsImpl);
         assert namespaceUID != null;
         this.namespaceRef = null;
+        
+        this.leftBracketPos = leftBracketPos != -1 ? leftBracketPos : startOffset;
         
         nsImpl.addNamespaceDefinition(NamespaceDefinitionImpl.this);
     }
@@ -263,6 +268,15 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         }
     }
     
+    private static int calcLeftBracketPos(AST node) {
+        AST lcurly = AstUtil.findChildOfType(node, CPPTokenTypes.LCURLY);
+        return (lcurly instanceof CsmAST) ? ((CsmAST) lcurly).getOffset() : -1;
+    }
+    
+    public int getLeftBracketOffset() {
+        return leftBracketPos;
+    }
+    
     private synchronized NamespaceImpl _getNamespaceImpl() {
         NamespaceImpl impl = this.namespaceRef;
         if (impl == null) {
@@ -348,7 +362,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
             NamespaceDefinitionImpl ns = getNamespaceDefinitionInstance();
             if (ns == null) {
                 NamespaceImpl parentNamespace = parent != null ? parent.getNamespace() : (NamespaceImpl)((ProjectBase) file.getProject()).getGlobalNamespace();
-                ns = new NamespaceDefinitionImpl(name, parentNamespace, file, startOffset, endOffset);
+                ns = new NamespaceDefinitionImpl(name, parentNamespace, file, startOffset, endOffset, startOffset);
                 if(parent != null) {
                     parent.addDeclaration(ns);
                 } else {
@@ -381,6 +395,8 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         if (getName().length() == 0) {
             writeUID(output);
         }
+        
+        output.writeInt(leftBracketPos);
     }  
 
     public NamespaceDefinitionImpl(RepositoryDataInput input) throws IOException {
@@ -405,5 +421,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         if (getName().length() == 0) {
             readUID(input);
         }
+        
+        this.leftBracketPos = input.readInt();
     }
 }

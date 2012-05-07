@@ -63,6 +63,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
@@ -75,6 +76,7 @@ import javax.tools.Diagnostic;
 import javax.tools.Diagnostic.Kind;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.AnnotationProcessingQuery;
 import org.netbeans.api.java.source.ClassIndex;
@@ -420,7 +422,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                         if (!binaryName.equals(className)) {
                             if (javaContext.getFQNs().remove(className, relURLPair.second)) {
                                 toDelete.add(Pair.<String, String>of(className, relURLPair.first));
-                                removedTypes.add(ElementHandleAccessor.INSTANCE.create(ElementKind.OTHER, className));
+                                removedTypes.add(ElementHandleAccessor.getInstance().create(ElementKind.OTHER, className));
                                 removedFiles.add(f);
                                 fmTx.delete(f);
                             }
@@ -457,7 +459,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                         for (File f : children) {
                             String className = FileObjects.getBinaryName(f, classFolder);
                             toDelete.add(Pair.<String, String>of(className, null));
-                            removedTypes.add(ElementHandleAccessor.INSTANCE.create(ElementKind.OTHER, className));
+                            removedTypes.add(ElementHandleAccessor.getInstance().create(ElementKind.OTHER, className));
                             removedFiles.add(f);
                             fmTx.delete(f);
                         }
@@ -499,7 +501,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                 String binaryName = FileObjects.getBinaryName(file, classFolder);
                 for (String className : readRSFile(file)) {
                     if (!binaryName.equals(className)) {
-                        result.add(ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, className));
+                        result.add(ElementHandleAccessor.getInstance().create(ElementKind.CLASS, className));
                     } else {
                         cont = !dieIfNoRefFile;
                     }
@@ -530,7 +532,7 @@ public class JavaCustomIndexer extends CustomIndexer {
             };
             for (File f : parent.listFiles(filter)) {
                 String className = FileObjects.getBinaryName (f, classFolder);
-                result.add(ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, className));
+                result.add(ElementHandleAccessor.getInstance().create(ElementKind.CLASS, className));
             }
         }
         return result;
@@ -568,6 +570,71 @@ public class JavaCustomIndexer extends CustomIndexer {
         if (!active.virtual) {
             Iterable<Diagnostic<? extends JavaFileObject>> filteredErrorsList = Iterators.filter(errors.getDiagnostics(active.jfo), new FilterOutDiamondWarnings());
             ErrorsCache.setErrors(context.getRootURI(), active.indexable, filteredErrorsList, active.aptGenerated ? ERROR_CONVERTOR_NO_BADGE : ERROR_CONVERTOR);
+        }
+    }
+    
+    static void brokenPlatform(
+            @NonNull final Context ctx,
+            @NonNull final Iterable<? extends CompileTuple> files,
+            @NullAllowed final Diagnostic<JavaFileObject> diagnostic) {
+        if (diagnostic == null) {
+            return;
+        }
+        final Diagnostic<JavaFileObject> error = new Diagnostic<JavaFileObject>() {
+
+            @Override
+            public Kind getKind() {
+                return Kind.ERROR;
+            }
+
+            @Override
+            public JavaFileObject getSource() {
+                return diagnostic.getSource();
+            }
+
+            @Override
+            public long getPosition() {
+                return diagnostic.getPosition();
+            }
+
+            @Override
+            public long getStartPosition() {
+                return diagnostic.getStartPosition();
+            }
+
+            @Override
+            public long getEndPosition() {
+                return diagnostic.getEndPosition();
+            }
+
+            @Override
+            public long getLineNumber() {
+                return diagnostic.getLineNumber();
+            }
+
+            @Override
+            public long getColumnNumber() {
+                return diagnostic.getColumnNumber();
+            }
+
+            @Override
+            public String getCode() {
+                return diagnostic.getCode();
+            }
+
+            @Override
+            public String getMessage(Locale locale) {
+                return diagnostic.getMessage(locale);
+            }
+        };
+        for (CompileTuple file : files) {
+            if (!file.virtual) {
+                ErrorsCache.setErrors(
+                    ctx.getRootURI(),
+                    file.indexable,
+                    Collections.<Diagnostic<JavaFileObject>>singleton(error),
+                    ERROR_CONVERTOR);
+            }
         }
     }
 

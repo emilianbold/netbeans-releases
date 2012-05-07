@@ -1,17 +1,17 @@
 References in file quote_nosyshdr/cpu.cc
-[2315-2315] <b>ComputeSupportMetric</b>();
-[2522-2522] void Cpu::<b>ComputeSupportMetric</b>() {
+[48:9-48:29] <b>ComputeSupportMetric</b>();
+[57:11-57:31] void Cpu::<b>ComputeSupportMetric</b>() {
 References in file quote_nosyshdr/cpu.h
-[2531-2531] void <b>ComputeSupportMetric</b>();
+[58:14-58:34] void <b>ComputeSupportMetric</b>();
 References in file quote_nosyshdr/disk.cc
-[2309-2309] <b>ComputeSupportMetric</b>();
-[2516-2516] void Disk::<b>ComputeSupportMetric</b>() {
+[48:9-48:29] <b>ComputeSupportMetric</b>();
+[56:12-56:32] void Disk::<b>ComputeSupportMetric</b>() {
 References in file quote_nosyshdr/disk.h
-[2509-2509] void <b>ComputeSupportMetric</b>();
+[56:10-56:30] void <b>ComputeSupportMetric</b>();
 References in file quote_nosyshdr/memory.cc
-[2274-2274] <b>ComputeSupportMetric</b>();
-[2496-2496] void Memory::<b>ComputeSupportMetric</b>() {
+[46:9-46:29] <b>ComputeSupportMetric</b>();
+[56:14-56:34] void Memory::<b>ComputeSupportMetric</b>() {
 References in file quote_nosyshdr/memory.h
-[2487-2487] void <b>ComputeSupportMetric</b>();
+[56:10-56:30] void <b>ComputeSupportMetric</b>();
 References in file quote_nosyshdr/module.h
-[3099-3099] virtual void <b>ComputeSupportMetric</b>() = 0; //metric is defined in derived classes
+[81:18-81:38] virtual void <b>ComputeSupportMetric</b>() = 0; //metric is defined in derived classes

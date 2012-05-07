@@ -102,10 +102,12 @@ public final class EntitySelectionPanel extends AbstractPanel {
                 setErrorMessage("MSG_EntitySelectionPanel_NoSWDP");
                 return false;
             }*/
-            if (getPersistenceUnit(project) == null) {
+            /*
+             * Fix for BZ#206812: no need in this message because PU is forced to create
+             * if (getPersistenceUnit(project) == null) {
                 setInfoMessage("MSG_EntitySelectionPanel_NoPersistenceUnit");
                 return false;
-            }
+            }*/
         }
         return component.valid(wizardDescriptor);
     }

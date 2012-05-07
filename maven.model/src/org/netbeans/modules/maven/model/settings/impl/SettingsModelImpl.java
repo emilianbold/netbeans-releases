@@ -72,18 +72,22 @@ public class SettingsModelImpl extends SettingsModel {
         componentFactory = new SettingsComponentFactoryImpl(this);
     }
     
+    @Override
     public SettingsComponent getRootComponent() {
         return rootComponent;
     }
 
+    @Override
     public SettingsComponentFactory getFactory() {
         return componentFactory;
     }
 
+    @Override
     public Settings getSettings() {
         return (Settings) getRootComponent();
     }
 
+    @Override
     public SettingsComponent createRootComponent(Element root) {
         QName q = root == null ? null : AbstractDocumentComponent.getQName(root);
         if (root != null ) {
@@ -102,10 +106,12 @@ public class SettingsModelImpl extends SettingsModel {
         return getRootComponent();
     }
 
+    @Override
     protected ComponentUpdater<SettingsComponent> getComponentUpdater() {
         return new ChildComponentUpdateVisitor<SettingsComponent>();
     }
 
+    @Override
     public SettingsComponent createComponent(SettingsComponent parent, Element element) {
         return getFactory().create(element, parent);
     }

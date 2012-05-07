@@ -159,11 +159,12 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         setButtonsEnabled(false);
         if (rui.isQuery()) {
             Preferences prefs = NbPreferences.forModule(RefactoringPanel.class);
-            openInNewTab.setSelected(prefs.getBoolean(PREF_OPEN_NEW_TAB, false));
+            openInNewTab.setSelected(prefs.getBoolean(PREF_OPEN_NEW_TAB, true));
         }
+        Mnemonics.setLocalizedText(next, NbBundle.getMessage(ParametersPanel.class, rui.isQuery() ? "CTL_Find" : "CTL_Finish"));
 
         //TODO: Ugly Hack
-        forcePreview = "org.netbeans.modules.java.hints.jackpot.impl.refactoring.InspectAndRefactorUI".equals(rui.getClass().getName());
+        forcePreview = "org.netbeans.modules.java.hints.spiimpl.refactoring.InspectAndRefactorUI".equals(rui.getClass().getName());
         //cancel.setEnabled(false);
         next.setVisible(!forcePreview);
         validate();
@@ -799,6 +800,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         ((BorderLayout)this.getLayout()).invalidateLayout(this);
         stop(new ProgressEvent(this, ProgressEvent.STOP));
         dialog.pack();
+        dialog.repaint();
     }
 
     private boolean isPreviewRequired() {

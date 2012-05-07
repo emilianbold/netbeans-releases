@@ -655,6 +655,24 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
                 vec.addAll(compiler.getSystemPreprocessorSymbols());
             }
         }
+        List<String> undefinedMacros = getUndefinedMacros();
+        if (undefinedMacros.size() > 0) {
+            List<String> out = new ArrayList<String>();
+            for(String macro : vec) {
+                boolean remove = true;
+                for(String undef : undefinedMacros) {
+                    if (macro.equals(undef) ||
+                        macro.startsWith(undef+"=")) { //NOI18N
+                        remove = false;
+                        break;
+                    }
+                }
+                if (remove) {
+                    out.add(macro);
+                }
+            }
+            vec = out;
+        }
         return vec;
     }
 
@@ -697,6 +715,37 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
                         break;
                 }
             }
+        }
+        return vec;
+    }
+    
+    public List<String> getUndefinedMacros() {
+        List<String> vec = new ArrayList<String>();
+        MakeConfiguration makeConfiguration = getMakeConfiguration();
+        ItemConfiguration itemConfiguration = getItemConfiguration(makeConfiguration); //ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(getPath()));
+        if (itemConfiguration == null || !itemConfiguration.isCompilerToolConfiguration()) // FIXUP: itemConfiguration should never be null
+        {
+            return vec;
+        }
+        CompilerSet compilerSet = makeConfiguration.getCompilerSet().getCompilerSet();
+        if (compilerSet == null) {
+            return vec;
+        }
+        AbstractCompiler compiler = (AbstractCompiler) compilerSet.getTool(itemConfiguration.getTool());
+        BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
+        if (compilerConfiguration instanceof CCCCompilerConfiguration) {
+            CCCCompilerConfiguration cccCompilerConfiguration = (CCCCompilerConfiguration) compilerConfiguration;
+            CCCCompilerConfiguration master = (CCCCompilerConfiguration) cccCompilerConfiguration.getMaster();
+            while (master != null && cccCompilerConfiguration.getInheritUndefinedPreprocessor().getValue()) {
+                vec.addAll(master.getUndefinedPreprocessorConfiguration().getValue());
+                if (master.getInheritUndefinedPreprocessor().getValue()) {
+                    master = (CCCCompilerConfiguration) master.getMaster();
+                } else {
+                    master = null;
+                }
+            }
+            vec.addAll(cccCompilerConfiguration.getUndefinedPreprocessorConfiguration().getValue());
+            vec = SPI_ACCESSOR.getItemUndefinedUserMacros(vec, cccCompilerConfiguration, compiler, makeConfiguration);
         }
         return vec;
     }
@@ -880,6 +929,18 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
                 List<String> res = new ArrayList<String>();
                 for (UserOptionsProvider provider : getUserOptionsProviders()) {
                     res.addAll(provider.getItemUserMacros(macros, compilerOptions, compiler, makeConfiguration));
+                }
+                return res;
+            } else {
+                return macros;
+            }
+        }
+
+        private List<String> getItemUndefinedUserMacros(List<String> macros, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
+            if(!getUserOptionsProviders().isEmpty()) {
+                List<String> res = new ArrayList<String>();
+                for (UserOptionsProvider provider : getUserOptionsProviders()) {
+                    res.addAll(provider.getItemUserUndefinedMacros(macros, compilerOptions, compiler, makeConfiguration));
                 }
                 return res;
             } else {

@@ -57,6 +57,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.UIManager;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.modules.search.ui.UiUtils;
 import org.netbeans.spi.search.provider.SearchComposition;
 import org.netbeans.spi.search.provider.SearchResultsDisplayer;
@@ -69,8 +70,12 @@ import org.openide.util.NbBundle;
  */
 class ResultViewPanel extends JPanel implements Lookup.Provider {
 
+    @StaticResource
     private static final String STOP_ICON =
             "org/netbeans/modules/search/res/stop.png"; //NOI18N
+    @StaticResource
+    private static final String INFO_ICON =
+            "org/netbeans/modules/search/res/info.png";                 //NOI18N
 
     private static final String CARD_NAME_RESULTS = "results";          //NOI18N
     private static final String CARD_NAME_INFO = "info";                //NOI18N
@@ -151,7 +156,7 @@ class ResultViewPanel extends JPanel implements Lookup.Provider {
         }
         infoPanelContent.removeAll();
         infoPanelContent.add(new JLabel(ImageUtilities.loadImageIcon(
-                "org/netbeans/modules/search/res/info.png", false)));   //NOI18N
+                INFO_ICON, false)));
         infoPanelContent.add(new JLabel(title));
         infoPanel.validate();
         infoPanel.repaint();

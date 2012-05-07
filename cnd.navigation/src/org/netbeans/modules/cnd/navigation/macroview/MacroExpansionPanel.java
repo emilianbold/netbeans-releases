@@ -58,6 +58,7 @@ import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.text.Document;
 import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
+import org.netbeans.modules.cnd.model.tasks.OpenedEditors;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.editor.NbEditorDocument;
@@ -79,6 +80,7 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
     /** Creates new form MacroExpansionPanel. */
     public MacroExpansionPanel(boolean isView) {
         initComponents();
+        jCodeExpansionEditorPane.putClientProperty(OpenedEditors.CND_EDITOR_COMPONENT, Boolean.TRUE);
         setName(NbBundle.getMessage(getClass(), "CTL_MacroExpansionTopComponent")); // NOI18N
         setToolTipText(NbBundle.getMessage(getClass(), "HINT_MacroExpansionTopComponent")); // NOI18N
     }

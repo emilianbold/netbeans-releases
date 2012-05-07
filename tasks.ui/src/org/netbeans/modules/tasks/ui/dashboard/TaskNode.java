@@ -99,7 +99,7 @@ public class TaskNode extends TreeListNode implements Comparable<TaskNode> {
             lblName = new TreeLabel();
             panel.add(lblName, new GridBagConstraints(0, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 3), 0, 0));
         }
-        lblName.setText(Utils.getTaskDisplayString(task, lblName, rowWidth, DashboardViewer.getInstance().isTaskNodeActive(this)));
+        lblName.setText(Utils.getTaskDisplayString(task, lblName, rowWidth, DashboardViewer.getInstance().isTaskNodeActive(this), hasFocus));
         lblName.setToolTipText(task.getTooltip());
         lblName.setForeground(foreground);
         fireContentChanged();
