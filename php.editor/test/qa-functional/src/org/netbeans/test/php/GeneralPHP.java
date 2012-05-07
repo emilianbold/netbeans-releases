@@ -689,7 +689,7 @@ public class GeneralPHP extends JellyTestCase {
             window.pressKey(KeyEvent.VK_DOWN);
             Sleep(1000);
         }
-        window.pressKey(KeyEvent.VK_ENTER);
+       // window.pressKey(KeyEvent.VK_ENTER);
         Sleep(1000);
 
         return window;

@@ -59,6 +59,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
 import javax.swing.AbstractAction;
+import javax.swing.BoxLayout;
 import javax.swing.FocusManager;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -103,6 +104,7 @@ public final class ResultView extends TopComponent {
     private static final Color macBackground = UIManager.getColor("NbExplorerView.background"); //NOI18N
     private static final String CARD_NAME_EMPTY = "empty";              //NOI18N
     private static final String CARD_NAME_TABS = "tabs";                //NOI18N
+    private static final String CARD_NAME_SINGLE = "single";            //NOI18N
     
     /** unique ID of <code>TopComponent</code> (singleton) */
     static final String ID = "search-results";                  //NOI18N
@@ -112,6 +114,7 @@ public final class ResultView extends TopComponent {
     private CloseListener closeL;
 
     private JPanel emptyPanel;
+    private JPanel singlePanel;
     private JTabbedPane tabs;
     private WeakReference<ResultViewPanel> tabToReuse;
     private CurrentLookupProvider lookupProvider = new CurrentLookupProvider();
@@ -149,6 +152,8 @@ public final class ResultView extends TopComponent {
         closeL = new CloseListener();
         
         emptyPanel = new JPanel();
+        singlePanel = new JPanel();
+        singlePanel.setLayout(new BoxLayout(singlePanel, BoxLayout.PAGE_AXIS));
         emptyPanel.setOpaque(true);
         tabs = TabbedPaneFactory.createCloseButtonTabbedPane();
         tabs.addChangeListener(new ChangeListener() {
@@ -162,6 +167,7 @@ public final class ResultView extends TopComponent {
         tabs.addPropertyChangeListener(closeL);
         add(emptyPanel, CARD_NAME_EMPTY);
         add(tabs, CARD_NAME_TABS);
+        add(singlePanel, CARD_NAME_SINGLE);
         if (isMacLaf) {
             emptyPanel.setBackground(macBackground);
             tabs.setBackground(macBackground);
@@ -227,15 +233,19 @@ public final class ResultView extends TopComponent {
     }
 
     private ResultViewPanel getCurrentResultViewPanel(){
-        if (getComponentCount() > 0) {
-            Component comp = getComponent(0);
-            if (tabs.getTabCount() > 0) {
-                comp = tabs.getSelectedComponent();
-                if (comp instanceof ResultViewPanel) {
-                    return (ResultViewPanel) comp;
-                }
-            } else if (comp instanceof ResultViewPanel) {
-                    return (ResultViewPanel) comp;
+        if (singlePanel.getComponents().length == 1) {
+            Component comp = singlePanel.getComponents()[0];
+            if (comp instanceof ResultViewPanel) {
+                return (ResultViewPanel) comp;
+            } else {
+                return null;
+            }
+        } else if (tabs.getTabCount() > 0) {
+            Component comp = tabs.getSelectedComponent();
+            if (comp instanceof ResultViewPanel) {
+                return (ResultViewPanel) comp;
+            } else {
+                return null;
             }
         }
         return null;
@@ -257,7 +267,6 @@ public final class ResultView extends TopComponent {
         }
     }
     private void removePanel(JPanel panel) {
-        Component comp = getComponentCount() > 0 ? getComponent(0) : null;
         if (tabs.getTabCount() > 0) {
             if (panel == null) {
                 panel = (JPanel) tabs.getSelectedComponent();
@@ -269,16 +278,21 @@ public final class ResultView extends TopComponent {
             tabs.remove(panel);
             if (tabs.getTabCount() == 0) {
                 contentCards.show(this, CARD_NAME_EMPTY);
+            } else if (tabs.getTabCount() == 1) {
+                Component c = tabs.getComponentAt(0);
+                singlePanel.add(c);
+                contentCards.show(this, CARD_NAME_SINGLE);
             }
             this.repaint();
-        } else if (comp instanceof ResultViewPanel)  {
-            ResultViewPanel rvp = (ResultViewPanel)comp;
-            if (rvp.isSearchInProgress()){
+        } else if (singlePanel.getComponents().length == 1)  {
+            Component comp = singlePanel.getComponents()[0];
+            ResultViewPanel rvp = (ResultViewPanel) comp;
+            if (rvp.isSearchInProgress()) {
                 Manager.getInstance().stopSearching(viewToSearchMap.get(comp));
             }
-            remove(comp);
-            add(emptyPanel, BorderLayout.CENTER);
-            close();
+            singlePanel.remove(comp);
+            contentCards.show(this, CARD_NAME_EMPTY);
+            this.repaint();
         } else {
             close();
         }
@@ -402,6 +416,11 @@ public final class ResultView extends TopComponent {
                     removePanel((ResultViewPanel) c[i]);
                 }
             }
+        } else if (singlePanel.getComponents().length > 0) {
+            Component comp = singlePanel.getComponents()[0];
+            if (comp instanceof ResultViewPanel) { // #172546
+                removePanel((ResultViewPanel) comp);
+            }
         }
     }
 
@@ -456,44 +475,43 @@ public final class ResultView extends TopComponent {
         SearchComposition<?> composition = searchTask.getComposition();
         String title = composition.getSearchResultsDisplayer().getTitle();
 
-        Component comp = getComponent(0);
-        if (tabs != null) {
-            if (tabs.getTabCount() == 0) {
-                contentCards.show(this, CARD_NAME_TABS);
-            }
+        if (singlePanel.getComponents().length == 0
+                && tabs.getTabCount() == 0) {
+            singlePanel.add(panel);
+            contentCards.show(this, CARD_NAME_SINGLE);
+        } else if (singlePanel.getComponents().length == 1) {
+            ResultViewPanel comp =
+                    (ResultViewPanel) singlePanel.getComponents()[0];
+            tabs.insertTab(comp.getName(), null, comp,
+                    comp.getToolTipText(), 0);
+            tabs.insertTab(title, null, panel, panel.getToolTipText(),
+                    tabIndex > -1 ? tabIndex : 1);
+            tabs.setSelectedIndex(tabIndex > -1 ? tabIndex : 1);
+            contentCards.show(this, CARD_NAME_TABS);
+        } else {
             tabs.insertTab(title, null, panel,
-                    panel.getToolTipText(), tabIndex);
+                    panel.getToolTipText(),
+                    tabIndex > -1 ? tabIndex : tabs.getTabCount());
             tabs.setSelectedComponent(panel);
             tabs.validate();
-        } else {
-            remove(comp);
-            JTabbedPane pane = TabbedPaneFactory.createCloseButtonTabbedPane();
-            pane.setMinimumSize(new Dimension(0, 0));
-            pane.addMouseListener(popL);
-            pane.addPropertyChangeListener(closeL);
-            if( isMacLaf ) {
-                pane.setBackground(macBackground);
-                pane.setOpaque(true);
-            }
-            add(pane, BorderLayout.CENTER);
-            if (comp instanceof ResultViewPanel){
-                pane.addTab(getTabTitle(comp), null, comp, ((JPanel) comp).getToolTipText());
-            }
-            pane.addTab(title, null, panel, panel.getToolTipText());
-            pane.setSelectedComponent(panel);
-            pane.validate();
         }
         validate();
         requestActive();
         return panel;
     }
 
+    /**
+     * Return tab index to reuse, or -1 to disable reusing.
+     */
     private int tryReuse() {
         ResultViewPanel toReuse = getTabToReuse();
-        if (tabs.getTabCount() == 0) {
+        if (toReuse == null) {
+            return -1;
+        } else if (singlePanel.getComponents().length == 1
+                && singlePanel.getComponent(0) == toReuse) {
+            removePanel(toReuse);
             return 0;
-        }
-        if (toReuse != null) {
+        } else if (tabs.getTabCount() > 0) {
             int index = tabs.indexOfComponent(toReuse);
             if (index >= 0) {
                 removePanel(toReuse);
