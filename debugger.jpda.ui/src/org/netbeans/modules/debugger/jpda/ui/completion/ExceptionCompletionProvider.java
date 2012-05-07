@@ -44,6 +44,7 @@ package org.netbeans.modules.debugger.jpda.ui.completion;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -99,7 +100,7 @@ public class ExceptionCompletionProvider implements CompletionProvider {
                     if (dot > 0) pn = pn.substring(0, dot);
                     if (lastTextDot > 0) pn = pn.substring(lastTextDot + 1);
                     if (!resultPackages.contains(pn)) {
-                        resultSet.addItem(new ClassCompletionItem(pn, caretOffset, true));
+                        resultSet.addItem(new ElementCompletionItem(pn, ElementKind.PACKAGE, caretOffset));
                         resultPackages.add(pn);
                     }
                 }
@@ -127,13 +128,26 @@ public class ExceptionCompletionProvider implements CompletionProvider {
                     Set<String> resultClasses = new HashSet<String>();
                     for (ElementHandle<TypeElement> type : throwables) {
                         String className = type.getQualifiedName();
+                        int packageDotIndex = -1;
                         if (lastTextDot > 0) {
                             className = className.substring(lastTextDot + 1);
+                            if (!className.startsWith(classFilter)) {
+                                continue;
+                            }
+                        } else {
+                            packageDotIndex = type.getBinaryName().lastIndexOf('.');
+                            if (packageDotIndex > 0) {
+                                className = className.substring(packageDotIndex + 1);
+                            }
                         }
                         int dot = className.indexOf('.');
                         if (dot > 0) className = className.substring(0, dot);
                         if (!resultClasses.contains(className)) {
-                            resultSet.addItem(new ClassCompletionItem(className, caretOffset, false));
+                            ElementCompletionItem eci = new ElementCompletionItem(className, type.getKind(), caretOffset);
+                            if (packageDotIndex > 0 && lastTextDot < 0) {
+                                eci.setInsertPrefix(type.getQualifiedName().substring(0, packageDotIndex + 1));
+                            }
+                            resultSet.addItem(eci);
                             resultClasses.add(className);
                         }
                     }
