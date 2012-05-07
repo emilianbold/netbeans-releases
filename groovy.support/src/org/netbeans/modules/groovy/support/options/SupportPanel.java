@@ -109,7 +109,6 @@ final class SupportPanel extends javax.swing.JPanel {
     private void initComponents() {
 
         jLabel2 = new javax.swing.JLabel();
-        linkLabel = new javax.swing.JLabel();
         docLabel = new javax.swing.JLabel();
         groovyDocTextField = new javax.swing.JTextField();
         chooseDocButton = new javax.swing.JButton();
@@ -117,17 +116,15 @@ final class SupportPanel extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(SupportPanel.class, "SupportPanel.jLabel2.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(linkLabel, "<html><a href=\"http://groovy.codehaus.org\">http://groovy.codehaus.org</a></html>"); // NOI18N
-        linkLabel.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mousePressed(java.awt.event.MouseEvent evt) {
-                linkLabelMousePressed(evt);
+        jLabel2.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                jLabel2MouseEntered(evt);
             }
             public void mouseExited(java.awt.event.MouseEvent evt) {
-                linkLabelMouseExited(evt);
+                jLabel2MouseExited(evt);
             }
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                linkLabelMouseEntered(evt);
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                jLabel2MousePressed(evt);
             }
         });
 
@@ -149,29 +146,22 @@ final class SupportPanel extends javax.swing.JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(jLabel2)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(linkLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(jLabel1)
-                .addContainerGap())
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addComponent(groovyDocTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 450, Short.MAX_VALUE)
+                .addComponent(groovyDocTextField)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(chooseDocButton))
+            .addComponent(subpanelWrapper, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(docLabel)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel2)
+                    .addComponent(jLabel1)
+                    .addComponent(docLabel))
                 .addContainerGap())
-            .addComponent(subpanelWrapper, javax.swing.GroupLayout.DEFAULT_SIZE, 555, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(linkLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel1)
                 .addGap(18, 18, 18)
@@ -189,22 +179,6 @@ final class SupportPanel extends javax.swing.JPanel {
         chooseDocButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SupportPanel.class, "SupportPanel.chooseDocButton.accessibleName")); // NOI18N
         chooseDocButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SupportPanel.class, "SupportPanel.chooseDocButton.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
-
-    private void linkLabelMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_linkLabelMousePressed
-        try {
-            HtmlBrowser.URLDisplayer.getDefault().showURL(new URL("http://groovy.codehaus.org")); // NOI18N
-        } catch (MalformedURLException murle) {
-            Exceptions.printStackTrace(murle);
-        }
-    }//GEN-LAST:event_linkLabelMousePressed
-
-    private void linkLabelMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_linkLabelMouseEntered
-        setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-    }//GEN-LAST:event_linkLabelMouseEntered
-
-    private void linkLabelMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_linkLabelMouseExited
-        setCursor(Cursor.getDefaultCursor());
-    }//GEN-LAST:event_linkLabelMouseExited
 
 private void chooseDocButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chooseDocButtonActionPerformed
         JFileChooser chooser = new JFileChooser(groovyDocTextField.getText());
@@ -224,6 +198,22 @@ private void chooseDocButtonActionPerformed(java.awt.event.ActionEvent evt) {//G
 
         }
 }//GEN-LAST:event_chooseDocButtonActionPerformed
+
+    private void jLabel2MouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel2MouseEntered
+        setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+    }//GEN-LAST:event_jLabel2MouseEntered
+
+    private void jLabel2MouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel2MouseExited
+        setCursor(Cursor.getDefaultCursor());
+    }//GEN-LAST:event_jLabel2MouseExited
+
+    private void jLabel2MousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel2MousePressed
+        try {
+            HtmlBrowser.URLDisplayer.getDefault().showURL(new URL("http://groovy.codehaus.org")); // NOI18N
+        } catch (MalformedURLException murle) {
+            Exceptions.printStackTrace(murle);
+        }
+    }//GEN-LAST:event_jLabel2MousePressed
 
     void load() {
         GroovySettings groovyOption = GroovySettings.getInstance();
@@ -266,7 +256,6 @@ private void chooseDocButtonActionPerformed(java.awt.event.ActionEvent evt) {//G
     private javax.swing.JTextField groovyDocTextField;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel linkLabel;
     private javax.swing.JPanel subpanelWrapper;
     // End of variables declaration//GEN-END:variables
 
