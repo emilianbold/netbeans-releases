@@ -41,12 +41,14 @@
  */
 package org.openide.nodes;
 
+import java.lang.ref.WeakReference;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.openide.nodes.Children.Entry;
-import org.openide.nodes.EntrySupportLazy.EntryInfo;
+import org.openide.util.Utilities;
 
 /** This class should represent an immutable state of a EntrySupportLazy instance.
  *
@@ -161,4 +163,168 @@ final class EntrySupportLazyState implements Cloneable {
             entriesSize + "; entryToInfoSize: " + entryToInfoSize + 
             EntrySupportLazy.dumpEntriesInfos(getEntries(), getEntryToInfo());
     }
+    
+    static final class EntryInfo {
+
+        private final EntrySupportLazy lazy;
+        /**
+         * corresponding entry
+         */
+        final Entry entry;
+        /**
+         * cached node for this entry
+         */
+        private NodeRef refNode;
+        /**
+         * my index in list of entries
+         */
+        private int index = -1;
+
+        public EntryInfo(EntrySupportLazy lazy, Entry entry) {
+            this.lazy = lazy;
+            this.entry = entry;
+        }
+
+        final EntryInfo duplicate(Node node) {
+            EntryInfo ei = new EntryInfo(lazy, entry);
+            ei.index = index;
+            ei.refNode = node != null ? new NodeRef(node, ei) : refNode;
+            return ei;
+        }
+
+        final EntrySupportLazy lazy() {
+            return lazy;
+        }
+
+        private Object lock() {
+            return lazy.LOCK;
+        }
+
+        /**
+         * Gets or computes the nodes. It holds them using weak reference so
+         * they can get garbage collected.
+         */
+        public final Node getNode() {
+            return getNode(false, null);
+        }
+        private Thread creatingNodeThread = null;
+
+        public final Node getNode(boolean refresh, Object source) {
+            while (true) {
+                Node node = null;
+                boolean creating = false;
+                synchronized (lock()) {
+                    if (refresh) {
+                        refNode = null;
+                    }
+                    if (refNode != null) {
+                        node = refNode.get();
+                        if (node != null) {
+                            return node;
+                        }
+                    }
+                    if (creatingNodeThread != null) {
+                        if (creatingNodeThread == Thread.currentThread()) {
+                            return new EntrySupportLazy.DummyNode();
+                        }
+                        try {
+                            lock().wait();
+                        } catch (InterruptedException ex) {
+                        }
+                    } else {
+                        creatingNodeThread = Thread.currentThread();
+                        creating = true;
+                    }
+                }
+                Collection<Node> nodes = Collections.emptyList();
+                if (creating) {
+                    try {
+                        nodes = entry.nodes(source);
+                    } catch (RuntimeException ex) {
+                        NodeOp.warning(ex);
+                    }
+                }
+                synchronized (lock()) {
+                    if (!creating) {
+                        if (refNode != null) {
+                            node = refNode.get();
+                            if (node != null) {
+                                return node;
+                            }
+                        }
+                        // node created by other thread was GCed meanwhile, try once again
+                        continue;
+                    }
+                    if (nodes.size() == 0) {
+                        node = new EntrySupportLazy.DummyNode();
+                    } else {
+                        if (nodes.size() > 1) {
+                            EntrySupportLazy.LOGGER.fine("Number of nodes for Entry: " + entry + " is " + nodes.size() + " instead of 1"); // NOI18N
+                        }
+                        node = nodes.iterator().next();
+                    }
+                    refNode = new NodeRef(node, this);
+                    if (creating) {
+                        creatingNodeThread = null;
+                        lock().notifyAll();
+                    }
+                }
+                final Children ch = lazy().children;
+                // assign node to the new children
+                node.assignTo(ch, -1);
+                node.fireParentNodeChange(null, ch.parent);
+                return node;
+            }
+        }
+
+        /**
+         * extract current node (if was already created)
+         */
+        Node currentNode() {
+            synchronized (lock()) {
+                return refNode == null ? null : refNode.get();
+            }
+        }
+
+        final boolean isHidden() {
+            return this.index == -2;
+        }
+
+        /**
+         * Sets the index of the entry.
+         */
+        final void setIndex(int i) {
+            this.index = i;
+        }
+
+        /**
+         * Get index.
+         */
+        final int getIndex() {
+            assert index >= 0 : "When first asked for it has to be set: " + index; // NOI18N
+            return index;
+        }
+
+        @Override
+        public String toString() {
+            return "EntryInfo for entry: " + entry + ", node: " + (refNode == null ? null : refNode.get()); // NOI18N
+        }
+    }
+
+    private static final class NodeRef extends WeakReference<Node> implements Runnable {
+
+        private final EntryInfo info;
+
+        public NodeRef(Node node, EntryInfo info) {
+            super(node, Utilities.activeReferenceQueue());
+            info.lazy().registerNode(1, info);
+            this.info = info;
+        }
+
+        @Override
+        public void run() {
+            info.lazy().registerNode(-1, info);
+        }
+    }
+    
 }
