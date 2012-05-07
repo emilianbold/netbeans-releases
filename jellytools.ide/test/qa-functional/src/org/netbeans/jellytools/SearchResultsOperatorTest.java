@@ -50,16 +50,17 @@ import junit.framework.Test;
 public class SearchResultsOperatorTest extends JellyTestCase {
 
     public static final String[] tests = new String[]{
-        "testBtStopSearch",
+        "testWaitEndOfSearch",
+        //"testBtStopSearch", // don't know how to test
         "testBtShowDetails",
         "testBtModifySearch",
         "testOutlineResult",
         "testSelectResult",
         "testOpenResult",
         "testModifySearch",
-        "testShowDetails",
-        "testWaitEndOfSearch",
-        "testVerify"
+        "testVerify",
+        "testShowDetails", // has to be last because it steals focus
+        "testClose"
     };
 
     /** Method used for explicit test suite definition
@@ -127,6 +128,7 @@ public class SearchResultsOperatorTest extends JellyTestCase {
     public void testShowDetails() {
         searchResultsOper.makeComponentVisible();
         searchResultsOper.showDetails().close();
+        searchResultsOper.makeComponentVisible();
     }
 
     /** Test modifySearch method*/
@@ -143,6 +145,10 @@ public class SearchResultsOperatorTest extends JellyTestCase {
     /** Test verify method */
     public void testVerify() {
         searchResultsOper.verify();
+    }
+    
+    /** Test close method */
+    public void testClose() {
         searchResultsOper.close();
     }
 }
