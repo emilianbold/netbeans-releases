@@ -79,6 +79,7 @@ public class ModuleUpdateElementImpl extends UpdateElementImpl {
     private String date;
     private boolean isEager;
     private boolean isAutoload;
+    private boolean isPreferredUpdate;
     
     public ModuleUpdateElementImpl (ModuleItem item, String providerName) {
         super (item, providerName);
@@ -94,6 +95,7 @@ public class ModuleUpdateElementImpl extends UpdateElementImpl {
         date = item.getDate ();
         isEager = item.isEager ();
         isAutoload = item.isAutoload ();
+        this.isPreferredUpdate = item.isPreferredUpdate();
     }
     
     @Override
@@ -249,6 +251,10 @@ public class ModuleUpdateElementImpl extends UpdateElementImpl {
     @Override
     public boolean isEager () {
         return isEager;
+    }
+    
+    public boolean isPreferredUpdate() {
+        return isPreferredUpdate;
     }
     
     @Override

@@ -113,6 +113,7 @@ public abstract class UpdateElementImpl extends Object {
     public abstract boolean isAutoload ();
     public abstract boolean isEager ();
     public abstract boolean isFixed ();
+    public abstract boolean isPreferredUpdate();
     
    // XXX: try to rid of this
     public abstract List<ModuleInfo> getModuleInfos ();

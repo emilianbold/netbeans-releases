@@ -217,7 +217,7 @@ public final class OperationContainerImpl<Support> {
         //if operations contains only first class modules - don`t search for eagers.
         boolean checkEagers = false;
         for (OperationInfo<?> i : operations) {
-            if(!Utilities.isFirstClassModule(i.getUpdateUnit())) {
+            if(!Utilities.isFirstClassModule(i.getUpdateElement())) {
                checkEagers = true;
                break;
             }

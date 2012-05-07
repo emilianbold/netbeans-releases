@@ -297,6 +297,15 @@ public class FeatureUpdateElementImpl extends UpdateElementImpl {
     }
     
     @Override
+    public boolean isPreferredUpdate() {
+        boolean res = true;
+        for (ModuleUpdateElementImpl impl : getContainedModuleElements()) {
+            res &= impl.isPreferredUpdate();
+        }
+        return res;
+    }
+    
+    @Override
     public boolean equals(Object obj) {
         if (obj == null)
             return false;
@@ -325,7 +334,7 @@ public class FeatureUpdateElementImpl extends UpdateElementImpl {
                                          : 0);
         return hash;
     }
-    
+
     public static class Agent extends FeatureUpdateElementImpl {
         
         private Set<ModuleUpdateElementImpl> moduleElementsImpl;

@@ -190,6 +190,11 @@ public class NativeComponentUpdateElementImpl extends UpdateElementImpl {
     }
     
     @Override
+    public boolean isPreferredUpdate() {
+        return false;
+    }
+    
+    @Override
     public boolean equals(Object obj) {
         if (obj == null)
             return false;
