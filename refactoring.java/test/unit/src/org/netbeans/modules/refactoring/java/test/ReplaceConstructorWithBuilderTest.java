@@ -72,8 +72,8 @@ public class ReplaceConstructorWithBuilderTest extends RefTestBase {
         performTest("create");
 
         assertContent(src,
-                new File("test/Test.java", "package test;\n public class Test {\n public Test(int i) {}\n private void t() {\n Test t = new test.TestBuilder().setI(1).createTest();\n }\n }\n"),
-                new File("test/Use.java", "package test; public class Use { private void t(java.util.List<String> ll) { Test t = new test.TestBuilder().setI(-1).createTest(); } }"),
+                new File("test/Test.java", "package test;\n public class Test {\n public Test(int i) {}\n private void t() {\n Test t = new TestBuilder().setI(1).createTest();\n }\n }\n"),
+                new File("test/Use.java", "package test; public class Use { private void t(java.util.List<String> ll) { Test t = new TestBuilder().setI(-1).createTest(); } }"),
                 new File("test/TestBuilder.java", "package test; public class TestBuilder { private int i; public TestBuilder() { } public TestBuilder setI(int i) { this.i = i; return this; } public Test createTest() { return new Test(i); } } "));
     }
     
