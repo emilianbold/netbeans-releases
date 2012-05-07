@@ -324,6 +324,7 @@ public class ResultsOutlineSupport {
 
         private FlatChildren flatChildren;
         private FolderTreeChildren folderTreeChildren;
+        private String htmlDisplayName = null;
 
         public ResultsNode() {
             super(new FlatChildren());
@@ -366,6 +367,20 @@ public class ResultsOutlineSupport {
 
         @Override
         protected void createPasteTypes(Transferable t, List<PasteType> s) {
+        }
+
+        public void setHtmlAndRawDisplayName(String htmlName) {
+            htmlDisplayName = htmlName;
+            String stripped = (htmlName == null)
+                    ? null
+                    : htmlName.replaceAll("<b>", "").replaceAll( //NOI18N
+                    "</b>", "");                                        //NOI18N
+            this.setDisplayName(stripped);
+        }
+
+        @Override
+        public String getHtmlDisplayName() {
+            return htmlDisplayName;
         }
     }
 
@@ -692,7 +707,7 @@ public class ResultsOutlineSupport {
     }
 
     public void setResultsNodeText(String text) {
-        resultsNode.setDisplayName(text);
+        resultsNode.setHtmlAndRawDisplayName(text);
     }
 
     private class ColumnsListener implements TableColumnModelListener {
