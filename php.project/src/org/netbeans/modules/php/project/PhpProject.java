@@ -177,8 +177,9 @@ public final class PhpProject implements Project {
     private final AntProjectListener phpAntProjectListener = new PhpAntProjectListener();
     private final PropertyChangeListener projectPropertiesListener = new ProjectPropertiesListener();
 
-    // @GuardedBy("ProjectManager.mutex()") #211924
-    private Set<BasePathSupport.Item> ignoredFolders;
+    // @GuardedBy("ProjectManager.mutex() & ignoredFoldersLock") #211924
+    Set<BasePathSupport.Item> ignoredFolders;
+    final Object ignoredFoldersLock = new Object();
     // changes in ignored files - special case because of PhpVisibilityQuery
     final ChangeSupport ignoredFoldersChangeSupport = new ChangeSupport(this);
 
@@ -511,16 +512,18 @@ public final class PhpProject implements Project {
         ProjectManager.mutex().readAccess(new Mutex.Action<Void>() {
             @Override
             public Void run() {
-                if (ignoredFolders == null) {
-                    ignoredFolders = resolveIgnoredFolders();
-                }
-                assert ignoredFolders != null : "Ignored folders cannot be null";
-
-                for (BasePathSupport.Item item : ignoredFolders) {
-                    if (item.isBroken()) {
-                        continue;
+                synchronized (ignoredFoldersLock) {
+                    if (ignoredFolders == null) {
+                        ignoredFolders = resolveIgnoredFolders();
                     }
-                    ignored.add(new File(item.getAbsoluteFilePath(helper.getProjectDirectory())));
+                    assert ignoredFolders != null : "Ignored folders cannot be null";
+
+                    for (BasePathSupport.Item item : ignoredFolders) {
+                        if (item.isBroken()) {
+                            continue;
+                        }
+                        ignored.add(new File(item.getAbsoluteFilePath(helper.getProjectDirectory())));
+                    }
                 }
                 return null;
             }
@@ -531,7 +534,9 @@ public final class PhpProject implements Project {
         ProjectManager.mutex().readAccess(new Mutex.Action<Void>() {
             @Override
             public Void run() {
-                ignoredFolders = null;
+                synchronized (ignoredFoldersLock) {
+                    ignoredFolders = null;
+                }
                 return null;
             }
         });
