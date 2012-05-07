@@ -53,13 +53,13 @@ import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.modules.maven.spi.actions.AbstractMavenActionsProvider;
 import org.netbeans.modules.maven.spi.actions.MavenActionsProvider;
 import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
  * Enables developers to run and debug Hudson plugins.
  */
-@ServiceProvider(service=MavenActionsProvider.class, position=57)
+@ProjectServiceProvider(service=MavenActionsProvider.class, projectType="org-netbeans-modules-maven/hpi")
 public class HpiActionGoalProvider implements MavenActionsProvider {
 
     private static final HashSet<String> ACTIONS = new HashSet<String>(Arrays.asList(ActionProvider.COMMAND_RUN, ActionProvider.COMMAND_DEBUG));
