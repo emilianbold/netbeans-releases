@@ -46,6 +46,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import org.openide.nodes.Children.Entry;
 import org.openide.util.Utilities;
 
@@ -262,7 +263,7 @@ final class EntrySupportLazyState implements Cloneable {
 
         public final Node getNode(boolean refresh, Object source) {
             while (true) {
-                Node node = null;
+                Node node;
                 boolean creating = false;
                 synchronized (lock()) {
                     if (refresh) {
@@ -306,11 +307,14 @@ final class EntrySupportLazyState implements Cloneable {
                         // node created by other thread was GCed meanwhile, try once again
                         continue;
                     }
-                    if (nodes.size() == 0) {
+                    if (nodes.isEmpty()) {
                         node = new EntrySupportLazy.DummyNode();
                     } else {
                         if (nodes.size() > 1) {
-                            EntrySupportLazy.LOGGER.fine("Number of nodes for Entry: " + entry + " is " + nodes.size() + " instead of 1"); // NOI18N
+                            EntrySupportLazy.LOGGER.log(Level.FINE, 
+                                "Number of nodes for Entry: {0} is {1} instead of 1", // NOI18N
+                                new Object[]{entry, nodes.size()}
+                            ); 
                         }
                         node = nodes.iterator().next();
                     }
