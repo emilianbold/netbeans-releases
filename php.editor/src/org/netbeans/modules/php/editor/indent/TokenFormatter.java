@@ -1451,7 +1451,10 @@ public class TokenFormatter {
 
         private int countLastBracedBlockIndent(int indent, CharSequence oldText) {
             int result = 0;
-            int lastIndexOfNewLine = oldText.toString().lastIndexOf('\n');
+            int lastIndexOfNewLine = -1;
+            if (oldText != null) {
+                lastIndexOfNewLine = oldText.toString().lastIndexOf('\n');
+            }
             if (lastIndexOfNewLine != -1) {
                 result = indent - countOfSpaces(oldText.toString().substring(lastIndexOfNewLine + 1), docOptions.tabSize);
             }
