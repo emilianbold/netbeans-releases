@@ -61,6 +61,7 @@ import java.util.ResourceBundle;
 import javax.swing.AbstractAction;
 import javax.swing.BoxLayout;
 import javax.swing.FocusManager;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
@@ -140,7 +141,6 @@ public final class ResultView extends TopComponent {
 
         setName("Search Results");                                      //NOI18N
         setDisplayName(NbBundle.getMessage(ResultView.class, "TITLE_SEARCH_RESULTS"));    //NOI18N
-        setToolTipText(NbBundle.getMessage(ResultView.class, "TOOLTIP_SEARCH_RESULTS"));  //NOI18N
         
         initAccessibility();
 
@@ -212,6 +212,8 @@ public final class ResultView extends TopComponent {
         ResultViewPanel panel = getCurrentResultViewPanel();
         if (panel != null)
             panel.componentOpened();
+        setToolTipText(NbBundle.getMessage(ResultView.class,
+                "TOOLTIP_SEARCH_RESULTS"));                             //NOI18N
     }
 
     @Override
@@ -304,6 +306,7 @@ public final class ResultView extends TopComponent {
         replaceToSearchMap.remove(rTask);
 
         validate();
+        updateTooltip();
     }
 
     @Override
@@ -484,19 +487,26 @@ public final class ResultView extends TopComponent {
                     (ResultViewPanel) singlePanel.getComponents()[0];
             tabs.insertTab(comp.getName(), null, comp,
                     comp.getToolTipText(), 0);
+            tabs.setToolTipTextAt(0, comp.getToolTipText());
+            int tabToInsert = tabIndex > -1 ? tabIndex : 1;
             tabs.insertTab(title, null, panel, panel.getToolTipText(),
-                    tabIndex > -1 ? tabIndex : 1);
+                    tabToInsert);
+            tabs.setToolTipTextAt(tabToInsert, panel.getToolTipText());
             tabs.setSelectedIndex(tabIndex > -1 ? tabIndex : 1);
             contentCards.show(this, CARD_NAME_TABS);
         } else {
             tabs.insertTab(title, null, panel,
                     panel.getToolTipText(),
                     tabIndex > -1 ? tabIndex : tabs.getTabCount());
+            tabs.setToolTipTextAt(
+                    tabIndex > -1 ? tabIndex : tabs.getTabCount() - 1,
+                    panel.getToolTipText());
             tabs.setSelectedComponent(panel);
             tabs.validate();
         }
         validate();
         requestActive();
+        updateTooltip();
         return panel;
     }
 
@@ -563,6 +573,33 @@ public final class ResultView extends TopComponent {
         ResultViewPanel rvp = getCurrentResultViewPanel();
         lookupProvider.setLookup(rvp == null ? Lookup.EMPTY : rvp.getLookup());
         getLookup().lookup(Object.class); //refresh lookup
+    }
+
+    private void updateTooltip() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("<html><b>");                                         //NOI18N
+        sb.append(NbBundle.getMessage(ResultView.class,
+                "TOOLTIP_SEARCH_RESULTS"));                             //NOI18N
+        sb.append("</b>");                                              //NOI18N
+        if (singlePanel.getComponents().length == 1) {
+            appendTabToToolTip(singlePanel.getComponent(0), sb);
+        } else if (tabs.getComponents().length > 0) {
+            Component[] comps = tabs.getComponents();
+            for (int i = 0; i < comps.length; i++) {
+                appendTabToToolTip(comps[i], sb);
+            }
+        }
+        sb.append("</html>");                                           //NOI18N
+        setToolTipText(sb.toString());
+    }
+
+    private void appendTabToToolTip(Component c, StringBuilder sb) {
+        if (c instanceof ResultViewPanel) {
+            ResultViewPanel rvp = (ResultViewPanel) c;
+            sb.append("<br>&nbsp;&nbsp;");                              //NOI18N
+            sb.append(rvp.getToolTipText());
+            sb.append("&nbsp;");                                        //NOI18N
+        }
     }
 
     private static class CurrentLookupProvider implements Lookup.Provider {
