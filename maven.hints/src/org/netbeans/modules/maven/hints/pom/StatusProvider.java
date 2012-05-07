@@ -134,10 +134,10 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
                     });
                 }
             };
-            initializeModel();
             RP.post(new Runnable() {
                 @Override
                 public void run() {
+                    initializeModel(); //#204067 moved to RP 
                     checkHints();
                 }
             });
