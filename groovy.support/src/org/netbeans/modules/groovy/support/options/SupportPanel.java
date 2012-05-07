@@ -71,13 +71,10 @@ import org.openide.util.NbBundle;
  */
 final class SupportPanel extends javax.swing.JPanel {
 
-    private final SupportOptionsPanelController controller;
     private final Collection<GroovyOptionsSubpanel> subpanels;
 
-    SupportPanel(SupportOptionsPanelController controller,
-            @NonNull Collection<? extends GroovyOptionsSubpanel> subpanels) {
+    SupportPanel(@NonNull Collection<? extends GroovyOptionsSubpanel> subpanels) {
 
-        this.controller = controller;
         this.subpanels = new ArrayList<GroovyOptionsSubpanel>(subpanels);
         initComponents();
 

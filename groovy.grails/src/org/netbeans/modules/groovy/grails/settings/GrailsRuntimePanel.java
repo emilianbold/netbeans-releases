@@ -43,20 +43,21 @@ package org.netbeans.modules.groovy.grails.settings;
 
 import java.awt.Component;
 import java.awt.Cursor;
-import javax.swing.JFileChooser;
-import javax.swing.SwingUtilities;
-import org.openide.DialogDisplayer;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import javax.swing.JFileChooser;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.groovy.grails.RuntimeHelper;
 import org.netbeans.modules.groovy.support.spi.GroovyOptionsSubpanel;
+import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.ServiceProvider;
 
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.groovy.support.spi.GroovyOptionsSubpanel.class)
+@ServiceProvider(service = GroovyOptionsSubpanel.class)
 public final class GrailsRuntimePanel extends javax.swing.JPanel implements GroovyOptionsSubpanel {
 
     private final GrailsSettings settings;
@@ -177,14 +178,17 @@ public final class GrailsRuntimePanel extends javax.swing.JPanel implements Groo
         }
     }//GEN-LAST:event_jLabel2MousePressed
 
+    @Override
     public Component getComponent() {
         return this;
     }
 
+    @Override
     public void load() {
         grailsHomeLocation.setText(settings.getGrailsBase());
     }
 
+    @Override
     public void store() {
         String location = grailsHomeLocation.getText();
         if ("".equals(location.trim())) { // NOI18N
@@ -198,6 +202,7 @@ public final class GrailsRuntimePanel extends javax.swing.JPanel implements Groo
         }
     }
 
+    @Override
     public boolean valid() {
         // TODO check whether form is consistent and complete
         return true;
