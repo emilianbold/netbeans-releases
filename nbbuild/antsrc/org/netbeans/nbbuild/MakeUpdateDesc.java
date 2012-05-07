@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -259,6 +259,12 @@ public class MakeUpdateDesc extends MatchingTask {
                 targetClustersDefined |= m.xml.getAttributeNode("targetcluster") != null;
             }
         }
+        boolean isPreferredUpdateDefined = false;
+        for (Collection<Module> modules : modulesByGroup.values()) {
+            for (Module m : modules) {
+                isPreferredUpdateDefined |= m.xml.getAttributeNode("preferredupdate") != null;
+            }
+        }
         boolean use25DTD = false;
         for (Collection<Module> modules : modulesByGroup.values()) {
             for (Module m : modules) {
@@ -293,7 +299,9 @@ public class MakeUpdateDesc extends MatchingTask {
                     }
                     File desc_ent = new File(ent_name);
                     desc_ent.delete();
-                    if(useLicenseUrl) {
+                    if (isPreferredUpdateDefined) {
+                        pw.println("<!DOCTYPE module_updates PUBLIC \"-//NetBeans//DTD Autoupdate Catalog 2.7//EN\" \"http://www.netbeans.org/dtds/autoupdate-catalog-2_7.dtd\" [");
+                    } else if (useLicenseUrl) {
                         pw.println("<!DOCTYPE module_updates PUBLIC \"-//NetBeans//DTD Autoupdate Catalog 2.6//EN\" \"http://www.netbeans.org/dtds/autoupdate-catalog-2_6.dtd\" [");
                     } else if (use25DTD) {
                         pw.println("<!DOCTYPE module_updates PUBLIC \"-//NetBeans//DTD Autoupdate Catalog 2.5//EN\" \"http://www.netbeans.org/dtds/autoupdate-catalog-2_5.dtd\" [");
@@ -329,7 +337,9 @@ public class MakeUpdateDesc extends MatchingTask {
                     pw.println ();
                     
                 } else {
-                    if(useLicenseUrl) {
+                    if (isPreferredUpdateDefined) {
+                        pw.println("<!DOCTYPE module_updates PUBLIC \"-//NetBeans//DTD Autoupdate Catalog 2.7//EN\" \"http://www.netbeans.org/dtds/autoupdate-catalog-2_7.dtd\" [");
+                    } else if (useLicenseUrl) {
                         pw.println("<!DOCTYPE module_updates PUBLIC \"-//NetBeans//DTD Autoupdate Catalog 2.6//EN\" \"http://www.netbeans.org/dtds/autoupdate-catalog-2_6.dtd\">");
                     } else if (use25DTD) {
                         pw.println("<!DOCTYPE module_updates PUBLIC \"-//NetBeans//DTD Autoupdate Catalog 2.5//EN\" \"http://www.netbeans.org/dtds/autoupdate-catalog-2_5.dtd\">");
