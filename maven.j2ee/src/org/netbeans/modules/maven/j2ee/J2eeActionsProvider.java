@@ -44,34 +44,34 @@ package org.netbeans.modules.maven.j2ee;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.spi.actions.AbstractMavenActionsProvider;
-import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.spi.actions.MavenActionsProvider;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  * j2ee specific defaults for project running and debugging..
  * @author mkleint
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.maven.spi.actions.MavenActionsProvider.class, position=50)
+@ServiceProvider(service = MavenActionsProvider.class, position=50)
 public class J2eeActionsProvider extends AbstractMavenActionsProvider {
 
-    private ArrayList<String> supported;
+    private static final ArrayList<String> supported;
     private static final String ACT_RUN = ActionProvider.COMMAND_RUN_SINGLE + ".deploy";
     private static final String ACT_DEBUG = ActionProvider.COMMAND_DEBUG_SINGLE + ".deploy";
     private static final String ACT_PROFILE = ActionProvider.COMMAND_PROFILE_SINGLE + ".deploy";
-    
-    /** Creates a new instance of J2eeActionsProvider */
-    public J2eeActionsProvider() {
+    static {
         supported = new ArrayList<String>();
         supported.add(NbMavenProject.TYPE_WAR);
         supported.add(NbMavenProject.TYPE_EAR);
         supported.add(NbMavenProject.TYPE_EJB);
         supported.add(NbMavenProject.TYPE_APPCLIENT);
     }
-    
-    
+
+    @Override
     public InputStream getActionDefinitionStream() {
         String path = "/org/netbeans/modules/maven/j2ee/webActionMappings.xml"; //NOI18N
         InputStream in = getClass().getResourceAsStream(path);
