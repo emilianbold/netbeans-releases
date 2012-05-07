@@ -69,7 +69,9 @@ public class testCCInDetail extends cc {
                 "CreateApplication",
                 "CreatePHPFile",
                 "testPhp54ArrayDereferencing",
-                "DetailedCodeCompletionTesting",
+                "DetailedCodeCompletionTestingPartOne",
+                "DetailedCodeCompletionTestingPartTwo",
+                "DetailedCodeCompletionTestingPartThree",
                 "testPhp54Callable",
                 "testPhp54AnonymousObject").enableModules(".*").clusters(".*") //.gui( true )
                 );
@@ -189,7 +191,7 @@ public class testCCInDetail extends cc {
         assertTrue("Failed Array AnonymousObject test", result);
         endTest();
     }
-    
+
     public void testPhp54Callable() {
         CreatePHPFile(TEST_PHP_NAME, "PHP File", "Callable");
         startTest();
@@ -199,15 +201,12 @@ public class testCCInDetail extends cc {
         endTest();
     }
 
-    public void DetailedCodeCompletionTesting() {
+    public void DetailedCodeCompletionTestingPartOne() {
         startTest();
-        CreatePHPFile(TEST_PHP_NAME, "PHP File", "Details");
+        CreatePHPFile(TEST_PHP_NAME, "PHP File", "Details1");
         CCompletionCase[] accTests = {
             new CCompletionCase("*/", "$test=1;\n$test1=$tes;", "$test1=$tes", CCompletionCase.COMPLETION_LIST, 0, "$test|$test1", -1, 2),
             new CCompletionCase("*/", "$test=1;\n$test1=\"a\";\n$newvar=$tes;", "$newvar=$tes", CCompletionCase.COMPLETION_LIST, 0, "$test|$test1", -2, 3),
-            // wrong test
-            // new CCompletionCase( "*/", "$test=1;\n$newvar=$tes;\n$test1=\"a\";", "$newvar=$tes", CCompletionCase.COMPLETION_LIST, 0, "$test|$test1", -1, 3 ),
-
             new CCompletionCase("*/", "$test=1;\n$test1=\"$tes\";", "$test1=\"$tes", CCompletionCase.COMPLETION_LIST, 0, "$test|$test1", -1, 2),
             new CCompletionCase("*/", "$test=1;\nif ($test==1){\n$test1=\"a\";\n}\n$newvar=$tes;", "$newvar=$tes", CCompletionCase.COMPLETION_LIST, 0, "$test|$test1", -4, 6),
             new CCompletionCase("*/", "$test=1;\nif ($test==1){\n$test1=\"a\";\n}\nif ($test==1){\n$newvar=$tes;\n}", "$newvar=$tes", CCompletionCase.COMPLETION_LIST, 0, "$test|$test1", -5, 8),
@@ -215,23 +214,53 @@ public class testCCInDetail extends cc {
             new CCompletionCase("*/", "$test=1;\n$test1=\"a\";\n// $newvar=$tes;", "$newvar=$tes", CCompletionCase.COMPLETION_LIST, 0, "No suggestions", -2, 3),
             new CCompletionCase("*/", "$test=1;\n/*  $test1=\"a\";\n$newvar=$tes;", "$newvar=$tes", CCompletionCase.COMPLETION_STRING, 0, "[*] [$]newvar=[$]test;", -2, 4),
             new CCompletionCase("*/", "$test=1;\n/**  $test1=\"a\";\n$newvar=$tes;", "$newvar=$tes", CCompletionCase.COMPLETION_LIST, 0, "No suggestions", -2, 4),
-            new CCompletionCase("*/", "/**  @v\n", "@v", CCompletionCase.COMPLETION_LIST, 0, "@var|@version", -1, 3),
-            /*
-             *    wrong test
-             *    new CCompletionCase( "?>", "<html>\n<?php\n$test=1;\n?>\n$newvar=$tes\n</html>", "$newvar=$tes", CCompletionCase.COMPLETION_LIST, 0, "No suggestions", -4, 6 ),
-             */
+            new CCompletionCase("*/", "/**  @v\n", "@v", CCompletionCase.COMPLETION_LIST, 0, "@var|@version", -1, 3),};
+        String sFailed = "";
+        int iFailed = 0;
+        for (CCompletionCase cc : accTests) {
+            if (!CheckCodeCompletion(cc, "Details1.php")) {
+                iFailed++;
+                sFailed = sFailed + "|" + cc.sResult;
+            }
+        }
+        if (0 != iFailed) {
+            fail("" + iFailed + " test(s) failed, invalid results: \"" + sFailed + "\"");
+        }
+
+        endTest();
+    }
+
+    public void DetailedCodeCompletionTestingPartThree() {
+        startTest();
+        CreatePHPFile(TEST_PHP_NAME, "PHP File", "Details3");
+        CCompletionCase[] accTests = {
             new CCompletionCase("?>", "<?php\n$test=1;\n?>\nText\n<?php\n$newvar=$tes\n?>", "$newvar=$tes", CCompletionCase.COMPLETION_STRING, 0, "[$]newvar=[$]test", -5, 7),
-            /*
-             *      wrong test
-             *      new CCompletionCase( "?>", "<?php\n$test=1;\n?>\nText\n<%\n$newvar=$tes\n%>", "$newvar=$tes", CCompletionCase.COMPLETION_STRING, 0, "[$]newvar=[$]test", -5, 7 ),
-             */
             new CCompletionCase("?>", "<?php\n$test=1;\n?>\nText\n<?=\n$newvar=$tes\n=>", "$newvar=$tes", CCompletionCase.COMPLETION_STRING, 0, "[$]newvar=[$]test", -5, 7),
             new CCompletionCase("*/", "func", "func", CCompletionCase.COMPLETION_LIST, 0, "func_get_arg|func_get_args|function_exists|function", 0, 1),
             new CCompletionCase("*/", "function func(){\nret", "ret", CCompletionCase.COMPLETION_STRING, 0, "return;", -1, 3),
             new CCompletionCase("*/", "function func($param){\n$newvar=$par", "$newvar=$par", CCompletionCase.COMPLETION_STRING, 0, "[$]newvar=[$]param", -1, 3),
             new CCompletionCase("*/", "function func(&$param){\n$newvar=$par", "$newvar=$par", CCompletionCase.COMPLETION_STRING, 0, "[$]newvar=[$]param", -1, 3),
             new CCompletionCase("*/", "function func($param){\n$newvar=$param;\n}\n$test=$newv\n{", "$test=$newv", CCompletionCase.COMPLETION_LIST, 0, "No suggestions", -3, 6),
-            new CCompletionCase("*/", "function func($param){\n$newvar=$param;\n}\n$test=$par\n{", "$test=$par", CCompletionCase.COMPLETION_LIST, 0, "No suggestions", -3, 6),
+            new CCompletionCase("*/", "function func($param){\n$newvar=$param;\n}\n$test=$par\n{", "$test=$par", CCompletionCase.COMPLETION_LIST, 0, "No suggestions", -3, 6)};
+        String sFailed = "";
+        int iFailed = 0;
+        for (CCompletionCase cc : accTests) {
+            if (!CheckCodeCompletion(cc, "Details3.php")) {
+                iFailed++;
+                sFailed = sFailed + "|" + cc.sResult;
+            }
+        }
+        if (0 != iFailed) {
+            fail("" + iFailed + " test(s) failed, invalid results: \"" + sFailed + "\"");
+        }
+
+        endTest();
+    }
+
+    public void DetailedCodeCompletionTestingPartTwo() {
+        startTest();
+        CreatePHPFile(TEST_PHP_NAME, "PHP File", "Details2");
+        CCompletionCase[] accTests = {
             new CCompletionCase("*/", "cla", "cla", CCompletionCase.COMPLETION_LIST, 0, "class_exists|class_implements|class", 0, 1),
             new CCompletionCase("*/", "class MyCla", "class MyCla", CCompletionCase.COMPLETION_LIST, 0, "No suggestions", 0, 1),
             new CCompletionCase("*/", "class MyClass ext", "class MyClass ext", CCompletionCase.COMPLETION_STRING, 0, "class MyClass extends", 0, 1),
@@ -249,11 +278,10 @@ public class testCCInDetail extends cc {
         //            new CCompletionCase("*/", "class MyClass {\nprivate static $test;\nprivate static function func(){\necho \"Hello\";\n}\n}\n$test=MyClass::\n{{", "MyClass::", CCompletionCase.COMPLETION_LIST, 0, "No suggestions", -6, 10)
         };
 
-//    EditorOperator eoPHP = new EditorOperator( "EmptyPHP.php" );
         String sFailed = "";
         int iFailed = 0;
         for (CCompletionCase cc : accTests) {
-            if (!CheckCodeCompletion(cc, "Details.php")) {
+            if (!CheckCodeCompletion(cc, "Details2.php")) {
                 iFailed++;
                 sFailed = sFailed + "|" + cc.sResult;
             }
