@@ -71,6 +71,7 @@ import org.netbeans.modules.java.preprocessorbridge.spi.JavaIndexerPlugin;
 import org.netbeans.modules.java.source.JavaFileFilterQuery;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.indexing.JavaCustomIndexer.CompileTuple;
+import org.netbeans.modules.java.source.parsing.ProcessorGenerated;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
@@ -99,6 +100,7 @@ final class JavaParsingContext {
     private CheckSums checkSums;
     private FQN2Files fqn2Files;    
     private Iterable<? extends JavaIndexerPlugin> pluginsCache;
+    private ProcessorGenerated processorGenerated;
 
     JavaParsingContext(final Context context, final boolean allowNonExistentRoot) throws IOException {
         ctx = context;
@@ -205,6 +207,14 @@ final class JavaParsingContext {
             fqn2Files = FQN2Files.forRoot(ctx.getRootURI());
         }
         return fqn2Files;
+    }
+    
+    @NonNull
+    ProcessorGenerated getProcessorGeneratedFiles() {
+        if (processorGenerated == null) {
+            processorGenerated = TransactionContext.get().get(ProcessorGenerated.class);
+        }
+        return processorGenerated;
     }
 
     void analyze(
