@@ -61,9 +61,11 @@ public class GroovyBreakpointActionsProvider implements NodeActionsProviderFilte
     private static final Action GO_TO_SOURCE_ACTION = Models.createAction (
         NbBundle.getMessage(GroovyBreakpointActionsProvider.class, "LBL_Action_Go_To_Source"),
         new Models.ActionPerformer () {
+        @Override
             public boolean isEnabled (Object node) {
                 return true;
             }
+        @Override
             public void perform (Object[] nodes) {
                 goToSource ((GroovyLineBreakpoint) nodes [0]);
             }
@@ -74,18 +76,20 @@ public class GroovyBreakpointActionsProvider implements NodeActionsProviderFilte
     private static final Action CUSTOMIZE_ACTION = Models.createAction (
         NbBundle.getMessage(GroovyBreakpointActionsProvider.class, "LBL_Action_Customize"),
         new Models.ActionPerformer () {
+        @Override
             public boolean isEnabled (Object node) {
                 return false;
             }
+        @Override
             public void perform (Object[] nodes) {
 //                customize ((Breakpoint) nodes [0]);
             }
         },
         Models.MULTISELECTION_TYPE_EXACTLY_ONE
-    
     );
     
     
+    @Override
     public Action[] getActions (NodeActionsProvider original, Object node) throws UnknownTypeException {
         if (!(node instanceof GroovyLineBreakpoint))
             return original.getActions (node);
@@ -105,11 +109,13 @@ public class GroovyBreakpointActionsProvider implements NodeActionsProviderFilte
         return as;
     }
     
+    @Override
     public void performDefaultAction (NodeActionsProvider original, Object node) throws UnknownTypeException {
-        if (node instanceof GroovyLineBreakpoint)
+        if (node instanceof GroovyLineBreakpoint) {
             goToSource ((GroovyLineBreakpoint) node);
-        else
+        } else {
             original.performDefaultAction (node);
+        }
     }
 
     public void addModelListener (ModelListener l) {
@@ -118,68 +124,6 @@ public class GroovyBreakpointActionsProvider implements NodeActionsProviderFilte
     public void removeModelListener (ModelListener l) {
     }
 
-//    private static void customize (Breakpoint b) {
-//        JComponent c = null;
-//        if (b instanceof GroovyLineBreakpoint) {
-//            c = new JspBreakpointPanel((GroovyLineBreakpoint) b);
-//        }
-//
-//        DialogDescriptor descriptor = new DialogDescriptor (
-//            c,
-//            NbBundle.getMessage (
-//                GroovyBreakpointActionsProvider.class,
-//                "CTL_Breakpoint_Customizer_Title" // NOI18N
-//             // NOI18N
-//            )
-//
-//        );
-//
-//        JButton bOk = null;
-//        JButton bClose = null;
-//        descriptor.setOptions (new JButton[] {
-//            bOk = new JButton (NbBundle.getMessage (
-//                GroovyBreakpointActionsProvider.class,
-//                "CTL_Ok" // NOI18N
-//             // NOI18N
-//            )),
-//            bClose = new JButton (NbBundle.getMessage (
-//                GroovyBreakpointActionsProvider.class,
-//                "CTL_Close" // NOI18N
-//             // NOI18N
-//            ))
-//
-//        });
-//        HelpCtx helpCtx = HelpCtx.findHelp (c);
-//        if (helpCtx == null)
-//            helpCtx = new HelpCtx ("debug.add.breakpoint");;
-//        descriptor.setHelpCtx (helpCtx);
-//        bOk.getAccessibleContext ().setAccessibleDescription (
-//            NbBundle.getMessage (
-//                GroovyBreakpointActionsProvider.class,
-//                "ACSD_CTL_Ok" // NOI18N
-//             // NOI18N
-//            )
-//
-//        );
-//        bOk.setMnemonic(NbBundle.getMessage(GroovyBreakpointActionsProvider.class, "CTL_Ok_MNEM").charAt(0)); // NOI18N
-//        bClose.getAccessibleContext ().setAccessibleDescription (
-//            NbBundle.getMessage (
-//                GroovyBreakpointActionsProvider.class,
-//                "ACSD_CTL_Close" // NOI18N
-//             // NOI18N
-//            )
-//
-//        );
-//        bClose.setMnemonic(NbBundle.getMessage(GroovyBreakpointActionsProvider.class, "CTL_Close_MNEM").charAt(0)); // NOI18N
-//        descriptor.setClosingOptions (null);
-//        Dialog d = DialogDisplayer.getDefault ().createDialog (descriptor);
-//        d.pack ();
-//        d.setVisible (true);
-//        if (descriptor.getValue () == bOk) {
-//            ((Controller) c).ok ();
-//        }
-//    }
-    
     private static void goToSource (GroovyLineBreakpoint b) {
         Context.showSource (b);
     }

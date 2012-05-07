@@ -44,10 +44,18 @@
 
 package org.netbeans.modules.groovy.support.debug;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.NbBundle;
 
 /**
@@ -57,6 +65,8 @@ import org.openide.util.NbBundle;
  */
 public class GroovyLineBreakpoint extends Breakpoint {
 
+    private static final Logger LOGGER = Logger.getLogger(GroovyLineBreakpoint.class.getName());
+    
     /** Property name for enabled status of the breakpoint. */
     public static final String          PROP_ENABLED = JPDABreakpoint.PROP_ENABLED;
 
@@ -83,29 +93,22 @@ public class GroovyLineBreakpoint extends Breakpoint {
     
     private LineBreakpoint javalb;
         
-    /** Creates a new instance of JspLineBreakpoint */
-    public GroovyLineBreakpoint() { }
+    public GroovyLineBreakpoint() {
+    }
     
-    /** Creates a new instance of JspLineBreakpoint with url, linenumber*/
     public GroovyLineBreakpoint(String url, int lineNumber) {
-        super();
-        
         this.url = url;
         this.lineNumber = lineNumber;
         String pt = NbBundle.getMessage(GroovyLineBreakpoint.class, "CTL_Default_Print_Text");
-        this.printText = pt.replace("{jspName}", DebugUtils.getJspName(url));
+        this.printText = pt.replace("{jspName}", getGroovyName(url));
         
         DebuggerManager d = DebuggerManager.getDebuggerManager();
-        
-//        Utils.log("jsp url: " + url);
-
-        String filter = DebugUtils.getClassFilter(url);
-//        Utils.log("filter: " + filter);
+        String filter = getClassFilter(url);
         
         javalb = LineBreakpoint.create(url, lineNumber);
         javalb.setStratum("Groovy"); // NOI18N
-        javalb.setSourceName(DebugUtils.getJspName(url));
-        javalb.setSourcePath(DebugUtils.getJspPath(url));
+        javalb.setSourceName(getGroovyName(url));
+        javalb.setSourcePath(getGroovyPath(url));
         javalb.setPreferredClassName(filter);
         javalb.setHidden(true);
         javalb.setPrintText(printText);
@@ -130,6 +133,58 @@ public class GroovyLineBreakpoint extends Breakpoint {
      */
     public static GroovyLineBreakpoint create(String url, int lineNumber) {
         return new GroovyLineBreakpoint(url, lineNumber);
+    }
+
+    private FileObject getFileObjectFromUrl(String url) {
+
+        FileObject fo = null;
+
+        try {
+            fo = URLMapper.findFileObject(new URL(url));
+        } catch (MalformedURLException e) {
+            //noop
+        }
+        return fo;
+    }
+
+    private String getClassFilter(String url) {
+        String relativePath = getGroovyPath(url);
+        if (relativePath == null) {
+            return "";
+        }
+
+        if (relativePath.endsWith(".groovy")) { // NOI18N
+            relativePath = relativePath.substring(0, relativePath.length() - 7);
+        }
+        return relativePath.replace('/', '.') + "*";
+    }
+
+    private String getGroovyName(String url) {
+        FileObject fo = getFileObjectFromUrl(url);
+        if (fo != null) {
+            return fo.getNameExt();
+        }
+        return (url == null) ? null : url.toString();
+    }
+
+    private String getGroovyPath(String url) {
+        FileObject fo = getFileObjectFromUrl(url);
+        String relativePath = url;
+
+        if (fo != null) {
+            ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+            if (cp == null) {
+                LOGGER.log(Level.FINE, "No classpath for {0}", url);
+                return null;
+            }
+            FileObject root = cp.findOwnerRoot(fo);
+            if (root == null) {
+                return null;
+            }
+            relativePath = FileUtil.getRelativePath(root, fo);
+        }
+
+        return relativePath;
     }
     
     /**
@@ -192,7 +247,7 @@ public class GroovyLineBreakpoint extends Breakpoint {
      * @param printText a new value of print text property
      */
     public void setPrintText (String printText) {
-        if (this.printText == printText) return;
+        if (this.printText.equals(printText)) return;
         String old = this.printText;
         this.printText = printText;
         if (javalb != null) {
@@ -204,6 +259,7 @@ public class GroovyLineBreakpoint extends Breakpoint {
     /**
      * Called when breakpoint is removed.
      */
+    @Override
     protected void dispose() {
         if (javalb != null) {
             DebuggerManager.getDebuggerManager().removeBreakpoint(javalb);
@@ -215,6 +271,7 @@ public class GroovyLineBreakpoint extends Breakpoint {
      *
      * @return <code>true</code> if so
      */
+    @Override
     public boolean isEnabled() {
         return enabled;
     }
@@ -222,6 +279,7 @@ public class GroovyLineBreakpoint extends Breakpoint {
     /**
      * Disables the breakpoint.
      */
+    @Override
     public void disable() {
         if (!enabled) return;
         enabled = false;
@@ -234,6 +292,7 @@ public class GroovyLineBreakpoint extends Breakpoint {
     /**
      * Enables the breakpoint.
      */
+    @Override
     public void enable() {
         if (enabled) return;
         enabled = true;
@@ -322,6 +381,7 @@ public class GroovyLineBreakpoint extends Breakpoint {
      *
      * @return  a string representation of the object
      */
+    @Override
     public String toString () {
         return "GroovyLineBreakpoint " + url + " : " + lineNumber;
     }    
@@ -343,10 +403,11 @@ public class GroovyLineBreakpoint extends Breakpoint {
     }
     
     /**
-     * Sets group name of this JSP breakpoint and also sets the same group name for underlying Java breakpoint.
+     * Sets group name of this Groovy breakpoint and also sets the same group name for underlying Java breakpoint.
      * 
      * @param newGroupName name of the group
      */ 
+    @Override
     public void setGroupName(String newGroupName) {
         super.setGroupName(newGroupName);
         javalb.setGroupName(newGroupName);
