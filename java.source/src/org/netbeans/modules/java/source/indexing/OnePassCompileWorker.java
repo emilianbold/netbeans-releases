@@ -244,7 +244,7 @@ final class OnePassCompileWorker extends CompileWorker {
                 }
                 jt.analyze(types);
                 if (aptEnabled) {
-                    JavaCustomIndexer.addAptGenerated(context, javaContext, active.indexable.getRelativePath(), aptGenerated);
+                    JavaCustomIndexer.addAptGenerated(context, javaContext, active, aptGenerated);
                 }
                 if (mem.isLowMemory()) {
                     units = null;
