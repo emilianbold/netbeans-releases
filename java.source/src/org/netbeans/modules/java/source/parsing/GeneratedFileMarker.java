@@ -43,10 +43,13 @@
 package org.netbeans.modules.java.source.parsing;
 
 import java.net.URL;
+import javax.tools.JavaFileManager;
 import org.netbeans.api.annotations.common.NonNull;
 
 /**
- *
+ * TODO: Probably not needed in transactinal cache and
+ * can be fully replaced by ProcessorGenerated.
+ * 
  * @author Tomas Zezula
  */
 public interface GeneratedFileMarker {
@@ -56,7 +59,7 @@ public interface GeneratedFileMarker {
         RESOURCE
     }
 
-    void mark (@NonNull URL generated, @NonNull Type type);
-    void finished(@NonNull URL source);
+    void mark (@NonNull javax.tools.FileObject generated, @NonNull Type type);
+    void finished(@NonNull URL source, @NonNull JavaFileManager owner);
     boolean allowsWrite();
 }

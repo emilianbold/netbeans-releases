@@ -108,6 +108,37 @@ public class ExtractSuperclassTest extends RefactoringTestBase {
                 + "        System.out.println(\"Hello\");\n"
                 + "    } // Trailing comments\n"
                 + "}\n"));
+        
+        writeFilesAndWaitForScan(src,
+                new File("extract/ExtractBaseClass.java", "package extract;\n"
+                + "\n"
+                + "public class ExtractBaseClass {\n"
+                + "    // Method comments\n"
+                + "    public void method() {\n"
+                + "        //method body\n"
+                + "        System.out.println(\"Hello\");\n"
+                + "    } // Trailing comments\n"
+                + "}"));
+        performExtractSuperclass(src.getFileObject("extract/ExtractBaseClass.java"), 1, "ExtractSuperClass", Boolean.FALSE);
+        verifyContent(src,
+                new File("extract/ExtractBaseClass.java", "package extract;\n"
+                + "\n"
+                + "public class ExtractBaseClass extends ExtractSuperClass {\n"
+                + "    \n"
+                + "}"),
+                new File("extract/ExtractSuperClass.java", "/* * Refactoring License */ package extract;\n"
+                + "\n"
+                + "/**\n"
+                + " *\n"
+                + " * @author junit\n"
+                + " */\n"
+                + "public class ExtractSuperClass {\n"
+                + "    // Method comments\n"
+                + "    public void method() {\n"
+                + "        //method body\n"
+                + "        System.out.println(\"Hello\");\n"
+                + "    } // Trailing comments\n"
+                + "}\n"));
     }
 
     private void performExtractSuperclass(FileObject source, final int position, final String newName, final Boolean makeAbstract, Problem... expectedProblems) throws IOException, IllegalArgumentException, InterruptedException {

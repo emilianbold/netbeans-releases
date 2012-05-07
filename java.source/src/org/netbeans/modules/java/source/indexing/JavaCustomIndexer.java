@@ -48,6 +48,7 @@ import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -84,17 +85,21 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.java.JavaDataLoader;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.JavaSourceTaskFactoryManager;
 import org.netbeans.modules.java.source.parsing.FileManagerTransaction;
 import org.netbeans.modules.java.source.parsing.FileObjects;
+import org.netbeans.modules.java.source.parsing.InferableJavaFileObject;
 import org.netbeans.modules.java.source.parsing.PrefetchableJavaFileObject;
+import org.netbeans.modules.java.source.parsing.ProcessorGenerated;
 import org.netbeans.modules.java.source.parsing.SourceFileObject;
 import org.netbeans.modules.java.source.tasklist.TasklistSettings;
 import org.netbeans.modules.java.source.usages.*;
 import org.netbeans.modules.java.source.util.Iterators;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.impl.indexing.FileObjectIndexable;
+import org.netbeans.modules.parsing.impl.indexing.IndexableImpl;
 import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController;
 import org.netbeans.modules.parsing.spi.indexing.Context;
@@ -195,7 +200,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                 CompileWorker.ParsingOutput compileResult = null;
                 try {
                     if (context.isAllFilesIndexing()) {
-                        cleanUpResources(context.getRootURI());
+                        cleanUpResources(context.getRootURI(), fmTx);
                     }
                     if (javaContext.getClassIndexImpl() == null)
                         return; //IDE is exiting, indeces are already closed.
@@ -538,29 +543,19 @@ public class JavaCustomIndexer extends CustomIndexer {
         return result;
     }
 
-    static boolean addAptGenerated(final Context context, JavaParsingContext javaContext, final String sourceRelative, final Set<CompileTuple> aptGenerated) throws IOException {
+    static boolean addAptGenerated(
+            @NonNull final Context context,
+            @NonNull JavaParsingContext javaContext,
+            @NonNull final CompileTuple source,
+            @NonNull final Set<CompileTuple> aptGenerated) throws IOException {
         boolean ret = false;
-        final File aptFolder = JavaIndex.getAptFolder(context.getRootURI(), false);
-        if (aptFolder.exists()) {
-            final FileObject root = FileUtil.toFileObject(aptFolder);
-            final File classFolder = JavaIndex.getClassFolder(context.getRootURI());
-            final String withoutExt = FileObjects.stripExtension(sourceRelative);
+        final Set<javax.tools.FileObject> genSources = javaContext.getProcessorGeneratedFiles().getGeneratedSources(source.indexable.getURL());
+        if (genSources != null) {
             final SPIAccessor accessor = SPIAccessor.getInstance();
-            File file = new File(classFolder,  withoutExt + '.' + FileObjects.RAPT);
-            if (file.exists()) {
-                try {
-                    for (String fileName : readRSFile(file)) {
-                        File f = new File (aptFolder, fileName);
-                        if (f.exists() && FileObjects.JAVA.equals(FileObjects.getExtension(f.getName()))) {
-                            Indexable i = accessor.create(new FileObjectIndexable(root, fileName));
-                            PrefetchableJavaFileObject ffo = FileObjects.fileFileObject(f, aptFolder, null, javaContext.getEncoding());
-                            ret |= aptGenerated.add(new CompileTuple(ffo, i, false, true, true));
-                        }
-                    }
-                } catch (IOException ioe) {
-                    //The signature file is broken, report it but don't stop scanning
-                    Exceptions.printStackTrace(ioe);
-                }
+            for (javax.tools.FileObject fo : genSources) {
+                final PrefetchableJavaFileObject pfo = (PrefetchableJavaFileObject) fo;
+                final Indexable i = accessor.create(new AptGeneratedIndexable(pfo));
+                ret |= aptGenerated.add(new CompileTuple(pfo, i, false, true, true));
             }
         }
         return ret;
@@ -830,15 +825,17 @@ public class JavaCustomIndexer extends CustomIndexer {
         return ret;
     }
 
-    private static void cleanUpResources (final URL rootURL) throws IOException {
+    private static void cleanUpResources (
+            @NonNull final URL rootURL,
+            @NonNull final FileManagerTransaction fmTx) throws IOException {
         final File classFolder = JavaIndex.getClassFolder(rootURL);
         final File resourcesFile = new File (classFolder,FileObjects.RESOURCES);
         try {
             for (String fileName : readRSFile(resourcesFile)) {
                 File f = new File (classFolder, fileName);
-                f.delete();
+                fmTx.delete(f);
             }
-            resourcesFile.delete();
+            fmTx.delete(resourcesFile);
         } catch (IOException ioe) {
             //Nothing to delete - pass
         }
@@ -1121,6 +1118,42 @@ public class JavaCustomIndexer extends CustomIndexer {
     private static class FilterOutDiamondWarnings implements Comparable<Diagnostic<? extends JavaFileObject>> {
         @Override public int compareTo(Diagnostic<? extends JavaFileObject> o) {
             return DIAMOND_KINDS.contains(o.getCode()) ? 0 : -1;
+        }
+    }
+    
+    private static final class AptGeneratedIndexable implements IndexableImpl {
+        
+        private final InferableJavaFileObject jfo;
+        
+        AptGeneratedIndexable(@NonNull final InferableJavaFileObject jfo) {
+            this.jfo = jfo;
+        }
+
+        @Override
+        public String getRelativePath() {
+            final StringBuilder sb = new StringBuilder(FileObjects.convertPackage2Folder(jfo.inferBinaryName(), '/'));  //NOI18N
+            sb.append('.'); //NOI18N
+            sb.append(FileObjects.getExtension(jfo.toUri().getPath()));
+            return sb.toString();
+        }
+
+        @Override
+        public URL getURL() {
+            try {
+                return jfo.toUri().toURL();
+            } catch (MalformedURLException ex) {
+                throw new IllegalStateException(ex);
+            }
+        }
+
+        @Override
+        public String getMimeType() {
+            return JavaDataLoader.JAVA_MIME_TYPE;
+        }
+
+        @Override
+        public boolean isTypeOf(String mimeType) {
+            return JavaDataLoader.JAVA_MIME_TYPE.equals(mimeType);
         }
     }
 }
