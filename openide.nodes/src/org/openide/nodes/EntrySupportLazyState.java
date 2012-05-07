@@ -44,7 +44,6 @@ package org.openide.nodes;
 import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.openide.nodes.Children.Entry;
@@ -58,17 +57,41 @@ final class EntrySupportLazyState implements Cloneable {
     static final EntrySupportLazyState UNINITIALIZED = new EntrySupportLazyState();
     
     private EntrySupportLazyState() {
+        this(
+            false, null, false, false, 
+            Collections.<Entry>emptyList(),
+            Collections.<Entry>emptyList(),
+            Collections.<Entry,EntryInfo>emptyMap()
+        );
+    }
+
+    private EntrySupportLazyState(
+        boolean inited, 
+        Thread initThread, 
+        boolean initInProgress, 
+        boolean mustNotifySetEntries, 
+        List<Entry> entries, 
+        List<Entry> visibleEntries, 
+        Map<Entry, EntryInfo> entryToInfo
+    ) {
+        this.inited = inited;
+        this.initThread = initThread;
+        this.initInProgress = initInProgress;
+        this.mustNotifySetEntries = mustNotifySetEntries;
+        this.entries = entries;
+        this.visibleEntries = visibleEntries;
+        this.entryToInfo = entryToInfo;
     }
     
-    private boolean inited;
-    private Thread initThread;
-    private boolean initInProgress;
-    private boolean mustNotifySetEntries;
     
-    private List<Entry> entries = Collections.emptyList();
-    private List<Entry> visibleEntries = Collections.emptyList();
-    private Map<Entry, EntryInfo> entryToInfo = new HashMap<Entry, EntryInfo>();
+    private final boolean inited;
+    private final Thread initThread;
+    private final boolean initInProgress;
+    private final boolean mustNotifySetEntries;
     
+    private final List<Entry> entries;
+    private final List<Entry> visibleEntries;
+    private final Map<Entry, EntryInfo> entryToInfo;
     
     final boolean isInited() {
         return inited;
@@ -103,42 +126,54 @@ final class EntrySupportLazyState implements Cloneable {
     }
 
     final EntrySupportLazyState changeInited(boolean newInited) {
-        EntrySupportLazyState newESLS = cloneState();
-        newESLS.inited = newInited;
-        return newESLS;
+        return new EntrySupportLazyState(
+            newInited, initThread, 
+            initInProgress, mustNotifySetEntries, 
+            entries, visibleEntries, entryToInfo
+        );
     }
 
     final EntrySupportLazyState changeThread(Thread t) {
-        EntrySupportLazyState s = cloneState();
-        s.initThread = t;
-        return s;
+        return new EntrySupportLazyState(
+            inited, t, 
+            initInProgress, mustNotifySetEntries, 
+            entries, visibleEntries, entryToInfo
+        );
     }
 
     final EntrySupportLazyState changeProgress(boolean b) {
-        EntrySupportLazyState s = cloneState();
-        s.initInProgress = b;
-        return s;
+        return new EntrySupportLazyState(
+            inited, initThread, 
+            b, mustNotifySetEntries, 
+            entries, visibleEntries, entryToInfo
+        );
     }
     final EntrySupportLazyState changeMustNotify(boolean b) {
-        EntrySupportLazyState s = cloneState();
-        s.mustNotifySetEntries = b;
-        return s;
+        return new EntrySupportLazyState(
+            inited, initThread, 
+            initInProgress, b,
+            entries, visibleEntries, entryToInfo
+        );
     }
     final EntrySupportLazyState changeEntries(
         List<Entry> entries, 
         List<Entry> visibleEntries,
         Map<Entry, EntryInfo> entryToInfo
     ) {
-        EntrySupportLazyState state = cloneState();
-        if (entries != null) {
-            state.entries = entries;
+        if (entries == null) {
+            entries = this.entries;
         }
-        if (visibleEntries != null) {
-            state.visibleEntries = visibleEntries;
+        if (visibleEntries == null) {
+            visibleEntries = this.visibleEntries;
         }
-        if (entryToInfo != null) {
-            state.entryToInfo = entryToInfo;
+        if (entryToInfo == null) {
+            entryToInfo = this.entryToInfo;
         }
+        EntrySupportLazyState state = new EntrySupportLazyState(
+            inited, initThread, 
+            initInProgress, mustNotifySetEntries, 
+            entries, visibleEntries, entryToInfo
+        );
         int entriesSize = 0;
         int entryToInfoSize = 0;
         assert (entriesSize = state.getEntries().size()) >= 0;
