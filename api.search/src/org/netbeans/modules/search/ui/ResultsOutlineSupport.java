@@ -87,6 +87,7 @@ import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
+import org.openide.util.RequestProcessor;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.Lookups;
 
@@ -146,8 +147,7 @@ public class ResultsOutlineSupport {
                     if (outlineView.isDisplayable()) {
                         onAttach();
                     } else {
-                        onDetach();
-                        outlineView.removeHierarchyListener(this);
+                        checkDetached(this);
                     }
                 }
             }
@@ -165,6 +165,26 @@ public class ResultsOutlineSupport {
 
     private void onAttach() {
         outlineView.expandNode(resultsNode);
+    }
+
+    /**
+     * Check whether the search results panel has been removed and, if so,
+     * remove hierarchy listener and call {@link #onDetach} method.
+     *
+     * Method {@link #onDetach()} is not called directly because results panel
+     * can be detached a attached to another parent container when result tabs
+     * are created and closed. (TODO: Add panelClosed API method to displayer.)
+     */
+    private void checkDetached(final HierarchyListener listenerToRemove) {
+        RequestProcessor.getDefault().post(new Runnable() {
+            @Override
+            public void run() {
+                if (!outlineView.isDisplayable()) {
+                    outlineView.removeHierarchyListener(listenerToRemove);
+                    onDetach();
+                }
+            }
+        }, 10);
     }
 
     private synchronized void onDetach() {
