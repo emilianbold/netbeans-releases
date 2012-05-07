@@ -213,16 +213,12 @@ public final class ActionToGoalUtils {
                 names.add(map.getActionName());
             }
         }
-        for (MavenActionsProvider prov : Lookup.getDefault().lookupAll(MavenActionsProvider.class)) {
-            if (prov instanceof NbGlobalActionGoalProvider) {
                 // check the global actions defined, include only if not the same name as project-specific one.
-                for (NetbeansActionMapping map : ((NbGlobalActionGoalProvider) prov).getCustomMappings()) {
+                for (NetbeansActionMapping map : Lookup.getDefault().lookup(NbGlobalActionGoalProvider.class).getCustomMappings()) {
                     if (!names.contains(map.getActionName())) {
                         toRet.add(map);
                     }
                 }
-            }
-        }
         return toRet.toArray(new NetbeansActionMapping[toRet.size()]);
     }
 
