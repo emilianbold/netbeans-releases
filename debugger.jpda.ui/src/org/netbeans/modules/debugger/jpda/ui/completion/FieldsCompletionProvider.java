@@ -133,7 +133,9 @@ public class FieldsCompletionProvider implements CompletionProvider {
                                 List<? extends Element> enclosedElements = te.getEnclosedElements();
                                 for (Element elm : enclosedElements) {
                                     if (elm.getKind() == ElementKind.FIELD) {
-                                        resultSet.addItem(new ClassCompletionItem(elm.getSimpleName().toString(), caret, false));
+                                        ElementCompletionItem eci = new ElementCompletionItem(elm.getSimpleName().toString(), elm.getKind(), elm.getModifiers(), caret);
+                                        eci.setElementType(elm.asType());
+                                        resultSet.addItem(eci);
                                     }
                                 }
                             }
