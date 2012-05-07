@@ -165,35 +165,51 @@ final class EntrySupportLazyState implements Cloneable {
     }
     
     static final class EntryInfo {
-
         private final EntrySupportLazy lazy;
+        private final Entry entry;
         /**
-         * corresponding entry
+         * my index in list of entries
          */
-        final Entry entry;
+        private final int index;
         /**
          * cached node for this entry
          */
         private NodeRef refNode;
-        /**
-         * my index in list of entries
-         */
-        private int index = -1;
 
         public EntryInfo(EntrySupportLazy lazy, Entry entry) {
+            this(lazy, entry, -1, (NodeRef)null);
+        }
+        
+        private EntryInfo(EntrySupportLazy lazy, Entry entry, int index, NodeRef refNode) {
             this.lazy = lazy;
             this.entry = entry;
+            this.index = index;
+            this.refNode = refNode;
+        }
+        private EntryInfo(EntrySupportLazy lazy, Entry entry, int index, Node refNode) {
+            this.lazy = lazy;
+            this.entry = entry;
+            this.index = index;
+            this.refNode = new NodeRef(refNode, this);
         }
 
-        final EntryInfo duplicate(Node node) {
-            EntryInfo ei = new EntryInfo(lazy, entry);
-            ei.index = index;
-            ei.refNode = node != null ? new NodeRef(node, ei) : refNode;
-            return ei;
+        final EntryInfo changeNode(Node node) {
+            if (node != null) {
+                return new EntryInfo(lazy, entry, index, node);
+            } else {
+                return new EntryInfo(lazy, entry, index, refNode);
+            }
+        }
+        final EntryInfo changeIndex(int index) {
+            return new EntryInfo(lazy, entry, index, refNode);
         }
 
         final EntrySupportLazy lazy() {
             return lazy;
+        }
+        
+        final Entry entry() {
+            return entry;
         }
 
         private Object lock() {
@@ -288,13 +304,6 @@ final class EntrySupportLazyState implements Cloneable {
 
         final boolean isHidden() {
             return this.index == -2;
-        }
-
-        /**
-         * Sets the index of the entry.
-         */
-        final void setIndex(int i) {
-            this.index = i;
         }
 
         /**

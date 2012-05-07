@@ -41,7 +41,6 @@
  */
 package org.openide.nodes;
 
-import java.lang.ref.WeakReference;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -392,8 +391,9 @@ class EntrySupportLazy extends EntrySupport {
         Node newNode = null;
         if (info.isHidden()) {
             newNode = info.getNode(true, null);
+            newInfo = info.changeIndex(-1);
         } else {
-            newInfo = info.duplicate(null);
+            newInfo = info.changeNode(null);
             newNode = newInfo.getNode(true, null);
         }
         boolean newIsDummy = isDummyNode(newNode);
@@ -408,34 +408,37 @@ class EntrySupportLazy extends EntrySupport {
         if (!info.isHidden() || newIsDummy) {
             removeEntries(null, entry, newInfo, true, true);
             // refresh state
-            // XXX: note completely OK, as the newInfo and newNode come from above
+            // XXX: not completely OK, as the newInfo and newNode come from above
             state = internal.get();
-        }
-        Map<Entry,EntryInfo> new2Info = null;
-        if (newInfo != null) {
-            info = newInfo;
-            new2Info = new HashMap<Entry, EntryInfo>(state.getEntryToInfo());
-            new2Info.put(entry, info);
         }
         if (newIsDummy) {
             return;
         }
+        final Map<Entry,EntryInfo> new2Info = new HashMap<Entry, EntryInfo>(state.getEntryToInfo());
         // recompute indexes
         int index = 0;
-        info.setIndex(-1);
+        int changedIndex = -1;
         List<Entry> arr = new ArrayList<Entry>();
         for (Entry tmpEntry : state.getEntries()) {
-            EntryInfo tmpInfo = state.getEntryToInfo().get(tmpEntry);
+            EntryInfo tmpInfo = null;
+            if (tmpEntry.equals(entry)) {
+                tmpInfo = newInfo;
+                changedIndex = index;
+            }
+            if (tmpInfo == null) {
+                tmpInfo = state.getEntryToInfo().get(tmpEntry);
+            }
             if (tmpInfo.isHidden()) {
                 continue;
             }
-            tmpInfo.setIndex(index++);
+            new2Info.put(tmpEntry, tmpInfo.changeIndex(index++));
             arr.add(tmpEntry);
         }
+        assert changedIndex != -1;
         synchronized (LOCK) {
             setState(state, state.changeEntries(null, arr, new2Info));
         }
-        fireSubNodesChangeIdx(true, new int[]{info.getIndex()}, entry, createSnapshot(), null);
+        fireSubNodesChangeIdx(true, new int[]{changedIndex}, entry, createSnapshot(), null);
     }
 
     void notifySetEntries() {
@@ -477,12 +480,11 @@ class EntrySupportLazy extends EntrySupport {
                 EntryInfo info = newState2Info.get(entry);
                 if (info == null) {
                     info = new EntryInfo(this, entry);
-                    newState2Info.put(entry, info);
                     if (createNodes) {
                         Node n = info.getNode();
                         if (isDummyNode(n)) {
                             // mark as hidden
-                            info.setIndex(-2);
+                            newState2Info.put(entry, info.changeIndex(-2));
                             continue;
                         }
                     }
@@ -491,7 +493,7 @@ class EntrySupportLazy extends EntrySupport {
                 if (info.isHidden()) {
                     continue;
                 }
-                info.setIndex(inx++);
+                newState2Info.put(entry, info.changeIndex(inx++));
                 newStateVisibleEntries.add(entry);
             }
             synchronized (LOCK) {
@@ -525,8 +527,10 @@ class EntrySupportLazy extends EntrySupport {
         int permSize = 0;
         List<Entry> reorderedEntries = null;
         List<Entry> newVisible = null;
+        Map<Entry,EntryInfo> new2Infos = null;
+        final Map<Entry, EntryInfo> old2Infos = state.getEntryToInfo();
         for (Entry entry : newEntries) {
-            EntryInfo info = state.getEntryToInfo().get(entry);
+            final EntryInfo info = old2Infos.get(entry);
             if (info == null) {
                 // this entry has to be added
                 toAdd.add(entry);
@@ -534,6 +538,7 @@ class EntrySupportLazy extends EntrySupport {
                 if (reorderedEntries == null) {
                     reorderedEntries = new LinkedList<Entry>();
                     newVisible = new ArrayList<Entry>();
+                    new2Infos = new HashMap<Entry, EntryInfo>(old2Infos);
                 }
                 reorderedEntries.add(entry);
                 if (info.isHidden()) {
@@ -543,7 +548,7 @@ class EntrySupportLazy extends EntrySupport {
                 int oldPos = info.getIndex();
                 // already there => test if it should not be reordered
                 if (currentPos != oldPos) {
-                    info.setIndex(currentPos);
+                    new2Infos.put(entry, info.changeIndex(currentPos));
                     perm[oldPos] = 1 + currentPos;
                     permSize++;
                 }
@@ -565,7 +570,7 @@ class EntrySupportLazy extends EntrySupport {
             }
             // reorderedEntries are not null
             synchronized (LOCK) {
-                setState(state, state.changeEntries(reorderedEntries, newVisible, null));
+                setState(state, state.changeEntries(reorderedEntries, newVisible, new2Infos));
             }
             Node p = children.parent;
             if (p != null) {
@@ -669,9 +674,8 @@ class EntrySupportLazy extends EntrySupport {
                 EntryInfo info = newState2Info.get(entry);
                 if (info == null) {
                     info = new EntryInfo(this, entry);
-                    newState2Info.put(entry, info);
                 }
-                info.setIndex(i);
+                newState2Info.put(entry, info.changeIndex(i));
             }
             synchronized (LOCK) {
                 setState(state, state.changeEntries(newStateEntries, newStateVisibleEntries, newState2Info));
@@ -760,20 +764,24 @@ class EntrySupportLazy extends EntrySupport {
                     new2Infos = new HashMap<Entry, EntryInfo>(oldState2Info);
                 }
                 if (justHide) {
-                    EntryInfo dup = newEntryInfo != null ? newEntryInfo : info.duplicate(null);
-                    new2Infos.put(info.entry, dup);
-                    // mark as hidden
-                    dup.setIndex(-2);
+                    EntryInfo dup = newEntryInfo != null ? newEntryInfo : info.changeNode(null);
+                    // mark as hidden 
+                    new2Infos.put(info.entry(), dup.changeIndex(-2));
                 } else {
                     new2Infos.remove(entry);
                 }
             } else {
+                if (new2Infos == null) {
+                    new2Infos = new HashMap<Entry, EntryInfo>(oldState2Info);
+                }
                 if (!info.isHidden()) {
-                    newStateVisibleEntries.add(info.entry);
-                    info.setIndex(index++);
+                    newStateVisibleEntries.add(info.entry());
+                    new2Infos.put(info.entry(), info.changeIndex(index++));
+                } else {
+                    new2Infos.put(info.entry(), info.changeIndex(-2));
                 }
                 if (!justHide) {
-                    newEntries.add(info.entry);
+                    newEntries.add(info.entry());
                 }
             }
         }
