@@ -53,13 +53,17 @@ import org.openide.nodes.EntrySupportLazy.EntryInfo;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 final class EntrySupportLazyState implements Cloneable {
+    static final EntrySupportLazyState UNINITIALIZED = new EntrySupportLazyState();
+    
+    private EntrySupportLazyState() {
+    }
+    
     private boolean inited;
     private Thread initThread;
     private boolean initInProgress;
     private boolean mustNotifySetEntries;
     
     private List<Entry> entries = Collections.emptyList();
-    /** entries with node*/
     private List<Entry> visibleEntries = Collections.emptyList();
     private Map<Entry, EntryInfo> entryToInfo = new HashMap<Entry, EntryInfo>();
     
@@ -140,5 +144,21 @@ final class EntrySupportLazyState implements Cloneable {
         assert state.getEntries().size() == state.getEntryToInfo().size() : "Entries: " + state.getEntries().size() + "; vis. entries: " + EntrySupportLazy.notNull(state.getVisibleEntries()).size() + "; Infos: " + state.getEntryToInfo().size() + "; entriesSize: " + entriesSize + "; entryToInfoSize: " + entryToInfoSize + EntrySupportLazy.dumpEntriesInfos(state.getEntries(), state.getEntryToInfo()); // NOI18N
         return state;
     }
+
+    @Override
+    public String toString() {
+        int entriesSize = getEntries().size();
+        int entryToInfoSize = getEntryToInfo().size();
+        return 
     
+            "Inited: " + inited +
+            "\nThread: " + initThread +
+            "\nInProgress: " + initInProgress +
+            "\nMustNotify: " + mustNotifySetEntries +
+            "\nEntries: " + getEntries().size() + "; vis. entries: " + 
+            EntrySupportLazy.notNull(getVisibleEntries()).size() + "; Infos: " + 
+            getEntryToInfo().size() + "; entriesSize: " + 
+            entriesSize + "; entryToInfoSize: " + entryToInfoSize + 
+            EntrySupportLazy.dumpEntriesInfos(getEntries(), getEntryToInfo());
+    }
 }
