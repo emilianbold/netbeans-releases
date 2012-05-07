@@ -590,7 +590,7 @@ public class SelectorsLoader extends DefaultHandler {
                                 JsFunctionImpl function = new JsFunctionImpl((DeclarationScope) jQuery, jQuery, new IdentifierImpl(name, OffsetRange.NONE), params, OffsetRange.NONE);
                                 function.addReturnType(new TypeUsageImpl(returns, -1, true));
                                 jQuery.addProperty(name + "#" + added, function);
-                                System.out.println(name + "#" + added);
+//                                System.out.println(name + "#" + added);
                                 params.clear();
                             }
                             break;

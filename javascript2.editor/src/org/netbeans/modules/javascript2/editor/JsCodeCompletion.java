@@ -232,6 +232,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
         return help;
     }
 
+    
     @Override
     public ElementHandle resolveLink(String link, ElementHandle originalHandle) {
         return null;

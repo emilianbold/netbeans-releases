@@ -87,6 +87,15 @@ public class JQueryCodeCompletion {
             case GLOBAL:
             case EXPRESSION:
                 if (isJQuery(parserResult, lastTsOffset)) {
+//                    String functionName = findFunctionName(parserResult, lastTsOffset);
+//                    if (functionName != null) {
+//                        int paramIndex = findParamIndex(parserResult, lastTsOffset);
+//                        if (paramIndex > -1) {
+//                            System.out.println("paramIndex: " + paramIndex);
+//                            
+//                        }
+//                    }
+//                    System.out.println("functionName: " + functionName);
                     addSelectors(result, parserResult, prefix, lastTsOffset);
                 }
                 break;
@@ -100,6 +109,59 @@ public class JQueryCodeCompletion {
         return result;
     }
 
+    private int findParamIndex(ParserResult parserResult, int offset) {
+        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(parserResult.getSnapshot().getTokenHierarchy(), offset);
+        if (ts == null) {
+            return -1;
+        }
+        ts.move(offset);
+        if (!(ts.moveNext() && ts.movePrevious())) {
+            return -1;
+        }
+        Token<? extends JsTokenId> token = LexUtilities.findNext(ts, Arrays.asList(JsTokenId.WHITESPACE));
+        // count index of parameters
+        int paramIndex = 0;
+        while(token.id() != JsTokenId.EOL && token.id() != JsTokenId.BRACKET_LEFT_PAREN) {
+            if (token.id() == JsTokenId.OPERATOR_COMMA) {
+                paramIndex ++;
+            } else if (token.id() == JsTokenId.OPERATOR_DOT) {
+                // we are not inside ()
+                return -1;
+            }
+            token = LexUtilities.findNext(ts, Arrays.asList(JsTokenId.WHITESPACE));
+        }
+        if (token.id() == JsTokenId.BRACKET_LEFT_PAREN) {
+            return paramIndex;
+        }
+        return -1;
+    }
+    
+    private String findFunctionName(ParserResult parserResult, int offset) {
+        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(parserResult.getSnapshot().getTokenHierarchy(), offset);
+        if (ts == null) {
+            return null;
+        }
+        ts.move(offset);
+        if (!(ts.moveNext() && ts.movePrevious())) {
+            return null;
+        }
+        Token<? extends JsTokenId> token = LexUtilities.findNext(ts, Arrays.asList(JsTokenId.WHITESPACE));
+        while(token.id() != JsTokenId.EOL && token.id() != JsTokenId.BRACKET_LEFT_PAREN) {
+            if (token.id() == JsTokenId.OPERATOR_DOT) {
+                // we are not inside ()
+                return null;
+            }
+            token = LexUtilities.findNext(ts, Arrays.asList(JsTokenId.WHITESPACE));
+        }
+        if (token.id() == JsTokenId.BRACKET_LEFT_PAREN && ts.movePrevious()) {
+            token = LexUtilities.findNext(ts, Arrays.asList(JsTokenId.WHITESPACE));
+            if (token.id() == JsTokenId.IDENTIFIER){
+                return token.text().toString();
+            }
+        }
+        return null;
+    }
+    
     private boolean isJQuery(ParserResult parserResult, int offset) {
         TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(parserResult.getSnapshot().getTokenHierarchy(), offset);
         if (ts == null) {
