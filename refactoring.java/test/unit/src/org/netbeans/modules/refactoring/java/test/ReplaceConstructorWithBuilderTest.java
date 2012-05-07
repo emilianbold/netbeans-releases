@@ -76,6 +76,20 @@ public class ReplaceConstructorWithBuilderTest extends RefTestBase {
                 new File("test/Use.java", "package test; public class Use { private void t(java.util.List<String> ll) { Test t = new test.TestBuilder().setI(-1).createTest(); } }"),
                 new File("test/TestBuilder.java", "package test; public class TestBuilder { private int i; public TestBuilder() { } public TestBuilder setI(int i) { this.i = i; return this; } public Test createTest() { return new Test(i); } } "));
     }
+    
+    public void test212135() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("test/Test.java", "package test; public class Test { public Test() { } }"),
+                new File("test/Use.java", "package test; public class Use { private void t(java.util.List<String> ll) { Test t = new Test(); } }"));
+
+        performTest2("create");
+
+        assertContent(src,
+                new File("test/Test.java", "package test; public class Test { public Test() { } }"),
+                new File("test/Use.java", "package test; public class Use { private void t(java.util.List<String> ll) { Test t = new TestBuilder().createTest(); } }"),
+                new File("test/TestBuilder.java", "package test; public class TestBuilder { public TestBuilder() { } public Test createTest() { return new Test(); } } "));
+    }
+    
 
     private void performTest(final String factoryName) throws Exception {
         final ReplaceConstructorWithBuilderRefactoring[] r = new ReplaceConstructorWithBuilderRefactoring[1];
@@ -99,6 +113,34 @@ public class ReplaceConstructorWithBuilderTest extends RefTestBase {
                         "i",
                         false);
                 r[0].setSetters(Collections.singletonList(setter));
+            }
+        }, true);
+
+        RefactoringSession rs = RefactoringSession.create("Session");
+        Thread.sleep(1000);
+        r[0].prepare(rs);
+        rs.doRefactoring(true);
+
+        IndexingManager.getDefault().refreshIndex(src.getURL(), null);
+        SourceUtils.waitScanFinished();
+        //assertEquals(false, TaskCache.getDefault().isInError(src, true));
+    }
+    
+    private void performTest2(final String factoryName) throws Exception {
+        final ReplaceConstructorWithBuilderRefactoring[] r = new ReplaceConstructorWithBuilderRefactoring[1];
+        FileObject testFile = src.getFileObject("test/Test.java");
+
+        JavaSource.forFileObject(testFile).runUserActionTask(new Task<CompilationController>() {
+
+            public void run(CompilationController parameter) throws Exception {
+                parameter.toPhase(JavaSource.Phase.RESOLVED);
+                CompilationUnitTree cut = parameter.getCompilationUnit();
+
+                MethodTree var = (MethodTree) ((ClassTree) cut.getTypeDecls().get(0)).getMembers().get(0);
+
+                TreePath tp = TreePath.getPath(cut, var);
+                r[0] = new ReplaceConstructorWithBuilderRefactoring(TreePathHandle.create(tp, parameter));
+                r[0].setBuilderName("test.TestBuilder");
             }
         }, true);
 
