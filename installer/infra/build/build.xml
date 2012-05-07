@@ -2248,33 +2248,60 @@ jarsigner.storepass=${jarsigner.storepass}
         <!-- JavaSE + JDK7 bundles -->
 	<antcall target="generate-jdk-bundle-single">
 	    <param name="jdk.bundle.files.prefix"     value="jdk-7u4"/>
-	    <param name="jdk.full.version"            value="1.7.0.4.20"/>
             <param name="bundled.jvm.file.prefix"     value="jre-7"/>
 	    <param name="license.resource"            value="$S{nbi.overall.license.jdk7.resource}"/>
 	</antcall>
     </target>
 
     <target name="generate-jdk-bundle-single">
+        <for-each list="${bundle.jdk.platform}" separator="," property="bundle.jdk.platform.single">
+	    <antcall target="generate-jdk-bundle-single-${bundle.jdk.platform.single}"/>
+        </for-each>
+    </target>
+    <target name="generate-jdk-bundle-single-windows">
+        <condition property="jdk.full.version.platform" value="${jdk.full.version}" else="1.7.0.4.22">
+            <isset property="jdk.full.version"/>
+        </condition>
 	<antcall target="generate-jdk-bundle">
 		<param name="bundle.platform"           value="windows"/>
 		<param name="bundle.extension"		value=".exe"/>
 		<param name="bundled.jvm.file.suffix"   value="windows-i586.exe"/>
+	        <param name="jdk.full.version"          value="${jdk.full.version.platform}"/>
 	</antcall>
+    </target>
+    <target name="generate-jdk-bundle-single-linux">
+        <condition property="jdk.full.version.platform" value="${jdk.full.version}" else="1.7.0.4.20">
+            <isset property="jdk.full.version"/>
+        </condition>
 	<antcall target="generate-jdk-bundle">
 		<param name="bundle.platform"           value="linux"/>
 		<param name="bundle.extension"		value=".sh"/>
 		<param name="bundled.jvm.file.suffix"   value="linux-i586.bin"/>
+	        <param name="jdk.full.version"          value="${jdk.full.version.platform}"/>
 	</antcall>
-
+    </target>
+    
+    <target name="generate-jdk-bundle-single-solaris-x86">
+        <condition property="jdk.full.version.platform" value="${jdk.full.version}" else="1.7.0.4.20">
+            <isset property="jdk.full.version"/>
+        </condition>
 	<antcall target="generate-jdk-bundle">
 		<param name="bundle.platform"           value="solaris-x86"/>
 		<param name="bundle.extension"		value=".sh"/>
 		<param name="bundled.jvm.file.suffix"   value="solaris-i586.sh"/>
+	        <param name="jdk.full.version"          value="${jdk.full.version.platform}"/>
 	</antcall>
+    </target>
+
+    <target name="generate-jdk-bundle-single-solaris-sparc">
+        <condition property="jdk.full.version.platform" value="${jdk.full.version}" else="1.7.0.4.20">
+            <isset property="jdk.full.version"/>
+        </condition>
 	<antcall target="generate-jdk-bundle">
 		<param name="bundle.platform"           value="solaris-sparc"/>
 		<param name="bundle.extension"		value=".sh"/>
 		<param name="bundled.jvm.file.suffix"   value="solaris-sparc.sh"/>
+	        <param name="jdk.full.version"          value="${jdk.full.version.platform}"/>
 	</antcall>
     </target>
 
