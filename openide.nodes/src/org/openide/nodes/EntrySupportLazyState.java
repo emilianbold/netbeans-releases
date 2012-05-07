@@ -54,7 +54,7 @@ import org.openide.util.Utilities;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-final class EntrySupportLazyState implements Cloneable {
+final class EntrySupportLazyState {
     static final EntrySupportLazyState UNINITIALIZED = new EntrySupportLazyState();
     
     private EntrySupportLazyState() {
