@@ -43,6 +43,7 @@
 package org.netbeans.modules.hudson.maven;
 
 import java.io.InputStream;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.modules.maven.spi.actions.AbstractMavenActionsProvider;
 import org.netbeans.modules.maven.spi.actions.MavenActionsProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
@@ -53,8 +54,10 @@ import org.netbeans.spi.project.ProjectServiceProvider;
 @ProjectServiceProvider(service=MavenActionsProvider.class, projectType="org-netbeans-modules-maven/hpi")
 public class HpiActionGoalProvider extends AbstractMavenActionsProvider {
 
+    @StaticResource private static final String MAPPINGS = "org/netbeans/modules/hudson/maven/action-mappings.xml";
+
     @Override protected InputStream getActionDefinitionStream() {
-        return HpiActionGoalProvider.class.getResourceAsStream("action-mappings.xml"); // NOI18N
+        return HpiActionGoalProvider.class.getClassLoader().getResourceAsStream(MAPPINGS);
     }
 
 }

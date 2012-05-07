@@ -43,6 +43,7 @@
 package org.netbeans.modules.maven.j2ee;
 
 import java.io.InputStream;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.spi.actions.AbstractMavenActionsProvider;
@@ -68,13 +69,11 @@ public class J2eeActionsProvider extends AbstractMavenActionsProvider {
     private static final String ACT_RUN = ActionProvider.COMMAND_RUN_SINGLE + ".deploy";
     private static final String ACT_DEBUG = ActionProvider.COMMAND_DEBUG_SINGLE + ".deploy";
     private static final String ACT_PROFILE = ActionProvider.COMMAND_PROFILE_SINGLE + ".deploy";
+    @StaticResource private static final String MAPPINGS = "org/netbeans/modules/maven/j2ee/webActionMappings.xml";
 
     @Override
-    public InputStream getActionDefinitionStream() {
-        String path = "/org/netbeans/modules/maven/j2ee/webActionMappings.xml"; //NOI18N
-        InputStream in = getClass().getResourceAsStream(path);
-        assert in != null : "no instream for " + path;  //NOI18N
-        return in;
+    protected InputStream getActionDefinitionStream() {
+        return J2eeActionsProvider.class.getClassLoader().getResourceAsStream(MAPPINGS);
     }
 
     @Override
