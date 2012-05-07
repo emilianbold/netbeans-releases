@@ -135,7 +135,11 @@ public class MethodsCompletionProvider implements CompletionProvider {
                                 for (Element elm : enclosedElements) {
                                     ElementKind kind = elm.getKind();
                                     if (kind == ElementKind.METHOD || kind == ElementKind.CONSTRUCTOR) {
-                                        ElementCompletionItem eci = new ElementCompletionItem(elm.getSimpleName().toString(), kind, elm.getModifiers(), caret);
+                                        String name = elm.getSimpleName().toString();
+                                        if ("<init>".equals(name)) {    // NOI18N
+                                            name = te.getSimpleName().toString();
+                                        }
+                                        ElementCompletionItem eci = new ElementCompletionItem(name, kind, elm.getModifiers(), caret);
                                         eci.setExecutableElement((ExecutableElement) elm);
                                         resultSet.addItem(eci);
                                     }
