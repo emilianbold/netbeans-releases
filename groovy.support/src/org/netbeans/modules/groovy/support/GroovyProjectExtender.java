@@ -63,7 +63,6 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.modules.groovy.support.customizer.GroovyCustomizerPanel;
 import org.netbeans.modules.groovy.support.spi.GroovyFeature;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -96,19 +95,9 @@ public class GroovyProjectExtender implements GroovyFeature {
 
     private final Project project;
     //private org.netbeans.modules.gsfpath.api.classpath.ClassPath gsfClassPath;
-    private GroovyCustomizerPanel panel;
 
     public GroovyProjectExtender(Project project) {
         this.project = project;
-    }
-
-    public GroovyCustomizerPanel createPanel() {
-        panel = new GroovyCustomizerPanel(this);
-        return panel;
-    }
-
-    public GroovyCustomizerPanel getPanel() {
-        return panel;
     }
 
     /**
