@@ -43,20 +43,21 @@ package org.netbeans.modules.groovy.grails.settings;
 
 import java.awt.Component;
 import java.awt.Cursor;
-import javax.swing.JFileChooser;
-import javax.swing.SwingUtilities;
-import org.openide.DialogDisplayer;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import javax.swing.JFileChooser;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.groovy.grails.RuntimeHelper;
 import org.netbeans.modules.groovy.support.spi.GroovyOptionsSubpanel;
+import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.ServiceProvider;
 
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.groovy.support.spi.GroovyOptionsSubpanel.class)
+@ServiceProvider(service = GroovyOptionsSubpanel.class)
 public final class GrailsRuntimePanel extends javax.swing.JPanel implements GroovyOptionsSubpanel {
 
     private final GrailsSettings settings;
@@ -85,7 +86,6 @@ public final class GrailsRuntimePanel extends javax.swing.JPanel implements Groo
         grailsHomeLocation = new javax.swing.JTextField();
         chooseDir = new javax.swing.JButton();
         jLabel2 = new javax.swing.JLabel();
-        linkLabel = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
 
         org.openide.awt.Mnemonics.setLocalizedText(chooseDir, org.openide.util.NbBundle.getMessage(GrailsRuntimePanel.class, "SupportPanel.chooseDir.text")); // NOI18N
@@ -96,17 +96,15 @@ public final class GrailsRuntimePanel extends javax.swing.JPanel implements Groo
         });
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(GrailsRuntimePanel.class, "SupportPanel.jLabel2.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(linkLabel, "<html><a href=\"http://www.grails.org\">http://www.grails.org</a></html>"); // NOI18N
-        linkLabel.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mousePressed(java.awt.event.MouseEvent evt) {
-                linkLabelMousePressed(evt);
+        jLabel2.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                jLabel2MouseEntered(evt);
             }
             public void mouseExited(java.awt.event.MouseEvent evt) {
-                linkLabelMouseExited(evt);
+                jLabel2MouseExited(evt);
             }
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                linkLabelMouseEntered(evt);
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                jLabel2MousePressed(evt);
             }
         });
 
@@ -120,13 +118,11 @@ public final class GrailsRuntimePanel extends javax.swing.JPanel implements Groo
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel5)
-                    .addComponent(grailsHomeLocation, javax.swing.GroupLayout.DEFAULT_SIZE, 426, Short.MAX_VALUE))
+                    .addComponent(grailsHomeLocation, javax.swing.GroupLayout.DEFAULT_SIZE, 747, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(chooseDir))
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jLabel2)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(linkLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -138,9 +134,7 @@ public final class GrailsRuntimePanel extends javax.swing.JPanel implements Groo
                     .addComponent(chooseDir)
                     .addComponent(grailsHomeLocation, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel2)
-                    .addComponent(linkLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addComponent(jLabel2))
         );
 
         grailsHomeLocation.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GrailsRuntimePanel.class, "SupportPanel.grailsHomeLocation.accessibleName")); // NOI18N
@@ -168,30 +162,33 @@ public final class GrailsRuntimePanel extends javax.swing.JPanel implements Groo
         
     }//GEN-LAST:event_chooseDirActionPerformed
 
-    private void linkLabelMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_linkLabelMouseEntered
+    private void jLabel2MouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel2MouseEntered
         setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-    }//GEN-LAST:event_linkLabelMouseEntered
+    }//GEN-LAST:event_jLabel2MouseEntered
 
-    private void linkLabelMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_linkLabelMouseExited
+    private void jLabel2MouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel2MouseExited
         setCursor(Cursor.getDefaultCursor());
-    }//GEN-LAST:event_linkLabelMouseExited
+    }//GEN-LAST:event_jLabel2MouseExited
 
-    private void linkLabelMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_linkLabelMousePressed
+    private void jLabel2MousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel2MousePressed
         try {
             HtmlBrowser.URLDisplayer.getDefault().showURL(new URL("http://www.grails.org")); // NOI18N
         } catch (MalformedURLException murle) {
             Exceptions.printStackTrace(murle);
         }
-    }//GEN-LAST:event_linkLabelMousePressed
+    }//GEN-LAST:event_jLabel2MousePressed
 
+    @Override
     public Component getComponent() {
         return this;
     }
 
+    @Override
     public void load() {
         grailsHomeLocation.setText(settings.getGrailsBase());
     }
 
+    @Override
     public void store() {
         String location = grailsHomeLocation.getText();
         if ("".equals(location.trim())) { // NOI18N
@@ -205,6 +202,7 @@ public final class GrailsRuntimePanel extends javax.swing.JPanel implements Groo
         }
     }
 
+    @Override
     public boolean valid() {
         // TODO check whether form is consistent and complete
         return true;
@@ -215,7 +213,6 @@ public final class GrailsRuntimePanel extends javax.swing.JPanel implements Groo
     private javax.swing.JTextField grailsHomeLocation;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel linkLabel;
     // End of variables declaration//GEN-END:variables
 
 }
