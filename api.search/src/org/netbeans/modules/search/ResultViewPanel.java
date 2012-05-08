@@ -233,4 +233,9 @@ class ResultViewPanel extends JPanel implements Lookup.Provider {
     public Lookup getLookup() {
         return lookup;
     }
+
+    @Override
+    public String getToolTipText() {
+        return visualComponent.getToolTipText();
+    }
 }

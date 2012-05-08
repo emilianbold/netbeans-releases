@@ -1507,7 +1507,7 @@ public class ChildrenKeysTest extends NbTestCase {
         lch.assertLazyCount("Counter shouldstill be 3", 3);
         if (lazy()) {
             assertEquals("Size is 5", 5, ta.getChildren().getNodesCount());
-            assertTrue("Child is empty", ta.getChildren().getNodeAt(4) instanceof EntrySupport.Lazy.DummyNode);
+            assertTrue("Child is empty", ta.getChildren().getNodeAt(4) instanceof EntrySupportLazy.DummyNode);
             assertEquals("We have just four children", 4, ta.getChildren().getNodesCount());
             assertEquals("Three nodes created, still", 3, lch.cnt);
             l.assertRemoveEvent("Removal of 4th node", new int[] { 4 });
@@ -2082,8 +2082,8 @@ public class ChildrenKeysTest extends NbTestCase {
             public void childrenRemoved(NodeMemberEvent ev) {
                 List<Node> prevSnapshot = ev.getPrevSnapshot();
                 if (lazy()) {
-                    EntrySupport.Lazy.LazySnapshot ls = (EntrySupport.Lazy.LazySnapshot) snapshot;
-                    EntrySupport.Lazy.LazySnapshot pls = (EntrySupport.Lazy.LazySnapshot) prevSnapshot;
+                    EntrySupportLazy.LazySnapshot ls = (EntrySupportLazy.LazySnapshot) snapshot;
+                    EntrySupportLazy.LazySnapshot pls = (EntrySupportLazy.LazySnapshot) prevSnapshot;
                     assertEquals(ls.entries, pls.entries);
                 } else {
                     assertEquals(snapshot, prevSnapshot);
@@ -2151,8 +2151,8 @@ public class ChildrenKeysTest extends NbTestCase {
             public void childrenRemoved(NodeMemberEvent ev) {
                 List<Node> prevSnapshot = ev.getPrevSnapshot();
                 if (lazy()) {
-                    EntrySupport.Lazy.LazySnapshot ls = (EntrySupport.Lazy.LazySnapshot) snapshot;
-                    EntrySupport.Lazy.LazySnapshot pls = (EntrySupport.Lazy.LazySnapshot) prevSnapshot;
+                    EntrySupportLazy.LazySnapshot ls = (EntrySupportLazy.LazySnapshot) snapshot;
+                    EntrySupportLazy.LazySnapshot pls = (EntrySupportLazy.LazySnapshot) prevSnapshot;
                     assertEquals(ls.entries, pls.entries);
                 } else {
                     assertEquals(snapshot, prevSnapshot);
