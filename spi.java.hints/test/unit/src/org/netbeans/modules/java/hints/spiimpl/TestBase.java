@@ -73,14 +73,15 @@ public class TestBase extends NbTestCase {
         super.setUp();
         SourceUtilsTestUtil.prepareTest(new String[0], new Object[0]);
         TreeLoader.DISABLE_CONFINEMENT_TEST = true;
-    }
-
-    protected void prepareTest(String fileName, String code) throws Exception {
         clearWorkDir();
 
         FileUtil.refreshFor(File.listRoots());
+    }
 
-        FileObject workFO = FileUtil.toFileObject(getWorkDir());
+    private int workDirPart = 0;
+    
+    protected void prepareTest(String fileName, String code) throws Exception {
+        FileObject workFO = FileUtil.createFolder(new File(getWorkDir(), String.valueOf(workDirPart++)));
 
         assertNotNull(workFO);
 
