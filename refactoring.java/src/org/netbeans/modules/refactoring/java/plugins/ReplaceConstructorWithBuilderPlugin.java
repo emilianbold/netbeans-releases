@@ -192,7 +192,7 @@ public class ReplaceConstructorWithBuilderPlugin implements RefactoringPlugin {
                             Collections.<TypeParameterTree>emptyList(),
                             Collections.<VariableTree>emptyList(),
                             Collections.<ExpressionTree>emptyList(),
-                            "{return new " + parent.getSimpleName() + "(" + args + ");}", //NOI18N
+                            "{return new " + parent.getSimpleName() + "(" + (args==null?"":args) + ");}", //NOI18N
                             null));
 
 
