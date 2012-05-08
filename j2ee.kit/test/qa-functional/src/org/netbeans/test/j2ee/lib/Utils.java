@@ -67,6 +67,7 @@ import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.EventTool;
+import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
@@ -108,7 +109,12 @@ public class Utils {
     }
 
     public static void prepareDatabase() {
-        new Node(new RuntimeTabOperator().getRootNode(), "Databases|/sample").performPopupActionNoBlock("Connect");
+        try {
+            new Node(new RuntimeTabOperator().getRootNode(), "Databases|/sample").performPopupActionNoBlock("Connect");
+        } catch (TimeoutExpiredException tee) {
+            // try once more to prevent re-selection of Databases node by IDE and "Has right selection" error
+            new Node(new RuntimeTabOperator().getRootNode(), "Databases|/sample").performPopupActionNoBlock("Connect");
+        }
     }
 
     public void assertFiles(File dir, String fileNames[], String goldenFilePrefix) throws IOException {
