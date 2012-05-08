@@ -41,19 +41,23 @@
  */
 package org.netbeans.modules.tasks.ui.dashboard;
 
-import org.netbeans.modules.tasks.ui.LinkButton;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import javax.swing.*;
 import org.netbeans.modules.bugtracking.api.Issue;
+import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.tasks.ui.LinkButton;
 import org.netbeans.modules.tasks.ui.actions.Actions;
-import org.netbeans.modules.tasks.ui.model.Category;
 import org.netbeans.modules.tasks.ui.actions.CloseCategoryNodeAction;
 import org.netbeans.modules.tasks.ui.actions.DummyAction;
 import org.netbeans.modules.tasks.ui.actions.OpenCategoryNodeAction;
 import org.netbeans.modules.tasks.ui.filter.AppliedFilters;
+import org.netbeans.modules.tasks.ui.model.Category;
 import org.netbeans.modules.tasks.ui.treelist.TreeLabel;
 import org.netbeans.modules.tasks.ui.treelist.TreeListNode;
 import org.netbeans.modules.tasks.ui.utils.Utils;
@@ -73,10 +77,12 @@ public class CategoryNode extends TreeListNode implements Comparable<CategoryNod
     private TreeLabel lblName;
     private final Object LOCK = new Object();
     private LinkButton btnRefresh;
-    private TreeLabel counts;
+    private TreeLabel lblCounts;
     private CloseCategoryNodeAction closeCategoryAction;
     private OpenCategoryNodeAction openCategoryAction;
     private boolean opened;
+    private boolean refresh;
+    private ProgressLabel lblProgress;
 
     public CategoryNode(Category category) {
         this(category, true);
@@ -86,19 +92,42 @@ public class CategoryNode extends TreeListNode implements Comparable<CategoryNod
         super(true, null);
         this.category = category;
         this.opened = opened;
+        this.refresh = false;
         updateNodes();
     }
 
     @Override
     protected List<TreeListNode> createChildren() {
+        if (refresh) {
+            refreshTasks();
+            refresh = false;
+        }
+        updateNodes();
         List<TaskNode> children = getFilteredTaskNodes();
         Collections.sort(children);
         return new ArrayList<TreeListNode>(children);
     }
 
     void updateContent() {
-        updateNodes();
         refreshChildren();
+    }
+
+    public void refreshContent() {
+        refresh = true;
+        updateContent();
+    }
+
+    @Override
+    protected void childrenLoadingStarted() {
+        lblCounts.setVisible(false);
+        lblProgress.setVisible(true);
+    }
+
+    @Override
+    protected void childrenLoadingFinished() {
+        lblProgress.setVisible(false);
+        lblCounts.setVisible(true);
+        lblCounts.setText(getCountText());
     }
 
     @Override
@@ -113,19 +142,21 @@ public class CategoryNode extends TreeListNode implements Comparable<CategoryNod
                 lblName = new TreeLabel(getCategory().getName());
                 panel.add(lblName, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
 
-                counts = new TreeLabel(getCountText());
-                panel.add(counts, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
-
-                panel.add(new JLabel(), new GridBagConstraints(3, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+                lblCounts = new TreeLabel(getCountText());
+                panel.add(lblCounts, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
+                lblProgress = createProgressLabel();
+                panel.add(lblProgress, new GridBagConstraints(3, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
+                lblProgress.setVisible(false);
+                panel.add(new JLabel(), new GridBagConstraints(4, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 
                 btnRefresh = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/refresh.png", true), new DummyAction()); //NOI18N
                 btnRefresh.setToolTipText(NbBundle.getMessage(CategoryNode.class, "LBL_Refresh")); //NOI18N
-                panel.add(btnRefresh, new GridBagConstraints(4, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 3, 0, 0), 0, 0));
+                panel.add(btnRefresh, new GridBagConstraints(5, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 3, 0, 0), 0, 0));
             }
             lblName.setText(Utils.getCategoryDisplayText(this));
             lblName.setForeground(foreground);
-            counts.setText(getCountText());
-            counts.setForeground(foreground);
+            lblCounts.setText(getCountText());
+            lblCounts.setForeground(foreground);
             return panel;
         }
     }
@@ -175,7 +206,7 @@ public class CategoryNode extends TreeListNode implements Comparable<CategoryNod
     public final Action[] getPopupActions() {
         List<Action> actions = new ArrayList<Action>();
         actions.add(getCategoryAction());
-        actions.addAll(Actions.getCategoryPopupActions(category));
+        actions.addAll(Actions.getCategoryPopupActions(this));
         return actions.toArray(new Action[actions.size()]);
     }
 
@@ -266,5 +297,29 @@ public class CategoryNode extends TreeListNode implements Comparable<CategoryNod
         String bundleName = DashboardViewer.getInstance().expandNodes() ? "LBL_Matches" : "LBL_Total"; //NOI18N
         return "(" + getTotalCount() + " " + NbBundle.getMessage(CategoryNode.class, bundleName)
                 + " | " + getModifiedCount() + " " + NbBundle.getMessage(CategoryNode.class, "LBL_Changed") + ")"; //NOI18N
+    }
+
+    private void refreshTasks() {
+        Map<Repository, List<String>> map = getTasksToRepository(category.getTasks());
+        Set<Repository> repositoryKeys = map.keySet();
+        for (Repository repository : repositoryKeys) {
+            List<String> ids = map.get(repository);
+            repository.getIssues(ids.toArray(new String[ids.size()]));
+        }
+    }
+
+    private Map<Repository, List<String>> getTasksToRepository(List<Issue> tasks) {
+        Map<Repository, List<String>> map = new HashMap<Repository, List<String>>();
+        for (Issue issue : tasks) {
+            Repository repositoryKey = issue.getRepository();
+            if (map.containsKey(repositoryKey)) {
+                map.get(repositoryKey).add(issue.getID());
+            } else {
+                ArrayList<String> list = new ArrayList<String>();
+                list.add(issue.getID());
+                map.put(repositoryKey, list);
+            }
+        }
+        return map;
     }
 }
