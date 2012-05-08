@@ -771,7 +771,10 @@ If you are sure you want to build with JDK 7+ anyway, use: -Dpermit.jdk7.builds=
         <antcall target="javadoc">
             <param name="netbeans.javadoc.dir" location="${maven.tmp.javadoc}"/>
         </antcall>
-        <exec executable="mvn" failonerror="true">
+        <condition property=".bat" value=".bat" else="">
+          <os family="windows"/>
+        </condition>
+        <exec executable="${maven.embedder.dir}/maven/bin/mvn${.bat}" failonerror="true">
             <arg value="-DforcedVersion=SNAPSHOT"/>
             <arg value="-DdefineCluster=false"/>
             <arg value="-DdependencyRepositoryId=netbeans-snapshot"/>
