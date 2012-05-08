@@ -211,7 +211,7 @@ final class SuperOnePassCompileWorker extends CompileWorker {
             for (Pair<CompilationUnitTree, CompileTuple> unit : units) {
                 CompileTuple active = unit.second;
                 if (aptEnabled) {
-                    JavaCustomIndexer.addAptGenerated(context, javaContext, active.indexable.getRelativePath(), aptGenerated);
+                    JavaCustomIndexer.addAptGenerated(context, javaContext, active, aptGenerated);
                 }
                 List<TypeElement> activeTypes = new ArrayList<TypeElement>();
                 for (Tree tree : unit.first.getTypeDecls()) {

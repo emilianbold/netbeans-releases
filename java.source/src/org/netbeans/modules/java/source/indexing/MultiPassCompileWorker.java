@@ -256,7 +256,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                     continue;
                 }
                 jt.analyze(types);
-                boolean aptGenerated = aptEnabled ? JavaCustomIndexer.addAptGenerated(context, javaContext, active.indexable.getRelativePath(), previous.aptGenerated) : false;
+                boolean aptGenerated = aptEnabled ? JavaCustomIndexer.addAptGenerated(context, javaContext, active, previous.aptGenerated) : false;
                 if (mem.isLowMemory()) {
                     dumpSymFiles(fileManager, jt, previous.createdFiles);
                     mem.isLowMemory();

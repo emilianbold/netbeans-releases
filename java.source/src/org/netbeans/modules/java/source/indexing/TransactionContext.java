@@ -48,6 +48,7 @@ import java.util.Map;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.java.source.parsing.FileManagerTransaction;
+import org.netbeans.modules.java.source.parsing.ProcessorGenerated;
 import org.netbeans.modules.java.source.usages.ClassIndexEventsTransaction;
 import org.netbeans.modules.java.source.usages.PersistentIndexTransaction;
 import org.netbeans.modules.parsing.spi.indexing.BinaryIndexer;
@@ -221,6 +222,9 @@ public final class TransactionContext {
                 hasCache ?
                     FileManagerTransaction.writeBack(root):
                     FileManagerTransaction.writeThrough()).
+            register(
+                ProcessorGenerated.class,
+                ProcessorGenerated.create()).
             register(
                 PersistentIndexTransaction.class, 
                 PersistentIndexTransaction.create()).

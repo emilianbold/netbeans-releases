@@ -228,8 +228,7 @@ public class VisualizerNodeEventsOrderTest extends NbTestCase {
     
     
     final boolean isDummyNode(TreeNode visNode) {
-        Node node = ((VisualizerNode)(visNode)).node;
-        return node.getClass().getName().endsWith("EntrySupport$Lazy$DummyNode");
+        return VisualizerNodeTest.isDummyNode(visNode);
     }
     
     static class LazyChildren extends Children.Keys<String> {
