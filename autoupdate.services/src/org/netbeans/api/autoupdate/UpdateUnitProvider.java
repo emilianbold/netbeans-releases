@@ -136,6 +136,16 @@ public final class UpdateUnitProvider {
         return impl.getSourceDescription();
     }
 
+    /** The description of content providing by this provider. Usually associated with {@link #getSourceIcon()}.
+     * In case no special description is found, a general one is returned.
+     * 
+     * @return textual description of content or null
+     * @since 1.33
+     */
+    public String getContentDescription() {
+        return impl.getContentDescription();
+    }
+
     /** It's special support for <code>UpdateProvider</code> based on Autoupdate Catalog.
      * It's most kind of Update Providers and have a special support in UI.
      * 

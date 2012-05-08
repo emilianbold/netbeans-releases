@@ -118,7 +118,7 @@ public class AutoupdateCatalogParser extends DefaultHandler {
     private static final Logger ERR = Logger.getLogger (AutoupdateCatalogParser.class.getName ());
     
     private static enum ELEMENTS {
-        module_updates, module_group, notification, module, description,
+        module_updates, module_group, notification, content_description, module, description,
         module_notification, external_package, manifest, l10n, license
     }
     
@@ -258,6 +258,7 @@ public class AutoupdateCatalogParser extends DefaultHandler {
     private Stack<ModuleDescriptor> currentModule = new Stack<ModuleDescriptor> ();
     private Stack<Map <String,String>> currentLicense = new Stack<Map <String,String>> ();
     private Stack<String> currentNotificationUrl = new Stack<String> ();
+    private Stack<String> currentContentDescriptionUrl = new Stack<String> ();
     private Map<String, UpdateLicenseImpl> name2license = new HashMap<String, UpdateLicenseImpl> ();
     private List<String> lines = new ArrayList<String> ();
     private int bufferInitSize = 0;
@@ -305,6 +306,26 @@ public class AutoupdateCatalogParser extends DefaultHandler {
                                 "<a name=\"autoupdate_catalog_parser\"/>"; // NOI18N
                     }
                     provider.setNotification (notification);
+                }
+                currentNotificationUrl.pop ();
+                break;
+            case content_description :
+                // write catalog notification
+                if (this.provider != null && ! lines.isEmpty ()) {
+                    StringBuilder sb = new StringBuilder (bufferInitSize);
+                    for (String line : lines) {
+                        sb.append (line);
+                    }
+                    String contentDescription = sb.toString ();
+                    String contentDescriptionUrl = currentContentDescriptionUrl.peek ();
+                    if (contentDescriptionUrl != null && contentDescriptionUrl.length () > 0) {
+                        contentDescription += (contentDescription.length () > 0 ? "<br>" : "") + // NOI18N
+                                "<a name=\"update_center_content_description\" href=\"" + contentDescriptionUrl + "\">" + contentDescriptionUrl + "</a>"; // NOI18N
+                    } else {
+                        contentDescription += (contentDescription.length () > 0 ? "<br>" : "") +
+                                "<a name=\"update_center_content_description\"/>"; // NOI18N
+                    }
+                    provider.setContentDescription(contentDescription);
                 }
                 currentNotificationUrl.pop ();
                 break;

@@ -1,7 +1,7 @@
 <!-- -//NetBeans//DTD Autoupdate Catalog 2.7//EN -->
 <!-- XML representation of Autoupdate Modules/Updates Catalog -->
 
-<!ELEMENT module_updates ((notification?, (module_group|module)*, license*)|error)>
+<!ELEMENT module_updates ((notification?, content_description?, (module_group|module)*, license*)|error)>
 <!ATTLIST module_updates timestamp CDATA #REQUIRED>
 
 <!ELEMENT module_group ((module_group|module)*)>
@@ -9,6 +9,9 @@
 
 <!ELEMENT notification (#PCDATA)>
 <!ATTLIST notification url CDATA #IMPLIED>
+
+<!ELEMENT content_description (#PCDATA)>
+<!ATTLIST content_description url CDATA #IMPLIED>
 
 <!ELEMENT module (description?, module_notification?, external_package*, (manifest | l10n) )>
 <!ATTLIST module codenamebase CDATA #REQUIRED
