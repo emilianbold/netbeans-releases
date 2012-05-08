@@ -780,7 +780,7 @@ If you are sure you want to build with JDK 7+ anyway, use: -Dpermit.jdk7.builds=
             <arg value="-DnetbeansNbmDirectory=${maven.tmp.nbms}"/>
             <arg value="-DnetbeansSourcesDirectory=${maven.tmp.sources}"/>
             <arg value="-DnetbeansJavadocDirectory=${maven.tmp.javadoc}"/>
-            <arg value="org.codehaus.mojo:nbm-maven-plugin:3.7-SNAPSHOT:populate-repository"/>
+            <arg value="org.codehaus.mojo:nbm-maven-plugin:3.7:populate-repository"/>
         </exec>
     </target>
 
