@@ -1202,25 +1202,27 @@ class WSTransformer extends DefaultTreePathVisitor {
     private ASTNode previousNode(ASTNode node) {
         ASTNode previous = null;
         List<ASTNode> path = getPath();
-        if (path.get(0) instanceof Block) {
-            Block block = (Block) path.get(0);
-            List<Statement> statements = block.getStatements();
-            int index = 0;
+        synchronized (path) {
+            if (path.get(0) instanceof Block) {
+                Block block = (Block) path.get(0);
+                List<Statement> statements = block.getStatements();
+                int index = 0;
 
-            while (index < statements.size()
-                    && statements.get(index).getEndOffset() < node.getStartOffset()) {
-                previous = statements.get(index);
-                index ++;
-            }
-            if (previous == null) {
-                index = 1;
-                while (index < path.size()
-                        && !(path.get(index) instanceof ClassDeclaration)) {
-                    index++;
+                while (index < statements.size()
+                        && statements.get(index).getEndOffset() < node.getStartOffset()) {
+                    previous = statements.get(index);
+                    index ++;
                 }
+                if (previous == null) {
+                    index = 1;
+                    while (index < path.size()
+                            && !(path.get(index) instanceof ClassDeclaration)) {
+                        index++;
+                    }
 
-                if (index < path.size() && path.get(index) instanceof ClassDeclaration) {
-                    previous = path.get(index);
+                    if (index < path.size() && path.get(index) instanceof ClassDeclaration) {
+                        previous = path.get(index);
+                    }
                 }
             }
         }
