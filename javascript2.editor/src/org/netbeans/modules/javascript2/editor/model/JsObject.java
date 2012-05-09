@@ -79,4 +79,6 @@ public interface JsObject extends JsElement {
      * False if the function is declared as an item in array or the name is an expression
      */ 
     public boolean hasExactName();
+    
+    public String getDocumentation();
 }

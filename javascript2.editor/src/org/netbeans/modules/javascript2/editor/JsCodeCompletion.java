@@ -64,9 +64,16 @@ import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.*;
 import org.netbeans.modules.javascript2.editor.model.impl.*;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -228,8 +235,40 @@ class JsCodeCompletion implements CodeCompletionHandler {
 
     @Override
     public String document(ParserResult info, ElementHandle element) {
-        String help = jqueryCC.getHelpDocumentation(info, element);
-        return help;
+        final StringBuilder documentation = new StringBuilder();
+        if(element instanceof IndexedElement) {
+            final IndexedElement indexedElement = (IndexedElement)element;
+            FileObject nextFo = indexedElement.getFileObject();
+            
+            try {
+                ParserManager.parse(Collections.singleton(Source.create(nextFo)), new UserTask () {
+
+                    @Override
+                    public void run(ResultIterator resultIterator) throws Exception {
+                        Result parserResult = resultIterator.getParserResult();
+                        if (parserResult instanceof JsParserResult) {
+                            JsParserResult jsInfo = (JsParserResult)parserResult;
+                            
+                            String fqn = indexedElement.getFQN();
+                            JsObject jsObjectGlobal  = jsInfo.getModel().getGlobalObject();
+                            JsObject property = ModelUtils.findJsObjectByName(jsObjectGlobal, fqn);
+                            if (property != null) {
+                                documentation.append(property.getDocumentation());
+                            }
+                            
+                        }
+                        System.out.println(parserResult);
+                    }
+                    
+                });
+            } catch (ParseException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        if (documentation.length() == 0) {
+            documentation.append(jqueryCC.getHelpDocumentation(info, element));
+        }
+        return documentation.toString();
     }
 
     
