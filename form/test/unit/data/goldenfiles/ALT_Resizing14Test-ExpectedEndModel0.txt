@@ -11,7 +11,7 @@
               <Group type="sequential" alignment="trailing" attributes="0">
                   <EmptySpace pref="163" max="Short.MAX_VALUE" attributes="1028"/>
                   <Component id="jButton1" min="$pref" pref="94" max="$pref" attributes="1024"/>
-                  <EmptySpace min="$pref" pref="143" max="$pref" attributes="1024"/>
+                  <EmptySpace pref="143" max="Short.MAX_VALUE" attributes="1024"/>
               </Group>
           </Group>
       </Group>
@@ -27,7 +27,7 @@
               <Group type="sequential" alignment="trailing" attributes="0">
                   <EmptySpace pref="138" max="Short.MAX_VALUE" attributes="1028"/>
                   <Component id="jButton1" min="$pref" pref="43" max="$pref" attributes="1024"/>
-                  <EmptySpace min="$pref" pref="119" max="$pref" attributes="1024"/>
+                  <EmptySpace pref="119" max="Short.MAX_VALUE" attributes="1024"/>
               </Group>
           </Group>
       </Group>
