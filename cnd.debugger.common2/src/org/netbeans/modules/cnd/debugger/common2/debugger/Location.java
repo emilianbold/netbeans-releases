@@ -164,28 +164,45 @@ public class Location {
         return breakpoint;
     }
 
+    @Override
     public String toString() {
 	String address = Address.toHexString0x(pc, true);
 	return "\"" + src + "\":" + line + " " + func + "()" + // NOI18N
 		" " + address + // NOI18N
 		" " + (update() ? "UPDATE" : "NOUPDATE") + // NOI18N
 		" " + (hasSource() ? "SRC" : "NOSRC"); // NOI18N
-
     }
 
-    public boolean equals(Object thatObj) {
-	if (thatObj == null)
-	    return false;
-	if (! (thatObj instanceof Location))
-	    return false;
-	Location that = (Location) thatObj;
-	if (this.line != that.line)
-	    return false;
-	if (IpeUtils.sameString(this.src, that.src))
-	    return true;
-	if (this.pc != that.pc)
-	    return false;
-	else
-	    return false;
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof Location)) {
+            return false;
+        }
+
+        Location that = (Location) obj;
+
+        if (this.line != that.line) {
+            return false;
+        }
+
+        if (IpeUtils.sameString(this.src, that.src)) {
+            return true;
+        }
+
+        return this.pc == that.pc;
+    }
+
+    @Override
+    /**
+     * Implementation of hashCode() 'looks' at fields used in equals only. See
+     * comments to the class regarding equals() method and instance
+     * immutability...
+     */
+    public int hashCode() {
+        int hash = 5;
+        hash = 97 * hash + (this.src != null ? this.src.hashCode() : 0);
+        hash = 97 * hash + this.line;
+        hash = 97 * hash + (int) (this.pc ^ (this.pc >>> 32));
+        return hash;
     }
 }

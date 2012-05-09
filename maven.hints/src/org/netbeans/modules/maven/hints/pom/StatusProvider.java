@@ -54,9 +54,6 @@ import javax.swing.text.Document;
 import org.apache.maven.DefaultMaven;
 import org.apache.maven.Maven;
 import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.artifact.repository.ArtifactRepositoryPolicy;
-import org.apache.maven.artifact.repository.MavenArtifactRepository;
-import org.apache.maven.artifact.repository.layout.DefaultRepositoryLayout;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.model.building.ModelBuildingException;
 import org.apache.maven.model.building.ModelBuildingRequest;
@@ -137,10 +134,10 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
                     });
                 }
             };
-            initializeModel();
             RP.post(new Runnable() {
                 @Override
                 public void run() {
+                    initializeModel(); //#204067 moved to RP 
                     checkHints();
                 }
             });

@@ -41,10 +41,9 @@
  */
 package org.netbeans.modules.html.editor.lib.api.elements;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.StringTokenizer;
+import java.util.*;
+import org.netbeans.modules.html.editor.lib.api.model.HtmlModel;
+import org.netbeans.modules.html.editor.lib.api.model.HtmlTag;
 import org.netbeans.modules.web.common.api.LexerUtils;
 
 /**
@@ -53,9 +52,120 @@ import org.netbeans.modules.web.common.api.LexerUtils;
  */
 public class ElementUtils {
 
+    private static final char ELEMENT_PATH_ELEMENTS_DELIMITER = '/';
+    private static final char ELEMENT_PATH_INDEX_DELIMITER = '|';
+    
     private static final String INDENT = "   "; //NOI18N
 
     private ElementUtils() {
+    }
+    
+    /**
+     * Provides a collection of possible open tags in the context
+     * 
+     * @since 3.6
+     * 
+     * @param model
+     * @param afterNode
+     * @return 
+     */
+    public static Collection<HtmlTag> getPossibleOpenTags(HtmlModel model, Element afterNode) {
+        if (afterNode.type() != ElementType.OPEN_TAG) {
+            return Collections.emptyList();
+        }
+
+        OpenTag openTag = (OpenTag) afterNode;
+
+        HtmlTag tag = model.getTag(openTag.unqualifiedName().toString());
+        if (tag == null) {
+            return Collections.emptyList();
+        }
+
+        //skip empty tags - this is mailny a workaround for bad logical context of empty nodes
+        //however not easily fixable since the HtmlCompletionQuery uses the XmlSyntaxTreeBuilder
+        //when the parse tree is broken and the builder has no notion of such metadata.
+        while (tag != null && tag.isEmpty()) {
+            afterNode = afterNode.parent();
+            if (afterNode == null) {
+                return Collections.emptyList();
+            }
+            if (afterNode.type() != ElementType.OPEN_TAG) {
+                return Collections.emptyList();
+            }
+            OpenTag ot = (OpenTag) afterNode;
+            tag = model.getTag(ot.unqualifiedName().toString());
+        }
+        if (tag == null) {
+            return Collections.emptyList();
+        }
+
+        Collection<HtmlTag> possibleChildren = new LinkedHashSet<HtmlTag>();
+        addPossibleTags(tag, possibleChildren);
+        return possibleChildren;
+    }
+
+     /**
+     * Provides a map of possible html tag to existing matching open tag node 
+     * or null if the end tag doesn't have to have an open tag
+     * 
+     * @since 3.6
+     * 
+     * @param model
+     * @param node
+     * @return 
+     */
+    public static Map<HtmlTag, OpenTag> getPossibleCloseTags(HtmlModel model, Element node) {
+        //Bug 197608 - Non-html tags offered as closing tags using code completion
+        //XXX define of what type can be the node argument
+        if (node.type() != ElementType.OPEN_TAG) {
+            node = node.parent();
+            if (node == null) {
+                return Collections.emptyMap();
+            }
+        }
+        //<<<
+
+        OpenTag openTag = (OpenTag) node;
+        String openTagName = openTag.unqualifiedName().toString();
+
+        HtmlTag tag = model.getTag(openTagName);
+        if (tag == null) {
+            return Collections.emptyMap();
+        }
+
+        Map<HtmlTag, OpenTag> possible = new LinkedHashMap<HtmlTag, OpenTag>();
+        //end tags
+        do {
+            if (!ElementUtils.isVirtualNode(node)) {
+                String tName = ((OpenTag)node).unqualifiedName().toString();
+                tag = model.getTag(tName);
+                
+                if (!tag.isEmpty()) {
+                    possible.put(tag, (OpenTag) node);
+                }
+                if (!tag.hasOptionalEndTag()) {
+                    //since the end tag is required, the parent elements cannot be closed here
+                    break;
+                }
+            }
+        } while ((node = node.parent()) != null && node.type() == ElementType.OPEN_TAG);
+
+        return possible;
+
+    }
+
+    private static void addPossibleTags(HtmlTag tag, Collection<HtmlTag> possible) {
+        //1.add all children of the tag
+        //2.if a child has optional end, add its possible children
+        //3.if a child is transparent, add its possible children
+        Collection<HtmlTag> children = tag.getChildren();
+        possible.addAll(children);
+        for (HtmlTag child : children) {
+            if (child.hasOptionalOpenTag()) {
+                addPossibleTags(child, possible);
+            }
+            //TODO add the transparent check
+        }
     }
 
     public static String getNamespace(Element element) {
@@ -227,6 +337,52 @@ public class ElementUtils {
             }
         }
     }
+    
+    /**
+     * Encodes the given {@link TreePath} into a string form. 
+     * 
+     * The encoded path can be later used as an argument of {@link #query(org.netbeans.modules.html.editor.lib.api.elements.Node, java.lang.String) }
+     * 
+     * The root node is not listed in the path.
+     * 
+     * Example: html/body/table/tbody/tr/td
+     * 
+     * @since 3.4
+     * @param element
+     * @return string representation of the {@link TreePath}
+     */
+    public static String encodeToString(TreePath treePath) {
+        StringBuilder sb = new StringBuilder();
+        List<Element> p = treePath.path();
+        for(int i = p.size() - 2; i >= 0; i-- ) { //do not include the root element
+            Element node = p.get(i);
+            Node parent = node.parent();
+            int myIndex = parent == null ? 0 : getIndexInSimilarNodes(node.parent(), node);
+            sb.append(node.id());
+            if(myIndex > 0) {
+                sb.append(ELEMENT_PATH_INDEX_DELIMITER);
+                sb.append(myIndex);
+            }
+            
+            if(i > 0) {
+                sb.append(ELEMENT_PATH_ELEMENTS_DELIMITER);
+            }
+        }
+        return sb.toString();
+    }
+    
+    private static int getIndexInSimilarNodes(Node parent, Element node) {
+        int index = -1;
+        for(Element child : parent.children()) {
+            if(node.id().equals(child.id()) && node.type() == child.type()) {
+                index++;
+            }
+            if(child == node) {
+                break;
+            }
+        }
+        return index;
+    }
 
     public static OpenTag query(Node base, String path) {
         return query(base, path, false);
@@ -239,11 +395,11 @@ public class ElementUtils {
      * note: queries OPEN TAGS ONLY!
      */
     public static OpenTag query(Node base, String path, boolean caseInsensitive) {
-        StringTokenizer st = new StringTokenizer(path, "/");
+        StringTokenizer st = new StringTokenizer(path, Character.toString(ELEMENT_PATH_ELEMENTS_DELIMITER));
         Node found = base;
         while (st.hasMoreTokens()) {
             String token = st.nextToken();
-            int indexDelim = token.indexOf('|');
+            int indexDelim = token.indexOf(ELEMENT_PATH_INDEX_DELIMITER);
 
             String nodeName = indexDelim >= 0 ? token.substring(0, indexDelim) : token;
             if (caseInsensitive) {

@@ -41,6 +41,7 @@
  */
 package org.openide.util;
 
+import java.util.concurrent.CountDownLatch;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 
@@ -52,7 +53,6 @@ public class RequestProcessorHrebejkBugTest extends NbTestCase {
         super(name);
     }
     
-    @RandomlyFails // NB-Core-Build #7925: NPE in r1.wrong
     public void testBug() throws Exception {
         RequestProcessor rp = new RequestProcessor("TestProcessor", 3, true); 
         
@@ -60,7 +60,12 @@ public class RequestProcessorHrebejkBugTest extends NbTestCase {
         R2 r2 = new R2(r1);
         
         r1.submit(rp);
+
+        r1.in.await();
+        
         RequestProcessor.Task t = rp.post(r2);
+        
+        r1.goOn.countDown();
         
         t.waitFinished(); 
         
@@ -74,6 +79,8 @@ public class RequestProcessorHrebejkBugTest extends NbTestCase {
         private volatile Exception wrong;
         private volatile int count;
         private RequestProcessor.Task task;
+        final CountDownLatch in = new CountDownLatch(1);
+        final CountDownLatch goOn = new CountDownLatch(1);
 
         @Override
         public void run() {
@@ -82,6 +89,12 @@ public class RequestProcessorHrebejkBugTest extends NbTestCase {
                 wrong = new Exception("First call");
             } else {
                 wrong = (Exception) wrong.initCause(new Exception("Next call " + count));
+            }
+            in.countDown();
+            try {
+                goOn.await();
+            } catch (InterruptedException ex) {
+                throw new IllegalStateException(ex);
             }
             long until = System.currentTimeMillis() + 1000;
             for (;;) {

@@ -43,8 +43,6 @@
 package org.netbeans.modules.maven.hints.pom.spi;
 
 import java.util.List;
-import java.util.prefs.Preferences;
-import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.spi.editor.hints.ErrorDescription;

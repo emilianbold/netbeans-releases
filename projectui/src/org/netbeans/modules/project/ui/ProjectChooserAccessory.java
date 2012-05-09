@@ -493,8 +493,8 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
             File selectedFile = getSelectedFile();
             if (selectedFile != null) {
                 File dir = FileUtil.normalizeFile(selectedFile);
-
-                if (getProject(dir) != null) {
+                FileObject fo = FileUtil.toFileObject(dir);
+                if (fo != null && fo.isFolder() && ProjectManager.getDefault().isProject(fo)) {
                     super.approveSelection();
                 }
                 else {

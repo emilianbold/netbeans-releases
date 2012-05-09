@@ -1244,7 +1244,7 @@ decl_namespace
 			//}
 			(options {greedy=true;} : namespace_attribute_specification)?
                         {action.namespace_body(LT(1));}
-			LCURLY!
+			LCURLY
 			//{enterNewLocalScope();}
 			((external_declaration)*)
 			{/*exitLocalScope();*/{ #decl_namespace = #(#[CSM_NAMESPACE_DECLARATION, name], #decl_namespace); }}

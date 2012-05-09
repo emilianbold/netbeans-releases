@@ -45,11 +45,7 @@ import java.awt.Image;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -65,6 +61,8 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.Type;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl2;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.support.LookupProviderSupport;
 import org.netbeans.libs.oracle.cloud.api.WhiteListQuerySupport;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibraryDependency;
 import org.netbeans.modules.javaee.specs.support.spi.JpaProviderFactory;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.util.ImageUtilities;
@@ -121,6 +119,23 @@ public class OracleJ2eePlatformImpl2 extends J2eePlatformImpl2 implements Change
         }
         return libs;
     }
+    
+    @Override
+    public LibraryImplementation[] getLibraries(Set<ServerLibraryDependency> libraries) {
+        if (dm.getOnPremiseServiceInstanceId() == null) {
+            return getLibraries();
+        }
+        try {
+            J2eePlatform platform = Deployment.getDefault().getServerInstance(dm.getOnPremiseServiceInstanceId()).getJ2eePlatform();
+            if (platform != null) {
+                return createLibraryForFiles(platform.getClasspathEntries(libraries));
+            }
+        } catch (InstanceRemovedException ex) {
+            // ignore
+        }
+        
+        return getLibraries();
+    }
         
     private LibraryImplementation[] getOnPremiseServerClasspath() {
         if (dm.getOnPremiseServiceInstanceId() == null) {
@@ -132,6 +147,10 @@ public class OracleJ2eePlatformImpl2 extends J2eePlatformImpl2 implements Change
         } catch (InstanceRemovedException ex) {
             return null;
         }
+        return createLibraryForFiles(files);
+    }
+    
+    private LibraryImplementation[] createLibraryForFiles(File[] files) {
         List<URL> urls = new ArrayList<URL>();
         for (File f : files) {
             try {
@@ -172,7 +191,7 @@ public class OracleJ2eePlatformImpl2 extends J2eePlatformImpl2 implements Change
     public Set<Profile> getSupportedProfiles() {
         // enabling EE 6 profile would cause many problems (eg. lite EJBs in Web Project,
         // no web.xml created by default, Servlet 3.0 spec, etc.) so it is better to stick with EE 5 here
-        return new HashSet(Arrays.asList(new Profile[]{/*Profile.JAVA_EE_6_FULL,*/ Profile.JAVA_EE_5}));
+        return new HashSet<Profile>(Arrays.<Profile>asList(new Profile[]{/*Profile.JAVA_EE_6_FULL,*/ Profile.JAVA_EE_5}));
     }
 
     @Override
@@ -201,6 +220,7 @@ public class OracleJ2eePlatformImpl2 extends J2eePlatformImpl2 implements Change
     }
 
     @Override
+    @Deprecated
     public boolean isToolSupported(String toolName) {
         return false;
     }

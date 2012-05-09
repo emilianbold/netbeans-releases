@@ -46,6 +46,6 @@ package org.netbeans.modules.cnd.makeproject.spi.configurations;
 
 import org.netbeans.modules.cnd.api.toolchain.Tool;
 
-public interface AllOptionsProvider extends Cloneable {
+public interface AllOptionsProvider {
     public String getAllOptions(Tool tool);
 }

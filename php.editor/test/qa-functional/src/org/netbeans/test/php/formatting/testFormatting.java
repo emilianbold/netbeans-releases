@@ -43,6 +43,7 @@
  */
 package org.netbeans.test.php.formatting;
 
+import java.awt.event.KeyEvent;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.MainWindowOperator;
@@ -150,8 +151,9 @@ public class testFormatting extends formatting {
         String sTextIdeal = "<?php\n\n"
                 + "function testFunction($a,\n        $b,\n        $c) {\n    \n}"
                 + "\n\n?>";
-        assertEquals(sTextIdeal, sTextFormatted);
-
+        sTextFormatted = sTextFormatted.replaceAll("[\r]", "");
+        assertTrue("Strings differ",sTextFormatted.equals(sTextIdeal));
+        
         //tests for If Long
         setMethodParametersWrappingOptions(2);
         DeleteFileContent(eoPHP);
@@ -168,7 +170,8 @@ public class testFormatting extends formatting {
                 + "function testFunction($firstLongParameter = \"bdlkfjdsa fhjjkdshafjd a\",\n        $secondLongParameter, $thirdLongParameter) {\n    \n}"
                 + "\n\n?>";
 
-        assertEquals(sTextIdeal, sTextFormatted);
+        sTextFormatted = sTextFormatted.replaceAll("[\r]", "");
+        assertTrue("Strings differ",sTextFormatted.equals(sTextIdeal));
 
         //test for never
         setMethodParametersWrappingOptions(0);
@@ -186,7 +189,8 @@ public class testFormatting extends formatting {
                 + "function testFunction($firstLongParameter, $secondLongParameter, $thirdLongParameter) {\n    \n}"
                 + "\n\n?>";
 
-        assertEquals(sTextIdeal, sTextFormatted);
+        sTextFormatted = sTextFormatted.replaceAll("[\r]", "");
+        assertTrue("Strings differ",sTextFormatted.equals(sTextIdeal));
 
         endTest();
     }
@@ -205,7 +209,8 @@ public class testFormatting extends formatting {
 
 
         int count = category.getItemCount();
-        window.close();
+//        window.close();
+        window.pressKey(KeyEvent.VK_ENTER);
         assertEquals(7, count); // +1 for uses
         endTest();
 

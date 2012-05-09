@@ -50,8 +50,7 @@ public class WebProjectValidation14 extends WebProjectValidation {
     public static final String[] TESTS = new String[]{
         "testNewWebProject",
         "testNewJSP", "testNewJSP2", "testNewServlet", "testNewServlet2",
-        "testCompileAllJSP", "testCompileJSP", "testCleanAndBuildProject",
-        "testRedeployProject", "testRunProject", "testRunJSP", "testViewServlet",
+        "testCleanAndBuildProject", "testRedeployProject", "testRunProject",
         "testRunServlet", "testCreateTLD", "testCreateTagHandler", "testRunTag",
         "testNewHTML", "testRunHTML", "testNewSegment", "testNewDocument",
         "testFinish"
@@ -67,7 +66,7 @@ public class WebProjectValidation14 extends WebProjectValidation {
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(WebProjectValidation14.class);
         conf = addServerTests(Server.GLASSFISH, conf, TESTS);
         conf = conf.enableModules(".*").clusters(".*");
-        return NbModuleSuite.create(conf);
+        return conf.suite();
     }
 
     @Override

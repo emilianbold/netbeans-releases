@@ -45,7 +45,7 @@ import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
 import org.netbeans.modules.cnd.highlight.semantic.SemanticHighlighter;
 
 /**
- * Disables highlighting on big files.
+ * Disables error highlighting on big files.
  *
  * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */

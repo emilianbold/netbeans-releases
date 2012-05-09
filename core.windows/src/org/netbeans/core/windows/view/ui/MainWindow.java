@@ -87,6 +87,8 @@ public final class MainWindow {
    /** generated Serialized Version UID */
    static final long serialVersionUID = -1160791973145645501L;
 
+    private static final Logger LOGGER = Logger.getLogger(MainWindow.class.getName());
+
    private final JFrame frame;
 
    private static JMenuBar mainMenuBar;
@@ -116,7 +118,7 @@ public final class MainWindow {
    public static MainWindow install( JFrame frame ) {
        synchronized( MainWindow.class ) {
            if( null != theInstance ) {
-               Logger.getLogger(MainWindow.class.getName()).log(Level.INFO, "Installing MainWindow again, existing frame is: " + theInstance.frame); //NOI18N
+                LOGGER.log(Level.INFO, "Installing MainWindow again, existing frame is: " + theInstance.frame); //NOI18N
            }
            theInstance = new MainWindow(frame);
            return theInstance;
@@ -126,7 +128,7 @@ public final class MainWindow {
    public static MainWindow getInstance() {
        synchronized( MainWindow.class ) {
            if( null == theInstance ) {
-               Logger.getLogger(MainWindow.class.getName()).log(Level.INFO, "Accessing uninitialized MainWindow, using dummy JFrame instead." ); //NOI18N
+                LOGGER.log(Level.INFO, "Accessing uninitialized MainWindow, using dummy JFrame instead." ); //NOI18N
                theInstance = new MainWindow(new JFrame());
            }
            return theInstance;
@@ -151,7 +153,7 @@ public final class MainWindow {
            @Override
            public void paint(Graphics g) {
                super.paint(g);
-               Logger.getLogger(MainWindow.class.getName()).log(Level.FINE,
+                LOGGER.log(Level.FINE,
                        "Paint method of main window invoked normally."); //NOI18N
                // XXX is this only needed by obsolete #24291 hack, or now needed independently?
                WindowManagerImpl.getInstance().mainWindowPainted();
@@ -461,6 +463,11 @@ public final class MainWindow {
        );
    }
 
+   static void preInitMenuAndToolbar() {
+       createMenuBar();
+       ToolbarPool.getDefault();
+   }
+
    /** Creates menu bar. */
    private static JMenuBar createMenuBar() {
        JMenuBar menu = getCustomMenuBar();
@@ -680,7 +687,7 @@ public final class MainWindow {
                     device.setFullScreenWindow( null );
                }catch( IllegalArgumentException iaE ) {
                    //#206310 - sometimes this make problems on Linux
-                   Logger.getLogger( MainWindow.class.getName() ).log( Level.FINE, null, iaE );
+                    LOGGER.log( Level.FINE, null, iaE );
                }
            }
        }

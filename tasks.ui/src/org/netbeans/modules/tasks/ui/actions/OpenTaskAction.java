@@ -56,7 +56,7 @@ public class OpenTaskAction extends AbstractAction {
     private Issue task;
 
     public OpenTaskAction(Issue task) {
-        super(NbBundle.getMessage(DeactivateTaskAction.class, "CTL_OpenTask")); //NOI18N
+        super(NbBundle.getMessage(DeactivateTaskAction.class, "CTL_Open")); //NOI18N
         this.task = task;
     }
 

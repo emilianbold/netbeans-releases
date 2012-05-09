@@ -685,7 +685,6 @@ class POMComponentCreateVisitor extends DefaultVisitor {
         }
         if (isElementQName(context.getModel().getPOMQNames().TESTRESOURCE) && context.getListClass().equals(Resource.class)) {
             created = new ResourceImpl(context.getModel(), element);
-            return;
         }
     }
 

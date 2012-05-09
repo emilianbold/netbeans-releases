@@ -72,51 +72,62 @@ public class ServerImpl extends SettingsComponentImpl implements Server {
     // child elements
 
 
+    @Override
     public void accept(SettingsComponentVisitor visitor) {
         visitor.visit(this);
     }
 
+    @Override
     public String getId() {
         return getChildElementText(getModel().getSettingsQNames().ID.getQName());
     }
 
+    @Override
     public void setId(String id) {
         setChildElementText(getModel().getSettingsQNames().ID.getName(), id,
                 getModel().getSettingsQNames().ID.getQName());
     }
 
+    @Override
     public String getUsername() {
         return getChildElementText(getModel().getSettingsQNames().USERNAME.getQName());
     }
 
+    @Override
     public void setUsername(String username) {
         setChildElementText(getModel().getSettingsQNames().USERNAME.getName(), username,
                 getModel().getSettingsQNames().USERNAME.getQName());
     }
 
+    @Override
     public String getPassphrase() {
         return getChildElementText(getModel().getSettingsQNames().PASSPHRASE.getQName());
     }
 
+    @Override
     public void setPassphrase(String passphrase) {
         setChildElementText(getModel().getSettingsQNames().PASSPHRASE.getName(), passphrase,
                 getModel().getSettingsQNames().PASSPHRASE.getQName());
     }
 
+    @Override
     public String getPrivateKey() {
         return getChildElementText(getModel().getSettingsQNames().PRIVATEKEY.getQName());
     }
 
+    @Override
     public void setPrivateKey(String key) {
         setChildElementText(getModel().getSettingsQNames().PRIVATEKEY.getName(), key,
                 getModel().getSettingsQNames().PRIVATEKEY.getQName());
     }
 
 
+    @Override
     public Configuration getConfiguration() {
         return getChild(Configuration.class);
     }
 
+    @Override
     public void setConfiguration(Configuration config) {
         setChild(Configuration.class, getModel().getSettingsQNames().CONFIGURATION.getName(), config,
                 getClassesBefore(ORDER, Configuration.class));

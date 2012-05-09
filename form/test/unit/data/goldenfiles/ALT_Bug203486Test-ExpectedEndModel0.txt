@@ -38,14 +38,14 @@
                           <Group type="sequential" attributes="0">
                               <EmptySpace min="$pref" pref="223" max="$pref" attributes="0"/>
                               <Component id="jScrollPane3" min="$pref" pref="122" max="$pref" attributes="0"/>
-                              <EmptySpace min="0" pref="0" max="Short.MAX_VALUE" attributes="0"/>
+                              <EmptySpace max="Short.MAX_VALUE" attributes="0"/>
                           </Group>
                           <Group type="sequential" alignment="trailing" attributes="0">
                               <EmptySpace max="Short.MAX_VALUE" attributes="1536"/>
                               <Component id="jScrollPane4" min="$pref" pref="231" max="$pref" attributes="0"/>
+                              <EmptySpace max="$pref" attributes="1024"/>
                           </Group>
                       </Group>
-                      <EmptySpace max="$pref" attributes="0"/>
                   </Group>
               </Group>
           </Group>

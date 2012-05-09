@@ -220,8 +220,8 @@ public final class Watcher extends AnnotationProvider {
         }
         
         final void register(FileObject fo) {
-            if (fo.isValid()) {
-                assert fo.isFolder() : "Should be a folder: " + fo + " data: " + fo.isData();
+            if (fo.isValid() && !fo.isFolder()) {
+                LOG.log(Level.INFO, "Should be a folder: {0} data: {1} folder: {2} valid: {3}", new Object[]{fo, fo.isData(), fo.isFolder(), fo.isValid()});
             }
             try {
                 clearQueue();
@@ -361,6 +361,9 @@ public final class Watcher extends AnnotationProvider {
             synchronized(lock) {
                 toRefresh = pending;
                 pending = null;
+                if (toRefresh == null) {
+                    return;
+                }
             }
             LOG.log(Level.FINE, "Refreshing {0} directories", toRefresh.size());
 
@@ -414,8 +417,8 @@ public final class Watcher extends AnnotationProvider {
                 final Notifier notifier = item.getInstance();
                 if (notifier != null) {
                     NotifierAccessor.getDefault().start(notifier);
+                    return notifier;
                 }
-                return notifier;
             } catch (IOException ex) {
                 LOG.log(Level.INFO, "Notifier {0} refused to be initialized", item.getType()); // NOI18N
                 LOG.log(Level.FINE, null, ex);

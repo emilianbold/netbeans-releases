@@ -238,7 +238,11 @@ public class ToolTipAnnotation extends Annotation
             return null;
         }
         String simpleExpression = text.substring(identStart, identEnd).trim();
-        return isInFieldDeclaration ? "$this->" + simpleExpression.substring(1) : simpleExpression; //NOI18N
+        String result = simpleExpression;
+        if (isInFieldDeclaration && simpleExpression.length() > 1) {
+            result = "$this->" + simpleExpression.substring(1); //NOI18N
+        }
+        return result;
     }
 
     private static boolean endsWithAccessModifier(final String possibleAccessModifier) {

@@ -108,7 +108,7 @@ import org.openide.util.WeakSet;
 public final class ElementHandle<T extends Element> {
     private static final Logger log = Logger.getLogger(ElementHandle.class.getName());
     static {
-        ElementHandleAccessor.INSTANCE = new ElementHandleAccessorImpl ();
+        ElementHandleAccessor.setInstance(new ElementHandleAccessorImpl ());
     }
     
     private final ElementKind kind;

@@ -43,11 +43,6 @@
  */
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import org.netbeans.modules.cnd.modelimpl.content.project.IncludedFileContainer;
-import org.netbeans.modules.cnd.modelimpl.content.project.DeclarationContainerProject;
-import org.netbeans.modules.cnd.modelimpl.content.project.ClassifierContainer;
-import org.netbeans.modules.cnd.modelimpl.content.project.ProjectComponent;
-import org.netbeans.modules.cnd.modelimpl.content.project.GraphContainer;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
@@ -69,58 +64,74 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.antlr.collections.AST;
-import org.netbeans.modules.cnd.api.model.*;
+import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmClassifier;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFriend;
+import org.netbeans.modules.cnd.api.model.CsmInheritance;
+import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
+import org.netbeans.modules.cnd.api.model.CsmModelState;
+import org.netbeans.modules.cnd.api.model.CsmNamespace;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.NameAcceptor;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmTracer;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
-import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.Language;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
-import org.netbeans.modules.cnd.debug.DebugUtils;
-import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
-import org.netbeans.modules.cnd.apt.support.APTPreprocHandler.State;
-import org.netbeans.modules.cnd.apt.support.StartEntry;
-import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
-import org.netbeans.modules.cnd.apt.support.APTSystemStorage;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
+import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
 import org.netbeans.modules.cnd.apt.support.APTFileSearch;
+import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTIncludePathStorage;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.apt.support.APTPreprocHandler.State;
+import org.netbeans.modules.cnd.apt.support.APTSystemStorage;
 import org.netbeans.modules.cnd.apt.support.APTWalker;
 import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
 import org.netbeans.modules.cnd.apt.support.PostIncludeData;
+import org.netbeans.modules.cnd.apt.support.StartEntry;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.netbeans.modules.cnd.debug.DebugUtils;
 import org.netbeans.modules.cnd.modelimpl.cache.impl.WeakContainer;
+import org.netbeans.modules.cnd.modelimpl.content.project.ClassifierContainer;
+import org.netbeans.modules.cnd.modelimpl.content.project.DeclarationContainerProject;
 import org.netbeans.modules.cnd.modelimpl.content.project.FileContainer;
-import org.netbeans.modules.cnd.modelimpl.debug.Terminator;
-import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
-import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
-
-import org.netbeans.modules.cnd.modelimpl.csm.*;
 import org.netbeans.modules.cnd.modelimpl.content.project.FileContainer.FileEntry;
+import org.netbeans.modules.cnd.modelimpl.content.project.GraphContainer;
+import org.netbeans.modules.cnd.modelimpl.content.project.IncludedFileContainer;
 import org.netbeans.modules.cnd.modelimpl.content.project.IncludedFileContainer.Storage;
+import org.netbeans.modules.cnd.modelimpl.content.project.ProjectComponent;
+import org.netbeans.modules.cnd.modelimpl.csm.ClassEnumBase;
+import org.netbeans.modules.cnd.modelimpl.csm.ForwardClass;
+import org.netbeans.modules.cnd.modelimpl.csm.FunctionImplEx;
+import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
+import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
+import org.netbeans.modules.cnd.modelimpl.debug.Terminator;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.impl.services.FileInfoQueryImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTRestorePreprocStateWalker;
 import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
 import org.netbeans.modules.cnd.modelimpl.repository.ClassifierContainerKey;
-import org.netbeans.modules.cnd.modelimpl.repository.ProjectDeclarationContainerKey;
 import org.netbeans.modules.cnd.modelimpl.repository.FileContainerKey;
 import org.netbeans.modules.cnd.modelimpl.repository.GraphContainerKey;
 import org.netbeans.modules.cnd.modelimpl.repository.KeyUtilities;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.modelimpl.repository.ProjectDeclarationContainerKey;
+import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.ProjectNameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
-import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.LazyCsmCollection;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
@@ -135,11 +146,12 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
-import org.openide.filesystems.FileSystem;
-import org.openide.util.CharSequences;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.Cancellable;
+import org.openide.util.CharSequences;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
@@ -191,6 +203,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         GraphContainer graphContainer = new GraphContainer(this);
         CndUtils.assertTrue(graphStorageKey.equals(graphContainer.getKey()));
         weakGraphContainer.clear();
+        includedFileContainer.clear();
         FAKE_GLOBAL_NAMESPACE = NamespaceImpl.create(this, true);
     }
 
@@ -1404,6 +1417,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         Collection<ProjectBase> dependentProjects = getDependentProjects();
         synchronized (stateLock) {
             fileContainer.invalidatePreprocState(absPath);
+            this.invalidateIncludedPreprocState(stateLock, this, absPath);
             for (ProjectBase projectBase : dependentProjects) {
                 projectBase.invalidateIncludedPreprocState(stateLock, this, absPath);
             }
@@ -1456,7 +1470,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
         FileImpl csmFile = findFile(file, true, FileImpl.FileType.HEADER_FILE, preprocHandler, false, null, null);
 
-        if (isDisposing() || startProject.isDisposing()) {
+        if (csmFile == null || isDisposing() || startProject.isDisposing()) {
             return csmFile;
         }
         APTPreprocHandler.State newState = preprocHandler.getState();
@@ -1531,9 +1545,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     statesToParse.add(newState);
                     AtomicBoolean clean = new AtomicBoolean(false);
                     thisProjectUpdateResult = updateFileEntryBasedOnIncludedStatePair(entry, newStatePair, file, csmFile, clean, statesToParse);
-                    if (thisProjectUpdateResult && startProject != this) {
-                        // we found the "best from the bests" for the current lib
-                        // have to be considered as the best in start project lib storage as well
+                    if (thisProjectUpdateResult) {
+                        // start project can be this project or another project, but
+                        // we found the "best from the bests" for the current lib;
+                        // it have to be considered as the best in start project lib storage as well
                         if (!startProjectUpdateResult) {
                             CndUtils.assertTrueInConsole(false, " this project " + this + " thinks that new state for " + file + " is the best but start project does not take it " + startProject);
                         }
@@ -2263,7 +2278,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     private FileImpl findFileImpl(CharSequence absPath, boolean treatSymlinkAsSeparateFile, FileImpl.FileType fileType, APTPreprocHandler preprocHandler,
             boolean scheduleParseIfNeed, APTPreprocHandler.State initial, NativeFileItem nativeFileItem) {
-        FileImpl impl = null;
+        FileImpl impl;
         boolean create = false;
         synchronized (fileContainerLock) {
             impl = getFile(absPath, treatSymlinkAsSeparateFile);
@@ -2276,6 +2291,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             assert preprocHandler != null : "null preprocHandler for " + absPath;
             FileObject fo = CndFileUtils.toFileObject(fileSystem, absPath);
             CndUtils.assertTrueInConsole(fo != null, "file object not found ", absPath); // + " in fs=" + fileSystem); // NOI18N
+            if (fo == null) {
+                return null;
+            }
             FileBuffer fileBuffer = ModelSupport.createFileBuffer(fo);
             // and all other under lock again
             synchronized (fileContainerLock) {
@@ -2942,7 +2960,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     private APTPreprocHandler createDefaultPreprocHandler(CharSequence interestedFile) {
         NativeProject nativeProject = findNativeProjectHolder(new HashSet<ProjectBase>(10));
-        APTPreprocHandler out = null;
+        APTPreprocHandler out;
         if (nativeProject != null) {
             // we have own native project to get settings from
             NativeFileItem item = new DefaultFileItem(nativeProject, interestedFile.toString());
@@ -3334,15 +3352,15 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             Map<CharSequence, CsmClassifier> map = null;
             switch (phase) {
                 case 0:
-                    printStream.println("\n========== Dumping Dump Project Classifiers");//NOI18N
+                    printStream.printf("\n========== Dumping %s Project Classifiers\n", project.getName());//NOI18N
                     map = container.getTestClassifiers();
                     break;
                 case 1:
-                    printStream.println("\n========== Dumping Dump Project Short Classifiers");//NOI18N
+                    printStream.printf("\n========== Dumping %s Project Short Classifiers\n", project.getName());//NOI18N
                     map = container.getTestShortClassifiers();
                     break;
                 case 2:
-                    printStream.println("\n========== Dumping Dump Project Typedefs");//NOI18N
+                    printStream.printf("\n========== Dumping %s Project Typedefs\n", project.getName());//NOI18N
                     map = container.getTestTypedefs();
                     break;
             }

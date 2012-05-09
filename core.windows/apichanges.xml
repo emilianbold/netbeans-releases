@@ -108,6 +108,23 @@ is the proper place.
 
   <changes>
 
+    <change id="help-button-at-left-side" >
+        <api name="winsys"/>
+        <summary>Allow to move the Help button to the left side</summary>
+        <version major="2" minor="48"/>
+        <date day="24" month="4" year="2012"/>
+        <author login="jhorvath"/>
+        <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description>
+            A new branding token <code>HelpButtonAtTheLeftSide</code> in 
+            <code>org.netbeans.core.windows.services</code> package allows 
+            to change position of the Help button. When the property value 
+            is <code>true</code> the help button is placed at the left side 
+            of the dialog.
+        </description>
+        <issue number="211640"/>
+    </change>  
+    
     <change id="reload-save-actions" >
         <api name="winsys"/>
         <summary>Actions to load or save state of windowsystem</summary>

@@ -69,14 +69,17 @@ public class SettingsExtensibilityElementBase extends SettingsComponentImpl
         this(model, createElementNS(model, name));
     }
      
+    @Override
     public void accept(SettingsComponentVisitor visitor) {
         visitor.visit(this);
     }
 
+    @Override
     public String getElementText() {
         return getText();
     }
 
+    @Override
     public void setElementText(String text) {
         setText(getQName().getLocalPart(), text);
     }
@@ -84,27 +87,35 @@ public class SettingsExtensibilityElementBase extends SettingsComponentImpl
     public static class StringAttribute implements Attribute {
         private String name;
         public StringAttribute(String name) { this.name = name; }
+        @Override
         public Class getType() { return String.class; }
+        @Override
         public String getName() { return name; }
+        @Override
         public Class getMemberType() { return null; }
     }
     
+    @Override
     public String getAttribute(String attribute) {
         return getAttribute(new StringAttribute(attribute));
     }
     
+    @Override
     public void setAttribute(String attribute, String value) {
         setAttribute(attribute, new StringAttribute(attribute), value);
     }
     
+    @Override
     public String getContentFragment() {
         return super.getXmlFragment();
     }
     
+    @Override
     public void setContentFragment(String text) throws IOException {
         super.setXmlFragment(CONTENT_FRAGMENT_PROPERTY, text);
     }
 
+    @Override
     public void addAnyElement(SettingsExtensibilityElement anyElement, int index) {
         List<SettingsComponent> all = getChildren();
         if (index > all.size() || index < 0) {
@@ -113,10 +124,12 @@ public class SettingsExtensibilityElementBase extends SettingsComponentImpl
         insertAtIndex(EXTENSIBILITY_ELEMENT_PROPERTY, anyElement, index);
     }
 
+    @Override
     public void removeAnyElement(SettingsExtensibilityElement any) {
         super.removeExtensibilityElement(any);
     }
 
+    @Override
     public List<SettingsExtensibilityElement> getAnyElements() {
         List<SettingsExtensibilityElement> result = new ArrayList<SettingsExtensibilityElement>();
         List<SettingsExtensibilityElement> allEEs = super.getExtensibilityElements();

@@ -76,10 +76,10 @@ import org.netbeans.modules.cnd.discovery.api.Progress;
 import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
-import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
-import org.netbeans.modules.cnd.discovery.wizard.api.ProjectConfiguration;
 import org.netbeans.modules.cnd.discovery.wizard.api.ConfigurationFactory;
 import org.netbeans.modules.cnd.discovery.wizard.api.ConsolidationStrategy;
+import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
+import org.netbeans.modules.cnd.discovery.wizard.api.ProjectConfiguration;
 import org.netbeans.modules.cnd.discovery.wizard.tree.FileConfigurationNode;
 import org.netbeans.modules.cnd.discovery.wizard.tree.FolderConfigurationNode;
 import org.netbeans.modules.cnd.discovery.wizard.tree.IncludesListModel;
@@ -279,7 +279,7 @@ public final class SelectConfigurationPanel extends JPanel {
     }// </editor-fold>//GEN-END:initComponents
     
     private static String getString(String key) {
-        return NbBundle.getBundle(SelectConfigurationPanel.class).getString(key);
+        return NbBundle.getMessage(SelectConfigurationPanel.class, key);
     }
     
     private Icon getLoadingIcon() {
@@ -424,7 +424,6 @@ public final class SelectConfigurationPanel extends JPanel {
     
     void store(DiscoveryDescriptor wizardDescriptor) {
         DiscoveryProvider provider = wizardDescriptor.getProvider();
-        List<ProjectConfiguration> projectConfigurations = wizardDescriptor.getConfigurations();
         if (provider != null && wasTerminated){
             //System.out.println("Stop analyzing");
             isStoped = true;

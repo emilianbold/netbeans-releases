@@ -201,14 +201,24 @@ public final class JavaSourceNodeFactory implements NodeFactory {
 
         @Override
         public void addChangeListener(ChangeListener l) {
-            changeSupport.addChangeListener(l);
-            FileUtil.addFileChangeListener(genSrcDirListener, genSrcDir);
+            synchronized (changeSupport) {
+                final boolean shouldAdd = !changeSupport.hasListeners();
+                changeSupport.addChangeListener(l);
+                if (shouldAdd) {
+                    FileUtil.addFileChangeListener(genSrcDirListener, genSrcDir);
+                }
+            }
         }
         
         @Override
-        public void removeChangeListener(ChangeListener l) {
-            changeSupport.removeChangeListener(l);
-            FileUtil.removeFileChangeListener(genSrcDirListener, genSrcDir);
+        public void removeChangeListener(ChangeListener l) {            
+            synchronized (changeSupport) {
+                final boolean hadListeners = changeSupport.hasListeners();
+                changeSupport.removeChangeListener(l);            
+                if (hadListeners ^ changeSupport.hasListeners())  {
+                    FileUtil.removeFileChangeListener(genSrcDirListener, genSrcDir);
+                }
+            }
         }
         
         @Override

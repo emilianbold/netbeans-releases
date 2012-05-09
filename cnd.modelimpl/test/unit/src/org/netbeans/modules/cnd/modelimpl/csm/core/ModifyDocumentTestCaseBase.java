@@ -363,8 +363,12 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
         };
         return listener;
     }
-        
-    private List<CsmOffsetable> checkDeadBlocks(final CsmProject project, final FileImpl fileImpl, String docMsg, final BaseDocument doc, String msg, int expectedDeadBlocks) throws BadLocationException {
+
+    protected static void checkDeclarationNumber(int num, final FileImpl fileImpl) {
+        assertEquals("different number of declarations", num, fileImpl.getDeclarationsSize());
+    }
+
+    protected static List<CsmOffsetable> checkDeadBlocks(final CsmProject project, final FileImpl fileImpl, String docMsg, final BaseDocument doc, String msg, int expectedDeadBlocks) throws BadLocationException {
         project.waitParse();
         List<CsmOffsetable> unusedCodeBlocks = CsmFileInfoQuery.getDefault().getUnusedCodeBlocks(fileImpl);
         if (TraceFlags.TRACE_182342_BUG) {
@@ -381,8 +385,90 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
         assertEquals(msg + fileImpl.getAbsolutePath(), expectedDeadBlocks, unusedCodeBlocks.size());
         return unusedCodeBlocks;
     }
+    
+    protected static interface Checker {
+        void checkBeforeModifyingFile(FileImpl modifiedFile, FileImpl fileToCheck, CsmProject project, BaseDocument doc) throws BadLocationException;
+        void checkAfterModifyingFile(FileImpl modifiedFile, FileImpl fileToCheck, CsmProject project, BaseDocument doc) throws BadLocationException;
+        void checkAfterParseFinished(FileImpl modifiedFile, FileImpl fileToCheck, CsmProject project, BaseDocument doc) throws BadLocationException;
+        void checkAfterUndo(FileImpl modifiedFile, FileImpl fileToCheck, CsmProject project, BaseDocument doc) throws BadLocationException;
+        void checkAfterUndoAndParseFinished(FileImpl modifiedFile, FileImpl fileToCheck, CsmProject project, BaseDocument doc) throws BadLocationException;
+    }
+    
+    protected static final class DeclarationsNumberChecker implements Checker {
+        private final int numBefore;
+        private final int numAfter;
 
-    protected void insertTextThenSave(File sourceFile, final int insertLine, final String insertString, int numDecls, int numDeclsAfterModification, boolean doUndoRedo) throws Exception {
+        public DeclarationsNumberChecker(int numBefore, int numAfter) {
+            this.numBefore = numBefore;
+            this.numAfter = numAfter;
+        }
+        
+        @Override
+        public void checkBeforeModifyingFile(FileImpl modifiedFile, final FileImpl fileToCheck, final CsmProject project, final BaseDocument doc) {
+            checkDeclarationNumber(numBefore, fileToCheck);
+        }
+
+        @Override
+        public void checkAfterModifyingFile(FileImpl modifiedFile, final FileImpl fileToCheck, final CsmProject project, final BaseDocument doc) {
+            checkDeclarationNumber(numAfter, fileToCheck);
+        }
+
+        @Override
+        public void checkAfterParseFinished(FileImpl modifiedFile, final FileImpl fileToCheck, final CsmProject project, final BaseDocument doc) {
+            checkDeclarationNumber(numAfter, fileToCheck);
+        }
+
+        @Override
+        public void checkAfterUndo(FileImpl modifiedFile, final FileImpl fileToCheck, final CsmProject project, final BaseDocument doc) {
+            checkBeforeModifyingFile(modifiedFile, fileToCheck, project, doc);
+        }
+
+        @Override
+        public void checkAfterUndoAndParseFinished(FileImpl modifiedFile, FileImpl fileToCheck, CsmProject project, BaseDocument doc) throws BadLocationException {
+            checkAfterParseFinished(modifiedFile, fileToCheck, project, doc);
+        }
+    };
+    
+    protected static final class DeadBlocksNumberChecker implements Checker {
+        private final int numBefore;
+        private final int numAfter;
+
+        public DeadBlocksNumberChecker(int numBefore, int numAfter) {
+            this.numBefore = numBefore;
+            this.numAfter = numAfter;
+        }
+        
+        @Override
+        public void checkBeforeModifyingFile(FileImpl modifiedFile, final FileImpl fileToCheck, final CsmProject project, final BaseDocument doc) throws BadLocationException {
+            checkDeadBlocks(project, fileToCheck, "1. text before:", doc, "File must have " + numBefore + " dead code block ", numBefore);
+        }
+
+        @Override
+        public void checkAfterModifyingFile(FileImpl modifiedFile, final FileImpl fileToCheck, final CsmProject project, final BaseDocument doc) throws BadLocationException {
+        }
+
+        @Override
+        public void checkAfterParseFinished(FileImpl modifiedFile, FileImpl fileToCheck, CsmProject project, BaseDocument doc) throws BadLocationException {
+            checkDeadBlocks(project, fileToCheck, "2. text after:", doc, "File must have " + numAfter + " dead code blocks ", numAfter);
+        }
+
+        @Override
+        public void checkAfterUndo(FileImpl modifiedFile, final FileImpl fileToCheck, final CsmProject project, final BaseDocument doc) throws BadLocationException {
+            checkBeforeModifyingFile(modifiedFile, fileToCheck, project, doc);
+        }
+
+        @Override
+        public void checkAfterUndoAndParseFinished(FileImpl modifiedFile, FileImpl fileToCheck, CsmProject project, BaseDocument doc) throws BadLocationException {
+            checkAfterParseFinished(modifiedFile, fileToCheck, project, doc);
+        }
+    };
+
+    protected void insertTextThenSaveAndCheck(File modifiedFile,
+                                              final int insertLine,
+                                              final String insertString,
+                                              File checkedFile,
+                                              Checker checker,
+                                              boolean doUndoRedo) throws Exception {
         if (TraceFlags.TRACE_191307_BUG) {
             System.err.printf("TEST INSERT/SAVE then UNDO/REDO\n");
         }
@@ -391,27 +477,29 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
         final AtomicReference<CountDownLatch> condRef = new AtomicReference<CountDownLatch>(parse1);
         Semaphore waitParseSemaphore = new Semaphore(0);
         final AtomicReference<Semaphore> semRef = new AtomicReference<Semaphore>(waitParseSemaphore);
-        final CsmProject project = super.getProject();
-        final FileImpl fileImpl = (FileImpl) getCsmFile(sourceFile);
-        assertNotNull(fileImpl);
-        final BaseDocument doc = getBaseDocument(sourceFile);
-        final UndoManager urm = getUndoRedoManager(sourceFile);
-        final int insertOffset = CndCoreTestUtils.getDocumentOffset(doc, insertLine, 0);
-        assertNotNull(doc);
+        final FileImpl fileToModifyImpl = (FileImpl) getCsmFile(modifiedFile);
+        final CsmProject project = fileToModifyImpl.getProject();
+        final FileImpl fileToCheckImpl = (FileImpl) getCsmFile(checkedFile);
+        assertNotNull(fileToModifyImpl);
+        final BaseDocument modifiedDoc = getBaseDocument(modifiedFile);
+        final UndoManager urm = getUndoRedoManager(modifiedFile);
+        final int insertOffset = CndCoreTestUtils.getDocumentOffset(modifiedDoc, insertLine, 1);
+        assertNotNull(modifiedDoc);
+        final BaseDocument checkedDoc = getBaseDocument(modifiedFile);
+        assertNotNull(checkedDoc);
         project.waitParse();
         final AtomicInteger parseCounter = new AtomicInteger(0);
-        CsmProgressListener listener = createFileParseListener(fileImpl, condRef, semRef, parseCounter);
+        CsmProgressListener listener = createFileParseListener(fileToModifyImpl, condRef, semRef, parseCounter);
         CsmListeners.getDefault().addProgressListener(listener);
         try {
-            int curNumDecls = fileImpl.getDeclarationsSize();
-            assertEquals("different number of declarations", numDecls, curNumDecls);
+            checker.checkBeforeModifyingFile(fileToModifyImpl, fileToCheckImpl, project, checkedDoc);
             // modify document
             SwingUtilities.invokeAndWait(new Runnable() {
 
                 @Override
                 public void run() {
                     try {
-                        doc.insertString(insertOffset, insertString, null);
+                        modifiedDoc.insertString(insertOffset, insertString, null);
                     } catch (BadLocationException ex) {
                         exRef.compareAndSet(null, ex);
                     }
@@ -427,20 +515,18 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
             }            
             waitParseSemaphore.acquire();
 //            waitParseSemaphore.acquire();
-            assertTrue("file not yet parsed at this time" + fileImpl.getParsingStateFromTest() + fileImpl.getStateFromTest(), fileImpl.isParsed());
-            curNumDecls = fileImpl.getDeclarationsSize();
-            assertEquals("different number of declarations", numDeclsAfterModification, curNumDecls);
+            assertTrue("file not yet parsed at this time" + fileToModifyImpl.getParsingStateFromTest() + fileToModifyImpl.getStateFromTest(), fileToModifyImpl.isParsed());
+            checker.checkAfterModifyingFile(fileToModifyImpl, fileToCheckImpl, project, checkedDoc);
 //            assertEquals("must be exactly one parse event", 1, parseCounter.get());
             project.waitParse();
             while(waitParseSemaphore.tryAcquire()) {}
             // let's save changes
-            saveDocument(sourceFile, doc, project);
+            saveDocument(modifiedFile, modifiedDoc, project);
             waitParseSemaphore.acquire();
             project.waitParse();
             while(waitParseSemaphore.tryAcquire()) {}
-            assertTrue("file not yet parsed at this time" + fileImpl.getParsingStateFromTest() + fileImpl.getStateFromTest(), fileImpl.isParsed());
-            curNumDecls = fileImpl.getDeclarationsSize();
-            assertEquals("different number of declarations after save", numDeclsAfterModification, curNumDecls);
+            assertTrue("file not yet parsed at this time" + fileToModifyImpl.getParsingStateFromTest() + fileToModifyImpl.getStateFromTest(), fileToModifyImpl.isParsed());
+            checker.checkAfterParseFinished(fileToModifyImpl, fileToCheckImpl, project, checkedDoc);
             checkModifiedObjects(0);
             
             assertTrue("must have undoable modification", urm.canUndo());
@@ -449,9 +535,8 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
                 waitParseSemaphore.acquire();
                 project.waitParse();
                 while(waitParseSemaphore.tryAcquire()) {}
-                assertTrue("file not yet parsed at this time" + fileImpl.getParsingStateFromTest() + fileImpl.getStateFromTest(), fileImpl.isParsed());
-                curNumDecls = fileImpl.getDeclarationsSize();
-                assertEquals("different number of declarations after save and undo", numDecls, curNumDecls);
+                assertTrue("file not yet parsed at this time" + fileToModifyImpl.getParsingStateFromTest() + fileToModifyImpl.getStateFromTest(), fileToModifyImpl.isParsed());
+                checker.checkAfterUndo(fileToModifyImpl, fileToCheckImpl, project, checkedDoc);
     //            assertEquals("must be exactly three parse events", 3, parseCounter.get());
                 checkModifiedObjects(1);
 
@@ -460,9 +545,8 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
                 waitParseSemaphore.acquire();
                 project.waitParse();
                 while(waitParseSemaphore.tryAcquire()) {}
-                assertTrue("file not yet parsed at this time" + fileImpl.getParsingStateFromTest() + fileImpl.getStateFromTest(), fileImpl.isParsed());
-                curNumDecls = fileImpl.getDeclarationsSize();
-                assertEquals("different number of declarations after save and undo", numDeclsAfterModification, curNumDecls);
+                assertTrue("file not yet parsed at this time" + fileToModifyImpl.getParsingStateFromTest() + fileToModifyImpl.getStateFromTest(), fileToModifyImpl.isParsed());
+                checker.checkAfterParseFinished(fileToModifyImpl, fileToCheckImpl, project, checkedDoc);
                 checkModifiedObjects(0);
                 project.waitParse();
             }

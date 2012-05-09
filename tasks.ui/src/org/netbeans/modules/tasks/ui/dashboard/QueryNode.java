@@ -174,7 +174,7 @@ public class QueryNode extends AsynchronousNode<List<Issue>> implements Comparab
                 labels.add(lblSeparator);
                 if (getChangedTaskCount() > 0) {
                     lblSeparator.setText("|"); //NOI18N
-                    btnChanged = new LinkButton(getChangedString(), new OpenQueryAction(query)); //NOI18N
+                    btnChanged = new LinkButton(getChangedString(), new OpenQueryAction(query, Query.QueryMode.SHOW_NEW_OR_CHANGED)); //NOI18N
                     panel.add(btnChanged, new GridBagConstraints(5, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
                     buttons.add(btnChanged);
                 }

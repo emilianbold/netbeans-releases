@@ -42,34 +42,24 @@
 
 package org.netbeans.modules.groovy.editor.api.completion;
 
-import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 /**
  *
  * @author phejl
  */
-public class GrailsConfigsTest extends GroovyTestBase {
-
-    String TEST_BASE = "testfiles/completion/grails/";
+public class GrailsConfigsTest extends GroovyCCTestBase {
 
     public GrailsConfigsTest(String testName) {
         super(testName);
-        Logger.getLogger(CompletionHandler.class.getName()).setLevel(Level.FINEST);
     }
 
-    // uncomment this to have logging from GroovyLexer
-    protected Level logLevel() {
-        // enabling logging
-        return Level.INFO;
-        // we are only interested in a single logger, so we set its level in setUp(),
-        // as returning Level.FINEST here would log from all loggers
+    @Override
+    protected String getTestType() {
+        return "grails";
     }
 
     // FIXME this does not provide accurate results, but we need to test
     // at least basic closure completion
     public void testDataSourceClosure1() throws Exception {
-        checkCompletion(TEST_BASE + "" + "GrailsConfig1.groovy", "}.^", false);
+        checkCompletion(BASE + "" + "DataSourceClosure1.groovy", "}.^", false);
     }  
 }

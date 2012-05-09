@@ -152,20 +152,14 @@ final class PaletteSwitch implements Runnable, LookupListener {
         currentToken = new Object();
         TopComponent.Registry registry = TopComponent.getRegistry();
         final TopComponent activeTc = registry.getActivated();
-        Set<TopComponent> opened = registry.getOpened();
-        final Set<TopComponent> openedEditors = new HashSet<TopComponent>(opened.size());
-        for( TopComponent tc : opened ) {
-            if( WindowManager.getDefault().isEditorTopComponent(tc) ) {
-                openedEditors.add( tc );
-            }
-        }
+        final Set<TopComponent> opened = new HashSet<TopComponent>(registry.getOpened());
         final PaletteController existingPalette = currentPalette;
         final boolean isMaximized = isPaletteMaximized();
         final Object token = currentToken;
         RP.post(new Runnable() {
             @Override
             public void run() {
-                findNewPalette(existingPalette, activeTc, openedEditors, isMaximized, token);
+                findNewPalette(existingPalette, activeTc, opened, isMaximized, token);
             }
         });
     }
@@ -259,6 +253,7 @@ final class PaletteSwitch implements Runnable, LookupListener {
     
     private PropertyChangeListener createRegistryListener() {
         return new PropertyChangeListener() {
+            @Override
             public void propertyChange( PropertyChangeEvent evt ) {
                 if( TopComponent.Registry.PROP_CURRENT_NODES.equals( evt.getPropertyName() )
                     || TopComponent.Registry.PROP_OPENED.equals( evt.getPropertyName() )
@@ -267,7 +262,7 @@ final class PaletteSwitch implements Runnable, LookupListener {
                     if( TopComponent.Registry.PROP_ACTIVATED.equals( evt.getPropertyName() )
                         || TopComponent.Registry.PROP_OPENED.equals( evt.getPropertyName() ) ) {
                         //listen to Lookup changes of showing editor windows
-                        watchOpenedEditors();
+                        watchOpenedTCs();
                     }
                     
                     if( TopComponent.Registry.PROP_ACTIVATED.equals( evt.getPropertyName() ) ) {
@@ -280,19 +275,20 @@ final class PaletteSwitch implements Runnable, LookupListener {
         };
     }
 
+    @Override
     public void resultChanged(LookupEvent ev) {
         run();
     }
     
     private Map<TopComponent, Lookup.Result> watchedLkpResults = new WeakHashMap<TopComponent, Lookup.Result>(3);
     
-    private void watchOpenedEditors() {
-        ArrayList<TopComponent> editorsToWatch = findShowingEditors();
-        ArrayList<TopComponent> toAddListeners = new ArrayList<TopComponent>( editorsToWatch );
+    private void watchOpenedTCs() {
+        ArrayList<TopComponent> windowsToWatch = findShowingTCs();
+        ArrayList<TopComponent> toAddListeners = new ArrayList<TopComponent>( windowsToWatch );
         toAddListeners.removeAll(watchedLkpResults.keySet());
         
         ArrayList<TopComponent> toRemoveListeners = new ArrayList<TopComponent>( watchedLkpResults.keySet() );
-        toRemoveListeners.removeAll(editorsToWatch);
+        toRemoveListeners.removeAll(windowsToWatch);
         
         for( TopComponent tc : toRemoveListeners ) {
             Lookup.Result res = watchedLkpResults.get(tc);
@@ -310,11 +306,10 @@ final class PaletteSwitch implements Runnable, LookupListener {
         }
     }
     
-    private ArrayList<TopComponent> findShowingEditors() {
+    private ArrayList<TopComponent> findShowingTCs() {
         ArrayList<TopComponent> res = new ArrayList<TopComponent>( 3 );
-        WindowManager wm = WindowManager.getDefault();
         for( TopComponent tc : TopComponent.getRegistry().getOpened() ) {
-            if( tc.isShowing() && wm.isEditorTopComponent(tc) )
+            if( tc.isShowing() )
                 res.add( tc );
         }
         return res;
@@ -348,6 +343,7 @@ final class PaletteSwitch implements Runnable, LookupListener {
         }
         final boolean isNewVisible = PaletteVisibility.isVisible(newPalette) || PaletteVisibility.isVisible(null);
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 if( currentToken == token )
                     showHidePaletteTopComponent(newPalette, isNewVisible);

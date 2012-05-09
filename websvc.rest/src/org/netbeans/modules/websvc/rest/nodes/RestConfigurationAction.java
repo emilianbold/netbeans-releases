@@ -47,12 +47,14 @@ import java.io.IOException;
 import java.util.List;
 import java.util.logging.Logger;
 import org.apache.tools.ant.module.api.support.ActionUtils;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.javaee.specs.support.api.JaxRsStackSupport;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.rest.RestUtils;
 import org.netbeans.modules.websvc.rest.model.api.RestApplication;
 import org.netbeans.modules.websvc.rest.projects.RestApplicationsPanel;
@@ -80,8 +82,21 @@ public class RestConfigurationAction extends NodeAction  {
     }
 
     protected boolean enable(Node[] activatedNodes) {
-        if (activatedNodes.length != 1) return false;
-        if (activatedNodes[0].getLookup().lookup(Project.class) == null) return false;
+        if (activatedNodes.length != 1) {
+            return false;
+        }
+        Project project = activatedNodes[0].getLookup().lookup(Project.class);
+        if ( project== null) {
+            return false;
+        }
+        WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
+        Profile profile = webModule.getJ2eeProfile();
+        if (Profile.JAVA_EE_6_WEB.equals(profile) 
+                || Profile.JAVA_EE_6_FULL.equals(profile))
+        {
+            return false;
+        }
+            
         return true;
     }
     

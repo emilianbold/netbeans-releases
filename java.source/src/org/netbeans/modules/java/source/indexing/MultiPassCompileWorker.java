@@ -256,7 +256,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                     continue;
                 }
                 jt.analyze(types);
-                boolean aptGenerated = aptEnabled ? JavaCustomIndexer.addAptGenerated(context, javaContext, active.indexable.getRelativePath(), previous.aptGenerated) : false;
+                boolean aptGenerated = aptEnabled ? JavaCustomIndexer.addAptGenerated(context, javaContext, active, previous.aptGenerated) : false;
                 if (mem.isLowMemory()) {
                     dumpSymFiles(fileManager, jt, previous.createdFiles);
                     mem.isLowMemory();
@@ -337,7 +337,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                 }
                 return new ParsingOutput(false, previous.file2FQNs, previous.addedTypes, previous.createdFiles, previous.finishedFiles, previous.modifiedTypes, previous.aptGenerated);
             } catch (MissingPlatformError mpe) {
-                //No platform - log & ignore
+                //No platform - log & mark files as errornous
                 if (JavaIndex.LOG.isLoggable(Level.FINEST)) {
                     final ClassPath bootPath   = javaContext.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.BOOT);
                     final ClassPath classPath  = javaContext.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.COMPILE);
@@ -351,6 +351,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                                 );
                     JavaIndex.LOG.log(Level.FINEST, message, mpe);
                 }
+                JavaCustomIndexer.brokenPlatform(context, files, mpe.getDiagnostic());
                 return new ParsingOutput(false, previous.file2FQNs, previous.addedTypes, previous.createdFiles, previous.finishedFiles, previous.modifiedTypes, previous.aptGenerated);
             } catch (CancelAbort ca) {
                 if (JavaIndex.LOG.isLoggable(Level.FINEST)) {
