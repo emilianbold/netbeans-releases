@@ -79,6 +79,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.source.indexing.TransactionContext;
 import org.netbeans.modules.java.source.parsing.FileManagerTransaction;
+import org.netbeans.modules.java.source.parsing.ProcessorGenerated;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
@@ -213,7 +214,10 @@ public class JavaSymbolProvider implements SymbolProvider {
                                 }
                                 if (!r.isEmpty()) {
                                     //Needs FileManagerTransaction as it creates CPI with backgroundCompilation == true
-                                    TransactionContext.beginTrans().register(FileManagerTransaction.class, FileManagerTransaction.read());
+                                    TransactionContext.
+                                            beginTrans().
+                                            register(FileManagerTransaction.class, FileManagerTransaction.read()).
+                                            register(ProcessorGenerated.class, ProcessorGenerated.nullWrite());
                                     try {
                                         final ClasspathInfo cpInfo = ClasspathInfoAccessor.getINSTANCE().create(root,null,true,true,false,false);
                                         final JavaSource js = JavaSource.create(cpInfo);
