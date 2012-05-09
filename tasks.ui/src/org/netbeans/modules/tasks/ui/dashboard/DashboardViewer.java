@@ -698,7 +698,7 @@ public final class DashboardViewer implements PropertyChangeListener{
             int index = model.getRootNodes().indexOf(titleCategoryNode) + 1;
             for (CategoryNode categoryNode : categoryNodes) {
                 if (isCategoryInFilter(categoryNode)) {
-                    taskHits += categoryNode.getTotalCount();
+                    taskHits += categoryNode.getTotalTaskCount();
                     mapCategoryToNode.put(categoryNode.getCategory(), categoryNode);
                     addRootToModel(index++, categoryNode);
                 }

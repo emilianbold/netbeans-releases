@@ -56,7 +56,6 @@ import org.netbeans.modules.tasks.ui.actions.Actions;
 import org.netbeans.modules.tasks.ui.actions.CloseCategoryNodeAction;
 import org.netbeans.modules.tasks.ui.actions.DummyAction;
 import org.netbeans.modules.tasks.ui.actions.OpenCategoryNodeAction;
-import org.netbeans.modules.tasks.ui.filter.AppliedFilters;
 import org.netbeans.modules.tasks.ui.model.Category;
 import org.netbeans.modules.tasks.ui.treelist.TreeLabel;
 import org.netbeans.modules.tasks.ui.treelist.TreeListNode;
@@ -68,11 +67,9 @@ import org.openide.util.NbBundle;
  *
  * @author jpeska
  */
-public class CategoryNode extends TreeListNode implements Comparable<CategoryNode> {
+public class CategoryNode extends TaskContainerNode implements Comparable<CategoryNode> {
 
     private final Category category;
-    private List<TaskNode> taskNodes;
-    private List<TaskNode> filteredTaskNodes;
     private JPanel panel;
     private TreeLabel lblName;
     private final Object LOCK = new Object();
@@ -81,8 +78,6 @@ public class CategoryNode extends TreeListNode implements Comparable<CategoryNod
     private CloseCategoryNodeAction closeCategoryAction;
     private OpenCategoryNodeAction openCategoryAction;
     private boolean opened;
-    private boolean refresh;
-    private ProgressLabel lblProgress;
 
     public CategoryNode(Category category) {
         this(category, true);
@@ -92,41 +87,39 @@ public class CategoryNode extends TreeListNode implements Comparable<CategoryNod
         super(true, null);
         this.category = category;
         this.opened = opened;
-        this.refresh = false;
         updateNodes();
     }
 
     @Override
     protected List<TreeListNode> createChildren() {
-        if (refresh) {
+        if (isRefresh()) {
             refreshTasks();
-            refresh = false;
+            updateNodes();
+            setRefresh(false);
         }
-        updateNodes();
         List<TaskNode> children = getFilteredTaskNodes();
         Collections.sort(children);
         return new ArrayList<TreeListNode>(children);
     }
 
+    @Override
     void updateContent() {
+        updateNodes();
         refreshChildren();
     }
 
-    public void refreshContent() {
-        refresh = true;
-        updateContent();
+    @Override
+    List<Issue> getTasks() {
+        return category.getTasks();
     }
 
     @Override
-    protected void childrenLoadingStarted() {
-        lblCounts.setVisible(false);
-        lblProgress.setVisible(true);
+    void adjustTaskNode(TaskNode taskNode) {
+        taskNode.setCategory(category);
     }
 
     @Override
-    protected void childrenLoadingFinished() {
-        lblProgress.setVisible(false);
-        lblCounts.setVisible(true);
+    void updateCounts() {
         lblCounts.setText(getCountText());
     }
 
@@ -144,15 +137,16 @@ public class CategoryNode extends TreeListNode implements Comparable<CategoryNod
 
                 lblCounts = new TreeLabel(getCountText());
                 panel.add(lblCounts, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
-                lblProgress = createProgressLabel();
-                panel.add(lblProgress, new GridBagConstraints(3, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
-                lblProgress.setVisible(false);
+                getTotalCountComp().add(lblCounts);
+                panel.add(getLblProgress(), new GridBagConstraints(3, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
+                getLblProgress().setVisible(false);
                 panel.add(new JLabel(), new GridBagConstraints(4, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 
                 btnRefresh = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/refresh.png", true), new DummyAction()); //NOI18N
                 btnRefresh.setToolTipText(NbBundle.getMessage(CategoryNode.class, "LBL_Refresh")); //NOI18N
                 panel.add(btnRefresh, new GridBagConstraints(5, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 3, 0, 0), 0, 0));
             }
+            getLblProgress().setForeground(foreground);
             lblName.setText(Utils.getCategoryDisplayText(this));
             lblName.setForeground(foreground);
             lblCounts.setText(getCountText());
@@ -172,21 +166,6 @@ public class CategoryNode extends TreeListNode implements Comparable<CategoryNod
                 openCategoryAction = new OpenCategoryNodeAction(this);
             }
             return openCategoryAction;
-        }
-    }
-
-    final void updateNodes() {
-        AppliedFilters appliedTaskFilters = DashboardViewer.getInstance().getAppliedTaskFilters();
-        List<Issue> tasks = category.getTasks();
-        taskNodes = new ArrayList<TaskNode>(tasks.size());
-        filteredTaskNodes = new ArrayList<TaskNode>(tasks.size());
-        for (Issue issue : tasks) {
-            TaskNode taskNode = new TaskNode(issue, this);
-            taskNode.setCategory(category);
-            taskNodes.add(taskNode);
-            if (appliedTaskFilters.isInFilter(issue)) {
-                filteredTaskNodes.add(taskNode);
-            }
         }
     }
 
@@ -210,48 +189,22 @@ public class CategoryNode extends TreeListNode implements Comparable<CategoryNod
         return actions.toArray(new Action[actions.size()]);
     }
 
-    public List<TaskNode> getTaskNodes() {
-        return new ArrayList<TaskNode>(taskNodes);
-    }
-
-    public int getTotalCount() {
-        return filteredTaskNodes.size();
-    }
-
-    public int getModifiedCount() {
-        int modifiedCount = 0;
-        for (TaskNode taskNode : getFilteredTaskNodes()) {
-            if (taskNode.getTask().getStatus() != Issue.Status.UPTODATE) {
-                modifiedCount++;
-            }
-        }
-        return modifiedCount;
-    }
-
-    public List<TaskNode> getFilteredTaskNodes() {
-        return filteredTaskNodes;
-    }
-
-    public void setFilteredTaskNodes(List<TaskNode> filteredTaskNodes) {
-        this.filteredTaskNodes = filteredTaskNodes;
-    }
-
     public boolean addTaskNode(TaskNode taskNode, boolean isInFilter) {
-        if (taskNodes.contains(taskNode)) {
+        if (getTaskNodes().contains(taskNode)) {
             return false;
         }
-        taskNodes.add(taskNode);
+        getTaskNodes().add(taskNode);
         category.addTask(taskNode.getTask());
         if (isInFilter) {
-            filteredTaskNodes.add(taskNode);
+            getFilteredTaskNodes().add(taskNode);
         }
         return true;
     }
 
     public void removeTaskNode(TaskNode taskNode) {
-        taskNodes.remove(taskNode);
+        getTaskNodes().remove(taskNode);
         category.removeTask(taskNode.getTask());
-        filteredTaskNodes.remove(taskNode);
+        getFilteredTaskNodes().remove(taskNode);
     }
 
     @Override
@@ -284,8 +237,8 @@ public class CategoryNode extends TreeListNode implements Comparable<CategoryNod
     }
 
     int indexOf(Issue task) {
-        for (int i = 0; i < taskNodes.size(); i++) {
-            TaskNode taskNode = taskNodes.get(i);
+        for (int i = 0; i < getTaskNodes().size(); i++) {
+            TaskNode taskNode = getTaskNodes().get(i);
             if (taskNode.getTask().equals(task)) {
                 return i;
             }
@@ -294,9 +247,13 @@ public class CategoryNode extends TreeListNode implements Comparable<CategoryNod
     }
 
     private String getCountText() {
-        String bundleName = DashboardViewer.getInstance().expandNodes() ? "LBL_Matches" : "LBL_Total"; //NOI18N
-        return "(" + getTotalCount() + " " + NbBundle.getMessage(CategoryNode.class, bundleName)
-                + " | " + getModifiedCount() + " " + NbBundle.getMessage(CategoryNode.class, "LBL_Changed") + ")"; //NOI18N
+        String text = "(" + getTotalString();
+        String changed = getChangedString();
+        if (!changed.isEmpty()) {
+            text += "|" + changed;
+        }
+        text += ")";
+        return text;
     }
 
     private void refreshTasks() {
