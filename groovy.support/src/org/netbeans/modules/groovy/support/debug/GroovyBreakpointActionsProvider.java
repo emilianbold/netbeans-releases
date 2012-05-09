@@ -52,11 +52,13 @@ import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.NodeActionsProviderFilter;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  * @author Martin Grebac
  * @author Martin Adamek
  */
+@ServiceProvider(service = NodeActionsProviderFilter.class)
 public class GroovyBreakpointActionsProvider implements NodeActionsProviderFilter {
     
     @Messages("LBL_Action_Go_To_Source=Go to Source")

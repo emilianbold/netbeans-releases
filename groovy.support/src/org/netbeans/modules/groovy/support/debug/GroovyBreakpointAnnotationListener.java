@@ -50,7 +50,9 @@ import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
+import org.netbeans.api.debugger.LazyDebuggerManagerListener;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  * Listens on {@org.netbeans.api.debugger.DebuggerManager} on
@@ -61,6 +63,7 @@ import org.netbeans.api.debugger.jpda.JPDADebugger;
  * @author Martin Grebac
  * @author Martin Adamek
  */
+@ServiceProvider(service = LazyDebuggerManagerListener.class)
 public class GroovyBreakpointAnnotationListener extends DebuggerManagerAdapter {
     
     private HashMap breakpointToAnnotation = new HashMap ();

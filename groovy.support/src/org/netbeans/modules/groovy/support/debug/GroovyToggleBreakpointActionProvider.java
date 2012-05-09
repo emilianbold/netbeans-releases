@@ -51,10 +51,12 @@ import java.util.Set;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.ActionsProvider.Registration;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.util.lookup.ServiceProvider;
 
 /** 
  * Toggle Groovy Breakpoint action provider.
@@ -63,6 +65,7 @@ import org.openide.filesystems.FileObject;
  * @author Martin Adamek
  */
 @Registration(actions={"toggleBreakpoint"}, activateForMIMETypes={"text/x-groovy"})
+@ServiceProvider(service = ActionsProvider.class)
 public class GroovyToggleBreakpointActionProvider extends ActionsProviderSupport implements PropertyChangeListener {
     
     private JPDADebugger debugger;
@@ -73,8 +76,7 @@ public class GroovyToggleBreakpointActionProvider extends ActionsProviderSupport
     }
     
     public GroovyToggleBreakpointActionProvider (ContextProvider contextProvider) {
-        debugger = (JPDADebugger) contextProvider.lookupFirst 
-                (null, JPDADebugger.class);
+        debugger = (JPDADebugger) contextProvider.lookupFirst(null, JPDADebugger.class);
         debugger.addPropertyChangeListener (JPDADebugger.PROP_STATE, this);
         Context.addPropertyChangeListener (this);
         setEnabled (ActionsManager.ACTION_TOGGLE_BREAKPOINT, false);
