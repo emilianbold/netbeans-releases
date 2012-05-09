@@ -48,6 +48,7 @@
                 <package>org.netbeans.modules.web.webkit.debugging.api</package>
                 <package>org.netbeans.modules.web.webkit.debugging.api.debugger</package>
                 <package>org.netbeans.modules.web.webkit.debugging.spi</package>
+                <package>org.netbeans.modules.web.webkit.debugging.spi.netbeansdebugger</package>
             </friend-packages>
         </data>
     </configuration>
