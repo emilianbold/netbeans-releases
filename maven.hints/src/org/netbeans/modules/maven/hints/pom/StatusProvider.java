@@ -299,14 +299,16 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
         } catch (ProjectBuildingException x) {
             problems = new ArrayList<ModelProblem>();
             List<ProjectBuildingResult> results = x.getResults();
-            if (results != null) {
+            if (results != null) { //one code point throwing ProjectBuildingException contains results,
                 for (ProjectBuildingResult result : results) {
                     problems.addAll(result.getProblems());
                 }
-            }
-            Throwable cause = x.getCause();
-            if (cause instanceof ModelBuildingException) {
-                problems.addAll(((ModelBuildingException) cause).getProblems());
+            } else {
+                // another code point throwing ProjectBuildingException doesn't contain results..
+                Throwable cause = x.getCause();
+                if (cause instanceof ModelBuildingException) {
+                    problems.addAll(((ModelBuildingException) cause).getProblems());
+                }
             }
         }
         for (ModelProblem problem : problems) {
