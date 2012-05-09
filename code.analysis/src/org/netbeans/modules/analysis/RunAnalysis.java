@@ -72,6 +72,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.analysis.RunAnalysisPanel.DialogState;
 import org.netbeans.modules.analysis.spi.Analyzer;
 import org.netbeans.modules.analysis.spi.Analyzer.AnalyzerFactory;
 import org.netbeans.modules.analysis.spi.Analyzer.Context;
@@ -105,13 +106,17 @@ public class RunAnalysis {
     private static final RequestProcessor WORKER = new RequestProcessor(RunAnalysisAction.class.getName(), 1, false, false);
     private static final int MAX_WORK = 1000;
 
+    public static void showDialogAndRunAnalysis() {
+        showDialogAndRunAnalysis(Lookups.fixed(Utilities.actionsGlobalContext().lookupAll(Object.class).toArray(new Object[0])), null);
+    }
+    
     @Messages({"BN_Inspect=Inspect",
                "BN_Cancel=Cancel",
                "TL_Inspect=Inspect"})
-    public static void showDialogAndRunAnalysis() {
+    public static void showDialogAndRunAnalysis(final Lookup context, DialogState startingState) {
         final ProgressHandle progress = ProgressHandleFactory.createHandle("Analyzing...", null, null);
         final JButton runAnalysis = new JButton(Bundle.BN_Inspect());
-        final RunAnalysisPanel rap = new RunAnalysisPanel(progress, Utilities.actionsGlobalContext(), runAnalysis);
+        final RunAnalysisPanel rap = new RunAnalysisPanel(progress, context, runAnalysis, startingState);
         JButton cancel = new JButton(Bundle.BN_Cancel());
         HelpCtx helpCtx = new HelpCtx("org.netbeans.modules.analysis.RunAnalysis");
         DialogDescriptor dd = new DialogDescriptor(rap, Bundle.TL_Inspect(), true, new Object[] {runAnalysis, cancel}, runAnalysis, DialogDescriptor.DEFAULT_ALIGN, helpCtx, null);
@@ -128,6 +133,7 @@ public class RunAnalysis {
                 final Configuration configuration = rap.getConfiguration();
                 final String singleWarningId = rap.getSingleWarningId();
                 final Collection<? extends AnalyzerFactory> analyzers = rap.getAnalyzers();
+                final DialogState dialogState = rap.getDialogState();
 
                 rap.started();
                 progress.start();
@@ -168,7 +174,7 @@ public class RunAnalysis {
                             @Override public void run() {
                                 if (!doCancel.get()) {
                                     AnalysisResultTopComponent resultWindow = AnalysisResultTopComponent.findInstance();
-                                    resultWindow.setData(Lookups.fixed(), new AnalysisResult(result, extraNodes));
+                                    resultWindow.setData(context, dialogState, new AnalysisResult(result, extraNodes));
                                     resultWindow.open();
                                     resultWindow.requestActive();
                                 }
