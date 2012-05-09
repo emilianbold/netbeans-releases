@@ -596,9 +596,11 @@ public final class ResultView extends TopComponent {
     private void appendTabToToolTip(Component c, StringBuilder sb) {
         if (c instanceof ResultViewPanel) {
             ResultViewPanel rvp = (ResultViewPanel) c;
-            sb.append("<br>&nbsp;&nbsp;");                              //NOI18N
-            sb.append(rvp.getToolTipText());
-            sb.append("&nbsp;");                                        //NOI18N
+            if (rvp.getToolTipText() != null) {
+                sb.append("<br>&nbsp;&nbsp;");                          //NOI18N
+                sb.append(rvp.getToolTipText());
+                sb.append("&nbsp;");                                    //NOI18N
+            }
         }
     }
 
