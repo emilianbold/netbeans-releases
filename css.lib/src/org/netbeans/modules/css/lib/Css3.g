@@ -205,7 +205,7 @@ package org.netbeans.modules.css.lib;
                 
                 int mark = -1;
                 //create error-recovery node
-                dbg.enterRule(getGrammarFileName(), "recovery");
+                //dbg.enterRule(getGrammarFileName(), "recovery");
 
                 try {
                     mark = input.mark();
@@ -243,7 +243,7 @@ package org.netbeans.modules.css.lib;
                     if  (mark != -1) {
                         input.release(mark);
                     }
-                    dbg.exitRule(getGrammarFileName(), "recovery");
+                    //dbg.exitRule(getGrammarFileName(), "recovery");
                 }
             }
     

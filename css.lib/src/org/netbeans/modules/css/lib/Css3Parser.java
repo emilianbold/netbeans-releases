@@ -328,7 +328,7 @@ public class Css3Parser extends DebugParser {
                     
                     int mark = -1;
                     //create error-recovery node
-                    dbg.enterRule(getGrammarFileName(), "recovery");
+//                    dbg.enterRule(getGrammarFileName(), "recovery"); //syncToRBRACE content considered as "valid"
 
                     try {
                         mark = input.mark();
@@ -366,7 +366,7 @@ public class Css3Parser extends DebugParser {
                         if  (mark != -1) {
                             input.release(mark);
                         }
-                        dbg.exitRule(getGrammarFileName(), "recovery");
+//                        dbg.exitRule(getGrammarFileName(), "recovery");
                     }
                 }
         
