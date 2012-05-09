@@ -1175,12 +1175,20 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
         private static final long serialVersionUID = -6786654671313465458L;
 
 
+        @NbBundle.Messages({
+            "# {0} - operation",
+            "SyncPanel.operation.tooltip={0} (click to change)"
+        })
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             JLabel rendererComponent = (JLabel) DEFAULT_TABLE_CELL_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             SyncItem.Operation operation = (SyncItem.Operation) value;
             rendererComponent.setIcon(operation.getIcon());
-            rendererComponent.setToolTipText(operation.getTitle());
+            if (OPERATIONS.contains(operation)) {
+                rendererComponent.setToolTipText(Bundle.SyncPanel_operation_tooltip(operation.getTitle()));
+            } else {
+                rendererComponent.setToolTipText(operation.getTitle());
+            }
             rendererComponent.setText(null);
             rendererComponent.setHorizontalAlignment(SwingConstants.CENTER);
             return rendererComponent;
