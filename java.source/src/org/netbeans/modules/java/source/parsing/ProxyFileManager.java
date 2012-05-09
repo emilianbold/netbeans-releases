@@ -420,30 +420,4 @@ public class ProxyFileManager implements JavaFileManager {
         }
         return write ? result : (T) FileManagerTransaction.nullFileObject((InferableJavaFileObject)result);    //safe - NullFileObject subclass of both JFO and FO.
     }
-
-    @Trusted
-    private static final class NullFileObject extends ForwardingInferableJavaFileObject {
-        private NullFileObject (@NonNull final InferableJavaFileObject delegate) {
-            super (delegate);
-        }
-
-        @Override
-        public OutputStream openOutputStream() throws IOException {
-            return new NullOutputStream();
-        }
-
-        @Override
-        public Writer openWriter() throws IOException {
-            return new OutputStreamWriter(openOutputStream());
-        }
-    }
-
-
-    private static class NullOutputStream extends OutputStream {
-        @Override
-        public void write(int b) throws IOException {
-            //pass
-        }
-    }
-
 }
