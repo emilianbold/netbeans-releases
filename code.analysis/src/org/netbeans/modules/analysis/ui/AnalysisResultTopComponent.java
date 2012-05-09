@@ -56,6 +56,7 @@ import org.netbeans.api.settings.ConvertAsProperties;
 import org.netbeans.modules.analysis.AnalysisResult;
 import org.netbeans.modules.analysis.DescriptionReader;
 import org.netbeans.modules.analysis.RunAnalysis;
+import org.netbeans.modules.analysis.RunAnalysisPanel.DialogState;
 import org.netbeans.modules.analysis.spi.Analyzer.AnalyzerFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.awt.ActionID;
@@ -94,6 +95,7 @@ public final class AnalysisResultTopComponent extends TopComponent implements Ex
     private final ExplorerManager manager = new ExplorerManager();
 
     private Lookup context;
+    private DialogState dialogState;
     private BeanTreeView btv;
     
     public AnalysisResultTopComponent() {
@@ -116,7 +118,7 @@ public final class AnalysisResultTopComponent extends TopComponent implements Ex
         prevAction.addPropertyChangeListener(l);
         nextAction.addPropertyChangeListener(l);
 
-        setData(Lookup.EMPTY, new AnalysisResult(Collections.<AnalyzerFactory, List<ErrorDescription>>emptyMap(), Collections.<Node>emptyList()));
+        setData(Lookup.EMPTY, null, new AnalysisResult(Collections.<AnalyzerFactory, List<ErrorDescription>>emptyMap(), Collections.<Node>emptyList()));
 
         getActionMap().put("jumpNext", nextAction);
         getActionMap().put("jumpPrev", prevAction);
@@ -266,7 +268,7 @@ public final class AnalysisResultTopComponent extends TopComponent implements Ex
     }// </editor-fold>//GEN-END:initComponents
 
     private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshButtonActionPerformed
-        RunAnalysis.showDialogAndRunAnalysis();
+        RunAnalysis.showDialogAndRunAnalysis(context, dialogState);
     }//GEN-LAST:event_refreshButtonActionPerformed
 
     private void nextErrorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nextErrorActionPerformed
@@ -326,8 +328,9 @@ public final class AnalysisResultTopComponent extends TopComponent implements Ex
 
     AnalysisResult analysisResult;
 
-    public void setData(Lookup context, AnalysisResult analysisResult) {
+    public void setData(Lookup context, DialogState dialogState, AnalysisResult analysisResult) {
         this.context = context;
+        this.dialogState = dialogState;
         this.analysisResult = analysisResult;
         manager.setRootContext(Nodes.constructSemiLogicalView(analysisResult, byCategory.isSelected()));
         if (btv != null) {
