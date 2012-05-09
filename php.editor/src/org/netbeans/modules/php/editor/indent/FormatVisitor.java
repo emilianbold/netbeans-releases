@@ -1640,7 +1640,8 @@ public class FormatVisitor extends DefaultVisitor {
         while (ts.moveNext()
                 && ((ts.token().id() == PHPTokenId.WHITESPACE
                 && countOfNewLines(ts.token().text()) == 0)
-                || isComment(ts.token()))) {
+                || isComment(ts.token()))
+                && lastIndex < ts.index()) {
             if (ts.token().id() == PHPTokenId.PHP_LINE_COMMENT
                     && !"//".equals(ts.token().text().toString())) {
                 addFormatToken(formatTokens);
@@ -1685,7 +1686,8 @@ public class FormatVisitor extends DefaultVisitor {
         while (ts.moveNext()
                 && (ts.token().id() == PHPTokenId.WHITESPACE
                 || isComment(ts.token())
-                || (ts.token().id() == PHPTokenId.PHP_TOKEN && ",".equals(ts.token().text().toString())))) {
+                || (ts.token().id() == PHPTokenId.PHP_TOKEN && ",".equals(ts.token().text().toString())))
+                && lastIndex < ts.index()) {
             addFormatToken(formatTokens);
         }
         ts.movePrevious();
