@@ -62,6 +62,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
@@ -633,8 +634,8 @@ public class JavaCustomIndexer extends CustomIndexer {
         }
     }
 
-    private static List<String> readRSFile (final File file) throws IOException {
-        final List<String> binaryNames = new LinkedList<String>();
+    private static Iterable<String> readRSFile (final File file) throws IOException {
+        final LinkedHashSet<String> binaryNames = new LinkedHashSet<String>();
         BufferedReader in = new BufferedReader (new InputStreamReader ( new FileInputStream (file), "UTF-8")); //NOI18N
         try {
             String binaryName;
