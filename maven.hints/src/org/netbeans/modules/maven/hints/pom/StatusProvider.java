@@ -285,30 +285,7 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
             return;
         }
         
-        MavenEmbedder embedder = EmbedderFactory.getProjectEmbedder();
-        MavenExecutionRequest meReq = embedder.createMavenExecutionRequest();
-        ProjectBuildingRequest req = meReq.getProjectBuildingRequest();
-        req.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MAVEN_3_1); // currently enables just <reporting> warning
-        req.setLocalRepository(embedder.getLocalRepository());
-        List<ArtifactRepository> remoteRepos = RepositoryPreferences.getInstance().remoteRepositories(embedder);
-        req.setRemoteRepositories(remoteRepos);
-        req.setRepositorySession(((DefaultMaven) embedder.lookupComponent(Maven.class)).newRepositorySession(meReq));
-        List<ModelProblem> problems;
-        try {
-            problems = embedder.lookupComponent(ProjectBuilder.class).build(pom, req).getProblems();
-        } catch (ProjectBuildingException x) {
-            problems = new ArrayList<ModelProblem>();
-            List<ProjectBuildingResult> results = x.getResults();
-            if (results != null) {
-                for (ProjectBuildingResult result : results) {
-                    problems.addAll(result.getProblems());
-                }
-            }
-            Throwable cause = x.getCause();
-            if (cause instanceof ModelBuildingException) {
-                problems.addAll(((ModelBuildingException) cause).getProblems());
-            }
-        }
+        List<ModelProblem> problems = runMavenValidationImpl(pom);
         for (ModelProblem problem : problems) {
             if (!problem.getSource().equals(pom.getAbsolutePath())) {
                 LOG.log(Level.FINE, "found problem not in {0}: {1}", new Object[] {pom, problem.getSource()});
@@ -338,6 +315,38 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
                 LOG.log(Level.WARNING, "improper line number: {0}", problem);
             }
         }
+        
+    }
+    
+    //non-private because of tests..   
+    static List<ModelProblem> runMavenValidationImpl(final File pom) {
+        MavenEmbedder embedder = EmbedderFactory.getProjectEmbedder();
+        MavenExecutionRequest meReq = embedder.createMavenExecutionRequest();
+        ProjectBuildingRequest req = meReq.getProjectBuildingRequest();
+        req.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MAVEN_3_1); // currently enables just <reporting> warning
+        req.setLocalRepository(embedder.getLocalRepository());
+        List<ArtifactRepository> remoteRepos = RepositoryPreferences.getInstance().remoteRepositories(embedder);
+        req.setRemoteRepositories(remoteRepos);
+        req.setRepositorySession(((DefaultMaven) embedder.lookupComponent(Maven.class)).newRepositorySession(meReq));
+        List<ModelProblem> problems;
+        try {
+            problems = embedder.lookupComponent(ProjectBuilder.class).build(pom, req).getProblems();
+        } catch (ProjectBuildingException x) {
+            problems = new ArrayList<ModelProblem>();
+            List<ProjectBuildingResult> results = x.getResults();
+            if (results != null) { //one code point throwing ProjectBuildingException contains results,
+                for (ProjectBuildingResult result : results) {
+                    problems.addAll(result.getProblems());
+                }
+            } else {
+                // another code point throwing ProjectBuildingException doesn't contain results..
+                Throwable cause = x.getCause();
+                if (cause instanceof ModelBuildingException) {
+                    problems.addAll(((ModelBuildingException) cause).getProblems());
+                }
+            }
+        }
+        return problems;
     }
 
 }

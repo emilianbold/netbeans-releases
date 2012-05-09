@@ -646,7 +646,9 @@ public class NetBeansUtils {
                             nbLocation,
                             NetBeansUtils.getLockFile(nbLocation));
                     
-                    ErrorManager.notifyWarning(warning);
+                    // uninstallation shouls not run when trying to uninstall
+                    // running instance of NB
+                    ErrorManager.notifyCritical(warning);
                 }
             } else {
                 checkedAndRunning.remove(nbLocation);

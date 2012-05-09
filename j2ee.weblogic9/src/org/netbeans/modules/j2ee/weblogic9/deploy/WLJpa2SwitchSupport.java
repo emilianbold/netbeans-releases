@@ -46,6 +46,7 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -60,6 +61,7 @@ import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
 import org.netbeans.modules.j2ee.core.api.support.progress.ProgressSupport;
 import org.netbeans.modules.j2ee.core.api.support.progress.ProgressSupport.Context;
@@ -87,9 +89,13 @@ public final class WLJpa2SwitchSupport {
 
     private static final String OEPE_CONTRIBUTIONS_JAR = "oepe-contributions.jar"; // NO18N
 
-    private static final String JPA_JAR_1 = "javax.persistence_1.0.0.0_2-0-0.jar"; // NO18N
+    private static final Pattern JPA_JAR_1_PATTERN = Pattern.compile("^.*javax\\.persistence.*(_2-\\d+(-\\d+)?)\\.jar$"); // NO18N
 
-    private static final String JPA_JAR_2 = "com.oracle.jpa2support_1.0.0.0_2-0.jar"; // NO18N
+    private static final String JPA_JAR1_FALLBACK = "javax.persistence_1.0.0.0_2-0-0.jar"; // NOI18N
+
+    private static final Pattern JPA_JAR_2_PATTERN = Pattern.compile("^.*com\\.oracle\\.jpa2support.*\\.jar$"); // NO18N
+
+    private static final String JPA_JAR2_FALLBACK = "com.oracle.jpa2support_1.0.0.0_2-0.jar"; // NOI18N
 
     private static final Logger LOGGER = Logger.getLogger(WLJpa2SwitchSupport.class.getName());
 
@@ -172,8 +178,11 @@ public final class WLJpa2SwitchSupport {
             }
             final File oepeFile = new File(libDir, OEPE_CONTRIBUTIONS_JAR);
             final String relPath = path;
-            final String contribPath = path + JPA_JAR_1 + " " // NOI18N
-                    + path + JPA_JAR_2;//NOI18N
+
+            Jpa2Jars jars = getJpa2Jars(libDir, path);
+
+            final String contribPath = path + jars.getJpa1Jar() + " " // NOI18N
+                    + path + jars.getJpa2Jar();
 
             
             // oepe does not exist
@@ -188,17 +197,19 @@ public final class WLJpa2SwitchSupport {
                     if (cp == null) {
                         cp = ""; // NOI18N
                     }
-                    if (!cp.contains(JPA_JAR_1) || !cp.contains(JPA_JAR_2)) {
-                        StringBuilder updated = new StringBuilder(cp);
-                        if (cp != null) {
-                            // TODO full path check
-                            if (!cp.contains(JPA_JAR_2)) {
-                                updated.insert(0, " ").insert(0, JPA_JAR_2).insert(0, relPath);
-                            }
-                            if (!cp.contains(JPA_JAR_1)) {
-                                updated.insert(0, " ").insert(0, JPA_JAR_1).insert(0, relPath);
+                    if ((!JPA_JAR_1_PATTERN.matcher(cp).matches() || !cp.contains(jars.getJpa1Jar()))
+                            || (!JPA_JAR_2_PATTERN.matcher(cp).matches() || !cp.contains(jars.getJpa2Jar()))) {
+
+                        StringBuilder updated = new StringBuilder();
+                        for (String element : cp.split("\\s+")) { // NOI18N
+                            if (!JPA_JAR_1_PATTERN.matcher(element).matches() && !JPA_JAR_2_PATTERN.matcher(element).matches()) {
+                                updated.append(element).append(" "); // NOI18N
                             }
                         }
+
+                        updated.insert(0, " ").insert(0, jars.getJpa2Jar()).insert(0, relPath); // NOI18N
+                        updated.insert(0, " ").insert(0, jars.getJpa1Jar()).insert(0, relPath); // NOI18N
+
                         if (cp.length() == 0) {
                             updated.deleteCharAt(updated.length() - 1);
                         }
@@ -262,7 +273,7 @@ public final class WLJpa2SwitchSupport {
 
                 StringBuilder builder = new StringBuilder();
                 for (String element : cp.split("\\s+")) { // NOI18N
-                    if (!element.contains(JPA_JAR_1) && !element.contains(JPA_JAR_2)) {
+                    if (!JPA_JAR_1_PATTERN.matcher(element).matches() && !JPA_JAR_2_PATTERN.matcher(element).matches()) {
                         builder.append(element).append(" "); // NOI18N
                     }
                 }
@@ -292,7 +303,7 @@ public final class WLJpa2SwitchSupport {
                     WLPluginProperties.getMiddlewareHome(serverRoot), null);
             for (URL url : classpath) {
                 URL file = FileUtil.getArchiveFile(url);
-                if (file != null && file.getFile().endsWith(JPA_JAR_1)) {
+                if (file != null && JPA_JAR_1_PATTERN.matcher(file.getFile()).matches()) {
                     return true;
                 }
             }
@@ -477,6 +488,37 @@ public final class WLJpa2SwitchSupport {
         return "../../../modules"; // NOI18N
     }
 
+    private Jpa2Jars getJpa2Jars(File libDir, String path) {
+        String jar1 = null;
+        String jar2 = null;
+
+        if (libDir != null) {
+            File dir = new File(libDir, path);
+
+            for (File candidate : dir.listFiles(new FilenameFilter() {
+
+                @Override
+                public boolean accept(File dir, String name) {
+                    return JPA_JAR_1_PATTERN.matcher(name).matches() || JPA_JAR_2_PATTERN.matcher(name).matches();
+                }
+            })) {
+                if (jar1 == null && JPA_JAR_1_PATTERN.matcher(candidate.getName()).matches()) {
+                    jar1 = candidate.getName();
+                } else if (jar2 == null) {
+                    jar2 = candidate.getName();
+                }
+            }
+        }
+        // just fallback
+        if (jar1 == null) {
+            jar1 = JPA_JAR1_FALLBACK;
+        }
+        if (jar2 == null) {
+            jar2 = JPA_JAR2_FALLBACK;
+        }
+        return new Jpa2Jars(jar1, jar2);
+    }
+
     // package for testing only
     static String getRelativePath(File from, File to) {
         String toPath = to.getAbsolutePath();
@@ -500,6 +542,26 @@ public final class WLJpa2SwitchSupport {
             } else {
                 return "../" + getRelativePath(parent, to); // NOI18N
             }
+        }
+    }
+
+    private static class Jpa2Jars {
+
+        private final String Jpa1Jar;
+
+        private final String Jpa2Jar;
+
+        public Jpa2Jars(String Jpa1Jar, String Jpa2Jar) {
+            this.Jpa1Jar = Jpa1Jar;
+            this.Jpa2Jar = Jpa2Jar;
+        }
+
+        public String getJpa1Jar() {
+            return Jpa1Jar;
+        }
+
+        public String getJpa2Jar() {
+            return Jpa2Jar;
         }
     }
 }
