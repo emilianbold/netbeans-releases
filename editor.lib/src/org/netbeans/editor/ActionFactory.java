@@ -439,6 +439,10 @@ public class ActionFactory {
                     return;
                 }
                 final BaseDocument doc = (BaseDocument) target.getDocument();
+                if (doc instanceof GuardedDocument && ((GuardedDocument) doc).isPosGuarded(target.getCaretPosition())) {
+                    target.getToolkit().beep();
+                    return;
+                }
                 doc.runAtomicAsUser (new Runnable () {
                     public void run () {
                         DocumentUtilities.setTypingModification(doc, true);
@@ -535,6 +539,10 @@ public class ActionFactory {
                     return;
                 }
                 final BaseDocument doc = (BaseDocument) target.getDocument();
+                if (doc instanceof GuardedDocument && ((GuardedDocument) doc).isPosGuarded(target.getCaretPosition())) {
+                    target.getToolkit().beep();
+                    return;
+                }
                 doc.runAtomicAsUser (new Runnable () {
                     public void run () {
                         DocumentUtilities.setTypingModification(doc, true);
@@ -546,7 +554,7 @@ public class ActionFactory {
                             boolean backwardSelection = false;
                             int start = target.getCaretPosition();
                             int end = start;
-
+                            
                             // check if there is a selection
                             if (Utilities.isSelectionShowing(caret)) {
                                 int selStart = caret.getDot();
