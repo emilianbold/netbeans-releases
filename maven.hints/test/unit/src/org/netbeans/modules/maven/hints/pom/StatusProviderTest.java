@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,65 +37,52 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.profiler.heapwalker;
+package org.netbeans.modules.maven.hints.pom;
 
-import java.io.IOException;
-import org.netbeans.modules.profiler.heapwalk.HeapWalkerManager;
-import org.openide.cookies.OpenCookie;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataNode;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectExistsException;
-import org.openide.loaders.MultiDataObject;
-import org.openide.loaders.MultiFileLoader;
-import org.openide.nodes.Node;
-import org.openide.nodes.Children;
-import org.openide.util.Lookup;
-import org.openide.util.RequestProcessor;
+import java.io.File;
+import java.net.URL;
+import java.util.List;
+import org.apache.maven.model.building.ModelProblem;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
- * HPROF heapdump DataObject
  *
- * @author Tomas Hurka
+ * @author mkleint
  */
-@DataObject.Registration(
-    iconBase = "org/netbeans/modules/profiler/heapwalk/ui/icons/impl/snapshotDataObject.png", 
-    mimeType = "application/x-netbeans-profiler-hprof",
-    position=10
-)
-public class HprofDataObject extends MultiDataObject implements OpenCookie {
+public class StatusProviderTest {
     
-    public HprofDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
-        super(pf, loader);
-        
+    public StatusProviderTest() {
     }
     
-    @Override
-    protected Node createNodeDelegate() {
-        return new DataNode(this, Children.LEAF, getLookup());
+    @BeforeClass
+    public static void setUpClass() {
     }
     
-    @Override
-    public Lookup getLookup() {
-        return getCookieSet().getLookup();
+    @AfterClass
+    public static void tearDownClass() {
     }
     
-    public void open() {
-        final FileObject heapDumpFo = getPrimaryFile();
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                if (heapDumpFo != null) {
-                    HeapWalkerManager.getDefault().openHeapWalker(FileUtil.toFile(heapDumpFo));
-                }
-            }
-        });
+    @Before
+    public void setUp() {
+    }
+    
+    @After
+    public void tearDown() {
     }
 
-    @Override
-    protected void handleDelete() throws IOException {
-        HeapWalkerManager.getDefault().deleteHeapDump(FileUtil.toFile(getPrimaryFile()));
+    @Test
+    public void testModelLoading() throws Exception {
+        //#212152
+        URL file = getClass().getClassLoader().getResource("org/netbeans/modules/maven/hints/pom/pom-with-warnings.xml");
+        File fil = new File(file.toURI());
+        List<ModelProblem> result = StatusProvider.runMavenValidationImpl(fil);
+        assertEquals(5, result.size());
     }
 }
