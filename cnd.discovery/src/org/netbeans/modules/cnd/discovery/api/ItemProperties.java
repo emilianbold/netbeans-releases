@@ -69,6 +69,11 @@ public interface ItemProperties {
     Map<String,String> getUserMacros();
 
     /**
+     * List of undefined macros
+     */
+    List<String> getUndefinedMacros();
+
+    /**
      * List of system predefined macros
      */
     Map<String,String> getSystemMacros();

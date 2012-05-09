@@ -78,7 +78,6 @@ import org.openide.util.ImageUtilities;
 public class YamlCompletion implements CodeCompletionHandler {
 
     private String refcard;
-
     // Based http://www.yaml.org/refcard.html
     private static final String[] YAML_KEYS =
             new String[]{
@@ -115,8 +114,7 @@ public class YamlCompletion implements CodeCompletionHandler {
         "!!seq", "{ List, array, tuple, vector, sequence }",
         "!!str", "Unicode string",
         "!!set", "{ cherries, plums, apples }",
-        "!!omap", "[ one: 1, two: 2 ]",
-    //{ ~, null }              : Null (no value).
+        "!!omap", "[ one: 1, two: 2 ]", //{ ~, null }              : Null (no value).
     //[ 1234, 0x4D2, 02333 ]   : [ Decimal int, Hexadecimal int, Octal int ]
     //[ 1_230.15, 12.3015e+02 ]: [ Fixed float, Exponential float ]
     //[ .inf, -.Inf, .NAN ]    : [ Infinity (float), Negative, Not a number ]

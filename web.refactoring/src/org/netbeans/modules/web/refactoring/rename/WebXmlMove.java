@@ -34,7 +34,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.j2ee.core.api.support.java.JavaIdentifiers;
-import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.web.refactoring.RefactoringUtil;
@@ -50,8 +49,8 @@ public class WebXmlMove extends BaseWebXmlRename{
     private final MoveRefactoring move;
     private final List<String> classes;
     
-    public WebXmlMove(FileObject webDD, WebApp webModel, MoveRefactoring move) {
-        super(webDD, webModel);
+    public WebXmlMove(FileObject webDD, MoveRefactoring move) {
+        super(webDD);
         this.move = move;
         this.classes = RefactoringUtil.getRefactoredClasses(move);
     }

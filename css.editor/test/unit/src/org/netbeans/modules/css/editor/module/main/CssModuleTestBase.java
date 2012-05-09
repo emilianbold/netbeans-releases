@@ -145,7 +145,25 @@ public class CssModuleTestBase extends CslTestBase {
             System.out.println(String.format("Input '%s' resolved in %s ms.", inputText, c - a));
         }
         if (pv.isResolved() != expectedSuccess) {
-            assertTrue("Unexpected parsing result", false);
+            StringBuilder msg = new StringBuilder();
+            msg.append("Unexpected parsing result - ");
+            if(expectedSuccess) {
+                msg.append(" success expected but was failure.");
+                msg.append(" Uresolved token(s): ");
+                List<String> unresolved = pv.getUnresolvedTokens();
+                for(int i = unresolved.size() - 1; i >= 0; i--) {
+                    String token = unresolved.get(i);
+                    msg.append(token);
+                    if(i > 0) {
+                        msg.append(",");
+                    }
+                }
+                
+            } else {
+                msg.append(" failure expected but was success.");
+            }
+            assertTrue(msg.toString(), false);
+            
         }
 
         return pv;

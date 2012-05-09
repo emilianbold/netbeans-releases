@@ -66,8 +66,9 @@ import org.netbeans.modules.csl.spi.ParserResult;
 import org.openide.util.Exceptions;
 
 /**
- * Keystroke handler for YAML; handle newline indentation, auto matching of <% %> etc.
- * 
+ * Keystroke handler for YAML; handle newline indentation, auto matching of <%
+ * %> etc.
+ *
  * @author Tor Norbye
  */
 public class YamlKeystrokeHandler implements KeystrokeHandler {

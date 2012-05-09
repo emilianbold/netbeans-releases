@@ -258,7 +258,7 @@ public final class GdbDebuggerSettingsBridge extends DebuggerSettingsBridge {
     }
     
     static String[] detectRedirect(String runargs, String type) {
-        String[] res = {null, null};
+        String[] res = {null, runargs};
         int argPos = runargs.indexOf(type);
         if (argPos != -1) {
             res[1] = runargs.substring(0, argPos);

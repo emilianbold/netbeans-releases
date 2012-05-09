@@ -1127,6 +1127,10 @@ final class BinaryFS extends FileSystem implements DataInput {
             hash = 37 * hash + (this.fo != null ? this.fo.hashCode() : 0);
             return hash;
         }
+        @Override
+        public String toString() {
+            return "BinaryFileMap@" + Integer.toHexString(System.identityHashCode(this)) + "{" + "fo=" + fo + '}'; // NOI18N
+        }
     } // end of FileMap
     private static final class AttrFileSet extends AbstractSet<Map.Entry<String,Object>> {
         private FileObject fo;

@@ -167,11 +167,11 @@ public class ActiveTerm extends StreamTerm {
     } 
 
     public ActiveRegion beginRegion(boolean hyperlink) {
-	ActiveRegion region = null;
+	ActiveRegion region;
 	try {
 	    region = rm.beginRegion(getCursorCoord());
 	} catch (RegionException x) {
-	    ;
+            return new ActiveRegion(null, new Coord(), false);
 	} 
         region.setParentAttrs(attrSave());
 	if (hyperlink) {
@@ -187,14 +187,15 @@ public class ActiveTerm extends StreamTerm {
 
 	// This only happens if we begin and end a region w/o any output
 	// in between
-	if (bcursor == null)
+	if (bcursor == null) {
 	    bcursor = cursor;
+        }
 
-        ActiveRegion endedRegion = null;
+        ActiveRegion endedRegion;
 	try {
 	    endedRegion = rm.endRegion(bcursor);
 	} catch (RegionException x) {
-	    ;
+            return;
 	}
 	// OLD setAttribute(0);		// reset
         attrRestore(endedRegion.getParentAttrs());

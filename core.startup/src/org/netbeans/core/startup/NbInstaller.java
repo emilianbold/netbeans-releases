@@ -337,7 +337,16 @@ final class NbInstaller extends ModuleInstaller {
     }
     
     @Override
-    public void load(List<Module> modules) {
+    public void load(final List<Module> modules) {
+        FileUtil.runAtomicAction(new Runnable() {
+            @Override
+            public void run() {
+                loadImpl(modules);
+            }
+        });
+    }
+    
+    private void loadImpl(List<Module> modules) {
         ev.log(Events.START_LOAD, modules);
         
         checkForDeprecations(modules);
@@ -406,7 +415,17 @@ final class NbInstaller extends ModuleInstaller {
         }
     }
     
-    public void unload(List<Module> modules) {
+    @Override
+    public void unload(final List<Module> modules) {
+        FileUtil.runAtomicAction(new Runnable() {
+            @Override
+            public void run() {
+                unloadImpl(modules);
+            }
+        });
+    }
+    
+    private void unloadImpl(List<Module> modules) {
         ev.log(Events.START_UNLOAD, modules);
         for (Module m: modules) {
             try {

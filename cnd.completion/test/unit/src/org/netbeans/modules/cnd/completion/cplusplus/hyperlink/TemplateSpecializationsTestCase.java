@@ -175,6 +175,11 @@ public class TemplateSpecializationsTestCase extends HyperlinkBaseTestCase {
         // Bug 209513 - a lot of renderer exceptions in log
         performTest("bug209513.cpp", 4, 37, "bug209513.cpp", 2, 9);
     }
+
+    public void testBug210303() throws Exception {
+        // Bug 210303 - Unresolved instantiation
+        performTest("bug210303.cpp", 8, 7, "bug210303.cpp", 3, 5);
+    }    
     
     public static class Failed extends HyperlinkBaseTestCase {
 

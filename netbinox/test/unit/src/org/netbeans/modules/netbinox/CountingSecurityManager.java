@@ -59,6 +59,7 @@ import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import junit.framework.Assert;
+import org.openide.modules.Places;
 
 /**
  *
@@ -457,6 +458,10 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
         if (containsPath(file, ".eclipse/org.eclipse.equinox.security/secure_storage")) {
             // comes from org.eclipse.equinox.internal.security.storage.StorageUtils.getDefaultLocation
             // and does not seem to be preventable
+            return false;
+        }
+
+        if (containsPath(file, Places.getUserDirectory().getName() + "/.metadata")) {
             return false;
         }
         if (

@@ -40,11 +40,10 @@
 package org.netbeans.modules.testng.maven;
 
 import java.io.InputStream;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.spi.actions.AbstractMavenActionsProvider;
-import org.netbeans.modules.maven.spi.actions.MavenActionsProvider;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
@@ -52,6 +51,8 @@ import org.openide.util.lookup.ServiceProvider;
  */
 //@ServiceProvider(service=MavenActionsProvider.class, position=53)
 public class TestNGActionsProvider extends AbstractMavenActionsProvider {
+
+    @StaticResource private static final String MAPPINGS = "org/netbeans/modules/testng/maven/testngActionMappings.xml";
 
     /** Creates a new instance of TestNGActionsProvider */
     public TestNGActionsProvider() {
@@ -68,13 +69,7 @@ public class TestNGActionsProvider extends AbstractMavenActionsProvider {
 
     @Override
     protected InputStream getActionDefinitionStream() {
-       String path = "/org/netbeans/modules/testng/maven/testngActionMappings.xml"; //NOI18N
-       InputStream in = getClass().getResourceAsStream(path);
-        if (in == null) {
-            assert false : "No instream for " + path; //NOI18N
-            return null;
-        }
-       return in;
+        return TestNGActionsProvider.class.getClassLoader().getResourceAsStream(MAPPINGS);
     }
 
 }

@@ -127,7 +127,7 @@ public class EntityResourcesSetupPanelVisual extends JPanel
         controllerPackageLabel = new javax.swing.JLabel();
         controllerPackageComboBox = new javax.swing.JComboBox();
 
-        setPreferredSize(new java.awt.Dimension(596, 100));
+        setPreferredSize(new java.awt.Dimension(450, 100));
 
         projectLabel.setLabelFor(projectTextField);
         org.openide.awt.Mnemonics.setLocalizedText(projectLabel, org.openide.util.NbBundle.getMessage(EntityResourcesSetupPanelVisual.class, "LBL_Project")); // NOI18N
@@ -177,7 +177,7 @@ public class EntityResourcesSetupPanelVisual extends JPanel
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(resourcePackageLabel)
-                            .addComponent(controllerPackageLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 133, Short.MAX_VALUE))
+                            .addComponent(controllerPackageLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 124, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -185,10 +185,10 @@ public class EntityResourcesSetupPanelVisual extends JPanel
                             .addComponent(locationLabel))
                         .addGap(79, 79, 79)))
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(locationComboBox, javax.swing.GroupLayout.Alignment.LEADING, 0, 366, Short.MAX_VALUE)
-                    .addComponent(projectTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 366, Short.MAX_VALUE)
-                    .addComponent(resourcePackageComboBox, javax.swing.GroupLayout.Alignment.LEADING, 0, 366, Short.MAX_VALUE)
-                    .addComponent(controllerPackageComboBox, javax.swing.GroupLayout.Alignment.LEADING, 0, 366, Short.MAX_VALUE)))
+                    .addComponent(locationComboBox, javax.swing.GroupLayout.Alignment.LEADING, 0, 320, Short.MAX_VALUE)
+                    .addComponent(projectTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 320, Short.MAX_VALUE)
+                    .addComponent(resourcePackageComboBox, javax.swing.GroupLayout.Alignment.LEADING, 0, 320, Short.MAX_VALUE)
+                    .addComponent(controllerPackageComboBox, javax.swing.GroupLayout.Alignment.LEADING, 0, 320, Short.MAX_VALUE)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)

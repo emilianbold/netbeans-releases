@@ -53,8 +53,8 @@ public class WebXmlWhereUsed extends WebXmlRefactoring{
     private final WhereUsedQuery whereUsedQuery;
     private final String clazzFqn;
     
-    public WebXmlWhereUsed(FileObject webDD, WebApp webModel, String clazzFqn, WhereUsedQuery whereUsedQuery) {
-        super(webDD, webModel);
+    public WebXmlWhereUsed(FileObject webDD, String clazzFqn, WhereUsedQuery whereUsedQuery) {
+        super(webDD);
         this.clazzFqn = clazzFqn;
         this.whereUsedQuery = whereUsedQuery;
     }
@@ -63,31 +63,31 @@ public class WebXmlWhereUsed extends WebXmlRefactoring{
     public Problem prepare(RefactoringElementsBag refactoringElements) {
         
         for (Servlet servlet : getServlets(clazzFqn)){
-            refactoringElements.add(whereUsedQuery, new WhereUsedElement(webModel, webDD, "TXT_WebXmlServletWhereUsed", clazzFqn));//NO18N
+            refactoringElements.add(whereUsedQuery, new WhereUsedElement(getWebModel(), webDD, "TXT_WebXmlServletWhereUsed", clazzFqn));//NO18N
         }
         
         for (Filter filter : getFilters(clazzFqn)){
-            refactoringElements.add(whereUsedQuery, new WhereUsedElement(webModel, webDD, "TXT_WebXmlFilterWhereUsed", clazzFqn));//NO18N
+            refactoringElements.add(whereUsedQuery, new WhereUsedElement(getWebModel(), webDD, "TXT_WebXmlFilterWhereUsed", clazzFqn));//NO18N
         }
         
         for (Listener listener : getListeners(clazzFqn)){
-            refactoringElements.add(whereUsedQuery, new WhereUsedElement(webModel, webDD, "TXT_WebXmlListenerWhereUsed", clazzFqn));//NO18N
+            refactoringElements.add(whereUsedQuery, new WhereUsedElement(getWebModel(), webDD, "TXT_WebXmlListenerWhereUsed", clazzFqn));//NO18N
         }
         
         for (EjbRef ejbRef : getEjbRefs(clazzFqn, true)){
-            refactoringElements.add(whereUsedQuery, new WhereUsedElement(webModel, webDD, "TXT_WebXmlRefRemoteWhereUsed", clazzFqn));//NO18N
+            refactoringElements.add(whereUsedQuery, new WhereUsedElement(getWebModel(), webDD, "TXT_WebXmlRefRemoteWhereUsed", clazzFqn));//NO18N
         }
         
         for (EjbRef ejbRef : getEjbRefs(clazzFqn, false)){
-            refactoringElements.add(whereUsedQuery, new WhereUsedElement(webModel, webDD, "TXT_WebXmlRefHomeWhereUsed", clazzFqn));//NO18N
+            refactoringElements.add(whereUsedQuery, new WhereUsedElement(getWebModel(), webDD, "TXT_WebXmlRefHomeWhereUsed", clazzFqn));//NO18N
         }
         
         for (EjbLocalRef ejbLocalRef : getEjbLocalRefs(clazzFqn, true)){
-            refactoringElements.add(whereUsedQuery, new WhereUsedElement(webModel, webDD, "TXT_WebXmlRefLocalHomeWhereUsed", clazzFqn));//NO18N
+            refactoringElements.add(whereUsedQuery, new WhereUsedElement(getWebModel(), webDD, "TXT_WebXmlRefLocalHomeWhereUsed", clazzFqn));//NO18N
         }
         
         for (EjbLocalRef ejbLocalRef : getEjbLocalRefs(clazzFqn, true)){
-            refactoringElements.add(whereUsedQuery, new WhereUsedElement(webModel, webDD, "TXT_WebXmlRefLocalWhereUsed", clazzFqn));//NO18N
+            refactoringElements.add(whereUsedQuery, new WhereUsedElement(getWebModel(), webDD, "TXT_WebXmlRefLocalWhereUsed", clazzFqn));//NO18N
         }
         
         return null;

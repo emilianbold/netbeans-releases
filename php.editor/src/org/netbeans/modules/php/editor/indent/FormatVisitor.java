@@ -494,6 +494,21 @@ public class FormatVisitor extends DefaultVisitor {
     }
 
     @Override
+    public void visit(TraitDeclaration node) {
+        addAllUntilOffset(node.getStartOffset());
+        if (includeWSBeforePHPDoc) {
+            formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_CLASS, ts.offset()));
+        } else {
+            includeWSBeforePHPDoc = true;
+        }
+        while (ts.moveNext() && ts.token().id() != PHPTokenId.PHP_CURLY_OPEN) {
+            addFormatToken(formatTokens);
+        }
+        ts.movePrevious();
+        super.visit(node);
+    }
+
+    @Override
     public void visit(ClassInstanceCreation node) {
         scan(node.getClassName());
         if (node.ctorParams() != null && node.ctorParams().size() > 0) {
@@ -689,8 +704,32 @@ public class FormatVisitor extends DefaultVisitor {
     @Override
     public void visit(ForEachStatement node) {
         scan(node.getExpression());
+        boolean wrap = node.getKey() != null;
+        if (wrap) {
+            int start = node.getKey().getStartOffset();
+            addAllUntilOffset(node.getKey().getStartOffset());
+            formatTokens.add(new FormatToken.IndentToken(start, options.continualIndentSize));
+            formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_IN_FOR, start));
+            formatTokens.add(new FormatToken.UnbreakableSequenceToken(start, null, FormatToken.Kind.UNBREAKABLE_SEQUENCE_START));
+        }
         scan(node.getKey());
+        if (wrap) {
+            addEndOfUnbreakableSequence(node.getKey().getEndOffset());
+            formatTokens.add(new FormatToken.IndentToken(ts.offset(), -1 * options.continualIndentSize));
+        }
+        wrap = node.getValue() != null;
+        if (wrap) {
+            int start = node.getValue().getStartOffset();
+            addAllUntilOffset(node.getValue().getStartOffset());
+            formatTokens.add(new FormatToken.IndentToken(start, options.continualIndentSize));
+            formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_IN_FOR, start));
+            formatTokens.add(new FormatToken.UnbreakableSequenceToken(start, null, FormatToken.Kind.UNBREAKABLE_SEQUENCE_START));
+        }
         scan(node.getValue());
+        if (wrap) {
+            addEndOfUnbreakableSequence(node.getValue().getEndOffset());
+            formatTokens.add(new FormatToken.IndentToken(ts.offset(), -1 * options.continualIndentSize));
+        }
         ASTNode body = node.getStatement();
         if (body != null && (body instanceof Block && !((Block) body).isCurly())) {
             addAllUntilOffset(body.getStartOffset());

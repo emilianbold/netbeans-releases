@@ -50,6 +50,7 @@ import java.util.Collection;
  */
 public interface HtmlModel {
 
+    @Deprecated
     public String getModelId();
 
     public Collection<HtmlTag> getAllTags();

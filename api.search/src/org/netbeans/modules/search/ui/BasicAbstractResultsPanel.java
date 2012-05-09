@@ -301,7 +301,7 @@ public abstract class BasicAbstractResultsPanel
                 args = new Object[4];
             } else if (resultModel.canHaveDetails()) {
                 bundleKey = "TEXT_MSG_FOUND_X_NODES_FULLTEXT";          //NOI18N
-                args = new Object[2];
+                args = new Object[3];
             } else {
                 bundleKey = "TEXT_MSG_FOUND_X_NODES";                   //NOI18N
                 args = new Object[1];
@@ -313,7 +313,9 @@ public abstract class BasicAbstractResultsPanel
             if (args.length > 2) {
                 BasicSearchCriteria bsc = composition.getBasicSearchCriteria();
                 args[2] = bsc.getTextPatternExpr();
-                args[3] = bsc.getReplaceExpr();
+                if (args.length > 3) {
+                    args[3] = bsc.getReplaceExpr();
+                }
             }
             baseMsg = NbBundle.getMessage(ResultView.class, bundleKey, args);
         }

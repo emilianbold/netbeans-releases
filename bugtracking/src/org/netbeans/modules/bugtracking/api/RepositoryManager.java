@@ -157,7 +157,7 @@ public final class RepositoryManager {
         public void propertyChange(PropertyChangeEvent evt) {
             if(EVENT_REPOSITORIES_CHANGED.equals(evt.getPropertyName())) {
                 Collection<RepositoryImpl> newImpls = (Collection<RepositoryImpl>) evt.getNewValue();
-                Collection<RepositoryImpl> oldImpls = (Collection<RepositoryImpl>) evt.getNewValue();
+                Collection<RepositoryImpl> oldImpls = (Collection<RepositoryImpl>) evt.getOldValue();
                 changeSupport.firePropertyChange(EVENT_REPOSITORIES_CHANGED, toRepositories(oldImpls), toRepositories(newImpls));
             }
         }

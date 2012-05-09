@@ -51,7 +51,6 @@ import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
-import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 
 /**
@@ -59,6 +58,7 @@ import org.openide.util.NbBundle.Messages;
  * @author mkleint
  */
 @NavigatorPanel.Registration(mimeType=Constants.POM_MIME_TYPE, position=200, displayName="#POM_NAME")
+@Messages("POM_NAME=POM inheritance")
 public class POMInheritanceNavigator implements NavigatorPanel {
     private POMInheritancePanel component;
     
@@ -67,8 +67,9 @@ public class POMInheritanceNavigator implements NavigatorPanel {
     protected final LookupListener selectionListener = new LookupListener() {
         @Override
         public void resultChanged(LookupEvent ev) {
-            if(selection == null)
+            if(selection == null) {
                 return;
+            }
             navigate(selection.allInstances());
         }
     };
@@ -76,7 +77,7 @@ public class POMInheritanceNavigator implements NavigatorPanel {
 
     @Override
     public String getDisplayName() {
-        return NbBundle.getMessage(POMInheritanceNavigator.class, "POM_NAME");
+        return POM_NAME();
     }
 
     @Override

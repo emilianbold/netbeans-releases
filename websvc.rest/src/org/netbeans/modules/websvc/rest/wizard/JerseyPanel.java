@@ -246,6 +246,8 @@ public class JerseyPanel extends javax.swing.JPanel implements ChangeListener, S
         restAppClassLbl = new javax.swing.JLabel();
         restAppClass = new javax.swing.JTextField();
 
+        setPreferredSize(new java.awt.Dimension(450, 115));
+
         org.openide.awt.Mnemonics.setLocalizedText(useJersey, org.openide.util.NbBundle.getMessage(JerseyPanel.class, "LBL_UseJersey")); // NOI18N
         useJersey.setActionCommand(org.openide.util.NbBundle.getMessage(JerseyPanel.class, "JerseyPanel.useJersey.actionCommand")); // NOI18N
 
@@ -275,7 +277,7 @@ public class JerseyPanel extends javax.swing.JPanel implements ChangeListener, S
             .addGroup(layout.createSequentialGroup()
                 .addComponent(restAppClassLbl)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(restAppClass, javax.swing.GroupLayout.DEFAULT_SIZE, 422, Short.MAX_VALUE)
+                .addComponent(restAppClass, javax.swing.GroupLayout.DEFAULT_SIZE, 285, Short.MAX_VALUE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(

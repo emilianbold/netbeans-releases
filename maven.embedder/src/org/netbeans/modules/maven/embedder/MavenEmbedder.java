@@ -158,7 +158,7 @@ public final class MavenEmbedder {
             if (localRepositoryPath != null) {
                 return repositorySystem.createLocalRepository(FileUtil.normalizeFile(new File(localRepositoryPath)));
             }
-            return repositorySystem.createLocalRepository(RepositorySystem.defaultUserLocalRepository);
+            return repositorySystem.createDefaultLocalRepository();
         } catch (InvalidRepositoryException ex) {
             // can't happen
             throw new IllegalStateException(ex);

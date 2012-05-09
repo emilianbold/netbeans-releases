@@ -131,7 +131,7 @@ public final class EditorPreferencesDefaults {
     public static final boolean defaultWordMatchMatchOneChar = true;
     public static final boolean defaultWordMatchMatchCase = false;
     public static final boolean defaultWordMatchSmartCase = false;
-    public static final boolean defaultCodeFoldingEnable = false;
+    public static final boolean defaultCodeFoldingEnable = true;
     
     // -----------------------------------------------------------------------
     // --- from ExtSettingsDefaults

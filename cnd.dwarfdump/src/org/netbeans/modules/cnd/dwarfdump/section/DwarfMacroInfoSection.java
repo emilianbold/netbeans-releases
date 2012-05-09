@@ -53,16 +53,16 @@
 package org.netbeans.modules.cnd.dwarfdump.section;
 
 import java.io.ByteArrayOutputStream;
-import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfMacinfoTable;
-import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfMacinfoEntry;
-import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.MACINFO;
-import org.netbeans.modules.cnd.dwarfdump.reader.DwarfReader;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Stack;
+import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfMacinfoEntry;
+import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfMacinfoTable;
+import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.MACINFO;
+import org.netbeans.modules.cnd.dwarfdump.reader.DwarfReader;
 
 /**
  *
@@ -157,7 +157,6 @@ public class DwarfMacroInfoSection extends ElfSection {
 
     public List<Integer> getCommandIncudedFiles(DwarfMacinfoTable table, long offset) throws IOException{
         List<Integer> res = new ArrayList<Integer>();
-        long currPos = reader.getFilePointer();
         reader.seek(header.getSectionOffset() + offset);
         int level = 0;
         int lineNum;

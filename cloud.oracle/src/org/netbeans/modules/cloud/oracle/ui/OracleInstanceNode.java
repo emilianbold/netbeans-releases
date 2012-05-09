@@ -56,13 +56,14 @@ import org.openide.util.lookup.Lookups;
 public class OracleInstanceNode extends AbstractNode {
     
     private OracleInstance ai;
+    private static final String ORACLE_ICON = "org/netbeans/modules/cloud/oracle/ui/resources/oracle.png"; // NOI18N
     
     public OracleInstanceNode(OracleInstance ai) {
         super(Children.LEAF, Lookups.fixed(ai));
         this.ai = ai;
         setName(""); // NOI18N
         setDisplayName(ai.getName());
-        setIconBaseWithExtension(RootNode.ORACLE_ICON);
+        setIconBaseWithExtension(ORACLE_ICON);
     }
     
     @Override

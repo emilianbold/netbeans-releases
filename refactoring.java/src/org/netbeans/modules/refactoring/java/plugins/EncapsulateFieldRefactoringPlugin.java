@@ -946,7 +946,7 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
 
             String fieldName = field.getSimpleName().toString();
             boolean staticMod = field.getModifiers().contains(Modifier.STATIC);
-            String longName = staticMod ? "" : "this." + fieldName;//NOI18N
+            String longName = (staticMod ? "" : "this.") + fieldName;//NOI18N
             String oldName = "old" + getCapitalizedName(field);//NOI18N
             String parName = staticMod ? "a" + getCapitalizedName(field) : Utilities.isJavaIdentifier(stripPrefix(fieldName)) ? stripPrefix(fieldName) : fieldName; //NOI18N
             String getterBody = "{return " + fieldName + ";}"; //NOI18N
@@ -954,16 +954,16 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
             setterBody.append("{");//NOI18N
 
             if (propertyChange != null || vetoableChange != null) {
-                setterBody.append(field.asType().toString() + " " + oldName + " = " + fieldName + ";");//NOI18N
+                setterBody.append(field.asType().toString()).append(" ").append(oldName).append(" = ").append(fieldName).append(";");//NOI18N
             }
             if (vetoableChange != null) {
-                setterBody.append(vetoableChange.getName() + ".fireVetoableChange(" + propName.getName() + ", " + oldName + ", " + fieldName + ");");//NOI18N
+                setterBody.append(vetoableChange.getName()).append(".fireVetoableChange(").append(propName.getName()).append(", ").append(oldName).append(", ").append(fieldName).append(");");//NOI18N
             }
 
-            setterBody.append(longName + " = " + parName + ";"); //NOI18N
+            setterBody.append(longName).append(" = ").append(parName).append(";"); //NOI18N
 
             if (propertyChange != null) {
-                setterBody.append(propertyChange.getName() + ".firePropertyChange(" + propName.getName() + ", " + oldName + ", " + fieldName + ");");//NOI18N
+                setterBody.append(propertyChange.getName()).append(".firePropertyChange(").append(propName.getName()).append(", ").append(oldName).append(", ").append(fieldName).append(");");//NOI18N
             }
 
 

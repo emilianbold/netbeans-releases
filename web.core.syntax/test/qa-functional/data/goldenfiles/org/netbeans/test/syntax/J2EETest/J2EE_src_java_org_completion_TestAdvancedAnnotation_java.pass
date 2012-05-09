@@ -8,6 +8,7 @@ FieldResult
 NamedNativeQuery
 Override
 RequestForEnhancement
+SafeVarargs
 SuppressWarnings
 Temporal
 TestAdvancedAnnotation
@@ -39,8 +40,10 @@ ArithmeticException
 ArrayIndexOutOfBoundsException
 ArrayStoreException
 AssertionError
+AutoCloseable
 Basic
 Boolean
+BootstrapMethodError
 Byte
 CharSequence
 Character
@@ -50,6 +53,7 @@ ClassCircularityError
 ClassFormatError
 ClassLoader
 ClassNotFoundException
+ClassValue <T>
 CloneNotSupportedException
 Cloneable
 Column
@@ -100,11 +104,13 @@ Package
 Process
 ProcessBuilder
 Readable
+ReflectiveOperationException
 RequestForEnhancement
 Runnable
 Runtime
 RuntimeException
 RuntimePermission
+SafeVarargs
 SecurityException
 SecurityManager
 Short
@@ -162,8 +168,10 @@ ArithmeticException
 ArrayIndexOutOfBoundsException
 ArrayStoreException
 AssertionError
+AutoCloseable
 Basic
 Boolean
+BootstrapMethodError
 Byte
 CharSequence
 Character
@@ -173,6 +181,7 @@ ClassCircularityError
 ClassFormatError
 ClassLoader
 ClassNotFoundException
+ClassValue <T>
 CloneNotSupportedException
 Cloneable
 Column
@@ -223,11 +232,13 @@ Package
 Process
 ProcessBuilder
 Readable
+ReflectiveOperationException
 RequestForEnhancement
 Runnable
 Runtime
 RuntimeException
 RuntimePermission
+SafeVarargs
 SecurityException
 SecurityManager
 Short
@@ -277,6 +288,7 @@ FieldResult
 NamedNativeQuery
 Override
 RequestForEnhancement
+SafeVarargs
 SuppressWarnings
 Temporal
 TestAdvancedAnnotation

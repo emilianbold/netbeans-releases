@@ -46,6 +46,7 @@ package org.netbeans.modules.project.libraries;
 
 import org.netbeans.api.project.TestUtil;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.util.test.MockLookup;
@@ -75,6 +76,7 @@ public class LibrariesStorageRefreshTest extends NbTestCase {
         this.storage = new LibrariesStorage (this.storageFolder);
     }
 
+    @RandomlyFails // NB-Core-Build #8253: Libraries count expected:<1> but was:<0>
     public void testGetLibrariesAfterEnablingProvider() throws Exception {
         this.storage.getLibraries();
         LibraryImplementation[] libs = this.storage.getLibraries();

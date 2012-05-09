@@ -457,14 +457,12 @@ public final class Main extends Object {
             
             /** Checks if licence was accepted already or not. */
             public boolean shouldDisplayLicense () {
-                File f = InstalledFileLocator.getDefault().locate("var/license_accepted","org.netbeans.core.startup",false); // NOI18N
-                if (f != null) {
-                    return false;
-                }
+                if (licenseFileExists()) return false;
                 classname = System.getProperty("netbeans.accept_license_class"); // NOI18N
                 return (classname != null);
             }
             
+            @Override
             public void run() {
                 // This module is included in our distro somewhere... may or may not be turned on.
                 // Whatever - try running some classes from it anyway.
@@ -480,6 +478,9 @@ public final class Main extends Object {
                         f.getParentFile().mkdirs();
                         try {
                             f.createNewFile();
+                            if (!licenseFileExists()) {
+                                throw new IOException("InstalledFileLocator can't find " + f); // NOI18N
+                            }
                         } catch (IOException exc) {
                             LOG.log(Level.WARNING, null, exc);
                         }
@@ -519,6 +520,16 @@ public final class Main extends Object {
                     // if there is no need to upgrade that every thing is good
                     return true;
                 }
+            }
+
+            private boolean licenseFileExists() {
+                for (File cluster : InstalledFileLocatorImpl.computeDirs()) {
+                    File f = new File(new File(cluster, "var"), "license_accepted"); // NOI18N
+                    if (f.exists()) {
+                        return true;
+                    }
+                }
+                return false;
             }
         }
                 

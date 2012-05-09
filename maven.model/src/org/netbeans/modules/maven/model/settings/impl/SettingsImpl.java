@@ -81,6 +81,7 @@ public class SettingsImpl extends SettingsComponentImpl implements Settings {
     // attributes
 
 
+    @Override
     public List<Profile> getProfiles() {
         ModelList<Profile> childs = getChild(ProfileImpl.List.class);
         if (childs != null) {
@@ -89,6 +90,7 @@ public class SettingsImpl extends SettingsComponentImpl implements Settings {
         return null;
     }
 
+    @Override
     public void addProfile(Profile profile) {
         ModelList<Profile> childs = getChild(ProfileImpl.List.class);
         if (childs == null) {
@@ -102,6 +104,7 @@ public class SettingsImpl extends SettingsComponentImpl implements Settings {
         childs.addListChild(profile);
     }
 
+    @Override
     public void removeProfile(Profile profile) {
         ModelList<Profile> childs = getChild(ProfileImpl.List.class);
         if (childs != null) {
@@ -111,10 +114,12 @@ public class SettingsImpl extends SettingsComponentImpl implements Settings {
 
 
 
+    @Override
     public void accept(SettingsComponentVisitor visitor) {
         visitor.visit(this);
     }
 
+    @Override
     public List<String> getActiveProfiles() {
         List<StringList> lists = getChildren(StringList.class);
         for (StringList list : lists) {
@@ -125,6 +130,7 @@ public class SettingsImpl extends SettingsComponentImpl implements Settings {
         return null;
     }
 
+    @Override
     public void addActiveProfile(String profileid) {
         List<StringList> lists = getChildren(StringList.class);
         for (StringList list : lists) {
@@ -146,6 +152,7 @@ public class SettingsImpl extends SettingsComponentImpl implements Settings {
         }
     }
 
+    @Override
     public void removeActiveProfile(String profileid) {
         List<StringList> lists = getChildren(StringList.class);
         for (StringList list : lists) {
@@ -156,6 +163,7 @@ public class SettingsImpl extends SettingsComponentImpl implements Settings {
         }
     }
 
+    @Override
     public Profile findProfileById(String id) {
         assert id != null;
         java.util.List<Profile> profiles = getProfiles();
@@ -169,6 +177,7 @@ public class SettingsImpl extends SettingsComponentImpl implements Settings {
         return null;
     }
 
+    @Override
     public List<String> getPluginGroups() {
         List<StringList> lists = getChildren(StringList.class);
         for (StringList list : lists) {
@@ -179,6 +188,7 @@ public class SettingsImpl extends SettingsComponentImpl implements Settings {
         return null;
     }
 
+    @Override
     public void addPluginGroup(String group) {
         List<StringList> lists = getChildren(StringList.class);
         for (StringList list : lists) {
@@ -200,6 +210,7 @@ public class SettingsImpl extends SettingsComponentImpl implements Settings {
         }
     }
 
+    @Override
     public void removePluginGroup(String group) {
         List<StringList> lists = getChildren(StringList.class);
         for (StringList list : lists) {
@@ -210,6 +221,7 @@ public class SettingsImpl extends SettingsComponentImpl implements Settings {
         }
     }
 
+    @Override
     public List<Proxy> getProxies() {
         ModelList<Proxy> childs = getChild(ProxyImpl.List.class);
         if (childs != null) {
@@ -218,6 +230,7 @@ public class SettingsImpl extends SettingsComponentImpl implements Settings {
         return null;
     }
 
+    @Override
     public void addProxy(Proxy proxy) {
         ModelList<Proxy> childs = getChild(ProxyImpl.List.class);
         if (childs == null) {
@@ -231,6 +244,7 @@ public class SettingsImpl extends SettingsComponentImpl implements Settings {
         childs.addListChild(proxy);
     }
 
+    @Override
     public void removeProxy(Proxy proxy) {
         ModelList<Proxy> childs = getChild(ProxyImpl.List.class);
         if (childs != null) {
@@ -238,6 +252,7 @@ public class SettingsImpl extends SettingsComponentImpl implements Settings {
         }
     }
 
+    @Override
     public List<Server> getServers() {
         ModelList<Server> childs = getChild(ServerImpl.List.class);
         if (childs != null) {
@@ -246,6 +261,7 @@ public class SettingsImpl extends SettingsComponentImpl implements Settings {
         return null;
     }
 
+    @Override
     public void addServer(Server server) {
         ModelList<Server> childs = getChild(ServerImpl.List.class);
         if (childs == null) {
@@ -259,6 +275,7 @@ public class SettingsImpl extends SettingsComponentImpl implements Settings {
         childs.addListChild(server);
     }
 
+    @Override
     public void removeServer(Server server) {
         ModelList<Server> childs = getChild(ServerImpl.List.class);
         if (childs != null) {
@@ -266,6 +283,7 @@ public class SettingsImpl extends SettingsComponentImpl implements Settings {
         }
     }
 
+    @Override
     public List<Mirror> getMirrors() {
         ModelList<Mirror> childs = getChild(MirrorImpl.List.class);
         if (childs != null) {
@@ -274,6 +292,7 @@ public class SettingsImpl extends SettingsComponentImpl implements Settings {
         return null;
     }
 
+    @Override
     public void addMirror(Mirror mirror) {
         ModelList<Mirror> childs = getChild(MirrorImpl.List.class);
         if (childs == null) {
@@ -287,6 +306,7 @@ public class SettingsImpl extends SettingsComponentImpl implements Settings {
         childs.addListChild(mirror);
     }
 
+    @Override
     public void removeMirror(Mirror mirror) {
         ModelList<Mirror> childs = getChild(MirrorImpl.List.class);
         if (childs != null) {
@@ -294,6 +314,7 @@ public class SettingsImpl extends SettingsComponentImpl implements Settings {
         }
     }
 
+    @Override
     public Mirror findMirrorById(String id) {
         assert id != null;
         java.util.List<Mirror> mirrors = getMirrors();
@@ -308,15 +329,18 @@ public class SettingsImpl extends SettingsComponentImpl implements Settings {
     }
 
 
+    @Override
     public String getLocalRepository() {
         return getChildElementText(getModel().getSettingsQNames().LOCALREPOSITORY.getQName());
     }
 
+    @Override
     public void setLocalRepository(String repo) {
         setChildElementText(getModel().getSettingsQNames().LOCALREPOSITORY.getName(), repo,
                 getModel().getSettingsQNames().LOCALREPOSITORY.getQName());
     }
 
+    @Override
     public Boolean isInteractiveMode() {
         String str = getChildElementText(getModel().getSettingsQNames().INTERACTIVEMODE.getQName());
         if (str != null) {
@@ -325,12 +349,14 @@ public class SettingsImpl extends SettingsComponentImpl implements Settings {
         return null;
     }
 
+    @Override
     public void setInteractiveMode(Boolean interactive) {
         setChildElementText(getModel().getSettingsQNames().INTERACTIVEMODE.getName(),
                 interactive == null ? null : interactive.toString(),
                 getModel().getSettingsQNames().INTERACTIVEMODE.getQName());
     }
 
+    @Override
     public Boolean isUsePluginRegistry() {
         String str = getChildElementText(getModel().getSettingsQNames().USEPLUGINREGISTRY.getQName());
         if (str != null) {
@@ -339,12 +365,14 @@ public class SettingsImpl extends SettingsComponentImpl implements Settings {
         return null;
     }
 
+    @Override
     public void setUsePluginRegistry(Boolean use) {
         setChildElementText(getModel().getSettingsQNames().USEPLUGINREGISTRY.getName(),
                 use == null ? null : use.toString(),
                 getModel().getSettingsQNames().USEPLUGINREGISTRY.getQName());
     }
 
+    @Override
     public Boolean isOffline() {
         String str = getChildElementText(getModel().getSettingsQNames().OFFLINE.getQName());
         if (str != null) {
@@ -353,6 +381,7 @@ public class SettingsImpl extends SettingsComponentImpl implements Settings {
         return null;
     }
 
+    @Override
     public void setOffline(Boolean offline) {
         setChildElementText(getModel().getSettingsQNames().OFFLINE.getName(),
                 offline == null ? null : offline.toString(),

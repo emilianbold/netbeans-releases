@@ -56,9 +56,13 @@ public class ReopenBrokenRepositoryValidationTest extends CndBaseTestSuite {
 
     public ReopenBrokenRepositoryValidationTest() {
         super("Broken Repository"); // NOI18N
-        
+
+        // prepare golden model by parsing and dump into files
         addTestSuite(RepositoryValidationGoldens.class);
+        // prepare model by parsing, compare with golden and persist in repository
         addTestSuite(ReopenBrokenRepositoryValidationFirstParse.class);
+        // reopen model from repository, simulate recovery issue
+        // reparse model and compare it is the same as golden
         addTestSuite(ReopenBrokenRepositoryValidationFinal.class);
     }
 

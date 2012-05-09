@@ -171,7 +171,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                         public @Override boolean isCanceled() {
                             return context.isCancelled();
                         }
-                    }, APTUtils.get(context.getRoot()));
+                    }, active.aptGenerated ? null : APTUtils.get(context.getRoot()));
                     Iterable<? extends Processor> processors = jt.getProcessors();
                     aptEnabled = processors != null && processors.iterator().hasNext();
                     if (JavaIndex.LOG.isLoggable(Level.FINER)) {
@@ -256,7 +256,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                     continue;
                 }
                 jt.analyze(types);
-                boolean aptGenerated = aptEnabled ? JavaCustomIndexer.addAptGenerated(context, javaContext, active.indexable.getRelativePath(), previous.aptGenerated) : false;
+                boolean aptGenerated = aptEnabled ? JavaCustomIndexer.addAptGenerated(context, javaContext, active, previous.aptGenerated) : false;
                 if (mem.isLowMemory()) {
                     dumpSymFiles(fileManager, jt, previous.createdFiles);
                     mem.isLowMemory();

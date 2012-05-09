@@ -239,7 +239,11 @@ public final class JspJavacAntLogger extends AntLogger {
                 SmapResolver resolver = new SmapResolver(new SmapFileReader(smapFile));
                 String jspName = resolver.getJspFileName(line1, col1);
                 if (jspName == null) {
-                    return null;
+                    // try to search one line higher (in case of WSs before scriptlet)
+                    jspName = resolver.getJspFileName(line1 - 1, col1);
+                    if (jspName == null) {
+                        return null;
+                    }
                 }
                 if (LOGGABLE) ERR.log(Level.FINE, "translate: [" + line1 + ", " + col1 + "]");
                 int newRow = resolver.unmangle(line1, col1);

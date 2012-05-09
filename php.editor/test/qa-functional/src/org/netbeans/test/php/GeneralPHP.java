@@ -136,8 +136,6 @@ public class GeneralPHP extends JellyTestCase {
     }
 
     protected String CreateSamplePHPApplication(String type) {
-        NewProjectWizardOperator.invoke().cancel();
-
         NewProjectWizardOperator opNewProjectWizard = NewProjectWizardOperator.invoke();
 
         opNewProjectWizard.selectCategory(SAMPLES + "|" + PHP_CATEGORY_NAME);
@@ -691,7 +689,7 @@ public class GeneralPHP extends JellyTestCase {
             window.pressKey(KeyEvent.VK_DOWN);
             Sleep(1000);
         }
-        window.pressKey(KeyEvent.VK_ENTER);
+       // window.pressKey(KeyEvent.VK_ENTER);
         Sleep(1000);
 
         return window;

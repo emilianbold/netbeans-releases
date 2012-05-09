@@ -177,9 +177,9 @@ public final class PhpProject implements Project {
     private final AntProjectListener phpAntProjectListener = new PhpAntProjectListener();
     private final PropertyChangeListener projectPropertiesListener = new ProjectPropertiesListener();
 
-    // @GuardedBy("ignoredFoldersLock")
-    private Set<BasePathSupport.Item> ignoredFolders;
-    private final Object ignoredFoldersLock = new Object();
+    // @GuardedBy("ProjectManager.mutex() & ignoredFoldersLock") #211924
+    Set<BasePathSupport.Item> ignoredFolders;
+    final Object ignoredFoldersLock = new Object();
     // changes in ignored files - special case because of PhpVisibilityQuery
     final ChangeSupport ignoredFoldersChangeSupport = new ChangeSupport(this);
 
@@ -491,8 +491,8 @@ public final class PhpProject implements Project {
 
     public Set<File> getIgnoredFiles() {
         Set<File> ignored = new HashSet<File>();
-        putIgnoredProjectFiles(ignored);
-        putIgnoredFrameworkFiles(ignored);
+        addIgnoredProjectFiles(ignored);
+        addIgnoredFrameworkFiles(ignored);
         return ignored;
     }
 
@@ -508,29 +508,41 @@ public final class PhpProject implements Project {
         return ignoredFileObjects;
     }
 
-    private void putIgnoredProjectFiles(Set<File> ignored) {
-        synchronized (ignoredFoldersLock) {
-            if (ignoredFolders == null) {
-                ignoredFolders = resolveIgnoredFolders();
-            }
-            assert ignoredFolders != null : "Ignored folders cannot be null";
+    private void addIgnoredProjectFiles(final Set<File> ignored) {
+        ProjectManager.mutex().readAccess(new Mutex.Action<Void>() {
+            @Override
+            public Void run() {
+                synchronized (ignoredFoldersLock) {
+                    if (ignoredFolders == null) {
+                        ignoredFolders = resolveIgnoredFolders();
+                    }
+                    assert ignoredFolders != null : "Ignored folders cannot be null";
 
-            for (BasePathSupport.Item item : ignoredFolders) {
-                if (item.isBroken()) {
-                    continue;
+                    for (BasePathSupport.Item item : ignoredFolders) {
+                        if (item.isBroken()) {
+                            continue;
+                        }
+                        ignored.add(new File(item.getAbsoluteFilePath(helper.getProjectDirectory())));
+                    }
                 }
-                ignored.add(new File(item.getAbsoluteFilePath(helper.getProjectDirectory())));
+                return null;
             }
-        }
+        });
     }
 
     private void resetIgnoredFolders() {
-        synchronized (ignoredFoldersLock) {
-            ignoredFolders = null;
-        }
+        ProjectManager.mutex().readAccess(new Mutex.Action<Void>() {
+            @Override
+            public Void run() {
+                synchronized (ignoredFoldersLock) {
+                    ignoredFolders = null;
+                }
+                return null;
+            }
+        });
     }
 
-    private void putIgnoredFrameworkFiles(Set<File> ignored) {
+    private void addIgnoredFrameworkFiles(Set<File> ignored) {
         PhpModule phpModule = getPhpModule();
         for (PhpFrameworkProvider provider : getFrameworks()) {
             PhpModuleIgnoredFilesExtender ignoredFilesExtender = provider.getIgnoredFilesExtender(phpModule);
@@ -596,6 +608,8 @@ public final class PhpProject implements Project {
         List<PhpFrameworkProvider> newFrameworkProviders = getFrameworks();
         if (!oldFrameworkProviders.equals(newFrameworkProviders)) {
             propertyChangeSupport.firePropertyChange(PROP_FRAMEWORKS, null, null);
+            // #209206 - also, likely some files are newly hidden/visible
+            fireIgnoredFilesChange();
         }
     }
 

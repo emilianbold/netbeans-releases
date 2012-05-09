@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.java.editor.overridden;
 
+import java.awt.event.KeyEvent;
 import com.sun.source.tree.Tree;
 import java.util.Collection;
 import java.util.Collections;
@@ -53,9 +54,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
+import javax.swing.KeyStroke;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
+
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.settings.KeyBindingSettings;
+import org.netbeans.api.editor.settings.MultiKeyBinding;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaParserResultTask;
@@ -121,6 +128,7 @@ public class ComputeAnnotations extends JavaParserResultTask<Result> {
     }
 
     private void createAnnotations(CompilationInfo info, StyledDocument doc, Map<ElementHandle<? extends Element>, List<ElementDescription>> descriptions, boolean overridden, List<IsOverriddenAnnotation> annotations) {
+        String kb = findKeyBinding(overridden ? "goto-implementation" : "goto-super-implementation"); //NOI18N
         if (descriptions != null) {
             for (Entry<ElementHandle<? extends Element>, List<ElementDescription>> e : descriptions.entrySet()) {
                 Element ee = e.getKey().resolve(info);
@@ -135,17 +143,23 @@ public class ComputeAnnotations extends JavaParserResultTask<Result> {
                 String dn;
 
                 if (overridden) {
+                    int choice;
                     if (ee.getModifiers().contains(Modifier.ABSTRACT)) {
                         type = AnnotationType.HAS_IMPLEMENTATION;
-                        dn = NbBundle.getMessage(ComputeAnnotations.class, "TP_HasImplementations");
+                        dn = NbBundle.getMessage(ComputeAnnotations.class, "TP_HasImplementations"); //NOI18N
+                        choice = 0;
                     } else {
                         type = AnnotationType.IS_OVERRIDDEN;
                         if (ee.getKind().isClass()) {
-                            dn = NbBundle.getMessage(ComputeAnnotations.class, "TP_HasSubclasses");
+                            dn = NbBundle.getMessage(ComputeAnnotations.class, "TP_HasSubclasses"); //NOI18N
+                            choice = 1;
                         } else {
-                            dn = NbBundle.getMessage(ComputeAnnotations.class, "TP_IsOverridden");
+                            dn = NbBundle.getMessage(ComputeAnnotations.class, "TP_IsOverridden"); //NOI18N
+                            choice = 2;
                         }
                     }
+                    if (kb != null)
+                        dn += NbBundle.getMessage(ComputeAnnotations.class, "LBL_shortcut_promotion", kb, choice); //NOI18N
                 } else {
                     StringBuffer tooltip = new StringBuffer();
                     boolean wasOverrides = false;
@@ -174,6 +188,8 @@ public class ComputeAnnotations extends JavaParserResultTask<Result> {
                     }
 
                     dn = tooltip.toString();
+                    if (kb != null)
+                        dn += NbBundle.getMessage(ComputeAnnotations.class, "LBL_shortcut_promotion", kb, 3); //NOI18N
                 }
 
                 Position pos = getPosition(doc, (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), t));
@@ -224,6 +240,17 @@ public class ComputeAnnotations extends JavaParserResultTask<Result> {
         doc.render(i);
 
         return i.pos;
+    }
+    
+    private static String findKeyBinding(String actionName) {
+        KeyBindingSettings kbs = MimeLookup.getLookup(MimePath.get("text/x-java")).lookup(KeyBindingSettings.class); //NOI18N
+        for (MultiKeyBinding mkb : kbs.getKeyBindings()) {
+            if (actionName.equals(mkb.getActionName())) {
+                KeyStroke ks = mkb.getKeyStrokeCount() > 0 ? mkb.getKeyStroke(0) : null;
+                return ks != null ? KeyEvent.getKeyModifiersText(ks.getModifiers()) + '+' + KeyEvent.getKeyText(ks.getKeyCode()) : null;
+            }
+        }
+        return null;
     }
 
     public static final class FactoryImpl extends TaskFactory {

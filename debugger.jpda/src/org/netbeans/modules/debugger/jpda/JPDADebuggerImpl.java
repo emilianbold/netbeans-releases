@@ -861,7 +861,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
             try {
                 StackFrame sf = csf.getStackFrame();
                 int stackDepth = csf.getFrameDepth();
-                final ThreadReference tr = StackFrameWrapper.thread(sf);
+                final ThreadReference tr = frameThreadImpl.getThreadReference();
                 Runnable methodToBeInvokedNotifier = new Runnable() {
                         @Override
                         public void run() {

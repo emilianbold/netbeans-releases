@@ -262,8 +262,8 @@ public class RemoteServices {
         mb.addJPDABreakpointListener(new JPDABreakpointListener() {
             @Override
             public void breakpointReached(JPDABreakpointEvent event) {
-                try {
-                    if (dbg.equals(event.getDebugger())) {
+                if (dbg.equals(event.getDebugger())) {
+                    try {
                         DebuggerManager.getDebuggerManager().removeBreakpoint(mb);
                         //System.err.println("BREAKPOINT "+mb+" REMOVED after reached."+" ID = "+System.identityHashCode(mb));
                         PropertyChangeListener listener = listenerPtr[0];
@@ -278,10 +278,10 @@ public class RemoteServices {
                         } finally {
                             ((JPDAThreadImpl)awtThread).notifyMethodInvokeDone();
                         }
+                    } finally {
+                        event.resume();
+                        latch.countDown();
                     }
-                } finally {
-                    event.resume();
-                    latch.countDown();
                 }
             }
         });
@@ -293,6 +293,7 @@ public class RemoteServices {
                     //System.err.println("BREAKPOINT "+mb+" REMOVED after debugger finished."+" ID = "+System.identityHashCode(mb));
                     dbg.removePropertyChangeListener(JPDADebugger.PROP_STATE, this);
                     listenerPtr[0] = null;
+                    latch.countDown();
                 }
             }
         };
@@ -304,6 +305,7 @@ public class RemoteServices {
         } else {
             dbg.removePropertyChangeListener(JPDADebugger.PROP_STATE, listener);
             //System.err.println("NOT ADDED BP: "+mb+" ID = "+System.identityHashCode(mb));
+            latch.countDown();
         }
     }
     

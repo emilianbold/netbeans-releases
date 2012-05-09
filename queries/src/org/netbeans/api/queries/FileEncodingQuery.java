@@ -394,6 +394,9 @@ public class FileEncodingQuery {
                             remainder = view;
                             buffer = null;
                             return result;
+                        } else if (result.isUnmappable()) {
+                            // encoder is not able to encode the head, throw an exception
+                            return result;
                         }
                         else {
                             if (in != null) {

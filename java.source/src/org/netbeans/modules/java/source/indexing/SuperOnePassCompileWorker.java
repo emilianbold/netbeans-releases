@@ -129,7 +129,7 @@ final class SuperOnePassCompileWorker extends CompileWorker {
                                 public @Override boolean isCanceled() {
                                     return context.isCancelled();
                                 }
-                            }, APTUtils.get(context.getRoot()));
+                            }, tuple.aptGenerated ? null : APTUtils.get(context.getRoot()));
                         }
                         for (CompilationUnitTree cut : jt.parse(tuple.jfo)) { //TODO: should be exactly one
                             trees.add(cut);
@@ -211,7 +211,7 @@ final class SuperOnePassCompileWorker extends CompileWorker {
             for (Pair<CompilationUnitTree, CompileTuple> unit : units) {
                 CompileTuple active = unit.second;
                 if (aptEnabled) {
-                    JavaCustomIndexer.addAptGenerated(context, javaContext, active.indexable.getRelativePath(), aptGenerated);
+                    JavaCustomIndexer.addAptGenerated(context, javaContext, active, aptGenerated);
                 }
                 List<TypeElement> activeTypes = new ArrayList<TypeElement>();
                 for (Tree tree : unit.first.getTypeDecls()) {

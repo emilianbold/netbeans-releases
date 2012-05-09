@@ -132,7 +132,7 @@ final class OnePassCompileWorker extends CompileWorker {
                                 public @Override boolean isCanceled() {
                                     return context.isCancelled();
                                 }
-                            }, APTUtils.get(context.getRoot()));
+                            }, tuple.aptGenerated ? null : APTUtils.get(context.getRoot()));
                         }
                         for (CompilationUnitTree cut : jt.parse(tuple.jfo)) { //TODO: should be exactly one
                             if (units != null) {
@@ -244,7 +244,7 @@ final class OnePassCompileWorker extends CompileWorker {
                 }
                 jt.analyze(types);
                 if (aptEnabled) {
-                    JavaCustomIndexer.addAptGenerated(context, javaContext, active.indexable.getRelativePath(), aptGenerated);
+                    JavaCustomIndexer.addAptGenerated(context, javaContext, active, aptGenerated);
                 }
                 if (mem.isLowMemory()) {
                     units = null;
