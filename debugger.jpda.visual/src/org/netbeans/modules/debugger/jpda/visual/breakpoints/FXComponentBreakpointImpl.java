@@ -72,11 +72,17 @@ public class FXComponentBreakpointImpl extends BaseComponentBreakpointImpl {
         if (((type & AWTComponentBreakpoint.TYPE_ADD) != 0) || ((type & AWTComponentBreakpoint.TYPE_REMOVE) != 0)) {
             MethodBreakpoint mb = MethodBreakpoint.create("javafx.scene.Node", "setParent");
             mb.setMethodSignature("(Ljavafx/scene/Parent)V");
+            if (!cb.isEnabled()) {
+                mb.disable();
+            }
             addMethodBreakpoint(mb, (ObjectVariable)variableComponent);
         }
         if (((type & AWTComponentBreakpoint.TYPE_SHOW) != 0) || ((type & AWTComponentBreakpoint.TYPE_HIDE) != 0)) {
             MethodBreakpoint mb = MethodBreakpoint.create("javafx.scene.Node", "setVisible");
             mb.setMethodSignature("(Z)V");
+            if (!cb.isEnabled()) {
+                mb.disable();
+            }
             addMethodBreakpoint(mb, (ObjectVariable) variableComponent);
         }
 //        if (((type & AWTComponentBreakpoint.TYPE_REPAINT) != 0)) {
