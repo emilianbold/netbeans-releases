@@ -546,6 +546,9 @@ public class JspCompletionItem implements CompletionItem {
                 String surl = url.toString();
                 int first = surl.indexOf('#') + 1;
                 String helpText = constructHelp(url);
+                if (helpText == null) {
+                    return null;
+                }
                 if (first > 0) {
                     int last = surl.lastIndexOf('#') + 1;
                     String from = surl.substring(first, last - 1);
