@@ -87,6 +87,7 @@ public class GroovyToggleBreakpointActionProvider extends ActionsProviderSupport
         Context.removePropertyChangeListener (this);
     }
     
+    @Override
     public void propertyChange (PropertyChangeEvent evt) {
         FileObject fo = Context.getCurrentFile();
         boolean isGroovyFile = fo != null && 
@@ -99,10 +100,12 @@ public class GroovyToggleBreakpointActionProvider extends ActionsProviderSupport
             destroy ();
     }
     
+    @Override
     public Set getActions () {
         return Collections.singleton (ActionsManager.ACTION_TOGGLE_BREAKPOINT);
     }
     
+    @Override
     public void doAction (Object action) {
         DebuggerManager d = DebuggerManager.getDebuggerManager ();
         
