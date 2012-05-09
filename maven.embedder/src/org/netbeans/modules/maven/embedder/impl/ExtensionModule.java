@@ -65,7 +65,8 @@ public class ExtensionModule implements Module {
         //#212214 the EnhancedLocalRepositoryManager will claim artifact is not locally present even if file is there but some metadata is missing
         //we just replace it with the simple variant that relies on file's presence only. 
         //I'm a bit afraid to remove the binding altogether, that's why we map simple to enhanced.
-        binder.bind(Roles.componentKey(LocalRepositoryManagerFactory.class, "enhanced")).to(SimpleLocalRepositoryManagerFactory.class);
+//We fixed the reported problem in another way, if the problem resurfaces elsewhere, just readd it..
+//        binder.bind(Roles.componentKey(LocalRepositoryManagerFactory.class, "enhanced")).to(SimpleLocalRepositoryManagerFactory.class);
     }
     
 }
