@@ -43,8 +43,8 @@
 package org.netbeans.core.browser.api;
 
 import java.beans.PropertyChangeListener;
-import java.util.List;
 import java.util.Map;
+import org.openide.util.Lookup;
 import org.w3c.dom.Document;
 
 /**
@@ -218,4 +218,6 @@ public abstract class WebBrowser {
      */
     public abstract Object executeJavaScript( String script );
 
+    public abstract Lookup getLookup();
+    
 }
