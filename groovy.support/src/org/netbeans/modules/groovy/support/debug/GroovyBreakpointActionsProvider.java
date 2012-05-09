@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.groovy.support.debug;
 
 import javax.swing.Action;
@@ -60,76 +59,76 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service = NodeActionsProviderFilter.class)
 public class GroovyBreakpointActionsProvider implements NodeActionsProviderFilter {
-    
+
     @Messages("LBL_Action_Go_To_Source=Go to Source")
-    private static final Action GO_TO_SOURCE_ACTION = Models.createAction (
-        LBL_Action_Go_To_Source(),
-        new Models.ActionPerformer () {
-        @Override
-            public boolean isEnabled (Object node) {
-                return true;
-            }
-        @Override
-            public void perform (Object[] nodes) {
-                goToSource ((GroovyLineBreakpoint) nodes [0]);
-            }
-        },
-        Models.MULTISELECTION_TYPE_EXACTLY_ONE
+    private static final Action GO_TO_SOURCE_ACTION = Models.createAction(
+            LBL_Action_Go_To_Source(),
+            new Models.ActionPerformer() {
+                @Override
+                public boolean isEnabled(Object node) {
+                    return true;
+                }
+
+                @Override
+                public void perform(Object[] nodes) {
+                    goToSource((GroovyLineBreakpoint) nodes[0]);
+                }
+            },
+            Models.MULTISELECTION_TYPE_EXACTLY_ONE);
     
-    );
     @Messages("LBL_Action_Customize=Customize")
-    private static final Action CUSTOMIZE_ACTION = Models.createAction (
-        LBL_Action_Customize(),
-        new Models.ActionPerformer () {
-        @Override
-            public boolean isEnabled (Object node) {
-                return false;
-            }
-        @Override
-            public void perform (Object[] nodes) {
+    private static final Action CUSTOMIZE_ACTION = Models.createAction(
+            LBL_Action_Customize(),
+            new Models.ActionPerformer() {
+                @Override
+                public boolean isEnabled(Object node) {
+                    return false;
+                }
+
+                @Override
+                public void perform(Object[] nodes) {
 //                customize ((Breakpoint) nodes [0]);
-            }
-        },
-        Models.MULTISELECTION_TYPE_EXACTLY_ONE
-    );
-    
-    
+                }
+            },
+            Models.MULTISELECTION_TYPE_EXACTLY_ONE);
+
     @Override
-    public Action[] getActions (NodeActionsProvider original, Object node) throws UnknownTypeException {
-        if (!(node instanceof GroovyLineBreakpoint))
-            return original.getActions (node);
-        
-        Action[] oas = original.getActions (node);
+    public Action[] getActions(NodeActionsProvider original, Object node) throws UnknownTypeException {
+        if (!(node instanceof GroovyLineBreakpoint)) {
+            return original.getActions(node);
+        }
+
+        Action[] oas = original.getActions(node);
         if (node instanceof GroovyLineBreakpoint) {
-            Action[] as = new Action [oas.length + 3];
-            as [0] = GO_TO_SOURCE_ACTION;
-            as [1] = null;
-            System.arraycopy (oas, 0, as, 2, oas.length);
-            as [as.length - 1] = CUSTOMIZE_ACTION;
+            Action[] as = new Action[oas.length + 3];
+            as[0] = GO_TO_SOURCE_ACTION;
+            as[1] = null;
+            System.arraycopy(oas, 0, as, 2, oas.length);
+            as[as.length - 1] = CUSTOMIZE_ACTION;
             return as;
         }
-        Action[] as = new Action [oas.length + 1];
-        System.arraycopy (oas, 0, as, 0, oas.length);
-        as [as.length - 1] = CUSTOMIZE_ACTION;
+        Action[] as = new Action[oas.length + 1];
+        System.arraycopy(oas, 0, as, 0, oas.length);
+        as[as.length - 1] = CUSTOMIZE_ACTION;
         return as;
     }
-    
+
     @Override
-    public void performDefaultAction (NodeActionsProvider original, Object node) throws UnknownTypeException {
+    public void performDefaultAction(NodeActionsProvider original, Object node) throws UnknownTypeException {
         if (node instanceof GroovyLineBreakpoint) {
-            goToSource ((GroovyLineBreakpoint) node);
+            goToSource((GroovyLineBreakpoint) node);
         } else {
-            original.performDefaultAction (node);
+            original.performDefaultAction(node);
         }
     }
 
-    public void addModelListener (ModelListener l) {
+    public void addModelListener(ModelListener l) {
     }
 
-    public void removeModelListener (ModelListener l) {
+    public void removeModelListener(ModelListener l) {
     }
 
-    private static void goToSource (GroovyLineBreakpoint b) {
-        Context.showSource (b);
+    private static void goToSource(GroovyLineBreakpoint b) {
+        Context.showSource(b);
     }
 }
