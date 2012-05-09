@@ -76,6 +76,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.progress.ProgressHandle;
@@ -227,6 +229,12 @@ public class RunAnalysisPanel extends javax.swing.JPanel implements LookupListen
         updateEnableDisable();
 
         setBorder(new EmptyBorder(12, 12, 12, 12));
+        
+        ConfigurationsManager.getDefault().addChangeListener(new ChangeListener() {
+            @Override public void stateChanged(ChangeEvent e) {
+                resultChanged(null);
+            }
+        });
     }
 
     void started() {
