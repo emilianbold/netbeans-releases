@@ -538,10 +538,10 @@ public class ModelVisitor extends PathNodeVisitor {
             if (name != null) {
                 JsObjectImpl property = (JsObjectImpl)scope.getProperty(name.getName());
                 if (property == null) {
-                    property = new JsObjectImpl(scope, name, name.getOffsetRange());
+                    property = ModelElementFactory.create(parserResult, propertyNode, name, modelBuilder, true);
                 } else {
                     // The property can be already defined, via a usage before declaration (see testfiles/model/simpleObject.js - called property)
-                    JsObjectImpl newProperty = new JsObjectImpl(scope, name, name.getOffsetRange());
+                    JsObjectImpl newProperty = ModelElementFactory.create(parserResult, propertyNode, name, modelBuilder, true);
                     newProperty.addOccurrence(property.getDeclarationName().getOffsetRange());
                     for(Occurrence occurrence : property.getOccurrences()) {
                         newProperty.addOccurrence(occurrence.getOffsetRange());

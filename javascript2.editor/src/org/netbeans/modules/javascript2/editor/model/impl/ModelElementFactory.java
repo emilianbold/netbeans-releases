@@ -45,6 +45,7 @@ import com.oracle.nashorn.ir.FunctionNode;
 import com.oracle.nashorn.ir.IdentNode;
 import com.oracle.nashorn.ir.LiteralNode;
 import com.oracle.nashorn.ir.ObjectNode;
+import com.oracle.nashorn.ir.PropertyNode;
 import com.oracle.nashorn.parser.Token;
 import java.util.ArrayList;
 import java.util.List;
@@ -150,5 +151,13 @@ class ModelElementFactory {
         DocumentationProvider docProvider = DocumentationSupport.getDocumentationProvider(parserResult);
         result.setDocumentation(docProvider.getDocumentation(objectNode));
         return result;
+    }
+    
+    static JsObjectImpl create(JsParserResult parserResult, PropertyNode propertyNode, Identifier name, ModelBuilder modelBuilder, boolean belongsToParent) {
+        JsObjectImpl scope = modelBuilder.getCurrentObject();
+        JsObjectImpl property = new JsObjectImpl(scope, name, name.getOffsetRange());
+        DocumentationProvider docProvider = DocumentationSupport.getDocumentationProvider(parserResult);
+        property.setDocumentation(docProvider.getDocumentation(propertyNode));
+        return property;
     }
 }
