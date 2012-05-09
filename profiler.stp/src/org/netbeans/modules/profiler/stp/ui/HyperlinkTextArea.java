@@ -52,6 +52,8 @@ import java.awt.event.FocusListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import javax.swing.UIManager;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 
 
 /**
@@ -155,6 +157,14 @@ public class HyperlinkTextArea extends HTMLTextArea {
     public void setText(String value) {
         this.originalText = value;
         super.setText(value);
+        Document d = getDocument();
+        if (d != null) {
+            String accesibleName = value;
+            try {
+                accesibleName = d.getText(0, d.getLength());
+            } catch (BadLocationException ex) {}
+            getAccessibleContext().setAccessibleName(accesibleName);
+        }
     }
 
     public void scrollRectToVisible(Rectangle aRect) {

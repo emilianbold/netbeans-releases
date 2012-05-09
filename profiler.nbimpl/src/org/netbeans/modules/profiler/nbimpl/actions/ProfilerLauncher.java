@@ -133,6 +133,10 @@ public class ProfilerLauncher {
             return ps;
         }
         
+        public void setProfilingSettings(ProfilingSettings ps) {
+            this.ps = ps;
+        }
+        
         public SessionSettings getSessionSettings() {
             return ss;
         }
