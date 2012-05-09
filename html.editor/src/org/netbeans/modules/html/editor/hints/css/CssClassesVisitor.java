@@ -75,7 +75,7 @@ public class CssClassesVisitor implements ElementVisitor {
         this.rule = rule;
         
         referredFiles = context.getCssDependenciesGraph().getAllReferedFiles();
-        classes = context.getCssIndex().findAll(RefactoringElementType.CLASS);
+        classes = context.getCssIndex().findAllClassDeclarations();
         classes2files = createReversedMap(classes);
     }
 
@@ -112,17 +112,21 @@ public class CssClassesVisitor implements ElementVisitor {
         if (value == null) {
             return;
         }
+        
+        if(value.length() == 0) {
+            return ; //ignore empty value
+        }
+        
         //all files containing the id declaration
         Collection<FileObject> filesWithTheId = elements2files.get(value.toString());
 
         //all referred files with the id declaration
         Collection<FileObject> referredFilesWithTheId = new LinkedList<FileObject>();
         if (filesWithTheId != null) {
-            filesWithTheId.remove(context.getFile());
             referredFilesWithTheId.addAll(filesWithTheId);
             referredFilesWithTheId.retainAll(referredFiles);
         }
-
+        
         if (referredFilesWithTheId.isEmpty()) {
             //unknown id
             hints.add(new MissingCssElement(rule,

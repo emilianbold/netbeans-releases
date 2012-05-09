@@ -52,7 +52,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.*;
  * @author Tomasz.Slota@Sun.COM
  */
 public class DefaultTreePathVisitor extends DefaultVisitor{
-    private LinkedList<ASTNode> path = new LinkedList<ASTNode>();
+    private List<ASTNode> path = Collections.synchronizedList(new LinkedList<ASTNode>());
     private List<ASTNode> unmodifiablePath;
 
     public DefaultTreePathVisitor() {
@@ -71,45 +71,45 @@ public class DefaultTreePathVisitor extends DefaultVisitor{
 
     @Override
     public void visit(NamespaceDeclaration node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(UseStatement statement) {
-        path.addFirst(statement);super.visit(statement);path.removeFirst();
+        path.add(0, statement);super.visit(statement);path.remove(0);
     }
 
     @Override
     public void visit(UseStatementPart statementPart) {
-        path.addFirst(statementPart);super.visit(statementPart);path.removeFirst();
+        path.add(0, statementPart);super.visit(statementPart);path.remove(0);
     }
 
 
     @Override
     public void visit(ArrayAccess node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(ArrayCreation node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(ArrayElement node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(Assignment node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     protected void addToPath(ASTNode node) {
-        path.addFirst(node);
+        path.add(0, node);
     }
     protected void removeFromPath() {
-        path.removeFirst();
+        path.remove(0);
     }
 
     @Override
@@ -119,362 +119,362 @@ public class DefaultTreePathVisitor extends DefaultVisitor{
 
     @Override
     public void visit(BackTickExpression node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(Block node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(BreakStatement node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(CastExpression node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(CatchClause node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(ConstantDeclaration node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(ClassDeclaration node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(ClassInstanceCreation node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(ClassName node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(CloneExpression node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(Comment node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(ConditionalExpression node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(ContinueStatement node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(DeclareStatement node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(DoStatement node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(EchoStatement node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(EmptyStatement node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(ExpressionStatement node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(FieldAccess node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(FieldsDeclaration node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(ForEachStatement node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(FormalParameter node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(ForStatement node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(FunctionDeclaration node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(FunctionInvocation node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(FunctionName node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(GlobalStatement node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(Identifier node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(IfStatement node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(IgnoreError node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(Include node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(InfixExpression node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(InLineHtml node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(InstanceOfExpression node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(InterfaceDeclaration node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(ListVariable node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(MethodDeclaration node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(MethodInvocation node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(ParenthesisExpression node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(PostfixExpression node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(PrefixExpression node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(Program node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(Quote node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(Reference node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(ReflectionVariable node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(ReturnStatement node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(Scalar node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(SingleFieldDeclaration node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(StaticConstantAccess node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(StaticFieldAccess node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(StaticMethodInvocation node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(StaticStatement node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(SwitchCase node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(SwitchStatement node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(ThrowStatement node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(TryStatement node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(UnaryOperation node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(Variable node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(WhileStatement node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(ASTNode node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(PHPDocBlock node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(PHPDocTypeTag node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(PHPDocTag node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(PHPDocVarTypeTag node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(PHPDocMethodTag node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(PHPDocNode node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(TraitDeclaration node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(TraitMethodAliasDeclaration node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(TraitConflictResolutionDeclaration node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(UseTraitStatement node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(UseTraitStatementPart node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
     @Override
     public void visit(AnonymousObjectVariable node) {
-        path.addFirst(node);super.visit(node);path.removeFirst();
+        path.add(0, node);super.visit(node);path.remove(0);
     }
 
 }

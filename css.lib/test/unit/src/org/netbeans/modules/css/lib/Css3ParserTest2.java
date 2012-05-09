@@ -307,6 +307,23 @@ public class Css3ParserTest2 extends CslTestBase {
 //        error = errors.get(1);
 //        assertEquals(CssParserTreeConstants.JJTERROR_SKIPBLOCK, error.kind());
     }
+    
+    public void testNoErrorAfterAtSign() throws ParseException, BadLocationException {
+        String source = "a {\n\t@d;\n}";
+        CssParserResult result = parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        
+        List<ProblemDescription> errors = getErrors(result);
+        for(ProblemDescription pd : errors) {
+            System.out.println(pd);
+        }
+        
+        assertEquals(1, errors.size());
+
+        ProblemDescription pd1 = errors.get(0);
+        assertEquals("Unexpected character(s) '@d',';' found", pd1.getDescription());
+    }
 
 }
 

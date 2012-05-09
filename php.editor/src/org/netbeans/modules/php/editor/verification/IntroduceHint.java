@@ -338,13 +338,19 @@ public class IntroduceHint extends AbstractRule {
             Collection<ClassElement> classes = Collections.emptyList();
             if ("self".equals(name) || "parent".equals(name)) {
                 //NOI18N
+                ClassDeclaration classDeclaration = null;
                 List<ASTNode> path = getPath();
-                for (ASTNode aSTNode : path) {
-                    if (aSTNode instanceof ClassDeclaration) {
-                        final String clzName = CodeUtils.extractClassName((ClassDeclaration) aSTNode);
-                        classes = index.getClasses(NameKind.exact(clzName));
-                        break;
+                synchronized (path) {
+                    for (ASTNode aSTNode : path) {
+                        if (aSTNode instanceof ClassDeclaration) {
+                            classDeclaration = (ClassDeclaration) aSTNode;
+                            break;
+                        }
                     }
+                }
+                if (classDeclaration != null) {
+                    String clzName = CodeUtils.extractClassName(classDeclaration);
+                    classes = index.getClasses(NameKind.exact(clzName));
                 }
             } else {
                 classes = index.getClasses(NameKind.exact(name));

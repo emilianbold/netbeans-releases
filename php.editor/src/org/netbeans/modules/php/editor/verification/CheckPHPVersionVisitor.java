@@ -44,6 +44,7 @@ package org.netbeans.modules.php.editor.verification;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.api.QualifiedName;
@@ -101,9 +102,12 @@ public class CheckPHPVersionVisitor extends DefaultTreePathVisitor {
 
     @Override
     public void visit(ConstantDeclaration statement) {
-        for (ASTNode node : getPath()) {
-            if (node instanceof TypeDeclaration) {
-                return;
+        List<ASTNode> path = getPath();
+        synchronized (path) {
+            for (ASTNode node : path) {
+                if (node instanceof TypeDeclaration) {
+                    return;
+                }
             }
         }
         createError(statement);

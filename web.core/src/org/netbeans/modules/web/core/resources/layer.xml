@@ -411,6 +411,7 @@ made subject to such option by the copyright holder.
                  <folder name="Factories">
                      <file name="org-netbeans-modules-web-core-jsploader-JspLoader.instance">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
+                        <attr name="position" intvalue="3000"/>
                     </file>
                  </folder>
             </folder>
@@ -423,7 +424,7 @@ made subject to such option by the copyright holder.
                  <folder name="Factories">
                      <file name="org-netbeans-modules-web-core-jsploader-JspLoader.instance">
                          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
-                        <attr name="position" intvalue="3000"/>
+                         <attr name="position" intvalue="3000"/>
                      </file>
                  </folder>
                 
@@ -499,6 +500,7 @@ made subject to such option by the copyright holder.
                  <folder name="Factories">
                      <file name="org-netbeans-modules-web-taglib-TLDLoader.instance">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
+                        <attr name="position" intvalue="3100"/>
                     </file>
                  </folder>
                 <folder name="Actions">
