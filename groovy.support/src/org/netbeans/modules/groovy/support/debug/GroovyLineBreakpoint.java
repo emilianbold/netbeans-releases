@@ -53,10 +53,11 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.api.java.classpath.ClassPath;
+import static org.netbeans.modules.groovy.support.debug.Bundle.*;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
@@ -96,10 +97,11 @@ public class GroovyLineBreakpoint extends Breakpoint {
     public GroovyLineBreakpoint() {
     }
     
+    @Messages("CTL_Default_Print_Text=Breakpoint reached at line {lineNumber} in {jspName} by thread {threadName}.")
     public GroovyLineBreakpoint(String url, int lineNumber) {
         this.url = url;
         this.lineNumber = lineNumber;
-        String pt = NbBundle.getMessage(GroovyLineBreakpoint.class, "CTL_Default_Print_Text");
+        String pt = CTL_Default_Print_Text();
         this.printText = pt.replace("{jspName}", getGroovyName(url));
         
         DebuggerManager d = DebuggerManager.getDebuggerManager();

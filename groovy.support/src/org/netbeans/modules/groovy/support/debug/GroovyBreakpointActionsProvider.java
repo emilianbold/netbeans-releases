@@ -45,12 +45,13 @@
 package org.netbeans.modules.groovy.support.debug;
 
 import javax.swing.Action;
+import static org.netbeans.modules.groovy.support.debug.Bundle.*;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.NodeActionsProviderFilter;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  * @author Martin Grebac
@@ -58,8 +59,9 @@ import org.openide.util.NbBundle;
  */
 public class GroovyBreakpointActionsProvider implements NodeActionsProviderFilter {
     
+    @Messages("LBL_Action_Go_To_Source=Go to Source")
     private static final Action GO_TO_SOURCE_ACTION = Models.createAction (
-        NbBundle.getMessage(GroovyBreakpointActionsProvider.class, "LBL_Action_Go_To_Source"),
+        LBL_Action_Go_To_Source(),
         new Models.ActionPerformer () {
         @Override
             public boolean isEnabled (Object node) {
@@ -73,8 +75,9 @@ public class GroovyBreakpointActionsProvider implements NodeActionsProviderFilte
         Models.MULTISELECTION_TYPE_EXACTLY_ONE
     
     );
+    @Messages("LBL_Action_Customize=Customize")
     private static final Action CUSTOMIZE_ACTION = Models.createAction (
-        NbBundle.getMessage(GroovyBreakpointActionsProvider.class, "LBL_Action_Customize"),
+        LBL_Action_Customize(),
         new Models.ActionPerformer () {
         @Override
             public boolean isEnabled (Object node) {
