@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -45,6 +45,7 @@
 package org.netbeans.core.ui;
 
 import java.awt.Cursor;
+import java.awt.EventQueue;
 import java.awt.Window;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -65,18 +66,24 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import org.netbeans.core.actions.HTMLViewAction;
+import static org.netbeans.core.ui.Bundle.*;
+import org.openide.awt.CheckForUpdatesProvider;
 import org.openide.awt.HtmlBrowser;
+import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.Places;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import static org.netbeans.core.ui.Bundle.*;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.RequestProcessor;
 
 public class ProductInformationPanel extends JPanel implements HyperlinkListener {
 
     URL url = null;
     Icon about;
+    
+    private static final String CHECK_FOR_UPDATES_ACTION = "check-for-updates";
     
     @Messages({
         "# {0} - product version",
@@ -87,17 +94,42 @@ public class ProductInformationPanel extends JPanel implements HyperlinkListener
         "# {5} - locale",
         "# {6} - user dir",
         "# {7} - cache dir",
+        "# {8} - updates",
         "LBL_description=<div style=\"font-size: 12pt; font-family: Verdana, 'Verdana CE',  Arial, 'Arial CE', 'Lucida Grande CE', lucida, 'Helvetica CE', sans-serif;\">"
             + "<p style=\"margin: 0\"><b>Product Version:</b> {0}</p>\n "
+            + "{8}"
             + "<p style=\"margin: 0\"><b>Java:</b> {1}; {2}</p>\n "
             + "<p style=\"margin: 0\"><b>System:</b> {3}; {4}; {5}</p>\n "
             + "<p style=\"margin: 0\"><b>User directory:</b> {6}</p>\n "
-            + "<p style=\"margin: 0\"><b>Cache directory:</b> {7}</p></div>"
+            + "<p style=\"margin: 0\"><b>Cache directory:</b> {7}</p></div>",
+        "# {0} - content description",
+        "updates_not_found=<p style=\"margin: 0\"><b>Updates:</b> NetBeans IDE is updated to version {0}</p>\n ",
+        "# {0} - content description",
+        "updates_found=<p style=\"margin: 0\"><b>Updates:</b> <a href=\"" + CHECK_FOR_UPDATES_ACTION + "\">Updates available</a> {0}</p>\n ",
+        "check_for_updates=Check for Updates",
+        "to_version=to version {0}"
     })
     public ProductInformationPanel() {
         initComponents();
         imageLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        description.setText(LBL_description(getProductVersionValue(), getJavaValue(), getVMValue(), getOperatingSystemValue(), getEncodingValue(), getSystemLocaleValue(), getUserDirValue(), Places.getCacheDirectory().getAbsolutePath()));
+        description.setText(LBL_description(getProductVersionValue(), getJavaValue(), getVMValue(), getOperatingSystemValue(), getEncodingValue(), getSystemLocaleValue(), getUserDirValue(), Places.getCacheDirectory().getAbsolutePath(), ""));
+        description.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        RequestProcessor.getDefault().post(new Runnable() {
+
+            @Override
+            public void run() {
+                final String updates = getUpdates();
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        description.setText(LBL_description(getProductVersionValue(), getJavaValue(), getVMValue(), getOperatingSystemValue(), getEncodingValue(), getSystemLocaleValue(), getUserDirValue(), Places.getCacheDirectory().getAbsolutePath(), updates));
+                        description.setCursor(null);
+                        description.revalidate();
+                    }
+                });
+            }
+        });
         description.setCaretPosition(0); // so that text is not scrolled down
         description.addHyperlinkListener(this);
         copyright.addHyperlinkListener(this);
@@ -114,6 +146,28 @@ public class ProductInformationPanel extends JPanel implements HyperlinkListener
                     showUrl();
                 } catch (MalformedURLException ex) {
                     //ignore
+                }
+            }
+        });
+        
+        description.addHyperlinkListener(new HyperlinkListener() {
+
+            @Override
+            public void hyperlinkUpdate(HyperlinkEvent e) {
+                if(HyperlinkEvent.EventType.ENTERED == e.getEventType()) {
+                    if (CHECK_FOR_UPDATES_ACTION.equals(e.getDescription())) {
+                        description.setToolTipText(check_for_updates());
+                    } else if (e.getURL() != null) {
+                        description.setToolTipText(e.getURL().toExternalForm());
+                    }
+                } else if (HyperlinkEvent.EventType.EXITED == e.getEventType()) {
+                    description.setToolTipText(null);
+                } else if (HyperlinkEvent.EventType.ACTIVATED.equals(e.getEventType())) {
+                    if (CHECK_FOR_UPDATES_ACTION.equals(e.getDescription())) {
+                        checkForUpdates();
+                    } else {
+                        URLDisplayer.getDefault().showURL(e.getURL());
+                    }
                 }
             }
         });
@@ -332,5 +386,28 @@ private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
         }
 
         return result.toString();
+    }
+    
+    private static String getUpdates() {
+        assert ! EventQueue.isDispatchThread() : "Don't call it from event dispatch thread.";
+        CheckForUpdatesProvider checkForUpdatesProvider = Lookup.getDefault().lookup(CheckForUpdatesProvider.class);
+        if (checkForUpdatesProvider == null) {
+            return ""; // NOI18N
+        }
+        String desc = checkForUpdatesProvider.getContentDescription();
+        desc = desc != null ? desc : ""; // NOI18N
+        if (checkForUpdatesProvider.notifyAvailableUpdates(false)) {
+            return updates_found(desc.isEmpty() ? desc : to_version(desc));
+        } else {
+            return desc.isEmpty() ? desc : updates_not_found(desc);
+        }
+    }
+    
+    private static void checkForUpdates() {
+        assert EventQueue.isDispatchThread() : "Call it from event dispatch thread only.";
+        CheckForUpdatesProvider checkForUpdatesProvider = Lookup.getDefault().lookup(CheckForUpdatesProvider.class);
+        if (checkForUpdatesProvider != null) {
+            checkForUpdatesProvider.openCheckForUpdatesWizard(true);
+        }
     }
 }
