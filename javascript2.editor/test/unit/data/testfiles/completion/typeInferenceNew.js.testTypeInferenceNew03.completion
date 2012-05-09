@@ -1,0 +1,7 @@
+Code completion result for source line:
+formatter.println("town: " + object.|town);
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+FIELD      country                         [PUBLIC]   typeInferenceNew.js
+FIELD      street                          [PUBLIC]   typeInferenceNew.js
+FIELD      town                            [PUBLIC]   typeInferenceNew.js
