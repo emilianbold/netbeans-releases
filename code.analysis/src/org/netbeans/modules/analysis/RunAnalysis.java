@@ -140,6 +140,8 @@ public class RunAnalysis {
 
                 WORKER.post(new Runnable() {
                     @Override public void run() {
+                        dialogState.save();
+                        
                         Scope scope = rap.getSelectedScope(doCancel);
 
                         progress.switchToDeterminate(MAX_WORK);

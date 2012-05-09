@@ -65,6 +65,7 @@ import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
@@ -108,6 +109,7 @@ import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.NbPreferences;
 
 /**
  *
@@ -229,7 +231,7 @@ public final class RunAnalysisPanel extends javax.swing.JPanel implements Lookup
         add(progress, gridBagConstraints);
         ((CardLayout) progress.getLayout()).show(progress, "empty");
 
-        if (state == null) state = new DialogState(true, null, null, null); //XXX: the values should be kept across invocations of the dialog
+        if (state == null) state = DialogState.load();
         updateConfigurations(state);
         updateEnableDisable();
 
@@ -601,7 +603,7 @@ public final class RunAnalysisPanel extends javax.swing.JPanel implements Lookup
         return new DialogState(configurationRadio.isSelected(),
                                selectedConfiguration instanceof AnalyzerFactory ? SPIAccessor.ACCESSOR.getAnalyzerId((AnalyzerFactory) selectedConfiguration) : null,
                                selectedConfiguration instanceof Configuration ? ((Configuration) selectedConfiguration).id() : null,
-                               selectedInspection instanceof AnalyzerAndWarning ? SPIAccessor.ACCESSOR.getWarningCategoryId(((AnalyzerAndWarning) selectedInspection).wd) : null);
+                               selectedInspection instanceof AnalyzerAndWarning ? SPIAccessor.ACCESSOR.getWarningId(((AnalyzerAndWarning) selectedInspection).wd) : null);
     }
 
     public static final class ConfigurationRenderer extends DefaultListCellRenderer {
@@ -839,6 +841,32 @@ public final class RunAnalysisPanel extends javax.swing.JPanel implements Lookup
             this.selectedAnalyzer = selectedAnalyzer;
             this.selectedConfiguration = selectedConfiguration;
             this.selectedInspection = selectedInspection;
+        }
+        
+        public void save() {
+            Preferences prefs = NbPreferences.forModule(RunAnalysisPanel.class).node("RunAnalysisPanel");
+            
+            prefs.putBoolean("configurationsSelected", configurationsSelected);
+            if (selectedAnalyzer != null)
+                prefs.put("selectedAnalyzer", selectedAnalyzer);
+            else
+                prefs.remove("selectedAnalyzer");
+            if (selectedConfiguration != null)
+                prefs.put("selectedConfiguration", selectedConfiguration);
+            else
+                prefs.remove("selectedConfiguration");
+            if (selectedInspection != null)
+                prefs.put("selectedInspection", selectedInspection);
+            else
+                prefs.remove("selectedInspection");
+        }
+        
+        private static DialogState load() {
+            Preferences prefs = NbPreferences.forModule(RunAnalysisPanel.class).node("RunAnalysisPanel");
+            return new DialogState(prefs.getBoolean("configurationsSelected", true),
+                                   prefs.get("selectedAnalyzer", null),
+                                   prefs.get("selectedConfiguration", null),
+                                   prefs.get("selectedInspection", null));
         }
     }
 }
