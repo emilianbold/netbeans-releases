@@ -164,8 +164,8 @@ public class Utilities {
         for(String licenseId : acceptedLicenseIDs) {
             sb.append(licenseId).append(",");
         }
-        getPreferences().put(PLUGIN_MANAGER_ACCEPTED_LICENSE_IDS, sb.length() == 0 ? null : sb.substring(0, sb.length() - 1));
-        logger.fine("License IDs - Stored: " + (sb.length() == 0 ? null : sb.substring(0, sb.length() - 1)));
+        getPreferences().put(PLUGIN_MANAGER_ACCEPTED_LICENSE_IDS, sb.length() == 0 ? "" : sb.substring(0, sb.length() - 1));
+        logger.fine("License IDs - Stored: " + (sb.length() == 0 ? "" : sb.substring(0, sb.length() - 1)));
         acceptedLicenseIDs = null;
     }
     
