@@ -74,6 +74,7 @@ import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -253,7 +254,10 @@ class JsCodeCompletion implements CodeCompletionHandler {
                             JsObject jsObjectGlobal  = jsInfo.getModel().getGlobalObject();
                             JsObject property = ModelUtils.findJsObjectByName(jsObjectGlobal, fqn);
                             if (property != null) {
-                                documentation.append(property.getDocumentation());
+                                String doc = property.getDocumentation();
+                                if (doc != null && !doc.isEmpty()) {
+                                    documentation.append(doc);
+                                }
                             }
                             
                         }
@@ -266,7 +270,13 @@ class JsCodeCompletion implements CodeCompletionHandler {
             }
         }
         if (documentation.length() == 0) {
-            documentation.append(jqueryCC.getHelpDocumentation(info, element));
+            String doc = jqueryCC.getHelpDocumentation(info, element);
+            if (doc != null && !doc.isEmpty()) {
+                documentation.append(doc);
+            }
+        }
+        if (documentation.length() == 0) {
+            documentation.append(NbBundle.getMessage(JsCodeCompletion.class, "MSG_DocNotAvailable"));
         }
         return documentation.toString();
     }
