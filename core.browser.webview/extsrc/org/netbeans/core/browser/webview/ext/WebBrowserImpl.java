@@ -71,6 +71,7 @@ import org.netbeans.core.browser.api.WebBrowserEvent;
 import org.netbeans.core.browser.api.WebBrowserListener;
 import org.netbeans.core.browser.webview.BrowserCallback;
 import org.netbeans.modules.web.browser.api.PageInspector;
+import org.netbeans.modules.web.webkit.debugging.spi.Factory;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -100,12 +101,14 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
      * Creates a new {@code WebBrowserImpl}.
      */
     public WebBrowserImpl() {
-        lookup = Lookups.fixed(
-                new MessageDispatcherImpl(),
-                new ScriptExecutorImpl(this)
-        );
     }
 
+    WebEngine getEngine() {
+        assert browser != null;
+        return browser.getEngine();
+    }
+    
+    
     @Override
     public Component getComponent() {
         synchronized( LOCK ) {
@@ -129,10 +132,25 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
      * 
      * @return lookup of this web-browser tab.
      */
-    Lookup getLookup() {
+    @Override
+    public Lookup getLookup() {
+        if (lookup == null) {
+            lookup = createLookup();
+        }
         return lookup;
     }
 
+    private Lookup createLookup() {
+        WebKitDebuggingTransport transport = new WebKitDebuggingTransport(this);
+        Lookup l = Lookups.fixed(
+                new MessageDispatcherImpl(),
+                new ScriptExecutorImpl(this),
+                transport,
+                Factory.createWebKitDebugging(transport)
+        );
+        return l;
+    }
+    
     @Override
     public void reloadDocument() {
         if( !isInitialized() )
@@ -532,5 +550,5 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
             dispatcher.dispatchMessage(PageInspector.MESSAGE_DISPATCHER_FEATURE_ID, null);
         }
     }
-    
+
 }

@@ -73,8 +73,19 @@ public class WebBrowserImplProvider {
     private static final Logger log = Logger.getLogger(WebBrowserImplProvider.class.getName());
     
     static WebBrowser createBrowser() {
+        ClassLoader cl = getBrowserClassLoader();
         try {
-            ClassLoader cl = getBrowserClassLoader();
+            if (cl != null) {
+                // test that JavaFX has latest required APIs:
+                cl.loadClass("com.sun.javafx.scene.web.Debugger");
+            }
+        } catch(ClassNotFoundException ex)  {
+            log.log(Level.WARNING, "It looks that latest JavaFX runtime (>=2.2.0) "
+                    + "which contains support for WebKit Remote Debugging is not available. "
+                    + "Please upgrade your JavaFX runtime to newer version. ", ex);
+            return new NoWebBrowserImpl();
+        }
+        try {
             if (cl != null) {
                  //return new WebBrowserImpl();
                 Class impl = cl.loadClass("org.netbeans.core.browser.webview.ext.WebBrowserImpl");

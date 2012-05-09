@@ -47,8 +47,13 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.debugger.Session;
 import org.netbeans.core.browser.api.WebBrowser;
+import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
+import org.netbeans.modules.web.webkit.debugging.spi.TransportImplementation;
+import org.netbeans.modules.web.webkit.debugging.spi.netbeansdebugger.NetBeansJavaScriptDebuggerFactory;
 import org.openide.awt.HtmlBrowser;
+import org.openide.util.Lookup;
 
 /**
  * HTML browser implementation which uses embedded native browser component.
@@ -59,6 +64,7 @@ class HtmlBrowserImpl extends HtmlBrowser.Impl {
 
     private WebBrowser browser;
     private final Object LOCK = new Object();
+    private Session session;
 
     public HtmlBrowserImpl() {
         super();
@@ -89,6 +95,46 @@ class HtmlBrowserImpl extends HtmlBrowser.Impl {
     }
 
     @Override
+    public Lookup getLookup() {
+        return getBrowser().getLookup();
+    }
+        
+    private boolean initialized = false;
+
+    private void init() {
+        if (initialized) {
+            return;
+        }
+        initialized = true;
+        TransportImplementation transport = getLookup().lookup(TransportImplementation.class);
+        WebKitDebugging webkitDebugger = getLookup().lookup(WebKitDebugging.class);
+        NetBeansJavaScriptDebuggerFactory debuggerFactory = Lookup.getDefault().lookup(NetBeansJavaScriptDebuggerFactory.class);
+        if (webkitDebugger == null || debuggerFactory == null) {
+            return;
+        }
+        transport.attach();
+        webkitDebugger.getDebugger().enable();
+        session = debuggerFactory.createDebuggingSession(webkitDebugger);
+    }
+    
+    private void destroy() {
+        if (!initialized) {
+            return;
+        }
+        initialized = false;
+        TransportImplementation transport = getLookup().lookup(TransportImplementation.class);
+        WebKitDebugging webkitDebugger = getLookup().lookup(WebKitDebugging.class);
+        NetBeansJavaScriptDebuggerFactory debuggerFactory = Lookup.getDefault().lookup(NetBeansJavaScriptDebuggerFactory.class);
+        if (webkitDebugger == null || debuggerFactory == null) {
+            return;
+        }
+        debuggerFactory.stopDebuggingSession(session);
+        session = null;
+        webkitDebugger.getDebugger().disable();
+        transport.detach();
+    }
+    
+    @Override
     public void setURL(final URL url) {
 //        if( !SwingUtilities.isEventDispatchThread() ) {
 //            SwingUtilities.invokeLater( new Runnable() {
@@ -100,6 +146,7 @@ class HtmlBrowserImpl extends HtmlBrowser.Impl {
 //            });
 //            return;
 //        }
+        init();
         getBrowser().setURL(url.toString());
     }
 
@@ -178,6 +225,7 @@ class HtmlBrowserImpl extends HtmlBrowser.Impl {
 
     @Override
     public void dispose() {
+        destroy();
         synchronized( LOCK ) {
             if( null != browser ) {
                 browser.dispose();

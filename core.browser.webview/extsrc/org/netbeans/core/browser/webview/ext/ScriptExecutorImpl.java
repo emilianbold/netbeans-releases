@@ -43,8 +43,9 @@ package org.netbeans.core.browser.webview.ext;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
+import org.json.simple.parser.ParseException;
 import org.netbeans.modules.web.browser.spi.ScriptExecutor;
 
 /**
@@ -73,7 +74,7 @@ public class ScriptExecutorImpl implements ScriptExecutor {
         sb.append("postMessageToNetBeans=function(e) {alert('"); // NOI18N
         sb.append(WebBrowserImpl.PAGE_INSPECTION_PREFIX);
         sb.append("'+JSON.stringify(e));};\n"); // NOI18N
-        String quoted = JSONObject.quote(script);
+        String quoted = JSONValue.escape(script);
         // We don't want to depend on what is the type of WebBrowser.executeJavaScript()
         // for various types of script results => we stringify the result
         // (i.e. pass strings only through executeJavaScript()). We decode
@@ -83,9 +84,9 @@ public class ScriptExecutorImpl implements ScriptExecutor {
         Object result = browserTab.executeJavaScript(wrappedScript);
         String txtResult = result.toString();
         try {
-            JSONObject jsonResult = new JSONObject(txtResult);
-            return jsonResult.opt("result"); // NOI18N
-        } catch (JSONException ex) {
+            JSONObject jsonResult = (JSONObject)JSONValue.parseWithException(txtResult);
+            return jsonResult.get("result"); // NOI18N
+        } catch (ParseException ex) {
             Logger.getLogger(ScriptExecutorImpl.class.getName()).log(Level.INFO, null, ex);
             return ScriptExecutor.ERROR_RESULT;
         }

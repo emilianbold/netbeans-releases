@@ -48,6 +48,7 @@ import java.util.Map;
 import javax.swing.JLabel;
 import org.netbeans.core.browser.api.WebBrowser;
 import org.netbeans.core.browser.api.WebBrowserListener;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.w3c.dom.Document;
 
@@ -185,6 +186,11 @@ class NoWebBrowserImpl extends WebBrowser {
     @Override
     public Object executeJavaScript( String script ) {
         return null;
+    }
+
+    @Override
+    public Lookup getLookup() {
+        return Lookup.EMPTY;
     }
     
 }
