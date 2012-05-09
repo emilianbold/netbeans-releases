@@ -121,6 +121,9 @@ public class AWTComponentBreakpointImpl extends BaseComponentBreakpointImpl {
                     }
                 }
             });
+            if (!cb.isEnabled()) {
+                mb.disable();
+            }
             DebuggerManager.getDebuggerManager().addBreakpoint(mb);
             serviceBreakpoints.add(mb);
         }
@@ -131,6 +134,10 @@ public class AWTComponentBreakpointImpl extends BaseComponentBreakpointImpl {
             MethodBreakpoint mbHide = MethodBreakpoint.create("java.awt.Component", "hide");
             mbHide.setMethodSignature("()V");
             addMethodBreakpoint(mbHide, (ObjectVariable) variableComponent);
+            if (!cb.isEnabled()) {
+                mbShow.disable();
+                mbHide.disable();
+            }
         }
         if (((type & AWTComponentBreakpoint.TYPE_REPAINT) != 0)) {
             String componentClassName = null;
@@ -154,6 +161,9 @@ public class AWTComponentBreakpointImpl extends BaseComponentBreakpointImpl {
                     navigateToCustomCode(event.getThread());
                 }
             });
+            if (!cb.isEnabled()) {
+                mbShow.disable();
+            }
             DebuggerManager.getDebuggerManager().addBreakpoint(mbShow);
             serviceBreakpoints.add(mbShow);
         }
