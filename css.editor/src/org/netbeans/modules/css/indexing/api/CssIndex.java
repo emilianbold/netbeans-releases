@@ -100,6 +100,28 @@ public class CssIndex {
     public Collection<FileObject> findIds(String id) {
         return find(RefactoringElementType.ID, id);
     }
+    
+    /**
+     * Returns a collection of file containing declaration of the css id.
+     * Note that the generic {@link #findIds(java.lang.String)} method
+     * also takes into account the usages of the css id in html code.
+     * 
+     * @since 1.28
+     * 
+     * @param id name of the css id
+     */
+    public Collection<FileObject> findIdDeclarations(String id) {
+        return find(RefactoringElementType.ID, id, false);
+    }
+    
+    /**
+     * @since 1.28
+     * 
+     * @return map of all id declarations. See {@link #findAll(org.netbeans.modules.css.refactoring.api.RefactoringElementType)}
+     */
+    public Map<FileObject, Collection<String>> findAllIdDeclarations() {
+        return findAll(RefactoringElementType.ID, false);
+    }
 
     /**
      *
@@ -108,6 +130,28 @@ public class CssIndex {
      */
     public Collection<FileObject> findClasses(String clazz) {
         return find(RefactoringElementType.CLASS, clazz);
+    }
+    
+   /**
+     * @since 1.28
+     * 
+     * @return map of all class declarations. See {@link #findAll(org.netbeans.modules.css.refactoring.api.RefactoringElementType)}
+     */
+    public Map<FileObject, Collection<String>> findAllClassDeclarations() {
+        return findAll(RefactoringElementType.CLASS, false);
+    }    
+    
+    /**
+     * Returns a collection of file containing declaration of the css class.
+     * Note that the generic {@link #findClasses(java.lang.String)} method
+     * also takes into account the usages of the css class in html code.
+     * 
+     * @since 1.28
+     * 
+     * @param clazz name of the css class
+     */
+    public Collection<FileObject> findClassDeclarations(String clazz) {
+        return find(RefactoringElementType.CLASS, clazz, false);
     }
 
     /**
@@ -166,10 +210,15 @@ public class CssIndex {
                 String searchExpression = ".*("+encodeValueForRegexp(prefix)+").*"; //NOI18N
                 results = querySupport.query(keyName, searchExpression, QuerySupport.Kind.REGEXP, keyName);
             }
+            String VIRTUAL_ELEMENT_MARKER_STR = Character.toString(CssIndexer.VIRTUAL_ELEMENT_MARKER);
             for (IndexResult result : results) {
                 Collection<String> elements = decodeListValue(result.getValue(keyName));
                 for(String e : elements) {
                     if(e.startsWith(prefix)) {
+                        if(e.endsWith(VIRTUAL_ELEMENT_MARKER_STR)) {
+                            //strip the marker
+                            e = e.substring(0, e.length() - 1);
+                        }
                         FileObject file = result.getFile();
                         if(file != null) {
                             Collection<String> col = map.get(file);
@@ -190,15 +239,27 @@ public class CssIndex {
     }
 
     public Map<FileObject, Collection<String>> findAll(RefactoringElementType type) {
+        return findAll(type, true);
+    }
+    
+    private Map<FileObject, Collection<String>> findAll(RefactoringElementType type, boolean includeVirtualElements) {
         String keyName = type.getIndexKey();
         Map<FileObject, Collection<String>> map = new HashMap<FileObject, Collection<String>>();
         try {
             Collection<? extends IndexResult> results =
                     querySupport.query(keyName, "", QuerySupport.Kind.PREFIX, keyName);
-
+            String VIRTUAL_ELEMENT_MARKER_STR = Character.toString(CssIndexer.VIRTUAL_ELEMENT_MARKER);
             for (IndexResult result : filterDeletedFiles(results)) {
                 Collection<String> elements = decodeListValue(result.getValue(keyName));
                 for (String e : elements) {
+                    if(e.endsWith(VIRTUAL_ELEMENT_MARKER_STR)) {
+                        if(includeVirtualElements) {
+                            //strip the marker
+                            e = e.substring(0, e.length() - 1);
+                        } else {
+                            continue; //ignore
+                        }
+                    }
                     Collection<String> col = map.get(result.getFile());
                     if (col == null) {
                         col = new LinkedList<String>();
@@ -222,11 +283,24 @@ public class CssIndex {
      * value matches the value regular expression
      */
     public Collection<FileObject> find(RefactoringElementType type, String value) {
+        return find(type, value, true);
+    }
+    
+    
+    private Collection<FileObject> find(RefactoringElementType type, String value, boolean includeVirtualElements) {
         String keyName = type.getIndexKey();
         try {
-            String searchExpression = ".*(" + encodeValueForRegexp(value) + ")[,;].*"; //NOI18N
+            StringBuilder searchExpression = new StringBuilder();
+            searchExpression.append(".*("); //NOI18N
+            searchExpression.append(encodeValueForRegexp(value));
+            if(includeVirtualElements) {
+                searchExpression.append(CssIndexer.VIRTUAL_ELEMENT_MARKER);
+                searchExpression.append('?'); //!?
+            }
+            searchExpression.append(")[,;].*"); //NOI18N
+            
             Collection<FileObject> matchedFiles = new LinkedList<FileObject>();
-            Collection<? extends IndexResult> results = querySupport.query(keyName, searchExpression, QuerySupport.Kind.REGEXP, keyName);
+            Collection<? extends IndexResult> results = querySupport.query(keyName, searchExpression.toString(), QuerySupport.Kind.REGEXP, keyName);
             for (IndexResult result : filterDeletedFiles(results)) {
                 matchedFiles.add(result.getFile());
             }
