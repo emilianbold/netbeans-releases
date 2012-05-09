@@ -127,7 +127,7 @@ public class JsIndex {
                 TypeUsage type = assignments.iterator().next();
                 result.addAll(getProperties(type.getType()));
             }
-            for (IndexedElement indexedElement : IndexedElement.createProperties(indexResult)) {
+            for (IndexedElement indexedElement : IndexedElement.createProperties(indexResult, fqn)) {
                 result.add(indexedElement);
             }
         }

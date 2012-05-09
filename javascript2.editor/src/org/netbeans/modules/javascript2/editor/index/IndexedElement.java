@@ -144,11 +144,11 @@ public class IndexedElement extends JsElementImpl {
         return result;
     }
     
-    public static Collection<IndexedElement> createProperties(IndexResult indexResult) {
+    public static Collection<IndexedElement> createProperties(IndexResult indexResult, String fqn) {
         Collection<IndexedElement> result = new ArrayList<IndexedElement>();
         FileObject fo = indexResult.getFile();
         for(String sProperty : indexResult.getValues(JsIndex.FIELD_PROPERTY)) {
-            result.add(decodeProperty(sProperty, fo));
+            result.add(decodeProperty(sProperty, fo, fqn));
         }
         return result;
     }
@@ -245,11 +245,12 @@ public class IndexedElement extends JsElementImpl {
         return parameters;
     }
     
-    private static IndexedElement decodeProperty(String text, FileObject fo) {
+    private static IndexedElement decodeProperty(String text, FileObject fo, String fqn) {
         String[] parts = text.split(";");
         String name = parts[0];
         JsElement.Kind jsKind = JsElement.Kind.fromId(Integer.parseInt(parts[1]));
         boolean isDeclared = "1".equals(parts[2]);
+        String fqnOfProperty = fqn + "." + name;
         if (parts.length > 3) {
             if (jsKind.isFunction()) {
                 String paramsText = parts[3];
@@ -259,10 +260,10 @@ public class IndexedElement extends JsElementImpl {
                 for (StringTokenizer stringTokenizer = new StringTokenizer(returnTypesText, ","); stringTokenizer.hasMoreTokens();) {
                     returnTypes.add(stringTokenizer.nextToken());
                 }
-                return new FunctionIndexedElement(fo, name, null, jsKind, OffsetRange.NONE, EnumSet.of(Modifier.PUBLIC), parameters, returnTypes);
+                return new FunctionIndexedElement(fo, name, fqnOfProperty, jsKind, OffsetRange.NONE, EnumSet.of(Modifier.PUBLIC), parameters, returnTypes);
             }
         }
-        return new IndexedElement(fo, name, null, isDeclared, jsKind,OffsetRange.NONE, EnumSet.of(Modifier.PUBLIC));
+        return new IndexedElement(fo, name, fqnOfProperty, isDeclared, jsKind,OffsetRange.NONE, EnumSet.of(Modifier.PUBLIC));
     }
     
     public static class FunctionIndexedElement extends IndexedElement {

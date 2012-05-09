@@ -58,6 +58,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
     final private List<Occurrence> occurrences;
     final private Map<Integer, Collection<TypeUsage>> assignments;
     final private boolean hasName;
+    private String documentation;
     
     public JsObjectImpl(JsObject parent, Identifier name, OffsetRange offsetRange) {
         super((parent != null ? parent.getFileObject() : null), name.getName(), false,  offsetRange, EnumSet.of(Modifier.PUBLIC));
@@ -311,5 +312,13 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         
         return null;
     }
-    
+
+    @Override
+    public String getDocumentation() {
+        return documentation;
+    }
+ 
+    public void setDocumentation(String doc) {
+        this.documentation = doc;
+    }
 }
