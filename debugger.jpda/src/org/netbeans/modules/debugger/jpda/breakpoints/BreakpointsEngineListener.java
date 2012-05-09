@@ -136,19 +136,19 @@ implements PropertyChangeListener, DebuggerManagerListener {
         if (debugger.getState () == JPDADebugger.STATE_RUNNING) {
             if (started) return;
             started = true;
-            createBreakpointImpls ();
             DebuggerManager.getDebuggerManager ().addDebuggerListener (
                 DebuggerManager.PROP_BREAKPOINTS,
                 this
             );
+            createBreakpointImpls ();
         }
         if (debugger.getState () == JPDADebugger.STATE_DISCONNECTED) {
-            removeBreakpointImpls ();
-            started = false;
             DebuggerManager.getDebuggerManager ().removeDebuggerListener (
                 DebuggerManager.PROP_BREAKPOINTS,
                 this
             );
+            removeBreakpointImpls ();
+            started = false;
         }
     }
     
