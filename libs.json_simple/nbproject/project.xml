@@ -3,13 +3,14 @@
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
-            <code-name-base>org.netbeans.libs.json</code-name-base>
+            <code-name-base>org.netbeans.libs.json_simple</code-name-base>
             <module-dependencies/>
             <public-packages>
-                <package>org.json</package>
+                <package>org.json.simple</package>
+                <package>org.json.simple.parser</package>
             </public-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/JSON.org.jar</runtime-relative-path>
+                <runtime-relative-path>ext/json-simple-1.1.1.jar</runtime-relative-path>
             </class-path-extension>
         </data>
     </configuration>
