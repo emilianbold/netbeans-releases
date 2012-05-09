@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.java.hints.introduce;
 
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import javax.swing.text.Document;
@@ -85,6 +86,10 @@ public class PositionRefresherHelperImpl extends PositionRefresherHelper<Documen
     public List<ErrorDescription> getErrorDescriptionsAt(CompilationInfo info, Context context, Document doc) throws Exception {
         int[] selection = SelectionAwareJavaSourceTaskFactory.getLastSelection(info.getFileObject());
 
+        if (selection == null) {
+            return Collections.emptyList();
+        }
+        
         return IntroduceHint.computeError(info, selection[0], selection[1], new EnumMap<IntroduceKind, Fix>(IntroduceKind.class), new EnumMap<IntroduceKind, String>(IntroduceKind.class), context.getCancel());
     }
 
