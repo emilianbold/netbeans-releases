@@ -116,6 +116,11 @@ public class MacroExpansionExpandTestCase extends MacroExpansionDocProviderImplB
     public void testCodeExpansion() throws Exception {
         performExpandCodeTest("file1.cc", 10, 13, "CONSTANT + 1"); // NOI18N
     }
+    
+    public void testCodeWithCommentExpansion() throws Exception {
+        // IZ 207378
+        performExpandCodeTest("file1.cc", 10, 13, "CONSTANT /*comment*/ + 1"); // NOI18N
+    }
 
     public void testIZ175801() throws Exception {
         // IZ#175801 : Preprocessor #define not handled properly

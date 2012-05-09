@@ -222,18 +222,22 @@ public class MoveMembersRefactoringPlugin extends JavaRefactoringPlugin {
             }
         }
 
-        TreePath sourceClass = JavaRefactoringUtils.findEnclosingClass(javac, sourceTph.resolve(javac), true, true, true, true, true);
         TreePath targetPath = target.resolve(javac);
         if(targetPath == null) {
+            return new Problem(true, NbBundle.getMessage(MoveMembersRefactoringPlugin.class, "ERR_TargetNotResolved"));
+        }
+        TreePath targetClass = JavaRefactoringUtils.findEnclosingClass(javac, targetPath, true, true, true, true, true);
+        TypeMirror targetType = javac.getTrees().getTypeMirror(targetClass);
+        if(targetType == null) {
             return new Problem(true, NbBundle.getMessage(MoveMembersRefactoringPlugin.class, "ERR_TargetNotResolved"));
         }
         Problem p = checkProjectDeps(sourceTph.getFileObject(), target.getFileObject());
         if(p != null) {
             return p;
         }
-        TreePath targetClass = JavaRefactoringUtils.findEnclosingClass(javac, targetPath, true, true, true, true, true);
+
+        TreePath sourceClass = JavaRefactoringUtils.findEnclosingClass(javac, sourceTph.resolve(javac), true, true, true, true, true);
         TypeMirror sourceType = javac.getTrees().getTypeMirror(sourceClass);
-        TypeMirror targetType = javac.getTrees().getTypeMirror(targetClass);
         if (sourceType.equals(targetType)) { // [f] target is the same as source
             return new Problem(true, NbBundle.getMessage(MoveMembersRefactoringPlugin.class, "ERR_MoveToSameClass")); //NOI18N
         }

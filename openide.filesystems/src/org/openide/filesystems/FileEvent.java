@@ -140,6 +140,7 @@ public class FileEvent extends EventObject {
         this.expected = expected;
         this.time = time;
         MIMESupport.freeCaches();
+        FileUtil.freeCaches();
     }
 
     /** @return the original file where action occurred

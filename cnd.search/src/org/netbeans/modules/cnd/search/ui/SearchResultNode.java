@@ -43,8 +43,10 @@ package org.netbeans.modules.cnd.search.ui;
 
 import java.awt.Image;
 import java.awt.event.ActionEvent;
+import java.beans.FeatureDescriptor;
 import java.io.CharConversionException;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -52,6 +54,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.actions.Openable;
+import org.netbeans.api.search.SearchPattern;
 import org.netbeans.modules.cnd.search.IconsCache;
 import org.netbeans.modules.cnd.search.MatchingFileData.Entry;
 import org.netbeans.modules.cnd.search.SearchParams;
@@ -76,8 +79,9 @@ import org.openide.xml.XMLUtil;
  */
 public final class SearchResultNode extends AbstractNode {
 
+    private static final String DOB_REF_PROP = "dataObjRef"; // NOI18N
     private final SearchResult result;
-//    private PropertySet[] propertySets;
+    private PropertySet[] propertySets;
 
     public SearchResultNode(SearchResult result) {
         super(result.data.hasEntries() ? Children.create(new SearchChildFactory(result), true) : Children.LEAF);
@@ -91,59 +95,49 @@ public final class SearchResultNode extends AbstractNode {
 
     @Override
     public Image getIcon(int type) {
+        Object dobRefProp = getValue(DOB_REF_PROP);
+        if (dobRefProp instanceof WeakReference) {
+            WeakReference<DataObject> dobRef = (WeakReference<DataObject>)dobRefProp;
+            DataObject dob = dobRef.get();
+            if (dob != null) {
+                return dob.getNodeDelegate().getIcon(type);
+            }
+        }
         return IconsCache.getIcon(result.data.getFileName(), type);
     }
 
     @Override
     public Image getOpenedIcon(int type) {
-        return IconsCache.getIcon(result.data.getFileName(), type);
+        return getIcon(type);
     }
 
-//    @Override
-//    public PropertySet[] getPropertySets() {
-//        if (propertySets == null) {
-//            propertySets = new PropertySet[2];
-//
-//            PropertySet set = new PropertySet() {
-//
-//                @Override
-//                public Property<?>[] getProperties() {
-//                    Property[] properties = new Property[0];
-//                    return properties;
-//                }
-//            };
-//
-//            propertySets[0] = set;
-//            propertySets[1] = new SearchResultPropertySet(result);
-//        }
-//        
-//        return propertySets;
-//    }
+    @Override
+    public PropertySet[] getPropertySets() {
+        if (propertySets == null) {
+            propertySets = new PropertySet[]{new SearchResultPropertySet(result)};
+        }
+        return propertySets;
+    }
+
     @Override
     public Action getPreferredAction() {
-        return new OpenResultAction(result, 0);
+        return new OpenResultAction(result, 0, this);
     }
 
-//    @Override
-//    protected Sheet createSheet() {
-//        Sheet sheet = Sheet.createDefault();
-//        Sheet.Set ps = Sheet.createPropertiesSet();
-//        ps.put(new SizeProperty());
-//        //ps.put(new LocationProperty());
-//        //ps.put(new StatusProperty());
-//        return sheet;
-//    }
-//    private class SizeProperty extends PropertySupport.ReadOnly<Integer> {
-//
-//        public SizeProperty() {
-//            super("size", Integer.class, "size Modified", "size Modified");
-//        }
-//
-//        @Override
-//        public Integer getValue() throws IllegalAccessException, InvocationTargetException {
-//            return result.file.getSize();
-//        }
-//    }
+    @Override
+    public void setValue(String attributeName, Object value) {
+        // No synchronization as this method supposed to be called from EDT only
+        if (DOB_REF_PROP.equals(attributeName)) {
+            Object current = getValue(attributeName);
+            if (!(value.equals(current))) {
+                super.setValue(attributeName, value);
+                fireIconChange();
+            }
+        } else {
+            super.setValue(attributeName, value);
+        }
+    }
+
     private static class SearchChildFactory extends ChildFactory<SearchResult> {
 
         private final SearchResult result;
@@ -173,10 +167,12 @@ public final class SearchResultNode extends AbstractNode {
 
         private final SearchResult result;
         private final int line;
+        private final FeatureDescriptor descriptor;
 
-        public OpenResultAction(SearchResult result, int line) {
+        public OpenResultAction(SearchResult result, int line, FeatureDescriptor descriptor) {
             this.result = result;
             this.line = line;
+            this.descriptor = descriptor;
         }
 
         @Override
@@ -215,6 +211,10 @@ public final class SearchResultNode extends AbstractNode {
                         open.open();
                     }
                 }
+
+                if (descriptor != null) {
+                    descriptor.setValue(DOB_REF_PROP, new WeakReference<DataObject>(dataObj));
+                }
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -250,17 +250,27 @@ public final class SearchResultNode extends AbstractNode {
 
         @Override
         public Action getPreferredAction() {
-            return new OpenResultAction(result, entry.getLineNumber());
+            return new OpenResultAction(result, entry.getLineNumber(), this);
+        }
+
+        @Override
+        public void setValue(String attributeName, Object value) {
+            if (DOB_REF_PROP.equals(attributeName)) {
+                getParentNode().setValue(attributeName, value);
+            } else {
+                super.setValue(attributeName, value);
+            }
         }
 
         private String composeHtmlName() {
             SearchParams params = result.data.getSearchParams();
             String context = entry.getContext();
             Pattern p;
+            SearchPattern sp = params.getSearchPattern();
             try {
-                p = params.isCaseSensitive()
-                        ? Pattern.compile(params.getSearchText())
-                        : Pattern.compile(params.getSearchText(), Pattern.CASE_INSENSITIVE);
+                p = sp.isMatchCase()
+                        ? Pattern.compile(sp.getSearchExpression())
+                        : Pattern.compile(sp.getSearchExpression(), Pattern.CASE_INSENSITIVE);
             } catch (Exception ex) {
                 return null;
             }

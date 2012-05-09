@@ -50,6 +50,7 @@ import javax.swing.Action;
 import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyVetoException;
+import java.util.Collection;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
@@ -74,6 +75,7 @@ import org.openide.explorer.view.BeanTreeView;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -220,17 +222,21 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
         if ( rootNode != null && rootNode.getFileObject().equals( fileObject) ) {
             // update
             //System.out.println("UPDATE ======" + description.fileObject.getName() );
-            long startTime = System.currentTimeMillis();
-            rootNode.updateRecursively( description );
-            long endTime = System.currentTimeMillis();
-            Logger.getLogger("TIMER").log(Level.FINE, "Navigator Merge",
-                    new Object[] {fileObject, endTime - startTime});
-
+            final Runnable r = new Runnable() {
+                public void run() {
+                    long startTime = System.currentTimeMillis();
+                    rootNode.updateRecursively( description );
+                    long endTime = System.currentTimeMillis();
+                    Logger.getLogger("TIMER").log(Level.FINE, "Navigator Merge",
+                            new Object[] {fileObject, endTime - startTime});
+                }
+            };
+            RP.post(r);
         } 
         else {
             //System.out.println("REFRES =====" + description.fileObject.getName() );
             // New fileobject => refresh completely
-            SwingUtilities.invokeLater(new Runnable() {
+            Runnable r = new Runnable() {
 
                 public void run() {
                     long startTime = System.currentTimeMillis();
@@ -247,23 +253,30 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
                             expandDepth = configuration.getExpandDepth();
                         }
                     }
-                    boolean scrollOnExpand = elementView.getScrollOnExpand();
+                    final boolean scrollOnExpand = elementView.getScrollOnExpand();
                     elementView.setScrollOnExpand( false );
+                    // impl hack: Node expansion is synced by VisualizerNode to the AWT thread, possibly delayed
                     expandNodeByDefaultRecursively(manager.getRootContext(), 0, expandDepth);
-                    elementView.setScrollOnExpand( scrollOnExpand );
+                    // set soe back only after all pending expansion events are processed:
+                    Mutex.EVENT.writeAccess(new Runnable() {
+                        @Override
+                        public void run() {
+                            elementView.setScrollOnExpand( scrollOnExpand );
+                        }
+                    });
                     elementView.setAutoWaitCursor(true);
                     long endTime = System.currentTimeMillis();
                     Logger.getLogger("TIMER").log(Level.FINE, "Navigator Initialization",
                             new Object[] {fileObject, endTime - startTime});
                 }
 
-            } );
-            
+            };
+            RP.post(r);
         }
     }
     
     public void sort() {
-        getRootNode().refreshRecursively();
+        refreshRootRecursively();
     }
     
     public ClassMemberFilters getFilters() {
@@ -274,7 +287,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
         elementView.expandNode(n);
     }
 
-    void expandNodeByDefaultRecursively(Node node) {
+    private void expandNodeByDefaultRecursively(Node node) {
         // using 0, -1 since we cannot quickly resolve currentDepth
         expandNodeByDefaultRecursively(node, 0, -1);
     }
@@ -286,19 +299,53 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
         if (! expandNodeByDefault (node)) {
             return;
         }
+        expandNode(node);
         for (Node subNode : node.getChildren().getNodes()) {
             expandNodeByDefaultRecursively(subNode, currentDepth + 1, maxDepth);
         }
     }
 
-    boolean expandNodeByDefault(Node node) {
+    private boolean expandNodeByDefault(Node node) {
+        if (isExpandedByDefault(node)) {
+            expandNode(node);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Expand specified nodes. The nodes in 'expand' are expanded, nodes in 'expandRec'
+     * are expanded recursively, if their default state allows expansion.
+     * <p/>
+     * The processing is forked to a private thread to avoid waiting for completion.
+     *
+     * @param expand nodes to expand (unconditionally)
+     * @param expandRec nodes to expand recursively if they are expanded by default.
+     */
+    void performExpansion(final Collection<Node> expand, final Collection<Node> expandRec) {
+        Runnable r = new Runnable() {
+           public void run() {
+               for (Node n : expand) {
+                   expandNode(n);
+               }
+
+               for (Node n : expandRec) {
+                   expandNodeByDefaultRecursively(n);
+               }
+           }
+        };
+
+        RP.post(r);
+    }
+
+    boolean isExpandedByDefault(Node node) {
         if (node instanceof ElementNode) {
             StructureItem item = ((ElementNode) node).getDescription();
             if (item instanceof StructureItem.CollapsedDefault  &&  ((StructureItem.CollapsedDefault) item).isCollapsedByDefault()) {
                 return false;
             }
         }
-        expandNode(node);
         return true;
     }
 
@@ -313,13 +360,21 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
     // FilterChangeListener ----------------------------------------------------
     
     public void filterStateChanged(ChangeEvent e) {
-        ElementNode root = getRootNode();
-        
-        if ( root != null ) {
-            root.refreshRecursively();
-        }
+        refreshRootRecursively();
     }
-    
+
+    private void refreshRootRecursively() {
+        final ElementNode root = getRootNode();
+
+         if ( root != null ) {
+            RP.post(new Runnable() {
+                public void run() {
+                    root.refreshRecursively();
+                }
+            });
+         }
+     }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is

@@ -42,11 +42,9 @@
 package org.netbeans.modules.profiler.j2ee;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.profiler.api.project.AntProjectSupport;
 import org.netbeans.modules.profiler.nbimpl.project.AbstractAntProjectSupportProvider;
 import org.netbeans.spi.project.LookupProvider.Registration.ProjectType;
 import org.netbeans.spi.project.ProjectServiceProvider;
-import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -60,21 +58,6 @@ import org.openide.filesystems.FileObject;
                         }
 )
 public final class J2EEAntProjectSupportProvider extends AbstractAntProjectSupportProvider {
-
-    @Override
-    public String getProfilerTargetName(FileObject buildScript, int type, FileObject profiledClassFile) {
-        switch (type) {
-            case AntProjectSupport.TARGET_PROFILE:
-                return "profile"; // NOI18N
-            case AntProjectSupport.TARGET_PROFILE_TEST:
-                return null; // not currently supported // "profile-test"; // NOI18N
-            case AntProjectSupport.TARGET_PROFILE_TEST_SINGLE:
-                return "profile-test-single"; // NOI18N
-            default:
-                return null;
-        }
-    }
-    
     public J2EEAntProjectSupportProvider(Project project) {
         super(project);
     }

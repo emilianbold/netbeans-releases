@@ -122,6 +122,9 @@ public class JspHyperlinkProvider implements HyperlinkProvider {
             
             TokenHierarchy<BaseDocument> tokenHierarchy = TokenHierarchy.get(bdoc);
             TokenSequence<?> tokenSequence = tokenHierarchy.tokenSequence();
+            if (tokenSequence == null) {
+                return false;
+            }
             tokenSequence.move(offset);
             if (!tokenSequence.moveNext() && !tokenSequence.movePrevious()) {
                 return false; //no token found

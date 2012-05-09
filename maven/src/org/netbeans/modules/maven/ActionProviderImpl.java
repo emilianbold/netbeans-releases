@@ -145,19 +145,17 @@ public class ActionProviderImpl implements ActionProvider {
         COMMAND_COPY
     };
     
-    Lookup.Result<? extends MavenActionsProvider> result;
     private RequestProcessor RP = new RequestProcessor(ActionProviderImpl.class.getName(), 3);
 
     public ActionProviderImpl(Project proj) {
         this.proj = proj;
-        result = Lookup.getDefault().lookupResult(MavenActionsProvider.class);
     }
 
     @Override
     public String[] getSupportedActions() {
         Set<String> supp = new HashSet<String>();
         supp.addAll( Arrays.asList( supported));
-        for (MavenActionsProvider add : result.allInstances()) {
+        for (MavenActionsProvider add : ActionToGoalUtils.actionProviders(proj)) {
             Set<String> added = add.getSupportedDefaultActions();
             if (added != null) {
                 supp.addAll( added);

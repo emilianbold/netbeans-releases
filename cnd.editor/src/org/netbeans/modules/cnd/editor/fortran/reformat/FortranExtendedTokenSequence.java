@@ -59,16 +59,19 @@ import static org.netbeans.cnd.api.lexer.FortranTokenId.*;
 public class FortranExtendedTokenSequence {
     private final TokenSequence<FortranTokenId> ts;
     private final FortranDiffLinkedList diffs;
-    private int tabSize;
-    /*package local*/ FortranExtendedTokenSequence(TokenSequence<FortranTokenId> ts, FortranDiffLinkedList diffs, int tabSize){
+    private final int tabSize;
+    private final boolean expandTabToSpaces;
+    
+    /*package local*/ FortranExtendedTokenSequence(TokenSequence<FortranTokenId> ts, FortranDiffLinkedList diffs, int tabSize, boolean expandTabToSpaces){
         this.ts = ts;
         this.diffs = diffs;
         this.tabSize = tabSize;
+        this.expandTabToSpaces = expandTabToSpaces;
     }
 
     /*package local*/ Diff replacePrevious(Token<FortranTokenId> previous, int newLines, int spaces, boolean isIndent){
         String old = previous.text().toString();
-        if (!Diff.equals(old, newLines, spaces, isIndent)){
+        if (!Diff.equals(old, newLines, spaces, isIndent, expandTabToSpaces, tabSize)){
             return diffs.addFirst(ts.offset() - previous.length(),
                                   ts.offset(), newLines, spaces, isIndent);
         }
@@ -85,7 +88,7 @@ public class FortranExtendedTokenSequence {
 
     /*package local*/ Diff replaceCurrent(Token<FortranTokenId> current, int newLines, int spaces, boolean isIndent){
         String old = current.text().toString();
-        if (!Diff.equals(old, newLines, spaces, isIndent)){
+        if (!Diff.equals(old, newLines, spaces, isIndent, expandTabToSpaces, tabSize)){
             return diffs.addFirst(ts.offset(),
                                   ts.offset() + current.length(), newLines, spaces, isIndent);
         }
@@ -102,7 +105,7 @@ public class FortranExtendedTokenSequence {
 
     /*package local*/ Diff replaceNext(Token<FortranTokenId> current, Token<FortranTokenId> next, int newLines, int spaces, boolean isIndent){
         String old = next.text().toString();
-        if (!Diff.equals(old, newLines, spaces, isIndent)){
+        if (!Diff.equals(old, newLines, spaces, isIndent, expandTabToSpaces, tabSize)){
             return diffs.addFirst(ts.offset()+current.length(),
                                   ts.offset()+current.length()+next.length(), newLines, spaces, isIndent);
         }
@@ -802,7 +805,7 @@ public class FortranExtendedTokenSequence {
         return apply(diffs, this);
     }
 
-    /*package local*/ static String apply(FortranDiffLinkedList diffs, FortranExtendedTokenSequence ts) {
+    /*package local*/ String apply(FortranDiffLinkedList diffs, FortranExtendedTokenSequence ts) {
         int index = ts.index();
         StringBuilder buf = new StringBuilder();
         try {
@@ -815,7 +818,7 @@ public class FortranExtendedTokenSequence {
             for (Diff diff : diffs.getStorage()) {
                 int start = diff.getStartOffset();
                 int end = diff.getEndOffset();
-                String text = diff.getText();
+                String text = diff.getText(expandTabToSpaces, tabSize);
                 if (startOffset > end || endOffset < start) {
                     System.err.println("What?" + startOffset + ":" + start + "-" + end);// NOI18N
                     continue;

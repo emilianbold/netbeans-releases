@@ -226,7 +226,9 @@ public class LockAction extends ContextAction {
 
         @Override
         public void logError (String error) {
-            if (error.contains("is already locked")) { //NOI18N
+            if (error == null) {
+                // not interested
+            } else if (error.contains("is already locked")) { //NOI18N
                 msg = error;
             } else if (SvnClientExceptionHandler.isAuthentication(error)) {
                 authError = true;

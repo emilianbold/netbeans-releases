@@ -41,11 +41,11 @@
  */
 package org.netbeans.modules.maven.model.pom.impl;
 
+import java.util.ArrayList;
 import java.util.List;
-import org.w3c.dom.Element;
-import org.netbeans.modules.maven.model.pom.*;	
-import org.netbeans.modules.maven.model.pom.POMComponentVisitor;	
+import org.netbeans.modules.maven.model.pom.*;
 import org.netbeans.modules.maven.model.util.ModelImplUtils;
+import org.w3c.dom.Element;
 
 /**
  *
@@ -53,10 +53,12 @@ import org.netbeans.modules.maven.model.util.ModelImplUtils;
  */
 public class ResourceImpl extends POMComponentImpl implements Resource {
 
-    private static final Class<POMComponent>[] ORDER = new Class[] {
-        POMExtensibilityElement.class,
-        StringListImpl.class, //resources
-    };
+    private static final List<Class<? extends POMComponent>> ORDER;
+    static {
+        ORDER = new ArrayList<Class<? extends POMComponent>>();
+        ORDER.add(POMExtensibilityElement.class);
+        ORDER.add(StringListImpl.class); //resources
+    }
 
     public ResourceImpl(POMModel model, Element element) {
         super(model, element);
@@ -69,28 +71,34 @@ public class ResourceImpl extends POMComponentImpl implements Resource {
     // attributes
 
     // child elements
+    @Override
     public void accept(POMComponentVisitor visitor) {
         visitor.visit(this);
     }
 
+    @Override
     public String getDirectory() {
         return getChildElementText(getModel().getPOMQNames().DIRECTORY.getQName());
     }
 
+    @Override
     public void setDirectory(String directory) {
         setChildElementText(getModel().getPOMQNames().DIRECTORY.getName(), directory,
                 getModel().getPOMQNames().DIRECTORY.getQName());
     }
 
+    @Override
     public String getTargetPath() {
         return getChildElementText(getModel().getPOMQNames().TARGETPATH.getQName());
     }
 
+    @Override
     public void setTargetPath(String path) {
         setChildElementText(getModel().getPOMQNames().TARGETPATH.getName(), path,
                 getModel().getPOMQNames().TARGETPATH.getQName());
     }
 
+    @Override
     public Boolean isFiltering() {
         String str = getChildElementText(getModel().getPOMQNames().FILTERING.getQName());
         if (str != null) {
@@ -99,12 +107,14 @@ public class ResourceImpl extends POMComponentImpl implements Resource {
         return null;
     }
 
+    @Override
     public void setFiltering(Boolean filtering) {
         setChildElementText(getModel().getPOMQNames().FILTERING.getName(),
                 filtering == null ? null : filtering.toString(),
                 getModel().getPOMQNames().FILTERING.getQName());
     }
 
+    @Override
     public List<String> getIncludes() {
         List<StringList> lists = getChildren(StringList.class);
         for (StringList list : lists) {
@@ -115,6 +125,7 @@ public class ResourceImpl extends POMComponentImpl implements Resource {
         return null;
     }
 
+    @Override
     public void addInclude(String include) {
         List<StringList> lists = getChildren(StringList.class);
         for (StringList list : lists) {
@@ -136,6 +147,7 @@ public class ResourceImpl extends POMComponentImpl implements Resource {
         }
     }
 
+    @Override
     public void removeInclude(String include) {
         List<StringList> lists = getChildren(StringList.class);
         for (StringList list : lists) {
@@ -146,6 +158,7 @@ public class ResourceImpl extends POMComponentImpl implements Resource {
         }
     }
 
+    @Override
     public List<String> getExcludes() {
         List<StringList> lists = getChildren(StringList.class);
         for (StringList list : lists) {
@@ -156,6 +169,7 @@ public class ResourceImpl extends POMComponentImpl implements Resource {
         return null;
     }
 
+    @Override
     public void addExclude(String exclude) {
         List<StringList> lists = getChildren(StringList.class);
         for (StringList list : lists) {
@@ -177,6 +191,7 @@ public class ResourceImpl extends POMComponentImpl implements Resource {
         }
     }
 
+    @Override
     public void removeExclude(String exclude) {
         List<StringList> lists = getChildren(StringList.class);
         for (StringList list : lists) {

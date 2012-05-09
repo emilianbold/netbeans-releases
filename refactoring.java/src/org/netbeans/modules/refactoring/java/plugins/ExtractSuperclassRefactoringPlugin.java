@@ -519,15 +519,27 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
                     VariableTree tree = (VariableTree) wc.getTrees().getTree(elm);
                     VariableTree copy = genUtils.importComments(tree, wc.getTrees().getPath(elm).getCompilationUnit());
                     copy = genUtils.importFQNs(copy);
+                    ModifiersTree modifiers = copy.getModifiers();
+                    if(modifiers.getFlags().contains(Modifier.PRIVATE)) {
+                        modifiers = make.removeModifiersModifier(modifiers, Modifier.PRIVATE);
+                        modifiers = make.addModifiersModifier(modifiers, Modifier.PROTECTED);
+                        copy = make.Variable(modifiers, copy.getName(), copy.getType(), copy.getInitializer());
+                    }
                     members.add(copy);
                 } else if (member.getGroup() == MemberInfo.Group.METHOD) {
                     @SuppressWarnings("unchecked")
                     ElementHandle<ExecutableElement> handle = (ElementHandle<ExecutableElement>) member.getElementHandle();
                     ExecutableElement elm = handle.resolve(wc);
-                    MethodTree methodTree = wc.getTrees().getTree(elm);
+                    final MethodTree methodTree = genUtils.importComments(wc.getTrees().getTree(elm), wc.getTrees().getPath(elm).getCompilationUnit());
+                    ModifiersTree modifiers = methodTree.getModifiers();
+                    if(modifiers.getFlags().contains(Modifier.PRIVATE)) {
+                        modifiers = make.removeModifiersModifier(modifiers, Modifier.PRIVATE);
+                        modifiers = make.addModifiersModifier(modifiers, Modifier.PROTECTED);
+                    }
+                    MethodTree newMethod;
                     if (member.isMakeAbstract() && !elm.getModifiers().contains(Modifier.ABSTRACT)) {
-                        methodTree = make.Method(
-                                RefactoringUtils.makeAbstract(make, methodTree.getModifiers()),
+                        newMethod = make.Method(
+                                RefactoringUtils.makeAbstract(make, modifiers),
                                 methodTree.getName(),
                                 methodTree.getReturnType(),
                                 methodTree.getTypeParameters(),
@@ -535,14 +547,21 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
                                 methodTree.getThrows(),
                                 (BlockTree) null,
                                 null);
-                        methodTree = genUtils.importFQNs(methodTree);
-                        RefactoringUtils.copyJavadoc(elm, methodTree, wc);
                     } else {
-                        methodTree = genUtils.importComments(methodTree, wc.getTrees().getPath(elm).getCompilationUnit());
-                        methodTree = genUtils.importFQNs(methodTree);
+                        newMethod = make.Method(modifiers,
+                                methodTree.getName(),
+                                methodTree.getReturnType(),
+                                methodTree.getTypeParameters(),
+                                methodTree.getParameters(),
+                                methodTree.getThrows(),
+                                methodTree.getBody(),
+                                (ExpressionTree) methodTree.getDefaultValue());
                     }
-                    makeAbstract |= methodTree.getModifiers().getFlags().contains(Modifier.ABSTRACT);
-                    members.add(methodTree);
+                    newMethod = genUtils.importFQNs(newMethod);
+                    genUtils.copyComments(methodTree, newMethod, false);
+                    genUtils.copyComments(methodTree, newMethod, true);
+                    makeAbstract |= newMethod.getModifiers().getFlags().contains(Modifier.ABSTRACT);
+                    members.add(newMethod);
                 } else if (member.getGroup() == MemberInfo.Group.IMPLEMENTS) {
                     TypeMirrorHandle handle = (TypeMirrorHandle) member.getElementHandle();
                     // XXX check if interface is not aready there; the templates might be changed by user :-(

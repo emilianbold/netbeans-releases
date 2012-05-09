@@ -93,10 +93,12 @@ public class SettingsElementFactoryProvider implements ElementFactory {
         all.addAll(nsold.getElementQNames());
     }
 
+    @Override
     public Set<QName> getElementQNames() {
         return all;
     }
 
+    @Override
     public SettingsComponent create(SettingsComponent context, Element element) {
         return new SettingsComponentCreateVisitor().create(element, context);
     }
@@ -322,7 +324,6 @@ class SettingsComponentCreateVisitor extends DefaultVisitor {
         }
         if (isElementQName(context.getModel().getSettingsQNames().PROXY) && context.getListClass().equals(Proxy.class)) {
             created = new ProxyImpl(context.getModel(), element);
-            return;
         }
     }
 

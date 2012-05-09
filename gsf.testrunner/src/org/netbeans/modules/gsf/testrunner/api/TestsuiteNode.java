@@ -182,6 +182,8 @@ public class TestsuiteNode extends AbstractNode {
                 switch (status){
                     case PASSED:
                         return ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/ok_16.png"); //NOI18N
+                    case PASSEDWITHERRORS:
+                        return ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/ok_withErrors_16.png"); //NOI18N
                     case FAILED:
                         return ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/warning_16.png"); //NOI18N
                     case ERROR:
@@ -317,6 +319,8 @@ public class TestsuiteNode extends AbstractNode {
             result = "MSG_TestsuitePending"; //NOI18N
         } else if (Status.SKIPPED == status) {
             result = "MSG_TestsuiteSkipped"; //NOI18N
+        } else if (Status.PASSEDWITHERRORS == status) {
+            result = "MSG_TestsuitePassedWithErrors"; //NOI18N
         } else {
             result = "MSG_TestsuitePassed"; //NOI18N
         }

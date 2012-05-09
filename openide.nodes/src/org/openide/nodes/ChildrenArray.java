@@ -49,7 +49,7 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.openide.nodes.EntrySupport.Default.Info;
+import org.openide.nodes.EntrySupportDefault.Info;
 
 
 /** Holder of nodes for a children object. Communicates
@@ -59,7 +59,7 @@ import org.openide.nodes.EntrySupport.Default.Info;
 */
 final class ChildrenArray extends NodeAdapter {
     /** children's EntrySupport */
-    public  EntrySupport.Default entrySupport;
+    public  EntrySupportDefault entrySupport;
 
     /** nodes associated */
     private Node[] nodes;

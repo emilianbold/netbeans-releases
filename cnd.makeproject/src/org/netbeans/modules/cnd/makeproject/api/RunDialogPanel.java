@@ -53,7 +53,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JButton;
@@ -66,26 +65,27 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
-import org.netbeans.modules.cnd.utils.FileFilterFactory;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configurations;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.Env;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.PanelProjectLocationVisual;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.FSPath;
+import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
@@ -117,8 +117,8 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
     private RunProjectAction projectAction;
     private static final RequestProcessor RP = new RequestProcessor("RunDialogPanel Worker", 1); //NOI18N
     
-    private static String lastSelectedExecutable = null;
-    private static Project lastSelectedProject = null;
+    private String lastSelectedExecutable = null;
+    private Project lastSelectedProject = null;
     
     private boolean isValidating = false;
 
@@ -944,7 +944,7 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
         String aName = name;
         for(int i = 1; ;i++) {
             boolean found = false;
-            for(Configuration c : projectDescriptor.getConfs().getConfigurations()) {
+            for(Configuration c : clonedConfs) {
                 if (aName.equals(c.getName())) {
                     found = true;
                     break;
@@ -965,17 +965,16 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
                 ExecutionEnvironment executionEnvironment = FileSystemProvider.getExecutionEnvironment(fileSystem);
                 FileUtil.createFolder(fileSystem.getRoot(), projectFolderField.getText().trim());
                 projectAction = action;
-                Project project = null;
                 if (executionEnvironment.isLocal()) {
-                    project = createLocalProject(true);
+                    createLocalProject(true);
                 } else {
                     FileObject projectCreator = findProjectCreator();
                     if (projectCreator == null) {
-                        project = createLocalProject(false);
+                         createLocalProject(false);
                     } else {
-                        project = createRemoteProject(projectCreator);
+                        Project project = createRemoteProject(projectCreator);
                         if (project == null) {
-                            project = createLocalProject(false);
+                            createLocalProject(false);
                         }
                     }
                 }
@@ -1059,6 +1058,11 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
                                      , "--project-create", "binary="+getExecutablePath() // NOI18N
                                      , "--sources=used" // NOI18N
                                      );
+                if (TRACE_REMOTE_CREATION) {
+                    logger.log(Level.INFO, "#exitCode={0}", execute.exitCode); // NOI18N
+                    logger.log(Level.INFO, execute.error);
+                    logger.log(Level.INFO, execute.output);
+                }
             }
         }
         String baseDir = projectFolderField.getText().trim();

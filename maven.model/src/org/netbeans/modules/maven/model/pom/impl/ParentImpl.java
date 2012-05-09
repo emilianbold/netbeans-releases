@@ -41,9 +41,8 @@
  */
 package org.netbeans.modules.maven.model.pom.impl;
 
+import org.netbeans.modules.maven.model.pom.*;
 import org.w3c.dom.Element;
-import org.netbeans.modules.maven.model.pom.*;	
-import org.netbeans.modules.maven.model.pom.POMComponentVisitor;	
 
 /**
  *
@@ -62,14 +61,17 @@ public class ParentImpl extends VersionablePOMComponentImpl implements Parent {
     // attributes
 
     // child elements
+    @Override
     public void accept(POMComponentVisitor visitor) {
         visitor.visit(this);
     }
 
+    @Override
     public String getRelativePath() {
         return getChildElementText(getModel().getPOMQNames().RELATIVEPATH.getQName());
     }
 
+    @Override
     public void setRelativePath(String relPath) {
         setChildElementText(getModel().getPOMQNames().RELATIVEPATH.getQName().getLocalPart(), relPath,
                 getModel().getPOMQNames().RELATIVEPATH.getQName());

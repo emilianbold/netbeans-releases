@@ -48,17 +48,21 @@ import java.util.HashSet;
 import java.util.Set;
 import javax.swing.Action;
 import org.apache.maven.project.MavenProject;
-import org.netbeans.modules.maven.spi.actions.MavenActionsProvider;
-import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.modules.maven.api.execute.RunConfig;
-import org.netbeans.modules.maven.spi.actions.AbstractMavenActionsProvider;
-import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.FileUtilities;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
+import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.execute.RunUtils;
+import static org.netbeans.modules.maven.apisupport.Bundle.*;
+import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
+import org.netbeans.modules.maven.spi.actions.AbstractMavenActionsProvider;
+import org.netbeans.modules.maven.spi.actions.MavenActionsProvider;
 import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.LookupProvider.Registration.ProjectType;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -69,34 +73,31 @@ import org.openide.awt.DynamicMenuContent;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
-import static org.netbeans.modules.maven.apisupport.Bundle.*;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author mkleint
  */
-@ServiceProvider(service=MavenActionsProvider.class, position=55)
+@ProjectServiceProvider(service=MavenActionsProvider.class, projectTypes={
+    @ProjectType(id="org-netbeans-modules-maven/" + NbMavenProject.TYPE_NBM),
+    @ProjectType(id="org-netbeans-modules-maven/" + NbMavenProject.TYPE_NBM_APPLICATION)
+})
 public class NbmActionGoalProvider implements MavenActionsProvider {
     static final String NBMRELOAD = "nbmreload";
     private static final String RELOAD_TARGET = "reload-target"; // #190469
+    @StaticResource private static final String PLATFORM_MAPPINGS = "org/netbeans/modules/maven/apisupport/platformActionMappings.xml";
+    @StaticResource private static final String IDE_MAPPINGS = "org/netbeans/modules/maven/apisupport/ideActionMappings.xml";
     
     private AbstractMavenActionsProvider platformDelegate = new AbstractMavenActionsProvider() {
 
         protected @Override InputStream getActionDefinitionStream() {
-            String path = "platformActionMappings.xml"; //NOI18N
-            InputStream in = getClass().getResourceAsStream(path);
-            assert in != null : "no instream for " + path; //NOI18N
-            return in;
+            return NbmActionGoalProvider.class.getClassLoader().getResourceAsStream(PLATFORM_MAPPINGS);
         }
     };
     private AbstractMavenActionsProvider ideDelegate = new AbstractMavenActionsProvider() {
 
         protected @Override InputStream getActionDefinitionStream() {
-            String path = "ideActionMappings.xml"; //NOI18N
-            InputStream in = getClass().getResourceAsStream(path);
-            assert in != null : "no instream for " + path; //NOI18N
-            return in;
+            return NbmActionGoalProvider.class.getClassLoader().getResourceAsStream(IDE_MAPPINGS);
         }
     };
 

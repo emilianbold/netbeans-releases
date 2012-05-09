@@ -41,9 +41,12 @@
  */
 package org.netbeans.modules.cnd.search.ui;
 
+import java.lang.reflect.InvocationTargetException;
 import org.netbeans.modules.cnd.search.SearchResult;
 import org.openide.nodes.Node;
 import org.openide.nodes.Node.Property;
+import org.openide.nodes.PropertySupport;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -51,54 +54,52 @@ import org.openide.nodes.Node.Property;
  */
 public final class SearchResultPropertySet extends Node.PropertySet {
 
+    private static final String[] namesAndDisplayNames = new String[]{
+        NbBundle.getMessage(SearchResultPropertySet.class, "SearchResultPropertySet.column.path.name"), // NOI18N
+        NbBundle.getMessage(SearchResultPropertySet.class, "SearchResultPropertySet.column.path.desc"), // NOI18N
+        NbBundle.getMessage(SearchResultPropertySet.class, "SearchResultPropertySet.column.size.name"), // NOI18N
+        NbBundle.getMessage(SearchResultPropertySet.class, "SearchResultPropertySet.column.size.desc"), // NOI18N
+    };
     private final Property[] properties;
-//    private final SearchResult result;
+    private final SearchResult result;
 
     public SearchResultPropertySet(SearchResult result) {
-//        this.result = result;
+        this.result = result;
         properties = new Property[]{
-//            new PathProperty(), new SizeProperty(), new LastModifiedProperty()
+            new PathProperty(), new SizeProperty()
         };
+    }
+
+    public static String[] getNamesAndDisplayNames() {
+        return namesAndDisplayNames;
     }
 
     @Override
     public Property<?>[] getProperties() {
         return properties;
     }
-//
-//    private class LastModifiedProperty extends PropertySupport.ReadOnly<Date> {
-//
-//        public LastModifiedProperty() {
-//            super("lastModified", Date.class, "Last Modified", "Last Modified");
-//        }
-//
-//        @Override
-//        public Date getValue() throws IllegalAccessException, InvocationTargetException {
-//            return new Date(System.currentTimeMillis());
-//        }
-//    }
-//
-//    private class PathProperty extends PropertySupport.ReadOnly<String> {
-//
-//        public PathProperty() {
-//            super("path", String.class, "path Modified", "path Modified");
-//        }
-//
-//        @Override
-//        public String getValue() throws IllegalAccessException, InvocationTargetException {
-//            return result.data.getPath();
-//        }
-//    }
-//
-//    private class SizeProperty extends PropertySupport.ReadOnly<Integer> {
-//
-//        public SizeProperty() {
-//            super("size", Integer.class, "size Modified", "size Modified");
-//        }
-//
-//        @Override
-//        public Integer getValue() throws IllegalAccessException, InvocationTargetException {
-//            return result.data.getSize();
-//        }
-//    }
+
+    private class PathProperty extends PropertySupport.ReadOnly<String> {
+
+        public PathProperty() {
+            super(namesAndDisplayNames[0], String.class, namesAndDisplayNames[1], namesAndDisplayNames[1]);
+        }
+
+        @Override
+        public String getValue() throws IllegalAccessException, InvocationTargetException {
+            return result.data.getPath();
+        }
+    }
+
+    private class SizeProperty extends PropertySupport.ReadOnly<Integer> {
+
+        public SizeProperty() {
+            super(namesAndDisplayNames[2], Integer.class, namesAndDisplayNames[3], namesAndDisplayNames[3]);
+        }
+
+        @Override
+        public Integer getValue() throws IllegalAccessException, InvocationTargetException {
+            return result.data.getSize();
+        }
+    }
 }

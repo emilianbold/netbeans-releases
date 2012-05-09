@@ -57,7 +57,11 @@ public interface NodeConfiguration {
     
     boolean overrideMacros();
 
+    boolean overrideUndefinedMacros();
+
     Set<String> getUserInludePaths(boolean resulting);
 
     Map<String,String> getUserMacros(boolean resulting);
+
+    Set<String> getUndefinedMacros(boolean resulting);
 }

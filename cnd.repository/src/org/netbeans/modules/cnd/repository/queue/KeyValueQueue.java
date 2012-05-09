@@ -84,8 +84,12 @@ public class KeyValueQueue<K, V> extends BaseQueue {
     public KeyValueQueue() {
         super(new BaseQueue.Queue());
         dispatcher = new EventsDispatcher<K, V>(this);
+    }
+    
+    protected final void start() {
         dispatcher.start();
     }
+    
     
     public void addLast(K key, V value) {
 	if( needsTrace() ) {

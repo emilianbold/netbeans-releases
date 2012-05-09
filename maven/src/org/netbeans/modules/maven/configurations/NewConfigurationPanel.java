@@ -101,6 +101,14 @@ public class NewConfigurationPanel extends javax.swing.JPanel implements Documen
         }
         return toRet;
     }
+    
+    public void setProperties(String props) {
+        epProperties.setText(props);
+    }
+    
+    public String getProperties() {
+        return epProperties.getText();
+    }
 
     void attachDescriptor(DialogDescriptor dd) {
         this.descriptor = dd;
@@ -129,6 +137,9 @@ public class NewConfigurationPanel extends javax.swing.JPanel implements Documen
         lblActivate = new javax.swing.JLabel();
         lblHint = new javax.swing.JLabel();
         txtActivate = new javax.swing.JTextField();
+        lblProperties = new javax.swing.JLabel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        epProperties = new javax.swing.JEditorPane();
 
         lblId.setLabelFor(txtId);
         org.openide.awt.Mnemonics.setLocalizedText(lblId, org.openide.util.NbBundle.getMessage(NewConfigurationPanel.class, "NewConfigurationPanel.lblId.text")); // NOI18N
@@ -140,6 +151,12 @@ public class NewConfigurationPanel extends javax.swing.JPanel implements Documen
 
         lblHint.setText(org.openide.util.NbBundle.getMessage(NewConfigurationPanel.class, "NewConfigurationPanel.lblHint.text")); // NOI18N
         lblHint.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+
+        lblProperties.setLabelFor(epProperties);
+        org.openide.awt.Mnemonics.setLocalizedText(lblProperties, org.openide.util.NbBundle.getMessage(NewConfigurationPanel.class, "NewConfigurationPanel.lblProperties.text")); // NOI18N
+
+        epProperties.setContentType("text/x-properties");
+        jScrollPane1.setViewportView(epProperties);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -153,12 +170,16 @@ public class NewConfigurationPanel extends javax.swing.JPanel implements Documen
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(cbShared)
-                            .addComponent(txtId, javax.swing.GroupLayout.DEFAULT_SIZE, 292, Short.MAX_VALUE)))
+                            .addComponent(txtId)))
+                    .addComponent(lblHint, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 450, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(lblActivate)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(lblActivate)
+                            .addComponent(lblProperties))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(txtActivate, javax.swing.GroupLayout.DEFAULT_SIZE, 291, Short.MAX_VALUE))
-                    .addComponent(lblHint, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 423, Short.MAX_VALUE))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(txtActivate)
+                            .addComponent(jScrollPane1))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -174,8 +195,12 @@ public class NewConfigurationPanel extends javax.swing.JPanel implements Documen
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblActivate)
                     .addComponent(txtActivate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
-                .addComponent(lblHint)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(lblProperties)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(lblHint, javax.swing.GroupLayout.DEFAULT_SIZE, 41, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -187,21 +212,27 @@ public class NewConfigurationPanel extends javax.swing.JPanel implements Documen
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox cbShared;
+    private javax.swing.JEditorPane epProperties;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel lblActivate;
     private javax.swing.JLabel lblHint;
     private javax.swing.JLabel lblId;
+    private javax.swing.JLabel lblProperties;
     private javax.swing.JTextField txtActivate;
     private javax.swing.JTextField txtId;
     // End of variables declaration//GEN-END:variables
 
+    @Override
     public void insertUpdate(DocumentEvent e) {
         check();
     }
 
+    @Override
     public void removeUpdate(DocumentEvent e) {
         check();
     }
 
+    @Override
     public void changedUpdate(DocumentEvent e) {
         check();
     }

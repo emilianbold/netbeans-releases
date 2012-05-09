@@ -2117,11 +2117,13 @@
     </target>
 
 
-    <!-- Running/Debugging Standalone -->
+    <!-- Running/Debugging/Profiling Standalone -->
 
     <target name="jfxsa-run" depends="-check-jfx-runtime,run"/>
 
     <target name="jfxsa-debug" depends="jar,-check-jfx-runtime,debug"/>
+    
+    <target name="jfxsa-profile" depends="-check-jfx-runtime,profile"/>
 
 
     <!-- Shared Debugging init -->
@@ -2148,7 +2150,7 @@
     </target>
 
 
-    <!-- Running/Debugging as WebStart -->
+    <!-- Running/Debugging/Profiling as WebStart -->
     
     <target name="-check-jnlp-file-fx" depends="-check-project" unless="fx-in-swing-app">
         <basename property="jfx.deployment.base" file="${jfx.deployment.jar}" suffix=".jar"/>
@@ -2194,10 +2196,52 @@
         </exec>
     </target>
     
+    <target name="-profile-check-1">
+        <condition property="profiler.configured">
+            <or>
+                <contains casesensitive="true" string="${run.jvmargs.ide}" substring="-agentpath:"/>
+                <contains casesensitive="true" string="${run.jvmargs.ide}" substring="-javaagent:"/>
+            </or>
+        </condition>
+    </target>
+    
+    <target if="jnlp-file-exists+netbeans.home" name="-profile-check-jnlp">
+        <antcall target="-profile-check-1"/>
+    </target>
+    
+    <target name="-do-jfxws-profile" depends="-check-jdk-7u4-mac,jar,-check-jfx-webstart,-resolve-jnlp-file,-check-jfx-runtime">
+        <echo message="Executing ${jfx.deployment.jnlp} in profile mode using ${active.webstart.executable}"/>
+        <exec executable="${active.webstart.executable}">
+            <env key="JAVAWS_VM_ARGS" value="${run.jvmargs.ide}"/>
+            <arg value="-wait"/>
+            <arg file="${jfx.deployment.jnlp}"/>
+        </exec>
+    </target>
+    
+    <target name="jfxws-profile" if="profiler.configured" 
+        depends="-profile-check-1"
+        description="Profile fx javaws project in IDE">
+        <startprofiler/>
+        
+        <antcall target="-do-jfxws-profile"/>
+    </target>
+    
 
-    <!-- Running/Debugging in Browser -->
+    <!-- Running/Debugging/Profiling in Browser -->
 
     <target name="-check-selected-browser-path" depends="-check-default-run-config">
+        <condition property="javafx.run.inbrowser.undefined">
+            <or>
+                <and>
+                    <isset property="javafx.run.inbrowser"/>
+                    <equals arg1="${javafx.run.inbrowser}" arg2="undefined"/>
+                </and>
+                <and>
+                    <isset property="javafx.run.inbrowser.path"/>
+                    <equals arg1="${javafx.run.inbrowser.path}" arg2="undefined"/>
+                </and>
+            </or>
+        </condition>
         <condition property="javafx.run.inbrowser.path-exists">
             <and>
                 <isset property="javafx.run.inbrowser.path"/>
@@ -2205,6 +2249,7 @@
             </and>
         </condition>
         <fail message="Error:${line.separator}Browser selection not recognizable from ${config} run configuration.${line.separator}Please go to Project Properties dialog, category Run, to select a valid browser." unless="javafx.run.inbrowser.path"/>
+        <fail message="Error:${line.separator}No browser defined in ${config} run configuration.${line.separator}Please verify in Tools->Options dialog that NetBeans recognizes a valid browser, then go to Project Properties dialog, category Run, to select a valid browser." if="javafx.run.inbrowser.undefined"/>
         <fail message="Error:${line.separator}Browser ${javafx.run.inbrowser.path} referred from ${config} run configuration can not be found.${line.separator}(This can happen, e.g, when the FX Project is transferred to another system.)${line.separator}Please go to Project Properties dialog, category Run, to select a valid browser." unless="javafx.run.inbrowser.path-exists"/>
     </target>
 
@@ -2255,5 +2300,24 @@
         </exec>
     </target>
 
+    <target if="html-file-exists+netbeans.home" name="-profile-check-html">
+        <antcall target="-profile-check-1"/>
+    </target>
 
+    <target name="-do-jfxbe-profile" depends="-check-jdk-7u4-mac,jar,-check-selected-browser-path,-set-html-file,-check-jfx-runtime">
+        <echo message="Executing ${jfx.deployment.html} in profile mode using ${javafx.run.inbrowser}"/>
+        <echo message="(${javafx.run.inbrowser.path})"/>
+        <exec executable="${javafx.run.inbrowser.path}">
+            <env key="_JPI_VM_OPTIONS" value="${run.jvmargs.ide}"/>
+            <arg file="${jfx.deployment.html}"/>
+        </exec>
+    </target>
+
+    <target name="jfxbe-profile" if="profiler.configured"
+        depends="-profile-check-html"
+        description="Profile JavaFX project in browser">
+        <startprofiler/>
+        
+        <antcall target="-do-jfxbe-profile"/>
+    </target>
 </project>

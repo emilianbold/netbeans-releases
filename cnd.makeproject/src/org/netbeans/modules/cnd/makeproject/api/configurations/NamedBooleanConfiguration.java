@@ -46,7 +46,7 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
  *
  * @author Alexander Simon
  */
-public class NamedBooleanConfiguration extends BooleanConfiguration {
+public class NamedBooleanConfiguration extends BooleanConfiguration implements Cloneable {
 
     private final String falseValue;
     private final String trueValue;

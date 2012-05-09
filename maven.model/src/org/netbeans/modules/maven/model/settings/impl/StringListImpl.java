@@ -68,6 +68,7 @@ public class StringListImpl extends SettingsComponentImpl implements StringList 
 
 
     // child elements
+    @Override
     public List<String> getListChildren() {
         List<SettingsExtensibilityElement> el = getChildren(SettingsExtensibilityElement.class);
         List<String> toRet = new ArrayList<String>();
@@ -79,6 +80,7 @@ public class StringListImpl extends SettingsComponentImpl implements StringList 
         return toRet.size() > 0 ? toRet : null;
     }
 
+    @Override
     public void addListChild(String child) {
         assert child != null;
         SettingsExtensibilityElement el = getModel().getFactory().createSettingsExtensibilityElement(childname.getQName());
@@ -87,6 +89,7 @@ public class StringListImpl extends SettingsComponentImpl implements StringList 
 
     }
 
+    @Override
     public void removeListChild(String child) {
         assert child != null;
         List<SettingsExtensibilityElement> el = getChildren(SettingsExtensibilityElement.class);
@@ -101,6 +104,7 @@ public class StringListImpl extends SettingsComponentImpl implements StringList 
 
 
     // child elements
+    @Override
     public void accept(SettingsComponentVisitor visitor) {
         visitor.visit(this);
     }

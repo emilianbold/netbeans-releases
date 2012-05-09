@@ -87,7 +87,7 @@ public class Utils {
         return computeFitText(component, maxWidth, task.getDisplayName(), false);
     }
 
-    public static String getTaskDisplayString(Issue task, JComponent component, int maxWidth, boolean active) {
+    public static String getTaskDisplayString(Issue task, JComponent component, int maxWidth, boolean active, boolean hasFocus) {
         String displayName;
         String fitText = computeFitText(component, maxWidth, task.getDisplayName(), active);
         String activeText = active ? "<b>" + fitText + "</b>" : getFilterBoldText(fitText); //NOI18N
@@ -97,9 +97,9 @@ public class Utils {
 //        }
 
         Status status = task.getStatus();
-        if (status == Status.NEW) {
+        if (status == Status.NEW && !hasFocus) {
             displayName = "<html><font color=\"green\">" + activeText + "</font></html>"; //NOI18N
-        } else if (status == Status.MODIFIED) {
+        } else if (status == Status.MODIFIED && !hasFocus) {
             displayName = "<html><font color=\"blue\">" + activeText + "</font></html>"; //NOI18N
         } else {
             displayName = "<html>" + activeText + "</html>"; //NOI18N

@@ -64,13 +64,9 @@ made subject to such option by the copyright holder.
     <entry category="private" javaType="java.lang.String" name="caret-type-overwrite-mode" xml:space="preserve">
         <value><![CDATA[block-caret]]></value>
     </entry>
-    <!-- #137560 - this can be uncommented when we clean the languages not to override the 'All Languages'
-         setting; this setting is not controlled no the per-language basis and its hardcoded default value
-         is 'false'.
     <entry category="private" javaType="java.lang.Boolean" name="code-folding-enable" xml:space="preserve">
-        <value><![CDATA[false]]></value>
+        <value><![CDATA[true]]></value>
     </entry>
-    -->
     <entry category="private" javaType="java.lang.Boolean" name="completion-auto-popup" xml:space="preserve">
         <value><![CDATA[true]]></value>
     </entry>
@@ -250,7 +246,7 @@ made subject to such option by the copyright holder.
     <entry category="deprecated" javaType="java.lang.Integer" name="write-buffer-size" xml:space="preserve">
         <value><![CDATA[16384]]></value>
     </entry>
-    
+
     <entry category="private" javaType="java.lang.Boolean" name="toolbarVisible" xml:space="preserve">
         <value><![CDATA[true]]></value>
     </entry>
@@ -260,7 +256,7 @@ made subject to such option by the copyright holder.
     <entry category="private" javaType="java.lang.String" name="text-line-wrap" xml:space="preserve">
         <value><![CDATA[none]]></value>
     </entry>
-    
+
     <entry category="deprecated" javaType="methodvalue" name="rendering-hints" xml:space="preserve">
         <value><![CDATA[org.netbeans.modules.editor.impl.ComplexValueSettingsFactory.getRenderingHintsValue]]></value>
     </entry>
@@ -273,7 +269,7 @@ made subject to such option by the copyright holder.
 
     <entry name="hyperlink-activation-modifiers" value="128" javaType="java.lang.Integer" /> <!-- InputEvent.CTRL_DOWN_MASK -->
     <entry name="alt-hyperlink-activation-modifiers" value="640" javaType="java.lang.Integer" /> <!-- InputEvent.CTRL_DOWN_MASK | InputEvent.ALT_DOWN_MASK -->
-    
+
 <!--
             settingsMap.put(SettingsNames.TAB_SIZE, SettingsDefaults.defaultTabSize);
             settingsMap.put(SettingsNames.EXPAND_TABS, SettingsDefaults.defaultExpandTabs);
@@ -330,7 +326,7 @@ made subject to such option by the copyright holder.
             settingsMap.put(ExtSettingsNames.COMPLETION_REFRESH_DELAY, ExtSettingsDefaults.defaultCompletionRefreshDelay);
             settingsMap.put(ExtSettingsNames.COMPLETION_PANE_MIN_SIZE, ExtSettingsDefaults.defaultCompletionPaneMinSize);
             settingsMap.put(ExtSettingsNames.COMPLETION_PANE_MAX_SIZE, ExtSettingsDefaults.defaultCompletionPaneMaxSize);
-            
+
             settingsMap.put(ExtSettingsNames.REINDENT_WITH_TEXT_BEFORE, Boolean.TRUE);
             settingsMap.put(ExtSettingsNames.JAVADOC_AUTO_POPUP_DELAY, ExtSettingsDefaults.defaultJavaDocAutoPopupDelay);
             settingsMap.put(ExtSettingsNames.JAVADOC_PREFERRED_SIZE, ExtSettingsDefaults.defaultJavaDocPreferredSize);

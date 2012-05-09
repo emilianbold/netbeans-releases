@@ -42,8 +42,6 @@
 package org.netbeans.modules.maven.model.pom.visitor;
 
 import org.netbeans.modules.maven.model.pom.*;
-//import org.netbeans.modules.xml.wsdl.model.spi.GenericExtensibilityElement;
-//import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.netbeans.modules.xml.xam.AbstractComponent;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.ComponentUpdater;
@@ -57,7 +55,6 @@ import org.netbeans.modules.xml.xam.dom.DocumentComponent;
 public class ChildComponentUpdateVisitor<T extends POMComponent> //implements SCAComponentVisitor, 
         implements ComponentUpdater<T> {
     
-    private Operation operation;
     private POMComponent parent;
     private int index;
     private boolean canAdd = false;
@@ -74,23 +71,23 @@ public class ChildComponentUpdateVisitor<T extends POMComponent> //implements SC
         return canAdd;
     }
     
+    @Override
     public void update(POMComponent target, POMComponent child, Operation operation) {
         update(target, child, -1, operation);
     }
     
+    @Override
     public void update(POMComponent target, POMComponent child, int index, Operation operation) {
         assert target != null;
         assert child != null;
 
         this.parent = target;
-        this.operation = operation;
         this.index = index;
         //#165465
         if (operation != null) {
             if (operation == Operation.REMOVE) {
                 //TODO what property shall be fired? is it important?
                 removeChild("XXX", child);
-                return;
             } else {
                 //TODO what property shall be fired? is it important?
                 addChild("XXX", child);

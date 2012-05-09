@@ -67,10 +67,12 @@ import javax.swing.event.TableColumnModelListener;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.table.TableColumn;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.modules.search.FindDialogMemory;
 import org.netbeans.modules.search.MatchingObject;
 import org.netbeans.modules.search.ResultModel;
 import org.netbeans.modules.search.Selectable;
+import org.netbeans.modules.search.ui.AbstractSearchResultsPanel.RootNode;
 import org.netbeans.swing.etable.ETableColumnModel;
 import org.netbeans.swing.outline.Outline;
 import org.openide.explorer.view.OutlineView;
@@ -83,11 +85,9 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
-import org.openide.nodes.NodeAdapter;
-import org.openide.nodes.NodeMemberEvent;
-import org.openide.nodes.NodeReorderEvent;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
+import org.openide.util.RequestProcessor;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.Lookups;
 
@@ -97,6 +97,7 @@ import org.openide.util.lookup.Lookups;
  */
 public class ResultsOutlineSupport {
 
+    @StaticResource
     private static final String ROOT_NODE_ICON =
             "org/netbeans/modules/search/res/context.gif";              //NOI18N
     private static final int VERTICAL_ROW_SPACE = 2;
@@ -124,7 +125,7 @@ public class ResultsOutlineSupport {
         this.rootFiles = rootFiles;
         this.resultsNode = new ResultsNode();
         this.infoNode = infoNode;
-        this.invisibleRoot = new RootNode();
+        this.invisibleRoot = new RootNode(resultsNode, infoNode);
         this.matchingObjectNodes = new LinkedList<MatchingObjectNode>();
         createOutlineView();
     }
@@ -146,8 +147,7 @@ public class ResultsOutlineSupport {
                     if (outlineView.isDisplayable()) {
                         onAttach();
                     } else {
-                        onDetach();
-                        outlineView.removeHierarchyListener(this);
+                        checkDetached(this);
                     }
                 }
             }
@@ -165,6 +165,26 @@ public class ResultsOutlineSupport {
 
     private void onAttach() {
         outlineView.expandNode(resultsNode);
+    }
+
+    /**
+     * Check whether the search results panel has been removed and, if so,
+     * remove hierarchy listener and call {@link #onDetach} method.
+     *
+     * Method {@link #onDetach()} is not called directly because results panel
+     * can be detached a attached to another parent container when result tabs
+     * are created and closed. (TODO: Add panelClosed API method to displayer.)
+     */
+    private void checkDetached(final HierarchyListener listenerToRemove) {
+        RequestProcessor.getDefault().post(new Runnable() {
+            @Override
+            public void run() {
+                if (!outlineView.isDisplayable()) {
+                    outlineView.removeHierarchyListener(listenerToRemove);
+                    onDetach();
+                }
+            }
+        }, 10);
     }
 
     private synchronized void onDetach() {
@@ -297,72 +317,6 @@ public class ResultsOutlineSupport {
         }
     }
 
-    private class RootNode extends AbstractNode {
-
-        public RootNode() {
-            this(new RootNodeChildren());
-        }
-
-        private RootNode(final RootNodeChildren rootNodeChildren) {
-            super(rootNodeChildren);
-            if (infoNode != null) {
-                setInfoNodeListener(rootNodeChildren);
-            }
-        }
-    }
-
-    private void setInfoNodeListener(final RootNodeChildren rootNodeChildren) {
-
-        assert infoNode != null;
-
-        infoNode.getChildren().getNodes(true);
-        infoNode.addNodeListener(new NodeAdapter() {
-            private boolean added = false;
-
-            @Override
-            public synchronized void childrenAdded(NodeMemberEvent ev) {
-                if (!added) {
-                    rootNodeChildren.showInfoNode();
-                    infoNode.removeNodeListener(this);
-                    added = true;
-                }
-            }
-
-            @Override
-            public void propertyChange(PropertyChangeEvent ev) {
-                super.propertyChange(ev);
-            }
-
-            @Override
-            public void childrenReordered(NodeReorderEvent ev) {
-                super.childrenReordered(ev);
-            }
-        });
-    }
-
-    private class RootNodeChildren extends Children.Keys<Node> {
-
-        private Node[] standard = new Node[]{resultsNode};
-        private Node[] withInfo = new Node[]{resultsNode, infoNode};
-        private boolean infoNodeShown = false;
-
-        public RootNodeChildren() {
-            setKeys(standard);
-        }
-
-        private synchronized void showInfoNode() {
-            if (!infoNodeShown) {
-                setKeys(withInfo);
-                infoNodeShown = true;
-            }
-        }
-
-        @Override
-        protected Node[] createNodes(Node key) {
-            return new Node[]{key};
-        }
-    }
-
     /**
      * Class for representation of the root node.
      */
@@ -370,6 +324,7 @@ public class ResultsOutlineSupport {
 
         private FlatChildren flatChildren;
         private FolderTreeChildren folderTreeChildren;
+        private String htmlDisplayName = null;
 
         public ResultsNode() {
             super(new FlatChildren());
@@ -412,6 +367,20 @@ public class ResultsOutlineSupport {
 
         @Override
         protected void createPasteTypes(Transferable t, List<PasteType> s) {
+        }
+
+        public void setHtmlAndRawDisplayName(String htmlName) {
+            htmlDisplayName = htmlName;
+            String stripped = (htmlName == null)
+                    ? null
+                    : htmlName.replaceAll("<b>", "").replaceAll( //NOI18N
+                    "</b>", "");                                        //NOI18N
+            this.setDisplayName(stripped);
+        }
+
+        @Override
+        public String getHtmlDisplayName() {
+            return htmlDisplayName;
         }
     }
 
@@ -738,7 +707,7 @@ public class ResultsOutlineSupport {
     }
 
     public void setResultsNodeText(String text) {
-        resultsNode.setDisplayName(text);
+        resultsNode.setHtmlAndRawDisplayName(text);
     }
 
     private class ColumnsListener implements TableColumnModelListener {

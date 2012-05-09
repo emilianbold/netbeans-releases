@@ -75,6 +75,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import static org.junit.Assert.*;
+import org.netbeans.junit.RandomlyFails;
 
 /**
  *
@@ -256,6 +257,7 @@ public abstract class BulkSearchTestPerformer extends NbTestCase {
                     Collections.<String>emptyList());
     }
 
+    @RandomlyFails
     public void testNoExponentialTimeComplexity() throws Exception {
         try {
         String code = "package test;\n" +
