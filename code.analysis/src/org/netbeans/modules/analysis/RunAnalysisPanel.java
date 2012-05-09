@@ -264,11 +264,7 @@ public class RunAnalysisPanel extends javax.swing.JPanel implements LookupListen
 
         configurationModel.addElement("Custom");
 
-        if (!RunAnalysis.readConfigurations().iterator().hasNext()) {
-            RunAnalysis.getConfigurationSettingsRoot("default").put("displayName", "Default");
-        }
-
-        for (Configuration c : RunAnalysis.readConfigurations()) {
+        for (Configuration c : ConfigurationsManager.getDefault().getConfigurations()) {
             configurationModel.addElement(c);
         }
 
@@ -356,11 +352,11 @@ public class RunAnalysisPanel extends javax.swing.JPanel implements LookupListen
         return (AnalyzerFactory) configurationCombo.getSelectedItem();
     }
 
-    public String getConfiguration() {
-        if (inspectionCombo.isEnabled()) return "internal-temporary";
+    public Configuration getConfiguration() {
+        if (inspectionCombo.isEnabled()) return ConfigurationsManager.getDefault().getTemporaryConfiguration();
         Object selected = configurationCombo.getSelectedItem();
 
-        if (selected instanceof Configuration) return ((Configuration) selected).id();
+        if (selected instanceof Configuration) return (Configuration) selected;
         else return null;
     }
 

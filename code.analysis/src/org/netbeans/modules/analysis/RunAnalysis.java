@@ -125,7 +125,7 @@ public class RunAnalysis {
                 runAnalysis.setEnabled(false);
 
                 final AnalyzerFactory toRun = rap.getSelectedAnalyzer();
-                final String configuration = rap.getConfiguration();
+                final Configuration configuration = rap.getConfiguration();
                 final String singleWarningId = rap.getSingleWarningId();
                 final Collection<? extends AnalyzerFactory> analyzers = rap.getAnalyzers();
 
@@ -181,7 +181,7 @@ public class RunAnalysis {
 
                     private void doRunAnalyzer(AnalyzerFactory analyzer, Scope scope, ProgressHandle handle, int bucketStart, int bucketSize, final Map<AnalyzerFactory, List<ErrorDescription>> result, Collection<MissingPlugin> missingPlugins, Collection<AnalysisProblem> additionalProblems) {
                         List<ErrorDescription> current = new ArrayList<ErrorDescription>();
-                        Preferences settings = configuration != null ? getConfigurationSettingsRoot(configuration).node(SPIAccessor.ACCESSOR.getAnalyzerId(analyzer)) : null;
+                        Preferences settings = configuration != null ? configuration.getPreferences().node(SPIAccessor.ACCESSOR.getAnalyzerId(analyzer)) : null;
                         Context context = SPIAccessor.ACCESSOR.createContext(scope, settings, singleWarningId, handle, bucketStart, bucketSize);
                         Collection<? extends MissingPlugin> requiredPlugins = analyzer.requiredPlugins(context);
                         if (!requiredPlugins.isEmpty()) {
@@ -216,34 +216,6 @@ public class RunAnalysis {
         });
 
         d.setVisible(true);
-    }
-
-    public static Preferences getConfigurationsRoot() {
-        return NbPreferences.forModule(AdjustConfigurationPanel.class).node("configurations");
-    }
-
-    public static Preferences getConfigurationSettingsRoot(String configuration) {
-        return getConfigurationsRoot().node(configuration);
-    }
-
-    public static Iterable<? extends Configuration> readConfigurations() {
-        List<Configuration> result = new ArrayList<Configuration>();
-        Preferences root = getConfigurationsRoot();
-
-        try {
-            for (String configurationName : root.childrenNames()) {
-                Preferences node = root.node(configurationName);
-                String displayName = node != null ? node.get("displayName", null) : null;
-
-                if (displayName != null) {
-                    result.add(ConfigurationsManager.getDefault().getDefaultConfiguration());
-                }
-            }
-        } catch (BackingStoreException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-
-        return result;
     }
 
     
