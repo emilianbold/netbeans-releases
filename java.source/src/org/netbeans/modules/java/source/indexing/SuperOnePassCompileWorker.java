@@ -129,7 +129,7 @@ final class SuperOnePassCompileWorker extends CompileWorker {
                                 public @Override boolean isCanceled() {
                                     return context.isCancelled();
                                 }
-                            }, APTUtils.get(context.getRoot()));
+                            }, tuple.aptGenerated ? null : APTUtils.get(context.getRoot()));
                         }
                         for (CompilationUnitTree cut : jt.parse(tuple.jfo)) { //TODO: should be exactly one
                             trees.add(cut);

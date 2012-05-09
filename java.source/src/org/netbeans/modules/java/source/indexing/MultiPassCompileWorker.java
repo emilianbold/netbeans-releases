@@ -171,7 +171,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                         public @Override boolean isCanceled() {
                             return context.isCancelled();
                         }
-                    }, APTUtils.get(context.getRoot()));
+                    }, active.aptGenerated ? null : APTUtils.get(context.getRoot()));
                     Iterable<? extends Processor> processors = jt.getProcessors();
                     aptEnabled = processors != null && processors.iterator().hasNext();
                     if (JavaIndex.LOG.isLoggable(Level.FINER)) {
