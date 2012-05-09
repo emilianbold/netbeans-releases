@@ -54,7 +54,7 @@ public interface TransportImplementation {
     /**
      * Deactivate transport.
      */
-    boolean dettach();
+    boolean detach();
 
     /**
      * Send command to WebKit.
