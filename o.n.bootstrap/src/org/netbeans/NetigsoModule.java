@@ -136,13 +136,13 @@ final class NetigsoModule extends Module {
     protected void classLoaderDown() {
         NetigsoModule.LOG.log(Level.FINE, "classLoaderDown {0}", getCodeNameBase()); // NOI18N
         ProxyClassLoader pcl = (ProxyClassLoader)classloader;
+        classloader = null;
         ClassLoader l = pcl.firstParent();
         if (l == null) {
             mgr.netigsoLoaderDown(this);
             return;
         }
         mgr.netigso().stopLoader(this, l);
-        classloader = null;
     }
 
     @Override
