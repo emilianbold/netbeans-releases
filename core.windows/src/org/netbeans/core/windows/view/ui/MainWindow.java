@@ -144,6 +144,24 @@ public final class MainWindow {
                    LOGGER.log(Level.FINE, null, x);
                }
            }
+           //#198639 - workaround for main menu & mouse issues in Gnome 3
+           if ("gnome-shell".equals(System.getenv("DESKTOP_SESSION"))) { //NOI18N
+               try {
+                   Class<?> xwm = Class.forName("sun.awt.X11.XWM"); //NOI18N
+                   Field awt_wmgr = xwm.getDeclaredField("awt_wmgr"); //NOI18N
+                   awt_wmgr.setAccessible(true);
+                   Field other_wm = xwm.getDeclaredField("OTHER_WM"); //NOI18N
+                   other_wm.setAccessible(true);
+                   if (awt_wmgr.get(null).equals(other_wm.get(null))) {
+                       Field metacity_wm = xwm.getDeclaredField("METACITY_WM"); //NOI18N
+                       metacity_wm.setAccessible(true);
+                       awt_wmgr.set(null, metacity_wm.get(null));
+                       LOGGER.info("installed #198639 workaround"); //NOI18N
+                   }
+               } catch (Exception x) {
+                   LOGGER.log(Level.FINE, null, x);
+               }
+           }
        }
    }
 
