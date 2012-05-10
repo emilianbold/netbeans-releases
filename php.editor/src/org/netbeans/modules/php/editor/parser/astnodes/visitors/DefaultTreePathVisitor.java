@@ -52,8 +52,8 @@ import org.netbeans.modules.php.editor.parser.astnodes.*;
  * @author Tomasz.Slota@Sun.COM
  */
 public class DefaultTreePathVisitor extends DefaultVisitor{
-    private List<ASTNode> path = Collections.synchronizedList(new LinkedList<ASTNode>());
-    private List<ASTNode> unmodifiablePath;
+    private final List<ASTNode> path = Collections.synchronizedList(new LinkedList<ASTNode>());
+    private final List<ASTNode> unmodifiablePath;
 
     public DefaultTreePathVisitor() {
         unmodifiablePath = Collections.unmodifiableList(path);
