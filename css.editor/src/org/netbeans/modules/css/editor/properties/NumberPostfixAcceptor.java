@@ -52,6 +52,7 @@ public abstract class NumberPostfixAcceptor implements CssPropertyValueAcceptor{
 
     protected abstract List<String> postfixes();
     
+    @Override
     public boolean accepts(String image) {
         for(String postfix : postfixes()) {
             if(image.toLowerCase().endsWith(postfix.toLowerCase())) {
@@ -60,7 +61,7 @@ public abstract class NumberPostfixAcceptor implements CssPropertyValueAcceptor{
                     Float.parseFloat(numberImage);
                     return true;
                 } catch(NumberFormatException nfe) {
-                    return false;
+                    //just continue in trying other units
                 }
             }
         }
