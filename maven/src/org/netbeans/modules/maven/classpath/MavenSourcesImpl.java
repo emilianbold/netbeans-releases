@@ -57,6 +57,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.event.ChangeListener;
 import org.apache.maven.model.Resource;
@@ -105,9 +107,7 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
     private final ChangeSupport cs = new ChangeSupport(this);
     private final PropertyChangeListener pcl = new PropertyChangeListener() {
         public @Override void propertyChange(PropertyChangeEvent event) {
-            if (NbMavenProjectImpl.PROP_PROJECT.equals(event.getPropertyName())) {
-                checkChanges(true, true);
-            }
+            checkChanges(true, true);
         }
     };
     
@@ -140,10 +140,11 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
         synchronized (lock) {
             NbMavenProjectImpl project = project();
             MavenProject mp = project.getOriginalMavenProject();
-            FileObject folder = FileUtilities.convertStringToFileObject(mp.getBuild().getSourceDirectory());
-            changed = changed | checkSourceGroupCache(folder, NAME_SOURCE, SG_Sources(), javaGroup);
-            folder = FileUtilities.convertStringToFileObject(mp.getBuild().getTestSourceDirectory());
-            changed = changed | checkSourceGroupCache(folder, NAME_TESTSOURCE, SG_Test_Sources(), javaGroup);
+            NbMavenProject watcher = project.getProjectWatcher();
+            File folder = FileUtilities.convertStringToFile(mp.getBuild().getSourceDirectory());
+            changed = changed | checkSourceGroupCache(folder, NAME_SOURCE, SG_Sources(), javaGroup, watcher);
+            folder = FileUtilities.convertStringToFile(mp.getBuild().getTestSourceDirectory());
+            changed = changed | checkSourceGroupCache(folder, NAME_TESTSOURCE, SG_Test_Sources(), javaGroup, watcher);
             changed = changed | checkGeneratedGroupsCache();
             if (checkAlsoNonJavaStuff) {
                 changed = changed | checkOtherGroupsCache(project.getOtherRoots(false), false);
@@ -260,7 +261,9 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
     /**
      * consult the SourceGroup cache, return true if anything changed..
      */
-    private boolean checkSourceGroupCache(FileObject root, String name, String displayName, Map<String, SourceGroup> groups) {
+    private boolean checkSourceGroupCache(File rootF, String name, String displayName, Map<String, SourceGroup> groups, NbMavenProject watcher) {
+        watcher.addWatchedPath(rootF.toURI());
+        FileObject root = FileUtil.toFileObject(rootF);
         SourceGroup group = groups.get(name);
         if (root == null && group != null) {
             groups.remove(name);
@@ -408,15 +411,13 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
             }
         }
         if (folder != null) {
-            if (!folder.exists() && !folder.mkdirs()) {
-                // XXX not allowed to throw IOException
+            FileObject fo;
+            try {
+                fo = FileUtil.createFolder(folder);
+            } catch (IOException x) { // XXX not allowed to rethrow
+                Logger.getLogger(MavenSourcesImpl.class.getName()).log(Level.INFO, null, x);
                 return null;
             }
-            FileUtil.refreshFor(folder);
-            // XXX might suffice to just listen to PROP_RESOURCE
-            checkChanges(true, true);
-            FileObject fo = FileUtil.toFileObject(folder);
-            assert fo != null;
             SourceGroup[] grps = getSourceGroups(type);
             for (SourceGroup sg : grps) {
                 if (fo.equals(sg.getRootFolder())) {

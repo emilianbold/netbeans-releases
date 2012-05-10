@@ -154,7 +154,25 @@ public class MavenSourcesImplTest extends NbTestCase {
         assertEquals(2, grps.length);
         assertEquals(main, grps[0].getRootFolder());
         assertEquals(g2, grps[1]);
-        // XXX may also be desirable to fire a change if source root created on disk w/o going thru SourceGroupModifier
+    }
+
+    public void testManuallyDeletedSourceGroup() throws Exception { // #204545
+        TestFileUtils.writeFile(d, "pom.xml", "<project><modelVersion>4.0.0</modelVersion><groupId>g</groupId><artifactId>a</artifactId><version>0</version></project>");
+        FileObject main = FileUtil.createFolder(d, "src/main/java");
+        FileObject test = FileUtil.createFolder(d, "src/test/java");
+        Project p = ProjectManager.getDefault().findProject(d);
+        Sources s = ProjectUtils.getSources(p);
+        SourceGroup[] grps = s.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        assertEquals(2, grps.length);
+        assertEquals(main, grps[0].getRootFolder());
+        assertEquals(test, grps[1].getRootFolder());
+        MockChangeListener l = new MockChangeListener();
+        s.addChangeListener(l);
+        test.getParent().delete();
+        l.assertEvent();
+        grps = s.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        assertEquals(1, grps.length);
+        assertEquals(main, grps[0].getRootFolder());
     }
 
 }
