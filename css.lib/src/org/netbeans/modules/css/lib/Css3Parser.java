@@ -1,4 +1,4 @@
-// $ANTLR 3.3 Nov 30, 2010 12:50:56 /Volumes/Mercurial/web-main_default/css.lib/src/org/netbeans/modules/css/lib/Css3.g 2012-04-25 17:23:45
+// $ANTLR 3.3 Nov 30, 2010 12:50:56 /Volumes/Mercurial/web-main_default/css.lib/src/org/netbeans/modules/css/lib/Css3.g 2012-05-10 08:03:22
 
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
@@ -328,7 +328,7 @@ public class Css3Parser extends DebugParser {
                     
                     int mark = -1;
                     //create error-recovery node
-//                    dbg.enterRule(getGrammarFileName(), "recovery"); //syncToRBRACE content considered as "valid"
+                    //dbg.enterRule(getGrammarFileName(), "recovery");
 
                     try {
                         mark = input.mark();
@@ -366,7 +366,7 @@ public class Css3Parser extends DebugParser {
                         if  (mark != -1) {
                             input.release(mark);
                         }
-//                        dbg.exitRule(getGrammarFileName(), "recovery");
+                        //dbg.exitRule(getGrammarFileName(), "recovery");
                     }
                 }
         
