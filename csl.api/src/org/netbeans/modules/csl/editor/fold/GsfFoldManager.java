@@ -748,7 +748,7 @@ public class GsfFoldManager implements FoldManager {
 
     private static boolean hasErrors(ParserResult r) {
         for(org.netbeans.modules.csl.api.Error e : r.getDiagnostics()) {
-            if (e.getSeverity() == Severity.ERROR) {
+            if (e.getSeverity() == Severity.FATAL) {
                 return true;
             }
         }

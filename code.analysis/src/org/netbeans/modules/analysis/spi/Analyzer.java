@@ -41,12 +41,14 @@
  */
 package org.netbeans.modules.analysis.spi;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.modules.analysis.AnalysisProblem;
 import org.netbeans.modules.analysis.SPIAccessor;
 import org.netbeans.modules.refactoring.api.Scope;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -118,6 +120,7 @@ public interface Analyzer extends Cancellable {
         private final ProgressHandle progress;
         private final int bucketStart;
         private final int bucketSize;
+        private final Collection<AnalysisProblem> problems = new ArrayList<AnalysisProblem>();
         private int totalWork;
 
         Context(Scope scope, Preferences settings, String singleWarningId, ProgressHandle progress, int bucketStart, int bucketSize) {
@@ -163,6 +166,10 @@ public interface Analyzer extends Cancellable {
 
         public void finish() {
             progress.progress(bucketStart + bucketSize);
+        }
+        
+        public void reportAnalysisProblem(String displayName, CharSequence description) {
+            problems.add(new AnalysisProblem(displayName, description));
         }
 
         static {
@@ -220,6 +227,11 @@ public interface Analyzer extends Cancellable {
                 @Override
                 public String getAnalyzerIconPath(AnalyzerFactory analyzer) {
                     return analyzer.iconPath;
+                }
+
+                @Override
+                public Collection<? extends AnalysisProblem> getAnalysisProblems(Context context) {
+                    return context.problems;
                 }
             };
         }

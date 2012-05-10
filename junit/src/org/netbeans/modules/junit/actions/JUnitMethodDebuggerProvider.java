@@ -94,7 +94,8 @@ public class JUnitMethodDebuggerProvider extends TestMethodDebuggerProvider {
                 if (pane != null) {
                     String text = pane.getText();
                     if (text.contains("org.junit.") || text.contains("junit.") //NOI18N
-                            || text.contains(".junit.") || text.contains("TestBase")) {  //NOI18N
+                            || text.contains(".junit.") || text.contains("TestBase") //NOI18N
+                            || text.contains("MercurialTestCase")) {  //NOI18N
                         return true;
                     }
                 }

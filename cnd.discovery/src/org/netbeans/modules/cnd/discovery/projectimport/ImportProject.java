@@ -834,7 +834,9 @@ public class ImportProject implements PropertyChangeListener {
         if (makeLog == null) {
             makeLog = createTempFile("make"); // NOI18N
         }
-        if(BuildTraceSupport.useBuildTrace()) {
+        ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
+        final MakeConfigurationDescriptor makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
+        if(BuildTraceSupport.useBuildTrace(makeConfigurationDescriptor.getActiveConfiguration())) {
             if (BuildTraceSupport.supportedPlatforms(executionEnvironment)) {
                 try {
                     HostInfo hostInfo = HostInfoUtils.getHostInfo(executionEnvironment);
@@ -914,7 +916,9 @@ public class ImportProject implements PropertyChangeListener {
             try {
                 ses.setEnvironmentVariables(vars.toArray(new String[vars.size()]));
                 if (execLog != null) {
-                    vars.add(BuildTraceSupport.CND_TOOLS+"="+BuildTraceSupport.CND_TOOLS_VALUE); // NOI18N
+                    ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
+                    MakeConfigurationDescriptor makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
+                    vars.add(BuildTraceSupport.CND_TOOLS+"="+BuildTraceSupport.getTools(makeConfigurationDescriptor.getActiveConfiguration())); // NOI18N
                     if (executionEnvironment.isLocal()) {
                         vars.add(BuildTraceSupport.CND_BUILD_LOG+"="+execLog.getAbsolutePath()); // NOI18N
                     } else {
@@ -956,7 +960,9 @@ public class ImportProject implements PropertyChangeListener {
         }
         List<String> vars = ImportUtils.parseEnvironment(configureArguments);
         if (execLog != null) {
-            vars.add(BuildTraceSupport.CND_TOOLS+"="+BuildTraceSupport.CND_TOOLS_VALUE); // NOI18N
+            ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
+            MakeConfigurationDescriptor makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
+            vars.add(BuildTraceSupport.CND_TOOLS+"="+BuildTraceSupport.getTools(makeConfigurationDescriptor.getActiveConfiguration())); // NOI18N
             if (executionEnvironment.isLocal()) {
                 vars.add(BuildTraceSupport.CND_BUILD_LOG+"="+execLog.getAbsolutePath()); // NOI18N
             } else {

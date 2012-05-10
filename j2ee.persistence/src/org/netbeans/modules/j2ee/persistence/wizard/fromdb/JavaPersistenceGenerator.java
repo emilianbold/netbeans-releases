@@ -751,7 +751,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 return genUtils.createVariable(typeElement, m.getMemberName(), getMemberType(m));
             }
 
-            private String getMemberType(EntityMember m) {
+            String getMemberType(EntityMember m) {
                 String memberType = m.getMemberType();
                 if ("java.sql.Date".equals(memberType)) { //NOI18N
                     memberType = "java.util.Date";
@@ -1256,7 +1256,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                             property.setOldField(variables.get(m.getColumnName().toUpperCase()));
                         }
                         TypeMirror exTm = this.copy.getTrees().getTypeMirror(TreePath.getPath(copy.getCompilationUnit(), exMemberType));
-                        String newType = m.getMemberType();
+                        String newType = getMemberType(m);
                         //first if type is the same, just return and keep all as is
                         if(exTm.toString().equals(newType)){
                             return;//nothing is changed

@@ -66,22 +66,41 @@ public class LoadingNode extends AbstractNode implements Call {
         return ImageUtilities.loadImage("org/netbeans/modules/cnd/callgraph/resources/waitNode.gif"); // NOI18N
     }
 
+    @Override
     public void open() {
     }
 
+    @Override
     public Function getCallee() {
         return null;
     }
 
+    @Override
     public Function getCaller() {
         return null;
     }
 
+    @Override
     public int compareTo(Call o) {
         return -1;
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof LoadingNode) {
+            return this == obj;
+        }
+        return false;
+    }
+
+    @Override
     public String getDescription() {
         return getName();
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        return hash;
     }
 }

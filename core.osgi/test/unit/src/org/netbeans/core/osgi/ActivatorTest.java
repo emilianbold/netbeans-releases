@@ -42,6 +42,7 @@
 
 package org.netbeans.core.osgi;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
@@ -68,7 +69,7 @@ public class ActivatorTest extends NbTestCase {
         new OSGiProcess(getWorkDir()).newModule().clazz(ModuleInstallInstall.class).manifest(
                 "OpenIDE-Module: custom",
                 "OpenIDE-Module-Install: " + ModuleInstallInstall.class.getName(),
-                "OpenIDE-Module-Module-Dependencies: org.openide.modules").done().run();
+                "OpenIDE-Module-Module-Dependencies: org.openide.modules").done().run(false);
         assertTrue(Boolean.getBoolean("my.bundle.ran"));
     }
     public static class ModuleInstallInstall extends ModuleInstall {
@@ -81,7 +82,7 @@ public class ActivatorTest extends NbTestCase {
         new OSGiProcess(getWorkDir()).newModule().clazz(ModuleInstallBackwardsInstall.class).manifest(
                 "OpenIDE-Module: custom",
                 "OpenIDE-Module-Install: " + ModuleInstallBackwardsInstall.class.getName(),
-                "OpenIDE-Module-Module-Dependencies: org.openide.modules").done().backwards().run();
+                "OpenIDE-Module-Module-Dependencies: org.openide.modules").done().backwards().run(false);
         assertTrue(Boolean.getBoolean("my.bundle.ran.again"));
     }
     public static class ModuleInstallBackwardsInstall extends ModuleInstall {
@@ -97,7 +98,7 @@ public class ActivatorTest extends NbTestCase {
                 clazz(OnStopImpl2.class).namedservice("Modules/Stop", Runnable.class, OnStopImpl2.class).
                 manifest(
                 "OpenIDE-Module: custom",
-                "OpenIDE-Module-Module-Dependencies: org.openide.modules").done().run();
+                "OpenIDE-Module-Module-Dependencies: org.openide.modules").done().run(true);
         assertTrue(Boolean.getBoolean("my.bundle.started"));
         assertTrue(Boolean.getBoolean("my.bundle.stopping"));
         assertTrue(Boolean.getBoolean("my.bundle.stopped"));
@@ -125,7 +126,7 @@ public class ActivatorTest extends NbTestCase {
                 "OpenIDE-Module-Install: " + URLStreamHandlerInstall.class.getName(),
                 "OpenIDE-Module-Module-Dependencies: org.openide.modules").done().
                 backwards(). // XXX will not pass otherwise
-                run();
+                run(false);
         assertEquals("10", System.getProperty("my.url.length"));
     }
     public static class URLStreamHandlerInstall extends ModuleInstall {
@@ -133,7 +134,7 @@ public class ActivatorTest extends NbTestCase {
             try {
                 System.setProperty("my.url.length",
                         Integer.toString(new URL("nbres:/custom/stuff").openConnection().getContentLength()));
-            } catch (Exception x) {
+            } catch (IOException x) {
                 x.printStackTrace();
             }
         }
@@ -143,7 +144,7 @@ public class ActivatorTest extends NbTestCase {
         new OSGiProcess(getWorkDir()).newModule().clazz(JREPackageImportInstall.class).manifest(
                 "OpenIDE-Module: custom",
                 "OpenIDE-Module-Install: " + JREPackageImportInstall.class.getName(),
-                "OpenIDE-Module-Module-Dependencies: org.openide.modules").done().run();
+                "OpenIDE-Module-Module-Dependencies: org.openide.modules").done().run(false);
         assertTrue(Boolean.getBoolean("my.bundle.worked"));
     }
     public static class JREPackageImportInstall extends ModuleInstall {
@@ -226,7 +227,7 @@ public class ActivatorTest extends NbTestCase {
                 "public @Override void restored() {System.setProperty(\"provider.name\",",
                 "org.openide.util.Lookup.getDefault().lookup(api.Interface.class).getClass().getName());}",
                 "}").done().
-                run();
+                run(false);
         assertEquals("impl.Provider", System.getProperty("provider.name"));
     }
 
@@ -243,7 +244,7 @@ public class ActivatorTest extends NbTestCase {
                 "OpenIDE-Module-Install: custom.Install",
                 "OpenIDE-Module-Module-Dependencies: org.openide.modules, org.netbeans.modules.javahelp/1").done().
                 module("org.netbeans.modules.javahelp").
-                run();
+                run(false);
         assertTrue(Boolean.getBoolean("used.javahelp"));
     }
 
@@ -259,7 +260,7 @@ public class ActivatorTest extends NbTestCase {
                 "}").manifest(
                 "OpenIDE-Module: custom",
                 "OpenIDE-Module-Install: custom.Install",
-                "OpenIDE-Module-Module-Dependencies: org.openide.modules, painter").done().run();
+                "OpenIDE-Module-Module-Dependencies: org.openide.modules, painter").done().run(false);
         assertTrue(Boolean.getBoolean("com.sun.available"));
     }
 

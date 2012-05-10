@@ -373,17 +373,18 @@ public class WebProjectValidation extends J2eeTestCase {
         String compileJSPLabel = "Test compile all JSP files during builds";
         new JCheckBoxOperator(properties, compileJSPLabel).changeSelection(true);
         properties.ok();
-
-        testCleanAndBuildProject();
-        logAndCloseOutputs();
-        testCleanAndBuildProject();
-        logAndCloseOutputs();
-
-        new Action(null, "Properties").perform(rootNode);
-        properties = new NbDialogOperator("Project Properties");
-        new Node(new JTreeOperator(properties), "Build|Compiling").select();
-        new JCheckBoxOperator(properties, compileJSPLabel).changeSelection(false);
-        properties.ok();
+        try {
+            testCleanAndBuildProject();
+            logAndCloseOutputs();
+            testCleanAndBuildProject();
+            logAndCloseOutputs();
+        } finally {
+            new Action(null, "Properties").perform(rootNode);
+            properties = new NbDialogOperator("Project Properties");
+            new Node(new JTreeOperator(properties), "Build|Compiling").select();
+            new JCheckBoxOperator(properties, compileJSPLabel).changeSelection(false);
+            properties.ok();
+        }
     }
 
     public void testCompileJSP() {
@@ -483,23 +484,7 @@ public class WebProjectValidation extends J2eeTestCase {
         editor.replace("try {",
                 "try {\nout.println(\"<title>Servlet with name=\"+request.getParameter(\"name\")+\"</title>\");");
         new ActionNoBlock(null, "Run File").perform(editor);
-        NbDialogOperator dialog;
-        try {
-            dialog = new NbDialogOperator("Set Servlet Execution URI");
-        } catch (TimeoutExpiredException e) {
-            // workaround bug 201668
-            System.out.println("Bug 201668");
-            e.printStackTrace(System.out);
-            // close all error and information dialogs
-            JDialog jDialog;
-            do {
-                jDialog = NbDialogOperator.findJDialog(ComponentSearcher.getTrueChooser("Any dialog"));
-                if (jDialog != null) {
-                    new NbDialogOperator(jDialog).close();
-                }
-            } while (jDialog != null);
-            return;
-        }
+        NbDialogOperator dialog = new NbDialogOperator("Set Servlet Execution URI");
         JComboBoxOperator combo = new JComboBoxOperator(dialog);
         combo.setSelectedItem(combo.getSelectedItem() + "?name=Servlet1");
         dialog.ok();

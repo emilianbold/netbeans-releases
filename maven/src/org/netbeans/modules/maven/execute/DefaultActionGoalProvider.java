@@ -44,6 +44,7 @@ package org.netbeans.modules.maven.execute;
 
 import org.netbeans.modules.maven.spi.actions.AbstractMavenActionsProvider;
 import java.io.InputStream;
+import org.netbeans.api.annotations.common.StaticResource;
 
 /**
  * a default implementation of AdditionalM2ActionsProvider, a fallback when nothing is
@@ -52,19 +53,11 @@ import java.io.InputStream;
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.maven.spi.actions.MavenActionsProvider.class, position=666)
 public class DefaultActionGoalProvider extends AbstractMavenActionsProvider {
-    /** Creates a new instance of DefaultActionProvider */
-    public DefaultActionGoalProvider() {
-    }
     
-    public InputStream getActionDefinitionStream() {
-       String path = "/org/netbeans/modules/maven/execute/defaultActionMappings.xml"; //NOI18N
-       InputStream in = getClass().getResourceAsStream(path);
-        if (in == null) {
-            assert false : "No instream for " + path; //NOI18N
-            return null;
-        }
-       return in;
-    }
+    @StaticResource private static final String MAPPINGS = "org/netbeans/modules/maven/execute/defaultActionMappings.xml";
 
+    @Override protected InputStream getActionDefinitionStream() {
+        return DefaultActionGoalProvider.class.getClassLoader().getResourceAsStream(MAPPINGS);
+    }
     
 }

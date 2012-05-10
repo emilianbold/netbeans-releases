@@ -46,32 +46,13 @@ package org.netbeans.modules.cnd.completion.cplusplus.ext;
 import java.awt.Component;
 import java.awt.Graphics;
 import java.text.MessageFormat;
-import java.util.Collections;
-import java.util.Map;
-import org.netbeans.api.lexer.TokenId;
-import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.cnd.api.lexer.CppTokenId;
-import org.netbeans.modules.cnd.api.model.CsmEnumerator;
-import org.netbeans.modules.cnd.api.model.CsmMacro;
-import org.netbeans.modules.cnd.api.model.CsmClass;
-import org.netbeans.modules.cnd.api.model.CsmClassifier;
-import org.netbeans.modules.cnd.api.model.CsmEnum;
-import org.netbeans.modules.cnd.api.model.CsmField;
-import org.netbeans.modules.cnd.api.model.CsmNamespace;
-import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.cnd.api.model.CsmType;
-import org.netbeans.modules.cnd.api.model.CsmTypedef;
-import org.netbeans.modules.cnd.api.model.CsmVariable;
-import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
-import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilterBuilder;
-import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
-import org.netbeans.modules.cnd.api.model.services.CsmInheritanceUtilities;
-import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import java.util.Iterator;
-import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -79,47 +60,66 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CndTokenProcessor;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
+import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassForwardDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmConstructor;
+import org.netbeans.modules.cnd.api.model.CsmEnum;
+import org.netbeans.modules.cnd.api.model.CsmEnumerator;
+import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmInstantiation;
+import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
+import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
+import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
+import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypeBasedSpecializationParameter;
+import org.netbeans.modules.cnd.api.model.CsmTypedef;
+import org.netbeans.modules.cnd.api.model.CsmVariable;
+import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.api.model.deep.CsmLabel;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmFileReferences;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
+import org.netbeans.modules.cnd.api.model.services.CsmInheritanceUtilities;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilterBuilder;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmTemplateBasedReferencedObject;
+import org.netbeans.modules.cnd.completion.cplusplus.NbCsmCompletionQuery.NbCsmItemFactory;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletion.BaseType;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem.TemplateParameterResultItem;
-import org.netbeans.modules.cnd.completion.csm.CompletionResolver.Result;
-import org.openide.util.NbBundle;
-
 import org.netbeans.modules.cnd.completion.csm.CompletionResolver;
+import org.netbeans.modules.cnd.completion.csm.CompletionResolver.Result;
 import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
 import org.netbeans.modules.cnd.modelutil.AntiLoop;
 import org.netbeans.modules.cnd.modelutil.CsmPaintComponent;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.spi.editor.completion.CompletionItem;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -170,9 +170,7 @@ abstract public class CsmCompletionQuery {
         GLOBAL_QUERY,
     };
 
-    public CsmCompletionQuery(CsmItemFactory itemFactory) {
-        super();
-        CsmCompletionQuery.itemFactory = itemFactory;
+    public CsmCompletionQuery() {
     }
 
     public CsmCompletionResult query(JTextComponent component, int offset, boolean instantiateTypes) {
@@ -1181,7 +1179,7 @@ abstract public class CsmCompletionQuery {
                 }
             }
             ExprKind kind = ExprKind.NONE;
-            ExprKind nextKind = ExprKind.NONE;
+            ExprKind nextKind;
             int lastInd = parmCnt - 1;
             AtomicBoolean derefOfTHIS = new AtomicBoolean(false);
             for (int i = startIdx; i < parmCnt && ok; i++) { // resolve all items in exp
@@ -1453,10 +1451,9 @@ abstract public class CsmCompletionQuery {
                                         }
                                         if (lastType == null || lastType.getClassifierText().toString().equals("auto")) { // NOI18N
                                             // try to find with resolver
-                                            CompletionResolver.Result res = null;
                                             compResolver.setResolveTypes(CompletionResolver.RESOLVE_CONTEXT);
                                             if (resolve(varPos, var, true)) {
-                                                res = compResolver.getResult();
+                                                CompletionResolver.Result res = compResolver.getResult();
                                                 lastType = getVariableOrClassifierType(res, new AtomicBoolean(false), item);
                                             }
                                         }
@@ -1793,6 +1790,22 @@ abstract public class CsmCompletionQuery {
                                     if (filtered.size() > 0) {
                                         mtdList = filtered;
                                         lastType = extractFunctionType(mtdList, null);
+                                    } else if (item.getParameterCount() > 1) {
+                                        CsmType type0 = resolveType(item.getParameter(0));
+                                        CsmType type1 = resolveType(item.getParameter(1));
+                                        if(type0 != null && type1 != null) {
+                                            lastType = sup.getCommonType(type1, type0);
+                                            if(lastType == null) {
+                                                if(type0.isBuiltInBased(true)) {
+                                                    lastType = type1;
+                                                } else {
+                                                    lastType = type0;
+                                                }
+                                            }
+                                        } else {
+                                            lastType = type0;
+                                        }
+                                        staticOnly = false;
                                     } else if (item.getParameterCount() > 0) {
                                         lastType = resolveType(item.getParameter(0));
                                         staticOnly = false;
@@ -2316,8 +2329,7 @@ abstract public class CsmCompletionQuery {
                     boolean instantiatedByTemplateParam = false;
                     CsmInstantiation inst = (CsmInstantiation)classifier;
                     Map<CsmTemplateParameter, CsmSpecializationParameter> mapping = inst.getMapping();
-                    for (CsmTemplateParameter templateParam : mapping.keySet()) {
-                        CsmSpecializationParameter specParam = mapping.get(templateParam);
+                    for (CsmSpecializationParameter specParam : mapping.values()) {
                         if(CsmKindUtilities.isTypeBasedSpecalizationParameter(specParam)) {
                             CsmType type = ((CsmTypeBasedSpecializationParameter)specParam).getType();
                             if(type != null && type.isTemplateBased()) {
@@ -2698,6 +2710,10 @@ abstract public class CsmCompletionQuery {
     }
 
     //========================== Items Factory ===============================
+    protected static void setCsmItemFactory(NbCsmItemFactory factory) {
+        itemFactory = factory;
+    }
+
     public static CsmItemFactory getCsmItemFactory() {
         return itemFactory;
     }

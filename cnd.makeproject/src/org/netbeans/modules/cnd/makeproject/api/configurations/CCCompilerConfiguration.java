@@ -43,22 +43,21 @@
  */
 
 package org.netbeans.modules.cnd.makeproject.api.configurations;
-import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.LanguageFlavor;
+import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
+import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
+import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.OptionsNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
-import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
-import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
-import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.CompileOptionsProvider;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 
-public class CCCompilerConfiguration extends CCCCompilerConfiguration {
+public class CCCompilerConfiguration extends CCCCompilerConfiguration implements Cloneable {
     
     public static final int STANDARD_DEFAULT = 0;
     public static final int STANDARD_CPP98 = 1;
@@ -158,6 +157,8 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration {
         clone.setInheritIncludes(getInheritIncludes().clone());
         clone.setPreprocessorConfiguration(getPreprocessorConfiguration().clone());
         clone.setInheritPreprocessor(getInheritPreprocessor().clone());
+        clone.setUndefinedPreprocessorConfiguration(getUndefinedPreprocessorConfiguration().clone());
+        clone.setInheritUndefinedPreprocessor(getInheritUndefinedPreprocessor().clone());
         clone.setUseLinkerLibraries(getUseLinkerLibraries().clone());
         // From CCCompiler
         clone.setCppStandard(getCppStandard().clone());

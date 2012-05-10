@@ -35,8 +35,10 @@ AssociationOverride
 AssociationOverrides
 AttributeOverride
 AttributeOverrides
+AutoCloseable
 Basic
 Boolean
+BootstrapMethodError
 Byte
 Cache
 CacheRetrieveMode
@@ -51,6 +53,7 @@ ClassCircularityError
 ClassFormatError
 ClassLoader
 ClassNotFoundException
+ClassValue <T>
 CloneNotSupportedException
 Cloneable
 CollectionTable
@@ -181,11 +184,13 @@ Query
 QueryHint
 QueryTimeoutException
 Readable
+ReflectiveOperationException
 RollbackException
 Runnable
 Runtime
 RuntimeException
 RuntimePermission
+SafeVarargs
 SecondaryTable
 SecondaryTables
 SecurityException
@@ -263,8 +268,10 @@ AssociationOverride
 AssociationOverrides
 AttributeOverride
 AttributeOverrides
+AutoCloseable
 Basic
 Boolean
+BootstrapMethodError
 Byte
 Cache
 CacheRetrieveMode
@@ -279,6 +286,7 @@ ClassCircularityError
 ClassFormatError
 ClassLoader
 ClassNotFoundException
+ClassValue <T>
 CloneNotSupportedException
 Cloneable
 CollectionTable
@@ -409,11 +417,13 @@ Query
 QueryHint
 QueryTimeoutException
 Readable
+ReflectiveOperationException
 RollbackException
 Runnable
 Runtime
 RuntimeException
 RuntimePermission
+SafeVarargs
 SecondaryTable
 SecondaryTables
 SecurityException

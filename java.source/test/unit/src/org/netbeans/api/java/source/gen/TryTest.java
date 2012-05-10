@@ -46,10 +46,18 @@ package org.netbeans.api.java.source.gen;
 import com.sun.source.tree.*;
 import com.sun.source.util.TreeScanner;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.prefs.Preferences;
 import javax.lang.model.element.Modifier;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.api.java.source.CodeStyle.BracePlacement;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.*;
@@ -57,6 +65,7 @@ import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.java.ui.FmtOptions;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -600,7 +609,117 @@ public class TryTest extends GeneratorTestMDRCompat {
         System.err.println(res);
         assertEquals(golden, res);
     }
+    
+    public void test211174() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.io.InputStream;\n" +
+            "\n" +
+            "public class ConnectionFilter\n" +
+            "{\n" +
+            "\n" +
+            "    public void m()\n" +
+            "    {\n" +
+            "        InputStream in = null;\n" +
+            "\n" +
+            "        in.read();\n" +
+            "\n" +
+            "        try\n" +
+            "        {\n" +
+            "            System.err.println(\"x\");\n" +
+            "        }\n" +
+            "        finally\n" +
+            "        {\n" +
+            "            in.close();\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.io.InputStream;\n" +
+            "\n" +
+            "public class ConnectionFilter\n" +
+            "{\n" +
+            "\n" +
+            "    public void m()\n" +
+            "    {\n" +
+            "\n" +//TODO: should not be here
+            "        try\n" +
+            "        {\n" +
+            "            InputStream in = null;\n" +
+//            "\n" + //TODO: should be here
+            "            in.read();\n" +
+//            "\n" + //TODO: should be here
+            "            try\n" +
+            "            {\n" +
+            "                System.err.println(\"x\");\n" +
+            "            }\n" +
+            "            finally\n" +
+            "            {\n" +
+            "                in.close();\n" +
+            "            }\n" +
+            "        }\n" +
+            "        catch (Exception ex)\n" +
+            "        {\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+        
+        Map<String, String> adjustPreferences = new HashMap<String, String>();
 
+        adjustPreferences.put(FmtOptions.placeFinallyOnNewLine, "true");
+        adjustPreferences.put(FmtOptions.placeCatchOnNewLine, "true");
+        adjustPreferences.put(FmtOptions.classDeclBracePlacement, BracePlacement.NEW_LINE.name());
+        adjustPreferences.put(FmtOptions.methodDeclBracePlacement, BracePlacement.NEW_LINE.name());
+        adjustPreferences.put(FmtOptions.otherBracePlacement, BracePlacement.NEW_LINE.name());
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+        Map<String, String> origValues = new HashMap<String, String>();
+        for (String key : adjustPreferences.keySet()) {
+            origValues.put(key, preferences.get(key, null));
+        }
+        setValues(preferences, adjustPreferences);
+        
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                TryTree nueTry = make.Try(make.Block(new ArrayList<StatementTree>(method.getBody().getStatements()), false),
+                                 Collections.singletonList(make.Catch(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)),
+                                                                                    "ex",
+                                                                                    make.Type("java.lang.Exception"),
+                                                                                    null),
+                                                                      make.Block(Collections.<StatementTree>emptyList(), false))),
+                                 null);
+                workingCopy.rewrite(method.getBody(), make.Block(Collections.singletonList(nueTry), false));
+            }
+
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+        setValues(preferences, origValues);
+    }
+
+    private void setValues(Preferences p, Map<String, String> values) {
+        for (Entry<String, String> e : values.entrySet()) {
+            if (e.getValue() != null) {
+                p.put(e.getKey(), e.getValue());
+            } else {
+                p.remove(e.getKey());
+            }
+        }
+    }
+    
     String getGoldenPckg() {
         return "";
     }

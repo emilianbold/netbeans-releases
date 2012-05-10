@@ -237,7 +237,7 @@ public class FormatVisitor extends DefaultVisitor {
             }
             if (ts.token().text().toString().equals("[")) { //NOI18N
                 formatTokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
-            } else {
+            } else if (lastIndex < ts.index()) {
                 addFormatToken(formatTokens); // add array keyword
             }
         }
@@ -276,8 +276,9 @@ public class FormatVisitor extends DefaultVisitor {
         }
         if (ts.token().id() == PHPTokenId.PHP_TOKEN) {
             if (path.size() > 1 && !(path.get(1) instanceof ForStatement)) {
-                if (node.getLeftHandSide() instanceof Variable) {
-                    handleGroupAlignment(node.getLeftHandSide());
+                VariableBase leftHandSide = node.getLeftHandSide();
+                if (leftHandSide instanceof Variable || leftHandSide instanceof FieldAccess) {
+                    handleGroupAlignment(leftHandSide);
                 }
             }
             addFormatToken(formatTokens);
@@ -493,6 +494,21 @@ public class FormatVisitor extends DefaultVisitor {
     }
 
     @Override
+    public void visit(TraitDeclaration node) {
+        addAllUntilOffset(node.getStartOffset());
+        if (includeWSBeforePHPDoc) {
+            formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_CLASS, ts.offset()));
+        } else {
+            includeWSBeforePHPDoc = true;
+        }
+        while (ts.moveNext() && ts.token().id() != PHPTokenId.PHP_CURLY_OPEN) {
+            addFormatToken(formatTokens);
+        }
+        ts.movePrevious();
+        super.visit(node);
+    }
+
+    @Override
     public void visit(ClassInstanceCreation node) {
         scan(node.getClassName());
         if (node.ctorParams() != null && node.ctorParams().size() > 0) {
@@ -688,8 +704,32 @@ public class FormatVisitor extends DefaultVisitor {
     @Override
     public void visit(ForEachStatement node) {
         scan(node.getExpression());
+        boolean wrap = node.getKey() != null;
+        if (wrap) {
+            int start = node.getKey().getStartOffset();
+            addAllUntilOffset(node.getKey().getStartOffset());
+            formatTokens.add(new FormatToken.IndentToken(start, options.continualIndentSize));
+            formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_IN_FOR, start));
+            formatTokens.add(new FormatToken.UnbreakableSequenceToken(start, null, FormatToken.Kind.UNBREAKABLE_SEQUENCE_START));
+        }
         scan(node.getKey());
+        if (wrap) {
+            addEndOfUnbreakableSequence(node.getKey().getEndOffset());
+            formatTokens.add(new FormatToken.IndentToken(ts.offset(), -1 * options.continualIndentSize));
+        }
+        wrap = node.getValue() != null;
+        if (wrap) {
+            int start = node.getValue().getStartOffset();
+            addAllUntilOffset(node.getValue().getStartOffset());
+            formatTokens.add(new FormatToken.IndentToken(start, options.continualIndentSize));
+            formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_IN_FOR, start));
+            formatTokens.add(new FormatToken.UnbreakableSequenceToken(start, null, FormatToken.Kind.UNBREAKABLE_SEQUENCE_START));
+        }
         scan(node.getValue());
+        if (wrap) {
+            addEndOfUnbreakableSequence(node.getValue().getEndOffset());
+            formatTokens.add(new FormatToken.IndentToken(ts.offset(), -1 * options.continualIndentSize));
+        }
         ASTNode body = node.getStatement();
         if (body != null && (body instanceof Block && !((Block) body).isCurly())) {
             addAllUntilOffset(body.getStartOffset());
@@ -1079,7 +1119,9 @@ public class FormatVisitor extends DefaultVisitor {
     public void visit(SwitchCase node) {
         if (node.getValue() == null) {
             ts.moveNext();
-            addFormatToken(formatTokens);
+            if (lastIndex < ts.index()) {
+                addFormatToken(formatTokens);
+            }
         } else {
             scan(node.getValue());
         }
@@ -1600,7 +1642,8 @@ public class FormatVisitor extends DefaultVisitor {
         while (ts.moveNext()
                 && ((ts.token().id() == PHPTokenId.WHITESPACE
                 && countOfNewLines(ts.token().text()) == 0)
-                || isComment(ts.token()))) {
+                || isComment(ts.token()))
+                && lastIndex < ts.index()) {
             if (ts.token().id() == PHPTokenId.PHP_LINE_COMMENT
                     && !"//".equals(ts.token().text().toString())) {
                 addFormatToken(formatTokens);
@@ -1645,7 +1688,8 @@ public class FormatVisitor extends DefaultVisitor {
         while (ts.moveNext()
                 && (ts.token().id() == PHPTokenId.WHITESPACE
                 || isComment(ts.token())
-                || (ts.token().id() == PHPTokenId.PHP_TOKEN && ",".equals(ts.token().text().toString())))) {
+                || (ts.token().id() == PHPTokenId.PHP_TOKEN && ",".equals(ts.token().text().toString())))
+                && lastIndex < ts.index()) {
             addFormatToken(formatTokens);
         }
         ts.movePrevious();
@@ -1773,6 +1817,10 @@ public class FormatVisitor extends DefaultVisitor {
             FormatToken.AssignmentAnchorToken aaToken = new FormatToken.AssignmentAnchorToken(ts.offset());
             aaToken.setLenght(length);
             aaToken.setPrevious(previousGroupToken);
+            aaToken.setIsInGroup(true);
+            if (!previousGroupToken.isInGroup()) {
+                previousGroupToken.setIsInGroup(true);
+            }
             if (previousGroupToken.getMaxLength() < length) {
                 // if the length of the current identifier is bigger, then is in
                 // the group so far, change max length for all items in the group

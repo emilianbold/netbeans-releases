@@ -70,6 +70,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
@@ -705,6 +706,24 @@ public class FileObjects {
         final String path = getRelativePath(new File(root.toURI()), new File(fo.toURI()));
         return path.replace(File.separatorChar, '/');   //NOI18N
     }
+    
+    @NonNull
+    public static byte[] asBytes(@NonNull final File file) throws IOException {
+        byte[] data = new byte[(int)file.length()];
+        final InputStream in = new BufferedInputStream(new FileInputStream(file));
+        try {
+            int read, len = 0;
+            while ((read=in.read(data, len, data.length-len))>0) {
+                len+=read;
+            }
+            if (len != data.length) {
+                data = Arrays.copyOf(data, len);
+            }
+        } finally {
+            in.close();
+        }
+        return data;
+    }
 
     // <editor-fold defaultstate="collapsed" desc="Private helper methods">
     private static CharSequence getCharContent(InputStream ins, Charset encoding, JavaFileFilterImplementation filter, long expectedLength, boolean ignoreEncodingErrors) throws IOException {
@@ -990,7 +1009,7 @@ public class FileObjects {
         }
         
         private CharSequence getCharContentImpl(boolean ignoreEncodingErrors) throws IOException {
-            return FileObjects.getCharContent(new FileInputStream(f), encoding, filter, f.length(), ignoreEncodingErrors);
+            return FileObjects.getCharContent(openInputStream(), encoding, filter, f.length(), ignoreEncodingErrors);
         }
     }
         

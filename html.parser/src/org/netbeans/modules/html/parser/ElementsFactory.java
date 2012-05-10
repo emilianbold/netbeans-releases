@@ -368,6 +368,12 @@ public class ElementsFactory {
             //no-op
 //            throw new IllegalStateException();
         }
+
+        @Override
+        public String toString() {
+            return new StringBuilder(super.toString()).append(isEmpty() ? "(self close tag)" : "").toString();
+        }
+        
     }
 
     static class CommonOpenTag extends EmptyOpenTag {

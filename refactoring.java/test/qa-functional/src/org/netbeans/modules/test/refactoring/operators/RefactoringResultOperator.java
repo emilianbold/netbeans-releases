@@ -251,14 +251,14 @@ public class RefactoringResultOperator extends TopComponentOperator{
     
     public JToggleButton getCollapse() {
         if(collapse==null) {
-            collapse = (JToggleButton) getJToolbar().getComponent(1);
+            collapse = (JToggleButton) getJToolbar().getComponent(5);
         }
         return collapse;
     }
 
     public JToggleButton getLogical() {
         if(logical==null) {
-            logical = (JToggleButton) getJToolbar().getComponent(2);
+            logical = (JToggleButton) getJToolbar().getComponent(4);
         }
         return logical;
     }
@@ -272,14 +272,14 @@ public class RefactoringResultOperator extends TopComponentOperator{
 
     public JButton getPrev() {
         if(prev==null) {
-            prev = (JButton) getJToolbar().getComponent(4);
+            prev = (JButton) getJToolbar().getComponent(1);
         }
         return prev;
     }
 
     public JButton getNext() {
         if(next==null) {
-            next = (JButton) getJToolbar().getComponent(5);
+            next = (JButton) getJToolbar().getComponent(2);
         }
         return next;
     }

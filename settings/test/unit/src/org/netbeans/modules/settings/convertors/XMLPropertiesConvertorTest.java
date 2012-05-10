@@ -247,6 +247,7 @@ public final class XMLPropertiesConvertorTest extends NbTestCase {
 
     /* default instance in serial data format -> xml properties format
      */
+    @RandomlyFails // if Thread.sleep is commented out
     public void testUpgradeSetting() throws Exception {
         String res = "Settings/org-netbeans-modules-settings-convertors-FooSettingSerialData.settings";
         FileObject fo = FileUtil.getConfigFile(res);
@@ -270,6 +271,7 @@ public final class XMLPropertiesConvertorTest extends NbTestCase {
     /* object of deprecated class persisted in serial data format -> new object
      * persisted in xml properties format
      */
+    @RandomlyFails // NB-Core-Build #8238
     public void testUpgradeSetting2() throws Exception {
         String res = "Settings/testUpgradeSetting2/ObsoleteClass.settings";
         FileObject fo = FileUtil.getConfigFile(res);
@@ -330,11 +332,9 @@ public final class XMLPropertiesConvertorTest extends NbTestCase {
         assertNotNull("InstanceDataObject.create cannot return null!", ido);
         
         obj.setProperty1("testDeleteSettings");
-        Thread.sleep(500);
         ido.delete();
         assertNull(filename + ".settings was not deleted!", root.getFileObject(filename));
         assertEquals("Listener not deregistered", 0, obj.getListenerCount());
-        Thread.sleep(3000);
         assertNull(filename + ".settings was not deleted!", root.getFileObject(filename));
     }
     

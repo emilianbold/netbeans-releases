@@ -62,7 +62,7 @@ import org.openide.util.NbBundle;
  */
 public class SelectCodeElementAction extends BaseAction {
 
-    private boolean selectNext;
+    private final boolean selectNext;
 
     /**
      * Construct new action that selects next/previous code elements
@@ -123,8 +123,8 @@ public class SelectCodeElementAction extends BaseAction {
 
     private static final class SelectionHandler implements CaretListener, Runnable {
         
-        private JTextComponent target;
-        private String name;
+        private final JTextComponent target;
+        private final String name;
         private SelectionInfo[] selectionInfos;
         private int selIndex = -1;
         private boolean ignoreNextCaretUpdate;
@@ -132,6 +132,7 @@ public class SelectCodeElementAction extends BaseAction {
 
         SelectionHandler(JTextComponent target, String name) {
             this.target = target;
+            this.name = name;
         }
 
         public void selectNext() {
@@ -188,7 +189,7 @@ public class SelectCodeElementAction extends BaseAction {
         }
 
         @Override
-        public void run() {
+        public synchronized void run() {
             if (selectionInfos != null && selIndex < selectionInfos.length - 1) {
                 select(selectionInfos[++selIndex]);
             }

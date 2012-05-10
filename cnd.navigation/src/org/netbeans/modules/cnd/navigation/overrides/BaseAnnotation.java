@@ -43,14 +43,13 @@
  */
 package org.netbeans.modules.cnd.navigation.overrides;
 
-import java.util.MissingResourceException;
-import org.netbeans.modules.cnd.modelutil.OverridesPopup;
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.MissingResourceException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -62,9 +61,11 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.modelutil.OverridesPopup;
 import org.netbeans.modules.cnd.utils.ui.PopupUtil;
 import org.openide.text.Annotation;
 import org.openide.text.NbDocument;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -213,8 +214,19 @@ public abstract class BaseAnnotation extends Annotation {
         if(pos.getOffset() == -1 || pos.getOffset() >= document.getEndPosition().getOffset()) {
             return false;
         }
-         NbDocument.addAnnotation(document, pos, -1, this);
-         return true;
+        if (!(document instanceof NbDocument.Annotatable)) {
+            return false;
+        }
+        if (getAnnotationType() == null) {
+            return false;
+        }
+        try {
+            NbDocument.addAnnotation(document, pos, -1, this);
+            return true;
+        } catch (Throwable e) {
+            Exceptions.printStackTrace(e);
+            return false;
+        }
     }
     
     public void detachImpl() {

@@ -43,6 +43,7 @@
 package org.netbeans.modules.maven.coverage;
 
 import java.io.InputStream;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.modules.maven.spi.actions.AbstractMavenActionsProvider;
 import org.netbeans.modules.maven.spi.actions.MavenActionsProvider;
 import org.openide.util.lookup.ServiceProvider;
@@ -50,8 +51,10 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service=MavenActionsProvider.class)
 public class CoverageActionsProvider extends AbstractMavenActionsProvider {
 
+    @StaticResource private static final String MAPPINGS = "org/netbeans/modules/maven/coverage/action-mappings.xml";
+
     protected @Override InputStream getActionDefinitionStream() {
-        return CoverageActionsProvider.class.getResourceAsStream("action-mappings.xml"); // NOI18N
+        return CoverageActionsProvider.class.getClassLoader().getResourceAsStream(MAPPINGS);
     }
 
 }

@@ -50,15 +50,21 @@ import java.io.*;
 import java.sql.Blob;
 import java.sql.SQLException;
 import java.util.EventObject;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.table.TableCellEditor;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.db.dataview.util.FileBackedBlob;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 public class BlobFieldTableCellEditor extends AbstractCellEditor
         implements TableCellEditor,
         ActionListener {
+    private static final Logger LOG = Logger.getLogger(
+            BlobFieldTableCellEditor.class.getName());
 
     protected static final String EDIT = "edit";
     protected Blob currentValue;
@@ -184,9 +190,11 @@ public class BlobFieldTableCellEditor extends AbstractCellEditor
                     f.delete();
                 }
             } catch (IOException ex) {
-                throw new RuntimeException(ex);
+                LOG.log(Level.INFO, "IOError while saving BLOB to file", ex);
+                displayError(f, ex, false);
             } catch (SQLException ex) {
-                throw new RuntimeException(ex);
+                LOG.log(Level.INFO, "SQLException while saving BLOB to file", ex);
+                displayError(f, ex, false);
             }
         }
     }
@@ -205,16 +213,22 @@ public class BlobFieldTableCellEditor extends AbstractCellEditor
                     result = null;
                 }
             } catch (IOException ex) {
-                throw new RuntimeException(ex);
+                LOG.log(Level.INFO, "IOError while loading BLOB from file", ex);
+                displayError(f, ex, true);
+                result = null;
             } catch (SQLException ex) {
-                throw new RuntimeException(ex);
+                LOG.log(Level.INFO, "SQLException while loading BLOB from file", ex);
+                displayError(f, ex, true);
+                result = null;
             }
         }
         return result;
     }
 
     /**
-     * @return true if transfer is complete and not iterrupted 
+     * Note: The streams will be closed after this method was invoked
+     * 
+     * @return true if transfer is complete and not interrupted 
      */
     private boolean doTransfer(InputStream is, OutputStream os, Integer size, String title) throws IOException {
         MonitorableStreamTransfer ft = new MonitorableStreamTransfer(is, os, size);
@@ -225,6 +239,8 @@ public class BlobFieldTableCellEditor extends AbstractCellEditor
         } else {
             t = ft.run(null);
         }
+        is.close();
+        os.close();
         if (t != null && t instanceof RuntimeException) {
             throw (RuntimeException) t;
         } else if (t != null && t instanceof IOException) {
@@ -233,5 +249,49 @@ public class BlobFieldTableCellEditor extends AbstractCellEditor
             throw new RuntimeException(t);
         }
         return !ft.isCancel();
+    }
+
+    private void displayError(File f, Exception ex, boolean read) {
+        DialogDisplayer dd = DialogDisplayer.getDefault();
+
+        String errorObjectMsg;
+        String messageMsg;
+        String titleMsg;
+
+        if (ex instanceof SQLException) {
+            errorObjectMsg = NbBundle.getMessage(BlobFieldTableCellEditor.class,
+                    "lobErrorObject.database");
+        } else {
+            errorObjectMsg = NbBundle.getMessage(BlobFieldTableCellEditor.class,
+                    "lobErrorObject.file");
+        }
+
+        if (!read) {
+            titleMsg = NbBundle.getMessage(BlobFieldTableCellEditor.class,
+                    "blobSaveToFileError.title");
+            messageMsg = NbBundle.getMessage(BlobFieldTableCellEditor.class,
+                    "blobSaveToFileError.message",
+                    errorObjectMsg,
+                    f.getAbsolutePath(),
+                    ex.getLocalizedMessage());
+        } else {
+            titleMsg = NbBundle.getMessage(BlobFieldTableCellEditor.class,
+                    "blobReadFromFileError.title");
+            messageMsg = NbBundle.getMessage(BlobFieldTableCellEditor.class,
+                    "blobReadFromFileError.message",
+                    errorObjectMsg,
+                    f.getAbsolutePath(),
+                    ex.getLocalizedMessage());
+        }
+
+        NotifyDescriptor nd = new NotifyDescriptor(
+                messageMsg,
+                titleMsg,
+                NotifyDescriptor.OK_CANCEL_OPTION,
+                NotifyDescriptor.WARNING_MESSAGE,
+                new Object[]{NotifyDescriptor.CANCEL_OPTION},
+                NotifyDescriptor.CANCEL_OPTION);
+
+        dd.notifyLater(nd);
     }
 }

@@ -41,8 +41,10 @@
  */
 package org.netbeans.modules.netbinox;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.eclipse.osgi.launch.EquinoxFactory;
 import org.netbeans.core.netigso.spi.NetigsoArchive;
@@ -64,6 +66,7 @@ import org.osgi.framework.launch.FrameworkFactory;
 public class NetbinoxFactory implements FrameworkFactory {
     static final Logger LOG = Logger.getLogger("org.netbeans.modules.netbinox"); // NOI18N
 
+    @Override
     @SuppressWarnings("unchecked")
     public Framework newFramework(Map map) {
         Map<String,Object> configMap = new HashMap<String,Object>();
@@ -73,13 +76,20 @@ public class NetbinoxFactory implements FrameworkFactory {
 //            + ",org.eclipse.core.runtime.internal.adaptor.EclipseClassLoadingHook" // NOI18N
         );
         configMap.put("osgi.hook.configurators.include", NetbinoxHooks.class.getName()); // NOI18N
-        configMap.put("osgi.user.area.default", configMap.get(Constants.FRAMEWORK_STORAGE)); // NOI18N
-        configMap.put("osgi.instance.area.default", System.getProperty("netbeans.user")); // NOI18N
-        configMap.put("osgi.install.area", System.getProperty("netbeans.home")); // NOI18N
+        final String userArea = toFileURL(System.getProperty("netbeans.user"));
+        configMap.put("osgi.user.area.default", userArea); // NOI18N
+        configMap.put("osgi.user.area", userArea); // NOI18N
+        configMap.put("osgi.instance.area", userArea); // NOI18N
+        configMap.put("osgi.instance.area.default", userArea); // NOI18N
+        final String installArea = toFileURL(findInstallArea());
+        configMap.put("osgi.install.area", installArea); // NOI18N
         // some useless value
         configMap.put("osgi.framework.properties", System.getProperty("netbeans.user")); // NOI18N
         // don't change classloader when getting XMLParsers
         configMap.put("eclipse.parsers.setTCCL", "false"); // NOI18N
+        configMap.put(Constants.FRAMEWORK_STORAGE, toFileURL(
+            (String)map.get(Constants.FRAMEWORK_STORAGE)
+        ));
 
         Object rawBundleMap = configMap.get("felix.bootdelegation.classloaders"); // NOI18N
 
@@ -104,5 +114,48 @@ public class NetbinoxFactory implements FrameworkFactory {
         }
         configMap.put("osgi.framework", loc);
         return new Netbinox(configMap);
+    }
+    private static String findInstallArea() {
+        String ia = System.getProperty("netbeans.home"); // NOI18N
+        String rest = System.getProperty("netbeans.dirs"); // NOI18N
+        if (rest != null) {
+            for (String c : rest.split(File.pathSeparator)) {
+                File cf = new File(c);
+                if (!cf.isAbsolute() || !cf.exists()) {
+                    continue;
+                }
+                int prefix = findCommonPrefix(ia, c);
+                if (prefix <= 3) {
+                    LOG.log(Level.WARNING, "Cannot compute install area. No common prefix between {0} and {1}", new Object[]{ia, c});
+                } else {
+                    ia = ia.substring(0, prefix);
+                }
+            }
+        }
+        return ia;
+    }
+
+    private static int findCommonPrefix(String s1, String s2) {
+        int len = Math.min(s1.length(), s2.length());
+        for (int i = 0; i < len; i++) {
+            if (s1.charAt(i) != s2.charAt(i)) {
+                return i;
+            }
+        }
+        return len;
+    }
+    
+    private static String toFileURL(String file) {
+        if (file == null) {
+            return null;
+        }
+        if (file.startsWith("file:")) { // NOI18N
+            return file;
+        }
+        if (file.startsWith("/")) { // NOI18N
+            return "file:" + file; // NOI18N
+        } else {
+            return "file:/" + file.replace(File.separatorChar, '/'); // NOI18N
+        }
     }
 }

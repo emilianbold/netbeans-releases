@@ -24,28 +24,28 @@
           <Group type="102" alignment="0" attributes="0">
               <Component id="lWhenSavingFiles" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="jSeparator4" pref="458" max="32767" attributes="0"/>
+              <Component id="jSeparator4" max="32767" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
               <Component id="lCamelCaseBehavior" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="jSeparator3" pref="431" max="32767" attributes="0"/>
+              <Component id="jSeparator3" max="32767" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
               <Component id="lCodeFolding" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="jSeparator1" pref="488" max="32767" attributes="0"/>
+              <Component id="jSeparator1" max="32767" attributes="0"/>
           </Group>
-          <Group type="102" attributes="0">
-              <Group type="103" groupAlignment="0" attributes="0">
+          <Group type="102" alignment="1" attributes="0">
+              <Group type="103" groupAlignment="1" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="lSearch" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jSeparator5" pref="507" max="32767" attributes="0"/>
+                      <Component id="jSeparator5" max="32767" attributes="0"/>
                   </Group>
-                  <Group type="102" attributes="0">
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
+                      <Group type="103" groupAlignment="1" attributes="0">
+                          <Group type="102" alignment="0" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="lUseCodeFolding" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -85,7 +85,7 @@
                               <Component id="cbUseCodeFolding" min="-2" max="-2" attributes="0"/>
                           </Group>
                       </Group>
-                      <EmptySpace min="0" pref="0" max="-2" attributes="0"/>
+                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace pref="24" max="-2" attributes="0"/>
@@ -94,7 +94,10 @@
               <EmptySpace max="-2" attributes="0"/>
               <Component id="lEditorSearchType" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="cboEditorSearchType" min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="lSearchtypeTooltip" min="-2" max="-2" attributes="0"/>
+                  <Component id="cboEditorSearchType" min="-2" max="-2" attributes="0"/>
+              </Group>
               <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
@@ -161,7 +164,9 @@
                   <Component id="lEditorSearchType" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="cboEditorSearchType" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="32767" attributes="0"/>
+              <EmptySpace type="separate" max="-2" attributes="0"/>
+              <Component id="lSearchtypeTooltip" min="-2" max="-2" attributes="0"/>
+              <EmptySpace pref="33" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -288,6 +293,11 @@
             <StringItem index="3" value="Item 4"/>
           </StringArray>
         </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="lSearchtypeTooltip">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="&lt;html&gt;In Closing type Enter accepts search match, Esc jumps to start. Both close searchbar. &lt;br /&gt; Default type closes searchbar by Esc or button. Enter means find a new instance.&lt;/html&gt;"/>
       </Properties>
     </Component>
   </SubComponents>

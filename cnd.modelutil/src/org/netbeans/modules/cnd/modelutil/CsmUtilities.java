@@ -689,6 +689,8 @@ public class CsmUtilities {
                 e.confirmed();
                 document = cookie.openDocument();
             }
+        } catch(UserQuestionException e) {
+            // no need to report
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }

@@ -61,7 +61,7 @@ import org.openide.util.Exceptions;
  * @author Jaroslav Tulach
  */
 final class NetigsoModule extends Module {
-    static final Logger LOG = Logger.getLogger(NetigsoModule.class.getPackage().getName());
+    private static final Logger LOG = Logger.getLogger(NetigsoModule.class.getName());
 
     private final File jar;
     private final Manifest manifest;
@@ -110,13 +110,13 @@ final class NetigsoModule extends Module {
 
     @Override
     public void reload() throws IOException {
-        NetigsoFramework.getDefault().reload(this);
+        mgr.netigso().reload(this);
     }
 
     final void start() throws IOException {
         ProxyClassLoader pcl = (ProxyClassLoader)classloader;
         try {
-            Set<String> pkgs = NetigsoFramework.getDefault().createLoader(this, pcl, this.jar);
+            Set<String> pkgs = mgr.netigso().createLoader(this, pcl, this.jar);
             pcl.addCoveredPackages(pkgs);
         } catch (IOException ex) {
             classloader = null;
@@ -126,22 +126,23 @@ final class NetigsoModule extends Module {
 
     @Override
     protected void classLoaderUp(Set<Module> parents) throws IOException {
-        assert classloader == null;
+        NetigsoModule.LOG.log(Level.FINE, "classLoaderUp {0}", getCodeNameBase()); // NOI18N
+        assert classloader == null : "already had " + classloader + " for " + this;
         classloader = new DelegateCL();
-        NetigsoFramework.classLoaderUp(this);
+        mgr.netigsoLoaderUp(this);
     }
 
     @Override
     protected void classLoaderDown() {
         NetigsoModule.LOG.log(Level.FINE, "classLoaderDown {0}", getCodeNameBase()); // NOI18N
         ProxyClassLoader pcl = (ProxyClassLoader)classloader;
+        classloader = null;
         ClassLoader l = pcl.firstParent();
         if (l == null) {
-            NetigsoFramework.classLoaderDown(this);
+            mgr.netigsoLoaderDown(this);
             return;
         }
-        NetigsoFramework.getDefault().stopLoader(this, l);
-        classloader = null;
+        mgr.netigso().stopLoader(this, l);
     }
 
     @Override
@@ -172,7 +173,7 @@ final class NetigsoModule extends Module {
 
     @Override
     public Enumeration<URL> findResources(String resources) {
-        return NetigsoFramework.getDefault().findResources(this, resources);
+        return mgr.netigso().findResources(this, resources);
     }
 
     @Override

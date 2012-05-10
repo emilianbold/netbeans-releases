@@ -66,6 +66,7 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -116,6 +117,7 @@ public final class TreeViewTest extends NbTestCase {
      * is taken into account in
      * <code>TreeView.TreePropertyListener.treeExpanded(...)</code>.
      */
+    @RandomlyFails // NB-Core-Build #8278: Check the view has scrolled
     public void testAutoscrollOnOff() throws InterruptedException {
         assert !EventQueue.isDispatchThread();
         

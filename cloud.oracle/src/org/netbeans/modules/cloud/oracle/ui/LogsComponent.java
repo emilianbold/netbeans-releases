@@ -421,7 +421,7 @@ public class LogsComponent extends TopComponent {
         private List<Job> jobs;
 
         public JobsModel(List<Job> jobs) {
-            this.jobs = new ArrayList(jobs);
+            this.jobs = new ArrayList<Job>(jobs);
         }
         
         @Override

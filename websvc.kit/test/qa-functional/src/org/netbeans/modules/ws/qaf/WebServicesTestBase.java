@@ -41,23 +41,22 @@
  */
 package org.netbeans.modules.ws.qaf;
 
+import java.awt.Component;
 import java.awt.Container;
 import java.io.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JButton;
-import javax.swing.JMenuItem;
-import javax.swing.MenuElement;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.*;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.ActionNoBlock;
-import org.netbeans.jellytools.actions.OutputWindowViewAction;
 import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
+import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.ComponentSearcher;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyProperties;
@@ -396,10 +395,8 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
                         runAndCancelUpdateIndex("Local");
                     }
                     project = createProject(projectName, getProjectType(), getJavaEEversion());
-                    // closing Tasks tab
-                    new OutputWindowViewAction().performMenu();
-                    new ActionNoBlock("Window|Tasks", null).performMenu();
-                    new ActionNoBlock("Window|Close Window", null).performMenu();
+                    // open otuput window
+                    OutputOperator.invoke();
                     // not display browser on run for Maven projects
                     if (ProjectType.MAVEN_WEB.equals(getProjectType()) || ProjectType.MAVEN_EJB.equals(getProjectType())) {
                         //Properties
@@ -691,11 +688,26 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
         pto.pressMouse(); // to get focus, otherwise performing popup action won't work
         ProjectRootNode node = pto.getProjectRootNode(projectName);
         node.performPopupAction(actionName);
-        new ActionNoBlock("Window|Output|Output", null).performMenu(); // open output window
         OutputTabOperator oto = new OutputTabOperator(projectName);
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", 600000); //NOI18N
         if (!getProjectType().isAntBasedProject()) {
             oto.waitText("Total time:"); //NOI18N
+            // wait progress bar dismiss
+            final Component comp = MainWindowOperator.getDefault().findSubComponent(new ComponentChooser() {
+
+                @Override
+                public boolean checkComponent(Component comp) {
+                    return "NbProgressBar".equals(comp.getClass().getSimpleName());  //NOI18N
+                }
+
+                @Override
+                public String getDescription() {
+                    return "NbProgressBar component.";  //NOI18N
+                }
+            });
+            if (comp != null) {
+                new ComponentOperator(comp).waitComponentShowing(false);
+            }
             dumpOutput();
             assertTrue("Build failed", oto.getText().indexOf("BUILD SUCCESS") > -1); //NOI18N
             assertTrue("Deploy failed", oto.getText().indexOf("[ERROR]") < 0); //NOI18N

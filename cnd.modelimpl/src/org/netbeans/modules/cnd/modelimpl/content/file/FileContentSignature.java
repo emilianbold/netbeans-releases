@@ -341,7 +341,7 @@ public final class FileContentSignature {
         
         @Override
         public int length() {
-            return signature.length() + extra.length() + 2;
+            return 2/*M[*/ + signature.length() + 1/*]*/ + extra.length();
         }
 
         @Override

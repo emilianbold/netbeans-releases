@@ -44,11 +44,9 @@
 
 package org.netbeans.modules.cnd.debugger.common2.debugger.remote;
 
-import org.openide.ErrorManager;
-
-import org.netbeans.modules.cnd.debugger.common2.utils.masterdetail.AbstractRecordList;
-
 import org.netbeans.modules.cnd.debugger.common2.utils.UserdirFile;
+import org.netbeans.modules.cnd.debugger.common2.utils.masterdetail.AbstractRecordList;
+import org.openide.ErrorManager;
 
 public class CustomizableHostList extends AbstractRecordList<CustomizableHost> {
 
@@ -101,7 +99,7 @@ public class CustomizableHostList extends AbstractRecordList<CustomizableHost> {
 	    new HostListXMLWriter(userdirFile, this);
         try {
             xw.write();
-            clearDirty();
+//            clearDirty();
         } catch (Exception e) {
             ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
         }
@@ -117,6 +115,7 @@ public class CustomizableHostList extends AbstractRecordList<CustomizableHost> {
     }
 
     // override AbstractRecordList
+    @Override
     public CustomizableHostList cloneList() {
 	return new CustomizableHostList(this);
     }
@@ -135,7 +134,8 @@ public class CustomizableHostList extends AbstractRecordList<CustomizableHost> {
 	int i = getHostIndexByName(Host.localhost);
 	if (i == 0) {
 	    return;
-	} else if (i == -1) {
+	} 
+        if (i == -1) {
 	    addRecord(new CustomizableHost());
 	} else {
 	    // Move it to the front (someone edited the XML?)

@@ -158,7 +158,7 @@ public final class MavenEmbedder {
             if (localRepositoryPath != null) {
                 return repositorySystem.createLocalRepository(FileUtil.normalizeFile(new File(localRepositoryPath)));
             }
-            return repositorySystem.createLocalRepository(RepositorySystem.defaultUserLocalRepository);
+            return repositorySystem.createDefaultLocalRepository();
         } catch (InvalidRepositoryException ex) {
             // can't happen
             throw new IllegalStateException(ex);
@@ -351,10 +351,6 @@ public final class MavenEmbedder {
         ArtifactRepository localRepository = getLocalRepository();
         req.setLocalRepository(localRepository);
         req.setLocalRepositoryPath(localRepository.getBasedir());
-        if(req.getRemoteRepositories()==null){
-            req.setRemoteRepositories(Collections.<ArtifactRepository>emptyList());
-        }
-        
 
         //TODO: do we need to validate settings files?
         File settingsXml = embedderConfiguration.getSettingsXml();
@@ -367,8 +363,12 @@ public final class MavenEmbedder {
         
         req.setSystemProperties(getSystemProperties());
         try {
-            populator.populateDefaults(req);
+            //#212214 populating from settings needs to come first
+            //it adds mirrors and proxies to the request
+            //later on populateDefaults() will use these to replace/configure the default "central" repository
+            // and the repository id used is important down the road for resolution in EnhancedLocalRepositoryManager
             populator.populateFromSettings(req, getSettings());
+            populator.populateDefaults(req);
         } catch (MavenExecutionRequestPopulationException x) {
             // XXX where to display this?
             Exceptions.printStackTrace(x);

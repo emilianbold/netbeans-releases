@@ -69,7 +69,6 @@ import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.io.xpp3.NetbeansBuildActionXpp3Reader;
 import org.netbeans.modules.maven.indexer.api.RepositoryIndexer;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
-import org.netbeans.modules.maven.spi.actions.MavenActionsProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
@@ -484,12 +483,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_btnIndexActionPerformed
     
     private void btnGoalsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGoalsActionPerformed
-        NbGlobalActionGoalProvider provider = null;
-        for (MavenActionsProvider prov : Lookup.getDefault().lookupAll(MavenActionsProvider.class)) {
-            if (prov instanceof NbGlobalActionGoalProvider) {
-                provider = (NbGlobalActionGoalProvider)prov;
-            }
-        }
+        NbGlobalActionGoalProvider provider = Lookup.getDefault().lookup(NbGlobalActionGoalProvider.class);
         assert provider != null;
         try {
             ActionToGoalMapping mappings = new NetbeansBuildActionXpp3Reader().read(new StringReader(provider.getRawMappingsAsString()));
@@ -543,7 +537,6 @@ public class SettingsPanel extends javax.swing.JPanel {
     
     private void browseAddNewRuntime() {
         JFileChooser chooser = new JFileChooser();
-        FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
         chooser.setDialogTitle(org.openide.util.NbBundle.getMessage(SettingsPanel.class, "TIT_Select2"));
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         chooser.setFileHidingEnabled(false);

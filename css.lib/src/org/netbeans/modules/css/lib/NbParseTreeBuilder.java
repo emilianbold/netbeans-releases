@@ -86,6 +86,9 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
     private Map<CommonToken, Pair<Node>> noViableAltNodes = new HashMap<CommonToken, Pair<Node>>();
     private Collection<RuleNode> leafRuleNodes = new ArrayList<RuleNode>();
     
+    private static final String RECOVERY_RULE_NAME = "recovery";
+    private final Collection<ProblemDescription> problems = new LinkedHashSet<ProblemDescription> ();
+    
     public NbParseTreeBuilder(CharSequence source) {
         this.source = source;
         callStack.push(new RootNode(source));
@@ -146,6 +149,40 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
             //all the nodes from possiblyEmptyRuleNodes list are checked after
             //the parsing finishes and removed from the parse tree if still empty
             leafRuleNodes.add(ruleNode);
+        }
+        
+        if(RECOVERY_RULE_NAME.equals(ruleName)) {
+            
+            if(ruleNode.getChildCount() > 0) {
+                //create a ProblemDescription for the skipped tokens
+                //create a ParsingProblem
+                int trimmedSize = 0;
+                StringBuilder tokensList = new StringBuilder();
+                for(int i = 0; i < ruleNode.getChildCount(); i++) {
+                    Node child = (Node)ruleNode.getChild(i);
+                    trimmedSize+=child.image().toString().trim().length();
+                    
+                    tokensList.append('\'');
+                    tokensList.append(child.image());
+                    tokensList.append('\'');
+                    if(i < ruleNode.getChildCount() - 1) {
+                        tokensList.append(',');
+                    }
+                }
+
+                if(trimmedSize > 0) {
+                    //do not report skipped whitespaces
+                    ProblemDescription problemDescription = new ProblemDescription(
+                        ruleNode.from(),
+                        ruleNode.to(),
+                        NbBundle.getMessage(NbParseTreeBuilder.class, "MSG_Error_Unexpected_Char", tokensList),
+                        ProblemDescription.Keys.PARSING.name(),
+                        ProblemDescription.Type.ERROR);
+
+                    problems.add(problemDescription);
+                }
+            }
+            
         }
     }
 
@@ -268,6 +305,8 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
                 ProblemDescription.Keys.PARSING.name(),
                 ProblemDescription.Type.ERROR);
 
+        problems.add(problemDescription);
+        
         //create an error node and add it to the parse tree
         ErrorNode errorNode = new ErrorNode(from, to, problemDescription, source);
 
@@ -367,10 +406,6 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
     }
 
     public Collection<ProblemDescription> getProblems() {
-        Collection<ProblemDescription> problems = new LinkedHashSet<ProblemDescription>();
-        for (ErrorNode errorNode : errorNodes) {
-            problems.add(errorNode.getProblemDescription());
-        }
         return problems;
     }
 

@@ -281,6 +281,9 @@ public class BookmarksPersistence implements PropertyChangeListener, Runnable {
     
     private void saveProjectBookmarks(ProjectBookmarks projectBookmarks) {
         Project project = projectBookmarks.getProject();
+        if (project == null) { // Bookmarks that do not belong to any project
+            return;
+        }
         if (!ProjectManager.getDefault ().isValid (project)) {
             return; // cannot modify it now anyway
         }

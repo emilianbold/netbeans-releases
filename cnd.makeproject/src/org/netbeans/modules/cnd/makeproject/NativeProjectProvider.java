@@ -54,8 +54,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
@@ -63,17 +63,19 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.api.project.NativeExitStatus;
-import org.netbeans.modules.cnd.api.project.NativeFileSearch;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
+import org.netbeans.modules.cnd.api.project.NativeFileSearch;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectChangeSupport;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
+import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
+import org.netbeans.modules.cnd.makeproject.api.configurations.CCCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configurations;
@@ -81,12 +83,10 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.makeproject.api.configurations.CCCompilerConfiguration;
-import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
-import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
-import org.netbeans.modules.cnd.utils.FSPath;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -631,7 +631,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
      **/
     @Override
     public List<String> getSystemMacroDefinitions() {
-        ArrayList<String> vec = new ArrayList<String>();
+        List<String> vec = new ArrayList<String>();
         MakeConfiguration makeConfiguration = getMakeConfiguration();
         if (makeConfiguration != null) {
             CompilerSet compilerSet = makeConfiguration.getCompilerSet().getCompilerSet();
@@ -642,6 +642,24 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             if (compiler != null) {
                 vec.addAll(compiler.getSystemPreprocessorSymbols());
             }
+        }
+        List<String> undefinedMacros = getUndefinedMacros();
+        if (undefinedMacros.size() > 0) {
+            List<String> out = new ArrayList<String>();
+            for(String macro : vec) {
+                boolean remove = true;
+                for(String undef : undefinedMacros) {
+                    if (macro.equals(undef) ||
+                        macro.startsWith(undef+"=")) { //NOI18N
+                        remove = false;
+                        break;
+                    }
+                }
+                if (remove) {
+                    out.add(macro);
+                }
+            }
+            vec = out;
         }
         return vec;
     }
@@ -661,6 +679,16 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         if (makeConfiguration != null) {
             CCCompilerConfiguration cccCompilerConfiguration = makeConfiguration.getCCCompilerConfiguration();
             vec.addAll(cccCompilerConfiguration.getPreprocessorConfiguration().getValue());
+        }
+        return vec;
+    }
+
+    private List<String> getUndefinedMacros() {
+        ArrayList<String> vec = new ArrayList<String>();
+        MakeConfiguration makeConfiguration = getMakeConfiguration();
+        if (makeConfiguration != null) {
+            CCCompilerConfiguration cccCompilerConfiguration = makeConfiguration.getCCCompilerConfiguration();
+            vec.addAll(cccCompilerConfiguration.getUndefinedPreprocessorConfiguration().getValue());
         }
         return vec;
     }

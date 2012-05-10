@@ -114,11 +114,12 @@ public abstract class CssCompletionItem implements CompletionProposal {
     }
 
     public static CssCompletionItem createPropertyNameCompletionItem(CssElement element,
-            String value,
+            String propertyName,
+            String propertyInsertPrefix,
             int anchorOffset,
             boolean addSemicolon) {
 
-        return new PropertyCompletionItem(element, value, anchorOffset, addSemicolon);
+        return new PropertyCompletionItem(element, propertyName, propertyInsertPrefix, anchorOffset, addSemicolon);
     }
 
     public static CssCompletionItem createRAWCompletionItem(CssElement element,
@@ -558,12 +559,16 @@ public abstract class CssCompletionItem implements CompletionProposal {
 
     static class PropertyCompletionItem extends CssCompletionItem {
 
+        private String propertyInsertPrefix;
+        
         private PropertyCompletionItem(CssElement element,
-                String value,
+                String propertyName,
+                String propertyInsertPrefix,
                 int anchorOffset,
                 boolean addSemicolon) {
 
-            super(element, value, anchorOffset, addSemicolon);
+            super(element, propertyName, anchorOffset, addSemicolon);
+            this.propertyInsertPrefix = propertyInsertPrefix;
         }
 
         @Override
@@ -586,7 +591,7 @@ public abstract class CssCompletionItem implements CompletionProposal {
 
         @Override
         public String getInsertPrefix() {
-            return super.getInsertPrefix() + ": "; //NOI18N
+            return propertyInsertPrefix + ": "; //NOI18N
         }
     }
 

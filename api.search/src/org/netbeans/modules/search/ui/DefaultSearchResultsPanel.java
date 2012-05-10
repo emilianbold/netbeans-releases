@@ -41,9 +41,15 @@
  */
 package org.netbeans.modules.search.ui;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.AbstractButton;
+import javax.swing.JButton;
+import javax.swing.JToggleButton;
 import org.netbeans.modules.search.Constants;
+import org.netbeans.modules.search.ui.AbstractSearchResultsPanel.RootNode;
 import org.netbeans.spi.search.provider.SearchComposition;
 import org.netbeans.spi.search.provider.SearchProvider.Presenter;
 import org.netbeans.spi.search.provider.SearchResultsDisplayer;
@@ -63,6 +69,7 @@ public class DefaultSearchResultsPanel<T> extends AbstractSearchResultsPanel {
     private List<T> matchingObjects = new ArrayList<T>();
     private final NodeDisplayer<T> nodeDisplayer;
     private ResultsNode resultsNode;
+    private OutlineView outlineView;
 
     public DefaultSearchResultsPanel(
             SearchResultsDisplayer.NodeDisplayer<T> nodeDisplayer,
@@ -71,16 +78,32 @@ public class DefaultSearchResultsPanel<T> extends AbstractSearchResultsPanel {
 
         super(searchComposition, searchProviderPresenter);
         this.resultsNode = new ResultsNode();
-        getExplorerManager().setRootContext(resultsNode);
         this.nodeDisplayer = nodeDisplayer;
         resultsNode.update();
-        getContentPanel().add(new OutlineView(UiUtils.getText(
-                "BasicSearchResultsPanel.outline.nodes")));             //NOI18N
+        outlineView = new OutlineView(UiUtils.getText(
+                "BasicSearchResultsPanel.outline.nodes"));              //NOI18N
+        outlineView.getOutline().setRootVisible(false);
+        initExpandButton();
+        getContentPanel().add(outlineView);
+    }
+
+    private void initExpandButton() {
+        btnExpand.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                getOutlineView().expandNode(resultsNode);
+                for (Node n : resultsNode.getChildren().getNodes(true)) {
+                    toggleExpand(n, btnExpand.isSelected());
+                }
+            }
+        });
+        btnExpand.setEnabled(true);
     }
 
     public void addMatchingObject(T object) {
         matchingObjects.add(object);
         resultsNode.update();
+        afterMatchingNodeAdded();
     }
 
     /**
@@ -129,5 +152,54 @@ public class DefaultSearchResultsPanel<T> extends AbstractSearchResultsPanel {
         resultsNode.setDisplayName(NbBundle.getMessage(Constants.class,
                 "TEXT_MSG_FOUND_X_NODES", //NOI18N
                 matchingObjects.size()));
+    }
+
+    /**
+     * Get {@link OutlineView} used for displaying result nodes.
+     */
+    public OutlineView getOutlineView() {
+        return outlineView;
+    }
+
+    /**
+     * Get button for moving to the previous result item. It is hidden by
+     * default. You can set it visible and add a {@link ActionListener}.
+     */
+    public JButton getButtonPrevious() {
+        return btnPrev;
+    }
+
+    /**
+     * Get button for moving to the next result item. It is hidden by default.
+     * You can set it visible and add a {@link ActionListener}.
+     */
+    public JButton getButtonNext() {
+        return btnNext;
+    }
+
+    /**
+     * Get button for expanding/collapsing of the result tree. It is hidden by
+     * default. You can set it visible and add a {@link ActionListener}.
+     */
+    public JToggleButton getButtonExpand() {
+        return btnExpand;
+    }
+
+    /**
+     * Add a custom button to the toolbar.
+     */
+    public void addButton(AbstractButton button) {
+        super.addButton(button);
+    }
+
+    public void setInfoNode(Node infoNode) {
+        Node root = new RootNode(resultsNode, infoNode);
+        getExplorerManager().setRootContext(root);
+        getOutlineView().expandNode(resultsNode);
+    }
+
+    @Override
+    protected boolean isDetailNode(Node n) {
+        return true;
     }
 }

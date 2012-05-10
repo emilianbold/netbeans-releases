@@ -157,19 +157,16 @@ public class WhereUsedQueryUI implements RefactoringUI {
                 if (kind == ElementKind.METHOD) {
                     String description = null;
                     if (panel.isMethodFindUsages()) {
-                        description = getString("DSC_FindUsages");
-                    }
-                    
-                    if (panel.isMethodOverriders()) {
-                        if (description != null) {
-                            description += " " + getString("DSC_And") + " ";
+                        if (panel.isMethodOverriders()) {
+                            description = getString("DSC_FindUsagesAndMethodOverriders", panel.getMethodDeclaringClass() + '.' + name); //NOI18N
                         } else {
-                            description = "";
+                            description = getString("DSC_WhereUsed", panel.getMethodDeclaringClass() + '.' + name); //NOI18N
                         }
-                        description += getString("DSC_WhereUsedMethodOverriders");
+                    } else {
+                        if (panel.isMethodOverriders()) {
+                            description = getString("DSC_MethodOverriders", panel.getMethodDeclaringClass() + '.' + name); //NOI18N
+                        }
                     }
-                    
-                    description += " " + getString("DSC_WhereUsedOf", panel.getMethodDeclaringClass() + '.' + name); //NOI18N
                     return description;
                 }
             }

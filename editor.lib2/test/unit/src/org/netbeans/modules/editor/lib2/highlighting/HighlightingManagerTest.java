@@ -136,6 +136,26 @@ public class HighlightingManagerTest extends NbTestCase {
         assertEquals("Wrong end offset", 20, highlights.getEndOffset());
         assertEquals("Can't find attribute", "value", highlights.getAttributes().getAttribute("attrib-A"));
     }
+    
+    public void testExcludeTwoLayers() {
+        OffsetsBag bag = new OffsetsBag(new PlainDocument());
+        
+        MemoryMimeDataProvider.reset(null);
+        MemoryMimeDataProvider.addInstances(
+            "text/plain", new SingletonLayerFactory("layer", ZOrder.DEFAULT_RACK, true, bag));
+
+        JEditorPane pane = new JEditorPane();
+        String [] removed = new String[] {"^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\..*$", "^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\.TextSelectionHighlighting$"};
+        pane.putClientProperty("HighlightsLayerExcludes", removed);
+        pane.setContentType("text/plain");
+        assertEquals("The pane has got wrong mime type", "text/plain", pane.getContentType());
+        
+        HighlightingManager hm = HighlightingManager.getInstance(pane);
+        HighlightsContainer hc = hm.getHighlights(HighlightsLayerFilter.IDENTITY);
+
+        assertNotNull("Can't get fixed HighlightsContainer", hc);
+        assertFalse("There should be no fixed highlights", hc.getHighlights(0, Integer.MAX_VALUE).moveNext());
+    }
 
     // test multiple layers, merging, ordering
     

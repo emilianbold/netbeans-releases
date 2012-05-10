@@ -1139,25 +1139,27 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
     @CheckForNull
     private ASTNode findConditionalStatement(List<ASTNode> path) {
-        for (ASTNode aSTNode : path) {
-            if (aSTNode instanceof IfStatement) {
-                return aSTNode;
-            } else if (aSTNode instanceof WhileStatement) {
-                return aSTNode;
-            } else if (aSTNode instanceof DoStatement) {
-                return aSTNode;
-            } else if (aSTNode instanceof ForEachStatement) {
-                return aSTNode;
-            } else if (aSTNode instanceof ForStatement) {
-                return aSTNode;
-            } else if (aSTNode instanceof CatchClause) {
-                return aSTNode;
-            } else if (aSTNode instanceof SwitchStatement) {
-                return aSTNode;
-            } else if (aSTNode instanceof TryStatement) {
-                return aSTNode;
-            } else if (aSTNode instanceof InstanceOfExpression) {
-                return aSTNode;
+        synchronized (path) {
+            for (ASTNode aSTNode : path) {
+                if (aSTNode instanceof IfStatement) {
+                    return aSTNode;
+                } else if (aSTNode instanceof WhileStatement) {
+                    return aSTNode;
+                } else if (aSTNode instanceof DoStatement) {
+                    return aSTNode;
+                } else if (aSTNode instanceof ForEachStatement) {
+                    return aSTNode;
+                } else if (aSTNode instanceof ForStatement) {
+                    return aSTNode;
+                } else if (aSTNode instanceof CatchClause) {
+                    return aSTNode;
+                } else if (aSTNode instanceof SwitchStatement) {
+                    return aSTNode;
+                } else if (aSTNode instanceof TryStatement) {
+                    return aSTNode;
+                } else if (aSTNode instanceof InstanceOfExpression) {
+                    return aSTNode;
+                }
             }
         }
         return null;

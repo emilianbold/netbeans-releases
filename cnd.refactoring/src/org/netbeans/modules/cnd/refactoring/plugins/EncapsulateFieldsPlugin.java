@@ -133,7 +133,8 @@ public final class EncapsulateFieldsPlugin extends CsmModificationRefactoringPlu
                 refactoring.getMethodModifiers(),
                 refactoring.getFieldModifiers(),
                 refactoring.isAlwaysUseAccessors(),
-                refactoring.isMethodInline());
+                refactoring.isMethodInline(),
+                refactoring.isMethodMarkedAsInlined());
         return validation(FAST_CHECK_PARAMETERS);
     }
 
@@ -228,7 +229,7 @@ public final class EncapsulateFieldsPlugin extends CsmModificationRefactoringPlu
 //    }
 
     private void initRefactorings(Collection<EncapsulateFieldInfo> refactorFields, Set<CsmVisibility> methodModifier, Set<CsmVisibility> fieldModifier, 
-            boolean alwaysUseAccessors, boolean methodInline) {
+            boolean alwaysUseAccessors, boolean methodInline, boolean markedInline) {
         refactorings = new ArrayList<EncapsulateFieldRefactoringPlugin>(refactorFields.size());
         CsmFile[] declDefFiles = null;
         for (EncapsulateFieldInfo info : refactorFields) {
