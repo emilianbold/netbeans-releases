@@ -70,7 +70,6 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
     private LinkButton btnChanged;
     private LinkButton btnTotal;
     private QueryListener queryListener;
-    private TreeLabel lblSeparator;
 
     public QueryNode(Query query, TreeListNode parent, boolean refresh) {
         super(refresh, true, parent);
@@ -144,10 +143,10 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
                 panel.add(btnTotal, new GridBagConstraints(3, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
                 buttons.add(btnTotal);
                 addTotalCountComp(btnTotal);
-                lblSeparator = new TreeLabel("|"); //NOI18N
-                panel.add(lblSeparator, new GridBagConstraints(4, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 2, 0, 2), 0, 0));
-                labels.add(lblSeparator);
-                addChangedCountComp(lblSeparator);
+                lbl = new TreeLabel("|"); //NOI18N
+                panel.add(lbl, new GridBagConstraints(4, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 2, 0, 2), 0, 0));
+                labels.add(lbl);
+                addChangedCountComp(lbl);
                 btnChanged = new LinkButton(getChangedString(), new OpenQueryAction(query, Query.QueryMode.SHOW_NEW_OR_CHANGED)); //NOI18N
                 panel.add(btnChanged, new GridBagConstraints(5, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
                 buttons.add(btnChanged);
