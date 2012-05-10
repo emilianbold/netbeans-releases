@@ -743,6 +743,7 @@ public final class CndLexerUtilities {
             CppTokenId.__FORCEINLINE,            
             CppTokenId.__REAL__,
             CppTokenId.__RESTRICT,
+            CppTokenId.__RESTRICT__,
             CppTokenId.__SIGNED,
             CppTokenId.__SIGNED__,
             CppTokenId.TYPEOF,
