@@ -121,6 +121,7 @@ public enum CssTokenId implements TokenId {
     PERCENTAGE(Css3Lexer.PERCENTAGE, NUMBERS),
     LENGTH(Css3Lexer.LENGTH, NUMBERS),
     EMS(Css3Lexer.EMS, NUMBERS),
+    REM(Css3Lexer.REM, NUMBERS),
     EXS(Css3Lexer.EXS, NUMBERS),
     ANGLE(Css3Lexer.ANGLE, NUMBERS),
     TIME(Css3Lexer.TIME, NUMBERS),
@@ -197,7 +198,7 @@ public enum CssTokenId implements TokenId {
     CONTAINS(Css3Lexer.CONTAINS, OPERATORS),
     
     FONT_FACE_SYM(Css3Lexer.FONT_FACE_SYM, KEYWORDS),
-    HASH_CHAR_ONLY(Css3Lexer.T__115, OTHERS),
+    HASH_CHAR_ONLY(Css3Lexer.T__116, OTHERS),
     
     MOZ_DOCUMENT_SYM(Css3Lexer.MOZ_DOCUMENT_SYM, KEYWORDS),
     MOZ_DOMAIN(Css3Lexer.MOZ_DOMAIN, URIS),
