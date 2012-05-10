@@ -44,6 +44,7 @@
 package org.netbeans.modules.groovy.support.debug;
 
 import javax.swing.Action;
+import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import static org.netbeans.modules.groovy.support.debug.Bundle.*;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.Models;
@@ -51,13 +52,11 @@ import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.NodeActionsProviderFilter;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.util.NbBundle.Messages;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
  * @author Martin Grebac
  * @author Martin Adamek
  */
-@ServiceProvider(service = NodeActionsProviderFilter.class)
 public class GroovyBreakpointActionsProvider implements NodeActionsProviderFilter {
 
     @Messages("LBL_Action_Go_To_Source=Go to Source")
@@ -71,7 +70,7 @@ public class GroovyBreakpointActionsProvider implements NodeActionsProviderFilte
 
                 @Override
                 public void perform(Object[] nodes) {
-                    goToSource((GroovyLineBreakpoint) nodes[0]);
+                    goToSource((LineBreakpoint) nodes[0]);
                 }
             },
             Models.MULTISELECTION_TYPE_EXACTLY_ONE);
@@ -94,12 +93,12 @@ public class GroovyBreakpointActionsProvider implements NodeActionsProviderFilte
 
     @Override
     public Action[] getActions(NodeActionsProvider original, Object node) throws UnknownTypeException {
-        if (!(node instanceof GroovyLineBreakpoint)) {
+        if (!(node instanceof LineBreakpoint)) {
             return original.getActions(node);
         }
 
         Action[] oas = original.getActions(node);
-        if (node instanceof GroovyLineBreakpoint) {
+        if (node instanceof LineBreakpoint) {
             Action[] as = new Action[oas.length + 3];
             as[0] = GO_TO_SOURCE_ACTION;
             as[1] = null;
@@ -115,8 +114,8 @@ public class GroovyBreakpointActionsProvider implements NodeActionsProviderFilte
 
     @Override
     public void performDefaultAction(NodeActionsProvider original, Object node) throws UnknownTypeException {
-        if (node instanceof GroovyLineBreakpoint) {
-            goToSource((GroovyLineBreakpoint) node);
+        if (node instanceof LineBreakpoint) {
+            goToSource((LineBreakpoint) node);
         } else {
             original.performDefaultAction(node);
         }
@@ -128,7 +127,7 @@ public class GroovyBreakpointActionsProvider implements NodeActionsProviderFilte
     public void removeModelListener(ModelListener l) {
     }
 
-    private static void goToSource(GroovyLineBreakpoint b) {
+    private static void goToSource(LineBreakpoint b) {
         Context.showSource(b);
     }
 }

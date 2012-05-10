@@ -49,6 +49,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.filesystems.FileObject;
@@ -163,7 +164,7 @@ public class Context {
     }
 
     // utility methods .........................................................
-    public static String getFileName(GroovyLineBreakpoint b) {
+    public static String getFileName(LineBreakpoint b) {
         try {
             return new File(new URL(b.getURL()).getFile()).getName();
         } catch (MalformedURLException e) {
@@ -171,7 +172,7 @@ public class Context {
         }
     }
 
-    public static boolean showSource(GroovyLineBreakpoint b) {
+    public static boolean showSource(LineBreakpoint b) {
         if (b.getLineNumber() < 1) {
             return Context.showSource(b.getURL(), 1, null);
         }
@@ -186,7 +187,7 @@ public class Context {
      * @return annotation or <code>null</code>, when the annotation can not be
      * created at the url:line where the given breakpoint is set.
      */
-    public static Object annotate(GroovyLineBreakpoint b) {
+    public static Object annotate(LineBreakpoint b) {
         String url = b.getURL();
         int lineNumber = b.getLineNumber();
         if (lineNumber < 1) {

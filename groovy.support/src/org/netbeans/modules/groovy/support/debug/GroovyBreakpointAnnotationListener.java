@@ -50,20 +50,18 @@ import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
-import org.netbeans.api.debugger.LazyDebuggerManagerListener;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
-import org.openide.util.lookup.ServiceProvider;
+import org.netbeans.api.debugger.jpda.LineBreakpoint;
 
 /**
  * Listens on {@org.netbeans.api.debugger.DebuggerManager} on
  * {@link org.netbeans.api.debugger.DebuggerManager#PROP_BREAKPOINTS}
  * property and annotates
- * JSP breakpoints in NetBeans editor.
+ * Groovy breakpoints in NetBeans editor.
  *
  * @author Martin Grebac
  * @author Martin Adamek
  */
-@ServiceProvider(service = LazyDebuggerManagerListener.class)
 public class GroovyBreakpointAnnotationListener extends DebuggerManagerAdapter {
     
     private HashMap breakpointToAnnotation = new HashMap ();
@@ -74,106 +72,89 @@ public class GroovyBreakpointAnnotationListener extends DebuggerManagerAdapter {
         return new String[] {DebuggerManager.PROP_BREAKPOINTS};
     }
     
-    /**
-     * Listens on breakpoint.
-     */
     @Override
     public void propertyChange (PropertyChangeEvent e) {
         String propertyName = e.getPropertyName ();
-        if (propertyName == null) return;
+        if (propertyName == null) {
+            return;
+        }
         if (!listen) return;
-        if ( (!propertyName.equals (GroovyLineBreakpoint.PROP_CONDITION)) &&
-             (!propertyName.equals (GroovyLineBreakpoint.PROP_URL)) &&
-             (!propertyName.equals (GroovyLineBreakpoint.PROP_LINE_NUMBER)) &&
-             (!propertyName.equals (GroovyLineBreakpoint.PROP_ENABLED))
-        ) return;
-        GroovyLineBreakpoint b = (GroovyLineBreakpoint) e.getSource ();
+        if ( (!propertyName.equals (LineBreakpoint.PROP_CONDITION)) &&
+             (!propertyName.equals (LineBreakpoint.PROP_URL)) &&
+             (!propertyName.equals (LineBreakpoint.PROP_LINE_NUMBER)) &&
+             (!propertyName.equals (LineBreakpoint.PROP_ENABLED))
+        ) {
+            return;
+        }
+        LineBreakpoint b = (LineBreakpoint) e.getSource ();
         annotate (b);
     }
 
-    /**
-    * Called when some breakpoint is added.
-    *
-    * @param b breakpoint
-    */
     @Override
     public void breakpointAdded (Breakpoint b) {
-        if (b instanceof GroovyLineBreakpoint) {
-            ((GroovyLineBreakpoint) b).addPropertyChangeListener (this);
-            annotate ((GroovyLineBreakpoint) b);
+        if (b instanceof LineBreakpoint) {
+            ((LineBreakpoint) b).addPropertyChangeListener (this);
+            annotate ((LineBreakpoint) b);
         }
     }
 
-    /**
-    * Called when some breakpoint is removed.
-    *
-    * @param breakpoint
-    */
     @Override
     public void breakpointRemoved (Breakpoint b) {
-        if (b instanceof GroovyLineBreakpoint) {
-            ((GroovyLineBreakpoint) b).removePropertyChangeListener (this);
-            removeAnnotation ((GroovyLineBreakpoint) b);
+        if (b instanceof LineBreakpoint) {
+            ((LineBreakpoint) b).removePropertyChangeListener (this);
+            removeAnnotation ((LineBreakpoint) b);
         }
     }
-
-    public GroovyLineBreakpoint findBreakpoint (String url, int lineNumber) {
-        Iterator i = breakpointToAnnotation.keySet ().iterator ();
-        while (i.hasNext ()) {
-            GroovyLineBreakpoint lb = (GroovyLineBreakpoint) i.next ();
-            if (!lb.getURL ().equals (url)) continue;
-            Object annotation = breakpointToAnnotation.get (lb);
-            int ln = Context.getLineNumber (annotation, null);
-            if (ln == lineNumber) return lb;
-        }
-        return null;
-    }
     
-    // helper methods ..........................................................
-    
-    private void annotate (GroovyLineBreakpoint b) {
+    private void annotate (LineBreakpoint b) {
         // remove old annotation
         Object annotation = breakpointToAnnotation.get (b);
-        if (annotation != null)
+        if (annotation != null) {
             Context.removeAnnotation (annotation);
-        if (b.isHidden ()) return;
+        }
+        if (b.isHidden ()) {
+            return;
+        }
         
         // add new one
         annotation = Context.annotate (b);
-        if (annotation == null)
+        if (annotation == null) {
             return;
+        }
         
         breakpointToAnnotation.put (b, annotation);
         
-        DebuggerEngine de = DebuggerManager.getDebuggerManager ().
-            getCurrentEngine ();
+        DebuggerEngine de = DebuggerManager.getDebuggerManager().getCurrentEngine ();
         Object timeStamp = null;
-        if (de != null)
+        if (de != null) {
             timeStamp = de.lookupFirst (null, JPDADebugger.class);
+        }
         update (b, timeStamp);        
     }
 
     public void updateGroovyLineBreakpoints () {
         Iterator it = breakpointToAnnotation.keySet ().iterator (); 
         while (it.hasNext ()) {
-            GroovyLineBreakpoint lb = (GroovyLineBreakpoint) it.next ();
+            LineBreakpoint lb = (LineBreakpoint) it.next ();
             update (lb, null);
         }
     }
     
-    private void update (GroovyLineBreakpoint b, Object timeStamp) {
+    private void update (LineBreakpoint b, Object timeStamp) {
         Object annotation = breakpointToAnnotation.get (b);
-        if (annotation == null) 
+        if (annotation == null) {
             return;
+        }
         int ln = Context.getLineNumber (annotation, timeStamp);
         listen = false;
         b.setLineNumber (ln);
         listen = true;
     }
     
-    private void removeAnnotation(GroovyLineBreakpoint b) {
+    private void removeAnnotation(LineBreakpoint b) {
         Object annotation = breakpointToAnnotation.remove (b);
-        if (annotation != null)
+        if (annotation != null) {
             Context.removeAnnotation (annotation);
+        }
     }
 }
