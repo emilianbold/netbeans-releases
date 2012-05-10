@@ -47,8 +47,10 @@ import com.atlassian.connector.eclipse.internal.jira.core.model.JiraStatus;
 import com.atlassian.connector.eclipse.internal.jira.core.model.Priority;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
 import javax.swing.table.DefaultTableModel;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
+import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.openide.util.NbBundle;
 
@@ -94,16 +96,26 @@ public class SubtaskTableModel extends DefaultTableModel {
             if (subTask == null) {
                 subTask = (NbJiraIssue)repository.getIssue(key);
             }
-            data[count] = new Object[] {
-                key,
-                subTask.getSummary(),
-                subTask.getType(),
-                subTask.getStatus(),
-                subTask.getPriority()
-            };
-            count++;
+            if(subTask != null) {
+                data[count] = new Object[] {
+                    key,
+                    subTask.getSummary(),
+                    subTask.getType(),
+                    subTask.getStatus(),
+                    subTask.getPriority()
+                };
+                count++;
+            } else {
+                Jira.LOG.log(Level.WARNING, "no subtask returned for key {0}", key); // NOI18N
+            }
         }
-        return data;
+        if(count < keys.size()) {
+            Object[][] ret = new Object[count][];
+            System.arraycopy(data, 0, ret, 0, count);
+            return ret;
+        } else {
+            return data;
+        }
     }
 
     @Override
