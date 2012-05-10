@@ -61,6 +61,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.BorderFactory;
@@ -109,7 +110,9 @@ import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * Panel for remote synchronization.
@@ -129,6 +132,8 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
     @StaticResource
     private static final String WARNING_ICON_PATH = "org/netbeans/modules/php/project/ui/resources/warning.gif"; // NOI18N
 
+    static final RequestProcessor RP = new RequestProcessor("PHP: Sync items validation & information"); // NOI18N
+
     static final TableCellRenderer DEFAULT_TABLE_CELL_RENDERER = new DefaultTableCellRenderer();
     static final TableCellRenderer ERROR_TABLE_CELL_RENDERER = new DefaultTableCellRenderer();
 
@@ -140,7 +145,6 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
                 SyncItem.Operation.DELETE);
 
     final RemoteClient remoteClient;
-    // @GuardedBy(AWT)
     final List<SyncItem> allItems;
     // @GuardedBy(AWT)
     final List<SyncItem> displayedItems;
@@ -177,7 +181,7 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
 
         this.project = project;
         this.remoteConfigurationName = remoteConfigurationName;
-        this.allItems = items;
+        this.allItems = new CopyOnWriteArrayList<SyncItem>(items);
         displayedItems = new ArrayList<SyncItem>(items);
         this.remoteClient = remoteClient;
         tableModel = new FileTableModel(displayedItems);
@@ -210,7 +214,8 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
         "# {0} - project name",
         "# {1} - remote configuration name",
         "SyncPanel.title=Remote Synchronization for {0}: {1}",
-        "SyncPanel.button.titleWithMnemonics=S&ynchronize"
+        "SyncPanel.button.titleWithMnemonics=S&ynchronize",
+        "SyncPanel.pleaseWait=Please wait...",
     })
     public boolean open() {
         assert SwingUtilities.isEventDispatchThread();
@@ -243,7 +248,7 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
 
     public List<SyncItem> getItems() {
         assert SwingUtilities.isEventDispatchThread();
-        return allItems;
+        return new ArrayList<SyncItem>(allItems);
     }
 
     private List<ViewCheckBox> getViewCheckBoxes() {
@@ -649,42 +654,70 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
     })
     void validateItems() {
         assert SwingUtilities.isEventDispatchThread();
-        boolean warn = false;
-        for (SyncItem syncItem : allItems) {
-            SyncItem.ValidationResult validationResult = syncItem.validate();
-            if (validationResult.hasError()) {
-                setError(Bundle.SyncPanel_error_operations());
-                return;
+        invalidatePanel();
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                boolean warn = false;
+                for (SyncItem syncItem : allItems) {
+                    SyncItem.ValidationResult validationResult = syncItem.validate();
+                    if (validationResult.hasError()) {
+                        setError(Bundle.SyncPanel_error_operations());
+                        return;
+                    }
+                    if (validationResult.hasWarning()) {
+                        warn = true;
+                    }
+                }
+                if (warn) {
+                    setWarning(Bundle.SyncPanel_warn_operations());
+                } else {
+                    clearError();
+                }
             }
-            if (validationResult.hasWarning()) {
-                warn = true;
-            }
-        }
-        if (warn) {
-            setWarning(Bundle.SyncPanel_warn_operations());
-        } else {
-            clearError();
-        }
+        });
     }
 
-    void setError(String error) {
-        String msg = getImgTag(ERROR_ICON_PATH) + getColoredText(error, UIManager.getColor("nb.errorForeground")) + "<br>" + defaultInfoMessage; // NOI18N
-        messagesTextPane.setText(msg);
-        descriptor.setValid(false);
-        okButton.setEnabled(false);
+    void setError(final String error) {
+        Mutex.EVENT.readAccess(new Runnable() {
+            @Override
+            public void run() {
+                String msg = getImgTag(ERROR_ICON_PATH) + getColoredText(error, UIManager.getColor("nb.errorForeground")) + "<br>" + defaultInfoMessage; // NOI18N
+                messagesTextPane.setText(msg);
+                descriptor.setValid(false);
+                okButton.setEnabled(false);
+            }
+        });
     }
 
-    void setWarning(String warning) {
-        String msg = getImgTag(WARNING_ICON_PATH) + getColoredText(warning, UIManager.getColor("nb.warningForeground")) + "<br>" + defaultInfoMessage; // NOI18N
-        messagesTextPane.setText(msg);
-        descriptor.setValid(true);
-        okButton.setEnabled(true);
+    void setWarning(final String warning) {
+        Mutex.EVENT.readAccess(new Runnable() {
+            @Override
+            public void run() {
+                String msg = getImgTag(WARNING_ICON_PATH) + getColoredText(warning, UIManager.getColor("nb.warningForeground")) + "<br>" + defaultInfoMessage; // NOI18N
+                messagesTextPane.setText(msg);
+                descriptor.setValid(true);
+                okButton.setEnabled(true);
+            }
+        });
     }
 
     void clearError() {
-        messagesTextPane.setText(defaultInfoMessage);
-        descriptor.setValid(true);
-        okButton.setEnabled(true);
+        Mutex.EVENT.readAccess(new Runnable() {
+            @Override
+            public void run() {
+                messagesTextPane.setText(defaultInfoMessage);
+                descriptor.setValid(true);
+                okButton.setEnabled(true);
+            }
+        });
+    }
+
+    void invalidatePanel() {
+        assert SwingUtilities.isEventDispatchThread();
+        messagesTextPane.setText(Bundle.SyncPanel_pleaseWait());
+        descriptor.setValid(false);
+        okButton.setEnabled(false);
     }
 
     private String getImgTag(String src) {
@@ -717,42 +750,59 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
             + "{3} no-ops, {4} errors, {5} warnings."
     })
     void updateSyncInfo() {
-        List<SyncItem> selectedItems = getSelectedItems(false);
-        if (selectedItems.size() == 1) {
-            SyncItem syncItem = selectedItems.get(0);
-            SyncItem.ValidationResult result = syncItem.validate();
-            if (result.hasError()) {
-                syncInfoLabel.setForeground(UIManager.getColor("nb.errorForeground")); // NOI18N
-                syncInfoLabel.setText(Bundle.SyncPanel_info_prefix_error(syncItem.getName(), result.getMessage()));
-                return;
+        assert SwingUtilities.isEventDispatchThread();
+        syncInfoLabel.setText(Bundle.SyncPanel_pleaseWait());
+        final List<SyncItem> selectedItems = new CopyOnWriteArrayList<SyncItem>(getSelectedItems(false));
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                List<SyncItem> selectedItemsCopy = selectedItems;
+                if (selectedItemsCopy.size() == 1) {
+                    final SyncItem syncItem = selectedItemsCopy.get(0);
+                    final SyncItem.ValidationResult result = syncItem.validate();
+                    if (result.hasError()) {
+                        Mutex.EVENT.readAccess(new Runnable() {
+                            @Override
+                            public void run() {
+                                syncInfoLabel.setForeground(UIManager.getColor("nb.errorForeground")); // NOI18N
+                                syncInfoLabel.setText(Bundle.SyncPanel_info_prefix_error(syncItem.getName(), result.getMessage()));
+                            }
+                        });
+                        return;
+                    }
+                    if (result.hasWarning()) {
+                        Mutex.EVENT.readAccess(new Runnable() {
+                            @Override
+                            public void run() {
+                                syncInfoLabel.setForeground(UIManager.getColor("nb.warningForeground")); // NOI18N
+                                syncInfoLabel.setText(Bundle.SyncPanel_info_prefix_warning(syncItem.getName(), result.getMessage()));
+                            }
+                        });
+                        return;
+                    }
+                    selectedItemsCopy.clear();
+                }
+                // all or selection
+                boolean all = false;
+                if (selectedItemsCopy.isEmpty()) {
+                    all = true;
+                    selectedItemsCopy = allItems;
+                }
+                SyncInfo syncInfo = getSyncInfo(selectedItemsCopy);
+                String info = Bundle.SyncPanel_info_status(syncInfo.download, syncInfo.upload, syncInfo.delete, syncInfo.noop, syncInfo.errors, syncInfo.warnings);
+                final String msg = all ? Bundle.SyncPanel_info_prefix_all(info) : Bundle.SyncPanel_info_prefix_selection(info);
+                Mutex.EVENT.readAccess(new Runnable() {
+                    @Override
+                    public void run() {
+                        syncInfoLabel.setForeground(UIManager.getColor("Label.foreground")); // NOI18N
+                        syncInfoLabel.setText(msg);
+                    }
+                });
             }
-            if (result.hasWarning()) {
-                syncInfoLabel.setForeground(UIManager.getColor("nb.warningForeground")); // NOI18N
-                syncInfoLabel.setText(Bundle.SyncPanel_info_prefix_warning(syncItem.getName(), result.getMessage()));
-                return;
-            }
-            selectedItems.clear();
-        }
-        // all or selection
-        boolean all = false;
-        if (selectedItems.isEmpty()) {
-            all = true;
-            selectedItems = allItems;
-        }
-        SyncInfo syncInfo = getSyncInfo(selectedItems);
-        String info = Bundle.SyncPanel_info_status(syncInfo.download, syncInfo.upload, syncInfo.delete, syncInfo.noop, syncInfo.errors, syncInfo.warnings);
-        String msg;
-        if (all) {
-            msg = Bundle.SyncPanel_info_prefix_all(info);
-        } else {
-            msg = Bundle.SyncPanel_info_prefix_selection(info);
-        }
-        syncInfoLabel.setForeground(UIManager.getColor("Label.foreground")); // NOI18N
-        syncInfoLabel.setText(msg);
+        });
     }
 
     public SyncInfo getSyncInfo(List<SyncItem> items) {
-        assert SwingUtilities.isEventDispatchThread();
         SyncInfo syncInfo = new SyncInfo();
         for (SyncItem syncItem : items) {
             SyncItem.ValidationResult validationResult = syncItem.validate();
