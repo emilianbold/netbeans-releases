@@ -63,6 +63,7 @@ import javax.swing.Icon;
 import javax.swing.event.ChangeListener;
 import org.apache.maven.model.Resource;
 import org.apache.maven.project.MavenProject;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -261,9 +262,14 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
     /**
      * consult the SourceGroup cache, return true if anything changed..
      */
-    private boolean checkSourceGroupCache(File rootF, String name, String displayName, Map<String, SourceGroup> groups, NbMavenProject watcher) {
-        watcher.addWatchedPath(rootF.toURI());
-        FileObject root = FileUtil.toFileObject(rootF);
+    private boolean checkSourceGroupCache(@NullAllowed File rootF, String name, String displayName, Map<String, SourceGroup> groups, NbMavenProject watcher) {
+        FileObject root;
+        if (rootF != null) {
+            watcher.addWatchedPath(rootF.toURI());
+            root = FileUtil.toFileObject(rootF);
+        } else {
+            root = null;
+        }
         SourceGroup group = groups.get(name);
         if (root == null && group != null) {
             groups.remove(name);
