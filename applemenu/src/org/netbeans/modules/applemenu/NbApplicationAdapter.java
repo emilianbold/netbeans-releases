@@ -63,6 +63,8 @@ import org.openide.cookies.ViewCookie;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.windows.WindowManager;
+import org.openide.windows.WindowSystemEvent;
+import org.openide.windows.WindowSystemListener;
 
 /** Adapter class which intercepts action events and passes them to the
  * correct action instance as defined in the system filesystem.
@@ -92,9 +94,11 @@ class NbApplicationAdapter implements ApplicationListener {
         } finally {
             Beans.setDesignTime(wasDesignTime);
         }
-        SwingUtilities.invokeLater(new Runnable() {
+        WindowManager.getDefault().addWindowSystemListener(new WindowSystemListener() {
+
             @Override
-            public void run() {
+            public void beforeLoad(WindowSystemEvent event) {
+                WindowManager.getDefault().removeWindowSystemListener(this);
                 try {
                     FullScreenUtilities.setWindowCanFullScreen(WindowManager.getDefault().getMainWindow(), true);
                 } catch( ThreadDeath td ) {
@@ -103,6 +107,18 @@ class NbApplicationAdapter implements ApplicationListener {
                     Logger.getLogger(NbApplicationAdapter.class.getName()).log(Level.FINE, 
                             "Error while setting up full screen support.", e );//NOI18N
                 }
+            }
+
+            @Override
+            public void afterLoad(WindowSystemEvent event) {
+            }
+
+            @Override
+            public void beforeSave(WindowSystemEvent event) {
+            }
+
+            @Override
+            public void afterSave(WindowSystemEvent event) {
             }
         });
     }

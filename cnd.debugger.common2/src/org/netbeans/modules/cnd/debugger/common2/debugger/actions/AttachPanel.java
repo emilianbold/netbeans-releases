@@ -317,32 +317,7 @@ public final class AttachPanel extends TopComponent {
         filterLabel.setLabelFor(filterCombo);
         filterCombo.setToolTipText(Catalog.get("RegExp")); //NOI18N
         filterCombo.setEditable(true);
-        filterCombo.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent evt) {
-                String filter = (String) filterCombo.getSelectedItem();
-                if (filter != null) {
-                    refreshProcesses(null, false);
-                }
-
-            // An attempt to fix 6642223 ...
-		/* LATER
-            System.out.printf("filterCombo.actionPerformed: %s\n", evt);
-            if ("comboBoxChanged".equals(evt.getActionCommand())) {
-            // selection changed (arrow movement) do nothin
-            } else if ("comboBoxEdited".equals(evt.getActionCommand())) {
-            // selection accepted ... process it.
-            filterActivated(evt);
-            } else {
-            // fallback behaviour in case "comboBoxEdited" ever
-            // changes (see 4808758).
-            filterActivated(evt);
-            }
-             */
-            // ... but it's impossible AFAIK. See 6642299.
-            }
-        });
-
+        
         final JTextComponent cbEditor = (JTextComponent) filterCombo.getEditor().getEditorComponent();
         cbEditor.getDocument().addDocumentListener(new AnyChangeDocumentListener() {
             public void documentChanged(DocumentEvent e) {
@@ -721,10 +696,17 @@ public final class AttachPanel extends TopComponent {
     private void tableInfo(final String infoKey) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                procTable.setEnabled(false);
+                setUIEnabled(false);
                 processModel.setDataVector(new Object[][]{{Catalog.get(infoKey)}}, new Object[]{" "}); //NOI18N
             }
         });
+    }
+    
+    private void setUIEnabled(boolean st) {
+        filterCombo.setEnabled(st);
+        refreshButton.setEnabled(st);
+        hostCombo.setEnabled(st);
+        procTable.setEnabled(st);
     }
 
     /**
@@ -735,7 +717,7 @@ public final class AttachPanel extends TopComponent {
         if (!filterReady) {
             return;
         }
-
+        
         JTextComponent cbEditor = (JTextComponent) filterCombo.getEditor().getEditorComponent();
         Object selected = request ? filterCombo.getSelectedItem() : cbEditor.getText();
 
@@ -874,7 +856,7 @@ public final class AttachPanel extends TopComponent {
 
             public void run() {
                 processModel.setDataVector(psData.processes(re), psData.header());
-                procTable.setEnabled(true);
+                setUIEnabled(true);
 
                 // It seems we need to reassign the renderer whenever we
                 // setDataVector ...

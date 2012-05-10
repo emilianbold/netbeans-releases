@@ -136,6 +136,7 @@ made subject to such option by the copyright holder.
                             <xsl:attribute name="includes">@{includes}</xsl:attribute>
                             <xsl:attribute name="excludes">@{excludes}</xsl:attribute>
                             <xsl:attribute name="includeAntRuntime">false</xsl:attribute>
+                            <xsl:attribute name="fork">true</xsl:attribute>
                             <src>
                                 <dirset dir="@{{gensrcdir}}" erroronmissingdir="false">
                                     <include name="*"/>
