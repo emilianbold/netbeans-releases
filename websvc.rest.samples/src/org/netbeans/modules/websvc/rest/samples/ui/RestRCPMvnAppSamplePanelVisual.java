@@ -92,7 +92,7 @@ public class RestRCPMvnAppSamplePanelVisual extends JPanel implements DocumentLi
         org.openide.awt.Mnemonics.setLocalizedText(projectLocationLabel, org.openide.util.NbBundle.getMessage(RestRCPMvnAppSamplePanelVisual.class, "RestRCPMvnAppSamplePanelVisual.projectLocationLabel.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(RestRCPMvnAppSamplePanelVisual.class, "RestRCPMvnAppSamplePanelVisual.browseButton.text")); // NOI18N
-        browseButton.setActionCommand(org.openide.util.NbBundle.getMessage(RestRCPMvnAppSamplePanelVisual.class, "RestRCPMvnAppSamplePanelVisual.browseButton.actionCommand")); // NOI18N
+        browseButton.setActionCommand("BROWSE");
         browseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseButtonActionPerformed(evt);
