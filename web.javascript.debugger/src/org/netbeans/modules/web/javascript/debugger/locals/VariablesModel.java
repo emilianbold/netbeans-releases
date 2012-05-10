@@ -45,19 +45,19 @@
 package org.netbeans.modules.web.javascript.debugger.locals;
 
 import java.awt.datatransfer.Transferable;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.chromium.sdk.*;
-import org.netbeans.modules.web.javascript.debugger.Debugger;
-import org.netbeans.modules.web.javascript.debugger.DebuggerListener;
-import org.netbeans.modules.web.javascript.debugger.DebuggerState;
 import org.netbeans.modules.web.javascript.debugger.ViewModelSupport;
 import org.netbeans.modules.web.javascript.debugger.watches.WatchesModel;
+import org.netbeans.modules.web.webkit.debugging.api.Debugger;
+import org.netbeans.modules.web.webkit.debugging.api.debugger.CallFrame;
+import org.netbeans.modules.web.webkit.debugging.api.debugger.PropertyDescriptor;
+import org.netbeans.modules.web.webkit.debugging.api.debugger.RemoteObject;
+import org.netbeans.modules.web.webkit.debugging.api.debugger.Scope;
 import org.netbeans.spi.debugger.ContextProvider;
 import static org.netbeans.spi.debugger.ui.Constants.*;
 import org.netbeans.spi.viewmodel.*;
@@ -65,21 +65,10 @@ import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.PasteType;
 
 @NbBundle.Messages({"VariablesModel_Name=Name",
-"VariablesModel_Desc=Description",
-"TYPE_ARRAY=Array",
-"TYPE_OBJECT=Object",
-"TYPE_NUMBER=Number",
-"TYPE_STRING=String",
-"TYPE_FUNCTION=Function",
-"TYPE_BOOLEAN=Boolean",
-"TYPE_ERROR=Error",
-"TYPE_REGEXP=Regexp",
-"TYPE_DATE=Date",
-"TYPE_UNDEFINED=Undefined",
-"TYPE_NULL=Null"
+"VariablesModel_Desc=Description"
 })
 public class VariablesModel extends ViewModelSupport implements TreeModel, ExtendedNodeModel,
-		TableModel, DebuggerListener {
+		TableModel, Debugger.Listener {
 	
 	public static final String LOCAL = "org/netbeans/modules/debugger/resources/localsView/local_variable_16.png"; // NOI18N
 	public static final String GLOBAL = "org/netbeans/modules/web/javascript/debugger/resources/global_variable_16.png"; // NOI18N
@@ -97,7 +86,11 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
         debugger = contextProvider.lookupFirst(null, Debugger.class);
         debugger.addListener(this);
         // update now:
-        stateChanged(debugger);
+        if (debugger.isSuspended()) {
+            currentStack.set(debugger.getCurrentCallStack().get(0));
+        } else {
+            currentStack.set(null);
+        }
 	}
 
 	// TreeModel implementation ................................................
@@ -116,8 +109,8 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
         }
 		if (parent == ROOT) {
             return getVariables(frame).subList(from, to).toArray();
-		} else if (parent instanceof ScopedVariable) {
-            return getProperties((ScopedVariable)parent).toArray();
+		} else if (parent instanceof ScopedRemoteObject) {
+            return getProperties((ScopedRemoteObject)parent).toArray();
 		} else {
 			throw new UnknownTypeException(parent);
 		}
@@ -127,45 +120,46 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
         return currentStack.get();
     }
 
-    private List<ScopedVariable> getVariables(CallFrame frame) {
-        List<ScopedVariable> vars = new ArrayList<ScopedVariable>();
-        for (JsScope scope : frame.getVariableScopes()) {
-            if (scope.getType() == JsScope.Type.LOCAL && scope.getVariables().isEmpty()) {
-                vars.add(WatchesModel.evaluateExpression(frame, "this"));
-            }
-            for (JsVariable var : scope.getVariables()) {
-                if (var.isReadable()) {
-                    vars.add(new ScopedVariable(var, scope));
-                }
+    private List<ScopedRemoteObject> getVariables(CallFrame frame) {
+        List<ScopedRemoteObject> vars = new ArrayList<ScopedRemoteObject>();
+        for (Scope scope : frame.getScopes()) {
+            RemoteObject obj = scope.getScopeObject();
+            if (scope.isLocalScope()) {
+                vars.addAll(getProperties(obj, ViewScope.LOCAL));
+            } else {
+                vars.add(new ScopedRemoteObject(obj, scope));
             }
         }
         return sortVariables(vars);
     }
     
-    private List<ScopedVariable> sortVariables(List<ScopedVariable> vars) {
-        Collections.sort(vars, new Comparator<ScopedVariable>() {
+    private List<ScopedRemoteObject> sortVariables(List<ScopedRemoteObject> vars) {
+        Collections.sort(vars, new Comparator<ScopedRemoteObject>() {
             @Override
-            public int compare(ScopedVariable o1, ScopedVariable o2) {
+            public int compare(ScopedRemoteObject o1, ScopedRemoteObject o2) {
                 int i = o1.getScope().compareTo(o2.getScope());
                 if (i != 0) {
                     return i;
                 } else {
-                    return o1.getVariable().getName().compareTo(o2.getVariable().getName());
+                    return o1.getObjectName().compareToIgnoreCase(o2.getObjectName());
                 }
             }
         });
         return vars;
     }
     
-    protected Collection<? extends ScopedVariable> getProperties(ScopedVariable var) {
-        JsValue val = var.getVariable().getValue();
-        List<ScopedVariable> res = new ArrayList<ScopedVariable>();
-        if (JsValue.Type.isObjectType(val.getType())) {
-            for (JsVariable v : var.getVariable().getValue().asObject().getProperties()) {
-                res.add(new ScopedVariable(v));
-            }
-            for (JsVariable v : var.getVariable().getValue().asObject().getInternalProperties()) {
-                res.add(new ScopedVariable(v, ViewScope.PROTO));
+    private Collection<? extends ScopedRemoteObject> getProperties(ScopedRemoteObject var) {
+        return getProperties(var.getRemoteObject(), ViewScope.DEFAULT);
+    }
+    
+    private Collection<? extends ScopedRemoteObject> getProperties(RemoteObject prop, ViewScope scope) {
+        List<ScopedRemoteObject> res = new ArrayList<ScopedRemoteObject>();
+        if (prop.getType() == RemoteObject.Type.OBJECT) {
+            for (PropertyDescriptor desc : prop.getProperties()) {
+                if (desc.getValue().getType() == RemoteObject.Type.FUNCTION) {
+                    continue;
+                }
+                res.add(new ScopedRemoteObject(desc.getValue(), desc.getName(), scope));
             }
         }
         return sortVariables(res);
@@ -175,22 +169,10 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
 	public boolean isLeaf(Object node) throws UnknownTypeException {
 		if (node == ROOT) {
 			return false;
-		} else if (node instanceof ScopedVariable) {
-			JsVariable var = ((ScopedVariable)node).getVariable();
-            JsValue val = var.getValue();
-            if (val != null && JsValue.Type.isObjectType(val.getType())) {
-                JsObject ob = val.asObject();
-                if (ob != null) {
-                    try {
-                    Collection<? extends JsVariable> vars = ob.getProperties();
-                    if (vars != null && vars.size() > 0) {
-                        return false;
-                    }
-                    } catch (Throwable t) {
-                        LOGGER.log(Level.WARNING, "cannot get value of "+var.getFullyQualifiedName()+". cause: "+t.getMessage());
-                        return true;
-                    }
-                }
+		} else if (node instanceof ScopedRemoteObject) {
+			RemoteObject var = ((ScopedRemoteObject)node).getRemoteObject();
+            if (var.getType() == RemoteObject.Type.OBJECT) {
+                return var.getProperties().isEmpty();
             }
             return true;
 		} else {
@@ -206,8 +188,8 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
         }
 		if (parent == ROOT) {
             return getVariables(frame).size();
-		} else if (parent instanceof ScopedVariable) {
-            return getProperties((ScopedVariable)parent).size();
+		} else if (parent instanceof ScopedRemoteObject) {
+            return getProperties((ScopedRemoteObject)parent).size();
 		} else {
 			throw new UnknownTypeException(parent);
 		}
@@ -219,8 +201,8 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
 	public String getDisplayName(Object node) throws UnknownTypeException {
 		if (node == ROOT) {
 			return Bundle.VariablesModel_Name();
-		} else if (node instanceof ScopedVariable) {
-			return ((ScopedVariable) node).getVariable().getName();
+		} else if (node instanceof ScopedRemoteObject) {
+			return ((ScopedRemoteObject) node).getObjectName();
 		} else {
 			throw new UnknownTypeException(node);
 		}
@@ -235,8 +217,8 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
 	public String getIconBaseWithExtension(Object node)
 			throws UnknownTypeException {
 		assert node != ROOT;
-		if (node instanceof ScopedVariable) {
-			ScopedVariable sv = (ScopedVariable)node;
+		if (node instanceof ScopedRemoteObject) {
+			ScopedRemoteObject sv = (ScopedRemoteObject)node;
             switch (sv.getScope()) {
                 case GLOBAL: return GLOBAL;
                 case PROTO : return PROTO;
@@ -251,9 +233,8 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
 	public String getShortDescription(Object node) throws UnknownTypeException {
 		if (node == ROOT) {
 			return Bundle.VariablesModel_Desc();
-		} else if (node instanceof ScopedVariable) {
-			JsVariable var = ((ScopedVariable)node).getVariable();
-			return var.getFullyQualifiedName();
+		} else if (node instanceof ScopedRemoteObject) {
+			return ((ScopedRemoteObject) node).getObjectName();
 		} else {
 			throw new UnknownTypeException(node);
 		}
@@ -266,43 +247,36 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
 			throws UnknownTypeException {
 		if (node == ROOT) {
 			return "";
-		} else if (node instanceof ScopedVariable) {
-			JsVariable var = ((ScopedVariable) node).getVariable();
-			JsValue value = var.getValue();
+		} else if (node instanceof ScopedRemoteObject) {
+			RemoteObject var = ((ScopedRemoteObject) node).getRemoteObject();
 			if (LOCALS_VALUE_COLUMN_ID.equals(columnID)) {
-			    return value.getValueString();
+			    return var.getValueAsString();
 			} else if (LOCALS_TYPE_COLUMN_ID.equals(columnID)) {
-                return getTypeName(value.getType());
+                if (var.getType() == RemoteObject.Type.OBJECT) {
+                    String desc = var.getDescription();
+                    if (desc == null) {
+                        return var.getType().getName();
+                    } else {
+                        return desc;
+                    }
+                } else {
+                    return var.getType().getName();
+                }
 			} else if (LOCALS_TO_STRING_COLUMN_ID.equals(columnID)) {
-                return value.getValueString();
+                return var.getValueAsString();
             }
 		}
 		throw new UnknownTypeException(node);
 	}
     
-    private static String getTypeName(JsValue.Type type) {
-        switch (type) {
-            case TYPE_OBJECT : return Bundle.TYPE_OBJECT();
-            case TYPE_NUMBER : return Bundle.TYPE_NUMBER();
-            case TYPE_STRING : return Bundle.TYPE_STRING();
-            case TYPE_FUNCTION : return Bundle.TYPE_FUNCTION();
-            case TYPE_BOOLEAN : return Bundle.TYPE_BOOLEAN();
-            case TYPE_ERROR : return Bundle.TYPE_ERROR();
-            case TYPE_REGEXP : return Bundle.TYPE_REGEXP();
-            case TYPE_DATE : return Bundle.TYPE_DATE();
-            case TYPE_ARRAY : return Bundle.TYPE_ARRAY();
-            case TYPE_UNDEFINED : return Bundle.TYPE_UNDEFINED();
-            case TYPE_NULL : return Bundle.TYPE_NULL();
-        }
-        return type.name();
-    }
-
     @Override
     public boolean isReadOnly(Object node, String columnID)
             throws UnknownTypeException {
-        if (LOCALS_VALUE_COLUMN_ID.equals(columnID) && node instanceof ScopedVariable) {
-            JsVariable var = ((ScopedVariable) node).getVariable();
-            return !var.isMutable();
+        if (LOCALS_VALUE_COLUMN_ID.equals(columnID) && node instanceof ScopedRemoteObject ||
+            WATCH_VALUE_COLUMN_ID.equals(columnID) && node instanceof ScopedRemoteObject) {
+//            RemoteObject var = ((ScopedRemoteObject) node).getRemoteObject();
+//            return !var.isMutable();
+            return true;
         }
         return true;
     }
@@ -310,10 +284,10 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
     @Override
     public void setValueAt(Object node, String columnID, Object value)
             throws UnknownTypeException {
-        if (LOCALS_VALUE_COLUMN_ID.equals(columnID) && node instanceof ScopedVariable) {
-            JsVariable var = ((ScopedVariable) node).getVariable();
-            assert var.isMutable() : var;
-            var.setValue(value.toString(), null);
+        if (LOCALS_VALUE_COLUMN_ID.equals(columnID) && node instanceof ScopedRemoteObject) {
+            ScopedRemoteObject sro = (ScopedRemoteObject) node;
+            WatchesModel.evaluateExpression(getCurrentStack(), sro.getObjectName() + "=" + value+";");
+            refresh();
         }
         throw new UnknownTypeException(node);
     }
@@ -357,44 +331,62 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
 	}
 
     @Override
-    public void stateChanged(Debugger debugger) {
-        if (debugger.getState() == DebuggerState.SUSPENDED) {
-            currentStack.set(debugger.getCurrentStackTrace().get(0));
-        } else {
-            currentStack.set(null);
-        }
+    public void paused(List<CallFrame> callStack, String reason) {
+        currentStack.set(callStack.get(0));
         refresh();
     }
 
-    public static class ScopedVariable {
-        private JsVariable var;
-        private ViewScope scope;
+    @Override
+    public void resumed() {
+        currentStack.set(null);
+        refresh();
+    }
 
-        public ScopedVariable(JsVariable var) {
-            this(var, ViewScope.DEFAULT);
+    @Override
+    public void reset() {
+    }
+
+    public static class ScopedRemoteObject {
+        private RemoteObject var;
+        private ViewScope scope;
+        private String objectName;
+
+        public ScopedRemoteObject(RemoteObject var, String name) {
+            this(var, name, ViewScope.DEFAULT);
         }
         
-        public ScopedVariable(JsVariable var, JsScope sc) {
+        public ScopedRemoteObject(RemoteObject var, Scope sc) {
             this.var = var;
-            if (sc.getType().equals(JsScope.Type.LOCAL)) {
+            if (sc.isLocalScope()) {
                 this.scope = ViewScope.LOCAL;
+                this.objectName = "Local";
             } else {
                 this.scope = ViewScope.GLOBAL;
+                this.objectName = "Global";
             }
         }
 
-        public ScopedVariable(JsVariable var, ViewScope scope) {
+        public ScopedRemoteObject(RemoteObject var, String name, ViewScope scope) {
             this.var = var;
             this.scope = scope;
+            this.objectName = name;
         }
 
         public ViewScope getScope() {
+            if ("__proto__".equals(objectName)) {
+                return ViewScope.PROTO;
+            }
             return scope;
         }
 
-        public JsVariable getVariable() {
+        public RemoteObject getRemoteObject() {
             return var;
         }
+
+        public String getObjectName() {
+            return objectName;
+        }
+        
     }
     
     public static enum ViewScope {

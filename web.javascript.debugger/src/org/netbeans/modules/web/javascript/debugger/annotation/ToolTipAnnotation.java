@@ -49,13 +49,13 @@ import java.util.List;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.StyledDocument;
-import org.chromium.sdk.CallFrame;
-import org.chromium.sdk.JsVariable;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.modules.web.javascript.debugger.Debugger;
-import org.netbeans.modules.web.javascript.debugger.DebuggerState;
+import org.netbeans.modules.web.javascript.debugger.locals.VariablesModel;
 import org.netbeans.modules.web.javascript.debugger.watches.WatchesModel;
+import org.netbeans.modules.web.webkit.debugging.api.Debugger;
+import org.netbeans.modules.web.webkit.debugging.api.debugger.CallFrame;
+import org.netbeans.modules.web.webkit.debugging.api.debugger.RemoteObject;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
@@ -117,7 +117,7 @@ public class ToolTipAnnotation extends Annotation
             return;
         }
         DataObject dataObject = DataEditorSupport.findDataObject(line);
-        EditorCookie editorCookie = (EditorCookie)dataObject.
+        EditorCookie editorCookie = dataObject.
             getCookie(EditorCookie.class);
         StyledDocument document = editorCookie.getDocument();
         if (document == null) {return;}
@@ -127,15 +127,18 @@ public class ToolTipAnnotation extends Annotation
         String selectedText = getSelectedText( ep, offset);
         if ( selectedText != null ){
             Debugger d = getDebugger();
-            if (d != null && d.getState() == DebuggerState.SUSPENDED) {
-                List<? extends CallFrame> l = d.getCurrentStackTrace();
+            if (d != null && d.isSuspended()) {
+                List<? extends CallFrame> l = d.getCurrentCallStack();
                 if (l == null || l.isEmpty()) {
                     return;
                 }
                 CallFrame frame = l.get(0);
-                JsVariable var = WatchesModel.evaluateExpression(frame, selectedText).getVariable();
-                firePropertyChange(PROP_SHORT_DESCRIPTION, null,
-                        var.getValue().getValueString());
+                VariablesModel.ScopedRemoteObject sv = WatchesModel.evaluateExpression(frame, selectedText);
+                if (sv != null) {
+                    RemoteObject var = sv.getRemoteObject();
+                    firePropertyChange(PROP_SHORT_DESCRIPTION, null,
+                        var.getValueAsString());
+                }
             }
         }
     }

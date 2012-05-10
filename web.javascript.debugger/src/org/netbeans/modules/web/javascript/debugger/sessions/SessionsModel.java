@@ -44,21 +44,24 @@
 
 package org.netbeans.modules.web.javascript.debugger.sessions;
 
-import java.util.Map;
-import java.util.WeakHashMap;
+import java.util.List;
 import org.netbeans.api.debugger.DebuggerEngine;
-import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.web.javascript.debugger.ViewModelSupport;
-import org.netbeans.modules.web.javascript.debugger.Debugger;
-import org.netbeans.modules.web.javascript.debugger.DebuggerListener;
+import org.netbeans.modules.web.webkit.debugging.api.Debugger;
+import org.netbeans.modules.web.webkit.debugging.api.debugger.CallFrame;
 import static org.netbeans.spi.debugger.ui.Constants.*;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.TableModelFilter;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.util.NbBundle;
 
-public final class SessionsModel extends ViewModelSupport implements TableModelFilter, DebuggerListener  {
+@NbBundle.Messages({
+    "Session_running=Running",
+    "Session_paused=Paused",
+    "Session_none="
+})
+public final class SessionsModel extends ViewModelSupport implements TableModelFilter, Debugger.Listener  {
 
     private Debugger d;
     
@@ -107,12 +110,28 @@ public final class SessionsModel extends ViewModelSupport implements TableModelF
             d = debugger;
             d.addListener(this);
         }
-        return debugger.getState().getName();
+        if (debugger.isEnabled()) {
+            if (debugger.isSuspended()) {
+                return Bundle.Session_paused();
+            } else {
+                return Bundle.Session_running();
+            }
+        }
+        return Bundle.Session_none();
     }
 
     @Override
-    public void stateChanged(Debugger debugger) {
+    public void paused(List<CallFrame> callStack, String reason) {
         refresh();
+    }
+
+    @Override
+    public void resumed() {
+        refresh();
+    }
+
+    @Override
+    public void reset() {
     }
     
 }

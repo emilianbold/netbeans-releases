@@ -123,16 +123,11 @@ public class BreakpointsReader implements Properties.Reader {
             FileObject fileObject = breakpoint.getLine().getLookup().lookup(
                     FileObject.class);
 
-            try {
-                properties.setString(URL, fileObject.getURL().toString());
+                properties.setString(URL, fileObject.toURL().toString());
                 properties.setInt(LINE_NUMBER, breakpoint.getLine()
                         .getLineNumber());
                 properties.setBoolean(ENABED, breakpoint.isEnabled());
                 properties.setString(GROUP_NAME, breakpoint.getGroupName());
-            } catch (FileStateInvalidException ex) {
-                Logger.getLogger(BreakpointsReader.class.getName()).log(Level.SEVERE,
-                        null, ex);
-            }
         }
 /*        else if ( object instanceof FunctionBreakpoint ) {
             FunctionBreakpoint breakpoint = (FunctionBreakpoint)object;

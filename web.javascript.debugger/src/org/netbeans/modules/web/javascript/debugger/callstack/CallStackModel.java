@@ -52,20 +52,17 @@ import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.logging.Logger;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
-import org.chromium.sdk.CallFrame;
 import org.netbeans.modules.web.javascript.debugger.MiscEditorUtil;
 
 import org.netbeans.modules.web.javascript.debugger.ViewModelSupport;
 import org.netbeans.modules.web.javascript.debugger.annotation.CallStackAnnotation;
 import org.netbeans.modules.web.javascript.debugger.annotation.CurrentLineAnnotation;
-import org.netbeans.modules.web.javascript.debugger.Debugger;
-import org.netbeans.modules.web.javascript.debugger.DebuggerListener;
-import org.netbeans.modules.web.javascript.debugger.DebuggerState;
+import org.netbeans.modules.web.webkit.debugging.api.Debugger;
+import org.netbeans.modules.web.webkit.debugging.api.debugger.CallFrame;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.ui.Constants;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
@@ -82,7 +79,7 @@ import org.openide.util.NbBundle;
     "CTL_CallstackAction_Copy2CLBD_Label=Copy Stack"
 })
 public class CallStackModel extends ViewModelSupport implements TreeModel, NodeModel,
-        NodeActionsProvider, TableModel, DebuggerListener {
+        NodeActionsProvider, TableModel, Debugger.Listener {
 
     public static final String CALL_STACK =
             "org/netbeans/modules/debugger/resources/callStackView/NonCurrentFrame"; // NOI18N
@@ -104,7 +101,8 @@ public class CallStackModel extends ViewModelSupport implements TreeModel, NodeM
         debugger.addListener(this);
         GO_TO_SOURCE = MiscEditorUtil.createDebuggerGoToAction();
         // update now:
-        stateChanged(debugger);
+        setStackTrace(debugger.isSuspended() ? debugger.getCurrentCallStack() : new ArrayList<CallFrame>());
+        updateAnnotations();
     }
 
     public void setStackTrace(List<? extends CallFrame> stackTrace) {
@@ -210,7 +208,7 @@ public class CallStackModel extends ViewModelSupport implements TreeModel, NodeM
             throws UnknownTypeException {
         if (node instanceof CallFrame) {
             CallFrame frame = (CallFrame)node;
-            return frame.getScript().getName() + ":" + (frame.getStatementStartPosition().getLine()+1);
+            return frame.getScript().getURL() + ":" + (frame.getLineNumber()+1);
         }
         return null;
     }
@@ -222,7 +220,7 @@ public class CallStackModel extends ViewModelSupport implements TreeModel, NodeM
             throws UnknownTypeException {
         if (node instanceof CallFrame) {
             CallFrame frame = (CallFrame)node;
-            Line line = MiscEditorUtil.getLine(frame.getScript().getName(), frame.getStatementStartPosition().getLine());
+            Line line = MiscEditorUtil.getLine(frame.getScript().getURL(), frame.getLineNumber());
             MiscEditorUtil.showLine(line, true);
         }
     }
@@ -244,12 +242,12 @@ public class CallStackModel extends ViewModelSupport implements TreeModel, NodeM
         if (node instanceof CallFrame) {
             CallFrame frame = (CallFrame) node;
             if ( columnID.equals(Constants.CALL_STACK_FRAME_LOCATION_COLUMN_ID) ){
-                String file = frame.getScript().getName();
+                String file = frame.getScript().getURL();
                 int index = file.lastIndexOf("/");
                 if (index != -1) {
                     file = file.substring(index+1);
                 }
-                return file + ":" + (frame.getStatementStartPosition().getLine()+1);
+                return file + ":" + (frame.getLineNumber()+1);
             }
         } 
         throw new UnknownTypeException("Unknown Type Node: " + node + " or columnID: " + columnID);
@@ -320,18 +318,6 @@ public class CallStackModel extends ViewModelSupport implements TreeModel, NodeM
         return clipboard;
     }
 
-    @Override
-    public void stateChanged(Debugger deb) {
-        if (deb.getState() != DebuggerState.SUSPENDED) {
-            setStackTrace(new ArrayList<CallFrame>());
-            updateAnnotations();
-        } else {
-            setStackTrace(deb.getCurrentStackTrace());
-            updateAnnotations();
-        }
-        refresh();
-    }
-
     private void updateAnnotations() {
         for (Annotation ann : annotations) {
             ann.detach();
@@ -339,7 +325,7 @@ public class CallStackModel extends ViewModelSupport implements TreeModel, NodeM
         annotations.clear();
         boolean first = true;
         for (CallFrame cf : stackTrace.get()) {
-            final Line line = MiscEditorUtil.getLine(cf.getScript().getName(), cf.getStatementStartPosition().getLine());
+            final Line line = MiscEditorUtil.getLine(cf.getScript().getURL(), cf.getLineNumber());
             if (line == null) {
                 first = false;
                 continue;
@@ -359,6 +345,25 @@ public class CallStackModel extends ViewModelSupport implements TreeModel, NodeM
             annotations.add(anno);
             first = false;
         }
+    }
+
+    @Override
+    public void paused(List<CallFrame> callStack, String reason) {
+        setStackTrace(callStack);
+        updateAnnotations();
+        refresh();
+    }
+
+    @Override
+    public void resumed() {
+        setStackTrace(new ArrayList<CallFrame>());
+        updateAnnotations();
+        refresh();
+    }
+
+    @Override
+    public void reset() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
 }

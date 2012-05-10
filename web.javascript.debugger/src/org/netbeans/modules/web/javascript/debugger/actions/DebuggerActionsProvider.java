@@ -46,18 +46,19 @@ import java.beans.PropertyChangeEvent;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import javax.swing.JEditorPane;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.modules.web.javascript.debugger.Debugger;
-import org.netbeans.modules.web.javascript.debugger.DebuggerListener;
-import org.netbeans.modules.web.javascript.debugger.DebuggerState;
+import org.netbeans.modules.web.webkit.debugging.api.Debugger;
+import org.netbeans.modules.web.webkit.debugging.api.debugger.CallFrame;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.NbBundle;
+
 
 /**
  * This is the ActionsProvider for NetBeans JavaScript debugger.
@@ -66,7 +67,7 @@ import org.openide.util.NbBundle;
  */
 @NbBundle.Messages({"MSG_WILL_PAUSE=The debugger will suspend on next JavaScript execution."})
 public class DebuggerActionsProvider extends ActionsProviderSupport 
-                                         implements DebuggerListener {
+                                         implements Debugger.Listener {
     static final String JAVASCRIPT_MIMETYPE = "text/javascript";
     static final String HTML_MIMETYPE = "text/html";    
 
@@ -88,27 +89,7 @@ public class DebuggerActionsProvider extends ActionsProviderSupport
     private Debugger debugger;
 
     private void updateDebuggerState() {
-        DebuggerState debuggerState = debugger.getState();
-        switch (debuggerState) {
-        case RUNNING:
-//            setEnabled(ActionsManager.ACTION_START, false);
-            //setEnabled(ActionsManager.ACTION_KILL, true);
-            setEnabled(ActionsManager.ACTION_CONTINUE, false);
-//            setEnabled(ActionsManager.ACTION_PAUSE, true);
-            setEnabled(ActionsManager.ACTION_STEP_INTO, false);
-            setEnabled(ActionsManager.ACTION_STEP_OVER, false);
-            setEnabled(ActionsManager.ACTION_STEP_OUT, false);
-            break;
-        case SUSPENDED:
-//            setEnabled(ActionsManager.ACTION_START, false);
-            //setEnabled(ActionsManager.ACTION_KILL, true);
-            setEnabled(ActionsManager.ACTION_CONTINUE, true);
-//            setEnabled(ActionsManager.ACTION_PAUSE, false);
-            setEnabled(ActionsManager.ACTION_STEP_INTO, true);
-            setEnabled(ActionsManager.ACTION_STEP_OVER, true);
-            setEnabled(ActionsManager.ACTION_STEP_OUT, true);
-            break;
-        case DISCONNECTED:
+        if (!debugger.isEnabled()) {
 //            setEnabled(ActionsManager.ACTION_START, false);
             //setEnabled(ActionsManager.ACTION_KILL, false);
             setEnabled(ActionsManager.ACTION_CONTINUE, false);
@@ -116,9 +97,23 @@ public class DebuggerActionsProvider extends ActionsProviderSupport
             setEnabled(ActionsManager.ACTION_STEP_INTO, false);
             setEnabled(ActionsManager.ACTION_STEP_OVER, false);
             setEnabled(ActionsManager.ACTION_STEP_OUT, false);
-            break;
+        } else if (debugger.isSuspended()) {
+//            setEnabled(ActionsManager.ACTION_START, false);
+            //setEnabled(ActionsManager.ACTION_KILL, true);
+            setEnabled(ActionsManager.ACTION_CONTINUE, true);
+//            setEnabled(ActionsManager.ACTION_PAUSE, false);
+            setEnabled(ActionsManager.ACTION_STEP_INTO, true);
+            setEnabled(ActionsManager.ACTION_STEP_OVER, true);
+            setEnabled(ActionsManager.ACTION_STEP_OUT, true);
+        } else {
+//            setEnabled(ActionsManager.ACTION_START, false);
+            //setEnabled(ActionsManager.ACTION_KILL, true);
+            setEnabled(ActionsManager.ACTION_CONTINUE, false);
+//            setEnabled(ActionsManager.ACTION_PAUSE, true);
+            setEnabled(ActionsManager.ACTION_STEP_INTO, false);
+            setEnabled(ActionsManager.ACTION_STEP_OVER, false);
+            setEnabled(ActionsManager.ACTION_STEP_OUT, false);
         }
-        //handleRunToCursor();
     }
 
    // private JSDebuggerEventListener debuggerListener;
@@ -155,11 +150,11 @@ public class DebuggerActionsProvider extends ActionsProviderSupport
         } else if (action == ActionsManager.ACTION_KILL) {
             //DebuggerEngineProviderImpl provider = contextProviderWrapper.getNbJSDebuggerEngineProvider();
             //assert provider != null;
-            debugger.stopDebugger();
+            //debugger.stopDebugger();
         } else if (action == ActionsManager.ACTION_CONTINUE) {
             debugger.resume();
         } else if (action == ActionsManager.ACTION_PAUSE) {
-            //debugger.pause();
+            debugger.pause();
             StatusDisplayer.getDefault().setStatusText(
                     Bundle.MSG_WILL_PAUSE());
             setEnabled(ActionsManager.ACTION_PAUSE, false);
@@ -199,7 +194,17 @@ public class DebuggerActionsProvider extends ActionsProviderSupport
     }
 
     @Override
-    public void stateChanged(Debugger debugger) {
+    public void paused(List<CallFrame> callStack, String reason) {
         updateDebuggerState();
     }
+
+    @Override
+    public void resumed() {
+        updateDebuggerState();
+    }
+
+    @Override
+    public void reset() {
+    }
+
 }

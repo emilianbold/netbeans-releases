@@ -41,22 +41,47 @@
  */
 package org.netbeans.modules.web.javascript.debugger.browser;
 
-import org.netbeans.modules.extbrowser.plugins.BrowserId;
-import org.netbeans.modules.extbrowser.spi.BrowserLookupProvider;
-import org.netbeans.modules.extbrowser.spi.ExternalBrowserDescriptor;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
+import org.netbeans.api.debugger.DebuggerEngine;
+import org.netbeans.api.debugger.DebuggerInfo;
+import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.Session;
+import org.netbeans.modules.web.javascript.debugger.DebuggerConstants;
+import org.netbeans.modules.web.javascript.debugger.DebuggerEngineProviderImpl;
+import org.netbeans.modules.web.javascript.debugger.breakpoints.BreakpointRuntimeSetter;
+import org.netbeans.modules.web.javascript.debugger.breakpoints.LineBreakpoint;
+import org.netbeans.modules.web.webkit.debugging.api.Debugger;
+import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
+import org.netbeans.modules.web.webkit.debugging.spi.netbeansdebugger.NetBeansJavaScriptDebuggerFactory;
+import org.netbeans.spi.debugger.DebuggerEngineProvider;
 import org.openide.util.lookup.ServiceProvider;
 
-@ServiceProvider(service=BrowserLookupProvider.class)
-public class ChromeBrowserLookupProvider implements BrowserLookupProvider {
+@ServiceProvider(service=NetBeansJavaScriptDebuggerFactory.class)
+public class NetBeansJavaScriptDebuggerFactoryImpl implements NetBeansJavaScriptDebuggerFactory {
 
     @Override
-    public Lookup createBrowserLookup(ExternalBrowserDescriptor desc) {
-        if (desc.getBrowserFamily() != BrowserId.CHROME && 
-                desc.getBrowserFamily() != BrowserId.CHROMIUM) {
-            return null;
+    public Session createDebuggingSession(WebKitDebugging webkit) {
+        Debugger debugger = webkit.getDebugger();
+        DebuggerInfo di = DebuggerInfo.create(DebuggerConstants.DEBUGGER_INFO, new Object[]{webkit, debugger});
+        DebuggerEngine engine = DebuggerManager.getDebuggerManager().startDebugging(di)[0];
+        Session session = engine.lookupFirst(null, Session.class);
+        activateBreakpoints();
+        return session;
+    }
+
+    @Override
+    public void stopDebuggingSession(Session session) {
+        DebuggerEngine engine = session.lookupFirst(null, DebuggerEngine.class);
+        assert engine != null;
+        session.kill();
+        ((DebuggerEngineProviderImpl) engine.lookupFirst(null,
+                DebuggerEngineProvider.class)).getDestructor().killEngine();
+    }
+    
+    private void activateBreakpoints() {
+        for (org.netbeans.api.debugger.Breakpoint b : DebuggerManager.getDebuggerManager().getBreakpoints()) {
+            if (b instanceof LineBreakpoint) {
+                BreakpointRuntimeSetter.addBreakpoint((LineBreakpoint)b);
+            }
         }
-        return Lookups.fixed(new ChromeBrowserDebuggerImpl(desc));
     }
 }

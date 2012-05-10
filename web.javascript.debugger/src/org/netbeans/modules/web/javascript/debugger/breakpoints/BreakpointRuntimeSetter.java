@@ -45,7 +45,8 @@ package org.netbeans.modules.web.javascript.debugger.breakpoints;
 
 import java.beans.PropertyChangeEvent;
 import org.netbeans.api.debugger.*;
-import org.netbeans.modules.web.javascript.debugger.Debugger;
+import org.netbeans.modules.web.webkit.debugging.api.Debugger;
+import org.openide.filesystems.FileObject;
 
 
 /**
@@ -69,31 +70,53 @@ public class BreakpointRuntimeSetter extends DebuggerManagerAdapter  {
      */
     @Override
     public void breakpointAdded( Breakpoint breakpoint ) {
-        if (!(breakpoint instanceof AbstractBreakpoint)) {
+        if (!(breakpoint instanceof LineBreakpoint)) {
             return;
         }
         breakpoint.addPropertyChangeListener(Breakpoint.PROP_ENABLED, this);
+        LineBreakpoint lb = (LineBreakpoint)breakpoint;
+        addBreakpoint(lb);
+    }
+    
+    public static void addBreakpoint(LineBreakpoint lb) {
+        FileObject fo = lb.getLine().getLookup().lookup(FileObject.class);
+        String file = reformatFileURL(fo.toURL().toExternalForm());
         for (DebuggerEngine de: DebuggerManager.getDebuggerManager().getDebuggerEngines()) {
             Debugger d = de.lookupFirst("", Debugger.class);
             if (d != null) {
-                d.addBreakpoint(breakpoint);
+                org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint b = 
+                        d.addLineBreakpoint(file, lb.getLine().getLineNumber(), 0);
+                lb.setWebkitBreakpoint(b);
             }
         }
     }
 
+    // changes "file:/some" to "file:///some"
+    private static String reformatFileURL(String tabToDebug) {
+        if (!tabToDebug.startsWith("file:")) {
+            return tabToDebug;
+        }
+        tabToDebug = tabToDebug.substring(5);
+        while (tabToDebug.length() > 0 && tabToDebug.startsWith("/")) {
+            tabToDebug = tabToDebug.substring(1);
+        }
+        return "file:///"+tabToDebug;
+    }
+    
     /* (non-Javadoc)
      * @see org.netbeans.api.debugger.DebuggerManagerListener#breakpointRemoved(org.netbeans.api.debugger.Breakpoint)
      */
     @Override
     public void breakpointRemoved( Breakpoint breakpoint ) {
-        if (!(breakpoint instanceof AbstractBreakpoint)) {
+        if (!(breakpoint instanceof LineBreakpoint)) {
             return;
         }
+        LineBreakpoint lb = (LineBreakpoint)breakpoint;
         breakpoint.removePropertyChangeListener(Breakpoint.PROP_ENABLED, this);
         for (DebuggerEngine de: DebuggerManager.getDebuggerManager().getDebuggerEngines()) {
             Debugger d = de.lookupFirst("", Debugger.class);
             if (d != null) {
-                d.removeBreakpoint(breakpoint);
+                d.removeLineBreakpoint(lb.getWebkitBreakpoint());
             }
         }
     }
@@ -107,14 +130,19 @@ public class BreakpointRuntimeSetter extends DebuggerManagerAdapter  {
             return;
         }
         Breakpoint b = (Breakpoint)event.getSource();
-        if (!(b instanceof AbstractBreakpoint)) {
+        if (!(b instanceof LineBreakpoint)) {
             return;
         }
+        LineBreakpoint lb = (LineBreakpoint)b;
         for (DebuggerEngine de: DebuggerManager.getDebuggerManager().getDebuggerEngines()) {
             Debugger d = de.lookupFirst("", Debugger.class);
             if (d != null) {
-                d.removeBreakpoint(b);
-                d.addBreakpoint(b);
+                if (lb.getWebkitBreakpoint() != null) {
+                    d.removeLineBreakpoint(lb.getWebkitBreakpoint());
+                    lb.setWebkitBreakpoint(null);
+                } else {
+                    breakpointAdded(b);
+                }
             }
         }
     }

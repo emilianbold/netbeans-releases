@@ -44,6 +44,7 @@ package org.netbeans.modules.web.javascript.debugger;
 
 import static org.netbeans.modules.web.javascript.debugger.DebuggerConstants.SESSION;
 import static org.netbeans.modules.web.javascript.debugger.DebuggerConstants.SESSION_LOCATION_NAME;
+import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.SessionProvider;
 
@@ -56,8 +57,8 @@ public class SessionProviderImpl extends SessionProvider {
     private String sessionName;
 
     public SessionProviderImpl(ContextProvider contextProvider) {
-        org.netbeans.modules.web.javascript.debugger.Debugger d = contextProvider.lookupFirst(null, org.netbeans.modules.web.javascript.debugger.Debugger.class);
-        sessionName = d.getUrlToDebug();
+        WebKitDebugging webkit = contextProvider.lookupFirst(null, WebKitDebugging.class);
+        sessionName = webkit.getConnectionName();
     }
 
     @Override

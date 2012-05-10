@@ -46,13 +46,15 @@ package org.netbeans.modules.web.javascript.debugger.watches;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import org.chromium.sdk.CallFrame;
-import org.chromium.sdk.JsEvaluateContext;
-import org.chromium.sdk.JsVariable;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.Watch;
 import org.netbeans.modules.web.javascript.debugger.locals.VariablesModel;
+import org.netbeans.modules.web.webkit.debugging.api.debugger.CallFrame;
+import org.netbeans.modules.web.webkit.debugging.api.debugger.RemoteObject;
 import org.netbeans.spi.debugger.ContextProvider;
 import static org.netbeans.spi.debugger.ui.Constants.*;
 import org.netbeans.spi.viewmodel.ModelEvent;
@@ -63,6 +65,9 @@ public final class WatchesModel extends VariablesModel {
     public static final String WATCH =
             "org/netbeans/modules/debugger/resources/watchesView/watch_16.png"; // NOI18N
 
+    private static final Logger LOG = Logger.getLogger( 
+            WatchesModel.class.getCanonicalName());
+    
     private WatchesListener listener;
     
     public WatchesModel(final ContextProvider contextProvider) {
@@ -78,8 +83,8 @@ public final class WatchesModel extends VariablesModel {
         CallFrame frame = getCurrentStack();
         if (parent == ROOT) {
             return DebuggerManager.getDebuggerManager().getWatches();
-        } else if (parent instanceof Watch) {
-            ScopedVariable var = evaluateWatch(frame, (Watch)parent);
+        } else if (parent instanceof Watch && frame != null) {
+            ScopedRemoteObject var = evaluateWatch(frame, (Watch)parent);
             if (var == null) {
                 return new Object[0];
             } else {
@@ -91,33 +96,24 @@ public final class WatchesModel extends VariablesModel {
     }
     
         
-    public static ScopedVariable evaluateWatch(CallFrame frame, Watch watch) {
+    public static ScopedRemoteObject evaluateWatch(CallFrame frame, Watch watch) {
         return evaluateExpression(frame, watch.getExpression());
     }
     
-    public static ScopedVariable evaluateExpression(CallFrame frame, String expression) {
-        final JsVariable[] var = new JsVariable[1];
-        if (frame == null) {
+    public static ScopedRemoteObject evaluateExpression(CallFrame frame, String expression) {
+        RemoteObject prop = frame.evaluate(expression);
+        if (prop == null) {
+            LOG.log(Level.WARNING, "expression was not evaluated: '"+expression+"'");
             return null;
         }
-        frame.getEvaluateContext().evaluateSync(expression, null, new JsEvaluateContext.EvaluateCallback() {
-            @Override
-            public void success(JsVariable variable) {
-                var[0] = variable;
-            }
-            @Override
-            public void failure(String errorMessage) {
-                var[0] = null;
-            }
-        });
-        return var[0] == null ? null : new ScopedVariable(var[0], VariablesModel.ViewScope.LOCAL);
+        return new ScopedRemoteObject(prop, expression, VariablesModel.ViewScope.LOCAL);
     }
 
     @Override
     public boolean isLeaf(Object node) throws UnknownTypeException {
         CallFrame frame = getCurrentStack();
-        if (node instanceof Watch) {
-            ScopedVariable var = evaluateWatch(frame, (Watch)node);
+        if (node instanceof Watch && frame != null) {
+            ScopedRemoteObject var = evaluateWatch(frame, (Watch)node);
             if (var == null) {
                 return true;
             } else {
@@ -134,7 +130,10 @@ public final class WatchesModel extends VariablesModel {
             return DebuggerManager.getDebuggerManager().getWatches().length;
         } else if (node instanceof Watch) {
             CallFrame frame = getCurrentStack();
-            ScopedVariable var = evaluateWatch(frame, (Watch)node);
+            if (frame == null) {
+                return 0;
+            }
+            ScopedRemoteObject var = evaluateWatch(frame, (Watch)node);
             if (var == null) {
                 return 0;
             } else {
@@ -183,7 +182,10 @@ public final class WatchesModel extends VariablesModel {
             UnknownTypeException {
         if(node instanceof Watch) {
             CallFrame frame = getCurrentStack();
-            ScopedVariable var = evaluateWatch(frame, (Watch)node);
+            ScopedRemoteObject var = null;
+            if (frame != null) {
+                var = evaluateWatch(frame, (Watch)node);
+            }
             if (var != null) {
                 return getValueAt(var, columnID);
             } else {
@@ -212,7 +214,10 @@ public final class WatchesModel extends VariablesModel {
     public boolean isReadOnly(Object node, String columnID) throws UnknownTypeException {
         if (WATCH_VALUE_COLUMN_ID.equals(columnID) && node instanceof Watch) {
             CallFrame frame = getCurrentStack();
-            ScopedVariable var = evaluateWatch(frame, (Watch)node);
+            ScopedRemoteObject var = null;
+            if (frame != null) {
+                var = evaluateWatch(frame, (Watch)node);
+            }
             if (var == null) {
                 return false;
             } else {
@@ -227,7 +232,10 @@ public final class WatchesModel extends VariablesModel {
             throws UnknownTypeException {
         if (WATCH_VALUE_COLUMN_ID.equals(columnID) && node instanceof Watch) {
             CallFrame frame = getCurrentStack();
-            ScopedVariable var = evaluateWatch(frame, (Watch)node);
+            if (frame == null) {
+                return;
+            }
+            ScopedRemoteObject var = evaluateWatch(frame, (Watch)node);
             assert var != null;
             super.setValueAt(var, columnID, value);
         }        

@@ -48,7 +48,7 @@ import java.awt.EventQueue;
 import java.io.File;
 import java.net.URI;
 import javax.swing.Action;
-import org.chromium.sdk.CallFrame;
+import org.netbeans.modules.web.webkit.debugging.api.debugger.CallFrame;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.netbeans.spi.viewmodel.Models;
 import org.openide.cookies.EditorCookie;
@@ -89,7 +89,7 @@ public final class MiscEditorUtil {
         
         try {
             DataObject dataObject = DataObject.find(fileObject);
-            EditorCookie cookie = (EditorCookie) dataObject.getCookie(EditorCookie.class);
+            EditorCookie cookie = dataObject.getCookie(EditorCookie.class);
             cookie.open();
         } catch (DataObjectNotFoundException e) {
             e.printStackTrace();
@@ -118,7 +118,7 @@ public final class MiscEditorUtil {
         }
 
         LineCookie lineCookie = getLineCookie(fileObject);
-        assert lineCookie != null;
+        assert lineCookie != null : "no line for: "+fileObject;
         return lineCookie.getLineSet().getCurrent(lineNumber);
     }
 
@@ -229,7 +229,7 @@ public final class MiscEditorUtil {
                     MiscEditorUtil.openFileObject(fileObject);
                 } else*/ if ( node instanceof CallFrame ){
                     CallFrame cf = ((CallFrame)node);
-                    Line line = MiscEditorUtil.getLine(cf.getScript().getName(), cf.getStatementStartPosition().getLine());
+                    Line line = MiscEditorUtil.getLine(cf.getScript().getURL(), cf.getLineNumber());
                     if ( line != null ) {
                         showLine(line, true);
                     }
