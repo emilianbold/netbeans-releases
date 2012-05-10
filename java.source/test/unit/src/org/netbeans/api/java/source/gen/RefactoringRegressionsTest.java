@@ -889,6 +889,62 @@ public class RefactoringRegressionsTest extends GeneratorTestMDRCompat {
         assertEquals(nueGolden, newRes);
     }
     
+    public void testNonSyntheticSuper() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package javaapplication1;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    class ExceptionX extends Exception {\n" +
+            "        public ExceptionX() {\n" +
+            "            super(\"T\", new RuntimeException(\"T\"));\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package javaapplication1;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    class ExceptionX extends Exception {\n" +
+            "        public ExceptionX() {\n" +
+            "            super(\"T\", new RuntimeException(\"T\"));\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+        String nueGolden =
+            "\n" +
+            "class ExceptionX extends Exception {\n" +
+            "\n" +
+            "    public ExceptionX() {\n" +
+            "        super(\"T\", new RuntimeException(\"T\"));\n" +
+            "    }\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                ClassTree inner = (ClassTree) clazz.getMembers().get(1);
+                inner = GeneratorUtilities.get(workingCopy).importFQNs(inner);
+                workingCopy.rewrite(null, make.CompilationUnit(FileUtil.toFileObject(getWorkDir()), "ExceptionX.java", Collections.<ImportTree>emptyList(), Collections.singletonList(inner)));
+            }
+            
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+        File newFile = new File(getWorkDir(), "ExceptionX.java");
+        assertTrue(newFile.canRead());
+        String newRes = TestUtilities.copyFileToString(newFile);
+        assertEquals(nueGolden, newRes);
+    }
+    
     String getGoldenPckg() {
         return "";
     }
