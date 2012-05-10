@@ -169,5 +169,9 @@
         <!-- CSH : JSF from entity wizard -->
         <mapID target="persistence_entity_selection_javaee6" url="web/framework/jsf/csh/file_jsffromentity_panel1.html"/>
         <mapID target="framework_jsf_fromentity_setup" url="web/framework/jsf/csh/file_jsffromentity_panel2.html"/>
+        
+        
+        <!-- CSH : Bean Validation Constraint wizard -->
+        <mapID target="org.netbeans.modules.javaee.beanvalidation.ConstraintPanel" url="web/framework/jsf/csh/file_beanvalidationconstraint.html"/>
 </map>
 
