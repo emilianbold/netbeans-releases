@@ -417,13 +417,15 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
         LayoutDesigner layoutDesigner = formDesigner.getLayoutDesigner();
         if (layoutDesigner != null) {
             Component topComp = formDesigner.getTopDesignComponentView();
-            Point convertPoint = convertPointFromComponent(0, 0, topComp);
-            g.translate(convertPoint.x, convertPoint.y);
-            Color oldColor = g.getColor();
-            g.setColor(formSettings.getGuidingLineColor());
-            layoutDesigner.paintSelection(g);
-            g.setColor(oldColor);
-            g.translate(-convertPoint.x, -convertPoint.y);
+            if (topComp != null) {
+                Point convertPoint = convertPointFromComponent(0, 0, topComp);
+                g.translate(convertPoint.x, convertPoint.y);
+                Color oldColor = g.getColor();
+                g.setColor(formSettings.getGuidingLineColor());
+                layoutDesigner.paintSelection(g);
+                g.setColor(oldColor);
+                g.translate(-convertPoint.x, -convertPoint.y);
+            }
         }
     }
 
