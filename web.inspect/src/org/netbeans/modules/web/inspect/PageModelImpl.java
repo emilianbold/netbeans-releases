@@ -49,9 +49,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
 import org.netbeans.modules.web.browser.spi.ScriptExecutor;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
@@ -158,7 +158,8 @@ public class PageModelImpl extends PageModel {
             JSONObject jsonHandle = handle.toJSONObject();
             jsonHandles.add(jsonHandle);
         }
-        JSONArray array = new JSONArray(jsonHandles);
+        JSONArray array = new JSONArray();
+        array.addAll(jsonHandles);
         String code = array.toString();
         executeScript("NetBeans.selectElements("+code+")"); // NOI18N
         firePropertyChange(PROP_SELECTED_ELEMENTS, null, null);
@@ -215,16 +216,12 @@ public class PageModelImpl extends PageModel {
      * names of the original object to their values.
      */
     private Map<String,String> toMap(JSONObject json) {
-        Iterator iter = json.keys();
+        Iterator iter = json.keySet().iterator();
         Map<String,String> map = new HashMap<String,String>();
         while (iter.hasNext()) {
             String key = iter.next().toString();
-            try {
-                String value = json.getString(key);
-                map.put(key, value);
-            } catch (JSONException ex) {
-                LOG.log(Level.INFO, "Unexpected value of key {0} in {1}.", new Object[]{key, json}); // NOI18N
-            }
+            String value = (String)json.get(key);
+            map.put(key, value);
         }
         return map;
     }
@@ -236,19 +233,15 @@ public class PageModelImpl extends PageModel {
         if (result instanceof JSONArray) {
             JSONArray array = (JSONArray)result;
             resources = new LinkedList<ResourceInfo>();
-            for (int i=0; i<array.length(); i++) {
-                try {
-                    JSONObject resource = array.getJSONObject(i);
-                    String url = resource.getString(RESOURCE_URL);
-                    String typeCode = resource.getString(RESOURCE_TYPE);
-                    ResourceInfo.Type type = ResourceInfo.Type.fromCode(typeCode);
-                    if (type == null) {
-                        LOG.log(Level.INFO, "Unexpected resource type: {0}", typeCode); // NOI18N
-                    } else {
-                        resources.add(new ResourceInfo(type, url));
-                    }
-                } catch (JSONException ex) {
-                    LOG.log(Level.INFO, "Unexpected resource on index {0} in {1}", new Object[]{i, array}); // NOI18N
+            for (int i=0; i<array.size(); i++) {
+                JSONObject resource = (JSONObject)array.get(i);
+                String url = (String)resource.get(RESOURCE_URL);
+                String typeCode = (String)resource.get(RESOURCE_TYPE);
+                ResourceInfo.Type type = ResourceInfo.Type.fromCode(typeCode);
+                if (type == null) {
+                    LOG.log(Level.INFO, "Unexpected resource type: {0}", typeCode); // NOI18N
+                } else {
+                    resources.add(new ResourceInfo(type, url));
                 }
             }
         } else if (result != ScriptExecutor.ERROR_RESULT) {
@@ -259,7 +252,7 @@ public class PageModelImpl extends PageModel {
 
     @Override
     public void reloadResource(ResourceInfo resource) {
-        String url = JSONObject.quote(resource.getURL());
+        String url = JSONValue.escape(resource.getURL());
         ResourceInfo.Type type = resource.getType();
         if (type == ResourceInfo.Type.STYLESHEET) {
             executeScript("NetBeans.reloadCSS("+url+")");
@@ -279,19 +272,15 @@ public class PageModelImpl extends PageModel {
         if (result instanceof JSONArray) {
             JSONArray array = (JSONArray)result;
             rules = new LinkedList<RuleInfo>();
-            for (int i=0; i<array.length(); i++) {
-                try {
-                    JSONObject resource = array.getJSONObject(i);
-                    String selector = resource.getString(RULE_SELECTOR);
-                    String sourceURL = null;
-                    if (!resource.isNull(RULE_SOURCE_URL)) {
-                        sourceURL = resource.getString(RULE_SOURCE_URL);
-                    }
-                    JSONObject style = resource.getJSONObject(RULE_STYLE);
-                    rules.add(new RuleInfo(sourceURL, selector, toMap(style)));
-                } catch (JSONException ex) {
-                    LOG.log(Level.INFO, "Unexpected matched rule on index {0} in {1}", new Object[]{i, array}); // NOI18N
+            for (int i=0; i<array.size(); i++) {
+                JSONObject resource = (JSONObject)array.get(i);
+                String selector = (String)resource.get(RULE_SELECTOR);
+                String sourceURL = null;
+                if (resource.containsKey(RULE_SOURCE_URL)) {
+                    sourceURL = (String)resource.get(RULE_SOURCE_URL);
                 }
+                JSONObject style = (JSONObject)resource.get(RULE_STYLE);
+                rules.add(new RuleInfo(sourceURL, selector, toMap(style)));
             }
         } else if (result != ScriptExecutor.ERROR_RESULT) {
             LOG.log(Level.INFO, "Unexpected matched rules: {0}", result); // NOI18N

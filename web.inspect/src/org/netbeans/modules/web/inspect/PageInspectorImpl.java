@@ -46,8 +46,9 @@ import java.beans.PropertyChangeSupport;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
+import org.json.simple.parser.ParseException;
 import org.netbeans.modules.web.browser.api.PageInspector;
 import org.netbeans.modules.web.browser.spi.MessageDispatcher;
 import org.netbeans.modules.web.browser.spi.MessageDispatcher.MessageListener;
@@ -217,19 +218,14 @@ public class PageInspectorImpl extends PageInspector {
                 }
             } else {
                 try {
-                    JSONObject message = new JSONObject(messageTxt);
-                    Object type = message.opt(MESSAGE_TYPE);
+                    JSONObject message = (JSONObject)JSONValue.parseWithException(messageTxt);
+                    Object type = message.get(MESSAGE_TYPE);
                     if (MESSAGE_SELECTION.equals(type)) {
-                        try {
-                            JSONObject jsonHandle = message.getJSONObject(MESSAGE_SELECTION);
-                            ElementHandle handle = ElementHandle.forJSONObject(jsonHandle);
-                            pageModel.setSelectedElements(Collections.singleton(handle));
-                        } catch (JSONException ex) {
-                            Logger.getLogger(PageInspectorImpl.class.getName())
-                                    .log(Level.INFO, "Ignoring message with malformed selection attribute: {0}", messageTxt); // NOI18N
-                        }
+                        JSONObject jsonHandle = (JSONObject)message.get(MESSAGE_SELECTION);
+                        ElementHandle handle = ElementHandle.forJSONObject(jsonHandle);
+                        pageModel.setSelectedElements(Collections.singleton(handle));
                     }
-                } catch (JSONException ex) {
+                } catch (ParseException ex) {
                     Logger.getLogger(PageInspectorImpl.class.getName())
                             .log(Level.INFO, "Ignoring message that is not in JSON format: {0}", messageTxt); // NOI18N
                 }

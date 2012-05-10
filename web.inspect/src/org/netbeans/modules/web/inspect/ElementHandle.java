@@ -46,9 +46,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.w3c.dom.Document;
@@ -167,29 +166,24 @@ public class ElementHandle {
      * @return handle that corresponds to the one given in JSON format.
      */
     public static ElementHandle forJSONObject(JSONObject json) {
-        try {
-            ElementHandle handle = new ElementHandle();
-            if (json.has(JSON_ID)) {
-                handle.id = json.getString(JSON_ID);
-            }
-            if (json.has(JSON_CLASS)) {
-                handle.className = json.getString(JSON_CLASS);
-            }
-            if (!json.isNull(JSON_PARENT)) {
-                JSONObject parent = json.getJSONObject(JSON_PARENT);
-                handle.parent = forJSONObject(parent);
-            }
-            handle.indexInParent = json.getInt(JSON_INDEX_IN_PARENT);
-            JSONArray siblings = json.getJSONArray(JSON_SIBLING_TAG_NAMES);
-            handle.siblingTagNames = new String[siblings.length()];
-            for (int i = 0; i < siblings.length(); i++) {
-                handle.siblingTagNames[i] = siblings.getString(i);
-            }
-            return handle;
-        } catch (JSONException ex) {
-            Logger.getLogger(ElementHandle.class.getName()).log(Level.INFO, null, ex);
+        ElementHandle handle = new ElementHandle();
+        if (json.containsKey(JSON_ID)) {
+            handle.id = (String)json.get(JSON_ID);
         }
-        return null;
+        if (json.containsKey(JSON_CLASS)) {
+            handle.className = (String)json.get(JSON_CLASS);
+        }
+        if (json.containsKey(JSON_PARENT)) {
+            JSONObject parent = (JSONObject)json.get(JSON_PARENT);
+            handle.parent = forJSONObject(parent);
+        }
+        handle.indexInParent = ((Number)json.get(JSON_INDEX_IN_PARENT)).intValue();
+        JSONArray siblings = (JSONArray)json.get(JSON_SIBLING_TAG_NAMES);
+        handle.siblingTagNames = new String[siblings.size()];
+        for (int i = 0; i < siblings.size(); i++) {
+            handle.siblingTagNames[i] = (String)siblings.get(i);
+        }
+        return handle;
     }
 
     /**
@@ -348,20 +342,16 @@ public class ElementHandle {
      * @return JSON representation of this handle.
      */
     public JSONObject toJSONObject() {
-        try {
-            JSONObject json = new JSONObject();
-            if (parent == null) {
-                json.put(JSON_PARENT, JSONObject.NULL);
-            } else {
-                json.put(JSON_PARENT, parent.toJSONObject());
-            }
-            json.put(JSON_INDEX_IN_PARENT, indexInParent);
-            JSONArray siblings = new JSONArray(Arrays.asList(siblingTagNames));
-            json.put(JSON_SIBLING_TAG_NAMES, siblings);
-            return json;
-        } catch (JSONException ex) {
-            Logger.getLogger(ElementHandle.class.getName()).log(Level.INFO, null, ex);
+        JSONObject json = new JSONObject();
+        if (parent == null) {
+            json.remove(JSON_PARENT);
+        } else {
+            json.put(JSON_PARENT, parent.toJSONObject());
         }
-        return null;
+        json.put(JSON_INDEX_IN_PARENT, indexInParent);
+        JSONArray siblings = new JSONArray();
+        siblings.addAll(Arrays.asList(siblingTagNames));
+        json.put(JSON_SIBLING_TAG_NAMES, siblings);
+        return json;
     }
 }
