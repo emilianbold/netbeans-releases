@@ -135,7 +135,7 @@ public class AID {
     //The above pattern is more precise, but it will ignore trailing garbage
     //and bad characters in the PIX, giving us poorer error reporting
     static final Pattern AID_PARSE_PATTERN =
-            Pattern.compile("//aid/(.+)/(.+)"); //NOI18N
+            Pattern.compile("//aid/((.+)/(.+)|(.+))"); //NOI18N
 
     public static AID parse(String aid) {
         if (aid == null) {
@@ -144,9 +144,12 @@ public class AID {
         }
         Matcher m = AID_PARSE_PATTERN.matcher(aid);
         if (m.lookingAt()) {
-            if (m.groupCount() == 2) {
-                String RID = m.group(1);
-                String PIX = m.group(2);
+            if (m.groupCount() == 4) {
+                String RID = m.group(2) != null ? m.group(2) : m.group(4);
+                String PIX = m.group(3) != null ? m.group(3) : ""; //NOI18N
+                if (RID.endsWith("/")) {
+                    RID = RID.substring(0, RID.length() - 1);
+                }
                 if (RID.length() % 2 != 0) {
                     throw new IllegalArgumentException(
                             Portability.getString(
