@@ -434,7 +434,7 @@ public final class RepositoryPreferences {
      */
     public List<ArtifactRepository> remoteRepositories(MavenEmbedder embedder) {
         List<ArtifactRepository> remotes = new ArrayList<ArtifactRepository>();
-        for (RepositoryInfo info : RepositoryPreferences.getInstance().getRepositoryInfos()) {
+        for (RepositoryInfo info : getRepositoryInfos()) {
             // XXX should there be a String preferredId parameter to limit the remote repositories used in case we have a "reference" ID somehow?
             if (!info.isLocal()) {
                 remotes.add(embedder.createRemoteRepository(info.getRepositoryUrl(), info.getId()));
