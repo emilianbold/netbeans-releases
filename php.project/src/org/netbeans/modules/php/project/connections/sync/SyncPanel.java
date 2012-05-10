@@ -404,7 +404,9 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
             public void actionPerformed(ActionEvent e) {
                 List<SyncItem> selectedItems = getSelectedItems(true);
                 for (SyncItem item : selectedItems) {
-                    item.resetOperation();
+                    if (item.isOperationChangePossible()) {
+                        item.resetOperation();
+                    }
                 }
                 updateDisplayedItems();
                 reselectItems(selectedItems);
@@ -1319,6 +1321,9 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
         public void actionPerformed(ActionEvent e) {
             List<SyncItem> selectedItems = getSelectedItems(true);
             for (SyncItem item : selectedItems) {
+                if (!item.isOperationChangePossible()) {
+                    continue;
+                }
                 if (fromOperation == null
                         || fromOperation == item.getOperation()) {
                     item.setOperation(toOperation);
