@@ -82,9 +82,7 @@ public class CssParser extends Parser {
         long start = System.currentTimeMillis();
         try {
             CharSequence source = snapshot.getText();
-            CharStream charstream = new ANTLRStringStream(source.toString());
-
-            ExtCss3Lexer lexer = new ExtCss3Lexer(charstream);
+            ExtCss3Lexer lexer = new ExtCss3Lexer(source);
             TokenStream tokenstream = new CommonTokenStream(lexer);
             NbParseTreeBuilder builder = new NbParseTreeBuilder(source);
             ExtCss3Parser parser = new ExtCss3Parser(tokenstream, builder);
