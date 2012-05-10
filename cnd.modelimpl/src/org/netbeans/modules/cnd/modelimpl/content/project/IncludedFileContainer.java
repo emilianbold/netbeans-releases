@@ -198,6 +198,17 @@ public final class IncludedFileContainer {
         }
     }
 
+    public boolean remove(Object lock, ProjectBase includedFileOwner, CharSequence fileKey) {
+        assert Thread.holdsLock(lock) : "does not hold lock for " + fileKey;
+        boolean out = false;
+        Storage storage = getStorageForProject(includedFileOwner);
+        if (storage != null) {
+            out = storage.remove(fileKey) != null;
+            storage.put();
+        }
+        return out;
+    }
+
     public FileContainer.FileEntry getIncludedFileEntry(Object lock, ProjectBase includedFileOwner, CharSequence fileKey) {
         assert Thread.holdsLock(lock) : "does not hold lock for " + fileKey;
         Storage storage = getStorageForProject(includedFileOwner);
@@ -237,6 +248,10 @@ public final class IncludedFileContainer {
             if (entry != null) {
                 entry.invalidateStates();
             }
+        }
+
+        private FileEntry remove(CharSequence fileKey) {
+            return myFiles.remove(fileKey);
         }
 
         private FileEntry getOrCreateFileEntry(FileImpl includedFile) {
