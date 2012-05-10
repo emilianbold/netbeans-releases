@@ -61,7 +61,7 @@ import org.openide.util.Exceptions;
  * @author Jaroslav Tulach
  */
 final class NetigsoModule extends Module {
-    static final Logger LOG = Logger.getLogger(NetigsoModule.class.getPackage().getName());
+    private static final Logger LOG = Logger.getLogger(NetigsoModule.class.getName());
 
     private final File jar;
     private final Manifest manifest;
