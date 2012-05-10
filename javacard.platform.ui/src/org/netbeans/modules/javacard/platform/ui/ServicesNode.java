@@ -73,7 +73,7 @@ import org.openide.util.HelpCtx;
  *
  * @author Tim Boudreau
  */
-@ServicesTabNodeRegistration(displayName="#UI/Runtime/ServicesNode.instance", iconResource="org/netbeans/modules/javacard/platform/ui/root.png", name="ServicesNode.instance")
+@ServicesTabNodeRegistration(displayName="#UI/Runtime/ServicesNode.instance", iconResource="org/netbeans/modules/javacard/platform/ui/root.png", name="ServicesNode.instance", position=152)
 public final class ServicesNode extends AbstractNode {
 
     public ServicesNode() {
