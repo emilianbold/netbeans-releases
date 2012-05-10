@@ -122,7 +122,7 @@ public class HtmlBrowserComponent extends CloneableTopComponent implements Prope
     
     @Override
     public int getPersistenceType() {
-        return PERSISTENCE_ONLY_OPENED;
+        return PERSISTENCE_NEVER;
     }
     
     public void propertyChange (PropertyChangeEvent e) {
