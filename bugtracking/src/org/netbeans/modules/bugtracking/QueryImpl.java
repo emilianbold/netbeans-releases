@@ -200,4 +200,8 @@ public final class QueryImpl<Q, I>  {
         return null;
     }
 
+    public boolean isData(Object obj) {
+        return data == obj;
+    }
+
 }
