@@ -47,7 +47,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -62,14 +61,11 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
-import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.ModelBase;
 import org.apache.maven.model.Parent;
 import org.apache.maven.model.Profile;
-import org.apache.maven.model.Repository;
 import org.apache.maven.model.io.ModelReader;
-import org.apache.maven.project.MavenProject;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -111,6 +107,7 @@ public class ProjectOpenedHookImpl extends ProjectOpenedHook {
     private static final String PROP_SOURCE_CHECKED = "sourceChecked";
    
     private final Project proj;
+    private TransientRepositories transRepos;
     private final List<URI> uriReferences = new ArrayList<URI>();
     private CopyResourcesOnSave copyResourcesOnSave;
 
@@ -166,8 +163,9 @@ public class ProjectOpenedHookImpl extends ProjectOpenedHook {
             FileOwnerQuery.markExternalOwner(uri, proj, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
             uriReferences.add(uri);
         }
+        NbMavenProject watcher = project.getProjectWatcher();
         //XXX: is there an ordering problem? should this be done first right after the project changes, instead of ordinary listener?
-        project.getProjectWatcher().addPropertyChangeListener(extRootChangeListener);
+        watcher.addPropertyChangeListener(extRootChangeListener);
         
         // register project's classpaths to GlobalPathRegistry
         ProjectSourcesClassPathProvider cpProvider = proj.getLookup().lookup(ProjectSourcesClassPathProvider.class);
@@ -180,25 +178,22 @@ public class ProjectOpenedHookImpl extends ProjectOpenedHook {
         //UI logging.. log what was the packaging type for the opened project..
         LogRecord record = new LogRecord(Level.INFO, "UI_MAVEN_PROJECT_OPENED"); //NOI18N
         record.setLoggerName(UI_LOGGER_NAME); //NOI18N
-        record.setParameters(new Object[] {project.getProjectWatcher().getPackagingType()});
+        record.setParameters(new Object[] {watcher.getPackagingType()});
         record.setResourceBundle(NbBundle.getBundle(ProjectOpenedHookImpl.class));
         UI_LOGGER.log(record);
 
         //USG logging.. log what was the packaging type for the opened project..
         record = new LogRecord(Level.INFO, "USG_PROJECT_OPEN_MAVEN"); //NOI18N
         record.setLoggerName(USG_LOGGER_NAME); //NOI18N
-        record.setParameters(new Object[] {project.getProjectWatcher().getPackagingType()});
+        record.setParameters(new Object[] {watcher.getPackagingType()});
         USG_LOGGER.log(record);
 
-        MavenProject mp = project.getOriginalMavenProject();
-        for (ArtifactRepository repo : mp.getRemoteArtifactRepositories()) {
-            register(repo, mp.getRepositories());
+        if (transRepos == null) {
+            transRepos = new TransientRepositories(watcher);
         }
-        for (ArtifactRepository repo : mp.getPluginArtifactRepositories()) {
-            register(repo, mp.getPluginRepositories());
-        }
+        transRepos.register();
 
-        copyResourcesOnSave = new CopyResourcesOnSave(project.getProjectWatcher(), proj);
+        copyResourcesOnSave = new CopyResourcesOnSave(watcher, proj);
         copyResourcesOnSave.opened();
 
         //only check for the updates of index, if the indexing was already used.
@@ -252,35 +247,6 @@ public class ProjectOpenedHookImpl extends ProjectOpenedHook {
         }
         return toRet;
     }
-    private void register(ArtifactRepository repo, List<Repository> definitions) {
-        String id = repo.getId();
-        String displayName = id;
-        for (Repository r : definitions) {
-            if (id.equals(r.getId())) {
-                String n = r.getName();
-                if (n != null) {
-                    displayName = n;
-                    break;
-                }
-            }
-        }
-        List<ArtifactRepository> mirrored = repo.getMirroredRepositories();
-        if (mirrored.isEmpty()) {
-            try {
-                RepositoryPreferences.getInstance().addTransientRepository(this, repo.getId(), displayName, repo.getUrl(), RepositoryInfo.MirrorStrategy.ALL);
-            } catch (URISyntaxException x) {
-                LOGGER.log(Level.WARNING, "Ignoring repo with malformed URL: {0}", x.getMessage());
-            }
-        } else {
-            for (ArtifactRepository mirr : mirrored) {
-                try {
-                    RepositoryPreferences.getInstance().addTransientRepository(this, mirr.getId(), mirr.getId(), mirr.getUrl(), RepositoryInfo.MirrorStrategy.ALL);
-                } catch (URISyntaxException x) {
-                    LOGGER.log(Level.WARNING, "Ignoring repo with malformed URL: {0}", x.getMessage());
-                }
-            }
-        }
-    }
     private boolean existsDefaultIndexLocation() {
         File cacheDir = new File(Places.getCacheDirectory(), "mavenindex");//NOI18N
         return cacheDir.exists() && cacheDir.isDirectory();
@@ -317,8 +283,8 @@ public class ProjectOpenedHookImpl extends ProjectOpenedHook {
             copyResourcesOnSave.closed();
         }
         copyResourcesOnSave = null;
-        
-        RepositoryPreferences.getInstance().removeTransientRepositories(this);
+
+        transRepos.unregister();
     }
    
    private void checkBinaryDownloads() {
