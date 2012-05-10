@@ -106,10 +106,6 @@ public class Utilities {
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat ("yyyy/MM/dd"); // NOI18N
     public static final String ATTR_ESSENTIAL = "AutoUpdate-Essential-Module";
 
-    private static final String[] FIRST_CLASS_MODULES = new String [] {
-        "org.netbeans.modules.autoupdate.services",   // NOI18N
-        "org.netbeans.modules.autoupdate.ui"          // NOI18N
-    };
     private static final String PLUGIN_MANAGER_FIRST_CLASS_MODULES = "plugin.manager.first.class.modules"; // NOI18N
 
     private static final String USER_KS_KEY = "userKS";
@@ -709,7 +705,7 @@ public class Utilities {
                 UpdateUnit u = reqUnits == null || reqUnits.isEmpty() ? null : reqUnits.iterator().next();
                 if (u != null) {
                     boolean aggressive = beAggressive;
-                    if (aggressive && (isFirstClassModule(el.getUpdateUnit()) || u.getType() ==  UpdateManager.TYPE.KIT_MODULE)) {
+                    if (aggressive && (isFirstClassModule(el) || u.getType() ==  UpdateManager.TYPE.KIT_MODULE)) {
                         aggressive = false;
                     }
                     // follow aggressive updates strategy
@@ -1062,15 +1058,12 @@ public class Utilities {
         return isFixed (mi) || (o != null && Boolean.parseBoolean (o.toString ()));
     }
 
-    public static boolean isFirstClassModule (UpdateUnit u) {
-        String codeName = u.getCodeName();
+    public static boolean isFirstClassModule (UpdateElement ue) {
+        String codeName = ue.getCodeName();
         String names = System.getProperty (PLUGIN_MANAGER_FIRST_CLASS_MODULES);
         if (names == null || names.length () == 0) {
-            for(String m : FIRST_CLASS_MODULES) {
-                if(m.equals(codeName)) {
-                    return true;
-                }
-            }
+            UpdateElementImpl ueImpl = Trampoline.API.impl(ue);
+            return ueImpl.isPreferredUpdate();
         } else {
             StringTokenizer en = new StringTokenizer(names, ","); // NOI18N
             while (en.hasMoreTokens()) {

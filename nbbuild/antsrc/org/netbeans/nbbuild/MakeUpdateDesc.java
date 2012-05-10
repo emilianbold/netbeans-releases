@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -193,6 +193,17 @@ public class MakeUpdateDesc extends MatchingTask {
     }
 
     
+    private String contentDescription;
+    private String contentDescriptionURL;
+
+    public void setContentDescription(String message) {
+        this.contentDescription = message;
+    }
+    public void setContentDescriptionURL(String url) {
+        this.contentDescriptionURL = url;
+    }
+
+    
     // Similar to org.openide.xml.XMLUtil methods.
     private static String xmlEscape(String s) {
         int max = s.length();
@@ -259,6 +270,12 @@ public class MakeUpdateDesc extends MatchingTask {
                 targetClustersDefined |= m.xml.getAttributeNode("targetcluster") != null;
             }
         }
+        boolean isPreferredUpdateDefined = false;
+        for (Collection<Module> modules : modulesByGroup.values()) {
+            for (Module m : modules) {
+                isPreferredUpdateDefined |= m.xml.getAttributeNode("preferredupdate") != null;
+            }
+        }
         boolean use25DTD = false;
         for (Collection<Module> modules : modulesByGroup.values()) {
             for (Module m : modules) {
@@ -293,7 +310,9 @@ public class MakeUpdateDesc extends MatchingTask {
                     }
                     File desc_ent = new File(ent_name);
                     desc_ent.delete();
-                    if(useLicenseUrl) {
+                    if (isPreferredUpdateDefined) {
+                        pw.println("<!DOCTYPE module_updates PUBLIC \"-//NetBeans//DTD Autoupdate Catalog 2.7//EN\" \"http://www.netbeans.org/dtds/autoupdate-catalog-2_7.dtd\" [");
+                    } else if (useLicenseUrl) {
                         pw.println("<!DOCTYPE module_updates PUBLIC \"-//NetBeans//DTD Autoupdate Catalog 2.6//EN\" \"http://www.netbeans.org/dtds/autoupdate-catalog-2_6.dtd\" [");
                     } else if (use25DTD) {
                         pw.println("<!DOCTYPE module_updates PUBLIC \"-//NetBeans//DTD Autoupdate Catalog 2.5//EN\" \"http://www.netbeans.org/dtds/autoupdate-catalog-2_5.dtd\" [");
@@ -329,7 +348,9 @@ public class MakeUpdateDesc extends MatchingTask {
                     pw.println ();
                     
                 } else {
-                    if(useLicenseUrl) {
+                    if (isPreferredUpdateDefined || (contentDescription != null && ! contentDescription.isEmpty())) {
+                        pw.println("<!DOCTYPE module_updates PUBLIC \"-//NetBeans//DTD Autoupdate Catalog 2.7//EN\" \"http://www.netbeans.org/dtds/autoupdate-catalog-2_7.dtd\" [");
+                    } else if (useLicenseUrl) {
                         pw.println("<!DOCTYPE module_updates PUBLIC \"-//NetBeans//DTD Autoupdate Catalog 2.6//EN\" \"http://www.netbeans.org/dtds/autoupdate-catalog-2_6.dtd\">");
                     } else if (use25DTD) {
                         pw.println("<!DOCTYPE module_updates PUBLIC \"-//NetBeans//DTD Autoupdate Catalog 2.5//EN\" \"http://www.netbeans.org/dtds/autoupdate-catalog-2_5.dtd\">");
@@ -342,6 +363,8 @@ public class MakeUpdateDesc extends MatchingTask {
                     pw.println ();
                 }
                 writeNotification(pw);
+                pw.println ();
+                writeContentDescription(pw);
                 pw.println ();
 		Map<String,Element> licenses = new HashMap<String,Element>();
                 String prefix = null;
@@ -482,6 +505,29 @@ public class MakeUpdateDesc extends MatchingTask {
                         "<notification url=\"" + xmlEscape(notificationURL.toString()) + "\">" +
                         xmlEscape(notificationMessage) +
                         "</notification>");
+            }
+            pw.println();
+        }
+    }
+
+    private void writeContentDescription(PrintWriter pw) {
+        // write content_description message/url if defined
+        if (contentDescription == null) {
+            contentDescription = "";
+        }
+        if (contentDescriptionURL == null) {
+            contentDescriptionURL = "";
+        }
+        if (contentDescription.length() > 0 || contentDescriptionURL.length() > 0) {
+            if (contentDescription.length() == 0) {
+                pw.println("<content_description url=\"" + xmlEscape(contentDescriptionURL.toString()) + "\"/>");
+            } else if (contentDescriptionURL.length() == 0) {
+                pw.println("<content_description>" + xmlEscape(contentDescription) + "</content_description>");
+            } else {
+                pw.println(
+                        "<content_description url=\"" + xmlEscape(contentDescriptionURL.toString()) + "\">" +
+                        xmlEscape(contentDescription) +
+                        "</content_description>");
             }
             pw.println();
         }

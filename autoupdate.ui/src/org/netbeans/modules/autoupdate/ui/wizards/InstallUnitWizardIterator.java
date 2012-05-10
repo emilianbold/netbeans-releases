@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -47,7 +47,6 @@ package org.netbeans.modules.autoupdate.ui.wizards;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
@@ -67,18 +66,25 @@ public final class InstallUnitWizardIterator implements WizardDescriptor.Iterato
     private boolean isCompact = false;
     private boolean clearLazyUnits = false;
     private final boolean allowRunInBackground;
+    private final boolean runInBackground;
     
     public InstallUnitWizardIterator (InstallUnitWizardModel model) {
         this (model, false);
     }
     
     public InstallUnitWizardIterator (InstallUnitWizardModel model, boolean clearLazyUnits) {
-        this(model, clearLazyUnits, true);
+        this(model, clearLazyUnits, true, true);
     }
+    
     public InstallUnitWizardIterator (InstallUnitWizardModel model, boolean clearLazyUnits, boolean allowRunInBackground) {
+        this(model, clearLazyUnits, allowRunInBackground, false);
+    }
+    
+    private InstallUnitWizardIterator (InstallUnitWizardModel model, boolean clearLazyUnits, boolean allowRunInBackground, boolean runInBackground) {
         this.installModel = model;
         this.clearLazyUnits = clearLazyUnits;
         this.allowRunInBackground = allowRunInBackground;
+        this.runInBackground = runInBackground;
         createPanels ();
         index = 0;
     }
@@ -95,29 +101,34 @@ public final class InstallUnitWizardIterator implements WizardDescriptor.Iterato
         panels.add (licenseApprovalStep);
         customHandleStep = new CustomHandleStep (installModel);
         panels.add (customHandleStep);
-        installStep = new InstallStep (installModel, clearLazyUnits, allowRunInBackground);
+        installStep = new InstallStep (installModel, clearLazyUnits, allowRunInBackground, runInBackground);
         panels.add (installStep);
     }
     
+    @Override
     public WizardDescriptor.Panel<WizardDescriptor> current () {
         assert panels != null;
         return panels.get (index);
     }
     
+    @Override
     public String name () {
         return NbBundle.getMessage (InstallUnitWizardIterator.class, "InstallUnitWizard_Title");
     }
     
+    @Override
     public boolean hasNext () {
         compactPanels ();
         return index < panels.size () - 1;
     }
     
+    @Override
     public boolean hasPrevious () {
         compactPanels ();
         return index > 0 && ! (current () instanceof InstallStep || current () instanceof CustomHandleStep);
     }
     
+    @Override
     public void nextPanel () {
         compactPanels ();
         if (!hasNext ()) {
@@ -126,6 +137,7 @@ public final class InstallUnitWizardIterator implements WizardDescriptor.Iterato
         index++;
     }
     
+    @Override
     public void previousPanel () {
         compactPanels ();
         if (!hasPrevious ()) {
@@ -135,7 +147,9 @@ public final class InstallUnitWizardIterator implements WizardDescriptor.Iterato
     }
     
     // If nothing unusual changes in the middle of the wizard, simply:
+    @Override
     public void addChangeListener (ChangeListener l) {}
+    @Override
     public void removeChangeListener (ChangeListener l) {}
 
     private void compactPanels () {

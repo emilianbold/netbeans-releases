@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -207,7 +207,7 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
     private UpdateElement installModuleImpl (UpdateUnit toInstall, UpdateElement installElement, final boolean installSupport) throws Exception {
         fileChanges = new Boolean[]{false, false, false};
         installElement = (installElement != null) ? installElement : toInstall.getAvailableUpdates ().get (0);
-        File f = InstallManager.findTargetDirectory(installElement.getUpdateUnit ().getInstalled (), Trampoline.API.impl(installElement),false);
+        File f = InstallManager.findTargetDirectory(installElement.getUpdateUnit ().getInstalled (), Trampoline.API.impl(installElement), null, false);
         File configModules = new File(new File (f, "config"), "Modules");
         File modules = new File (f, "modules");
         int configModulesSize = (configModules.listFiles () != null) ? configModules.listFiles ().length : 0;

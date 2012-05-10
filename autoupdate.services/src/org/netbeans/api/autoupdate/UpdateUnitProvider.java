@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -45,13 +45,13 @@
 package org.netbeans.api.autoupdate;
 
 import java.awt.Image;
-import org.netbeans.spi.autoupdate.*;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import org.netbeans.api.autoupdate.UpdateManager.TYPE;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.autoupdate.services.UpdateUnitProviderImpl;
+import org.netbeans.spi.autoupdate.*;
 
 
 /**<code>UpdateUnitProvider</code> providers <code>UpdateUnit</code>. The units
@@ -134,6 +134,16 @@ public final class UpdateUnitProvider {
      */
     public String getSourceDescription() {
         return impl.getSourceDescription();
+    }
+
+    /** A description of content providing by this provider. The description might contains
+     * HTML tags e.g. HTML Links.
+     * 
+     * @return textual description of content or <code>null</code>
+     * @since 1.33
+     */
+    public String getContentDescription() {
+        return impl.getContentDescription();
     }
 
     /** It's special support for <code>UpdateProvider</code> based on Autoupdate Catalog.

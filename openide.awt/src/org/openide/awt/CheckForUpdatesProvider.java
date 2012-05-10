@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,31 +34,42 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.openide.awt;
 
-package org.netbeans.modules.autoupdate.services;
-
-import java.io.IOException;
-import org.netbeans.api.autoupdate.OperationException;
-
-/**
+/** Provides a UI for <code>Check for Updates<code> feature, for example in <code>About</code> dialog.
+ * A provider should be installed in default lookup using {@link org.openide.util.lookup.ServiceProvider}.
  *
  * @author Jiri Rechtacek
+ * @since 7.45
  */
-public class TargetClusterWhenGlobalUndeclaredTest extends TargetClusterTestCase {
+public interface CheckForUpdatesProvider {
     
-    public TargetClusterWhenGlobalUndeclaredTest (String testName) {
-        super (testName);
-    }
+    /** Opens a wizard for installation of updates if found some available.
+     * <b>Note:</b> Call it from AWT queue only.
+     * 
+     * @param reload if <code>true</code> then reload the content from all enabled Update Centers
+     * @return <code>true</code> if all updates were successfully installed, <code>false</code> otherwise.
+     */
+    public boolean openCheckForUpdatesWizard(boolean reload);
     
-    @Override
-    protected String getCodeName (String target, Boolean global) {
-        return "org.yourorghere.testupdatemodule";
-    }
+    /** Runs a check for updates. If some updates found, shows a notification in the status line.
+     * <b>Note:</b> It could be a time-consuming task, it should not be called from an event queue.
+     * 
+     * @param reload if <code>true</code> then reload the content from all enabled Update Centers
+     * @return <code>true</code> if updates are available and users will be notified
+     * in the status line, <code>false</code> if no updates found.
+     */
+    public boolean notifyAvailableUpdates(boolean reload);
     
-    public void testUpdateGlobalUndeclared () throws IOException, OperationException {
-        // Otherwise (no cluster name specified), if marked global, maybe put it into an "extra" cluster
-        assertEquals ("Goes into extraDir", "extra", getTargetCluster (null, Boolean.TRUE).getName ());
-    }
-    
+    /** A description of content of enable Update Centers, assuming returns something like 7.1 patch1.
+     *  The description might contains HTML tags e.g. HTML Links.
+     * 
+     * @return free-form description of content or <code>null</code>
+     */
+    public String getContentDescription();
 }

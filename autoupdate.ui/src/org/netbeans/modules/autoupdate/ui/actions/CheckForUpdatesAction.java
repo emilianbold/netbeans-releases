@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -41,51 +41,27 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.autoupdate.ui.actions;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Collection;
-import org.netbeans.modules.autoupdate.ui.PluginManagerUI;
-import org.netbeans.modules.autoupdate.ui.wizards.InstallUnitWizard;
-import org.netbeans.modules.autoupdate.ui.wizards.LazyInstallUnitWizardIterator.LazyUnit;
-import org.netbeans.modules.autoupdate.ui.wizards.OperationWizardModel.OperationType;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
+import org.openide.awt.CheckForUpdatesProvider;
+import org.openide.util.Lookup;
 
 @ActionID(id = "org.netbeans.modules.autoupdate.ui.actions.CheckForUpdatesAction", category = "System")
-@ActionRegistration(displayName = "#CTL_CheckForUpdatesAction", iconInMenu=true)
+@ActionRegistration(displayName = "#CTL_CheckForUpdatesAction", iconInMenu = true)
 @ActionReference(path = "Menu/Help", position = 1300)
 public final class CheckForUpdatesAction implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent ev) {
-        boolean wizardFinished = false;
-        RequestProcessor.Task t = PluginManagerUI.getRunningTask ();
-        if (t != null && ! t.isFinished ()) {
-            DialogDisplayer.getDefault ().notifyLater (
-                    new NotifyDescriptor.Message (
-                        NbBundle.getMessage (AutoupdateCheckScheduler.class,
-                            "AutoupdateCheckScheduler_InstallInProgress"), // NOI18N
-                        NotifyDescriptor.WARNING_MESSAGE));
-            return ;
-        }
-        Collection<LazyUnit> units = LazyUnit.loadLazyUnits (OperationType.UPDATE);
-        try {
-            wizardFinished = new InstallUnitWizard ().invokeLazyWizard (units, OperationType.UPDATE, true);
-        } finally {
-            if (wizardFinished) {
-                PluginManagerUI pluginManagerUI = PluginManagerAction.getPluginManagerUI ();
-                if (pluginManagerUI != null) {
-                    pluginManagerUI.updateUnitsChanged();
-                }
-            }
+        final CheckForUpdatesProvider checkForUpdatesProvider = Lookup.getDefault().lookup(CheckForUpdatesProvider.class);
+        assert checkForUpdatesProvider != null : "An instance of CheckForUpdatesProvider found in Lookup: " + Lookup.getDefault();
+        if (checkForUpdatesProvider != null) {
+            checkForUpdatesProvider.openCheckForUpdatesWizard(true);
         }
     }
 }

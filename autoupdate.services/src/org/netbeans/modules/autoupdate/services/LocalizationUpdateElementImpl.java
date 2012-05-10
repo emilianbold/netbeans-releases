@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -44,11 +44,11 @@
 
 package org.netbeans.modules.autoupdate.services;
 
-import org.netbeans.modules.autoupdate.updateprovider.InstallInfo;
-import org.netbeans.modules.autoupdate.updateprovider.LocalizationItem;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.autoupdate.UpdateManager;
+import org.netbeans.modules.autoupdate.updateprovider.InstallInfo;
+import org.netbeans.modules.autoupdate.updateprovider.LocalizationItem;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.SpecificationVersion;
 
@@ -81,42 +81,52 @@ public class LocalizationUpdateElementImpl extends UpdateElementImpl {
         this.localizationItem = item;
     }
     
+    @Override
     public String getCodeName () {
         return codeName;
     }
     
+    @Override
     public String getDisplayName () {
         return displayName;
     }
     
+    @Override
     public SpecificationVersion getSpecificationVersion () {
         return specVersion;
     }
     
+    @Override
     public String getDescription () {
         return description;
     }
     
+    @Override
     public String getNotification() {
         return null;
     }
     
+    @Override
     public String getAuthor () {
         return author;
     }
     
+    @Override
     public String getHomepage () {
         return homepage;
     }
     
+    @Override
     public int getDownloadSize () {
         return downloadSize;
     }
     
+    @Override
     public String getSource () {
         return source;
     }
     
+    @Override
     public String getCategory () {
         if (category == null) {
             category = UpdateUnitFactory.UNSORTED_CATEGORY;
@@ -124,41 +134,60 @@ public class LocalizationUpdateElementImpl extends UpdateElementImpl {
         return category;
     }
     
+    @Override
     public String getDate () {
         return null;
     }
     
+    @Override
+    public String getLicenseId() {
+        return localizationItem.getUpdateLicenseImpl().getName();
+    }
+    
+    @Override
     public String getLicence () {
         return localizationItem.getAgreement ();
     }
 
+    @Override
     public InstallInfo getInstallInfo () {
         return installInfo;
     }
     
+    @Override
     public List<ModuleInfo> getModuleInfos () {
         // XXX: localization vs. modules
         return Collections.emptyList ();
     }
     
+    @Override
     public UpdateManager.TYPE getType () {
         return UpdateManager.TYPE.LOCALIZATION;
     }
 
+    @Override
     public boolean isEnabled () {
         // XXX: how to detect if localization is enabled?
         return false;
     }            
     
+    @Override
     public boolean isAutoload () {
         return false;
     }
 
+    @Override
     public boolean isEager () {
         return false;
     }
     
+    @Override
     public boolean isFixed () {
+        return false;
+    }
+    
+    @Override
+    public boolean isPreferredUpdate() {
         return false;
     }
     
@@ -191,5 +220,6 @@ public class LocalizationUpdateElementImpl extends UpdateElementImpl {
                                          : 0);
         return hash;
     }
+
     
 }

@@ -68,6 +68,8 @@ public class AutoupdateCatalogProvider implements UpdateProvider {
     private String description;
     private boolean descriptionInitialized;
     private ProviderCategory category;
+    private String contentDescription;
+    private boolean contentDescriptionInitialized;
 
     public AutoupdateCatalogProvider (String name, String displayName, URL updateCenter) {
         this(name, displayName, updateCenter, ProviderCategory.forValue(CATEGORY.COMMUNITY));
@@ -113,6 +115,21 @@ public class AutoupdateCatalogProvider implements UpdateProvider {
         this.descriptionInitialized = true;
     }
 
+    public String getContentDescription () {
+        if (contentDescription == null && !contentDescriptionInitialized) {
+            try {
+               getUpdateItems();
+            } catch (IOException e) {
+            }            
+        }
+        return contentDescription;
+    }
+    
+    public void setContentDescription (String description) {
+        this.contentDescription = description;
+        this.contentDescriptionInitialized = true;
+    }
+
     @Override
     public Map<String, UpdateItem> getUpdateItems () throws IOException {
             URL toParse = cache.getCatalogURL(codeName);
@@ -131,7 +148,7 @@ public class AutoupdateCatalogProvider implements UpdateProvider {
     
     @Override
     public boolean refresh (boolean force) throws IOException {
-        boolean res = false;
+        boolean res;
         LOG.log (Level.FINER, "Try write(force? {0}) to cache Update Provider {1} from {2}", new Object[]{force, codeName, getUpdateCenterURL ()});
         if (force) {
             res = cache.writeCatalogToCache (codeName, getUpdateCenterURL ()) != null;

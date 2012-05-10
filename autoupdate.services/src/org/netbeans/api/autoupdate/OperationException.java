@@ -77,6 +77,10 @@ public final class OperationException extends Exception {
          * Uninstallation of plugin failed
          */
         UNINSTALL,
+        /**
+         * Lack of write permission to write in installation directory
+         */
+        WRITE_PERMISSION
     }       
  
     /**

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -44,9 +44,9 @@
 
 package org.netbeans.api.autoupdate;
 
+import org.netbeans.api.autoupdate.OperationSupport.Restarter;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.autoupdate.services.InstallSupportImpl;
-import org.netbeans.api.autoupdate.OperationSupport.Restarter;
 
 /**
  * Performs all operations scheduled on instance of <code>OperationContainer</code>.
@@ -86,7 +86,7 @@ public final class InstallSupport {
         impl = new InstallSupportImpl (this);
     }
     
-    /** Downloads all instances i.e. <code>UpdateElement</code>s in corresponing <code>OperationContainer</code>.
+    /** Downloads all instances i.e. <code>UpdateElement</code>s in corresponding <code>OperationContainer</code>.
      * 
      * @param progress ProgressHandle for notification progress in downloading, can be <code>null</code>
      * @param isGlobal if <code>true</code> then forces download instances into shared directories i.e. installation directory
@@ -94,7 +94,25 @@ public final class InstallSupport {
      * @throws org.netbeans.api.autoupdate.OperationException
      */
     public Validator doDownload(ProgressHandle progress/*or null*/, boolean isGlobal) throws OperationException {
-        if (impl.doDownload (progress, isGlobal)) {
+        if (impl.doDownload (progress, isGlobal ? Boolean.TRUE : null, false)) {
+            return new Validator ();
+        } else {
+            return null;
+        }
+    }
+
+    /** Downloads all instances i.e. <code>UpdateElement</code>s in corresponding <code>OperationContainer</code>.
+     * 
+     * @param progress ProgressHandle for notification progress in downloading, can be <code>null</code>
+     * @param isGlobal if <code>true</code> then forces download plugins into shared directories i.e. installation directory,
+     * if <code>false</code> then download plugins into <code>userdir</code>. If <code>null</code> then download plugins in a default place.
+     * @param useUserdirAsFallback if <code>true</code> the download plugins into userdir if no permission to write in shared directories
+     * @return <code>Validator</code> an instance of Validator which allows to verify downloaded instances in the next step
+     * @throws org.netbeans.api.autoupdate.OperationException
+     * @since 1.33
+     */
+    public Validator doDownload(ProgressHandle progress/*or null*/, Boolean isGlobal/*or null*/, boolean useUserdirAsFallback) throws OperationException {
+        if (impl.doDownload (progress, isGlobal, useUserdirAsFallback)) {
             return new Validator ();
         } else {
             return null;

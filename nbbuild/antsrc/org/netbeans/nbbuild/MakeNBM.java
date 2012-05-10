@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -316,6 +316,7 @@ public class MakeNBM extends Task {
     private String moduleauthor = null;
     private String releasedate = null;
     private String global = null;
+    private String preferredupdate = null;
     private String targetcluster = null;
     private String jarSignerMaxMemory = "96m";
     private Blurb license = null;
@@ -408,6 +409,10 @@ public class MakeNBM extends Task {
     /** Install globally? */
     public void setGlobal (String isGlobal) {
         this.global = isGlobal;
+    }
+    /** Is preferred update? */
+    public void setPreferredupdate(String isPreferred) {
+        this.preferredupdate = isPreferred;
     }
     /** Sets pattern for target cluster */
     public void setTargetcluster (String targetCluster) {
@@ -943,7 +948,10 @@ public class MakeNBM extends Task {
         }
         
         String pub, sys;
-        if (attr.getValue("AutoUpdate-Show-In-Client") != null || attr.getValue("AutoUpdate-Essential-Module") != null ||
+        if (preferredupdate != null && !("".equals(preferredupdate))) {
+            pub = "-//NetBeans//DTD Autoupdate Module Info 2.7//EN";
+            sys = "http://www.netbeans.org/dtds/autoupdate-info-2_7.dtd";
+        } else if (attr.getValue("AutoUpdate-Show-In-Client") != null || attr.getValue("AutoUpdate-Essential-Module") != null ||
                 attr.getValue("OpenIDE-Module-Recommends") != null || attr.getValue("OpenIDE-Module-Needs") != null) {
             pub = "-//NetBeans//DTD Autoupdate Module Info 2.5//EN";
             sys = "http://www.netbeans.org/dtds/autoupdate-info-2_5.dtd";
@@ -994,6 +1002,9 @@ public class MakeNBM extends Task {
         }
         if (global != null && !("".equals(global))) {
             module.setAttribute("global", global);
+        }
+        if (preferredupdate != null && !("".equals(preferredupdate))) {
+            module.setAttribute("preferredupdate", global);
         }
         if (targetcluster != null && !("".equals(targetcluster))) {
             module.setAttribute("targetcluster", targetcluster);
