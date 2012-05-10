@@ -995,7 +995,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                     doc.remove(start, end-start);
                 }
                 // Fall through to do normal insert matching work
-            } else if (ch == '"' || ch == '\'' || ch == '(' || ch == '{' || ch == '[' || ch == '/') {
+            } else if (ch == '"' || ch == '\'' || ch == '(' || ch == '{' || ch == '[') {
                 // Bracket the selection
                 String selection = target.getSelectedText();
                 if (selection != null && selection.length() > 0) {
@@ -1009,7 +1009,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                             // Replace the surround-with chars?
                             if (selection.length() > 1 &&
                                     ((firstChar == '"' || firstChar == '\'' || firstChar == '(' ||
-                                    firstChar == '{' || firstChar == '[' || firstChar == '/') &&
+                                    firstChar == '{' || firstChar == '[') &&
                                     lastChar == matching(firstChar))) {
                                 doc.remove(end-1, 1);
                                 doc.insertString(end-1, Character.toString(matching(ch)), null);
