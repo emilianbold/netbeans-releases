@@ -44,9 +44,12 @@
 
 package org.netbeans.modules.form;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyEditor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.HashSet;
 import java.util.MissingResourceException;
@@ -59,6 +62,7 @@ import javax.swing.event.ChangeListener;
 import org.openide.awt.Mnemonics;
 import org.openide.explorer.propertysheet.PropertyPanel;
 import org.openide.nodes.PropertySupport;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -81,6 +85,9 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
     private PropertyPanel guideLineColEditor = new PropertyPanel();
     private PropertyPanel selectionBorderColEditor = new PropertyPanel();    
     private JCheckBox cbPaintLayout = new JCheckBox();
+
+    private ColorSettingsProperty guideLineColorProperty;
+    private ColorSettingsProperty selectionBorderColorProperty;
 
     private Set<Component> brandedInvisibleComponents;
 
@@ -316,20 +323,14 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
         listen = false;
         FormLoaderSettings options = FormLoaderSettings.getInstance();
         try {
-            selectionBorderColEditor.setProperty(
-                    new PropertySupport.Reflection(
-                    options,
-                    java.awt.Color.class,
-                    "selectionBorderColor")); // NOI18N
+            selectionBorderColorProperty = new ColorSettingsProperty("selectionBorderColor"); // NOI18N
+            selectionBorderColEditor.setProperty(selectionBorderColorProperty);
         } catch (NoSuchMethodException ex) {
             Logger.getLogger(getClass().getName()).log(Level.SEVERE, ex.getMessage(), ex);
         }
         try {
-            guideLineColEditor.setProperty(
-                    new PropertySupport.Reflection(
-                    options,
-                    java.awt.Color.class,
-                    "guidingLineColor")); // NOI18N
+            guideLineColorProperty = new ColorSettingsProperty("guidingLineColor"); // NOI18N
+            guideLineColEditor.setProperty(guideLineColorProperty);
         } catch (NoSuchMethodException ex) {
             Logger.getLogger(getClass().getName()).log(Level.SEVERE, ex.getMessage(), ex);
         }
@@ -381,6 +382,8 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
             case 3: options.setVariablesModifier (Modifier.PRIVATE);
                     break;
         }
+        guideLineColorProperty.apply();
+        selectionBorderColorProperty.apply();
         options.setPaintAdvancedLayoutInfo(cbPaintLayout.isSelected() ? 3 : 0);
         changed = false;
     }
@@ -407,5 +410,41 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
     public void stateChanged (ChangeEvent e) {
         if (listen)
             changed = true;
+    }
+
+    private static class ColorSettingsProperty extends PropertySupport.Reflection<Color> {
+        private Color color;
+
+        ColorSettingsProperty(String settingName) throws NoSuchMethodException {
+            super(FormLoaderSettings.getInstance(), Color.class, settingName);
+        }
+
+        void apply() {
+            if (color != null) {
+                try {
+                    super.setValue(color);
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+
+        @Override
+        public Color getValue() throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+            if (color != null) {
+                return color;
+            }
+            return super.getValue();
+        }
+        
+        @Override
+        public void setValue(Color val) {
+            color = val;
+        }
+
+        @Override
+        public PropertyEditor getPropertyEditor() {
+            return FormPropertyEditorManager.findBasicEditor(Color.class);
+        }
     }
 }
