@@ -90,7 +90,7 @@ public final class Debugger {
     }
 
     public void disable() {
-        transport.sendBlockingCommand(new Command("Debugger.disable"));
+        transport.sendCommand(new Command("Debugger.disable"));
         enabled = false;
     }
 
@@ -207,9 +207,12 @@ public final class Debugger {
         params.put("url", url.replaceAll("/", "\\/")); //  XXX: not sure why but using backslash is necesssary here
         params.put("columnNumber", columnNumber);
         Response resp = transport.sendBlockingCommand(new Command("Debugger.setBreakpointByUrl", params));
-        Breakpoint b = APIFactory.createBreakpoint(resp.getResponse(), webkit);
-        currentBreakpoints.add(b);
-        return b;
+        if (resp != null) {
+            Breakpoint b = APIFactory.createBreakpoint(resp.getResponse(), webkit);
+            currentBreakpoints.add(b);
+            return b;
+        }
+        return null;
     }
 
     @SuppressWarnings("unchecked")    

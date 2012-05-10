@@ -57,7 +57,7 @@ import org.openide.util.NbBundle;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 
-@NbBundle.Messages({"# {0} - url being debugged", "WebKitDebuggingProtocolPane=WebKit Protocol {0}"})
+@NbBundle.Messages({"WebKitDebuggingProtocolPane=WebKit Protocol"})
 public class TransportHelper {
     
     private TransportImplementation impl;
@@ -170,7 +170,7 @@ public class TransportHelper {
     }
 
     private InputOutput getOutputLogger() {
-       return IOProvider.getDefault().getIO(Bundle.WebKitDebuggingProtocolPane(getConnectionName()), false); 
+       return IOProvider.getDefault().getIO(Bundle.WebKitDebuggingProtocolPane(), false); 
     }
     
     private void log(String s) {

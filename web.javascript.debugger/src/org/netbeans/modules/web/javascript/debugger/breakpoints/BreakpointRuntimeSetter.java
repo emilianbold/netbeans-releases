@@ -78,17 +78,20 @@ public class BreakpointRuntimeSetter extends DebuggerManagerAdapter  {
         addBreakpoint(lb);
     }
     
-    public static void addBreakpoint(LineBreakpoint lb) {
-        FileObject fo = lb.getLine().getLookup().lookup(FileObject.class);
-        String file = reformatFileURL(fo.toURL().toExternalForm());
-        for (DebuggerEngine de: DebuggerManager.getDebuggerManager().getDebuggerEngines()) {
-            Debugger d = de.lookupFirst("", Debugger.class);
+    private static void addBreakpoint(LineBreakpoint lb) {
+        for (Session se: DebuggerManager.getDebuggerManager().getSessions()) {
+            Debugger d = se.lookupFirst("", Debugger.class);
             if (d != null) {
-                org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint b = 
-                        d.addLineBreakpoint(file, lb.getLine().getLineNumber(), 0);
-                lb.setWebkitBreakpoint(b);
+                addBreakpoint(d, lb);
             }
         }
+    }
+    public static void addBreakpoint(Debugger d, LineBreakpoint lb) {
+        FileObject fo = lb.getLine().getLookup().lookup(FileObject.class);
+        String file = reformatFileURL(fo.toURL().toExternalForm());
+        org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint b = 
+                d.addLineBreakpoint(file, lb.getLine().getLineNumber(), 0);
+        lb.setWebkitBreakpoint(b);
     }
 
     // changes "file:/some" to "file:///some"

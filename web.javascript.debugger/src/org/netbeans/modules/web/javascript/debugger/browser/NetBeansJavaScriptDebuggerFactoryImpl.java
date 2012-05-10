@@ -64,7 +64,7 @@ public class NetBeansJavaScriptDebuggerFactoryImpl implements NetBeansJavaScript
         DebuggerInfo di = DebuggerInfo.create(DebuggerConstants.DEBUGGER_INFO, new Object[]{webkit, debugger});
         DebuggerEngine engine = DebuggerManager.getDebuggerManager().startDebugging(di)[0];
         Session session = engine.lookupFirst(null, Session.class);
-        activateBreakpoints();
+        activateBreakpoints(debugger);
         return session;
     }
 
@@ -77,10 +77,10 @@ public class NetBeansJavaScriptDebuggerFactoryImpl implements NetBeansJavaScript
                 DebuggerEngineProvider.class)).getDestructor().killEngine();
     }
     
-    private void activateBreakpoints() {
+    private void activateBreakpoints(Debugger d) {
         for (org.netbeans.api.debugger.Breakpoint b : DebuggerManager.getDebuggerManager().getBreakpoints()) {
             if (b instanceof LineBreakpoint) {
-                BreakpointRuntimeSetter.addBreakpoint((LineBreakpoint)b);
+                BreakpointRuntimeSetter.addBreakpoint(d, (LineBreakpoint)b);
             }
         }
     }

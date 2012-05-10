@@ -50,6 +50,7 @@ import org.netbeans.modules.web.webkit.debugging.spi.TransportImplementation;
 public class WebKitDebuggingTransport implements TransportImplementation {
 
     private ExtBrowserImpl impl;
+    private ResponseCallback callback;
 
     public WebKitDebuggingTransport(ExtBrowserImpl impl) {
         this.impl = impl;
@@ -57,18 +58,19 @@ public class WebKitDebuggingTransport implements TransportImplementation {
     
     @Override
     public void sendCommand(Command command) {
+        assert impl.getBrowserTabDescriptor() != null;
         ExternalBrowserPlugin.getInstance().sendWebKitDebuggerCommand(impl.getBrowserTabDescriptor(), command.getCommand());
     }
 
     @Override
     public void registerResponseCallback(ResponseCallback callback) {
-        impl.getBrowserTabDescriptor().setCallback(callback);
-        // XXX: should I listen here in "DETACH" event which browser can trigger?
+        this.callback = callback;
     }
 
     @Override
     public boolean attach() {
         ExternalBrowserPlugin.getInstance().attachWebKitDebugger(impl.getBrowserTabDescriptor());
+        impl.getBrowserTabDescriptor().setCallback(callback);
         return true;
     }
 
@@ -81,7 +83,11 @@ public class WebKitDebuggingTransport implements TransportImplementation {
 
     @Override
     public String getConnectionName() {
-        return impl.getURL().toExternalForm();
+        if (impl.getURL() != null) {
+            return impl.getURL().toExternalForm();
+        } else {
+            return "...";
+        }
     }
     
 }

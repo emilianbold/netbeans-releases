@@ -54,16 +54,15 @@ import org.netbeans.spi.debugger.SessionProvider;
  */
 public class SessionProviderImpl extends SessionProvider {
 	
-    private String sessionName;
+    private WebKitDebugging webkit;
 
     public SessionProviderImpl(ContextProvider contextProvider) {
-        WebKitDebugging webkit = contextProvider.lookupFirst(null, WebKitDebugging.class);
-        sessionName = webkit.getConnectionName();
+        webkit = contextProvider.lookupFirst(null, WebKitDebugging.class);
     }
 
     @Override
     public String getSessionName() {
-        return sessionName;
+        return webkit.getConnectionName();
     }
 
     @Override

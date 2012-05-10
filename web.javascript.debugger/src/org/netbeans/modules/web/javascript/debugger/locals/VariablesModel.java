@@ -156,7 +156,7 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
         List<ScopedRemoteObject> res = new ArrayList<ScopedRemoteObject>();
         if (prop.getType() == RemoteObject.Type.OBJECT) {
             for (PropertyDescriptor desc : prop.getProperties()) {
-                if (desc.getValue().getType() == RemoteObject.Type.FUNCTION) {
+                if (desc.getValue() == null || desc.getValue().getType() == RemoteObject.Type.FUNCTION) {
                     continue;
                 }
                 res.add(new ScopedRemoteObject(desc.getValue(), desc.getName(), scope));

@@ -561,7 +561,6 @@ public final class ExternalBrowserPlugin {
         }
 
         public void setCallback(ResponseCallback callback) {
-            assert this.callback == null : "why do you set callback twice??";
             this.callback = callback;
         }
 

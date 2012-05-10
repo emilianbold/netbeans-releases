@@ -53,7 +53,10 @@ public class PropertyDescriptor extends AbstractObject {
 
     PropertyDescriptor(JSONObject property, WebKitDebugging webkit) {
         super(property, webkit);
-        value = new RemoteObject((JSONObject)property.get("value"), webkit, property);
+        JSONObject ro = (JSONObject)property.get("value");
+        if (ro != null) {
+            value = new RemoteObject(ro, webkit, property);
+        }
     }
     
     public String getName() {

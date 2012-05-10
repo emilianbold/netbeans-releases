@@ -82,6 +82,8 @@ abstract public class AbstractObject {
     AbstractObject(JSONObject object, WebKitDebugging webkit) {
         this.object = object;
         this.webkit = webkit;
+        assert object != null;
+        assert webkit != null;
     }
     
     protected JSONObject getObject() {
