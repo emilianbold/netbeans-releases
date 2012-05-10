@@ -94,7 +94,7 @@ public class PHPSamplesPanelVisual extends JPanel implements DocumentListener {
         org.openide.awt.Mnemonics.setLocalizedText(projectLocationLabel, org.openide.util.NbBundle.getMessage(PHPSamplesPanelVisual.class, "PHPSamplesPanelVisual.projectLocationLabel.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(PHPSamplesPanelVisual.class, "PHPSamplesPanelVisual.browseButton.text")); // NOI18N
-        browseButton.setActionCommand(org.openide.util.NbBundle.getMessage(PHPSamplesPanelVisual.class, "PHPSamplesPanelVisual.browseButton.actionCommand")); // NOI18N
+        browseButton.setActionCommand("BROWSE"); // NOI18N
         browseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseButtonActionPerformed(evt);

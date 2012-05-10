@@ -172,8 +172,8 @@ public class Symfony2CustomizerPanel extends JPanel {
         appDirTextField = new JTextField();
         appDirBrowseButton = new JButton();
         ignoreCacheDirectoryCheckBox = new JCheckBox();
-        Mnemonics.setLocalizedText(infoLabel, NbBundle.getMessage(Symfony2CustomizerPanel.class, "Symfony2CustomizerPanel.infoLabel.text")); // NOI18N
-        Mnemonics.setLocalizedText(optionsLabel, NbBundle.getMessage(Symfony2CustomizerPanel.class, "Symfony2CustomizerPanel.optionsLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(infoLabel, NbBundle.getMessage(Symfony2CustomizerPanel.class, "Symfony2CustomizerPanel.infoLabel.text"));
+        Mnemonics.setLocalizedText(optionsLabel, NbBundle.getMessage(Symfony2CustomizerPanel.class, "Symfony2CustomizerPanel.optionsLabel.text"));
         optionsLabel.addMouseListener(new MouseAdapter() {
             public void mouseEntered(MouseEvent evt) {
                 optionsLabelMouseEntered(evt);
@@ -182,10 +182,10 @@ public class Symfony2CustomizerPanel extends JPanel {
                 optionsLabelMousePressed(evt);
             }
         });
-        Mnemonics.setLocalizedText(enabledCheckBox, NbBundle.getMessage(Symfony2CustomizerPanel.class, "Symfony2CustomizerPanel.enabledCheckBox.text")); // NOI18N
-        Mnemonics.setLocalizedText(enabledInfoLabel, NbBundle.getMessage(Symfony2CustomizerPanel.class, "Symfony2CustomizerPanel.enabledInfoLabel.text")); // NOI18N
-        Mnemonics.setLocalizedText(appDirLabel, NbBundle.getMessage(Symfony2CustomizerPanel.class, "Symfony2CustomizerPanel.appDirLabel.text")); // NOI18N
-        Mnemonics.setLocalizedText(appDirBrowseButton, NbBundle.getMessage(Symfony2CustomizerPanel.class, "Symfony2CustomizerPanel.appDirBrowseButton.text")); // NOI18N
+        Mnemonics.setLocalizedText(enabledCheckBox, NbBundle.getMessage(Symfony2CustomizerPanel.class, "Symfony2CustomizerPanel.enabledCheckBox.text"));
+        Mnemonics.setLocalizedText(enabledInfoLabel, NbBundle.getMessage(Symfony2CustomizerPanel.class, "Symfony2CustomizerPanel.enabledInfoLabel.text"));
+        Mnemonics.setLocalizedText(appDirLabel, NbBundle.getMessage(Symfony2CustomizerPanel.class, "Symfony2CustomizerPanel.appDirLabel.text"));
+        Mnemonics.setLocalizedText(appDirBrowseButton, NbBundle.getMessage(Symfony2CustomizerPanel.class, "Symfony2CustomizerPanel.appDirBrowseButton.text"));
         appDirBrowseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 appDirBrowseButtonActionPerformed(evt);
@@ -193,7 +193,7 @@ public class Symfony2CustomizerPanel extends JPanel {
         });
 
         ignoreCacheDirectoryCheckBox.setSelected(true);
-        Mnemonics.setLocalizedText(ignoreCacheDirectoryCheckBox, NbBundle.getMessage(Symfony2CustomizerPanel.class, "Symfony2CustomizerPanel.ignoreCacheDirectoryCheckBox.text")); // NOI18N
+        Mnemonics.setLocalizedText(ignoreCacheDirectoryCheckBox, NbBundle.getMessage(Symfony2CustomizerPanel.class, "Symfony2CustomizerPanel.ignoreCacheDirectoryCheckBox.text"));
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
@@ -203,13 +203,13 @@ public class Symfony2CustomizerPanel extends JPanel {
 
                 .addPreferredGap(ComponentPlacement.RELATED).addComponent(appDirTextField).addPreferredGap(ComponentPlacement.RELATED).addComponent(appDirBrowseButton)).addGroup(layout.createSequentialGroup()
 
-                .addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(ignoreCacheDirectoryCheckBox).addComponent(enabledCheckBox).addGroup(layout.createSequentialGroup()
-                        .addGap(21, 21, 21)
+                .addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(ignoreCacheDirectoryCheckBox).addComponent(enabledCheckBox)).addContainerGap()).addGroup(layout.createSequentialGroup()
+                .addGap(21, 21, 21)
 
-                        .addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(enabledInfoLabel).addGroup(layout.createSequentialGroup()
-                                .addComponent(infoLabel)
+                .addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(enabledInfoLabel).addGroup(layout.createSequentialGroup()
+                        .addComponent(infoLabel)
 
-                                .addPreferredGap(ComponentPlacement.RELATED).addComponent(optionsLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))))).addContainerGap())
+                        .addPreferredGap(ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addComponent(optionsLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(Alignment.LEADING).addGroup(Alignment.TRAILING, layout.createSequentialGroup()
