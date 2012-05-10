@@ -724,6 +724,7 @@ term
             | PERCENTAGE
             | LENGTH
             | EMS
+            | REM
             | EXS
             | ANGLE
             | TIME
@@ -1191,6 +1192,7 @@ GENERIC_AT_RULE	    : '@' NMCHAR+;
 fragment    EMS         :;  // 'em'
 fragment    EXS         :;  // 'ex'
 fragment    LENGTH      :;  // 'px'. 'cm', 'mm', 'in'. 'pt', 'pc'
+fragment    REM		:;  // 'rem'
 fragment    ANGLE       :;  // 'deg', 'rad', 'grad'
 fragment    TIME        :;  // 'ms', 's'
 fragment    FREQ        :;  // 'khz', 'hz'
@@ -1239,8 +1241,15 @@ NUMBER
             
             | (D E G)=>
                 D E G       { $type = ANGLE;        }
-            | (R A D)=>
-                R A D       { $type = ANGLE;        }
+//            | (R A D)=>
+//                R A D       { $type = ANGLE;        }
+
+            | (R (A|E))=>
+                R    
+                ( 
+                   A D       {$type = ANGLE;         }
+                 | E M       {$type = REM;           }
+                )
             
             | (S)=>S        { $type = TIME;         }
                 

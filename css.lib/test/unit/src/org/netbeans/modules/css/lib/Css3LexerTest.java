@@ -179,6 +179,19 @@ public class Css3LexerTest extends NbTestCase {
         
     }
     
+    public void testRemUnit() throws Exception {
+        String source = "10rad 20rem ";
+     
+        Lexer lexer = createLexer(source);
+        
+        assertANTLRToken(null ,Css3Lexer.ANGLE, lexer.nextToken());
+        assertANTLRToken(null ,Css3Lexer.WS, lexer.nextToken());
+        
+        assertANTLRToken(null ,Css3Lexer.REM, lexer.nextToken());
+        assertANTLRToken(null ,Css3Lexer.WS, lexer.nextToken());
+        
+    }
+    
      /**
     * @param expectedImage - use null if you do not want to check the image
     */
