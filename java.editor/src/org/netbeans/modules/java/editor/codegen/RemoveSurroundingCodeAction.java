@@ -308,6 +308,9 @@ public class RemoveSurroundingCodeAction extends BaseAction {
                                         break;
                                     case TRY:
                                         TryTree tt = (TryTree) tree;
+                                        for (Tree t : tt.getResources()) {
+                                            addStat((StatementTree)t, stats);
+                                        }
                                         addStat(tt.getBlock(), stats);
                                         addStat(tt.getFinallyBlock(), stats);
                                         break;
@@ -404,6 +407,9 @@ public class RemoveSurroundingCodeAction extends BaseAction {
                         break;
                     case TRY:
                         TryTree tt = (TryTree) tree;
+                        for (Tree t : tt.getResources()) {
+                            positions.add(getStatBounds(sp, path.getCompilationUnit(), ((StatementTree)t)));
+                        }
                         positions.add(getStatBounds(sp, path.getCompilationUnit(), tt.getBlock()));
                         positions.add(getStatBounds(sp, path.getCompilationUnit(), tt.getFinallyBlock()));
                         break;

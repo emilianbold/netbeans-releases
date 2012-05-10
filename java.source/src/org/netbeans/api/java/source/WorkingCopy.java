@@ -80,6 +80,7 @@ import javax.tools.JavaFileObject;
 
 import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ForLoopTree;
+import com.sun.source.tree.TryTree;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.annotations.common.NullUnknown;
@@ -421,6 +422,15 @@ public class WorkingCopy extends CompilationController {
                         return super.visitEnhancedForLoop(node, p);
                     } finally {
                         oldTrees.remove(node.getVariable());
+                    }
+                }
+
+                @Override
+                public Void visitTry(TryTree node, Void p) {
+                    try {
+                        return super.visitTry(node, p);
+                    } finally {
+                        oldTrees.removeAll(node.getResources());
                     }
                 }
                 
