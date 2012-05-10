@@ -102,9 +102,10 @@ public final class EntitySelectionPanel extends AbstractPanel {
                 setErrorMessage("MSG_EntitySelectionPanel_NoSWDP");
                 return false;
             }*/
+            getPersistenceUnit(project);
             /*
              * Fix for BZ#206812: no need in this message because PU is forced to create
-             * if (getPersistenceUnit(project) == null) {
+             * if ( == null) {
                 setInfoMessage("MSG_EntitySelectionPanel_NoPersistenceUnit");
                 return false;
             }*/
