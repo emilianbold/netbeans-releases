@@ -138,7 +138,7 @@ public class PatternsTest extends RestTestBase {
     public void setUp() throws Exception {
         super.setUp();
         // add Jersey library, otherwise package org.codehaus.jettison is not added from server libraries, see issue #206526
-        if (!PatternsTest.jerseyAdded) {
+        if (!PatternsTest.jerseyAdded && getProjectType().isAntBasedProject()) {
             ProjectRootNode prn = ProjectsTabOperator.invoke().getProjectRootNode(getProjectName());
             prn.select();
             if (prn.isCollapsed()) {
