@@ -43,21 +43,16 @@ package org.netbeans.modules.css.lib;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.antlr.runtime.CharStream;
-import org.antlr.runtime.CommonToken;
-import org.antlr.runtime.NoViableAltException;
-import org.antlr.runtime.RecognitionException;
-import org.antlr.runtime.RecognizerSharedState;
-import org.antlr.runtime.Token;
+import org.antlr.runtime.*;
 import org.netbeans.modules.css.lib.api.ProblemDescription;
 import org.netbeans.modules.css.lib.api.ProblemDescription.Type;
 import org.openide.util.NbBundle;
 
 /**
- * Note: Funny aspect of the ANTLR lexer is that it doesn't create any kind
- * of error tokens. So if there's a character in the input which cannot be properly
- * made a part of a token it is simply skipped. The result is that the sequence of
- * tokens is not continuous and there might be "holes".
+ * Note: Funny aspect of the ANTLR lexer is that it doesn't create any kind of
+ * error tokens. So if there's a character in the input which cannot be properly
+ * made a part of a token it is simply skipped. The result is that the sequence
+ * of tokens is not continuous and there might be "holes".
  *
  * @author marekfukala
  */
@@ -71,6 +66,35 @@ public class ExtCss3Lexer extends Css3Lexer {
 
     public ExtCss3Lexer(CharStream input) {
         super(input);
+    }
+
+    /**
+     * Preferred constructor.
+     * 
+     * Make the Css3Lexer case insensitive by default - the characters passed to
+     * the lexer are converted to upper case. The token images are in the
+     * original case though.
+     */
+    public ExtCss3Lexer(CharSequence charSequence) {
+
+        this(new ANTLRStringStream(charSequence.toString()) {
+            @Override
+            public int LA(int i) {
+                if (i == 0) {
+                    return 0; // undefined
+                }
+                if (i < 0) {
+                    i++; // e.g., translate LA(-1) to use offset 0
+                }
+
+                if ((p + i - 1) >= n) {
+
+                    return CharStream.EOF;
+                }
+                return Character.toUpperCase(data[p + i - 1]);
+            }
+        });
+
     }
 
     @Override

@@ -197,7 +197,7 @@ public class Symfony2OptionsPanel extends JPanel {
         });
         Mnemonics.setLocalizedText(sandboxInfoLabel, NbBundle.getMessage(Symfony2OptionsPanel.class, "Symfony2OptionsPanel.sandboxInfoLabel.text")); // NOI18N
         Mnemonics.setLocalizedText(ignoreCacheCheckBox, NbBundle.getMessage(Symfony2OptionsPanel.class, "Symfony2OptionsPanel.ignoreCacheCheckBox.text")); // NOI18N
-        Mnemonics.setLocalizedText(errorLabel, NbBundle.getMessage(Symfony2OptionsPanel.class, "Symfony2OptionsPanel.errorLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(errorLabel, "ERROR"); // NOI18N
         Mnemonics.setLocalizedText(noteLabel, NbBundle.getMessage(Symfony2OptionsPanel.class, "Symfony2OptionsPanel.noteLabel.text")); // NOI18N
         Mnemonics.setLocalizedText(downloadLabel, NbBundle.getMessage(Symfony2OptionsPanel.class, "Symfony2OptionsPanel.downloadLabel.text")); // NOI18N
         downloadLabel.addMouseListener(new MouseAdapter() {
@@ -212,46 +212,25 @@ public class Symfony2OptionsPanel extends JPanel {
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
+            layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
                 .addComponent(sandboxLabel)
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(sandboxInfoLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
+
+                .addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
+
+                        .addComponent(sandboxInfoLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addGap(0, 0, Short.MAX_VALUE)).addGroup(layout.createSequentialGroup()
                         .addComponent(sandboxTextField)
-                        .addPreferredGap(ComponentPlacement.RELATED)
-                        .addComponent(sandboxBrowseButton))))
-            .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                    .addComponent(ignoreCacheCheckBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .addComponent(errorLabel)
-                    .addComponent(noteLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                .addGap(0, 0, Short.MAX_VALUE))
-            .addGroup(layout.createSequentialGroup()
+
+                        .addPreferredGap(ComponentPlacement.RELATED).addComponent(sandboxBrowseButton)))).addGroup(layout.createSequentialGroup()
+
+                .addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(ignoreCacheCheckBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addComponent(errorLabel).addComponent(noteLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)).addGap(0, 0, Short.MAX_VALUE)).addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(downloadLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+
+                .addComponent(downloadLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addContainerGap())
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
-                    .addComponent(sandboxLabel)
-                    .addComponent(sandboxTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .addComponent(sandboxBrowseButton))
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(sandboxInfoLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(ignoreCacheCheckBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(noteLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(downloadLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(ComponentPlacement.RELATED, 125, Short.MAX_VALUE)
-                .addComponent(errorLabel))
+            layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
+
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(sandboxLabel).addComponent(sandboxTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addComponent(sandboxBrowseButton)).addPreferredGap(ComponentPlacement.RELATED).addComponent(sandboxInfoLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addGap(18, 18, 18).addComponent(ignoreCacheCheckBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addGap(18, 18, 18).addComponent(noteLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addPreferredGap(ComponentPlacement.RELATED).addComponent(downloadLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addPreferredGap(ComponentPlacement.RELATED, 125, Short.MAX_VALUE).addComponent(errorLabel))
         );
     }// </editor-fold>//GEN-END:initComponents
 

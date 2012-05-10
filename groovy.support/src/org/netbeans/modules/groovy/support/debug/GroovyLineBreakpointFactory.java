@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,6 +24,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,10 +40,6 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.groovy.support.debug;
@@ -46,34 +48,64 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.api.java.classpath.ClassPath;
+import static org.netbeans.modules.groovy.support.debug.Bundle.*;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.NbBundle.Messages;
 
 /**
- *
- * @author Martin Adamek
+ * Factory for creating new Groovy line breakpoints.
+ * 
+ * @author Martin Janicek
  */
-public class DebugUtils {
+public class GroovyLineBreakpointFactory {
 
-    private static final Logger LOGGER = Logger.getLogger(DebugUtils.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(GroovyLineBreakpointFactory.class.getName());
+    
+    
+    private GroovyLineBreakpointFactory() {
+    }
 
-    public static FileObject getFileObjectFromUrl(String url) {
-        
+    /**
+     * Creates a new breakpoint for the given parameters.
+     *
+     * @param url a url
+     * @param lineNumber a line number
+     * @return a new breakpoint for given parameters
+     */
+    @Messages("CTL_Default_Print_Text=Breakpoint reached at line {lineNumber} in {groovyName} by thread {threadName}.")
+    public static LineBreakpoint create(String url, int lineNumber) {
+        String pt = CTL_Default_Print_Text();
+        String printText = pt.replace("{groovyName}", getGroovyName(url));
+
+        LineBreakpoint groovyBreakpoint = LineBreakpoint.create(url, lineNumber);
+        groovyBreakpoint.setStratum("Groovy"); // NOI18N
+        groovyBreakpoint.setSourceName(getGroovyName(url));
+        groovyBreakpoint.setSourcePath(getGroovyPath(url));
+        groovyBreakpoint.setPreferredClassName(getClassFilter(url));
+        groovyBreakpoint.setPrintText(printText);
+        groovyBreakpoint.setHidden(false);
+
+        return groovyBreakpoint;
+    }
+
+    private static FileObject getFileObjectFromUrl(String url) {
+
         FileObject fo = null;
-        
+
         try {
             fo = URLMapper.findFileObject(new URL(url));
         } catch (MalformedURLException e) {
             //noop
         }
-
         return fo;
     }
 
-    public static String getClassFilter(String url) {
-        String relativePath = getRelativePath(url);
+    private static String getClassFilter(String url) {
+        String relativePath = getGroovyPath(url);
         if (relativePath == null) {
             return "";
         }
@@ -84,22 +116,18 @@ public class DebugUtils {
         return relativePath.replace('/', '.') + "*";
     }
 
-    public static String getJspName(String url) {
+    private static String getGroovyName(String url) {
         FileObject fo = getFileObjectFromUrl(url);
         if (fo != null) {
             return fo.getNameExt();
         }
         return (url == null) ? null : url.toString();
     }
-    
-    public static String getJspPath(String url) {
-        return getRelativePath(url);
-    }
 
-    private static String getRelativePath(String url) {
+    private static String getGroovyPath(String url) {
         FileObject fo = getFileObjectFromUrl(url);
         String relativePath = url;
-        
+
         if (fo != null) {
             ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
             if (cp == null) {
@@ -112,7 +140,7 @@ public class DebugUtils {
             }
             relativePath = FileUtil.getRelativePath(root, fo);
         }
-        
+
         return relativePath;
     }
 }
