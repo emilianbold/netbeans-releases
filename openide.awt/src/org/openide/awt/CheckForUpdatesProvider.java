@@ -66,7 +66,7 @@ public interface CheckForUpdatesProvider {
      */
     public boolean notifyAvailableUpdates(boolean reload);
     
-    /** A description of content of enable Update Centers, assuming returns something like 7.1 patch1.
+    /** A description of content of enable Update Centers, assuming returns something like <i>7.1 patch1</i>.
      *  The description might contains HTML tags e.g. HTML Links.
      * 
      * @return free-form description of content or <code>null</code>
