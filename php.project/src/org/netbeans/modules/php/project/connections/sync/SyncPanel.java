@@ -57,7 +57,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.BorderFactory;
@@ -91,6 +94,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import org.netbeans.api.annotations.common.StaticResource;
+import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.connections.RemoteClient;
@@ -98,6 +102,7 @@ import org.netbeans.modules.php.project.connections.sync.diff.DiffPanel;
 import org.netbeans.modules.php.project.ui.HintArea;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
+import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -143,6 +148,9 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
     final FileTableModel tableModel;
     // @GuardedBy(AWT)
     final JPopupMenu popupMenu = new JPopupMenu();
+
+    // @GuardedBy(AWT)
+    boolean selectionIsAdjusting = false;
     // @GuardedBy(AWT)
     Point popupMenuPoint = new Point(); // XXX is there a better way?
 
@@ -348,6 +356,9 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
             @Override
             public void valueChanged(ListSelectionEvent event) {
                 if (event.getValueIsAdjusting()) {
+                    return;
+                }
+                if (selectionIsAdjusting) {
                     return;
                 }
                 updateSyncInfo();
@@ -584,9 +595,11 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
     }
 
     void reselectItem(SyncItem syncItem) {
-        int index = displayedItems.indexOf(syncItem); // XXX performance?
+        assert SwingUtilities.isEventDispatchThread();
+        assert itemTable.getSelectedRowCount() <= 1 : "Selected rows in table: " + itemTable.getSelectedRowCount();
+        int index = itemsToIndex(displayedItems).get(syncItem);
         if (index != -1) {
-            itemTable.getSelectionModel().addSelectionInterval(index, index);
+            itemTable.getSelectionModel().setSelectionInterval(index, index);
         }
     }
 
@@ -609,9 +622,25 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
 
     void reselectItems(List<SyncItem> selectedItems) {
         assert SwingUtilities.isEventDispatchThread();
+        List<Integer> selectedRows = new ArrayList<Integer>(selectedItems.size());
+        Map<SyncItem, Integer> itemsToIndex = itemsToIndex(displayedItems);
         for (SyncItem item : selectedItems) {
-            reselectItem(item);
+            int index = itemsToIndex.get(item);
+            if (index != -1) {
+                selectedRows.add(index);
+            }
         }
+        // #212269 - minimize ui refreshes
+        selectionIsAdjusting = true;
+        Iterator<Pair<Integer, Integer>> iterator = PhpProjectUtils.getIntervals(selectedRows).iterator();
+        while (iterator.hasNext()) {
+            Pair<Integer, Integer> pair = iterator.next();
+            if (!iterator.hasNext()) {
+                selectionIsAdjusting = false;
+            }
+            itemTable.getSelectionModel().addSelectionInterval(pair.first, pair.second);
+        }
+        selectionIsAdjusting = false;
     }
 
     @NbBundle.Messages({
@@ -840,6 +869,15 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
             }
         }
         return selected;
+    }
+
+    private Map<SyncItem, Integer> itemsToIndex(List<SyncItem> items) {
+        int i = 0;
+        Map<SyncItem, Integer> map = new HashMap<SyncItem, Integer>(items.size() * 2);
+        for (SyncItem syncItem : items) {
+            map.put(syncItem, i++);
+        }
+        return map;
     }
 
     /**
