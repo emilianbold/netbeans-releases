@@ -2445,7 +2445,23 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     protected final void removeFile(CharSequence file) {
-        getFileContainer().removeFile(file);
+        FileContainer fileContainer = getFileContainer();
+        FileEntry entry = fileContainer.getEntry(file);
+        if (entry != null) {
+            assert file.toString().contentEquals(UIDUtilities.getFileName(entry.getTestFileUID()));
+            Object lock = entry.getLock();
+            Collection<ProjectBase> dependentProjects = getDependentProjects();
+            synchronized (lock) {
+                includedFileContainer.remove(lock, this, file);
+                for (ProjectBase prj : dependentProjects) {
+                    prj.includedFileContainer.remove(lock, this, file);
+                }
+                synchronized (fileContainerLock) {
+                    fileContainer.removeFile(file);
+                }
+            }
+            putContainers(dependentProjects, fileContainer);
+        }
     }
 
     private void putFile(FileImpl impl, APTPreprocHandler.State state) {
