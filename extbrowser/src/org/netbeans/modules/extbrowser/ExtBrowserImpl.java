@@ -47,16 +47,20 @@ package org.netbeans.modules.extbrowser;
 import java.awt.Component;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.extbrowser.plugins.*;
 import org.netbeans.modules.extbrowser.plugins.ExternalBrowserPlugin.BrowserTabDescriptor;
-import org.netbeans.modules.extbrowser.spi.BrowserLookupProvider;
-import org.netbeans.modules.extbrowser.spi.ExternalBrowserDescriptor;
+import org.netbeans.modules.extbrowser.plugins.chrome.WebKitDebuggingTransport;
 import org.netbeans.modules.web.browser.api.EnhancedBrowser;
+import org.netbeans.modules.web.webkit.debugging.spi.Factory;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.HtmlBrowser.Impl;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
@@ -117,14 +121,10 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl
                     new MessageDispatcherImpl(),
                     new RemoteScriptExecutor(this)
                 ));
-        
-        String arg = extBrowserFactory.getBrowserExecutable().getArguments();
-        ExternalBrowserDescriptor desc = new ExternalBrowserDescriptor(extBrowserFactory.getBrowserFamilyId(), arg);
-        for (BrowserLookupProvider prov : Lookup.getDefault().lookupAll(BrowserLookupProvider.class)) {
-            Lookup l = prov.createBrowserLookup(desc);
-            if (l != null) {
-                lookups.add(l);
-            }
+        if (extBrowserFactory.getBrowserFamilyId() == BrowserId.CHROME || 
+                extBrowserFactory.getBrowserFamilyId() == BrowserId.CHROMIUM) {
+            WebKitDebuggingTransport transport = new WebKitDebuggingTransport(this);
+            lookups.add(Lookups.fixed(transport, Factory.createWebKitDebugging(transport)));
         }
         
         return new ProxyLookup(lookups.toArray(new Lookup[lookups.size()]));
@@ -229,10 +229,20 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl
                                 }
                             });
                 }
+                
+                // instead of using real URL to open a new tab in the browser
+                // (and possible start browser process itself) I'm going to use
+                // a temp file which I will refresh with the real URL once the
+                // link between browser and IDE was established. The reason is
+                // that I would like to be able to set breakpoints to the browser
+                // tab before the URL is loaded so that breakpoints get hit
+                // even when the URL is loaded for the first time.
+                URL tempUrl = createBlankHTMLPage();
+                assert tempUrl != null;
                 if (pluginAvailable) {
-                    ExternalBrowserPlugin.getInstance().register(url, this);
+                    ExternalBrowserPlugin.getInstance().register(tempUrl, url, this);
                 }
-                loadURLInBrowser(url);
+                loadURLInBrowser(tempUrl);
             }
             else {
                 ExternalBrowserPlugin.getInstance().showURLInTab(tab, url);
@@ -242,6 +252,19 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl
             loadURLInBrowser(url);
         }
         this.url = url;
+    }
+    
+    private URL createBlankHTMLPage() {
+        try {
+            File f = File.createTempFile("blank", ".html");
+            FileWriter fw = new FileWriter(f);
+            fw.write("<html></html>");
+            fw.close();
+            return f.toURI().toURL();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
     }
     
     abstract protected void loadURLInBrowser(URL url);

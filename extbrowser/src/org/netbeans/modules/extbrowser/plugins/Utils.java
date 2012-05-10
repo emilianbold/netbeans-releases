@@ -62,6 +62,10 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import javax.xml.parsers.DocumentBuilder;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
+import org.json.simple.parser.ParseException;
+import org.openide.util.Exceptions;
 
 import org.openide.util.Utilities;
 import org.w3c.dom.Document;
@@ -106,13 +110,15 @@ public final class Utils {
         return string;
     }
     
-    public static String readFile( File file ){
+    public static JSONObject readFile( File file ){
         BufferedReader reader = null;
         try {
             reader = new BufferedReader(new FileReader(file));
-            return read(reader);
-        }
-        catch ( IOException e ){
+            return (JSONObject)JSONValue.parseWithException(reader);
+        } catch (ParseException ex) {
+            Logger.getLogger( Utils.class.getCanonicalName()).log(Level.WARNING, 
+                    "cannot parse JSON file "+file , ex );
+        } catch ( IOException e ){
             Logger.getLogger( Utils.class.getCanonicalName()).log(Level.WARNING, 
                     null , e );
         }

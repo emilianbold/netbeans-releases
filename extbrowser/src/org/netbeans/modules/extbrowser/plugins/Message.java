@@ -42,11 +42,12 @@
  */
 package org.netbeans.modules.extbrowser.plugins;
 
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Map.Entry;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
+import org.json.simple.parser.ParseException;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -62,7 +63,12 @@ class Message {
         RELOAD,
         URLCHANGE,
         CLOSE,
-        INSPECT;
+        INSPECT,
+        ATTACH_DEBUGGER,
+        DETACH_DEBUGGER,
+        DEBUGGER_COMMAND,
+        DEBUGGER_COMMAND_RESPONSE,
+        ;
         
         @Override
         public String toString() {
@@ -79,43 +85,31 @@ class Message {
         }
     }
     
-    Message(MessageType type , Map<String,String> map ){
+    Message(MessageType type , JSONObject data ){
         this.type = type;
-        this.map = Collections.unmodifiableMap(map);
+        this.data = data;
+    }
+    
+    Message(MessageType type , Map map ){
+        this.type = type;
+        this.data = new JSONObject(map);
+    }
+
+    public int getTabId() {
+        Number n = (Number)getValue().get(Message.TAB_ID);
+        if (n == null) {
+            return -1;
+        }
+        return n.intValue();
     }
     
     public static Message parse( String message ){
-        /*
-         *  TODO : rewrite this code accurately based on restricted
-         *  JSON format application layer protocol or use 
-         *  existing general JSON parser  
-         */
-        int index = message.indexOf('{');
-        if ( index != -1 ){
-            message = message.substring( index +1);
-        }
-        index = message.lastIndexOf('}');
-        if ( index != -1 ){
-            message = message.substring( 0 , index );
-        }
-        String[] parts = message.split(",");    // NOI18N
-        Map<String, String> map = new HashMap<String, String>();
-        for (String part : parts) {
-            part = part.trim();
-            index = part.indexOf(':');
-            if ( index == -1 ){
-                continue;
-            }
-            String key = part.substring( 0, index );
-            String value = part.substring( index +1);
-            map.put( unquote( key ), unquote( value ));
-        }
-        String type = map.remove(MESSAGE);
-        if ( type == null ){
+        try {
+            JSONObject json = (JSONObject)JSONValue.parseWithException(message);
+            return new Message(MessageType.forString((String)json.get("message")), json);
+        } catch (ParseException ex) {
+            Exceptions.printStackTrace(ex);
             return null;
-        }
-        else {
-            return new Message(MessageType.forString(type), map);
         }
     }
     
@@ -123,87 +117,19 @@ class Message {
         return type;
     }
     
-    public String getValue( String key ){
-        return map.get(key);
+    public String toStringValue() {
+        JSONObject result = new JSONObject(data);
+        result.put("message", type.toString());
+        return result.toJSONString();
     }
     
-    @Override
-    public String toString() {
-        StringBuilder builder = new StringBuilder("{");     // NOI18N
-        builder.append( DEFAULT_PRESENTER.getPresentation(MESSAGE));
-        builder.append(':');
-        builder.append( DEFAULT_PRESENTER.getPresentation( type.toString()));
-        for( Entry<String,String> entry : map.entrySet()){
-            builder.append(',');
-            String key = entry.getKey();
-            String value = entry.getValue();
-            value = getPresenter(key).getPresentation(value);
-            builder.append( DEFAULT_PRESENTER.getPresentation(key));
-            builder.append(':');
-            builder.append( value );
-        }
-        builder.append('}');
-        return builder.toString();
+    public JSONObject getValue() {
+        return data;
     }
     
-    private ValuePresenter getPresenter( String key ){
-        ValuePresenter valuePresenter = VALUE_PRESENTERS.get( key );
-        if ( valuePresenter == null ){
-            return DEFAULT_PRESENTER;
-        }
-        else {
-            return valuePresenter;
-        }
-    }
-    
-    private static String unquote( String str ){
-        if ( str.length() == 0 ){
-            return str;
-        }
-        if ( str.charAt(0) =='"'){
-            str = str.substring(1);
-            if ( str.charAt( str.length()-1 ) == '"'){
-                str = str.substring( 0, str.length() -1 );
-            }
-        }
-        return str;
-    }
-    
-    static interface ValuePresenter {
-        String getPresentation( String value );
-    }
-    
-    static class DefaultPresenter implements ValuePresenter {
-        /* (non-Javadoc)
-         * @see org.netbeans.modules.web.common.reload.Message.ValuePresenter#getPresentation(java.lang.String)
-         */
-        @Override
-        public String getPresentation( String value ) {
-            StringBuilder builder = new StringBuilder("\"");        // NOI18N
-            builder.append( value );
-            builder.append('"');
-            return builder.toString();
-        }
-    }
-    
-    static class NumberPresenter implements ValuePresenter {
-        /* (non-Javadoc)
-         * @see org.netbeans.modules.web.common.reload.Message.ValuePresenter#getPresentation(java.lang.String)
-         */
-        @Override
-        public String getPresentation( String value ) {
-            return value;
-        }
-    }
     
     private final MessageType type;
-    private final Map<String,String> map;
-    static final String TAB_ID = "tabId";       // NOI18N
-    private static final Map<String,ValuePresenter> VALUE_PRESENTERS = 
-        new HashMap<String, Message.ValuePresenter>();
-    private static final ValuePresenter DEFAULT_PRESENTER = new DefaultPresenter();
+    private JSONObject data;
+    static final String TAB_ID = "tabId";       // NOI18N    
     
-    static {
-        VALUE_PRESENTERS.put(Message.TAB_ID, new NumberPresenter() );
-    }
 }

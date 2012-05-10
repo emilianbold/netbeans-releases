@@ -45,8 +45,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
+import org.json.simple.parser.ParseException;
 import org.netbeans.modules.extbrowser.ExtBrowserImpl;
 import org.netbeans.modules.web.browser.api.PageInspector;
 import org.netbeans.modules.web.browser.spi.MessageDispatcher;
@@ -105,17 +106,13 @@ public class RemoteScriptExecutor implements ScriptExecutor {
             }
             int id = ++lastIDSent;
             JSONObject message = new JSONObject();
-            try {
-                message.put(MESSAGE_TYPE, MESSAGE_EVAL);
-                message.put(MESSAGE_ID, id);
-                message.put(MESSAGE_SCRIPT, script);
-                ExternalBrowserPlugin.getInstance().sendMessage(
-                        message.toString(),
-                        browserImpl,
-                        PageInspector.MESSAGE_DISPATCHER_FEATURE_ID);
-            } catch (JSONException ex) {
-                // Cannot happen
-            }
+            message.put(MESSAGE_TYPE, MESSAGE_EVAL);
+            message.put(MESSAGE_ID, id);
+            message.put(MESSAGE_SCRIPT, script);
+            ExternalBrowserPlugin.getInstance().sendMessage(
+                    message.toJSONString(),
+                    browserImpl,
+                    PageInspector.MESSAGE_DISPATCHER_FEATURE_ID);
             try {
                 do {
                     LOCK.wait();
@@ -187,33 +184,29 @@ public class RemoteScriptExecutor implements ScriptExecutor {
      */
     void messageReceived(String messageTxt) {
         try {
-            JSONObject message = new JSONObject(messageTxt);
-            Object type = message.opt(MESSAGE_TYPE);
+            JSONObject message = (JSONObject)JSONValue.parseWithException(messageTxt);
+            Object type = message.get(MESSAGE_TYPE);
             if (MESSAGE_EVAL.equals(type)) {
-                try {
-                    int id = message.getInt(MESSAGE_ID);
-                    synchronized (LOCK) {
-                        for (int i=lastIDReceived+1; i<id; i++) {
-                            LOG.log(Level.INFO, "Haven''t received result of execution of script with ID {0}.", i); // NOI18N
-                            results.put(i, ERROR_RESULT);
-                        }
-                        Object status = message.opt(MESSAGE_STATUS);
-                        Object result = message.opt(MESSAGE_RESULT);
-                        if (MESSAGE_STATUS_OK.equals(status)) {
-                            results.put(id, result);
-                        } else {
-                            LOG.log(Level.INFO, "Message with id {0} wasn''t executed successfuly: {1}", // NOI18N
-                                    new Object[]{id, result});
-                            results.put(id, ERROR_RESULT);
-                        }
-                        lastIDReceived = id;
-                        LOCK.notifyAll();
+                int id = ((Number)message.get(MESSAGE_ID)).intValue();
+                synchronized (LOCK) {
+                    for (int i=lastIDReceived+1; i<id; i++) {
+                        LOG.log(Level.INFO, "Haven''t received result of execution of script with ID {0}.", i); // NOI18N
+                        results.put(i, ERROR_RESULT);
                     }
-                } catch (JSONException ex) {
-                    LOG.log(Level.INFO, "Ignoring message with malformed id: {0}", messageTxt); // NOI18N
+                    Object status = message.get(MESSAGE_STATUS);
+                    Object result = message.get(MESSAGE_RESULT);
+                    if (MESSAGE_STATUS_OK.equals(status)) {
+                        results.put(id, result);
+                    } else {
+                        LOG.log(Level.INFO, "Message with id {0} wasn''t executed successfuly: {1}", // NOI18N
+                                new Object[]{id, result});
+                        results.put(id, ERROR_RESULT);
+                    }
+                    lastIDReceived = id;
+                    LOCK.notifyAll();
                 }
             }
-        } catch (JSONException ex) {
+        } catch (ParseException ex) {
             LOG.log(Level.INFO, "Ignoring message that is not in JSON format: {0}", messageTxt); // NOI18N
         }        
     }

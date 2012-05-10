@@ -86,13 +86,12 @@ made subject to such option by the copyright holder.
         </echo>
     </target>
 
-    <target name="netbeans-extra" depends="build-chrome-plugin,build-firefox-plugin"/>
+    <target name="netbeans-extra" depends="build-chrome-plugin"/>
 
     <target name="build-chrome-plugin" depends="build-crx-task">
         <taskdef name="crx" classname="org.netbeans.modules.extbrowser.CrxTask" classpath="build/antclasses"/>
         <zip destfile="build/netbeans-ros-chrome-plugin.zip">
             <fileset dir="plugins/chrome" excludes="**/*.pem"/>
-            <fileset dir="plugins/common"/>
         </zip> 
         <crx src="build/netbeans-ros-chrome-plugin.zip" privatekey="plugins/chrome/private.pem" publickey="plugins/chrome/public.pem"/>
         <mkdir dir="${cluster}/modules/ext"/>
@@ -112,9 +111,6 @@ made subject to such option by the copyright holder.
         <mkdir dir="build/firefox"/>
         <copy todir="build/firefox">
             <fileset dir="plugins/firefox"/>
-        </copy>
-        <copy todir="build/firefox/data">
-            <fileset dir="plugins/common"/>
         </copy>
         <property name="firefox.plugin.dir" location="build/firefox"/>
         <exec executable="cmd" dir="${firefox.addonsdk.home}" osfamily="windows">

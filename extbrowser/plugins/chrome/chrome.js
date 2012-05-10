@@ -52,6 +52,43 @@ NetBeans.browserReloadCallback = function(tabId, newUrl) {
     }
 }
 
+NetBeans.browserAttachDebugger = function(tabId) {
+    if (NetBeans.DEBUG) {
+        console.log('debugger attach for tab ' + tabId);
+    }
+    chrome.debugger.attach({tabId : tabId}, "1.0", function(){
+        if (chrome.extension.lastError) {
+            console.log('debugger attach result code: ' + chrome.extension.lastError);
+        }
+    });
+}
+
+NetBeans.browserDetachDebugger = function(tabId) {
+    if (NetBeans.DEBUG) {
+        console.log('debugger detaching from tab ' + tabId);
+    }
+    chrome.debugger.detach({tabId : tabId});
+}
+
+NetBeans.browserSendCommand = function(tabId, id, method, params, callback) {
+    if (NetBeans.DEBUG) {
+        console.log('send ['+tabId+","+id+","+method+","+params);
+    }
+    chrome.debugger.sendCommand({tabId : tabId}, method, params, 
+        function(result) {
+            if (chrome.extension.lastError) {
+                console.log('debugger send command result code: ' + chrome.extension.lastError);
+            } else {
+                console.log('debugger send command response: ' + result);
+                NetBeans.sendDebuggingResponse(tabId, {id : id, result : result});
+            }
+        });
+}
+
+chrome.debugger.onEvent.addListener(function(source, method, params) {
+    NetBeans.sendDebuggingResponse(source.tabId, {method : method, params : params});
+}); 
+
 // Register tab listeners
 chrome.tabs.onCreated.addListener(function(tab) {
     NetBeans.tabCreated(tab.id);

@@ -148,7 +148,7 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
             RequestProcessor.getDefault ().post (
                 new Runnable () {
                     public void run () {
-                        UnixBrowserImpl.this.setURL (newUrl);
+                        UnixBrowserImpl.this.loadURLInBrowser (newUrl);
                     }
             });
             return;

@@ -39,14 +39,49 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.extbrowser.spi;
+package org.netbeans.modules.extbrowser.plugins.chrome;
 
-import org.openide.util.Lookup;
+import org.netbeans.modules.extbrowser.ExtBrowserImpl;
+import org.netbeans.modules.extbrowser.plugins.ExternalBrowserPlugin;
+import org.netbeans.modules.web.webkit.debugging.spi.Command;
+import org.netbeans.modules.web.webkit.debugging.spi.ResponseCallback;
+import org.netbeans.modules.web.webkit.debugging.spi.TransportImplementation;
 
-/**
- * Ability for third party modules to enhance browser's lookup.
- */
-public interface BrowserLookupProvider {
+public class WebKitDebuggingTransport implements TransportImplementation {
+
+    private ExtBrowserImpl impl;
+
+    public WebKitDebuggingTransport(ExtBrowserImpl impl) {
+        this.impl = impl;
+    }
     
-    Lookup createBrowserLookup(ExternalBrowserDescriptor desc);
+    @Override
+    public void sendCommand(Command command) {
+        ExternalBrowserPlugin.getInstance().sendWebKitDebuggerCommand(impl.getBrowserTabDescriptor(), command.getCommand());
+    }
+
+    @Override
+    public void registerResponseCallback(ResponseCallback callback) {
+        impl.getBrowserTabDescriptor().setCallback(callback);
+        // XXX: should I listen here in "DETACH" event which browser can trigger?
+    }
+
+    @Override
+    public boolean attach() {
+        ExternalBrowserPlugin.getInstance().attachWebKitDebugger(impl.getBrowserTabDescriptor());
+        return true;
+    }
+
+    @Override
+    public boolean  detach() {
+        ExternalBrowserPlugin.getInstance().detachWebKitDebugger(impl.getBrowserTabDescriptor());
+        return true;
+        // XXX: anything else to cleanup?? unregister callback from tab?
+    }
+
+    @Override
+    public String getConnectionName() {
+        return impl.getURL().toExternalForm();
+    }
+    
 }

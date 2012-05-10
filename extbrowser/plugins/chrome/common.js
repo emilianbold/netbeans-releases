@@ -99,7 +99,7 @@ NetBeans.connectIfNeeded = function() {
             self.sendPendingMessages();
         }
         this.socket.onmessage = function(e) {
-            if (self.DEBUG) {
+            if (NetBeans.DEBUG) {
                 console.log('Received message: ' + e.data);
             }
             var message;
@@ -165,6 +165,12 @@ NetBeans.processMessage = function(message) {
         this.processInitMessage(message);
     } else if (type === 'reload') {
         this.processReloadMessage(message);
+    } else if (type === 'attach_debugger') {
+        this.processAttachDebuggerMessage(message);
+    } else if (type === 'detach_debugger') {
+        this.processDetachDebuggerMessage(message);
+    } else if (type === 'debugger_command') {
+        this.processDebuggerCommandMessage(message);
     } else {
         console.log('Unsupported message!');
         console.log(message);
@@ -177,7 +183,7 @@ NetBeans.tabIdFromMessage = function(message) {
     if (typeof(tabIdValue) === 'number') {
         tabId = tabIdValue;
     } else if (typeof(tabIdValue) === 'string') {
-        tabId = parseInt(tabId);
+        tabId = parseInt(tabIdValue);
     } else {
         console.log('Missing/incorrect tabId attribute!');
         console.log(message);
@@ -223,6 +229,52 @@ NetBeans.processReloadMessage = function(message) {
         }
     }
 }
+
+NetBeans.processAttachDebuggerMessage = function(message) {
+    var tabId = this.tabIdFromMessage(message);
+    if (tabId !== undefined) {
+        var status = this.tabStatus(tabId);
+        if (status === this.STATUS_MANAGED) {
+            this.browserAttachDebugger(tabId);
+        } else {
+            console.log('Refusing to attach debugger to tab that is not managed: '+tabId);
+        }
+    }
+}
+
+NetBeans.processDetachDebuggerMessage = function(message) {
+    var tabId = this.tabIdFromMessage(message);
+    if (tabId !== undefined) {
+        var status = this.tabStatus(tabId);
+        if (status === this.STATUS_MANAGED) {
+            this.browserDetachDebugger(tabId);
+        } else {
+            console.log('Refusing to dettach debugger from tab that is not managed: '+tabId);
+        }
+    }
+}
+
+NetBeans.processDebuggerCommandMessage = function(message) {
+    var tabId = this.tabIdFromMessage(message);
+    if (tabId !== undefined) {
+        var status = this.tabStatus(tabId);
+        if (status === this.STATUS_MANAGED) {
+            var command = message.command;
+            this.browserSendCommand(tabId, command.id, command.method, command.params);
+        } else {
+            console.log('Refusing to send debugger command to tab that is not managed: '+tabId);
+        }
+    }
+}
+
+NetBeans.sendDebuggingResponse = function(tabId, response) {
+    this.sendMessage({
+        message: 'debugger_command_response',
+        tabId: tabId,
+        response : response
+    });
+}
+
 
 NetBeans.tabCreated = function(tabId) {
     this.managedTabs[tabId] = {status: this.STATUS_NEW};

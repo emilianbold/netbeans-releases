@@ -52,11 +52,18 @@ import java.nio.charset.Charset;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.json.simple.JSONObject;
+import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.extbrowser.ExtBrowserImpl;
 import org.netbeans.modules.extbrowser.ExtWebBrowser;
+import org.netbeans.modules.extbrowser.plugins.chrome.WebKitDebuggingTransport;
 import org.netbeans.modules.netserver.websocket.WebSocketReadHandler;
 import org.netbeans.modules.netserver.websocket.WebSocketServer;
 import org.netbeans.modules.web.browser.api.PageInspector;
+import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
+import org.netbeans.modules.web.webkit.debugging.spi.Response;
+import org.netbeans.modules.web.webkit.debugging.spi.ResponseCallback;
+import org.netbeans.modules.web.webkit.debugging.spi.netbeansdebugger.NetBeansJavaScriptDebuggerFactory;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
@@ -112,8 +119,8 @@ public final class ExternalBrowserPlugin {
      * will store ID if the browser tab and use it for all consequent external 
      * browser requests.
      */
-    public void register(URL url, ExtBrowserImpl browserImpl) {
-        awaitingBrowserResponse.put(urlToString(url), browserImpl);
+    public void register(URL tempURL, URL realUrl, ExtBrowserImpl browserImpl) {
+        awaitingBrowserResponse.put(urlToString(tempURL), new Pair(browserImpl, realUrl));
     }
     
     private String urlToString(URL url) {
@@ -129,9 +136,22 @@ public final class ExternalBrowserPlugin {
      * Show URL in browser in given browser tab.
      */
     public void showURLInTab(BrowserTabDescriptor tab, URL url) {
+        tab.init();
         server.sendMessage(tab.keyForFeature(FEATURE_ROS), createReloadMessage(tab.tabID, url));
     }
 
+    public void attachWebKitDebugger(BrowserTabDescriptor tab) {
+        server.sendMessage(tab.keyForFeature(FEATURE_ROS), createAttachDebuggerMessage(tab.tabID));
+    }
+    
+    public void detachWebKitDebugger(BrowserTabDescriptor tab) {
+        server.sendMessage(tab.keyForFeature(FEATURE_ROS), createDetachDebuggerMessage(tab.tabID));
+    }
+    
+    public void sendWebKitDebuggerCommand(BrowserTabDescriptor tab, JSONObject command) {
+        server.sendMessage(tab.keyForFeature(FEATURE_ROS), createDebuggerCommandMessage(tab.tabID, command));
+    }
+    
     private void removeKey( SelectionKey key ) {
         notifyDispatchers(null, key); // Notify MessageDispatcher(s) about the closed socket
         for(Iterator<BrowserTabDescriptor> iterator = knownBrowserTabs.iterator() ; iterator.hasNext() ; ) {
@@ -218,6 +238,13 @@ public final class ExternalBrowserPlugin {
                 case INSPECT:
                     handleInspect(msg, key);
                     break;
+                case ATTACH_DEBUGGER:
+                    break;
+                case DETACH_DEBUGGER:
+                    break;
+                case DEBUGGER_COMMAND_RESPONSE:
+                    handleDebuggerResponse( msg , key );
+                    break;
                 default:
                     assert false;
             }
@@ -225,11 +252,42 @@ public final class ExternalBrowserPlugin {
         }
         
         private void handleInit( Message message , SelectionKey key ){
-            String url = message.getValue(URL);
-            String tabId = message.getValue(Message.TAB_ID);
-            if ( url == null || tabId == null ){
+            String url = (String)message.getValue().get(URL);
+            int tabId = message.getTabId();
+            if ( url == null || tabId == -1 ){
                 return;
             }
+            final Pair p = getAwaitingPair(url);
+            ExtBrowserImpl browserImpl = p != null ? p.impl : null;
+            if (browserImpl == null) {
+                Map map = new HashMap();
+                map.put( Message.TAB_ID, tabId );
+                map.put("status","notaccepted");       // NOI18N
+                Message msg = new Message( Message.MessageType.INIT , map );
+                server.sendMessage(key, msg.toStringValue());
+            } else  {
+                final BrowserTabDescriptor tab = new BrowserTabDescriptor(tabId, browserImpl);
+                tab.registerKeyForFeature(FEATURE_ROS, key);
+                browserImpl.setBrowserTabDescriptor(tab);
+                knownBrowserTabs.add(tab);
+                Map map = new HashMap();
+                map.put( Message.TAB_ID, tabId );
+                map.put("status","accepted");       // NOI18N
+                Message msg = new Message( Message.MessageType.INIT , map );
+                server.sendMessage(key, msg.toStringValue());
+
+                RequestProcessor.getDefault().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        // update temp URL with real one:
+                        assert p.realURL != null;
+                        showURLInTab(tab, p.realURL);
+                    }
+                });
+            }
+        }
+        
+        private Pair getAwaitingPair(String url) {
             URL u = null;
             try {
                 u = new URL(url);
@@ -242,14 +300,16 @@ public final class ExternalBrowserPlugin {
                     LOG.log(Level.FINE, "awaiting URL: {0}", awaiting);  // NOI18N
                 }
             }
-            ExtBrowserImpl browserImpl = (u == null) ? null : awaitingBrowserResponse.remove(urlToString(u));
+            Pair pair = (u == null) ? null : awaitingBrowserResponse.remove(urlToString(u));
+            ExtBrowserImpl browserImpl = pair != null ? pair.impl : null;
             
             // XXX: workaround: when Web Project is run it is started as "http:/localhost/aa" but browser URL is
             // "http:/localhost/aa/"
             if (browserImpl == null && url.endsWith("/")) { // NOI18N
                 try {
                     u = new URL(url.substring(0, url.length()-1));
-                    browserImpl = awaitingBrowserResponse.remove(urlToString(u));
+                    pair = awaitingBrowserResponse.remove(urlToString(u));
+                    browserImpl = pair != null ? pair.impl : null;
                 } catch (MalformedURLException ex) {
                     LOG.log(Level.WARNING, "cannot parse URL: {0}", url);   // NOI18N
                 }
@@ -260,53 +320,54 @@ public final class ExternalBrowserPlugin {
             {
                 try {
                     u = new URL(u.getProtocol(), "", u.getPort(), u.getFile()); // NOI18N
-                    browserImpl = awaitingBrowserResponse.remove(urlToString(u));
+                    pair = awaitingBrowserResponse.remove(urlToString(u));
+                    browserImpl = pair != null ? pair.impl : null;
                 } catch (MalformedURLException ex) {
                     LOG.log(Level.WARNING, "cannot parse URL: {0}", url);// NOI18N
                 }
             }
-            if (browserImpl == null) {
-                Map<String,String> map = new HashMap<String, String>();
-                map.put( Message.TAB_ID, tabId );
-                map.put("status","notaccepted");       // NOI18N
-                Message msg = new Message( Message.MessageType.INIT , map );
-                server.sendMessage(key, msg.toString());
-            } else  {
-                BrowserTabDescriptor tab = new BrowserTabDescriptor(tabId, browserImpl);
-                tab.registerKeyForFeature(FEATURE_ROS, key);
-                browserImpl.setBrowserTabDescriptor(tab);
-                knownBrowserTabs.add(tab);
-                Map<String,String> map = new HashMap<String, String>();
-                map.put( Message.TAB_ID, tabId );
-                map.put("status","accepted");       // NOI18N
-                Message msg = new Message( Message.MessageType.INIT , map );
-                server.sendMessage(key, msg.toString());
-            }
+            return pair;
         }
         
         private void handleClose( Message message, SelectionKey key  ){
-            String tabId = message.getValue( Message.TAB_ID );
-            if ( tabId == null ){
+            int tabId = message.getTabId();
+            if ( tabId == -1 ){
                 return;
             }
             for(Iterator<BrowserTabDescriptor> iterator = knownBrowserTabs.iterator() ; iterator.hasNext() ; ) {
                 BrowserTabDescriptor browserTab = iterator.next();
-                if ( tabId.equals( browserTab.tabID )) {
+                if ( tabId == browserTab.tabID ) {
                     iterator.remove();
+                    browserTab.deinitialize();
                     browserTab.browserImpl.wasClosed();
                     return;
                 }
             }
         }
 
+        private void handleDebuggerResponse( Message message, SelectionKey key  ){
+            int tabId = message.getTabId();
+            JSONObject response = (JSONObject)message.getValue().get("response" );
+            assert tabId != -1;
+            assert response != null;
+            if ( tabId == -1 || response == null) {
+                return;
+            }
+            for(BrowserTabDescriptor browserTab : knownBrowserTabs) {
+                if (tabId == browserTab.tabID && browserTab.getCallback() != null) {
+                    browserTab.getCallback().handleResponse(new Response(response));
+                }
+            }
+        }
+
         private void handleURLChange( Message message, SelectionKey key  ){
-            String tabId = message.getValue( Message.TAB_ID );
-            if ( tabId == null ){
+            int tabId = message.getTabId();
+            if ( tabId == -1 ){
                 return;
             }
             for(Iterator<BrowserTabDescriptor> iterator = knownBrowserTabs.iterator() ; iterator.hasNext() ; ) {
                 BrowserTabDescriptor browserTab = iterator.next();
-                if ( tabId.equals( browserTab.tabID )) {
+                if ( tabId == browserTab.tabID ) {
                     browserTab.browserImpl.urlHasChanged();
                     return;
                 }
@@ -324,12 +385,12 @@ public final class ExternalBrowserPlugin {
             if (inspector == null) {
                 LOG.log(Level.INFO, "No PageInspector found: ignoring the request for page inspection!"); // NOI18N
             } else {
-                String tabId = message.getValue(Message.TAB_ID);
+                int tabId = message.getTabId();
                 
                 // Find if the tab is known to RoS already
                 BrowserTabDescriptor browserTab = null;
                 for (BrowserTabDescriptor descriptor : knownBrowserTabs) {
-                    if (descriptor.tabID.equals(tabId)) {
+                    if (descriptor.tabID == tabId) {
                         browserTab = descriptor;
                     }
                 }
@@ -371,8 +432,8 @@ public final class ExternalBrowserPlugin {
         
     }
     
-    private String createReloadMessage(String tabId, URL newURL) {
-        Map<String, String> params = new HashMap<String, String>();
+    private String createReloadMessage(int tabId, URL newURL) {
+        Map params = new HashMap();
         params.put( Message.TAB_ID, tabId );
         if (newURL != null) {
             try {
@@ -382,12 +443,45 @@ public final class ExternalBrowserPlugin {
             }
         }
         Message msg = new Message( Message.MessageType.RELOAD, params);
-        return msg.toString();
+        return msg.toStringValue();
+    }
+    
+    private String createAttachDebuggerMessage(int tabId) {
+        Map params = new HashMap();
+        params.put( Message.TAB_ID, tabId );
+        Message msg = new Message( Message.MessageType.ATTACH_DEBUGGER, params);
+        return msg.toStringValue();
+    }
+    
+    private String createDetachDebuggerMessage(int tabId) {
+        Map params = new HashMap();
+        params.put( Message.TAB_ID, tabId );
+        Message msg = new Message( Message.MessageType.DETACH_DEBUGGER, params);
+        return msg.toStringValue();
+    }
+    
+    private String createDebuggerCommandMessage(int tabId, JSONObject params2) {
+        JSONObject data = new JSONObject();
+        data.put(Message.TAB_ID, tabId );
+        data.put("command", params2);
+        Message msg = new Message( Message.MessageType.DEBUGGER_COMMAND, data);
+        return msg.toStringValue();
     }
     
     private WebSocketServer server;
 
-    private Map<String,ExtBrowserImpl> awaitingBrowserResponse = new HashMap<String,ExtBrowserImpl>();
+    private Map<String,Pair> awaitingBrowserResponse = new HashMap<String,Pair>();
+    
+    private static class Pair {
+        ExtBrowserImpl impl;
+        URL realURL;
+
+        public Pair(ExtBrowserImpl impl, URL realURL) {
+            this.impl = impl;
+            this.realURL = realURL;
+        }
+        
+    }
     
     private List<BrowserTabDescriptor> knownBrowserTabs = new ArrayList<BrowserTabDescriptor>();
     
@@ -397,10 +491,13 @@ public final class ExternalBrowserPlugin {
     public static class BrowserTabDescriptor {
         /** Maps IDs of features (related to this tab) to their correponding sockets. */
         private Map<String,SelectionKey> keyMap = new HashMap<String,SelectionKey>();
-        private String tabID;
+        private int tabID;
         private ExtBrowserImpl browserImpl;
+        private ResponseCallback callback;
+        private boolean initialized;
+        private Session session;
 
-        public BrowserTabDescriptor(String tabID, ExtBrowserImpl browserImpl) {
+        public BrowserTabDescriptor(int tabID, ExtBrowserImpl browserImpl) {
             this.tabID = tabID;
             this.browserImpl = browserImpl;
         }
@@ -462,6 +559,49 @@ public final class ExternalBrowserPlugin {
             }
             return featureId;
         }
+
+        public void setCallback(ResponseCallback callback) {
+            assert this.callback == null : "why do you set callback twice??";
+            this.callback = callback;
+        }
+
+        private ResponseCallback getCallback() {
+            return callback;
+        }
+
+        private void init() {
+            if (initialized) {
+                return;
+            }
+            initialized = true;
+            WebKitDebuggingTransport transport = browserImpl.getLookup().lookup(WebKitDebuggingTransport.class);
+            WebKitDebugging webkitDebugger = browserImpl.getLookup().lookup(WebKitDebugging.class);
+            NetBeansJavaScriptDebuggerFactory factory = Lookup.getDefault().lookup(NetBeansJavaScriptDebuggerFactory.class);
+            if (webkitDebugger == null || factory == null) {
+                return;
+            }
+            transport.attach();
+            webkitDebugger.getDebugger().enable();
+            session = factory.createDebuggingSession(webkitDebugger);
+        }
+
+        private void deinitialize() {
+            if (!initialized) {
+                return;
+            }
+            initialized = false;
+            WebKitDebuggingTransport transport = browserImpl.getLookup().lookup(WebKitDebuggingTransport.class);
+            WebKitDebugging webkitDebugger = browserImpl.getLookup().lookup(WebKitDebugging.class);
+            NetBeansJavaScriptDebuggerFactory factory = Lookup.getDefault().lookup(NetBeansJavaScriptDebuggerFactory.class);
+            if (webkitDebugger == null || factory == null) {
+                return;
+            }
+            factory.stopDebuggingSession(session);
+            session = null;
+            webkitDebugger.getDebugger().disable();
+            transport.detach();
+        }
+
         
     }
     

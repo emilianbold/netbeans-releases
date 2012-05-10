@@ -48,8 +48,10 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Locale;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.json.simple.JSONObject;
 import org.netbeans.modules.extbrowser.plugins.ExtensionManagerAccessor;
 import org.netbeans.modules.extbrowser.plugins.PluginLoader;
 import org.netbeans.modules.extbrowser.plugins.Utils;
@@ -103,49 +105,47 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
             if ( prefs == null || prefs.length == 0){
                 return false;
             }
-            String preferences = Utils.readFile( prefs[0] );
-            int index = preferences.indexOf(PLUGIN_NAME);
-            if ( index == -1 ){
+            JSONObject preferences = Utils.readFile( prefs[0] );
+            if (preferences == null) {
                 return false;
             }
-            String firstPart = preferences.substring( 0, index );
-            int start = firstPart.lastIndexOf('}');
-            if ( start == -1){
+            JSONObject extensions = (JSONObject)preferences.get("extensions");
+            if (extensions == null) {
                 return false;
             }
-            int end = preferences.indexOf( '}', start+1);
-            if ( end == -1 ){
+            JSONObject settings = (JSONObject)extensions.get("settings");
+            if (extensions == null) {
                 return false;
             }
-            String version = getValue(preferences, start, end, VERSION);
-            if ( isUpdateRequired( version )){
-                return false;
-            }
-            start = end;
-            end = preferences.indexOf('}' , start +1);
-            if ( end == -1 ){
-                return false;
-            }
-            String state = getValue(preferences, start, end, STATE);
-            try {
-                boolean isEnabled =  Byte.valueOf((byte)1).equals(Byte.parseByte(state ));
-                
-                if ( !isEnabled ){
-                    NotifyDescriptor descriptor = new NotifyDescriptor.Message(
-                            NbBundle.getMessage(ChromeExtensionManager.class, 
-                                    "LBL_ChromePluginIsDisabled"),                   // NOI18N
-                                        NotifyDescriptor.ERROR_MESSAGE);
-                    
-                    descriptor.setTitle(NbBundle.getMessage(ChromeExtensionManager.class, 
-                            "TTL_ChromePluginIsDisabled"));                             // NOI18N
-                    DialogDisplayer.getDefault().notify(descriptor);
+            for (Object item : settings.entrySet()) {
+                Map.Entry e = (Map.Entry)item;
+                JSONObject extension = (JSONObject)e.getValue();
+                if (extension != null) {
+                    String path = (String)extension.get("path");
+                    if (path != null && path.indexOf("/extbrowser/plugins/chrome") != -1) {
+                        return true;
+                    }
+                    JSONObject manifest = (JSONObject)extension.get("manifest");
+                    if (manifest != null && PLUGIN_NAME.equals((String)manifest.get("name"))) {
+                        String version = (String)manifest.get("version");
+                        if (isUpdateRequired( version )){
+                            return false;
+                        }
+                        Number n = (Number)extension.get("state");
+                        if (n != null && n.intValue() != 1) {
+                            NotifyDescriptor descriptor = new NotifyDescriptor.Message(
+                                    NbBundle.getMessage(ChromeExtensionManager.class, 
+                                            "LBL_ChromePluginIsDisabled"),                   // NOI18N
+                                                NotifyDescriptor.ERROR_MESSAGE);
+                            descriptor.setTitle(NbBundle.getMessage(ChromeExtensionManager.class, 
+                                    "TTL_ChromePluginIsDisabled"));                             // NOI18N
+                            DialogDisplayer.getDefault().notify(descriptor);
+                        }
+                        return true;
+                    }
                 }
-                
-                return true;
             }
-            catch ( NumberFormatException e ){
-                return false;
-            }
+            return false;
         }
 
         /* (non-Javadoc)
@@ -224,34 +224,20 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
                                     localState.length == 0;
                         
                         if ( !guessDefault ) {
-                            String localStateContent = Utils.readFile( localState[0]);
-                            int index = localStateContent.indexOf("\"profile\":");       // NOI18N
-                            if ( index == -1){
-                                guessDefault = true;
-                            }
-                            else {
-                                index = localStateContent.indexOf( LAST_USED , index); 
-                            }
-                            if ( index == -1){
-                                guessDefault = true;
-                            }
-                            else {
-                                int end = localStateContent.indexOf( '}', 
-                                        index +LAST_USED.length());
-                                if ( end == -1){
-                                    guessDefault = true;
-                                }
-                                else {
-                                    String profile = localStateContent.substring( 
-                                            index +LAST_USED.length(), end ).trim();
-                                    profile = Utils.unquote( profile );
-                                    File[] listFiles = dir.listFiles( new FileFinder( 
-                                            profile , true));
-                                    if ( listFiles != null && listFiles.length >0 ){
-                                        return listFiles[0];
-                                    }
-                                    else {
-                                        guessDefault = true;
+                            JSONObject localStateContent = Utils.readFile( localState[0]);
+                            if (localStateContent != null) {
+                                JSONObject profile = (JSONObject)localStateContent.get("profile");
+                                if (profile != null) {
+                                    String prof = (String)profile.get("last_used");
+                                    if (prof != null) {
+                                        prof = Utils.unquote(prof);
+                                        File[] listFiles = dir.listFiles( new FileFinder( 
+                                                prof , true));
+                                        if ( listFiles != null && listFiles.length >0 ){
+                                            return listFiles[0];
+                                        } else {
+                                            guessDefault = true;
+                                        }
                                     }
                                 }
                             }
