@@ -411,12 +411,14 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
             }
         }
         if (newVal == null) {
-            canonicFiles.remove(primaryKey);
+            boolean removed = canonicFiles.remove(canonicKey, out);
+            CndUtils.assertTrue(removed, "inconsistent state for ", primaryKey);
             if (TraceFlags.TRACE_CANONICAL_FIND_FILE) {
                 System.err.println("removed entry for " + canonicKey + " while removing " + primaryKey);
             }
         } else {
-            canonicFiles.put(canonicKey, newVal);
+            Object prevValue = canonicFiles.put(canonicKey, newVal);
+            CndUtils.assertTrue(prevValue == out, "inconsistent state for ", primaryKey);
             if (TraceFlags.TRACE_CANONICAL_FIND_FILE) {
                 System.err.println("change entry for " + canonicKey + " while removing " + primaryKey + " to " + newVal);
             }
