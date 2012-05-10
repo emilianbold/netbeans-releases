@@ -44,14 +44,16 @@ package org.netbeans.modules.web.clientproject.libraries;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.json.JSONTokener;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
+import org.json.simple.parser.ParseException;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryImplementation3;
@@ -105,7 +107,7 @@ public class CDNJSLibrariesProvider implements LibraryProvider<LibraryImplementa
                 } else if (entry.getName().endsWith(".json")) { // NOI18N
                     try {
                         addLibrary(libs, str, versions);
-                    } catch (JSONException ex) {
+                    } catch (ParseException ex) {
                         Exceptions.printStackTrace(ex);
                     }
                 }
@@ -133,14 +135,14 @@ public class CDNJSLibrariesProvider implements LibraryProvider<LibraryImplementa
     }
 
     private void addLibrary(List<LibraryImplementation> libs, ZipInputStream str, 
-            Map<String, List<String>> versions) throws JSONException {
-        JSONTokener tokener = new JSONTokener(str);
-        JSONObject desc = new JSONObject(tokener);
-        String name = desc.getString("name"); // NOI18N
-        String version = desc.getString("version"); // NOI18N
-        String file = desc.getString("filename"); // NOI18N
-        String homepage = desc.getString("homepage"); // NOI18N
-        String description = desc.getString("description"); // NOI18N
+            Map<String, List<String>> versions) throws ParseException, IOException {
+        Reader r = new InputStreamReader(str);
+        JSONObject desc = (JSONObject)JSONValue.parseWithException(r);
+        String name = (String)desc.get("name"); // NOI18N
+        String version = (String)desc.get("version"); // NOI18N
+        String file = (String)desc.get("filename"); // NOI18N
+        String homepage = (String)desc.get("homepage"); // NOI18N
+        String description = (String)desc.get("description"); // NOI18N
         libs.add(createLibrary(name, version, file, homepage, description));
         List<String> vers = versions.get(name);
         if (vers == null) {
