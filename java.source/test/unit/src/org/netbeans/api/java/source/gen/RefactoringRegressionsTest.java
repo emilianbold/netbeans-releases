@@ -52,6 +52,7 @@ import java.io.IOException;
 import java.util.Collections;
 import com.sun.source.tree.*;
 import com.sun.source.util.TreeScanner;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.Modifier;
@@ -838,6 +839,54 @@ public class RefactoringRegressionsTest extends GeneratorTestMDRCompat {
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertEquals(golden, res);
+    }
+    
+    public void testCopyLiteralTree() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package javaapplication1;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    \n" +
+            "    public static int II = 0x00FF;\n" +
+            "}\n"
+            );
+        String golden =
+            "package javaapplication1;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    \n" +
+            "    public static int II = 0x00FF;\n" +
+            "}\n";
+        String nueGolden =
+            "\n" +
+            "public class Nue {\n" +
+            "\n" +
+            "    public static int II = 0x00FF;\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                VariableTree toCopy = (VariableTree) clazz.getMembers().get(1);
+                ClassTree newClass = make.Class(make.Modifiers(EnumSet.of(Modifier.PUBLIC)), "Nue", Collections.<TypeParameterTree>emptyList(), null, Collections.<Tree>emptyList(), Collections.<Tree>singletonList(toCopy));
+                workingCopy.rewrite(null, make.CompilationUnit(FileUtil.toFileObject(getWorkDir()), "Nue.java", Collections.<ImportTree>emptyList(), Collections.singletonList(newClass)));
+            }
+            
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+        File newFile = new File(getWorkDir(), "Nue.java");
+        assertTrue(newFile.canRead());
+        String newRes = TestUtilities.copyFileToString(newFile);
+        assertEquals(nueGolden, newRes);
     }
     
     String getGoldenPckg() {
