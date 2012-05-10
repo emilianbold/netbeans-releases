@@ -267,7 +267,7 @@ public class ProjectOpenedHookImpl extends ProjectOpenedHook {
         List<ArtifactRepository> mirrored = repo.getMirroredRepositories();
         if (mirrored.isEmpty()) {
             try {
-                RepositoryPreferences.getInstance().addTransientRepository(this, repo.getId(), repo.getId(), repo.getUrl(), RepositoryInfo.MirrorStrategy.ALL);
+                RepositoryPreferences.getInstance().addTransientRepository(this, repo.getId(), displayName, repo.getUrl(), RepositoryInfo.MirrorStrategy.ALL);
             } catch (URISyntaxException x) {
                 LOGGER.log(Level.WARNING, "Ignoring repo with malformed URL: {0}", x.getMessage());
             }
