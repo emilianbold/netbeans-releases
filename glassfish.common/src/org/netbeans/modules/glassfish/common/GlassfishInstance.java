@@ -60,18 +60,18 @@ import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.common.nodes.Hk2InstanceNode;
 import org.netbeans.modules.glassfish.common.ui.InstanceCustomizer;
 import org.netbeans.modules.glassfish.common.ui.VmCustomizer;
-import org.netbeans.modules.glassfish.spi.CustomizerCookie;
-import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.ServerState;
-import org.netbeans.modules.glassfish.spi.GlassfishModuleFactory;
-import org.netbeans.modules.glassfish.spi.RemoveCookie;
+import org.netbeans.modules.glassfish.spi.*;
 import org.netbeans.spi.server.ServerInstanceFactory;
 import org.netbeans.spi.server.ServerInstanceImplementation;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
@@ -104,6 +104,50 @@ public class GlassfishInstance implements ServerInstanceImplementation, Lookup.P
     // Static methods                                                         //
     ////////////////////////////////////////////////////////////////////////////
 
+    /** 
+     * Creates a GlassfishInstance object for a server installation.  This
+     * instance should be added to the the provider registry if the caller wants
+     * it to be persisted for future sessions or searchable.
+     * <p/>
+     * @param displayName display name for this server instance.
+     * @param homeFolder install folder where server code is located.
+     * @param httpPort http port for this server instance.
+     * @param adminPort admin port for this server instance.
+     * @return GlassfishInstance object for this server instance.
+     */
+    public static GlassfishInstance create(String displayName, String installRoot, 
+            String glassfishRoot, String domainsDir, String domainName, int httpPort, 
+            int adminPort,String url, String uriFragment, GlassfishInstanceProvider gip) {
+        Map<String, String> ip = new HashMap<String, String>();
+        ip.put(GlassfishModule.DISPLAY_NAME_ATTR, displayName);
+        ip.put(GlassfishModule.INSTALL_FOLDER_ATTR, installRoot);
+        ip.put(GlassfishModule.GLASSFISH_FOLDER_ATTR, glassfishRoot);
+        ip.put(GlassfishModule.DOMAINS_FOLDER_ATTR, domainsDir);
+        ip.put(GlassfishModule.DOMAIN_NAME_ATTR, domainName);
+        ip.put(GlassfishModule.HTTPPORT_ATTR, Integer.toString(httpPort));
+        ip.put(GlassfishModule.ADMINPORT_ATTR, Integer.toString(adminPort));
+        ip.put(GlassfishModule.URL_ATTR, url);
+        // extract the host from the URL
+        String[] bigUrlParts = url.split("]");
+        if (null != bigUrlParts && bigUrlParts.length > 1) {
+            String[] urlParts = bigUrlParts[1].split(":"); // NOI18N
+            if (null != urlParts && urlParts.length > 2) {
+                ip.put(GlassfishModule.HOSTNAME_ATTR, urlParts[2]);
+            }
+        }
+        GlassfishInstance result = new GlassfishInstance(ip, gip, true);
+        return result;
+    }
+    
+    public static GlassfishInstance create(Map<String, String> ip,GlassfishInstanceProvider gip, boolean updateNow) {
+        return new GlassfishInstance(ip, gip, updateNow);
+    }
+
+    public static GlassfishInstance create(Map<String, String> ip,GlassfishInstanceProvider gip) {
+        GlassfishInstance result = new GlassfishInstance(ip, gip, true);
+        return result;
+    }
+    
     /**
      * Build and update copy of GlassFish properties to be stored in <code>this</code>
      * object.
@@ -141,8 +185,8 @@ public class GlassfishInstance implements ServerInstanceImplementation, Lookup.P
         // Assume remote Prelude and 3.0 instances are in DEBUG (we cannot change them)
         // Assume a remote 3.1 instance is in NORMAL_MODE... we can restart it into debug mode
         // XXX username/password handling at some point.
-        properties.put(GlassfishModule.USERNAME_ATTR, DEFAULT_ADMIN_NAME);
-        properties.put(GlassfishModule.PASSWORD_ATTR, DEFAULT_ADMIN_PASSWORD);
+        newProperties.put(GlassfishModule.USERNAME_ATTR, DEFAULT_ADMIN_NAME);
+        newProperties.put(GlassfishModule.PASSWORD_ATTR, DEFAULT_ADMIN_PASSWORD);
         return newProperties;
     }
 
@@ -217,9 +261,9 @@ public class GlassfishInstance implements ServerInstanceImplementation, Lookup.P
     ////////////////////////////////////////////////////////////////////////////
     // Constructors                                                           //
     ////////////////////////////////////////////////////////////////////////////
-
+    @SuppressWarnings("LeakingThisInConstructor")
     private GlassfishInstance(Map<String, String> ip, GlassfishInstanceProvider instanceProvider, boolean updateNow) {
-        String deployerUri = null;
+        String deployerUri = ip.get(GlassfishModule.URL_ATTR);
         this.version = null;
         try {
             ic = new InstanceContent();
@@ -240,7 +284,6 @@ public class GlassfishInstance implements ServerInstanceImplementation, Lookup.P
             commonSupport = new CommonServerSupport(lookup, this, instanceProvider);
 
             // Flag this server URI as under construction
-            deployerUri = getDeployerUri();
             GlassfishInstanceProvider.activeRegistrationSet.add(deployerUri);
             if (null == instanceProvider.getInstance(deployerUri)) {
                 ic.add(this); // Server instance in lookup (to find instance from node lookup)
@@ -260,8 +303,6 @@ public class GlassfishInstance implements ServerInstanceImplementation, Lookup.P
             }
         }
     }
-
-
 
     ////////////////////////////////////////////////////////////////////////////
     // Getters and Setters                                                    //
@@ -289,9 +330,42 @@ public class GlassfishInstance implements ServerInstanceImplementation, Lookup.P
     // Fake Getters from GlassFishServer interface                            //
     ////////////////////////////////////////////////////////////////////////////
 
+    /**
+     * Returns property value to which the specified <code>key</code> is mapped,
+     * or <code>null</code> if this map contains no mapping for the
+     * <code>key</code>.
+     * <p/>
+     * @param key GlassFish property <code>key</code>.
+     * @return GlassFish property or <code>null</code> if no value with
+     *         given <code>key</code> is stored.
+     */
+    public String getProperty(String key) {
+        return properties.get(key);
+    }
+
+    /**
+     * Associates the specified <code>value</code> with the specified
+     * <code>key</code> in this map.
+     * <p/>
+     * If the map previously contained a mapping for the key, the old value
+     * is replaced by the specified value.
+     * <p/>
+     * @param properties GlassFish properties to set
+     * @return Previous value associated with <code>key</code>, or
+     *         <code>null</code> if there was no mapping for <code>key</code>.
+     */
+    public String putProperty(String key, String value) {
+        return properties.put(key, value);
+    }
+
+    /**
+     * Get GlassFish display name stored properties.
+     * <p/>
+     * @return GlassFish display name.
+     */
     @Override
     public String getName() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return properties.get(GlassfishModule.DISPLAY_NAME_ATTR);
     }
 
     /**
@@ -356,6 +430,18 @@ public class GlassfishInstance implements ServerInstanceImplementation, Lookup.P
     }
 
     /**
+     * Set GlassFish server domains folder into stored properties.
+     * <p/>
+     * @param domainsFolder GlassFish server domains folder.
+     * @return Previous value of domains folder, or <code>null</code> if there
+     *         was no value of domains folder stored.
+     */
+    public String setDomainsFolder(String domainsFolder) {
+        return properties.put(GlassfishModule.DOMAINS_FOLDER_ATTR,
+                domainsFolder);
+    }
+
+    /**
      * Set GlassFish server domain name from stored properties.
      * <p/>
      * @param domainsFolder GlassFish server domain name.
@@ -410,6 +496,15 @@ public class GlassfishInstance implements ServerInstanceImplementation, Lookup.P
     // Fake Getters                                                           //
     ////////////////////////////////////////////////////////////////////////////
     
+    /**
+     * Get GlassFish server port from stored properties.
+     * <p/>
+     * @return GlassFish server port as <code>String</code>.
+     */
+    public String getHttpPort() {
+        return properties.get(GlassfishModule.HTTPPORT_ATTR);
+    }
+
     public String getInstallRoot() {
         return properties.get(GlassfishModule.INSTALL_FOLDER_ATTR);
     }
@@ -431,28 +526,59 @@ public class GlassfishInstance implements ServerInstanceImplementation, Lookup.P
         return properties.get(GlassfishModule.USERNAME_ATTR);
     }
 
-    /**
-     * Returns property value to which the specified <code>key</code> is mapped,
-     * or <code>null</code> if this map contains no mapping for the
-     * <code>key</code>.
-     * <p/>
-     * @param key Key whose associated value is to be returned.
-     */
-    public String getProperty(String key) {
-        return properties.get(key);
-    }
+    public synchronized String getDomainsRoot() {
+        String retVal = getDomainsFolder();
+        if (null == retVal) {
+            return null;
+        }
+        File candidate = new File(retVal);
+        if (candidate.exists() && !Utils.canWrite(candidate)) {
+            // we need to do some surgury here...
+            String foldername = FileUtil.findFreeFolderName(FileUtil.getConfigRoot(), "GF3");
+            FileObject destdir = null;
+            try {
+                destdir = FileUtil.createFolder(FileUtil.getConfigRoot(),foldername);
+            } catch (IOException ex) {
+                Logger.getLogger("glassfish").log(Level.INFO,"could not create a writable domain dir",ex); // NOI18N
+            }
+            if (null != destdir) {
+                candidate = new File(candidate, getDomainName());
+                FileObject source = FileUtil.toFileObject(FileUtil.normalizeFile(candidate));
+                try {
+                    Utils.doCopy(source, destdir);
 
-    /**
-     * Associates the specified <code>value</code> with the specified
-     * <code>key</code> in this map.
-     * <p/>
-     * If the map previously contained a mapping for the key, the old value
-     * is replaced by the specified value.
-     * @param key   Key with which the specified value is to be associated.
-     * @param value Value to be associated with the specified key.
-     */
-    public void putProperty(String key, String value) {
-        properties.put(key, value);
+                    retVal = FileUtil.toFile(destdir).getAbsolutePath();
+                    setDomainsFolder(retVal);
+                } catch (IOException ex) {
+                    // need to try again... since the domain is probably unreadable.
+                    foldername = FileUtil.findFreeFolderName(FileUtil.getConfigRoot(), "GF3"); // NOI18N
+                    try {
+                        destdir = FileUtil.createFolder(FileUtil.getConfigRoot(), foldername);
+                    } catch (IOException ioe) {
+                        Logger.getLogger("glassfish").log(Level.INFO,"could not create a writable second domain dir",ioe); // NOI18N
+                        return retVal;
+                    }
+                    File destdirFile = FileUtil.toFile(destdir);
+                    setDomainsFolder(destdirFile.getAbsolutePath());
+                    retVal = destdirFile.getAbsolutePath();
+                    // getEe6() eventually creates a call to getDomainsRoot()... which can lead to a deadlock
+                    //  forcing the call to happen after getDomainsRoot returns will 
+                    // prevent the deadlock.
+                    RequestProcessor.getDefault().post(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            CreateDomain cd = new CreateDomain("anonymous", "", // NOI18N
+                                    new File(getServerHome()),
+                                    properties, GlassfishInstanceProvider.getEe6(),
+                                    false, true, "INSTALL_ROOT_KEY"); // NOI18N
+                            cd.start();
+                        }
+                    }, 100);
+                }
+            }
+        }
+        return retVal;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -540,7 +666,7 @@ public class GlassfishInstance implements ServerInstanceImplementation, Lookup.P
 
     }
     
-    void updateModuleSupport() {
+    final void updateModuleSupport() {
         // Find all modules that have NetBeans support, add them to lookup if server
         // supports them.
         updateFactories();
@@ -552,58 +678,10 @@ public class GlassfishInstance implements ServerInstanceImplementation, Lookup.P
         updateFactories();
     }
 
-    /** 
-     * Creates a GlassfishInstance object for a server installation.  This
-     * instance should be added to the the provider registry if the caller wants
-     * it to be persisted for future sessions or searchable.
-     * 
-     * @param displayName display name for this server instance.
-     * @param homeFolder install folder where server code is located.
-     * @param httpPort http port for this server instance.
-     * @param adminPort admin port for this server instance.
-     * @return GlassfishInstance object for this server instance.
-     */
-    public static GlassfishInstance create(String displayName, String installRoot, 
-            String glassfishRoot, String domainsDir, String domainName, int httpPort, 
-            int adminPort,String url, String uriFragment, GlassfishInstanceProvider gip) {
-        Map<String, String> ip = new HashMap<String, String>();
-        ip.put(GlassfishModule.DISPLAY_NAME_ATTR, displayName);
-        ip.put(GlassfishModule.INSTALL_FOLDER_ATTR, installRoot);
-        ip.put(GlassfishModule.GLASSFISH_FOLDER_ATTR, glassfishRoot);
-        ip.put(GlassfishModule.DOMAINS_FOLDER_ATTR, domainsDir);
-        ip.put(GlassfishModule.DOMAIN_NAME_ATTR, domainName);
-        ip.put(GlassfishModule.HTTPPORT_ATTR, Integer.toString(httpPort));
-        ip.put(GlassfishModule.ADMINPORT_ATTR, Integer.toString(adminPort));
-        ip.put(GlassfishModule.URL_ATTR, url);
-        // extract the host from the URL
-        String[] bigUrlParts = url.split("]");
-        if (null != bigUrlParts && bigUrlParts.length > 1) {
-            String[] urlParts = bigUrlParts[1].split(":"); // NOI18N
-            if (null != urlParts && urlParts.length > 2) {
-                ip.put(GlassfishModule.HOSTNAME_ATTR, urlParts[2]);
-            }
-        }
-        GlassfishInstance result = new GlassfishInstance(ip, gip, true);
-        return result;
-    }
-    
-    public static GlassfishInstance create(Map<String, String> ip,GlassfishInstanceProvider gip, boolean updateNow) {
-        return new GlassfishInstance(ip, gip, updateNow);
-    }
-
-    public static GlassfishInstance create(Map<String, String> ip,GlassfishInstanceProvider gip) {
-        GlassfishInstance result = new GlassfishInstance(ip, gip, true);
-        return result;
-    }
-    
     public ServerInstance getCommonInstance() {
         return commonInstance;
     }
-        
-    public CommonServerSupport getCommonSupport() {
-        return commonSupport;
-    }
-    
+           
     @Override
     public Lookup getLookup() {
         synchronized (lookupResult) {
@@ -611,6 +689,10 @@ public class GlassfishInstance implements ServerInstanceImplementation, Lookup.P
         }
     }
     
+    public CommonServerSupport getCommonSupport() {
+        return commonSupport;
+    }
+
     public void addChangeListener(final ChangeListener listener) {
         commonSupport.addChangeListener(listener);
     }
@@ -744,28 +826,28 @@ public class GlassfishInstance implements ServerInstanceImplementation, Lookup.P
         if (null == other.getDeployerUri()) {
             return false;
         }
-        if (null == commonSupport) {
+//        if (null == commonSupport) {
+//            return false;
+//        }
+        if (null == getDomainName()) {
             return false;
         }
-        if (null == commonSupport.getDomainName()) {
-            return false;
-        }
-        if (null == other.getCommonSupport()) {
-            return false;
-        }
-        if (null == other.getCommonSupport().getDomainName()) {
+//        if (null == other.getCommonSupport()) {
+//            return false;
+//        }
+        if (null == getDomainName()) {
             return false;
         }
         return getDeployerUri().replace("127.0.0.1", "localhost").equals(other.getDeployerUri().replace("127.0.0.1", "localhost")) &&
-                commonSupport.getDomainName().equals(other.getCommonSupport().getDomainName()) &&
-                commonSupport.getDomainsRoot().equals(other.getCommonSupport().getDomainsRoot()) &&
-                commonSupport.getHttpPort().equals(other.getCommonSupport().getHttpPort());
+                getDomainName().equals(other.getCommonSupport().getDomainName()) &&
+                getDomainsRoot().equals(other.getCommonSupport().getDomainsRoot()) &&
+                getHttpPort().equals(other.getHttpPort());
     }
 
     @Override
     public int hashCode() {
-        String tmp = getDeployerUri().replace("127.0.0.1", "localhost")+commonSupport.getHttpPort()+
-                commonSupport.getDomainsRoot()+commonSupport.getDomainName();
+        String tmp = getDeployerUri().replace("127.0.0.1", "localhost")+getHttpPort()+
+                getDomainsRoot()+getDomainName();
         return tmp.hashCode();
     }
 

@@ -46,22 +46,11 @@ package org.netbeans.modules.glassfish.common.nodes;
 
 import java.awt.Component;
 import java.awt.Image;
-import java.util.Collections;
-import java.util.Map;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.glassfish.common.GlassfishInstance;
-import org.netbeans.modules.glassfish.common.actions.DebugAction;
-import org.netbeans.modules.glassfish.common.actions.ProfileAction;
-import org.netbeans.modules.glassfish.common.actions.PropertiesAction;
-import org.netbeans.modules.glassfish.common.actions.RemoveServerAction;
-import org.netbeans.modules.glassfish.common.actions.RestartAction;
-import org.netbeans.modules.glassfish.common.actions.StartServerAction;
-import org.netbeans.modules.glassfish.common.actions.StopServerAction;
-import org.netbeans.modules.glassfish.common.actions.ViewAdminConsoleAction;
-import org.netbeans.modules.glassfish.common.actions.ViewServerLogAction;
-import org.netbeans.modules.glassfish.common.actions.ViewUpdateCenterAction;
+import org.netbeans.modules.glassfish.common.actions.*;
 import org.netbeans.modules.glassfish.common.nodes.actions.RefreshModulesAction;
 import org.netbeans.modules.glassfish.common.nodes.actions.RefreshModulesCookie;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
@@ -115,6 +104,7 @@ public class Hk2InstanceNode extends AbstractNode implements ChangeListener { //
         }
     }
     
+    @SuppressWarnings("LeakingThisInConstructor")
     private Hk2InstanceNode(final GlassfishInstance instance, final InstanceContent ic, boolean isFullNode) {
         super(isFullNode ? new Hk2InstanceChildren(instance) : Children.LEAF, 
                 new ProxyLookup(new AbstractLookup(ic), instance.getLookup()));
@@ -125,10 +115,12 @@ public class Hk2InstanceNode extends AbstractNode implements ChangeListener { //
         if(isFullNode) {
             serverInstance.addChangeListener(WeakListeners.change(this, serverInstance));
             instanceContent.add(new RefreshModulesCookie() {
+                @Override
                 public void refresh() {
                     refresh(null, null);
                 }
 
+                @Override
                 public void refresh(String expected, String unexpected) {
                     Children children = getChildren();
                     if(children instanceof Refreshable) {
@@ -251,41 +243,34 @@ public class Hk2InstanceNode extends AbstractNode implements ChangeListener { //
 
     private boolean isDebug() {
         return GlassfishModule.DEBUG_MODE.equals(
-                serverInstance.getCommonSupport().getInstanceProperties().get(GlassfishModule.JVM_MODE));
+                serverInstance.getProperty(GlassfishModule.JVM_MODE));
     }
     
     private boolean isProfile() {
         return GlassfishModule.PROFILE_MODE.equals(
-                serverInstance.getCommonSupport().getInstanceProperties().get(GlassfishModule.JVM_MODE));
+                serverInstance.getProperty(GlassfishModule.JVM_MODE));
     }
 
-    private Map<String, String> getInstanceProperties() {
-        Map<String, String> ip = null;
-        GlassfishModule commonSupport = getLookup().lookup(GlassfishModule.class);
-        if(commonSupport != null) {
-            ip = commonSupport.getInstanceProperties();
-        }
-
+/*    private Map<String, String> getInstanceProperties() {
+        Map<String, String> ip = serverInstance.getProperties();
+//        GlassfishModule commonSupport = getLookup().lookup(GlassfishModule.class);
         if(ip == null) {
             ip = Collections.emptyMap();
         }
-        
         return ip;
     }
-    
+*/    
     private String buildDisplayName() {
-        Map<String, String> ip = getInstanceProperties();
-        String dn = ip.get(GlassfishModule.DISPLAY_NAME_ATTR);
+        String dn = serverInstance.getProperty(GlassfishModule.DISPLAY_NAME_ATTR);
         return dn != null ? dn : "Bogus display name"; // NOI18N NbBundle.getMessage(Hk2InstanceNode.class, "TXT_GlassfishPreludeInstanceNode");
     }
 
     private String getAdminUrl() {
         String result = null;
-        
-        Map<String, String> ip = getInstanceProperties();
-        String host = ip.get(GlassfishModule.HOSTNAME_ATTR);
-        String adminPort = !"false".equals(System.getProperty("glassfish.useadminport")) ?
-            ip.get(GlassfishModule.ADMINPORT_ATTR) : ip.get(GlassfishModule.HTTPPORT_ATTR);
+        String host = serverInstance.getProperty(GlassfishModule.HOSTNAME_ATTR);
+        String adminPort = !"false".equals(System.getProperty("glassfish.useadminport"))
+                ? serverInstance.getProperty(GlassfishModule.ADMINPORT_ATTR)
+                : serverInstance.getProperty(GlassfishModule.HTTPPORT_ATTR);
         if(host != null && host.length() > 0) {
             result = "http://" + host + ":" + adminPort; // this is just a display string...
         }
@@ -293,8 +278,10 @@ public class Hk2InstanceNode extends AbstractNode implements ChangeListener { //
         return result;
     }
 
+    @Override
     public void stateChanged(ChangeEvent e) {
         Mutex.EVENT.readAccess(new Runnable() {
+            @Override
             public void run() {
                 fireIconChange();
             }

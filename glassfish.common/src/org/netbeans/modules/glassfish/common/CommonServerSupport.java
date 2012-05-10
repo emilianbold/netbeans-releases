@@ -55,6 +55,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
+import org.glassfish.tools.ide.admin.CommandVersion;
+import org.glassfish.tools.ide.admin.ResultString;
+import org.glassfish.tools.ide.admin.ServerAdmin;
+import org.glassfish.tools.ide.admin.TaskState;
+import org.glassfish.tools.ide.data.IdeContext;
 import org.netbeans.api.keyring.Keyring;
 import org.netbeans.modules.glassfish.common.nodes.actions.RefreshModulesCookie;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
@@ -169,92 +174,37 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
         return retVal;
     }
 
+    @Deprecated
     public String getAdminPort() {
         return instance.getProperty(ADMINPORT_ATTR);
     }
 
+    @Deprecated
     public String getHttpPort() {
         return instance.getProperty(HTTPPORT_ATTR);
     }
 
+    @Deprecated
     public int getHttpPortNumber() {
-        int httpPort = -1;
-        try {
-            httpPort = Integer.parseInt(instance.getProperty(HTTPPORT_ATTR));
-        } catch(NumberFormatException ex) {
-            Logger.getLogger("glassfish").log(Level.WARNING, ex.getLocalizedMessage(), ex);  // NOI18N
-        }
-        return httpPort;
+        return instance.getPort();
     }
 
+    @Deprecated
     public int getAdminPortNumber() {
-        int adminPort = -1;
-        try {
-            adminPort = Integer.parseInt(instance.getProperty(ADMINPORT_ATTR));
-        } catch(NumberFormatException ex) {
-            Logger.getLogger("glassfish").log(Level.WARNING, ex.getLocalizedMessage(), ex);  // NOI18N
-        }
-        return adminPort;
+        return instance.getAdminPort();
     }
 
+    @Deprecated
     public String getHostName() {
         return instance.getProperty(HOSTNAME_ATTR);
     }
 
-    public synchronized String getDomainsRoot() {
-        String retVal = instance.getProperty(DOMAINS_FOLDER_ATTR);
-        if (null == retVal) {
-            return null;
-        }
-        File candidate = new File(retVal);
-        if (candidate.exists() && !Utils.canWrite(candidate)) {
-            // we need to do some surgury here...
-            String foldername = FileUtil.findFreeFolderName(FileUtil.getConfigRoot(), "GF3");
-            FileObject destdir = null;
-            try {
-                destdir = FileUtil.createFolder(FileUtil.getConfigRoot(),foldername);
-            } catch (IOException ex) {
-                Logger.getLogger("glassfish").log(Level.INFO,"could not create a writable domain dir",ex); // NOI18N
-            }
-            if (null != destdir) {
-                candidate = new File(candidate, instance.getProperty(DOMAIN_NAME_ATTR));
-                FileObject source = FileUtil.toFileObject(FileUtil.normalizeFile(candidate));
-                try {
-                    Utils.doCopy(source, destdir);
-
-                    retVal = FileUtil.toFile(destdir).getAbsolutePath();
-                    instance.putProperty(DOMAINS_FOLDER_ATTR,retVal);
-                } catch (IOException ex) {
-                    // need to try again... since the domain is probably unreadable.
-                    foldername = FileUtil.findFreeFolderName(FileUtil.getConfigRoot(), "GF3"); // NOI18N
-                    try {
-                        destdir = FileUtil.createFolder(FileUtil.getConfigRoot(), foldername);
-                    } catch (IOException ioe) {
-                        Logger.getLogger("glassfish").log(Level.INFO,"could not create a writable second domain dir",ioe); // NOI18N
-                        return retVal;
-                    }
-                    File destdirFile = FileUtil.toFile(destdir);
-                    instance.putProperty(DOMAINS_FOLDER_ATTR, destdirFile.getAbsolutePath());
-                    retVal = destdirFile.getAbsolutePath();
-                    // getEe6() eventually creates a call to getDomainsRoot()... which can lead to a deadlock
-                    //  forcing the call to happen after getDomainsRoot returns will 
-                    // prevent the deadlock.
-                    RequestProcessor.getDefault().post(new Runnable() {
-
-                        @Override
-                        public void run() {
-                            CreateDomain cd = new CreateDomain("anonymous", "", // NOI18N
-                                    new File(instance.getProperty(GlassfishModule.GLASSFISH_FOLDER_ATTR)),
-                                    instance.getProperties(), GlassfishInstanceProvider.getEe6(), false, true, "INSTALL_ROOT_KEY"); // NOI18N
-                            cd.start();
-                        }
-                    }, 100);
-                }
-            }
-        }
-        return retVal;
+    @Deprecated
+    public String getDomainsRoot() {
+        return instance.getDomainsRoot();
     }
 
+    @Deprecated
     public String getDomainName() {
         String retVal = instance.getProperty(DOMAIN_NAME_ATTR);
         return retVal;
@@ -670,11 +620,10 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
                     // !PW temporary while some server versions support __locations
                     // and some do not but are still V3 and might the ones the user
                     // is using.
-//                    Command cmd = new CommandVersion();
-//                    IdeContext ide = new IdeContext();
-//                    Future<ResultString> future = ServerAdmin.<ResultString>exec(server, command, ide);
-                    result = execute(true, new Commands.VersionCommand());
-                    isReady = result.get(timeout, units) == OperationState.COMPLETED;
+                    Future<ResultString> future = 
+                            ServerAdmin.<ResultString>exec(instance,
+                            new CommandVersion(), new IdeContext());
+                    isReady = future.get().getState() == TaskState.COMPLETED;
                     break;
                 } else {
                     // keep trying for 10 minutes if the server is stuck between
