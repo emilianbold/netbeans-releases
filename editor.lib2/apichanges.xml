@@ -107,6 +107,21 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="UndoableEditWrapper">
+            <summary>UndoableEditWrapper interface added</summary>
+            <version major="1" minor="60"/>
+            <date day="24" month="4" year="2012"/>
+            <author login="mmetelka"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+            <description>
+                <p>
+                    Added UndoableEditWrapper interface which allows wrapping
+                    of document-generated undoable edit by custom wrapping undoable edit(s).
+                </p>
+            </description>
+            <issue number="204828"/>
+        </change>
+
         <change id="EditorDocumentUtils.runExclusive">
             <summary>EditorDocumentUtils.runExclusive method added</summary>
             <version major="1" minor="58"/>

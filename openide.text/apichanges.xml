@@ -49,6 +49,24 @@ made subject to such option by the copyright holder.
 <apidef name="text">Text API</apidef>
 </apidefs>
 <changes>
+    <change id="NbDocument-getEditToBeUndoneOfType">
+        <api name="text"/>
+        <summary>Added NbDocument.getEditToBeUndoneOfType</summary>
+        <version major="6" minor="49"/>
+        <date day="24" month="4" year="2011"/>
+        <author login="mmetelka"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                Added NbDocument.getEditToBeUndoneOfType()
+                and NbDocument.getEditToBeRedoneOfType()
+                to retrieve custom undoable edits that wrap document-generated
+                undoable edits.
+            </p>
+        </description>
+        <class package="org.openide.text" name="CloneableEditorSupport"/>
+        <issue number="199568"/>
+    </change>
       <change id="NbDocument.openDocument">
           <api name="text"/>
           <summary>Added methods <code>NbDocument.getDocument</code>, 
