@@ -2270,30 +2270,6 @@ jarsigner.storepass=${jarsigner.storepass}
 	</antcall>
     </target>
     
-    <target name="generate-jdk-bundle-single-solaris-x86">
-        <condition property="jdk.full.version.platform" value="${jdk.full.version}" else="1.7.0.4.20">
-            <isset property="jdk.full.version"/>
-        </condition>
-	<antcall target="generate-jdk-bundle">
-		<param name="bundle.platform"           value="solaris-x86"/>
-		<param name="bundle.extension"		value=".sh"/>
-		<param name="bundled.jvm.file.suffix"   value="solaris-i586.sh"/>
-	        <param name="jdk.full.version"          value="${jdk.full.version.platform}"/>
-	</antcall>
-    </target>
-
-    <target name="generate-jdk-bundle-single-solaris-sparc">
-        <condition property="jdk.full.version.platform" value="${jdk.full.version}" else="1.7.0.4.20">
-            <isset property="jdk.full.version"/>
-        </condition>
-	<antcall target="generate-jdk-bundle">
-		<param name="bundle.platform"           value="solaris-sparc"/>
-		<param name="bundle.extension"		value=".sh"/>
-		<param name="bundled.jvm.file.suffix"   value="solaris-sparc.sh"/>
-	        <param name="jdk.full.version"          value="${jdk.full.version.platform}"/>
-	</antcall>
-    </target>
-
     <target name="generate-jdk-bundle"  depends="get-bundled-jvm">
         <property name="bundle.prefix"
                       value="${jdk.output.dir}/${jdk.bundle.files.prefix}-${jdk.bundle.files.suffix}-${bundle.platform}${nb.build.suffix}"/>
@@ -2371,14 +2347,6 @@ jarsigner.storepass=${jarsigner.storepass}
 		<param name="bundle.platform"  value="linux"/>
 		<param name="bundle.extension" value="sh"/>
 	</antcall>
-	<antcall target="generate-weblogic-bundle">
-	    <param name="bundle.platform"  value="solaris-x86"/>
-	    <param name="bundle.extension" value="sh"/>
-        </antcall>
-	<antcall target="generate-weblogic-bundle">
-	    <param name="bundle.platform"  value="solaris-sparc"/>
-	    <param name="bundle.extension" value="sh"/>
-        </antcall>
 	<antcall target="generate-weblogic-bundle">
                <param name="bundle.platform"  value="macosx-x86"/>
                <param name="bundle.extension" value="zip"/>

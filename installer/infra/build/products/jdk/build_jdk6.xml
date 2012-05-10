@@ -69,12 +69,6 @@
         <antcall target="clean-platform">
             <param name="product.platforms" value="linux"/>
         </antcall>
-        <antcall target="clean-platform">
-            <param name="product.platforms" value="solaris-x86"/>
-        </antcall>
-        <antcall target="clean-platform">
-            <param name="product.platforms" value="solaris-sparc"/>
-        </antcall>
     </target>
     
     <!--
@@ -90,12 +84,6 @@
         <antcall target="build-platform">
             <param name="product.platforms" value="linux"/>
         </antcall>
-        <antcall target="build-platform">
-            <param name="product.platforms" value="solaris-x86"/>
-        </antcall>
-        <antcall target="build-platform">
-            <param name="product.platforms" value="solaris-sparc"/>
-        </antcall>
     </target>
     
     <!--
@@ -110,12 +98,6 @@
         </antcall>
         <antcall target="release-platform">
             <param name="product.platforms" value="linux"/>
-        </antcall>
-        <antcall target="release-platform">
-            <param name="product.platforms" value="solaris-x86"/>
-        </antcall>
-        <antcall target="release-platform">
-            <param name="product.platforms" value="solaris-sparc"/>
         </antcall>
     </target>
     

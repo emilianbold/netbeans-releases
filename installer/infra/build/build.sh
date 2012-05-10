@@ -78,8 +78,8 @@ if [ -z "$BUILD_NBJDK7" ] ; then
 fi
 
 if [ -z "$BUNDLE_JDK_PLATFORM" ] ; then
-    #build NetBeans/JDK for windows,solaris-x86,solaris-sparc,linux by default (Mac has own native build)
-    BUNDLE_JDK_PLATFORM="windows,solaris-x86,solaris-sparc,linux"
+    #build NetBeans/JDK for windows,linux by default (Mac has own native build)
+    BUNDLE_JDK_PLATFORM="windows,linux"
 fi
 
 if [ -z "$EN_BUILD" ] ; then
