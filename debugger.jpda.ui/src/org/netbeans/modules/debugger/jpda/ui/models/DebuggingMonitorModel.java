@@ -136,9 +136,9 @@ NodeActionsProviderFilter, TableModel, Constants {
         private final Set<JPDAThread> threadsAskedForMonitors = new WeakSet<JPDAThread>();
         private final Set<CallStackFrame> framesAskedForMonitors = new WeakSet<CallStackFrame>();
         private final DeadlockDetector deadlockDetector;
-        private boolean isDeadlock;
         private Preferences preferences = NbPreferences.forModule(getClass()).node("debugging"); // NOI18N
         private PreferenceChangeListener prefListener;
+        private RevertShowMonitorsListener revertShowMonitorsListener;
 
         private ModelListener modelListener;
         private DebuggingTreeModel modelEventSource;
@@ -164,7 +164,7 @@ NodeActionsProviderFilter, TableModel, Constants {
                 synchronized (threadsAskedForMonitors) {
                     threadsAskedForMonitors.add(t);
                 }
-                if (preferences.getBoolean(SHOW_MONITORS, false) || isDeadlock) {
+                if (preferences.getBoolean(SHOW_MONITORS, false)) {
                     try {
                         ObjectVariable contended = t.getContendedMonitor ();
                         ObjectVariable[] owned;
@@ -268,7 +268,7 @@ NodeActionsProviderFilter, TableModel, Constants {
             }
             if (o instanceof CallStackFrame) {
                 CallStackFrame frame = (CallStackFrame) o;
-                if (preferences.getBoolean(SHOW_MONITORS, false) || isDeadlock) {
+                if (preferences.getBoolean(SHOW_MONITORS, false)) {
                     List<MonitorInfo> monitors = frame.getOwnedMonitors();
                     int n = monitors.size();
                     if (n > 0) {
@@ -349,7 +349,7 @@ NodeActionsProviderFilter, TableModel, Constants {
             if (o instanceof ObjectVariable)
                 return true;
             if (o instanceof CallStackFrame) {
-                if (preferences.getBoolean(SHOW_MONITORS, false) || isDeadlock) {
+                if (preferences.getBoolean(SHOW_MONITORS, false)) {
                     return false;
                 } else {
                     synchronized (framesAskedForMonitors) {
@@ -374,7 +374,6 @@ NodeActionsProviderFilter, TableModel, Constants {
             public void preferenceChange(PreferenceChangeEvent evt) {
                 String key = evt.getKey();
                 if (SHOW_MONITORS.equals(key)) {
-                    isDeadlock = false;
                     List<JPDAThread> threads;
                     synchronized (threadsAskedForMonitors) {
                         threads = new ArrayList(threadsAskedForMonitors);
@@ -397,6 +396,11 @@ NodeActionsProviderFilter, TableModel, Constants {
                         fireModelChange(new ModelEvent.NodeChanged(modelEventSource,
                                         t, ModelEvent.NodeChanged.CHILDREN_MASK));
                     }
+                    if (revertShowMonitorsListener != null) {
+                        // Soneone has changed the SHOW_MONITORS property, cancel the revert.
+                        debugger.removePropertyChangeListener(JPDADebugger.PROP_STATE, revertShowMonitorsListener);
+                        revertShowMonitorsListener = null;
+                    }
                 }
             }
 
@@ -406,9 +410,38 @@ NodeActionsProviderFilter, TableModel, Constants {
 
             public void propertyChange(PropertyChangeEvent evt) {
                 Set<Deadlock> deadlocks = deadlockDetector.getDeadlocks();
-                isDeadlock = deadlocks.size() > 0;
+                boolean isDeadlock = deadlocks.size() > 0;
+                if (isDeadlock) {
+                    boolean areMonitors = preferences.getBoolean(SHOW_MONITORS, false);
+                    if (!areMonitors) {
+                        // Show the monitors temporarily
+                        preferences.putBoolean(SHOW_MONITORS, true);
+                        final RevertShowMonitorsListener revertShowMonitorsListener = new RevertShowMonitorsListener();
+                        debugger.addPropertyChangeListener(JPDADebugger.PROP_STATE, revertShowMonitorsListener);
+                        // Set revertShowMonitorsListener later, so that lazy preferenceChange does not remove it right away.
+                        RequestProcessor.getDefault().post(new Runnable() {
+                            @Override
+                            public void run() {
+                                Children.this.revertShowMonitorsListener = revertShowMonitorsListener;
+                            }
+                        }, 1000);
+                    }
+                }
             }
 
+        }
+        
+        private class RevertShowMonitorsListener implements PropertyChangeListener {
+
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (debugger.getState() == JPDADebugger.STATE_DISCONNECTED) {
+                    // Turn the monitors off again.
+                    preferences.putBoolean(SHOW_MONITORS, false);
+                    debugger.removePropertyChangeListener(JPDADebugger.PROP_STATE, this);
+                }
+            }
+            
         }
 
     }
