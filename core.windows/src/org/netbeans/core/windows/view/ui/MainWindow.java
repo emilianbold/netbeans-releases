@@ -80,8 +80,6 @@ public final class MainWindow {
    /** generated Serialized Version UID */
    static final long serialVersionUID = -1160791973145645501L;
 
-    private static final Logger LOGGER = Logger.getLogger(MainWindow.class.getName());
-
    private final JFrame frame;
 
    private static JMenuBar mainMenuBar;
