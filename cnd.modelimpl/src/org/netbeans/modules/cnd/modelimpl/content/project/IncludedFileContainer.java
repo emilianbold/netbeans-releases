@@ -155,10 +155,13 @@ public final class IncludedFileContainer {
         return null;
     }
 
-    public void putStorage(ProjectBase includedProject) {
+    public boolean putStorage(ProjectBase includedProject) {
         Storage storage = getStorageForProject(includedProject);
-        assert storage != null : "no storage for " + srorageListOwner + " and included " + includedProject;
-        storage.put();
+        if (storage != null) {
+            storage.put();
+            return true;
+        }
+        return false;
     }
 
     public FileEntry getOrCreateEntryForIncludedFile(FileEntry entryToLockOn, ProjectBase includedProject, FileImpl includedFile) {
