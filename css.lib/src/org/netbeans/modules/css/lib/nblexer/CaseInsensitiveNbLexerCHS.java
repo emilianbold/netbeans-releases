@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,38 +37,28 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.css.lib.nblexer;
 
-package org.netbeans.modules.groovy.support.debug;
-
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.api.debugger.jpda.InvalidExpressionException;
-import org.netbeans.api.debugger.jpda.JPDADebugger;
-import org.netbeans.spi.debugger.ContextProvider;
-import org.netbeans.spi.debugger.jpda.Evaluator;
+import org.netbeans.spi.lexer.LexerRestartInfo;
 
 /**
  *
- * @author Petr Hejl
+ * @author marekfukala
  */
-// Not yet finished
-//@Evaluator.Registration(language="GROOVY")
-public class GroovyEvaluator implements Evaluator<GroovyExpression> {
+public class CaseInsensitiveNbLexerCHS extends NbLexerCharStream {
 
-    private static final Logger LOGGER = Logger.getLogger(GroovyEvaluator.class.getName());
-
-    private final JPDADebugger debugger;
-
-    public GroovyEvaluator (ContextProvider lookupProvider) {
-        debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
+    public CaseInsensitiveNbLexerCHS(LexerRestartInfo lri) {
+        super(lri);
     }
 
-    public Result evaluate(Expression<GroovyExpression> expression, final Context context) throws InvalidExpressionException {
-        LOGGER.log(Level.FINE, "Groovy evaulator evaluating {0}", expression.getExpression());
-
-        return new Result(context.getContextVariable());
+    @Override
+    public int LA(int i) {
+        if (i == 0) {
+            return 0; // undefined
+        }
+        int la = super.LA(i);
+        return Character.toUpperCase(la);
     }
-
 }

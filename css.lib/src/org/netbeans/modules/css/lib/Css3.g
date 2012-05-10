@@ -724,6 +724,7 @@ term
             | PERCENTAGE
             | LENGTH
             | EMS
+            | REM
             | EXS
             | ANGLE
             | TIME
@@ -1132,9 +1133,9 @@ STRING          : '\'' ( ~('\n'|'\r'|'\f'|'\'') )*
                 ;
 
 
-ONLY 		: O N L Y;
-NOT		: N O T; 
-AND		: A N D;
+ONLY 		: 'ONLY';
+NOT		: 'NOT'; 
+AND		: 'AND';
 
 // -------------
 // Identifier.  Identifier tokens pick up properties names and values
@@ -1146,68 +1147,37 @@ IDENT           : '-'? NMSTART NMCHAR*  ;
 //
 HASH            : '#' NAME              ;
 
-IMPORTANT_SYM   : '!' (WS|COMMENT)* I M P O R T A N T   ;
+IMPORTANT_SYM   : '!' (WS|COMMENT)* 'IMPORTANT'   ;
 
-IMPORT_SYM          : '@' I M P O R T       ;
-PAGE_SYM            : '@' P A G E           ;
-MEDIA_SYM           : '@' M E D I A         ;
-NAMESPACE_SYM       : '@' N A M E S P A C E ;
-CHARSET_SYM         : '@charset'           ;
-COUNTER_STYLE_SYM   : '@counter-style';
-FONT_FACE_SYM       : '@font-face';
+IMPORT_SYM          : '@IMPORT';
+PAGE_SYM            : '@PAGE';
+MEDIA_SYM           : '@MEDIA';
+NAMESPACE_SYM       : '@NAMESPACE' ;
+CHARSET_SYM         : '@CHARSET';
+COUNTER_STYLE_SYM   : '@COUNTER-STYLE';
+FONT_FACE_SYM       : '@FONT-FACE';
 
-TOPLEFTCORNER_SYM     :'@top-left-corner';
-TOPLEFT_SYM           :'@top-left';
-TOPCENTER_SYM         :'@top-center';
-TOPRIGHT_SYM          :'@top-right';
-TOPRIGHTCORNER_SYM    :'@top-right-corner';
-BOTTOMLEFTCORNER_SYM  :'@bottom-left-corner'; 
-BOTTOMLEFT_SYM        :'@bottom-left';
-BOTTOMCENTER_SYM      :'@bottom-center';
-BOTTOMRIGHT_SYM       :'@bottom-right';
-BOTTOMRIGHTCORNER_SYM :'@bottom-right-corner';
-LEFTTOP_SYM           :'@left-top';
-LEFTMIDDLE_SYM        :'@left-middle';
-LEFTBOTTOM_SYM        :'@left-bottom';
-RIGHTTOP_SYM          :'@right-top';
-RIGHTMIDDLE_SYM       :'@right-middle';
-RIGHTBOTTOM_SYM       :'@right-bottom';
+TOPLEFTCORNER_SYM     :'@TOP-LEFT-CORNER';
+TOPLEFT_SYM           :'@TOP-LEFT';
+TOPCENTER_SYM         :'@TOP-CENTER';
+TOPRIGHT_SYM          :'@TOP-RIGHT';
+TOPRIGHTCORNER_SYM    :'@TOP-RIGHT-CORNER';
+BOTTOMLEFTCORNER_SYM  :'@BOTTOM-LEFT-CORNER'; 
+BOTTOMLEFT_SYM        :'@BOTTOM-LEFT';
+BOTTOMCENTER_SYM      :'@BOTTOM-CENTER';
+BOTTOMRIGHT_SYM       :'@BOTTOM-RIGHT';
+BOTTOMRIGHTCORNER_SYM :'@BOTTOM-RIGHT-CORNER';
+LEFTTOP_SYM           :'@LEFT-TOP';
+LEFTMIDDLE_SYM        :'@LEFT-MIDDLE';
+LEFTBOTTOM_SYM        :'@LEFT-BOTTOM';
+RIGHTTOP_SYM          :'@RIGHT-TOP';
+RIGHTMIDDLE_SYM       :'@RIGHT-MIDDLE';
+RIGHTBOTTOM_SYM       :'@RIGHT-BOTTOM';
 
-MOZ_DOCUMENT_SYM      : '@-moz-document';
+MOZ_DOCUMENT_SYM      : '@-MOZ-DOCUMENT';
 
 //this generic at rule must be after the last of the specific at rule tokens
 GENERIC_AT_RULE	    : '@' NMCHAR+;	
-
-//I cannot figure out how to use the fragment tokens to generate the following tokens.
-//the parser generator cycles itself indefinitely.
-
-//fragment TOP          : '@' T O P '-';
-//fragment TOPLEFT      : TOP L E F T;
-//fragment TOPRIGHT     : TOP R I G H T;
-
-//TOPLEFTCORNER_SYM     : TOPLEFT '-' C O R N E R;
-//TOPLEFT_SYM           : TOPLEFT;
-//TOPCENTER_SYM         :	TOP '-' C E N T E R;
-//TOPRIGHT_SYM          : TOPRIGHT;
-//TOPRIGHTCORNER_SYM    : TOPRIGHT '-' C O R N E R;
-
-//fragment BOTTOM          : '@' B O T T O M '-';
-//fragment BOTTOMLEFT      : BOTTOM L E F T;
-//fragment BOTTOMRIGHT     : BOTTOM R I G H T;
-
-//BOTTOMLEFTCORNER_SYM  : BOTTOMLEFT '-' C O R N E R;
-//BOTTOMLEFT_SYM        : BOTTOMLEFT;
-//BOTTOMCENTER_SYM      :	BOTTOM '-' C E N T E R;
-//BOTTOMRIGHT_SYM       :	BOTTOMRIGHT; 
-//BOTTOMRIGHTCORNER_SYM : BOTTOMRIGHT '-' C O R N E R;
-  
-//LEFTTOP_SYM           : '@' L E F T '-' T O P;
-//LEFTMIDDLE_SYM        : '@' L E F T '-' M I D D L E;
-//LEFTBOTTOM_SYM        : '@' L E F T '-' B O T T O M;
-
-//RIGHTTOP_SYM          : '@' R I G H T '-' T O P;
-//RIGHTMIDDLE_SYM       : '@' R I G H T '-' M I D D L E;
-//RIGHTBOTTOM_SYM       : '@' R I G H T '-' B O T T O M;
 
 // ---------
 // Numbers. Numbers can be followed by pre-known units or unknown units
@@ -1222,6 +1192,7 @@ GENERIC_AT_RULE	    : '@' NMCHAR+;
 fragment    EMS         :;  // 'em'
 fragment    EXS         :;  // 'ex'
 fragment    LENGTH      :;  // 'px'. 'cm', 'mm', 'in'. 'pt', 'pc'
+fragment    REM		:;  // 'rem'
 fragment    ANGLE       :;  // 'deg', 'rad', 'grad'
 fragment    TIME        :;  // 'ms', 's'
 fragment    FREQ        :;  // 'khz', 'hz'
@@ -1270,8 +1241,15 @@ NUMBER
             
             | (D E G)=>
                 D E G       { $type = ANGLE;        }
-            | (R A D)=>
-                R A D       { $type = ANGLE;        }
+//            | (R A D)=>
+//                R A D       { $type = ANGLE;        }
+
+            | (R (A|E))=>
+                R    
+                ( 
+                   A D       {$type = ANGLE;         }
+                 | E M       {$type = REM;           }
+                )
             
             | (S)=>S        { $type = TIME;         }
                 
@@ -1297,7 +1275,7 @@ URI :   U R L
     
 MOZ_URL_PREFIX
 	:
-	'url-prefix('
+	'URL-PREFIX('
             ((WS)=>WS)? (URL|STRING) WS?
         ')'
     
@@ -1305,7 +1283,7 @@ MOZ_URL_PREFIX
 
 MOZ_DOMAIN
 	:
-	'domain('
+	'DOMAIN('
             ((WS)=>WS)? (URL|STRING) WS?
         ')'
     
@@ -1313,7 +1291,7 @@ MOZ_DOMAIN
 
 MOZ_REGEXP
 	:
-	'regexp('
+	'REGEXP('
             ((WS)=>WS)? STRING WS?
         ')'
     
