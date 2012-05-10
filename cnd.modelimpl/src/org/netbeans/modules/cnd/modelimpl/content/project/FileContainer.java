@@ -55,6 +55,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmUID;
@@ -62,7 +63,6 @@ import org.netbeans.modules.cnd.debug.DebugUtils;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler.State;
-import org.netbeans.modules.cnd.modelimpl.content.project.IncludedFileContainer.Storage;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FilePreprocessorConditionState;
 import org.netbeans.modules.cnd.modelimpl.csm.core.PreprocessorStatePair;
@@ -100,7 +100,7 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
     private static final class Lock {}
     private final Object lock = new Lock();
     private final Map<CharSequence, FileEntry> myFiles = new ConcurrentHashMap<CharSequence, FileEntry>();
-    private final Map<CharSequence, Object/*CharSequence or CharSequence[]*/> canonicFiles = new ConcurrentHashMap<CharSequence, Object/*CharSequence or CharSequence[]*/>();
+    private final ConcurrentMap<CharSequence, Object/*CharSequence or CharSequence[]*/> canonicFiles = new ConcurrentHashMap<CharSequence, Object/*CharSequence or CharSequence[]*/>();
     private final FileSystem fileSystem;
             
     // empty stub
@@ -130,6 +130,9 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
         readStringToFileEntryMap(fileSystem, input, myFiles);
         readStringToStringsArrMap(input, canonicFiles);
 	//trace(canonicFiles, "Read in ctor:");
+        if (CndUtils.isDebugMode()) {
+            checkConsistency();
+        }
     }
 
     // only for creating EMPTY stub
@@ -150,6 +153,9 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
     }
 
     public void putFile(FileImpl impl, APTPreprocHandler.State state) {
+        if (CndUtils.isDebugMode()) {
+            checkConsistency();
+        }
         CharSequence path = getFileKey(impl.getAbsolutePath(), true);
         CharSequence canonicalPath = getCanonicalKey(path);
         FileEntry newEntry;
@@ -163,13 +169,17 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
         if (old != null){
             System.err.println("Replace file info for "+ old.fileNew + " with " + impl);
         }
-	put();
+        if (CndUtils.isDebugMode()) {
+            checkConsistency();
+        }
     }
-    
+
     public void removeFile(CharSequence file) {
         CharSequence path = getFileKey(file, false);
         FileEntry f;
-
+        if (CndUtils.isDebugMode()) {
+            checkConsistency();
+        }
         f = myFiles.remove(path);
         if (f != null) {
             removeAlternativeFileKey(f.canonical, path);
@@ -181,7 +191,9 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
                 if (false) { RepositoryUtils.remove(f.fileNew, null) ;}
             }
         }
-	put();
+        if (CndUtils.isDebugMode()) {
+            checkConsistency();
+        }
     }
 
     public FileImpl getFile(CharSequence absPath, boolean treatSymlinkAsSeparateFile) {
@@ -284,11 +296,6 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
         }
     }
     
-    public void clear(){
-        myFiles.clear();
-	put();
-    }
-    
     public int getSize(){
         return myFiles.size();
     }
@@ -380,20 +387,26 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
         assert out != null : "no entry for " + canonicKey + " of " + primaryKey;
         Object newVal;
         if (out instanceof CharSequence) {
+            assert primaryKey.equals(out) : " primaryKey " + primaryKey + " have to be " + out;
             newVal = null;
         } else {
             CharSequence[] oldAr = (CharSequence[])out;
             assert oldAr.length >= 2;
             if (oldAr.length == 2) {
+                assert oldAr[0].equals(primaryKey) || oldAr[1].equals(primaryKey) : "no primaryKey " + primaryKey + " in " + oldAr;
                 newVal = oldAr[0].equals(primaryKey) ? oldAr[1] : oldAr[0];
             } else {
                 CharSequence[] newAr = new CharSequence[oldAr.length - 1];
                 int k = 0;
+                boolean found = false;
                 for(CharSequence cur : oldAr){
                     if (!cur.equals(primaryKey)){
                         newAr[k++]=cur;
+                    } else {
+                        found = true;
                     }
                 }
+                assert found : " not found " + primaryKey + " in " + oldAr;
                 newVal = newAr;
             }
         }
@@ -409,7 +422,28 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
             }
         }
     }
-    
+
+    private void checkConsistency() {
+        int valuesSize = 0;
+        for (Map.Entry<CharSequence, Object> entry : this.canonicFiles.entrySet()) {
+            Object value = entry.getValue();
+            assert value != null;
+            CharSequence[] absPaths;
+            if (value instanceof CharSequence) {
+                absPaths = new CharSequence[] { (CharSequence)value };
+            } else {
+                absPaths = (CharSequence[]) value;
+            }
+            valuesSize += absPaths.length;
+            for (CharSequence path : absPaths) {
+                if (!myFiles.containsKey(path)) {
+                    CndUtils.assertTrueInConsole(false, "no Entry for registered absPath " + path + " with canonical " + entry.getKey());
+                }
+            }
+        }
+        assert valuesSize == myFiles.size() : "different number of elements " + myFiles.size() + " vs " + valuesSize;
+    }
+
     /*package*/ static void writeStringToFileEntryMap (
             final RepositoryDataOutput output, Map<CharSequence, FileEntry> aMap) throws IOException {
         assert output != null;
