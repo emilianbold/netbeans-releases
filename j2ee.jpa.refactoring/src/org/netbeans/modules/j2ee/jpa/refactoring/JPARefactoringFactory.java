@@ -53,8 +53,10 @@ import org.netbeans.modules.j2ee.jpa.refactoring.moveclass.PersistenceXmlMoveCla
 import org.netbeans.modules.j2ee.jpa.refactoring.rename.EntityRename;
 import org.netbeans.modules.j2ee.jpa.refactoring.rename.PersistenceXmlPackageRename;
 import org.netbeans.modules.j2ee.jpa.refactoring.rename.PersistenceXmlRename;
+import org.netbeans.modules.j2ee.jpa.refactoring.rename.RelationshipMappingRename;
 import org.netbeans.modules.j2ee.jpa.refactoring.safedelete.PersistenceXmlSafeDelete;
 import org.netbeans.modules.j2ee.jpa.refactoring.whereused.PersistenceXmlWhereUsed;
+import org.netbeans.modules.j2ee.jpa.refactoring.whereused.RelationshipMappingWhereUsed;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
@@ -96,6 +98,7 @@ public class JPARefactoringFactory implements RefactoringPluginFactory{
                 refactorings.add(new PersistenceXmlPackageRename(rename));
             } else if (javaMember){
                 refactorings.add(new EntityRename(rename));
+                refactorings.add(new RelationshipMappingRename(rename));
             }
             return new JPARefactoringPlugin(refactorings);
         }
@@ -115,6 +118,7 @@ public class JPARefactoringFactory implements RefactoringPluginFactory{
         if (refactoring instanceof WhereUsedQuery) {
             WhereUsedQuery whereUsedQuery = (WhereUsedQuery) refactoring;
             refactorings.add(new PersistenceXmlWhereUsed(whereUsedQuery));
+            refactorings.add(new RelationshipMappingWhereUsed(whereUsedQuery));
             return new JPARefactoringPlugin(refactorings);
         }
         

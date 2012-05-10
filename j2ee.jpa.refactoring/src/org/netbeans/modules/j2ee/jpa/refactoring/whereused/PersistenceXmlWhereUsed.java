@@ -46,7 +46,6 @@
 package org.netbeans.modules.j2ee.jpa.refactoring.whereused;
 
 
-import com.sun.source.tree.Tree.Kind;
 import java.text.MessageFormat;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
@@ -84,27 +83,29 @@ public final class PersistenceXmlWhereUsed extends PersistenceXmlRefactoring {
     public Problem prepare(RefactoringElementsBag refactoringElementsBag) {
         Problem result = null;
         TreePathHandle handle = whereUsedQuery.getRefactoringSource().lookup(TreePathHandle.class);
-        if (handle == null || !TreeUtilities.CLASS_TREE_KINDS.contains(handle.getKind())){
+        if (handle == null) { 
             return null;
         }
-        Element resElement = handle.resolveElement(RefactoringUtil.getCompilationInfo(handle, whereUsedQuery));
-        TypeElement type = (TypeElement) resElement;
-        String clazz = type.getQualifiedName().toString();
-        for (FileObject each : getPersistenceXmls(handle.getFileObject())){
-            try{
-                PUDataObject pUDataObject = ProviderUtil.getPUDataObject(each);
-                for (PersistenceUnit persistenceUnit : getAffectedPersistenceUnits(pUDataObject, clazz)){
-                    refactoringElementsBag.add(getRefactoring(), getRefactoringElement(persistenceUnit, handle.getFileObject(), pUDataObject, each));
-                    
+        if(TreeUtilities.CLASS_TREE_KINDS.contains(handle.getKind())) {
+            Element resElement = handle.resolveElement(RefactoringUtil.getCompilationInfo(handle, whereUsedQuery));
+            TypeElement type = (TypeElement) resElement;
+            String clazz = type.getQualifiedName().toString();
+            for (FileObject each : getPersistenceXmls(handle.getFileObject())){
+                try{
+                    PUDataObject pUDataObject = ProviderUtil.getPUDataObject(each);
+                    for (PersistenceUnit persistenceUnit : getAffectedPersistenceUnits(pUDataObject, clazz)){
+                        refactoringElementsBag.add(getRefactoring(), getRefactoringElement(persistenceUnit, handle.getFileObject(), pUDataObject, each));
+
+                    }
+                } catch (InvalidPersistenceXmlException ex) {
+                    Problem newProblem =
+                            new Problem(false, NbBundle.getMessage(PersistenceXmlRefactoring.class, "TXT_PersistenceXmlInvalidProblem", ex.getPath()));
+
+                    result = RefactoringUtil.addToEnd(newProblem, result);
                 }
-            } catch (InvalidPersistenceXmlException ex) {
-                Problem newProblem =
-                        new Problem(false, NbBundle.getMessage(PersistenceXmlRefactoring.class, "TXT_PersistenceXmlInvalidProblem", ex.getPath()));
-                
-                result = RefactoringUtil.addToEnd(newProblem, result);
+
             }
-            
-        }
+        } 
         return result;
     }
     
@@ -132,13 +133,14 @@ public final class PersistenceXmlWhereUsed extends PersistenceXmlRefactoring {
          * Returns text describing the refactoring formatted for display (using HTML tags).
          * @return Formatted text.
          */
+        @Override
         public String getDisplayText() {
             return MessageFormat.format(NbBundle.getMessage(PersistenceXmlWhereUsedRefactoringElement.class, "TXT_PersistenceXmlClassWhereUsed"), clazz);
         }
         
+        @Override
         public void performChange() {
             // nothing to do here
-        }
-        
+        }    
     }
 }
