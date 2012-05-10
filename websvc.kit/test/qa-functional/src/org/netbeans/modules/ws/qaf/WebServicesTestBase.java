@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.ws.qaf;
 
+import java.awt.Component;
 import java.awt.Container;
 import java.io.*;
 import java.util.logging.Level;
@@ -55,6 +56,7 @@ import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
+import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.ComponentSearcher;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyProperties;
@@ -690,6 +692,22 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", 600000); //NOI18N
         if (!getProjectType().isAntBasedProject()) {
             oto.waitText("Total time:"); //NOI18N
+            // wait progress bar dismiss
+            final Component comp = MainWindowOperator.getDefault().findSubComponent(new ComponentChooser() {
+
+                @Override
+                public boolean checkComponent(Component comp) {
+                    return "NbProgressBar".equals(comp.getClass().getSimpleName());  //NOI18N
+                }
+
+                @Override
+                public String getDescription() {
+                    return "NbProgressBar component.";  //NOI18N
+                }
+            });
+            if (comp != null) {
+                new ComponentOperator(comp).waitComponentShowing(false);
+            }
             dumpOutput();
             assertTrue("Build failed", oto.getText().indexOf("BUILD SUCCESS") > -1); //NOI18N
             assertTrue("Deploy failed", oto.getText().indexOf("[ERROR]") < 0); //NOI18N

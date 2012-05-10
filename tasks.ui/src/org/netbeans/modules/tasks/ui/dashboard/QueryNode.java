@@ -55,7 +55,6 @@ import org.netbeans.modules.tasks.ui.actions.Actions;
 import org.netbeans.modules.tasks.ui.actions.OpenQueryAction;
 import org.netbeans.modules.tasks.ui.treelist.TreeLabel;
 import org.netbeans.modules.tasks.ui.treelist.TreeListNode;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -68,7 +67,6 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
     private List<TreeLabel> labels;
     private List<LinkButton> buttons;
     private TreeLabel lblName;
-    private final Object LOCK = new Object();
     private LinkButton btnChanged;
     private LinkButton btnTotal;
     private QueryListener queryListener;
@@ -108,9 +106,11 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
 
     @Override
     void updateCounts() {
-        if (btnTotal != null) {
-            btnTotal.setText(getTotalString());
-            btnChanged.setText(getChangedString());
+        synchronized (UI_LOCK) {
+            if (btnTotal != null) {
+                btnTotal.setText(getTotalString());
+                btnChanged.setText(getChangedString());
+            }
         }
     }
 
@@ -125,7 +125,7 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
 
     @Override
     protected JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus, int rowWidth) {
-        synchronized (LOCK) {
+        synchronized (UI_LOCK) {
             if (panel == null) {
                 panel = new JPanel(new GridBagLayout());
                 panel.setOpaque(false);
@@ -137,30 +137,30 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
 
                 TreeLabel lbl = new TreeLabel("("); //NOI18N
                 labels.add(lbl);
-                getTotalCountComp().add(lbl);
+                addTotalCountComp(lbl);
                 panel.add(lbl, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0, 0));
 
                 btnTotal = new LinkButton(getTotalString(), new OpenQueryAction(query));
                 panel.add(btnTotal, new GridBagConstraints(3, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
                 buttons.add(btnTotal);
-                getTotalCountComp().add(btnTotal);
+                addTotalCountComp(btnTotal);
                 lblSeparator = new TreeLabel("|"); //NOI18N
                 panel.add(lblSeparator, new GridBagConstraints(4, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 2, 0, 2), 0, 0));
                 labels.add(lblSeparator);
-                getChangedCountComp().add(lblSeparator);
+                addChangedCountComp(lblSeparator);
                 btnChanged = new LinkButton(getChangedString(), new OpenQueryAction(query, Query.QueryMode.SHOW_NEW_OR_CHANGED)); //NOI18N
                 panel.add(btnChanged, new GridBagConstraints(5, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
                 buttons.add(btnChanged);
-                getChangedCountComp().add(btnChanged);
+                addChangedCountComp(btnChanged);
 
                 lbl = new TreeLabel(")"); //NOI18N
                 labels.add(lbl);
-                getTotalCountComp().add(lbl);
+                addTotalCountComp(lbl);
                 panel.add(lbl, new GridBagConstraints(6, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
                 panel.add(getLblProgress(), new GridBagConstraints(7, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
                 getLblProgress().setVisible(false);
                 labels.add(getLblProgress());
-                
+
                 panel.add(new JLabel(), new GridBagConstraints(8, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
             }
 

@@ -72,7 +72,6 @@ public class CategoryNode extends TaskContainerNode implements Comparable<Catego
     private final Category category;
     private JPanel panel;
     private TreeLabel lblName;
-    private final Object LOCK = new Object();
     private LinkButton btnRefresh;
     private TreeLabel lblCounts;
     private CloseCategoryNodeAction closeCategoryAction;
@@ -120,12 +119,14 @@ public class CategoryNode extends TaskContainerNode implements Comparable<Catego
 
     @Override
     void updateCounts() {
-        lblCounts.setText(getCountText());
+        synchronized (UI_LOCK) {
+            lblCounts.setText(getCountText());
+        }
     }
 
     @Override
     protected JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus, int rowWidth) {
-        synchronized (LOCK) {
+        synchronized (UI_LOCK) {
             if (panel == null) {
                 panel = new JPanel(new GridBagLayout());
                 panel.setOpaque(false);
@@ -137,7 +138,7 @@ public class CategoryNode extends TaskContainerNode implements Comparable<Catego
 
                 lblCounts = new TreeLabel(getCountText());
                 panel.add(lblCounts, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
-                getTotalCountComp().add(lblCounts);
+                addTotalCountComp(lblCounts);
                 panel.add(getLblProgress(), new GridBagConstraints(3, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
                 getLblProgress().setVisible(false);
                 panel.add(new JLabel(), new GridBagConstraints(4, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
