@@ -64,24 +64,14 @@ import org.openide.util.RequestProcessor;
  * global one owned by BrowserSupport (ie. getDefault method) or per project
  * pane (ie. getProjectScoped method).
  */
-@NbBundle.Messages({
-    "AttemptToDebug=Attempting to debug {0}",
-    "AlreadyRunning=Reusing active debugging session",
-    "StartingDebugger=Starting new debugging session",
-    "BrowserReady=Browser is up and running",
-    "BrowserUnknownState=Cannot talk to browser via NetBeans browser plugin. Debugging aborted.",
-    "WaitingForBrowser=Waiting for browser to start"
-    })
 public final class BrowserSupport {
     
     private WebBrowserPane pane;
     
     private URL currentURL;
-    private WebBrowserPane.WebBrowserPaneListener paneListener;
     private WebBrowser browser;
     private PropertyChangeListener listener;
     private FileObject file;
-    private boolean activeDebuggingSession = false;
 
     private static BrowserSupport INSTANCE = create();
     
@@ -152,12 +142,6 @@ public final class BrowserSupport {
                                             .getPreferred();
                                     if ( pane!= null ){
                                         // pane could be null because of the following code
-                                        pane.removeListener(paneListener);
-                                        if (activeDebuggingSession) {
-                                            activeDebuggingSession = false;
-                                            BrowserDebugger
-                                                    .stopDebuggingSession(pane);
-                                        }
                                         pane = null;
                                     }
                                 }
@@ -168,8 +152,6 @@ public final class BrowserSupport {
                 WebBrowsers.getInstance().addPropertyChangeListener(listener);
             }
             pane = browser.createNewBrowserPane();
-            paneListener = new ListenerImpl();
-            pane.addListener(paneListener);
         }
         return pane;
     }
@@ -187,65 +169,6 @@ public final class BrowserSupport {
         file = context;
         currentURL = url;
         wbp.showURL(url);
-        if (BrowserDebugger.isDebuggingEnabled(pane)) {
-            BrowserDebugger.getOutputLogger().getOut().println(Bundle.AttemptToDebug(url.toExternalForm()));
-            startDebugger(url, FileOwnerQuery.getOwner(context));
-        }
-    }
-    
-    private void startDebugger(final URL url, final Project p) {
-        assert BrowserDebugger.isDebuggingEnabled(pane);
-        final String tabToDebug = url.toExternalForm();
-        if (!activeDebuggingSession) {
-            Runnable r = new Runnable() {
-                @Override
-                public void run() {
-                    BrowserDebugger.getOutputLogger().getOut().println(Bundle.StartingDebugger());
-                    boolean res = BrowserDebugger.startDebuggingSession(p, pane, tabToDebug);
-                    if (res) {
-                        activeDebuggingSession = true;
-                    }
-                }
-            };
-
-            final WebBrowserPane.WebBrowserPaneListener l = new WebBrowserPane.WebBrowserPaneListener() {
-                @Override
-                public void browserEvent(WebBrowserPaneEvent event) {
-                    if (event instanceof WebBrowserPane.WebBrowserRunningStateChangedEvent) {
-                        pane.removeListener(this);
-                        if (Boolean.TRUE.equals(pane.isRunning())) {
-                            // try to start debugger again; will be harmless if debugger is already running
-                            SwingUtilities.invokeLater(new Runnable() {
-                                @Override
-                                public void run() {
-                                    startDebugger(url, p);
-                                }
-                            });
-                        }
-                    }
-                }
-            };
-            pane.addListener(l);
-
-            Boolean browserRuns = getWebBrowserPane().isRunning();
-            if (browserRuns == Boolean.TRUE) {
-                BrowserDebugger.getOutputLogger().getOut().println(Bundle.BrowserReady());
-                r.run();
-            } else if (browserRuns == null) {
-                BrowserDebugger.getOutputLogger().getOut().println(Bundle.BrowserUnknownState());
-                // we do know know anything about browser;
-                // perhaps I could just wait two seconds and try to connect to
-                // browser and repeat this five times before giving up.
-                // there might be many causes of the failure, eg. browser is still starting;
-                // browser is not running with debugging port; etc.
-            } else {
-                BrowserDebugger.getOutputLogger().getOut().println(Bundle.WaitingForBrowser());
-                // listener defined above will take care about this case
-                // and start debugger once the browser has started
-            }
-        } else {
-            BrowserDebugger.getOutputLogger().getOut().println(Bundle.AlreadyRunning());
-        }
     }
     
     /**
@@ -302,22 +225,6 @@ public final class BrowserSupport {
             return currentURL;
         }
         return null;
-    }
-    
-    private class ListenerImpl implements WebBrowserPane.WebBrowserPaneListener {
-
-        @Override
-        public void browserEvent(WebBrowserPane.WebBrowserPaneEvent event) {
-            if (event instanceof WebBrowserPane.WebBrowserPaneWasClosedEvent) {
-                currentURL = null;
-                file = null;
-                if (activeDebuggingSession) {
-                    activeDebuggingSession = false;
-                    BrowserDebugger.stopDebuggingSession(pane);
-                }
-            }
-        }
-        
     }
     
 }
