@@ -126,7 +126,8 @@ final class NetigsoModule extends Module {
 
     @Override
     protected void classLoaderUp(Set<Module> parents) throws IOException {
-        assert classloader == null;
+        NetigsoModule.LOG.log(Level.FINE, "classLoaderUp {0}", getCodeNameBase()); // NOI18N
+        assert classloader == null : "already had " + classloader + " for " + this;
         classloader = new DelegateCL();
         mgr.netigsoLoaderUp(this);
     }
