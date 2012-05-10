@@ -42,6 +42,8 @@
 package org.netbeans.modules.tasks.ui.dashboard;
 
 import java.awt.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.Action;
@@ -59,7 +61,7 @@ import org.netbeans.modules.tasks.ui.utils.Utils;
  *
  * @author jpeska
  */
-public class TaskNode extends TreeListNode implements Comparable<TaskNode> {
+public class TaskNode extends TreeListNode implements Comparable<TaskNode>, PropertyChangeListener {
 
     private Issue task;
     private JPanel panel;
@@ -71,6 +73,13 @@ public class TaskNode extends TreeListNode implements Comparable<TaskNode> {
         //super(task.hasSubtasks(), parent);
         super(false, parent);
         this.task = task;
+        this.task.addPropertyChangeListener(this);
+    }
+
+    @Override
+    protected void dispose() {
+        super.dispose();
+        this.task.removePropertyChangeListener(this);
     }
 
     @Override
@@ -183,7 +192,7 @@ public class TaskNode extends TreeListNode implements Comparable<TaskNode> {
             int idOther = Integer.parseInt(toCompare.task.getID());
             if (id < idOther) {
                 return 1;
-            } else  if (id > idOther){
+            } else if (id > idOther) {
                 return -1;
             } else {
                 return 0;
@@ -194,5 +203,12 @@ public class TaskNode extends TreeListNode implements Comparable<TaskNode> {
     @Override
     public String toString() {
         return task.getDisplayName();
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt.getPropertyName().equals(Issue.EVENT_ISSUE_REFRESHED)) {
+            fireContentChanged();
+        }
     }
 }

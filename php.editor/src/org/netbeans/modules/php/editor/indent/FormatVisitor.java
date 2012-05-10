@@ -237,7 +237,7 @@ public class FormatVisitor extends DefaultVisitor {
             }
             if (ts.token().text().toString().equals("[")) { //NOI18N
                 formatTokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
-            } else {
+            } else if (lastIndex < ts.index()) {
                 addFormatToken(formatTokens); // add array keyword
             }
         }
@@ -1119,7 +1119,9 @@ public class FormatVisitor extends DefaultVisitor {
     public void visit(SwitchCase node) {
         if (node.getValue() == null) {
             ts.moveNext();
-            addFormatToken(formatTokens);
+            if (lastIndex < ts.index()) {
+                addFormatToken(formatTokens);
+            }
         } else {
             scan(node.getValue());
         }
