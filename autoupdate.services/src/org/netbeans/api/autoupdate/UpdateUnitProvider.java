@@ -136,7 +136,7 @@ public final class UpdateUnitProvider {
         return impl.getSourceDescription();
     }
 
-    /** A description of content providing by this provider. The description might contains
+    /** A description of content staging by this provider. The description might contains
      * HTML tags e.g. HTML Links.
      * 
      * @return textual description of content or <code>null</code>

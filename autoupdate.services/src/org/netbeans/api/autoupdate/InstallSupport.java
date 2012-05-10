@@ -92,6 +92,7 @@ public final class InstallSupport {
      * @param isGlobal if <code>true</code> then forces download instances into shared directories i.e. installation directory
      * @return <code>Validator</code> an instance of Validator which allows to verify downloaded instances in the next step
      * @throws org.netbeans.api.autoupdate.OperationException
+     * @deprecated Use {@link #doDownload(ProgressHandle, Boolean, boolean)} instead.
      */
     public Validator doDownload(ProgressHandle progress/*or null*/, boolean isGlobal) throws OperationException {
         if (impl.doDownload (progress, isGlobal ? Boolean.TRUE : null, false)) {
@@ -106,7 +107,7 @@ public final class InstallSupport {
      * @param progress ProgressHandle for notification progress in downloading, can be <code>null</code>
      * @param isGlobal if <code>true</code> then forces download plugins into shared directories i.e. installation directory,
      * if <code>false</code> then download plugins into <code>userdir</code>. If <code>null</code> then download plugins in a default place.
-     * @param useUserdirAsFallback if <code>true</code> the download plugins into userdir if no permission to write in shared directories
+     * @param useUserdirAsFallback if <code>true</code> then download plugins into userdir if no permission to write in shared directories
      * @return <code>Validator</code> an instance of Validator which allows to verify downloaded instances in the next step
      * @throws org.netbeans.api.autoupdate.OperationException
      * @since 1.33

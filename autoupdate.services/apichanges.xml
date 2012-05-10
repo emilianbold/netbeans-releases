@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
 
 Oracle and Java are registered trademarks of Oracle and/or its affiliates.
 Other names may be trademarks of their respective owners.
@@ -57,6 +57,83 @@ made subject to such option by the copyright holder.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="preffered-update">
+            <api name="general"/>
+            <summary>Mark an update as preferred just if needed</summary>
+            <version major="1" minor="33"/>
+            <date day="16" month="5" year="2012"/>
+            <author login="jrechtacek"/>
+            <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" semantic="compatible" source="compatible"/>
+            <description>
+                <p>
+                    Added a <code>preferredupdate</code> attribute into <code>Update Center Descriptor</code>
+                    to specify if an update has to be installed before other updates or not. This flag is <b>off</b> as default.
+                </p>
+            </description>
+            <class package="org.netbeans.spi.autoupdate" name="UpdateItem"/>
+            <issue number="211734"/>
+        </change>
+        <change id="content-description">
+            <api name="general"/>
+            <summary>Added a method to get a descprition of content of Upadate Center</summary>
+            <version major="1" minor="33"/>
+            <date day="16" month="5" year="2012"/>
+            <author login="jrechtacek"/>
+            <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" semantic="compatible" source="compatible"/>
+            <description>
+                <p>
+                    {@link org.netbeans.api.autoupdate.UpdateUnitProvider#getContentDescription} returns
+                    a description of content staging by this provider. The description might contains HTML tags e.g. HTML Links.
+                </p>
+            </description>
+            <class package="org.netbeans.api.autoupdate" name="UpdateUnitProvider"/>
+            <issue number="211741"/>
+        </change>
+        <change id="get-license-id">
+            <api name="general"/>
+            <summary>Added a method to get ID of license agreement</summary>
+            <version major="1" minor="33"/>
+            <date day="16" month="5" year="2012"/>
+            <author login="jrechtacek"/>
+            <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" semantic="compatible" source="compatible"/>
+            <description>
+                <p>
+                    Added a method {@link org.netbeans.api.autoupdate.UpdateElement#getLicenseId}
+                    to get ID of license agreement if the <code>UpdateElement</code> has a copyright.
+                </p>
+                <p>
+                    This ID could be stored somewhere once an user approves the license and
+                    will not be asked for approval again the same license ID.                
+                </p>
+            </description>
+            <class package="org.netbeans.api.autoupdate" name="UpdateElement"/>
+            <issue number="211736"/>
+        </change>
+        <change id="check-write-permission">
+            <api name="general"/>
+            <summary>Check write permissions to installation directory</summary>
+            <version major="1" minor="33"/>
+            <date day="16" month="5" year="2012"/>
+            <author login="jrechtacek"/>
+            <compatibility addition="yes" binary="compatible" deletion="no"
+                deprecation="yes" semantic="compatible" source="compatible"
+            />
+            <description>
+                <p>
+                    <code>InstallSupport</code> find out the right directory where a plugin
+                    should be installed. After that it checks if an user has privilege to write there.
+                    In the case a lack of write permission, throws 
+                    {@link org.netbeans.api.autoupdate.OperationException.WRITE_PERMISSION}.
+                </p>
+                <p>
+                    Beside this it allows to write into 
+                    <code>userdir</code> as a fallback in the case of insufficient privilege.
+                </p>
+            </description>
+            <class package="org.netbeans.api.autoupdate" name="InstallSupport"/>
+            <class package="org.netbeans.api.autoupdate" name="OperationException"/>
+            <issue number="211777"/>
+        </change>
         <change id="nbm-external">
             <api name="general"/>
             <summary>External NBM contents</summary>
