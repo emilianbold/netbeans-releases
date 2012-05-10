@@ -75,6 +75,7 @@ final class APTGnuCFilter extends APTStdCFilter {
         filter("__real__", APTTokenTypes.LITERAL___real); // NOI18N
         filter("restrict", APTTokenTypes.LITERAL_restrict); // NOI18N
         filter("__restrict", APTTokenTypes.LITERAL___restrict); // NOI18N
+        filter("__restrict__", APTTokenTypes.LITERAL___restrict__); // NOI18N
         filter("__signed", APTTokenTypes.LITERAL___signed); // NOI18N
         filter("__signed__", APTTokenTypes.LITERAL___signed__); // NOI18N
         filter("__symbolic", APTTokenTypes.LITERAL___symbolic); // NOI18N
