@@ -45,20 +45,12 @@
 package org.netbeans.core.windows.view.ui;
 
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Frame;
-import java.awt.Graphics;
-import java.awt.GraphicsConfiguration;
-import java.awt.GraphicsDevice;
-import java.awt.GraphicsEnvironment;
-import java.awt.Image;
-import java.awt.Rectangle;
+import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
+import java.lang.reflect.Field;
 import java.util.*;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
@@ -69,6 +61,7 @@ import org.netbeans.core.windows.*;
 import org.netbeans.core.windows.view.ui.toolbars.ToolbarConfiguration;
 import org.openide.LifecycleManager;
 import org.openide.awt.*;
+import org.openide.awt.MenuBar;
 import org.openide.cookies.InstanceCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.*;
@@ -108,6 +101,8 @@ public final class MainWindow {
 
    private static MainWindow theInstance;
 
+   private static final Logger LOGGER = Logger.getLogger(MainWindow.class.getName());
+
    /** Constructs main window. */
    private MainWindow(JFrame frame) {
        this.frame = frame;
@@ -116,7 +111,7 @@ public final class MainWindow {
    public static MainWindow install( JFrame frame ) {
        synchronized( MainWindow.class ) {
            if( null != theInstance ) {
-               Logger.getLogger(MainWindow.class.getName()).log(Level.INFO, "Installing MainWindow again, existing frame is: " + theInstance.frame); //NOI18N
+               LOGGER.log(Level.INFO, "Installing MainWindow again, existing frame is: " + theInstance.frame); //NOI18N
            }
            theInstance = new MainWindow(frame);
            return theInstance;
@@ -126,7 +121,7 @@ public final class MainWindow {
    public static MainWindow getInstance() {
        synchronized( MainWindow.class ) {
            if( null == theInstance ) {
-               Logger.getLogger(MainWindow.class.getName()).log(Level.INFO, "Accessing uninitialized MainWindow, using dummy JFrame instead." ); //NOI18N
+               LOGGER.log(Level.INFO, "Accessing uninitialized MainWindow, using dummy JFrame instead." ); //NOI18N
                theInstance = new MainWindow(new JFrame());
            }
            return theInstance;
@@ -137,6 +132,18 @@ public final class MainWindow {
        if (mainMenuBar == null) {
            mainMenuBar = createMenuBar();
            ToolbarPool.getDefault().waitFinished();
+           Toolkit toolkit = Toolkit.getDefaultToolkit();
+           Class<?> xtoolkit = toolkit.getClass();
+           //#183739 - provide proper app name on Linux
+           if (xtoolkit.getName().equals("sun.awt.X11.XToolkit")) { //NOI18N
+               try {
+                    final Field awtAppClassName = xtoolkit.getDeclaredField("awtAppClassName"); //NOI18N
+                    awtAppClassName.setAccessible(true);
+                    awtAppClassName.set(null, NbBundle.getMessage(MainWindow.class, "CTL_MainWindow_Title_No_Project", "").trim()); //NOI18N
+               } catch (Exception x) {
+                   LOGGER.log(Level.FINE, null, x);
+               }
+           }
        }
    }
 
@@ -151,7 +158,7 @@ public final class MainWindow {
            @Override
            public void paint(Graphics g) {
                super.paint(g);
-               Logger.getLogger(MainWindow.class.getName()).log(Level.FINE,
+               LOGGER.log(Level.FINE,
                        "Paint method of main window invoked normally."); //NOI18N
                // XXX is this only needed by obsolete #24291 hack, or now needed independently?
                WindowManagerImpl.getInstance().mainWindowPainted();
@@ -685,7 +692,7 @@ public final class MainWindow {
                     device.setFullScreenWindow( null );
                }catch( IllegalArgumentException iaE ) {
                    //#206310 - sometimes this make problems on Linux
-                   Logger.getLogger( MainWindow.class.getName() ).log( Level.FINE, null, iaE );
+                   LOGGER.log( Level.FINE, null, iaE );
                }
            }
        }
