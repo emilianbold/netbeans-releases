@@ -69,6 +69,7 @@ public class CssAnalyser {
     private static final String UNKNOWN_PROPERTY_ERROR_KEY = "unknown_property" + UNKNOWN_PROPERTY_ERROR_KEY_DELIMITER;//NOI18N
     private static final String INVALID_PROPERTY_VALUE = "invalid_property_value";//NOI18N
 
+    //returned error offsets are AST offsets
     public static List<Error> checkForErrors(final Snapshot snapshot, final Node node) {
         List<Error> errors = new ArrayList<Error>();
         NodeVisitor<List<Error>> visitor = new NodeVisitor<List<Error>>(errors) {
@@ -174,22 +175,12 @@ public class CssAnalyser {
     private static Error makeError(int astFrom, int astTo, Snapshot snapshot, String key, String displayName, String description, boolean lineError, Severity severity) {
         assert astFrom <= astTo;
 
-        int from = snapshot.getOriginalOffset(astFrom);
-        int to = snapshot.getOriginalOffset(astTo);
-
-        if (from == -1 || to == -1) {
-            //error in virtual content, we cannot map back to the document :-(
-            return null;
-        }
-
-        assert from <= to;
-
         return CssErrorFactory.createError(key,
                             displayName,
                             description,
                             snapshot.getSource().getFileObject(),
-                            from,
-                            to,
+                            astFrom,
+                            astTo,
                             lineError,
                             severity);
 
