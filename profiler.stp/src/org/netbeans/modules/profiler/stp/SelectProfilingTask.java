@@ -80,6 +80,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.lib.profiler.common.CommonUtils;
+import org.netbeans.lib.profiler.common.ProfilingSettingsPresets;
 import org.netbeans.lib.profiler.ui.UIUtils;
 import org.netbeans.modules.profiler.api.ProfilerDialogs;
 import org.netbeans.modules.profiler.api.ProfilingSettingsManager;
@@ -1085,9 +1086,19 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
                                 }
                             }
 
+                            // #212239 workaround to prevent empty settings
+                            if (monitorSettings.isEmpty()) monitorSettings.add(
+                                    ProfilingSettingsPresets.createMonitorPreset());
                             taskMonitor.setProfilingSettings(monitorSettings);
+                            
                             //taskAnalyzer.setProfilingSettings(analyzerSettings);
+                            
+                            if (cpuSettings.isEmpty()) cpuSettings.add(
+                                    ProfilingSettingsPresets.createCPUPreset());
                             taskCPU.setProfilingSettings(cpuSettings);
+                            
+                            if (memorySettings.isEmpty()) memorySettings.add(
+                                    ProfilingSettingsPresets.createMemoryPreset());
                             taskMemory.setProfilingSettings(memorySettings);
 
                             // TODO: keep/change lastSelectedSettings to null if Welcome Screen is about to be displayed
