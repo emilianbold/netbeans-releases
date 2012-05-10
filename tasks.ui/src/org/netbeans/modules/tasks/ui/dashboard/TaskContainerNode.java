@@ -65,6 +65,8 @@ public abstract class TaskContainerNode extends TreeListNode {
     private ProgressLabel lblProgress;
     private List<JComponent> totalCountComp;
     private List<JComponent> changedCountComp;
+    private final Object LOCK = new Object();
+    final Object UI_LOCK = new Object();
 
     public TaskContainerNode(boolean expandable, TreeListNode parent) {
         this(false, expandable, parent);
@@ -88,9 +90,11 @@ public abstract class TaskContainerNode extends TreeListNode {
 
     @Override
     protected void childrenLoadingStarted() {
-        if (refresh) {
-            hideCounts();
-            lblProgress.setVisible(true);
+        synchronized (UI_LOCK) {
+            if (refresh) {
+                hideCounts();
+                lblProgress.setVisible(true);
+            }
         }
     }
 
@@ -99,9 +103,11 @@ public abstract class TaskContainerNode extends TreeListNode {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                lblProgress.setVisible(false);
-                showCounts();
-                updateCounts();
+                synchronized (UI_LOCK) {
+                    lblProgress.setVisible(false);
+                    showCounts();
+                    updateCounts();
+                }
             }
         });
     }
@@ -139,35 +145,41 @@ public abstract class TaskContainerNode extends TreeListNode {
     }
 
     public final int getChangedTaskCount() {
-        int count = 0;
-        for (TaskNode taskNode : filteredTaskNodes) {
-            if (taskNode.getTask().getStatus() != Issue.Status.UPTODATE) {
-                count++;
+        synchronized (LOCK) {
+            int count = 0;
+            for (TaskNode taskNode : filteredTaskNodes) {
+                if (taskNode.getTask().getStatus() != Issue.Status.UPTODATE) {
+                    count++;
+                }
             }
+            return count;
         }
-        return count;
     }
 
     public final int getTotalTaskCount() {
-        return filteredTaskNodes.size();
+        synchronized (LOCK) {
+            return filteredTaskNodes.size();
+        }
     }
 
     final void updateNodes() {
-        AppliedFilters appliedFilters = DashboardViewer.getInstance().getAppliedTaskFilters();
-        List<Issue> issues = getTasks();
-        removeTaskListeners();
-        if (taskListener == null) {
-            taskListener = new TaskListener();
-        }
-        taskNodes = new ArrayList<TaskNode>(issues.size());
-        filteredTaskNodes = new ArrayList<TaskNode>(issues.size());
-        for (Issue issue : issues) {
-            issue.addPropertyChangeListener(taskListener);
-            TaskNode taskNode = new TaskNode(issue, this);
-            adjustTaskNode(taskNode);
-            taskNodes.add(taskNode);
-            if (appliedFilters.isInFilter(issue)) {
-                filteredTaskNodes.add(taskNode);
+        synchronized (LOCK) {
+            AppliedFilters appliedFilters = DashboardViewer.getInstance().getAppliedTaskFilters();
+            List<Issue> issues = getTasks();
+            removeTaskListeners();
+            if (taskListener == null) {
+                taskListener = new TaskListener();
+            }
+            taskNodes = new ArrayList<TaskNode>(issues.size());
+            filteredTaskNodes = new ArrayList<TaskNode>(issues.size());
+            for (Issue issue : issues) {
+                issue.addPropertyChangeListener(taskListener);
+                TaskNode taskNode = new TaskNode(issue, this);
+                adjustTaskNode(taskNode);
+                taskNodes.add(taskNode);
+                if (appliedFilters.isInFilter(issue)) {
+                    filteredTaskNodes.add(taskNode);
+                }
             }
         }
     }
@@ -181,12 +193,12 @@ public abstract class TaskContainerNode extends TreeListNode {
         return getChangedTaskCount() + " " + NbBundle.getMessage(TaskContainerNode.class, "LBL_Changed");//NOI18N
     }
 
-    final List<JComponent> getTotalCountComp() {
-        return totalCountComp;
+    final void addTotalCountComp(JComponent component) {
+        totalCountComp.add(component);
     }
 
-    final List<JComponent> getChangedCountComp() {
-        return changedCountComp;
+    final void addChangedCountComp(JComponent component) {
+        changedCountComp.add(component);
     }
 
     final ProgressLabel getLblProgress() {
@@ -194,14 +206,16 @@ public abstract class TaskContainerNode extends TreeListNode {
     }
 
     private void removeTaskListeners() {
-        if (taskListener != null) {
-            for (TaskNode taskNode : getFilteredTaskNodes()) {
-                taskNode.getTask().removePropertyChangeListener(taskListener);
+        synchronized (LOCK) {
+            if (taskListener != null) {
+                for (TaskNode taskNode : filteredTaskNodes) {
+                    taskNode.getTask().removePropertyChangeListener(taskListener);
+                }
             }
         }
     }
 
-    final void showCounts() {
+    private void showCounts() {
         for (JComponent component : totalCountComp) {
             component.setVisible(true);
         }

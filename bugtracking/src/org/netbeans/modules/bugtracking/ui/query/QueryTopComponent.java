@@ -490,8 +490,9 @@ public final class QueryTopComponent extends TopComponent
      ***********/
 
     private void onNewClick() {
-        RepositoryImpl repo = BugtrackingUtil.createRepository();
-        if(repo != null) {
+        RepositoryImpl repoImpl = BugtrackingUtil.createRepository();
+        if(repoImpl != null) {
+            Repository repo = repoImpl.getRepository();
             repositoryComboBox.addItem(repo);
             repositoryComboBox.setSelectedItem(repo);
         }
