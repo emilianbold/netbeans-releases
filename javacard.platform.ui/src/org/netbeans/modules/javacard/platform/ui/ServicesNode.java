@@ -55,6 +55,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 import java.util.List;
+import org.netbeans.api.core.ide.ServicesTabNodeRegistration;
 import org.netbeans.modules.javacard.api.JavacardPlatformChildren;
 import org.netbeans.modules.javacard.common.Utils;
 import org.netbeans.modules.javacard.spi.Card;
@@ -72,6 +73,7 @@ import org.openide.util.HelpCtx;
  *
  * @author Tim Boudreau
  */
+@ServicesTabNodeRegistration(displayName="#UI/Runtime/ServicesNode.instance", iconResource="org/netbeans/modules/javacard/platform/ui/root.png", name="ServicesNode.instance")
 public final class ServicesNode extends AbstractNode {
 
     public ServicesNode() {
