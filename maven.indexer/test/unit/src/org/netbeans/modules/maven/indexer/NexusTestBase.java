@@ -48,7 +48,6 @@ import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
-import org.netbeans.modules.maven.indexer.api.RepositoryPreferencesTest;
 import org.openide.modules.api.PlacesTestUtils;
 import org.openide.util.test.TestFileUtils;
 
@@ -69,7 +68,7 @@ abstract class NexusTestBase extends NbTestCase {
         PlacesTestUtils.setUserDirectory(getWorkDir());
         File repo = new File(getWorkDir(), "repo");
         embedder = EmbedderFactory.getProjectEmbedder();
-        RepositoryPreferencesTest.DO_NOT_CONSIDER_MIRRORS();
+        System.setProperty("no.local.settings", "true");
         defaultArtifactRepository = embedder.lookupComponent(ArtifactRepositoryFactory.class).createArtifactRepository("test", repo.toURI().toString(), "default", null, null);
         embedder.setUpLegacySupport(); // XXX could use org.sonatype.aether.RepositorySystem to avoid maven-compat
         artifactInstaller = embedder.lookupComponent(ArtifactInstaller.class);
