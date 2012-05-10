@@ -128,7 +128,7 @@ public class RemoveSurroundingCodeAction extends BaseAction {
                                     if (cancel.get()) {
                                         return;
                                     }
-                                    controller.toPhase(JavaSource.Phase.PARSED);
+                                    controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
 
                                     if (cancel.get()) {
                                         return;
