@@ -51,6 +51,7 @@ import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.RepositoryManager;
 import org.netbeans.modules.tasks.ui.DashboardTopComponent;
+import org.netbeans.modules.tasks.ui.dashboard.CategoryNode;
 import org.netbeans.modules.tasks.ui.dashboard.DashboardViewer;
 import org.netbeans.modules.tasks.ui.dashboard.QueryNode;
 import org.netbeans.modules.tasks.ui.dashboard.RepositoryNode;
@@ -149,12 +150,13 @@ public class Actions {
         }
     }
 
-    public static List<Action> getCategoryPopupActions(Category category) {
+    public static List<Action> getCategoryPopupActions(CategoryNode categoryNode) {
+        Category category = categoryNode.getCategory();
         List<Action> actions = new ArrayList<Action>();
         actions.add(new DeleteCategoryAction(category));
         actions.add(new RenameCategoryAction(category));
         actions.add(new NotificationCategoryAction(category));
-        actions.add(new RefreshCategoryAction(category));
+        actions.add(new RefreshCategoryAction(categoryNode));
         return actions;
     }
 
@@ -187,13 +189,16 @@ public class Actions {
 
     private static class RefreshCategoryAction extends AbstractAction {
 
-        public RefreshCategoryAction(Category category) {
+        private final CategoryNode categoryNode;
+
+        public RefreshCategoryAction(CategoryNode categoryNode) {
             super(NbBundle.getMessage(Actions.class, "CTL_Refresh")); //NOI18N
+            this.categoryNode = categoryNode;
         }
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            new DummyAction().actionPerformed(e);
+            categoryNode.refreshContent();
         }
     }
 
