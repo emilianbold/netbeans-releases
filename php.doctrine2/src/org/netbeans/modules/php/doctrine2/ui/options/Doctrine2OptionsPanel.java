@@ -173,24 +173,24 @@ public class Doctrine2OptionsPanel extends JPanel {
         learnMoreLabel = new JLabel();
 
         scriptLabel.setLabelFor(scriptTextField);
-        Mnemonics.setLocalizedText(scriptLabel, NbBundle.getMessage(Doctrine2OptionsPanel.class, "Doctrine2OptionsPanel.scriptLabel.text")); // NOI18N
-        Mnemonics.setLocalizedText(scriptBrowseButton, NbBundle.getMessage(Doctrine2OptionsPanel.class, "Doctrine2OptionsPanel.scriptBrowseButton.text")); // NOI18N
+        Mnemonics.setLocalizedText(scriptLabel, NbBundle.getMessage(Doctrine2OptionsPanel.class, "Doctrine2OptionsPanel.scriptLabel.text"));
+        Mnemonics.setLocalizedText(scriptBrowseButton, NbBundle.getMessage(Doctrine2OptionsPanel.class, "Doctrine2OptionsPanel.scriptBrowseButton.text"));
         scriptBrowseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 scriptBrowseButtonActionPerformed(evt);
             }
         });
-        Mnemonics.setLocalizedText(scriptSearchButton, NbBundle.getMessage(Doctrine2OptionsPanel.class, "Doctrine2OptionsPanel.scriptSearchButton.text")); // NOI18N
+        Mnemonics.setLocalizedText(scriptSearchButton, NbBundle.getMessage(Doctrine2OptionsPanel.class, "Doctrine2OptionsPanel.scriptSearchButton.text"));
         scriptSearchButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 scriptSearchButtonActionPerformed(evt);
             }
         });
-        Mnemonics.setLocalizedText(scriptInfoLabel, "HINT"); // NOI18N
-        Mnemonics.setLocalizedText(noteLabel, NbBundle.getMessage(Doctrine2OptionsPanel.class, "Doctrine2OptionsPanel.noteLabel.text")); // NOI18N
-        Mnemonics.setLocalizedText(errorLabel, NbBundle.getMessage(Doctrine2OptionsPanel.class, "Doctrine2OptionsPanel.errorLabel.text")); // NOI18N
-        Mnemonics.setLocalizedText(installationInstructionsLabel, NbBundle.getMessage(Doctrine2OptionsPanel.class, "Doctrine2OptionsPanel.installationInstructionsLabel.text")); // NOI18N
-        Mnemonics.setLocalizedText(learnMoreLabel, NbBundle.getMessage(Doctrine2OptionsPanel.class, "Doctrine2OptionsPanel.learnMoreLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(scriptInfoLabel, "HINT");
+        Mnemonics.setLocalizedText(noteLabel, NbBundle.getMessage(Doctrine2OptionsPanel.class, "Doctrine2OptionsPanel.noteLabel.text"));
+        Mnemonics.setLocalizedText(errorLabel, "ERROR");
+        Mnemonics.setLocalizedText(installationInstructionsLabel, NbBundle.getMessage(Doctrine2OptionsPanel.class, "Doctrine2OptionsPanel.installationInstructionsLabel.text"));
+        Mnemonics.setLocalizedText(learnMoreLabel, NbBundle.getMessage(Doctrine2OptionsPanel.class, "Doctrine2OptionsPanel.learnMoreLabel.text"));
         learnMoreLabel.addMouseListener(new MouseAdapter() {
             public void mouseEntered(MouseEvent evt) {
                 learnMoreLabelMouseEntered(evt);

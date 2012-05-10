@@ -54,6 +54,7 @@ import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
@@ -90,7 +91,6 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import org.netbeans.api.annotations.common.StaticResource;
-import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.connections.RemoteClient;
@@ -404,7 +404,9 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
             public void actionPerformed(ActionEvent e) {
                 List<SyncItem> selectedItems = getSelectedItems(true);
                 for (SyncItem item : selectedItems) {
-                    item.resetOperation();
+                    if (item.isOperationChangePossible()) {
+                        item.resetOperation();
+                    }
                 }
                 updateDisplayedItems();
                 reselectItems(selectedItems);
@@ -425,16 +427,18 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
         }
         popupMenu.addSeparator();
         // disable operations
-        @SuppressWarnings("unchecked")
-        List<Pair<SyncItem.Operation, String>> disableOperations = Arrays.asList(
-                Pair.of(SyncItem.Operation.DOWNLOAD, Bundle.SyncPanel_popupMenu_disable_download()),
-                Pair.of(SyncItem.Operation.UPLOAD, Bundle.SyncPanel_popupMenu_disable_upload()),
-                Pair.of(SyncItem.Operation.DELETE, Bundle.SyncPanel_popupMenu_disable_delete()));
-        for (Pair<SyncItem.Operation, String> pair : disableOperations) {
-            JMenuItem operationMenuItem = new JMenuItem(pair.second);
-            operationMenuItem.addActionListener(new PopupMenuItemListener(pair.first, SyncItem.Operation.NOOP));
-            popupMenu.add(operationMenuItem);
-        }
+        // - downloads
+        JMenuItem disableDownloadsMenuItem = new JMenuItem(Bundle.SyncPanel_popupMenu_disable_download());
+        disableDownloadsMenuItem.addActionListener(new PopupMenuItemListener(Arrays.asList(SyncItem.Operation.DOWNLOAD, SyncItem.Operation.DOWNLOAD_REVIEW), SyncItem.Operation.NOOP));
+        popupMenu.add(disableDownloadsMenuItem);
+        // - uploads
+        JMenuItem disableUploadsMenuItem = new JMenuItem(Bundle.SyncPanel_popupMenu_disable_upload());
+        disableUploadsMenuItem.addActionListener(new PopupMenuItemListener(Arrays.asList(SyncItem.Operation.UPLOAD, SyncItem.Operation.UPLOAD_REVIEW), SyncItem.Operation.NOOP));
+        popupMenu.add(disableUploadsMenuItem);
+        // - deletions
+        JMenuItem disableDeletionsMenuItem = new JMenuItem(Bundle.SyncPanel_popupMenu_disable_delete());
+        disableDeletionsMenuItem.addActionListener(new PopupMenuItemListener(SyncItem.Operation.DELETE, SyncItem.Operation.NOOP));
+        popupMenu.add(disableDeletionsMenuItem);
         popupMenu.addSeparator();
         // diff
         final JMenuItem diffMenuItem = new JMenuItem(Bundle.SyncPanel_popupMenu_diffItem(), ImageUtilities.loadImageIcon(DIFF_ICON_PATH, false));
@@ -1303,15 +1307,20 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
 
     private class PopupMenuItemListener implements ActionListener {
 
-        private final SyncItem.Operation fromOperation;
+        private final Collection<SyncItem.Operation> fromOperations;
         private final SyncItem.Operation toOperation;
 
+
         public PopupMenuItemListener(SyncItem.Operation toOperation) {
-            this(null, toOperation);
+            this(Collections.<SyncItem.Operation>emptyList(), toOperation);
         }
 
         public PopupMenuItemListener(SyncItem.Operation fromOperation, SyncItem.Operation toOperation) {
-            this.fromOperation = fromOperation;
+            this(Collections.singleton(fromOperation), toOperation);
+        }
+
+        public PopupMenuItemListener(Collection<SyncItem.Operation> fromOperations, SyncItem.Operation toOperation) {
+            this.fromOperations = fromOperations;
             this.toOperation = toOperation;
         }
 
@@ -1319,8 +1328,11 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
         public void actionPerformed(ActionEvent e) {
             List<SyncItem> selectedItems = getSelectedItems(true);
             for (SyncItem item : selectedItems) {
-                if (fromOperation == null
-                        || fromOperation == item.getOperation()) {
+                if (!item.isOperationChangePossible()) {
+                    continue;
+                }
+                if (fromOperations.isEmpty()
+                        || fromOperations.contains(item.getOperation())) {
                     item.setOperation(toOperation);
                 }
             }
