@@ -65,7 +65,6 @@ import org.netbeans.modules.tasks.ui.treelist.ColorManager;
 import org.netbeans.modules.tasks.ui.treelist.TreeList;
 import org.netbeans.modules.tasks.ui.treelist.TreeListModel;
 import org.netbeans.modules.tasks.ui.treelist.TreeListNode;
-import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -699,7 +698,7 @@ public final class DashboardViewer implements PropertyChangeListener{
             int index = model.getRootNodes().indexOf(titleCategoryNode) + 1;
             for (CategoryNode categoryNode : categoryNodes) {
                 if (isCategoryInFilter(categoryNode)) {
-                    taskHits += categoryNode.getTotalCount();
+                    taskHits += categoryNode.getTotalTaskCount();
                     mapCategoryToNode.put(categoryNode.getCategory(), categoryNode);
                     addRootToModel(index++, categoryNode);
                 }
