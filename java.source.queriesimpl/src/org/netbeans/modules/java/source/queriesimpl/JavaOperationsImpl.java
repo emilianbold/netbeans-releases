@@ -213,21 +213,19 @@ class JavaOperationsImpl<T> implements ModelOperations {
         if (tp == null) {
             return null;
         }
-        int start = -1;
-        int end = -1;
+        int start = (int) trees.getSourcePositions().getStartPosition(tp.getCompilationUnit(),tp.getLeaf());
+        int end = (int) trees.getSourcePositions().getEndPosition(tp.getCompilationUnit(),tp.getLeaf());
         List<Comment> cmts = control.getTreeUtilities().getComments(tp.getLeaf(), true);
-        if (!cmts.isEmpty()) {
-            start = cmts.iterator().next().pos();
+        for (Comment c : cmts) {
+            final int cp = c.pos();
+            if (cp >= 0) {
+                start = Math.min(start,cp);
+            }
         }
         cmts = control.getTreeUtilities().getComments(tp.getLeaf(), false);
-        if (!cmts.isEmpty()) {
-            end = cmts.listIterator(cmts.size()).previous().pos();
-        }
-        if (start == -1) {
-            start = (int) trees.getSourcePositions().getStartPosition(tp.getCompilationUnit(),tp.getLeaf());
-        }
-        if (end == -1) {
-            end = (int) trees.getSourcePositions().getEndPosition(tp.getCompilationUnit(),tp.getLeaf());
+        for (Comment c : cmts) {
+            final int cp  = c.endPos();
+            end = Math.max(end,cp);
         }
         return new int[] {start, end};
     }
