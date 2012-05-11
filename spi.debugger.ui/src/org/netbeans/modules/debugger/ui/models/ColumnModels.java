@@ -599,8 +599,14 @@ public class ColumnModels {
             FileObject file = EditorContextDispatcher.getDefault().getMostRecentFile();
             int line = EditorContextDispatcher.getDefault().getMostRecentLineNumber();
             String mimeType = file != null ? file.getMIMEType() : "text/plain"; // NOI18N
+            boolean doBind = true;
+            if (!mimeType.startsWith("text/")) { // NOI18N
+                // If the current file happens to be of unknown or not text MIME type, use the ordinary text one.
+                mimeType = "text/plain"; // NOI18N
+                doBind = false; // Do not do binding to an unknown file content.
+            }
             editorPane = new WatchesEditorPane(mimeType, "");
-            if (file != null) {
+            if (doBind && file != null) {
                 line = WatchPanel.adjustLine(file, line);
                 DialogBinding.bindComponentToFile(file, line, 0, 0, editorPane);
             }

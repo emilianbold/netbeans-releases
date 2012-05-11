@@ -95,9 +95,11 @@ public class WatchPanel {
         final FileObject file = EditorContextDispatcher.getDefault().getMostRecentFile();
         int line = EditorContextDispatcher.getDefault().getMostRecentLineNumber();
         String mimeType = file != null ? file.getMIMEType() : "text/plain"; // NOI18N
+        boolean doBind = true;
         if (!mimeType.startsWith("text/")) { // NOI18N
             // If the current file happens to be of unknown or not text MIME type, use the ordinary text one.
             mimeType = "text/plain"; // NOI18N
+            doBind = false; // Do not do binding to an unknown file content.
         }
 
         //Add JEditorPane and context
@@ -108,25 +110,27 @@ public class WatchPanel {
         int w = Math.min(70*editorPane.getFontMetrics(editorPane.getFont()).charWidth('a'),
                          org.openide.windows.WindowManager.getDefault().getMainWindow().getSize().width);
         sp.setPreferredSize(new Dimension(w, h));
-        line = adjustLine(file, line);
-        if (file != null && line >= 0) {
-            DialogBinding.bindComponentToFile(file, line, 0, 0, editorPane);
-        }
-        final int theLine = line;
-        RequestProcessor.getDefault().post(new Runnable() {
-            @Override
-            public void run() {
-                final int adjustedLine = adjustLine(file, theLine);
-                if (adjustedLine != theLine) {
-                    SwingUtilities.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            DialogBinding.bindComponentToFile(file, adjustedLine, 0, 0, editorPane);
-                        }
-                    });
-                }
+        if (doBind) {
+            line = adjustLine(file, line);
+            if (file != null && line >= 0) {
+                DialogBinding.bindComponentToFile(file, line, 0, 0, editorPane);
             }
-        });
+            final int theLine = line;
+            RequestProcessor.getDefault().post(new Runnable() {
+                @Override
+                public void run() {
+                    final int adjustedLine = adjustLine(file, theLine);
+                    if (adjustedLine != theLine) {
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                DialogBinding.bindComponentToFile(file, adjustedLine, 0, 0, editorPane);
+                            }
+                        });
+                    }
+                }
+            });
+        }
         panel.add (BorderLayout.CENTER, sp);
         editorPane.getAccessibleContext ().setAccessibleDescription (bundle.getString ("ACSD_CTL_Watch_Name")); // NOI18N
         String t = Utils.getIdentifier ();
