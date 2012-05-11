@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -91,7 +91,7 @@ public final class InstallUnitWizardModel extends OperationWizardModel {
     @Override
     public OperationContainer<InstallSupport> getBaseContainer () {
         OperationContainer c = getBaseContainerImpl();
-        assert c.getSupport() != null || c.listAll().isEmpty() : "Non empty container: " + c + " but null support";
+        assert c.getSupport() != null || c.listAll().isEmpty() : "Non empty container[list: " + c.listAll() + "]: " + c + " but support is " + c.getSupport();
         return c;
     }
     
