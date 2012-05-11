@@ -85,8 +85,8 @@ public final class ExternalStartManager {
      * Start the default local ss_attach listener.
      */
     public static void startLocal() {
-        // fix for IZ 181830 - do not start on windows
-        if (Utilities.isWindows()) {
+        // fix for IZ 181830 - do not start on windows & mac
+        if (Utilities.isWindows() || Utilities.isMac()) {
             return;
         }
         
