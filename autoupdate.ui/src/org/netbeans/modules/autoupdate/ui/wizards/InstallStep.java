@@ -220,15 +220,22 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
             return null;
         }
         validator = null;
-        OperationContainer installContainer = model.getBaseContainer ();
-        final InstallSupport support = model.getInstallSupport ();
+        OperationContainer<InstallSupport> installContainer = model.getBaseContainer ();
+        final InstallSupport support = installContainer.getSupport ();
         assert support != null : "OperationSupport cannot be null because OperationContainer " +
                 "contains elements: " + installContainer.listAll () + " and invalid elements " + installContainer.listInvalid () + "\ncontainer: " + installContainer;
         assert installContainer.listInvalid ().isEmpty () : support + ".listInvalid().isEmpty() but " + installContainer.listInvalid () + " container: " + installContainer;
         
+        if (support == null) {
+            log.warning("Download failed: OperationSupport was null because OperationContainer "
+                        + "either does not contain any elements: " + model.getBaseContainer().listAll()
+                        + " or contains invalid elements " + model.getBaseContainer().listInvalid());
+            return null;
+        }
+        
         boolean finish = false;
         while (! finish) {
-            finish = tryPerformDownload ();
+            finish = tryPerformDownload(support);
         }
         
         return validator;
@@ -277,9 +284,8 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
         return true;
     }
     
-    private boolean tryPerformDownload () {
+    private boolean tryPerformDownload(final InstallSupport support) {
         validator = null;
-        final InstallSupport support = model.getInstallSupport ();
         JLabel detailLabel = null;
         try {
             ProgressHandle handle = ProgressHandleFactory.createHandle (getBundle ("InstallStep_Download_DownloadingPlugins"));
@@ -331,7 +337,6 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
 
             validator = support.doDownload (handle, Utilities.isGlobalInstallation());
             if (validator == null) return true;
-            if (validator == null) return true;
             panel.waitAndSetProgressComponents (mainLabel, progressComponent, new JLabel (getBundle ("InstallStep_Done")));
             if (spareHandle != null && spareHandleStarted) {
                 spareHandle.finish ();
@@ -376,7 +381,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
             return null;
         }
         component.setHeadAndContent (getBundle (HEAD_VERIFY), getBundle (CONTENT_VERIFY));
-        final InstallSupport support = model.getInstallSupport ();
+        final InstallSupport support = model.getBaseContainer().getSupport();
         assert support != null : "OperationSupport cannot be null because OperationContainer " +
                 "contains elements: " + model.getBaseContainer ().listAll () + " and invalid elements " + model.getBaseContainer ().listInvalid ();
         ProgressHandle handle = ProgressHandleFactory.createHandle (getBundle ("InstallStep_Validate_ValidatingPlugins"));
@@ -520,7 +525,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
         }
         installException = null;
         component.setHeadAndContent (getBundle (HEAD_INSTALL), getBundle (CONTENT_INSTALL));
-        InstallSupport support = model.getInstallSupport();
+        InstallSupport support = model.getBaseContainer().getSupport();
         assert support != null : "OperationSupport cannot be null because OperationContainer " +
                 "contains elements: " + model.getBaseContainer ().listAll () + " and invalid elements " + model.getBaseContainer ().listInvalid ();
         model.modifyOptionsForDisabledCancel (wd);
@@ -613,7 +618,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
         panel.setBody (getBundle ("InstallStep_InstallDone_Text"), model.getAllVisibleUpdateElements ());
         panel.hideRunInBackground ();
         if (runInBackground ()) {
-            InstallSupport support = model.getInstallSupport ();
+            InstallSupport support = model.getBaseContainer().getSupport();
             resetLastCheckWhenUpdatingFirstClassModules (model.getAllUpdateElements ());
             support.doRestartLater (restarter);
             try {
@@ -710,7 +715,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
                 Logger.getLogger (InstallStep.class.getName ()).log (Level.INFO, x.getMessage (), x);
             }
         } else if (restarter != null) {
-            InstallSupport support = model.getInstallSupport ();
+            InstallSupport support = model.getBaseContainer().getSupport();
             assert support != null : "OperationSupport cannot be null because OperationContainer " +
                     "contains elements: " + model.getBaseContainer ().listAll () + " and invalid elements " + model.getBaseContainer ().listInvalid ();
             if (panel.restartNow ()) {
