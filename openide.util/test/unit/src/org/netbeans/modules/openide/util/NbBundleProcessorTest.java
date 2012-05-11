@@ -303,6 +303,18 @@ public class NbBundleProcessorTest extends NbTestCase {
         assertTrue(err.toString(), err.toString().contains("Undocumented format parameter {0}"));
     }
 
+    /** @see org.openide.util.NbBundle.DebugLoader.DebugInputStream */
+    public void testNOI18N() throws Exception {
+        AnnotationProcessorTestUtils.makeSource(src, "p.C1", "@org.openide.util.NbBundle.Messages({\"#NOI18N\", \"k1=ON_EXIT\"})", "class C1 {String s = Bundle.k1();}");
+        ByteArrayOutputStream err = new ByteArrayOutputStream();
+        assertTrue(err.toString(), AnnotationProcessorTestUtils.runJavac(src, "C1.java", dest, null, err));
+        assertEquals("", err.toString());
+        err.reset();
+        AnnotationProcessorTestUtils.makeSource(src, "p.C2", "@org.openide.util.NbBundle.Messages({\"# NOI18N\", \"k2=ON_EXIT\"})", "class C2 {String s = Bundle.k2();}");
+        assertFalse(err.toString(), AnnotationProcessorTestUtils.runJavac(src, "C2.java", dest, null, err));
+        assertTrue(err.toString(), err.toString().contains("NOI18N"));
+    }
+
     private static boolean isJDK7EarlyBuild() {
         String run = System.getProperty("java.runtime.version");
         if ("1.7".equals(System.getProperty("java.specification.version")) && run != null) {

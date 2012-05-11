@@ -64,14 +64,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.ArchiveResources;
 import org.netbeans.Module;
-import org.netbeans.ModuleManager;
 import org.netbeans.NetigsoFramework;
 import org.netbeans.ProxyClassLoader;
 import org.netbeans.Stamps;
+import static org.netbeans.core.netigso.Bundle.*;
 import org.netbeans.core.startup.Main;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.Places;
 import org.openide.util.*;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.ServiceProviders;
 import org.osgi.framework.Bundle;
@@ -129,6 +130,7 @@ implements Cloneable, Stamps.Updater {
     }
 
     @Override
+    @Messages({"#NOI18N", "FRAMEWORK_START_LEVEL="})
     protected void prepare(Lookup lkp, Collection<? extends Module> preregister) {
         if (framework == null) {
             readBundles();
@@ -140,7 +142,7 @@ implements Cloneable, Stamps.Updater {
             configMap.put("netigso.archive", NetigsoArchiveFactory.DEFAULT.create(this)); // NOI18N
             configMap.put("felix.log.level", "4"); // NOI18N
             configMap.put("felix.bootdelegation.classloaders", activator); // NOI18N
-            String startLevel = NbBundle.getMessage(Netigso.class, "FRAMEWORK_START_LEVEL");
+            String startLevel = FRAMEWORK_START_LEVEL();
             if (!startLevel.isEmpty()) {
                 configMap.put("org.osgi.framework.startlevel.beginning", startLevel); // NOI18N
             }
@@ -234,14 +236,16 @@ implements Cloneable, Stamps.Updater {
     }
 
     @Override
+    @Messages({"#NOI18N", "DEFAULT_BUNDLE_START_LEVEL=0"})
     protected int defaultStartLevel() {
         if (defaultStartLevel == null) {
-            defaultStartLevel = Integer.parseInt(NbBundle.getMessage(Netigso.class, "DEFAULT_BUNDLE_START_LEVEL"));
+            defaultStartLevel = Integer.parseInt(DEFAULT_BUNDLE_START_LEVEL());
         }
         return defaultStartLevel;
     }
 
     @Override
+    @Messages({"#NOI18N", "MODULE_START_LEVEL="})
     protected Set<String> createLoader(ModuleInfo m, ProxyClassLoader pcl, File jar) throws IOException {
         try {
             assert registered.containsKey(m.getCodeNameBase()) : m.getCodeNameBase();
@@ -293,7 +297,7 @@ implements Cloneable, Stamps.Updater {
             }
             pcl.append(new ClassLoader[]{ l });
             try {
-                String msl = NbBundle.getMessage(Netigso.class, "MODULE_START_LEVEL"); // NOI18N
+                String msl = MODULE_START_LEVEL();
                 boolean start = true;
                 if (!msl.isEmpty()) {
                     int moduleStartLevel = Integer.parseInt(msl);
@@ -681,9 +685,10 @@ implements Cloneable, Stamps.Updater {
         return new VFile().toURI().toString();
     }
 
+    @Messages({"#NOI18N", "FIND_COVERED_PKGS=findEntries"})
     private boolean findCoveredPkgs() {
         if (defaultCoveredPkgs == null) {
-            defaultCoveredPkgs = NbBundle.getMessage(Netigso.class, "FIND_COVERED_PKGS"); // NOI18N
+            defaultCoveredPkgs = FIND_COVERED_PKGS();
         }
         return "findEntries".equals(defaultCoveredPkgs); // NOI18N
     }
