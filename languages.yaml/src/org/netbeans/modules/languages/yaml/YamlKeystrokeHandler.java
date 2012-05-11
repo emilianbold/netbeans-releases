@@ -246,7 +246,7 @@ public class YamlKeystrokeHandler implements KeystrokeHandler {
         }
 
         List<? extends StructureItem> items = result.getItems();
-        if (items.size() == 0) {
+        if (items.isEmpty()) {
             return Collections.emptyList();
         }
 
