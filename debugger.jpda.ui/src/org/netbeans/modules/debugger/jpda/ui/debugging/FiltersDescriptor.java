@@ -52,6 +52,8 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Icon;
@@ -72,6 +74,7 @@ import org.netbeans.modules.debugger.jpda.ui.models.DebuggingNodeModel;
 import org.netbeans.modules.debugger.jpda.ui.models.DebuggingTreeModel;
 import org.openide.awt.Mnemonics;
 import org.openide.util.ImageUtilities;
+import org.openide.util.WeakListeners;
 import org.openide.util.actions.Presenter;
 
 
@@ -232,6 +235,7 @@ public final class FiltersDescriptor {
         String displayName;
         String tooltip;
         Icon selectedIcon;
+        PreferenceChangeListener pchl;
         
         private boolean isSelected;
         private Group group;
@@ -277,6 +281,11 @@ public final class FiltersDescriptor {
                 return;
             }
             isSelected = state;
+            setState(state);
+            writeValue();
+        }
+        
+        private void setState(boolean state) {
             JToggleButton toggleButton = toggleButtonRef.get();
             if (toggleButton != null) {
                 toggleButton.setSelected(state);
@@ -288,7 +297,6 @@ public final class FiltersDescriptor {
                     } // if
                 } // for
             } // if
-            writeValue();
         }
 
         public void setToggleButton(JToggleButton button) {
@@ -321,6 +329,19 @@ public final class FiltersDescriptor {
                 isSelected = preferences.getBoolean(SHOW_SUSPEND_TABLE, true);
             } else {
                 isSelected = false;
+            }
+            if (pchl == null) {
+                pchl = new PreferenceChangeListener() {
+                    @Override
+                    public void preferenceChange(PreferenceChangeEvent evt) {
+                        boolean wasSelected = isSelected;
+                        readValue();
+                        if (wasSelected != isSelected) {
+                            setState(isSelected);
+                        }
+                    }
+                };
+                preferences.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, pchl, preferences));
             }
         }
 

@@ -286,6 +286,16 @@ public final class CodeStyle {
                          EditorOptions.addLeadingStarInCommentDefault);
     }
 
+    public boolean getUseBlockComment() {
+        return getOption(EditorOptions.useBlockComment,
+                EditorOptions.useBlockCommentDefault);
+    }
+    
+    public boolean getUseInlineKeyword() {
+        return getOption(EditorOptions.useInlineKeyword,
+                EditorOptions.useInlineKeywordDefault);
+    }
+    
     //MultilineAlignment
     public boolean alignMultilineCallArgs() {
         return getOption(EditorOptions.alignMultilineCallArgs,

@@ -1,0 +1,86 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+*     Copyright © 1997, 2011, Oracle and/or its affiliates. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <title>New Validation Constraint Wizard: Name and Location</title>
+        <link href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css"
+            rel="StyleSheet" type="text/css">
+    </head>
+
+    <body>
+        <h2>New Validation Constraint Wizard: Name and Location</h2>
+
+        <p><small><a href="#seealso">See Also</a></small></p>
+
+        <p>You can use a validation constraint to ensure that the values
+            of fields, methods, and types are valid and within a specified constraint.
+            You apply a validation constraint by placing annotations
+            on a field, method, or class, for example on
+            a managed bean or persistent entity class.</p>
+            
+        <p>You can use the validation constraints that are defined as part of the
+            Bean Validation API or create custom constraints by
+            specifying any validation constraints for the field or property 
+            and the annotation that is associated with the custom constraints.
+            You can specify the constraints in the validation constraint class
+            or create a validator class for the constraint.</p>
+        
+        <p>For additional details about bean validation and a list of the predefined constraints, see:<p>
+            <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                <param name="content" value="http://docs.oracle.com/javaee/6/tutorial/doc/gircz.html">
+                <param name="text" value="<html><u>http://docs.oracle.com/javaee/6/tutorial/doc/gircz.html</u></html>">
+                <param name="textFontSize" value="medium">
+                <param name="textColor" value="blue">
+            </object>
+        
+        <p>You use the New Validation Constraint wizard to generate a custom validation constraint class.
+        You can select the Generate Validator Class option in the wizard if you want
+        the IDE to also generate a validator class for the validation constraint.</p>
+        
+        <p>You open the wizard by opening the New File wizard and selecting Validation Constraint
+            in the Bean Validation category.</p>
+        
+
+        <p>In the Name and Location page you set the following properties:</p>
+
+        <ul>
+            <li><strong>Class Name:</strong> Specifies the name of validator constraint class.</li>
+
+            <li><strong>Project:</strong> Specifies the project in which the validator constraint
+                will be located.</li>
+
+            <li><strong>Location:</strong> Specifies a folder to house the validator constraint.</li>
+
+            <li><strong>Package:</strong> Specifies a package within the location to house the
+                validator constraint.</li>
+
+            <li><strong>Created File:</strong> Displays the full path to the new validator constraint.</li>
+
+            <li><strong>Generate Validator Class.</strong> Select this option if you want the IDE to generate
+                a validator class. 
+                <p>If you select this option you need to supply the following details for the generated class.</p>
+                <ul>
+                    <li><b>Validator Class Name.</b> Type the name of the validator class.</li>
+                    <li><b>Java type to Validate.</b> Type the Java type that is to be validated.</li>
+                </ul>
+            </li>
+            
+            
+
+            
+        </ul>
+
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="../about.html">About JavaServer Faces Framework Support</a></dd>
+            <dd><a href="../../about_framework.html">About Web Application Frameworks</a></dd>
+        </dl>
+
+        <hr><small><a href="../../../../credits.html">Legal Notices</a></small>
+        <table cellpadding="20" border="0"><tr><td>&nbsp;</td></tr></table>
+    </body>
+</html>

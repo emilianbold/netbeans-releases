@@ -54,7 +54,18 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  * A dummy class that is added to model in the case
- * there is a forward class declaration that does not refer to a class
+ * there is a forward class declaration that does not refer to a class.
+ * ForwardClass can be created i.e. for the following constructions:
+ * class Fwd1; // as ::Fwd1
+ * namespace N {
+ * class Outer {
+ *      class InnerFwd2; // as N::Outer::InnerFwd2
+ *      struct Fwd3 *p; // as N::Fwd3
+ * }
+ * }
+ * class N::Outer::InnerFwd2 {
+ *      int var;
+ * }
  * @author Vladimir Kvashin
  */
 public final class ForwardClass extends ClassImpl {
