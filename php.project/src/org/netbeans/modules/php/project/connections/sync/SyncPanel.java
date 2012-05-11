@@ -215,7 +215,7 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
         "# {1} - remote configuration name",
         "SyncPanel.title=Remote Synchronization for {0}: {1}",
         "SyncPanel.button.titleWithMnemonics=S&ynchronize",
-        "SyncPanel.pleaseWait=Please wait...",
+        "SyncPanel.pleaseWait=Please wait..."
     })
     public boolean open() {
         assert SwingUtilities.isEventDispatchThread();
