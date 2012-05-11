@@ -53,6 +53,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.*;
 import javax.lang.model.type.*;
 import javax.lang.model.util.Types;
+import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -322,7 +323,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
     }
     
     private void updateImports() {
-        AutoImport imp = AutoImport.get(cInfo);
+        final AutoImport imp = AutoImport.get(cInfo);
         for (Map.Entry<CodeTemplateParameter, TypeMirror> entry : param2types.entrySet()) {
             CodeTemplateParameter param = entry.getKey();
             TypeMirror tm = param2types.get(param);
@@ -338,41 +339,52 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
             }
         }
         if (!autoImportedTypeNames.isEmpty()) {
-            try {
-                ModificationResult.runModificationTask(Collections.singleton(cInfo.getSnapshot().getSource()), new UserTask() {
-                    @Override
-                    public void run(ResultIterator resultIterator) throws Exception {
-                        WorkingCopy copy = WorkingCopy.get(resultIterator.getParserResult());
-                        copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                        for (Element usedElement : Utilities.getUsedElements(copy)) {
-                            switch (usedElement.getKind()) {
-                                case CLASS:
-                                case INTERFACE:
-                                case ENUM:
-                                case ANNOTATION_TYPE:
-                                    autoImportedTypeNames.remove(((TypeElement)usedElement).getQualifiedName().toString());
-                            }
-                        }
-                        TreeMaker tm = copy.getTreeMaker();
-                        CompilationUnitTree cut = copy.getCompilationUnit();
-                        for (String typeName : autoImportedTypeNames) {
-                            for (ImportTree importTree : cut.getImports()) {
-                                if (!importTree.isStatic()) {
-                                    if (typeName.equals(importTree.getQualifiedIdentifier().toString())) {
-                                        cut = tm.removeCompUnitImport(cut, importTree);
-                                        break;
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        final Set<String> autoImported = imp.getAutoImportedTypes();
+                        ModificationResult.runModificationTask(Collections.singleton(cInfo.getSnapshot().getSource()), new UserTask() {
+                            @Override
+                            public void run(ResultIterator resultIterator) throws Exception {
+                                WorkingCopy copy = WorkingCopy.get(resultIterator.getParserResult());
+                                copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                                for (Element usedElement : Utilities.getUsedElements(copy)) {
+                                    switch (usedElement.getKind()) {
+                                        case CLASS:
+                                        case INTERFACE:
+                                        case ENUM:
+                                        case ANNOTATION_TYPE:
+                                            String name = ((TypeElement)usedElement).getQualifiedName().toString();
+                                            if (autoImportedTypeNames.remove(name)) {
+                                                autoImported.add(name);
+                                            }
                                     }
                                 }
+                                TreeMaker tm = copy.getTreeMaker();
+                                CompilationUnitTree cut = copy.getCompilationUnit();
+                                for (String typeName : autoImportedTypeNames) {
+                                    for (ImportTree importTree : cut.getImports()) {
+                                        if (!importTree.isStatic()) {
+                                            if (typeName.equals(importTree.getQualifiedIdentifier().toString())) {
+                                                cut = tm.removeCompUnitImport(cut, importTree);
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                                copy.rewrite(copy.getCompilationUnit(), cut);
                             }
-                        }
-                        copy.rewrite(copy.getCompilationUnit(), cut);
+                        }).commit();
+                        autoImportedTypeNames = autoImported;
+                    } catch (Exception e) {
+                        Exceptions.printStackTrace(e);
                     }
-                }).commit();
-            } catch (Exception e) {
-                Exceptions.printStackTrace(e);
-            }
+                }
+            });
+        } else {
+            autoImportedTypeNames = imp.getAutoImportedTypes();
         }
-        autoImportedTypeNames = imp.getAutoImportedTypes();
     }
     
     private String getProposedValue(CodeTemplateParameter param) {
