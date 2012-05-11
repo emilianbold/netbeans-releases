@@ -50,7 +50,10 @@ import java.util.Stack;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 import org.apache.maven.artifact.Artifact;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.annotations.common.NullUnknown;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -70,7 +73,7 @@ public final class FileUtilities {
     private FileUtilities() {
     }
     
-    public static FileObject convertURItoFileObject(URI uri) {
+    public static @CheckForNull FileObject convertURItoFileObject(@NullAllowed URI uri) {
         if (uri == null) {
             return null;
         }
@@ -78,7 +81,7 @@ public final class FileUtilities {
         return FileUtil.toFileObject(fil);
     }
     
-    public static FileObject convertStringToFileObject(String str) {
+    public static @CheckForNull FileObject convertStringToFileObject(@NullAllowed String str) {
         if (str != null) {
             File fil = new File(str);
             fil = FileUtil.normalizeFile(fil);
@@ -87,7 +90,7 @@ public final class FileUtilities {
         return null;
     }
     
-    public static File convertStringToFile(String str) {
+    public static @NullUnknown File convertStringToFile(@NullAllowed String str) {
         if (str != null) {
             File fil = new File(str);
             return FileUtil.normalizeFile(fil);
@@ -96,7 +99,7 @@ public final class FileUtilities {
     }
     
 
-    public static URI convertStringToUri(String str) {
+    public static @NullUnknown URI convertStringToUri(@NullAllowed String str) {
         if (str != null) {
             File fil = new File(str);
             fil = FileUtil.normalizeFile(fil);

@@ -563,6 +563,9 @@ public class HistoryDiffView implements PropertyChangeListener {
     }
     
     private void setCurrentDifference(int idx) {
+        if(diffView == null) {
+            return;
+        }
         diffView.setLocation(DiffController.DiffPane.Modified, DiffController.LocationType.DifferenceIndex, idx);    
         tc.refreshNavigationButtons(diffView.getDifferenceIndex(), diffView.getDifferenceCount());
     }

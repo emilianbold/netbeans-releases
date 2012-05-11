@@ -166,6 +166,9 @@ public final class MavenEmbedder {
     }
 
     public synchronized Settings getSettings() {
+        if (Boolean.getBoolean("no.local.settings")) { // for unit tests
+            return new Settings(); // could instead make public void setSettings(Settings settingsOverride)
+        }
         File settingsXml = embedderConfiguration.getSettingsXml();
         long newSettingsTimestamp = settingsXml.hashCode() ^ settingsXml.lastModified() ^ MavenCli.DEFAULT_USER_SETTINGS_FILE.lastModified();
         // could be included but currently constant: hashCode() of those files; getSystemProperties.hashCode()
