@@ -138,7 +138,7 @@ public class PaletteItemDataObject extends MultiDataObject implements CookieSet.
             paletteItem.componentClassSource = null;
 //            paletteItem.isContainer_explicit = null;
             paletteItem.componentType_explicit = null;
-            paletteItem.componentInitializerId = null;
+            paletteItem.setComponentInitializerId(null);
         }
 
         displayName = null;

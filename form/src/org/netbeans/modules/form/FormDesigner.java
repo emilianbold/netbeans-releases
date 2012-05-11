@@ -825,16 +825,10 @@ public class FormDesigner {
 
         if (mode == MODE_ADD) {
             PaletteItem pitem = PaletteUtils.getSelectedItem();
-            if ((pitem != null) && PaletteItem.TYPE_CHOOSE_BEAN.equals(pitem.getExplicitComponentType())
-                    && getSelectedDesigner() == this) {
-                NotifyDescriptor.InputLine desc = new NotifyDescriptor.InputLine(
-                    FormUtils.getBundleString("MSG_Choose_Bean"), // NOI18N
-                    FormUtils.getBundleString("TITLE_Choose_Bean")); // NOI18N
-                DialogDisplayer.getDefault().notify(desc);
-                if (NotifyDescriptor.OK_OPTION.equals(desc.getValue())) {
-                    pitem.setClassFromCurrentProject(desc.getInputText(),
-                            formEditor.getFormDataObject().getPrimaryFile());
-                } else {
+            if (pitem != null && getSelectedDesigner() == this) {
+                boolean prepared = pitem.prepareComponentInitializer(
+                                     formEditor.getFormDataObject().getPrimaryFile());
+                if (!prepared) {
                     toggleSelectionMode();
                     return;
                 }

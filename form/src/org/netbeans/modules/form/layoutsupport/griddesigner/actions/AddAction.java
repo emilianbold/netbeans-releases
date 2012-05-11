@@ -108,20 +108,6 @@ public class AddAction extends AbstractGridAction {
                 if (paletteItem == null) {
                     return false;
                 }
-                if (PaletteItem.TYPE_CHOOSE_BEAN.equals(paletteItem.getExplicitComponentType())) {
-                    NotifyDescriptor.InputLine desc = new NotifyDescriptor.InputLine(
-                        FormUtils.getBundleString("MSG_Choose_Bean"), // NOI18N
-                        FormUtils.getBundleString("TITLE_Choose_Bean")); // NOI18N
-                    DialogDisplayer.getDefault().notify(desc);
-                    if (NotifyDescriptor.OK_OPTION.equals(desc.getValue())) {
-                        FormModel formModel = replicator.getTopMetaComponent().getFormModel();
-                        String chooseBeanType = desc.getInputText();
-                        paletteItem.setClassFromCurrentProject(chooseBeanType,
-                            FormEditor.getFormDataObject(formModel).getPrimaryFile());
-                    } else {
-                        return false;
-                    }
-                }
                 performer.performAction(new AddComponentAction(paletteItem));
                 return true;
             }
@@ -159,12 +145,7 @@ public class AddAction extends AbstractGridAction {
             FormModel formModel = container.getFormModel();
             RADComponent metacomp = formModel.getComponentCreator().createComponent(
                     pItem, container, null);
-            if (metacomp == null) {
-                String pattern = NbBundle.getMessage(AddAction.class, "AddAction_CannotAdd"); // NOI18N
-                String msg = MessageFormat.format(pattern, pItem.getNode().getDisplayName());
-                NotifyDescriptor.Message desc = new NotifyDescriptor.Message(msg, NotifyDescriptor.WARNING_MESSAGE);
-                DialogDisplayer.getDefault().notify(desc);
-            } else if (isSubComponent(metacomp, container)) {
+            if (metacomp != null && isSubComponent(metacomp, container)) {
                 replicator.addComponent(metacomp);
                 Component comp = (Component)replicator.getClonedComponent(metacomp);
                 gridManager.setGridX(comp, context.getFocusedColumn());

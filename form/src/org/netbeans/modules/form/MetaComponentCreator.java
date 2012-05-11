@@ -60,7 +60,6 @@ import org.netbeans.modules.form.layoutsupport.*;
 import org.netbeans.modules.form.layoutdesign.*;
 import org.netbeans.modules.form.layoutdesign.support.SwingLayoutBuilder;
 import org.netbeans.modules.form.editors2.BorderDesignSupport;
-import org.netbeans.modules.form.palette.BoxFillerInitializer;
 import org.netbeans.modules.form.palette.PaletteItem;
 import org.netbeans.modules.form.project.ClassSource;
 import org.netbeans.modules.form.project.ClassPathUtils;
@@ -109,10 +108,16 @@ public class MetaComponentCreator {
     public RADComponent createComponent(PaletteItem paletteItem,
                                         RADComponent targetComp,
                                         Object constraints) {
-        RADComponent metaComp = createComponent(paletteItem.getComponentClassSource(), targetComp, constraints);
-        String initializerId = paletteItem.getInitializerId();
-        initializeNewComponent(metaComp, initializerId);
-        return metaComp;
+        boolean prepared = paletteItem.prepareComponentInitializer(
+                               FormEditor.getFormDataObject(formModel).getPrimaryFile());
+        if (prepared) {
+            RADComponent metaComp = createComponent(paletteItem.getComponentClassSource(), targetComp, constraints);
+            if (metaComp != null && metaComp.isInModel()) {
+                paletteItem.initializeComponent(metaComp);
+            }
+            return metaComp;
+        }
+        return null;
     }
 
     /** Creates and adds a new metacomponent to FormModel. The new component
@@ -140,10 +145,12 @@ public class MetaComponentCreator {
             return null; // class loading failed
 
         RADComponent metacomp = createAndAddComponent(compClass, targetComp, constraints, exactTargetMatch);
-        String typeParams = classSource.getTypeParameters();
-        if (typeParams != null) {
-            metacomp.setAuxValue(JavaCodeGenerator.AUX_TYPE_PARAMETERS, typeParams);
-            JavaCodeGenerator.setupComponentFromAuxValues(metacomp);
+        if (metacomp != null) {
+            String typeParams = classSource.getTypeParameters();
+            if (typeParams != null) {
+                metacomp.setAuxValue(JavaCodeGenerator.AUX_TYPE_PARAMETERS, typeParams);
+                JavaCodeGenerator.setupComponentFromAuxValues(metacomp);
+            }
         }
         return metacomp;
     }
@@ -268,19 +275,8 @@ public class MetaComponentCreator {
 
     public RADVisualComponent precreateVisualComponent(PaletteItem paletteItem) {
         RADVisualComponent metaComp = precreateVisualComponent(paletteItem.getComponentClassSource());
-        String initializerId = paletteItem.getInitializerId();
-        initializeNewComponent(metaComp, initializerId);
+        paletteItem.initializeComponent(metaComp);
         return metaComp;
-    }
-
-    private void initializeNewComponent(RADComponent metaComp, String initializerId) {
-        if (initializerId == null) {
-            return;
-        }
-        // PENDING general registration of initializers
-        if (initializerId.startsWith("Box.Filler")) { // NOI18N
-            new BoxFillerInitializer(metaComp, initializerId).initialize();
-        }
     }
 
     public RADVisualComponent getPrecreatedMetaComponent() {
@@ -386,6 +382,9 @@ public class MetaComponentCreator {
         final TargetInfo target = getTargetInfo(compClass, targetComp,
                                       !exactTargetMatch, !exactTargetMatch);
         if (target == null) {
+            if (exactTargetMatch) {
+                showCannotAddComponentMessage(compClass.getName());
+            }
             return null;
         }
 
@@ -1376,6 +1375,12 @@ public class MetaComponentCreator {
         em.annotate(ex, msg);
         em.notify(ErrorManager.USER, ex); // Issue 65116 - don't show the exception to the user
         em.notify(ErrorManager.INFORMATIONAL, ex); // Make sure the exception is in the console and log file
+    }
+
+    private static void showCannotAddComponentMessage(String name) {
+        String msg = FormUtils.getFormattedBundleString("FMT_CannotAdd", name); // NOI18N
+        NotifyDescriptor.Message desc = new NotifyDescriptor.Message(msg, NotifyDescriptor.WARNING_MESSAGE);
+        DialogDisplayer.getDefault().notify(desc);
     }
 
     private boolean initComponentInstance(RADComponent metacomp,
