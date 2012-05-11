@@ -153,10 +153,12 @@ public class YamlKeystrokeHandler implements KeystrokeHandler {
         return false;
     }
 
+    @Override
     public boolean afterCharInserted(Document doc, int caretOffset, JTextComponent target, char ch) throws BadLocationException {
         return false;
     }
 
+    @Override
     public boolean charBackspaced(Document doc, int dotPos, JTextComponent target, char ch) throws BadLocationException {
         if (ch == '%' && dotPos > 0 && dotPos <= doc.getLength() - 2) {
             String s = doc.getText(dotPos - 1, 3);
@@ -180,6 +182,7 @@ public class YamlKeystrokeHandler implements KeystrokeHandler {
 //
 //        return true;
 //    }
+    @Override
     public int beforeBreak(Document document, int offset, JTextComponent target) throws BadLocationException {
 
         Caret caret = target.getCaret();
@@ -230,10 +233,12 @@ public class YamlKeystrokeHandler implements KeystrokeHandler {
         return newPos + 1;
     }
 
+    @Override
     public OffsetRange findMatching(Document doc, int caretOffset) {
         return OffsetRange.NONE;
     }
 
+    @Override
     public List<OffsetRange> findLogicalRanges(ParserResult info, int caretOffset) {
         YamlParserResult result = (YamlParserResult) info;
         if (result == null) {
@@ -271,6 +276,7 @@ public class YamlKeystrokeHandler implements KeystrokeHandler {
         }
     }
 
+    @Override
     public int getNextWordOffset(Document doc, int caretOffset, boolean reverse) {
         return -1;
     }
