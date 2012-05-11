@@ -117,9 +117,9 @@ public final class HudsonOptions {
     public String getJobConfig() {
         String config = getPreferences().get(JOB_CONFIG, null);
         if (config == null) {
-            String configFile = getDefaultJobConfig();
-            if (configFile != null) {
-                setJobConfig(configFile);
+            config = getDefaultJobConfig();
+            if (config != null) {
+                setJobConfig(config);
             }
         }
         return config;
