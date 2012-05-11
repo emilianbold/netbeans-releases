@@ -57,7 +57,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.*;
 import javax.swing.undo.UndoableEdit;
 import org.netbeans.api.actions.Openable;
-import org.netbeans.modules.openide.text.NbDocumentRefactoringHack;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.UndoRedo;
@@ -534,33 +533,39 @@ public final class NbDocument extends Object {
         ((Annotatable) doc).removeAnnotation(annotation);
     }
 
-        /**
-     * TODO: will be removed after API review
+    /**
+     * Get an edit of given type that would be undone if an undo operation would be invoked
+     * at this time for an editor cookie.
+     * <br>
+     * The edit to be undone may be composed from instances of various undoable edit types
+     * (see <a href="@TOP@/org/netbeans/spi/editor/document/UndoableEditWrapper.html">UndoableEditWrapper</a>).
+     *
+     * @param <T> type of undoable edit to be retrieved.
+     * @param ec editor cookie providing an undo/redo manager.
+     * @param type class of undoable edit to be retrieved.
+     * @return undoable edit of given type or null if there is no edit to be undone
+     *  or an instance of the given type is not contained in the edit to be undone.
+     * @since 6.49
      */
-    
-    static {
-        NbDocumentRefactoringHack.APIAccessor.DEFAULT = new APIAccessorImpl();
-    }
-
-    private static class APIAccessorImpl extends NbDocumentRefactoringHack.APIAccessor {
-
-        @Override
-        public <T> T getEditToBeUndoneOfType(EditorCookie ec, Class<T> type) {
-            return NbDocument.getEditToBeUndoneOfType(ec, type);
-        }
-
-        @Override
-        public <T> T getEditToBeRedoneOfType(EditorCookie ec, Class<T> type) {
-            return NbDocument.getEditToBeRedoneOfType(ec, type);
-        }
-
-    }
-
-    static <T> T getEditToBeUndoneOfType(EditorCookie ec, Class<T> type) {
+    public static <T> T getEditToBeUndoneOfType(EditorCookie ec, Class<T> type) {
         return getEditToBeUndoneRedoneOfType(ec, type, false);
     }
 
-    static <T> T getEditToBeRedoneOfType(EditorCookie ec, Class<T> type) {
+    /**
+     * Get an edit of given type that would be redone if a redo operation would be invoked
+     * at this time for an editor cookie.
+     * <br>
+     * The edit to be undone may be composed from instances of various undoable edit types
+     * (see <a href="@TOP@/org/netbeans/spi/editor/document/UndoableEditWrapper.html">UndoableEditWrapper</a>).
+     *
+     * @param <T> type of undoable edit to be retrieved.
+     * @param ec editor cookie providing an undo/redo manager.
+     * @param type class of undoable edit to be retrieved.
+     * @return undoable edit of given type or null if there is no edit to be redone
+     *  or an instance of the given type is not contained in the edit to be redone.
+     * @since 6.49
+     */
+    public static <T> T getEditToBeRedoneOfType(EditorCookie ec, Class<T> type) {
         return getEditToBeUndoneRedoneOfType(ec, type, true);
     }
 
@@ -587,8 +592,6 @@ public final class NbDocument extends Object {
         }
         return null;
     }
-
-    //End of TODO
 
     /**
      * Get the document associated with a file.

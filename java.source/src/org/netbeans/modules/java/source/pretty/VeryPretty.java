@@ -2431,9 +2431,7 @@ public final class VeryPretty extends JCTree.Visitor {
                 JCMethodInvocation mit = (JCMethodInvocation) est.getExpression();
                 if (mit.meth.getKind() == Kind.IDENTIFIER) {
                     JCIdent it = (JCIdent) mit.getMethodSelect();
-                    if (it.name == names._super && !diffContext.notSyntheticTrees.contains(tree)) {
-                        return TreeInfo.getEndPos(tree, diffContext.origUnit.endPositions) < 0 && tree.pos != 0 && tree.pos != NOPOS;
-                    }
+                    return it.name == names._super && diffContext.syntheticTrees.contains(tree);
                 }
             }
         }

@@ -478,9 +478,7 @@ public class FormUtils
         return NbBundle.getBundle(FormUtils.class).getString(key);
     }
 
-    public static String getFormattedBundleString(String key,
-                                                  Object[] arguments)
-    {
+    public static String getFormattedBundleString(String key, Object... arguments) {
         return NbBundle.getMessage(FormUtils.class, key, arguments);
     }
 

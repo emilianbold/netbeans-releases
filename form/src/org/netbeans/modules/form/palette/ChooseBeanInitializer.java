@@ -39,41 +39,37 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.openide.text;
+package org.netbeans.modules.form.palette;
 
-import java.util.Collection;
-import org.openide.cookies.EditorCookie;
-import org.openide.text.NbDocument;
+import org.netbeans.modules.form.FormUtils;
+import org.netbeans.modules.form.RADComponent;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileObject;
 
 /**
- * * TODO: will be removed after API review
+ * Initializer for the "Choose Bean" palette item, letting the user enter the
+ * component class to use.
+ *
+ * @author Tomas Pavek
  */
-public class NbDocumentRefactoringHack {
+class ChooseBeanInitializer implements PaletteItem.ComponentInitializer {
 
-    public static abstract class APIAccessor {
-
-        static {
-            Class c = NbDocument.class;
-            try {
-                Class.forName(c.getName(), true, c.getClassLoader());
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
+    @Override
+    public boolean prepare(PaletteItem item, FileObject classPathRep) {
+        NotifyDescriptor.InputLine desc = new NotifyDescriptor.InputLine(
+            FormUtils.getBundleString("MSG_Choose_Bean"), // NOI18N
+            FormUtils.getBundleString("TITLE_Choose_Bean")); // NOI18N
+        DialogDisplayer.getDefault().notify(desc);
+        if (NotifyDescriptor.OK_OPTION.equals(desc.getValue())) {
+            item.setClassFromCurrentProject(desc.getInputText(), classPathRep);
+            return true;
+        } else {
+            return false;
         }
-
-        
-        public static APIAccessor DEFAULT;
-
-        public abstract <T> T getEditToBeUndoneOfType(EditorCookie ec, Class<T> type);
-
-        public abstract <T> T getEditToBeRedoneOfType(EditorCookie ec, Class<T> type);
     }
 
-    public static <T> T getEditToBeUndoneOfType(EditorCookie ec, Class<T> type) {
-        return APIAccessor.DEFAULT.getEditToBeUndoneOfType(ec, type);
-    }
-
-    public static <T> T getEditToBeRedoneOfType(EditorCookie ec, Class<T> type) {
-        return APIAccessor.DEFAULT.getEditToBeRedoneOfType(ec, type);
+    @Override
+    public void initializeComponent(RADComponent metacomp) {
     }
 }

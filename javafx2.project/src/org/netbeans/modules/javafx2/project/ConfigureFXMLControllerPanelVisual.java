@@ -218,6 +218,7 @@ public class ConfigureFXMLControllerPanelVisual extends JPanel implements Docume
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(controllerCheckBox, gridBagConstraints);
+        controllerCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConfigureFXMLControllerPanelVisual.class, "ConfigureFXMLControllerPanelVisual.controllerCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
 
         createdNameLabel.setLabelFor(createdNameTextField);
         org.openide.awt.Mnemonics.setLocalizedText(createdNameLabel, org.openide.util.NbBundle.getMessage(ConfigureFXMLControllerPanelVisual.class, "ConfigureFXMLControllerPanelVisual.createdNameLabel.text")); // NOI18N
@@ -227,8 +228,9 @@ public class ConfigureFXMLControllerPanelVisual extends JPanel implements Docume
         gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
-        gridBagConstraints.insets = new java.awt.Insets(5, 40, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 40, 0, 0);
         add(createdNameLabel, gridBagConstraints);
+        createdNameLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConfigureFXMLControllerPanelVisual.class, "ConfigureFXMLControllerPanelVisual.createdNameLabel.AccessibleContext.accessibleDescription")); // NOI18N
 
         createdNameTextField.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -250,6 +252,7 @@ public class ConfigureFXMLControllerPanelVisual extends JPanel implements Docume
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(25, 15, 0, 0);
         add(fileLabel, gridBagConstraints);
+        fileLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConfigureFXMLControllerPanelVisual.class, "ConfigureFXMLControllerPanelVisual.fileLabel.AccessibleContext.accessibleDescription")); // NOI18N
 
         fileTextField.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -259,7 +262,7 @@ public class ConfigureFXMLControllerPanelVisual extends JPanel implements Docume
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.weightx = 0.1;
-        gridBagConstraints.insets = new java.awt.Insets(25, 5, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
         add(fileTextField, gridBagConstraints);
 
         buttonGroup1.add(createNewRadioButton);
@@ -278,6 +281,7 @@ public class ConfigureFXMLControllerPanelVisual extends JPanel implements Docume
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 15, 0, 0);
         add(createNewRadioButton, gridBagConstraints);
+        createNewRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConfigureFXMLControllerPanelVisual.class, "ConfigureFXMLControllerPanelVisual.createNewRadioButton.AccessibleContext.accessibleDescription")); // NOI18N
 
         buttonGroup1.add(useExistingRadioButton);
         org.openide.awt.Mnemonics.setLocalizedText(useExistingRadioButton, org.openide.util.NbBundle.getMessage(ConfigureFXMLControllerPanelVisual.class, "ConfigureFXMLControllerPanelVisual.useExistingRadioButton.text")); // NOI18N
@@ -294,6 +298,7 @@ public class ConfigureFXMLControllerPanelVisual extends JPanel implements Docume
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 15, 0, 0);
         add(useExistingRadioButton, gridBagConstraints);
+        useExistingRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConfigureFXMLControllerPanelVisual.class, "ConfigureFXMLControllerPanelVisual.useExistingRadioButton.AccessibleContext.accessibleDescription")); // NOI18N
 
         existingNameLabel.setLabelFor(existingNameTextField);
         org.openide.awt.Mnemonics.setLocalizedText(existingNameLabel, org.openide.util.NbBundle.getMessage(ConfigureFXMLControllerPanelVisual.class, "ConfigureFXMLControllerPanelVisual.existingNameLabel.text")); // NOI18N
@@ -303,8 +308,9 @@ public class ConfigureFXMLControllerPanelVisual extends JPanel implements Docume
         gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
-        gridBagConstraints.insets = new java.awt.Insets(5, 40, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 40, 0, 0);
         add(existingNameLabel, gridBagConstraints);
+        existingNameLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConfigureFXMLControllerPanelVisual.class, "ConfigureFXMLControllerPanelVisual.existingNameLabel.AccessibleContext.accessibleDescription")); // NOI18N
 
         existingNameTextField.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -329,10 +335,13 @@ public class ConfigureFXMLControllerPanelVisual extends JPanel implements Docume
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
         add(chooseButton, gridBagConstraints);
+        chooseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConfigureFXMLControllerPanelVisual.class, "ConfigureFXMLControllerPanelVisual.chooseButton.AccessibleContext.accessibleDescription")); // NOI18N
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 6;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 0.1;
         gridBagConstraints.weighty = 0.1;
         add(filler1, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents

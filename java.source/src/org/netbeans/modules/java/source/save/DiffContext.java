@@ -74,7 +74,7 @@ public class DiffContext {
     public final Document doc;
     public final PositionConverter positionConverter;
     public final FileObject file;
-    public final Set<Tree> notSyntheticTrees;
+    public final Set<Tree> syntheticTrees;
     
     public final JCCompilationUnit mainUnit;
     public final String mainCode;
@@ -83,7 +83,7 @@ public class DiffContext {
         this(copy, new HashSet<Tree>());
     }
 
-    public DiffContext(CompilationInfo copy, Set<Tree> notSyntheticTrees) {
+    public DiffContext(CompilationInfo copy, Set<Tree> syntheticTrees) {
         this.tokenSequence = copy.getTokenHierarchy().tokenSequence(JavaTokenId.language());
         this.mainCode = this.origText = copy.getText();
         this.style = getCodeStyle(copy);
@@ -93,10 +93,10 @@ public class DiffContext {
         this.doc = copy.getSnapshot().getSource().getDocument(false); //TODO: true or false?
         this.positionConverter = copy.getPositionConverter();
         this.file = copy.getFileObject();
-        this.notSyntheticTrees = notSyntheticTrees;
+        this.syntheticTrees = syntheticTrees;
     }
 
-    public DiffContext(CompilationInfo copy, CompilationUnitTree cut, String code, PositionConverter positionConverter, FileObject file, Set<Tree> notSyntheticTrees, CompilationUnitTree mainUnit, String mainCode) {
+    public DiffContext(CompilationInfo copy, CompilationUnitTree cut, String code, PositionConverter positionConverter, FileObject file, Set<Tree> syntheticTrees, CompilationUnitTree mainUnit, String mainCode) {
         this.tokenSequence = TokenHierarchy.create(code, JavaTokenId.language()).tokenSequence(JavaTokenId.language());
         this.origText = code;
         this.style = getCodeStyle(copy);
@@ -106,7 +106,7 @@ public class DiffContext {
         this.doc = null;
         this.positionConverter = positionConverter;
         this.file = file;
-        this.notSyntheticTrees = notSyntheticTrees;
+        this.syntheticTrees = syntheticTrees;
         this.mainUnit = (JCCompilationUnit) mainUnit;
         this.mainCode = mainCode;
     }
