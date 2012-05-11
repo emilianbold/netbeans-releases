@@ -133,7 +133,7 @@ public class PluginImporter {
             SpecificationVersion remoteSpec = null;
             if (remoteUnit != null && ! remoteUnit.getAvailableUpdates ().isEmpty ()) {
                 remoteElement = remoteUnit.getAvailableUpdates ().get (0);
-                remoteSpec = new SpecificationVersion (remoteElement.getSpecificationVersion ());
+                remoteSpec = remoteElement.getSpecificationVersion() == null ? null : new SpecificationVersion(remoteElement.getSpecificationVersion());
             }
 
             if (unit.getInstalled () != null) {
@@ -402,6 +402,7 @@ public class PluginImporter {
                 if (! stamp.setLastModified (System.currentTimeMillis ())) {
                     stamp.delete ();
                     stamp = new File (cluster, LAST_MODIFIED);
+                    stamp.setLastModified (System.currentTimeMillis ());
                 }
             }
         } catch (IOException ex) {
