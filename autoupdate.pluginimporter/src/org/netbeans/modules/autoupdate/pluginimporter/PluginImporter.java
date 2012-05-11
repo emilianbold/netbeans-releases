@@ -402,6 +402,7 @@ public class PluginImporter {
                 if (! stamp.setLastModified (System.currentTimeMillis ())) {
                     stamp.delete ();
                     stamp = new File (cluster, LAST_MODIFIED);
+                    stamp.setLastModified (System.currentTimeMillis ());
                 }
             }
         } catch (IOException ex) {
