@@ -426,8 +426,8 @@ public final class Utils {
     public static byte[] getAIDAsByteArray(String aid) {
         String aidSubStr = aid.substring(AID_AUTHORITY.length());
         int lastIndexofSlash = aidSubStr.lastIndexOf('/');
-        String RID = aidSubStr.substring(0, lastIndexofSlash);
-        String PIX = aidSubStr.substring(lastIndexofSlash + 1);
+        String RID = lastIndexofSlash != -1 ? aidSubStr.substring(0, lastIndexofSlash) : aidSubStr;
+        String PIX = lastIndexofSlash != -1 ? aidSubStr.substring(lastIndexofSlash + 1) : "";
         byte[] aidArray = new byte[RID.length() / 2 + PIX.length() / 2];
         // copy the RID
         int offset = getByteArrayForString(RID, aidArray, 0);
