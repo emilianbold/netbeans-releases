@@ -46,6 +46,7 @@ package org.netbeans.lib.jsp.lexer;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.jsp.lexer.JspTokenId;
@@ -61,7 +62,8 @@ import org.openide.filesystems.FileObject;
 import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.web.core.syntax.gsf.JspLanguage;
 
-/**Jsp Lexer Test
+/**
+ * Jsp Lexer Test
  *
  * @author Marek.Fukala@Sun.COM
  */
@@ -253,8 +255,7 @@ public class JspLexerTest extends CslTestBase {
         assertToken(ts, "\"", JspTokenId.ATTR_VALUE);
 
     }
-    
-    
+
     private void assertToken(TokenSequence ts, String tokenText, JspTokenId tokenId) {
         assertTrue(ts.moveNext());
         assertEquals(tokenId, ts.token().id());
@@ -266,25 +267,36 @@ public class JspLexerTest extends CslTestBase {
                 JspTokenId.language());
     }
 
-	/* Commented out - see bug 194639.
-    public void testHashedEL() throws Exception {
-        testSyntaxTree("testHashedEL.jspx.txt");
+    /* Commented out - see bug 194639.
+     public void testHashedEL() throws Exception {
+     testSyntaxTree("testHashedEL.jspx.txt");
 
+     }
+     */
+    public void test_QE_tokensTest() throws IOException {
+        FileObject file = getTestFile("testfiles/tokensTest.jsp");
+
+        Map<String, String> libs = new HashMap<String, String>();
+        libs.put("missing", "/WEB-INF/missing.tld");
+        libs.put("tag", "/WEB-INF/tags/");
+        libs.put("c", "http://java.sun.com/jstl/core_rt");
+
+        Utils.dumpTokens(file, libs, getRef());
+        compareReferenceFiles();
     }
-	 */
 
     public void generate_assertTokenCommands(String code) {
         TokenHierarchy th = TokenHierarchy.create(code, JspTokenId.language());
         TokenSequence<JspTokenId> ts = th.tokenSequence(JspTokenId.language());
         ts.moveStart();
-        while(ts.moveNext()) {
+        while (ts.moveNext()) {
             Token<JspTokenId> t = ts.token();
             System.out.println(String.format("assertToken(ts, \"%s\", JspTokenId.%s);", t.text(), t.id().name()));
         }
-        
-        
+
+
     }
-    
+
     @Override
     protected String getPreferredMimeType() {
         return "text/x-jsp";
@@ -298,9 +310,9 @@ public class JspLexerTest extends CslTestBase {
     private void testSyntaxTree(String testFile) throws Exception {
         FileObject source = getTestFile("testfiles/" + testFile);
         BaseDocument doc = getDocument(source);
-        
-        
-        JspParseData jspParseData = new JspParseData((Map<String,String>)Collections.EMPTY_MAP, true, true, true);
+
+
+        JspParseData jspParseData = new JspParseData((Map<String, String>) Collections.EMPTY_MAP, true, true, true);
 
         InputAttributes inputAttributes = new InputAttributes();
         inputAttributes.setValue(JspTokenId.language(), JspParseData.class, jspParseData, false);
@@ -312,7 +324,7 @@ public class JspLexerTest extends CslTestBase {
 
 
         StringBuilder output = new StringBuilder(ts.toString());
-        
+
         assertDescriptionMatches(source, output.toString(), false, ".pass", true);
     }
 }
