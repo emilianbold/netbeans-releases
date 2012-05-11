@@ -52,6 +52,7 @@ import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -1272,7 +1273,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 CustomIssueField cField = (CustomIssueField)field;
                 if ((nbRepository && cField.getKey().equals(IssueField.ISSUE_TYPE.getKey()))
                     || (newIssue && !cField.getShowOnBugCreation())  // NB IssueProvider type is already among non-custom fields
-                    || (newIssue && field.getKey().equals("cf_autoreporter_id")))   // NOI18N do not show exception reporter field - issue #212182
+                    || (isNbExceptionReport(field) && (newIssue || "".equals(issue.getFieldValue(field).trim()))))     // NOI18N do not show exception reporter field - issue #212182
                 {
                     continue;
                 }
@@ -1293,7 +1294,24 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                         UIUtils.issue163946Hack(scrollPane);
                         break;
                     case FreeText:
-                        comp = editor = new JTextField();
+                        if(isNbExceptionReport(field)) {
+                            final String val = issue.getFieldValue(field);
+                            LinkButton lb = new LinkButton(val);
+                            lb.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    try {
+                                        URL url = new URL("http://statistics.netbeans.org/exceptions/detail.do?id=" + val); // NOI18N
+                                        HtmlBrowser.URLDisplayer.getDefault().showURL(url);
+                                    } catch (MalformedURLException muex) {
+                                        Bugzilla.LOG.log(Level.INFO, "Unable to show the exception report in the browser.", muex); // NOI18N
+                                    }
+                                }
+                            });
+                            comp = editor = lb;
+                        } else {
+                            comp = editor = new JTextField();
+                        }
                         break;
                     case MultipleSelection:
                         JList list = new JList();
@@ -1359,6 +1377,10 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         fieldLayout.setVerticalGroup(fieldVerticalGroup);
         customFieldsPanelLeft.setVisible(anyField);
         customFieldsPanelRight.setVisible(anyField);
+    }
+    
+    private boolean isNbExceptionReport(IssueField field) {
+        return field.getKey().equals("cf_autoreporter_id"); // NOI18N
     }
 
     /** This method is called from within the constructor to
@@ -3073,7 +3095,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
             return 0;
         }
     }
-    
+
     class CancelHighlightDocumentListener implements DocumentListener {
         private JComponent label;
         

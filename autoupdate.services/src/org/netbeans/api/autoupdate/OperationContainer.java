@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -232,10 +232,11 @@ public final class OperationContainer<Support> {
         if (upToDate) {
             return support;
         } else {
-            if (listAll().size() > 0 && listInvalid().size() == 0) {
+            if (listAll().size() > 0 && listInvalid().isEmpty()) {
                 upToDate = true;
                 return support;
             } else {
+                OperationContainerImpl.LOGGER.info("Support is null, either listAll[" + listAll() + "] empty, or there are invalid[" + listInvalid() + "]");
                 return null;
             }
         }
@@ -404,7 +405,6 @@ public final class OperationContainer<Support> {
     private  OperationContainer(OperationContainerImpl<Support> impl, Support t) {
         this.impl = impl;
         this.support = t;
-        impl.setOperationContainer (this);
     }
     
     OperationContainerImpl<Support> impl;
