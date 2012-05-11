@@ -208,7 +208,7 @@ public class YamlKeystrokeHandler implements KeystrokeHandler {
         String lineSuffix = doc.getText(offset, lineEnd + 1 - offset);
         if (linePrefix.trim().endsWith(":") && lineSuffix.trim().length() == 0) {
             // Yes, new key: increase indent
-            indent += getIndentSize(doc);
+            indent += IndentUtils.getIndentSize();
         } else {
             // No, just use same indent as parent
         }
@@ -227,7 +227,7 @@ public class YamlKeystrokeHandler implements KeystrokeHandler {
         if (remove > 0) {
             doc.remove(offset, remove);
         }
-        String str = getIndentString(indent);
+        String str = IndentUtils.getIndentString(indent);
         int newPos = offset + str.length();
         doc.insertString(offset, str, null);
         caret.setDot(offset);
@@ -300,21 +300,4 @@ public class YamlKeystrokeHandler implements KeystrokeHandler {
         }
     }
 
-    public static int getIndentSize(BaseDocument doc) {
-        Preferences prefs = MimeLookup.getLookup(MimePath.get(YamlTokenId.YAML_MIME_TYPE)).lookup(Preferences.class);
-        return prefs.getInt(SimpleValueNames.SPACES_PER_TAB, 4);
-    }
-
-    public static void indent(StringBuilder sb, int indent) {
-        for (int i = 0; i < indent; i++) {
-            sb.append(' ');
-        }
-    }
-
-    public static String getIndentString(int indent) {
-        StringBuilder sb = new StringBuilder(indent);
-        indent(sb, indent);
-
-        return sb.toString();
-    }
 }
