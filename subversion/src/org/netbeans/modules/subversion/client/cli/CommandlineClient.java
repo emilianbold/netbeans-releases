@@ -1417,6 +1417,6 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
 
     @Override
     public void dispose() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        
     }
 }
