@@ -1043,6 +1043,11 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         // Bug 210299 - Unresolved static field
         performTest("bug210299.cpp", 9, 39, "bug210299.cpp", 3, 3);
     }    
+
+    public void testBug212145() throws Exception {
+        // Bug 212145 - Unable to resolve identifier - remote development - C++
+        performTest("bug212145.cpp", 9, 11, "bug212145.cpp", 3, 5);
+    }    
     
     public static class Failed extends HyperlinkBaseTestCase {
 

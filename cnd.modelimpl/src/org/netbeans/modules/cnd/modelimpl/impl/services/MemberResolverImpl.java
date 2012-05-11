@@ -127,6 +127,11 @@ public final class MemberResolverImpl {
                 res.add((CsmClassifier) m);
             }
         }
+
+        if (CsmKindUtilities.isClass(cls) && CsmSortUtilities.matchName(cls.getName(), name, true, true)){
+            res.add(cls);
+        }
+        
         return res.iterator();
     }
 }
