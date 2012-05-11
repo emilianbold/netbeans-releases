@@ -586,14 +586,14 @@ public abstract class WebRestSupport extends RestSupport {
         } else {
             setProjectProperty(WebRestSupport.PROP_REST_CONFIG_TYPE, WebRestSupport.CONFIG_TYPE_USER);
             RestConfig rc = RestConfig.USER;
-            rc.setJerseyLibSelected(configPanel.isJerseyLibSelected());
-            rc.setServerJerseyLibSelected(configPanel.isServerJerseyLibSelected());
-            if ( configPanel.isServerJerseyLibSelected() ){
+            rc.setJerseyLibSelected(false);
+            rc.setServerJerseyLibSelected(false);
+            /*if ( configPanel.isServerJerseyLibSelected() ){
                 setProjectProperty(PROP_REST_JERSEY, JERSEY_CONFIG_SERVER );
             }
             else if ( configPanel.isJerseyLibSelected()){
                 setProjectProperty(PROP_REST_JERSEY, JERSEY_CONFIG_IDE);
-            }
+            }*/
             return rc;
         }
         return RestConfig.USER;

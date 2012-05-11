@@ -44,7 +44,9 @@ package org.netbeans.modules.php.project.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -58,6 +60,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.editor.indent.api.Reformat;
+import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpSources;
@@ -329,6 +332,46 @@ public final class PhpProjectUtils {
      */
     public static void openCustomizer(Project project, String category) {
         project.getLookup().lookup(CustomizerProviderImpl.class).showCustomizer(category);
+    }
+
+    /**
+     * Get number intervals for the given numbers.
+     * <p>
+     * For example, for numbers [2, 1, 3, 102, 5, 77, 103, 4], these intervals are returned:
+     * [[1, 5], [77, 77], [102, 103]].
+     * @param numbers numbers to get number intervals for
+     * @return number intervals for the given numbers, never {@code null}
+     */
+    public static List<Pair<Integer, Integer>> getIntervals(List<Integer> numbers) {
+        if (numbers.isEmpty()) {
+            return Collections.emptyList();
+        }
+        if (numbers.size() == 1) {
+            Integer number = numbers.get(0);
+            return Collections.singletonList(Pair.of(number, number));
+        }
+        Collections.sort(numbers);
+        int start = -1;
+        int end = -1;
+        int current;
+        List<Pair<Integer, Integer>> intervals = new ArrayList<Pair<Integer, Integer>>();
+        for (Integer index : numbers) {
+            current = index;
+            if (start == -1) {
+                start = index;
+            }
+            if (end == -1) {
+                end = index;
+            } else if (current - end == 1) {
+                end = current;
+            } else {
+                intervals.add(Pair.of(start, end));
+                start = current;
+                end = current;
+            }
+        }
+        intervals.add(Pair.of(start, end));
+        return intervals;
     }
 
     // http://wiki.netbeans.org/UsageLoggingSpecification
