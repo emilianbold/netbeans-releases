@@ -53,6 +53,9 @@ import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dialog;
 import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -648,10 +651,38 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             }
             
             rendererComponent = new MyPanel();
-            rendererComponent.setLayout(new BorderLayout());
-            rendererComponent.add( jlName, BorderLayout.WEST );
-            rendererComponent.add( jlPkg, BorderLayout.CENTER);
-            rendererComponent.add( jlPrj, BorderLayout.EAST );
+            rendererComponent.setLayout(new GridBagLayout());
+            GridBagConstraints c = new GridBagConstraints();
+            c.gridx = 0;
+            c.gridy = 0;
+            c.gridwidth = 1;
+            c.gridheight = 1;
+            c.fill = GridBagConstraints.NONE;
+            c.weightx = 0;            
+            c.anchor = GridBagConstraints.WEST;
+            c.insets = new Insets (0,0,0,7);
+            rendererComponent.add( jlName, c);
+            
+            c = new GridBagConstraints();
+            c.gridx = 1;
+            c.gridy = 0;
+            c.gridwidth = 1;
+            c.gridheight = 1;
+            c.fill = GridBagConstraints.HORIZONTAL;
+            c.weightx = 0.1;            
+            c.anchor = GridBagConstraints.WEST;
+            c.insets = new Insets (0,0,0,7);
+            rendererComponent.add( jlPkg, c);
+            
+            c = new GridBagConstraints();
+            c.gridx = 2;
+            c.gridy = 0;
+            c.gridwidth = 1;
+            c.gridheight = 1;
+            c.fill = GridBagConstraints.NONE;
+            c.weightx = 0;            
+            c.anchor = GridBagConstraints.EAST;
+            rendererComponent.add( jlPrj, c);
             
             
             jlName.setOpaque(false);
