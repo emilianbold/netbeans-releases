@@ -77,10 +77,10 @@ public abstract class AbstractPanel implements ChangeListener, FinishablePanel,
     public abstract boolean isFinishPanel();
 
     public static interface Settings {
-        public void read(WizardDescriptor wizard);
-        public void store(WizardDescriptor wizard);
-        public boolean valid(WizardDescriptor wizard);
-        public void addChangeListener(ChangeListener l);
+        void read(WizardDescriptor wizard);
+        void store(WizardDescriptor wizard);
+        boolean valid(WizardDescriptor wizard);
+        void addChangeListener(ChangeListener l);
     }
     
     @Override

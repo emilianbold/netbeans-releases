@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -44,18 +44,12 @@
 
 package org.netbeans.updater;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.zip.CRC32;
-import org.w3c.dom.*;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
 
 /** This class represents module updates tracking
@@ -524,6 +518,7 @@ public final class UpdateTracking {
     private void scanDir () {
         File dir = new File (directory, TRACKING_FILE_NAME);
         File[] files = dir.listFiles( new FileFilter() {
+                               @Override
                                public boolean accept( File file ) {
                                    if ( !file.isDirectory() && file.getName().toUpperCase().endsWith(".XML") ) // NOI18N
                                        return true;
@@ -663,7 +658,7 @@ public final class UpdateTracking {
             
             // check module name from config file
             String replaced = name.replace ('.', '-'); // NOI18N
-            String searchFor = null;
+            String searchFor;
             
             if (replaced.indexOf (ModuleDeactivator.MODULES) > 0) { // NOI18N
                 // standard module
@@ -684,6 +679,7 @@ public final class UpdateTracking {
                     File hidden = new File(new File(new File(c, "config"), "Modules"), dash + ".xml_hidden");
                     if (hidden.exists()) {
                         hidden.delete();
+                        XMLUtil.LOG.info("File " + hidden + " deleted.");
                     }
 
                     if (directory.equals(c)) {
@@ -722,8 +718,8 @@ public final class UpdateTracking {
             Document document = XMLUtil.createDocument(ELEMENT_MODULE);
             
             Element e_module = document.getDocumentElement();
-            Element e_version = null;
-            Element e_file = null;
+            Element e_version;
+            Element e_file;
             
             e_module.setAttribute(ATTR_CODENAMEBASE, getCodenamebase());
             Iterator it2 = getVersions().iterator();
@@ -771,6 +767,7 @@ public final class UpdateTracking {
             if (os != null) {
                 try {
                     XMLUtil.write(document, os);
+                    XMLUtil.LOG.info("File " + file + " modified." );
                 } catch (IOException e) {
                     XMLUtil.LOG.log(Level.WARNING, "Cannot write " + file, e);
                 } finally {
@@ -819,12 +816,14 @@ public final class UpdateTracking {
                     }
                 }
                 if ( ! found )
-                    f.delete();
+                    XMLUtil.LOG.info("Deleting file: " + f);
+                    boolean deleted = f.delete();
+                    XMLUtil.LOG.info(".... " + f + " was deleted? " + deleted);
             }
         }
         
         String getL10NSpecificationVersion(String jarpath) {
-            String localever = null;
+            String localever;
             Collections.<Version>sort( versions );
             for (Version ver: versions) {
                 localever = ver.getLocaleVersion( jarpath );
@@ -927,6 +926,7 @@ public final class UpdateTracking {
                 pw.println("</module>");
                 pw.flush();
                 pw.close();
+                XMLUtil.LOG.info("New config was written in " + config);
             } catch (IOException ex) {
                 XMLUtil.LOG.log(Level.INFO, null, ex);
             }
@@ -1080,6 +1080,7 @@ public final class UpdateTracking {
             return locver;
         }
         
+        @Override
         public int compareTo (Version oth) {
             if ( install_time < oth.getInstall_time() )
                 return 1;
@@ -1152,15 +1153,18 @@ public final class UpdateTracking {
             pError = true;
         }
 
+        @Override
         public void error (org.xml.sax.SAXParseException e) {
             // normally a validity error
             pError = true;
         }
 
+        @Override
         public void warning (org.xml.sax.SAXParseException e) {
             //parseFailed = true;
         }
 
+        @Override
         public void fatalError (org.xml.sax.SAXParseException e) {
             pError = true;
         }

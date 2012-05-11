@@ -47,6 +47,9 @@ import javax.swing.JComponent;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Issue.Status;
 import org.netbeans.modules.tasks.ui.DashboardTopComponent;
+import org.netbeans.modules.tasks.ui.dashboard.CategoryNode;
+import org.netbeans.modules.tasks.ui.dashboard.DashboardViewer;
+import org.netbeans.modules.tasks.ui.dashboard.RepositoryNode;
 
 /**
  *
@@ -56,11 +59,35 @@ public class Utils {
 
     private final static int VISIBLE_START_CHARS = 5;
 
+    public static String getCategoryDisplayText(CategoryNode categoryNode) {
+        String categoryName = categoryNode.getCategory().getName();
+        boolean containsActiveTask = DashboardViewer.getInstance().containsActiveTask(categoryNode);
+        return getTopLvlDisplayText(containsActiveTask, categoryName, categoryNode.isOpened());
+    }
+
+
+    public static String getRepositoryDisplayText(RepositoryNode repositoryNode) {
+        String repositoryName = repositoryNode.getRepository().getDisplayName();
+        boolean containsActiveTask = DashboardViewer.getInstance().containsActiveTask(repositoryNode);
+        return getTopLvlDisplayText(containsActiveTask, repositoryName, repositoryNode.isOpened());
+    }
+
+    private static String getTopLvlDisplayText(boolean containsActiveTask, String name, boolean isOpened) {
+        String displayName;
+        String activeText = containsActiveTask ? "<b>" + name + "</b>" : name; //NOI18N
+        if (!isOpened) {
+            displayName = "<html><strike>" + activeText + "</strike><html>"; //NOI18N
+        } else {
+            displayName = "<html>" + activeText + "<html>";
+        }
+        return displayName;
+    }
+
     public static String getTaskPlainDisplayText(Issue task, JComponent component, int maxWidth) {
         return computeFitText(component, maxWidth, task.getDisplayName(), false);
     }
 
-    public static String getTaskDisplayString(Issue task, JComponent component, int maxWidth, boolean active) {
+    public static String getTaskDisplayString(Issue task, JComponent component, int maxWidth, boolean active, boolean hasFocus) {
         String displayName;
         String fitText = computeFitText(component, maxWidth, task.getDisplayName(), active);
         String activeText = active ? "<b>" + fitText + "</b>" : getFilterBoldText(fitText); //NOI18N
@@ -70,9 +97,9 @@ public class Utils {
 //        }
 
         Status status = task.getStatus();
-        if (status == Status.NEW) {
+        if (status == Status.NEW && !hasFocus) {
             displayName = "<html><font color=\"green\">" + activeText + "</font></html>"; //NOI18N
-        } else if (status == Status.MODIFIED) {
+        } else if (status == Status.MODIFIED && !hasFocus) {
             displayName = "<html><font color=\"blue\">" + activeText + "</font></html>"; //NOI18N
         } else {
             displayName = "<html>" + activeText + "</html>"; //NOI18N

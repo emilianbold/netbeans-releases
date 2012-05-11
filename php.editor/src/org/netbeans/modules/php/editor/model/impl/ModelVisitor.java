@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.php.editor.model.impl;
 
-import java.security.Policy;
 import java.util.*;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.csl.api.OffsetRange;
@@ -172,6 +171,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         }
         if (currentScope instanceof TypeScope && kind.equals(PHPDocTag.Type.METHOD)) {
             modelBuilder.buildMagicMethod(node, occurencesBuilder);
+            occurencesBuilder.prepare(node, currentScope);
         }
         // ...and then reset it to avoid possible problems.
         if (scopeHasBeenModified) {
@@ -251,7 +251,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                     if (assignment != null) {
                         String typeName = assignment.typeNameFromUnion();
                         if (typeName != null) {
-                            if (!typeName.contains("@")) {//NOI18N
+                            if (!typeName.contains(VariousUtils.PRE_OPERATION_TYPE_DELIMITER)) {//NOI18N
                                 return typeName;
                             } else {
                                 String variableName = getName(typeName, VariousUtils.Kind.VAR, true);
@@ -286,16 +286,16 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
     public static String getName(String semiType, VariousUtils.Kind kind, boolean strict) {
         if (semiType != null) {
-            String prefix = "@" + kind.toString(); // NOI18N
+            String prefix = VariousUtils.PRE_OPERATION_TYPE_DELIMITER + kind.toString(); // NOI18N
             if (semiType.startsWith(prefix)) {
                 String[] split = semiType.split(prefix, 2);
                 if (split.length > 1) {
 
-                    if (split[1].contains("@")) {
+                    if (split[1].contains(VariousUtils.PRE_OPERATION_TYPE_DELIMITER)) {
                         if (strict) {
                             return null;
                         } else {
-                            split = split[1].split("@");
+                            split = split[1].split(VariousUtils.PRE_OPERATION_TYPE_DELIMITER);
                             if (split.length < 1) {
                                 return null;
                             }
@@ -470,8 +470,8 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                     Scope currentScope = modelBuilder.getCurrentScope();
                     VariableNameImpl varN = findVariable(currentScope, var);
                     if (varN != null) {
-                        varN.addElement(new VarAssignmentImpl(varN, currentScope, true,
-                                getBlockRange(currentScope), ASTNodeInfo.create(var).getRange(), clsName));
+                        VarAssignmentImpl varAssignment = varN.createAssignment(currentScope, true, getBlockRange(currentScope), ASTNodeInfo.create(var).getRange(), clsName);
+                        varN.addElement(varAssignment);
                     }
                 }
 
@@ -483,7 +483,14 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
     @Override
     public void visit(MethodInvocation node) {
-        occurencesBuilder.prepare(node, modelBuilder.getCurrentScope());
+        FunctionInvocation method = node.getMethod();
+        if (method != null) {
+            if (hasCommonFunctionName(method)) {
+                occurencesBuilder.prepare(node, modelBuilder.getCurrentScope());
+            } else {
+                scan(method);
+            }
+        }
         scan(node.getDispatcher());
         scan(node.getMethod().getParameters());
     }
@@ -501,7 +508,14 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     @Override
     public void visit(StaticMethodInvocation node) {
         Scope scope = modelBuilder.getCurrentScope();
-        occurencesBuilder.prepare(node, scope);
+        FunctionInvocation method = node.getMethod();
+        if (method != null) {
+            if (hasCommonFunctionName(method)) {
+                occurencesBuilder.prepare(node, modelBuilder.getCurrentScope());
+            } else {
+                scan(method);
+            }
+        }
         Expression className = node.getClassName();
         if (className instanceof Variable) {
             scan(className);
@@ -509,6 +523,25 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             occurencesBuilder.prepare((NamespaceName) className, scope);
         }
         scan(node.getMethod().getParameters());
+    }
+
+    private boolean hasCommonFunctionName(final FunctionInvocation functionInvocation) {
+        boolean result = false;
+        FunctionName functionName = functionInvocation.getFunctionName();
+        if (functionName != null) {
+            Expression name = functionName.getName();
+            if (name instanceof Variable) {
+                Variable variable = (Variable) name;
+                if (variable.isDollared()) {
+                    result = false;
+                } else {
+                    result = true;
+                }
+            } else {
+                result = true;
+            }
+        }
+        return result;
     }
 
     @Override
@@ -692,20 +725,20 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                             Expression value = arrayElement.getValue();
                             String typeName = VariousUtils.extractVariableTypeFromExpression(value, allAssignments);
                             ASTNode conditionalNode = findConditionalStatement(getPath());
-                            VarAssignmentImpl vAssignment = new VarAssignmentImpl(varN, scope, conditionalNode != null,
-                                    getBlockRange(conditionalNode, scope), new OffsetRange(var.getStartOffset(), var.getEndOffset()), typeName);
+                            VarAssignmentImpl vAssignment = varN.createAssignment(scope, conditionalNode != null, getBlockRange(conditionalNode, scope), new OffsetRange(var.getStartOffset(), var.getEndOffset()), typeName);
+                            varN.addElement(vAssignment);
                             vAssignment.setAsArrayAccess(true);
                         }
                     } else {
                         String typeName = VariousUtils.extractVariableTypeFromExpression(rightHandSide, allAssignments);
                         ASTNode conditionalNode = findConditionalStatement(getPath());
-                        new VarAssignmentImpl(varN, scope, conditionalNode != null,
-                                    getBlockRange(conditionalNode, scope), new OffsetRange(var.getStartOffset(), var.getEndOffset()), typeName);
+                        VarAssignmentImpl varAssignment = varN.createAssignment(scope, conditionalNode != null, getBlockRange(conditionalNode, scope), new OffsetRange(var.getStartOffset(), var.getEndOffset()), typeName);
+                        varN.addElement(varAssignment);
                     }
                 } else {
                     ASTNode conditionalNode = findConditionalStatement(getPath());
-                    varN.createAssignment(scope, conditionalNode != null, getBlockRange(conditionalNode, scope), new OffsetRange(var.getStartOffset(), var.getEndOffset()), node,
-                            allAssignments);
+                    VarAssignmentImpl varAssignment = varN.createAssignment(scope, conditionalNode != null, getBlockRange(conditionalNode, scope), new OffsetRange(var.getStartOffset(), var.getEndOffset()), node, allAssignments);
+                    varN.addElement(varAssignment);
                 }
                 occurencesBuilder.prepare((Variable) leftHandSide, scope);
             }
@@ -730,16 +763,26 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         super.visit(node);
         Expression expression = node.getExpression();
         Expression value = node.getValue();
-        if ((expression instanceof Variable) && (value instanceof Variable)) {
-            VariableNameImpl varArray = findVariable(scope, (Variable)expression);
-            VariableNameImpl varValue = findVariable(scope, (Variable)value);
-            if (varArray != null && varValue != null) {
-                processVarComment(varArray.getName(), scope);
+        if (value instanceof Variable) {
+            VariableNameImpl varValue = findVariable(scope, (Variable) value);
+            if (varValue != null) {
                 varValue.setTypeResolutionKind(VariableNameImpl.TypeResolutionKind.MERGE_ASSIGNMENTS);
-                Collection<? extends String> typeNames = varArray.getArrayAccessTypeNames(node.getStartOffset());
-                for (String tpName : typeNames) {
-                    new VarAssignmentImpl(varValue, scope, true, getBlockRange(scope),
-                            new OffsetRange(value.getStartOffset(), value.getEndOffset()), tpName);
+                if (expression instanceof Variable) {
+                    VariableNameImpl varArray = findVariable(scope, (Variable)expression);
+                    if (varArray != null) {
+                        processVarComment(varArray.getName(), scope);
+                        Collection<? extends String> typeNames = varArray.getArrayAccessTypeNames(node.getStartOffset());
+                        for (String tpName : typeNames) {
+                            VarAssignmentImpl varAssignment = varValue.createAssignment(scope, true, getBlockRange(scope), new OffsetRange(value.getStartOffset(), value.getEndOffset()), tpName);
+                            varValue.addElement(varAssignment);
+                        }
+                    }
+                } else {
+                    String varType = VariousUtils.extractVariableTypeFromExpression(expression, getAssignmentMap(scope, (Variable) value));
+                    if (varType != null) {
+                        VarAssignmentImpl varAssignment = varValue.createAssignment(scope, true, getBlockRange(scope), new OffsetRange(value.getStartOffset(), value.getEndOffset()), varType);
+                        varValue.addElement(varAssignment);
+                    }
                 }
             }
         }
@@ -774,8 +817,8 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                 }
                 VariableNameImpl var = createParameter(fncScope, parameter);
                 if (!types.isEmpty() && var != null) {
-                    var.addElement(new VarAssignmentImpl(var, fncScope, false, fncScope.getBlockRange(),
-                            parameter.getOffsetRange(), typeName));
+                    VarAssignmentImpl varAssignment = var.createAssignment(fncScope, false, fncScope.getBlockRange(), parameter.getOffsetRange(), typeName);
+                    var.addElement(varAssignment);
                 }
             }
         }
@@ -797,8 +840,8 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         if (scope instanceof VariableNameFactory) {
             VariableNameImpl varNameImpl = createVariable((VariableNameFactory) scope, variable);
             if (varNameImpl != null) {
-                varNameImpl.addElement(new VarAssignmentImpl(varNameImpl, scope, true, new OffsetRange(node.getStartOffset(), node.getEndOffset()),
-                        VariableNameImpl.toOffsetRange(variable), CodeUtils.extractUnqualifiedTypeName(node)));
+                VarAssignmentImpl varAssignment = varNameImpl.createAssignment(scope, true, new OffsetRange(node.getStartOffset(), node.getEndOffset()), VariableNameImpl.toOffsetRange(variable), CodeUtils.extractUnqualifiedTypeName(node));
+                varNameImpl.addElement(varAssignment);
             }
         }
         occurencesBuilder.prepare(Kind.CLASS, node.getClassName(), scope);
@@ -978,8 +1021,8 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                         varN = new VariableNameImpl(factory, varName, variableScope.getFile(), nameRange, true);
                     }
                     if (varN != null) {
-                        varN.addElement(new VarAssignmentImpl(varN, variableScope,
-                                false, variableScope.getBlockRange(), varN.getNameRange(), typeName));
+                        VarAssignmentImpl varAssignment = varN.createAssignment(variableScope, false, variableScope.getBlockRange(), varN.getNameRange(), typeName);
+                        varN.addElement(varAssignment);
                     }
                 }
             }
@@ -1096,25 +1139,27 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
     @CheckForNull
     private ASTNode findConditionalStatement(List<ASTNode> path) {
-        for (ASTNode aSTNode : path) {
-            if (aSTNode instanceof IfStatement) {
-                return aSTNode;
-            } else if (aSTNode instanceof WhileStatement) {
-                return aSTNode;
-            } else if (aSTNode instanceof DoStatement) {
-                return aSTNode;
-            } else if (aSTNode instanceof ForEachStatement) {
-                return aSTNode;
-            } else if (aSTNode instanceof ForStatement) {
-                return aSTNode;
-            } else if (aSTNode instanceof CatchClause) {
-                return aSTNode;
-            } else if (aSTNode instanceof SwitchStatement) {
-                return aSTNode;
-            } else if (aSTNode instanceof TryStatement) {
-                return aSTNode;
-            } else if (aSTNode instanceof InstanceOfExpression) {
-                return aSTNode;
+        synchronized (path) {
+            for (ASTNode aSTNode : path) {
+                if (aSTNode instanceof IfStatement) {
+                    return aSTNode;
+                } else if (aSTNode instanceof WhileStatement) {
+                    return aSTNode;
+                } else if (aSTNode instanceof DoStatement) {
+                    return aSTNode;
+                } else if (aSTNode instanceof ForEachStatement) {
+                    return aSTNode;
+                } else if (aSTNode instanceof ForStatement) {
+                    return aSTNode;
+                } else if (aSTNode instanceof CatchClause) {
+                    return aSTNode;
+                } else if (aSTNode instanceof SwitchStatement) {
+                    return aSTNode;
+                } else if (aSTNode instanceof TryStatement) {
+                    return aSTNode;
+                } else if (aSTNode instanceof InstanceOfExpression) {
+                    return aSTNode;
+                }
             }
         }
         return null;
@@ -1320,9 +1365,8 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         }
         if (varInstance != null) {
             ASTNode conditionalNode = findConditionalStatement(getPath());
-            VarAssignmentImpl vAssignment = new VarAssignmentImpl(varInstance,
-                    (Scope) varScope, conditionalNode != null, getBlockRange(varScope), phpDocTypeTagInfo.getRange(), phpDocTypeTagInfo.getTypeName());
-            varInstance.addElement(vAssignment);
+            VarAssignmentImpl varAssignment = varInstance.createAssignment((Scope) varScope, conditionalNode != null, getBlockRange(varScope), phpDocTypeTagInfo.getRange(), phpDocTypeTagInfo.getTypeName());
+            varInstance.addElement(varAssignment);
         }
         //scan(phpDocTypeTagInfo.getTypeTag());
         occurencesBuilder.prepare(phpDocTypeTagInfo.getTypeTag(), varScope);
@@ -1333,16 +1377,11 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         Parameters.notNull("variableScope", variableScope); //NOI18N
         List<PhpDocTypeTagInfo> varComments = varTypeComments.get(variableName);
         if (varComments != null) {
-            List<PhpDocTypeTagInfo> commentsToRemove = new LinkedList<PhpDocTypeTagInfo>();
             for (PhpDocTypeTagInfo phpDocTypeTagInfo : varComments) {
                 VariableScope varScope = getVariableScope(phpDocTypeTagInfo.getRange().getStart());
                 if (varScope.equals(variableScope)) {
                     handleVarAssignment(variableName, varScope, phpDocTypeTagInfo);
-                    commentsToRemove.add(phpDocTypeTagInfo);
                 }
-            }
-            for (PhpDocTypeTagInfo phpDocTypeTagInfo : commentsToRemove) {
-                varComments.remove(phpDocTypeTagInfo);
             }
         }
     }

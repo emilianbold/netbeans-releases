@@ -49,7 +49,7 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.php.editor.model.*;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.php.editor.model.Occurence;
-import org.netbeans.modules.php.editor.nav.TestBase;
+import org.netbeans.modules.php.editor.nav.PHPNavTestBase;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -59,7 +59,7 @@ import org.openide.util.Exceptions;
  *
  * @author Radek Matous
  */
-public class ModelTestBase extends TestBase {
+public class ModelTestBase extends PHPNavTestBase {
     public ModelTestBase(String testName) {
         super(testName);
     }

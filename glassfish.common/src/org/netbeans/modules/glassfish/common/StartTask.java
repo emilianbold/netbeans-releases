@@ -363,7 +363,7 @@ public class StartTask extends BasicTask<OperationState> {
                 Logger.getLogger("glassfish").log(Level.FINE, "Server HTTP is live."); // NOI18N
                 OperationState state = OperationState.COMPLETED;
                 String messageKey = "MSG_SERVER_STARTED"; // NOI18N
-                if (!support.isReady(true,30,TimeUnit.SECONDS)) {
+                if (!support.isReady(true,3,TimeUnit.HOURS)) {
                     state = OperationState.FAILED;
                     messageKey = "MSG_START_SERVER_FAILED"; // NOI18N
                     serverProcess.destroy();
@@ -375,6 +375,8 @@ public class StartTask extends BasicTask<OperationState> {
 
             // if we are profiling, we need to lie about the status?
             if (null != jvmArgs) {
+                // save process to be able to stop process waiting for profiler to attach
+                support.setLocalStartProcess(serverProcess);
                 // try to sync the states after the profiler attaches
                 NODE_REFRESHER.post(new Runnable () {
 

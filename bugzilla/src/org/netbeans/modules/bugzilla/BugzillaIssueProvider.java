@@ -39,17 +39,18 @@ package org.netbeans.modules.bugzilla;
 
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.util.List;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiIssueProvider;
+import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.spi.IssueProvider;
-import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
-import org.openide.nodes.Node;
+import org.netbeans.modules.bugzilla.repository.IssueField;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class BugzillaIssueProvider extends IssueProvider<BugzillaIssue> {
+public class BugzillaIssueProvider extends KenaiIssueProvider<BugzillaIssue> {
 
     @Override
     public String getDisplayName(BugzillaIssue data) {
@@ -67,6 +68,12 @@ public class BugzillaIssueProvider extends IssueProvider<BugzillaIssue> {
     }
 
     @Override
+    public String[] getSubtasks(BugzillaIssue data) {
+        List<String> l = data.getFieldValues(IssueField.BLOCKS);
+        return l.toArray(new String[l.size()]);
+    }
+
+    @Override
     public String getSummary(BugzillaIssue data) {
         return data.getSummary();
     }
@@ -76,6 +83,11 @@ public class BugzillaIssueProvider extends IssueProvider<BugzillaIssue> {
         return data.isNew();
     }
 
+    @Override
+    public boolean isFinished(BugzillaIssue data) {
+        return data.isFinished();
+    }
+    
     @Override
     public boolean refresh(BugzillaIssue data) {
         return data.refresh();
@@ -106,9 +118,13 @@ public class BugzillaIssueProvider extends IssueProvider<BugzillaIssue> {
         data.addPropertyChangeListener(listener);
     }
 
+    /************************************************************************************
+     * Kenai
+     ************************************************************************************/
+    
     @Override
-    public void setContext(BugzillaIssue data, Node[] nodes) {
-        data.setContext(nodes);
+    public void setOwnerInfo(BugzillaIssue data, OwnerInfo info) {
+        data.setOwnerInfo(info);
     }
     
 }

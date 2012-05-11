@@ -32,7 +32,7 @@
       includeCoda:
       pluginDcls:
       beans:
-        bean : bean1,    SESSION,    more_for_test.TestBean
+        bean : bean1,    more_for_test.TestBean
  ------- XML View (constructed from the original data structure) -----
 <?xml version="1.0" encoding="UTF-8" ?>
 <jsp:root

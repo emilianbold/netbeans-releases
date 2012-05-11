@@ -168,7 +168,7 @@ public class JpaControllerGenerator {
         ClassPath cp = Util.getFullClasspath(pkg);
         boolean isAnnotation = cp.findResource("javax/faces/bean/ManagedBean.class") != null; //NOI18N
 
-        addImplementsClause(controllerFileObject, controllerClass, "java.io.Serializable"); //NOI18N
+        controllerFileObject = addImplementsClause(controllerFileObject, controllerClass, "java.io.Serializable"); //NOI18N
         controllerFileObject = generateJpaController(fieldName, pkg, idGetter.get(0), persistenceUnit, controllerClass, exceptionPackage,
                 entityClass, simpleEntityName, toOneRelMethods, toManyRelMethods, isInjection, fieldAccess[0], controllerFileObject, embeddedPkSupport, getPersistenceVersion(project));
     }
@@ -217,7 +217,7 @@ public class JpaControllerGenerator {
             modificationResult.commit();
         }
     }
-    private static void addImplementsClause(FileObject fileObject, final String className, final String interfaceName) throws IOException {
+    private static FileObject addImplementsClause(FileObject fileObject, final String className, final String interfaceName) throws IOException {
         JavaSource javaSource = JavaSource.forFileObject(fileObject);
         if(javaSource == null){
             if (!fileObject.isValid()) {
@@ -247,6 +247,7 @@ public class JpaControllerGenerator {
         if (modified[0]) {
             modificationResult.commit();
         }
+        return fileObject;
     }
     
     private static FileObject generateJpaController(
@@ -262,7 +263,7 @@ public class JpaControllerGenerator {
             final List<ElementHandle<ExecutableElement>> toManyRelMethods,
             final boolean isInjection,
             final boolean isFieldAccess,
-            final FileObject controllerFileObject, 
+            FileObject controllerFileObject, 
             final EmbeddedPkSupport embeddedPkSupport,
             final String version) throws IOException {
         
@@ -274,6 +275,18 @@ public class JpaControllerGenerator {
             final boolean[] derived = new boolean[] {false};
             
             JavaSource controllerJavaSource = JavaSource.forFileObject(controllerFileObject);
+            //sometimes javasource isn't refreshed properly yet
+            if(controllerJavaSource == null){
+                if (!controllerFileObject.isValid()) {
+                    controllerFileObject.getParent().refresh();	//Maybe fo.refresh() is enough
+                    controllerFileObject = FileUtil.toFileObject(FileUtil.toFile(controllerFileObject));
+                    controllerJavaSource = JavaSource.forFileObject(controllerFileObject);
+                } 
+                
+                if(controllerJavaSource == null){
+                    Logger.getLogger(JpaControllerGenerator.class.getName()).log(Level.WARNING, "Can''t find JavaSource for {0}", controllerFileObject.getPath());
+                }
+            }
             controllerJavaSource.runModificationTask(new Task<WorkingCopy>() {
             @Override
                 public void run(WorkingCopy workingCopy) throws IOException {

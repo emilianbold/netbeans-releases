@@ -95,8 +95,8 @@ public class JiraRepositoryProvider extends KenaiRepositoryProvider<JiraReposito
     }
 
     @Override
-    public NbJiraIssue getIssue(JiraRepository r, String id) {
-        return r.getIssue(id);
+    public NbJiraIssue[] getIssues(JiraRepository r, String[] ids) {
+        return r.getIssues(ids);
     }
 
     @Override

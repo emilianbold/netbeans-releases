@@ -492,7 +492,7 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
             Object val = model.getValueAt(row, i);
 
             // Check for Constant e.g <NULL>, <DEFAULT>, <CURRENT_TIMESTAMP> etc
-            if (DataViewUtils.isSQLConstantString(val)) {
+            if (DataViewUtils.isSQLConstantString(val, col)) {
                 insertData[i] = val;
             } else { // ELSE literals
                 insertData[i] = DBReadWriteHelper.validate(val, col);

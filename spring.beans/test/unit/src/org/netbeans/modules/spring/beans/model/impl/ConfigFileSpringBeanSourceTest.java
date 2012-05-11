@@ -92,7 +92,7 @@ public class ConfigFileSpringBeanSourceTest extends ConfigFileTestCase {
         int offset = contents.indexOf("<bean ");
         Location location = bean.getLocation();
         assertEquals(offset, location.getOffset());
-        assertEquals(configFile, location.getFile());
+        assertEquals(FileUtil.toFileObject(configFile), location.getFile());
     }
     
     public void testPropertyParseWithPNamespace() throws Exception {

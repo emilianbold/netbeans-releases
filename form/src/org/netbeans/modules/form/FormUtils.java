@@ -384,7 +384,8 @@ public class FormUtils
     /** Table defining order of dependent properties. */
     private static Object[][] propertyOrder = {
         { "javax.swing.text.JTextComponent",
-            "document", "text" },
+            "document", "text",
+            "editable", "background" },
         { "javax.swing.JSpinner",
             "model", "editor" },
         { "javax.swing.AbstractButton",
@@ -428,8 +429,11 @@ public class FormUtils
     /** Table enumerating properties that can hold HTML text. */
     private static Object[][] swingTextProperties = {
         { "javax.swing.JComponent", FormUtils.CLASS_AND_SUBCLASSES,
-            "text", Boolean.TRUE,
-            "toolTipText", Boolean.TRUE }
+            "toolTipText", Boolean.TRUE },
+        { "javax.swing.JLabel", FormUtils.CLASS_AND_SUBCLASSES,
+            "text", Boolean.TRUE },
+        { "javax.swing.AbstractButton", FormUtils.CLASS_AND_SUBCLASSES,
+            "text", Boolean.TRUE }
     };
 
     /** List of components that should never be containers; some of them are

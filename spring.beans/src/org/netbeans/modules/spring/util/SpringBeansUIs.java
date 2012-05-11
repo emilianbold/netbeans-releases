@@ -50,6 +50,7 @@ import javax.swing.AbstractAction;
 import org.netbeans.modules.spring.api.beans.model.Location;
 import org.netbeans.modules.spring.api.beans.model.SpringBean;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -62,7 +63,7 @@ public class SpringBeansUIs {
     public static GoToBeanAction createGoToBeanAction(SpringBean bean) {
         Location location = bean.getLocation();
         if (location != null) {
-            return new GoToBeanAction(location.getFile(), location.getOffset());
+            return new GoToBeanAction(FileUtil.toFile(location.getFile()), location.getOffset());
         }
         return null;
     }

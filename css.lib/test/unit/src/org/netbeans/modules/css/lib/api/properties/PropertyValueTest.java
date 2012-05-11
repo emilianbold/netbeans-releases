@@ -186,9 +186,9 @@ public class PropertyValueTest extends CssTestBase {
         assertAlternatives(p.getGrammar(), "20px /",
                 "initial", "normal", "none", "!number", "!length", "!percentage", "-");
         assertAlternatives(p.getGrammar(), "20px / 5pt",
-                "fantasy", "serif", "!string", "sans-serif", "monospace", "!identifier", "cursive");
-        assertAlternatives(p.getGrammar(), "20px / 5pt cursive",
-                ",");
+                "fantasy","serif","!string","sans-serif","monospace","!identifier","cursive");
+        assertAlternatives(p.getGrammar(), "20px / 5pt cursive", 
+                ",", "!identifier");
     }
 
     public void testFontThoroughly2() {
@@ -331,13 +331,13 @@ public class PropertyValueTest extends CssTestBase {
     public void testFontFamily() {
         PropertyModel p = Properties.getPropertyModel("font-family");
 //        assertResolve(p.getGrammar(), "fantasy");
-        assertAlternatives(p.getGrammar(), "fantasy", ",");
+        assertAlternatives(p.getGrammar(), "fantasy", ",", "!identifier");
 
-        assertAlternatives(p.getGrammar(), "fantasy, ",
-                "fantasy", "serif", "sans-serif", "monospace", "cursive", "!string", "!identifier");
-
-        assertAlternatives(p.getGrammar(), "fantasy, monospace",
-                ",");
+        assertAlternatives(p.getGrammar(), "fantasy, ", 
+                "fantasy","serif","sans-serif","monospace","cursive", "!string","!identifier");
+        
+        assertAlternatives(p.getGrammar(), "fantasy, monospace", 
+                ",", "!identifier");
 
         assertAlternatives(p.getGrammar(), "fantasy, monospace, ",
                 "fantasy", "serif", "sans-serif", "monospace", "cursive", "!string", "!identifier");

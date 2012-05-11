@@ -70,14 +70,11 @@ import java.util.MissingResourceException;
 import java.util.logging.Level;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComponent;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.api.Util;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer;
@@ -110,7 +107,8 @@ import org.openide.util.RequestProcessor.Task;
  *
  * @author Tomas Stupka
  */
-public class QueryController extends BugtrackingController implements DocumentListener, ItemListener, ListSelectionListener, ActionListener, FocusListener, KeyListener {
+public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryController implements ItemListener, ListSelectionListener, ActionListener, FocusListener, KeyListener, IssueTable.IssueTableProvider {
+
     protected QueryPanel panel;
 
     private static final String CHANGED_NOW = "Now";                            // NOI18N
@@ -143,6 +141,8 @@ public class QueryController extends BugtrackingController implements DocumentLi
     private final IssueTable issueTable;
     private final boolean isNetbeans;
 
+    private final Object REFRESH_LOCK = new Object();
+        
     public QueryController(BugzillaRepository repository, BugzillaQuery query, String urlParameters, boolean urlDef) {
         this(repository, query, urlParameters, false, true);
     }
@@ -273,8 +273,10 @@ public class QueryController extends BugtrackingController implements DocumentLi
     @Override
     public void closed() {
         onCancelChanges();
-        if(refreshTask != null) {
-            refreshTask.cancel();
+        synchronized(REFRESH_LOCK) {
+            if(refreshTask != null) {
+                refreshTask.cancel();
+            }
         }
         if(query.isSaved()) {
             if(!(query.getRepository() instanceof KenaiRepository)) {
@@ -312,15 +314,21 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     @Override
-    public boolean isValid() {
-        return true;
+    public void setMode(QueryMode mode) {
+        Filter filter;
+        switch(mode) {
+            case SHOW_ALL:
+                filter = issueTable.getAllFilter();
+                break;
+            case SHOW_NEW_OR_CHANGED:
+                filter = issueTable.getNewOrChangedFilter();
+                break;
+            default: 
+                throw new IllegalStateException("Unsupported mode " + mode);
+        }
+        selectFilter(filter);
     }
-
-    @Override
-    public void applyChanges() {
-
-    }
-
+        
     public String getUrlParameters(boolean encode) {
         if(panel.urlPanel.isVisible()) {
             return panel.urlTextField.getText();
@@ -460,23 +468,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     @Override
-    public void insertUpdate(DocumentEvent e) {
-        fireDataChanged();
-    }
-
-    @Override
-    public void removeUpdate(DocumentEvent e) {
-        fireDataChanged();
-    }
-
-    @Override
-    public void changedUpdate(DocumentEvent e) {
-        fireDataChanged();
-    }
-
-    @Override
     public void itemStateChanged(ItemEvent e) {
-        fireDataChanged();
         if(e.getSource() == panel.filterComboBox) {
             onFilterChange((Filter)e.getItem());
         }
@@ -487,7 +479,6 @@ public class QueryController extends BugtrackingController implements DocumentLi
         if(e.getSource() == panel.productList) {
             onProductChanged(e);
         }
-        fireDataChanged();            // XXX do we need this ???
     }
 
     @Override
@@ -802,12 +793,18 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     private void refresh(final boolean auto, boolean synchronously) {
-        if(refreshTask == null) {
-            refreshTask = new QueryTask();
-        } else {
-            refreshTask.cancel();
+        Task t;
+        synchronized(REFRESH_LOCK) {
+            if(refreshTask == null) {
+                refreshTask = new QueryTask();
+            } else {
+                refreshTask.cancel();
+            }
+            t = refreshTask.post(auto);
         }
-        refreshTask.post(auto, synchronously);
+        if(synchronously) {
+            t.waitFinished();
+        }
     }
 
     private void onModify() {
@@ -882,8 +879,10 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     private void remove() {
-        if (refreshTask != null) {
-            refreshTask.cancel();
+        synchronized(REFRESH_LOCK) {
+            if (refreshTask != null) {
+                refreshTask.cancel();
+            }
         }
         query.remove();
     }
@@ -1010,15 +1009,24 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     void switchToDeterminateProgress(long issuesCount) {
-        if(refreshTask != null) {
-            refreshTask.switchToDeterminateProgress(issuesCount);
+        synchronized(REFRESH_LOCK) {
+            if(refreshTask != null) {
+                refreshTask.switchToDeterminateProgress(issuesCount);
+            }
         }
     }
 
     void addProgressUnit(String issueDesc) {
-        if(refreshTask != null) {
-            refreshTask.addProgressUnit(issueDesc);
+        synchronized(REFRESH_LOCK) {
+            if(refreshTask != null) {
+                refreshTask.addProgressUnit(issueDesc);
+            }
         }
+    }
+
+    @Override
+    public IssueTable getIssueTable() {
+        return issueTable;
     }
 
     private class QueryTask implements Runnable, Cancellable, QueryNotifyListener {
@@ -1033,7 +1041,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
             query.addNotifyListener(this);
         }
 
-        private synchronized void startQuery() {
+        private void startQuery() {
             handle = ProgressHandleFactory.createHandle(
                     NbBundle.getMessage(
                         QueryController.class,
@@ -1053,7 +1061,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
             handle.start();
         }
 
-        private synchronized void finnishQuery() {
+        private void finnishQuery() {
             task = null;
             if(handle != null) {
                 handle.finish();
@@ -1070,7 +1078,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
             });
         }
 
-        synchronized void switchToDeterminateProgress(long progressMaxWorkunits) {
+        void switchToDeterminateProgress(long progressMaxWorkunits) {
             if(handle != null) {
                 handle.switchToDeterminate((int) progressMaxWorkunits);
                 this.progressMaxWorkunits = progressMaxWorkunits;
@@ -1078,7 +1086,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
             }
         }
 
-        synchronized void addProgressUnit(String issueDesc) {
+        void addProgressUnit(String issueDesc) {
             if(handle != null && progressWorkunits < progressMaxWorkunits) {
                 handle.progress(
                     NbBundle.getMessage(
@@ -1087,7 +1095,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
             }
         }
 
-        public void executeQuery() {
+        private void executeQuery() {
             setQueryRunning(true);
             // XXX isn't persistent and should be merged with refresh
             String lastChageFrom = panel.changedFromTextField.getText().trim();
@@ -1128,17 +1136,14 @@ public class QueryController extends BugtrackingController implements DocumentLi
             }
         }
 
-        synchronized void post(boolean autoRefresh, boolean synchronously) {
+        Task post(boolean autoRefresh) {
             if(task != null) {
                 task.cancel();
             }
             task = rp.create(this);
             this.autoRefresh = autoRefresh;
-            if(synchronously) {
-                task.run();
-            } else {
-                task.schedule(0);
-            }
+            task.schedule(0);
+            return task;
         }
 
         @Override

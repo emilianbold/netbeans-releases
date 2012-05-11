@@ -354,11 +354,6 @@ public class PersistenceClientEntitySelectionVisual extends JPanel {
         jPanel2.setLayout(new java.awt.BorderLayout());
 
         listSelected.setCellRenderer(ENTITY_LIST_RENDERER_SEL);
-        listSelected.addComponentListener(new java.awt.event.ComponentAdapter() {
-            public void componentResized(java.awt.event.ComponentEvent evt) {
-                listSelectedComponentResized(evt);
-            }
-        });
         jScrollPane2.setViewportView(listSelected);
         listSelected.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "LBL_SelectedEntitiesList")); // NOI18N
         listSelected.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "ACSD_SelectedEntitiesList")); // NOI18N
@@ -403,11 +398,6 @@ public class PersistenceClientEntitySelectionVisual extends JPanel {
         createPU = createPUCheckbox.isVisible() && createPUCheckbox.isSelected();
 
     }//GEN-LAST:event_createPUCheckboxItemStateChanged
-
-    private void listSelectedComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_listSelectedComponentResized
-// TODO add your handling code here:
-        System.out.println("RES");
-    }//GEN-LAST:event_listSelectedComponentResized
 
     private void buttonRemoveAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonRemoveAllActionPerformed
 

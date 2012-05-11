@@ -77,8 +77,6 @@ import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.ActionProgress;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.SubprojectProvider;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
@@ -341,13 +339,7 @@ public final class SuiteActions implements ActionProvider, ExecProject {
     
     public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
         if (COMMAND_BRANDING.equals(command)) {
-            boolean enabled = false;
-            EditableProperties properties = project.getHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-            if( null != properties ) {
-                String brandingToken = properties.get(SuiteBrandingModel.BRANDING_TOKEN_PROPERTY);
-                enabled = null != brandingToken;
-            }
-            return enabled;
+            return project.getEvaluator().getProperty(SuiteBrandingModel.BRANDING_TOKEN_PROPERTY) != null;
         } else if (ActionProvider.COMMAND_DELETE.equals(command) ||
                 ActionProvider.COMMAND_RENAME.equals(command) ||
                 ActionProvider.COMMAND_MOVE.equals(command)) {
@@ -368,18 +360,15 @@ public final class SuiteActions implements ActionProvider, ExecProject {
     
     @Messages("Title_BrandingEditor={0} - Branding")
     @Override public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
+        if (!ModuleActions.canRunNoLock(command, project.getTestUserDirLockFile())) {
+            return;
+        }
         if (ActionProvider.COMMAND_DELETE.equals(command)) {
-            if (SuiteOperations.canRun(project)) {
-                DefaultProjectOperations.performDefaultDeleteOperation(project);
-            }
+            DefaultProjectOperations.performDefaultDeleteOperation(project);
         } else if (ActionProvider.COMMAND_RENAME.equals(command)) {
-            if (SuiteOperations.canRun(project)) {
-                DefaultProjectOperations.performDefaultRenameOperation(project, null);
-            }
+            DefaultProjectOperations.performDefaultRenameOperation(project, null);
         } else if (ActionProvider.COMMAND_MOVE.equals(command)) {
-            if (SuiteOperations.canRun(project)) {
-                DefaultProjectOperations.performDefaultMoveOperation(project);
-            }
+            DefaultProjectOperations.performDefaultMoveOperation(project);
         } else if (COMMAND_BRANDING.equals(command)) {
             SuiteProperties properties = new SuiteProperties(project, project.getHelper(), project.getEvaluator(), SuiteUtils.getSubProjects(project));
             BrandingModel model = properties.getBrandingModel();
@@ -453,7 +442,7 @@ public final class SuiteActions implements ActionProvider, ExecProject {
             targetNames = new String[] {command};
         }
 
-        ModuleActions.setRunArgsIde(project, new SuiteProperties(project, project.getHelper(), project.getEvaluator(), Collections.<NbModuleProject>emptySet()), command, p, project.getTestUserDirLockFile());
+        ModuleActions.setRunArgsIde(project, new SuiteProperties(project, project.getHelper(), project.getEvaluator(), Collections.<NbModuleProject>emptySet()), command, p);
         
         return ActionUtils.runTarget(findBuildXml(project), targetNames, p);
     }

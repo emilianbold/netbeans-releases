@@ -404,7 +404,13 @@ public class UninitializedVariableHint extends AbstractRule implements PHPRuleWi
         private void initializeExpression(Expression expression) {
             if (expression instanceof Variable) {
                 initializeVariable((Variable) expression);
+            } else if (expression instanceof Reference) {
+                initializeReference((Reference) expression);
             }
+        }
+
+        private void initializeReference(Reference node) {
+            initializeExpression(node.getExpression());
         }
 
         private void initializeVariableBase(VariableBase variableBase) {

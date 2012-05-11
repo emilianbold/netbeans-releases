@@ -73,10 +73,18 @@ public class TemplateSelector implements ActionListener {
         this.preferences = preferences;
     }
 
+    /**
+     * @deprecated use {@link #show(java.lang.String) } instead
+     */
+    @Deprecated
     public boolean show() {
+        return show(TemplatesPanel.class.getName());
+    }
+
+    public boolean show (String helpCtxId) {
         getPanel().autoFillInCheckBox.setSelected(isAutofill());
         getPanel().templateTextArea.setText(getTemplate());
-        if(showPanel()) {
+        if(showPanel(helpCtxId)) {
             setAutofill(getPanel().autoFillInCheckBox.isSelected());
             setTemplate(getPanel().templateTextArea.getText());
             return true;
@@ -84,7 +92,7 @@ public class TemplateSelector implements ActionListener {
         return false;
     }
 
-    private boolean showPanel() {
+    private boolean showPanel (String helpCtxId) {
         DialogDescriptor descriptor = new DialogDescriptor (
                 getPanel(),
                 NbBundle.getMessage(TemplateSelector.class, "CTL_TemplateTitle"),   // NOI18N
@@ -92,7 +100,7 @@ public class TemplateSelector implements ActionListener {
                 new Object[] {DialogDescriptor.OK_OPTION, DialogDescriptor.CANCEL_OPTION},
                 DialogDescriptor.OK_OPTION,
                 DialogDescriptor.DEFAULT_ALIGN,
-                new HelpCtx(TemplatesPanel.class),
+                new HelpCtx(helpCtxId),
                 null);
         return DialogDisplayer.getDefault().notify(descriptor) == DialogDescriptor.OK_OPTION;
     }

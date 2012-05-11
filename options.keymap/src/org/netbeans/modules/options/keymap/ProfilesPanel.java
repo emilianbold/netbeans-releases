@@ -79,15 +79,21 @@ import org.xml.sax.SAXException;
 public class ProfilesPanel extends javax.swing.JPanel {
 
     private ProfileListModel model;
+    private KeymapPanel keymapPanel;
 
     /** Creates new form ProfilesPanel */
-    public ProfilesPanel() {
+    public ProfilesPanel(KeymapPanel k) {
+        keymapPanel = k;
         model = new ProfileListModel();
         initComponents();
-        model.setData(KeymapPanel.getModel().getProfiles());
-        profilesList.setSelectedValue(KeymapPanel.getModel().getCurrentProfile(), true);
+        model.setData(getKeymapPanel().getModel().getProfiles());
+        profilesList.setSelectedValue(getKeymapPanel().getModel().getCurrentProfile(), true);
     }
 
+    private KeymapPanel getKeymapPanel() {
+        return keymapPanel;
+    }
+    
     ProfileListModel getModel() {
         return model;
     }
@@ -226,7 +232,7 @@ public class ProfilesPanel extends javax.swing.JPanel {
         duplicateButton.setEnabled(true);
         exportButton.setEnabled(true);
         
-        if(KeymapPanel.getModel().isCustomProfile(profile)) {
+        if(getKeymapPanel().getModel().isCustomProfile(profile)) {
             deleteButton.setEnabled(true);
             restoreButton.setEnabled(false);
         } else {
@@ -245,11 +251,12 @@ public class ProfilesPanel extends javax.swing.JPanel {
                 KeymapPanel.loc("CTL_Create_New_Profile_Message"), // NOI18N
                 KeymapPanel.loc("CTL_Create_New_Profile_Title") // NOI18N
                 );
-        il.setInputText((String) profilesList.getSelectedValue());
+        String profileToDuplicate =(String) profilesList.getSelectedValue();
+        il.setInputText(profileToDuplicate);
         DialogDisplayer.getDefault().notify(il);
         if (il.getValue() == NotifyDescriptor.OK_OPTION) {
             newName = il.getInputText();
-            for (String s : KeymapPanel.getModel().getProfiles()) {
+            for (String s : getKeymapPanel().getModel().getProfiles()) {
                 if (newName.equals(s)) {
                     Message md = new Message(
                             KeymapPanel.loc("CTL_Duplicate_Profile_Name"), // NOI18N
@@ -258,7 +265,11 @@ public class ProfilesPanel extends javax.swing.JPanel {
                     return null;
                 }
             }
-            KeymapPanel.getModel().cloneProfile(newName);
+            KeymapViewModel currentModel = getKeymapPanel().getModel();
+            String currrentProfile = currentModel.getCurrentProfile();
+            getKeymapPanel().getModel().setCurrentProfile(profileToDuplicate);
+            getKeymapPanel().getModel().cloneProfile(newName);
+            currentModel.setCurrentProfile(currrentProfile);
             model.addItem(il.getInputText());
             profilesList.setSelectedValue(il.getInputText(), true);
         }
@@ -285,7 +296,7 @@ public class ProfilesPanel extends javax.swing.JPanel {
             Document doc = XMLUtil.createDocument(ELEM_XML_ROOT, null, PUBLIC_ID, SYSTEM_ID);
             Node root = doc.getElementsByTagName(ELEM_XML_ROOT).item(0);
 
-            KeymapViewModel kmodel = KeymapPanel.getModel();
+            KeymapViewModel kmodel = getKeymapPanel().getModel();
             for (String categorySet : kmodel.getCategories().keySet()) {
                 for (String category : kmodel.getCategories().get(categorySet)) {
                     for (Object o : kmodel.getItems(category)) {
@@ -388,7 +399,7 @@ public class ProfilesPanel extends javax.swing.JPanel {
         if(ret == JFileChooser.APPROVE_OPTION) {
             try {
                 InputSource is = new InputSource(new FileInputStream(chooser.getSelectedFile()));
-                KeymapViewModel kmodel = KeymapPanel.getModel();
+                KeymapViewModel kmodel = getKeymapPanel().getModel();
                 String newProfile = duplicateProfile();
                 if (newProfile == null) return; //invalid (duplicate) profile name
                 kmodel.setCurrentProfile(newProfile);
@@ -448,7 +459,7 @@ public class ProfilesPanel extends javax.swing.JPanel {
 
     private void deleteOrRestoreSelectedProfile() {
         String currentProfile = (String) profilesList.getSelectedValue();
-        final KeymapViewModel keymapModel = KeymapPanel.getModel();
+        final KeymapViewModel keymapModel = getKeymapPanel().getModel();
         keymapModel.deleteOrRestoreProfile(currentProfile);
         if (keymapModel.isCustomProfile (currentProfile)) {
             model.removeItem(profilesList.getSelectedIndex());

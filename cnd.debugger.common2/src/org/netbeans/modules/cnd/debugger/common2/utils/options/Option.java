@@ -74,20 +74,15 @@ public abstract class Option {
     private final String      defaultValue;// default value
     private final boolean     clientOption;// is this option handled by OptionClient?
 //    private final boolean     trim;		// ... the string representation on set
-    private final int         type;        // GUI represantation of the option
+    private final Type         type;        // GUI represantation of the option
     private final boolean hasTooltip;
     private CatalogDynamic catalog;
 
     /**
      * types defining GUI representation
      */
-    public static final int TEXT_AREA    = 1;
-    public static final int RADIO_BUTTON = 2;
-    public static final int COMBO_BOX    = 3;
-    public static final int CHECK_BOX    = 4;
-    public static final int DIRECTORY    = 5;
-    public static final int FILE 	 = 6;
-
+    public static enum Type{TEXT_AREA, RADIO_BUTTON, COMBO_BOX, CHECK_BOX, DIRECTORY, DIRECTORIES, FILE};
+    
     private static String yesString = null;
     private static String noString = null;
 
@@ -118,7 +113,7 @@ public abstract class Option {
 
     protected Option(String name, CatalogDynamic catalog, String[] values,
 			   String defaultValue, boolean clientOption,
-			   int type, boolean hasTooltip, boolean hasMnemonic) {
+			   Type type, boolean hasTooltip, boolean hasMnemonic) {
 	this.name  = name;
 	this.catalog = catalog;
 	this.values =  values;
@@ -154,7 +149,7 @@ public abstract class Option {
     public String getOptionDescription() {return optionDescr; }
     public String getDefaultValue() {return defaultValue; }
     public boolean isClientOption() {return clientOption;}
-    public int getType() {return type;}
+    public Type getType() {return type;}
 
     public String getCurrValue(OptionSet optionSet) {
 	OptionValue ov = optionSet.byType(this);
@@ -236,7 +231,9 @@ public abstract class Option {
      */
     private void setValueLabels() {
 	//for the text area and check box no valueLabel is used
-	if (type == TEXT_AREA || type == CHECK_BOX || type == DIRECTORY || type == FILE) {
+	if (type == Type.TEXT_AREA || type == Type.CHECK_BOX 
+                || type == Type.DIRECTORY || type == Type.DIRECTORIES
+                || type == Type.FILE) {
 	    valueLabels = null;
 	    setValueDescrs();
 	    return;
@@ -292,7 +289,7 @@ public abstract class Option {
 
     private void setValueDescrs() {
 	String labTxt;
-	if (type == RADIO_BUTTON) {
+	if (type == Type.RADIO_BUTTON) {
 	    valueDescrs = new String[values.length];
 	    for (int i = 0; i < values.length; i++) {
 		if (isNumber(values[i])) {
@@ -332,10 +329,10 @@ public abstract class Option {
      * and if the option is a RADIO_BOX option
      */
     public boolean isYesNoOption() {
-	if (type == CHECK_BOX)
+	if (type == Type.CHECK_BOX)
 	    return true;
 
-	if ((type == RADIO_BUTTON)  &&
+	if ((type == Type.RADIO_BUTTON)  &&
 		(values.length == 2) &&
 		((values[0].equals("on")) || (values[0].equals("off"))) &&    // NOI18N
 		((values[1].equals("on")) || (values[1].equals("off"))))     // NOI18N
@@ -411,20 +408,21 @@ public abstract class Option {
     public OptionUI createUI() {
 	OptionUI panel = null;
 	switch (this.getType()) {
-	    case Option.DIRECTORY:
-	    case Option.FILE:
+	    case DIRECTORIES:
+            case DIRECTORY:
+	    case FILE:
 		panel = new DirectoryOptionUI(this);
 		break;
-	    case Option.TEXT_AREA:
+	    case TEXT_AREA:
 		panel = new TextFieldOptionUI(this);
 		break;
-	    case Option.RADIO_BUTTON:
+	    case RADIO_BUTTON:
 		panel = new RadioButtonOptionUI(this);
 		break;
-	    case Option.COMBO_BOX:
+	    case COMBO_BOX:
 		panel = new ComboBoxOptionUI(this);
 		break;
-	    case Option.CHECK_BOX:
+	    case CHECK_BOX:
 		panel = new CheckBoxOptionUI(this);
 		break;
 	    default:

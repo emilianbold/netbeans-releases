@@ -61,6 +61,8 @@ import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.MixinNode;
 import org.codehaus.groovy.control.CompilerConfiguration;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
@@ -75,25 +77,31 @@ import org.openide.util.Exceptions;
 final class CompilationUnit extends org.codehaus.groovy.control.CompilationUnit {
 
     public CompilationUnit(GroovyParser parser, CompilerConfiguration configuration,
-            CodeSource security, GroovyClassLoader loader, GroovyClassLoader transformationLoader,
-            JavaSource javaSource) {
+            CodeSource security,
+            @NonNull final GroovyClassLoader loader,
+            @NonNull final GroovyClassLoader transformationLoader,
+            @NonNull final ClasspathInfo cpInfo,
+            @NonNull final ClassNodeCache classNodeCache) {
 
         super(configuration, security, loader, transformationLoader);
-        this.ast = new CompileUnit(parser, this.classLoader, security, this.configuration, javaSource);
+        this.ast = new CompileUnit(parser, this.classLoader, security, this.configuration, cpInfo, classNodeCache);
     }
 
     private static class CompileUnit extends org.codehaus.groovy.ast.CompileUnit {
 
-        private final Map<String, ClassNode> cache = new HashMap<String, ClassNode>();
+        private final ClassNodeCache cache;
         private final GroovyParser parser;
         private final JavaSource javaSource;
-
+        
 
         public CompileUnit(GroovyParser parser, GroovyClassLoader classLoader,
-                CodeSource codeSource, CompilerConfiguration config, JavaSource javaSource) {
+                CodeSource codeSource, CompilerConfiguration config,
+                ClasspathInfo cpInfo,
+                ClassNodeCache classNodeCache) {
             super(classLoader, codeSource, config);
             this.parser = parser;
-            this.javaSource = javaSource;
+            this.cache = classNodeCache;
+            this.javaSource = cache.createResolver(cpInfo);
         }
 
 
@@ -102,60 +110,46 @@ final class CompilationUnit extends org.codehaus.groovy.control.CompilationUnit 
             if (parser.isCancelled()) {
                 throw new CancellationException();
             }
-
-            ClassNode classNode;
-            // check the cache for non-null value
-            synchronized (cache) {
-                classNode = cache.get(name);
-                if (classNode != null) {
-                    return cache.get(name);
-                }
-            }
-
-            // if null or not present in cache
-            classNode = super.getClass(name);
+            
+            ClassNode classNode = cache.get(name);
             if (classNode != null) {
                 return classNode;
             }
-
-            // if present in cache but null
-            synchronized (cache) {
-                if (cache.containsKey(name)) {
-                    return null;
-                }
-            }
-
             try {
                 // if it is a groovy file it is useless to load it with java
                 // at least until VirtualSourceProvider will do te job ;)
 //                if (getClassLoader().getResourceLoader().loadGroovySource(name) != null) {
 //                    return null;
 //                }
+                final ClassNode[] holder = new ClassNode[1];
                 Task<CompilationController> task = new Task<CompilationController>() {
                     @Override
                     public void run(CompilationController controller) throws Exception {
                         Elements elements = controller.getElements();
                         TypeElement typeElement = ElementSearch.getClass(elements, name);
-
-                        synchronized (cache) {
-                            if (typeElement != null) {
-                                ClassNode node = createClassNode(name, typeElement);
-                                if (node != null) {
-                                    cache.put(name, node);
-                                }
+                        if (typeElement != null) {
+                            final ClassNode node = createClassNode(name, typeElement);
+                            if (node != null) {
+                                cache.put(name, node);
+                                holder[0] = node;
                             }
                         }
                     }
                 };
-
                 javaSource.runUserActionTask(task, true);
+                if (holder[0] != null) {
+                    return holder[0];
+                }
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
-
-            synchronized (cache) {
-                return cache.get(name);
+            
+            // if null or not present in cache
+            classNode = super.getClass(name);
+            if (classNode != null) {
+                cache.put(name, classNode);
             }
+            return classNode;
         }
 
         private ClassNode createClassNode(String name, TypeElement typeElement) {

@@ -43,14 +43,11 @@
  */
 package org.netbeans.modules.cnd.makeproject;
 
-import java.io.IOException;
-import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
-import org.netbeans.modules.cnd.makeproject.api.StepControllerProvider.StepController;
-import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import java.awt.Dialog;
 import java.awt.Frame;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -64,64 +61,67 @@ import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.cnd.api.toolchain.ui.BuildToolsAction;
 import org.netbeans.modules.cnd.actions.ShellRunAction;
-import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
-import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
-import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
-import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
-import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
-import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
-import org.netbeans.modules.cnd.makeproject.api.ProjectActionSupport;
-import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
-import org.netbeans.modules.cnd.makeproject.api.configurations.CCCompilerConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.CCompilerConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
-import org.netbeans.modules.cnd.makeproject.api.configurations.CustomToolConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
-import org.netbeans.modules.cnd.makeproject.ui.utils.ConfSelectorPanel;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
-import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
-import org.netbeans.modules.nativeexecution.api.HostInfo;
-import org.netbeans.modules.nativeexecution.api.util.Path;
-import org.netbeans.modules.cnd.api.utils.PlatformInfo;
-import org.netbeans.modules.dlight.util.usagetracking.SunStudioUserCounter;
-import org.netbeans.modules.cnd.execution.ShellExecSupport;
-import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
-import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
-import org.netbeans.modules.cnd.makeproject.api.PackagerManager;
-import org.netbeans.modules.cnd.makeproject.api.configurations.AssemblerConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.makeproject.platform.Platform;
-import org.netbeans.modules.cnd.makeproject.platform.Platforms;
-import org.netbeans.modules.cnd.makeproject.api.StepControllerProvider;
+import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
-import org.netbeans.modules.cnd.spi.toolchain.CompilerSetFactory;
+import org.netbeans.modules.cnd.api.toolchain.ui.BuildToolsAction;
 import org.netbeans.modules.cnd.api.toolchain.ui.LocalToolsPanelModel;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelModel;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
+import org.netbeans.modules.cnd.api.utils.PlatformInfo;
+import org.netbeans.modules.cnd.execution.ShellExecSupport;
+import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
+import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
+import org.netbeans.modules.cnd.makeproject.api.PackagerManager;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionSupport;
+import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
+import org.netbeans.modules.cnd.makeproject.api.StepControllerProvider;
+import org.netbeans.modules.cnd.makeproject.api.StepControllerProvider.StepController;
+import org.netbeans.modules.cnd.makeproject.api.configurations.AssemblerConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.CCCompilerConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.CCompilerConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.CustomToolConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
+import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
+import org.netbeans.modules.cnd.makeproject.platform.Platform;
+import org.netbeans.modules.cnd.makeproject.platform.Platforms;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.CompileOptionsProvider;
+import org.netbeans.modules.cnd.makeproject.ui.utils.ConfSelectorPanel;
+import org.netbeans.modules.cnd.spi.toolchain.CompilerSetFactory;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
+import org.netbeans.modules.dlight.util.usagetracking.SunStudioUserCounter;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.netbeans.modules.nativeexecution.api.util.Shell;
 import org.netbeans.modules.nativeexecution.api.util.ShellValidationSupport;
 import org.netbeans.modules.nativeexecution.api.util.ShellValidationSupport.ShellValidationStatus;
@@ -401,7 +401,7 @@ public final class MakeActionProvider implements ActionProvider {
                     } catch (CancellationException ex) {
                         cancel();
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        e.printStackTrace(System.err);
                         final String message = MessageFormat.format(getString("ERR_Cant_Connect"), record.getDisplayName()); //NOI18N
                         final String title = getString("DLG_TITLE_Cant_Connect"); //NOI18N
                         SwingUtilities.invokeLater(new Runnable() {
@@ -822,7 +822,7 @@ public final class MakeActionProvider implements ActionProvider {
         String buildCommand = null;
 
         if (conf.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_WINDOWS) {
-            HostInfo hostInfo = null;
+            HostInfo hostInfo;
             try {
                 hostInfo = HostInfoUtils.getHostInfo(conf.getDevelopmentHost().getExecutionEnvironment());
                 buildCommand = hostInfo.getShell();
@@ -1113,7 +1113,7 @@ public final class MakeActionProvider implements ActionProvider {
      * @return array of targets or null to stop execution; can return empty array
      */
     private String[] getTargetNames(String command) throws IllegalArgumentException {
-        String[] targetNames = new String[0];
+        String[] targetNames;
         if (command.equals(COMMAND_COMPILE_SINGLE)) {
             targetNames = commands.get(command);
         } else if (command.equals(COMMAND_RUN)
@@ -1224,7 +1224,7 @@ public final class MakeActionProvider implements ActionProvider {
             return true;
         } else if (command.equals(COMMAND_RUN_SINGLE)) {
             Node node = context.lookup(Node.class);
-            return (node != null) && (node.getCookie(ShellExecSupport.class) != null);
+            return (node != null) && (node.getLookup().lookup(ShellExecSupport.class) != null);
         } else if (command.equals(COMMAND_TEST)) {
             Folder root = projectDescriptor.getLogicalFolders();
             Folder testRootFolder = null;
@@ -1245,9 +1245,9 @@ public final class MakeActionProvider implements ActionProvider {
         if (item == null) {
             // try to find Item in associated data object if any
             try {
-                DataObject dao = node.getCookie(DataObject.class);
+                DataObject dao = node.getLookup().lookup(DataObject.class);
                 if (dao != null) {
-                    item = getProjectDescriptor().findItemByPathSlowly(dao.getPrimaryFile().getPath());
+                    item = getProjectDescriptor().findItemByFileObject(dao.getPrimaryFile());
                 }
             } catch (NullPointerException ex) {
                 // not found item
@@ -1257,7 +1257,7 @@ public final class MakeActionProvider implements ActionProvider {
     }
 
     private static String getMakeCommand(MakeConfigurationDescriptor pd, MakeConfiguration conf) {
-        String cmd = null;
+        String cmd;
         CompilerSet cs = conf.getCompilerSet().getCompilerSet();
         if (cs != null) {
             cmd = cs.getTool(PredefinedToolKind.MakeTool).getPath();
@@ -1320,7 +1320,7 @@ public final class MakeActionProvider implements ActionProvider {
                 String errormsg = getString("WRONG_PLATFORM", hostPlatform.getDisplayName(), buildPlatform.getDisplayName());
                 if (CndUtils.isUnitTestMode()) {
                     errormsg += "\n (build platform id =" + buildPlatformId + " host platform id = " + hostPlatformId + ")"; //NOI18N
-                    new Exception(errormsg).printStackTrace();
+                    new Exception(errormsg).printStackTrace(System.err);
                 } else {
                     if (DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(errormsg, NotifyDescriptor.WARNING_MESSAGE)) != NotifyDescriptor.OK_OPTION) {
                         return false;

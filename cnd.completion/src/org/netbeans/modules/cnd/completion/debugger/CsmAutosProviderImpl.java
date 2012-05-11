@@ -42,7 +42,9 @@
 
 package org.netbeans.modules.cnd.completion.debugger;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.text.*;
 import org.netbeans.api.lexer.TokenId;
@@ -155,6 +157,7 @@ public class CsmAutosProviderImpl implements AutosProvider {
         final Set<Integer> excludeOffsets = new HashSet<Integer>();
         
         CsmFileReferences.getDefault().accept(csmFile, new CsmFileReferences.Visitor() {
+            @SuppressWarnings("fallthrough")
             @Override
             public void visit(CsmReferenceContext context) {
                 CsmReference reference = context.getReference();
@@ -225,7 +228,7 @@ public class CsmAutosProviderImpl implements AutosProvider {
         return lineStartOffset;
     }
     
-    public static String matchChar(Document document,
+    private static String matchChar(Document document,
             int offset,
             int limit,
             char origin,

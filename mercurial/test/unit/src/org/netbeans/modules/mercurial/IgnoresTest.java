@@ -44,6 +44,7 @@ package org.netbeans.modules.mercurial;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -232,6 +233,38 @@ public class IgnoresTest extends AbstractHgTestCase {
         toggleIgnore(obscureFile, ignoredFiles);
         ignoredFiles.clear();
         assertIgnoreStatus(parentFiles, ignoredFiles);
+    }
+    
+    public void testRefreshPatternsAfterExternalModification () throws Exception {
+        File workDir = getWorkTreeDir();
+        File ignoreFile = new File(workDir, ".hgignore");
+        ignoreFile.delete();
+        File file = new File(workDir, "ignored");
+        File file2 = new File(workDir, "ignored2");
+        write(file, "aaa");
+        write(file2, "aaa");
+        
+        getCache().refreshAllRoots(Collections.singleton(workDir));
+        assertEquals(FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY, getCache().getCachedStatus(file).getStatus());
+        assertIgnoreStatus(file, Collections.<File>emptySet());
+        
+        Thread.sleep(1100);
+        write(ignoreFile, "^ignored$");
+        
+        getCache().refreshAllRoots(Collections.singleton(workDir));
+        assertIgnoreStatus(file, Collections.singleton(file));
+        
+        Thread.sleep(1100);
+        write(ignoreFile, "^ignored$\n^ignored2$\n");
+        
+        getCache().refreshAllRoots(Collections.singleton(workDir));
+        assertIgnoreStatus(file, new HashSet<File>(Arrays.asList(file, file2)));
+        
+        Thread.sleep(1100);
+        ignoreFile.delete();
+        
+        getCache().refreshAllRoots(Collections.singleton(workDir));
+        assertIgnoreStatus(file, Collections.<File>emptySet());
     }
 
     private void assertIgnoreStatus (File[] parents, Set<File> ignoredFiles) throws InterruptedException {

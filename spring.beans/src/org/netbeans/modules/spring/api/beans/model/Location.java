@@ -45,6 +45,7 @@
 package org.netbeans.modules.spring.api.beans.model;
 
 import java.io.File;
+import org.openide.filesystems.FileObject;
 
 /**
  * Encapsulates the location of a bean definition, that is, a file and
@@ -59,7 +60,7 @@ public interface Location {
      *
      * @return the file; never null.
      */
-    File getFile();
+    FileObject getFile();
 
     /**
      * Returns the offset corresponding to this location.

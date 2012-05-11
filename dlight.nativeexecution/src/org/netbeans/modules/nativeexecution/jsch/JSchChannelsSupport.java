@@ -38,10 +38,18 @@
  */
 package org.netbeans.modules.nativeexecution.jsch;
 
-import com.jcraft.jsch.*;
+import com.jcraft.jsch.Channel;
+import com.jcraft.jsch.ChannelShell;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.Session;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map.Entry;
-import java.util.*;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -61,6 +69,7 @@ import org.openide.util.Cancellable;
 public final class JSchChannelsSupport {
 
     private static final java.util.logging.Logger log = Logger.getInstance();
+    private static final int JSCH_CONNECTION_RETRY = Integer.getInteger("jsch.connection.retry", 3); // NOI18N
     private static final int JSCH_CONNECTION_TIMEOUT = Integer.getInteger("jsch.connection.timeout", 10000); // NOI18N
     private static final int JSCH_SESSIONS_PER_ENV = Integer.getInteger("jsch.sessions.per.env", 10); // NOI18N
     private static final int JSCH_CHANNELS_PER_SESSION = Integer.getInteger("jsch.channels.per.session", 10); // NOI18N
@@ -106,42 +115,56 @@ public final class JSchChannelsSupport {
     }
 
     public synchronized Channel acquireChannel(String type, boolean waitIfNoAvailable) throws JSchException, IOException, InterruptedException {
-//        if (SwingUtilities.isEventDispatchThread()) {
-//            Exception e = new Exception("O-la-la acquireChannel!!!");
-//            Exceptions.printStackTrace(e);
-//        }
-//
+        JSchException exception = null;
 
-        Session session = findFreeSession();
+        for (int i = 0; i < JSCH_CONNECTION_RETRY; i++) {
+            Session session = findFreeSession();
 
-        if (session == null) {
-            if (sessions.size() >= JSCH_SESSIONS_PER_ENV) {
-                if (waitIfNoAvailable) {
-                    try {
-                        sessionsLock.lock();
-                        while (session == null) {
-                            sessionAvailable.await();
-                            session = findFreeSession();
+            if (session == null) {
+                if (sessions.size() >= JSCH_SESSIONS_PER_ENV) {
+                    if (waitIfNoAvailable) {
+                        try {
+                            sessionsLock.lock();
+                            while (session == null) {
+                                sessionAvailable.await();
+                                session = findFreeSession();
+                            }
+                        } finally {
+                            sessionsLock.unlock();
                         }
-                    } finally {
-                        sessionsLock.unlock();
+                    } else {
+                        throw new IOException("All " + JSCH_SESSIONS_PER_ENV + " sessions for " + env.getDisplayName() + " are fully loaded"); // NOI18N
                     }
-                } else {
-                    throw new IOException("All " + JSCH_SESSIONS_PER_ENV + " sessions for " + env.getDisplayName() + " are fully loaded"); // NOI18N
                 }
+            }
+
+            try {
+                if (session == null) {
+                    session = startNewSession(true);
+                }
+
+                Channel result = session.openChannel(type);
+                if (result != null) {
+                    log.log(Level.FINE, "Acquired channel [{0}] from session [{1}].", new Object[]{System.identityHashCode(result), System.identityHashCode(session)}); // NOI18N
+
+                    knownChannels.add(result);
+
+                    return result;
+                }
+            } catch (JSchException ex) {
+                exception = ex;
+            }
+
+            if (session != null && !session.isConnected()) {
+                sessions.remove(session);
             }
         }
 
-        if (session == null) {
-            session = startNewSession(true);
-        }
-
-        Channel result = session.openChannel(type);
-        log.log(Level.FINE, "Acquired channel [{0}] from session [{1}].", new Object[]{System.identityHashCode(result), System.identityHashCode(session)}); // NOI18N
-
-        knownChannels.add(result);
-
-        return result;
+        // It is either JSCH_CONNECTION_RETRY times we got JSchException =>
+        // exception is set; or there was another exception => it was thrown
+        // already
+        assert exception != null;
+        throw exception;
     }
 
     public boolean isConnected() {
@@ -243,11 +266,6 @@ public final class JSchChannelsSupport {
     }
 
     public synchronized void releaseChannel(final Channel channel) throws JSchException {
-//        if (SwingUtilities.isEventDispatchThread()) {
-//            Exception e = new Exception("O-la-la releaseChannel!!!");
-//            Exceptions.printStackTrace(e);
-//        }
-
         if (!knownChannels.remove(channel)) {
             // Means it was not in the collection
             return;

@@ -621,7 +621,7 @@ final class BinaryFS extends FileSystem implements DataInput {
                     }
                 }
             }
-            return ret.toArray(new URL[0]);
+            return ret.toArray(new URL[ret.size()]);
         }
     }
 
@@ -1126,6 +1126,10 @@ final class BinaryFS extends FileSystem implements DataInput {
             int hash = 7;
             hash = 37 * hash + (this.fo != null ? this.fo.hashCode() : 0);
             return hash;
+        }
+        @Override
+        public String toString() {
+            return "BinaryFileMap@" + Integer.toHexString(System.identityHashCode(this)) + "{" + "fo=" + fo + '}'; // NOI18N
         }
     } // end of FileMap
     private static final class AttrFileSet extends AbstractSet<Map.Entry<String,Object>> {

@@ -245,11 +245,16 @@ public class BindingCustomizer extends JPanel {
     private boolean showImportData() {
         String path = bindingDescriptor.getPath();
         Class clazz = bindingComponent.getBeanClass();
-        return "elements".equals(path) // NOI18N
+        boolean show = "elements".equals(path) // NOI18N
             && (JList.class.isAssignableFrom(clazz)
                 || JComboBox.class.isAssignableFrom(clazz)
-                || JTable.class.isAssignableFrom(clazz))
-            && (Lookup.getDefault().lookup(DataImporter.class) != null);
+                || JTable.class.isAssignableFrom(clazz));
+        if (show) {
+            FormModel model = bindingComponent.getFormModel();
+            DataImporter importer = Lookup.getDefault().lookup(DataImporter.class);
+            show = (importer != null) && importer.canImportData(model);
+        }
+        return show;
     }
 
     private boolean showDisplayExpression() {

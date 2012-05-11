@@ -44,8 +44,11 @@ package org.netbeans.test.php.hints;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.EventTool;
+import org.netbeans.jemmy.Waitable;
+import org.netbeans.jemmy.Waiter;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.php.GeneralPHP;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -53,7 +56,7 @@ import org.netbeans.test.php.GeneralPHP;
  */
 public class testHints extends GeneralPHP {
 
-    static final String TEST_PHP_NAME = "PhpProject_cc_0004";
+    static final String TEST_PHP_NAME = "PhpProject_hints_0001";
 
     public testHints(String arg0) {
         super(arg0);
@@ -63,6 +66,9 @@ public class testHints extends GeneralPHP {
         return NbModuleSuite.create(
                 NbModuleSuite.createConfiguration(testHints.class).addTest(
                 "CreateApplication",
+                "testImmutableVariable",
+                "testImmutableVariableSimple",
+                "testUnusedUse",
                 "testClassExpr",
                 "testBinaryNotationIncorrect",
                 "testBinaryNotationCorrect",
@@ -92,11 +98,9 @@ public class testHints extends GeneralPHP {
         TypeCode(file, "\n class Test{ \n public static function test(){\n");
         file.setCaretPosition("?>", true);
         TypeCode(file, "Bar::{'test'}();");
-        new EventTool().waitNoEvent(1000);
-        Object[] oo = file.getAnnotations();
-        for (Object o : oo) {
-            assertTrue("Error annotation showed", !EditorOperator.getAnnotationType(o).toString().endsWith("_err"));
-        }
+        file.save();
+        new EventTool().waitNoEvent(2000);
+        checkNumberOfAnnotationsContains("error", 0, "Error annotation showed for testClassExpr", file);
         endTest();
     }
 
@@ -105,15 +109,9 @@ public class testHints extends GeneralPHP {
         EditorOperator file = new EditorOperator("Class.php");
         file.setCaretPosition("*/", false);
         TypeCode(file, "\n $wrongBinary=0b002;");
-        new EventTool().waitNoEvent(1000);
-        Object[] oo = file.getAnnotations();
-        int numberOfErrors = 0;
-        for (Object o : oo) {
-            if (EditorOperator.getAnnotationShortDescription(o).toString().contains("Syntax error: unexpected: 2")) {
-                numberOfErrors++;
-            }
-        }
-        assertEquals("Incorrect number of error hints", 1, numberOfErrors);
+        file.save();
+        new EventTool().waitNoEvent(2000);
+        checkNumberOfAnnotationsContains("Syntax error: unexpected: 2", 1, "Incorrect number of error hints", file);
         endTest();
     }
 
@@ -121,15 +119,9 @@ public class testHints extends GeneralPHP {
         startTest();
         EditorOperator file = new EditorOperator("Class.php");
         file.replace("0b002", "0b001");
-        new EventTool().waitNoEvent(1000);
-        Object[] oo = file.getAnnotations();
-        int numberOfErrors = 0;
-        for (Object o : oo) {
-            if (EditorOperator.getAnnotationShortDescription(o).toString().contains("Syntax error: unexpected: 2")) {
-                numberOfErrors++;
-            }
-        }
-        assertEquals("Incorrect number of error hints", 0, numberOfErrors);
+        file.save();
+        new EventTool().waitNoEvent(2000);
+        checkNumberOfAnnotationsContains("Syntax error: unexpected: 2", 0, "Incorrect number of error hints", file);
         endTest();
     }
 
@@ -138,15 +130,9 @@ public class testHints extends GeneralPHP {
         EditorOperator file = new EditorOperator("Class.php");
         file.setCaretPosition("*/", false);
         TypeCode(file, "\n $arr = [0 => \"Foo\"];");
-        new EventTool().waitNoEvent(1000);
-        Object[] oo = file.getAnnotations();
-        int numberOfErrors = 0;
-        for (Object o : oo) {
-            if (EditorOperator.getAnnotationShortDescription(o).toString().contains("Syntax error: unexpected: 2")) {
-                numberOfErrors++;
-            }
-        }
-        assertEquals("Incorrect number of error hints", 0, numberOfErrors);
+        file.save();
+        new EventTool().waitNoEvent(2000);
+        checkNumberOfAnnotationsContains("error", 0, "Incorrect number of error hints", file);
         endTest();
     }
 
@@ -154,15 +140,9 @@ public class testHints extends GeneralPHP {
         startTest();
         SetPhpVersion(TEST_PHP_NAME, 3);
         EditorOperator file = new EditorOperator("Class.php");
-        new EventTool().waitNoEvent(1000);
-        Object[] oo = file.getAnnotations();
-        int numberOfErrors = 0;
-        for (Object o : oo) {
-            if (EditorOperator.getAnnotationType(o).toString().endsWith("_err")) {
-                numberOfErrors++;
-            }
-        }
-        assertEquals("Incorrect number of error hints", 2, numberOfErrors);
+        file.save();
+        new EventTool().waitNoEvent(2000);
+        checkNumberOfAnnotationsContains("Language feature not compatible", 2, "Incorrect number of error hints", file);
         endTest();
     }
 
@@ -172,15 +152,84 @@ public class testHints extends GeneralPHP {
         file.setCaretPosition("*/", false);
         TypeCode(file, "\n namespace test;");
         SetPhpVersion(TEST_PHP_NAME, 2);
-        new EventTool().waitNoEvent(1000);
-        Object[] oo = file.getAnnotations();
-        int numberOfErrors = 0;
-        for (Object o : oo) {
-            if (EditorOperator.getAnnotationType(o).toString().endsWith("_err")) {
-                numberOfErrors++;
-            }
-        }
-        assertEquals("Incorrect number of error hints", 3, numberOfErrors);
+        file.save();
+        new EventTool().waitNoEvent(2000);
+        checkNumberOfAnnotationsContains("Language feature not compatible", 3, "Incorrect number of error hints", file);
         endTest();
+    }
+
+    public void testImmutableVariableSimple() {
+        EditorOperator file = CreatePHPFile(TEST_PHP_NAME, "PHP File", "Immutable");
+        startTest();
+        file.setCaretPosition("*/", false);
+        new EventTool().waitNoEvent(1000);
+        TypeCode(file, "\n $foo=1;\n $foo=2;");
+        file.save();
+        new EventTool().waitNoEvent(2000);
+        checkNumberOfAnnotationsContains("1 assignment(s) (2 used)", 2, "Incorrect number of Immutable hints", file);
+        endTest();
+    }
+
+    public void testImmutableVariable() {
+        EditorOperator file = CreatePHPFile(TEST_PHP_NAME, "PHP File", "Immutable2");
+        startTest();
+        file.setCaretPosition("*/", false);
+        new EventTool().waitNoEvent(1000);
+        TypeCode(file, "\n for($i=0;$i<10;$i=$i+1){}");
+        file.save();
+        new EventTool().waitNoEvent(2000);
+        checkNumberOfAnnotationsContains("1 assignment(s) (2 used)", 0, "Incorrect number of Immutable hints", file);
+        endTest();
+    }
+
+    public void testUnusedUse() {
+        EditorOperator file = CreatePHPFile(TEST_PHP_NAME, "PHP File", "UnusedUse");
+        SetPhpVersion(TEST_PHP_NAME, 4);
+        startTest();
+        file.setCaretPosition("*/", false);
+        new EventTool().waitNoEvent(1000);
+        TypeCode(file, "\n use \\Foo\\Bar\\Baz;");
+        file.save();
+        new EventTool().waitNoEvent(2000);
+        checkNumberOfAnnotationsContains("Unused Use Statement", 1, "Incorrect number of Unused Use Statement hints", file);
+        endTest();
+    }
+
+    private void checkNumberOfAnnotationsContains(String annotation, int expectedOccurences, String failMsg, EditorOperator file) {
+        
+        final EditorOperator eo = new EditorOperator(file.getName());
+        final int limit = expectedOccurences;
+        try {
+            new Waiter(new Waitable() {
+
+              @Override
+              public Object actionProduced(Object oper) {
+                  return eo.getAnnotations().length > limit ? Boolean.TRUE : null;
+              }
+
+              @Override
+              public String getDescription() {
+                  return ("Wait parser annotations."); // NOI18N
+              }
+          }).waitAction(null);
+          
+          
+          int numberOfErrors = 0;
+          int lines = file.getText().split(System.getProperty("line.separator")).length;
+          Object[] ann;
+          int lineCounter = 1;
+          while (lineCounter <= lines) {
+              ann = file.getAnnotations(lineCounter);
+              for (Object o : ann) {
+                  if (EditorOperator.getAnnotationShortDescription(o).toString().contains(annotation) && !EditorOperator.getAnnotationShortDescription(o).toString().contains("HTML error checking")) {
+                      numberOfErrors++;
+                  }
+              }
+              lineCounter++;
+          }
+          assertEquals(failMsg, expectedOccurences, numberOfErrors);
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 }

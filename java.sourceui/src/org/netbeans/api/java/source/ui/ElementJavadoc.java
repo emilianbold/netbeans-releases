@@ -1070,6 +1070,7 @@ public class ElementJavadoc {
             if (SEE_TAG.equals(tag.kind())) {
                 SeeTag stag = (SeeTag)tag;
                 ClassDoc refClass = stag.referencedClass();
+                PackageDoc refPackage = stag.referencedPackage();
                 String className = stag.referencedClassName();
                 String memberName = stag.referencedMemberName();
                 String label = stag.label();
@@ -1085,6 +1086,8 @@ public class ElementJavadoc {
                 } else if (className != null) {
                     if (refClass != null) {
                         createLink(see, ctx.second.elementFor(refClass), "<code>" + (label != null && label.length() > 0 ? label : refClass.simpleTypeName()) + "</code>"); //NOI18N
+                    } else if (refPackage != null) {
+                        createLink(see, ctx.second.elementFor(refPackage), "<code>" + (label != null && label.length() > 0 ? label : refPackage.name()) + "</code>"); //NOI18N
                     } else {
                         see.append(className);
                     }
@@ -1158,6 +1161,7 @@ public class ElementJavadoc {
             } else if (SEE_TAG.equals(tag.kind())) {
                 SeeTag stag = (SeeTag)tag;
                 ClassDoc refClass = stag.referencedClass();
+                PackageDoc refPackage = stag.referencedPackage();
                 String className = stag.referencedClassName();
                 String memberName = stag.referencedMemberName();
                 String label = stag.label();
@@ -1173,6 +1177,8 @@ public class ElementJavadoc {
                 } else if (className != null) {
                     if (refClass != null) {
                         createLink(see, ctx.second.elementFor(refClass), "<code>" + (label != null && label.length() > 0 ? label : refClass.simpleTypeName()) + "</code>"); //NOI18N
+                    } else if (refPackage != null) {
+                        createLink(see, ctx.second.elementFor(refPackage), "<code>" + (label != null && label.length() > 0 ? label : refPackage.name()) + "</code>"); //NOI18N
                     } else {
                         see.append(className);
                     }
@@ -1237,6 +1243,7 @@ public class ElementJavadoc {
                 } else {
                     ClassDoc refClass = stag.referencedClass();
                     String memberName = stag.referencedMemberName();
+                    PackageDoc refPackage = stag.referencedPackage();
                     String label = stag.label();
                     boolean plain = LINKPLAIN_TAG.equals(stag.name());
                     if (memberName != null) {
@@ -1250,6 +1257,8 @@ public class ElementJavadoc {
                     } else {
                         if (refClass != null) {
                             createLink(sb, ctx.second.elementFor(refClass), (plain ? "" : "<code>") + (label != null && label.length() > 0 ? label : refClass.simpleTypeName()) + (plain ? "" : "</code>")); //NOI18N
+                        } else if (refPackage != null) {
+                            createLink(sb, ctx.second.elementFor(refPackage), (plain ? "" : "<code>") + (label != null && label.length() > 0 ? label : refPackage.name()) + (plain ? "" : "</code>")); //NOI18N
                         } else {
                             String className = stag.referencedClassName();
                             sb.append(className != null ? className : stag.text());

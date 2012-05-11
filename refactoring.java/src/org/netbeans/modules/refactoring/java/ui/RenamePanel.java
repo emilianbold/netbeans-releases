@@ -140,7 +140,7 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
                         TypeElement parent = (TypeElement) element.getEnclosingElement();
                     boolean hasGetters = false;
                         for (ExecutableElement method : ElementFilter.methodsIn(parent.getEnclosedElements())) {
-                            if (RefactoringUtils.isGetter(method, element) || RefactoringUtils.isSetter(method, element)) {
+                            if (RefactoringUtils.isGetter(info, method, element) || RefactoringUtils.isSetter(info, method, element)) {
                                 hasGetters = true;
                                 break;
                             }

@@ -88,5 +88,11 @@ echo $php_errormsg;
 echo $HTTP_RAW_POST_DATA;
 echo $http_response_header;
 
+$refArr = array();
+foreach ($refArr as &$refVar) {
+
+}
+unset($refVar);
+
 //END
 ?>

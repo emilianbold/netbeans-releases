@@ -154,7 +154,7 @@ public class BugtrackingUtilTest {
         @Override
         public Image getIcon() { throw new UnsupportedOperationException("Not supported yet."); }
         @Override
-        public TestIssue getIssue(String id) { throw new UnsupportedOperationException("Not supported yet."); }
+        public TestIssue[] getIssues(String[] id) { throw new UnsupportedOperationException("Not supported yet."); }
         @Override
         public void remove() { throw new UnsupportedOperationException("Not supported yet."); }
         @Override

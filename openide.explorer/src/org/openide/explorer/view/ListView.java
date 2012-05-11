@@ -44,13 +44,7 @@
 
 package org.openide.explorer.view;
 
-import java.awt.AWTEvent;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Insets;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.Toolkit;
+import java.awt.*;
 import java.awt.dnd.Autoscroll;
 import java.awt.dnd.DnDConstants;
 import java.awt.event.ActionEvent;
@@ -1136,12 +1130,11 @@ public class ListView extends JScrollPane implements Externalizable {
                 searchpanel = new JPanel();
 
                 JLabel lbl = new JLabel(NbBundle.getMessage(TreeView.class, "LBL_QUICKSEARCH")); //NOI18N
-                searchpanel.setLayout(new BoxLayout(searchpanel, BoxLayout.X_AXIS));
-                searchpanel.add(lbl);
-                searchpanel.add(searchTextField);
+                searchpanel.setLayout(new BorderLayout(5, 0));
+                searchpanel.add(lbl, BorderLayout.WEST);
+                searchpanel.add(searchTextField, BorderLayout.CENTER);
                 lbl.setLabelFor(searchTextField);
                 searchpanel.setBorder(BorderFactory.createRaisedBevelBorder());
-                lbl.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 5));
             }
         }
 
@@ -1185,11 +1178,11 @@ public class ListView extends JScrollPane implements Externalizable {
                         visibleRect.width - (SEARCH_FIELD_SPACE * 2),
                         SEARCH_FIELD_PREFERRED_SIZE - SEARCH_FIELD_SPACE);
 
+                int height = heightOfTextField + searchpanel.getInsets().top + searchpanel.getInsets().bottom;
                 searchpanel.setBounds(
                         Math.max(SEARCH_FIELD_SPACE, (visibleRect.x + visibleRect.width) - width),
                         visibleRect.y + SEARCH_FIELD_SPACE, Math.min(visibleRect.width, width) - SEARCH_FIELD_SPACE,
-                        heightOfTextField);
-                //System.err.println("Laid out search field: " + searchpanel.getBounds());
+                        height);
             }        
         }
 

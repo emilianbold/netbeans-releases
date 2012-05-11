@@ -63,6 +63,7 @@ import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.VariableName;
 import org.netbeans.modules.php.editor.model.VariableScope;
+import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.openide.util.NbBundle.Messages;
 
@@ -113,7 +114,7 @@ public class VarDocHint extends AbstractRule {
                         if (variable.getTypes(offset).isEmpty()) {
                             Collection<? extends String> typeNames = variable.getTypeNames(offset);
                             for (String type : typeNames) {
-                                if (!type.contains("@")) {//NOI18N
+                                if (!type.contains(VariousUtils.PRE_OPERATION_TYPE_DELIMITER)) {//NOI18N
                                     return;
                                 }
                             }

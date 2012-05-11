@@ -319,9 +319,6 @@
                   <ResourceString bundle="org/netbeans/modules/j2ee/persistence/wizard/Bundle.properties" key="ACSD_SelectedEntitiesList" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </AccessibilityProperties>
-              <Events>
-                <EventHandler event="componentResized" listener="java.awt.event.ComponentListener" parameters="java.awt.event.ComponentEvent" handler="listSelectedComponentResized"/>
-              </Events>
             </Component>
           </SubComponents>
         </Container>

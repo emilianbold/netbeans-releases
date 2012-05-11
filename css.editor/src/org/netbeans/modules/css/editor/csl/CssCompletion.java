@@ -71,6 +71,7 @@ import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
 import org.netbeans.modules.css.lib.api.properties.ValueGrammarElement;
 import org.netbeans.modules.css.indexing.api.CssIndex;
 import org.netbeans.modules.css.lib.api.*;
+import org.netbeans.modules.css.model.api.Property;
 import org.netbeans.modules.css.refactoring.api.RefactoringElementType;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.common.api.DependenciesGraph;
@@ -872,9 +873,11 @@ public class CssCompletion implements CodeCompletionHandler {
     private void completePropertyName(CompletionContext cc, List<CompletionProposal> completionProposals) {
         NodeType nodeType = cc.getActiveNode().type();
 
+        String prefix = cc.getPrefix();
+        
         //1. css property name completion with prefix
-        if (nodeType == NodeType.property && (cc.getPrefix().length() > 0 || cc.getEmbeddedCaretOffset() == cc.getActiveNode().from())) {
-            Collection<PropertyDefinition> possibleProps = filterProperties(Properties.getProperties(), cc.getPrefix());
+        if (nodeType == NodeType.property && (prefix.length() > 0 || cc.getEmbeddedCaretOffset() == cc.getActiveNode().from())) {
+            Collection<PropertyDefinition> possibleProps = filterProperties(Properties.getProperties(), prefix);
             completionProposals.addAll(Utilities.wrapProperties(possibleProps, cc.getSnapshot().getOriginalOffset(cc.getActiveNode().from())));
         }
 
@@ -882,11 +885,35 @@ public class CssCompletion implements CodeCompletionHandler {
         if (nodeType == NodeType.recovery || nodeType == NodeType.error) {
             Node parent = cc.getActiveNode().parent();
             if (parent != null && (parent.type() == NodeType.rule || parent.type() == NodeType.moz_document)) {
-                Collection<PropertyDefinition> possibleProps = filterProperties(Properties.getProperties(), cc.getPrefix());
-                completionProposals.addAll(Utilities.wrapProperties(possibleProps, cc.getCaretOffset()));
+                
+                //>>> Bug 204821 - Incorrect completion for vendor specific properties
+                boolean bug204821 = false;
+                if (prefix.length() == 0) {
+                    //
+                    //If the vendor specific property name is completed with the - (MINUS)
+                    //prefix the cc.getPrefix() is empty since minus is operator
+                    //But particulary in this case the prefix must count
+                    if (cc.getActiveTokenNode().type() == NodeType.token) {
+                        CssTokenId tokenId = NodeUtil.getTokenNodeTokenId(cc.getActiveTokenNode());
+                        if (tokenId == CssTokenId.MINUS) {
+                            bug204821 = true;
+                        }
+                    }
+                }
+                if(bug204821) {
+                    //get all "-" prefixed props
+                    Collection<PropertyDefinition> possibleProps = 
+                            filterProperties(Properties.getProperties(), "-");
+                    //and add them to the result with the "-" prefix stripped
+                    completionProposals.addAll(Utilities.wrapProperties(possibleProps, cc.getCaretOffset(), 1));
+                } else {
+                    Collection<PropertyDefinition> possibleProps = 
+                            filterProperties(Properties.getProperties(), prefix);
+                    completionProposals.addAll(Utilities.wrapProperties(possibleProps, cc.getCaretOffset()));
+                }
             }
         }
-
+        
         //3. in empty rule (NodeType.ruleSet)
         //h1 { | }
         //
@@ -1122,7 +1149,6 @@ public class CssCompletion implements CodeCompletionHandler {
                     }
 
                     //case #3
-                    //=======
                     //test the situation when completion is invoked just after a valid token
                     //like color: rgb| or font-family: cursive|
                     for (ValueGrammarElement vge : filteredByPrefix) {

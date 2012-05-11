@@ -66,6 +66,31 @@ public class InlineTest extends RefactoringTestBase {
         super(name);
     }
     
+    public void test211356() throws Exception { // #211356 - java.util.NoSuchElementException at java.util.LinkedList.getLast
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    private static final String message = true? getMessage(\"KEY\") : null;\n"
+                + "    private static String getMessage(String key) {\n"
+                + "        return key;\n"
+                + "    }\n"
+                + "    public void testMethod() {\n"
+                + "        System.out.println(message);\n"
+                + "    }\n"
+                + "}"));
+        final InlineRefactoring[] r = new InlineRefactoring[1];
+        createInlineMethodRefactoring(src.getFileObject("t/A.java"), 2, r);
+        performRefactoring(r);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    private static final String message = true? \"KEY\" : null;\n"
+                + "    public void testMethod() {\n"
+                + "        System.out.println(message);\n"
+                + "    }\n"
+                + "}"));
+    }
+    
     public void test210942() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t;\n"
@@ -747,6 +772,7 @@ public class InlineTest extends RefactoringTestBase {
                 + "        return numberOfLateDeliveries > 5;"
                 + "    }\n"
                 + "    public int getRating() {\n"
+                + "        moreThanFiveDeliveries();\n"
                 + "        return (moreThanFiveDeliveries()) ? 2 : 1;\n"
                 + "    }\n"
                 + "    private int numberOfLateDeliveries = 6;\n"
@@ -758,6 +784,8 @@ public class InlineTest extends RefactoringTestBase {
                 new File("t/A.java", "package t;\n"
                 + "public class A {\n"
                 + "    public int getRating() {\n"
+                + "        System.out.println(\"Less then five?\");\n"
+                + "        numberOfLateDeliveries > 5;\n"
                 + "        System.out.println(\"Less then five?\");\n"
                 + "        return (numberOfLateDeliveries > 5) ? 2 : 1;\n"
                 + "    }\n"

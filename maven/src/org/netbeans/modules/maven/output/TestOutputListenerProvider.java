@@ -54,6 +54,8 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
+import org.netbeans.modules.maven.api.Constants;
+import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.api.output.OutputProcessor;
 import org.netbeans.modules.maven.api.output.OutputUtils;
 import org.netbeans.modules.maven.api.output.OutputVisitor;
@@ -206,15 +208,26 @@ public class TestOutputListenerProvider implements OutputProcessor {
                 return;
             }
             outDir.refresh();
-            FileObject report = outDir.getFileObject(testname + ".txt"); //NOI18N
+
             Project prj = FileOwnerQuery.getOwner(outDir);
             if (prj != null) {
                 NbMavenProjectImpl nbprj = prj.getLookup().lookup(NbMavenProjectImpl.class);
+                
                 if (nbprj == null) {
                     LOG.log(Level.INFO, "Cannot find owning maven project for {0} to follow link in Output Window.", outputDir); //NOI18N
                     StatusDisplayer.getDefault().setStatusText(MSG_CannotFollowLink3());                    
                     return;
                 }
+            
+                String reportNameSuffix = PluginPropertyUtils.getPluginProperty(nbprj.getOriginalMavenProject(), Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_SUREFIRE, "reportNameSuffix", null);
+                String suffix = reportNameSuffix;
+                if (suffix == null) {
+                    suffix = "";
+                } else {
+                    //204480
+                    suffix = "-" + suffix;
+                }
+                FileObject report = outDir.getFileObject(testname + suffix + ".txt"); //NOI18N
                 String tsd = nbprj.getOriginalMavenProject().getBuild().getTestSourceDirectory();
                 if (tsd == null) {
                     //#205722 while we were executing tests, someone broke the pom and we don't get the proper test source directory.
@@ -256,7 +269,7 @@ public class TestOutputListenerProvider implements OutputProcessor {
                 public void run() {
                     BufferedReader reader = null;
                     OutputWriter writer = io.getOut();
-                    String line = null;
+                    String line;
                     Collection<? extends TestOutputObserver> observers = getObservers();
                     try {
                         reader = new BufferedReader(new InputStreamReader(fo.getInputStream()));

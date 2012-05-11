@@ -676,10 +676,14 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         BooleanConfiguration cInheritIncludes = null;
         VectorConfiguration<String> cPpreprocessorOption = null;
         BooleanConfiguration cInheritMacros = null;
+        VectorConfiguration<String> cPreprocessorUndefinedOption = null;
+        BooleanConfiguration cInheritUndefinedMacros = null;
         VectorConfiguration<String> ccIncludeDirectories = null;
         BooleanConfiguration ccInheritIncludes = null;
         VectorConfiguration<String> ccPreprocessorOption = null;
         BooleanConfiguration ccInheritMacros = null;
+        VectorConfiguration<String> ccPreprocessorUndefinedOption = null;
+        BooleanConfiguration ccInheritUndefinedMacros = null;
         Item[] items;
         MakeConfigurationDescriptor descriptor = this;
 
@@ -706,10 +710,14 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             cInheritIncludes = folderConfiguration.getCCompilerConfiguration().getInheritIncludes();
             cPpreprocessorOption = folderConfiguration.getCCompilerConfiguration().getPreprocessorConfiguration();
             cInheritMacros = folderConfiguration.getCCompilerConfiguration().getInheritPreprocessor();
+            cPreprocessorUndefinedOption = folderConfiguration.getCCompilerConfiguration().getUndefinedPreprocessorConfiguration();
+            cInheritUndefinedMacros = folderConfiguration.getCCompilerConfiguration().getInheritUndefinedPreprocessor();
             ccIncludeDirectories = folderConfiguration.getCCCompilerConfiguration().getIncludeDirectories();
             ccInheritIncludes = folderConfiguration.getCCCompilerConfiguration().getInheritIncludes();
             ccPreprocessorOption = folderConfiguration.getCCCompilerConfiguration().getPreprocessorConfiguration();
             ccInheritMacros = folderConfiguration.getCCCompilerConfiguration().getInheritPreprocessor();
+            ccPreprocessorUndefinedOption = folderConfiguration.getCCCompilerConfiguration().getUndefinedPreprocessorConfiguration();
+            ccInheritUndefinedMacros = folderConfiguration.getCCCompilerConfiguration().getInheritUndefinedPreprocessor();
             items = folder.getAllItemsAsArray();
             if (folderConfiguration.getCCompilerConfiguration().isCStandardChanged()) {
                 folderConfiguration.getCCompilerConfiguration().getCStandard().setDirty(false);
@@ -718,17 +726,24 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             if (folderConfiguration.getCCCompilerConfiguration().isCppStandardChanged()) {
                 folderConfiguration.getCCCompilerConfiguration().getCppStandard().setDirty(false);
                 cFiles = true;
-            }            
+            }
         } else if (item != null) {
             ItemConfiguration itemConfiguration = item.getItemConfiguration(makeConfiguration);
             if (itemConfiguration == null) {
                 return;
+            }
+            if (itemConfiguration.isToolDirty()) {
+                itemConfiguration.setToolDirty(false);
+                ccFiles = true;
+                cFiles = true;
             }
             if (itemConfiguration.getTool() == PredefinedToolKind.CCompiler) {
                 cIncludeDirectories = itemConfiguration.getCCompilerConfiguration().getIncludeDirectories();
                 cInheritIncludes = itemConfiguration.getCCompilerConfiguration().getInheritIncludes();
                 cInheritMacros = itemConfiguration.getCCompilerConfiguration().getInheritPreprocessor();
                 cPpreprocessorOption = itemConfiguration.getCCompilerConfiguration().getPreprocessorConfiguration();
+                cPreprocessorUndefinedOption = itemConfiguration.getCCompilerConfiguration().getUndefinedPreprocessorConfiguration();
+                cInheritUndefinedMacros = itemConfiguration.getCCompilerConfiguration().getInheritUndefinedPreprocessor();
                 if (itemConfiguration.getCCompilerConfiguration().getCommandLineConfiguration().getDirty()){
                     itemConfiguration.getCCompilerConfiguration().getCommandLineConfiguration().setDirty(false);
                     cFiles = true;
@@ -748,6 +763,8 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
                 ccInheritIncludes = itemConfiguration.getCCCompilerConfiguration().getInheritIncludes();
                 ccPreprocessorOption = itemConfiguration.getCCCompilerConfiguration().getPreprocessorConfiguration();
                 ccInheritMacros = itemConfiguration.getCCCompilerConfiguration().getInheritPreprocessor();
+                ccPreprocessorUndefinedOption = itemConfiguration.getCCCompilerConfiguration().getUndefinedPreprocessorConfiguration();
+                ccInheritUndefinedMacros = itemConfiguration.getCCCompilerConfiguration().getInheritUndefinedPreprocessor();                
                 if (itemConfiguration.getCCCompilerConfiguration().getCommandLineConfiguration().getDirty()){
                     itemConfiguration.getCCCompilerConfiguration().getCommandLineConfiguration().setDirty(false);
                     ccFiles = true;
@@ -779,6 +796,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             cIncludeDirectories = makeConfiguration.getCCompilerConfiguration().getIncludeDirectories();
             cInheritIncludes = makeConfiguration.getCCompilerConfiguration().getInheritIncludes();
             cPpreprocessorOption = makeConfiguration.getCCompilerConfiguration().getPreprocessorConfiguration();
+            cPreprocessorUndefinedOption = makeConfiguration.getCCompilerConfiguration().getUndefinedPreprocessorConfiguration();
             if (makeConfiguration.getCCompilerConfiguration().getCommandLineConfiguration().getDirty()){
                 makeConfiguration.getCCompilerConfiguration().getCommandLineConfiguration().setDirty(false);
                 cFiles = true;
@@ -792,10 +810,13 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
                 cFiles = true;
             }                            
             cInheritMacros = makeConfiguration.getCCompilerConfiguration().getInheritPreprocessor();
+            cInheritUndefinedMacros = makeConfiguration.getCCompilerConfiguration().getInheritUndefinedPreprocessor();
             ccIncludeDirectories = makeConfiguration.getCCCompilerConfiguration().getIncludeDirectories();
             ccInheritIncludes = makeConfiguration.getCCCompilerConfiguration().getInheritIncludes();
             ccPreprocessorOption = makeConfiguration.getCCCompilerConfiguration().getPreprocessorConfiguration();
             ccInheritMacros = makeConfiguration.getCCCompilerConfiguration().getInheritPreprocessor();
+            ccPreprocessorUndefinedOption = makeConfiguration.getCCCompilerConfiguration().getUndefinedPreprocessorConfiguration();
+            ccInheritUndefinedMacros = makeConfiguration.getCCCompilerConfiguration().getInheritUndefinedPreprocessor(); 
             if (makeConfiguration.getCCCompilerConfiguration().getCommandLineConfiguration().getDirty()){
                 makeConfiguration.getCCCompilerConfiguration().getCommandLineConfiguration().setDirty(false);
                 ccFiles = true;
@@ -814,21 +835,25 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
 
         if (cIncludeDirectories != null
                 && (cIncludeDirectories.getDirty() || cPpreprocessorOption.getDirty()
-                || cInheritIncludes.getDirty() || cInheritMacros.getDirty())) {
+                || cInheritIncludes.getDirty() || cInheritMacros.getDirty() || cPreprocessorUndefinedOption.getDirty() || cInheritUndefinedMacros.getDirty())) {
             cFiles = true;
             cIncludeDirectories.setDirty(false);
             cPpreprocessorOption.setDirty(false);
             cInheritIncludes.setDirty(false);
             cInheritMacros.setDirty(false);
+            cPreprocessorUndefinedOption.setDirty(false);
+            cInheritUndefinedMacros.setDirty(false);
         }
         if (ccIncludeDirectories != null
                 && (ccIncludeDirectories.getDirty() || ccPreprocessorOption.getDirty()
-                || ccInheritIncludes.getDirty() || ccInheritMacros.getDirty())) {
+                || ccInheritIncludes.getDirty() || ccInheritMacros.getDirty() || ccPreprocessorUndefinedOption.getDirty() || ccInheritUndefinedMacros.getDirty())) {
             ccFiles = true;
             ccIncludeDirectories.setDirty(false);
             ccPreprocessorOption.setDirty(false);
             ccInheritIncludes.setDirty(false);
             ccInheritMacros.setDirty(false);
+            ccPreprocessorUndefinedOption.setDirty(false);
+            ccInheritUndefinedMacros.setDirty(false);
         }
         if (libsChanged) {
             makeConfiguration.getRequiredProjectsConfiguration().setDirty(false);

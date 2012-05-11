@@ -44,7 +44,6 @@
 package org.netbeans.modules.localhistory.ui.view;
 
 import java.io.File;
-import java.io.Serializable;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
@@ -59,21 +58,20 @@ import org.netbeans.modules.versioning.ui.history.HistoryComponent;
  */
 final public class HistoryTopComponent extends TopComponent {
 
-    private static HistoryTopComponent instance;
     static final String PREFERRED_ID = "text.history";
+    private HistoryComponent hc;
     
-    public HistoryTopComponent() {
+    private HistoryTopComponent() {
         initComponents();
         if( "Aqua".equals( UIManager.getLookAndFeel().getID() ) ) {             // NOI18N
             setBackground(UIManager.getColor("NbExplorerView.background"));     // NOI18N
         }
-        setToolTipText(NbBundle.getMessage(HistoryTopComponent.class, "HINT_LocalHistoryTopComponent"));
+        setToolTipText(NbBundle.getMessage(HistoryTopComponent.class, "HINT_LocalHistoryTopComponent")); // NOI18N
     }
 
     HistoryTopComponent(File[] files) {
         this();
-
-        HistoryComponent hc = new HistoryComponent(files);
+        hc = new HistoryComponent(files);
         setLayout(new java.awt.BorderLayout());
         add(hc, java.awt.BorderLayout.CENTER);
         add(hc.getToolbarRepresentation(), java.awt.BorderLayout.PAGE_START);
@@ -95,18 +93,6 @@ final public class HistoryTopComponent extends TopComponent {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // End of variables declaration//GEN-END:variables
 
-    /**
-     * Gets default instance. Do not use directly: reserved for *.settings files only,
-     * i.e. deserialization routines; otherwise you could get a non-deserialized instance.
-     * To obtain the singleton instance, use {@link findInstance}.
-     */
-    public static synchronized HistoryTopComponent getDefault() {
-        if (instance == null) {
-            instance = new HistoryTopComponent();
-        }
-        return instance;
-    }
-
     @Override
     public int getPersistenceType() {
         return TopComponent.PERSISTENCE_NEVER;
@@ -115,27 +101,42 @@ final public class HistoryTopComponent extends TopComponent {
     @Override
     public void componentOpened() {
         super.componentOpened();
+        hc.componentOpened();
     }
 
     @Override
     public void componentClosed() {
         super.componentClosed();
+        hc.componentClosed();
     }
 
-    /** replaces this in object stream */
-    public Object writeReplace() {
-        return new ResolvableHelper();
+    @Override
+    protected void componentActivated() {
+        super.componentActivated();
+        hc.componentActivated();
     }
 
+    @Override
+    protected void componentDeactivated() {
+        super.componentDeactivated();
+        hc.componentDeactivated();
+    }
+
+    @Override
+    protected void componentHidden() {
+        super.componentHidden();
+        hc.componentHidden();
+    }
+
+    @Override
+    protected void componentShowing() {
+        super.componentShowing();
+        hc.componentShowing();
+    }
+
+    @Override
     protected String preferredID() {
         return PREFERRED_ID;
-    }
-
-    final static class ResolvableHelper implements Serializable {
-        private static final long serialVersionUID = 1L;
-        public Object readResolve() {
-            return HistoryTopComponent.getDefault();
-        }
     }
 
     @Override

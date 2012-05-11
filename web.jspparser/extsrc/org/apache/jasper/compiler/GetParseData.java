@@ -50,14 +50,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Vector;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.jsp.JspException;
@@ -351,41 +344,25 @@ public class GetParseData {
         
         return nbPageInfo;
     }
-    
-    
+
     private static org.netbeans.modules.web.jsps.parserapi.PageInfo.BeanData[] createBeanData(BeanRepository rep) {
         try {
-            initBeanRepositoryFields();
-            Vector sessionBeans = (Vector)sessionBeansF.get(rep);
-            Vector pageBeans = (Vector)pageBeansF.get(rep);
-            Vector appBeans = (Vector)appBeansF.get(rep);
-            Vector requestBeans = (Vector)requestBeansF.get(rep);
-            Hashtable beanTypes = (Hashtable)beanTypesF.get(rep);
+            initBeanRepository();
+            Map beanTypes = (HashMap) beanTypesF.get(rep);
             int size = beanTypes.size();
-            org.netbeans.modules.web.jsps.parserapi.PageInfo.BeanData bd[] = 
+            org.netbeans.modules.web.jsps.parserapi.PageInfo.BeanData[] bd =
                 new org.netbeans.modules.web.jsps.parserapi.PageInfo.BeanData[size];
             Iterator it = beanTypes.keySet().iterator();
             int index = 0;
             while (it.hasNext()) {
-                String id = (String)it.next();
-                String type = (String)beanTypes.get(id);
-                int scope = PageContext.PAGE_SCOPE;
-                if (sessionBeans.contains(id)) {
-                    scope = PageContext.SESSION_SCOPE;
-                }
-                if (appBeans.contains(id)) {
-                    scope = PageContext.APPLICATION_SCOPE;
-                }
-                if (requestBeans.contains(id)) {
-                    scope = PageContext.REQUEST_SCOPE;
-                }
-                
-                bd[index] = new BeanDataImpl(id, scope, type);
+                String id = (String) it.next();
+                String type = (String) beanTypes.get(id);
+
+                bd[index] = new BeanDataImpl(id, type);
                 ++index;
             }
             return bd;
-        }
-        catch (IllegalAccessException e) {
+        } catch (IllegalAccessException e) {
             LOGGER.log(Level.INFO, null, e);
             throw new RuntimeException();
         }
@@ -436,45 +413,32 @@ public class GetParseData {
     static class BeanDataImpl implements org.netbeans.modules.web.jsps.parserapi.PageInfo.BeanData {
 
         private final String id;
-        private final int scope;
         private final String className;
 
-        BeanDataImpl(String id, int scope, String className) {
+        BeanDataImpl(String id, String className) {
             this.id = id;
-            this.scope = scope;
             this.className = className;
         }
 
         /** Identifier of the bean in the page (variable name). */
+        @Override
         public String getId() {
             return id;
         }
 
-        /** Scope for this bean. Returns constants defined in {@link javax.servlet.jsp.PageContext}. */
-        public int getScope() {
-            return scope;
-        }
-
         /** Returns the class name for this bean. */
+        @Override
         public String getClassName() {
             return className;
         }
     }
                 
     // ------ getting BeanRepository data by reflection
-    private static Field sessionBeansF, pageBeansF, appBeansF, requestBeansF, beanTypesF;
+    private static Field beanTypesF;
     
-    private static void initBeanRepositoryFields() {
-        if (sessionBeansF == null) {
+    private static void initBeanRepository() {
+        if (beanTypesF == null) {
             try {
-                sessionBeansF = BeanRepository.class.getDeclaredField("sessionBeans");
-                sessionBeansF.setAccessible(true);
-                pageBeansF = BeanRepository.class.getDeclaredField("pageBeans");
-                pageBeansF.setAccessible(true);
-                appBeansF = BeanRepository.class.getDeclaredField("appBeans");
-                appBeansF.setAccessible(true);
-                requestBeansF = BeanRepository.class.getDeclaredField("requestBeans");
-                requestBeansF.setAccessible(true);
                 beanTypesF = BeanRepository.class.getDeclaredField("beanTypes");
                 beanTypesF.setAccessible(true);
             } catch (NoSuchFieldException e) {
@@ -541,7 +505,7 @@ public class GetParseData {
      * The cache is changed, when a jsp page is parsed and a tag file was changed. 
      */
     
-    private static Hashtable<URL, TagFileInfoCacheRecord> tagFileInfoCache = new Hashtable<URL, TagFileInfoCacheRecord>();
+    private static Map<URL, TagFileInfoCacheRecord> tagFileInfoCache = new HashMap<URL, TagFileInfoCacheRecord>();
     
     private static Map getTaglibsMapReflect(PageInfo pageInfo, JspCompilationContext ctxt) {
         initPageInfoFields();
@@ -557,14 +521,14 @@ public class GetParseData {
                         //We need the access for the files
                         Field tagFileMapF = ImplicitTagLibraryInfo.class.getDeclaredField("tagFileMap");
                         tagFileMapF.setAccessible(true);
-                        Hashtable tagFileMap = (Hashtable)tagFileMapF.get(libInfo);
+                        Map tagFileMap = (HashMap)tagFileMapF.get(libInfo);
                         TagFileInfo[] tagFiles = new TagFileInfo[tagFileMap.size()];
                         int index = 0;
                         //Check every file in tag library
-                        Enumeration e = tagFileMap.keys();
-                        while (e.hasMoreElements()){
+                        Iterator iterator = tagFileMap.keySet().iterator();
+                        while (iterator.hasNext()){
                             //Find the path for the file
-                            String name = (String) e.nextElement();
+                            String name = (String) iterator.next();
                             String filePath = (String)tagFileMap.get(name);
                             
                             URL path =  ctxt.getResource(filePath);

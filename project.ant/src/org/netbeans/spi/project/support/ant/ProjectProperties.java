@@ -50,9 +50,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Collections;
+import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -71,6 +71,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Mutex;
+import org.openide.util.NbCollections;
 import org.openide.util.RequestProcessor;
 import org.openide.util.UserQuestionException;
 import org.openide.util.Utilities;
@@ -421,18 +422,17 @@ final class ProjectProperties {
     /**
      * See {@link AntProjectHelper#getStockPropertyPreprovider}.
      */
+    @SuppressWarnings("SleepWhileInLoop")
     public PropertyProvider getStockPropertyPreprovider() {
         if (stockPropertyPreprovider == null) {
-            Map<String,String> m = new HashMap<String,String>();
-            Properties p = System.getProperties();
-            synchronized (p) { // #194904: else get rare CME
-                for (Map.Entry<?,?> entry : p.entrySet()) {
-                    Object k = entry.getKey();
-                    Object v = entry.getValue();
-                    // #194044: do not use NbCollections as that may trigger class loading -> deadlock
-                    if (k instanceof String && v instanceof String) {
-                        m.put((String) k, (String) v);
-                    }
+            Map<String,String> m = null;
+            while (m == null) {
+                try {
+                    m = NbCollections.checkedMapByCopy(System.getProperties(), String.class, String.class, false);
+                } catch (ConcurrentModificationException x) { // #194904, but do not synchronize (#212007)
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException x2) {}
                 }
             }
             m.put("basedir", FileUtil.toFile(helper.getProjectDirectory()).getAbsolutePath()); // NOI18N

@@ -55,6 +55,11 @@ import org.openide.nodes.Node;
 public class TestIssueProvider extends IssueProvider<TestIssue> {
 
     @Override
+    public String[] getSubtasks(TestIssue data) {
+        return data.getSubtasks();
+    }
+
+    @Override
     public String getDisplayName(TestIssue data) {
         return data.getDisplayName();
     }
@@ -79,6 +84,11 @@ public class TestIssueProvider extends IssueProvider<TestIssue> {
         return data.isNew();
     }
 
+    @Override
+    public boolean isFinished(TestIssue data) {
+        return data.isFinished();
+    }
+    
     @Override
     public boolean refresh(TestIssue data) {
         return data.refresh();
@@ -109,9 +119,4 @@ public class TestIssueProvider extends IssueProvider<TestIssue> {
         data.addPropertyChangeListener(listener);
     }
 
-    @Override
-    public void setContext(TestIssue data, Node[] nodes) {
-        data.setContext(nodes);
-    }
-    
 }

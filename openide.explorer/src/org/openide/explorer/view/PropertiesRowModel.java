@@ -49,7 +49,6 @@ import java.awt.event.MouseMotionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -371,26 +370,22 @@ class PropertiesRowModel implements RowModel {
         if (locMsg != null
             && (throwable.getLocalizedMessage() != throwable.getMessage())) { //XXX See issue 34569
 
-            String msg = MessageFormat.format(
-                    NbBundle.getMessage(PropertiesRowModel.class, "FMT_ErrorSettingValue"), new Object[] { newValue, title }
-                ); //NOI18N
+            String msg = NbBundle.getMessage(
+                    PropertiesRowModel.class, "FMT_ErrorSettingValue", newValue, title); //NOI18N
             UIException.annotateUser(throwable, msg,
                                      throwable.getLocalizedMessage(), throwable,
                                      new Date());
         } else if (throwable instanceof NumberFormatException) {
             //Handle NFE's from the core sun.beans property editors w/o raising stack traces
             UIException.annotateUser(throwable, throwable.getMessage(),
-                                     MessageFormat.format(NbBundle.getMessage(PropertiesRowModel.class,
-                                                                              "FMT_BAD_NUMBER_FORMAT"),
-                                                          new Object[]{newValue}),
+                                     NbBundle.getMessage(PropertiesRowModel.class, "FMT_BAD_NUMBER_FORMAT", newValue),
                                      null, null);
         }
 
         String msg = Exceptions.findLocalizedMessage(throwable);
         if (msg == null) {
-            msg = MessageFormat.format(
-                    NbBundle.getMessage(PropertiesRowModel.class, "FMT_ErrorSettingValue"), new Object[] { newValue, title }
-                ); //NOI18N
+            msg = NbBundle.getMessage(
+                    PropertiesRowModel.class, "FMT_ErrorSettingValue", newValue, title); //NOI18N
 
         }
         NotifyDescriptor d = new NotifyDescriptor.Message(msg, NotifyDescriptor.INFORMATION_MESSAGE);

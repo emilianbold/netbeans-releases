@@ -44,8 +44,7 @@
 
 package org.netbeans.modules.cnd.navigation.hierarchy;
 
-import org.netbeans.modules.cnd.api.model.CsmClass;
-import org.openide.awt.StatusDisplayer;
+import org.netbeans.modules.cnd.navigation.hierarchy.HierarchyTopComponent.TypeContextFinder;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -56,19 +55,12 @@ public final class ShowClassHierarchyAction extends CookieAction {
     
     @Override
     protected void performAction(Node[] activatedNodes) {
-        CsmClass decl = ContextUtils.getContextClass(activatedNodes);
-        if (decl != null){
-            HierarchyTopComponent view = HierarchyTopComponent.findInstance();
-            if (!view.isOpened()) {
-                 view.open();
-            }
-            view.setClass(decl, false);
-            view.requestActive();
-        } else {
-            String msg = NbBundle.getMessage(getClass(), "MESSAGE_NoContextClass"); // NOI18N
-            StatusDisplayer.getDefault().setStatusText(msg);
-            //DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg));
+        HierarchyTopComponent view = HierarchyTopComponent.findInstance();
+        if (!view.isOpened()) {
+            view.open();
         }
+        view.setClass(new TypeContextFinder(activatedNodes), false);
+        view.requestActive();
     }
 
     @Override

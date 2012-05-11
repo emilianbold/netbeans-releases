@@ -228,9 +228,7 @@ public class BookmarkManager {
         ProjectBookmarks projectBookmarks = null;
         if (fo != null) {
             Project project = FileOwnerQuery.getOwner(fo);
-            if (project != null) {
-                projectBookmarks = getProjectBookmarks(project, true, true);
-            }
+            projectBookmarks = getProjectBookmarks(project, true, true);
         }
         return projectBookmarks;
     }
@@ -240,7 +238,11 @@ public class BookmarkManager {
         projectBookmarks = project2Bookmarks.get(project);
         if (projectBookmarks == null) {
             if (load) {
-                projectBookmarks = BookmarksPersistence.get().loadProjectBookmarks(project);
+                if (project != null) {
+                    projectBookmarks = BookmarksPersistence.get().loadProjectBookmarks(project);
+                } else { // Bookmarks not belonging to any project
+                    projectBookmarks = new ProjectBookmarks(null);
+                }
                 if (projectBookmarks != null) {
                     BookmarkChange change = new BookmarkChange(projectBookmarks.getProject(), null);
                     change.markAdded();

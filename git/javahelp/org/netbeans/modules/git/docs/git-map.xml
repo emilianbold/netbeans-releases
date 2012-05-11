@@ -40,4 +40,5 @@
 	<mapID target="org.netbeans.modules.git.ui.status.GitVersioningTopComponent" url="csh/git-versioning-view.html"/>
 	<mapID target="org.netbeans.modules.git.ui.reset.Reset" url="csh/git-reset.html"/>
 	<mapID target="org.netbeans.modules.git.ui.repository.GitRepositoryTopComponent" url="csh/git-repo-browser.html"/>
+	<mapID target="org.netbeans.modules.git.ui.commit.TemplatePanel" url="csh/git-select-template.html"/>
 </map>

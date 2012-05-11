@@ -6,6 +6,8 @@
   is performed using FreeMaker (http://freemarker.org/) - see its documentation
   for full syntax. Variables available for templating are:
 
+    htmlTagPrefix - prefix of facelet's html tags
+    coreTagPrefix - prefix of facelet's core tags
     entityName - name of entity being modified (type: String)
     managedBean - name of managed choosen in UI (type: String)
     managedBeanProperty - name of managed bean property choosen in UI (type: String)
@@ -27,22 +29,22 @@
   be found in category JavaServer Faces->JSF Data/Form from Entity.
 
 </#if>
-<h:form>
-    <h1><h:outputText value="List"/></h1>
-    <h:dataTable value="${r"#{"}${managedBeanProperty}${r"}"}" var="${item}">
+<${htmlTagPrefix}:form>
+    <h1><${htmlTagPrefix}:outputText value="List"/></h1>
+    <${htmlTagPrefix}:dataTable value="${r"#{"}${managedBeanProperty}${r"}"}" var="${item}">
 <#list entityDescriptors as entityDescriptor>
-        <h:column>
-            <f:facet name="header">
-                <h:outputText value="${entityDescriptor.label}"/>
-            </f:facet>
+        <${htmlTagPrefix}:column>
+            <${coreTagPrefix}:facet name="header">
+                <${htmlTagPrefix}:outputText value="${entityDescriptor.label}"/>
+            </${coreTagPrefix}:facet>
 <#if entityDescriptor.dateTimeFormat?? && entityDescriptor.dateTimeFormat != "">
-            <h:outputText value="${r"#{"}${entityDescriptor.name}${r"}"}">
-                <f:convertDateTime pattern="${entityDescriptor.dateTimeFormat}" />
-            </h:outputText>
+            <${htmlTagPrefix}:outputText value="${r"#{"}${entityDescriptor.name}${r"}"}">
+                <${coreTagPrefix}:convertDateTime pattern="${entityDescriptor.dateTimeFormat}" />
+            </${htmlTagPrefix}:outputText>
 <#else>
-            <h:outputText value="${r"#{"}${entityDescriptor.name}${r"}"}"/>
+            <${htmlTagPrefix}:outputText value="${r"#{"}${entityDescriptor.name}${r"}"}"/>
 </#if>
-        </h:column>
+        </${htmlTagPrefix}:column>
 </#list>
-    </h:dataTable>
-</h:form>
+    </${htmlTagPrefix}:dataTable>
+</${htmlTagPrefix}:form>

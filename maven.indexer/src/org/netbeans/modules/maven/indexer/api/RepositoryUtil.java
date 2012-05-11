@@ -112,7 +112,7 @@ public final class RepositoryUtil {
         List<ArtifactRepository> remotes;
         RepositoryInfo repo = RepositoryPreferences.getInstance().getRepositoryInfoById(info.getRepoId());
         if (repo != null && repo.isRemoteDownloadable()) {
-            remotes = Collections.singletonList(EmbedderFactory.createRemoteRepository(online, repo.getRepositoryUrl(), repo.getId()));
+            remotes = Collections.singletonList(online.createRemoteRepository(repo.getRepositoryUrl(), repo.getId()));
         } else {
             remotes = Collections.emptyList();
         }

@@ -45,8 +45,10 @@ package org.netbeans.modules.bugtracking.ui.query;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
+import javax.swing.JComponent;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.QueryImpl;
+import org.netbeans.modules.bugtracking.issuetable.IssueTable.IssueTableProvider;
 import org.openide.util.actions.CallbackSystemAction;
 import org.openide.util.actions.SystemAction;
 import org.openide.windows.TopComponent;
@@ -56,13 +58,13 @@ import org.openide.windows.TopComponent;
  * @author Tomas Stupka
  */
 class FindInQuerySupport {
-    private IssueTable table;
+    private IssueTableProvider tableProvider;
     private QueryImpl query;
     private FindInQueryBar bar;
 
     private FindInQuerySupport(TopComponent tc) {
         bar = new FindInQueryBar(this);
-
+        
         ActionMap actionMap = tc.getActionMap();
         CallbackSystemAction a = SystemAction.get(org.openide.actions.FindAction.class);
         actionMap.put(a.getActionMapKey(), new FindAction());                
@@ -100,6 +102,9 @@ class FindInQuerySupport {
     private class FindAction extends AbstractAction {
         @Override
         public void actionPerformed(ActionEvent e) {
+            if(getIssueTable() == null) {
+                return; 
+            }
             if (bar.isVisible()) {
                 updatePattern();
             } else {
@@ -111,10 +116,7 @@ class FindInQuerySupport {
     }
 
     private IssueTable getIssueTable() {
-        if(table == null) {
-            return IssueTableSupport.getInstance().find(query);
-        }
-        return table;
+        return query.getIssueTable();
     }
 
 }

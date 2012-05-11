@@ -41,26 +41,19 @@
  */
 package org.netbeans.modules.html.editor.gsf;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.csl.api.DeclarationFinder;
 import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
-import org.netbeans.modules.csl.api.ElementHandle;
-import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.csl.api.HtmlFormatter;
-import org.netbeans.modules.csl.api.Modifier;
-import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.css.refactoring.api.CssRefactoring;
@@ -144,14 +137,15 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
     }
 
     private OffsetRange getCoreHtmlReferenceSpan(Document doc, int caretOffset) {
-        final TokenSequence<HTMLTokenId> ts = Utils.getJoinedHtmlSequence(doc, caretOffset);
+        TokenHierarchy hi = TokenHierarchy.get(doc);
+        final TokenSequence<HTMLTokenId> ts = Utils.getJoinedHtmlSequence(hi, caretOffset);
         if (ts == null) {
             return null;
         }
 
         //tag attribute value hyperlinking
         if (ts.token().id() == HTMLTokenId.VALUE) {
-            return new AttributeValueAction<OffsetRange>(ts) {
+            return new AttributeValueAction<OffsetRange>(hi, ts) {
 
                 @Override
                 public OffsetRange resolve() {
@@ -184,7 +178,8 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
 
     private DeclarationLocation findCoreHtmlDeclaration(final ParserResult info, final int caretOffset) {
         final FileObject file = info.getSnapshot().getSource().getFileObject();
-        final TokenSequence<HTMLTokenId> ts = info.getSnapshot().getTokenHierarchy().tokenSequence(HTMLTokenId.language());
+        TokenHierarchy hi = info.getSnapshot().getTokenHierarchy();
+        final TokenSequence<HTMLTokenId> ts = hi.tokenSequence(HTMLTokenId.language());
         if (ts == null) {
             return null;
         }
@@ -200,7 +195,7 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
 
         //tag attribute value hyperlinking
         if (ts.token().id() == HTMLTokenId.VALUE) {
-            return new AttributeValueAction<DeclarationLocation>(ts) {
+            return new AttributeValueAction<DeclarationLocation>(hi, ts) {
 
                 @Override
                 public DeclarationLocation resolve() {
@@ -321,11 +316,13 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
 
     private abstract class AttributeValueAction<T> {
 
-        private TokenSequence<HTMLTokenId> ts;
+        private final TokenHierarchy hi;
+        private final TokenSequence<HTMLTokenId> ts;
         protected String tagName, attrName, unquotedValue;
         protected OffsetRange valueRange;
 
-        public AttributeValueAction(TokenSequence<HTMLTokenId> ts) {
+        public AttributeValueAction(TokenHierarchy hi, TokenSequence<HTMLTokenId> ts) {
+            this.hi = hi;
             this.ts = ts;
         }
 
@@ -340,7 +337,22 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
             //find attribute name
             int quotesDiff = WebUtils.isValueQuoted(ts.token().text().toString()) ? 1 : 0;
             unquotedValue = WebUtils.unquotedValue(ts.token().text().toString());
-            valueRange = new OffsetRange(ts.offset() + quotesDiff, ts.offset() + ts.token().length() - quotesDiff);
+            
+            Token<HTMLTokenId> token = ts.token();
+            List<? extends Token<HTMLTokenId>> tokenParts = token.joinedParts();
+            if(tokenParts == null) {
+                //continuos token
+                valueRange = new OffsetRange(ts.offset() + quotesDiff, ts.offset() + ts.token().length() - quotesDiff);
+            } else {
+                //joined token
+                //the range is first token part start to last token part end
+                Token<HTMLTokenId> first = tokenParts.get(0);
+                Token<HTMLTokenId> last = tokenParts.get(tokenParts.size() - 1);
+                
+                valueRange = new OffsetRange(first.offset(hi), last.offset(hi) + last.length());
+            }
+            
+            
             while (ts.movePrevious()) {
                 HTMLTokenId id = ts.token().id();
                 if (id == HTMLTokenId.ARGUMENT && attrName == null) {

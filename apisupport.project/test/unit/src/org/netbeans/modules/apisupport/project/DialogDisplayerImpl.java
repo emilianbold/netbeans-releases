@@ -63,8 +63,6 @@ public class DialogDisplayerImpl extends DialogDisplayer {
     public static void returnFromNotify(Object value) {
         Object o = DialogDisplayer.getDefault();
         Assert.assertEquals("My class", DialogDisplayerImpl.class, o.getClass());
-        
-        Assert.assertNull("No previous value", toReturn);
         toReturn = value;
     }
     

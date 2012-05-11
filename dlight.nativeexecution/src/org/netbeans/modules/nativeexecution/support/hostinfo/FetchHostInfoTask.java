@@ -41,12 +41,13 @@
  */
 package org.netbeans.modules.nativeexecution.support.hostinfo;
 
-import org.netbeans.modules.nativeexecution.support.*;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.support.Computable;
+import org.netbeans.modules.nativeexecution.support.Logger;
 import org.openide.util.Lookup;
 
 public final class FetchHostInfoTask implements Computable<ExecutionEnvironment, HostInfo> {
@@ -62,8 +63,7 @@ public final class FetchHostInfoTask implements Computable<ExecutionEnvironment,
             try {
                 result = provider.getHostInfo(execEnv);
             } catch (IOException ex) {
-                // TODO: should we throw exception instead?
-                log.log(Level.SEVERE, "Exception while receiving hostinfo for " + execEnv.getDisplayName(), ex); //NOI18N
+                log.log(Level.INFO, "Exception while receiving hostinfo for " + execEnv.getDisplayName(), ex); //NOI18N
             }
             if (result != null) {
                 break;

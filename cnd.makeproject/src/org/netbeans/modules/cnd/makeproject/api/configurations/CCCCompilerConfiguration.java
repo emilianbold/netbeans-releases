@@ -47,10 +47,10 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem.OptionItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringListNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.VectorNodeProp;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.HelpCtx;
@@ -94,7 +94,9 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
     private VectorConfiguration<String> includeDirectories;
     private BooleanConfiguration inheritIncludes;
     private VectorConfiguration<String> preprocessorConfiguration;
+    private VectorConfiguration<String> preprocessorUndefinedConfiguration;
     private BooleanConfiguration inheritPreprocessor;
+    private BooleanConfiguration inheritUndefinedPreprocessor;
     private BooleanConfiguration useLinkerPkgConfigLibraries;
     private MakeConfiguration owner;
 
@@ -109,7 +111,9 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
         includeDirectories = new VectorConfiguration<String>(master != null ? master.getIncludeDirectories() : null);
         inheritIncludes = new BooleanConfiguration(true);
         preprocessorConfiguration = new VectorConfiguration<String>(master != null ? master.getPreprocessorConfiguration() : null);
+        preprocessorUndefinedConfiguration = new VectorConfiguration<String>(master != null ? master.getUndefinedPreprocessorConfiguration() : null);
         inheritPreprocessor = new BooleanConfiguration(true);
+        inheritUndefinedPreprocessor = new BooleanConfiguration(true);
         useLinkerPkgConfigLibraries = new BooleanConfiguration(true);
     }
 
@@ -131,6 +135,8 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
                 inheritIncludes.getModified() ||
                 preprocessorConfiguration.getModified() ||
                 inheritPreprocessor.getModified() ||
+                preprocessorUndefinedConfiguration.getModified() ||
+                inheritUndefinedPreprocessor.getModified() ||
                 useLinkerPkgConfigLibraries.getModified();
     }
 
@@ -199,6 +205,15 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
     public void setPreprocessorConfiguration(VectorConfiguration<String> preprocessorConfiguration) {
         this.preprocessorConfiguration = preprocessorConfiguration;
     }
+    
+    // Preprocessor
+    public VectorConfiguration<String> getUndefinedPreprocessorConfiguration() {
+        return preprocessorUndefinedConfiguration;
+    }
+
+    public void setUndefinedPreprocessorConfiguration(VectorConfiguration<String> preprocessorUndefinedConfiguration) {
+        this.preprocessorUndefinedConfiguration = preprocessorUndefinedConfiguration;
+    }
 
     // Inherit Include Directories
     public BooleanConfiguration getInheritPreprocessor() {
@@ -207,6 +222,14 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
 
     public void setInheritPreprocessor(BooleanConfiguration inheritPreprocessor) {
         this.inheritPreprocessor = inheritPreprocessor;
+    }
+
+    public BooleanConfiguration getInheritUndefinedPreprocessor() {
+        return inheritUndefinedPreprocessor;
+    }
+
+    public void setInheritUndefinedPreprocessor(BooleanConfiguration inheritUndefinedPreprocessor) {
+        this.inheritUndefinedPreprocessor = inheritUndefinedPreprocessor;
     }
 
     // Linker libraries
@@ -244,6 +267,8 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
         getInheritIncludes().assign(conf.getInheritIncludes());
         getPreprocessorConfiguration().assign(conf.getPreprocessorConfiguration());
         getInheritPreprocessor().assign(conf.getInheritPreprocessor());
+        getUndefinedPreprocessorConfiguration().assign(conf.getUndefinedPreprocessorConfiguration());
+        getInheritUndefinedPreprocessor().assign(conf.getInheritUndefinedPreprocessor());
         getUseLinkerLibraries().assign(conf.getUseLinkerLibraries());
     }
 
@@ -280,7 +305,27 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
             }
         }
         set1.put(new StringListNodeProp(getPreprocessorConfiguration(), getMaster() != null ? getInheritPreprocessor() : null, new String[]{"preprocessor-definitions", getString("PreprocessorDefinitionsTxt"), getString("PreprocessorDefinitionsHint"), getString("PreprocessorDefinitionsLbl"), inheritedValues.toString()}, true, new HelpCtx("preprocessor-definitions"))); // NOI18N
-
+     
+        if (false) {
+            // commented because:
+            // 1. managed projects do not support -U flags
+            // 2. no needs to show internal presentation of undefs
+            // Undefined Macros
+            inheritedValues = new StringBuilder();
+            master = (CCCCompilerConfiguration) getMaster();
+            while (master != null) {
+                inheritedValues.append(master.getUndefinedPreprocessorConfiguration().toString(visitor));
+                if (master.getInheritUndefinedPreprocessor().getValue()) {
+                    master = (CCCCompilerConfiguration) master.getMaster();
+                } else {
+                    master = null;
+                }
+            }
+            set1.put(new StringListNodeProp(getUndefinedPreprocessorConfiguration(),
+                    getMaster() != null ? getInheritUndefinedPreprocessor() : null,
+                    new String[]{"preprocessor-undefined", getString("PreprocessorUndefinedTxt"), getString("PreprocessorUndefinedHint"), getString("PreprocessorUndefinedLbl"), inheritedValues.toString()},
+                    true, new HelpCtx("preprocessor-undefined"))); // NOI18N
+        }
         if (this.getMaster() == null) {            
             final IntConfiguration configurationType = this.getOwner() == null ? null : this.getOwner().getConfigurationType();
             if (configurationType == null || (configurationType.getValue() != MakeConfiguration.TYPE_MAKEFILE)) {

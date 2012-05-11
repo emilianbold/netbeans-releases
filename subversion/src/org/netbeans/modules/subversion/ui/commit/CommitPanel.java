@@ -324,7 +324,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
 
     private void onTemplate() {
         TemplateSelector ts = new TemplateSelector(SvnModuleConfig.getDefault().getPreferences());
-        if(ts.show()) {
+        if(ts.show("org.netbeans.modules.subversion.ui.commit.TemplatePanel")) { //NOI18N
             messageTextArea.setText(ts.getTemplate());
         }
     }

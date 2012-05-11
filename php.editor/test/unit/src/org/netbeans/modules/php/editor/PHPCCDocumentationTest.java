@@ -97,6 +97,22 @@ public class PHPCCDocumentationTest extends PHPCodeCompletionTestBase {
         checkCompletionDocumentation("testfiles/completion/documentation/functionWithArrayReturnWithoutDesc.php", "bFunctionNam^e(null);", false, "");
     }
 
+    public void testIssue207952_01() throws Exception {
+        checkCompletionDocumentation("testfiles/completion/documentation/issue207952.php", "$my->aMagic^Method($paramName);", false, "");
+    }
+
+    public void testIssue207952_02() throws Exception {
+        checkCompletionDocumentation("testfiles/completion/documentation/issue207952.php", "$my->nonMagic^Method($paramName);", false, "");
+    }
+
+    public void testIssue207952_03() throws Exception {
+        checkCompletionDocumentation("testfiles/completion/documentation/issue207952_nonNs.php", "$my->aMagic^Method($paramName);", false, "");
+    }
+
+    public void testIssue207952_04() throws Exception {
+        checkCompletionDocumentation("testfiles/completion/documentation/issue207952_nonNs.php", "$my->nonMagic^Method($paramName);", false, "");
+    }
+
     @Override
     protected String alterDocumentationForTest(String documentation) {
         int start = documentation.indexOf("file:");

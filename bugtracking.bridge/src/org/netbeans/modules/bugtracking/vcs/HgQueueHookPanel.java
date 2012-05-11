@@ -61,8 +61,7 @@ import javax.swing.JComboBox;
 import org.netbeans.modules.bugtracking.ui.search.QuickSearchComboBar;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.api.Util;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.api.RepositoryManager;
 import org.netbeans.modules.versioning.util.VerticallyNonResizingPanel;
 
 /**
@@ -301,7 +300,7 @@ public class HgQueueHookPanel extends VerticallyNonResizingPanel implements Item
     }
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        Repository repo = Util.createRepository();
+        Repository repo = RepositoryManager.getInstance().createRepository();
         if(repo == null) {
             return;
         }

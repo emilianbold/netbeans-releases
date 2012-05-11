@@ -276,6 +276,14 @@ public class Folder implements FileChangeListener, ChangeListener {
         }
     }
 
+    public String getDiskName() {
+        String diskName = getAbsolutePath();
+        if (diskName != null) {
+            return CndPathUtilitities.getBaseName(diskName);
+        }
+        return null;
+    }
+    
     public void attachListeners() {
         if (configurationDescriptor == null) {
             CndUtils.assertTrueInConsole(false, "null configurationDescriptor for " + this.name);
@@ -399,6 +407,15 @@ public class Folder implements FileChangeListener, ChangeListener {
     }
 
     public String getDisplayName() {
+        // This is dirty fix for #201152. Do not see other way to do this,
+        // as Folders instances are always updated and it is impossible
+        // to provide them with the right name.
+        if (isDiskFolder() && getRoot() != null) {
+            String diskName = getDiskName();
+            if (diskName != null) {
+                return diskName;
+            }
+        }
         return displayName;
     }
 
@@ -992,11 +1009,14 @@ public class Folder implements FileChangeListener, ChangeListener {
     }
 
     public String getAbsolutePath() {
-        String absRootPath = CndPathUtilitities.toAbsolutePath(configurationDescriptor.getBaseDir(), getRoot());
-        absRootPath = RemoteFileUtil.normalizeAbsolutePath(absRootPath, getProject());
-        FileObject folderFile = RemoteFileUtil.getFileObject(absRootPath, getProject());
-        if (folderFile != null) {
-            return folderFile.getPath();
+        String aRoot = getRoot();
+        if (aRoot != null) {
+            String absRootPath = CndPathUtilitities.toAbsolutePath(configurationDescriptor.getBaseDirFileObject(), getRoot());
+            absRootPath = RemoteFileUtil.normalizeAbsolutePath(absRootPath, getProject());
+            FileObject folderFile = RemoteFileUtil.getFileObject(absRootPath, getProject());
+            if (folderFile != null) {
+                return folderFile.getPath();
+            }
         }
         return null;
     }
@@ -1233,7 +1253,7 @@ public class Folder implements FileChangeListener, ChangeListener {
             itemPath = CndPathUtilitities.toRelativePath(getConfigurationDescriptor().getBaseDir(), itemPath);
             itemPath = CndPathUtilitities.normalizeSlashes(itemPath);
             Item item = Item.createInFileSystem(configurationDescriptor.getBaseDirFileSystem(), itemPath);
-            addItemAction(item, false);
+            addItemAction(item, true);
         } else {
             while (aParent != null && aParent.isValid() && !aParent.isRoot()) {
                 if (aParent.equals(thisFolder)) {
@@ -1262,7 +1282,7 @@ public class Folder implements FileChangeListener, ChangeListener {
                     // It is possible that short-living temporary folder is created while building project
                     return;
                 }
-                /*Folder top =*/ getConfigurationDescriptor().addFilesFromDir(this, fileObject, true, false, null);
+                /*Folder top =*/ getConfigurationDescriptor().addFilesFromDir(this, fileObject, true, true, null);
             }
         } else {
             while (aParent != null && aParent.isValid() && !aParent.isRoot()) {
@@ -1300,13 +1320,13 @@ public class Folder implements FileChangeListener, ChangeListener {
             }
             
             if (item != null) {
-                removeItemAction(item, false);
+                removeItemAction(item, true);
                 return;
             }
             // then folder
             Folder folder = findFolderByName(fileObject.getNameExt());
             if (folder != null) {
-                removeFolderAction(folder, false);
+                removeFolderAction(folder, true);
                 return;
             }
             fireChangeEvent(this, false);

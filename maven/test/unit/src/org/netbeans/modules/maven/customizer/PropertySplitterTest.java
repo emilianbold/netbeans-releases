@@ -82,6 +82,33 @@ public class PropertySplitterTest extends TestCase {
         assertEquals("\"-Dfoo bar=baz quux\"", instance.nextPair());
         assertEquals("whatever", instance.nextPair());
         assertEquals(null, instance.nextPair());
+        
+        instance = new PropertySplitter("foo=1\\\n2\\\n3\nbar=123");
+        assertEquals("foo=123", instance.nextPair());
+        assertEquals("bar=123", instance.nextPair());
+        assertEquals(null, instance.nextPair());
+        
+    } 
+    
+    public void testIssue211686() {
+        PropertySplitter instance = new PropertySplitter("-Dmaven.home=\"C:\\Program Files\\NetBeans Dev 201204240400\\java\\maven\" -Xms10m -classpath %classpath test.mavenproject17.App");
+        instance.setSeparator(' ');
+        assertEquals("-Dmaven.home=\"C:\\Program Files\\NetBeans Dev 201204240400\\java\\maven\"", instance.nextPair());
+
+        instance = new PropertySplitter("-Dmaven.home='C:\\Program Files\\NetBeans Dev 201204240400\\java\\maven' -Xms10m -classpath %classpath test.mavenproject17.App");
+        instance.setSeparator(' ');
+        assertEquals("-Dmaven.home='C:\\Program Files\\NetBeans Dev 201204240400\\java\\maven'", instance.nextPair());
+        
+        // and embed the double quotes in quotes..
+        instance = new PropertySplitter("-Dmaven.home='C:\\Program Files\\NetBeans Dev 2012\" \"04240400\\java\\maven' -Xms10m -classpath %classpath test.mavenproject17.App");
+        instance.setSeparator(' ');
+        assertEquals("-Dmaven.home='C:\\Program Files\\NetBeans Dev 2012\" \"04240400\\java\\maven'", instance.nextPair());
+        
+        // and embed the quotes in double quotes..
+        instance = new PropertySplitter("-Dmaven.home='C:\\Program Files\\NetBeans Dev 2012\" \"04240400\\java\\maven' -Xms10m -classpath %classpath test.mavenproject17.App");
+        instance.setSeparator(' ');
+        assertEquals("-Dmaven.home='C:\\Program Files\\NetBeans Dev 2012\" \"04240400\\java\\maven'", instance.nextPair());
+
     }
 
 }

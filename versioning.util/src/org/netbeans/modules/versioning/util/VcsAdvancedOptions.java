@@ -90,11 +90,10 @@ public class VcsAdvancedOptions extends OptionsPanelController {
             AdvancedOption generalOption = null;
             while (it.hasNext()) {
                 AdvancedOption option = it.next();
-                if ("org.netbeans.modules.versioning.options.GeneralAdvancedOption".equals(option.getClass().getName())) {
+                if ("org.netbeans.modules.versioning.ui.options.GeneralAdvancedOption".equals(option.getClass().getName())) {
                     generalOption = option;
-                } else {
-                    registerOption(option, masterLookup);
                 }
+                registerOption(option, masterLookup);
             }
             if (generalOption != null) {
                 registerOption(generalOption, masterLookup);

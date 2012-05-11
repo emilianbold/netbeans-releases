@@ -50,9 +50,20 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFriend;
+import org.netbeans.modules.cnd.api.model.CsmInheritance;
+import org.netbeans.modules.cnd.api.model.CsmMember;
+import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.CsmScopeElement;
+import org.netbeans.modules.cnd.api.model.CsmTypedef;
+import org.netbeans.modules.cnd.api.model.CsmVariable;
+import org.netbeans.modules.cnd.navigation.hierarchy.LoadingNode;
 import org.netbeans.modules.cnd.navigation.services.HierarchyModel;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.CharSequences;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -60,6 +71,7 @@ import org.openide.nodes.Node;
  */
 public class HierarchyChildren extends Children.Keys<CsmClass> {
     private static Comparator<CsmClass> COMARATOR = new MyComparator();
+    private static final RequestProcessor RP = new RequestProcessor(HierarchyChildren.class.getName(), 1);
     
     private CsmClass object;
     private HierarchyModel model;
@@ -75,29 +87,22 @@ public class HierarchyChildren extends Children.Keys<CsmClass> {
     public void dispose(){
         if (isInited) {
             isInited = false;
-            setKeys(new CsmClass[0]);
+            resetKeys(Collections.<CsmClass>emptyList());
         }
     }
     
-    private synchronized void resetKeys(){
-        if (object.isValid()) {
-            Collection<CsmClass> set = model.getHierarchy(object);
-            if (set != null && set.size() > 0) {
-                List<CsmClass> list = new ArrayList<CsmClass>(set);
-                Collections.sort(list, COMARATOR);
-                setKeys(list);
-                return;
-            }
+    private synchronized void resetKeys(List<CsmClass> list) {
+        if (list.size() > 1) {
+            Collections.sort(list, COMARATOR);
         }
-        setKeys(new CsmClass[0]);
+        setKeys(list);
     }
     
     @Override
     protected Node[] createNodes(CsmClass cls) {
-        Node node = null;
-        Collection<CsmClass> set = model.getHierarchy(cls);
-        if (set == null || set.isEmpty()) {
-            node = new HierarchyNode(cls, Children.LEAF, model, false);
+        Node node;
+        if (cls instanceof DummyClass) {
+            node = new LoadingNode();
         } else {
             if (checkRecursion(cls)) {
                 node = new HierarchyNode(cls, Children.LEAF, model, true);
@@ -125,7 +130,23 @@ public class HierarchyChildren extends Children.Keys<CsmClass> {
     @Override
     protected void addNotify() {
         isInited = true;
-        resetKeys();
+        if (!object.isValid()) {
+            resetKeys(Collections.<CsmClass>emptyList());
+        } else {
+            resetKeys(Collections.<CsmClass>singletonList(new DummyClass()));
+            RP.post(new Runnable(){
+                @Override
+                public void run() {
+                    Collection<CsmClass> set = model.getHierarchy(object);
+                    if (set != null && set.size() > 0) {
+                        List<CsmClass> list = new ArrayList<CsmClass>(set);
+                        resetKeys(list);
+                    } else {
+                        resetKeys(Collections.<CsmClass>emptyList());
+                    }
+                }
+            });
+        }
         super.addNotify();
     }
     
@@ -142,5 +163,104 @@ public class HierarchyChildren extends Children.Keys<CsmClass> {
             String n2 = o2.getName().toString();
             return n1.compareTo(n2);
         }
+    }
+    
+    private static final class DummyClass implements CsmClass {
+
+        @Override
+        public Collection<CsmMember> getMembers() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Collection<CsmFriend> getFriends() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Collection<CsmInheritance> getBaseClasses() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public int getLeftBracketOffset() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Collection<CsmTypedef> getEnclosingTypedefs() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Collection<CsmVariable> getEnclosingVariables() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Kind getKind() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public CharSequence getUniqueName() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public CharSequence getQualifiedName() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public CharSequence getName() {
+            return CharSequences.empty();
+        }
+
+        @Override
+        public CsmScope getScope() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean isValid() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public CsmFile getContainingFile() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public int getStartOffset() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public int getEndOffset() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Position getStartPosition() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Position getEndPosition() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public CharSequence getText() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Collection<CsmScopeElement> getScopeElements() {
+            throw new UnsupportedOperationException();
+        }
+        
     }
 }

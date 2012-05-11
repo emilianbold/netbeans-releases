@@ -172,7 +172,7 @@ public class JavaFXCSSModule extends CssEditorModule implements CssModule {
 
     @Override
     public String getSpecificationURL() {
-        return "http://docs.oracle.com/javafx/2.0/api/javafx/scene/doc-files/cssref.html"; // NOI18N
+        return "http://docs.oracle.com/javafx/2/api/javafx/scene/doc-files/cssref.html"; // NOI18N
     }
     
 }

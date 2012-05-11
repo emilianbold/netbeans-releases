@@ -98,7 +98,7 @@ public class ButtonCellEditor extends DefaultCellEditor {
             if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
                 JTable table = (JTable) cell.getParent();
                 table.getCellEditor().cancelCellEditing();
-                KeymapPanel.getModel().update();
+                ((KeymapPanel)table.getParent().getParent().getParent()).getModel().update();
             }
         }
     };

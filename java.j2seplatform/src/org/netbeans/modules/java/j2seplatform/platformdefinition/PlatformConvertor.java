@@ -84,6 +84,8 @@ import org.netbeans.modules.java.j2seplatform.wizard.J2SEWizardIterator;
  * @author Svata Dedic
  */
 public class PlatformConvertor implements Environment.Provider, InstanceCookie.Of, PropertyChangeListener, Runnable, InstanceContent.Convertor<Class<Node>,Node> {
+    
+    private static final Logger LOG = Logger.getLogger(PlatformConvertor.class.getName());
 
     private static final String CLASSIC = "classic";        //NOI18N
     private static final String MODERN = "modern";          //NOI18N
@@ -371,7 +373,16 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
     private static String getCompilerType (JavaPlatform platform) {
         assert platform != null;
         String prop = platform.getSystemProperties().get("java.specification.version"); //NOI18N
-        assert prop != null;
+        if (prop == null) {
+            LOG.log(
+               Level.INFO,
+               "Broken platform system properties, no java.specification.version",    //NOI18N
+               new IllegalArgumentException(
+                    String.format("platform: %s System Properties: %s",               //NOI18N
+                        platform.getDisplayName(),
+                        platform.getSystemProperties())));
+            return MODERN;
+        }
         SpecificationVersion specificationVersion = new SpecificationVersion (prop);
         SpecificationVersion jdk13 = new SpecificationVersion("1.3");   //NOI18N
         int c = specificationVersion.compareTo (jdk13);

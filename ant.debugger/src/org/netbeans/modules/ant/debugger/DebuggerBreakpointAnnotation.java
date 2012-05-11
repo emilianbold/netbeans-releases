@@ -79,26 +79,28 @@ public class DebuggerBreakpointAnnotation extends BreakpointAnnotation {
         attach (annotatable);
     }
     
+    @Override
     public String getAnnotationType () {
         return type;
     }
     
+    @Override
     public String getShortDescription () {
         if (type == BREAKPOINT_ANNOTATION_TYPE)
-            return NbBundle.getBundle (DebuggerBreakpointAnnotation.class).getString 
-                ("TOOLTIP_BREAKPOINT"); // NOI18N
+            return NbBundle.getMessage 
+                (DebuggerBreakpointAnnotation.class, "TOOLTIP_BREAKPOINT");
         else 
         if (type == DISABLED_BREAKPOINT_ANNOTATION_TYPE)
-            return NbBundle.getBundle (DebuggerBreakpointAnnotation.class).getString 
-                ("TOOLTIP_DISABLED_BREAKPOINT"); // NOI18N
+            return NbBundle.getMessage 
+                (DebuggerBreakpointAnnotation.class, "TOOLTIP_DISABLED_BREAKPOINT");
         else 
         if (type == CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE)
-            return NbBundle.getBundle (DebuggerBreakpointAnnotation.class).getString 
-                ("TOOLTIP_CONDITIONAL_BREAKPOINT"); // NOI18N
+            return NbBundle.getMessage 
+                (DebuggerBreakpointAnnotation.class, "TOOLTIP_CONDITIONAL_BREAKPOINT");
         else
         if (type == DISABLED_CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE)
-            return NbBundle.getBundle (DebuggerBreakpointAnnotation.class).getString 
-                ("TOOLTIP_DISABLED_CONDITIONAL_BREAKPOINT"); // NOI18N
+            return NbBundle.getMessage 
+                (DebuggerBreakpointAnnotation.class, "TOOLTIP_DISABLED_CONDITIONAL_BREAKPOINT");
         return null;
     }
 

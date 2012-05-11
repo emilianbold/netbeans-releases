@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.prefs.AbstractPreferences;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
@@ -145,7 +146,8 @@ public abstract class NbPreferences extends AbstractPreferences implements  Chan
 
     private String[] getKeysSpi() throws BackingStoreException {
         synchronized (lock) {
-            return properties().keySet().toArray(new String[0]);
+            Set<String> keySet = properties().keySet();
+            return keySet.toArray(new String[keySet.size()]);
         }
     }
     

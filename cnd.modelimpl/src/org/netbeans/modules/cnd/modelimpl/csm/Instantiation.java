@@ -1032,6 +1032,9 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
     }
 
     public static CsmType createType(CsmType type, CsmInstantiation instantiation) {
+        if (type == null) {
+            throw new NullPointerException("no type for " + instantiation); // NOI18N
+        }
 //        System.err.println("Instantiation.createType for " + type + " with instantiation " + instantiation);
         if (CsmKindUtilities.isTemplateParameterType(type)) {
             CsmType instantiatedType = resolveTemplateParameterType(type, instantiation);

@@ -84,6 +84,7 @@ import org.openide.actions.CutAction;
 import org.openide.actions.DeleteAction;
 import org.openide.actions.FileSystemAction;
 import org.openide.actions.PasteAction;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
@@ -298,10 +299,14 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
             if (fo == null /*paranoia*/ || !fo.isValid() || !fo.isFolder()) {
                 return;
             }
-            try {
-                fo.rename(fo.lock(), newName, null);
+            FileLock lock = null;
+            try {                
+                lock = fo.lock();
+                fo.rename(lock, newName, null);                
             } catch (IOException ioe) {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(ioe.getMessage()));
+            } finally {
+                if (lock != null) lock.releaseLock();
             }
             return;
         }

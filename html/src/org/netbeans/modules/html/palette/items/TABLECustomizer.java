@@ -339,7 +339,7 @@ public class TABLECustomizer extends javax.swing.JPanel {
         int rows = ((Integer)jSpinner1.getValue()).intValue();
         int cols = ((Integer)jSpinner2.getValue()).intValue();
         
-        boolean tooMuch = rows * cols > CELLS_LIMIT;
+        boolean tooMuch = Math.max(rows * cols, cols) > CELLS_LIMIT;
         org.openide.awt.Mnemonics.setLocalizedText(jLabel9, tooMuch ? org.openide.util.NbBundle.getMessage(TABLECustomizer.class, "TABLECustomizer.jLabel9.text") : ""); // NOI18N
     }
     

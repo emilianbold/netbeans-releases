@@ -64,6 +64,7 @@ import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
 import org.netbeans.modules.maven.j2ee.SessionContent;
 import org.netbeans.modules.maven.j2ee.Wrapper;
 import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -150,6 +151,12 @@ public abstract class BaseRunCustomizer extends JPanel implements ApplyChangesCu
         boolean enabled = cos == null || "all".equalsIgnoreCase(cos) || "app".equalsIgnoreCase(cos); // NOI18N
         dosCheckBox.setEnabled(enabled);
         dosDescription.setEnabled(enabled);
+
+        if (enabled) {
+            dosDescription.setText(NbBundle.getMessage(CustomizerRunWeb.class, "CustomizerRunWeb.dosDescription.text"));
+        } else {
+            dosDescription.setText(NbBundle.getMessage(CustomizerRunWeb.class, "CustomizerRunWeb.dosDescriptionIfDisabled.text"));
+        }
     }
     
     protected void loadServerModel(JComboBox serverModel, J2eeModule.Type type, Profile profile) {

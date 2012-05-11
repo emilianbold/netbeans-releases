@@ -243,35 +243,39 @@ public final class Exceptions extends Object {
         private static Map<Throwable, AnnException> extras = new WeakHashMap<Throwable, AnnException>();
 
         static AnnException findOrCreate(Throwable t, boolean create) {
-            if (t == null) {
-                return null;
+            AnnException ann;
+            try {
+                ann = findOrCreate0(t, create);
+                if (ann != null) {
+                    return ann;
+                }
+            } catch (IllegalStateException ex) {
+                assert create;
+                ann = extras.get(t);
+                if (ann == null) {
+                    ann = new AnnException(t.getMessage());
+                    ann.initCause(t);
+                    LOG.log(Level.FINE, "getCause was null yet initCause failed for " + t, ex);
+                    extras.put(t, ann);
+                }
             }
+            return ann;
+        }
+        private static AnnException findOrCreate0(Throwable t, boolean create) {
             if (t instanceof AnnException) {
-                return (AnnException)t;
+                return (AnnException) t;
             }
             if (t.getCause() == null) {
                 if (create) {
-                    IllegalStateException x = null;
-                    try {
-                        t.initCause(new AnnException());
-                        AnnException ann = (AnnException)t.getCause();
-                        if (ann != null) {
-                            return ann;
-                        }
-                    } catch (IllegalStateException ex) {
-                        x = ex;
+                    final AnnException ae = new AnnException();
+                    t.initCause(ae);
+                    if (ae != t.getCause()) {
+                        throw new IllegalStateException();
                     }
-                    AnnException ann = extras.get(t);
-                    if (ann == null) {
-                        ann = new AnnException(t.getMessage());
-                        ann.initCause(t);
-                        LOG.log(Level.FINE, "getCause was null yet initCause failed for " + t, x);
-                        extras.put(t, ann);
-                    }
-                    return ann;
                 }
+                return (AnnException) t.getCause();
             }
-            return findOrCreate(t.getCause(), create);
+            return findOrCreate0(t.getCause(), create);
         }
 
         public synchronized void addRecord(LogRecord rec) {

@@ -93,7 +93,7 @@ public final class BugtrackingFactory<R, Q, I> {
     public void openQuery(Repository repository, Q q) {
         Query query = getQuery(repository, q);
         if(query != null) {
-            query.open(false);
+            query.open(Query.QueryMode.SHOW_ALL);
         }
     }
     

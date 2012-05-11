@@ -72,7 +72,7 @@ public class FindUsagesTestCase extends RefactoringTestCase {
     public static final int FIND_DIRECT_SUBTYPES = 1 << 3;
     public static final int FIND_ALL_SUBTYPES = 1 << 4;
     public static final int FIND_OVERRIDING = 1 << 5;
-    public static final int SEARCH_FROM_BASECLASS = 1 << 6;
+    public static final int FIND_OVERRIDING_AND_USAGES= 1 << 6;
     public static final int SEARCH_IN_ALL_PROJ = 1 << 7;
     public static final int SEARCH_ACTUAL_PROJ = 1 << 8;
     public static final int FIND_USAGES_METHOD = 1 << 9;
@@ -117,10 +117,10 @@ public class FindUsagesTestCase extends RefactoringTestCase {
             findUsagesClassOperator.getFindUsages().setSelected(true);
         }
         if ((modifiers & FIND_USAGES_METHOD) != 0) {
-            findUsagesClassOperator.getFindMethodUsage().setSelected(true);
+            findUsagesClassOperator.getFindUsages().setSelected(true);
         }
         if ((modifiers & NOT_FIND_USAGES_METHOD) != 0) {
-            findUsagesClassOperator.getFindMethodUsage().setSelected(false);
+            findUsagesClassOperator.getFindUsages().setSelected(false);
         }
         if ((modifiers & FIND_ALL_SUBTYPES) != 0) {
             findUsagesClassOperator.getFindAllSubtypes().setSelected(true);
@@ -131,8 +131,8 @@ public class FindUsagesTestCase extends RefactoringTestCase {
         if ((modifiers & FIND_OVERRIDING) != 0) {
             findUsagesClassOperator.getFindOverridding().setSelected(true);
         }
-        if ((modifiers & SEARCH_FROM_BASECLASS) != 0) {
-            findUsagesClassOperator.getFindFromBaseClass().setSelected(true);
+        if ((modifiers & FIND_OVERRIDING_AND_USAGES) != 0) {
+            findUsagesClassOperator.getFindMethodUsageAndOverriding().setSelected(true);
         }
         if ((modifiers & NOT_SEARCH_FROM_BASECLASS) != 0) {
             findUsagesClassOperator.getFindFromBaseClass().setSelected(false);

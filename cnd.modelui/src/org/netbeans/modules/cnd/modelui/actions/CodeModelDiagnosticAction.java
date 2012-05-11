@@ -69,6 +69,7 @@ import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.debug.CndDiagnosticProvider;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
@@ -190,7 +191,9 @@ public class CodeModelDiagnosticAction extends ProjectActionBase {
                 err.printf("dumping cnd diagnostics into %s\n", tmpFile);// NOI18N 
                 int i = 0;
                 for (CsmFile csmFile : files) {
-                    pw.printf("file [%d] [%s] of class %s\n", i++, csmFile.getAbsolutePath(), csmFile.getClass().getName());// NOI18N 
+                    pw.printf("file [%d] [version=%d] [%s] of class %s\n", i++,  // NOI18N
+                            CsmFileInfoQuery.getDefault().getFileVersion(csmFile),
+                            csmFile.getAbsolutePath(), csmFile.getClass().getName());
                 }
                 if (doc != null) {
                     DataObject dob = NbEditorUtilities.getDataObject(doc);

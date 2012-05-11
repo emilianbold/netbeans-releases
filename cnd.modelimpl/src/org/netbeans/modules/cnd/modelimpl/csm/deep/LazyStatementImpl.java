@@ -125,7 +125,10 @@ abstract public class LazyStatementImpl extends StatementBase implements CsmScop
         FileImpl file = (FileImpl) getContainingFile();
         TokenStream stream = file.getTokenStream(getStartOffset(), getEndOffset(), getFirstTokenID(), true);
         if (stream == null) {
-            Utils.LOG.log(Level.SEVERE, "Can\'t create compound statement: can\'t create token stream for file {0}", file.getAbsolutePath()); // NOI18N
+            int startOffset = getStartOffset();
+            int[] lineColumn = file.getLineColumn(startOffset);
+            Utils.LOG.log(Level.SEVERE, "Can''t create compound statement: can''t create token stream for file {0} at {1}:{2}", // NOI18N
+                    new Object[] {file.getAbsolutePath(), lineColumn[0], lineColumn[1]});
             return false;
         } else {
             CsmParserProvider.CsmParserResult result = resolveLazyStatement(stream);

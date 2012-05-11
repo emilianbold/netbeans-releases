@@ -80,6 +80,7 @@ public class ReleaseVersionError implements POMErrorFixProvider {
                 true, Configuration.HintSeverity.WARNING);
     }
 
+    @Override
     public List<ErrorDescription> getErrorsForDocument(POMModel model, Project prj) {
         assert model != null;
         List<ErrorDescription> toRet = new ArrayList<ErrorDescription>();
@@ -159,10 +160,12 @@ public class ReleaseVersionError implements POMErrorFixProvider {
         }
     }
 
+    @Override
     public JComponent getCustomizer(Preferences preferences) {
         return new ReleaseVersionErrorCustomizer(preferences);
     }
 
+    @Override
     public Configuration getConfiguration() {
         return configuration;
     }

@@ -326,7 +326,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
 
     private void onTemplate() {
         TemplateSelector ts = new TemplateSelector(HgModuleConfig.getDefault().getPreferences());
-        if(ts.show()) {
+        if(ts.show("org.netbeans.modules.mercurial.ui.commit.TemplatePanel")) { //NOI18N
             messageTextArea.setText(ts.getTemplate());
         }
     }

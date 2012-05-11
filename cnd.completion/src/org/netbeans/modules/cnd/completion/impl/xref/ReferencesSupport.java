@@ -326,15 +326,28 @@ public final class ReferencesSupport {
             csmItem = parameter;
             
             if (csmItem == null && CsmKindUtilities.isVariableDeclaration(objUnderOffset)) {
-                // turned off, due to the problems like
-                // Cpu MyCpu(type, 0, amount);
-                // initialization part is part of variable => we need info about name position exactly
-                CsmVariable var = (CsmVariable) objUnderOffset;
-                if (var.getName().length() > 0 && tokenUnderOffset.text().toString().equals(var.getName().toString()) && !var.isExtern()) {
-                    // not work yet for arrays declarations IZ#130678
-                    // not work yet for elements with init value IZ#130684
-                    if ((var.getInitialValue() == null) && (var.getType() != null) && (var.getType().getArrayDepth() == 0)) {
-                        csmItem = var;
+                if (tokenUnderOffset == null && doc instanceof AbstractDocument) {
+                    ((AbstractDocument) doc).readLock();
+                    try {
+                        tokenUnderOffset = CndTokenUtilities.getTokenCheckPrev(doc, offset);
+                    } finally {
+                        ((AbstractDocument) doc).readUnlock();
+                    }
+                }
+                if (tokenUnderOffset != null) {
+                    // turned off, due to the problems like
+                    // Cpu MyCpu(type, 0, amount);
+                    // initialization part is part of variable => we need info about name position exactly
+                    CsmVariable var = (CsmVariable) objUnderOffset;
+                    CharSequence name = var.getName();
+                    if (name != null) {
+                        if (name.length() > 0 && tokenUnderOffset.text().toString().equals(name.toString()) && !var.isExtern()) {
+                            // not work yet for arrays declarations IZ#130678
+                            // not work yet for elements with init value IZ#130684
+                            if ((var.getInitialValue() == null) && (var.getType() != null) && (var.getType().getArrayDepth() == 0)) {
+                                csmItem = var;
+                            }
+                        }
                     }
                 }
             }

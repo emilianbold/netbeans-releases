@@ -63,7 +63,6 @@ import java.io.StringWriter;
 
 import java.lang.reflect.InvocationTargetException;
 
-import java.text.MessageFormat;
 
 import java.util.*;
 import javax.accessibility.AccessibleRole;
@@ -670,18 +669,15 @@ final class PropUtils {
         if (locMsg != null
             && (throwable.getLocalizedMessage() != throwable.getMessage())) { //XXX See issue 34569
 
-            String msg = MessageFormat.format(
-                    NbBundle.getMessage(PropUtils.class, "FMT_ErrorSettingProperty"), new Object[] { newValue, title }
-                ); //NOI18N
+            String msg = NbBundle.getMessage(
+                    PropUtils.class, "FMT_ErrorSettingProperty", newValue, title); //NOI18N
             UIException.annotateUser(throwable, msg,
                                      throwable.getLocalizedMessage(), throwable,
                                      new Date());
         } else if (throwable instanceof NumberFormatException) {
             //Handle NFE's from the core sun.beans property editors w/o raising stack traces
             UIException.annotateUser(throwable, throwable.getMessage(),
-                                     MessageFormat.format(NbBundle.getMessage(PropUtils.class,
-                                                                              "FMT_BAD_NUMBER_FORMAT"),
-                                                          new Object[]{newValue}),
+                                     NbBundle.getMessage(PropUtils.class, "FMT_BAD_NUMBER_FORMAT", newValue),
                                      null, null);
         }
 
@@ -714,18 +710,15 @@ final class PropUtils {
 
             if (throwable instanceof NumberFormatException) {
                 //Handle NFE's from the core sun.beans property editors w/o raising stack traces
-                return MessageFormat.format(
-                    NbBundle.getMessage(PropUtils.class, "FMT_BAD_NUMBER_FORMAT"), //NOI18N
-                    new Object[] { newValue }
-                );
+                return NbBundle.getMessage(
+                    PropUtils.class, "FMT_BAD_NUMBER_FORMAT", newValue);
             } 
             //No localized message could be found, log the exception
             //ErrorManager.getDefault().annotate(throwable, ErrorManager.WARNING, null, null, null, null);
 
             //punt
-            return MessageFormat.format(
-                NbBundle.getMessage(PropUtils.class, "FMT_CannotUpdateProperty"), new Object[] { newValue, title }
-            ); //NOI18N
+            return NbBundle.getMessage(
+                PropUtils.class, "FMT_CannotUpdateProperty", newValue, title); //NOI18N
         } catch (Exception e) {
             //We ABSOLUTELY cannot let this method throw exceptions or it will
             //quietly endlessly 

@@ -128,5 +128,334 @@ public class GrammarResolverListenerTest extends CssTestBase {
     }
     
     
-   
+    public void testFont2() {
+        PropertyModel p = CssModuleSupport.getPropertyModel("font");
+        PropertyValue pv = assertResolve(p.getGrammarElement(), "20px / 20px fantasy");
+        
+        List<ResolvedToken> resolved = pv.getResolvedTokens();
+        assertNotNull(resolved);
+        assertEquals(4, resolved.size());
+        
+        Iterator<ResolvedToken> itr = resolved.iterator();
+        assertEquals("[S0|font]/[S1]/[L2]/[S7|font-size]/!length (20px)", itr.next().toString());
+        assertEquals("[S0|font]/[S1]/[L2]/[L10]// (/)", itr.next().toString());
+        assertEquals("[S0|font]/[S1]/[L2]/[L10]/[S11|line-height]/!length (20px)", itr.next().toString());
+        assertEquals("[S0|font]/[S1]/[L2]/[S12|font-family]/[L13]/[S14]/[S17|@generic-family]/fantasy (fantasy)", itr.next().toString());
+        
+    }
+
+    public void testZeroMultiplicity() {
+        String rule = "[marek]?  [jitka]?  [ovecka]";
+        String text = "ovecka";
+        PropertyValue csspv = new PropertyValue(rule, text);
+        assertTrue(csspv.isResolved());
+    }
+
+    public void testFontFamily() {
+        PropertyModel p = CssModuleSupport.getPropertyModel("font-family");
+
+        assertTrue(new PropertyValue(p, "serif").isResolved());
+        assertTrue(new PropertyValue(p, "cursive, serif").isResolved());
+        
+        //resolves since the "cursive serif" can be considered as unquoted custom family name
+        assertTrue(new PropertyValue(p, "cursive serif").isResolved());
+
+    }
+
+    public void testFontFamilyWithQuotedValue() {
+        PropertyModel p = CssModuleSupport.getPropertyModel("font-family");
+        PropertyValue csspv = new PropertyValue(p, "'Times New Roman',serif");
+//        dumpResult(csspv);
+        assertTrue(csspv.isResolved());
+    }
+
+    public void testFontSize() {
+        PropertyModel p = CssModuleSupport.getPropertyModel("font-size");
+        String text = "xx-small";
+
+        PropertyValue csspv = new PropertyValue(p, text);
+
+        assertTrue(csspv.isResolved());
+    }
+
+    public void testBorder() {
+        PropertyModel p = CssModuleSupport.getPropertyModel("border");
+        String text = "20px double";
+        PropertyValue csspv = new PropertyValue(p, text);
+        assertTrue(csspv.isResolved());
+    }
+
+    public void testMarginWidth() {
+        PropertyModel p = CssModuleSupport.getPropertyModel("margin");
+        String text = "20px 10em 30px 30em";
+        PropertyValue csspv = new PropertyValue(p, text);
+        assertTrue(csspv.isResolved());
+    }
+
+    public void testPaddingWidth() {
+        PropertyModel p = CssModuleSupport.getPropertyModel("padding");
+        String text = "20px 10em 30px 30em";
+        PropertyValue csspv = new PropertyValue(p, text);
+        assertTrue(csspv.isResolved());
+    }
+
+    public void testTimeUnit() {
+        PropertyModel p = CssModuleSupport.getPropertyModel("pause-after");
+        String text = "200ms";
+        PropertyValue csspv = new PropertyValue(p, text);
+        assertTrue(csspv.isResolved());
+
+        text = "200";
+        csspv = new PropertyValue(p, text);
+        assertFalse(csspv.isResolved());
+
+        text = "AAms";
+        csspv = new PropertyValue(p, text);
+        assertFalse(csspv.isResolved());
+
+    }
+
+    public void testFrequencyUnit() {
+        PropertyModel p = CssModuleSupport.getPropertyModel("pitch");
+        String text = "200kHz";
+        PropertyValue csspv = new PropertyValue(p, text);
+        assertTrue(csspv.isResolved());
+
+        text = "200";
+        csspv = new PropertyValue(p, text);
+        assertFalse(csspv.isResolved());
+
+        text = "AAHz";
+        csspv = new PropertyValue(p, text);
+        assertFalse(csspv.isResolved());
+
+    }
+
+    public void testIdentifierUnit() {
+        PropertyModel p = CssModuleSupport.getPropertyModel("counter-increment");
+        String text = "ovecka";
+        PropertyValue csspv = new PropertyValue(p, text);
+        assertTrue(csspv.isResolved());
+
+        text = "10ovecek";
+        csspv = new PropertyValue(p, text);
+        assertFalse(csspv.isResolved());
+
+        text = "-beranek";
+        csspv = new PropertyValue(p, text);
+        assertTrue(csspv.isResolved());
+
+    }
+
+    public void testBackgroundImageURL() {
+        PropertyModel p = CssModuleSupport.getPropertyModel("background-image");
+        String text = "url('/images/v6/tabs-bg.png')";
+        PropertyValue csspv = new PropertyValue(p, text);
+
+//        dumpResult(csspv);
+
+        assertTrue(csspv.isResolved());
+
+        text = "url'/images/v6/tabs-bg.png')";
+        csspv = new PropertyValue(p, text);
+        assertFalse(csspv.isResolved());
+
+        text = "ury('/images/v6/tabs-bg.png')";
+        csspv = new PropertyValue(p, text);
+        assertFalse(csspv.isResolved());
+
+    }
+
+    public void testAbsoluteLengthUnits() {
+        PropertyModel p = CssModuleSupport.getPropertyModel("font");
+        String text = "12px/14cm sans-serif";
+        PropertyValue csspv = new PropertyValue(p, text);
+        assertTrue(csspv.isResolved());
+    }
+
+    public void testUnquotedURL() {
+        PropertyModel p = CssModuleSupport.getPropertyModel("@uri");
+        String text = "url(http://www.redballs.com/redball.png)";
+        PropertyValue csspv = new PropertyValue(p, text);
+        assertTrue(csspv.isResolved());
+    }
+
+    public void testBackroundImage() {
+        PropertyModel p = CssModuleSupport.getPropertyModel("background-image");
+        assertNotResolve(p.getGrammar(), "");
+    }
+
+    public void testBackroundPositionOrder() {
+        // TODO: fix #142254 and enable this test again
+        PropertyModel p = CssModuleSupport.getPropertyModel("@bg-position");
+        assertResolve(p.getGrammar(), "center top");
+    }
+
+    public void testBorderColor() {
+        PropertyModel p = CssModuleSupport.getPropertyModel("border-color");
+        assertResolve(p.getGrammar(), "red yellow black yellow");
+        assertResolve(p.getGrammar(), "red yellow black");
+        assertResolve(p.getGrammar(), "red yellow");
+        assertResolve(p.getGrammar(), "red");
+
+        assertNotResolve(p.getGrammar(), "xxx");
+        assertNotResolve(p.getGrammar(), "");
+    }
+
+    public void testIssue185995() {
+        PropertyModel p = CssModuleSupport.getPropertyModel("border-color");
+        assertResolve(p.getGrammar(), "transparent transparent");
+    }
+
+    public void testBorder_Top_Style() {
+        PropertyModel p = CssModuleSupport.getPropertyModel("border-top-style");
+
+        PropertyValue csspv = new PropertyValue(p, "dotted dotted dashed dashed");
+        assertFalse(csspv.isResolved());
+
+        csspv = new PropertyValue(p, "dotted");
+        assertTrue(csspv.isResolved());
+
+    }
+
+    public void testCaseSensitivity() {
+        PropertyModel p = CssModuleSupport.getPropertyModel("azimuth");
+        String text = "behind";
+        PropertyValue csspv = new PropertyValue(p, text);
+        assertTrue(csspv.isResolved());
+
+        text = "BEHIND";
+        csspv = new PropertyValue(p, text);
+        assertTrue(csspv.isResolved());
+
+    }
+
+    public void testJindrasCase() {
+        String g = "[ [ x || y ] || b";
+
+        assertResolve(g, "x");
+        assertResolve(g, "x y");
+        assertResolve(g, "y");
+        assertResolve(g, "y x");
+        assertResolve(g, "y x b");
+        assertResolve(g, "x b");
+        assertResolve(g, "y b");
+        assertResolve(g, "y x b");
+
+        assertNotResolve(g, "x b y");
+    }
+    
+    public void testContentFailure() {
+        String g = "[ uri , ]* normal";
+        
+        assertResolve(g, "normal");
+        assertResolve(g, "uri, normal");
+        assertResolve(g, "uri, uri, normal");
+    }
+    
+    public void testCase4() {
+         String grammar2 = "[ a b ] | [ a c ]";
+         assertNotResolve(grammar2, "a");
+    }
+    
+    public void testMultiplicityOfList() {
+        String g = " [ a || b ]*";
+        
+        assertResolve(g, "a");
+        assertResolve(g, "a b");
+        assertResolve(g, "a b a");
+    }
+    
+    public void testAllGroup() {
+        String g = "a && b";
+        
+        assertResolve(g, "a b");
+        assertResolve(g, "b a");
+        
+        assertNotResolve(g, "");
+        assertNotResolve(g, "a");
+        assertNotResolve(g, "b");
+        assertNotResolve(g, "b b");
+        assertNotResolve(g, "a a");
+        assertNotResolve(g, "x");
+        assertNotResolve(g, "a x");
+        assertNotResolve(g, "x x b");
+    }
+    
+    public void testAllGroupComplex() {
+        String g = "a [ a && b ] b";        
+        assertResolve(g, "a a b b");
+        assertResolve(g, "a b a b");        
+    }
+
+    public void testAllGroupComplex2() {
+        String g = "a [ a && b ]? b";        
+        assertResolve(g, "a a b b");
+        assertResolve(g, "a b a b");        
+        assertResolve(g, "a b");        
+        
+        assertNotResolve(g, "a a b");        
+        assertNotResolve(g, "a b b");        
+    }
+    
+    public void testAllGroupComplex3() {
+        String g = "[ a && b ]*";
+        assertResolve(g, "");
+        assertResolve(g, "a b a b a b");
+        assertResolve(g, "b a a b");        
+        assertResolve(g, "b a");        
+        
+        assertNotResolve(g, "a b b");        
+        assertNotResolve(g, "b a a b a");        
+    }
+ 
+    public void testAllGroupComplex4() {
+        String g = "a && c?";
+        assertResolve(g, "a");
+        assertResolve(g, "a c");
+        assertResolve(g, "c a");
+    }
+    
+    public void testBackground() {
+        PropertyModel pm = CssModuleSupport.getPropertyModel("background");
+        assertResolve(pm.getGrammarElement(), "url(images/shadow.gif) no-repeat bottom right");
+    }
+    
+    /*
+    //Bug 206035 - Incorrect background property value validation/completion
+    public void testBackground2() {
+        PropertyModel pm = CssModuleSupport.getPropertyModel("background");
+        assertResolve(pm.getGrammarElement(), "#fff url(\"../images/google\") no-repeat center left");
+    }
+    
+    public void testURI() {
+        PropertyModel pm = CssModuleSupport.getPropertyModel("@uri");
+        assertResolve(pm.getGrammarElement(), "url(images/google)");
+        assertResolve(pm.getGrammarElement(), "url(../images/google)");        
+    }
+    
+    public void testBgPosition() {
+        PropertyModel pm = CssModuleSupport.getPropertyModel("@bg-position");
+        assertResolve(pm.getGrammarElement(), "center left");
+    }
+    
+    public void testBgPositionDetail() {
+        PRINT_INFO_IN_ASSERT_RESOLVE = true;
+        GrammarResolver.setLogging(GrammarResolver.Log.DEFAULT, true);
+        
+        //the minimized grammar to reproduce the bg-position resolving problem
+        String grammar = "[ center | a ] && [ center | b ]";
+        
+        assertResolve(grammar, "center b");
+        assertResolve(grammar, "b center");
+        assertResolve(grammar, "a b");
+        assertResolve(grammar, "b a");
+        assertResolve(grammar, "center center");        
+        assertResolve(grammar, "a center");
+        
+        assertResolve(grammar, "center a"); //fails
+        
+    }
+    */
+
 }

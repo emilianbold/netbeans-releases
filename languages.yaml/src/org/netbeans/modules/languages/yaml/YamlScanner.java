@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.languages.yaml;
@@ -72,7 +72,7 @@ import org.openide.xml.XMLUtil;
 
 /**
  * Structure Scanner for YAML
- * 
+ *
  * @author Tor Norbye
  */
 public class YamlScanner implements StructureScanner {
@@ -108,9 +108,9 @@ public class YamlScanner implements StructureScanner {
             return Collections.emptyMap();
         }
 
-        Map<String,List<OffsetRange>> folds = new HashMap<String,List<OffsetRange>>();
+        Map<String, List<OffsetRange>> folds = new HashMap<String, List<OffsetRange>>();
         List<OffsetRange> codeblocks = new ArrayList<OffsetRange>();
-        folds.put("codeblocks", codeblocks); // NOI18N
+        folds.put("tags", codeblocks); // NOI18N
         BaseDocument doc = (BaseDocument) result.getSnapshot().getSource().getDocument(false);
 
         if (doc != null) {
@@ -207,7 +207,7 @@ public class YamlScanner implements StructureScanner {
         private static List<? extends StructureItem> initialize(YamlParserResult result, List<Node> roots) {
             // Really need IdentitySet or IdentityHashSet but there isn't one built in
             // or in our available libraries...
-            IdentityHashMap<Object,Boolean> seen = new IdentityHashMap<Object,Boolean>(100);
+            IdentityHashMap<Object, Boolean> seen = new IdentityHashMap<Object, Boolean>(100);
             //return new YamlStructureItem(root, null).getNestedItems();
             List<StructureItem> children = new ArrayList<StructureItem>();
             for (Node root : roots) {
@@ -219,7 +219,7 @@ public class YamlScanner implements StructureScanner {
         }
 
         @SuppressWarnings("unchecked")
-        private static void initializeChildren(YamlParserResult result, YamlStructureItem item, IdentityHashMap<Object,Boolean> seen, int depth) {
+        private static void initializeChildren(YamlParserResult result, YamlStructureItem item, IdentityHashMap<Object, Boolean> seen, int depth) {
             if (depth > 20) {
                 // Avoid boundless recursion in some yaml parse trees
                 // This should already be handled now with the seen map, but
@@ -251,11 +251,11 @@ public class YamlScanner implements StructureScanner {
 
                     Object key = entry.getKey();
                     if (key instanceof PositionedSequenceNode) {
-                        PositionedSequenceNode psn = (PositionedSequenceNode)key;
+                        PositionedSequenceNode psn = (PositionedSequenceNode) key;
                         Object keyValue = psn.getValue();
                         assert keyValue instanceof List;
                         @SuppressWarnings("unchecked")
-                        List<Node> list = (List<Node>)keyValue;
+                        List<Node> list = (List<Node>) keyValue;
                         for (Node o : list) {
                             //String childName = o.getValue().toString();
                             Object childValue = o.getValue();
@@ -268,10 +268,10 @@ public class YamlScanner implements StructureScanner {
                         }
                         Object entryValue = entry.getValue();
                         if (entryValue instanceof PositionedSequenceNode) {
-                            psn = (PositionedSequenceNode)entryValue;
+                            psn = (PositionedSequenceNode) entryValue;
                             keyValue = psn.getValue();
                             assert keyValue instanceof List;
-                            list = (List<Node>)keyValue;
+                            list = (List<Node>) keyValue;
                             for (Node o : list) {
                                 //String childName = o.getValue().toString();
                                 Object childValue = o.getValue();
@@ -283,8 +283,7 @@ public class YamlScanner implements StructureScanner {
                                 }
                             }
                         }
-                    } else {
-                        assert key instanceof PositionedScalarNode;
+                    } else if (key instanceof PositionedScalarNode) {
                         //ScalarNode scalar = (ScalarNode)key;
                         PositionedScalarNode scalar = (PositionedScalarNode) key;
                         String childName = scalar.getValue().toString();
@@ -297,7 +296,7 @@ public class YamlScanner implements StructureScanner {
                             // here foo is "empty" but I get a child of "" positioned at the beginning
                             // of "bar", which is wrong. In this case, don't include the child in the
                             // position bounds.
-                            if (child.getValue() instanceof ByteList && ((ByteList)child.getValue()).length() == 0) {
+                            if (child.getValue() instanceof ByteList && ((ByteList) child.getValue()).length() == 0) {
                                 e = result.convertByteToUtf8(((Positionable) scalar).getRange().end.offset);
                             }
                             children.add(new YamlStructureItem(child, childName,
@@ -311,7 +310,7 @@ public class YamlScanner implements StructureScanner {
                 Collections.sort(children);
             } else if (value instanceof List) {
                 @SuppressWarnings("unchecked")
-                List<Node> list = (List<Node>)value;
+                List<Node> list = (List<Node>) value;
 
                 List<YamlStructureItem> children = new ArrayList<YamlStructureItem>(list.size());
                 item.children = children;
@@ -340,7 +339,7 @@ public class YamlScanner implements StructureScanner {
                         // include it <<.
                         child.children = Collections.emptyList();
                     } else {
-                        initializeChildren(result, child, seen, depth+1);
+                        initializeChildren(result, child, seen, depth + 1);
                     }
                 }
             }
@@ -364,9 +363,8 @@ public class YamlScanner implements StructureScanner {
         }
 
         public int compareTo(YamlStructureItem other) {
-            return (int)(begin-other.begin);
+            return (int) (begin - other.begin);
         }
-
         //@Override
         //public String toString() {
         //    return "YamlStructureItem(" + name + ",begin=" + begin;

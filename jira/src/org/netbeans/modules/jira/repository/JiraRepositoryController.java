@@ -54,13 +54,11 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
-import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.api.Util;
+import org.netbeans.modules.bugtracking.api.RepositoryManager;
 import org.netbeans.modules.bugtracking.spi.RepositoryController;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
@@ -156,7 +154,7 @@ public class JiraRepositoryController implements RepositoryController, DocumentL
         // is name unique?
         Collection<Repository> repositories = null;
         if(repository.getTaskRepository() == null) {
-            repositories = Util.getRepositories(JiraConnector.ID);
+            repositories = RepositoryManager.getInstance().getRepositories(JiraConnector.ID);
             for (Repository rp : repositories) {
                 if(name.equals(rp.getDisplayName())) {
                     errorMessage = NbBundle.getMessage(JiraRepositoryController.class, "MSG_NAME_ALREADY_EXISTS");  // NOI18N

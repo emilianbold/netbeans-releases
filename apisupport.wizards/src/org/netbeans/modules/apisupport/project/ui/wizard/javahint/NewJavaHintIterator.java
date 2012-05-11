@@ -99,7 +99,6 @@ public class NewJavaHintIterator extends BasicWizardIterator {
         Map<String,String> replaceTokens = new HashMap<String,String>();
         replaceTokens.put("CLASS_NAME", className); // NOI18N
         replaceTokens.put("PACKAGE_NAME", model.getPackageName()); // NOI18N
-        replaceTokens.put("PACKAGE_NAME_UNDERSCORES", model.getPackageName().replace('.', '_')); // NOI18N
         replaceTokens.put("GENERATE_FIX", model.isDoFix() ? "true" : null); // NOI18N
         replaceTokens.put("DISPLAY_NAME", model.getDisplayName()); // NOI18N
         replaceTokens.put("DESCRIPTION", model.getDescription()); // NOI18N

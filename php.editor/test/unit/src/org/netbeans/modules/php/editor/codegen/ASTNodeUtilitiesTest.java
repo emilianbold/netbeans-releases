@@ -46,13 +46,13 @@ import java.util.Set;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.UserTask;
-import org.netbeans.modules.php.editor.nav.TestBase;
+import org.netbeans.modules.php.editor.nav.PHPNavTestBase;
 
 /**
  *
  * @author Andrei Badea
  */
-public class ASTNodeUtilitiesTest extends TestBase {
+public class ASTNodeUtilitiesTest extends PHPNavTestBase {
 
     public ASTNodeUtilitiesTest(String testName) {
         super(testName);

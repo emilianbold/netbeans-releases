@@ -88,7 +88,7 @@ public final class RepositoryUtils {
     /**
      * the version of the persistency mechanism
      */
-    private static int CURRENT_VERSION_OF_PERSISTENCY = 123;
+    private static int CURRENT_VERSION_OF_PERSISTENCY = 124;
 
     /** Creates a new instance of RepositoryUtils */
     private RepositoryUtils() {
@@ -371,6 +371,10 @@ public final class RepositoryUtils {
 
     static CharSequence getUnitName(int unitIndex) {
         return translator.getUnitName(unitIndex);
+    }
+
+    static CharSequence getUnitNameSafe(int unitIndex) {
+        return translator.getUnitNameSafe(unitIndex);
     }
 
     static int getFileIdByName(int unitId, CharSequence fileName) {

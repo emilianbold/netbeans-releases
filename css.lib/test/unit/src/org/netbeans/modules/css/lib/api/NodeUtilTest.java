@@ -75,13 +75,14 @@ public class NodeUtilTest extends NbTestCase {
     }
     
     public void test_getTrimmedNodeRange() {
+        String source = " hello! ";
+        //               012345678
         CommonToken token = new CommonToken(Css3Lexer.IDENT);
-        token.setText(" hello! ");
-        //             012345678
+        token.setText(source);
         token.setStartIndex(0);
         token.setStopIndex(7); //len - 1 -> points to last char not the end!
         
-        Node node = new TokenNode(token);
+        Node node = new TokenNode(source, token);
         
         assertEquals(" hello! ", node.image().toString());
         int[] result = NodeUtil.getTrimmedNodeRange(node);

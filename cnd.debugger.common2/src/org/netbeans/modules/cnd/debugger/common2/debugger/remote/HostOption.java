@@ -56,13 +56,13 @@ public class HostOption extends Option {
 
     public HostOption(String inName, String[] inValues,
 			   String inDefaultValue, boolean inIsEngineOption,
-			   int inType, boolean hasTooltip) {
+			   Type inType, boolean hasTooltip) {
 	super(inName, catalog, inValues, inDefaultValue, inIsEngineOption, inType,
 	      hasTooltip, false);
     }
 
     public HostOption(String inName, String inDefaultValue,
-                           boolean inIsEngineOption, int inType, boolean hasTip) {
+                           boolean inIsEngineOption, Type inType, boolean hasTip) {
         super(inName, catalog, null, inDefaultValue, inIsEngineOption, inType, hasTip, false);
     }
 
@@ -138,13 +138,13 @@ public class HostOption extends Option {
 				     Platform.Linux_x86.name() }, // NOI18N
 		       default_platform,  //default value
 		       false, // is engine option
-		       COMBO_BOX, true);	//type, hasToolTip
+		       Type.COMBO_BOX, true);	//type, hasToolTip
 
     public static final  HostOption HOST_PROP_LOCATION  =
 	new HostOption("studio_location", // NOI18N //name  
 		       null,
 		       false, // is engine option
-		       TEXT_AREA, true);  //type , hasToolTip
+		       Type.TEXT_AREA, true);  //type , hasToolTip
 		       // Until we have a remote file chooser
 		       // DIRECTORY, true);
 
@@ -154,13 +154,13 @@ public class HostOption extends Option {
 	new  HostOption("login_name", // NOI18N //name  
 			username,  // NOI18N 
 			false, //is engine option
-			TEXT_AREA, true);  //type , hasToolTip
+			Type.TEXT_AREA, true);  //type , hasToolTip
 
     public static final HostOption HOST_PROP_REMEMBER_PASSWORD  =
 	new  HostOption("remember_password", // NOI18N //name
 			"off",  // NOI18N
 			false, //is engine option
-			CHECK_BOX, true) {  //type , hasToolTip
+			Type.CHECK_BOX, true) {  //type , hasToolTip
 
 	    @Override
 	    protected boolean canWrite(OptionSet optionSet) {
@@ -176,7 +176,7 @@ public class HostOption extends Option {
 	new  HostOption("ssh_port", // NOI18N //name
 			"22",  // NOI18N
 			false, //is engine option
-			TEXT_AREA, true) {  //type , hasToolTip
+			Type.TEXT_AREA, true) {  //type , hasToolTip
 
 	    @Override
 	    public Validity getValidity(String text) {
@@ -194,7 +194,7 @@ public class HostOption extends Option {
 	new HostOption("host_name", // NOI18N //name  
 		       null,
 		       false, // is engine option
-		       TEXT_AREA, true) { //type , hasToolTip
+		       Type.TEXT_AREA, true) { //type , hasToolTip
 
 	    // override HostOption
 	    @Override

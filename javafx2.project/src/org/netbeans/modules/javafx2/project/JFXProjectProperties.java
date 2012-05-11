@@ -137,6 +137,7 @@ public final class JFXProjectProperties {
     public static final String RUN_IN_BROWSER = "javafx.run.inbrowser"; // NOI18N
     public static final String RUN_IN_BROWSER_PATH = "javafx.run.inbrowser.path"; // NOI18N
     public static final String RUN_IN_BROWSER_ARGUMENTS = "javafx.run.inbrowser.arguments"; // NOI18N
+    public static final String RUN_IN_BROWSER_UNDEFINED = "undefined"; // NOI18N
     public static final String RUN_AS = "javafx.run.as"; // NOI18N
 
     public static final String DEFAULT_APP_WIDTH = "800"; // NOI18N

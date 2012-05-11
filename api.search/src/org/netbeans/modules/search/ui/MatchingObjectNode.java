@@ -43,15 +43,26 @@ package org.netbeans.modules.search.ui;
 
 import java.awt.EventQueue;
 import java.awt.Image;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.modules.search.MatchingObject;
 import org.netbeans.modules.search.MatchingObject.InvalidityStatus;
 import org.openide.cookies.EditCookie;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -60,6 +71,7 @@ import org.openide.nodes.NodeListener;
 import org.openide.nodes.NodeMemberEvent;
 import org.openide.nodes.NodeReorderEvent;
 import org.openide.util.ImageUtilities;
+import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -67,6 +79,13 @@ import org.openide.util.lookup.Lookups;
  * @author jhavlin
  */
 public class MatchingObjectNode extends AbstractNode {
+
+    @StaticResource
+    private static final String INVALID_ICON =
+            "org/netbeans/modules/search/res/invalid.png";              //NOI18N
+    @StaticResource
+    private static final String WARNING_ICON =
+            "org/netbeans/modules/search/res/warning.gif";              //NOI18N
 
     private MatchingObject matchingObject;
     private Node original;
@@ -87,7 +106,8 @@ public class MatchingObjectNode extends AbstractNode {
             org.openide.nodes.Children children,
             final MatchingObject matchingObject,
             ReplaceCheckableNode checkableNode) {
-        super(children, Lookups.fixed(matchingObject, checkableNode));
+        super(children, Lookups.fixed(matchingObject, checkableNode,
+                matchingObject.getFileObject()));
         this.matchingObject = matchingObject;
         if (matchingObject.isObjectValid()) {
             this.original = original;
@@ -107,20 +127,38 @@ public class MatchingObjectNode extends AbstractNode {
     }
 
     @Override
+    public PasteType getDropType(Transferable t, int action, int index) {
+        return null;
+    }
+
+    @Override
+    protected void createPasteTypes(Transferable t, List<PasteType> s) {
+        return;
+    }
+
+    @Override
+    public Transferable drag() throws IOException {
+        return UiUtils.DISABLE_TRANSFER;
+    }
+
+    @Override
     public Image getIcon(int type) {
         if (valid) {
             return original.getIcon(type);
         } else {
-            String img;
             InvalidityStatus is = matchingObject.getInvalidityStatus();
-            switch (is == null ? InvalidityStatus.DELETED : is) {
-                case DELETED:
-                    img = "org/netbeans/modules/search/res/invalid.png";//NOI18N
-                    break;
-                default:
-                    img = "org/netbeans/modules/search/res/warning.gif";//NOI18N
-            }
-            return ImageUtilities.loadImage(img);
+            String icon = (is == null || is == InvalidityStatus.DELETED)
+                    ? INVALID_ICON : WARNING_ICON;
+            return ImageUtilities.loadImage(icon);
+        }
+    }
+
+    @Override
+    public Action[] getActions(boolean context) {
+        if (!context) {
+            return new Action[] {new OpenNodeAction(), new CopyPathAction()};
+        } else {
+            return new Action[0];
         }
     }
 
@@ -283,12 +321,40 @@ public class MatchingObjectNode extends AbstractNode {
 
     private class OpenNodeAction extends AbstractAction {
 
+        public OpenNodeAction() {
+            super(UiUtils.getText("LBL_EditAction"));                   //NOI18N
+        }
+
         @Override
         public void actionPerformed(ActionEvent e) {
             EditCookie editCookie = original.getLookup().lookup(
                     EditCookie.class);
             if (editCookie != null) {
                 editCookie.edit();
+            }
+        }
+    }
+
+    private class CopyPathAction extends AbstractAction {
+
+        public CopyPathAction() {
+            super(UiUtils.getText("LBL_CopyFilePathAction"));           //NOI18N
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            File f = FileUtil.toFile(
+                    matchingObject.getFileObject());
+            if (f != null) {
+                String path = f.getPath();
+                Toolkit toolkit = Toolkit.getDefaultToolkit();
+                if (toolkit != null) {
+                    Clipboard clipboard = toolkit.getSystemClipboard();
+                    if (clipboard != null) {
+                        StringSelection strSel = new StringSelection(path);
+                        clipboard.setContents(strSel, null);
+                    }
+                }
             }
         }
     }

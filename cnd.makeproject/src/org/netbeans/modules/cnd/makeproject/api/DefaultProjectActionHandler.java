@@ -59,22 +59,22 @@ import org.netbeans.api.extexecution.ExecutionDescriptor.LineConvertorFactory;
 import org.netbeans.api.extexecution.print.ConvertedLine;
 import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
+import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
-import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.OutputStreamHandler;
-import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
-import org.netbeans.modules.nativeexecution.api.ExecutionListener;
-import org.netbeans.modules.cnd.api.remote.ServerList;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
+import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.OutputStreamHandler;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PredefinedType;
-import org.netbeans.modules.cnd.spi.toolchain.CompilerLineConvertor;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
+import org.netbeans.modules.cnd.spi.toolchain.CompilerLineConvertor;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
@@ -90,7 +90,7 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.windows.InputOutput;
 
-public class DefaultProjectActionHandler implements ProjectActionHandler, ExecutionListener {
+public class DefaultProjectActionHandler implements ProjectActionHandler {
 
     private ProjectActionEvent pae;
     private Collection<OutputStreamHandler> outputHandlers;
@@ -110,20 +110,49 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
 
     @Override
     public void execute(final InputOutput io) {
-        if (SwingUtilities.isEventDispatchThread()) {
-            RequestProcessor.getDefault().post(new Runnable() {
+        final ExecutionListener listener = new ExecutionListener() {
 
-                @Override
-                public void run() {
-                    _execute(io);
+            @Override
+            public void executionStarted(int pid) {
+                for (ExecutionListener l : listeners) {
+                    l.executionStarted(pid);
                 }
-            });
+            }
+
+            @Override
+            public void executionFinished(int rc) {
+                for (ExecutionListener l : listeners) {
+                    l.executionFinished(rc);
+                }
+            }
+        };
+
+        Runnable executor = new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    _execute(io, listener);
+                } catch (Throwable th) {
+                    try {
+                        io.getErr().println("Internal error occured. Please report a bug.", null, true); // NOI18N
+                    } catch (IOException ex) {
+                    }
+                    io.getOut().close();
+                    listener.executionFinished(-1);
+                    throw new RuntimeException(th);
+                }
+            }
+        };
+
+        if (SwingUtilities.isEventDispatchThread()) {
+            RequestProcessor.getDefault().post(executor);
         } else {
-            _execute(io);
+            executor.run();
         }
     }
 
-    private void _execute(final InputOutput io) {
+    private void _execute(final InputOutput io, final ExecutionListener listener) {
         final Type actionType = pae.getType();
 
         if (actionType != ProjectActionEvent.PredefinedType.RUN
@@ -141,17 +170,17 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
         final PlatformInfo pi = conf.getPlatformInfo();
         final ExecutionEnvironment execEnv = conf.getDevelopmentHost().getExecutionEnvironment();
 
-        String exe = pae.getExecutable(); // we don't need quoting - it's execution responsibility
-        // we don't need quoting - it's execution responsibility
-        ArrayList<String> args = pae.getArguments();
         Map<String, String> env = pae.getProfile().getEnvironment().getenvAsMap();
         boolean showInput = actionType == ProjectActionEvent.PredefinedType.RUN;
         boolean unbuffer = false;
-        boolean runInInternalTerminal = false;
-        boolean runInExternalTerminal = false;
-        CompilerSet cs = null;
+        boolean runInInternalTerminal;
+        boolean runInExternalTerminal;
+        String commandLine = null;
+        CompilerSet cs;
 
         int consoleType = pae.getProfile().getConsoleType().getValue();
+        ArrayList<String> args = null;
+        // Used if not RUN. Also in case of QMake args are tweaked...
 
         if (actionType == ProjectActionEvent.PredefinedType.RUN) {
             runInInternalTerminal = consoleType == RunProfile.CONSOLE_TYPE_INTERNAL;
@@ -172,17 +201,11 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                     //use default consoly type for remote run
                     //the default is Internal Terminal
                     consoleType = RunProfile.getDefaultConsoleType();
-                    runInInternalTerminal = RunProfile.CONSOLE_TYPE_INTERNAL == consoleType;                            
+                    runInInternalTerminal = RunProfile.CONSOLE_TYPE_INTERNAL == consoleType;
                 }
             }
 
             if (consoleType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
-                if (pi.getPlatform() == PlatformTypes.PLATFORM_WINDOWS) {
-                    exe = CndPathUtilitities.naturalizeSlashes(exe);
-                } 
-                if (conf.getDevelopmentHost().isLocalhost()) {
-                    exe = CndPathUtilitities.toAbsolutePath(runDirectory, exe);
-                } 
                 unbuffer = true;
             } else if (!runInInternalTerminal) {
                 showInput = false;
@@ -208,6 +231,8 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                 }
                 env.put(pi.getPathName(), path);
             }
+
+            commandLine = pae.getRunCommandAsString();
         } else { // Build or Clean
             // Build or Clean
             cs = conf.getCompilerSet().getCompilerSet();
@@ -228,6 +253,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
             if (conf.isQmakeConfiguration()) {
                 String qmakePath = cs.getTool(PredefinedToolKind.QMakeTool).getPath();
                 qmakePath = CppUtils.normalizeDriveLetter(cs, qmakePath.replace('\\', '/')); // NOI18N
+                args = pae.getArguments();
                 args.add("QMAKE=" + CndPathUtilitities.escapeOddCharacters(qmakePath)); // NOI18N
             }
         }
@@ -256,15 +282,23 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
         }
 
         ProcessChangeListener processChangeListener =
-                new ProcessChangeListener(this, writer, converter, io);
+                new ProcessChangeListener(listener, writer, converter, io);
 
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv).
                 setWorkingDirectory(workingDirectory).
                 unbufferOutput(unbuffer).
-                setExecutable(exe).
-                setArguments(args.toArray(new String[args.size()])).
                 addNativeProcessListener(processChangeListener);
-        
+
+        if (commandLine != null) {
+            npb.setCommandLine(commandLine);
+        } else {
+            String exe = pae.getExecutable();
+            if (args == null) {
+                args = pae.getArguments();
+            }
+            npb.setExecutable(exe).setArguments(args.toArray(new String[args.size()]));
+        }
+
         if (actionType == ProjectActionEvent.PredefinedType.BUILD || actionType == ProjectActionEvent.PredefinedType.BUILD_TESTS) {
             npb.redirectError();
         }
@@ -353,23 +387,9 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
         });
     }
 
-    @Override
-    public void executionStarted(int pid) {
-        for (ExecutionListener l : listeners) {
-            l.executionStarted(pid);
-        }
-    }
-
-    @Override
-    public void executionFinished(int rc) {
-        for (ExecutionListener l : listeners) {
-            l.executionFinished(rc);
-        }
-    }
-
     /** Look up i18n strings here */
     private static String getString(String s) {
-        return NbBundle.getBundle(DefaultProjectActionHandler.class).getString(s);
+        return NbBundle.getMessage(DefaultProjectActionHandler.class, s);
     }
 
     protected static String getString(String key, String... a1) {
@@ -457,7 +477,9 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
     }
 
     private static final class WriterRedirector extends Writer {
+
         private final Collection<OutputStreamHandler> handlers;
+
         WriterRedirector(Collection<BuildActionsProvider.OutputStreamHandler> handlers) {
             this.handlers = handlers;
         }

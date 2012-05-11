@@ -39,11 +39,9 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.languages.yaml;
 
 import org.netbeans.modules.csl.api.CodeCompletionHandler.QueryType;
-
 
 /**
  *
@@ -66,7 +64,7 @@ public class YamlCompletionTest extends YamlTestBase {
     public void testCompletion1() throws Exception {
         checkCompletion("testfiles/test3.yaml", "Height:^ 5'11'' (180 cm)", false);
     }
-    
+
     public void testCompletion2() throws Exception {
         checkCompletion("testfiles/test3.yaml", "Heig^ht: 5'11'' (180 cm)", false);
     }

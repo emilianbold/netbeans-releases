@@ -58,6 +58,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.FocusManager;
@@ -155,6 +156,15 @@ public final class NavigatorController implements LookupListener, PropertyChange
     /***/
     private RequestProcessor requestProcessor = new RequestProcessor(NavigatorController.class);
 
+    /** boolean flag to indicate whether the content needs to be updated when the TC is activated*/
+    private boolean updateWhenActivated = false;
+
+    /** boolean flag to indicate whether the navigator TC is shown */
+    private boolean tcShown;
+
+    /** for tests - boolean flag to indicate whether the content will be updated when the TC is activated*/
+    private boolean updateWhenNotShown = false;
+
     /** Creates a new instance of NavigatorController */
     public NavigatorController(NavigatorDisplayer navigatorTC) {
         this.navigatorTC = navigatorTC;
@@ -163,6 +173,10 @@ public final class NavigatorController implements LookupListener, PropertyChange
         panelLookupWithNodes = new PanelLookupWithNodes();
         panelLookupListener = new PanelLookupListener();
         navigatorTC.addPropertyChangeListener(this);
+        //Add listener on custom topComponent - NavDisplayer navigatorTC doesnt have to be an instance of TopComponent
+        if (navigatorTC != navigatorTC.getTopComponent()) {
+            navigatorTC.getTopComponent().addPropertyChangeListener(this);
+        }
         TopComponent.getRegistry().addPropertyChangeListener(this);
         installActions();
     }
@@ -297,7 +311,13 @@ public final class NavigatorController implements LookupListener, PropertyChange
      * @force if true that update is forced even if it means clearing navigator content
      */
     private void updateContext (final boolean force, final NavigatorLookupPanelsPolicy panelsPolicy, final Collection<? extends NavigatorLookupHint> lkpHints) {
-        LOG.fine("updateContext entered, force: " + force);
+        LOG.log(Level.FINE, "updateContext entered, force: {0}", force); //NOI18N
+        // return when TC is not shown; updateWhenNotShown is true only for tests
+        if (!tcShown && !updateWhenNotShown) {
+            LOG.log(Level.FINE, "Exit because TC is not showing - no need to refresh"); //NOI18N
+            updateWhenActivated = true;
+            return;
+        }
         // #105327: don't allow reentrancy, may happen due to listening to node changes
         if (inUpdate) {
             LOG.fine("Exit because inUpdate already, force: " + force);
@@ -326,6 +346,7 @@ public final class NavigatorController implements LookupListener, PropertyChange
         synchronized (CUR_NODES_LOCK) {
             // detach node listeners
             Iterator<? extends NodeListener> curL = weakNodesL.iterator();
+            LOG.log(Level.FINE, "Removing {0} node listener(s)", curNodes.size());
             for (Iterator<? extends Node> curNode = curNodes.iterator(); curNode.hasNext(); ) {
                 curNode.next().removeNodeListener(curL.next());
             }
@@ -430,7 +451,7 @@ public final class NavigatorController implements LookupListener, PropertyChange
             panelLookup.lookup(Object.class);
 
             updateActNodesAndTitle();
-
+            updateWhenActivated = false;
             LOG.fine("Normal exit, change to new provider, force: " + force);
         } finally {
             inUpdate = false;
@@ -614,6 +635,11 @@ public final class NavigatorController implements LookupListener, PropertyChange
             }
         } else if (NavigatorDisplayer.PROP_PANEL_SELECTION.equals(evt.getPropertyName())) {
             activatePanel((NavigatorPanel) evt.getNewValue());
+        } else if ("ancestor".equals(evt.getPropertyName())) {
+            if (evt.getSource() == navigatorTC.getTopComponent()) {
+                boolean shown = evt.getNewValue() != null;
+                makeActive(shown);
+            }
         }
     }
 
@@ -703,6 +729,17 @@ public final class NavigatorController implements LookupListener, PropertyChange
         return null;
     }
 
+    /**Specify when the TC is shown*/
+    void makeActive(boolean tcShown) {
+        boolean oldValue = this.tcShown;
+        this.tcShown = tcShown;
+        if (tcShown && tcShown != oldValue && updateWhenActivated) {
+            updateWhenActivated = false;
+            Lookup globalContext = Utilities.actionsGlobalContext();
+            updateContext(globalContext.lookup(NavigatorLookupPanelsPolicy.class), globalContext.lookupAll(NavigatorLookupHint.class));
+        }
+    }
+
     /** Handles ESC key request - returns focus to previously focused top component
      */
     private class ESCHandler extends AbstractAction {
@@ -733,6 +770,11 @@ public final class NavigatorController implements LookupListener, PropertyChange
             }
         }
         return null;
+    }
+
+    /** for tests only*/
+    void setUpdateWhenNotShown(boolean updateWhenNotShown) {
+        this.updateWhenNotShown = updateWhenNotShown;
     }
 
     /** Lookup delegating to lookup of currently selected panel.

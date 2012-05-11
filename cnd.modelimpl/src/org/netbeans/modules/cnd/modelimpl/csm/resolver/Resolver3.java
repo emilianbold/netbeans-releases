@@ -44,9 +44,41 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.resolver;
 
-import java.util.*;
-import org.netbeans.modules.cnd.api.model.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmClassForwardDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmClassifier;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration.Kind;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
+import org.netbeans.modules.cnd.api.model.CsmInclude;
+import org.netbeans.modules.cnd.api.model.CsmInheritance;
+import org.netbeans.modules.cnd.api.model.CsmMember;
+import org.netbeans.modules.cnd.api.model.CsmNamespace;
+import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
+import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
+import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.CsmQualifiedNamedElement;
+import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.CsmScopeElement;
+import org.netbeans.modules.cnd.api.model.CsmType;
+import org.netbeans.modules.cnd.api.model.CsmTypedef;
+import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.api.model.CsmUsingDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmUsingDirective;
 import org.netbeans.modules.cnd.api.model.deep.CsmDeclarationStatement;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
@@ -83,7 +115,6 @@ public final class Resolver3 implements Resolver {
     private final Map<CharSequence, CsmDeclaration> usingDeclarations = new HashMap<CharSequence, CsmDeclaration>();
     private final Map<CharSequence, CsmClassifier> currUsedClassifiers = new HashMap<CharSequence, CsmClassifier>();
 
-    private CsmTypedef currTypedef;
     private CsmClassifier currLocalClassifier;
     private boolean currDone = false;
 
@@ -134,9 +165,10 @@ public final class Resolver3 implements Resolver {
     private CsmClassifier findClassifierUsedInFile(CharSequence qualifiedName) {
         // try to find visible classifier
         CsmClassifier result = null;
+        final CharSequence id = CharSequences.create(qualifiedName);
+        CsmClassifier globalResult = CsmClassifierResolver.getDefault().findClassifierUsedInFile(id, getStartFile(), needClasses());
         // first of all - check local context
         if (!currDone) {
-            currTypedef = null;
             currLocalClassifier = null;
             gatherMaps(file, false, origOffset);
             currDone = true;
@@ -144,15 +176,11 @@ public final class Resolver3 implements Resolver {
         if (currLocalClassifier != null && needClassifiers()) {
             result = currLocalClassifier;
         }
-        if (currTypedef != null && needClassifiers()) {
-            result = currTypedef;
-        }
         if (result == null) {
-            CharSequence id = CharSequences.create(qualifiedName);
             if (currUsedClassifiers.containsKey(id)) {
                 result = currUsedClassifiers.get(id);
             } else {
-                result = CsmClassifierResolver.getDefault().findClassifierUsedInFile(id, getStartFile(), needClasses());
+                result = globalResult;
                 currUsedClassifiers.put(id, result);
             }
         }
@@ -493,7 +521,7 @@ public final class Resolver3 implements Resolver {
             } else if( decl.getKind() == CsmDeclaration.Kind.TYPEDEF ) {
                 CsmTypedef typedef = (CsmTypedef) decl;
                 if( CharSequences.comparator().compare(currName(),typedef.getName())==0 ) {
-                    currTypedef = typedef;
+                    currLocalClassifier = typedef;
                 }
             }
         }
@@ -519,45 +547,65 @@ public final class Resolver3 implements Resolver {
     private void gatherMaps(CsmScopeElement element, int end, boolean inLocalContext, int offset) {
 
         CsmDeclaration.Kind kind = (element instanceof CsmDeclaration) ? ((CsmDeclaration) element).getKind() : null;
-        if( kind == CsmDeclaration.Kind.NAMESPACE_DEFINITION ) {
-            CsmNamespaceDefinition nsd = (CsmNamespaceDefinition) element;
-            if (nsd.getName().length() == 0) {
-                // this is unnamed namespace and it should be considered as
-                // it declares using itself
-                usedNamespaces.put(nsd.getQualifiedName(), nsd.getNamespace());
-            }
-            if (offset < end || isInContext(nsd)) {
-                //currentNamespace = nsd.getNamespace();
-                gatherMaps(nsd.getDeclarations(), inLocalContext, offset);
-            } else if (needClassifiers()){
-                processTypedefsInUpperNamespaces(nsd);
-            }
-        } else if( kind == CsmDeclaration.Kind.NAMESPACE_ALIAS ) {
-            CsmNamespaceAlias alias = (CsmNamespaceAlias) element;
-            namespaceAliases.put(alias.getAlias(), alias.getReferencedNamespace());
-        } else if( kind == CsmDeclaration.Kind.USING_DECLARATION ) {
-            CsmDeclaration decl = resolveUsingDeclaration((CsmUsingDeclaration) element);
-            if( decl != null ) {
-                CharSequence id;
-                if( decl.getKind() == CsmDeclaration.Kind.FUNCTION ||
-                        decl.getKind() == CsmDeclaration.Kind.FUNCTION_DEFINITION ||
-                        decl.getKind() == CsmDeclaration.Kind.FUNCTION_LAMBDA ||
-                        decl.getKind() == CsmDeclaration.Kind.FUNCTION_FRIEND ||
-                        decl.getKind() == CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION) {
-                    // TODO: decide how to resolve functions
-                    id = ((CsmFunction) decl).getSignature();
-                } else {
-                    id = decl.getName();
+        if (kind != null) {
+            switch (kind) {
+                case NAMESPACE_DEFINITION: {
+                    CsmNamespaceDefinition nsd = (CsmNamespaceDefinition) element;
+                    if (nsd.getName().length() == 0) {
+                        // this is unnamed namespace and it should be considered as
+                        // it declares using itself
+                        usedNamespaces.put(nsd.getQualifiedName(), nsd.getNamespace());
+                    }
+                    if (offset < end || isInContext(nsd)) {
+                        //currentNamespace = nsd.getNamespace();
+                        gatherMaps(nsd.getDeclarations(), inLocalContext, offset);
+                    } else if (needClassifiers()){
+                        processTypedefsInUpperNamespaces(nsd);
+                    }
+                    return;
                 }
-                usingDeclarations.put(id, decl);
+                case NAMESPACE_ALIAS: {
+                    CsmNamespaceAlias alias = (CsmNamespaceAlias) element;
+                    namespaceAliases.put(alias.getAlias(), alias.getReferencedNamespace());
+                    return;
+                }
+                case USING_DECLARATION: {
+                    CsmDeclaration decl = resolveUsingDeclaration((CsmUsingDeclaration) element);
+                    if( decl != null ) {
+                        CharSequence id;
+                        if( decl.getKind() == CsmDeclaration.Kind.FUNCTION ||
+                                decl.getKind() == CsmDeclaration.Kind.FUNCTION_DEFINITION ||
+                                decl.getKind() == CsmDeclaration.Kind.FUNCTION_LAMBDA ||
+                                decl.getKind() == CsmDeclaration.Kind.FUNCTION_FRIEND ||
+                                decl.getKind() == CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION) {
+                            // TODO: decide how to resolve functions
+                            id = ((CsmFunction) decl).getSignature();
+                        } else {
+                            id = decl.getName();
+                        }
+                        usingDeclarations.put(id, decl);
+                    }
+                    return;
+                }
+                case USING_DIRECTIVE:{
+                    CsmUsingDirective udir = (CsmUsingDirective) element;
+                    CharSequence name = udir.getName();
+                    if (!usedNamespaces.containsKey(name)) {
+                        usedNamespaces.put(name, udir); // getReferencedNamespace()
+                    }
+                    return;
+                }
+                case TYPEDEF: {
+                    CsmTypedef typedef = (CsmTypedef) element;
+                    // don't want typedef to find itself
+                    if( offset > end && CharSequences.comparator().compare(currName(),typedef.getName())==0 ) {
+                        currLocalClassifier = typedef;
+                    }
+                    return;
+                }
             }
-        } else if( kind == CsmDeclaration.Kind.USING_DIRECTIVE ) {
-            CsmUsingDirective udir = (CsmUsingDirective) element;
-            CharSequence name = udir.getName();
-            if (!usedNamespaces.containsKey(name)) {
-                usedNamespaces.put(name, udir); // getReferencedNamespace()
-            }
-        } else if( element instanceof CsmDeclarationStatement ) {
+        }
+        if( element instanceof CsmDeclarationStatement ) {
             CsmDeclarationStatement ds = (CsmDeclarationStatement) element;
             if( ds.getStartOffset() < offset ) {
                 gatherMaps( ((CsmDeclarationStatement) element).getDeclarators(), inLocalContext, offset);
@@ -573,12 +621,6 @@ public final class Resolver3 implements Resolver {
             }
             if (offset < end || isInContext((CsmScope) element)) {
                 gatherMaps( ((CsmScope) element).getScopeElements(), inLocalContext, offset);
-            }
-        } else if( kind == CsmDeclaration.Kind.TYPEDEF && needClassifiers()){
-            CsmTypedef typedef = (CsmTypedef) element;
-            // don't want typedef to find itself
-            if( offset > end && CharSequences.comparator().compare(currName(),typedef.getName())==0 ) {
-                currTypedef = typedef;
             }
         }
     }
@@ -690,9 +732,6 @@ public final class Resolver3 implements Resolver {
             if (currLocalClassifier != null && needClassifiers()) {
                 result = currLocalClassifier;
             }
-            if (currTypedef != null && needClassifiers()) {
-                result = currTypedef;
-            }
             if (result == null) {
                 CsmDeclaration decl = usingDeclarations.get(CharSequences.create(name));
                 if (decl != null) {
@@ -801,8 +840,8 @@ public final class Resolver3 implements Resolver {
         }
         if (result == null && needClassifiers()) {
             gatherMaps(file, !FileImpl.isFileBeingParsedInCurrentThread(file), origOffset);
-            if (currTypedef != null) {
-                CsmType type = currTypedef.getType();
+            if (currLocalClassifier != null && CsmKindUtilities.isTypedef(currLocalClassifier)) {
+                CsmType type = ((CsmTypedef)currLocalClassifier).getType();
                 if (type != null) {
                     CsmClassifier currentClassifier = getTypeClassifier(type);
                     while (currNamIdx < names.length - 1 && currentClassifier != null) {

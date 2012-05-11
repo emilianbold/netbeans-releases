@@ -148,7 +148,8 @@ public class JavaHlClientAdapterFactory extends SvnClientAdapterFactory {
             return;
         }
         String name = "libsvnjavahl-1.so";
-        String[] locations = new String[] {"/usr/lib/", "/usr/lib/jni/", "/usr/local/lib/"};
+        String[] locations = new String[] {"/usr/lib/", "/usr/lib/jni/", "/usr/local/lib/",
+            "/usr/lib64/", "/usr/lib64/jni/", "/usr/local/lib64/"};
         File location = null;
         for (String loc : locations) {
             File file = new File(loc, name);
@@ -226,7 +227,7 @@ public class JavaHlClientAdapterFactory extends SvnClientAdapterFactory {
     }    
     
     private File getJavahlFromExecutablePath(String libName) {
-        Preferences prefs = org.openide.util.NbPreferences.root ().node ("org/netbeans/modules.subversion");
+        Preferences prefs = org.openide.util.NbPreferences.root ().node ("org/netbeans/modules/subversion");
         
         String executablePath = prefs.get("svnExecBinary", "");
         if(executablePath == null || executablePath.trim().equals("")) {

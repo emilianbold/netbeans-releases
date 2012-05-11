@@ -88,7 +88,7 @@ public class MavenProtocolHandler extends URLStreamHandler {
             throw new IOException(stuff);
         }
         try {
-            online.resolve(a, Collections.<ArtifactRepository>singletonList(EmbedderFactory.createRemoteRepository(online, RepositorySystem.DEFAULT_REMOTE_REPO_URL, RepositorySystem.DEFAULT_REMOTE_REPO_ID)), online.getLocalRepository());
+            online.resolve(a, Collections.<ArtifactRepository>singletonList(online.createRemoteRepository(RepositorySystem.DEFAULT_REMOTE_REPO_URL, RepositorySystem.DEFAULT_REMOTE_REPO_ID)), online.getLocalRepository());
         } catch (Exception x) {
             throw new IOException(stuff + ": " + x, x);
         }

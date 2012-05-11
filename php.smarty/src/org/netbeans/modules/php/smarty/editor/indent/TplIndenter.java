@@ -208,7 +208,8 @@ public class TplIndenter extends AbstractIndenter<TplTopTokenId> {
 
         boolean isSmartyBodyCommand = false;
         boolean isSmartyElseCommand = false;
-        boolean isActionReturnUsed = false;
+        boolean afterDelimiter = false;
+        int embeddingLevel = 0;
         String lastTplCommand = "";
         // iterate over tokens on the line and push to stack any changes
         while (!context.isBlankLine() && ts.moveNext()
@@ -218,39 +219,48 @@ public class TplIndenter extends AbstractIndenter<TplTopTokenId> {
             if (token == null) {
                 continue;
             } else if (ts.embedded() != null) {
-                if (token.id() == TplTopTokenId.T_SMARTY && context.isIndentThisLine()) {
-                    String tplToken = getFunctionalTplTokenId(token);
-                    isSmartyBodyCommand = isBodyCommand(tplToken, context);
-                    if (isSmartyBodyCommand) {
-                        lastTplCommand = tplToken;
-                        isSmartyElseCommand = isElseCommand(tplToken);
+                // indent for smarty command of the zero embedding level
+                if (embeddingLevel == 1 && afterDelimiter) {
+                    if (token.id() == TplTopTokenId.T_SMARTY && context.isIndentThisLine()) {
+                        String tplToken = getFunctionalTplTokenId(token);
+                        isSmartyBodyCommand = isBodyCommand(tplToken, context);
+                        if (isSmartyBodyCommand) {
+                            lastTplCommand = tplToken;
+                            isSmartyElseCommand = isElseCommand(tplToken);
+                        }
+                    } else {
+                        isSmartyBodyCommand = false;
+                        isSmartyElseCommand = false;
                     }
-                } else {
-                    isSmartyBodyCommand = false;
-                    isSmartyElseCommand = false;
                 }
                 continue;
             }
 
             if (token.id() == TplTopTokenId.T_SMARTY_OPEN_DELIMITER) {
+                afterDelimiter = true;
+                embeddingLevel++;
                 TplStackItem state = new TplStackItem(StackItemState.IN_RULE);
                 blockStack.push(state);
             } else if (token.id() == TplTopTokenId.T_SMARTY_CLOSE_DELIMITER) {
+                afterDelimiter = false;
                 if (isInState(blockStack, StackItemState.IN_RULE)) {
                     // check that IN_RULE is the last state
                     TplStackItem item = blockStack.pop();
-                    assert item.state == StackItemState.IN_RULE;
-                    if (isSmartyBodyCommand) {
-                        if (!blockStack.isEmpty() && isInRelatedCommand(lastTplCommand, blockStack.peek().getCommand())) {
-                            if (isSmartyElseCommand) {
-                                String command = blockStack.pop().command;
-                                blockStack.push(new TplStackItem(StackItemState.IN_BODY, command));
+                    embeddingLevel--;
+                    if (embeddingLevel == 0) {
+                        assert item.state == StackItemState.IN_RULE;
+                        if (isSmartyBodyCommand) {
+                            if (!blockStack.isEmpty() && isInRelatedCommand(lastTplCommand, blockStack.peek().getCommand())) {
+                                if (isSmartyElseCommand) {
+                                    String command = blockStack.pop().command;
+                                    blockStack.push(new TplStackItem(StackItemState.IN_BODY, command));
+                                } else {
+                                    blockStack.pop();
+                                }
+                                iis.add(new IndentCommand(IndentCommand.Type.RETURN, preservedLineIndentation));
                             } else {
-                                blockStack.pop();
+                                blockStack.push(new TplStackItem(StackItemState.IN_BODY, lastTplCommand));
                             }
-                            iis.add(new IndentCommand(IndentCommand.Type.RETURN, preservedLineIndentation));
-                        } else {
-                            blockStack.push(new TplStackItem(StackItemState.IN_BODY, lastTplCommand));
                         }
                     }
                 }

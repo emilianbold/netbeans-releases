@@ -85,6 +85,7 @@ public class AntBreakpointActionProvider extends ActionsProviderSupport
      *
      * @param action an action which has been called
      */
+    @Override
     public void doAction (Object action) {
         Line line = getCurrentLine ();
         if (line == null) return ;
@@ -111,6 +112,7 @@ public class AntBreakpointActionProvider extends ActionsProviderSupport
      *
      * @return set of actions supported by this ActionsProvider
      */
+    @Override
     public Set getActions () {
         return actions;
     }
@@ -134,6 +136,7 @@ public class AntBreakpointActionProvider extends ActionsProviderSupport
         }
     }
     
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         // We need to push the state there :-(( instead of wait for someone to be interested in...
         boolean enabled = getCurrentLine() != null;

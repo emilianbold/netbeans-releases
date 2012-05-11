@@ -45,11 +45,8 @@
 package org.netbeans.modules.ant.debugger;
 
 import java.io.File;
-import org.apache.tools.ant.module.api.AntProjectCookie;
-import org.apache.tools.ant.module.api.AntTargetExecutor;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.junit.NbTestCase;
-import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
@@ -60,7 +57,7 @@ import org.openide.util.lookup.ProxyLookup;
 
 
 /**
- * Tests Ant debuggerstepping actions: step in, step out and step over.
+ * Tests Ant debugger stepping actions: step in, step out and step over.
  *
  * @author Jan Jancura
  */
@@ -106,6 +103,7 @@ public class StepTest extends NbTestCase {
 
     private static final class IFL extends InstalledFileLocator {
         public IFL() {}
+        @Override
         public File locate(String relativePath, String codeNameBase, boolean localized) {
             if (relativePath.equals("ant/nblib/bridge.jar")) {
                 String path = System.getProperty("test.bridge.jar");

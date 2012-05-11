@@ -365,9 +365,9 @@ class IndexedEditorPanel extends javax.swing.JPanel implements ExplorerManager.P
         selectedLookup.lookup(Object.class);
 
         if (showingDetails) {
-            detailsButton.setText(NbBundle.getBundle(IndexedEditorPanel.class).getString("CTL_HideDetails"));
+            detailsButton.setText(NbBundle.getMessage(IndexedEditorPanel.class, "CTL_HideDetails"));
         } else {
-            detailsButton.setText(NbBundle.getBundle(IndexedEditorPanel.class).getString("CTL_ShowDetails"));
+            detailsButton.setText(NbBundle.getMessage(IndexedEditorPanel.class, "CTL_ShowDetails"));
         }
 
         upButton.setEnabled((moveUp != null) && (moveUp.isEnabled()));
@@ -381,14 +381,14 @@ class IndexedEditorPanel extends javax.swing.JPanel implements ExplorerManager.P
 
         if (detailsButton.isVisible()) {
             if (showingDetails) {
-                Mnemonics.setLocalizedText(detailsButton, NbBundle.getBundle(IndexedEditorPanel.class).getString("CTL_HideDetails"));
+                Mnemonics.setLocalizedText(detailsButton, NbBundle.getMessage(IndexedEditorPanel.class, "CTL_HideDetails"));
                 detailsButton.getAccessibleContext().setAccessibleDescription(
-                    NbBundle.getBundle(IndexedEditorPanel.class).getString("ACSD_HideDetails")
+                    NbBundle.getMessage(IndexedEditorPanel.class, "ACSD_HideDetails")
                 );
             } else {
-                Mnemonics.setLocalizedText(detailsButton, NbBundle.getBundle(IndexedEditorPanel.class).getString("CTL_ShowDetails"));
+                Mnemonics.setLocalizedText(detailsButton, NbBundle.getMessage(IndexedEditorPanel.class, "CTL_ShowDetails"));
                 detailsButton.getAccessibleContext().setAccessibleDescription(
-                    NbBundle.getBundle(IndexedEditorPanel.class).getString("ACSD_ShowDetails")
+                    NbBundle.getMessage(IndexedEditorPanel.class, "ACSD_ShowDetails")
                 );
             }
 

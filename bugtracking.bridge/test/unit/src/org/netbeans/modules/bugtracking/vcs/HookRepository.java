@@ -72,8 +72,8 @@ public class HookRepository extends TestRepository {
     }
 
     @Override
-    public TestIssue getIssue(String id) {
-        return HookIssue.instance;
+    public TestIssue[] getIssues(String[] id) {
+        return new TestIssue[] {HookIssue.instance};
     }
 
     @Override

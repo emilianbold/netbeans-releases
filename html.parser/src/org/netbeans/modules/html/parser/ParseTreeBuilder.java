@@ -273,6 +273,12 @@ public class ParseTreeBuilder extends CoalescingTreeBuilder<Named> implements Tr
         this.offset = offset;
         int tag_gt_offset = -1;
         switch (to) {
+            case SELF_CLOSING_START_TAG:
+                if (LOG_FINER) {
+                    LOGGER.finer("Set self closing start tag flag.");//NOI18N
+                }
+                self_closing_starttag = true;
+                break;
             case TAG_OPEN:
                 tag_lt_offset = offset;
                 break;
@@ -301,8 +307,6 @@ public class ParseTreeBuilder extends CoalescingTreeBuilder<Named> implements Tr
             case SCRIPT_DATA:
             case DATA:
                 switch (from) {
-                    case SELF_CLOSING_START_TAG:
-                        self_closing_starttag = true;
                     case ATTRIBUTE_NAME:
                     case AFTER_ATTRIBUTE_VALUE_QUOTED:
                     case AFTER_ATTRIBUTE_NAME:
@@ -338,17 +342,24 @@ public class ParseTreeBuilder extends CoalescingTreeBuilder<Named> implements Tr
                 break;
 
             case ATTRIBUTE_VALUE_DOUBLE_QUOTED:
-                attrs.peek().valueQuotationType = AttrInfo.ValueQuotation.DOUBLE;
-                attrs.peek().valueOffset = offset;
+                if(from == BEFORE_ATTRIBUTE_VALUE) {
+                    attrs.peek().valueQuotationType = AttrInfo.ValueQuotation.DOUBLE;
+                    attrs.peek().valueOffset = offset;
+                }
                 break;
             case ATTRIBUTE_VALUE_SINGLE_QUOTED:
-                attrs.peek().valueQuotationType = AttrInfo.ValueQuotation.SINGLE;
-                attrs.peek().valueOffset = offset;
+                if(from == BEFORE_ATTRIBUTE_VALUE) {
+                    attrs.peek().valueQuotationType = AttrInfo.ValueQuotation.SINGLE;
+                    attrs.peek().valueOffset = offset;
+                }
                 break;
             case ATTRIBUTE_VALUE_UNQUOTED:
-                attrs.peek().valueQuotationType = AttrInfo.ValueQuotation.NONE;
-                attrs.peek().valueOffset = offset;
+                if(from == BEFORE_ATTRIBUTE_VALUE) {
+                    attrs.peek().valueQuotationType = AttrInfo.ValueQuotation.NONE;
+                    attrs.peek().valueOffset = offset;
+                }
                 break;
+                
 
         }
 
@@ -406,10 +417,13 @@ public class ParseTreeBuilder extends CoalescingTreeBuilder<Named> implements Tr
         super.endTag(en);
     }
 
-    private void resetIntenallPositions() {
+    private void resetInternalPositions() {
         tag_lt_offset = -1;
         self_closing_starttag = false;
         attrs.clear();
+        if (LOG) {
+            LOGGER.fine("Internal state reset.");//NOI18N
+        }
     }
 
     @Override
@@ -448,7 +462,7 @@ public class ParseTreeBuilder extends CoalescingTreeBuilder<Named> implements Tr
                 currentOpenTag = node = factory.createOpenTag(tag_lt_offset, -1, (byte)name.length());
             }
             addAttributesToElement(node, attributes);
-            resetIntenallPositions();
+            resetInternalPositions();
 
         } else {
             //virtual element
@@ -519,49 +533,28 @@ public class ParseTreeBuilder extends CoalescingTreeBuilder<Named> implements Tr
         for (int i = 0; i < attrs_count; i++) {
             //XXX I assume the attributes order is the same as in the source code
             AttrInfo attrInfo = attrs.elementAt(i);
-            StringBuilder value = new StringBuilder();
-            
-            appendQuotation(value, attrInfo.valueQuotationType);
-            value.append(attributes.getValue(i));
-            appendQuotation(value, attrInfo.valueQuotationType);
-            
             String attributeName = attributes.getLocalName(i);
             int attributeNameLength = attributeName.length();
-            if(attributeNameLength > Byte.MAX_VALUE) {
-                LOGGER.warning(String.format("Attribute name '%s' of node '%s' is longer than Byte.MAX_VALUE", attributeName, node));
-            }
-            byte attributeNameLengthAsByte = (byte)attributeNameLength;
             
-            int attributeValueLength = value.length();
-            if(attributeValueLength > Short.MAX_VALUE) {
-                LOGGER.warning(String.format("Attribute value of attribute '%s' of node '%s' is longer than Short.MAX_VALUE", attributeName, node));
+            int attributeValueLength;
+            if(attrInfo.valueOffset == -1) {
+                //no value
+                attributeValueLength = -1;
+            } else {
+                attributeValueLength = attributes.getValue(i).length() 
+                        + (attrInfo.valueQuotationType == AttrInfo.ValueQuotation.NONE ? 0 : 2);
             }
-            short attributeValueLengthAsShort = (short)attributeValueLength;
             
             Attribute attr = factory.createAttribute(
                     attrInfo.nameOffset,
                     attrInfo.valueOffset,
-                    attributeNameLengthAsByte,
-                    attributeValueLengthAsShort);
+                    (short)attributeNameLength,
+                    attributeValueLength);
                     
             mot.setAttribute(attr);
         }
     }
-    
-    private void appendQuotation(StringBuilder builder, AttrInfo.ValueQuotation kind) {
-        if(kind == null) {
-            return ;
-        }
-        switch(kind) {
-            case DOUBLE:
-                builder.append('"');
-                break;
-            case SINGLE:
-                builder.append('\'');
-                break;
-        }
-    }
-
+   
     //for unit tests
     static void setLoggerLevel(Level level) {
         LOGGER.setLevel(level);
@@ -586,7 +579,9 @@ public class ParseTreeBuilder extends CoalescingTreeBuilder<Named> implements Tr
 
     private static class AttrInfo {
 
-        public int nameOffset, equalSignOffset, valueOffset;
+        public int nameOffset, equalSignOffset;;
+        public int valueOffset = -1;
+        
         public ValueQuotation valueQuotationType;
 
         private enum ValueQuotation {

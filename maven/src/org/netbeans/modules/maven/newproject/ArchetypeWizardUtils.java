@@ -120,10 +120,21 @@ public class ArchetypeWizardUtils {
             config.setProperty("package", pack); //NOI18N
         }
         config.setProperty("basedir", directory.getAbsolutePath());//NOI18N
-
+        
+        Map<String, String> baseprops = new HashMap<String, String>(config.getProperties());
+        
         if (additional != null) {
             for (Map.Entry<String,String> entry : additional.entrySet()) {
-                config.setProperty(entry.getKey(), entry.getValue());
+                if (baseprops.containsKey(entry.getKey())) {
+                    //don't let the additional props overwrite the values for version, groupId or artifactId
+                    continue;
+                }
+                String val = entry.getValue();
+                //#208146 process the additional prop value through a simplistic extression resolution.
+                for (Map.Entry<String, String> basePropEnt : baseprops.entrySet()) {
+                    val = val.replace("${" + basePropEnt.getKey() + "}", basePropEnt.getValue());
+                }
+                config.setProperty(entry.getKey(), val);
             }
         }
         config.setActivatedProfiles(Collections.<String>emptyList());

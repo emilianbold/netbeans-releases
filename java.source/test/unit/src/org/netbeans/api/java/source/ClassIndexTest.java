@@ -62,7 +62,6 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.ClassIndexManagerEvent;
@@ -305,13 +304,13 @@ public class ClassIndexTest extends NbTestCase {
             scp);
         final ClassIndex ci = cpInfo.getClassIndex();
         Set<ElementHandle<TypeElement>> r = ci.getElements(
-            ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, "org.me.base.Base"),
+            ElementHandle.createTypeElementHandle(ElementKind.CLASS, "org.me.base.Base"),
             EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS),
             EnumSet.of(ClassIndex.SearchScope.SOURCE));
         assertElementHandles(new String[]{"org.me.pkg1.Class1","org.me.pkg2.Class2"}, r);
 
         r = ci.getElements(
-            ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, "org.me.base.Base"),
+            ElementHandle.createTypeElementHandle(ElementKind.CLASS, "org.me.base.Base"),
             EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS),
             Collections.singleton(
                 ClassIndex.createPackageSearchScope(
@@ -328,13 +327,13 @@ public class ClassIndexTest extends NbTestCase {
             ClassIndex.SearchScope.SOURCE,
             "org.me.pkg2"));
         r = ci.getElements(
-            ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, "org.me.base.Base"),
+            ElementHandle.createTypeElementHandle(ElementKind.CLASS, "org.me.base.Base"),
             EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS),
             scopes);
         assertElementHandles(new String[]{"org.me.pkg1.Class1","org.me.pkg2.Class2"}, r);
 
         r = ci.getElements(
-            ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, "org.me.base.Base"),
+            ElementHandle.createTypeElementHandle(ElementKind.CLASS, "org.me.base.Base"),
             EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS),
             Collections.singleton(
                 new ClassIndex.SearchScopeType() {
@@ -356,7 +355,7 @@ public class ClassIndexTest extends NbTestCase {
         assertElementHandles(new String[]{"org.me.pkg1.Class1","org.me.pkg2.Class2"}, r);
 
         r = ci.getElements(
-            ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, "org.me.base.Base"),
+            ElementHandle.createTypeElementHandle(ElementKind.CLASS, "org.me.base.Base"),
             EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS),
             Collections.singleton(
                 ClassIndex.createPackageSearchScope(
@@ -365,7 +364,7 @@ public class ClassIndexTest extends NbTestCase {
         assertElementHandles(new String[]{"org.me.pkg1.Class1"}, r);
 
         r = ci.getElements(
-            ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, "org.me.base.Base"),
+            ElementHandle.createTypeElementHandle(ElementKind.CLASS, "org.me.base.Base"),
             EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS),
             Collections.singleton(
                 ClassIndex.createPackageSearchScope(
@@ -373,13 +372,13 @@ public class ClassIndexTest extends NbTestCase {
         assertElementHandles(new String[]{}, r);
 
         r = ci.getElements(
-            ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, "java.lang.Object"),
+            ElementHandle.createTypeElementHandle(ElementKind.CLASS, "java.lang.Object"),
             EnumSet.allOf(ClassIndex.SearchKind.class),
             EnumSet.of(ClassIndex.SearchScope.SOURCE));
         assertElementHandles(new String[]{"org.me.base.Base", "org.me.pkg1.Class1","org.me.pkg2.Class2"}, r);
 
         r = ci.getElements(
-            ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, "java.lang.Object"),
+            ElementHandle.createTypeElementHandle(ElementKind.CLASS, "java.lang.Object"),
             EnumSet.allOf(ClassIndex.SearchKind.class),
             Collections.singleton(ClassIndex.createPackageSearchScope(ClassIndex.SearchScope.SOURCE, "org.me.pkg1")));
         assertElementHandles(new String[]{"org.me.pkg1.Class1"}, r);
@@ -509,31 +508,31 @@ public class ClassIndexTest extends NbTestCase {
         final ClassIndex ci = ClasspathInfo.create(bootPath, compilePath, sourcePath).getClassIndex();
         assertNotNull(ci);
         Set<FileObject> result = ci.getResourcesForPackage(
-            ElementHandleAccessor.INSTANCE.create(ElementKind.PACKAGE, "java.util"),    //NOI18N
+            ElementHandle.createPackageElementHandle("java.util"),    //NOI18N
             EnumSet.<ClassIndex.SearchKind>of(ClassIndex.SearchKind.IMPLEMENTORS),
             EnumSet.<ClassIndex.SearchScope>of(ClassIndex.SearchScope.SOURCE));
         assertNotNull(result);
         assertFiles(Collections.singleton(t1),result);
         result = ci.getResourcesForPackage(
-            ElementHandleAccessor.INSTANCE.create(ElementKind.PACKAGE, "java.util"),    //NOI18N
+            ElementHandle.createPackageElementHandle("java.util"),    //NOI18N
             EnumSet.<ClassIndex.SearchKind>allOf(ClassIndex.SearchKind.class),
             EnumSet.<ClassIndex.SearchScope>of(ClassIndex.SearchScope.SOURCE));
         assertNotNull(result);
         assertFiles(Arrays.asList(t1,t2),result);
         result = ci.getResourcesForPackage(
-            ElementHandleAccessor.INSTANCE.create(ElementKind.PACKAGE, "java.io"),      //NOI18N
+            ElementHandle.createPackageElementHandle("java.io"),      //NOI18N
             EnumSet.<ClassIndex.SearchKind>allOf(ClassIndex.SearchKind.class),
             EnumSet.<ClassIndex.SearchScope>of(ClassIndex.SearchScope.SOURCE));
         assertNotNull(result);
         assertFiles(Collections.singleton(t3),result);
         result = ci.getResourcesForPackage(
-            ElementHandleAccessor.INSTANCE.create(ElementKind.PACKAGE, "java.util.concurrent"), //NOI18N
+            ElementHandle.createPackageElementHandle("java.util.concurrent"), //NOI18N
             EnumSet.<ClassIndex.SearchKind>allOf(ClassIndex.SearchKind.class),
             EnumSet.<ClassIndex.SearchScope>of(ClassIndex.SearchScope.SOURCE));
         assertNotNull(result);
         assertFiles(Collections.<FileObject>emptySet(),result);
         result = ci.getResourcesForPackage(
-            ElementHandleAccessor.INSTANCE.create(ElementKind.PACKAGE, "u"),    //NOI18N
+            ElementHandle.createPackageElementHandle("u"),    //NOI18N
             EnumSet.<ClassIndex.SearchKind>of(ClassIndex.SearchKind.TYPE_REFERENCES),
             EnumSet.<ClassIndex.SearchScope>of(ClassIndex.SearchScope.SOURCE));
         assertNotNull(result);

@@ -267,18 +267,7 @@ public class DeclarativeHintRegistry implements HintProvider, ClassPathBasedHint
         for (HintTextDescription hint : parsed.hints) {
             HintDescriptionFactory f = HintDescriptionFactory.create();
             String displayName = resolveDisplayName(file, bundle, hint.displayName, true, "TODO: No display name");
-
-            Map<String, String> constraints = new HashMap<String, String>();
-
-            for (Condition c : hint.conditions) {
-                if (!(c instanceof Instanceof) || c.not)
-                    continue;
-
-                Instanceof i = (Instanceof) c;
-
-                constraints.put(i.variable, i.constraint.trim()); //TODO: may i.constraint contain comments? if so, they need to be removed
-            }
-
+            Map<String, String> constraints = Utilities.conditions2Constraints(hint.conditions);
             String imports = parsed.importsBlock != null ? spec.substring(parsed.importsBlock[0], parsed.importsBlock[1]) : "";
             String[] importsArray = parsed.importsBlock != null ? new String[] {spec.substring(parsed.importsBlock[0], parsed.importsBlock[1])} : new String[0];
 

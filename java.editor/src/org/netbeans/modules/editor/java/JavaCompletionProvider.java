@@ -931,7 +931,8 @@ public class JavaCompletionProvider implements CompletionProvider {
             int typePos = type.getKind() == Tree.Kind.ERRONEOUS && ((ErroneousTree)type).getErrorTrees().isEmpty() ?
                 (int)sourcePositions.getEndPosition(root, type) : (int)sourcePositions.getStartPosition(root, type);            
             if (offset <= typePos) {
-                if (path.getParentPath().getLeaf().getKind() == Tree.Kind.CATCH) {
+                Tree parent = path.getParentPath().getLeaf();
+                if (parent.getKind() == Tree.Kind.CATCH) {
                     String prefix = env.getPrefix();
                     CompilationController controller = env.getController();
                     if (queryType == COMPLETION_QUERY_TYPE) {
@@ -940,13 +941,18 @@ public class JavaCompletionProvider implements CompletionProvider {
                         Elements elements = controller.getElements();
                         for (TypeMirror ex : exs)
                             if (ex.getKind() == TypeKind.DECLARED && startsWith(env, ((DeclaredType)ex).asElement().getSimpleName().toString(), prefix) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(((DeclaredType)ex).asElement())))
-                                results.add(JavaCompletionItem.createTypeItem(env.getController(), (TypeElement)((DeclaredType)ex).asElement(), (DeclaredType)ex, anchorOffset, env.getReferencesCount(), elements.isDeprecated(((DeclaredType)ex).asElement()), false, false, false, true, false, env.getWhiteList()));
+                                results.add(JavaCompletionItem.createTypeItem(controller, (TypeElement)((DeclaredType)ex).asElement(), (DeclaredType)ex, anchorOffset, env.getReferencesCount(), elements.isDeprecated(((DeclaredType)ex).asElement()), false, false, false, true, false, env.getWhiteList()));
                     }
                     TypeElement te = controller.getElements().getTypeElement("java.lang.Throwable"); //NOI18N
                     if (te != null)
                         addTypes(env, EnumSet.of(CLASS, INTERFACE, TYPE_PARAMETER), controller.getTypes().getDeclaredType(te));
+                } else if (parent.getKind() == Tree.Kind.TRY) {
+                    CompilationController controller = env.getController();
+                    TypeElement te = controller.getElements().getTypeElement("java.lang.AutoCloseable"); //NOI18N
+                    if (te != null)
+                        addTypes(env, EnumSet.of(CLASS, INTERFACE, TYPE_PARAMETER), controller.getTypes().getDeclaredType(te));
                 } else {
-                    boolean isLocal = !TreeUtilities.CLASS_TREE_KINDS.contains(path.getParentPath().getLeaf().getKind());
+                    boolean isLocal = !TreeUtilities.CLASS_TREE_KINDS.contains(parent.getKind());
                     addMemberModifiers(env, var.getModifiers().getFlags(), isLocal);
                     addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, ANNOTATION_TYPE, TYPE_PARAMETER), null);
                     ModifiersTree mods = var.getModifiers();
@@ -1871,59 +1877,10 @@ public class JavaCompletionProvider implements CompletionProvider {
         
         private void insideTry(Env env) throws IOException {
             CompilationController controller = env.getController();
-            TreePath path = env.getPath();
-            TryTree tt = (TryTree)path.getLeaf();
-            TokenSequence<JavaTokenId> last = findLastNonWhitespaceToken(env, tt, env.getOffset());
-            if (last == null || (last.token().id() != JavaTokenId.LPAREN && last.token().id() != JavaTokenId.SEMICOLON)) {
-                int offset = env.getOffset();
-                SourcePositions sp = env.getSourcePositions();
-                CompilationUnitTree root = env.getRoot();
-                Tree lastRes = null;
-                for (Tree res : tt.getResources()) {
-                    if (sp.getEndPosition(root, res) >= offset)
-                        break;
-                    lastRes = res;
-                }
-                if (lastRes != null) {
-                    controller.toPhase(Phase.RESOLVED);
-                    TreePath resPath = new TreePath(path, lastRes);                    
-                    Element el = controller.getTrees().getElement(resPath);
-                    if (el != null && (el.getKind().isClass() || el.getKind().isInterface())) {
-                        TypeMirror tm = controller.getTrees().getTypeMirror(resPath);
-                        final Collection<? extends Element> illegalForwardRefs = env.getForwardReferences();
-                        Scope scope = env.getScope();
-                        final ExecutableElement method = scope.getEnclosingMethod();
-                        ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
-                            public boolean accept(Element e, TypeMirror t) {
-                                return (method == e.getEnclosingElement() || e.getModifiers().contains(FINAL)) &&
-                                        !illegalForwardRefs.contains(e);
-                            }
-                        };
-                        for (String name : Utilities.varNamesSuggestions(tm, null, env.getPrefix(), controller.getTypes(), controller.getElements(), controller.getElementUtilities().getLocalVars(scope, acceptor), false))
-                            results.add(JavaCompletionItem.createVariableItem(env.getController(), name, anchorOffset, true, false));
-                    }
-                }
-                return;
-            }
             addKeyword(env, FINAL_KEYWORD, SPACE, false);
-            addLocalMembersAndVars(env);
-            Set<? extends TypeMirror> smarts = env.getSmartTypes();
-            if (smarts != null) {
-                Elements elements = controller.getElements();
-                for (TypeMirror smart : smarts) {
-                    if (smart != null) {
-                        if (smart.getKind() == TypeKind.DECLARED) {
-                            for (DeclaredType subtype : getSubtypesOf(env, (DeclaredType)smart)) {
-                                TypeElement elem = (TypeElement)subtype.asElement();
-                                if (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(elem))
-                                    results.add(JavaCompletionItem.createTypeItem(controller, elem, subtype, anchorOffset, env.getReferencesCount(), elements.isDeprecated(elem), true, true, false, true, false, env.getWhiteList()));
-                                env.addToExcludes(elem);
-                            }
-                        }
-                    }
-                }
-            }
-            addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, ANNOTATION_TYPE, TYPE_PARAMETER), null);
+            TypeElement te = controller.getElements().getTypeElement("java.lang.AutoCloseable"); //NOI18N
+            if (te != null)
+                addTypes(env, EnumSet.of(CLASS, INTERFACE, TYPE_PARAMETER), controller.getTypes().getDeclaredType(te));
         }
 
         private void insideCatch(Env env) throws IOException {

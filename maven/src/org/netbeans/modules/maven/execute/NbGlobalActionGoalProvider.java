@@ -53,14 +53,17 @@ import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.modules.maven.spi.actions.AbstractMavenActionsProvider;
+import org.netbeans.modules.maven.spi.actions.MavenActionsProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.lookup.ServiceProviders;
 
 /**
  * user defined global definitions, to be found in the layers.
  * @author mkleint
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.maven.spi.actions.MavenActionsProvider.class, position=121)
+@ServiceProviders({@ServiceProvider(service=MavenActionsProvider.class, position=121), @ServiceProvider(service=NbGlobalActionGoalProvider.class)})
 public class NbGlobalActionGoalProvider extends AbstractMavenActionsProvider {
     
     public static final String FILENAME = "Projects/org-netbeans-modules-maven/nbactions.xml"; //NOI18N
@@ -68,10 +71,6 @@ public class NbGlobalActionGoalProvider extends AbstractMavenActionsProvider {
     
     private Date lastModified = new Date();
     private boolean lastTimeExists = true;
-    
-    /** Creates a new instance of NbGlobalActionGoalProvider */
-    public NbGlobalActionGoalProvider() {
-    }
     
     @Override
     public InputStream getActionDefinitionStream() {

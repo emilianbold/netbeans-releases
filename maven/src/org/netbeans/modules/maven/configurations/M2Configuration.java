@@ -114,6 +114,13 @@ public class M2Configuration extends AbstractMavenActionsProvider implements Pro
         return properties;
     }
     
+    public void setProperties(Map<String, String> props) {
+        if (props == null) {
+            props = Collections.emptyMap();
+        }
+        properties.clear();
+        properties.putAll(props);
+    }
     
     public static String getFileNameExt(String id) {
         if (DEFAULT.equals(id)) {

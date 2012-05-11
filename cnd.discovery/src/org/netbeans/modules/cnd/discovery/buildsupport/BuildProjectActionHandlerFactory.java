@@ -76,7 +76,7 @@ public class BuildProjectActionHandlerFactory implements ProjectActionHandlerFac
                 MakeConfiguration conf = (MakeConfiguration) configuration;
                 final ExecutionEnvironment executionEnvironment = conf.getDevelopmentHost().getExecutionEnvironment();
                 if (conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE) {
-                    if (BuildTraceSupport.useBuildTrace()) {
+                    if (BuildTraceSupport.useBuildTrace(conf)) {
                         if (BuildTraceSupport.supportedPlatforms(executionEnvironment)) {
                             return true;
                         }

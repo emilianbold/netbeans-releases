@@ -76,6 +76,9 @@ public class Element extends PatternRule {
         "XHTML element .*? not allowed as child of XHTML element .*? in this context.",
         "Attribute .*? not allowed on XHTML element .*? at this point.",
         
+        //???
+        "The end-tag for element type .*? must end with a '>' delimiter.",
+        
             
     }; //NOI18N
     

@@ -213,7 +213,7 @@ public class PreferredInstrFilterPanel extends JPanel implements HelpCtx.Provide
         add(label, gridBagConstraints);
 
         JScrollPane packagesAreaScrollPane = new JScrollPane();
-        packagesAreaScrollPane.setPreferredSize(new Dimension(350, 200));
+        packagesAreaScrollPane.setPreferredSize(new Dimension(420, 180));
         packagesArea.setText(""); //NOI18N
         packagesAreaScrollPane.setViewportView(packagesArea);
 

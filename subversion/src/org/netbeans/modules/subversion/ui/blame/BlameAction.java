@@ -147,8 +147,8 @@ public class BlameAction extends ContextAction {
 
         if (revision == null) {
             ISVNStatus status = Subversion.getInstance().getStatusCache().getStatus(file).getEntry(file);
-            if (status == null) {
-                // status could not be loaded, do not continnue
+            if (status == null || status.getRevision() == null) {
+                // status could not be loaded or we have a symlink, do not continnue
                 return;
             }
             ab.setSVNClienListener(new SVNClientListener(status.getRevision().getNumber(), repository, file, ab));

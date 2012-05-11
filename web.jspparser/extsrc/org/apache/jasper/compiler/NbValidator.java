@@ -146,8 +146,8 @@ public class NbValidator {
              */
             page.visit(new Validator.TagExtraInfoVisitor(compiler));
             
-            StringBuffer buf = (StringBuffer)bufF.get(pdi);
-            return buf.toString();
+            StringBuilder sb = (StringBuilder)bufF.get(pdi);
+            return sb.toString();
         } catch (IllegalAccessException e) {
             LOGGER.log(Level.INFO, null, e);
             throw new JasperException(e.getMessage());

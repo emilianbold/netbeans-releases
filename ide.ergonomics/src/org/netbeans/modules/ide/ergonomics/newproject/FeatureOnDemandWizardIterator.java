@@ -45,6 +45,7 @@
 package org.netbeans.modules.ide.ergonomics.newproject;
 
 import java.awt.Component;
+import java.awt.EventQueue;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -114,7 +115,8 @@ public final class FeatureOnDemandWizardIterator implements WizardDescriptor.Pro
         return res;
     }
 
-    private void createPanels () {
+    private List<WizardDescriptor.Panel<WizardDescriptor>> getPanels () {
+        assert EventQueue.isDispatchThread();
         if (panels == null) {
             panels = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>> ();
             panels.add (new DescriptionStep (autoEnable));
@@ -141,22 +143,23 @@ public final class FeatureOnDemandWizardIterator implements WizardDescriptor.Pro
                 i ++;
             }
         }
+        return panels;
     }
     
     private void createPanelsForEnable () {
-        if (panels == null) {
+        if (getPanels() == null) {
             panels = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>> ();
-            panels.add (new DescriptionStep (autoEnable));
-            panels.add (new EnableStep ());
+            getPanels().add (new DescriptionStep (autoEnable));
+            getPanels().add (new EnableStep ());
             names = new String [] {
                 NbBundle.getMessage (FeatureOnDemandWizardIterator.class, "DescriptionStep_Name"),
                 NbBundle.getMessage (FeatureOnDemandWizardIterator.class, "EnableStep_Name"),
             
             };
-            String[] steps = new String [panels.size ()];
+            String[] steps = new String [getPanels().size ()];
             assert steps.length == names.length : "As same names as steps must be";
             int i = 0;
-            for (WizardDescriptor.Panel p : panels) {
+            for (WizardDescriptor.Panel p : getPanels()) {
                 Component c = p.getComponent ();
                 // Default step name to component name of panel. Mainly useful
                 // for getting the name of the target chooser to appear in the
@@ -208,7 +211,6 @@ public final class FeatureOnDemandWizardIterator implements WizardDescriptor.Pro
         wiz.putProperty (CHOSEN_TEMPLATE, template);
         wiz.putProperty(DELEGATE_ITERATOR, null);
         index = 0;
-        createPanels (); // NOI18N
     }
     public void uninitialize(WizardDescriptor wiz) {
         if (getDelegateIterator () != null) {
@@ -223,14 +225,15 @@ public final class FeatureOnDemandWizardIterator implements WizardDescriptor.Pro
         if (getDelegateIterator () != null && getDelegateIterator() != this) {
             return getDelegateIterator ().current ();
         }
-        assert panels != null;
-        return panels.get (index);
+        assert getPanels() != null;
+        return getPanels().get (index);
     }
 
     public String name () {
         if (getDelegateIterator () != null) {
             return getDelegateIterator ().name ();
         }
+        getPanels();
         return names [index];
     }
 
@@ -238,7 +241,7 @@ public final class FeatureOnDemandWizardIterator implements WizardDescriptor.Pro
         if (getDelegateIterator () != null) {
             return getDelegateIterator ().hasNext ();
         }
-        return index < panels.size () - 1;
+        return index < getPanels().size () - 1;
     }
 
     public boolean hasPrevious () {

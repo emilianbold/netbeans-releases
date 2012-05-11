@@ -68,6 +68,8 @@ public class CCKit extends NbEditorKit {
     /* package */ static final String selectNextCamelCasePosition = "select-next-camel-case-position"; //NOI18N
     /* package */ static final String deletePreviousCamelCasePosition = "delete-previous-camel-case-position"; //NOI18N
     /* package */ static final String deleteNextCamelCasePosition = "delete-next-camel-case-position"; //NOI18N
+    /* package */ static final String selectNextElementAction = "select-element-next"; //NOI18N
+    /* package */ static final String selectPreviousElementAction = "select-element-previous"; //NOI18N
 
     public CCKit() {
         // default constructor needed to be created from services
@@ -135,7 +137,8 @@ public class CCKit extends NbEditorKit {
             new CCPreviousWordAction(selectionPreviousWordAction),
             new DeleteToNextCamelCasePosition(findAction(superActions, removeNextWordAction)),
             new DeleteToPreviousCamelCasePosition(findAction(superActions, removePreviousWordAction)),
-
+            new SelectCodeElementAction(selectNextElementAction, true),
+            new SelectCodeElementAction(selectPreviousElementAction, false),
             new InsertSemicolonAction(true),
             new InsertSemicolonAction(false),};
         ccActions = TextAction.augmentList(superActions, ccActions);
@@ -178,6 +181,7 @@ public class CCKit extends NbEditorKit {
             super(name);
         }
 
+        @Override
         protected int getPreviousWordOffset(JTextComponent target) throws BadLocationException {
             return isUsingCamelCase()
                     ? CamelCaseOperations.previousCamelCasePosition(target)

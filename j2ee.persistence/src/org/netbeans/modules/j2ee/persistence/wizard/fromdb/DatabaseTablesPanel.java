@@ -551,6 +551,10 @@ public class DatabaseTablesPanel extends javax.swing.JPanel implements AncestorL
                     sourceSchemaElement = dbschemaManager.getSchemaElement(dbconn);
                 } catch (SQLException e) {
                     notify(NbBundle.getMessage(DatabaseTablesPanel.class, "ERR_DatabaseError"));
+                } finally {
+                    if(sourceSchemaElement == null){
+                        datasourceComboBox.setSelectedIndex(-1);//drop to default selection instead of keep not loaded
+                    }
                 }
             }
         } else if (dbschemaRadioButton.isSelected()) {

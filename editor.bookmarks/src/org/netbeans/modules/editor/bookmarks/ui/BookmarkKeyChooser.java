@@ -198,7 +198,7 @@ public class BookmarkKeyChooser implements KeyListener, ActionListener {
                 if (bookmark != null) {
                     cell.setForeground(selForeColor);
                     cell.setBackground(selBackColor);
-                    cell.setToolTipText(bookmark.getLocationDescription());
+                    cell.setToolTipText(bookmark.getDescription(true, false, false));
                 } else {
                     cell.setForeground(foreColor);
                     cell.setBackground(backColor);

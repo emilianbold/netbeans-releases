@@ -49,7 +49,7 @@ import org.openide.filesystems.FileUtil;
 /**
  * @author Radek Matous
  */
-public class OccurrencesFinderImplTest extends TestBase {
+public class OccurrencesFinderImplTest extends PHPNavTestBase {
 
     public OccurrencesFinderImplTest(String testName) {
         super(testName);
@@ -970,6 +970,66 @@ public class OccurrencesFinderImplTest extends TestBase {
 
     public void testStaticAccessWithNsAlias_10() throws Exception {
         checkOccurrences(getTestPath(), "parent::some^Func();", true);
+    }
+
+    public void testIssue211230_01() throws Exception {
+        checkOccurrences(getTestPath(), "class F^oo {", true);
+    }
+
+    public void testIssue211230_02() throws Exception {
+        checkOccurrences(getTestPath(), " * @method F^oo|Bar method() This is my cool magic method description.", true);
+    }
+
+    public void testIssue211230_03() throws Exception {
+        checkOccurrences(getTestPath(), " * @method Foo|B^ar method() This is my cool magic method description.", true);
+    }
+
+    public void testIssue211230_04() throws Exception {
+        checkOccurrences(getTestPath(), "class B^ar {", true);
+    }
+
+    public void testIssue211230_05() throws Exception {
+        checkOccurrences(getTestPath(), "$b = new B^ar();", true);
+    }
+
+    public void testMagicMethod_01() throws Exception {
+        checkOccurrences(getTestPath(), " * @method Foo|Bar met^hod() This is my cool magic method description.", true);
+    }
+
+    public void testMagicMethod_02() throws Exception {
+        checkOccurrences(getTestPath(), "$b->met^hod()->fooMethod();", true);
+    }
+
+    public void testIssue211015_01() throws Exception {
+        checkOccurrences(getTestPath(), "$f^oo = \"omg\";", true);
+    }
+
+    public void testIssue211015_02() throws Exception {
+        checkOccurrences(getTestPath(), "$this->$f^oo();", true);
+    }
+
+    public void testIssue211015_03() throws Exception {
+        checkOccurrences(getTestPath(), "self::$f^oo();", true);
+    }
+
+    public void testIssue211015_04() throws Exception {
+        checkOccurrences(getTestPath(), "static::$f^oo();", true);
+    }
+
+    public void testIssue211015_05() throws Exception {
+        checkOccurrences(getTestPath(), "parent::$f^oo();", true);
+    }
+
+    public void testIssue186553_01() throws Exception {
+        checkOccurrences(getTestPath(), "public function do^Something()", true);
+    }
+
+    public void testIssue186553_02() throws Exception {
+        checkOccurrences(getTestPath(), "$object1->do^Something();", true);
+    }
+
+    public void testIssue186553_03() throws Exception {
+        checkOccurrences(getTestPath(), "$this->do^Something();", true);
     }
 
     @Override

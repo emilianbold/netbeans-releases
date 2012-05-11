@@ -49,6 +49,7 @@ import org.netbeans.modules.php.editor.model.FieldElement;
 import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeNode;
 
 /**
  *
@@ -252,6 +253,12 @@ public class IdentifierSignature {
         return new IdentifierSignature(constantElement.getName(),
                 constantElement.getPhpModifiers().toFlags(), ElementKind.CONSTANT,
                 constantElement.getInScope().getName(), true, constantElement.getInScope() instanceof ClassScope);
+    }
+
+    public static IdentifierSignature create(PHPDocTypeNode node) {
+        String type = node.getValue();
+        String[] typeParts = type.split("\\\\"); //NOI18N
+        return new IdentifierSignature(typeParts[typeParts.length - 1]);
     }
 
 }

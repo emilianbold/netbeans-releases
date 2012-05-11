@@ -322,6 +322,9 @@ public abstract class AbstractSummaryView implements MouseListener, MouseMotionL
     void showRemainingFiles (RevisionItem item) {
         item.allEventsExpanded = !item.allEventsExpanded;
         ((SummaryListModel) resultsList.getModel()).refreshModel();
+        if (resultsList.getSelectedIndices().length == 1) {
+            resultsList.ensureIndexIsVisible(resultsList.getSelectedIndices()[0]);
+        }
     }
 
     void moreRevisions (Integer count) {
@@ -932,6 +935,9 @@ public abstract class AbstractSummaryView implements MouseListener, MouseMotionL
                             dispIterator.previous();
                             dispIterator.add(item);
                             fireIntervalAdded(this, index, index);
+                            if (resultsList.getSelectionModel().isSelectedIndex(index)) {
+                                resultsList.getSelectionModel().removeSelectionInterval(index, index);
+                            }
                             dispIterator.next();
                             ++index;
                         }

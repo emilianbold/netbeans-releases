@@ -106,13 +106,7 @@ import org.netbeans.modules.profiler.stp.ui.HyperlinkLabel;
     "CPUSettingsAdvancedPanel_EmptyMethodsCheckboxText=Empt&y methods",
     "CPUSettingsAdvancedPanel_ThreadsCaption=Threads",
     "CPUSettingsAdvancedPanel_EnableThreadsCheckboxText=E&nable threads monitoring",
-    "CPUSettingsAdvancedPanel_EnableSamplingCheckboxText=&Sample threads states",
-    "CPUSettingsAdvancedPanel_GlobalSettingsCaption=Global Settings",
-    "CPUSettingsAdvancedPanel_OverrideSettingsCheckboxText=&Override global settings",
-    "CPUSettingsAdvancedPanel_WorkDirLabelText=&Working directory:",
-    "CPUSettingsAdvancedPanel_ChooseWorkDirLinkText=Choose...",
-    "CPUSettingsAdvancedPanel_JavaPlatformLabelText=&Java platform:",
-    "CPUSettingsAdvancedPanel_JvmArgumentsLabelText=JVM &arguments:"
+    "CPUSettingsAdvancedPanel_EnableSamplingCheckboxText=&Sample threads states"
 })
 public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements HelpCtx.Provider {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
@@ -121,30 +115,23 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
 
     //~ Instance fields ----------------------------------------------------------------------------------------------------------
 
-    private HyperlinkLabel workingDirectorySelectLink;
     private JCheckBox excludeTimeCheckbox;
     private JCheckBox instrumentEmptyMethodsCheckbox;
     private JCheckBox instrumentGettersSettersCheckbox;
     private JCheckBox instrumentMethodInvokeCheckbox;
     private JCheckBox limitThreadsCheckbox;
-    private JCheckBox overrideSettingsCheckbox;
     private JCheckBox profileFrameworkCheckbox;
     private JCheckBox profileSpawnedThreadsCheckbox;
     private JCheckBox threadsMonitoringCheckbox;
     private JCheckBox threadsSamplingCheckbox;
     private JCheckBox useCPUTimerCheckbox;
     private JComboBox instrumentationSchemeCombo;
-    private JComboBox javaPlatformCombo;
     private JLabel instrumentLabel;
     private JLabel instrumentationSchemeLabel;
-    private JLabel javaPlatformLabel;
     private JLabel methodsTrackingLabel;
     private JLabel sampledTimingLabel;
     private JLabel samplingFrequencyLabel;
     private JLabel samplingFrequencyUnitsLabel;
-    private JLabel vmArgumentsLabel;
-    private JLabel workingDirectoryLabel;
-    private JPanel globalSettingsPanel;
 
     // --- UI components declaration ---------------------------------------------
     private JPanel settingsPanel;
@@ -156,9 +143,6 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
     private JSpinner limitThreadsSpinner;
     private JSpinner sampledTimingSpinner;
     private JSpinner samplingFrequencySpinner;
-    private JTextField vmArgumentsTextField;
-    private JTextField workingDirectoryTextField;
-    private WeakReference<JFileChooser> workingDirectoryChooserReference;
     
     private int profilingType;
 
@@ -295,41 +279,6 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
         }
     }
 
-    public void setJavaPlatformName(String javaPlatformName) {
-        updateJavaPlatformCombo(javaPlatformName);
-    }
-
-    public String getJavaPlatformName() {
-        int selIndex = javaPlatformCombo.getSelectedIndex();
-
-        if (selIndex == 0) {
-            return null;
-        } else {
-            return javaPlatformCombo.getSelectedItem().toString();
-        }
-    }
-
-    public void setOverrideAvailable(boolean enableOverride) { // should be called before setOverrideSettings() to allow correct enabling/disabling of controls
-        overrideSettingsCheckbox.setEnabled(enableOverride);
-        workingDirectoryLabel.setEnabled(enableOverride);
-        workingDirectoryTextField.setEnabled(enableOverride);
-        workingDirectorySelectLink.setEnabled(enableOverride);
-        javaPlatformLabel.setEnabled(enableOverride);
-        javaPlatformCombo.setEnabled(enableOverride);
-        vmArgumentsLabel.setEnabled(enableOverride);
-        vmArgumentsTextField.setEnabled(enableOverride);
-        globalSettingsPanel.setVisible(enableOverride);
-    }
-
-    public void setOverrideSettings(boolean override) {
-        overrideSettingsCheckbox.setSelected(override);
-        updateEnabling();
-    }
-
-    public boolean getOverrideSettings() {
-        return overrideSettingsCheckbox.isSelected();
-    }
-
     public void setPartOfAppDefaults(boolean isPreset) {
         if (isPreset) {
             profileSpawnedThreadsCheckbox.setSelected(false);
@@ -411,22 +360,6 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
                useCPUTimerCheckbox.isSelected();
     }
 
-    public void setVMArguments(String vmArguments) {
-        vmArgumentsTextField.setText(vmArguments);
-    }
-
-    public String getVMArguments() {
-        return vmArgumentsTextField.getText().trim();
-    }
-
-    public void setWorkingDirectory(String workingDirectory) {
-        workingDirectoryTextField.setText(workingDirectory);
-    }
-
-    public String getWorkingDirectory() {
-        return workingDirectoryTextField.getText().trim();
-    }
-
     public void disableAll() {
         methodsTrackingLabel.setEnabled(false);
         exactTimingRadio.setEnabled(false);
@@ -452,16 +385,6 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
         threadsSettingsPanel.setEnabled(false);
         threadsMonitoringCheckbox.setEnabled(false);
         threadsSamplingCheckbox.setEnabled(false);
-
-        globalSettingsPanel.setEnabled(false);
-        overrideSettingsCheckbox.setEnabled(false);
-        workingDirectoryLabel.setEnabled(false);
-        workingDirectoryTextField.setEnabled(false);
-        workingDirectorySelectLink.setEnabled(false);
-        javaPlatformLabel.setEnabled(false);
-        javaPlatformCombo.setEnabled(false);
-        vmArgumentsLabel.setEnabled(false);
-        vmArgumentsTextField.setEnabled(false);
     }
 
     public void enableAll() {
@@ -490,15 +413,6 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
         threadsMonitoringCheckbox.setEnabled(true);
         threadsSamplingCheckbox.setEnabled(true);
 
-        globalSettingsPanel.setEnabled(true);
-        overrideSettingsCheckbox.setEnabled(true);
-        workingDirectoryLabel.setEnabled(true);
-        workingDirectoryTextField.setEnabled(true);
-        workingDirectorySelectLink.setEnabled(true);
-        javaPlatformLabel.setEnabled(true);
-        javaPlatformCombo.setEnabled(true);
-        vmArgumentsLabel.setEnabled(true);
-        vmArgumentsTextField.setEnabled(true);
     }
 
     // --- Static tester frame ---------------------------------------------------
@@ -524,24 +438,6 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
         frame.setVisible(true);
-    }
-
-    private JFileChooser getFileChooser() {
-        JFileChooser chooser;
-
-        if ((workingDirectoryChooserReference == null) || (workingDirectoryChooserReference.get() == null)) {
-            chooser = new JFileChooser();
-            chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-            chooser.setMultiSelectionEnabled(false);
-            chooser.setAcceptAllFileFilterUsed(false);
-            chooser.setDialogType(JFileChooser.OPEN_DIALOG);
-            chooser.setDialogTitle(Bundle.CPUSettingsAdvancedPanel_ChooseWorkDirDialogCaption());
-            workingDirectoryChooserReference = new WeakReference(chooser);
-        } else {
-            chooser = workingDirectoryChooserReference.get();
-        }
-
-        return chooser;
     }
 
     // --- UI definition ---------------------------------------------------------
@@ -1027,165 +923,6 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
         constraints.insets = new Insets(0, 7, 3, 0);
         threadsSettingsPanel.add(threadsSamplingCheckbox, constraints);
 
-        // globalSettingsPanel
-        globalSettingsPanel = new JPanel(new GridBagLayout());
-        globalSettingsPanel.setOpaque(false);
-        globalSettingsPanel.setBorder(BorderFactory.createTitledBorder(Bundle.CPUSettingsAdvancedPanel_GlobalSettingsCaption()));
-        constraints = new GridBagConstraints();
-        constraints.gridx = 0;
-        constraints.gridy = 2;
-        constraints.gridwidth = GridBagConstraints.REMAINDER;
-        constraints.fill = GridBagConstraints.HORIZONTAL;
-        constraints.anchor = GridBagConstraints.NORTHWEST;
-        constraints.insets = new Insets(0, 5, 0, 5);
-        add(globalSettingsPanel, constraints);
-
-        // overrideSettingsCheckbox
-        overrideSettingsCheckbox = new JCheckBox();
-        org.openide.awt.Mnemonics.setLocalizedText(overrideSettingsCheckbox, Bundle.CPUSettingsAdvancedPanel_OverrideSettingsCheckboxText());
-        overrideSettingsCheckbox.setToolTipText(Bundle.StpOverrideTooltip());
-        overrideSettingsCheckbox.setOpaque(false);
-        overrideSettingsCheckbox.setSelected(true);
-        overrideSettingsCheckbox.addChangeListener(new ChangeListener() {
-                public void stateChanged(ChangeEvent e) {
-                    updateEnabling();
-                }
-            });
-        constraints = new GridBagConstraints();
-        constraints.gridx = 0;
-        constraints.gridy = 0;
-        constraints.gridwidth = GridBagConstraints.REMAINDER;
-        constraints.fill = GridBagConstraints.NONE;
-        constraints.anchor = GridBagConstraints.WEST;
-        constraints.insets = new Insets(2, 7, 0, 0);
-        globalSettingsPanel.add(overrideSettingsCheckbox, constraints);
-
-        // workingDirectoryLabel
-        workingDirectoryLabel = new JLabel();
-        org.openide.awt.Mnemonics.setLocalizedText(workingDirectoryLabel, Bundle.CPUSettingsAdvancedPanel_WorkDirLabelText());
-        workingDirectoryLabel.setToolTipText(Bundle.StpWorkDirTooltip());
-        workingDirectoryLabel.setOpaque(false);
-        constraints = new GridBagConstraints();
-        constraints.gridx = 0;
-        constraints.gridy = 1;
-        constraints.gridwidth = 1;
-        constraints.fill = GridBagConstraints.NONE;
-        constraints.anchor = GridBagConstraints.WEST;
-        constraints.insets = new Insets(5, 19, 0, 0);
-        globalSettingsPanel.add(workingDirectoryLabel, constraints);
-
-        // workingDirectoryTextField
-        workingDirectoryTextField = new JTextField() {
-                public Dimension getMinimumSize() {
-                    return getPreferredSize();
-                }
-            };
-        workingDirectoryLabel.setLabelFor(workingDirectoryTextField);
-        workingDirectoryTextField.setToolTipText(Bundle.StpWorkDirTooltip());
-        workingDirectoryTextField.getDocument().addDocumentListener(new DocumentListener() {
-            public void insertUpdate(DocumentEvent e)  { checkWorkingDirectory(); }
-            public void removeUpdate(DocumentEvent e)  { checkWorkingDirectory(); }
-            public void changedUpdate(DocumentEvent e) { checkWorkingDirectory(); }
-        });
-        constraints = new GridBagConstraints();
-        constraints.gridx = 1;
-        constraints.gridy = 1;
-        constraints.gridwidth = 1;
-        constraints.weightx = 1;
-        constraints.fill = GridBagConstraints.HORIZONTAL;
-        constraints.anchor = GridBagConstraints.WEST;
-        constraints.insets = new Insets(5, 5, 0, 0);
-        globalSettingsPanel.add(workingDirectoryTextField, constraints);
-
-        // workingDirectorySelectLink
-        Color linkColor = Color.RED;
-        String colorText = "rgb(" + linkColor.getRed() + "," + linkColor.getGreen() + "," + linkColor.getBlue() + ")"; //NOI18N
-        workingDirectorySelectLink = new HyperlinkLabel("<a href='#'>" + Bundle.CPUSettingsAdvancedPanel_ChooseWorkDirLinkText() + "</a>", // NOI18N
-                                                        "<a href='#' color=\"" + colorText + "\">" + Bundle.CPUSettingsAdvancedPanel_ChooseWorkDirLinkText()
-                                                        + "</a>", // NOI18N
-                                                        new Runnable() {
-                public void run() {
-                    JFileChooser chooser = getFileChooser();
-                    chooser.setCurrentDirectory(new File(workingDirectoryTextField.getText().trim()));
-
-                    if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
-                        workingDirectoryTextField.setText(chooser.getSelectedFile().getAbsolutePath());
-                    }
-                }
-            });
-        workingDirectorySelectLink.setOpaque(false);
-        constraints = new GridBagConstraints();
-        constraints.gridx = 2;
-        constraints.gridy = 1;
-        constraints.gridwidth = 1;
-        constraints.fill = GridBagConstraints.NONE;
-        constraints.anchor = GridBagConstraints.WEST;
-        constraints.insets = new Insets(5, 4, 0, 3);
-        globalSettingsPanel.add(workingDirectorySelectLink, constraints);
-
-        // javaPlatformLabel
-        javaPlatformLabel = new JLabel();
-        org.openide.awt.Mnemonics.setLocalizedText(javaPlatformLabel, Bundle.CPUSettingsAdvancedPanel_JavaPlatformLabelText());
-        javaPlatformLabel.setToolTipText(Bundle.StpJPlatformTooltip());
-        javaPlatformLabel.setOpaque(false);
-        constraints = new GridBagConstraints();
-        constraints.gridx = 0;
-        constraints.gridy = 2;
-        constraints.gridwidth = 1;
-        constraints.fill = GridBagConstraints.NONE;
-        constraints.anchor = GridBagConstraints.WEST;
-        constraints.insets = new Insets(5, 19, 0, 0);
-        globalSettingsPanel.add(javaPlatformLabel, constraints);
-
-        // javaPlatformCombo
-        javaPlatformCombo = new JComboBox(new Object[] { Bundle.CPUSettingsAdvancedPanel_DoNotOverrideString() }) {
-                public Dimension getMinimumSize() {
-                    return getPreferredSize();
-                }
-            };
-        javaPlatformLabel.setLabelFor(javaPlatformCombo);
-        javaPlatformCombo.setToolTipText(Bundle.StpJPlatformTooltip());
-        constraints = new GridBagConstraints();
-        constraints.gridx = 1;
-        constraints.gridy = 2;
-        constraints.gridwidth = 1;
-        constraints.fill = GridBagConstraints.HORIZONTAL;
-        constraints.anchor = GridBagConstraints.WEST;
-        constraints.insets = new Insets(5, 5, 0, 0);
-        globalSettingsPanel.add(javaPlatformCombo, constraints);
-
-        // vmArgumentsLabel
-        vmArgumentsLabel = new JLabel();
-        org.openide.awt.Mnemonics.setLocalizedText(vmArgumentsLabel, Bundle.CPUSettingsAdvancedPanel_JvmArgumentsLabelText());
-        vmArgumentsLabel.setToolTipText(Bundle.StpVmArgsTooltip());
-        vmArgumentsLabel.setOpaque(false);
-        constraints = new GridBagConstraints();
-        constraints.gridx = 0;
-        constraints.gridy = 3;
-        constraints.gridwidth = 1;
-        constraints.fill = GridBagConstraints.NONE;
-        constraints.anchor = GridBagConstraints.WEST;
-        constraints.insets = new Insets(5, 19, 8, 0);
-        globalSettingsPanel.add(vmArgumentsLabel, constraints);
-
-        // vmArgumentsTextField
-        vmArgumentsTextField = new JTextField() {
-                public Dimension getMinimumSize() {
-                    return getPreferredSize();
-                }
-            };
-        vmArgumentsLabel.setLabelFor(vmArgumentsTextField);
-        vmArgumentsTextField.setToolTipText(Bundle.StpVmArgsTooltip());
-        constraints = new GridBagConstraints();
-        constraints.gridx = 1;
-        constraints.gridy = 3;
-        constraints.gridwidth = 1;
-        constraints.weightx = 1;
-        constraints.fill = GridBagConstraints.HORIZONTAL;
-        constraints.anchor = GridBagConstraints.WEST;
-        constraints.insets = new Insets(5, 5, 8, 0);
-        globalSettingsPanel.add(vmArgumentsTextField, constraints);
-
         // fillerPanel
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
@@ -1200,15 +937,6 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
     }
 
     private void updateEnabling() {
-        boolean enableOverride = overrideSettingsCheckbox.isSelected() && overrideSettingsCheckbox.isEnabled();
-        workingDirectoryLabel.setEnabled(enableOverride);
-        workingDirectoryTextField.setEnabled(enableOverride);
-        workingDirectorySelectLink.setEnabled(enableOverride);
-        javaPlatformLabel.setEnabled(enableOverride);
-        javaPlatformCombo.setEnabled(enableOverride);
-        vmArgumentsLabel.setEnabled(enableOverride);
-        vmArgumentsTextField.setEnabled(enableOverride);
-
         if (profileFrameworkCheckbox.isSelected()) {
             profileSpawnedThreadsCheckbox.setSelected(true);
             profileSpawnedThreadsCheckbox.setEnabled(false);
@@ -1217,34 +945,6 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
         } else {
             profileSpawnedThreadsCheckbox.setEnabled(methodsTrackingLabel.isEnabled()); // Just a hack to detect settings for preset (always disabled)
             instrumentationSchemeCombo.setEnabled(methodsTrackingLabel.isEnabled()); // Just a hack to detect settings for preset (always disabled)
-        }
-    }
-    
-    private void checkWorkingDirectory() {
-        String workDir = workingDirectoryTextField.getText().trim();
-        if (workDir.length() == 0 || new File(workDir).exists()) {
-            workingDirectoryTextField.setForeground(UIManager.getColor("TextField.foreground")); // NOI18N
-        } else {
-            workingDirectoryTextField.setForeground(Color.RED);
-        }
-    }
-
-    // --- Private implementation ------------------------------------------------
-    private void updateJavaPlatformCombo(String platformNameToSelect) {
-        List<JavaPlatform> supportedPlatforms = JavaPlatform.getPlatforms();
-        String[] supportedPlatformNames = new String[supportedPlatforms.size() + 1];
-        supportedPlatformNames[0] = Bundle.CPUSettingsAdvancedPanel_DoNotOverrideString();
-
-        for (int i = 1; i < supportedPlatformNames.length; i++) {
-            supportedPlatformNames[i] = supportedPlatforms.get(i - 1).getDisplayName();
-        }
-
-        javaPlatformCombo.setModel(new DefaultComboBoxModel(supportedPlatformNames));
-
-        if (platformNameToSelect != null) {
-            javaPlatformCombo.setSelectedItem(platformNameToSelect);
-        } else {
-            javaPlatformCombo.setSelectedIndex(0);
         }
     }
 }

@@ -194,25 +194,22 @@ public class CommentCollectorTest extends NbTestCase {
             protected CommentHandlerService service;
 
             public void run(WorkingCopy workingCopy) throws Exception {
-                CommentCollector cc = CommentCollector.getInstance();
                 workingCopy.toPhase(JavaSource.Phase.PARSED);
-                cc.collect(workingCopy);
+                CompilationUnitTree cu = workingCopy.getCompilationUnit();
+                GeneratorUtilities.get(workingCopy).importComments(cu, cu);
 
                 service = CommentHandlerService.instance(workingCopy.impl.getJavacTask().getContext());
                 CommentPrinter printer = new CommentPrinter(service);
-                CompilationUnitTree cu = workingCopy.getCompilationUnit();
                 cu.accept(printer, null);
 
                 JCTree.JCClassDecl clazz = (JCTree.JCClassDecl) cu.getTypeDecls().get(0);
                 final boolean[] processed = new boolean[1];
                 TreeVisitor<Void, Void> w = new TreeScanner<Void, Void>() {
                     @Override
-                    public Void visitIdentifier(IdentifierTree node, Void aVoid) {
-                        if (node.getName().contentEquals("System")) {
-                            verify(node, CommentSet.RelativePosition.PRECEDING, service, "// Test");
-                            processed[0] = true;
-                        }
-                        return super.visitIdentifier(node, aVoid);
+                    public Void visitExpressionStatement(ExpressionStatementTree node, Void p) {
+                        verify(node, CommentSet.RelativePosition.PRECEDING, service, "// Test");
+                        processed[0] = true;
+                        return super.visitExpressionStatement(node, p);
                     }
                 };
                 clazz.accept(w, null);
@@ -245,9 +242,7 @@ public class CommentCollectorTest extends NbTestCase {
             protected CommentHandlerService service;
 
             public void run(WorkingCopy workingCopy) throws Exception {
-//                CommentCollector cc = CommentCollector.getInstance();
                 workingCopy.toPhase(JavaSource.Phase.PARSED);
-//                cc.collect(workingCopy);
                 CompilationUnitTree cu = workingCopy.getCompilationUnit();
                 GeneratorUtilities.get(workingCopy).importComments(cu, cu);
 

@@ -377,7 +377,8 @@ final class DataViewTableUI extends ResultSetJXTable {
                     int[] rows = getSelectedRows();
                     String insertSQL = "";
                     for (int j = 0; j < rows.length; j++) {
-                        Object[] insertRow = dataView.getDataViewPageContext().getCurrentRows().get(rows[j]);
+                        int modelIndex = convertRowIndexToModel(rows[j]);
+                        Object[] insertRow = dataView.getDataViewPageContext().getCurrentRows().get(modelIndex);
                         String sql = dataView.getSQLStatementGenerator().generateRawInsertStatement(insertRow);
                         insertSQL += sql.replaceAll("\n", "").replaceAll("\t", "") + ";\n"; // NOI18N
                     }
@@ -402,7 +403,8 @@ final class DataViewTableUI extends ResultSetJXTable {
                 String rawDeleteStmt = "";
                 for (int j = 0; j < rows.length; j++) {
                     SQLStatementGenerator generator = dataView.getSQLStatementGenerator();
-                    final String deleteStmt = generator.generateDeleteStatement(rows[j], getModel());
+                    int modelIndex = convertRowIndexToModel(rows[j]);
+                    final String deleteStmt = generator.generateDeleteStatement(modelIndex, getModel());
                     rawDeleteStmt += deleteStmt + ";\n"; // NOI18N
                 }
                 ShowSQLDialog dialog = new ShowSQLDialog();

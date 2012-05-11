@@ -294,7 +294,9 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
                 isTrackComponentChanges = trackComponentChanges;
                 if (trackComponentChanges && RemoteAWTScreenshot.FAST_SNAPSHOT_RETRIEVAL) {
                     Method startHierarchyListenerMethod = ClassTypeWrapper.concreteMethodByName(serviceClass, "startHierarchyListener", "()V");
-                    ClassTypeWrapper.invokeMethod(serviceClass, tr, startHierarchyListenerMethod, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+                    if (startHierarchyListenerMethod != null) {
+                        ClassTypeWrapper.invokeMethod(serviceClass, tr, startHierarchyListenerMethod, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+                    }
                 }
             } catch (VMDisconnectedExceptionWrapper vmd) {                
             } catch (Exception ex) {

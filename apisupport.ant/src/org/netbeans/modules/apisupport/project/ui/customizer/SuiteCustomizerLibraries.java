@@ -73,6 +73,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ListSelectionModel;
@@ -1495,13 +1496,18 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
             Set<NbModuleProject> suiteModules, Set<ModuleEntry> extraBinaryModules) throws IOException {
         Set<UniverseModule> universeModules = new LinkedHashSet<UniverseModule>();
         for (NbModuleProject p : suiteModules) {
-            ManifestManager mm = ManifestManager.getInstance(p.getManifest(), false);
-            if (mm != null) {
-                universeModules.add(new SuiteModule(p, mm));
+            Manifest mani = p.getManifest();
+            if (mani != null) {
+                ManifestManager mm = ManifestManager.getInstance(mani, false);
+                if (mm != null) {
+                    universeModules.add(new SuiteModule(p, mm));
+                }
             }
         }
         for (ModuleEntry e : platformModules) {
-            universeModules.add(new PlatformModule(e));
+            if (e.getJarLocation().isFile()) { // might be false for unbuilt nb.org modules
+                universeModules.add(new PlatformModule(e));
+            }
         }
         for (ModuleEntry e : extraBinaryModules) {
             universeModules.add(new PlatformModule(e));

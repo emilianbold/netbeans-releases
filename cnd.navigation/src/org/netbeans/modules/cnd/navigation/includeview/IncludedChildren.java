@@ -94,9 +94,9 @@ public class IncludedChildren extends Children.Keys<CsmFile> {
     
     @Override
     protected Node[] createNodes(CsmFile file) {
-        Node node = null;
+        Node node;
         Set<CsmFile> set = model.getModel().get(file);
-        if (set == null || set.size() == 0) {
+        if (set == null || set.isEmpty()) {
             node = new IncludeNode(file, Children.LEAF, model, false);
         } else {
             if (checkRecursion(file)) {

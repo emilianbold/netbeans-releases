@@ -167,6 +167,16 @@ class CheckNodeListener implements MouseListener, KeyListener {
                         o = ((TreeElement) o).getUserObject();
                         if (o instanceof RefactoringElement) {
                             openDiff(node);
+                        } else if (o instanceof FileObject) {
+                            tree.expandPath(path);
+                            TreePath pathForRow = tree.getPathForRow(row+1);
+                            CheckNode lastPathComponent = (CheckNode) pathForRow.getLastPathComponent();
+                            Object userObject = lastPathComponent.getUserObject();
+                            if (userObject instanceof TreeElement) {
+                                Object refElement = ((TreeElement) userObject).getUserObject();
+                                if (refElement instanceof RefactoringElement)
+                                    openDiff(lastPathComponent);
+                            }
                         }
                     }
                 }
@@ -180,7 +190,36 @@ class CheckNodeListener implements MouseListener, KeyListener {
 
     @Override
     public void keyReleased(KeyEvent e) {
+        int keyCode = e.getKeyCode();
+        if (keyCode == KeyEvent.VK_UP || keyCode == KeyEvent.VK_DOWN) {
+            JTree tree = (JTree) e.getSource();
+            int row = tree.getSelectionRows()[0];
+            TreePath path = tree.getSelectionPath();
+            if (path != null) {
+                CheckNode node = (CheckNode) path.getLastPathComponent();
+
+                Object o = node.getUserObject();
+                if (o instanceof TreeElement) {
+                    o = ((TreeElement) o).getUserObject();
+                    if (o instanceof RefactoringElement) {
+                        openDiff(node);
+                    } else if (o instanceof FileObject) {
+                        tree.expandPath(path);
+                        TreePath pathForRow = tree.getPathForRow(row + 1);
+                        CheckNode lastPathComponent = (CheckNode) pathForRow.getLastPathComponent();
+                        Object userObject = lastPathComponent.getUserObject();
+                        if (userObject instanceof TreeElement) {
+                            Object refElement = ((TreeElement) userObject).getUserObject();
+                            if (refElement instanceof RefactoringElement) {
+                                openDiff(lastPathComponent);
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
+
 
     @Override
     public void mouseEntered(MouseEvent e) {
@@ -256,13 +295,6 @@ class CheckNodeListener implements MouseListener, KeyListener {
                 if (path != null) {
                     CheckNode node = (CheckNode) path.getLastPathComponent();
                     findInSource(node);
-                }
-            } else if (keyCode == KeyEvent.VK_UP || keyCode == KeyEvent.VK_DOWN) {
-                JTree tree = (JTree) e.getSource();
-                TreePath path = tree.getSelectionPath();
-                if (path != null) {
-                    CheckNode node = (CheckNode) path.getLastPathComponent();
-                    openDiff(node);
                 }
             }
         }

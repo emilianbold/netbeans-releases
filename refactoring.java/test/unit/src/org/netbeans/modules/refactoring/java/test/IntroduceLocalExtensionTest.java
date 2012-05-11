@@ -81,7 +81,10 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append(" */")
                 .append("\n").append("public class SingleList<E extends Object> extends AbstractList<E> implements List<E>{")
                 .append("\n").append("    ")
+                .append("\n").append("    public static final int MAGIC = 5;")
+                .append("\n").append("    ")
                 .append("\n").append("    private E[] elements = (E[]) new Object[1];")
+                .append("\n").append("    public int someMagicNumber = 5;")
                 .append("\n").append("")
                 .append("\n").append("    /**")
                 .append("\n").append("     * Create a new SingleList. This list will hold only one element.")
@@ -392,6 +395,214 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("}");
         //</editor-fold>
     }
+    
+    public void testDate() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "import java.util.Date;\n"
+                + "import java.util.Calendar;\n"
+                + "\n"
+                + "public class A {\n"
+                + "    public Date today() {\n"
+                + "        Date date = new Date();\n"
+                + "        return date;\n"
+                + "    }\n"
+                + "\n"
+                + "    public Date nextDay(int numberOfDays, Date date) {\n"
+                + "        return new Date(date.getYear(), date.getMonth(), date.getDate() + numberOfDays);\n"
+                + "    }\n"
+                + "\n"
+                + "    public static void main(String[] args) {\n"
+                + "        Date nu = Calendar.getInstance().getTime();\n"
+                + "        System.out.println(nu.toString());\n"
+                + "        IntroduceLocalExtension ile = new IntroduceLocalExtension();\n"
+                + "        Date today = ile.today();\n"
+                + "        System.out.println(today.toString());\n"
+                + "    }\n"
+                + "}"));
+        performIntroduceLocalExtension("DateExt", true, true, "t", IntroduceLocalExtensionRefactoring.Equality.DELEGATE);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "import java.util.Date;\n"
+                + "import java.util.Calendar;\n"
+                + "\n"
+                + "public class A {\n"
+                + "    public DateExt today() {\n"
+                + "        DateExt date = new DateExt();\n"
+                + "        return date;\n"
+                + "    }\n"
+                + "\n"
+                + "    public DateExt nextDay(int numberOfDays, DateExt date) {\n"
+                + "        return new DateExt(date.getYear(), date.getMonth(), date.getDate() + numberOfDays);\n"
+                + "    }\n"
+                + "\n"
+                + "    public static void main(String[] args) {\n"
+                + "        DateExt nu = new DateExt(Calendar.getInstance().getTime());\n"
+                + "        System.out.println(nu.toString());\n"
+                + "        IntroduceLocalExtension ile = new IntroduceLocalExtension();\n"
+                + "        DateExt today = ile.today();\n"
+                + "        System.out.println(today.toString());\n"
+                + "    }\n"
+                + "}"),
+                new File("t/DateExt.java", "/*\n"
+                + " * Refactoring License\n"
+                + " */\n"
+                + "package t;\n"
+                + "\n"
+                + "import java.io.Serializable;\n"
+                + "import java.util.Date;\n"
+                + "\n"
+                + "/**\n"
+                + " *\n"
+                + " * @author junit\n"
+                + " */\n"
+                + "public class DateExt implements Serializable, Cloneable, Comparable<DateExt> {\n"
+                + "    private Date delegate;\n"
+                + "\n"
+                + "    public DateExt(Date delegate) {\n"
+                + "        this.delegate = delegate;\n"
+                + "    }\n"
+                + "\n"
+                + "    public DateExt() {\n"
+                + "        this.delegate = new Date();\n"
+                + "    }\n"
+                + "\n"
+                + "    public DateExt(long date) {\n"
+                + "        this.delegate = new Date(date);\n"
+                + "    }\n"
+                + "\n"
+                + "    public DateExt(int year, int month, int date) {\n"
+                + "        this.delegate = new Date(year, month, date);\n"
+                + "    }\n"
+                + "\n"
+                + "    public DateExt(int year, int month, int date, int hrs, int min) {\n"
+                + "        this.delegate = new Date(year, month, date, hrs, min);\n"
+                + "    }\n"
+                + "\n"
+                + "    public DateExt(int year, int month, int date, int hrs, int min, int sec) {\n"
+                + "        this.delegate = new Date(year, month, date, hrs, min, sec);\n"
+                + "    }\n"
+                + "\n"
+                + "    public DateExt(String s) {\n"
+                + "        this.delegate = new Date(s);\n"
+                + "    }\n"
+                + "\n"
+                + "    public Object clone() {\n"
+                + "        return delegate.clone();\n"
+                + "    }\n"
+                + "\n"
+                + "    public static long UTC(int year, int month, int date, int hrs, int min, int sec) {\n"
+                + "        return Date.UTC(year, month, date, hrs, min, sec);\n"
+                + "    }\n"
+                + "\n"
+                + "    public static long parse(String s) {\n"
+                + "        return Date.parse(s);\n"
+                + "    }\n"
+                + "\n"
+                + "    public int getYear() {\n"
+                + "        return delegate.getYear();\n"
+                + "    }\n"
+                + "\n"
+                + "    public void setYear(int year) {\n"
+                + "        delegate.setYear(year);\n"
+                + "    }\n"
+                + "\n"
+                + "    public int getMonth() {\n"
+                + "        return delegate.getMonth();\n"
+                + "    }\n"
+                + "\n"
+                + "    public void setMonth(int month) {\n"
+                + "        delegate.setMonth(month);\n"
+                + "    }\n"
+                + "\n"
+                + "    public int getDate() {\n"
+                + "        return delegate.getDate();\n"
+                + "    }\n"
+                + "\n"
+                + "    public void setDate(int date) {\n"
+                + "        delegate.setDate(date);\n"
+                + "    }\n"
+                + "\n"
+                + "    public int getDay() {\n"
+                + "        return delegate.getDay();\n"
+                + "    }\n"
+                + "\n"
+                + "    public int getHours() {\n"
+                + "        return delegate.getHours();\n"
+                + "    }\n"
+                + "\n"
+                + "    public void setHours(int hours) {\n"
+                + "        delegate.setHours(hours);\n"
+                + "    }\n"
+                + "\n"
+                + "    public int getMinutes() {\n"
+                + "        return delegate.getMinutes();\n"
+                + "    }\n"
+                + "\n"
+                + "    public void setMinutes(int minutes) {\n"
+                + "        delegate.setMinutes(minutes);\n"
+                + "    }\n"
+                + "\n"
+                + "    public int getSeconds() {\n"
+                + "        return delegate.getSeconds();\n"
+                + "    }\n"
+                + "\n"
+                + "    public void setSeconds(int seconds) {\n"
+                + "        delegate.setSeconds(seconds);\n"
+                + "    }\n"
+                + "\n"
+                + "    public long getTime() {\n"
+                + "        return delegate.getTime();\n"
+                + "    }\n"
+                + "\n"
+                + "    public void setTime(long time) {\n"
+                + "        delegate.setTime(time);\n"
+                + "    }\n"
+                + "\n"
+                + "    public boolean before(DateExt when) {\n"
+                + "        return delegate.before(when.delegate);\n"
+                + "    }\n"
+                + "\n"
+                + "    public boolean after(DateExt when) {\n"
+                + "        return delegate.after(when.delegate);\n"
+                + "    }\n"
+                + "\n"
+                + "    public int compareTo(DateExt anotherDate) {\n"
+                + "        return delegate.compareTo(anotherDate.delegate);\n"
+                + "    }\n"
+                + "\n"
+                + "    public String toString() {\n"
+                + "        return delegate.toString();\n"
+                + "    }\n"
+                + "\n"
+                + "    public String toLocaleString() {\n"
+                + "        return delegate.toLocaleString();\n"
+                + "    }\n"
+                + "\n"
+                + "    public String toGMTString() {\n"
+                + "        return delegate.toGMTString();\n"
+                + "    }\n"
+                + "\n"
+                + "    public int getTimezoneOffset() {\n"
+                + "        return delegate.getTimezoneOffset();\n"
+                + "    }\n"
+                + "\n"
+                + "    public boolean equals(Object o) {\n"
+                + "        Object target = o;\n"
+                + "        if (o instanceof DateExt) {\n"
+                + "            target = ((DateExt) o).delegate;\n"
+                + "        }\n"
+                + "        return this.delegate.equals(target);\n"
+                + "    }\n"
+                + "\n"
+                + "    public int hashCode() {\n"
+                + "        return this.delegate.hashCode();\n"
+                + "    }\n"
+                + "\n"
+                + "}\n"
+                + ""));
+    }
+    
     public void test209863() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/SingleList.java", sb.toString()),
@@ -414,6 +625,7 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append(" * @author junit")
                 .append("\n").append(" */")
                 .append("\n").append("public class MyList<E> implements List<E>, Collection<E> {")
+                .append("\n").append("    public static final int MAGIC = SingleList.MAGIC;")
                 .append("\n").append("    private SingleList<E> delegate;")
                 .append("\n").append("")
                 .append("\n").append("    public MyList(SingleList<E> delegate) {")
@@ -435,16 +647,30 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("        this.delegate = new SingleList(element);")
                 .append("\n").append("    }")
                 .append("\n").append("")
-                .append("\n").append("    public boolean containsAll(Collection<?> arg0) {")
-                .append("\n").append("        return delegate.containsAll(arg0);")
+                .append("\n").append("    /**")
+                .append("\n").append("     * @return the someMagicNumber")
+                .append("\n").append("     */")
+                .append("\n").append("    public int getSomeMagicNumber() {")
+                .append("\n").append("        return delegate.someMagicNumber;")
                 .append("\n").append("    }")
                 .append("\n").append("")
-                .append("\n").append("    public boolean removeAll(Collection<?> arg0) {")
-                .append("\n").append("        return delegate.removeAll(arg0);")
+                .append("\n").append("    /**")
+                .append("\n").append("     * @param someMagicNumber the someMagicNumber to set")
+                .append("\n").append("     */")
+                .append("\n").append("    public void setSomeMagicNumber(int someMagicNumber) {")
+                .append("\n").append("        this.delegate.someMagicNumber = someMagicNumber;")
                 .append("\n").append("    }")
                 .append("\n").append("")
-                .append("\n").append("    public boolean retainAll(Collection<?> arg0) {")
-                .append("\n").append("        return delegate.retainAll(arg0);")
+                .append("\n").append("    public boolean containsAll(Collection<?> c) {")
+                .append("\n").append("        return delegate.containsAll(c);")
+                .append("\n").append("    }")
+                .append("\n").append("")
+                .append("\n").append("    public boolean removeAll(Collection<?> c) {")
+                .append("\n").append("        return delegate.removeAll(c);")
+                .append("\n").append("    }")
+                .append("\n").append("")
+                .append("\n").append("    public boolean retainAll(Collection<?> c) {")
+                .append("\n").append("        return delegate.retainAll(c);")
                 .append("\n").append("    }")
                 .append("\n").append("")
                 .append("\n").append("    public String toString() {")
@@ -459,12 +685,12 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("        return delegate.listIterator();")
                 .append("\n").append("    }")
                 .append("\n").append("")
-                .append("\n").append("    public ListIterator<E> listIterator(int arg0) {")
-                .append("\n").append("        return delegate.listIterator(arg0);")
+                .append("\n").append("    public ListIterator<E> listIterator(int index) {")
+                .append("\n").append("        return delegate.listIterator(index);")
                 .append("\n").append("    }")
                 .append("\n").append("")
-                .append("\n").append("    public List<E> subList(int arg0, int arg1) {")
-                .append("\n").append("        return delegate.subList(arg0, arg1);")
+                .append("\n").append("    public List<E> subList(int fromIndex, int toIndex) {")
+                .append("\n").append("        return delegate.subList(fromIndex, toIndex);")
                 .append("\n").append("    }")
                 .append("\n").append("")
                 .append("\n").append("    /**")
@@ -757,7 +983,7 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
     public void testWrapper() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/SingleList.java", sb.toString()),
-                new File("t/A.java", "package t; import java.util.List; public class A { public static void main(String[] args) { SingleList<String> lijst = new SingleList<String>(); SingleList<String> cloned = lijst.clone(); } }"));
+                new File("t/A.java", "package t; import java.util.List; public class A { public static void main(String[] args) { SingleList<String> lijst = new SingleList<String>(); SingleList<String> cloned = lijst.clone(); cloned.someMagicNumber = SingleList.MAGIC; System.out.println(\"Magic Number:\" + lijst.someMagicNumber); } }"));
         performIntroduceLocalExtension("MyList", true, true, "t", IntroduceLocalExtensionRefactoring.Equality.DELEGATE);
         StringBuilder sb1 = new StringBuilder();
         //<editor-fold defaultstate="collapsed" desc="Result">
@@ -776,6 +1002,7 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append(" * @author junit")
                 .append("\n").append(" */")
                 .append("\n").append("public class MyList<E> implements List<E>, Collection<E> {")
+                .append("\n").append("    public static final int MAGIC = SingleList.MAGIC;")
                 .append("\n").append("    private SingleList<E> delegate;")
                 .append("\n").append("")
                 .append("\n").append("    public MyList(SingleList<E> delegate) {")
@@ -796,17 +1023,30 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("    public MyList(E element) {")
                 .append("\n").append("        this.delegate = new SingleList(element);")
                 .append("\n").append("    }")
-                .append("\n").append("")
-                .append("\n").append("    public boolean containsAll(Collection<?> arg0) {")
-                .append("\n").append("        return delegate.containsAll(arg0);")
+                .append("\n").append("    /**")
+                .append("\n").append("     * @return the someMagicNumber")
+                .append("\n").append("     */")
+                .append("\n").append("    public int getSomeMagicNumber() {")
+                .append("\n").append("        return delegate.someMagicNumber;")
                 .append("\n").append("    }")
                 .append("\n").append("")
-                .append("\n").append("    public boolean removeAll(Collection<?> arg0) {")
-                .append("\n").append("        return delegate.removeAll(arg0);")
+                .append("\n").append("    /**")
+                .append("\n").append("     * @param someMagicNumber the someMagicNumber to set")
+                .append("\n").append("     */")
+                .append("\n").append("    public void setSomeMagicNumber(int someMagicNumber) {")
+                .append("\n").append("        this.delegate.someMagicNumber = someMagicNumber;")
                 .append("\n").append("    }")
                 .append("\n").append("")
-                .append("\n").append("    public boolean retainAll(Collection<?> arg0) {")
-                .append("\n").append("        return delegate.retainAll(arg0);")
+                .append("\n").append("    public boolean containsAll(Collection<?> c) {")
+                .append("\n").append("        return delegate.containsAll(c);")
+                .append("\n").append("    }")
+                .append("\n").append("")
+                .append("\n").append("    public boolean removeAll(Collection<?> c) {")
+                .append("\n").append("        return delegate.removeAll(c);")
+                .append("\n").append("    }")
+                .append("\n").append("")
+                .append("\n").append("    public boolean retainAll(Collection<?> c) {")
+                .append("\n").append("        return delegate.retainAll(c);")
                 .append("\n").append("    }")
                 .append("\n").append("")
                 .append("\n").append("    public String toString() {")
@@ -821,12 +1061,12 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("        return delegate.listIterator();")
                 .append("\n").append("    }")
                 .append("\n").append("")
-                .append("\n").append("    public ListIterator<E> listIterator(int arg0) {")
-                .append("\n").append("        return delegate.listIterator(arg0);")
+                .append("\n").append("    public ListIterator<E> listIterator(int index) {")
+                .append("\n").append("        return delegate.listIterator(index);")
                 .append("\n").append("    }")
                 .append("\n").append("")
-                .append("\n").append("    public List<E> subList(int arg0, int arg1) {")
-                .append("\n").append("        return delegate.subList(arg0, arg1);")
+                .append("\n").append("    public List<E> subList(int fromIndex, int toIndex) {")
+                .append("\n").append("        return delegate.subList(fromIndex, toIndex);")
                 .append("\n").append("    }")
                 .append("\n").append("")
                 .append("\n").append("    /**")
@@ -1078,8 +1318,8 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("")
                 .append("\n").append("    public boolean equals(Object o) {")
                 .append("\n").append("        Object target = o;")
-                .append("\n").append("        if (o instanceof MyList<E>) {")
-                .append("\n").append("            target = ((MyList<E>) o).delegate;")
+                .append("\n").append("        if (o instanceof MyList) {")
+                .append("\n").append("            target = ((MyList) o).delegate;")
                 .append("\n").append("        }")
                 .append("\n").append("        return this.delegate.equals(target);")
                 .append("\n").append("    }")
@@ -1092,7 +1332,7 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
         //</editor-fold>
         verifyContent(src,
                 new File("t/SingleList.java", sb.toString()),
-                new File("t/A.java", "package t; import java.util.List; public class A { public static void main(String[] args) { MyList<String> lijst = new MyList<String>(); MyList<String> cloned = lijst.clone(); } }"),
+                new File("t/A.java", "package t; import java.util.List; public class A { public static void main(String[] args) { MyList<String> lijst = new MyList<String>(); MyList<String> cloned = lijst.clone(); cloned.setSomeMagicNumber(MyList.MAGIC); System.out.println(\"Magic Number:\" + lijst.getSomeMagicNumber()); } }"),
                 new File("t/MyList.java", sb1.toString()));
     }
     
@@ -1157,16 +1397,16 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
         .append("\n").append(" */")
         .append("\n").append("public class ArrayList<E> extends java.util.ArrayList<E> {")
         .append("\n").append("")
-        .append("\n").append("    public ArrayList(int arg0) {")
-        .append("\n").append("        super(arg0);")
+        .append("\n").append("    public ArrayList(int initialCapacity) {")
+        .append("\n").append("        super(initialCapacity);")
         .append("\n").append("    }")
         .append("\n").append("")
         .append("\n").append("    public ArrayList() {")
         .append("\n").append("        super();")
         .append("\n").append("    }")
         .append("\n").append("")
-        .append("\n").append("    public ArrayList(Collection<? extends E> arg0) {")
-        .append("\n").append("        super(arg0);")
+        .append("\n").append("    public ArrayList(Collection<? extends E> c) {")
+        .append("\n").append("        super(c);")
         .append("\n").append("    }")
         .append("\n").append("")
         .append("\n").append("}")

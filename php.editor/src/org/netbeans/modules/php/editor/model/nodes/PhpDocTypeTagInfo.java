@@ -158,7 +158,9 @@ public class PhpDocTypeTagInfo extends ASTNodeInfo<PHPDocNode> {
     public OffsetRange getRange() {
         PHPDocNode node = getOriginalNode();
         if (Kind.VARIABLE.equals(getKind()) || Kind.FIELD.equals(getKind())) {
-            return new OffsetRange(node.getStartOffset()+1, node.getStartOffset()+getName().length());
+            int start = getName().length() > 0 ? node.getStartOffset() + 1 : node.getStartOffset();
+            int end = node.getStartOffset() + getName().length();
+            return new OffsetRange(start, end);
         }
         if (Kind.USE_ALIAS.equals(getKind())) {
             return new OffsetRange(node.getStartOffset(), node.getStartOffset()+getName().length());

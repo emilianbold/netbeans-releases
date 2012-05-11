@@ -225,7 +225,14 @@ public class ArchiveURLMapperTest extends NbTestCase {
         LOG.info("After refresh");
 
         // check meta.jar/newFile
-        FileObject newFO = metaRoot.getFileObject("newFile");
+        FileObject newFO = null;
+        for (int i = 0; i < 10; i++) {
+            newFO = metaRoot.getFileObject("newFile");
+            if (newFO != null) {
+                break;
+            }
+            Thread.sleep(500);
+        }
         LOG.log(Level.INFO, "newFile obtained: {0}", newFO);
         if (newFO == null) {
             fail("newFile should be found among:\n" + Arrays.toString(metaRoot.getChildren()));

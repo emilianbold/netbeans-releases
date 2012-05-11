@@ -159,8 +159,8 @@ import org.netbeans.modules.java.hints.spiimpl.JackpotTrees.ModifiersWildcard;
 import org.netbeans.modules.java.hints.spiimpl.JackpotTrees.VariableWildcard;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.builder.TreeFactory;
-import org.netbeans.modules.java.source.javac.CancelService;
-import org.netbeans.modules.java.source.javac.NBParserFactory.NBEndPosParser;
+import org.netbeans.lib.nbjavac.services.CancelService;
+import org.netbeans.lib.nbjavac.services.NBParserFactory.NBEndPosParser;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.pretty.ImportAnalysis2;
 import org.netbeans.modules.java.source.transform.ImmutableTreeTranslator;
@@ -381,9 +381,11 @@ public class Utilities {
             } else {
                 List<StatementTree> newStatements = new LinkedList<StatementTree>();
 
-                newStatements.add(make.ExpressionStatement(make.Identifier("$$1$")));
+                if (!statements.isEmpty() && !Utilities.isMultistatementWildcardTree(statements.get(0)))
+                    newStatements.add(make.ExpressionStatement(make.Identifier("$$1$")));
                 newStatements.addAll(statements);
-                newStatements.add(make.ExpressionStatement(make.Identifier("$$2$")));
+                if (!statements.isEmpty() && !Utilities.isMultistatementWildcardTree(statements.get(statements.size() - 1)))
+                    newStatements.add(make.ExpressionStatement(make.Identifier("$$2$")));
 
                 currentPatternTree = make.Block(newStatements, false);
             }
@@ -647,6 +649,14 @@ public class Utilities {
         if (t.getKind() == Kind.IDENTIFIER) {
             IdentifierTree identTree = (IdentifierTree) t;
             String name = identTree.getName().toString();
+
+            if (name.startsWith("$")) {
+                return name;
+            }
+        }
+        
+        if (t.getKind() == Kind.TYPE_PARAMETER) {
+            String name = ((TypeParameterTree) t).getName().toString();
 
             if (name.startsWith("$")) {
                 return name;

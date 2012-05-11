@@ -766,6 +766,10 @@ public class HgCommand {
         command.add(HG_UPDATE_CMD);
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
+        if (HgModuleConfig.getDefault().isInternalMergeToolEnabled()) {
+            command.add(HG_CONFIG_OPTION_CMD);
+            command.add(HG_MERGE_SIMPLE_TOOL);
+        }
         if (bundle != null) {
             command.add(bundle.getAbsolutePath());
         }

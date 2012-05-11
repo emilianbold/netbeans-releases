@@ -58,26 +58,27 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.picklist.DefaultPicklistModel;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
-import org.netbeans.modules.cnd.makeproject.runprofiles.RunProfileXMLCodec;
-import org.netbeans.modules.cnd.makeproject.runprofiles.ui.EnvPanel;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
-import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ComboStringConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.IntConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
+import org.netbeans.modules.cnd.makeproject.api.configurations.IntConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakefileConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.StringConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.ComboStringNodeProp;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
+import org.netbeans.modules.cnd.makeproject.runprofiles.RunProfileXMLCodec;
+import org.netbeans.modules.cnd.makeproject.runprofiles.ui.EnvPanel;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
@@ -779,7 +780,30 @@ public boolean isSimpleRunCommand() {
         set.setName("General"); // NOI18N
         set.setDisplayName(getString("GeneralName"));
         set.setShortDescription(getString("GeneralTT"));
-        set.put(new ComboStringNodeProp(getRunCommand(), true, getString("RunCommandName"), getString("RunCommandHint")));
+
+        String runComboHintSuffix = null;
+
+        ExecutionEnvironment targetEnv = makeConfiguration.getDevelopmentHost().getExecutionEnvironment();
+        if (!isWindows() && HostInfoUtils.isHostInfoAvailable(targetEnv)) {
+            try {
+                String shell = HostInfoUtils.getHostInfo(targetEnv).getShell();
+                if (shell != null) {
+                    shell = CndPathUtilitities.getBaseName(shell);
+                    runComboHintSuffix = NbBundle.getMessage(RunProfile.class, "ShellSyntaxSupported", shell); // NOI18N
+                }
+            } catch (IOException ex) {
+            } catch (CancellationException ex) {
+            }
+        }
+
+        String runComboName = getString("RunCommandName"); // NOI18N
+        String runComboHint = getString("RunCommandHint"); // NOI18N
+
+        if (runComboHintSuffix != null) {
+            runComboHint = runComboHint.concat("<br>").concat(runComboHintSuffix); // NOI18N
+        }
+
+        set.put(new ComboStringNodeProp(getRunCommand(), true, runComboName, runComboHint));
         set.put(new RunDirectoryNodeProp());
         set.put(argumentsNodeprop = new StringNodeProp(getConfigurationArguments(), "", "Arguments", getString("ArgumentsName"), getString("ArgumentsHint"))); // NOI18N
         argumentsNodeprop.setHidden(true);

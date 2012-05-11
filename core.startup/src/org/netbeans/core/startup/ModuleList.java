@@ -1571,7 +1571,7 @@ final class ModuleList implements Stamps.Updater {
             Map<String, Map<String, Object>> cache = readCache();
             String[] names;
             if (cache != null) {
-                names = cache.keySet().toArray(new String[0]);
+                names = cache.keySet().toArray(new String[cache.size()]);
             } else {
                 FileObject[] children = folder.getChildren();
                 List<String> arr = new ArrayList<String>(children.length);
@@ -1594,7 +1594,7 @@ final class ModuleList implements Stamps.Updater {
                         LOG.fine("Strange file encountered in modules folder: " + f);
                     }
                 }
-                names = arr.toArray(new String[0]);
+                names = arr.toArray(new String[arr.size()]);
             }
             ev.log(Events.MODULES_FILE_SCANNED, names.length);
             XMLReader reader = null;

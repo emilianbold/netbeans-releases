@@ -47,7 +47,7 @@ import org.netbeans.modules.bugtracking.api.Issue;
  *
  * @author jpeska
  */
-public class OpenedTaskFilter implements TaskFilter {
+public class OpenedTaskFilter implements DashboardFilter<Issue> {
 
     @Override
     public boolean isInFilter(Issue task) {
@@ -57,6 +57,11 @@ public class OpenedTaskFilter implements TaskFilter {
 
     @Override
     public boolean expandNodes() {
+        return false;
+    }
+
+    @Override
+    public boolean showHitCount() {
         return false;
     }
 }

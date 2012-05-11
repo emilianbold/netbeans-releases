@@ -58,6 +58,7 @@ import org.netbeans.modules.maven.api.output.OutputProcessor;
 import org.netbeans.modules.maven.api.output.OutputProcessorFactory;
 import org.netbeans.modules.maven.api.output.OutputVisitor;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.project.indexingbridge.IndexingBridge;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
@@ -80,6 +81,8 @@ public abstract class AbstractOutputHandler {
     protected Set<OutputProcessor> currentProcessors;
     protected Set<NotifyFinishOutputProcessor> toFinishProcessors;
     protected OutputVisitor visitor;
+    private IndexingBridge.Lock protectedMode; // #211005
+    private final Object protectedModeLock = new Object();
     private RequestProcessor.Task sleepTask;
     private static final int SLEEP_DELAY = 5000;
 
@@ -91,8 +94,26 @@ public abstract class AbstractOutputHandler {
         sleepTask = new RequestProcessor(AbstractOutputHandler.class).create(new Runnable() {
             public @Override void run() {
                 hand.suspend("");
+                exitProtectedMode();
             }
         });
+        enterProtectedMode();
+    }
+
+    private void enterProtectedMode() {
+        synchronized (protectedModeLock) {
+            if (protectedMode == null) {
+                protectedMode = IndexingBridge.getDefault().protectedMode();
+            }
+        }
+    }
+    private void exitProtectedMode() {
+        synchronized (protectedModeLock) {
+            if (protectedMode != null) {
+                protectedMode.release();
+                protectedMode = null;
+            }
+        }
     }
 
     protected abstract InputOutput getIO();
@@ -101,6 +122,7 @@ public abstract class AbstractOutputHandler {
         RequestProcessor.Task task = sleepTask;
         if (task != null) {
             task.schedule(SLEEP_DELAY);
+            enterProtectedMode();
         }
     }
 
@@ -110,6 +132,7 @@ public abstract class AbstractOutputHandler {
         if (task != null) {
             task.cancel();
             sleepTask = null;
+            exitProtectedMode();
         }
     }
     

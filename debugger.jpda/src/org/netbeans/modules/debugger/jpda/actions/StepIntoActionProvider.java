@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.debugger.jpda.actions;
 
+import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.ThreadReference;
@@ -60,8 +61,10 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.modules.debugger.jpda.EditorContextBridge;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.SourcePath;
 import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper;
@@ -161,24 +164,11 @@ public class StepIntoActionProvider extends JPDADebuggerActionProvider {
         final String[] methodPtr = new String[1];
         final String[] urlPtr = new String[1];
         final int[] linePtr = new int[1];
-        final int[] offsetPtr = new int[1];
-        try {
-            SwingUtilities.invokeAndWait(new Runnable() {
-                public void run() {
-                    EditorContext context = EditorContextBridge.getContext();
-                    methodPtr[0] = context.getSelectedMethodName ();
-                    linePtr[0] = context.getCurrentLineNumber();
-                    offsetPtr[0] = EditorContextBridge.getCurrentOffset();
-                    urlPtr[0] = context.getCurrentURL();
-                }
-            });
-        } catch (InvocationTargetException ex) {
-            return false;
-        } catch (InterruptedException ex) {
+        boolean retrieved = retievePosition(methodPtr, urlPtr, linePtr);
+        if (!retrieved) {
             return false;
         }
         final int methodLine = linePtr[0];
-        final int methodOffset = offsetPtr[0];
         final String url = urlPtr[0];
         if (methodLine < 0 || url == null || !url.endsWith (".java")) {
             return false;
@@ -203,7 +193,7 @@ public class StepIntoActionProvider extends JPDADebuggerActionProvider {
             if (debugger.getState() == JPDADebugger.STATE_DISCONNECTED) {
                 return false;
             }
-            final MethodChooserSupport cSupport = new MethodChooserSupport(debugger, url, clazz, methodLine, methodOffset);
+            final MethodChooserSupport cSupport = new MethodChooserSupport(debugger, url, clazz, methodLine);
             boolean continuedDirectly = cSupport.init();
             if (cSupport.getSegmentsCount() == 0) {
                 return false;
@@ -238,6 +228,29 @@ public class StepIntoActionProvider extends JPDADebuggerActionProvider {
         } else {
             return false;
         }
+    }
+
+    private boolean retievePosition(String[] methodPtr, String[] urlPtr, int[] linePtr) {
+        JPDAThread t = debugger.getCurrentThread();
+        String stratum = debugger.getSession().getCurrentLanguage();
+        int lineNumber = t.getLineNumber (stratum);
+        if (lineNumber < 1) {
+            return false;
+        }
+        linePtr[0] = lineNumber;
+        String sourcePath;
+        try {
+            sourcePath = SourcePath.convertSlash (t.getSourcePath (stratum));
+        } catch (AbsentInformationException e) {
+            sourcePath = SourcePath.convertClassNameToRelativePath (t.getClassName ());
+        }
+        String url = debugger.getEngineContext().getURL (sourcePath, true);
+        if (url == null) {
+            return false;
+        }
+        urlPtr[0] = url;
+        methodPtr[0] = t.getMethodName();
+        return true;
     }
     
 }

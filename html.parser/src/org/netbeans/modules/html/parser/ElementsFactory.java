@@ -79,11 +79,11 @@ public class ElementsFactory {
         return new Root(source, null);
     }
 
-    CommonAttribute createAttribute(int nameOffset, int valueOffset, byte nameLen, short valueLen) {
+    CommonAttribute createAttribute(int nameOffset, int valueOffset, short nameLen, int valueLen) {
         return new CommonAttribute(source, nameOffset, valueOffset, nameLen, valueLen);
     }
 
-    CommonAttribute createAttribute(int nameOffset, byte nameLen) {
+    CommonAttribute createAttribute(int nameOffset, short nameLen) {
         return new CommonAttribute(source, nameOffset, nameLen);
     }
 
@@ -368,6 +368,12 @@ public class ElementsFactory {
             //no-op
 //            throw new IllegalStateException();
         }
+
+        @Override
+        public String toString() {
+            return new StringBuilder(super.toString()).append(isEmpty() ? "(self close tag)" : "").toString();
+        }
+        
     }
 
     static class CommonOpenTag extends EmptyOpenTag {
@@ -821,10 +827,10 @@ public class ElementsFactory {
         private CharSequence source;
         private int nameOffset;
         private short valueOffset2nameOffsetDiff;
-        private byte nameLen;
-        private short valueLen;
+        private short nameLen;
+        private int valueLen;
 
-        public CommonAttribute(CharSequence source, int nameOffset, byte nameLen) {
+        public CommonAttribute(CharSequence source, int nameOffset, short nameLen) {
             this.source = source;
 
             this.nameOffset = nameOffset;
@@ -834,7 +840,7 @@ public class ElementsFactory {
             this.valueLen = -1;
         }
 
-        public CommonAttribute(CharSequence source, int nameOffset, int valueOffset, byte nameLen, short valueLen) {
+        public CommonAttribute(CharSequence source, int nameOffset, int valueOffset, short nameLen, int valueLen) {
             this.source = source;
 
             this.nameOffset = nameOffset;

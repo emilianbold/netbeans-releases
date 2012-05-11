@@ -70,6 +70,7 @@ import org.netbeans.modules.jira.query.JiraQuery;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -94,6 +95,17 @@ public class JiraUtils {
         return DialogDisplayer.getDefault().notify(descriptor) == ok;
     }
 
+    public static void notifyErrorMessage(String msg) {
+        NotifyDescriptor nd =
+                new NotifyDescriptor(
+                    msg,
+                    NbBundle.getMessage(JiraUtils.class, "LBLError"),    // NOI18N
+                    NotifyDescriptor.DEFAULT_OPTION,
+                    NotifyDescriptor.ERROR_MESSAGE,
+                    new Object[] {NotifyDescriptor.OK_OPTION},
+                    NotifyDescriptor.OK_OPTION);
+        DialogDisplayer.getDefault().notify(nd);
+    }
     // XXX merge with bugzilla
     /**
      * Returns TaskData for the given issue key or null if an error occured

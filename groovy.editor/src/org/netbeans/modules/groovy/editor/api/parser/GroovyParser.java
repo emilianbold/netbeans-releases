@@ -74,7 +74,6 @@ import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
 import org.codehaus.groovy.syntax.SyntaxException;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
@@ -109,10 +108,8 @@ public class GroovyParser extends Parser {
 
     private static final AtomicInteger PARSING_COUNT = new AtomicInteger(0);
 
-    private static final ClassPath EMPTY_CLASSPATH = ClassPathSupport.createClassPath(new URL[] {});
-
     private static long maximumParsingTime;
-
+    
     private GroovyParserResult lastResult;
 
     private AtomicBoolean cancelled = new AtomicBoolean();
@@ -173,7 +170,7 @@ public class GroovyParser extends Parser {
         GroovyParserResult parserResult = new GroovyParserResult(this, snapshot, rootNode, errorCollector);
         return parserResult;
     }
-
+    
     private boolean sanitizeSource(Context context, Sanitize sanitizing) {
 
         if (sanitizing == Sanitize.MISSING_END) {
@@ -439,28 +436,25 @@ public class GroovyParser extends Parser {
         }
 
         FileObject fo = context.snapshot.getSource().getFileObject();
-        ClassPath bootPath = fo == null ? EMPTY_CLASSPATH : ClassPath.getClassPath(fo, ClassPath.BOOT);
-        ClassPath compilePath = fo == null ? EMPTY_CLASSPATH : ClassPath.getClassPath(fo, ClassPath.COMPILE);
-        ClassPath sourcePath = fo == null ? EMPTY_CLASSPATH : ClassPath.getClassPath(fo, ClassPath.SOURCE);
+        ClassPath bootPath = fo == null ? ClassPath.EMPTY : ClassPath.getClassPath(fo, ClassPath.BOOT);
+        ClassPath compilePath = fo == null ? ClassPath.EMPTY : ClassPath.getClassPath(fo, ClassPath.COMPILE);
+        ClassPath sourcePath = fo == null ? ClassPath.EMPTY : ClassPath.getClassPath(fo, ClassPath.SOURCE);
         ClassPath cp = ClassPathSupport.createProxyClassPath(bootPath, compilePath, sourcePath);
 
         CompilerConfiguration configuration = new CompilerConfiguration();
         GroovyClassLoader classLoader = new ParsingClassLoader(cp, configuration);
-        GroovyClassLoader transformationLoader = new TransformationClassLoader(CompilationUnit.class.getClassLoader(),
-                cp, configuration);
-
+        final ClassNodeCache classNodeCache = ClassNodeCache.get();
+        final GroovyClassLoader transformationLoader = classNodeCache.createTransformationLoader(cp,configuration);        
         ClasspathInfo cpInfo = ClasspathInfo.create(
                 // we should try to load everything by javac instead of classloader,
-                // but for now it is faster to use javac only for sources
+                // but for now it is faster to use javac only for sources - not true
 
                 // null happens in GSP
-                bootPath == null ? EMPTY_CLASSPATH : bootPath,
-                compilePath == null ? EMPTY_CLASSPATH : compilePath,
-                sourcePath);
-        JavaSource javaSource = JavaSource.create(cpInfo);
-
+                bootPath == null ? ClassPath.EMPTY : bootPath,
+                compilePath == null ? ClassPath.EMPTY : compilePath,
+                sourcePath);        
         CompilationUnit compilationUnit = new CompilationUnit(this, configuration,
-                null, classLoader, transformationLoader, javaSource);
+                null, classLoader, transformationLoader, cpInfo, classNodeCache);
         InputStream inputStream = new ByteArrayInputStream(source.getBytes());
         compilationUnit.addSource(fileName, inputStream);
 
@@ -799,7 +793,7 @@ public class GroovyParser extends Parser {
 
     }
 
-    private static class TransformationClassLoader extends GroovyClassLoader {
+    static class TransformationClassLoader extends GroovyClassLoader {
 
         public TransformationClassLoader(ClassLoader parent, ClassPath cp, CompilerConfiguration config) {
             super(parent, config);

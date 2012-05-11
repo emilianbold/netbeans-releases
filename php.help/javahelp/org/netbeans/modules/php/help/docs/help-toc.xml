@@ -16,6 +16,7 @@
         <tocitem text="Working with PHP" target="php_process"/>
         <tocitem text="PHP Application Tasks: Quick Reference" target="php_quickref"/>
         <tocitem text="PHP Projects" target="php_projects"/>
+        <tocitem text="Setting Up XDebug" target="xdebug_setup"/>
         <tocitem text="Editing PHP Files" expand="false">
             <tocitem text="About Editing PHP Files" target="php_editor"/>
             <tocitem text="Syntax Highligting" target="php_syntax_highlighting"/>
@@ -27,6 +28,6 @@
             <tocitem target="php_codegen" text="Code Generators"/>
             <tocitem target="def_var_in_comment" text="Defining Variables in Comments"/>
         </tocitem>
-        
+        <tocitem text="Using a Continuous Build Server With PHP" target="php_hudson"/>
     </tocitem>
 </toc>

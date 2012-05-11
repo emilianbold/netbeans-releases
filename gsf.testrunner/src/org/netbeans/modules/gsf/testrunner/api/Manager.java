@@ -52,6 +52,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
@@ -435,7 +436,7 @@ public final class Manager {
 
     /** singleton of the <code>ResultDisplayHandler</code> */
     private Map<TestSession,ResultDisplayHandler> displayHandlers;
-
+    private Semaphore lock;
     /**
      */
     private synchronized ResultDisplayHandler getDisplayHandler(final TestSession session) {
@@ -450,14 +451,26 @@ public final class Manager {
             createIO(displayHandler);
             displayHandlers.put(session, displayHandler);
             final ResultDisplayHandler dispHandler = displayHandler;
+            lock = new Semaphore(1);
+            try {
+                lock.acquire(1);
+            } catch (InterruptedException e) {
+                LOGGER.log(Level.FINE, "Current thread was interrupted while acquiring a permit: {0}", e);
+            }
             Mutex.EVENT.writeAccess(new Runnable() {
 
                 @Override
                 public void run() {
                     StatisticsPanel comp = (StatisticsPanel) dispHandler.getDisplayComponent().getLeftComponent();
                     dispHandler.setTreePanel(comp.getTreePanel());
+                    lock.release();
                 }
             });
+            try {
+                lock.acquire(1);
+            } catch (InterruptedException e) {
+                LOGGER.log(Level.FINE, "Current thread was interrupted while acquiring a permit: {0}", e);
+            }
         }
         return displayHandler;
     }

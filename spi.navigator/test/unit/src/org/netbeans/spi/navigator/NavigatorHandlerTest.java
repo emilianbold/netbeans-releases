@@ -87,6 +87,9 @@ public class NavigatorHandlerTest extends NbTestCase {
         ic.add(hint);
             
         final NavigatorTC navTC = NavigatorTC.getInstance();
+        Field field = NavigatorController.class.getDeclaredField("updateWhenNotShown");
+        field.setAccessible(true);
+        field.setBoolean(navTC.getController(), true);
         try {
             Mutex.EVENT.readAccess(new Mutex.ExceptionAction() {
                 @Override

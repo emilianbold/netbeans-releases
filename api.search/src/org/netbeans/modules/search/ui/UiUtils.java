@@ -43,6 +43,10 @@ package org.netbeans.modules.search.ui;
 
 import java.awt.Color;
 import java.awt.EventQueue;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.io.IOException;
 import javax.swing.AbstractButton;
 import javax.swing.JLabel;
 import javax.swing.UIManager;
@@ -62,6 +66,26 @@ public class UiUtils {
     public static final String HTML_LINK_PREFIX =
             "<html><u><a href=\"#\">";                                  //NOI18N
     public static final String HTML_LINK_SUFFIX = "</a></u></html>";    //NOI18N
+
+    public static final Transferable DISABLE_TRANSFER = new Transferable() {
+        private final DataFlavor[] NO_FLAVOR = new DataFlavor[0];
+
+        @Override
+        public DataFlavor[] getTransferDataFlavors() {
+            return NO_FLAVOR;
+        }
+
+        @Override
+        public boolean isDataFlavorSupported(DataFlavor flavor) {
+            return false;
+        }
+
+        @Override
+        public Object getTransferData(DataFlavor flavor)
+                throws UnsupportedFlavorException, IOException {
+            return null;
+        }
+    };
 
     public static Color getErrorTextColor() {
 

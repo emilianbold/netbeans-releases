@@ -52,7 +52,6 @@ import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
 
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
-import org.netbeans.modules.ant.debugger.DebuggerAnnotation;
 import org.netbeans.modules.ant.debugger.DebuggerBreakpointAnnotation;
 
 
@@ -69,6 +68,7 @@ implements PropertyChangeListener {
     private Map breakpointToAnnotation = new HashMap ();
     
  
+    @Override
     public String[] getProperties () {
         return new String[] {DebuggerManager.PROP_BREAKPOINTS};
     }
@@ -78,6 +78,7 @@ implements PropertyChangeListener {
     *
     * @param b breakpoint
     */
+    @Override
     public void breakpointAdded (Breakpoint b) {
         if (! (b instanceof AntBreakpoint)) return;
         addAnnotation ((AntBreakpoint) b);
@@ -88,6 +89,7 @@ implements PropertyChangeListener {
     *
     * @param breakpoint
     */
+    @Override
     public void breakpointRemoved (Breakpoint b) {
         if (! (b instanceof AntBreakpoint)) return;
         removeAnnotation (b);
@@ -99,6 +101,7 @@ implements PropertyChangeListener {
      *   	and the property that has changed.
      */
 
+    @Override
     public void propertyChange (PropertyChangeEvent evt) {
         if (evt.getPropertyName () != Breakpoint.PROP_ENABLED) return;
         removeAnnotation ((Breakpoint) evt.getSource ());

@@ -64,7 +64,7 @@ import org.openide.util.lookup.ProxyLookup;
  *
  * @author Alexander Simon
  */
-public class NavigatorComponent implements NavigatorPanel, LookupListener {
+public final class NavigatorComponent implements NavigatorPanel, LookupListener {
     
     /** Lookup template to search for java data objects. shared with InheritanceTreePanel */
     private Lookup.Result<DataObject> doContext;
@@ -75,15 +75,18 @@ public class NavigatorComponent implements NavigatorPanel, LookupListener {
     /** current context to work on */
     /** actual data */
     private DataObject curData;
+    private final static class Lock{};
+    private final Lock lock = new Lock();
+    private final Lock uiLock = new Lock();
     
     @Override
     public String getDisplayName() {
-        return NbBundle.getBundle(NavigatorComponent.class).getString("LBL_members"); //NOI18N
+        return NbBundle.getMessage(NavigatorComponent.class, "LBL_members"); //NOI18N
     }
     
     @Override
     public String getDisplayHint() {
-        return NbBundle.getBundle(NavigatorComponent.class).getString("HINT_NavigatorTopComponen"); //NOI18N
+        return NbBundle.getMessage(NavigatorComponent.class, "HINT_NavigatorTopComponen"); //NOI18N
     }
     
     @Override
@@ -102,10 +105,12 @@ public class NavigatorComponent implements NavigatorPanel, LookupListener {
      * @param context Lookup instance representing current context
      */
     @Override
-    public synchronized void panelActivated(Lookup context) {
-        doContext = context.lookupResult(DataObject.class);
-        doContext.addLookupListener(this);
-        resultChanged(null);
+    public void panelActivated(Lookup context) {
+        synchronized(lock) {
+            doContext = context.lookupResult(DataObject.class);
+            doContext.addLookupListener(this);
+            resultChanged(null);
+        }
     }
     
     
@@ -113,38 +118,44 @@ public class NavigatorComponent implements NavigatorPanel, LookupListener {
      * Right place to detach, remove listeners from data context.
      */
     @Override
-    public synchronized void panelDeactivated() {
-        doContext.removeLookupListener(this);
-        doContext = null;
-        detachFromModel(curModel);
-        curModel = null;
-        curData = null;
+    public void panelDeactivated() {
+        synchronized(lock) {
+            doContext.removeLookupListener(this);
+            doContext = null;
+            detachFromModel(curModel);
+            curModel = null;
+            curData = null;
+        }
     }
     
     /** Impl of LookupListener, reacts to changes of context */
     @Override
-    public synchronized void resultChanged(LookupEvent ev) {
-        for (DataObject dob : doContext.allInstances()) {
-            if (MIMENames.isFortranOrHeaderOrCppOrC(getMime(dob))) {
-                if (!dob.equals(curData)) {
-                    detachFromModel(curModel);
-                    curData = dob;
-                    setNewContent(dob);
+    public void resultChanged(LookupEvent ev) {
+        synchronized(lock) {
+            for (DataObject dob : doContext.allInstances()) {
+                if (MIMENames.isFortranOrHeaderOrCppOrC(getMime(dob))) {
+                    if (!dob.equals(curData)) {
+                        detachFromModel(curModel);
+                        curData = dob;
+                        setNewContent(dob);
+                    }
+                    break;
                 }
-                break;
             }
         }
     }
     
     @Override
     public Lookup getLookup() {
-        if (curData == null || !curData.isValid()) {
-            return this.panelUI.getLookup();
-        } else {
-            if (this.panelUI.getLookup().lookup(Node.class) == null) {
-                return new ProxyLookup(this.panelUI.getLookup(), Lookups.fixed(curData.getNodeDelegate(), curData, curData.getPrimaryFile()));
+        synchronized(lock) {
+            if (curData == null || !curData.isValid()) {
+                return getPanelUI().getLookup();
             } else {
-                return new ProxyLookup(this.panelUI.getLookup(), Lookups.fixed(curData, curData.getPrimaryFile()));
+                if (getPanelUI().getLookup().lookup(Node.class) == null) {
+                    return new ProxyLookup(getPanelUI().getLookup(), Lookups.fixed(curData.getNodeDelegate(), curData, curData.getPrimaryFile()));
+                } else {
+                    return new ProxyLookup(getPanelUI().getLookup(), Lookups.fixed(curData, curData.getPrimaryFile()));
+                }
             }
         }
     }
@@ -206,16 +217,19 @@ public class NavigatorComponent implements NavigatorPanel, LookupListener {
     }
     
     private void setNewContentImpl(DataObject cdo, NavigatorPanelUI ui) {
-        curModel = new NavigatorModel(cdo, ui, this, getMime(cdo));
-        CsmListeners.getDefault().addProgressListener(curModel);
-        CsmListeners.getDefault().addModelListener(curModel);
-        ui.getContent().setModel(curModel);
+        NavigatorModel aNavigatorModel = new NavigatorModel(cdo, ui, this, getMime(cdo));
+        CsmListeners.getDefault().addProgressListener(aNavigatorModel);
+        CsmListeners.getDefault().addModelListener(aNavigatorModel);
+        ui.getContent().setModel(aNavigatorModel);
         try {
-            curModel.addBusyListener(this);
+            aNavigatorModel.addBusyListener(this);
         } catch (Exception exc) {
             exc.printStackTrace(System.err);
         }
-        curModel.addNotify();
+        synchronized (lock) {
+            curModel = aNavigatorModel;
+        }
+        aNavigatorModel.addNotify();
     }
     
     private void detachFromModel(NavigatorModel model) {
@@ -228,9 +242,11 @@ public class NavigatorComponent implements NavigatorPanel, LookupListener {
     }
     
     private NavigatorPanelUI getPanelUI() {
-        if (panelUI == null) {
-            panelUI = new NavigatorPanelUI();
+        synchronized(uiLock) {
+            if (panelUI == null) {
+                panelUI = new NavigatorPanelUI();
+            }
+            return panelUI;
         }
-        return panelUI;
     }
 }

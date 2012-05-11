@@ -90,11 +90,11 @@ public class ConnectorPanel extends JPanel implements ActionListener, HelpCtx.Pr
 
     /** Contains list of AttachType names.*/
     private JComboBox             cbAttachTypes;
-    /** Switches off listenning on cbAttachTypes.*/
+    /** Switches off listening on cbAttachTypes.*/
     private boolean               doNotListen;
     /** Contains list of installed AttachTypes.*/
-    private List                  attachTypes;
-    /** Currentlydisplayed panel.*/
+    private List<AttachType>      attachTypes;
+    /** Currently displayed panel.*/
     private Controller            controller;
     /** Current attach type, which is stored into settings for the next invocation. */
     private AttachType            currentAttachType;
@@ -111,34 +111,33 @@ public class ConnectorPanel extends JPanel implements ActionListener, HelpCtx.Pr
             NbBundle.getMessage (ConnectorPanel.class, 
                 "ACSD_CTL_Connect_through")// NOI18N
         ); 
-        List types = DebuggerManager.getDebuggerManager ().lookup (
+        List<? extends AttachType> types = DebuggerManager.getDebuggerManager ().lookup (
             null, AttachType.class
         );
-        attachTypes = new ArrayList(types);
-        for (Object t : types) {
-            AttachType att = (AttachType) t;
+        attachTypes = new ArrayList<AttachType>(types);
+        for (AttachType att : types) {
             if (att.getTypeDisplayName() == null) {
-                attachTypes.remove(t);
+                attachTypes.remove(att);
             }
         }
         String defaultAttachTypeName =
                 Properties.getDefault ().getProperties ("debugger").getString ("last_attach_type", null);
         int defaultIndex = 0;
         int i, k = attachTypes.size ();
-        Collections.sort(attachTypes, new Comparator() {
-            public int compare(Object o1, Object o2) {
-                if (!(o1 instanceof AttachType) || !(o2 instanceof AttachType)) return 0;
-                if (FIRST_ATTACH_TYPE.equals(o1.getClass().getName())) {
+        Collections.sort(attachTypes, new Comparator<AttachType>() {
+            @Override
+            public int compare(AttachType at1, AttachType at2) {
+                if (FIRST_ATTACH_TYPE.equals(at1.getClass().getName())) {
                     return -1;
                 }
-                if (FIRST_ATTACH_TYPE.equals(o2.getClass().getName())) {
+                if (FIRST_ATTACH_TYPE.equals(at2.getClass().getName())) {
                     return +1;
                 }
-                return ((AttachType) o1).getTypeDisplayName().compareTo(((AttachType) o2).getTypeDisplayName());
+                return at1.getTypeDisplayName().compareTo(at2.getTypeDisplayName());
             }
         });
         for (i = 0; i < k; i++) {
-            AttachType at = (AttachType) attachTypes.get (i);
+            AttachType at = attachTypes.get (i);
             String displayName = at.getTypeDisplayName();
             cbAttachTypes.addItem (displayName);
             if (displayName.equals(defaultAttachTypeName)) {
@@ -146,7 +145,7 @@ public class ConnectorPanel extends JPanel implements ActionListener, HelpCtx.Pr
             }
         }
         for (i = defaultIndex; i < k; ) {
-            AttachType at = (AttachType) attachTypes.get (i);
+            AttachType at = attachTypes.get (i);
             if (!at.getClass().getName().startsWith(ERGONOMICS_CLASS)) {
                 // Find some real attach type
                 defaultIndex = i;
@@ -205,7 +204,7 @@ public class ConnectorPanel extends JPanel implements ActionListener, HelpCtx.Pr
             JLabel noAttachType = new JLabel(NbBundle.getMessage(ConnectorPanel.class, "CTL_Attach_Types_Not_Found"));
             add (noAttachType, c);
         } else {
-            AttachType attachType = (AttachType) attachTypes.get (index);
+            AttachType attachType = attachTypes.get (index);
             JComponent customizer = attachType.getCustomizer ();
             help = HelpCtx.findHelp (customizer);
             controller = attachType.getController();
@@ -223,6 +222,7 @@ public class ConnectorPanel extends JPanel implements ActionListener, HelpCtx.Pr
     /**
      * Called when a user selects debugger type in a combo-box.
      */
+    @Override
     public void actionPerformed (ActionEvent e) {
         if (doNotListen) return;
         if (e.getActionCommand ().equals ("SwitchMe!")); // NOI18N
@@ -232,7 +232,6 @@ public class ConnectorPanel extends JPanel implements ActionListener, HelpCtx.Pr
         while (!(w instanceof Window))
             w = w.getParent ();
         if (w != null) ((Window) w).pack (); // ugly hack...
-        return;
     }
     
     Controller getController() {

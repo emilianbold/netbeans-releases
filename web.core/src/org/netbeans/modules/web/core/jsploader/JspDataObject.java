@@ -229,6 +229,14 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
     protected org.openide.nodes.Node createNodeDelegate() {
         return new JspNode(this);
     }
+
+    @Override
+    public void setModified(boolean modif) {
+        super.setModified(modif);
+        if (!modif) {
+            removeSaveCookie();
+        }
+    }
     
     private synchronized BaseJspEditorSupport getJspEditorSupport() {
         if (editorSupport == null) {

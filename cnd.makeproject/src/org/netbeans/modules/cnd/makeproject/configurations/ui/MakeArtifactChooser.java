@@ -59,7 +59,9 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
+import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -234,12 +236,17 @@ public class MakeArtifactChooser extends JPanel implements PropertyChangeListene
                 return null;
             }
             
-	    // FIXUP: need to check for this
-            if ( ProjectUtils.hasSubprojectCycles( master, selectedProject ) ) {
-                DialogDisplayer.getDefault().notify( new NotifyDescriptor.Message( 
-                    getString("ADD_CYCLIC_ERROR"),  // NOI18N
-                    NotifyDescriptor.INFORMATION_MESSAGE ) );
-                return null;
+	    // FIXUP: need to check for this for managed projects only
+            if (master instanceof MakeProject) {
+                MakeProject mprj = (MakeProject) master;
+                if (mprj.getActiveConfiguration() != null && mprj.getActiveConfiguration().getConfigurationType().getValue() != MakeConfiguration.TYPE_MAKEFILE) {
+                    if ( ProjectUtils.hasSubprojectCycles( master, selectedProject ) ) {
+                        DialogDisplayer.getDefault().notify( new NotifyDescriptor.Message( 
+                            getString("ADD_CYCLIC_ERROR"),  // NOI18N
+                            NotifyDescriptor.INFORMATION_MESSAGE ) );
+                        return null;
+                    }
+                }
             }
             
             Object[] tmp = new Object[model.getSize()];

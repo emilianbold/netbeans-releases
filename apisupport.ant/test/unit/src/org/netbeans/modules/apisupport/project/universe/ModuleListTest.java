@@ -340,7 +340,8 @@ public class ModuleListTest extends TestBase {
         assertNotNull("release version", e.getReleaseVersion());
         assertNotNull("specification version", e.getSpecificationVersion());
         assertNotNull(e.getProvidedTokens());
-        assertEquals("there are no provided tokens", 0, e.getProvidedTokens().length);
+        assertEquals("there is just provided cnb token", 1, e.getProvidedTokens().length);
+        assertEquals("cnb." + e.getCodeNameBase(), e.getProvidedTokens()[0]);
         /*
         e = ml.getEntry("org.netbeans.examples.modules.misc");
         assertNotNull("can find sources from another suite (misc must have been built first)", e);
@@ -364,7 +365,8 @@ public class ModuleListTest extends TestBase {
         assertNotNull("release version", e.getReleaseVersion());
         assertNotNull("specification version", e.getSpecificationVersion());
         assertNotNull(e.getProvidedTokens());
-        assertEquals("there are no provided tokens", 0, e.getProvidedTokens().length);
+        assertEquals("there is just provided cnb token", 1, e.getProvidedTokens().length);
+        assertEquals("cnb." + e.getCodeNameBase(), e.getProvidedTokens()[0]);
         assertEquals("number of public packages for " + e, new Integer(1), new Integer(e.getPublicPackages().length));
         e = ml.getEntry("org.netbeans.libs.xerces");
         assertNotNull("can find nb.org binary module too", e);

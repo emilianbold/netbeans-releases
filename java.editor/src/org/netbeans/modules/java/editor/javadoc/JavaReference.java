@@ -194,7 +194,6 @@ public final class JavaReference {
             cs = len > 0
                     ? token.text()
                     : token.text().subSequence(0, len);
-            params.append(cs);
             if (token.id () == JavadocTokenId.IDENT) {
                 JavaReference parameter = JavaReference.resolve (
                     jdts,
@@ -204,6 +203,13 @@ public final class JavaReference {
                 if (parameters == null)
                     parameters = new ArrayList<JavaReference> ();
                 parameters.add (parameter);
+                if (parameter.fqn != null) {
+                    params.append(parameter.fqn);
+                } else {
+                    params.append(cs);
+                }
+            } else {
+                params.append(cs);
             }
             if (params.indexOf (")") > 0)
                 break;

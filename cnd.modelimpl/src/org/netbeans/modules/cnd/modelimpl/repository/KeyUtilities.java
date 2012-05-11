@@ -137,6 +137,10 @@ public class KeyUtilities {
         return RepositoryUtils.getUnitName(unitIndex);
     }
 
+    public static CharSequence getUnitNameSafe(int unitIndex) {
+        return RepositoryUtils.getUnitNameSafe(unitIndex);
+    }
+
     public static int getFileIdByName(final int unitId, final CharSequence fileName) {
         return RepositoryUtils.getFileIdByName(unitId, fileName);
     }
@@ -176,7 +180,7 @@ public class KeyUtilities {
         } else if (key instanceof FileKey) {
             return ((FileKey) key).getName();
         } else if (key instanceof ProjectKey) {
-            return ((ProjectKey) key).getProjectName();
+            return ((ProjectKey) key).getUnit();
         }
         return null;
     }

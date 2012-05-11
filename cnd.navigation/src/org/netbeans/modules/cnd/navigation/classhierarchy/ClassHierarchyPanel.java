@@ -51,6 +51,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyVetoException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
@@ -94,6 +95,7 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
     private Action[] actions;
     private Action close;
     private final RequestProcessor.Task refreshTask = new RequestProcessor("ClassHierarchyPanelUpdater").create(new Updater());// NOI18N
+    private AtomicBoolean menuAvaliable = new AtomicBoolean(false);
     
     /** Creates new form ClassHierarchyPanel */
     public ClassHierarchyPanel(boolean isView) {
@@ -354,7 +356,9 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
     }
 
     public void setClass(CsmClass cls){
-        object = UIDs.get(cls);
+        if (cls != null) {
+            object = UIDs.get(cls);
+        }
         subDirection = true;
         updateButtons();
         update(cls);
@@ -365,6 +369,12 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
         supertypeButton.setSelected(!subDirection);
         directOnlyButton.setSelected(!recursive);
         treeButton.setSelected(!plain);
+        
+        refreshButton.setEnabled(menuAvaliable.get());
+        subtypeButton.setEnabled(menuAvaliable.get());
+        supertypeButton.setEnabled(menuAvaliable.get());
+        directOnlyButton.setEnabled(menuAvaliable.get());
+        treeButton.setEnabled(menuAvaliable.get());
     }
 
     @Override
@@ -373,7 +383,24 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
         return hierarchyPane.requestFocusInWindow();
     }
     
-    private synchronized void update(final CsmClass csmClass) {
+    public void setWaiting() {
+        menuAvaliable.set(false);
+        updateButtons();
+        final Children children = root.getChildren();
+        if (!Children.MUTEX.isReadAccess()){
+            Children.MUTEX.writeAccess(new Runnable(){
+                @Override
+                public void run() {
+                    children.remove(children.getNodes());
+                    children.add(new Node[] { ElementNode.getWaitNode(NbBundle.getMessage(ClassHierarchyPanel.class, "PleaseWait")) });
+                }
+            });
+        }
+    }
+
+    public void setEmpty() {
+        menuAvaliable.set(false);
+        updateButtons();
         final Children children = root.getChildren();
         if (!Children.MUTEX.isReadAccess()){
             Children.MUTEX.writeAccess(new Runnable(){
@@ -381,13 +408,17 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
                 public void run() {
                     children.remove(children.getNodes());
                     refreshTask.cancel();
-                    if (csmClass != null) {
-                        // add wait node for the time of calculation
-                        children.add(new Node[] { ElementNode.getWaitNode(NbBundle.getMessage(ClassHierarchyPanel.class, "PleaseWait")) });
-                        refreshTask.schedule(10);
-                    }
                 }
             });
+        }
+    }
+    
+    private synchronized void update(final CsmClass csmClass) {
+        if (csmClass != null) {
+            setWaiting();
+            refreshTask.schedule(10);
+        } else {
+            setEmpty();
         }
     }
 
@@ -426,6 +457,7 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
 
         @Override
         public final JMenuItem getPopupPresenter() {
+            menuItem.setEnabled(menuAvaliable.get());
             return menuItem;
         }
     }
@@ -447,6 +479,7 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
         @Override
         public final JMenuItem getPopupPresenter() {
             menuItem.setSelected(subDirection);
+            menuItem.setEnabled(menuAvaliable.get());
             return menuItem;
         }
     }
@@ -469,6 +502,7 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
         @Override
         public final JMenuItem getPopupPresenter() {
             menuItem.setSelected(!subDirection);
+            menuItem.setEnabled(menuAvaliable.get());
             return menuItem;
         }
     }
@@ -490,6 +524,7 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
         @Override
         public final JMenuItem getPopupPresenter() {
             menuItem.setSelected(!recursive);
+            menuItem.setEnabled(menuAvaliable.get());
             return menuItem;
         }
     }
@@ -511,6 +546,7 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
         @Override
         public final JMenuItem getPopupPresenter() {
             menuItem.setSelected(!plain);
+            menuItem.setEnabled(menuAvaliable.get());
             return menuItem;
         }
     }
@@ -612,7 +648,7 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
         public void run() {
             if (SwingUtilities.isEventDispatchThread()) {
 
-            final Children children = root.getChildren();
+                final Children children = root.getChildren();
                 if (!Children.MUTEX.isReadAccess()) {
                     Children.MUTEX.writeAccess(new Runnable() {
 
@@ -621,24 +657,25 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
                             children.remove(children.getNodes());
                             HierarchyModel curModel = model;
                             if (curModel != null) {
-                                HierarchyModel model = HierarchyFactory.getInstance().buildTypeHierarchyModel(csmClass, actions, subDirection, plain, recursive);
-                                model.setCloseWindowAction(close);
-                                final Node node = new HierarchyNode(csmClass, model, null);
+                                final Node node = new HierarchyNode(csmClass, curModel, null);
                                 children.add(new Node[]{node});
                                 try {
                                     getExplorerManager().setSelectedNodes(new Node[]{node});
                                 } catch (PropertyVetoException ex) {
                                 }
                                 SwingUtilities.invokeLater(new Runnable() {
+
                                     @Override
                                     public void run() {
+                                        menuAvaliable.set(true);
+                                        updateButtons();
                                         ((BeanTreeView) hierarchyPane).expandNode(node);
                                     }
                                 });
                             }
                         }
                     });
-                }                
+                }
             } else {
                 CsmUID<CsmClass> uid = ClassHierarchyPanel.this.object;
                 csmClass = uid == null ? null : uid.getObject();

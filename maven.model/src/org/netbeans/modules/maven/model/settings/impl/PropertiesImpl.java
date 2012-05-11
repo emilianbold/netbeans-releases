@@ -71,16 +71,19 @@ public class PropertiesImpl extends SettingsComponentImpl implements Properties 
     // child elements
 
 
+    @Override
     public void setProperty(String key, String value) {
         QName qname = SettingsQName.createQName(key, getModel().getSettingsQNames().isNSAware(), getModel().getSettingsQNames().isOldNS());
         setChildElementText(qname.getLocalPart(), value,
                 qname);
     }
 
+    @Override
     public String getProperty(String key) {
         return getChildElementText(SettingsQName.createQName(key, getModel().getSettingsQNames().isNSAware(), getModel().getSettingsQNames().isOldNS()));
     }
 
+    @Override
     public Map<String, String> getProperties() {
         Map<String, String> toRet = new HashMap<String, String>();
         List<SettingsComponent> chlds = getChildren();
@@ -93,6 +96,7 @@ public class PropertiesImpl extends SettingsComponentImpl implements Properties 
         return toRet;
     }
 
+    @Override
     public void accept(SettingsComponentVisitor visitor) {
         visitor.visit(this);
     }

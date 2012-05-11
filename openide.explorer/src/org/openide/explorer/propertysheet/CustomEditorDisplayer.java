@@ -61,7 +61,6 @@ import java.beans.VetoableChangeListener;
 
 import java.lang.reflect.InvocationTargetException;
 
-import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -404,10 +403,8 @@ final class CustomEditorDisplayer implements PropertyDisplayer_Editable {
 
         if (!legal && (msg == null)) {
             //            System.err.println(" not legal, constructing message");
-            msg = MessageFormat.format(
-                    NbBundle.getMessage(CustomEditorDisplayer.class, "FMT_CannotUpdateProperty"),
-                    new Object[] { editor.getValue(), getProperty().getDisplayName() }
-                ); //NOI18N
+            msg = NbBundle.getMessage(
+                    CustomEditorDisplayer.class, "FMT_CannotUpdateProperty",editor.getValue(), getProperty().getDisplayName()); //NOI18N
         }
 
         return msg;

@@ -75,10 +75,10 @@ public class MavenTestNGSupport extends TestNGSupportImplementation {
     static {
         Set<Action> s = new HashSet<Action>();
         s.add(Action.CREATE_TEST);
-        s.add(Action.RUN_FAILED);
-        s.add(Action.RUN_TESTMETHOD);
-        s.add(Action.RUN_TESTSUITE);
-        s.add(Action.DEBUG_TESTSUITE);
+//        s.add(Action.RUN_FAILED);
+//        s.add(Action.RUN_TESTMETHOD);
+//        s.add(Action.RUN_TESTSUITE);
+//        s.add(Action.DEBUG_TESTSUITE);
         SUPPORTED_ACTIONS = Collections.unmodifiableSet(s);
     }
 
@@ -92,7 +92,7 @@ public class MavenTestNGSupport extends TestNGSupportImplementation {
         if (ng == null) {
             Project p = FileOwnerQuery.getOwner(createdFile);
             FileObject pom = p.getProjectDirectory().getFileObject("pom.xml"); //NOI18N
-            ModelUtils.addDependency(pom, "org.testng", "testng", "6.3.1", null, "test", null, true);
+            ModelUtils.addDependency(pom, "org.testng", "testng", "6.5.2", null, "test", null, true);
             MavenModelUtils.addProfile(pom, "target/nb-private/testng-suite.xml"); //NOI18N
         }
     }

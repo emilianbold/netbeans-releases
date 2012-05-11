@@ -49,6 +49,7 @@ import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.io.File;
+import java.lang.ref.SoftReference;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -121,11 +122,13 @@ public class J2SEPlatformImpl extends JavaPlatform {
     /**
      * Holds bootstrap libraries for the platform
      */
-    Reference<ClassPath> bootstrap = new WeakReference<ClassPath>(null);
+    //@GuardedBy("this")
+    private Reference<ClassPath> bootstrap;
     /**
      * Holds standard libraries of the platform
      */
-    Reference<ClassPath> standardLibs = new WeakReference<ClassPath>(null);
+    //@GuardedBy("this")
+    private Reference<ClassPath> standardLibs;
 
     /**
      * Holds the specification of the platform
@@ -235,7 +238,7 @@ public class J2SEPlatformImpl extends JavaPlatform {
                 pathSpec = pathSpec + File.pathSeparator + extPathSpec;
             }
             cp = Util.createClassPath (pathSpec);
-            bootstrap = new WeakReference<ClassPath>(cp);
+            bootstrap = new SoftReference<ClassPath>(cp);
             return cp;
         }
     }
@@ -258,7 +261,7 @@ public class J2SEPlatformImpl extends JavaPlatform {
             else {
                 cp = Util.createClassPath (pathSpec);
             }
-            standardLibs = new WeakReference<ClassPath>(cp);
+            standardLibs = new SoftReference<ClassPath>(cp);
             return cp;
         }
     }

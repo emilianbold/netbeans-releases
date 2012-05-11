@@ -139,8 +139,13 @@ public class HtmlDocumentation implements HelpResolver {
         if (relativeLink == null) {
             return null;
         }
+        URL zipURL = getZipURL();
+        if(zipURL == null) {
+            return null;
+        }
+        
         try {
-            return new URI(getZipURL().toExternalForm() + relativeLink).toURL();
+            return new URI(zipURL.toExternalForm() + relativeLink).toURL();
         } catch (URISyntaxException ex) {
             Logger.getLogger(HtmlDocumentation.class.getName()).log(Level.SEVERE, null, ex);
         } catch (MalformedURLException ex) {

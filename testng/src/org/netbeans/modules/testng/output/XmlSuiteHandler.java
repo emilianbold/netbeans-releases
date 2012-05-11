@@ -44,17 +44,16 @@ package org.netbeans.modules.testng.output;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.testng.TestNGEntityResolver;
 import org.openide.filesystems.FileObject;
 import org.openide.xml.XMLUtil;
+import org.testng.xml.TestNGContentHandler;
 import org.xml.sax.*;
-import org.xml.sax.helpers.DefaultHandler;
 
 /**
  *
  * @author lukas
  */
-public class XmlSuiteHandler extends DefaultHandler {
+public class XmlSuiteHandler extends TestNGContentHandler {
 
     private static final Logger LOGGER = Logger.getLogger(XmlSuiteHandler.class.getName());
     private Locator loc;
@@ -62,7 +61,8 @@ public class XmlSuiteHandler extends DefaultHandler {
     private int line;
     private int column;
 
-    private XmlSuiteHandler(String name) {
+    private XmlSuiteHandler(String fName, String name) {
+        super(fName, false);
         suite = name;
     }
 
@@ -70,8 +70,7 @@ public class XmlSuiteHandler extends DefaultHandler {
         int[] location = new int[]{0, 0};
         try {
             XMLReader r = XMLUtil.createXMLReader(false, false);
-            r.setEntityResolver(new TestNGEntityResolver());
-            XmlSuiteHandler sl = new XmlSuiteHandler(suiteName);
+            XmlSuiteHandler sl = new XmlSuiteHandler(suiteFile.getName(), suiteName);
             r.setContentHandler(sl);
             r.parse(new InputSource(suiteFile.getInputStream()));
             location[0] = sl.getLine();
@@ -91,11 +90,14 @@ public class XmlSuiteHandler extends DefaultHandler {
 
     @Override
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-        super.startElement(uri, localName, qName, attributes);
         if ("test".equals(qName) && attributes != null && suite.equals(attributes.getValue("name"))) {
             line = loc.getLineNumber();
             column = loc.getColumnNumber() - suite.length() - 3;
         }
+    }
+
+    @Override
+    public void endElement(String uri, String localName, String qName) throws SAXException {
     }
 
     public int getLine() {

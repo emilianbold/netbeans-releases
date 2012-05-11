@@ -80,6 +80,24 @@ public class CamelCaseUtil {
     }
 
     /**
+     * Returns the first word for the given longName.
+     * For example if longName will be "StriBC", it will return "Stri". In general
+     * it means it always return a substring from the beginning to the second upper
+     * case character (which is 'B' in this case).
+     *
+     * @param longName whole type name
+     * @return first camel case word as described above
+     */
+    public static String getCamelCaseFirstWord(String longName) {
+        List<String> splittedPrefix = splitByUpperCases(longName);
+        if (splittedPrefix.isEmpty()) {
+            return "";
+        } else {
+            return splittedPrefix.get(0);
+        }
+    }
+
+    /**
      * For the given prefix returns list of subPrefixes where each of them starts
      * with an uppercases letter. For example:
      *

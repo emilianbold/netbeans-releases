@@ -250,12 +250,19 @@ public class RemoteConfirmationPanel implements WizardDescriptor.Panel<WizardDes
     // #205087
     private void disconnectRemoteClient() {
         if (remoteClient != null) {
-            try {
-                remoteClient.disconnect();
-            } catch (RemoteException ex) {
-                RemoteUtils.processRemoteException(ex);
-            }
+            // #211563
+            final RemoteClient remoteClientCopy = remoteClient;
             remoteClient = null;
+            RequestProcessor.getDefault().post(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        remoteClientCopy.disconnect();
+                    } catch (RemoteException ex) {
+                        RemoteUtils.processRemoteException(ex);
+                    }
+                }
+            });
         }
     }
 

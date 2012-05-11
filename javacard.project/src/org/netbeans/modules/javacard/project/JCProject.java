@@ -257,15 +257,9 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
                     UILookupMergerSupport.createPrivilegedTemplatesMerger(),
                     UILookupMergerSupport.createRecommendedTemplatesMerger(),
                     LookupProviderSupport.createSourcesMerger(),
-                    //PENDING replace second getRoots() with null if
-                    //http://www.netbeans.org/issues/show_bug.cgi?id=162270 gets
-                    //fixed
-                    new ProxySourceForBinaryQuery(QuerySupport.createCompiledSourceForBinaryQuery(antHelper, evaluator(), getRoots(), getRoots()), new JCSourceForBinaryQuery(this)),
+                    new ProxySourceForBinaryQuery(QuerySupport.createCompiledSourceForBinaryQuery(antHelper, evaluator(), getRoots(), null, new String[]{"build.classes.dir", "dist.jar"}, null), new JCSourceForBinaryQuery(this)),
                     QuerySupport.createTemplateAttributesProvider(antHelper, encodingQuery),
-                    //PENDING replace second getRoots() with null if
-                    //http://www.netbeans.org/issues/show_bug.cgi?id=162270 gets
-                    //fixed
-                    QuerySupport.createSharabilityQuery(antHelper, evaluator(), getRoots(), getRoots()),
+                    QuerySupport.createSharabilityQuery2(antHelper, evaluator(), getRoots(), null),
                     QuerySupport.createJavadocForBinaryQuery(antHelper, evaluator()),
                     QuerySupport.createFileBuiltQuery(antHelper, eval, sourceRoots, sourceRoots),
                     ExtraSourceJavadocSupport.createExtraSourceQueryImplementation(this, antHelper, eval),

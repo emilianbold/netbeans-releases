@@ -256,7 +256,7 @@ public class EqualsHashCodeGeneratorTest extends NbTestCase {
                     }
                 }
 
-                EqualsHashCodeGenerator.generateEqualsAndHashCode(copy, clazz, Collections.<VariableElement>emptyList(), vars);
+                EqualsHashCodeGenerator.generateEqualsAndHashCode(copy, clazz, Collections.<VariableElement>emptyList(), vars, -1);
             }
         }
 
@@ -335,7 +335,7 @@ public class EqualsHashCodeGeneratorTest extends NbTestCase {
                     }
                 }
 
-                EqualsHashCodeGenerator.generateEqualsAndHashCode(copy, clazz, vars, vars);
+                EqualsHashCodeGenerator.generateEqualsAndHashCode(copy, clazz, vars, vars, -1);
             }
         }
 
@@ -510,7 +510,7 @@ public class EqualsHashCodeGeneratorTest extends NbTestCase {
                     }
                 }
 
-                EqualsHashCodeGenerator.generateEqualsAndHashCode(copy, clazz, vars, vars);
+                EqualsHashCodeGenerator.generateEqualsAndHashCode(copy, clazz, vars, vars, -1);
             }
         }
 

@@ -43,9 +43,7 @@ package org.netbeans.modules.maven.model.pom;
 
 import java.util.List;
 import javax.xml.namespace.QName;
-import org.netbeans.modules.maven.model.pom.POMComponentVisitor;
 import org.netbeans.modules.xml.xam.dom.DocumentComponent;
-import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 
 /**
  * Interface for all the components in the model.
@@ -61,6 +59,7 @@ public interface POMComponent extends DocumentComponent<POMComponent> {
      * 
      * @return  the owner model
      */
+    @Override
     POMModel getModel();
     
     void accept(POMComponentVisitor visitor);

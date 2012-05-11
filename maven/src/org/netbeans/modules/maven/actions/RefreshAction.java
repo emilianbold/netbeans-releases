@@ -84,7 +84,8 @@ public class RefreshAction extends AbstractAction implements ContextAwareAction 
         // #166919 - need to run in RP to prevent RPing later in fireProjectReload()
         NbMavenProjectImpl.RELOAD_RP.post(new Runnable() {
             @Override public void run() {
-                EmbedderFactory.resetCachedEmbedders();
+                //#211217 in 3.x should not be necessary.. 
+                //EmbedderFactory.resetCachedEmbedders();
                 for (NbMavenProjectImpl prj : context.lookupAll(NbMavenProjectImpl.class)) {
                     NbMavenProject.fireMavenProjectReload(prj);
                 }

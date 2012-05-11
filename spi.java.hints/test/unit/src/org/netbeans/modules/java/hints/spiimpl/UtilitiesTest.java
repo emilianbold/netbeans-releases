@@ -443,6 +443,42 @@ public class UtilitiesTest extends TestBase {
         assertEquals(golden.replaceAll("[ \n\r]+", " "), result.toString().replaceAll("[ \n\r]+", " "));
     }
 
+    public void testParseAndAttributeMultipleStatementsWithBefore() throws Exception {
+        prepareTest("test/Test.java", "package test; public class Test{}");
+
+        Scope s = Utilities.constructScope(info, Collections.<String, TypeMirror>emptyMap());
+        Tree result = Utilities.parseAndAttribute(info, "$before$; String $2 = $1; int $l = $2.length(); System.err.println($l);", s);
+
+        assertTrue(result.getKind().name(), result.getKind() == Kind.BLOCK);
+
+        String golden = "{\n" +
+                        "    $before$;\n" +
+                        "    String $2 = $1;\n" +
+                        "    int $l = $2.length();\n" +
+                        "    System.err.println($l);\n" +
+                        "    $$2$;\n" +
+                        "}";
+        assertEquals(golden.replaceAll("[ \n\r]+", " "), result.toString().replaceAll("[ \n\r]+", " "));
+    }
+    
+    public void testParseAndAttributeMultipleStatementsWithAfter() throws Exception {
+        prepareTest("test/Test.java", "package test; public class Test{}");
+
+        Scope s = Utilities.constructScope(info, Collections.<String, TypeMirror>emptyMap());
+        Tree result = Utilities.parseAndAttribute(info, "String $2 = $1; int $l = $2.length(); System.err.println($l); $after$;", s);
+
+        assertTrue(result.getKind().name(), result.getKind() == Kind.BLOCK);
+
+        String golden = "{\n" +
+                        "    $$1$;\n" +
+                        "    String $2 = $1;\n" +
+                        "    int $l = $2.length();\n" +
+                        "    System.err.println($l);\n" +
+                        "    $after$;\n" +
+                        "}";
+        assertEquals(golden.replaceAll("[ \n\r]+", " "), result.toString().replaceAll("[ \n\r]+", " "));
+    }
+    
     public void testToHumanReadableTime() {
         long time = 202;
         assertEquals(    "5s", Utilities.toHumanReadableTime(time +=           5 * 1000));

@@ -60,6 +60,7 @@ import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
+import org.openide.windows.InputOutput;
 
 /**
  *
@@ -131,11 +132,15 @@ public class RunCheckerImpl implements LateBoundPrerequisitesChecker {
             ProfilerLauncher.Session session = ProfilerLauncher.getLastSession();
             
             if (session == null) {
+                closeInputOuptut(context);
                 return false;
             }
                        
             Map<String, String> sProps = session.getProperties();
-            if (sProps == null) return false;
+            if (sProps == null) {
+                closeInputOuptut(context);
+                return false;
+            }
             
             props.putAll(sProps);
             
@@ -151,5 +156,12 @@ public class RunCheckerImpl implements LateBoundPrerequisitesChecker {
         }
         
         return true;
+    }
+
+    private void closeInputOuptut(ExecutionContext context) {
+        InputOutput ioput = context.getInputOutput();
+        if (ioput != null) {
+            ioput.closeInputOutput();
+        }
     }
 }

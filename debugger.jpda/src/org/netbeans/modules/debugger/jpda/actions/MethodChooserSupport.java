@@ -118,7 +118,7 @@ public class MethodChooserSupport implements PropertyChangeListener {
     private Location[] locations;
     private boolean[] isCertainlyReachable;
 
-    MethodChooserSupport(JPDADebuggerImpl debugger, String url, ReferenceType clazz, int methodLine, int methodOffset) {
+    MethodChooserSupport(JPDADebuggerImpl debugger, String url, ReferenceType clazz, int methodLine) {
         this.debugger = debugger;
         this.currentThread = debugger.getCurrentThread();
         this.url = url;

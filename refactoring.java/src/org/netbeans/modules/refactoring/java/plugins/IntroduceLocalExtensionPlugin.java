@@ -44,8 +44,10 @@ package org.netbeans.modules.refactoring.java.plugins;
 import java.io.IOException;
 import java.net.URL;
 import java.text.MessageFormat;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -56,6 +58,7 @@ import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.IntroduceLocalExtensionRefactoring;
+import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.openide.filesystems.FileObject;
@@ -130,10 +133,12 @@ public final class IntroduceLocalExtensionPlugin extends JavaRefactoringPlugin {
     }
 
     private Set<FileObject> getRelevantFiles() {
-        ClasspathInfo cpInfo = getClasspathInfo(refactoring);
-        HashSet<FileObject> set = new HashSet<FileObject>();
+        ClasspathInfo cpInfo = RefactoringUtils.getClasspathInfoFor(treePathHandle);
+        Set<FileObject> set = new LinkedHashSet<FileObject>();
         ClassIndex idx = cpInfo.getClassIndex();
-        set.addAll(idx.getResources(treePathHandle.getElementHandle(), EnumSet.of(ClassIndex.SearchKind.TYPE_REFERENCES, ClassIndex.SearchKind.IMPLEMENTORS),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
+        Set<FileObject> resources = idx.getResources(treePathHandle.getElementHandle(), EnumSet.of(ClassIndex.SearchKind.TYPE_REFERENCES, ClassIndex.SearchKind.IMPLEMENTORS),EnumSet.of(ClassIndex.SearchScope.SOURCE));
+//        set.add(treePathHandle.getFileObject());
+        set.addAll(resources);
         return set;
     }
     

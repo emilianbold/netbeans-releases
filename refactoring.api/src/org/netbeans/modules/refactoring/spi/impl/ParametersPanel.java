@@ -114,7 +114,6 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
     private boolean cancelRequest = false;
     private boolean canceledDialog;
     private boolean forcePreview = false;
-    private final Object backgroundLock = new Object();
 
     /**
      * Enables/disables Preview button of dialog. Can be used by
@@ -140,7 +139,6 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         RefactoringPanel.checkEventThread();
         this.rui = rui;
         initComponents();
-        runInBackground.setVisible(false);
 
         // #143551 
         HelpCtx helpCtx = getHelpCtx();
@@ -161,11 +159,12 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         setButtonsEnabled(false);
         if (rui.isQuery()) {
             Preferences prefs = NbPreferences.forModule(RefactoringPanel.class);
-            openInNewTab.setSelected(prefs.getBoolean(PREF_OPEN_NEW_TAB, false));
+            openInNewTab.setSelected(prefs.getBoolean(PREF_OPEN_NEW_TAB, true));
         }
+        Mnemonics.setLocalizedText(next, NbBundle.getMessage(ParametersPanel.class, rui.isQuery() ? "CTL_Find" : "CTL_Finish"));
 
         //TODO: Ugly Hack
-        forcePreview = "org.netbeans.modules.java.hints.jackpot.impl.refactoring.InspectAndRefactorUI".equals(rui.getClass().getName());
+        forcePreview = "org.netbeans.modules.java.hints.spiimpl.refactoring.InspectAndRefactorUI".equals(rui.getClass().getName());
         //cancel.setEnabled(false);
         next.setVisible(!forcePreview);
         validate();
@@ -205,9 +204,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         next = new javax.swing.JButton();
         cancel = new javax.swing.JButton();
         help = new javax.swing.JButton();
-        runInBackground = new javax.swing.JButton();
         openInNewTab = new javax.swing.JCheckBox();
-        panel = new javax.swing.JPanel();
         innerPanel = new javax.swing.JPanel();
         label = new TooltipLabel();
         containerPanel = new javax.swing.JPanel();
@@ -262,13 +259,6 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(runInBackground, org.openide.util.NbBundle.getMessage(ParametersPanel.class, "ParametersPanel.runInBackground.text")); // NOI18N
-        runInBackground.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                runInBackgroundActionPerformed(evt);
-            }
-        });
-
         javax.swing.GroupLayout buttonsPanelLayout = new javax.swing.GroupLayout(buttonsPanel);
         buttonsPanel.setLayout(buttonsPanelLayout);
         buttonsPanelLayout.setHorizontalGroup(
@@ -278,13 +268,12 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
                 .addGap(4, 4, 4)
                 .addComponent(previewButton, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(runInBackground)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(next)
-                .addGap(4, 4, 4)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(cancel, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(4, 4, 4)
-                .addComponent(help, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(help, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
 
         buttonsPanelLayout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {back, cancel, help, next, previewButton});
@@ -292,12 +281,11 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         buttonsPanelLayout.setVerticalGroup(
             buttonsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(back)
-            .addComponent(previewButton)
             .addGroup(buttonsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addComponent(previewButton)
                 .addComponent(next)
-                .addComponent(runInBackground))
-            .addComponent(cancel)
-            .addComponent(help)
+                .addComponent(cancel)
+                .addComponent(help))
         );
 
         back.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_Back")); // NOI18N
@@ -319,17 +307,13 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
 
         progressPanel.add(controlsPanel, java.awt.BorderLayout.SOUTH);
 
-        panel.setLayout(new java.awt.BorderLayout());
-
         innerPanel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(128, 128, 128)));
         innerPanel.setLayout(new java.awt.BorderLayout());
 
         label.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         innerPanel.add(label, java.awt.BorderLayout.WEST);
 
-        panel.add(innerPanel, java.awt.BorderLayout.CENTER);
-
-        progressPanel.add(panel, java.awt.BorderLayout.PAGE_START);
+        progressPanel.add(innerPanel, java.awt.BorderLayout.NORTH);
 
         add(progressPanel, java.awt.BorderLayout.SOUTH);
 
@@ -418,11 +402,6 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         cancel.setEnabled(true);
         openInNewTab.setVisible(false);
         next.setVisible(false);
-        if (rui.isQuery()) {
-            runInBackground.setVisible(true);
-            dialog.getRootPane().setDefaultButton(runInBackground);
-            validate();
-        }
 
         RequestProcessor rp = new RequestProcessor();
         final int inputState = currentState;
@@ -523,22 +502,6 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         prefs.putBoolean(PREF_OPEN_NEW_TAB, openInNewTab.isSelected());
     }//GEN-LAST:event_openInNewTabStateChanged
 
-    private void runInBackgroundActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runInBackgroundActionPerformed
-        backgroundQuery = true;
-        if (rui.getRefactoring() instanceof WhereUsedQuery) {
-            //hack for cnd
-            //TODO: create API for it
-            ((WhereUsedQuery) rui.getRefactoring()).putValue("BACKGROUND_QUERY", true);
-        }
-        synchronized (backgroundLock) {
-            backgroundLock.notify();
-        }
-        synchronized (this) {
-            if (dialog != null) {
-                dialog.setVisible(false);
-            }
-        }
-    }//GEN-LAST:event_runInBackgroundActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton back;
     private javax.swing.JPanel buttonsPanel;
@@ -550,11 +513,9 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
     private javax.swing.JLabel label;
     private javax.swing.JButton next;
     private javax.swing.JCheckBox openInNewTab;
-    private javax.swing.JPanel panel;
     private javax.swing.JLabel pleaseWait;
     private javax.swing.JButton previewButton;
     private javax.swing.JPanel progressPanel;
-    private javax.swing.JButton runInBackground;
     // End of variables declaration//GEN-END:variables
 
     /**
@@ -621,20 +582,12 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
      * <code>null</code> if the operation was cancelled.
      */
     public synchronized RefactoringSession showDialog() {
-        backgroundQuery = false;
-        if (rui.getRefactoring() instanceof WhereUsedQuery) {
-            //hack for cnd
-            //TODO: create API for it
-            ((WhereUsedQuery) rui.getRefactoring()).putValue("BACKGROUND_QUERY", false);
-        }
-
         RefactoringPanel.checkEventThread();
         putClientProperty(JUMP_TO_FIRST_OCCURENCE, false);
         if (rui != null) {
             rui.getRefactoring().addProgressListener(this);
 
             openInNewTab.setVisible(rui.isQuery());
-            runInBackground.setVisible(false);
             next.setVisible(true);
 
         }
@@ -647,7 +600,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
             dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ParametersPanel.class, "ACSD_FindUsagesDialog"));
         }
 
-        setOkCancelStuff();
+        setOkCancelShortcuts();
         RequestProcessor.Task task = RP.post(new Runnable() {
             @Override
             public void run() {
@@ -723,7 +676,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         return temp;
     }
 
-    private void setOkCancelStuff() {
+    private void setOkCancelShortcuts() {
         canceledDialog = false;
         KeyStroke cancelKS = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
         String cancelActionKey = "cancel"; // NOI18N
@@ -788,9 +741,9 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
 
         next.setEnabled(!problem.isFatal() && !isPreviewRequired());
         dialog.getRootPane().setDefaultButton(forcePreview ? previewButton : next);
+        next.setVisible(true);
         if (currentState == PRE_CHECK) {
             Mnemonics.setLocalizedText(next, NbBundle.getMessage(ParametersPanel.class, "CTL_Next"));
-            next.setVisible(true);
             back.setVisible(false);
             if (!rui.hasParameters()) {
                 next.setVisible(false);
@@ -845,7 +798,9 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         }
         setOKorRefactor();
         ((BorderLayout)this.getLayout()).invalidateLayout(this);
+        stop(new ProgressEvent(this, ProgressEvent.STOP));
         dialog.pack();
+        dialog.repaint();
     }
 
     private boolean isPreviewRequired() {
@@ -868,13 +823,11 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
             @Override
             public void run() {
                 if (progressBar != null && progressBar.isVisible()) {
-                    LOGGER.log(Level.INFO, event.getSource() + " called start multiple times");
+                    LOGGER.log(Level.INFO, "{0} called start multiple times", event.getSource());
                     stop(event);
                 }
                 progressPanel.remove(innerPanel);
                 progressBar = ProgressBar.create(progressHandle = ProgressHandleFactory.createHandle("")); //NOI18N
-                progressPanel.add(progressBar, BorderLayout.CENTER);
-                //progressPanel.validate();
                 if (event.getCount() == -1) {
                     isIndeterminate = true;
                     progressHandle.start();
@@ -899,10 +852,11 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
                         text = NbBundle.getMessage(ParametersPanel.class, "LBL_Usages");
                         break;
                 }
-                progressBar.setString(text); //NOI18N
-
-                progressPanel.setVisible(true);
-
+                progressBar.setString(text);
+                progressPanel.add(progressBar, BorderLayout.NORTH);
+                progressPanel.setPreferredSize(null);
+                if (dialog!=null)
+                    dialog.validate();
                 setButtonsEnabled(false);
             }
         });
@@ -1051,22 +1005,9 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
                         RequestProcessor.Task post = RequestProcessor.getDefault().post(new Runnable() {
                             @Override
                             public void run() {
-                                try {
                                     problem = rui.getRefactoring().prepare(refactoringSession);
-                                } finally {
-                                    synchronized (backgroundLock) {
-                                        backgroundLock.notify();
-                                    }
-                                }
                             }
                         });
-                        synchronized (backgroundLock) {
-                            try {
-                                backgroundLock.wait();
-                            } catch (InterruptedException ex) {
-                                Exceptions.printStackTrace(ex);
-                            }
-                        }
                     } else {
                         problem = rui.getRefactoring().prepare(refactoringSession);
                     }
@@ -1086,11 +1027,6 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
                 });
             }
         }
-    }
-    private boolean backgroundQuery;
-
-    boolean isBackgroundQuery() {
-        return backgroundQuery;
     }
 
     private void setButtonsEnabled(boolean enabled) {
@@ -1124,7 +1060,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         private static ProgressBar create(ProgressHandle handle) {
             ProgressBar instance = new ProgressBar();
             instance.setLayout(new BorderLayout());
-            instance.label = new JLabel();
+            instance.label = new JLabel(" "); //NOI18N
             instance.label.setBorder(new EmptyBorder(0, 0, 2, 0));
             instance.add(instance.label, BorderLayout.NORTH);
             JComponent progress = ProgressHandleFactory.createProgressComponent(handle);

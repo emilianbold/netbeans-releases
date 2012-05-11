@@ -147,12 +147,16 @@ public class CodeCompletionUtils {
     }
 
     static ArrayList<String> afterSmartyCommand(Document doc, int offset) {
+        String openDelimiter = SmartyFramework.getOpenDelimiter(NbEditorUtilities.getFileObject(doc));
         // search for command one position back - waits at least for space after command
-        int updatedOffset = (offset == 0) ? 0 : offset - 1;
-        int readLength = (SCANNING_MAX_FILTER_LENGHT > updatedOffset) ? updatedOffset : SCANNING_MAX_FILTER_LENGHT;
+        int updatedOffset = offset;
         try {
-            return getLastKeywords(doc.getText(updatedOffset - readLength, readLength),
-                    SmartyFramework.getOpenDelimiter(NbEditorUtilities.getFileObject(doc)));
+            if (updatedOffset > 0 &&
+                    !doc.getText(offset - openDelimiter.length(), openDelimiter.length()).equals(openDelimiter)) {
+                updatedOffset--;
+            }
+            int readLength = (SCANNING_MAX_FILTER_LENGHT > updatedOffset) ? updatedOffset : SCANNING_MAX_FILTER_LENGHT;
+            return getLastKeywords(doc.getText(updatedOffset - readLength, readLength), openDelimiter);
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
         }

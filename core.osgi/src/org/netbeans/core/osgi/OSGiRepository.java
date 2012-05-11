@@ -144,6 +144,7 @@ class OSGiRepository extends Repository {
             @SuppressWarnings("deprecation") Object _1 = FileSystem.Environment.class; // FELIX-2128
             @SuppressWarnings("deprecation") Object _2 = org.openide.filesystems.FileSystemCapability.class;
             Object _3 = FileStatusListener.class;
+            Object _4 = LookupEvent.class; // FELIX-3477
         }
 
         private static final class Layers extends MultiFileSystem {
@@ -216,6 +217,7 @@ class OSGiRepository extends Repository {
             List<FileSystem> delegates = new ArrayList<FileSystem>();
             delegates.add(userdir);
             Collection<? extends FileSystem> dyn = dynamic.allInstances();
+            LOG.log(Level.FINE, "dyn={0}", dyn);
             for (FileSystem fs : dyn) {
                 if (Boolean.TRUE.equals(fs.getRoot().getAttribute("fallback"))) { // NOI18N
                     continue;

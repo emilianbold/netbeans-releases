@@ -186,6 +186,10 @@ public final class Issue {
         return impl.getSummary();
     }
 
+    public boolean isFinished() {
+        return impl.isFinished();
+    }
+    
     public Status getStatus() {
         // XXX this is hacked
         int status = IssueCacheUtils.getStatus(impl);

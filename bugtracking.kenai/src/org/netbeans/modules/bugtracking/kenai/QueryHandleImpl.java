@@ -140,7 +140,7 @@ class QueryHandleImpl extends QueryHandle implements QueryDescriptor, ActionList
     synchronized void refreshIfNeeded() {
         if(needsRefresh) {
             needsRefresh = false;
-            query.refresh(true);
+            query.refresh();
         }
     }
 

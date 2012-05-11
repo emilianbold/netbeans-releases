@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.project.ui;
 
+import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -58,7 +59,10 @@ import java.beans.VetoableChangeListener;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Locale;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
@@ -203,7 +207,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
     public FileObject getSelectedTemplate () {
         Node[] nodes = ((ExplorerProviderPanel) this.projectsPanel).getSelectedNodes();
         if (nodes != null && nodes.length == 1) {
-            DataObject dobj = nodes[0].getCookie(DataObject.class);
+            DataObject dobj = nodes[0].getLookup().lookup(DataObject.class);
             if (dobj != null) {
                 while (dobj instanceof DataShadow) {
                     dobj = ((DataShadow)dobj).getOriginal();
@@ -244,7 +248,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
                     } catch (PropertyVetoException e) {
                         /*Ignore it*/
                     }
-                    DataObject template = (DataObject) selectedNodes[0].getCookie(DataFolder.class);
+                    DataObject template = (DataObject) selectedNodes[0].getLookup().lookup(DataFolder.class);
                     if (template != null) {
                         FileObject fo = template.getPrimaryFile();
                         String templatePath = fo.getPath();
@@ -280,7 +284,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
             if (ExplorerManager.PROP_SELECTED_NODES.equals (event.getPropertyName())) {
                 Node[] selectedNodes = (Node[]) event.getNewValue ();
                 if (selectedNodes != null && selectedNodes.length == 1) {
-                    DataObject template = selectedNodes[0].getCookie(DataObject.class);
+                    DataObject template = selectedNodes[0].getLookup().lookup(DataObject.class);
                     if (template != null) {
                         URL descURL = getDescription (template);
                         if (descURL != null) {
@@ -581,14 +585,20 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         public void selectFirst() {
             RP.post(new Runnable() {
                 @Override public void run() {
-                    Children ch = getRootNode().getChildren();
+                    final Children ch = getRootNode().getChildren();
                     // XXX what is the best way to wait for >0 node to appear without necessarily waiting for them all?
-                    if (/*blocks*/ch.getNodesCount(true) > 0 && /*last minute*/getSelectedNodes().length == 0) {
-                        try {
-                            getExplorerManager().setSelectedNodes(new Node[] {ch.getNodeAt(0)});
-                        } catch (PropertyVetoException ex) {
-                            // ignore, race condition
-                        }
+                    if (ch.getNodesCount(true) > 0) { // blocks
+                        EventQueue.invokeLater(new Runnable() { // #210326
+                            @Override public void run() {
+                                if (getSelectedNodes().length == 0) { // last minute
+                                    try {
+                                        getExplorerManager().setSelectedNodes(new Node[] {ch.getNodeAt(0)});
+                                    } catch (PropertyVetoException x) {
+                                        Logger.getLogger(TemplatesPanelGUI.class.getName()).log(Level.INFO, "race condition while selecting first of " + getRootNode(), x);
+                                    }
+                                }
+                            }
+                        });
                     }
                 }
             });
@@ -733,11 +743,11 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         try {
             byte[] arr = new byte[4096];
             int len = stream.read (arr, 0, arr.length);
-            String txt = new String (arr, 0, (len>=0)?len:0).toUpperCase();
+            String txt = new String(arr, 0, (len >= 0 ) ? len : 0, "ISO-8859-1").toUpperCase(Locale.ENGLISH);
             // encoding
             return findEncoding (txt);
-        } catch (Exception x) {
-            x.printStackTrace();
+        } catch (IOException x) {
+            Logger.getLogger(TemplatesPanelGUI.class.getName()).log(Level.INFO, null, x);
         }
         return null;
     }

@@ -574,6 +574,8 @@ public class AbstractLookup extends Lookup implements Serializable {
                 CycleError cycle = new CycleError(err.getMessage());
                 cycle.add(evAndListeners);
                 throw cycle;
+            } catch (ISE ex) {
+                throw ex;
             } catch (RuntimeException e) {
                 // Such as e.g. occurred in #32040. Do not halt other things.
                 e.printStackTrace();
@@ -850,6 +852,9 @@ public class AbstractLookup extends Lookup implements Serializable {
 
         /** Tests whether this item can produce object
         * of class c.
+        * <p>Typically this will produce the same result as
+        * {@code c.isAssignableFrom(}{@link #getType() getType}{@code ())}
+        * but may avoid loading the concrete type's class in doing so.
         */
         protected abstract boolean instanceOf(Class<?> c);
 

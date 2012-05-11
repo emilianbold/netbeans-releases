@@ -111,15 +111,15 @@ public class OracleOptionalDeploymentManagerFactory extends OptionalDeploymentMa
 
         @Override
         public Set<ServerLibrary> getDeployedLibraries() {
-            
-            // list of libraries seems to be fixed for WLS in cloud; 
-            // check WSL console for full list; this is jsut subset relevant for NetBeans
-            
+            // if updating consult "Table 4-1 Other Java Cloud Service Supported Application Types"
+            // in "Using Oracle Java Cloud Service" documentation
             Set<ServerLibrary> res = new HashSet<ServerLibrary>();
             res.add(ServerLibraryFactory.createServerLibrary(
-                    new ServerLibraryImpl("JavaServer Faces", "JSF Reference Implementation", "1.2", "1.2.9.0", "jsf"))); // NOI18N
+                    new ServerLibraryImpl("JavaServer Faces", "JSF Reference Implementation", "1.2", null, "jsf"))); // NOI18N
             res.add(ServerLibraryFactory.createServerLibrary(
-                    new ServerLibraryImpl("JavaServer Pages Standard Tag Library (JSTL)", "JSTL Reference Implementation", "1.2", "1.2.0.1", "jstl"))); // NOI18N
+                    new ServerLibraryImpl("JavaServer Faces", "JSF Reference Implementation", "2.0", null, "jsf"))); // NOI18N
+            res.add(ServerLibraryFactory.createServerLibrary(
+                    new ServerLibraryImpl("JavaServer Pages Standard Tag Library (JSTL)", "JSTL Reference Implementation", "1.2", null, "jstl"))); // NOI18N
             return res;
         }
 
@@ -151,7 +151,9 @@ public class OracleOptionalDeploymentManagerFactory extends OptionalDeploymentMa
             this.spec = spec;
             this.impl = impl;
             this.specVer = Version.fromDottedNotationWithFallback(specVer);
-            this.implVer = Version.fromDottedNotationWithFallback(implVer);
+            if (implVer != null) {
+                this.implVer = Version.fromDottedNotationWithFallback(implVer);
+            }
             this.name = name;
         }
         

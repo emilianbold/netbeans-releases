@@ -90,10 +90,6 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
         return this.unitIndex == other.unitIndex;
     }
 
-    protected CharSequence getProjectName() {
-        return getUnit();
-    }
-
     @Override
     public void write(RepositoryDataOutput aStream) throws IOException {
         aStream.writeShort(this.unitIndex);
@@ -111,6 +107,10 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
     @Override
     public CharSequence getAt(int level) {
         throw new UnsupportedOperationException();
+    }
+
+    protected CharSequence getProjectName() {
+        return KeyUtilities.getUnitNameSafe(this.unitIndex);
     }
 
     @Override

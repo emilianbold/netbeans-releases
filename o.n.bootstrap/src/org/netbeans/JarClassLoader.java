@@ -89,6 +89,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
+import org.openide.util.Utilities;
 
 /**
  * A ProxyClassLoader capable of loading classes from a set of jar files
@@ -795,7 +796,14 @@ public class JarClassLoader extends ProxyClassLoader {
         public String getIdentifier() {
             String tmp = getURL().toExternalForm();
             if (tmp.startsWith("jar:file:") && tmp.endsWith("!/")) {
-                return Stamps.findRelativePath(tmp.substring(9));
+                String path = tmp.substring(9, tmp.length() - 2);
+                if (Utilities.isWindows()) {
+                    if (path.startsWith("/")) { // NOI18N
+                        path = path.substring(1);
+                    }
+                    path = path.replace('/', File.separatorChar);
+                }
+                return Stamps.findRelativePath(path) + "!/";
             }
             return tmp;
         }
@@ -976,7 +984,12 @@ public class JarClassLoader extends ProxyClassLoader {
         @Override
         protected void parseURL(URL u, String spec, int start, int limit) {
             if (spec.startsWith("/")) {
-                setURL(u, "jar", u.getHost(), u.getPort(), u.getAuthority(), u.getUserInfo(), u.getFile().replaceFirst("!/.+$", "!" + spec), u.getQuery(), u.getRef()); // NOI18N
+                setURL(
+                    u, "jar", u.getHost(), u.getPort(), 
+                    u.getAuthority(), u.getUserInfo(), 
+                    u.getFile().replaceFirst("!/.*$", "!" + spec), // NOI18N
+                    u.getQuery(), u.getRef()
+                ); 
             } else {
                 super.parseURL(u, spec, start, limit);
             }

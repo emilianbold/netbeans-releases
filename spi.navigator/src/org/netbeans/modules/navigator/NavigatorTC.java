@@ -335,8 +335,7 @@ public final class NavigatorTC extends TopComponent implements NavigatorDisplaye
         }
         return controller;
     }
-    
-    
+
     /*************** private stuff ************/
     
     /** Removes regular UI content and sets UI to empty state */

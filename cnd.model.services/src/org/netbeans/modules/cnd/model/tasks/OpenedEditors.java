@@ -53,7 +53,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import javax.swing.JEditorPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
@@ -71,6 +70,8 @@ import org.openide.util.Parameters;
  * @author Vladimir Kvashin
  */
 public final class OpenedEditors {
+    // marker for non standard editor components where semantic services are expected to work
+    public static final String CND_EDITOR_COMPONENT = "CND_EDITOR_COMPONENT"; // NOI18N
 
     private List<JTextComponent> visibleEditors = new ArrayList<JTextComponent>();
     private Map<JTextComponent, FileObject> visibleEditors2Files = new HashMap<JTextComponent, FileObject>();
@@ -138,10 +139,22 @@ public final class OpenedEditors {
     }
 
     private synchronized void stateChanged(PropertyChangeEvent evt) {
-        if (SHOW_TIME || TRACE_FILES) { 
-            System.err.println("OpenedEditors.stateChanged() with event " + (evt == null ? "null" : evt.getPropertyName()));
-        }
+        String propName = evt == null ? null: evt.getPropertyName();
 
+        // we don't want i.e. focus lost events
+        if (propName != null &&
+                !EditorRegistry.COMPONENT_REMOVED_PROPERTY.equals(propName) &&
+                !EditorRegistry.FOCUSED_DOCUMENT_PROPERTY.equals(propName) &&
+                !EditorRegistry.FOCUS_GAINED_PROPERTY.equals(propName) &&
+                !EditorRegistry.LAST_FOCUSED_REMOVED_PROPERTY.equals(propName)) {
+            if (SHOW_TIME || TRACE_FILES) {
+                System.err.println("in OpenedEditors.stateChanged() skip event " + propName);
+            }
+            return;
+        }
+        if (SHOW_TIME || TRACE_FILES) {
+            System.err.println("OpenedEditors.stateChanged() with event " + propName);
+        }
         for (JTextComponent c : visibleEditors) {
             c.removePropertyChangeListener(componentListener);
             visibleEditors2Files.remove(c);
@@ -150,15 +163,26 @@ public final class OpenedEditors {
         visibleEditors.clear();
 
         for(JTextComponent editor : EditorRegistry.componentList()) {
-            FileObject fo = editor != null ? getFileObject(editor) : null;
+            // skip non-editor components
+            if (isHandledEditor(editor)) {
+                FileObject fo = getFileObject(editor);
 
-            if (editor instanceof JEditorPane && fo != null && isSupported(fo)) {
-                // FIXUP for #139980 EditorRegistry.componentList() returns editors that are already closed
-                // UPDATE it seems that this bug was fixed and there is no need in additional check now
-                boolean valid = true;// isOpen((JEditorPane) editor, fo);
-                if (TRACE_FILES) { System.err.printf("\tfile: %s valid: %b\n", fo.toString(), valid); }
-                if (valid) {
-                    visibleEditors.add(editor);
+                if (isSupported(fo)) {
+                    // FIXUP for #139980 EditorRegistry.componentList() returns editors that are already closed
+                    // UPDATE it seems that this bug was fixed and there is no need in additional check now
+                    boolean valid = true;// isOpen((JEditorPane) editor, fo);
+                    if (TRACE_FILES) { System.err.printf("\tfile: %s valid: %b\n", fo.toString(), valid); }
+                    if (valid) {
+                        visibleEditors.add(editor);
+                    }
+                } else {
+                    if (SHOW_TIME || TRACE_FILES) {
+                        System.err.println("OpenedEditors.stateChanged() skip FO " + fo);
+                    }
+                }
+            } else {
+                if (SHOW_TIME || TRACE_FILES) {
+                    System.err.println("OpenedEditors.stateChanged() skip editor " + editor);
                 }
             }
         }
@@ -222,7 +246,9 @@ public final class OpenedEditors {
      * Checks if the given file is supported.
      */
     private static boolean isSupported(FileObject file) throws NullPointerException {
-        Parameters.notNull("files", file); //NOI18N
+        if (file == null) {
+            return false;
+        }
 
         return !filterSupportedFiles(Collections.singletonList(file)).isEmpty();
     }
@@ -273,5 +299,15 @@ public final class OpenedEditors {
         }
 
         return result;
+    }
+
+    private boolean isHandledEditor(JTextComponent editor) {
+        if (editor == null) {
+            return false;
+        }
+        if (editor.getClientProperty(OpenedEditors.CND_EDITOR_COMPONENT) != null) {
+            return true;
+        }
+        return editor.getClass().getName().equals("org.openide.text.QuietEditorPane"); // NOI18N
     }
 }

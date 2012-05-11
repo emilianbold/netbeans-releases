@@ -456,9 +456,7 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
     
     private String getFileLabel() {
         PropertiesDataObject propDO = (PropertiesDataObject) myEntry.getDataObject();
-        return propDO.isMultiLocale()
-                ? (propDO.getPrimaryFile().getName()+"("+Util.getLocaleLabel(myEntry)+")") // NOI18N
-                : propDO.getPrimaryFile().getNameExt();
+        return propDO.getPrimaryFile().getNameExt();
     }
     
     /** 

@@ -316,7 +316,7 @@ public class Controller {
      * This class coalesces name changes, which are run afterward on the event
      * queue.
      */
-    private class CoalescedNameUpdater implements Runnable {
+    class CoalescedNameUpdater implements Runnable {
         private Set<OutputTab> components = new HashSet<OutputTab>();
         CoalescedNameUpdater() {
         }
@@ -329,10 +329,19 @@ public class Controller {
             components.remove(tab);
         }
 
+        boolean contains(OutputTab tab) {
+            return components.contains(tab);
+        }
+
         public void run() {
+            List<OutputTab> toRemove = null;
             for (OutputTab t : components) {
                 NbIO io = t.getIO();
                 if (!ioToTab.containsKey(io)) {
+                    if (toRemove == null) {
+                        toRemove = new LinkedList<OutputTab>();
+                    }
+                    toRemove.add(t);
                     continue;
                 }
                 if (LOG) {
@@ -353,6 +362,9 @@ public class Controller {
                 }
                 //#88204 apostophes are escaped in xm but not html
                 io.getIOContainer().setTitle(t, name.replace("&apos;", "'"));
+            }
+            if (toRemove != null) {
+                components.removeAll(toRemove);
             }
             nameUpdater = null;
         }
@@ -640,7 +652,7 @@ public class Controller {
     private synchronized OutputTab findTabForIo(NbIO io) {
         WeakReference<OutputTab> tabReference = ioToTab.get(io);
         OutputTab result = tabReference == null ? null : tabReference.get();
-        if (result == null) {
+        if (result == null && Controller.LOG) {
             Controller.log("Tab for IO " + io.getName() //NOI18N
                     + " was not found."); //NOI18N)
         }

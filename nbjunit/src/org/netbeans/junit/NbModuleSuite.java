@@ -1142,7 +1142,7 @@ public class NbModuleSuite {
                         jos.putNextEntry(entry);
                         byte[] buf = new byte[(int) entry.getSize()];
                         int read = 0;
-                        for (;;) {
+                        while (read < buf.length) {
                             int more = jis.read(buf, read, buf.length - read);
                             if (more == -1) {
                                 break;

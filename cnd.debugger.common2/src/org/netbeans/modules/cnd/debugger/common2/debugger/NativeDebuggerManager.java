@@ -1120,25 +1120,22 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
             return;
         }
 
-        DebugTarget dt;
-        String args;
-
-        String corefile = currentDebugger.session().getCorefile();
-
         // SHOULD pass on the platform we're originating from so it can
         // properly be used as a DebugTarget key.
 
-        dt = currentDebugger.getNDI().getDebugTarget();
+        DebugTarget dt = currentDebugger.getNDI().getDebugTarget();
         if (dt == null) {
             // follow fork - attach child
-        } else {
-            if (corefile != null) // we want to remember executable path instead of corefile path
-            {
-                dt.setExecutable(progname);
-            } else if (!dt.getExecutable().equals(progname) && !from_unload) {
-                // load progname from dbx console
-                dt.setExecutable(progname);
-            }
+            return;
+        }
+
+        String corefile = currentDebugger.session().getCorefile();
+
+        if (corefile != null) { // we want to remember executable path instead of corefile path
+            dt.setExecutable(progname);
+        } else if (!dt.getExecutable().equals(progname) && !from_unload) {
+            // load progname from dbx console
+            dt.setExecutable(progname);
         }
 
         // not for attach <pid>

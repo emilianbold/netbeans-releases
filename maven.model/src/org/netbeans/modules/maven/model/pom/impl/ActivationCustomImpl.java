@@ -41,9 +41,8 @@
  */
 package org.netbeans.modules.maven.model.pom.impl;
 
-import org.w3c.dom.Element;
 import org.netbeans.modules.maven.model.pom.*;	
-import org.netbeans.modules.maven.model.pom.POMComponentVisitor;	
+import org.w3c.dom.Element;
 
 /**
  *
@@ -62,6 +61,7 @@ public class ActivationCustomImpl extends POMComponentImpl implements Activation
     // attributes
 
     // child elements
+    @Override
     public void accept(POMComponentVisitor visitor) {
         visitor.visit(this);
     }

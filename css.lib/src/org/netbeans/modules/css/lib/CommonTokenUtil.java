@@ -48,18 +48,25 @@ import org.antlr.runtime.CommonToken;
  * @author marekfukala
  */
 public class CommonTokenUtil {
-    
-    /** 
-     * Returns a pointer to the start and end of the token image in the underlaying stream.
-     * The token.getStopIndex() points to the last character of the token which is a bit confusing.
-     * 
-     * Use this method to get CommonToken's boundaries instead of using the getStart/StopIndex methods.
-     * 
-     * @return two members array - arr[0] is the start offset, arr[1] is the end offset
+
+    /**
+     * Returns a pointer to the start and end of the token image in the
+     * underlaying stream. The token.getStopIndex() points to the last character
+     * of the token which is a bit confusing.
+     *
+     * Use this method to get CommonToken's boundaries instead of using the
+     * getStart/StopIndex methods.
+     *
+     * @return two members array - arr[0] is the start offset, arr[1] is the end
+     * offset
      */
     public static int[] getCommonTokenOffsetRange(CommonToken token) {
-        return new int[]{token.getStartIndex(), token.getStopIndex() + 1};
-        
+        if (token.getType() == CommonToken.EOF) {
+            //"eof token" points at the end offset of the source, with zero length
+            return new int[]{token.getStartIndex(), token.getStopIndex()};
+        } else {
+            return new int[]{token.getStartIndex(), token.getStopIndex() + 1};
+        }
+
     }
-    
 }

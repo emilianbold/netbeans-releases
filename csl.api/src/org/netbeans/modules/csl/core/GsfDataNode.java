@@ -48,6 +48,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.Action;
 import javax.swing.JSeparator;
@@ -66,6 +68,8 @@ import org.openide.util.actions.SystemAction;
 
 
 public class GsfDataNode extends DataNode {
+    private static final Logger LOG = Logger.getLogger(GsfDataNode.class.getName());
+    
     private static Map<String, Action[]> mimeTypeToActions = new HashMap<String, Action[]>();
 
     public GsfDataNode(GsfDataObject basDataObject, Language language) {
@@ -103,7 +107,10 @@ public class GsfDataNode extends DataNode {
 
                     for (i = 0; i < k; i++) {
                         InstanceCookie ic = dob[i].getCookie(InstanceCookie.class);
-                        assert ic != null : "InstanceCookie is null. dob[" + i + "]:" + dob[i];
+                        if (ic == null) {
+                            LOG.log(Level.WARNING, "Not an action instance, or broken action: {0}", dob[i].getPrimaryFile());
+                            continue;
+                        }
                         Class clazz = ic.instanceClass();
 
                         if (JSeparator.class.isAssignableFrom(clazz)) {

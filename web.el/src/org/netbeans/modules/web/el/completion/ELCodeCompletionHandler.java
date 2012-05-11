@@ -41,13 +41,7 @@
  */
 package org.netbeans.modules.web.el.completion;
 
-import com.sun.el.parser.AstDeferredExpression;
-import com.sun.el.parser.AstDynamicExpression;
-import com.sun.el.parser.AstIdentifier;
-import com.sun.el.parser.AstMethodSuffix;
-import com.sun.el.parser.AstPropertySuffix;
-import com.sun.el.parser.AstString;
-import com.sun.el.parser.Node;
+import com.sun.el.parser.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -73,13 +67,7 @@ import org.netbeans.modules.csl.api.ParameterInfo;
 import org.netbeans.modules.csl.spi.DefaultCompletionResult;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.el.lexer.api.ELTokenId;
-import org.netbeans.modules.web.el.AstPath;
-import org.netbeans.modules.web.el.CompilationContext;
-import org.netbeans.modules.web.el.ELElement;
-import org.netbeans.modules.web.el.ELParserResult;
-import org.netbeans.modules.web.el.ELTypeUtilities;
-import org.netbeans.modules.web.el.ELVariableResolvers;
-import org.netbeans.modules.web.el.ResourceBundles;
+import org.netbeans.modules.web.el.*;
 import org.netbeans.modules.web.el.refactoring.RefactoringUtil;
 import org.netbeans.modules.web.el.spi.ELVariableResolver.VariableInfo;
 import org.netbeans.modules.web.el.spi.Function;
@@ -179,8 +167,8 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
         // node.
         if (target instanceof AstIdentifier
                 && (previous instanceof AstIdentifier
-                || previous instanceof AstPropertySuffix
-                || previous instanceof AstMethodSuffix)) {
+                || previous instanceof AstDotSuffix
+                || NodeUtil.isMethodCall(previous))) {
             return target;
         } else {
             return previous;

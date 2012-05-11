@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -143,6 +143,7 @@ public final class ModuleDeactivator extends Object {
             try {
                 writer = new BufferedWriter (new FileWriter (file));
                 writer.write (content);
+                XMLUtil.LOG.info("File " + file + " modified." );
             } finally {
                 if (writer != null) writer.close ();
             }
@@ -159,7 +160,7 @@ public final class ModuleDeactivator extends Object {
                 fileData = new StringBuffer ();
                 reader = new BufferedReader (new FileReader (file));
                 char[] buf = new char[1024];
-                int numRead = 0;
+                int numRead;
                 while ((numRead = reader.read (buf)) != -1) {
                     String readData = String.valueOf (buf, 0, numRead);
                     fileData.append (readData);
@@ -182,10 +183,14 @@ public final class ModuleDeactivator extends Object {
         if (! f.exists ()) {
             return ;
         }
+        XMLUtil.LOG.info("Deleting file: " + f);
         if (! f.delete ()) {
             // updater_nb.jar is locked on windows, don't throw AE here
             //assert false : f + " cannot be deleted";
             f.deleteOnExit ();
+            XMLUtil.LOG.info("File " + f + " cannot be deleted. Will be delete later on exit.");
+        } else {
+            XMLUtil.LOG.info("File " + f + " deleted.");
         }
         f = f.getParentFile ();
         while (f != null && doDeleteEmptyDirectory (f)) {
@@ -196,20 +201,23 @@ public final class ModuleDeactivator extends Object {
     private static boolean doDeleteEmptyDirectory (File d) {
         assert d != null : d + " cannot be null";
         
-        boolean res = false;
+        boolean res;
         if (d.isDirectory ()) { // #132673: remove .lastModified as well if the directory is empty
             List<File> files = Arrays.asList (d.listFiles ());
             if (files.size () == 1) {
                 File f = files.get (0);
                 if (UpdaterDispatcher.LAST_MODIFIED.endsWith (f.getName ())) {
                     if (f.delete ()) {
-                        res = d.delete ();
+                        d.delete ();
                     }
+                    XMLUtil.LOG.info("File " + f + " deleted.");
                 }
             }
             res = d.delete ();
+            XMLUtil.LOG.info("Directory " + d + " deleted.");
         } else {
             res = d.delete ();
+            XMLUtil.LOG.info("File " + d + " deleted.");
         }
         return res;
     }

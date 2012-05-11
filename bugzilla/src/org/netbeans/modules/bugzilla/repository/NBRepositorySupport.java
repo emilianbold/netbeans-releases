@@ -44,6 +44,7 @@ package org.netbeans.modules.bugzilla.repository;
 
 import java.util.Collection;
 import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.api.RepositoryManager;
 import org.netbeans.modules.bugtracking.api.Util;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
@@ -93,7 +94,7 @@ public class NBRepositorySupport extends BugzillaRepository {
         if(nbRepository != null) {
             // check if repository wasn't removed since the last time it was used
             if(!isKenai) {
-                repos = Util.getRepositories(BugzillaConnector.ID);
+                repos = RepositoryManager.getInstance().getRepositories(BugzillaConnector.ID);
                 boolean registered = false;
                 for (Repository repo : repos) {
                     if(BugtrackingUtil.isNbRepository(repo.getUrl())) {
@@ -107,7 +108,7 @@ public class NBRepositorySupport extends BugzillaRepository {
             }
             return nbRepository;
         }
-        repos = Util.getRepositories(BugzillaConnector.ID);
+        repos = RepositoryManager.getInstance().getRepositories(BugzillaConnector.ID);
         for (Repository repo : repos) {
             if(BugtrackingUtil.isNbRepository(repo.getUrl())) {
                 nbRepository = repo;

@@ -70,51 +70,63 @@ import org.netbeans.modules.maven.model.settings.StringList;
  */
 public class DefaultVisitor implements SettingsComponentVisitor {
         
+    @Override
     public void visit(Settings target) {
         visitComponent(target);
     }
 
+    @Override
     public void visit(Repository target) {
         visitComponent(target);
     }
 
+    @Override
     public void visit(RepositoryPolicy target) {
         visitComponent(target);
     }
 
+    @Override
     public void visit(Profile target) {
         visitComponent(target);
     }
 
+    @Override
     public void visit(Activation target) {
         visitComponent(target);
     }
 
+    @Override
     public void visit(ActivationProperty target) {
         visitComponent(target);
     }
 
+    @Override
     public void visit(ActivationOS target) {
         visitComponent(target);
     }
 
+    @Override
     public void visit(ActivationFile target) {
         visitComponent(target);
     }
 
+    @Override
     public void visit(ActivationCustom target) {
         visitComponent(target);
     }
 
 
+    @Override
     public void visit(SettingsExtensibilityElement target) {
         visitComponent(target);
     }
 
+    @Override
     public void visit(ModelList target) {
         visitComponent(target);
     }
     
+    @Override
     public void visit(Properties target) {
         visitComponent(target);
     }
@@ -122,22 +134,27 @@ public class DefaultVisitor implements SettingsComponentVisitor {
     protected void visitComponent(SettingsComponent target) {
     }
 
+    @Override
     public void visit(StringList target) {
         visitComponent(target);
     }
 
+    @Override
     public void visit(Configuration target) {
         visitComponent(target);
     }
 
+    @Override
     public void visit(Mirror target) {
         visitComponent(target);
     }
 
+    @Override
     public void visit(Proxy target) {
         visitComponent(target);
     }
 
+    @Override
     public void visit(Server target) {
         visitComponent(target);
     }

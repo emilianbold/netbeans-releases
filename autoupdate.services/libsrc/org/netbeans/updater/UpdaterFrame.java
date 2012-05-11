@@ -1,7 +1,7 @@
     /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -45,17 +45,16 @@
 package org.netbeans.updater;
 
 import java.awt.*;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
+import java.io.*;
+import java.net.URL;
 import java.util.Collection;
 import java.util.Locale;
-import javax.swing.*;
-import java.net.URL;
+import java.util.logging.FileHandler;
 import java.util.logging.Level;
-
-
+import java.util.logging.SimpleFormatter;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JFrame;
 import javax.swing.border.LineBorder;
 
 /**
@@ -63,8 +62,32 @@ import javax.swing.border.LineBorder;
  * @author  phrebejk, akemr, Jiri Rechtacek
  * @version
  */
+@SuppressWarnings("CallToThreadDumpStack")
 public class UpdaterFrame extends javax.swing.JPanel 
 implements UpdatingContext {
+
+    private static final boolean enabledConsole = Boolean.getBoolean("netbeans.logger.console");
+    
+    static {
+        FileHandler fh = null;
+        try {
+            boolean append = true;
+            fh = new FileHandler(UpdateTracking.getUserDir().getPath() + File.separator +
+                    "var" + File.separator + "log" + File.separator + "updater.log", 1000000, 3, append);
+            fh.setFormatter(new SimpleFormatter());
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        
+        XMLUtil.LOG.setUseParentHandlers(enabledConsole);
+        
+        if (fh != null) {
+            XMLUtil.LOG.addHandler(fh);
+        }
+        XMLUtil.LOG.info("Entering updater.jar .................................................................... ");
+    }
+    
 
     /** Operating system is Windows x */
     public static final int OS_WIN = 1;
@@ -104,7 +127,7 @@ implements UpdatingContext {
         loadSplash();
     }
     
-    static final void center(Window c) {
+    static void center(Window c) {
         c.pack();
 
         GraphicsConfiguration gconf = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
@@ -234,6 +257,7 @@ implements UpdatingContext {
             panel.showSplash ();
         }
         new UpdaterDispatcher (panel).run ();
+        XMLUtil.LOG.info("-------------------------- exiting updater.jar");
     }
 
     @Override
@@ -318,7 +342,7 @@ implements UpdatingContext {
     * @return one of the <code>OS_*</code> constants (such as {@link #OS_WINNT})
     */
     private static int getOperatingSystem () {
-        int operatingSystem = -1;
+        int operatingSystem;
         String osName = System.getProperty ("os.name");
         if ( osName != null && osName.startsWith("Windows")) // NOI18N
             operatingSystem = OS_WIN;
@@ -397,6 +421,7 @@ implements UpdatingContext {
     static class SplashFrame extends JFrame {
         
         /** Creates a new SplashFrame */
+        @SuppressWarnings("LeakingThisInConstructor")
         public SplashFrame (UpdaterFrame panel) {
             super (getMainWindowTitle ());
             setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
@@ -415,6 +440,7 @@ implements UpdatingContext {
     
     static class SplashWindow extends Window {
         /** Creates a new SplashWindow */
+        @SuppressWarnings("LeakingThisInConstructor")
         public SplashWindow (UpdaterFrame panel) {
             super(new Frame());
             // add splash component

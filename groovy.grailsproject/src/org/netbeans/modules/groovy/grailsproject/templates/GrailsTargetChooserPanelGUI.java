@@ -153,7 +153,9 @@ public class GrailsTargetChooserPanelGUI extends javax.swing.JPanel implements A
         Object preselectedPackage = getPreselectedPackage(preselectedGroup, preselectedFolder, packageComboBox.getModel());
 
         if (preselectedPackage != null) {
-            // packageComboBox.setSelectedItem( preselectedPackage );
+            if ("".equals(preselectedPackage)) {
+                preselectedPackage = ProjectUtils.getInformation(project).getDisplayName().toLowerCase();
+            }
             packageComboBox.getEditor().setItem( preselectedPackage );
         }
         if (template != null) {

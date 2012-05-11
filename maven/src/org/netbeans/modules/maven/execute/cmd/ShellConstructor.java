@@ -91,7 +91,8 @@ public class ShellConstructor implements Constructor {
     //#164234
     private static String quoteSpaces(String val, String quote) {
         if (Utilities.isWindows()) {
-            if (val.indexOf(' ') != -1 || val.indexOf('=') != -1) { //NOI18N
+            //#208065 not only space but a few other characters are to be quoted..
+            if (val.indexOf(' ') != -1 || val.indexOf('=') != -1 || val.indexOf(";") != -1 || val.indexOf(",") != -1) { //NOI18N
                 return quote + val + quote;
             }
         }

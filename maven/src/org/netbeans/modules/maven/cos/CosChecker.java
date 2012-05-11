@@ -51,6 +51,7 @@ import java.net.URL;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.apache.maven.model.Build;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Resource;
@@ -337,12 +338,19 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                 testng = "org.testng:testng"; //NOI18N
             }
             List<Dependency> deps = config.getMavenProject().getTestDependencies();
+            boolean haveJUnit = false, haveTestNG = false;
+            String testngVersion = null;
             for (Dependency d : deps) {
                 if (d.getManagementKey().startsWith(testng)) {
-                    //skip tests that are invoked by testng, no support for it yet.
-                    //#149464
-                    return true;
+                    testngVersion = d.getVersion();
+                    haveTestNG = true;
+                } else if (d.getManagementKey().startsWith("junit:junit")) { //NOI18N
+                    haveJUnit = true;
                 }
+            }
+            if (haveJUnit && haveTestNG && new ComparableVersion("6.5.1").compareTo(new ComparableVersion(testngVersion)) >= 0) {
+                //CoS requires at least TestNG 6.5.2-SNAPSHOT if JUnit is present
+                return true;
             }
             Map<String, Object> params = new HashMap<String, Object>();
             String test = config.getProperties().get("test"); //NOI18N

@@ -45,7 +45,6 @@ package org.netbeans.modules.versioning.core;
 
 import org.openide.util.actions.Presenter;
 import org.openide.util.actions.SystemAction;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.nodes.Node;
 import org.openide.awt.DynamicMenuContent;
@@ -257,8 +256,7 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
                 super.removeAll();
                 if (owner == null) {
                     // default Versioning menu (Import into...)
-                    Lookup.Result<VersioningSystem> result = Lookup.getDefault().lookup(new Lookup.Template<VersioningSystem>(VersioningSystem.class));
-                    List<? extends VersioningSystem> vcs = new ArrayList(result.allInstances());
+                    List<VersioningSystem> vcs = new ArrayList<VersioningSystem>(Arrays.asList(VersioningManager.getInstance().getVersioningSystems()));
                     Collections.sort(vcs, new VersioningMainMenu.ByDisplayNameComparator());
                     boolean added = false;
                     for (VersioningSystem vs : vcs) {

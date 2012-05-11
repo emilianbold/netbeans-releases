@@ -105,6 +105,8 @@ public class FileInformation extends VCSFileInformation {
                 s.add(Status.MODIFIED_HEAD_WORKING_TREE);
             } else if (GitStatus.Status.STATUS_ADDED.equals(statusHeadWC)) {
                 s.add(Status.NEW_HEAD_WORKING_TREE);
+            } else if (GitStatus.Status.STATUS_REMOVED.equals(statusHeadWC)) {
+                s.add(Status.REMOVED_HEAD_WORKING_TREE);
             }
             // correction
             if (s.size() == 1) {

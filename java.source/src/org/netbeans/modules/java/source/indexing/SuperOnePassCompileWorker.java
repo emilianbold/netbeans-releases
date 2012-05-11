@@ -48,8 +48,8 @@ import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
-import org.netbeans.modules.java.source.javac.CancelAbort;
-import org.netbeans.modules.java.source.javac.CancelService;
+import org.netbeans.lib.nbjavac.services.CancelAbort;
+import org.netbeans.lib.nbjavac.services.CancelService;
 import com.sun.tools.javac.util.CouplingAbort;
 import com.sun.tools.javac.util.FatalError;
 import com.sun.tools.javac.util.Log;
@@ -129,7 +129,7 @@ final class SuperOnePassCompileWorker extends CompileWorker {
                                 public @Override boolean isCanceled() {
                                     return context.isCancelled();
                                 }
-                            }, APTUtils.get(context.getRoot()));
+                            }, tuple.aptGenerated ? null : APTUtils.get(context.getRoot()));
                         }
                         for (CompilationUnitTree cut : jt.parse(tuple.jfo)) { //TODO: should be exactly one
                             trees.add(cut);
@@ -211,7 +211,7 @@ final class SuperOnePassCompileWorker extends CompileWorker {
             for (Pair<CompilationUnitTree, CompileTuple> unit : units) {
                 CompileTuple active = unit.second;
                 if (aptEnabled) {
-                    JavaCustomIndexer.addAptGenerated(context, javaContext, active.indexable.getRelativePath(), aptGenerated);
+                    JavaCustomIndexer.addAptGenerated(context, javaContext, active, aptGenerated);
                 }
                 List<TypeElement> activeTypes = new ArrayList<TypeElement>();
                 for (Tree tree : unit.first.getTypeDecls()) {
@@ -272,7 +272,7 @@ final class SuperOnePassCompileWorker extends CompileWorker {
                 JavaIndex.LOG.log(Level.FINEST, message, isp);
             }
         } catch (MissingPlatformError mpe) {
-            //No platform - log & ignore
+            //No platform - log & mark files as errornous
             if (JavaIndex.LOG.isLoggable(Level.FINEST)) {
                 final ClassPath bootPath   = javaContext.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.BOOT);
                 final ClassPath classPath  = javaContext.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.COMPILE);
@@ -285,6 +285,7 @@ final class SuperOnePassCompileWorker extends CompileWorker {
                             );
                 JavaIndex.LOG.log(Level.FINEST, message, mpe);
             }
+            JavaCustomIndexer.brokenPlatform(context, files, mpe.getDiagnostic());
         } catch (CancelAbort ca) {
             if (JavaIndex.LOG.isLoggable(Level.FINEST)) {
                 JavaIndex.LOG.log(Level.FINEST, "SuperOnePassCompileWorker was canceled in root: " + FileUtil.getFileDisplayName(context.getRoot()), ca);  //NOI18N

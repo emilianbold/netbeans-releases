@@ -41,10 +41,15 @@
  */
 package org.netbeans.modules.cloud.oracle.serverplugin;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
+import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory2;
+import org.netbeans.modules.j2ee.weblogic9.config.EarDeploymentConfiguration;
 import org.netbeans.modules.j2ee.weblogic9.config.WarDeploymentConfiguration;
 
 /**
@@ -57,12 +62,105 @@ public class ModuleConfigurationFactoryImpl implements ModuleConfigurationFactor
     
     @Override
     public ModuleConfiguration create(J2eeModule j2eeModule, String instanceUrl) throws ConfigurationException {
-        return new WarDeploymentConfiguration(j2eeModule);
+        if (J2eeModule.Type.WAR.equals(j2eeModule.getType())) {
+            return new CustomWarDeploymentConfiguration(j2eeModule);
+        } else if (J2eeModule.Type.EAR.equals(j2eeModule.getType())) {
+            return new EarDeploymentConfiguration(j2eeModule);
+        }
+        throw new ConfigurationException("Not supported module: " + j2eeModule.getType());
     }
 
     @Override
     public ModuleConfiguration create(J2eeModule j2eeModule) throws ConfigurationException {
-        return new WarDeploymentConfiguration(j2eeModule);
+        return new CustomWarDeploymentConfiguration(j2eeModule);
     }
+    
+    private static class CustomWarDeploymentConfiguration extends WarDeploymentConfiguration {
+
+        public CustomWarDeploymentConfiguration(J2eeModule j2eeModule) {
+            super(j2eeModule);
+        }
+        
+        @Override
+        public Set<Datasource> getDatasources() throws ConfigurationException {
+            // below code is pointless as such data source cannot be used for anything
+            // practical right now as there are no APIs to implement it
+            //
+            //return Collections.<Datasource>singleton(new CloudDatasource("TBD"));
+            // replace "TBD" with name of db service
+            //
+            return Collections.emptySet();
+        }
+        
+        @Override
+        public boolean supportsCreateDatasource() {
+            return false;
+        }
+        
+    }
+
+    private static class CustomEarDeploymentConfiguration extends EarDeploymentConfiguration {
+
+        public CustomEarDeploymentConfiguration(J2eeModule j2eeModule) {
+            super(j2eeModule);
+        }
+        
+        @Override
+        public Set<Datasource> getDatasources() throws ConfigurationException {
+            // below code is pointless as such data source cannot be used for anything
+            // practical right now as there are no APIs to implement it
+            //
+            //return Collections.<Datasource>singleton(new CloudDatasource("TBD"));
+            // replace "TBD" with name of db service
+            //
+            return Collections.emptySet();
+        }
+        
+        @Override
+        public boolean supportsCreateDatasource() {
+            return false;
+        }
+        
+    }
+    
+//    private static class CloudDatasource implements Datasource {
+//
+//        private String jndiName;
+//
+//        public CloudDatasource(String jndiName) {
+//            this.jndiName = jndiName;
+//        }
+//        
+//        @Override
+//        public String getJndiName() {
+//            return jndiName;
+//        }
+//
+//        @Override
+//        public String getUrl() {
+//            return "http://"+jndiName+"-nbtrial.db.cloud.oracle.com/apex/";
+//        }
+//
+//        @Override
+//        public String getUsername() {
+//            return "";
+//        }
+//
+//        @Override
+//        public String getPassword() {
+//            return "";
+//        }
+//
+//        @Override
+//        public String getDriverClassName() {
+//            return "undefined";
+//        }
+//
+//        @Override
+//        public String getDisplayName() {
+//            return "Oracle Database Cloud Service";
+//        }
+//        
+//    }
     
 }

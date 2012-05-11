@@ -57,11 +57,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
@@ -79,7 +74,6 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.UIManager;
-import javax.swing.WindowConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.TableColumn;
@@ -87,7 +81,6 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.bookmarks.BookmarkChange;
@@ -98,8 +91,6 @@ import org.netbeans.modules.editor.bookmarks.BookmarkManagerListener;
 import org.netbeans.modules.editor.bookmarks.BookmarkUtils;
 import org.netbeans.modules.editor.bookmarks.BookmarksPersistence;
 import org.netbeans.modules.editor.bookmarks.ProjectBookmarks;
-import org.netbeans.modules.editor.bookmarks.FileBookmarks;
-import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.swing.etable.ETable;
 import org.openide.cookies.EditorCookie;
 import org.openide.explorer.ExplorerManager;
@@ -108,9 +99,7 @@ import org.openide.explorer.view.BeanTreeView;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
-import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
@@ -161,6 +150,7 @@ implements BookmarkManagerListener, PropertyChangeListener, ExplorerManager.Prov
         };
     }
 
+    private transient final BookmarksNodeTree nodeTree;
     private transient final ExplorerManager explorerManager;
     private transient boolean treeViewShowing; // Whether viewed as tree or as a table
     private transient JSplitPane splitPane;
@@ -181,6 +171,7 @@ implements BookmarkManagerListener, PropertyChangeListener, ExplorerManager.Prov
     
     BookmarksView() {
 //        getActionMap().put("rename", SystemAction.get(RenameAction.class));
+        nodeTree = new BookmarksNodeTree();
         explorerManager = new ExplorerManager();
         ActionMap actionMap = getActionMap();
         actionMap.put("delete", ExplorerUtils.actionDelete(explorerManager, false));
@@ -326,125 +317,19 @@ implements BookmarkManagerListener, PropertyChangeListener, ExplorerManager.Prov
     }
     
     private void updateTreeRootContext(List<BookmarkChange> changes) {
-        Node[] projectNodes;
-        BookmarkManager lockedBookmarkManager = BookmarkManager.getLocked();
-        try {
-            Node selNode = getTreeSelectedNode();
-            BookmarkInfo selectedBookmark = null;
-            ProjectBookmarks selectedProjectBookmarks = null;
-            Node selectedProjectNode = null;
-            FileBookmarks selectedFileBookmarks = null;
-            if (selNode instanceof BookmarkNode) {
-                selectedBookmark = ((BookmarkNode)selNode).getBookmarkInfo();
-                selectedFileBookmarks = selectedBookmark.getFileBookmarks();
-                selectedProjectBookmarks = selectedFileBookmarks.getProjectBookmarks();
-            }
-            
-            List<ProjectBookmarks> loadedProjectBookmarks = lockedBookmarkManager.allLoadedProjectBookmarks();
-            List<Node> projectNodeList = new ArrayList<Node>(loadedProjectBookmarks.size());
-            for (ProjectBookmarks projectBookmarks : loadedProjectBookmarks) {
-                if (projectBookmarks.containsAnyBookmarks()) {
-                    FileObject[] sortedFileObjects = lockedBookmarkManager.getSortedFileObjects(projectBookmarks);
-                    ProjectBookmarksChildren children = new ProjectBookmarksChildren(projectBookmarks, sortedFileObjects);
-                    LogicalViewProvider lvp = projectBookmarks.getProject().getLookup().lookup(LogicalViewProvider.class);
-                    Node prjNode = (lvp != null) ? lvp.createLogicalView() : null;
-                    if (prjNode == null) {
-                        prjNode = new AbstractNode(Children.LEAF);
-                        prjNode.setDisplayName(children.getProjectDisplayName());
-                    }
-                    Node n = new FilterNode(prjNode, children) {
-                        @Override
-                        public boolean canCopy() {
-                            return false;
-                        }
-                        @Override
-                        public boolean canCut() {
-                            return false;
-                        }
-                        @Override
-                        public boolean canDestroy() {
-                            return false;
-                        }
-                        @Override
-                        public boolean canRename() {
-                            return false;
-                        }
-                    };
-                    projectNodeList.add(n);
-                    if (projectBookmarks == selectedProjectBookmarks) {
-                        selectedProjectNode = n;
-                    }
-                }
-            }
-            projectNodes = new Node[projectNodeList.size()];
-            projectNodeList.toArray(projectNodes);
-
-            // Sort by project's display name
-            Arrays.sort(projectNodes, new Comparator<Node>() {
-                @Override
-                public int compare(Node n1, Node n2) {
-                    return ((ProjectBookmarksChildren) n1.getChildren()).getProjectDisplayName().compareTo(
-                            ((ProjectBookmarksChildren) n2.getChildren()).getProjectDisplayName());
-                }
-            });
-            Children rootChildren = new Children.Array();
-            rootChildren.add(projectNodes);
-            Node rootNode = new AbstractNode(rootChildren);
-            explorerManager.setRootContext(rootNode);
-            
-            if (selectedProjectNode != null) {
-                for (Node fileNodes : selectedProjectNode.getChildren().snapshot()) {
-                    FileBookmarksChildren ch = (FileBookmarksChildren) fileNodes.getChildren();
-                    if (ch.fileBookmarks == selectedFileBookmarks) {
-                        for (Node bookmarkNode : ch.snapshot()) {
-                            if (((BookmarkNode)bookmarkNode).getBookmarkInfo() == selectedBookmark) {
-                                try {
-                                    selNode = bookmarkNode;
-                                    explorerManager.setSelectedNodes(new Node[] { bookmarkNode });
-                                } catch (PropertyVetoException ex) {
-                                    Exceptions.printStackTrace(ex);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Update table nodes as well if they exist
-            updateTableEntries();
-
-            if (selNode == null && projectNodes.length > 0) { // Select first node
-                try {
-                    explorerManager.setSelectedNodes(new Node[] { projectNodes[0] });
-                } catch (PropertyVetoException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-        } finally {
-            lockedBookmarkManager.unlock();
-        }
+        nodeTree.rebuild(explorerManager);
+        // Update table nodes as well if they exist
+        updateTableEntries();
     }
     
     private void updateTableEntries() {
         if (tableView != null) {
             BookmarksTable table = tableView.getTable();
             int selectedIndex = Math.max(table.getSelectedRow(), 0); // If no selection request first row selection
-            List<BookmarkInfo> bookmarks = new ArrayList<BookmarkInfo>();
-            collectBookmarksFromNodes(bookmarks, explorerManager.getRootContext());
-            ((BookmarksTableModel)table.getModel()).setEntries(bookmarks);
+            ((BookmarksTableModel)table.getModel()).setEntries(nodeTree.bookmarkNodes(false));
             selectedIndex = Math.min(selectedIndex, table.getRowCount() - 1);
             if (selectedIndex >= 0) {
                 table.getSelectionModel().setSelectionInterval(selectedIndex, selectedIndex);
-            }
-        }
-    }
-    
-    private void collectBookmarksFromNodes(List<BookmarkInfo> bookmarks, Node n) {
-        if (n instanceof BookmarkNode) {
-            bookmarks.add(((BookmarkNode)n).getBookmarkInfo());
-        } else {
-            for (Node cn : n.getChildren().snapshot()) {
-                collectBookmarksFromNodes(bookmarks, cn);
             }
         }
     }
@@ -666,7 +551,7 @@ implements BookmarkManagerListener, PropertyChangeListener, ExplorerManager.Prov
         BookmarksTable table = tableView.getTable();
         int selectedRowIndex = table.getSelectedRow();
         if (selectedRowIndex != -1 && selectedRowIndex < table.getRowCount()) {
-            return ((BookmarksTableModel)table.getModel()).getEntry(selectedRowIndex);
+            return ((BookmarksTableModel)table.getModel()).getEntry(selectedRowIndex).getBookmarkInfo();
         }
         return null;
     }
@@ -689,7 +574,8 @@ implements BookmarkManagerListener, PropertyChangeListener, ExplorerManager.Prov
                     try {
                         ProjectBookmarks projectBookmarks = lockedBookmarkManager.
                                 getProjectBookmarks(initialSelectionFileObject);
-                        Node bNode = findFirstBookmarkNode(projectBookmarks, initialSelectionFileObject);
+                        Node bNode = nodeTree.findFirstBookmarkNode(
+                                projectBookmarks, initialSelectionFileObject);
                         if (bNode != null) {
                             initialSelectionDone = true;
                             initialSelectionFileObject = null;
@@ -707,32 +593,6 @@ implements BookmarkManagerListener, PropertyChangeListener, ExplorerManager.Prov
         }
     }
     
-    private Node findFirstBookmarkNode(ProjectBookmarks projectBookmarks, FileObject fo) {
-        FileBookmarks fileBookmarks = projectBookmarks.get(fo.toURL());
-        if (fileBookmarks != null && fileBookmarks.containsAnyBookmarks()) {
-            Node rootContext = explorerManager.getRootContext();
-            if (rootContext != null) {
-                List<Node> projectNodes = rootContext.getChildren().snapshot();
-                for (Node pNode : projectNodes) {
-                    ProjectBookmarksChildren pChildren =
-                            (ProjectBookmarksChildren) pNode.getChildren();
-                    if (pChildren.projectBookmarks == projectBookmarks) {
-                        for (Node fNode : pChildren.snapshot()) {
-                            FileBookmarksChildren fChildren = (FileBookmarksChildren) fNode.getChildren();
-                            if (fChildren.fileBookmarks == fileBookmarks) {
-                                List<Node> bNodes = fChildren.snapshot();
-                                if (!bNodes.isEmpty()) {
-                                    return bNodes.get(0);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
     @Override
     public void paint(Graphics g) {
         super.paint(g);
@@ -814,85 +674,6 @@ implements BookmarkManagerListener, PropertyChangeListener, ExplorerManager.Prov
 
     }
 
-    private static final class ProjectBookmarksChildren extends Children.Keys<FileObject> {
-        
-        final String projectDisplayName;
-        
-        final ProjectBookmarks projectBookmarks;
-        
-        ProjectBookmarksChildren(ProjectBookmarks projectBookmarks, FileObject[] sortedFileObjects) {
-            this.projectBookmarks = projectBookmarks;
-            projectDisplayName = ProjectUtils.getInformation(projectBookmarks.getProject()).getDisplayName();
-            setKeys(sortedFileObjects);
-        }
-        
-        String getProjectDisplayName() {
-            return projectDisplayName;
-        }
-
-        @Override
-        protected Node[] createNodes(FileObject fo) {
-            try {
-                DataObject dob = DataObject.find(fo);
-                Node node = dob.getNodeDelegate().cloneNode();
-                URL url = fo.toURL();
-                FileBookmarks urlBookmarks = projectBookmarks.get(url);
-                return new Node[] { new FilterNode(node, new FileBookmarksChildren(urlBookmarks, fo)) };
-            } catch (DataObjectNotFoundException ex) {
-                throw new IllegalStateException(); // TODO generic node for FO
-            }
-        }
-
-    }
-    
-    private static final class FileBookmarksChildren extends Children.Array {
-        
-        final FileBookmarks fileBookmarks;
-        
-        FileBookmarksChildren(FileBookmarks fileBookmarks, FileObject fo) {
-            super(toNodes(fileBookmarks));
-            this.fileBookmarks = fileBookmarks;
-        }
-
-        public FileBookmarks getFileBookmarks() {
-            return fileBookmarks;
-        }
-        
-        @Override
-        public boolean remove(Node[] arr) {
-            boolean ret = super.remove(arr);
-            if (ret) {
-                BookmarkManager lockedBookmarkManager = BookmarkManager.getLocked();
-                try {
-                    List<BookmarkInfo> removedBookmarks = new ArrayList<BookmarkInfo>(arr.length);
-                    for (Node n : arr) {
-                        removedBookmarks.add(((BookmarkNode)n).getBookmarkInfo());
-                    }
-                    lockedBookmarkManager.removeBookmarks(removedBookmarks);
-                } finally {
-                    lockedBookmarkManager.unlock();
-                }
-            }
-            return ret;
-        }
-        
-        private static List<Node> toNodes(FileBookmarks fb) {
-            BookmarkManager lockedBookmarkManager = BookmarkManager.getLocked();
-            try {
-                List<BookmarkInfo> bookmarks = fb.getBookmarks();
-                List<Node> nodes = new ArrayList<Node>(bookmarks.size());
-                for (int i = 0; i < bookmarks.size(); i++) {
-                    BookmarkInfo bookmark = bookmarks.get(i);
-                    BookmarkNode bookmarkNode = new BookmarkNode(bookmark);
-                    nodes.add(bookmarkNode);
-                }
-                return nodes;
-            } finally {
-                lockedBookmarkManager.unlock();
-            }
-        }
-        
-    }
 
     private static final class BookmarksTableView extends JScrollPane { // Similar construct to explorer's TableView
 

@@ -99,15 +99,15 @@ public class HudsonInstanceNode extends AbstractNode {
         this.instance = instance;
         
         instance.addHudsonChangeListener(new HudsonChangeListener() {
-            public void stateChanged() {
+            @Override public void stateChanged() {
                 refreshState();
             }
-            public void contentChanged() {
+            @Override public void contentChanged() {
                 refreshContent();
             }
         });
         instance.prefs().addPreferenceChangeListener(new PreferenceChangeListener() {
-            public void preferenceChange(PreferenceChangeEvent evt) {
+            @Override public void preferenceChange(PreferenceChangeEvent evt) {
                 refreshContent();
             }
         });
@@ -119,7 +119,7 @@ public class HudsonInstanceNode extends AbstractNode {
     
     
     @Messages({
-        "MSG_WrongVersion=[Older version than {0}]",
+        "# {0} - supported Hudson version number", "MSG_WrongVersion=[Older version than {0}]",
         "MSG_Disconnected=[Disconnected]",
         "MSG_forbidden=[Unauthorized]",
         "HudsonInstanceNode.from_open_project=(from open project)"
@@ -139,7 +139,8 @@ public class HudsonInstanceNode extends AbstractNode {
     }
     
     public @Override Action[] getActions(boolean context) {
-        return org.openide.util.Utilities.actionsForPath(HudsonInstance.ACTION_PATH).toArray(new Action[0]);
+        List<? extends Action> actions = org.openide.util.Utilities.actionsForPath(HudsonInstance.ACTION_PATH);
+        return actions.toArray(new Action[actions.size()]);
     }
 
     public @Override boolean canDestroy() {
@@ -155,44 +156,40 @@ public class HudsonInstanceNode extends AbstractNode {
     }
     
     private synchronized void refreshState() {
-        // Save html name
-        String oldHtmlName = "";
-        
         alive = instance.isConnected();
         forbidden = instance.isForbidden();
         version = Utilities.isSupportedVersion(instance.getVersion());
         
         // Refresh children
-        if (!alive || !version)
+        if (!alive || !version) {
             setChildren(new Children.Array());
-        else if (getChildren().getNodesCount() == 0)
+        } else if (getChildren().getNodesCount() == 0) {
             setChildren(children);
+        }
         
         // Fire changes if any
-        fireDisplayNameChange(oldHtmlName, getHtmlDisplayName());
+        fireDisplayNameChange(null, getHtmlDisplayName());
     }
     
     private synchronized void refreshContent() {
-        // Get HTML Display Name
-        String oldHtmlName = null;
-        
         // Clear flags
         warn = false;
         run = false;
         
         // Refresh state flags
         for (HudsonJob job : instance.getJobs()) {
-            if (job.getColor().equals(Color.red) || job.getColor().equals(Color.red_anime))
+            if (job.getColor().equals(Color.red) || job.getColor().equals(Color.red_anime)) {
                 warn = true;
-            
-            if (job.getColor().isRunning())
+            }
+            if (job.getColor().isRunning()) {
                 run = true;
-            
-            if (warn && run)
+            }
+            if (warn && run) {
                 break; // it's not necessary to continue
+            }
         }
         // Fire changes if any
-        fireDisplayNameChange(oldHtmlName, getHtmlDisplayName());
+        fireDisplayNameChange(null, getHtmlDisplayName());
     }
 
     /**
@@ -204,17 +201,17 @@ public class HudsonInstanceNode extends AbstractNode {
         
         private final HudsonInstance instance;
         
-        public InstanceNodeChildren(HudsonInstance instance) {
+        InstanceNodeChildren(HudsonInstance instance) {
             this.instance = instance;
             instance.addHudsonChangeListener(this);
             instance.prefs().addPreferenceChangeListener(new PreferenceChangeListener() {
-                public void preferenceChange(PreferenceChangeEvent evt) {
+                @Override public void preferenceChange(PreferenceChangeEvent evt) {
                     refreshKeys();
                 }
             });
         }
         
-        protected Node[] createNodes(HudsonJob job) {
+        @Override protected Node[] createNodes(HudsonJob job) {
             return new Node[] {new HudsonJobNode(job)};
         }
         
@@ -251,9 +248,9 @@ public class HudsonInstanceNode extends AbstractNode {
             setKeys(jobs);
         }
         
-        public void stateChanged() {}
+        @Override public void stateChanged() {}
         
-        public void contentChanged() {
+        @Override public void contentChanged() {
             refreshKeys();
         }
     }

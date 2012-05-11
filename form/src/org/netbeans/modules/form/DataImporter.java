@@ -53,6 +53,15 @@ import java.util.concurrent.*;
 public interface DataImporter {
 
     /**
+     * Determines if any data can be imported into the specified form.
+     * 
+     * @param form target form.
+     * @return {@code true} if this importer is able to import any data
+     * into the specified form, returns {@code false} otherwise.
+     */
+    boolean canImportData(FormModel form);
+
+    /**
      * Imports the data. Usually opens a dialog allowing the user to customize
      * the data to import.
      * 

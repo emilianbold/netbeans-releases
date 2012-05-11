@@ -109,15 +109,15 @@ public class CreateJob implements ActionListener {
         "CreateJob.title=New Continuous Build",
         "CreateJob.create=Create"
     })
-    public void actionPerformed(ActionEvent e) {
+    @Override public void actionPerformed(ActionEvent e) {
         final CreateJobPanel panel = new CreateJobPanel();
         final DialogDescriptor dd = new DialogDescriptor(panel, CreateJob_title());
         final AtomicReference<Dialog> dialog = new AtomicReference<Dialog>();
         final JButton createButton = new JButton(CreateJob_create());
         createButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            @Override public void actionPerformed(ActionEvent e) {
                 RequestProcessor.getDefault().post(new Runnable() {
-                    public void run() {
+                    @Override public void run() {
                         finalizeJob(panel.instance, panel.creator, panel.name(), panel.selectedProject());
                     }
                 });
@@ -125,7 +125,7 @@ public class CreateJob implements ActionListener {
             }
         });
         dd.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
+            @Override public void propertyChange(PropertyChangeEvent evt) {
                 if (NotifyDescriptor.PROP_VALID.equals(evt.getPropertyName())) {
                     createButton.setEnabled(dd.isValid());
                 }
@@ -148,10 +148,10 @@ public class CreateJob implements ActionListener {
     @Messages({
         "CreateJob.failure=Could not create job. Please check your server's log for details.",
         "# UI logging of creating new build job",
-        "# {0} project type",
+        "# {0} - project type",
         "UI_HUDSON_JOB_CREATED=New Hudson build job created [project type: {0}]",
         "# Usage Logging",
-        "# {0} project type",
+        "# {0} - project type",
         "USG_HUDSON_JOB_CREATED=New Hudson build job created [project type: {0}]"
     })
     private void finalizeJob(HudsonInstance instance, ProjectHudsonJobCreator creator, String name, Project project) {

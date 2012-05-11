@@ -71,6 +71,7 @@ import org.netbeans.modules.html.editor.lib.api.model.HtmlTagAttribute;
 import org.netbeans.modules.html.editor.lib.api.model.HtmlTagType;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.html.editor.lib.api.*;
+import org.netbeans.modules.html.editor.lib.api.model.*;
 import org.netbeans.modules.html.parser.model.ElementDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -372,7 +373,7 @@ public class Html5ParserTest extends NbTestCase {
         Node body = ElementUtils.query(result.root(), "html/body");
         Collection<HtmlTag> possible = result.getPossibleCloseTags(body).keySet();
 
-        assertTrue(!possible.isEmpty());
+        assertFalse(possible.isEmpty());
 
         HtmlTag htmlTag = new HtmlTagImpl("html");
         HtmlTag headTag = new HtmlTagImpl("head");
@@ -610,6 +611,43 @@ public class Html5ParserTest extends NbTestCase {
     public void testParseFileTest5() throws ParseException {
         parse(getTestFile("testfiles/test5.html"));
     }
+    
+    //Bug 211776 - Self-closing element breaks code folding
+    public void testIssue211776() throws ParseException {
+//        ParseTreeBuilder.setLoggerLevel(Level.ALL);
+        
+        HtmlParseResult result = parse(getTestFile("testfiles/test6.html"));
+        Node root = result.root();
+//        ElementUtils.dumpTree(root);
+        
+        OpenTag body = ElementUtils.query(root, "html/body");
+        assertNotNull(body);
+        assertFalse(body.isEmpty());
+        
+        OpenTag link = ElementUtils.query(root, "html/head/link");
+        assertNotNull(link);
+        assertTrue(link.isEmpty());
+        
+        OpenTag div = ElementUtils.query(root, "html/body/div");
+        assertNotNull(div);
+        assertFalse(div.isEmpty());
+        
+    }
+    
+    public void testAddChildToEmptyTag() throws ParseException {
+//        ParseTreeBuilder.setLoggerLevel(Level.ALL);
+        
+        String code = "<div align='center'/><a>text</a></div>";
+        HtmlParseResult result = parse(code);
+        Node root = result.root();
+        
+        ElementUtils.dumpTree(root);
+    }
+
+    
+    
+    
+    //----------------------------------------------------------------
 
     protected FileObject getTestFile(String relFilePath) {
         File wholeInputFile = new File(getDataDir(), relFilePath);
@@ -628,7 +666,7 @@ public class Html5ParserTest extends NbTestCase {
 
         HtmlModel model = result.model();
         assertNotNull(model);
-        assertEquals("html5model", model.getModelId());
+//        assertEquals("html5model", model.getModelId());
 
         Collection<HtmlTag> all = model.getAllTags();
         assertNotNull(all);
@@ -920,8 +958,7 @@ public class Html5ParserTest extends NbTestCase {
     }
 
     public void testDuplicatedEntriesInHtmlModel() {
-        HtmlParser parser = new Html5Parser();
-        HtmlModel model = parser.getModel(HtmlVersion.HTML5);
+        HtmlModel model = HtmlModelFactory.getModel(HtmlVersion.HTML5);
         assertNotNull(model);
 
         Collection<HtmlTag> tags = model.getAllTags();
@@ -940,6 +977,53 @@ public class Html5ParserTest extends NbTestCase {
         assertTrue("found duplicated entry/ies: " + sb.toString(), sb.length() == 0);
     }
 
+    public void testParseTagAttributeWithoutValue() throws ParseException {
+        String code = "<!doctype html><body><div align/></body>";
+         HtmlParseResult result = parse(code);
+        Node root = result.root();
+        assertNotNull(root);
+
+//        ElementUtils.dumpTree(root);
+        
+        OpenTag div = ElementUtils.query(root, "html/body/div");
+        assertNotNull(div);
+        
+        Attribute attr = div.getAttribute("align");
+        assertNotNull(attr);
+        
+        assertNull(attr.value());
+        assertNull(attr.unquotedValue());
+
+    }
+    
+    //Bug 210976 - StringIndexOutOfBoundsException: String index out of range: 399
+    public void testIssue210976() throws ParseException {
+        String code = "<a href=\"@&msc=@@@&klub=@@@\"></a>";
+        //             01234567 8901234567890123456 7890123
+        //             0          1         2          3    
+        
+        HtmlParseResult result = parse(code);
+        Node root = result.root();
+        assertNotNull(root);
+
+//        ElementUtils.dumpTree(root);
+        
+        OpenTag a = ElementUtils.query(root, "html/body/a");
+        assertNotNull(a);
+        assertEquals(0, a.from());
+        assertEquals(29, a.to());
+        
+        Attribute attr = a.getAttribute("href");
+        assertNotNull(attr);
+        
+        assertNotNull(attr.value());
+        assertNotNull(attr.unquotedValue());
+        
+        assertEquals("\"@&msc=@@@&klub=@@@\"", attr.value());
+        assertEquals("@&msc=@@@&klub=@@@", attr.unquotedValue());
+
+    }
+    
     //fails
 //     //Bug 194037 - AssertionError at nu.validator.htmlparser.impl.TreeBuilder.endTag
 //    public void testIssue194037() throws ParseException {

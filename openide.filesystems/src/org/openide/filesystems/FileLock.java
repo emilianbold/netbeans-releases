@@ -130,7 +130,7 @@ public class FileLock extends Object {
             assert assertOn = true;
             if (assertOn) {
                 StreamPool.LOG.log(Level.SEVERE, 
-                    "Not released lock for file: " + toString() + " (traped in finalizer)", lockedBy);//NOI18N;
+                    "Not released lock for file: " + toString() + " (trapped in finalizer)", lockedBy); // NOI18N
             }
         }
     }

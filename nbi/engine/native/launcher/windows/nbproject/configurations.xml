@@ -50,6 +50,7 @@
       <compileType>
         <cTool>
           <stripSymbols>true</stripSymbols>
+          <commandLine>-mno-cygwin</commandLine>
           <warningLevel>3</warningLevel>
         </cTool>
         <ccTool>

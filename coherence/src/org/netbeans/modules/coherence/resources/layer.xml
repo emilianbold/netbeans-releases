@@ -302,7 +302,7 @@ Portions Copyrighted 2011 Sun Microsystems, Inc.
     <folder name="Templates">
         <folder name="Coherence">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.coherence.resources.Bundle"/>
-            <attr name="position" intvalue="833"/>
+            <attr name="position" intvalue="1650"/>
 
             <file name="Aggregator.java" url="templates/Aggregator_java">
                 <attr name="template" boolvalue="true"/>

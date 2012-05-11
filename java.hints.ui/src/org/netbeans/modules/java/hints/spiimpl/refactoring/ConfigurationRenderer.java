@@ -90,6 +90,9 @@ public class ConfigurationRenderer extends JLabel implements ListCellRenderer, U
             setBackground(list.getBackground());
             setForeground(list.getForeground());
         }
+
+        // #89393: GTK needs name to render cell renderer "natively"
+        setName("ComboBox.listRenderer"); // NOI18N
         return this;
     }
     

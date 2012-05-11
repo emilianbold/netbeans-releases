@@ -9,14 +9,14 @@
     <fontcolor name="ASM_REGISTER" foreColor="2E92C7" default="Register"/>   
            
     <fontcolor name="ASM_DIRECTIVE" foreColor="0000E6" default="Directive"/>    
-    <fontcolor name="ASM_NUMBER" foreColor="black" default="Number"/> 
+    <fontcolor name="ASM_NUMBER" default="number"/> 
     <fontcolor name="ASM_IMM_OP" foreColor="9933CC" default="Imm operand"/> 
     
-    <fontcolor name="ASM_LABEL" foreColor="black" default="Label">
+    <fontcolor name="ASM_LABEL" default="Label">
         <font style="inherited+bold"/>
     </fontcolor>  
     
-    <fontcolor name="ASM_LABEL_INST" foreColor="black" default="Label">
+    <fontcolor name="ASM_LABEL_INST" default="Label">
         <font style="inherited+bold"/>
     </fontcolor>  
     

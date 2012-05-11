@@ -134,6 +134,7 @@ public final class FolderBasedOptionPanel extends JPanel implements ActionListen
         filter.setColumns(10);
         filter.setText(org.openide.util.NbBundle.getMessage(FolderBasedOptionPanel.class, "FolderBasedOptionPanel.filter.text")); // NOI18N
 
+        filterLabel.setLabelFor(filter);
         org.openide.awt.Mnemonics.setLocalizedText(filterLabel, org.openide.util.NbBundle.getMessage(FolderBasedOptionPanel.class, "FolderBasedOptionPanel.filterLabel.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);

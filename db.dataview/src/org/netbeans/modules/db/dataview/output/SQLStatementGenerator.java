@@ -101,7 +101,7 @@ class SQLStatementGenerator {
             }
 
             // Check for Constant e.g <NULL>, <DEFAULT>, <CURRENT_TIMESTAMP> etc
-            if (val != null && DataViewUtils.isSQLConstantString(val)) {
+            if (val != null && DataViewUtils.isSQLConstantString(val, dbcol)) {
                 String constStr = ((String) val).substring(1, ((String) val).length() - 1);
                 values += constStr;
             } else { // ELSE literals
@@ -144,7 +144,7 @@ class SQLStatementGenerator {
             }
 
             // Check for Constant e.g <NULL>, <DEFAULT>, <CURRENT_TIMESTAMP> etc
-            if (val != null && DataViewUtils.isSQLConstantString(val)) {
+            if (val != null && DataViewUtils.isSQLConstantString(val, dbcol)) {
                 String constStr = ((String) val).substring(1, ((String) val).length() - 1);
                 rawvalues += constStr;
             } else { // ELSE literals
@@ -181,7 +181,7 @@ class SQLStatementGenerator {
 
             updateStmt.append(tblMeta.getQualifiedName(col, true));
             // Check for Constant e.g <NULL>, <DEFAULT>, <CURRENT_TIMESTAMP> etc
-            if (value != null && DataViewUtils.isSQLConstantString(value)) {
+            if (value != null && DataViewUtils.isSQLConstantString(value, dbcol)) {
                 String constStr = ((String) value).substring(1, ((String) value).length() - 1);
                 updateStmt.append(" = ").append(constStr);
             // NULL ist reported as an SQL constant, so treat it as such
@@ -222,7 +222,7 @@ class SQLStatementGenerator {
 
             rawUpdateStmt.append(tblMeta.getQualifiedName(col, true));
             // Check for Constant e.g <NULL>, <DEFAULT>, <CURRENT_TIMESTAMP> etc
-            if (value != null && DataViewUtils.isSQLConstantString(value)) {
+            if (value != null && DataViewUtils.isSQLConstantString(value, dbcol)) {
                 String constStr = ((String) value).substring(1, ((String) value).length() - 1);
                 rawUpdateStmt.append(" = ").append(constStr);
             } else { // ELSE literals

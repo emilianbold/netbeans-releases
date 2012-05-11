@@ -4,7 +4,7 @@ Description: The Eclipse Persistence Services Project ( EclipseLink) project.
 License: Eclipse Public License - v 1.0 and Eclipse Distribution License v 1.0
 OSR: 12269
 Origin: http://www.eclipse.org/eclipselink/
-Files: eclipselink-jpa-modelgen-2.3.2.jar
+Files: org.eclipse.persistence.jpa.modelgen.processor-2.3.2.jar
 
 Use of EclipseLink version 2.3.2 is governed by the terms of the license below:
 

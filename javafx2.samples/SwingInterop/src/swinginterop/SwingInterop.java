@@ -112,7 +112,7 @@ public class SwingInterop extends JApplet {
         JTable table = new JTable(tableModel);
         table.setAutoCreateRowSorter(true);
         table.setGridColor(Color.DARK_GRAY);
-        DecimalFormatRenderer renderer = new DecimalFormatRenderer();
+        SwingInterop.DecimalFormatRenderer renderer = new SwingInterop.DecimalFormatRenderer();
         renderer.setHorizontalAlignment(JLabel.RIGHT);
         for (int i = 0; i < table.getColumnCount(); i++) {
             table.getColumnModel().getColumn(i).setCellRenderer(renderer);

@@ -228,7 +228,7 @@ public class IssueAccessorTest extends NbTestCase {
             return delegate.getLookup();
         }
         public Image getIcon() { throw new UnsupportedOperationException("Not supported yet."); }
-        public TestIssue getIssue(String id) { throw new UnsupportedOperationException("Not supported yet."); }
+        public TestIssue[] getIssues(String[] id) { throw new UnsupportedOperationException("Not supported yet."); }
         public void remove() { throw new UnsupportedOperationException("Not supported yet."); }
         public RepositoryController getController() { throw new UnsupportedOperationException("Not supported yet.");}
         public TestQuery createQuery() { throw new UnsupportedOperationException("Not supported yet.");}
@@ -263,6 +263,9 @@ public class IssueAccessorTest extends NbTestCase {
         public boolean isNew() {
             return false;
         }
+        public boolean isFinished() {
+            return false;
+        }
         public String getSummary() {
             return "This is" + name;
         }
@@ -279,11 +282,6 @@ public class IssueAccessorTest extends NbTestCase {
         public IssueNode getNode() {throw new UnsupportedOperationException("Not supported yet.");}
 
         @Override
-        public void setContext(Node[] nodes) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
         public void removePropertyChangeListener(PropertyChangeListener listener) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
@@ -297,6 +295,11 @@ public class IssueAccessorTest extends NbTestCase {
         public TestIssue createFor(String id) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
+        
+        @Override
+        public String[] getSubtasks() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }        
     }
 
     private static class TestIssueController extends BugtrackingController {

@@ -230,6 +230,19 @@ public class TplTopLexerBatchTest extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_CLOSE_DELIMITER, "}");
     }
 
+    public void testIssue205540() {
+        String text = "{button type=\"add\" url=\"{$root}\" href=\"foo\"}";
+
+        TokenSequence ts = createTokenSequence(text);
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_OPEN_DELIMITER, "{");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY, "button type=\"add\" url=\"");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_OPEN_DELIMITER, "{");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY, "$root");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_CLOSE_DELIMITER, "}");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY, "\" href=\"foo\"");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_CLOSE_DELIMITER, "}");
+    }
+
     private void resetSmartyOptions() {
         SmartyOptions.getInstance().setDefaultOpenDelimiter("{");
         SmartyOptions.getInstance().setDefaultCloseDelimiter("}");

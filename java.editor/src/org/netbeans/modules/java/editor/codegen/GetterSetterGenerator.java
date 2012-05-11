@@ -234,7 +234,7 @@ public class GetterSetterGenerator implements CodeGenerator {
                                         }
                                         variableElements.add(elem);
                                     }
-                                    GeneratorUtils.generateGettersAndSetters(copy, path, variableElements, type);
+                                    GeneratorUtils.generateGettersAndSetters(copy, path, variableElements, type, caretOffset);
                                 }
                             }
                         });

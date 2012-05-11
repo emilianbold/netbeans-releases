@@ -491,7 +491,16 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                     progressPanel.setText(progressMsg);
                 }
                 FileObject entityClassPackageFO = entityClass.getPackageFileObject();
-                final FileObject entityClassFO = entityClassPackageFO.getFileObject(entityClassName, "java"); // NOI18N
+                FileObject entityClassFO0 = entityClassPackageFO.getFileObject(entityClassName, "java"); // NOI18N
+                if(entityClassFO0 == null){
+                    //refresh parent
+                    entityClassPackageFO.refresh(true);
+                    entityClassFO0 = entityClassPackageFO.getFileObject(entityClassName, "java");
+                    if(entityClassFO0 == null){
+                        Logger.getLogger(JavaPersistenceGenerator.class.getName()).log(Level.INFO, "Can''t resolve fileobject in package {0} for entity {1}", new Object[]{entityClassPackageFO.getPath(), entityClassName});//NOI18N
+                    }
+                }
+                final FileObject entityClassFO = entityClassFO0;
                 final FileObject pkClassFO = entityClassPackageFO.getFileObject(createPKClassName(entityClassName), "java"); // NOI18N
                 try {
 
@@ -742,7 +751,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 return genUtils.createVariable(typeElement, m.getMemberName(), getMemberType(m));
             }
 
-            private String getMemberType(EntityMember m) {
+            String getMemberType(EntityMember m) {
                 String memberType = m.getMemberType();
                 if ("java.sql.Date".equals(memberType)) { //NOI18N
                     memberType = "java.util.Date";
@@ -1247,7 +1256,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                             property.setOldField(variables.get(m.getColumnName().toUpperCase()));
                         }
                         TypeMirror exTm = this.copy.getTrees().getTypeMirror(TreePath.getPath(copy.getCompilationUnit(), exMemberType));
-                        String newType = m.getMemberType();
+                        String newType = getMemberType(m);
                         //first if type is the same, just return and keep all as is
                         if(exTm.toString().equals(newType)){
                             return;//nothing is changed

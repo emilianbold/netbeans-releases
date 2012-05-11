@@ -84,6 +84,7 @@ public class testCCCamelCase extends GeneralGroovy {
         createGroovyFile(TEST_BASE_NAME + (name_iterator - 1), "Groovy Class", "AA");
         EditorOperator file = new EditorOperator("AA.groovy");
         file.setCaretPosition("AA ", false);
+        waitScanFinished();
         type(file, "extends AC");
         file.typeKey(' ', InputEvent.CTRL_MASK);
         evt.waitNoEvent(1000);
@@ -101,6 +102,7 @@ public class testCCCamelCase extends GeneralGroovy {
         createGroovyFile(TEST_BASE_NAME + (name_iterator - 1), "Groovy Class", "BB");
         EditorOperator file = new EditorOperator("BB.groovy");
         file.setCaretPosition("BB ", false);
+        waitScanFinished();
         type(file, "extends AbC");
         file.typeKey(' ', InputEvent.CTRL_MASK);
         evt.waitNoEvent(1000);
@@ -120,6 +122,7 @@ public class testCCCamelCase extends GeneralGroovy {
         EditorOperator file = new EditorOperator("CC.groovy");
         file.setCaretPosition("CC ", false);
         type(file, "extends os");
+        waitScanFinished();
         file.typeKey(' ', InputEvent.CTRL_MASK);
         evt.waitNoEvent(1000);
 
@@ -136,6 +139,7 @@ public class testCCCamelCase extends GeneralGroovy {
         EditorOperator file = new EditorOperator("CC.groovy");
         file.setCaretPosition("extends ", false);
         type(file, "D");
+        waitScanFinished();
         file.setCaretPosition("Dos", false);
         file.typeKey(' ', InputEvent.CTRL_MASK);
         evt.waitNoEvent(1000);

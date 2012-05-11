@@ -508,6 +508,9 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
 
     @Override
     public void valueChanged(ListSelectionEvent e) {
+        if (e.getValueIsAdjusting()) {
+            return;
+        }
         final TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class, table);
         if (tc == null) return; // table is no longer in component hierarchy
         // this method may be called outside of AWT if a node fires change events from some other thread, see #79174

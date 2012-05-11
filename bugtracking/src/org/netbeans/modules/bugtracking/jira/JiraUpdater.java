@@ -227,7 +227,7 @@ public class JiraUpdater {
             return null;
         }
         @Override
-        public Object getIssue(Object r, String id) {
+        public Object[] getIssues(Object r, String... id) {
             throw new UnsupportedOperationException("Not supported yet.");      // NOI18N
         }
         @Override

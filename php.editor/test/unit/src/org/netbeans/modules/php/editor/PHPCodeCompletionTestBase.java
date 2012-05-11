@@ -49,8 +49,6 @@ import java.util.Collections;
 import java.util.Map;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
-import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
-import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -62,10 +60,6 @@ import org.openide.filesystems.FileUtil;
  */
 public abstract class PHPCodeCompletionTestBase extends PHPTestBase {
 
-    static {
-        System.setProperty("nb.php.test.run", "true"); //NOI18N
-    }
-
     public PHPCodeCompletionTestBase(String testName) {
         super(testName);
     }
@@ -76,16 +70,6 @@ public abstract class PHPCodeCompletionTestBase extends PHPTestBase {
         TestLanguageProvider.register(getPreferredLanguage().getLexerLanguage());
         PHPIndex.setClusterUrl("file:/bogus"); // No translation
         //getXTestJsCluster();
-    }
-
-    @Override
-    protected DefaultLanguageConfig getPreferredLanguage() {
-        return new PHPLanguage();
-    }
-
-    @Override
-    protected String getPreferredMimeType() {
-        return FileUtils.PHP_MIME_TYPE;
     }
 
      protected @Override Map<String, ClassPath> createClassPathsForTest() {

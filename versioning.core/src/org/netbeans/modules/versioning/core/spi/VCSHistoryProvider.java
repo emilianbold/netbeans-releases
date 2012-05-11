@@ -379,7 +379,7 @@ public interface VCSHistoryProvider {
     public void removeHistoryChangeListener(HistoryChangeListener l);
     
     /**
-     * Implement and pass over to {@link HisotryEntry} in case 
+     * Implement and pass over to {@link HistoryEntry} in case 
      * {@link HistoryEntry#setMessage(java.lang.String)}
      * is expected to work.
      * 
@@ -410,7 +410,7 @@ public interface VCSHistoryProvider {
     }
     
     /**
-     * Implement and pass over to {@link HisotryEntry} in case 
+     * Implement and pass over to {@link HistoryEntry} in case 
      * {@link HistoryEntry#getRevisionFile(java.io.File, java.io.File)}
      * is expected to work.
      * 
@@ -422,7 +422,7 @@ public interface VCSHistoryProvider {
     
     /**
      * Implement and pass over to a {@link HistoryEntry} in case you want 
-     * {@link HistoryEntry#getParentProvider()} to return relevant values.
+     * {@link HistoryEntry#getParentEntry(VCSFileProxy)} to return relevant values.
      * 
      * @since 1.30
      */
@@ -447,7 +447,7 @@ public interface VCSHistoryProvider {
         /**
          * Creates a new HistoryEvent
          * 
-         * @param source {@VCSHistoryProvider} representing the versioning system in which a history change happened. 
+         * @param source {@link VCSHistoryProvider} representing the versioning system in which a history change happened. 
          * @param files the files which history has changed
          */
         public HistoryEvent(VCSHistoryProvider source, VCSFileProxy[] files) {
@@ -458,7 +458,7 @@ public interface VCSHistoryProvider {
         /**
          * Creates a new HistoryEvent
          * 
-         * @param source {@VCSHistoryProvider} representing the versioning system in which a history change happened. 
+         * @param source {@link VCSHistoryProvider} representing the versioning system in which a history change happened. 
          * @param files the files which history has changed
          */        
         public VCSFileProxy[] getFiles() {

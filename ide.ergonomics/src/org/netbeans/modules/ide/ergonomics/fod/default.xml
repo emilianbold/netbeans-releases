@@ -65,6 +65,7 @@
             <file name="Separator1.instance_hidden"/>
             <file name="Separator2.instance_hidden"/>
             <file name="ServerManagerAction3.shadow_hidden"/>
+            <file name="CloudManagerAction3.shadow_hidden"/>
             <file name="VariablesCustomizerAction.shadow_hidden"/>
             <file name="org-netbeans-modules-favorites-templates-TemplatesAction.shadow_hidden"/>
             <file name="org-netbeans-modules-xml-catalog-CatalogAction.shadow_hidden"/>

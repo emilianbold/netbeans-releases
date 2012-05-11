@@ -621,6 +621,8 @@ abstract class WeakListenerImpl implements java.util.EventListener {
 
                     methodClass = methodClass.getSuperclass();
                 } while ((m == null) && (methodClass != Object.class));
+            } catch (RuntimeException x) {
+                LOG.log(Level.WARNING, "called get[Declared]Method on " + methodClass.getName(), x);
             } catch (LinkageError e) {
                 LOG.log(Level.WARNING, null, e);
             }

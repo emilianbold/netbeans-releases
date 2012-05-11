@@ -56,14 +56,14 @@ import org.openide.util.lookup.Lookups;
 public class AmazonInstanceNode extends AbstractNode {
     
     private AmazonInstance ai;
+    private static final String AMAZON_ICON = "org/netbeans/modules/cloud/amazon/ui/resources/amazon.png"; // NOI18N
     
     public AmazonInstanceNode(AmazonInstance ai) {
         super(Children.LEAF, Lookups.fixed(ai));
         this.ai = ai;
         setName(""); // NOI18N
         setDisplayName(ai.getName());
-        //setShortDescription(NbBundle.getMessage(RootNode.class, "Amazon_Node_Short_Description"));
-        setIconBaseWithExtension(RootNode.AMAZON_ICON);
+        setIconBaseWithExtension(AMAZON_ICON);
     }
     
     private static final String WAITING_ICON

@@ -66,6 +66,7 @@ import org.netbeans.modules.csl.api.DataLoadersBridge;
 import org.netbeans.modules.web.indent.api.embedding.JoinedTokenSequence;
 import org.netbeans.modules.web.indent.api.support.IndenterContextData;
 import org.netbeans.modules.editor.indent.spi.Context;
+import org.netbeans.modules.html.editor.lib.api.model.HtmlModelFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -89,9 +90,11 @@ public class HtmlIndenter extends MarkupAbstractIndenter<HTMLTokenId> {
             if(version == HtmlVersion.XHTML5) {
                 //we do not have a special model for xhtml5, just html5 model => 
                 //use xhtml1.0 model for formatting
-                HtmlParser parser = HtmlParserFactory.findParser(HtmlVersion.XHTML10_TRANSATIONAL);
-                model = parser.getModel(HtmlVersion.XHTML10_TRANSATIONAL);
+                version = HtmlVersion.XHTML10_TRANSATIONAL;
             }
+            
+            model = HtmlModelFactory.getModel(version);
+            
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
         }

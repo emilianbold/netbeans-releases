@@ -99,6 +99,9 @@ switch ($omg) {
     case $gom: break;
 }
 
+$variableCompact = 'test';
+compact('variableCompact');
+
 ?>
 
 <?= $usedShortEcho; ?>

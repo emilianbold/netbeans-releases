@@ -41,7 +41,20 @@
  */
 package org.netbeans.modules.cnd.loaders;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
+import org.netbeans.modules.cnd.api.toolchain.Tool;
+import org.netbeans.modules.cnd.spi.toolchain.ToolchainProject;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.OpenCookie;
@@ -58,45 +71,91 @@ import org.openide.util.Utilities;
 /*package*/ final class ExternalProgramOpenCookie implements OpenCookie {
 
     private final DataObject dao;
-    private final String program;
+    private final String[] programs;
     private final String failmsg;
 
-    public ExternalProgramOpenCookie(DataObject dao, String program, String failmsg) {
-        Parameters.notNull("dao", dao);
-        Parameters.notNull("program", program);
+    public ExternalProgramOpenCookie(DataObject dao, String[] programs, String failmsg) {
+        Parameters.notNull("dao", dao); // NOI18N
+        Parameters.notNull("program", programs); // NOI18N
         this.dao = dao;
-        this.program = program;
+        this.programs = programs;
         this.failmsg = failmsg;
     }
 
     @Override
     public void open() {
-        boolean success = false;
-        ProcessBuilder pb = new ProcessBuilder(program, dao.getPrimaryFile().getPath());
-        try {
-            pb.start();
-            success = true;
-        } catch (IOException ex) {
-        }
-
-        if (!success && Utilities.isMac()) {
-            // On Mac the built-in "open" command can launch installed
-            // applications without having them in PATH. This fixes
-            // bug #178742 - NetBeans can't launch Qt Designer
-            pb = new ProcessBuilder("open", "-a", program, dao.getPrimaryFile().getPath()); // NOI18N
-            try {
-                // "open" exits immediately, it does not wait until
-                // launched application finishes, so waitFor() can be safely used
-                int exitCode = pb.start().waitFor();
-                success = exitCode == 0;
-            } catch (IOException ex) {
-            } catch (InterruptedException ex) {
+        String qmakePath = getQmakePath();
+        String tool = null;
+        if (qmakePath != null) {
+            File dir = new File(qmakePath);
+            for(String program : programs) {
+                File file;
+                if (Utilities.isWindows()) {
+                    file = new File(dir, program+".exe"); // NOI18N
+                } else {
+                    file = new File(dir, program);
+                }
+                if (file.exists()) {
+                    tool = file.getAbsolutePath();
+                    break;
+                }
             }
         }
+        List<String> list = new ArrayList<String>(Arrays.asList(programs));
+        if (tool != null) {
+            list.add(tool);
+        }
+        boolean success = false;
+        for(String program : list) {
+            ProcessBuilder pb = new ProcessBuilder(program, dao.getPrimaryFile().getPath());
+            try {
+                pb.start();
+                success = true;
+            } catch (IOException ex) {
+            }
 
+            if (!success && Utilities.isMac()) {
+                // On Mac the built-in "open" command can launch installed
+                // applications without having them in PATH. This fixes
+                // bug #178742 - NetBeans can't launch Qt Designer
+                pb = new ProcessBuilder("open", "-a", program, dao.getPrimaryFile().getPath()); // NOI18N
+                try {
+                    // "open" exits immediately, it does not wait until
+                    // launched application finishes, so waitFor() can be safely used
+                    int exitCode = pb.start().waitFor();
+                    success = exitCode == 0;
+                } catch (IOException ex) {
+                } catch (InterruptedException ex) {
+                }
+            }
+            if (success) {
+                break;
+            }
+        }
         if (!success && failmsg != null) {
             DialogDisplayer.getDefault().notify(
                     new NotifyDescriptor.Message(failmsg));
         }
+    }
+    
+    private String getQmakePath() {
+        Project project = FileOwnerQuery.getOwner(dao.getPrimaryFile());
+        CompilerSet set = null;
+        if (project != null) {
+            ToolchainProject toolchain = project.getLookup().lookup(ToolchainProject.class);
+            if (toolchain != null) {
+                set = toolchain.getCompilerSet();
+            }
+        }
+        if (set == null) {
+            set = CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getDefaultCompilerSet();
+        }
+        if (set != null) {
+            Tool qmake = set.findTool(PredefinedToolKind.QMakeTool);
+            if (qmake != null) {
+                return CndPathUtilitities.getDirName(qmake.getPath());
+            }
+        }
+        return null;
     }
 }

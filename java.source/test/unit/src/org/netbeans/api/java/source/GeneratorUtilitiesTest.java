@@ -67,6 +67,7 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.prefs.Preferences;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -80,13 +81,19 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
+import javax.swing.JEditorPane;
+
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.JavaDataLoader;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.Repository;
+import org.openide.util.SharedClassObject;
 
 /**
  *
@@ -100,7 +107,9 @@ public class GeneratorUtilitiesTest extends NbTestCase {
 
     @Override
     protected void setUp() throws Exception {
-        SourceUtilsTestUtil.prepareTest(new String[0], new Object[0]);
+        SharedClassObject loader = JavaDataLoader.findObject(JavaDataLoader.class, true);
+        SourceUtilsTestUtil.prepareTest(new String[]{"org/netbeans/modules/java/source/resources/layer.xml"}, new Object[]{loader/*, cpp*/});
+        JEditorPane.registerEditorKitForContentType("text/x-java", "org.netbeans.modules.editor.java.JavaKit");
     }
 
     private void writeIntoFile(FileObject file, String what) throws Exception {
@@ -456,6 +465,8 @@ public class GeneratorUtilitiesTest extends NbTestCase {
     }
 
     public void testAddImports5() throws Exception {
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+        preferences.putBoolean("allowConvertToStarImport", true);
         performTest("package test;\nimport java.util.AbstractList;\nimport java.util.ArrayList;\nimport java.util.List;\nimport java.util.Vector;\npublic class Test { }\n", "1.5", new AddImportsTask("java.util.Collection"), new Validator() {
             public void validate(CompilationInfo info) {
                 assertEquals(0, info.getDiagnostics().size());
@@ -464,9 +475,12 @@ public class GeneratorUtilitiesTest extends NbTestCase {
                 assertEquals("java.util.*", imports.get(0).getQualifiedIdentifier().toString());
             }
         }, false);
+        preferences.putBoolean("allowConvertToStarImport", false);
     }
 
     public void testAddImports6() throws Exception {
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+        preferences.putBoolean("allowConvertToStarImport", true);
         performTest("package test;\nimport java.util.AbstractList;\nimport java.util.ArrayList;\nimport java.util.List;\nimport java.util.Vector;\npublic class Test { }\n", "1.5", new AddImportsTask("java.util.Collection"), new Validator() {
             public void validate(CompilationInfo info) {
                 assertEquals(0, info.getDiagnostics().size());
@@ -475,6 +489,7 @@ public class GeneratorUtilitiesTest extends NbTestCase {
                 assertEquals("java.util.*", imports.get(0).getQualifiedIdentifier().toString());
             }
         }, false);
+        preferences.putBoolean("allowConvertToStarImport", false);
     }
 
     public void testAddImports7() throws Exception {
@@ -503,6 +518,8 @@ public class GeneratorUtilitiesTest extends NbTestCase {
     }
 
     public void testAddImports9() throws Exception {
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+        preferences.putBoolean("allowConvertToStarImport", true);
         performTest("package test;\nimport java.awt.*;\nimport java.util.List;\npublic class Test {\nprivate void op(List list) {\nint size = list.size();\n}\n}\n", "1.5", new AddImportsTask("java.util.AbstractList", "java.util.ArrayList", "java.util.Collection", "java.util.Collections"), new Validator() {
             public void validate(CompilationInfo info) {
                 assertEquals(0, info.getDiagnostics().size());
@@ -513,9 +530,12 @@ public class GeneratorUtilitiesTest extends NbTestCase {
                 assertEquals("java.util.List", imports.get(2).getQualifiedIdentifier().toString());
             }
         }, false);
+        preferences.putBoolean("allowConvertToStarImport", false);
     }
 
     public void testAddImports9a() throws Exception {
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+        preferences.putBoolean("allowConvertToStarImport", true);
         performTest("package test;\npublic class Test {\nprivate void op(List list) {\nint size = list.size();\n}\n}\n", "1.5", new AddImportsTask("java.util.AbstractList", "java.util.ArrayList", "java.util.Collection", "java.util.Collections", "java.util.List", "java.awt.Component", "java.awt.Container", "java.awt.Dialog", "java.awt.Graphics", "java.awt.Menu"), new Validator() {
             public void validate(CompilationInfo info) {
                 assertEquals(0, info.getDiagnostics().size());
@@ -526,9 +546,12 @@ public class GeneratorUtilitiesTest extends NbTestCase {
                 assertEquals("java.util.List", imports.get(2).getQualifiedIdentifier().toString());
             }
         }, false);
+        preferences.putBoolean("allowConvertToStarImport", false);
     }
 
     public void testAddImports10() throws Exception {
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+        preferences.putBoolean("allowConvertToStaticStarImport", true);
         performTest("package test;\nimport static java.lang.Math.max;\npublic class Test { }\n", "1.5", new AddImportsTask("java.lang.Math.abs", "java.lang.Math.min"), new Validator() {
             public void validate(CompilationInfo info) {
                 assertEquals(0, info.getDiagnostics().size());
@@ -538,6 +561,7 @@ public class GeneratorUtilitiesTest extends NbTestCase {
                 assertTrue(imports.get(0).isStatic());
             }
         }, false);
+        preferences.putBoolean("allowConvertToStaticStarImport", false);
     }
 
     public void testAddImports11() throws Exception {

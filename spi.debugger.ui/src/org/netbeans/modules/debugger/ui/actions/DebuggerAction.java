@@ -90,6 +90,7 @@ public class DebuggerAction extends AbstractAction {
         return action;
     }
     
+    @Override
     public Object getValue(String key) {
         if (key == Action.NAME && nameInBundle) {
             return NbBundle.getMessage (DebuggerAction.class, (String) super.getValue(key));
@@ -97,6 +98,7 @@ public class DebuggerAction extends AbstractAction {
         return super.getValue(key);
     }
     
+    @Override
     public void actionPerformed (ActionEvent evt) {
         // Post the action asynchronously, since we're on AWT
         getActionsManager(action).postAction(action);
@@ -357,11 +359,11 @@ public class DebuggerAction extends AbstractAction {
     implements ActionsManagerListener {
         
         private ActionsManager  currentActionsManager;
-        private WeakReference   ref;
+        private WeakReference<DebuggerAction> ref;
 
         
         Listener (DebuggerAction da) {
-            ref = new WeakReference (da);
+            ref = new WeakReference<DebuggerAction>(da);
             DebuggerManager.getDebuggerManager ().addDebuggerListener (
                 DebuggerManager.PROP_CURRENT_ENGINE,
                 this
@@ -373,20 +375,24 @@ public class DebuggerAction extends AbstractAction {
             updateCurrentActionsManager ();
         }
         
+        @Override
         public void propertyChange (PropertyChangeEvent evt) {
             final DebuggerAction da = getDebuggerAction ();
             if (da == null) return;
             updateCurrentActionsManager ();
             final boolean en = DebuggerAction.isEnabled (da.getAction ());
             SwingUtilities.invokeLater (new Runnable () {
+                @Override
                 public void run () {
                     da.setEnabled (en);
                 }
             });
         }
         
+        @Override
         public void actionPerformed (Object action) {
         }
+        @Override
         public void actionStateChanged (
             final Object action, 
             final boolean enabled
@@ -398,6 +404,7 @@ public class DebuggerAction extends AbstractAction {
             // actions manager.
             final boolean en = DebuggerAction.isEnabled (da.getAction ());
             SwingUtilities.invokeLater (new Runnable () {
+                @Override
                 public void run () {
                     da.setEnabled (en);
                 }
@@ -418,7 +425,7 @@ public class DebuggerAction extends AbstractAction {
         }
         
         private DebuggerAction getDebuggerAction () {
-            DebuggerAction da = (DebuggerAction) ref.get ();
+            DebuggerAction da = ref.get ();
             if (da == null) {
                 DebuggerManager.getDebuggerManager ().removeDebuggerListener (
                     DebuggerManager.PROP_CURRENT_ENGINE,

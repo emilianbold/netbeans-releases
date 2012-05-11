@@ -58,6 +58,7 @@ import org.openide.util.CharSequences;
 
 /*package*/ abstract class ProjectFileNameBasedKey extends ProjectNameBasedKey {
     protected static final CharSequence NO_PROJECT = CharSequences.create("<No Project Name>"); // NOI18N
+    protected static final CharSequence NO_FILE = CharSequences.create("<No File Name>"); // NOI18N
 
     protected final int fileNameIndex;
 
@@ -68,7 +69,7 @@ import org.openide.util.CharSequences;
     }
 
     protected ProjectFileNameBasedKey(FileImpl file) {
-        this(getProjectName(file), file.getAbsolutePath());
+        this(getProjectName(file), getFileName(file));
     }
 
     protected ProjectFileNameBasedKey(KeyDataPresentation presentation) {
@@ -78,9 +79,19 @@ import org.openide.util.CharSequences;
 
     protected static CharSequence getProjectName(FileImpl file) {
         assert (file != null);
+        if (file == null) {
+            // extra check for #208877 
+            return NO_PROJECT;
+        }
         ProjectBase prj = file.getProjectImpl(true);
         assert (prj != null);
         return prj == null ? NO_PROJECT : prj.getUniqueName();  // NOI18N
+    }
+
+    private static CharSequence getFileName(FileImpl file) {
+        // extra check for #208877
+        assert file != null;
+        return file == null ? NO_FILE : file.getAbsolutePath();
     }
 
     @Override

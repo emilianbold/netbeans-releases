@@ -55,7 +55,7 @@ import java.util.Set;
 import javax.swing.Action;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.netbeans.modules.versioning.spi.testvcs.TestVCS;
+import org.netbeans.modules.versioning.core.spi.testvcs.TestVCS;
 import org.netbeans.modules.versioning.core.spi.VCSContext;
 import org.netbeans.modules.versioning.core.spi.VersioningSystem;
 import org.openide.nodes.Node;

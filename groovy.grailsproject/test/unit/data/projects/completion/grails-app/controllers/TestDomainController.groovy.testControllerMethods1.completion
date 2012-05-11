@@ -15,6 +15,7 @@ METHOD     bindData(Object, Object, Map,   [PROTECTE  Object
 METHOD     bindData(Object, Object, Strin  [PROTECTE  Object
 METHOD     chain(Map)                      [PROTECTE  Object
 METHOD     clone()                         [PROTECTE  Object
+METHOD     collect()                                  Collection
 METHOD     collect(Closure)                           List
 METHOD     collect(Collection, Closure)               Collection
 METHOD     dump()                                     String

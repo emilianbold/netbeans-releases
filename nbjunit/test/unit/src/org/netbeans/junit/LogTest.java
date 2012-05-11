@@ -48,6 +48,8 @@ import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /** Is logging working OK?
  */
@@ -112,7 +114,12 @@ public class LogTest extends NbTestCase {
         LOG.log(Level.INFO, "i4={0} o1={1}", new Object[] {i4, o1});
         String expect = seq.toString().replaceAll("(?m)^\\Q[my.log.for.test] THREAD: Test Watch Dog: testPublish MSG: \\E(.+)(\r?\n)+", "$1\n");
         expect = expect.replace('\\', '/');
-        expect = expect.replaceAll("WORKDIR/.*/testPublish", "WRKD");
+        
+        Pattern p = Pattern.compile(".*(WORKDIR.*)/some/thing");
+        Matcher m = p.matcher(expect);
+        if (m.find()) {
+            expect = expect.substring(0, m.start(1)) + "WRKD" + expect.substring(m.end(1));
+        }
         assertEquals("some stuff\n"
                 + "null\n"
                 + "found WRKD/some/thing great\n"

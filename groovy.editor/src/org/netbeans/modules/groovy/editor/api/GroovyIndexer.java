@@ -71,6 +71,7 @@ import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.groovy.editor.api.elements.ast.ASTField;
 import org.netbeans.modules.groovy.editor.api.elements.ast.ASTMethod;
+import org.netbeans.modules.groovy.editor.api.parser.ClassNodeCache;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexer;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
@@ -248,6 +249,18 @@ public class GroovyIndexer extends EmbeddingIndexer {
             } catch (IOException ioe) {
                 LOG.log(Level.WARNING, null, ioe);
             }
+        }
+
+        @Override
+        public boolean scanStarted(Context context) {
+            ClassNodeCache.createThreadLocalInstance();
+            return super.scanStarted(context);
+        }
+
+        @Override
+        public void scanFinished(Context context) {            
+            ClassNodeCache.clearThreadLocalInstance();
+            super.scanFinished(context);
         }
     }
     

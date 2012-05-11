@@ -46,7 +46,7 @@
             <public-packages/>
             <class-path-extension>
                 <runtime-relative-path>com-atlassian-connector-eclipse-commons-core.jar</runtime-relative-path>
-                <binary-origin>external/com.atlassian.connector.eclipse.commons.core-3.0.0.jar</binary-origin>
+                <binary-origin>external/com.atlassian.connector.eclipse.commons.core-3.0.4.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

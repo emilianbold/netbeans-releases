@@ -133,7 +133,7 @@ public abstract class VCSCommitParameters {
         return recentLink;
     }
     
-    protected static JLabel createMessagesTemplateLink(final JTextArea text, final Preferences preferences) {
+    protected static JLabel createMessagesTemplateLink(final JTextArea text, final Preferences preferences, final String helpCtxId) {
         JLabel templateLink = new JLabel();
         templateLink.setIcon(new ImageIcon(VCSCommitParameters.class.getResource("/org/netbeans/modules/versioning/util/resources/load_template.png"))); // NOI18N
         templateLink.setToolTipText(getMessage("CTL_CommitForm_LoadTemplate")); // NOI18N            
@@ -142,15 +142,15 @@ public abstract class VCSCommitParameters {
         templateLink.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                onTemplate(text, preferences);
+                onTemplate(text, preferences, helpCtxId);
             }
         });    
         return templateLink;
     }
     
-    protected JLabel getMessagesTemplateLink(final JTextArea text) {
+    protected JLabel getMessagesTemplateLink(final JTextArea text, String helpCtxId) {
         if(templateLink == null) {
-            templateLink = createMessagesTemplateLink(text, preferences);
+            templateLink = createMessagesTemplateLink(text, preferences, helpCtxId);
         }
         return templateLink;
     }
@@ -169,9 +169,9 @@ public abstract class VCSCommitParameters {
         }
     }
 
-    private static void onTemplate(JTextArea text, Preferences preferences) {
+    private static void onTemplate(JTextArea text, Preferences preferences, String helpCtxId) {
         TemplateSelector ts = new TemplateSelector(preferences);
-        if(ts.show()) {
+        if(ts.show(helpCtxId)) {
             text.setText(ts.getTemplate());
         }
     }    
@@ -251,7 +251,7 @@ public abstract class VCSCommitParameters {
                 messageLabel.setLabelFor(messageTextArea);
                 Mnemonics.setLocalizedText(messageLabel, getMessage("CTL_CommitForm_Message")); // NOI18N
 
-                JLabel templateLink = getMessagesTemplateLink(messageTextArea);
+                JLabel templateLink = getMessagesTemplateLink(messageTextArea, "org.netbeans.modules.versioning.util.common.TemplatePanel"); //NOI18N
                 JLabel recentLink = getRecentMessagesLink(messageTextArea);
 
                 messageTextArea.setColumns(60);    //this determines the preferred width of the whole dialog

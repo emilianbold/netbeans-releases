@@ -49,6 +49,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -132,8 +133,15 @@ public class MethodsCompletionProvider implements CompletionProvider {
                                 TypeElement te = type.resolve(cc);
                                 List<? extends Element> enclosedElements = te.getEnclosedElements();
                                 for (Element elm : enclosedElements) {
-                                    if (elm.getKind() == ElementKind.METHOD) {
-                                        resultSet.addItem(new ClassCompletionItem(elm.getSimpleName().toString(), caret, false));
+                                    ElementKind kind = elm.getKind();
+                                    if (kind == ElementKind.METHOD || kind == ElementKind.CONSTRUCTOR) {
+                                        String name = elm.getSimpleName().toString();
+                                        if ("<init>".equals(name)) {    // NOI18N
+                                            name = te.getSimpleName().toString();
+                                        }
+                                        ElementCompletionItem eci = new ElementCompletionItem(name, kind, elm.getModifiers(), caret);
+                                        eci.setExecutableElement((ExecutableElement) elm);
+                                        resultSet.addItem(eci);
                                     }
                                 }
                             }

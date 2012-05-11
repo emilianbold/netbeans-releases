@@ -57,19 +57,25 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.UIManager;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.modules.search.ui.UiUtils;
 import org.netbeans.spi.search.provider.SearchComposition;
 import org.netbeans.spi.search.provider.SearchResultsDisplayer;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 /**
  *
  * @author kaktus
  */
-class ResultViewPanel extends JPanel{
+class ResultViewPanel extends JPanel implements Lookup.Provider {
 
+    @StaticResource
     private static final String STOP_ICON =
             "org/netbeans/modules/search/res/stop.png"; //NOI18N
+    @StaticResource
+    private static final String INFO_ICON =
+            "org/netbeans/modules/search/res/info.png";                 //NOI18N
 
     private static final String CARD_NAME_RESULTS = "results";          //NOI18N
     private static final String CARD_NAME_INFO = "info";                //NOI18N
@@ -90,6 +96,8 @@ class ResultViewPanel extends JPanel{
     private JButton btnStop = new JButton();
     private SearchTask searchTask;
     private GraphicalSearchListener searchListener = null;
+    private final JComponent visualComponent;
+    private final Lookup lookup;
 
     /** */
     private volatile boolean searchInProgress = false;
@@ -109,7 +117,11 @@ class ResultViewPanel extends JPanel{
                 new BoxLayout(resultsPanel, BoxLayout.PAGE_AXIS));
         SearchResultsDisplayer<?> disp =
                 searchComposition.getSearchResultsDisplayer();
-        resultsPanel.add(disp.getVisualComponent());
+        visualComponent = disp.getVisualComponent();
+        lookup = (visualComponent instanceof Lookup.Provider)
+                ? ((Lookup.Provider) visualComponent).getLookup()
+                : Lookup.EMPTY;
+        resultsPanel.add(visualComponent);
         add(resultsPanel, CARD_NAME_RESULTS);
         showInfo(UiUtils.getText("TEXT_WAITING_FOR_PREVIOUS"));         //NOI18N
     }
@@ -144,7 +156,7 @@ class ResultViewPanel extends JPanel{
         }
         infoPanelContent.removeAll();
         infoPanelContent.add(new JLabel(ImageUtilities.loadImageIcon(
-                "org/netbeans/modules/search/res/info.png", false)));   //NOI18N
+                INFO_ICON, false)));
         infoPanelContent.add(new JLabel(title));
         infoPanel.validate();
         infoPanel.repaint();
@@ -186,7 +198,7 @@ class ResultViewPanel extends JPanel{
      */
     void searchCancelled() {
         Manager.getInstance().stopSearching(searchTask);
-        searchComposition.terminate();
+        searchTask.cancel();
         showInfo(NbBundle.getMessage(ResultView.class,
                 "TEXT_TASK_CANCELLED"));                                //NOI18N
         setBtnStopEnabled(false);
@@ -215,5 +227,15 @@ class ResultViewPanel extends JPanel{
 
     SearchComposition<?> getSearchComposition() {
         return this.searchComposition;
+    }
+
+    @Override
+    public Lookup getLookup() {
+        return lookup;
+    }
+
+    @Override
+    public String getToolTipText() {
+        return visualComponent.getToolTipText();
     }
 }

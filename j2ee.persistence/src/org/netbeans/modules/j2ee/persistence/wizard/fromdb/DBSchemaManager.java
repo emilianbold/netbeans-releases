@@ -137,6 +137,12 @@ public class DBSchemaManager {
             
             private SchemaElementImpl schemaElementImpl;
             private boolean cancelled;
+
+            @Override
+            protected boolean isCancellable() {
+                return true;
+            }
+            
             
             public void run(final ProgressSupport.Context actionContext) {
                 actionContext.progress(NbBundle.getMessage(DBSchemaManager.class, "LBL_RetrievingSchema"));

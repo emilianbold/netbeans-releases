@@ -142,7 +142,7 @@ public final class ReferencesCount {
                     @NonNull
                     @Override
                     public ElementHandle<TypeElement> convert(@NonNull final String p) {
-                        return ElementHandleAccessor.INSTANCE.create(ElementKind.OTHER, p);   //FIXME
+                        return ElementHandleAccessor.getInstance().create(ElementKind.OTHER, p);   //FIXME
                     }
                 });
         } catch (InterruptedException ie) {
@@ -164,7 +164,7 @@ public final class ReferencesCount {
                     @NonNull
                     @Override
                     public ElementHandle<PackageElement> convert(@NonNull final String p) {
-                        return ElementHandleAccessor.INSTANCE.create(ElementKind.PACKAGE, p);
+                        return ElementHandleAccessor.getInstance().create(ElementKind.PACKAGE, p);
                     }
                 });
         } catch (InterruptedException ie) {

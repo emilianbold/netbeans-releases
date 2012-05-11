@@ -43,7 +43,7 @@
  */
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
-public class IntConfiguration {
+public class IntConfiguration implements Cloneable {
 
     private IntConfiguration master;
     private byte def;

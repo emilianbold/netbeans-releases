@@ -548,10 +548,10 @@ public class GrammarResolverTest extends CssTestBase {
         assertEquals(4, resolved.size());
         
         Iterator<ResolvedToken> itr = resolved.iterator();
-        assertEquals("[S0|font]/[S1]/[L2]/[S7|font-size]/[L10|@length]/!length (20px(LENGTH;0-4))", itr.next().toString());
-        assertEquals("[S0|font]/[S1]/[L2]/[L11]// (/(SOLIDUS;5-6))", itr.next().toString());
-        assertEquals("[S0|font]/[S1]/[L2]/[L11]/[S12|line-height]/[L13|@length]/!length (20px(LENGTH;7-11))", itr.next().toString());
-        assertEquals("[S0|font]/[S1]/[L2]/[S14|font-family]/[L15]/[S16]/[S20|@generic-family]/fantasy (fantasy(IDENT;12-19))", itr.next().toString());
+        assertEquals("[S0|font]/[S1]/[L2]/[S7|font-size]/!length (20px)", itr.next().toString());
+        assertEquals("[S0|font]/[S1]/[L2]/[L10]// (/)", itr.next().toString());
+        assertEquals("[S0|font]/[S1]/[L2]/[L10]/[S11|line-height]/!length (20px)", itr.next().toString());
+        assertEquals("[S0|font]/[S1]/[L2]/[S12|font-family]/[L13]/[S14]/[S17|@generic-family]/fantasy (fantasy)", itr.next().toString());
         
     }
 
@@ -565,9 +565,11 @@ public class GrammarResolverTest extends CssTestBase {
     public void testFontFamily() {
         PropertyModel p = Properties.getPropertyModel("font-family");
 
-        assertResolve(p, "serif");
-        assertResolve(p, "cursive, serif");
-        assertResolve(p, "cursive serif", false);
+        assertTrue(new PropertyValue(p, "serif").isResolved());
+        assertTrue(new PropertyValue(p, "cursive, serif").isResolved());
+        
+        //resolves since the "cursive serif" can be considered as unquoted custom family name
+        assertTrue(new PropertyValue(p, "cursive serif").isResolved());
 
     }
 

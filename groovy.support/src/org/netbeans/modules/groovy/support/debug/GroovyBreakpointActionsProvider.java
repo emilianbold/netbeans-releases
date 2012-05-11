@@ -41,146 +41,93 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.groovy.support.debug;
 
 import javax.swing.Action;
+import org.netbeans.api.debugger.jpda.LineBreakpoint;
+import static org.netbeans.modules.groovy.support.debug.Bundle.*;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.NodeActionsProviderFilter;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  * @author Martin Grebac
  * @author Martin Adamek
  */
 public class GroovyBreakpointActionsProvider implements NodeActionsProviderFilter {
+
+    @Messages("LBL_Action_Go_To_Source=Go to Source")
+    private static final Action GO_TO_SOURCE_ACTION = Models.createAction(
+            LBL_Action_Go_To_Source(),
+            new Models.ActionPerformer() {
+                @Override
+                public boolean isEnabled(Object node) {
+                    return true;
+                }
+
+                @Override
+                public void perform(Object[] nodes) {
+                    goToSource((LineBreakpoint) nodes[0]);
+                }
+            },
+            Models.MULTISELECTION_TYPE_EXACTLY_ONE);
     
-    private static final Action GO_TO_SOURCE_ACTION = Models.createAction (
-        NbBundle.getMessage(GroovyBreakpointActionsProvider.class, "LBL_Action_Go_To_Source"),
-        new Models.ActionPerformer () {
-            public boolean isEnabled (Object node) {
-                return true;
-            }
-            public void perform (Object[] nodes) {
-                goToSource ((GroovyLineBreakpoint) nodes [0]);
-            }
-        },
-        Models.MULTISELECTION_TYPE_EXACTLY_ONE
-    
-    );
-    private static final Action CUSTOMIZE_ACTION = Models.createAction (
-        NbBundle.getMessage(GroovyBreakpointActionsProvider.class, "LBL_Action_Customize"),
-        new Models.ActionPerformer () {
-            public boolean isEnabled (Object node) {
-                return false;
-            }
-            public void perform (Object[] nodes) {
+    @Messages("LBL_Action_Customize=Customize")
+    private static final Action CUSTOMIZE_ACTION = Models.createAction(
+            LBL_Action_Customize(),
+            new Models.ActionPerformer() {
+                @Override
+                public boolean isEnabled(Object node) {
+                    return false;
+                }
+
+                @Override
+                public void perform(Object[] nodes) {
 //                customize ((Breakpoint) nodes [0]);
-            }
-        },
-        Models.MULTISELECTION_TYPE_EXACTLY_ONE
-    
-    );
-    
-    
-    public Action[] getActions (NodeActionsProvider original, Object node) throws UnknownTypeException {
-        if (!(node instanceof GroovyLineBreakpoint))
-            return original.getActions (node);
-        
-        Action[] oas = original.getActions (node);
-        if (node instanceof GroovyLineBreakpoint) {
-            Action[] as = new Action [oas.length + 3];
-            as [0] = GO_TO_SOURCE_ACTION;
-            as [1] = null;
-            System.arraycopy (oas, 0, as, 2, oas.length);
-            as [as.length - 1] = CUSTOMIZE_ACTION;
+                }
+            },
+            Models.MULTISELECTION_TYPE_EXACTLY_ONE);
+
+    @Override
+    public Action[] getActions(NodeActionsProvider original, Object node) throws UnknownTypeException {
+        if (!(node instanceof LineBreakpoint)) {
+            return original.getActions(node);
+        }
+
+        Action[] oas = original.getActions(node);
+        if (node instanceof LineBreakpoint) {
+            Action[] as = new Action[oas.length + 3];
+            as[0] = GO_TO_SOURCE_ACTION;
+            as[1] = null;
+            System.arraycopy(oas, 0, as, 2, oas.length);
+            as[as.length - 1] = CUSTOMIZE_ACTION;
             return as;
         }
-        Action[] as = new Action [oas.length + 1];
-        System.arraycopy (oas, 0, as, 0, oas.length);
-        as [as.length - 1] = CUSTOMIZE_ACTION;
+        Action[] as = new Action[oas.length + 1];
+        System.arraycopy(oas, 0, as, 0, oas.length);
+        as[as.length - 1] = CUSTOMIZE_ACTION;
         return as;
     }
-    
-    public void performDefaultAction (NodeActionsProvider original, Object node) throws UnknownTypeException {
-        if (node instanceof GroovyLineBreakpoint)
-            goToSource ((GroovyLineBreakpoint) node);
-        else
-            original.performDefaultAction (node);
+
+    @Override
+    public void performDefaultAction(NodeActionsProvider original, Object node) throws UnknownTypeException {
+        if (node instanceof LineBreakpoint) {
+            goToSource((LineBreakpoint) node);
+        } else {
+            original.performDefaultAction(node);
+        }
     }
 
-    public void addModelListener (ModelListener l) {
+    public void addModelListener(ModelListener l) {
     }
 
-    public void removeModelListener (ModelListener l) {
+    public void removeModelListener(ModelListener l) {
     }
 
-//    private static void customize (Breakpoint b) {
-//        JComponent c = null;
-//        if (b instanceof GroovyLineBreakpoint) {
-//            c = new JspBreakpointPanel((GroovyLineBreakpoint) b);
-//        }
-//
-//        DialogDescriptor descriptor = new DialogDescriptor (
-//            c,
-//            NbBundle.getMessage (
-//                GroovyBreakpointActionsProvider.class,
-//                "CTL_Breakpoint_Customizer_Title" // NOI18N
-//             // NOI18N
-//            )
-//
-//        );
-//
-//        JButton bOk = null;
-//        JButton bClose = null;
-//        descriptor.setOptions (new JButton[] {
-//            bOk = new JButton (NbBundle.getMessage (
-//                GroovyBreakpointActionsProvider.class,
-//                "CTL_Ok" // NOI18N
-//             // NOI18N
-//            )),
-//            bClose = new JButton (NbBundle.getMessage (
-//                GroovyBreakpointActionsProvider.class,
-//                "CTL_Close" // NOI18N
-//             // NOI18N
-//            ))
-//
-//        });
-//        HelpCtx helpCtx = HelpCtx.findHelp (c);
-//        if (helpCtx == null)
-//            helpCtx = new HelpCtx ("debug.add.breakpoint");;
-//        descriptor.setHelpCtx (helpCtx);
-//        bOk.getAccessibleContext ().setAccessibleDescription (
-//            NbBundle.getMessage (
-//                GroovyBreakpointActionsProvider.class,
-//                "ACSD_CTL_Ok" // NOI18N
-//             // NOI18N
-//            )
-//
-//        );
-//        bOk.setMnemonic(NbBundle.getMessage(GroovyBreakpointActionsProvider.class, "CTL_Ok_MNEM").charAt(0)); // NOI18N
-//        bClose.getAccessibleContext ().setAccessibleDescription (
-//            NbBundle.getMessage (
-//                GroovyBreakpointActionsProvider.class,
-//                "ACSD_CTL_Close" // NOI18N
-//             // NOI18N
-//            )
-//
-//        );
-//        bClose.setMnemonic(NbBundle.getMessage(GroovyBreakpointActionsProvider.class, "CTL_Close_MNEM").charAt(0)); // NOI18N
-//        descriptor.setClosingOptions (null);
-//        Dialog d = DialogDisplayer.getDefault ().createDialog (descriptor);
-//        d.pack ();
-//        d.setVisible (true);
-//        if (descriptor.getValue () == bOk) {
-//            ((Controller) c).ok ();
-//        }
-//    }
-    
-    private static void goToSource (GroovyLineBreakpoint b) {
-        Context.showSource (b);
+    private static void goToSource(LineBreakpoint b) {
+        Context.showSource(b);
     }
 }

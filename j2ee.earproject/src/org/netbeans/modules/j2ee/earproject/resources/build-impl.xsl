@@ -927,15 +927,21 @@ exists or setup the property manually. For example like this:
                 </condition>
             </target>
 
-            <target name="profile" depends="-profile-check,dist,-profile-pre72" if="profiler.configured">
-                <xsl:attribute name="description">Profile a J2EE project in the IDE.</xsl:attribute>
-                
+            <target name="-do-profile" depends="dist">
                 <startprofiler/>
                 <nbstartserver profilemode="true"/>
                 
                 <nbdeploy profilemode="true" clientUrlPart="${{client.urlPart}}" forceRedeploy="true" />
                 <antcall>
                     <xsl:attribute name="target">-profile-start-loadgen</xsl:attribute>
+                </antcall>
+            </target>
+
+            <target name="profile" depends="-profile-check,-profile-pre72" if="profiler.configured">
+                <xsl:attribute name="description">Profile a J2EE project in the IDE.</xsl:attribute>
+                
+                <antcall>
+                    <xsl:attribute name="target">-do-profile</xsl:attribute>
                 </antcall>
             </target>
 

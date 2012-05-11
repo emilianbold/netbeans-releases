@@ -137,7 +137,7 @@ public class RepositorySelectorTest extends NbTestCase {
         }
 
         @Override
-        public TestIssue getIssue(String id) {
+        public TestIssue[] getIssues(String[] id) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 

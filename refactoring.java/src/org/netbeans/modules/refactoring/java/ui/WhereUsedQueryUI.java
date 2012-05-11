@@ -44,9 +44,14 @@
 package org.netbeans.modules.refactoring.java.ui;
 
 import java.text.MessageFormat;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.ResourceBundle;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.swing.Icon;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.actions.Openable;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
@@ -54,12 +59,14 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.api.java.source.ui.ElementHeaders;
+import org.netbeans.api.java.source.ui.ElementIcons;
 import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Scope;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
+import org.netbeans.modules.refactoring.java.Pair;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
+import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.WhereUsedQueryConstants;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
@@ -81,11 +88,13 @@ public class WhereUsedQueryUI implements RefactoringUI, Openable, JavaRefactorin
     private ElementHandle<Element> elementHandle;
     private ElementKind kind;
     private AbstractRefactoring delegate;
+    private final List<Pair<Pair<String, Icon>, TreePathHandle>> classes;
 
     private WhereUsedQueryUI() {
+        this.classes = null;
     }
 
-    private WhereUsedQueryUI(TreePathHandle handle, Element el) {
+    private WhereUsedQueryUI(TreePathHandle handle, Element el, List<Pair<Pair<String, Icon>, TreePathHandle>> classes) {
         this.query = new WhereUsedQuery(Lookups.singleton(handle));
         // ClasspathInfo needs to be in context until all other modules change there
         // implementation to use scopes #199779. This is used by at least JPA refactoring and
@@ -97,17 +106,14 @@ public class WhereUsedQueryUI implements RefactoringUI, Openable, JavaRefactorin
         }
         name = el.getSimpleName().toString();
         kind = el.getKind();
+        this.classes = classes;
     }
 
-    public WhereUsedQueryUI(TreePathHandle jmiObject, String name, AbstractRefactoring delegate) {
+    public WhereUsedQueryUI(TreePathHandle handle, String name, AbstractRefactoring delegate) {
         this.delegate = delegate;
-        //this.query = new JavaWhereUsedQuery(jmiObject);
-        //this.query.getContext().add(info.getClasspathInfo());
-        this.element = jmiObject;
-        //Element el = jmiObject.resolveElement(info);
-        //name = ElementHeaders.getHeader(el, info, ElementHeaders.NAME);
-        //kind = el.getKind();
+        this.element = handle;
         this.name = name;
+        this.classes = null;
     }
 
     @Override
@@ -118,7 +124,7 @@ public class WhereUsedQueryUI implements RefactoringUI, Openable, JavaRefactorin
     @Override
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
         if (panel == null) {
-            panel = new WhereUsedPanel(name, element, parent);
+            panel = WhereUsedPanel.create(name, element, kind, classes, parent);
         }
         return panel;
     }
@@ -274,7 +280,29 @@ public class WhereUsedQueryUI implements RefactoringUI, Openable, JavaRefactorin
         if (el == null) {
             return null;
         }
-        return new WhereUsedQueryUI(handle, el);
+        final List<Pair<Pair<String, Icon>, TreePathHandle>> classes;
+        if(el.getKind() == ElementKind.CONSTRUCTOR || el.getKind() == ElementKind.METHOD) {
+            ExecutableElement method = (ExecutableElement) el;
+            classes = new LinkedList<Pair<Pair<String, Icon>, TreePathHandle>>();
+            Element enclosingElement = method.getEnclosingElement();
+            String methodDeclaringClass = enclosingElement.getSimpleName().toString();
+            Icon icon = ElementIcons.getElementIcon(enclosingElement.getKind(), enclosingElement.getModifiers());
+            classes.add(Pair.of(Pair.of(methodDeclaringClass, icon), handle));
+
+            Collection<ExecutableElement> overridens = JavaRefactoringUtils.getOverriddenMethods(method, info);
+            for (ExecutableElement executableElement : overridens) {
+                Element enclosingTypeElement = executableElement.getEnclosingElement();
+                String elName = enclosingTypeElement.getSimpleName().toString();
+                TreePathHandle tph = TreePathHandle.create(executableElement, info);
+                Icon typeIcon = ElementIcons.getElementIcon(enclosingTypeElement.getKind(), enclosingTypeElement.getModifiers());
+                classes.add(Pair.of(Pair.of(elName, typeIcon), tph));
+            }
+        } else if (el.getKind() == ElementKind.PACKAGE) { // Remove for #94325
+            return null;
+        } else {
+            classes = null;
+        }
+        return new WhereUsedQueryUI(handle, el, classes);
     }
 
     public static JavaRefactoringUIFactory factory() {

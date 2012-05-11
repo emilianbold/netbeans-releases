@@ -62,7 +62,7 @@ public abstract class AbstractRecordList<R extends Record>
 
     /** The list itself */
     private ArrayList<R> list = new ArrayList<R>();
-    private static boolean dirty = false;
+//    private static boolean dirty = false;
 
     /** Holds list of event listeners */
     protected EventListenerList listenerList = null;
@@ -119,9 +119,10 @@ public abstract class AbstractRecordList<R extends Record>
      * increasing its size by one.
      * @param   record   the component to be added.
      */
+    @Override
     public void appendRecord(R record) {
 	list.add(record);
-        dirty = true;
+//        dirty = true;
     }
 
     /**
@@ -462,13 +463,13 @@ public abstract class AbstractRecordList<R extends Record>
 	}
     }
 
-    protected static boolean isDirty() {
-        if (dirty)
-            return true;
-        return false;
-    }
-
-    protected static void clearDirty() {
-        dirty = false;
-    }
+//    protected static boolean isDirty() {
+//        if (dirty)
+//            return true;
+//        return false;
+//    }
+//
+//    protected static void clearDirty() {
+//        dirty = false;
+//    }
 }

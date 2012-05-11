@@ -45,10 +45,12 @@
 package org.netbeans.modules.editor.java;
 
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Scope;
 import com.sun.source.tree.Tree;
@@ -56,6 +58,7 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
 
 import java.util.*;
@@ -88,10 +91,9 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.ext.java.JavaTokenContext;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.java.editor.javadoc.JavadocImports;
 import org.netbeans.modules.java.editor.options.CodeCompletionPanel;
-import org.netbeans.spi.editor.hints.Severity;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.WeakListeners;
 
 /**
@@ -525,7 +527,54 @@ public final class Utilities {
             return true;
         return inAnonymousOrLocalClass(parentPath);
     }
-        
+
+    public static Set<Element> getUsedElements(final CompilationInfo info) {
+        final Set<Element> ret = new HashSet<Element>();
+        final Trees trees = info.getTrees();
+        new TreePathScanner<Void, Void>() {
+
+            @Override
+            public Void visitIdentifier(IdentifierTree node, Void p) {
+                addElement(trees.getElement(getCurrentPath()));
+                return null;
+            }
+
+            @Override
+            public Void visitClass(ClassTree node, Void p) {
+                for (Element element : JavadocImports.computeReferencedElements(info, getCurrentPath()))
+                    addElement(element);
+                return super.visitClass(node, p);
+            }
+
+            @Override
+            public Void visitMethod(MethodTree node, Void p) {
+                for (Element element : JavadocImports.computeReferencedElements(info, getCurrentPath()))
+                    addElement(element);
+                return super.visitMethod(node, p);
+            }
+
+            @Override
+            public Void visitVariable(VariableTree node, Void p) {
+                for (Element element : JavadocImports.computeReferencedElements(info, getCurrentPath()))
+                    addElement(element);
+                return super.visitVariable(node, p);
+            }
+
+            @Override
+            public Void visitCompilationUnit(CompilationUnitTree node, Void p) {
+                scan(node.getPackageAnnotations(), p);
+                return scan(node.getTypeDecls(), p);
+            }
+            
+            private void addElement(Element element) {
+                if (element != null) {
+                    ret.add(element);
+                }
+            }
+        }.scan(info.getCompilationUnit(), null);
+        return ret;                
+    }
+
     private static List<String> varNamesForType(TypeMirror type, Types types, Elements elements, String prefix) {
         switch (type.getKind()) {
             case ARRAY:

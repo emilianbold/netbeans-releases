@@ -488,12 +488,15 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
                     transferSucceeded(transferInfo, file);
                 } else {
                     transferFailed(transferInfo, file, getOperationFailureMessage(Operation.UPLOAD, fileName));
-                    boolean deleted;
-                    synchronized (this) {
-                        deleted = remoteClient.deleteFile(tmpFileName);
-                    }
-                    if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.fine(String.format("Unsuccessfully uploaded file %s deleted: %s", file.getRemotePath() + REMOTE_TMP_NEW_SUFFIX, deleted));
+                    if (!properties.isUploadDirectly()) {
+                        // delete tmp file if it has been uploaded
+                        boolean deleted;
+                        synchronized (this) {
+                            deleted = remoteClient.deleteFile(tmpFileName);
+                        }
+                        if (LOGGER.isLoggable(Level.FINE)) {
+                            LOGGER.fine(String.format("Unsuccessfully uploaded file %s deleted: %s", file.getRemotePath() + REMOTE_TMP_NEW_SUFFIX, deleted));
+                        }
                     }
                 }
             }

@@ -84,5 +84,13 @@ public final class Application {
     public List<String> getApplicationUrls() {
         return appUrls;
     }
+
+    @Override
+    public String toString() {
+        return "Application{" + "groupName=" + groupName + ", instanceName=" + 
+                instanceName + ", applicationName=" + applicationName + 
+                ", type=" + type + ", state=" + state + ", appUrls=" + appUrls + '}';
+    }
+    
     
 }

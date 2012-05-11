@@ -43,6 +43,7 @@ package org.netbeans.modules.testng;
 
 import java.io.IOException;
 import org.openide.util.lookup.ServiceProvider;
+import org.testng.xml.TestNGContentHandler;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -55,9 +56,6 @@ import org.xml.sax.SAXException;
 public class TestNGEntityResolver implements EntityResolver {
 
     public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
-        if ("http://testng.org/testng-1.0.dtd".equals(systemId)) { //NOI18N
-            return new InputSource(TestNGEntityResolver.class.getResourceAsStream("/testng-1.0.dtd")); //NOI18N
-        }
-        return null;
+        return new TestNGContentHandler(null, false).resolveEntity(publicId, systemId);
     }
 }

@@ -53,6 +53,7 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.api.model.CsmProject;
@@ -297,10 +298,8 @@ public final class ParserQueue {
 
         // there are no more simultaneously parsing files than threads, so LinkedList suites even better
         private final Collection<FileImpl> filesBeingParsed = new LinkedHashSet<FileImpl>();
-        private volatile boolean notifyListeners;
         private volatile int pendingActivity;
-        ProjectData(boolean notifyListeners) {
-            this.notifyListeners = notifyListeners;
+        ProjectData() {
             this.pendingActivity = 0;
         }
 
@@ -331,7 +330,7 @@ public final class ParserQueue {
 
     // do not need UIDs for ProjectBase in parsing data collection
     private final Map<ProjectBase, ProjectData> projectData = new HashMap<ProjectBase, ProjectData>();
-    private final Map<CsmProject, Object> projectLocks = new HashMap<CsmProject, Object>();
+    private final Map<CsmProject, ProjectWaitLatch> projectsAwaitLatches = new HashMap<CsmProject, ProjectWaitLatch>();
     private final AtomicInteger serial = new AtomicInteger(0);
     private static final class Lock {}
     private final Object lock = new Lock();
@@ -727,28 +726,49 @@ public final class ParserQueue {
     }
 
     public boolean hasPendingProjectRelatedWork(ProjectBase project, FileImpl skipFile) {
+        return getPendingProjectRelatedLatch(project, skipFile) != null;
+    }
+
+    private ProjectWaitLatch getPendingProjectRelatedLatch(ProjectBase project, FileImpl skipFile) {
         synchronized (lock) {
+            ProjectWaitLatch latch = null;
+            boolean hasProjectActivity;
             ProjectData data = getProjectData(project, false);
             if (data == null || data.noActivity()) {
                 // nothing in queue and nothing in progress => no files
-                return false;
+                hasProjectActivity = false;
             } else {
                 if (skipFile == null) {
                     // not empty, but nothing to skip => has files
-                    return true;
+                    hasProjectActivity = true;
                 } else {
                     if (data.filesBeingParsed.contains(skipFile) ||
                             data.filesInQueue.contains(skipFile)) {
-                        return data.filesBeingParsed.size() + data.filesInQueue.size() + data.pendingActivity > 1;
+                        hasProjectActivity = (data.filesBeingParsed.size() + data.filesInQueue.size() + data.pendingActivity) > 1;
+                    } else {
+                        hasProjectActivity = !data.noActivity();
                     }
-                    return !data.noActivity();
                 }
             }
+            if (hasProjectActivity) {
+                synchronized (projectsAwaitLatches) {
+                    latch = projectsAwaitLatches.get(project);
+                    if (latch == null) {
+                        latch = new ProjectWaitLatch();
+                        projectsAwaitLatches.put(project, latch);
+                    }
+                }
+            }
+            return latch;
         }
     }
 
     private Set<FileImpl> getProjectFiles(ProjectBase project) {
         return getProjectData(project, true).filesInQueue;
+    }
+
+    private void createProjectDataIfNeeded(ProjectBase project) {
+        getProjectData(project, true);
     }
 
     private ProjectData getProjectData(ProjectBase project, boolean create) {
@@ -757,17 +777,10 @@ public final class ParserQueue {
             ProjectBase key = project;
             ProjectData data = projectData.get(key);
             if (data == null && create) {
-                data = new ProjectData(false);
+                data = new ProjectData();
                 projectData.put(key, data);
             }
             return data;
-        }
-    }
-
-    private void removeProjectData(ProjectBase project) {
-        // must be in synchronized( lock ) block
-        synchronized (lock) {
-            projectData.remove(project);
         }
     }
 
@@ -778,6 +791,7 @@ public final class ParserQueue {
 
     public void onStartAddingProjectFiles(ProjectBase project) {
         suspend();
+        createProjectDataIfNeeded(project);
         boolean fire;
         synchronized(onStartLevel) {
             AtomicInteger level = onStartLevel.get(project);
@@ -788,7 +802,6 @@ public final class ParserQueue {
             fire = level.incrementAndGet() == 1;
         }
         if (fire) {
-            getProjectData(project, true).notifyListeners = true;
             ProgressSupport.instance().fireProjectParsingStarted(project);
         }
     }
@@ -808,9 +821,10 @@ public final class ParserQueue {
             }
         }
         if (fire) {
-            ProjectData pd = getProjectData(project, true);
+            ProjectData pd;
             boolean noFiles;
             synchronized (lock) {
+                pd = getProjectData(project, true);
                 noFiles = markLastProjectFileActivityIfNeeded(pd);
             }
             ProgressSupport.instance().fireProjectFilesCounted(project, pd.filesInQueue.size());
@@ -879,48 +893,38 @@ public final class ParserQueue {
         }
         if (last) {
             project.notifyOnWaitParseLock();
-            if (data.notifyListeners) {
-                ProgressSupport.instance().fireProjectParsingFinished(project);
-            }
+            ProgressSupport.instance().fireProjectParsingFinished(project);
         }
     }
 
     private void notifyWaitEmpty(ProjectBase project) {
-        Object prjWaitEmptyLock;
-        synchronized (projectLocks) {
-            prjWaitEmptyLock = projectLocks.remove(project);
-        }
-        if (prjWaitEmptyLock != null) {
-            synchronized (prjWaitEmptyLock) {
-                prjWaitEmptyLock.notifyAll();
+        synchronized (projectsAwaitLatches) {
+            CountDownLatch latch = projectsAwaitLatches.remove(project);
+            if (latch != null) {
+                latch.countDown();
             }
         }
     }
 
-    private static final class ProjectWaitLock {}
+    private static final class ProjectWaitLatch extends CountDownLatch {
+        public ProjectWaitLatch() {
+            super(1);
+        }
+    }
 
     /*package*/ void waitEmpty(ProjectBase project) {
         if (TraceFlags.TRACE_CLOSE_PROJECT) {
             System.err.println("Waiting Empty Project " + project.getName()); // NOI18N
         }
-        while (hasPendingProjectRelatedWork(project, null)) {
+        CountDownLatch latch;
+        while ((latch = getPendingProjectRelatedLatch(project, null)) != null) {
             if (TraceFlags.TRACE_CLOSE_PROJECT) {
                 System.err.println("Waiting Empty Project 2 " + project.getName()); // NOI18N
             }
-            Object prjWaitEmptyLock;
-            synchronized (projectLocks) {
-                prjWaitEmptyLock = projectLocks.get(project);
-                if (prjWaitEmptyLock == null) {
-                    prjWaitEmptyLock = new ProjectWaitLock();
-                    projectLocks.put(project, prjWaitEmptyLock);
-                }
-            }
-            synchronized (prjWaitEmptyLock) {
-                try {
-                    prjWaitEmptyLock.wait();
-                } catch (InterruptedException ex) {
-                    // nothing
-                }
+            try {
+                latch.await();
+            } catch (InterruptedException ex) {
+                // nothing
             }
         }
         if (TraceFlags.TRACE_CLOSE_PROJECT) {

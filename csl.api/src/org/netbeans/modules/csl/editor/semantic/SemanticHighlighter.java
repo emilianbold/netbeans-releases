@@ -64,11 +64,7 @@ import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
-import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.parsing.spi.Parser;
-import org.netbeans.modules.parsing.spi.ParserResultTask;
-import org.netbeans.modules.parsing.spi.Scheduler;
-import org.netbeans.modules.parsing.spi.SchedulerEvent;
+import org.netbeans.modules.parsing.spi.*;
 
 
 /**
@@ -80,12 +76,13 @@ import org.netbeans.modules.parsing.spi.SchedulerEvent;
  *
  * @author Jan Lahoda
  */
-public class SemanticHighlighter extends ParserResultTask<ParserResult> {
+public class SemanticHighlighter extends IndexingAwareParserResultTask<ParserResult> {
 
     private static final Logger LOG = Logger.getLogger(SemanticHighlighter.class.getName());
     
     /** Creates a new instance of SemanticHighlighter */
     SemanticHighlighter() {
+        super(TaskIndexingMode.ALLOWED_DURING_SCAN);
     }
 
 //    public Document getDocument() {

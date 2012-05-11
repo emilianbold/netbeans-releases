@@ -68,7 +68,7 @@ import org.netbeans.modules.php.editor.api.elements.PhpElement;
 import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.netbeans.modules.php.editor.api.elements.TypeResolver;
 import org.netbeans.modules.php.editor.api.QualifiedName;
-import org.netbeans.modules.php.editor.nav.TestBase;
+import org.netbeans.modules.php.editor.nav.PHPNavTestBase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -76,7 +76,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Radek Matous
  */
-public class PHPIndexTest extends TestBase {
+public class PHPIndexTest extends PHPNavTestBase {
 
     private ElementQuery.Index index;
 

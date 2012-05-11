@@ -364,6 +364,8 @@ public class QmakeProjectWriter {
                     LibraryItem.OptionItem option = (LibraryItem.OptionItem) item;
                     if (!option.getLibraryOption().contains(PKGCONFIG_BINARY)) {
                         return item.getOption(null);
+                    } else {
+                        return ""; // NOI18N
                     }                    
                 default:
                     return ""; // NOI18N

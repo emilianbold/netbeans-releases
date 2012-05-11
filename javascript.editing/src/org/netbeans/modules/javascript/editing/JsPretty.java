@@ -908,6 +908,9 @@ public class JsPretty {
     }
 
     private void remove(int start, int end, String caller) {
+        if (start < this.begin || end > this.end) {
+            return;
+        }
         diffs.add(new Diff(start, end, ""));
     }
 

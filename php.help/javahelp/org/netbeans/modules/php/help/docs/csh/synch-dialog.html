@@ -1,0 +1,88 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--      
+*     Copyright (c) 1997, 2011, Oracle and/or its affiliates. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <title>Remote Synchronization Dialog</title>
+        <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+        <meta name="keywords" content="FTP, SFTP">
+    </head>
+    <body>
+        <h2>Remote Synchronization Dialog</h2>
+        <p> <small><a href="#seealso">See Also</a>&nbsp; </small>
+        <p>Remote Synchronization is a feature of PHP projects set to run as Remote Web Site, over FTP or SFTP. Remote Synchronization allows you to compare your local version of a project with the version on a server and to diff, upload, or download files so the local and remote versions of the project match. The Remote Synchronization dialog opens from the context menu (right click) of the Source Files folder of a PHP project.</p>
+        <h3 id="show_ops">Show Planned Operations</h3>
+        <p>The IDE can perform one of several operations when synchronizing a file. 
+            The table of operations shows which operation the IDE plans to perform during 
+            synchronization. In this section you can select which planned operations the 
+        table shows.</p>
+        <ul>
+            <li><strong>Download.</strong> <img alt="Download icon" src="../images/download.png"> Download the remote version. Overwrite the
+            local version if one exists.</li>
+            <li><strong>Upload.</strong> <img alt="Upload icon" src="../images/upload.png"> Upload the local version to the server. Overwrite the remote version if one exists.</li>
+            <li><strong>No Operation.</strong> <img alt="No operation icon" src="../images/noop.png"> Do not synchronize the file.</li>
+            <li><strong>Delete.</strong> <img alt="Delete icon" src="../images/delete.png"> Delete both local and remote versions of the file.</li>
+        </ul>
+        <p>Click Check All to show all planned operations. Click Uncheck All to show no planned
+        operations.</p>
+        
+        
+        <h3 id="show_problems">Show Problems</h3>
+        <p>The table of operations shows warning icons for problems associated with operations.
+        In this section you select which problem icons to display.</p>
+        <ul>
+            <li><strong>Warning.</strong> Show warning icons. Warnings indicate problems that are not severe enough to prevent synchronization.</li>
+            <li><strong>Error.</strong> Show error icons. Errors are problems severe enough to prevent synchronization.</li>
+            <li><strong>File Conflict.</strong> <img src="../images/file-conflict.png" alt="File conflict icon"> File Conflict icons indicate that both the local and the remote version of the file changed since the last synchronization.</li>
+            <li><strong>File vs Directory Collision.</strong> <img alt="File vs Directory Collision icon" src="../images/file-dir-collision.png"> The path to a local file is the path to a
+                directory on the server, or the reverse. For example, there's a local file called <tt>/my/file</tt> but on the server <tt>/my/file/</tt> is a directory.</li>
+            <li><strong>Symbolic link.</strong> <img alt="Symbolic link icon" src="../images/symlink.png">
+                File is only a symbolic link pointing to another file.</li>
+        </ul>
+        <p>Click Check All to show all warnings. Click Uncheck All to show no warnings.</p>
+        <h3>Review Planned Operations on Files Table</h3>
+        <p>In this table you can review and change operations that the IDE plans for files, on a per file basis.</p>
+        <p>The table contains the following columns, from left to right:</p>
+        <ul>
+            <li><strong>Problem icons.</strong> An icon appears if the planned operation has a problem of a type selected in the <a href="#show_problems">Show Problems</a> section. </li>
+            <li><strong>Remote path.</strong> The path to the remote copy of the file from the project's root directory.</li>
+            <li><strong>Planned operation.</strong> The operation planned for the file, if the operation
+                type is selected in the <a href="#show_ops">Show Operations</a> section.</li>  
+            <li><strong>Local path.</strong> The path to the local copy of the file from the project's root directory.</li>
+        </ul>
+        <p>Additional information appears at the bottom of the table for any rows you select. For example, if you select 4 rows, you see a summary of the operations and problems for those rows, such as "3 downloads, 0 uploads, 1 no-op, 0 deletions, 0 errors, 0 warnings." If you select a row and there is an error associated with the operation in that row, details about that error appear, such as "Error (FILE_NAME): Non-existing file cannot be updated."</p>
+        <h3>Diffing File Versions and Changing Operations</h3>
+        <p>Beneath the Review Planned Operations on Files table is a set of buttons for diffing between local and remote versions of a file and changing the planned operation for a file. Select a row in the table to activate these buttons.</p>
+        <ul>
+            <li><strong>Diff.</strong> <img alt="Diff button" src="../images/diff2.png"> Diff the local and
+            remote versions of the selected file. Results of the diff appear in a new dialog.</li>
+            <li><strong>No operation.</strong> <img alt="No operation icon" src="../images/noop.png"> 
+            Change the planned operation to "no-op."</li>
+            <li><strong>Download.</strong> <img alt="Download icon" src="../images/download.png"> Change
+            the planned operation to "Download remote version."</li>
+            <li><strong>Upload.</strong> <img alt="Upload icon" src="../images/upload.png"> Change the
+            planned operation to "Upload local version."</li>
+            <li><strong>Delete.</strong> <img alt="Delete icon" src="../images/delete.png"> Change the
+            planned operation to "Delete both local and remote versions."</li>
+            <li><strong>Reset.</strong> <img alt="Reset icon" src="../images/reset_plan9.png"> Reset all
+            changes to the operation.</li>
+        </ul>
+        <h3>Show Summary Before Start</h3>
+        <p>Tick this box to show a summary of synchronization operations before synchronization starts.
+        Review the operations in the summary dialog. Click OK in the summary and the synchronization progress dialog opens.</p>
+        <h3>Synchronize</h3>
+        <p>Press this button to begin synchronization. The button is greyed out if there are any unresolved errors. If the Show Summary Before Start box is ticked, a summary of synchronization operations appears. Otherwise synchronization begins and the synchronization progress dialog opens. </p>
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd></dd>
+            <dd></dd>
+            <dd></dd></dl>
+        <hr>
+        <p>
+            <small><a href="../credits.html">Legal Notices</a></small>
+        </p>
+    </body>
+</html>

@@ -55,7 +55,7 @@ public class BeanTypeDescriptor extends AbstractBeanTypeDescriptor {
     private final int offset;
 
     public BeanTypeDescriptor(String displayName, SpringBean springBean) {
-        super(displayName, FileUtil.toFileObject(springBean.getLocation().getFile()));
+        super(displayName, springBean.getLocation().getFile());
         this.offset = springBean.getLocation().getOffset();
         this.className = springBean.getClassName();
     }

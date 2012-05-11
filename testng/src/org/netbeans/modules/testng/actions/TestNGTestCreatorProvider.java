@@ -122,17 +122,10 @@ public class TestNGTestCreatorProvider extends TestCreatorProvider {
         final Map<CommonPlugin.CreateTestParam, Object> params = CommonTestUtil.getSettingsMap(!singleClass);
         if (singleClass) {
             String name = context.getTestClassName();
-            params.put(CommonPlugin.CreateTestParam.CLASS_NAME, name.substring(name.indexOf("testng.") + 7));
+            params.put(CommonPlugin.CreateTestParam.CLASS_NAME, name);
         }
         
-        FileObject trgFolder = context.getTargetFolder();        
-        
-        try {
-            trgFolder = FileUtil.createFolder(trgFolder, "testng");
-        } catch (IOException ex) {
-            LOGGER.log(Level.SEVERE, null, ex);
-        }
-        final FileObject targetFolder = trgFolder;
+        final FileObject targetFolder = context.getTargetFolder();
         TestNGSupport.findTestNGSupport(FileOwnerQuery.getOwner(targetFolder)).configureProject(targetFolder);
         RequestProcessor.getDefault().post(new Runnable() {
 

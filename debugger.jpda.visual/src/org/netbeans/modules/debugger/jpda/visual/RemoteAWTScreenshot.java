@@ -865,7 +865,9 @@ public class RemoteAWTScreenshot {
                     if (ci != null) {
                         ObjectReference component = ci.getComponent();
                         ComponentBreakpoint b = ComponentBreakpointActionProvider.findBreakpoint(component);
-                        ComponentBreakpointsActionsProvider.customize(b);
+                        if (b != null) {
+                            ComponentBreakpointsActionsProvider.customize(b);
+                        }
                     }
                 }
             }

@@ -280,6 +280,122 @@ public final class GsfHintsProvider extends ParserResultTask<ParserResult> {
         cancel = false;
     }
     
+    private List<Error> processProviderErrors(
+            final List<ErrorDescription> descriptions, 
+            Snapshot topLevelSnapshot, final ParserResult r, final Language language) throws ParseException {
+        
+        HintsProvider provider = language.getHintsProvider();
+        if (provider == null) {
+            return null;
+        }
+
+        GsfHintsManager manager = language.getHintsManager();
+        if (manager == null) {
+            return null;
+        }
+        RuleContext ruleContext = manager.createRuleContext(r, language, -1, -1, -1);
+        if (ruleContext == null) {
+            return null;
+        }
+        List<Hint> hints = new ArrayList<Hint>();
+        List<Error> errors = new ArrayList<Error>();
+        provider.computeErrors(manager, ruleContext, hints, errors);
+        
+        boolean allowDisableEmpty = true;
+        for (int i = 0; i < hints.size(); i++) {
+            Hint hint = hints.get(i);
+            OffsetRange range = hint.getRange();
+            if (range != null &&
+                    range.getStart() >= 0 && range.getStart() <= topLevelSnapshot.getText().length() &&
+                    range.getEnd() >= 0 && range.getEnd() <= topLevelSnapshot.getText().length() &&
+                    range.getStart() <= range.getEnd()
+            ) {
+                ErrorDescription errorDesc = manager.createDescription(hint, ruleContext, allowDisableEmpty, i == hints.size()-1);
+                descriptions.add(errorDesc);
+            } else {
+                String msg = provider + " supplied hint " + hint + " with invalid range " + range + //NOI18N
+                        ", topLevelSnapshot.length=" + topLevelSnapshot.getText().length() +
+                        ", file=" + topLevelSnapshot.getSource().getFileObject(); //NOI18N
+//                                            assert false : msg;
+                LOG.log(Level.FINE, msg);
+            }
+        }
+        return errors;
+    }
+    
+    private void refreshErrors(final ResultIterator resultIterator) throws ParseException {
+        List<ErrorDescription> descs = new ArrayList<ErrorDescription>();
+        Document doc = getDocument();
+        processErrorsRecursive(resultIterator, doc, descs, resultIterator.getSnapshot());
+        HintsController.setErrors(doc, GsfHintsFactory.LAYER_NAME, descs);
+    }
+    
+    private void processErrorsRecursive(final ResultIterator resultIterator, 
+            Document doc,
+            final List<ErrorDescription> descriptions, 
+            Snapshot topLevelSnapshot) throws ParseException {
+
+            if (resultIterator == null) {
+            return;
+        }
+        
+        if (doc == null) {
+            doc = getDocument();
+        }
+        
+        for(Embedding e : resultIterator.getEmbeddings()) {
+            try {
+                if (isCanceled()) {
+                    return;
+                }
+            } catch (Exception ex) {
+                // should never happen, but log:
+                LOG.log(Level.WARNING, "Unexpected error", ex);
+            }
+
+            processErrorsRecursive(resultIterator.getResultIterator(e), doc, descriptions, topLevelSnapshot);
+        }
+        if (!(resultIterator.getParserResult() instanceof ParserResult)) {
+            return;
+        }
+        processErrors(resultIterator.getSnapshot(), (ParserResult)resultIterator.getParserResult(), 
+                doc, descriptions, topLevelSnapshot);
+    }
+    
+    void processErrors(final Snapshot snapshot, final ParserResult result,
+            Document doc,
+            final List<ErrorDescription> descriptions, 
+            Snapshot topLevelSnapshot) throws ParseException {
+
+        if (doc == null) {
+            doc = getDocument();
+        }
+        
+        Language language = LanguageRegistry.getInstance().getLanguageByMimeType(snapshot.getMimeType());
+        if (language == null) {
+            return;
+        }
+        if(!(result instanceof ParserResult)) {
+            return ;
+        }
+
+        ParserResult r = (ParserResult)result;
+        List<? extends Error> errors = r.getDiagnostics();
+        List<ErrorDescription> desc = new ArrayList<ErrorDescription>();
+        List<Error> unhandled = processProviderErrors(descriptions, topLevelSnapshot, r, language);
+        if (unhandled != null) {
+            errors = unhandled;
+        }
+        // Process errors without codes
+        desc = computeErrors(doc, r, errors, desc);
+        if (desc == null) {
+            //meaning: cancelled
+            return;
+        }
+
+        descriptions.addAll(desc);
+    }
+    
     public @Override void run(ParserResult result, SchedulerEvent event) {
         resume();
         
@@ -290,88 +406,20 @@ public final class GsfHintsProvider extends ParserResultTask<ParserResult> {
             return ;
         }
         
-//        long start = System.currentTimeMillis();
-        final List<ErrorDescription> descriptions = new ArrayList<ErrorDescription>();
-        
         try {
             ParserManager.parse(Collections.singleton(result.getSnapshot().getSource()), new UserTask() {
-                private Snapshot topLevelSnapshot = null;
-
                 public @Override void run(ResultIterator resultIterator) throws ParseException {
-                    if (topLevelSnapshot == null) {
-                        topLevelSnapshot = resultIterator.getSnapshot();
-                    }
-                    Language language = LanguageRegistry.getInstance().getLanguageByMimeType(resultIterator.getSnapshot().getMimeType());
-                    if (language != null) {
-                        if(!(resultIterator.getParserResult() instanceof ParserResult)) {
-                            return ;
-                        }
-                        ParserResult r = (ParserResult) resultIterator.getParserResult();
-                        List<? extends Error> errors = r.getDiagnostics();
-                        List<ErrorDescription> desc = new ArrayList<ErrorDescription>();
-
-                        HintsProvider provider = language.getHintsProvider();
-                        GsfHintsManager manager = null;
-                        RuleContext ruleContext = null;
-                        if (provider != null) {
-                            manager = language.getHintsManager();
-                            if (manager != null) {
-                                ruleContext = manager.createRuleContext(r, language, -1, -1, -1);
-                                if (ruleContext != null) {
-                                    List<Error> unhandled = new ArrayList<Error>();
-                                    List<Hint> hints = new ArrayList<Hint>();
-                                    provider.computeErrors(manager, ruleContext, hints, unhandled);
-                                    errors = unhandled;
-                                    boolean allowDisableEmpty = true;
-                                    for (int i = 0; i < hints.size(); i++) {
-                                        Hint hint = hints.get(i);
-                                        OffsetRange range = hint.getRange();
-                                        if (range != null &&
-                                                range.getStart() >= 0 && range.getStart() <= topLevelSnapshot.getText().length() &&
-                                                range.getEnd() >= 0 && range.getEnd() <= topLevelSnapshot.getText().length() &&
-                                                range.getStart() <= range.getEnd()
-                                        ) {
-                                            ErrorDescription errorDesc = manager.createDescription(hint, ruleContext, allowDisableEmpty, i == hints.size()-1);
-                                            descriptions.add(errorDesc);
-                                        } else {
-                                            String msg = provider + " supplied hint " + hint + " with invalid range " + range + //NOI18N
-                                                    ", topLevelSnapshot.length=" + topLevelSnapshot.getText().length() +
-                                                    ", file=" + topLevelSnapshot.getSource().getFileObject(); //NOI18N
-//                                            assert false : msg;
-                                            LOG.log(Level.FINE, msg);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        // Process errors without codes
-                        desc = computeErrors(doc, r, errors, desc);
-                        if (desc == null) {
-                            //meaning: cancelled
-                            return;
-                        }
-
-                        descriptions.addAll(desc);
-                    }
-
-                    for(Embedding e : resultIterator.getEmbeddings()) {
-                        if (isCanceled()) {
-                            return;
-                        }
-                        
-                        run(resultIterator.getResultIterator(e));
-                    }
+                    refreshErrors(resultIterator);
                 }
+
             });
         } catch (ParseException e) {
             LOG.log(Level.WARNING, null, e);
         }
-
-        HintsController.setErrors(doc, "csl-hints", descriptions);
-
-//        long end = System.currentTimeMillis();
-//        TimesCollector.getDefault().reportTime(info.getFileObject(), "com-hints", "Hints", end - start);
+    }
+    
+    public static void refreshErrors() {
+        
     }
 
     @Override

@@ -308,10 +308,6 @@ public class KenaiUtil {
         return APIAccessor.IMPL.getImpl(query).needsLogin();
     }
 
-    public static void setFilter(Query query, Filter filter) {
-        APIAccessor.IMPL.getImpl(query).setFilter(filter);
-    }
-
     public static BugtrackingType getType(Repository repo) {
         DelegatingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
         for (DelegatingConnector delegatingConnector : connectors) {
@@ -325,18 +321,6 @@ public class KenaiUtil {
         return null;
     }
 
-    public static Filter getAllFilter(Query query) {
-        return Filter.getAllFilter(APIAccessor.IMPL.getImpl(query));
-    }
-
-    public static Filter getNotSeenFilter(Query query) {
-        return Filter.getNotSeenFilter(APIAccessor.IMPL.getImpl(query));
-    }
-
-    public static Filter getNewFilter(Query query) {
-        return Filter.getNewFilter(APIAccessor.IMPL.getImpl(query));
-    }
-
     public static void closeQuery(Query query) {
         QueryAction.closeQuery(APIAccessor.IMPL.getImpl(query));
     }
@@ -345,11 +329,13 @@ public class KenaiUtil {
         IssueAction.createIssue(APIAccessor.IMPL.getImpl(repo));
     }
 
-    public static void openQuery(final Query query, final Repository repository, final boolean suggestedSelectionOnly) {
-        QueryAction.openQuery(
-                query != null ? APIAccessor.IMPL.getImpl(query) : null, 
-                repository != null ? APIAccessor.IMPL.getImpl(repository) : null, 
-                suggestedSelectionOnly);
+    public static void openNewQuery(Repository repository, final boolean suggestedSelectionOnly) {
+        QueryAction.openQuery(null, APIAccessor.IMPL.getImpl(repository), suggestedSelectionOnly);
+    }
+    
+    public static void openQuery(final Query query, Query.QueryMode mode, final boolean suggestedSelectionOnly) {
+        QueryImpl queryImpl = APIAccessor.IMPL.getImpl(query);
+        queryImpl.open(suggestedSelectionOnly, mode);
     }
 
     public static Collection<Issue> getRecentIssues(Repository repo) {

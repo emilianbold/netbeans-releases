@@ -347,13 +347,13 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
         if (issue.isNew()) {
             if(BugtrackingUtil.isNbRepository(issue.getRepository().getUrl())) {
-                Node[] selection = issue.getContext();
-                if(selection == null) {
+                ownerInfo = issue.getOwnerInfo();
+                if(ownerInfo == null) {
                     // XXX not sure why we need this - i'm going to keep it for now,
                     // doesn't seem to harm
-                    selection = WindowManager.getDefault().getRegistry().getActivatedNodes();
+                    Node[] selection = WindowManager.getDefault().getRegistry().getActivatedNodes();
+                    ownerInfo = issue.getRepository().getOwnerInfo(selection);
                 }
-                ownerInfo = issue.getRepository().getOwnerInfo(selection);
                 addNetbeansInfo();
             }
             selectProduct();
@@ -1271,7 +1271,9 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             if (field instanceof CustomIssueField) {
                 CustomIssueField cField = (CustomIssueField)field;
                 if ((nbRepository && cField.getKey().equals(IssueField.ISSUE_TYPE.getKey()))
-                        || (newIssue && !cField.getShowOnBugCreation())) { // NB IssueProvider type is already among non-custom fields
+                    || (newIssue && !cField.getShowOnBugCreation())  // NB IssueProvider type is already among non-custom fields
+                    || (newIssue && field.getKey().equals("cf_autoreporter_id")))   // NOI18N do not show exception reporter field - issue #212182
+                {
                     continue;
                 }
                 JLabel label = new JLabel(cField.getDisplayName()+":"); // NOI18N
@@ -2990,7 +2992,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
         return unitIncrement;
     }
 
-    private static final String CURRENT_NB_VERSION = "7.0";                     // NOI18N
+    private static final String CURRENT_NB_VERSION = "7.2";                     // NOI18N
     private String getCurrentNetBeansVersion() {        
         String version = parseProductVersion(getProductVersionValue());        
         if(version != null) {
@@ -3004,7 +3006,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
     }
 
     static String parseProductVersion(String productVersionValue) {
-        Pattern p = Pattern.compile("NetBeans IDE\\s([a-zA-Z0-9\\.?]*)\\s?.*");                      // NOI18N
+        Pattern p = Pattern.compile("NetBeans IDE\\s([a-zA-Z0-9\\.?]*)\\s?.*"); // NOI18N
         Matcher m = p.matcher(productVersionValue);
         if(m.matches()) {
             String version = m.group(1);

@@ -325,7 +325,7 @@ public class RADVisualComponent extends RADComponent {
                     constraintsProperties = constr.getProperties();
                 }
             }
-        } else if (getParentContainer() != null) {
+        } else if (getParentContainer() != null && !isMenuComponent()) {
             constraintsProperties = new Node.Property[] {
                 new LayoutComponentSizeProperty(LayoutConstants.HORIZONTAL),
                 new LayoutComponentSizeProperty(LayoutConstants.VERTICAL),

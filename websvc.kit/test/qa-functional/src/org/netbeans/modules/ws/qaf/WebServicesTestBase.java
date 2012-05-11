@@ -41,23 +41,22 @@
  */
 package org.netbeans.modules.ws.qaf;
 
+import java.awt.Component;
 import java.awt.Container;
 import java.io.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JButton;
-import javax.swing.JMenuItem;
-import javax.swing.MenuElement;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.*;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.ActionNoBlock;
-import org.netbeans.jellytools.actions.OutputWindowViewAction;
 import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
+import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.ComponentSearcher;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyProperties;
@@ -396,10 +395,8 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
                         runAndCancelUpdateIndex("Local");
                     }
                     project = createProject(projectName, getProjectType(), getJavaEEversion());
-                    // closing Tasks tab
-                    new OutputWindowViewAction().performMenu();
-                    new ActionNoBlock("Window|Tasks", null).performMenu();
-                    new ActionNoBlock("Window|Close Window", null).performMenu();
+                    // open otuput window
+                    OutputOperator.invoke();
                     // not display browser on run for Maven projects
                     if (ProjectType.MAVEN_WEB.equals(getProjectType()) || ProjectType.MAVEN_EJB.equals(getProjectType())) {
                         //Properties
@@ -695,6 +692,22 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", 600000); //NOI18N
         if (!getProjectType().isAntBasedProject()) {
             oto.waitText("Total time:"); //NOI18N
+            // wait progress bar dismiss
+            final Component comp = MainWindowOperator.getDefault().findSubComponent(new ComponentChooser() {
+
+                @Override
+                public boolean checkComponent(Component comp) {
+                    return "NbProgressBar".equals(comp.getClass().getSimpleName());  //NOI18N
+                }
+
+                @Override
+                public String getDescription() {
+                    return "NbProgressBar component.";  //NOI18N
+                }
+            });
+            if (comp != null) {
+                new ComponentOperator(comp).waitComponentShowing(false);
+            }
             dumpOutput();
             assertTrue("Build failed", oto.getText().indexOf("BUILD SUCCESS") > -1); //NOI18N
             assertTrue("Deploy failed", oto.getText().indexOf("[ERROR]") < 0); //NOI18N
@@ -753,22 +766,8 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
             needToSetServer = true;
         }
         // Set as Main Project
-        String setAsMainProjectItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", "LBL_SetAsMainProjectAction_Name");
-        String unsetAsMainProjectItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", "LBL_UnSetAsMainProjectAction_Name");
+         new ActionNoBlock("Run|Set Main Project|"+project, null).performMenu();
 
-        JPopupMenuOperator jpmo = ProjectsTabOperator.invoke().getProjectRootNode(project).callPopup();
-        MenuElement[] mel = jpmo.getSubElements();
-        MenuElement me;
-        boolean alreadySetAsMain = false;
-        for (int q = 0; q < mel.length; q++) {
-            me = mel[q];
-            if (me instanceof JMenuItem && ((JMenuItem) me).getText().equals(unsetAsMainProjectItem)) {
-                alreadySetAsMain = true;
-            }
-        }
-        if (!alreadySetAsMain) {
-            new Action(null, setAsMainProjectItem).perform(new ProjectsTabOperator().getProjectRootNode(project));
-        }
         if (needToSetServer) {
             // open project properties
             ProjectsTabOperator.invoke().getProjectRootNode(project).properties();

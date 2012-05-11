@@ -41,14 +41,8 @@
  */
 package org.netbeans.modules.web.el;
 
-import com.sun.el.parser.AstBracketSuffix;
-import com.sun.el.parser.AstIdentifier;
-import com.sun.el.parser.AstInteger;
-import com.sun.el.parser.AstMethodSuffix;
-import com.sun.el.parser.AstPropertySuffix;
-import com.sun.el.parser.AstString;
-import com.sun.el.parser.Node;
-import com.sun.el.parser.NodeVisitor;
+import com.sun.el.parser.*;
+import java.lang.reflect.Method;
 import javax.el.ELException;
 import junit.framework.TestCase;
 import org.junit.Test;
@@ -192,7 +186,7 @@ public class ELParserTest extends TestCase {
     }
 
     private static Node findProperty(final Node root, final String image) {
-        return findNode(root, image, AstPropertySuffix.class);
+        return findNode(root, image, AstDotSuffix.class);
     }
 
     private static Node findIdentifier(final Node root, final String image) {
@@ -200,7 +194,7 @@ public class ELParserTest extends TestCase {
     }
 
     private static Node findMethod(final Node root, final String image) {
-        return findNode(root, image, AstMethodSuffix.class);
+        return findNode(root, image, AstDotSuffix.class);
     }
 
     private static Node findNode(final Node root, final Class clazz) {

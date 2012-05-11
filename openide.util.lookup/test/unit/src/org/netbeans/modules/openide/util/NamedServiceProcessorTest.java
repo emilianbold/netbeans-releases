@@ -220,6 +220,7 @@ public class NamedServiceProcessorTest extends NbTestCase {
     public void testMissingRetention() throws Exception {
         String content = "import org.openide.util.lookup.NamedServiceDefinition;\n"
             + "@NamedServiceDefinition(path=\"fixed\",serviceType=Object.class)\n"
+            + "@java.lang.annotation.Target(java.lang.annotation.ElementType.TYPE)\n"
             + "public @interface Test {\n"
             + "}\n";
         AnnotationProcessorTestUtils.makeSource(getWorkDir(), "x.Test", content);
@@ -230,6 +231,25 @@ public class NamedServiceProcessorTest extends NbTestCase {
         String err = new String(os.toByteArray(), "UTF-8");
         if (err.indexOf("specify @Retention") == -1) {
             fail("The error messages should say something about missing where\n" + err);
+        }
+        if (err.indexOf("specify @Target") != -1) {
+            fail("Be silent about @Target\n" + err);
+        }
+    }
+    public void testMissingTarget() throws Exception {
+        String content = "import org.openide.util.lookup.NamedServiceDefinition;\n"
+            + "@NamedServiceDefinition(path=\"fixed\",serviceType=Object.class)"
+            + "@java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy.SOURCE)\n"
+            + "public @interface Test {\n"
+            + "}\n";
+        AnnotationProcessorTestUtils.makeSource(getWorkDir(), "x.Test", content);
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        assertFalse("Compilation fails",
+            AnnotationProcessorTestUtils.runJavac(getWorkDir(), null, getWorkDir(), null, os)
+        );
+        String err = new String(os.toByteArray(), "UTF-8");
+        if (err.indexOf("specify @Retention") != -1) {
+            fail("Be silent about Retention\n" + err);
         }
         if (err.indexOf("specify @Target") == -1) {
             fail("The error messages should say something about missing where\n" + err);

@@ -219,5 +219,81 @@ public class ExceptionsTest extends TestCase {
 
         assertCleanStackTrace(e);
     }
+
+    public void testAnnotateCNFE() {
+        Exception e = new ClassNotFoundException();
+        String msg = "text of annotation";
+
+        MyHandler mh = new MyHandler();
+        Exceptions.LOG.addHandler(mh);
+        
+        Exceptions.attachMessage(e, msg);
+        Exceptions.printStackTrace(e);
+
+        assertTrue(MyHandler.lastThrowable == e || MyHandler.lastThrowable.getCause() == e);
+        
+        StringWriter w = new StringWriter();
+        MyHandler.lastThrowable.printStackTrace(new PrintWriter(w));
+        String stackTrace = w.toString();
+
+        if (!stackTrace.contains(msg)) fail("\'"+msg+"\' not found: "+stackTrace);
+    }
+    
+    public void testAnnotateExceptionWithCNFECause() {
+        MyHandler mh = new MyHandler();
+        Exceptions.LOG.addHandler(mh);
+        
+        
+        Throwable e = new NoClassDefFoundError();
+        e.initCause(new ClassNotFoundException());
+        String msg = "some annotation";
+    
+        Exceptions.attachMessage(e, msg);
+        Exceptions.printStackTrace(e);
+
+        assertTrue(MyHandler.lastThrowable == e || MyHandler.lastThrowable.getCause() == e);
+        
+        StringWriter w = new StringWriter();
+        MyHandler.lastThrowable.printStackTrace(new PrintWriter(w));
+        String stackTrace = w.toString();
+
+        if (!stackTrace.contains(msg)) fail("\'"+msg+"\' not found: "+stackTrace);
+    }    
+    
+    public static final class MyHandler extends Handler {
+        public static final StringBuffer messages = new StringBuffer ();
+        
+        private static int lastSeverity;
+        private static Throwable lastThrowable;
+        private static String lastText;
+
+        public static void assertNotify (int sev, Throwable t) {
+            assertEquals ("Severity is same", sev, lastSeverity);
+            assertSame ("Throwable is the same", t, lastThrowable);
+            lastThrowable = null;
+            lastSeverity = -1;
+        }
+        
+        public static void assertLog (int sev, String t) {
+            assertEquals ("Severity is same", sev, lastSeverity);
+            assertEquals ("Text is the same", t, lastText);
+            lastText = null;
+            lastSeverity = -1;
+        }
+
+        public void publish(LogRecord record) {
+            messages.append(record.getMessage());
+            
+            lastText = record.getMessage();
+            lastThrowable = record.getThrown();
+        }
+
+        public void flush() {
+        }
+
+        public void close() throws SecurityException {
+        }
+        
+    } 
     
 }

@@ -147,15 +147,15 @@ public class EnabledAutoloadTest extends NbTestCase {
             mgr.enable(m3);
             assertTrue(m3.isEnabled());
             assertTrue(m2.isEnabled());
-            assertFalse("Module M1 is not enabled in ", m1.isEnabled());
+            assertTrue("After fix to bug #201695 module M1 is now enabled", m1.isEnabled());
             assertNotNull(m3.getClassLoader().getResource("m2/res"));
             assertNull("Can't load from not enabled bundle", m2.getClassLoader().getResource("m1/res"));
-            assertNotNull("But can load directly from bundle", bundle(m1).getResource("m1/res"));
+            assertNotNull("But can load directly from bundle", NetigsoUtil.bundle(m1).getResource("m1/res"));
 
         } finally {
             mgr.mutexPrivileged().exitWriteAccess();
         }
-        assertAsynchronousMessage(log, "bundle m1@1.0.0 resolved");
+        assertAsynchronousMessage(log, "m1 [1.0 1.0]");
         if (log.toString().contains("bundle m2")) {
             fail("m2 is turned on as module and listed on its own");
         }
@@ -169,20 +169,6 @@ public class EnabledAutoloadTest extends NbTestCase {
             Thread.sleep(100);
         }
         fail("There should be a message about enabling m1:\n" + log);
-    }
-
-    static Bundle bundle(Module module) throws Exception {
-        final Netigso netigso = Lookup.getDefault().lookup(Netigso.class);
-        Method m = Netigso.class.getDeclaredMethod("getFramework");
-        m.setAccessible(true);
-        Framework f = (Framework) m.invoke(netigso);
-        for (Bundle b : f.getBundleContext().getBundles()) {
-            if (b.getSymbolicName().equals(module.getCodeNameBase())) {
-                return b;
-            }
-        }
-        fail("no bundle found for " + module);
-        return null;
     }
 
 }

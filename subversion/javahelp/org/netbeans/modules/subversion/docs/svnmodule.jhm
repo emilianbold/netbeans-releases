@@ -190,5 +190,8 @@ Other names may be trademarks of their respective owners.
     <!-- Open Projects dialog (This applies to all versioning systems!) -->
         <mapID target="org.netbeans.modules.versioning.util.projects.ProjectOpener" url="svnmodule/csh/vcs_open_projects_dialog.html" />
 
+        <!-- Select Template dialog box -->
+        <mapID target="org.netbeans.modules.subversion.ui.commit.TemplatePanel" url="svnmodule/csh/svn-select-template.html" />
+
 </map>
 

@@ -41,9 +41,8 @@
  */
 package org.netbeans.modules.maven.model.pom.impl;
 
+import org.netbeans.modules.maven.model.pom.*;
 import org.w3c.dom.Element;
-import org.netbeans.modules.maven.model.pom.*;	
-import org.netbeans.modules.maven.model.pom.POMComponentVisitor;	
 
 /**
  *
@@ -62,23 +61,28 @@ public class IssueManagementImpl extends POMComponentImpl implements IssueManage
     // attributes
 
     // child elements
+    @Override
     public void accept(POMComponentVisitor visitor) {
         visitor.visit(this);
     }
 
+    @Override
     public String getUrl() {
         return getChildElementText(getModel().getPOMQNames().URL.getQName());
     }
 
+    @Override
     public void setUrl(String url) {
         setChildElementText(getModel().getPOMQNames().URL.getName(), url,
                 getModel().getPOMQNames().URL.getQName());
     }
 
+    @Override
     public String getSystem() {
         return getChildElementText(getModel().getPOMQNames().SYSTEM.getQName());
     }
 
+    @Override
     public void setSystem(String system) {
         setChildElementText(getModel().getPOMQNames().SYSTEM.getName(), system,
                 getModel().getPOMQNames().SYSTEM.getQName());

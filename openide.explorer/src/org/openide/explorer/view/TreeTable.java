@@ -150,9 +150,9 @@ class TreeTable extends JTable implements Runnable {
         setDefaultRenderer(Property.class, tableCell);
         setDefaultEditor(Property.class, tableCell);
         getTableHeader().setDefaultRenderer(tableCell);
-        getAccessibleContext().setAccessibleName(NbBundle.getBundle(TreeTable.class).getString("ACSN_TreeTable")); // NOI18N
+        getAccessibleContext().setAccessibleName(NbBundle.getMessage(TreeTable.class, "ACSN_TreeTable")); // NOI18N
         getAccessibleContext().setAccessibleDescription( // NOI18N
-            NbBundle.getBundle(TreeTable.class).getString("ACSD_TreeTable")); // NOI18N
+            NbBundle.getMessage(TreeTable.class, "ACSD_TreeTable")); // NOI18N
 
         setFocusCycleRoot(true);
         setFocusTraversalPolicy(new STPolicy());
@@ -208,9 +208,9 @@ class TreeTable extends JTable implements Runnable {
             )
         ); // NOI18N
 
-        getAccessibleContext().setAccessibleName(NbBundle.getBundle(TreeTable.class).getString("ACSN_TreeTable")); // NOI18N
+        getAccessibleContext().setAccessibleName(NbBundle.getMessage(TreeTable.class, "ACSN_TreeTable")); // NOI18N
         getAccessibleContext().setAccessibleDescription( // NOI18N
-            NbBundle.getBundle(TreeTable.class).getString("ACSD_TreeTable")); // NOI18N
+            NbBundle.getMessage(TreeTable.class, "ACSD_TreeTable")); // NOI18N
 
         imp.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0, false), "beginEdit");
         getActionMap().put("beginEdit", new EditAction());

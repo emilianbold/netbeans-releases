@@ -503,7 +503,7 @@ public class TreeLoader extends LazyTreeLoader {
                             if (state == 12 || state == 22)
                                 state--;
                         } else if (t == HTML.Tag.TABLE) {
-                            if (state == 11 || state == 22)
+                            if (state == 11 || state == 21)
                                 state--;
                         }
                     }

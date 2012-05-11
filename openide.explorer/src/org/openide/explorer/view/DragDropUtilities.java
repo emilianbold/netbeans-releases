@@ -356,7 +356,7 @@ final class DragDropUtilities extends Object {
     static void dropNotSuccesfull() {
         DialogDisplayer.getDefault().notify(
             new Message(
-                NbBundle.getBundle(TreeViewDropSupport.class).getString("MSG_NoPasteTypes"),
+                NbBundle.getMessage(TreeViewDropSupport.class, "MSG_NoPasteTypes"),
                 NotifyDescriptor.WARNING_MESSAGE
             )
         );
@@ -428,7 +428,7 @@ final class DragDropUtilities extends Object {
 
         menu.addSeparator();
 
-        JMenuItem abortItem = new JMenuItem(NbBundle.getBundle(DragDropUtilities.class).getString("MSG_ABORT"));
+        JMenuItem abortItem = new JMenuItem(NbBundle.getMessage(DragDropUtilities.class, "MSG_ABORT"));
         menu.add(abortItem);
 
         return menu;

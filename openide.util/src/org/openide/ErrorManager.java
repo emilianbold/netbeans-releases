@@ -857,27 +857,33 @@ public abstract class ErrorManager extends Object {
         }
 
         static AnnException findOrCreate(Throwable t, boolean create) {
+            AnnException ann;
+            try {
+                ann = findOrCreate0(t, create);
+            } catch (IllegalStateException x) {
+                assert create;
+                ann = extras.get(t);
+                if (ann == null) {
+                    ann = new AnnException();
+                    ann.initCause(t);
+                    Logger.getLogger(ErrorManager.class.getName()).log(Level.FINE, "getCause was null yet initCause failed for " + t, x);
+                    extras.put(t, ann);
+                }
+            }
+            return ann;
+        }
+
+        private static AnnException findOrCreate0(Throwable t, boolean create) {
             if (t instanceof AnnException) {
-                return (AnnException)t;
+                return (AnnException) t;
             }
             if (t.getCause() == null) {
                 if (create) {
-                    try {
-                        t.initCause(new AnnException());
-                    } catch (IllegalStateException x) {
-                        AnnException ann = extras.get(t);
-                        if (ann == null) {
-                            ann = new AnnException();
-                            ann.initCause(t);
-                            Logger.getLogger(ErrorManager.class.getName()).log(Level.FINE, "getCause was null yet initCause failed for " + t, x);
-                            extras.put(t, ann);
-                        }
-                        return ann;
-                    }
+                    t.initCause(new AnnException());
                 }
-                return (AnnException)t.getCause();
+                return (AnnException) t.getCause();
             }
-            return findOrCreate(t.getCause(), create);
+            return findOrCreate0(t.getCause(), create);
         }
 
         private AnnException() {

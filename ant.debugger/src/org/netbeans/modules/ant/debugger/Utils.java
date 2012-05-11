@@ -150,6 +150,7 @@ public class Utils {
         
         final Annotatable[] a = (Annotatable[]) line;
         SwingUtilities.invokeLater (new Runnable () {
+            @Override
             public void run () {
                 if (a [0] instanceof Line)
                     ((Line) a [0]).show (ShowOpenType.OPEN, ShowVisibilityType.FOCUS);
@@ -202,8 +203,8 @@ public class Utils {
         LineCookie lineCookie;
         try {
             DataObject d = DataObject.find (fileObject);
-            editor = (EditorCookie) d.getCookie (EditorCookie.class);
-            lineCookie = (LineCookie) d.getCookie (LineCookie.class);
+            editor = d.getLookup().lookup (EditorCookie.class);
+            lineCookie = d.getLookup().lookup (LineCookie.class);
             assert editor != null;
             assert lineCookie != null;
         
@@ -216,9 +217,11 @@ public class Utils {
             final int[] line = new int [4];
             class Handler extends DefaultHandler {
                 private Locator locator;
+                @Override
                 public void setDocumentLocator (Locator l) {
                     locator = l;
                 }
+                @Override
                 public void startElement (
                     String uri, 
                     String localname, 
@@ -234,6 +237,7 @@ public class Utils {
                         }
                     }
                 }
+                @Override
                 public void endElement (
                     String uri, 
                     String localname, 
@@ -275,8 +279,8 @@ public class Utils {
         LineCookie lineCookie;
         try {
             DataObject d = DataObject.find (fileObject);
-            editor = (EditorCookie) d.getCookie (EditorCookie.class);
-            lineCookie = (LineCookie) d.getCookie (LineCookie.class);
+            editor = d.getLookup().lookup (EditorCookie.class);
+            lineCookie = d.getLookup().lookup (LineCookie.class);
             assert editor != null;
             assert lineCookie != null;
         } catch (DataObjectNotFoundException e) {
@@ -292,9 +296,11 @@ public class Utils {
             final int[] line = new int [4];
             class Handler extends DefaultHandler {
                 private Locator locator;
+                @Override
                 public void setDocumentLocator (Locator l) {
                     locator = l;
                 }
+                @Override
                 public void startElement (
                     String uri, 
                     String localname, 
@@ -310,6 +316,7 @@ public class Utils {
                         }
                     }
                 }
+                @Override
                 public void endElement (
                     String uri, 
                     String localname, 
@@ -387,6 +394,7 @@ public class Utils {
         final IOException[] ioe = new IOException [1];
         final BadLocationException[] ble = new BadLocationException [1];
         document.render(new Runnable () {
+            @Override
             public void run() {
                 try {
                     kit.write (w, document, 0, document.getLength ());
@@ -421,6 +429,7 @@ public class Utils {
             final EditorKit[] ek = new EditorKit[1];
             try {
                 SwingUtilities.invokeAndWait(new Runnable() {
+                    @Override
                     public void run() {
                         ek[0] = findKit_(editor);
                     }

@@ -44,6 +44,7 @@ package org.netbeans.modules.javafx2.platform.registration;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.javafx2.platform.Utils;
@@ -53,8 +54,11 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Parameters;
 
 /**
- *
+ * Checks registry for entries describing the location of FX SDK and RT.
+ * If found, these entries are uset to create the default FX platform.
+ * 
  * @author Anton Chechel
+ * @author Petr Somol
  */
 public class PlatformAutoInstaller implements Runnable {
 
@@ -62,27 +66,26 @@ public class PlatformAutoInstaller implements Runnable {
 
     @Override
     public void run() {
+        JavaPlatform[] platforms = JavaPlatformManager.getDefault().getInstalledPlatforms();
+        for (JavaPlatform javaPlatform : platforms) {
+            if (JavaFXPlatformUtils.isJavaFXEnabled(javaPlatform)) {
+                return;
+            }
+        }
+        createRegisteredJavaFXPlatform();
+    }
+    
+    @CheckForNull
+    public static JavaPlatform createRegisteredJavaFXPlatform() {
         FileObject installedSDK = findInstalledSDK();
         if (installedSDK == null) {
             LOGGER.log(Level.INFO, "Can't find auto registered JavaFX SDK instance"); // NOI18N
-            return;
-        }
-
-        JavaPlatform[] platforms = JavaPlatformManager.getDefault().getInstalledPlatforms();
-        boolean fxPlatformExists = false;
-        for (JavaPlatform javaPlatform : platforms) {
-            if (JavaFXPlatformUtils.isJavaFXEnabled(javaPlatform)) {
-                fxPlatformExists = true;
-                break;
-            }
-        }
-        
-        if (!fxPlatformExists) {
-            createJavaFXPlatform(installedSDK);
-        }
+            return null;
+        }        
+        return createJavaFXPlatform(installedSDK);
     }
 
-    private FileObject findInstalledSDK() {
+    private static FileObject findInstalledSDK() {
         FileObject installedSDK = null;
         FileObject dir = getRepositoryDir(AutomaticRegistration.CONFIG, false);
         if (dir != null) {
@@ -111,7 +114,8 @@ public class PlatformAutoInstaller implements Runnable {
         return dir;
     }
 
-    private static void createJavaFXPlatform(FileObject installedSDK) {
+    @CheckForNull
+    private static JavaPlatform createJavaFXPlatform(FileObject installedSDK) {
         Parameters.notNull("installedSDK", installedSDK); // NOI18N
 
         // Read installedSKD properties
@@ -119,17 +123,17 @@ public class PlatformAutoInstaller implements Runnable {
         String runtimePath = getStringAttribute(installedSDK, AutomaticRegistration.RUNTIME_ATTR);
         if (sdkPath == null || runtimePath == null) {
             LOGGER.log(Level.FINE, "Can't read attributes from auto registered JavaFX SDK instance: {0}", installedSDK.getPath()); // NOI18N
-            return;
+            return null;
         }
 
         if (sdkPath == null || runtimePath == null) {
             LOGGER.log(Level.FINE, "Can't read attributes from auto registered JavaFX SDK instance: {0}", installedSDK.getPath()); // NOI18N
-            return;
+            return null;
         }
         
         if (!JavaFXPlatformUtils.areJFXLocationsCorrect(sdkPath, runtimePath)) {
             LOGGER.log(Level.FINE, "JavaFX SDK and/or JavaFX Runtime locations are not correct"); // NOI18N
-            return;
+            return null;
         }
 
         // Create java platform instance and register JavaFX platform extension
@@ -142,6 +146,7 @@ public class PlatformAutoInstaller implements Runnable {
         if (platform != null) {
             LOGGER.log(Level.INFO, "JavaFX Platform instance has been successfully registered: {0}", platform); // NOI18N
         }
+        return platform;
     }
 
     private static String getStringAttribute(FileObject fo, String attrName) {

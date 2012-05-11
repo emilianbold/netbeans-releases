@@ -134,9 +134,7 @@ public class JSPDebuggingOverallTest extends J2eeTestCase {
             openProjects(new File(getDataDir(), projects[i]).getAbsolutePath());
             waitScanFinished();
         }
-        // Set as Main Project
-        String setAsMainProjectItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", "LBL_SetAsMainProjectAction_Name");
-        new Action(null, setAsMainProjectItem).perform(new ProjectsTabOperator().getProjectRootNode(SAMPLE_WEB_PROJECT_NAME));
+        new Action("Run|Set Main Project|" + SAMPLE_WEB_PROJECT_NAME, null).perform();
         Utils.suppressBrowserOnRun(SAMPLE_WEB_PROJECT_NAME);
         waitScanFinished();
     }

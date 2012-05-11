@@ -217,6 +217,14 @@ public class DefaultCssEditorModule extends CssEditorModule {
                     case elementName:
                     case cssId:
                     case cssClass:
+                        //Bug 207764 - error syntax highlight
+                        //filter out virtual selectors (@@@)
+                        if(LexerUtils.equals(
+                                org.netbeans.modules.web.common.api.Constants.LANGUAGE_SNIPPET_SEPARATOR,
+                                node.image(), false, false)) {
+                            break; //@@@ node
+                        }
+                        
                         int dso = snapshot.getOriginalOffset(node.from());
                         if (dso == -1) {
                             //try next offset - for virtually created class and id

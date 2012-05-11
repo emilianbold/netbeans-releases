@@ -47,15 +47,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
-import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CoderResult;
-import java.nio.charset.CodingErrorAction;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.search.provider.SearchListener;
 import org.openide.filesystems.FileObject;
-import sun.nio.cs.ThreadLocalCoders;
 
 /**
  * The {@code BufferedCharSequence} class provides the {@code CharSequence}
@@ -140,27 +137,6 @@ public class BufferedCharSequence implements CharSequence {
     private boolean isClosed = false;
     private volatile boolean isTerminated = false;
     private int position = 0; // Invariants: position <= length
-
-    /**
-     * Creates {@code BufferedCharSequence} for the specified {@code stream}.
-     * @param stream is a stream that will be buffered and represented as a
-     *        {@code CharSequence}.
-     * @param charset is a named mapping that will be used to decode a sequence
-     *                of bytes from the {@code stream}.
-     * @param size is the size of the file.
-     * @deprecated tempts to use charset names, use {@link #BufferedCharSequence(java.io.InputStream, java.nio.charset.CharsetDecoder, long) 
-     */
-    @Deprecated
-    public BufferedCharSequence(final InputStream stream, Charset charset, long size) {
-        // TODO charset.name() is used instead of charset due to a bug in the
-        // org.netbeans.api.queries.FileEncodingQuery.ProxyCharset.ProxyDecoder
-        // The IllegalStateException may be thrown after correct actions.
-        // See #169804
-        this(stream,
-            ThreadLocalCoders.decoderFor(charset.name())
-                             .onMalformedInput(CodingErrorAction.REPLACE)
-                             .onUnmappableCharacter(CodingErrorAction.REPLACE), size);
-    }
 
     /**
      * Creates {@code BufferedCharSequence} for the specified {@code stream}.

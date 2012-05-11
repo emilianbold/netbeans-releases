@@ -78,6 +78,7 @@ import org.openide.awt.MouseUtils;
 import org.openide.awt.TabbedPaneFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.nodes.Node;
 import org.openide.text.CloneableEditor;
 import org.openide.text.NbDocument;
 import org.openide.util.*;
@@ -131,7 +132,9 @@ public final class SQLCloneableEditor extends CloneableEditor implements MultiVi
     }
 
     public SQLCloneableEditor(Lookup context) {
-        super(context.lookup(SQLEditorSupport.class), true);
+        super(context.lookup(SQLEditorSupport.class));
+        SQLEditorSupport support = context.lookup(SQLEditorSupport.class);
+        setActivatedNodes(new Node[] {support.getDataObject().getNodeDelegate()});
         putClientProperty("oldInitialize", Boolean.TRUE); // NOI18N
         initialize();
     }

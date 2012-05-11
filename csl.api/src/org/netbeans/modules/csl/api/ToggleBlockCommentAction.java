@@ -187,15 +187,14 @@ public class ToggleBlockCommentAction extends BaseAction {
         }
 
         boolean lineSelection = false;
-        boolean inComment = isInComment(doc, commentHandler, from);
-        if (from == to) {
+        boolean inComment = isInComment(doc, commentHandler, caret.getDot());
+        if (!Utilities.isSelectionShowing(caret)) {
             //no selection
-            if (!inComment) {
                 //check for commenting empty line
-                if (Utilities.isRowEmpty(doc, from) || Utilities.isRowWhite(doc, from)) {
-                    return;
-                }
-
+            if (Utilities.isRowEmpty(doc, from) || Utilities.isRowWhite(doc, from)) {
+                return;
+            }
+            if (!inComment) {
                 //extend the range to the whole line
                 from = Utilities.getFirstNonWhiteFwd(doc, Utilities.getRowStart(doc, from));
                 to = Utilities.getFirstNonWhiteBwd(doc, Utilities.getRowEnd(doc, to)) + 1;
@@ -242,7 +241,7 @@ public class ToggleBlockCommentAction extends BaseAction {
         final int _to = to;
         final boolean _lineSelection = lineSelection;
 
-        int[] commentRange = getCommentRange(comments, _from);
+        int[] commentRange = getCommentRange(comments, _from, commentHandler);
         if (commentRange == null) {
             //comment
             if (!forceDirection(false)) {
@@ -278,13 +277,28 @@ public class ToggleBlockCommentAction extends BaseAction {
         String endDelim = commentHandler.getCommentEndDelimiter();
 
         //put the comment start
-        diff += insert(doc, from, startDelim);
+        boolean startInComment = false;
+        
+        if (comments.length > 0) {
+            int cStart = comments[0];
+            int cEnd = comments[1];
+            
+            if (cStart <= from && cEnd > from) {
+                // the to-be-commented area starts in this comment
+                startInComment = true;
+            }
+        }
+        if (!startInComment) {
+            // insert start comment mark
+            diff += insert(doc, from, startDelim);
+        }
 
         for (int i = 0; i < comments.length; i += 2) {
             int commentStart = comments[i];
             int commentEnd = comments[i + 1];
-
-            diff += remove(doc, commentStart + diff, startDelim.length());
+            if (commentStart >= from) {
+                diff += remove(doc, commentStart + diff, startDelim.length());
+            }
 
             if (commentEnd <= to) {
                 diff += remove(doc, commentEnd + diff - endDelim.length(), endDelim.length());
@@ -368,13 +382,15 @@ public class ToggleBlockCommentAction extends BaseAction {
         return -length;
     }
 
-    private int[] getCommentRange(int[] comments, int offset) {
+    private int[] getCommentRange(int[] comments, int offset, CommentHandler handler) {
+        CharSequence commentEnd = handler.getCommentEndDelimiter();
+        
         //linear search
         for (int i = 0; i < comments.length; i++) {
             int from = comments[i];
             int to = comments[++i];
 
-            if (from <= offset && to > offset) { //end offset exclusive
+            if (from <= offset && to > offset && (commentEnd == null || offset < (to - commentEnd.length()))) { //end offset exclusive
                 return new int[]{from, to};
             }
         }

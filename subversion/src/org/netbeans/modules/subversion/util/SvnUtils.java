@@ -83,6 +83,7 @@ import org.netbeans.modules.versioning.util.FileSelector;
 import org.netbeans.modules.versioning.util.ProjectUtilities;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.cookies.EditorCookie;
+import org.openide.cookies.SaveCookie;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.HelpCtx;
@@ -948,18 +949,24 @@ public class SvnUtils {
         File parent = file.getParentFile();
         parent.mkdirs();
 
+        OutputStream os = null;
+        InputStream is = null;
         try {
             File oldFile = VersionsCache.getInstance().getFileRevision(repoUrl, fileUrl, Long.toString(revision.getNumber()), file.getName());
-            for (int i = 1; i < 7; i++) {
-                if (file.delete()) {
-                    break;
-                }
+            FileObject fo = FileUtil.toFileObject(file);
+            if (fo == null) {
+                fo = FileUtil.toFileObject(parent).createData(file.getName());
+            } else {
+                saveIfModified(fo);
                 try {
-                    Thread.sleep(i * 34);
-                } catch (InterruptedException e) {
+                    // this is weird, but FS needs some time between save and revert so it recognizes the change
+                    Thread.sleep(500);
+                } catch (InterruptedException ex) {
                 }
             }
-            FileUtil.copyFile(FileUtil.toFileObject(oldFile), FileUtil.toFileObject(parent), file.getName(), "");
+            os = fo.getOutputStream();
+            is = FileUtil.toFileObject(oldFile).getInputStream();
+            FileUtil.copy(is, os);
         } catch (IOException e) {
             if (refersToDirectory(e)) {
                 Subversion.LOG.log(Level.FINE, null, e);
@@ -967,8 +974,35 @@ public class SvnUtils {
             } else {
                 Subversion.LOG.log(Level.SEVERE, null, e);
             }
+        } finally {
+            if (os != null) {
+                try { os.close(); } catch (IOException ex) { }
+            }
+            if (is != null) {
+                try { is.close(); } catch (IOException ex) { }
+            }
         }
-    }  
+    }
+
+    public static void saveIfModified (FileObject fo) {
+        try {
+            DataObject reqDO = DataObject.find(fo);
+            Set<DataObject> modifs = DataObject.getRegistry().getModifiedSet();
+            if (modifs.contains(reqDO)) {
+                try {
+                    SaveCookie sc = reqDO.getLookup().lookup(SaveCookie.class);
+                    if (sc != null) {
+                        sc.save();
+                    }
+                } catch (IOException ex) {
+                    Subversion.LOG.log(Level.WARNING, null, ex);
+                }
+            }
+        } catch (DataObjectNotFoundException ex) {
+            // well, what can you do
+            Subversion.LOG.log(Level.FINE, null, ex);
+        }
+    }
     
     private static boolean refersToDirectory (Exception ex) {
         Throwable t = ex;

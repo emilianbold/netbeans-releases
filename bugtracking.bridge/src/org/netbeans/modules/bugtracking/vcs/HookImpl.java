@@ -218,14 +218,14 @@ class HookImpl {
                     break;
                 }
             }
-
-            Issue issue = repo.getIssue(operation.getIssueID());
-            if(issue == null) {
+            
+            Issue[] issues = repo.getIssues(operation.getIssueID());
+            if(issues == null || issues.length == 0) {
                 LOG.log(Level.FINE, " no issue found with id {0}", operation.getIssueID());  // NOI18N
                 continue;
             }
 
-            issue.addComment(operation.getMsg(), operation.isClose());
+            issues[0].addComment(operation.getMsg(), operation.isClose());
         }
         LOG.log(Level.FINE, "push hook end for {0}", file);                     // NOI18N
         VCSHooksConfig.logHookUsage(hookUsageName, getSelectedRepository());             // NOI18N

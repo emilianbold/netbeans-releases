@@ -412,7 +412,7 @@ class TableSheetCell extends AbstractCellEditor implements TableModelListener, P
     }
 
     private static String getString(String key) {
-        return NbBundle.getBundle(TableSheetCell.class).getString(key);
+        return NbBundle.getMessage(TableSheetCell.class, key);
     }
 
     /**

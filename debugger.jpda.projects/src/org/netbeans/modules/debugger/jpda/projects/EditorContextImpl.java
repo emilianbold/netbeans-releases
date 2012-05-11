@@ -1377,7 +1377,13 @@ public class EditorContextImpl extends EditorContext {
     private static String createSignature(ExecutableElement elm) {
         StringBuilder signature = new StringBuilder("(");
         for (VariableElement param : elm.getParameters()) {
-            String paramType = param.asType().toString();
+            TypeMirror pt = param.asType();
+            String paramType;
+            if (pt instanceof DeclaredType) {
+                paramType = ElementUtilities.getBinaryName((TypeElement) ((DeclaredType) pt).asElement());
+            } else {
+                paramType = param.asType().toString();
+            }
             signature.append(getSignature(paramType));
         }
         signature.append(')');

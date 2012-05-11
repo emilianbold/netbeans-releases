@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.refactoring.java.api;
 
+import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -102,6 +103,10 @@ public final class ReplaceConstructorWithBuilderRefactoring extends AbstractRefa
      * @return
      */
     public @NonNull List<Setter> getSetters() {
+        if (setters==null) {
+            //never return null;
+            return Collections.EMPTY_LIST;
+        }
         return setters;
     }
 

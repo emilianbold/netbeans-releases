@@ -99,6 +99,7 @@ public class AnnotationsHolder implements PropertyChangeListener, Runnable {
             }
         }
         if (holder != null) {
+            holder.ec.removePropertyChangeListener(holder);
             holder.task.schedule(0);
         }
     }
@@ -118,12 +119,8 @@ public class AnnotationsHolder implements PropertyChangeListener, Runnable {
      * Annotations that are to be attached to the document.
      * Synchronized by pendingAnnotationsLock.
      */
-    private Collection<BaseAnnotation> pendingAnnotations = null;
+    private final List<BaseAnnotation> pendingAnnotations = new ArrayList<BaseAnnotation>();
 
-    /** 
-     * A lock for accessing pendingAnnotations
-     */
-    private final Object pendingAnnotationsLock = new Object();
     private final ReentrantReadWriteLock attachedAnnotationsLock = new ReentrantReadWriteLock();
     
     private AnnotationsHolder(DataObject file, EditorCookie.Observable ec) {
@@ -154,28 +151,28 @@ public class AnnotationsHolder implements PropertyChangeListener, Runnable {
         //long currentTimeMillis = System.currentTimeMillis();
         // First, clear old annotations.
         // This should be done even if annotations are to be updated again.
-        attachedAnnotationsLock.readLock().lock();
-        try {
-            for (BaseAnnotation a : attachedAnnotations) {
-                a.detachImpl();
-            }
-        } finally {
-            attachedAnnotationsLock.readLock().unlock();
-        }
-        //System.err.println("Removing " + attachedAnnotations.size()+ " annotations.");
-        attachedAnnotationsLock.writeLock().lock();
-        try {
-            attachedAnnotations.clear();
-        } finally {
-            attachedAnnotationsLock.writeLock().unlock();
-        }
-        // Remember pendingAnnotations and set it to null
         Collection<BaseAnnotation> toAdd;
-        synchronized (pendingAnnotationsLock) {
-            toAdd = pendingAnnotations;
-            pendingAnnotations = null;
+        synchronized (pendingAnnotations) {
+            attachedAnnotationsLock.readLock().lock();
+            try {
+                for (BaseAnnotation a : attachedAnnotations) {
+                    a.detachImpl();
+                }
+            } finally {
+                attachedAnnotationsLock.readLock().unlock();
+            }
+            //System.err.println("Removing " + attachedAnnotations.size()+ " annotations.");
+            attachedAnnotationsLock.writeLock().lock();
+            try {
+                attachedAnnotations.clear();
+            } finally {
+                attachedAnnotationsLock.writeLock().unlock();
+            }
+            // Remember pendingAnnotations and set it to null
+            toAdd = new ArrayList<BaseAnnotation>(pendingAnnotations);
+            pendingAnnotations.clear();
         }
-        if (toAdd == null) {
+        if (toAdd.isEmpty()) {
             return;
         }
         for (BaseAnnotation a : toAdd) {
@@ -186,7 +183,7 @@ public class AnnotationsHolder implements PropertyChangeListener, Runnable {
             if (a.attach()) {
                 attachedAnnotationsLock.writeLock().lock();
                 try {
-                    attachedAnnotations.add(a);
+                   attachedAnnotations.add(a);
                 } finally {
                     attachedAnnotationsLock.writeLock().unlock();
                 }
@@ -199,7 +196,7 @@ public class AnnotationsHolder implements PropertyChangeListener, Runnable {
         assert SwingUtilities.isEventDispatchThread();        
         if (ec.getOpenedPanes() == null) {
             //reset:
-            AnnotationsHolder remove = null;
+            AnnotationsHolder remove;
             synchronized (file2holders) {
                 remove = file2holders.remove(file);
                 cancelled.set(true);
@@ -213,10 +210,11 @@ public class AnnotationsHolder implements PropertyChangeListener, Runnable {
         }
     }
     
-    public void setNewAnnotations(Collection<BaseAnnotation> annotations2set) {
+    void setNewAnnotations(Collection<BaseAnnotation> annotations2set) {
         CndUtils.assertNonUiThread();
-        synchronized (pendingAnnotationsLock) {
-            pendingAnnotations = new ArrayList<BaseAnnotation>(annotations2set);
+        synchronized (pendingAnnotations) {
+            pendingAnnotations.clear();
+            pendingAnnotations.addAll(annotations2set);
         }
         task.schedule(0);
     }

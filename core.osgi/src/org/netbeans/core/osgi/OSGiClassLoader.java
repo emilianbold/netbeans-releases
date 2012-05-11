@@ -49,6 +49,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Set;
 import org.openide.util.Enumerations;
 import org.openide.util.NbCollections;
 import org.osgi.framework.Bundle;
@@ -60,17 +61,20 @@ import org.osgi.framework.BundleContext;
 class OSGiClassLoader extends ClassLoader {
 
     private final BundleContext context;
+    private final Set<? extends Bundle> loadedBundles;
     private final Bundle bundle;
 
-    public OSGiClassLoader(BundleContext context) {
+    public OSGiClassLoader(BundleContext context, Set<? extends Bundle> loadedBundles) {
         super(ClassLoader.getSystemClassLoader().getParent());
         this.context = context;
+        this.loadedBundles = loadedBundles;
         bundle = null;
     }
 
     public OSGiClassLoader(Bundle bundle) {
         super(ClassLoader.getSystemClassLoader().getParent());
         context = null;
+        loadedBundles = null;
         this.bundle = bundle;
     }
 
@@ -83,11 +87,22 @@ class OSGiClassLoader extends ClassLoader {
                 // Thrown sometimes by Felix during shutdown. Not clear how to avoid this.
                 return Collections.emptySet();
             }
-            return NbCollections.iterable(Enumerations.filter(Enumerations.array(bundles), new Enumerations.Processor<Bundle,Bundle>() {
+            // Sort framework last so since in Felix 4 its loadClass will search app classpath, causing test failures.
+            // (Tried to disable this using various framework config properties without success.)
+            return NbCollections.iterable(Enumerations.concat(Enumerations.filter(Enumerations.array(bundles), new Enumerations.Processor<Bundle,Bundle>() {
                 public @Override Bundle process(Bundle b, Collection<Bundle> _) {
-                    return b.getState() == Bundle.INSTALLED ? null : b;
+                    if (b.getBundleId() == 0) {
+                        return null;
+                    }
+                    if (b.getState() == Bundle.INSTALLED) {
+                        return null;
+                    }
+                    if (!loadedBundles.contains(b)) {
+                        return null;
+                    }
+                    return b;
                 }
-            }));
+            }), Enumerations.singleton(context.getBundle(0))));
         } else {
             return Collections.singleton(bundle);
         }

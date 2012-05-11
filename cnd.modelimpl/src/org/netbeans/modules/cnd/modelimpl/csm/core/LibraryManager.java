@@ -370,6 +370,7 @@ public final class LibraryManager {
     }
 
     public void onProjectPropertyChanged(ProjectBase project) {
+        project.getGraph().clear();
         CsmUID<CsmProject> uid = project.getUID();
         for (LibraryEntry entry : librariesEntries.values()) {
             Boolean removed = entry.removeProject(uid);

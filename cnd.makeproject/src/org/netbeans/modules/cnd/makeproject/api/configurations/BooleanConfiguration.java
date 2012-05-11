@@ -43,7 +43,7 @@
  */
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
-public class BooleanConfiguration {
+public class BooleanConfiguration implements Cloneable {
 
     private boolean def;
     private boolean value;

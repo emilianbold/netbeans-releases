@@ -61,6 +61,8 @@ public class RefactorActionTest extends J2eeTestCase {
 
     private static final String PROJECT_DIR_NAME = "RefactorTestProject";
     private static boolean firstRun = true;
+    private static boolean unrelatedReferencesHTMLhasRun = false;
+    private static boolean unrelatedReferencesCSShasRun = false;
 
     public RefactorActionTest(String name) {
         super(name);
@@ -116,34 +118,61 @@ public class RefactorActionTest extends J2eeTestCase {
         assertTrue("second html refactored", index2.getText().contains("simple_log"));
     }
 
-    public void testUnrelatedReferencesFromHTML() throws Exception{
-        doRefactoring("metamorph_orange", "index.html", "#header", "#hlavicka", false, true);
+    public void testUnrelatedReferencesFromHTML() throws Exception {
+        if (!RefactorActionTest.unrelatedReferencesCSShasRun) {
+            doRefactoring("metamorph_orange", "index.html", "#header", "#hlavicka", false, true);
 
-        EditorOperator index = openFile("wrestling/index.html");
-        assertFalse("unrelated html refactored", index.getText().contains("header"));
-        assertTrue("unrelated html refactored", index.getText().contains("hlavicka"));
+            EditorOperator index = openFile("wrestling/index.html");
+            assertFalse("unrelated html refactored", index.getText().contains("header"));
+            assertTrue("unrelated html refactored", index.getText().contains("hlavicka"));
 
-        EditorOperator index2 = openFile("wrestling/index2.html");
-        assertFalse("unrelated html refactored", index2.getText().contains("header"));
-        assertTrue("unrelated html refactored", index2.getText().contains("hlavicka"));
+            EditorOperator index2 = openFile("wrestling/index2.html");
+            assertFalse("unrelated html refactored", index2.getText().contains("header"));
+            assertTrue("unrelated html refactored", index2.getText().contains("hlavicka"));
+        } else {
+            doRefactoring("metamorph_orange", "index.html", "#zahlavi", "#hlavicka", false, true);
+
+            EditorOperator index = openFile("wrestling/index.html");
+            assertFalse("unrelated html refactored", index.getText().contains("zahlavi"));
+            assertTrue("unrelated html refactored", index.getText().contains("hlavicka"));
+
+            EditorOperator index2 = openFile("wrestling/index2.html");
+            assertFalse("unrelated html refactored", index2.getText().contains("zahlavi"));
+            assertTrue("unrelated html refactored", index2.getText().contains("hlavicka"));
+        }
+
+        RefactorActionTest.unrelatedReferencesHTMLhasRun = true;
     }
 
-    public void testUnrelatedReferencesFromCSS() throws Exception{
-        doRefactoring("metamorph_orange", "style.css", "#hlavicka", "#zahlavi", false, true);
+    public void testUnrelatedReferencesFromCSS() throws Exception {
+        if (RefactorActionTest.unrelatedReferencesHTMLhasRun) {
+            doRefactoring("metamorph_orange", "style.css", "#hlavicka", "#zahlavi", false, true);
 
-        EditorOperator index = openFile("wrestling/index.html");
-        assertFalse("unrelated html refactored", index.getText().contains("hlavicka"));
-        assertTrue("unrelated html refactored", index.getText().contains("zahlavi"));
+            EditorOperator index = openFile("wrestling/index.html");
+            assertFalse("unrelated html refactored", index.getText().contains("hlavicka"));
+            assertTrue("unrelated html refactored", index.getText().contains("zahlavi"));
 
-        EditorOperator index2 = openFile("wrestling/index2.html");
-        assertFalse("unrelated html refactored", index2.getText().contains("hlavicka"));
-        assertTrue("unrelated html refactored", index2.getText().contains("zahlavi"));
+            EditorOperator index2 = openFile("wrestling/index2.html");
+            assertFalse("unrelated html refactored", index2.getText().contains("hlavicka"));
+            assertTrue("unrelated html refactored", index2.getText().contains("zahlavi"));
+        } else {
+            doRefactoring("metamorph_orange", "style.css", "#header", "#zahlavi", false, true);
+
+            EditorOperator index = openFile("wrestling/index.html");
+            assertFalse("unrelated html refactored", index.getText().contains("header"));
+            assertTrue("unrelated html refactored", index.getText().contains("zahlavi"));
+
+            EditorOperator index2 = openFile("wrestling/index2.html");
+            assertFalse("unrelated html refactored", index2.getText().contains("header"));
+            assertTrue("unrelated html refactored", index2.getText().contains("zahlavi"));
+        }
+        RefactorActionTest.unrelatedReferencesCSShasRun = true;
     }
 
     public void testIssue180215() throws Exception {// cycle reference
         doRefactoring("wrestling", "newcss.css", "root", "leaf", true, false);
     }
-
+    
     private void doRefactoring(String directory, String refactoredFileName, String oldValue, String newValue) throws Exception {
         doRefactoring(directory, refactoredFileName, oldValue, newValue, false, false);
     }

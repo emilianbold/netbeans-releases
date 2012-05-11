@@ -64,24 +64,29 @@ public class ActivationPropertyImpl extends SettingsComponentImpl implements Act
 
     // child elements
 
+    @Override
     public String getName() {
         return getChildElementText(getModel().getSettingsQNames().NAME.getQName());
     }
 
+    @Override
     public void setName(String name) {
         setChildElementText(getModel().getSettingsQNames().NAME.getName(), name,
                 getModel().getSettingsQNames().NAME.getQName());
     }
 
+    @Override
     public String getValue() {
         return getChildElementText(getModel().getSettingsQNames().VALUE.getQName());
     }
 
+    @Override
     public void setValue(String value) {
         setChildElementText(getModel().getSettingsQNames().VALUE.getName(), value,
                 getModel().getSettingsQNames().VALUE.getQName());
     }
 
+    @Override
     public void accept(SettingsComponentVisitor visitor) {
         visitor.visit(this);
     }

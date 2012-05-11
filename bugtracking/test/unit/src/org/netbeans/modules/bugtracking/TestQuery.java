@@ -43,9 +43,7 @@ package org.netbeans.modules.bugtracking;
 
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.spi.QueryProvider;
-import org.openide.nodes.Node;
+import org.netbeans.modules.bugtracking.spi.QueryController;
 
 /**
  *
@@ -57,7 +55,7 @@ public abstract class TestQuery {
 
     public abstract String getTooltip();
 
-    public abstract BugtrackingController getController();
+    public abstract QueryController getController();
 
     public abstract boolean isSaved();
 
@@ -69,6 +67,8 @@ public abstract class TestQuery {
 
     public abstract void addPropertyChangeListener(PropertyChangeListener listener);
 
-    public abstract void setContext(Node[] nodes);
+    public abstract void remove();
+
+    public abstract void refresh();
     
 }

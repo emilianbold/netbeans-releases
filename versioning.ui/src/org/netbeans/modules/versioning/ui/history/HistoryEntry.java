@@ -55,6 +55,7 @@ import org.netbeans.modules.versioning.core.util.Utils;
 class HistoryEntry {
     private final VCSHistoryProvider.HistoryEntry entry;
     private final boolean local;
+    private HistoryEntry parent;
 
     HistoryEntry(VCSHistoryProvider.HistoryEntry entry, boolean local) {
         this.entry = entry;
@@ -118,8 +119,11 @@ class HistoryEntry {
     }
     
     public HistoryEntry getParent(VCSFileProxy file) {
-        VCSHistoryProvider.HistoryEntry parent = entry.getParentEntry(file);
-        return parent != null ? new HistoryEntry(parent, local) : null;
+        if(parent == null) {
+            VCSHistoryProvider.HistoryEntry vcsParent = entry.getParentEntry(file);
+            parent = vcsParent != null ? new HistoryEntry(vcsParent, local) : null;
+        }
+        return parent;
     }
     
     public boolean isLocalHistory() {

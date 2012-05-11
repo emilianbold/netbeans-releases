@@ -153,10 +153,10 @@ public class MenuView extends JPanel {
     public MenuView() {
         setLayout(new java.awt.FlowLayout());
 
-        root = new JButton(NbBundle.getBundle(MenuView.class).getString("MenuViewStartFromRoot"));
+        root = new JButton(NbBundle.getMessage(MenuView.class, "MenuViewStartFromRoot"));
         add(root);
 
-        current = new JButton(NbBundle.getBundle(MenuView.class).getString("MenuViewStartFromCurrent"));
+        current = new JButton(NbBundle.getMessage(MenuView.class, "MenuViewStartFromCurrent"));
         add(current);
 
         init();

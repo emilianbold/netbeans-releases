@@ -74,9 +74,11 @@ import org.netbeans.modules.csl.api.Rule.ErrorRule;
 import org.netbeans.modules.csl.api.Rule.SelectionRule;
 import org.netbeans.modules.csl.api.Rule.UserConfigurableRule;
 import org.netbeans.modules.csl.api.RuleContext;
+import org.netbeans.modules.csl.hints.GsfHintsFactory;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -87,6 +89,7 @@ import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -551,65 +554,85 @@ public class GsfHintsManager extends HintsProvider.HintsManager {
     }
     
     public final void refreshHints(RuleContext context) {
-        List<ErrorDescription> result = getHints(this, context);
-        HintsController.setErrors(context.parserResult.getSnapshot().getSource().getFileObject(),
-                context.caretOffset == -1 ? HintsTask.class.getName() : SuggestionsTask.class.getName(), result);
+        List<ErrorDescription>[] result = new List[3];
+        getHints(this, context, result, context.parserResult.getSnapshot());
+        FileObject f = context.parserResult.getSnapshot().getSource().getFileObject();
+        if (result[0] != null) {
+            HintsController.setErrors(f, HintsTask.class.getName(), result[0]);
+        }
+        if (result[1] != null) {
+            HintsController.setErrors(f, SuggestionsTask.class.getName(), result[1]);
+        }
+        if (result[2] != null) {
+            HintsController.setErrors(f, GsfHintsFactory.LAYER_NAME, result[2]);
+        }
     }
     
-    private static final List<ErrorDescription> getHints(GsfHintsManager hintsManager, RuleContext context) {
-        int caretPos = context.caretOffset;
-        HintsProvider provider = hintsManager.provider;
+    private static final void getHints(GsfHintsManager hintsManager, RuleContext context, List<ErrorDescription>[] ret, Snapshot tls) {
+        if (hintsManager != null && context != null) {
+            int caretPos = context.caretOffset;
+            HintsProvider provider = hintsManager.provider;
 
-        // Force a refresh
-        // HACK ALERT!
-        List<Hint> descriptions = new ArrayList<Hint>();
-        if (caretPos == -1) {
-            provider.computeHints(hintsManager, context, descriptions);
-            List<ErrorDescription> result = new ArrayList<ErrorDescription>(descriptions.size());
-            for (int i = 0; i < descriptions.size(); i++) {
-                Hint desc = descriptions.get(i);
-                boolean allowDisable = true;
-                ErrorDescription errorDesc = hintsManager.createDescription(desc, context, allowDisable, i == descriptions.size()-1);
-                result.add(errorDesc);
+            // Force a refresh
+            // HACK ALERT!
+            if (provider != null) {
+                List<Hint> descriptions = new ArrayList<Hint>();
+                if (caretPos == -1) {
+                    provider.computeHints(hintsManager, context, descriptions);
+                    List<ErrorDescription> result = ret[0] == null ? new ArrayList<ErrorDescription>(descriptions.size()) : ret[0];
+                    for (int i = 0; i < descriptions.size(); i++) {
+                        Hint desc = descriptions.get(i);
+                        boolean allowDisable = true;
+                        ErrorDescription errorDesc = hintsManager.createDescription(desc, context, allowDisable, i == descriptions.size()-1);
+                        result.add(errorDesc);
+                    }
+
+                    ret[0] = result;
+                } else {
+                    provider.computeSuggestions(hintsManager, context, descriptions, caretPos);
+                    List<ErrorDescription> result = ret[1] == null ? new ArrayList<ErrorDescription>(descriptions.size()) : ret[1];
+                    for (int i = 0; i < descriptions.size(); i++) {
+                        Hint desc = descriptions.get(i);
+                        boolean allowDisable = true;                
+                        ErrorDescription errorDesc = hintsManager.createDescription(desc, context, allowDisable, i == descriptions.size()-1);
+                        result.add(errorDesc);
+                    }
+
+                    ret[1] = result;
+                }
             }
-
-            return result;
-        } else {
-            provider.computeSuggestions(hintsManager, context, descriptions, caretPos);
-            List<ErrorDescription> result = new ArrayList<ErrorDescription>(descriptions.size());
-            for (int i = 0; i < descriptions.size(); i++) {
-                Hint desc = descriptions.get(i);
-                boolean allowDisable = true;                
-                ErrorDescription errorDesc = hintsManager.createDescription(desc, context, allowDisable, i == descriptions.size()-1);
-                result.add(errorDesc);
-            }
-
-            return result;
         }
-        // TODO - compute errors as well
+        try {
+           ret[2] = GsfHintsFactory.getErrors(context.parserResult.getSnapshot(), context.parserResult, tls);
+        } catch (ParseException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
 
     static final void refreshHints(ResultIterator controller) {
-        List<ErrorDescription> allHints = new ArrayList<ErrorDescription>();
-        collectHints(controller, allHints);
+        List<ErrorDescription>[] allHints = new ArrayList[3];
+        collectHints(controller, allHints, controller.getSnapshot());
         FileObject f = controller.getSnapshot().getSource().getFileObject();
         if (f != null) {
-            HintsController.setErrors(f, HintsTask.class.getName(), allHints);
+            if (allHints[0] != null) {
+                HintsController.setErrors(f, HintsTask.class.getName(), allHints[0]);
+            }
+            if (allHints[1] != null) {
+                HintsController.setErrors(f, SuggestionsTask.class.getName(), allHints[1]);
+            }
+            if (allHints[2] != null) {
+                HintsController.setErrors(f, GsfHintsFactory.LAYER_NAME, allHints[2]);
+            }
         } else {
             LOG.warning("Source " + controller.getSnapshot().getSource() + " returns null from getFileObject()"); // NOI18N
         }
     }
 
-    private static void collectHints(ResultIterator controller, List<ErrorDescription> allHints) {
+    private static void collectHints(ResultIterator controller, List<ErrorDescription>[] allHints, Snapshot tls) {
         String mimeType = controller.getSnapshot().getMimeType();
         Language language = LanguageRegistry.getInstance().getLanguageByMimeType(mimeType);
         if (language == null) {
-            return;
-        }
-
-        HintsProvider provider = language.getHintsProvider();
-        if (provider == null) {
             return;
         }
 
@@ -629,12 +652,26 @@ public class GsfHintsManager extends HintsProvider.HintsManager {
         
         GsfHintsManager hintsManager = language.getHintsManager();
         RuleContext context = hintsManager.createRuleContext(parserResult, language, -1, -1, -1);
-        List<ErrorDescription> hints = getHints(hintsManager, context);
-        allHints.addAll(hints);
+        List<ErrorDescription>[] hints = new List[3];
+        getHints(hintsManager, context, hints, tls);
+        for (int i = 0; i < 3; i++) {
+            allHints[i] = merge(allHints[i], hints[i]);
+        }
 
         for(Embedding e : controller.getEmbeddings()) {
-            collectHints(controller.getResultIterator(e), allHints);
+            collectHints(controller.getResultIterator(e), allHints, tls);
         }
+    }
+    
+    private static List<ErrorDescription> merge(List<ErrorDescription> a, List<ErrorDescription> b) {
+        if (a == null) {
+            return b;
+        } else if (b == null) {
+            return a;
+        }
+        // assume a is mutable
+        a.addAll(b);
+        return a;
     }
 
     public RuleContext createRuleContext (ParserResult parserResult, Language language, int caretOffset, int selectionStart, int selectionEnd) {

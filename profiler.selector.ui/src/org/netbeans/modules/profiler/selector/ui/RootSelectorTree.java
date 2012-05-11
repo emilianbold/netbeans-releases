@@ -69,7 +69,6 @@ import org.netbeans.lib.profiler.utils.formatting.DefaultMethodNameFormatter;
 import org.netbeans.lib.profiler.utils.formatting.MethodNameFormatterFactory;
 import org.netbeans.modules.profiler.api.GestureSubmitter;
 import org.netbeans.modules.profiler.api.ProfilerDialogs;
-import org.netbeans.modules.profiler.api.java.SourceClassInfo;
 import org.netbeans.modules.profiler.api.java.SourceMethodInfo;
 import org.netbeans.modules.profiler.selector.api.nodes.*;
 import org.netbeans.modules.profiler.selector.spi.SelectionTreeBuilder;
@@ -78,7 +77,6 @@ import org.netbeans.modules.profiler.utilities.trees.NodeFilter;
 import org.openide.util.Cancellable;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -95,6 +93,21 @@ import org.openide.util.lookup.Lookups;
 })
 public class RootSelectorTree extends JPanel {
     final private static MethodNameFormatterFactory methodFormatterFactory = MethodNameFormatterFactory.getDefault(new DefaultMethodNameFormatter(DefaultMethodNameFormatter.VERBOSITY_FULLCLASSMETHOD));
+    final private static Comparator<SourceCodeSelection> containmentComparator = new Comparator<SourceCodeSelection>() {
+        @Override
+        public int compare(SourceCodeSelection o1, SourceCodeSelection o2) {
+            if (o1 == null && o2 != null) return 1;
+            if (o1 != null && o2 == null) return -1;
+            if (o1 == null && o2 == null) return 0;
+
+            if (o1.equals(o2)) return 0;
+            if (o1.contains(o2)) return -1;
+            if (o2.contains(o1)) return 1;
+
+            return o1.toFlattened().compareTo(o2.toFlattened());
+        }
+    };
+    
     private JCheckTree tree = new JCheckTree() {
         @Override
         public String getToolTipText(MouseEvent event) {
@@ -254,6 +267,20 @@ public class RootSelectorTree extends JPanel {
     }
 
     public SourceCodeSelection[] getSelection() {
+        if (currentSelectionSet.isEmpty()) return new SourceCodeSelection[0];
+        
+        List<SourceCodeSelection> selectionList = new ArrayList<SourceCodeSelection>(currentSelectionSet);
+        
+        Collections.sort(selectionList, containmentComparator);
+        
+        currentSelectionSet.clear();
+        SourceCodeSelection parentSel = null;
+        for(SourceCodeSelection scs : selectionList) {
+            if (parentSel == null || !parentSel.contains(scs)) {
+                parentSel = scs;
+                currentSelectionSet.add(scs);
+            }
+        }        
         return currentSelectionSet.toArray(new SourceCodeSelection[currentSelectionSet.size()]);
     }
 

@@ -42,6 +42,7 @@
 package org.netbeans.modules.refactoring.spi.impl;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.text.Document;
@@ -161,11 +162,18 @@ public class UndoableWrapper implements UndoableEditWrapper {
 
         @Override
         public boolean addEdit(UndoableEdit ue) {
-            if (ue instanceof UndoableEditDelegate) {
-                return inner.addEdit(((UndoableEditDelegate) ue).unwrap());
+            if (ue instanceof List) {
+                List<UndoableEdit> listEdit = (List<UndoableEdit>) ue;
+                UndoableEdit topEdit = listEdit.get(listEdit.size() - 1);
+                // Check that there's only original document's edit and the wrapping refactoring edit
+                boolean refatoringEditOnly = listEdit.size() == 2;
+                if (refatoringEditOnly && topEdit instanceof UndoableEditDelegate) {
+                    inner.addEdit(listEdit.get(0));
+                    return true;
             }
             return false;
-            //return delegate.addEdit(ue);
+        }
+            return false;
         }
         
         public UndoableEdit unwrap() {

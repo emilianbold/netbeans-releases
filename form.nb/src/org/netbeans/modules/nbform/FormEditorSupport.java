@@ -355,7 +355,16 @@ public class FormEditorSupport extends DataEditorSupport implements EditorSuppor
 
     @Override
     public void openDesign() {
-        openFormEditor(true);
+        if (EventQueue.isDispatchThread()) {
+            openFormEditor(true);
+        } else {
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    openFormEditor(true);
+                }
+            });
+        }
     }
 
     /** Overriden from JavaEditor - opens editor and ensures it is selected

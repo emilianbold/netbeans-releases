@@ -44,7 +44,10 @@ package org.netbeans.modules.cloud.oracle.ui;
 import java.awt.Component;
 import java.beans.BeanInfo;
 import java.io.File;
+import java.lang.reflect.Field;
+import java.net.Authenticator;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -59,13 +62,10 @@ import org.netbeans.modules.cloud.common.spi.support.ui.ServerResourceDescriptor
 import org.netbeans.modules.cloud.oracle.OracleInstance;
 import org.netbeans.modules.cloud.oracle.OracleInstanceManager;
 import org.netbeans.modules.cloud.oracle.serverplugin.OracleJ2EEInstance;
+import org.netbeans.modules.j2ee.weblogic9.DomainSupport;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
-import org.openide.util.ChangeSupport;
-import org.openide.util.HelpCtx;
-import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
+import org.openide.util.*;
 
 /**
  *
@@ -75,10 +75,9 @@ public class OracleWizardPanel implements WizardDescriptor.AsynchronousValidatin
     public static final String USERNAME = "username"; // String
     public static final String PASSWORD = "password"; // String
     public static final String ADMIN_URL = "admin-url"; // List<Node>
-    public static final String INSTANCE_URL = "instance-url"; // List<Node>
-    public static final String CLOUD_URL = "cloud-url"; // List<Node>
-    public static final String SERVICE_GROUP = "service-group"; // List<Node>
-    public static final String SERVICE_NAME = "service-name"; // List<Node>
+    public static final String IDENTITY_DOMAIN = "identity-domain"; // List<Node>
+    public static final String JAVA_SERVICE_NAME = "java-service-name"; // List<Node>
+    public static final String DB_SERVICE_NAME = "db-service-name"; // List<Node>
     public static final String SDK = "sdk"; // String
     
     private OracleWizardComponent component;
@@ -121,17 +120,21 @@ public class OracleWizardPanel implements WizardDescriptor.AsynchronousValidatin
             settings.putProperty(USERNAME, component.getUserName());
             settings.putProperty(PASSWORD, component.getPassword());
             settings.putProperty(ADMIN_URL, component.getAdminUrl());
-            settings.putProperty(INSTANCE_URL, component.getInstanceUrl());
-            settings.putProperty(CLOUD_URL, component.getCloudUrl());
-            settings.putProperty(SERVICE_GROUP, component.getIdentityDomain());
-            settings.putProperty(SERVICE_NAME, component.getServiceInstance());
+            settings.putProperty(IDENTITY_DOMAIN, component.getIdentityDomain());
+            settings.putProperty(JAVA_SERVICE_NAME, component.getJavaServiceName());
+            settings.putProperty(DB_SERVICE_NAME, component.getDatabaseServiceName());
             settings.putProperty(SDK, component.getSDKFolder());
             settings.putProperty(CloudResourcesWizardPanel.PROP_SERVER_RESOURCES, servers);
+            setWarningMessage("");
         }
     }
 
     public void setErrorMessage(String message) {
         wd.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
+    }
+    
+    public void setWarningMessage(String message) {
+        wd.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, message);
     }
     
     @Override
@@ -141,14 +144,20 @@ public class OracleWizardPanel implements WizardDescriptor.AsynchronousValidatin
         }
         String error = performValidation();
         setErrorMessage(error);
-        return error.length() == 0;
+        if (error.length() > 0) {
+            return false;
+        }
+        if (DomainSupport.getUsableDomainInstances(null).isEmpty()) {
+            setWarningMessage(NbBundle.getMessage(OracleWizardPanel.class, "OracleWizardPanel.noWeblogic"));
+        }    
+        return true;
     }
     
     private String performValidation() {
         if (component == null || wd == null) {
             // ignore this case
             return "";
-        } else if (component.getServiceInstance().trim().length() == 0) {
+        } else if (component.getJavaServiceName().trim().length() == 0) {
             return NbBundle.getMessage(OracleWizardPanel.class, "OracleWizardPanel.missingServiceInstance");
         } else if (component.getIdentityDomain().trim().length() == 0) {
             return NbBundle.getMessage(OracleWizardPanel.class, "OracleWizardPanel.missingIdentityDomain");
@@ -162,12 +171,8 @@ public class OracleWizardPanel implements WizardDescriptor.AsynchronousValidatin
             return NbBundle.getMessage(OracleWizardPanel.class, "OracleWizardPanel.wrongSDK");
         } else if (component.getAdminUrl().trim().length() == 0) {
             return NbBundle.getMessage(OracleWizardPanel.class, "OracleWizardPanel.missingAdminUrl");
-        } else if (component.getInstanceUrl().trim().length() == 0) {
-            return NbBundle.getMessage(OracleWizardPanel.class, "OracleWizardPanel.missingInstanceUrl");
-        } else if (component.getCloudUrl().trim().length() == 0) {
-            return NbBundle.getMessage(OracleWizardPanel.class, "OracleWizardPanel.missingCloudUrl");
         } else if (OracleInstanceManager.getDefault().exist(component.getAdminUrl(), component.getIdentityDomain(), 
-                component.getServiceInstance(), component.getUserName())) {
+                component.getJavaServiceName(), OracleWizardComponent.getPrefixedUserName(component.getIdentityDomain(), component.getUserName()))) {
             return NbBundle.getMessage(OracleWizardPanel.class, "OracleWizardPanel.alreadyRegistered");
         }
         return "";
@@ -205,8 +210,9 @@ public class OracleWizardPanel implements WizardDescriptor.AsynchronousValidatin
             
             servers = new ArrayList<ServerResourceDescriptor>();
             OracleInstance ai = new OracleInstance("Oracle Cloud", OracleWizardComponent.getPrefixedUserName(component.getIdentityDomain(), component.getUserName()), 
-                    component.getPassword(), component.getAdminUrl(), component.getInstanceUrl(),
-                    component.getCloudUrl(), component.getIdentityDomain(), component.getServiceInstance(), null, component.getSDKFolder());
+                    component.getPassword(), component.getAdminUrl(),
+                    component.getIdentityDomain(), component.getJavaServiceName(), component.getDatabaseServiceName(), null, component.getSDKFolder());
+            Authenticator auth = resetCurrentAuthenticator();
             try {
                 ai.testConnection();
             } catch (SDKException ex) {
@@ -224,6 +230,10 @@ public class OracleWizardPanel implements WizardDescriptor.AsynchronousValidatin
                 asynchError = NbBundle.getMessage(OracleWizardPanel.class, "OracleWizardPanel.something.wrong");
                 throw new WizardValidationException((JComponent)getComponent(), 
                         "connection exception", asynchError);
+            } finally {
+                if (auth != null) {
+                    Authenticator.setDefault(auth);
+                }
             }
             OracleJ2EEInstance instance = ai.readJ2EEServerInstance();
             OracleJ2EEInstanceNode n = new OracleJ2EEInstanceNode(instance, true);
@@ -232,6 +242,54 @@ public class OracleWizardPanel implements WizardDescriptor.AsynchronousValidatin
             component.setCursor(null);
             component.disableModifications(false);
         }
+    }
+    
+    public static boolean testPassword(String identityDomain, String user, String pwd, 
+            String adminURL, String sdkFolder) {
+        OracleInstance ai = new OracleInstance("Oracle Cloud", 
+                OracleWizardComponent.getPrefixedUserName(identityDomain, user), 
+                pwd, adminURL, identityDomain, "", "", null, sdkFolder);
+        Authenticator auth = resetCurrentAuthenticator();
+        try {
+            ai.testConnection();
+            return true;
+        } catch (SDKException ex) {
+            LOG.log(Level.FINE, "cannot access SDK", ex);
+        } catch (ManagerException ex) {
+            LOG.log(Level.FINE, "cannot connect to oracle cloud", ex);
+        } catch (Throwable t) {
+            LOG.log(Level.FINE, "cannot connect", t);
+        } finally {
+            if (auth != null) {
+                Authenticator.setDefault(auth);
+            }
+        }
+        return false;
+    }
+    
+    /**
+     * Uses reflection to retrieve current Authenticator. 
+     * 
+     * @return null can have two meanings - the original authentication could not
+     *  have been read or is null; do nothing in such case
+     */
+    private static Authenticator resetCurrentAuthenticator() {
+        try {
+            Field f = Authenticator.class.getDeclaredField("theAuthenticator"); // NOI18N
+            f.setAccessible(true);
+            Authenticator current = (Authenticator)f.get(null);
+            Authenticator.setDefault(null);
+            return current;
+        } catch (IllegalArgumentException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IllegalAccessException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (NoSuchFieldException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (SecurityException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
     }
 
     @Override

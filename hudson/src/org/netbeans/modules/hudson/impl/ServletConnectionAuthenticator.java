@@ -87,21 +87,30 @@ public class ServletConnectionAuthenticator implements ConnectionAuthenticator {
             String[] auth = aa.authorize(home);
             if (auth != null) {
                 LOGGER.log(Level.FINE, "Got authorization for {0} on {1} from {2}", new Object[] {auth[0], home, aa});
-                for (String realmURI : new String[] {"j_acegi_security_check", "j_security_check"}) { // NOI18N
+                for (String realmURI : new String[] {"j_spring_security_check", "j_acegi_security_check", "j_security_check"}) { // NOI18N
                     try {
                         LOGGER.log(Level.FINER, "Posting authentication to {0}", realmURI);
+                        if (realmURI.equals("j_security_check")) { // #193066: indulge org.apache.catalina.authenticator.FormAuthenticator
+                            new ConnectionBuilder().url(new URL(home, "loginEntry")).homeURL(home).authentication(false).connection();
+                        }
                         new ConnectionBuilder().url(new URL(home, realmURI)).
                                 postData(("j_username=" + URLEncoder.encode(auth[0], "UTF-8") + "&j_password=" + // NOI18N
                                 URLEncoder.encode(auth[1], "UTF-8")).getBytes("UTF-8")). // NOI18N
-                                homeURL(home).authentication(false).followRedirects(false).connection();
+                                homeURL(home).authentication(false).connection();
                         LOGGER.log(Level.FINER, "Posted authentication to {0} worked", realmURI);
                         try {
                             InputStream is = new ConnectionBuilder().url(new URL(home, "crumbIssuer/api/xml?xpath=concat(//crumbRequestField,'=',//crumb)")).homeURL(home).connection().getInputStream();
                             try {
                                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                                 FileUtil.copy(is, baos);
-                                LOGGER.log(Level.FINER, "Received crumb: {0}", baos);
-                                crumbs.put(home.toString(), baos.toString().split("=", 2));
+                                String crumb = baos.toString("UTF-8");
+                                String[] crumbA = crumb.split("=", 2);
+                                if (crumbA.length == 2 && crumbA[0].indexOf('\n') == -1) {
+                                    LOGGER.log(Level.FINER, "Received crumb: {0}", crumb);
+                                    crumbs.put(home.toString(), crumbA);
+                                } else {
+                                    LOGGER.log(Level.WARNING, "Bad crumb response: {0}", crumb);
+                                }
                             } finally {
                                 is.close();
                             }

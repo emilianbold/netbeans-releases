@@ -42,40 +42,111 @@
 
 package org.netbeans.modules.project.indexingbridge;
 
-import java.util.concurrent.Callable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.util.Lookup;
 
 /**
- * @see org.netbeans.modules.parsing.api.indexing.IndexingManager
+ * Allows parser indexing to be temporarily suppressed.
+ * Unlike {@code org.netbeans.modules.parsing.api.indexing.IndexingManager}
+ * this is not block-scoped. Every call to {@link #protectedMode} must
+ * eventually be matched by exactly one call to {@link Lock#release}.
+ * It is irrelevant which thread makes each call. It is permissible to make
+ * multiple enter calls so long as each lock is released.
  */
 public abstract class IndexingBridge {
 
+    private static final Logger LOG = Logger.getLogger(IndexingBridge.class.getName());
+
     protected IndexingBridge() {}
 
-    public abstract <T> T runProtected(Callable<T> operation) throws Exception;
-
-    public final void runProtected(final Runnable operation) {
-        try {
-            runProtected(new Callable<Void>() {
-                @Override public Void call() throws Exception {
-                    operation.run();
-                    return null;
-                }
-            });
-        } catch (RuntimeException x) {
-            throw x;
-        } catch (Exception x) {
-            throw new AssertionError(x);
+    /**
+     * Begin suppression of indexing.
+     * @return a lock indicating when to resume indexing
+     */
+    public final Lock protectedMode() {
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, null, new Throwable("IndexingBridge.protectedMode"));
         }
+        enterProtectedMode();
+        return new Lock();
     }
 
+    /**
+     * @see #protectedMode
+     */
+    public final class Lock {
+
+        private final Stack creationStack = new Stack("locked here");
+        private Stack releaseStack;
+
+        /**
+         * End suppression of indexing.
+         * Indexing may resume if this is the last matching call.
+         */
+        public void release() {
+            synchronized (IndexingBridge.this) {
+                if (releaseStack != null) {
+                    LOG.log(Level.WARNING, null, new IllegalStateException("Attempted to release lock twice", releaseStack));
+                    return;
+                }
+                releaseStack = new Stack("released here", creationStack);
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, null, new Throwable("IndexingBridge.Lock.release"));
+                }
+            }
+            exitProtectedMode();
+        }
+
+        @SuppressWarnings("FinalizeDeclaration")
+        @Override protected void finalize() throws Throwable {
+            super.finalize();
+            synchronized (IndexingBridge.this) {
+                if (releaseStack != null) {
+                    return;
+                }
+                LOG.log(Level.WARNING, "Unreleased lock", creationStack);
+                releaseStack = new Stack("released here", creationStack);
+            }
+            exitProtectedMode();
+        }
+        
+    }
+
+    /**
+     * SPI to enter protected mode semaphore. Will be matched eventually by one call to {@link #exitProtectedMode}.
+     */
+    protected abstract void enterProtectedMode();
+
+    /**
+     * SPI to exit protected mode semaphore. Will follow one call to {@link #enterProtectedMode}.
+     */
+    protected abstract void exitProtectedMode();
+
+    /**
+     * Gets the registered singleton of the bridge.
+     * If none is registered, a dummy implementation is produced which tracks lock usage but does nothing else.
+     */
     public static IndexingBridge getDefault() {
         IndexingBridge b = Lookup.getDefault().lookup(IndexingBridge.class);
         return b != null ? b : new IndexingBridge() {
-            @Override public <T> T runProtected(Callable<T> operation) throws Exception {
-                return operation.call();
-            }
+            @Override protected void enterProtectedMode() {}
+            @Override protected void exitProtectedMode() {}
         };
+    }
+
+    private static final class Stack extends Throwable {
+        Stack(String msg) {
+            super(msg);
+        }
+        Stack(String msg, Stack prior) {
+            super(msg, prior);
+        }
+        @Override public synchronized Throwable fillInStackTrace() {
+            boolean asserts = false;
+            assert asserts = true;
+            return asserts ? super.fillInStackTrace() : this;
+        }
     }
 
 }

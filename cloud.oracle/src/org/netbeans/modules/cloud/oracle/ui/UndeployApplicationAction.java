@@ -59,7 +59,7 @@ public class UndeployApplicationAction extends AbstractApplicationNodeAction {
     
     @Override
     protected boolean isAppInRightState(Application app) {
-        return ApplicationState.STATE_RETIRED != app.getState();
+        return ApplicationState.STATE_RETIRED != app.getState() && ApplicationState.STATE_UPDATE_PENDING != app.getState();
     }
 
     @Override

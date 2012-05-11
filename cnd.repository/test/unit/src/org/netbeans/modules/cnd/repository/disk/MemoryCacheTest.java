@@ -143,24 +143,26 @@ public class MemoryCacheTest extends NbTestCase {
                 }
                 double d = Math.random();
                 int k = (int) (max_key * d);
+                MyKey myKey = new MyKey(k);
                 switch (c % CASES) {
                     case 0:
-                        cache.putIfAbsent(new MyKey(k), new MyPersistent(d));
+                        cache.putIfAbsent(myKey, new MyPersistent(d));
                         if (onlySoft && (i % (50 * K)) == 0) {
                             cache.clearSoftRefs();
                         }
                         break;
                     case 1:
-                        cache.put(new MyKey(k), new MyPersistent(d));
+                        cache.put(myKey, new MyPersistent(d));
                         break;
                     case 2:
-                        cache.hang(new MyKey(k), new MyPersistent(d));
+                        cache.hang(myKey, new MyPersistent(d));
                         break;
                     case 3:
-                        cache.remove(new MyKey(k));
+                        cache.markRemoved(myKey);
+                        cache.removePhysically(myKey);
                         break;
                     default:
-                        cache.get(new MyKey(k));
+                        cache.get(myKey);
                         break;
                 }
             }

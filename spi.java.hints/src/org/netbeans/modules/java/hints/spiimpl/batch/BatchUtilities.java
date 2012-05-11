@@ -130,7 +130,7 @@ public class BatchUtilities {
         BatchSearch.VerifiedSpansCallBack callback = new BatchSearch.VerifiedSpansCallBack() {
             private ElementOverlay overlay;
             public void groupStarted() {
-                overlay = new ElementOverlay();
+                overlay = ElementOverlay.getOrCreateOverlay();
             }
             public boolean spansVerified(CompilationController wc, Resource r, Collection<? extends ErrorDescription> hints) throws Exception {
                 Constructor<WorkingCopy> wcConstr = WorkingCopy.class.getDeclaredConstructor(CompilationInfoImpl.class, ElementOverlay.class);

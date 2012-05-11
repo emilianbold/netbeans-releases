@@ -341,6 +341,11 @@ public class ModelSource implements SourceFileProperties {
         }
         return userMacros;
     }
+
+    @Override
+    public List<String> getUndefinedMacros() {
+        return new ArrayList<String>(item.getUndefinedMacros());
+    }
     
     @Override
     public Map<String, String> getSystemMacros() {

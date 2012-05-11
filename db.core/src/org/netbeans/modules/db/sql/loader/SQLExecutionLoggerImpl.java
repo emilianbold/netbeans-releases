@@ -100,6 +100,7 @@ public class SQLExecutionLoggerImpl implements SQLExecutionLogger {
                 String.valueOf(errorCount)));
         writer.println(""); // NOI18N
         writer.close();
+        inputOutput.select();
     }
 
     @Override

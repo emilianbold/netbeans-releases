@@ -45,6 +45,7 @@ package org.netbeans.modules.editor.hints;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
@@ -147,6 +148,10 @@ public class ParseErrorAnnotation extends Annotation implements PropertyChangeLi
         if (!attached) {
             attached = true;
             NbDocument.addAnnotation((StyledDocument) doc, lineStart, -1, this);
+        } else {
+            Level toLog = Level.FINE;
+            assert (toLog = Level.INFO) != null;
+            AnnotationHolder.LOG.log(toLog, "Attempt to attach already attached annotation", new Exception());
         }
     }
 
@@ -154,6 +159,10 @@ public class ParseErrorAnnotation extends Annotation implements PropertyChangeLi
         if (attached) {
             attached = false;
             NbDocument.removeAnnotation(doc, this);
+        } else {
+            Level toLog = Level.FINE;
+            assert (toLog = Level.INFO) != null;
+            AnnotationHolder.LOG.log(toLog, "Attempt to detach not attached annotation", new Exception());
         }
     }
 }

@@ -202,6 +202,56 @@ public final class MatchingObject implements Comparable<MatchingObject>,
             relativeSearchPath = computeRelativeSearchPath();
         }
         setUpDataObjValidityChecking();
+        if (textDetails != null && !textDetails.isEmpty()) {
+            adjustTextDetails();
+        }
+    }
+
+    /**
+     * Set line number indent for text details.
+     */
+    private void adjustTextDetails() {
+        TextDetail lastDetail = textDetails.get(textDetails.size() - 1);
+        int maxLine = lastDetail.getLine();
+        int maxDigits = countDigits(maxLine);
+        for (TextDetail td : textDetails) {
+            int digits = countDigits(td.getLine());
+            if (digits < maxDigits) {
+                td.setLineNumberIndent(indent(maxDigits - digits));
+            }
+        }
+    }
+
+    /**
+     * Get number of digits of a positive number.
+     */
+    private int countDigits(int number) {
+        int digits = 0;
+        while (number > 0) {
+            number = number / 10;
+            digits++;
+        }
+        return digits;
+    }
+
+    /**
+     * Get string with spaces of length {@code chars}.
+     */
+    private String indent(int chars) {
+        switch (chars) { // switch to compute common values faster
+            case 1:
+                return "&nbsp;&nbsp;";                                  //NOI18N
+            case 2:
+                return "&nbsp;&nbsp;&nbsp;&nbsp;";                      //NOI18N
+            case 3:
+                return "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";          //NOI18N
+            default:
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < chars; i++) {
+                    sb.append("&nbsp;&nbsp;");                          //NOI18N
+                }
+                return sb.toString();
+        }
     }
     
     /**

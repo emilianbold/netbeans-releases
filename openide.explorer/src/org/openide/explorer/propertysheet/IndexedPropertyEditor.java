@@ -359,7 +359,7 @@ class IndexedPropertyEditor extends Object implements ExPropertyEditor {
     }
 
     private static String getString(String key) {
-        return NbBundle.getBundle(IndexedPropertyEditor.class).getString(key);
+        return NbBundle.getMessage(IndexedPropertyEditor.class, key);
     }
 
     /**
@@ -542,7 +542,7 @@ class IndexedPropertyEditor extends Object implements ExPropertyEditor {
         public MyIndexedRootNode(Node[] ch) {
             getChildren().add(ch);
             setName("IndexedRoot"); // NOI18N
-            setDisplayName(NbBundle.getBundle(IndexedPropertyEditor.class).getString("CTL_Index"));
+            setDisplayName(NbBundle.getMessage(IndexedPropertyEditor.class, "CTL_Index"));
         }
 
         public NewType[] getNewTypes() {

@@ -56,14 +56,14 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
-import org.netbeans.modules.php.editor.nav.TestBase;
+import org.netbeans.modules.php.editor.nav.PHPNavTestBase;
 import org.openide.loaders.DataObjectNotFoundException;
 
 /**
  *
  * @author Jan Lahoda
  */
-public class GeneratingBracketCompleterTest extends TestBase {
+public class GeneratingBracketCompleterTest extends PHPNavTestBase {
 
     public GeneratingBracketCompleterTest(String testName) {
         super(testName);

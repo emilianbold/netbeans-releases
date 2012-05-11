@@ -51,10 +51,14 @@ import java.nio.charset.Charset;
 import java.sql.Clob;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.table.TableCellEditor;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.db.dataview.util.FileBackedClob;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.windows.WindowManager;
@@ -88,6 +92,8 @@ public class ClobFieldTableCellEditor extends AbstractCellEditor
             charsetSelect.setSelectedItem(selectedCharset);
         }
     }
+    private static final Logger LOG = Logger.getLogger(
+            ClobFieldTableCellEditor.class.getName());
     protected static final String EDIT = "edit";
     protected Clob currentValue;
     protected JButton button;
@@ -228,9 +234,11 @@ public class ClobFieldTableCellEditor extends AbstractCellEditor
                     f.delete();
                 }
             } catch (IOException ex) {
-                throw new RuntimeException(ex);
+                LOG.log(Level.INFO, "IOException while saving CLOB to file", ex);
+                displayError(f, ex, false);
             } catch (SQLException ex) {
-                throw new RuntimeException(ex);
+                LOG.log(Level.INFO, "SQLException while saving CLOB to file", ex);
+                displayError(f, ex, false);
             }
         }
     }
@@ -251,16 +259,22 @@ public class ClobFieldTableCellEditor extends AbstractCellEditor
                     result = null;
                 }
             } catch (IOException ex) {
-                throw new RuntimeException(ex);
+                LOG.log(Level.INFO, "IOException while loading CLOB from file", ex);
+                displayError(f, ex, true);
+                result = null;
             } catch (SQLException ex) {
-                throw new RuntimeException(ex);
+                LOG.log(Level.INFO, "SQLException while loading CLOB from file", ex);
+                displayError(f, ex, true);
+                result = null;
             }
         }
         return result;
     }
 
     /**
-     * @return true if transfer is complete and not iterrupted 
+     * Note: The character streams will be closed after this method was invoked
+     * 
+     * @return true if transfer is complete and not interrupted 
      */
     private boolean doTransfer(Reader in, Writer out, Integer size, String title, boolean sizeEstimated) throws IOException {
         // Only pass size if it is _not_ estimated
@@ -272,6 +286,8 @@ public class ClobFieldTableCellEditor extends AbstractCellEditor
         } else {
             t = ft.run(null);
         }
+        in.close();
+        out.close();
         if (t != null && t instanceof RuntimeException) {
             throw (RuntimeException) t;
         } else if (t != null && t instanceof IOException) {
@@ -282,6 +298,50 @@ public class ClobFieldTableCellEditor extends AbstractCellEditor
         return !ft.isCancel();
     }
     
+    private void displayError(File f, Exception ex, boolean read) {
+        DialogDisplayer dd = DialogDisplayer.getDefault();
+
+        String errorObjectMsg;
+        String messageMsg;
+        String titleMsg;
+
+        if (ex instanceof SQLException) {
+            errorObjectMsg = NbBundle.getMessage(ClobFieldTableCellEditor.class,
+                    "lobErrorObject.database");
+        } else {
+            errorObjectMsg = NbBundle.getMessage(ClobFieldTableCellEditor.class,
+                    "lobErrorObject.file");
+        }
+
+        if (!read) {
+            titleMsg = NbBundle.getMessage(ClobFieldTableCellEditor.class,
+                    "clobSaveToFileError.title");
+            messageMsg = NbBundle.getMessage(ClobFieldTableCellEditor.class,
+                    "clobSaveToFileError.message",
+                    errorObjectMsg,
+                    f.getAbsolutePath(),
+                    ex.getLocalizedMessage());
+        } else {
+            titleMsg = NbBundle.getMessage(ClobFieldTableCellEditor.class,
+                    "clobReadFromFileError.title");
+            messageMsg = NbBundle.getMessage(ClobFieldTableCellEditor.class,
+                    "clobReadFromFileError.message",
+                    errorObjectMsg,
+                    f.getAbsolutePath(),
+                    ex.getLocalizedMessage());
+        }
+
+        NotifyDescriptor nd = new NotifyDescriptor(
+                messageMsg,
+                titleMsg,
+                NotifyDescriptor.OK_CANCEL_OPTION,
+                NotifyDescriptor.WARNING_MESSAGE,
+                new Object[]{NotifyDescriptor.CANCEL_OPTION},
+                NotifyDescriptor.CANCEL_OPTION);
+
+        dd.notifyLater(nd);
+    }
+
     protected void editCell() {
         String stringVal = "";
         if (currentValue != null) {

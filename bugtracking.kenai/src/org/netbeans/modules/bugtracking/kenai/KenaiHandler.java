@@ -292,7 +292,7 @@ class KenaiHandler {
                 Support.getInstance().post(new Runnable() { // XXX add post method to BM
                     @Override
                     public void run() {
-                        KenaiUtil.openQuery(null, repo, true);
+                        KenaiUtil.openNewQuery(repo, true);
                     }
                 });
             }
@@ -343,12 +343,16 @@ class KenaiHandler {
                     }
                     for (QueryHandle qh : queries) {
                         if(qh instanceof QueryHandleImpl) {
-                            Query query = ((QueryHandleImpl)qh).getQuery();
-                            query.refresh(false);
+                            final Query query = ((QueryHandleImpl)qh).getQuery();
+                            Support.getInstance().post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    query.refresh();
+                                }
+                            });
                         }
                     }
                 }
-
             }
         }
         public void closeQueries() {

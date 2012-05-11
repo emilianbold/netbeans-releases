@@ -41,10 +41,10 @@
  */
 package org.netbeans.modules.tasks.ui.actions;
 
-import org.netbeans.modules.tasks.ui.dashboard.DashboardViewer;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import org.netbeans.modules.tasks.ui.dashboard.CategoryNode;
+import org.netbeans.modules.tasks.ui.dashboard.DashboardViewer;
 
 /**
  *
@@ -61,6 +61,6 @@ public class CloseCategoryNodeAction extends AbstractAction {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        DashboardViewer.getInstance().closeCategory(categoryNode);
+        DashboardViewer.getInstance().setCategoryOpened(categoryNode, false);
     }
 }

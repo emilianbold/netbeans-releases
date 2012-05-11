@@ -49,6 +49,8 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Point;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
@@ -282,7 +284,7 @@ public final class Terminal extends JComponent {
         termOptions = TermOptions.getDefault(prefs);
 
         // this.term = new StreamTerm();
-        this.term = new ActiveTerm();
+        this.term = createActiveTerminal();
 
 	applyDebugFlags();
 
@@ -968,6 +970,31 @@ public final class Terminal extends JComponent {
 	@Override
 	public void fileRenamed(FileRenameEvent fe) {
 	    applyShortcuts();
+	}
+    }
+    
+    private ActiveTerm createActiveTerminal() {
+	Clipboard aSystemClipboard = Lookup.getDefault().lookup(Clipboard.class);
+	if (aSystemClipboard == null) {
+	    aSystemClipboard = getToolkit().getSystemClipboard();
+	}
+	return new MyActiveTerm(aSystemClipboard);
+    }
+    
+    private static final class MyActiveTerm extends ActiveTerm {
+	private final Clipboard systemClipboard;
+	
+	private MyActiveTerm(Clipboard systemClipboard) {
+	    this.systemClipboard = systemClipboard;
+	}
+	
+	@Override
+	public void copyToClipboard() {
+	    String text = getSelectedText();
+	    if (text != null) {
+		StringSelection ss = new StringSelection(text);
+		systemClipboard.setContents(ss, ss);
+	    }
 	}
     }
 }

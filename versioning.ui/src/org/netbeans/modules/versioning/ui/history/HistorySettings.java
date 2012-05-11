@@ -62,6 +62,9 @@ public class HistorySettings {
     private static final String PROP_CLEANUP_LABELED = "noLabelCleanUp";                        // NOI18N  
     private static final String PROP_KEEP_FOREVER = "keepForever";                              // NOI18N  
     public static final String PROP_LOAD_ALL = "history.loadAll";                               // NOI18N  
+    public static final String PROP_ALL_MODE = "history.AllMode";                               // NOI18N  
+    public static final String PROP_VCS_MODE = "history.VCSMode";                               // NOI18N  
+    public static final String PROP_LH_MODE = "history.LHMode";                               // NOI18N  
             
     /** Creates a new instance of HistorySettings */
     private HistorySettings() {
@@ -126,6 +129,30 @@ public class HistorySettings {
     
     public void removePreferenceListener(PreferenceChangeListener l) {
         getPreferences().removePreferenceChangeListener(l);
+    }
+
+    void setAllMode(String name) {
+        getPreferences().put(PROP_ALL_MODE, name);
+    }
+    
+    void setVCSMode(String name) {
+        getPreferences().put(PROP_VCS_MODE, name);
+    }
+    
+    void setLHMode(String name) {
+        getPreferences().put(PROP_LH_MODE, name);
+    }
+    
+    String getAllMode(String def) {
+        return getPreferences().get(PROP_ALL_MODE, def);
+    }
+    
+    String getVCSMode(String def) {
+        return getPreferences().get(PROP_VCS_MODE, def);
+    }
+    
+    String getLHMode(String def) {
+        return getPreferences().get(PROP_LH_MODE, def);
     }
     
 }

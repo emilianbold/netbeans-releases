@@ -59,14 +59,12 @@ import org.openide.filesystems.FileObject;
  * @author marekfukala
  */
 public class AddStylesheetLinkHintFix implements HintFix {
-    private final RuleContext context;
     private final FileObject externalStylesheet;
     private final String message;
     private final FileObject sourceFile;
 
-    public AddStylesheetLinkHintFix(String message, FileObject sourceFile, FileObject externalStylesheet, RuleContext context) {
+    public AddStylesheetLinkHintFix(String message, FileObject sourceFile, FileObject externalStylesheet) {
         this.message = message;
-        this.context = context;
         this.sourceFile = sourceFile;
         this.externalStylesheet = externalStylesheet;
     }

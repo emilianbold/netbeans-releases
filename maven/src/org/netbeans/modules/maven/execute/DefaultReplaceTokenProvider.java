@@ -46,7 +46,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -56,8 +55,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.maven.classpath.MavenSourcesImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.classpath.MavenSourcesImpl;
 import org.netbeans.modules.maven.spi.actions.ActionConvertor;
 import org.netbeans.modules.maven.spi.actions.ReplaceTokenProvider;
 import org.netbeans.spi.project.ActionProvider;
@@ -95,9 +94,7 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
      */
     protected static FileObject[] extractFileObjectsfromLookup(Lookup lookup) {
         List<FileObject> files = new ArrayList<FileObject>();
-        Iterator<? extends DataObject> it = lookup.lookup(new Lookup.Template<DataObject>(DataObject.class)).allInstances().iterator();
-        while (it.hasNext()) {
-            DataObject d = it.next();
+        for (DataObject d : lookup.lookupAll(DataObject.class)) {
             FileObject f = d.getPrimaryFile();
             files.add(f);
         }
@@ -113,7 +110,7 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
     @Override public Map<String, String> createReplacements(String actionName, Lookup lookup) {
         FileObject[] fos = extractFileObjectsfromLookup(lookup);
         Tuple tuple = new Tuple(null, null);
-        FileObject fo = null;
+        FileObject fo;
         HashMap<String, String> replaceMap = new HashMap<String, String>();
         //read global variables defined in the IDE
         Map<String, String> vars = readVariables();

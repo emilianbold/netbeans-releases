@@ -73,6 +73,7 @@ import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension.Projec
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.makeproject.spi.DatabaseProjectProvider;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
@@ -156,7 +157,12 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
 
     private synchronized SelectModeDescriptorPanel getSelectModePanel() {
         if (selectModePanel == null) {
-            selectModePanel = new SelectModeDescriptorPanel(fullRemote);
+            FileObject fo = (FileObject) wiz.getProperty(CommonProjectActions.EXISTING_SOURCES_FOLDER);
+            if (fo == null) {
+                selectModePanel = new SelectModeDescriptorPanel(fullRemote);
+            } else {
+                selectModePanel = new SelectModeDescriptorPanel(fullRemote, fo.getPath());
+            }
             selectModePanel.addChangeListener(new ChangeListener() {
 
                 @Override

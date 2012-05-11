@@ -261,7 +261,7 @@ public class SourcePath {
     
     // utility methods .........................................................
 
-    private static String convertSlash (String original) {
+    public static String convertSlash (String original) {
         return original.replace (File.separatorChar, '/');
     }
 

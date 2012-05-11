@@ -55,7 +55,8 @@ public enum LNE {
     DW_LNE_set_address(0x02),
     DW_LNE_define_file(0x03),
     DW_LNE_lo_user(0x80),
-    DW_LNE_hi_user(0xff);
+    DW_LNE_hi_user(0xff),
+    DW_LNE_UNDEFUNED(-1);
 
     private final int value;
     static private final HashMap<Integer, LNE> hashmap = new HashMap<Integer, LNE>();
@@ -71,7 +72,11 @@ public enum LNE {
     }
     
     public static LNE get(int val) {
-        return hashmap.get(val);
+        LNE res = hashmap.get(val);
+        if (res == null) {
+            res = DW_LNE_UNDEFUNED;
+        }
+        return res;
     }
     
     public int value() {

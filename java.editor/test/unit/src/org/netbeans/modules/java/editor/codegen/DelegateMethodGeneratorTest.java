@@ -169,7 +169,7 @@ public class DelegateMethodGeneratorTest extends NbTestCase {
                 TypeElement type = (TypeElement) ((DeclaredType) var.asType()).asElement();
                 for (ExecutableElement ee : ElementFilter.methodsIn(type.getEnclosedElements())) {
                     if (methodName.equals(ee.getSimpleName().toString()) && ee.getParameters().size() == paramCount) {
-                        DelegateMethodGenerator.generateDelegatingMethods(wc, tp, var, Collections.singletonList(ee));
+                        DelegateMethodGenerator.generateDelegatingMethods(wc, tp, var, Collections.singletonList(ee), -1);
                     }
                 }
             }

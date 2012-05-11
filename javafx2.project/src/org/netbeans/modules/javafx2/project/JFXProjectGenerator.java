@@ -58,6 +58,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -94,10 +95,37 @@ import org.w3c.dom.NodeList;
  */
 public class JFXProjectGenerator {
 
-    static final String METRICS_LOGGER = "org.netbeans.ui.metrics.jfx"; //NOI18N
-    static final String PROJECT_CREATE = "USG_PROJECT_CREATE_JFX";      //NOI18N
-    static final String PROJECT_OPEN = "USG_PROJECT_OPEN_JFX";          //NOI18N
-    static final String PROJECT_CLOSE = "USG_PROJECT_CLOSE_JFX";        //NOI18N
+    private static final String METRICS_LOGGER = "org.netbeans.ui.metrics.projects"; //NOI18N
+    private static final String JFX_METRICS_LOGGER = "org.netbeans.ui.metrics.jfx";  //NOI18N
+    private static final String PROJECT_TYPE = "org.netbeans.modules.javafx2.project.JFXProject";   //NOI18N
+    
+    enum Action {
+        CREATE("USG_PROJECT_CREATE", "USG_PROJECT_CREATE_JFX"),   //NOI18N
+        OPEN("USG_PROJECT_OPEN", "USG_PROJECT_OPEN_JFX"),       //NOI18N
+        CLOSE("USG_PROJECT_CLOSE", "USG_PROJECT_CLOSE_JFX");     //NOI18N
+        
+        private final String genericLogMessage;
+        private final String specificLogMessage;
+        
+        private Action(
+            @NonNull final String genericLogMessage,
+            @NonNull final String specificLogMessage) {
+            assert genericLogMessage != null;
+            assert specificLogMessage != null;
+            this.genericLogMessage = genericLogMessage;
+            this.specificLogMessage = specificLogMessage;
+        }
+        
+        @NonNull
+        public String getGenericLogMessage() {
+            return genericLogMessage;
+        }
+        
+        @NonNull
+        public String getSpecificLogMessage() {
+            return specificLogMessage;
+        }
+    }
 
     private JFXProjectGenerator() {
     }
@@ -122,7 +150,7 @@ public class JFXProjectGenerator {
         dirFO.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
             @Override
             public void run() throws IOException {
-                h[0] = createProject(dirFO, name, "src", null, mainClass, manifestFile, //NOI18N
+                h[0] = createProject(dirFO, name, "src", "test", mainClass, manifestFile, //NOI18N
                         librariesDefinition, platformName, preloader, type);
                 final Project p = ProjectManager.getDefault().findProject(dirFO);
                 createJfxExtension(p, dirFO, type);
@@ -273,7 +301,7 @@ public class JFXProjectGenerator {
 //                h[0] = createProject(dirFO, name, "src", "test", preloaderClassName, // NOI18N
 //                        JavaFXProjectWizardIterator.MANIFEST_FILE, librariesDefinition,
 //                        platformName, null, WizardType.PRELOADER);
-                h[0] = createProject(dirFO, name, "src", null, preloaderClassName, // NOI18N
+                h[0] = createProject(dirFO, name, "src", "test", preloaderClassName, // NOI18N
                         JavaFXProjectWizardIterator.MANIFEST_FILE, librariesDefinition,
                         platformName, null, WizardType.PRELOADER);
                 
@@ -563,7 +591,7 @@ public class JFXProjectGenerator {
         }
         JFXProjectUtils.updateDefaultRunAsConfigFile(dirFO, JFXProjectProperties.RunAsType.ASWEBSTART, false);
         JFXProjectUtils.updateDefaultRunAsConfigFile(dirFO, JFXProjectProperties.RunAsType.INBROWSER, false);
-        logUsage();
+        logUsage(Action.CREATE);
         return h;
     }
 
@@ -573,10 +601,20 @@ public class JFXProjectGenerator {
      * Todo: Should log also J2SE project usage? The JFX project is de facto J2SE project,
      * most of this class should be replaced by J2SEProjectBuider.
      */
-    private static void logUsage() {
-        final LogRecord logRecord = new LogRecord(Level.INFO, PROJECT_CREATE);
-        logRecord.setLoggerName(METRICS_LOGGER);
-        Logger.getLogger(METRICS_LOGGER).log(logRecord);
+    static void logUsage(@NonNull Action action) {
+        assert action != null;
+        Logger logger = Logger.getLogger(JFXProjectGenerator.METRICS_LOGGER);
+        LogRecord logRecord = new LogRecord(Level.INFO, action.getGenericLogMessage());
+        logRecord.setLoggerName(logger.getName());
+        logRecord.setParameters(new Object[]{
+            PROJECT_TYPE
+        });
+        logger.log(logRecord);
+        
+        logger = Logger.getLogger(JFXProjectGenerator.JFX_METRICS_LOGGER);
+        logRecord = new LogRecord(Level.INFO, action.getSpecificLogMessage());
+        logRecord.setLoggerName(logger.getName());
+        logger.log(logRecord);
     }
 
     private static void copyRequiredLibraries(AntProjectHelper h, ReferenceHelper rh) throws IOException {

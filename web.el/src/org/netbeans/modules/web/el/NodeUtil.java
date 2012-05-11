@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.web.el;
 
+import com.sun.el.parser.AstBracketSuffix;
+import com.sun.el.parser.AstDotSuffix;
 import com.sun.el.parser.Node;
 import org.openide.util.Parameters;
 
@@ -95,5 +97,15 @@ public class NodeUtil {
         
         return parent.jjtGetChild(index - 1);
     }
-    
+
+    public static boolean isMethodCall(Node n) {
+        if (n instanceof AstDotSuffix && n.jjtGetNumChildren() > 0) {
+            return true;
+        }
+        if (n instanceof AstBracketSuffix && n.jjtGetNumChildren() > 1) {
+            return true;
+        }
+        return false;
+    }
+
 }

@@ -44,7 +44,7 @@
 
 package org.netbeans.modules.groovy.support;
 import javax.swing.Action;
-import static org.netbeans.modules.groovy.support.Bundle.LBL_RunFile_Action;
+import static org.netbeans.modules.groovy.support.Bundle.*;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.FileSensitiveActions;
 import org.openide.awt.ActionID;

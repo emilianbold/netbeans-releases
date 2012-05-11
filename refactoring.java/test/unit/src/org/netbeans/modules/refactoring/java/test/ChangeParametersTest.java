@@ -841,7 +841,7 @@ public class ChangeParametersTest extends RefactoringTestBase {
                 + "    }\n"
                 + "}\n"));
         paramTable = new ParameterInfo[] {new ParameterInfo(0, "x", "Strings", null)};
-        performChangeParameters(null, null, null, paramTable, Javadoc.NONE, 1, false, new Problem(false, "WRN_canNotResolve"), new Problem(false, "WRN_isNotAssignable"));
+        performChangeParameters(null, null, null, paramTable, Javadoc.NONE, 1, false, new Problem(false, "WRN_canNotResolve"));
         verifyContent(src,
                 new File("t/A.java", "package t; public class A {\n"
                 + "    public static void testMethod(Strings x) {\n"

@@ -49,6 +49,7 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.swing.text.StyledDocument;
@@ -144,8 +145,15 @@ public class AutosTestCase extends ProjectBasedTestCase {
     public void testAutosArrays2() throws Exception {
         performTest("file.cc", 38);
     }
+    
+    public void testAutosNoCodeModel() throws Exception {
+        performTest("file.cc", 38, true);
+    }
 
     private void performTest(String source, int lineIndex) throws Exception {
+        performTest(source, lineIndex, false);
+    }
+    private void performTest(String source, int lineIndex, boolean closeProject) throws Exception {
         File workDir = getWorkDir();
         File testFile = getDataFile(source);
         String goldenFileName = getName()+".ref"; //NOI18N
@@ -160,12 +168,21 @@ public class AutosTestCase extends ProjectBasedTestCase {
         }
 
         final StyledDocument doc = (StyledDocument)CndCoreTestUtils.getBaseDocument(testFileDO);
-
+        
+        if (closeProject){
+            closeProject(getProject().getName().toString());
+        }
+        
         Set<String> res = new CsmAutosProviderImpl().getAutos(doc, lineIndex-1);
 
         // sort results
-        List<String> resList = new ArrayList<String>(res);
-        Collections.sort(resList);
+        List<String> resList = new ArrayList<String>();
+        if (res == null) {
+            resList.add("null");
+        } else {
+            resList.addAll(res);
+            Collections.sort(resList);
+        }
 
         for (String val : resList) {
             streamOut.println(val);

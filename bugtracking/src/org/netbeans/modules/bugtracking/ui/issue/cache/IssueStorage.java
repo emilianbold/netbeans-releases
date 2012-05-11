@@ -148,6 +148,9 @@ class IssueStorage {
                         try { if(is != null) is.close(); } catch (IOException e) {}
                     }
                 } else {
+                    if(!folder.exists()) {
+                        folder.mkdirs();
+                    }
                     data.createNewFile();
                     ret = System.currentTimeMillis();
                     DataOutputStream os = null;
@@ -156,7 +159,7 @@ class IssueStorage {
                         os.writeLong(ret);
                         return ret;
                     } catch (InterruptedException ex) {
-                        BugtrackingManager.LOG.log(Level.WARNING, null, ex);
+                        BugtrackingManager.LOG.log(Level.WARNING, data.getAbsolutePath(), ex);
                         throw new IOException(ex);
                     } finally {
                         if(BugtrackingManager.LOG.isLoggable(Level.FINE)) {

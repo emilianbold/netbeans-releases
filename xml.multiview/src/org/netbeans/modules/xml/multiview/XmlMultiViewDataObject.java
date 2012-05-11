@@ -383,6 +383,12 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
         public void loadData() {
             FileObject file = getPrimaryFile();
             if (fileTime == file.lastModified().getTime()) {
+                // on base of issue #132922
+                // when the file is deleted or IO error happened, lastModified time
+                // is zero and the buffer can stay uninitialized
+                if (fileTime == 0) {
+                    buffer = ""; //NOI18N
+                }
                 return;
             }
             try {

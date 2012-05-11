@@ -69,85 +69,135 @@ public class BookmarksTableModel extends AbstractTableModel {
         false,
     };
     
-    private List<BookmarkInfo> entries;
+    private final boolean forHistoryPopup;
+    
+    private final List<BookmarkNode> entries;
 
-    public BookmarksTableModel() {
-        entries = new ArrayList<BookmarkInfo>();
+    private int columnCount;
+
+    /**
+     * Number of entries in a single column (in possibly multi-column model).
+     */
+    private int columnEntryCount;
+    
+    public BookmarksTableModel(boolean forHistoryPopup) {
+        this.forHistoryPopup = forHistoryPopup;
+        entries = new ArrayList<BookmarkNode>();
+        columnCount = forHistoryPopup ? 1 : COLUMN_COUNT;
+        columnEntryCount = Integer.MAX_VALUE;
     }
     
-    public void setEntries(List<BookmarkInfo> entries) {
+    public void setEntries(List<BookmarkNode> entries) {
         this.entries.clear();
         this.entries.addAll(entries);
         fireTableDataChanged();
     }
     
-    public void addEntry(BookmarkInfo entry) {
-        entries.add(entry);
-        int index = getRowCount() - 1;
-        fireTableRowsInserted(index, index);
+    public BookmarkNode getEntry(int index) {
+        return entries.get(index);
     }
 
-    public BookmarkInfo getEntry(int rowIndex) {
-        return entries.get(rowIndex);
+    public BookmarkNode getEntry(int rowIndex, int columnIndex) {
+        return getEntry(entryIndex(rowIndex, forHistoryPopup ? columnIndex : 0));
     }
-
+    
+    public int entryIndex(int rowIndex, int columnIndex) {
+        return columnIndex * columnEntryCount + rowIndex;
+    }
+    
+    public void entryIndex2rowColumn(int entryIndex, int[] rowColumn) {
+        rowColumn[1] = entryIndex / columnEntryCount;
+        rowColumn[0] = entryIndex - (rowColumn[1] * columnEntryCount);
+    }
+    
+    public int getEntryCount() {
+        return entries.size();
+    }
+    
     @Override
     public int getRowCount() {
-        return entries.size();
+        return Math.min(entries.size(), columnEntryCount);
     }
 
     @Override
     public int getColumnCount() {
-        return COLUMN_COUNT;
+        return columnCount;
     }
 
+    public int getColumnEntryCount() {
+        return columnEntryCount;
+    }
+
+    /**
+     * Set maximum number of entries in a single column.
+     *
+     * @param columnEntryCount entry count per column.
+     * @return total number of columns based on current entry count.
+     */
+    int setColumnEntryCount(int columnEntryCount) {
+        assert (columnEntryCount > 0) : "columnEntryCount=" + columnEntryCount + " <= 0"; // NOI18N
+        this.columnEntryCount = columnEntryCount;
+        this.columnCount = Math.min(1, (entries.size() + columnEntryCount - 1) / columnEntryCount);
+        fireTableDataChanged();
+        return this.columnCount;
+    }
+    
     @Override
     public boolean isCellEditable(int rowIndex, int columnIndex) {
-        return COLUMN_EDITABLE[columnIndex];
+        return forHistoryPopup ? false : COLUMN_EDITABLE[columnIndex];
     }
     
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
-        BookmarkInfo bookmark = entries.get(rowIndex);
-        switch (columnIndex) {
-            case NAME_COLUMN:
-                return bookmark.getName();
-            case KEY_COLUMN:
-                return bookmark.getKey();
-            case LOCATION_COLUMN:
-                return bookmark.getLocationDescriptionShort();
-            default:
-                throw new IllegalStateException("Invalid columnIndex=" + columnIndex); // NOI18N
+        BookmarkNode bNode = getEntry(rowIndex, columnIndex);
+        BookmarkInfo bookmark = bNode.getBookmarkInfo();
+        if (forHistoryPopup) {
+            return bookmark.getDescription(false, true, true);
+        } else {
+            switch (columnIndex) {
+                case NAME_COLUMN:
+                    return bookmark.getName();
+                case KEY_COLUMN:
+                    return bookmark.getKey();
+                case LOCATION_COLUMN:
+                    return bookmark.getDescription(false, false, false);
+                default:
+                    throw new IllegalStateException("Invalid columnIndex=" + columnIndex); // NOI18N
+            }
         }
     }
     
     public String getToolTipText(int rowIndex, int columnIndex) {
-        switch (columnIndex) {
-            case NAME_COLUMN:
-                String nameToolTip = (String) getValueAt(rowIndex, columnIndex);
-                if (nameToolTip == null || nameToolTip.length() == 0) {
-                    nameToolTip = NbBundle.getMessage(BookmarksTable.class, "LBL_BookmarkNameEmpty");
-                }
-                return nameToolTip;
-            case KEY_COLUMN:
-                String keyToolTip = (String) getValueAt(rowIndex, columnIndex);
-                if (keyToolTip == null || keyToolTip.length() == 0) {
-                    keyToolTip = NbBundle.getMessage(BookmarksTable.class, "LBL_BookmarkKeyEmpty");
-                }
-                return keyToolTip;
-            case LOCATION_COLUMN:
-                return entries.get(rowIndex).getLocationDescription();
-            default:
-                throw new IllegalStateException("Invalid columnIndex=" + columnIndex); // NOI18N
+        BookmarkNode bNode = getEntry(rowIndex, columnIndex);
+        BookmarkInfo bookmark = bNode.getBookmarkInfo();
+        if (forHistoryPopup) {
+            return bookmark.getFullPathDescription();
+        } else {
+            switch (columnIndex) {
+                case NAME_COLUMN:
+                    String nameToolTip = bookmark.getName();
+                    if (nameToolTip == null || nameToolTip.length() == 0) {
+                        nameToolTip = NbBundle.getMessage(BookmarksTable.class, "LBL_BookmarkNameEmpty");
+                    }
+                    return nameToolTip;
+                case KEY_COLUMN:
+                    String keyToolTip = bookmark.getKey();
+                    if (keyToolTip == null || keyToolTip.length() == 0) {
+                        keyToolTip = NbBundle.getMessage(BookmarksTable.class, "LBL_BookmarkKeyEmpty");
+                    }
+                    return keyToolTip;
+                case LOCATION_COLUMN:
+                    return bookmark.getDescription(true, false, false);
+                default:
+                    throw new IllegalStateException("Invalid columnIndex=" + columnIndex); // NOI18N
+            }
         }
     }
 
     @Override
     public void setValueAt(Object value, int rowIndex, int columnIndex) {
-        if (!COLUMN_EDITABLE[columnIndex]) {
-            return;
-        }
-        BookmarkInfo bookmark = entries.get(rowIndex);
+        BookmarkNode bookmarkNode = getEntry(rowIndex, columnIndex);
+        BookmarkInfo bookmark = bookmarkNode.getBookmarkInfo();
         switch (columnIndex) {
             case NAME_COLUMN:
                 BookmarkUtils.setBookmarkNameUnderLock(bookmark, (String)value);

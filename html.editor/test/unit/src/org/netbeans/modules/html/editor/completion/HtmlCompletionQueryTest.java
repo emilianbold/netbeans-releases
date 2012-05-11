@@ -63,6 +63,7 @@ import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
 import org.netbeans.modules.html.editor.api.gsf.HtmlExtension.CompletionContext;
 import org.netbeans.modules.html.editor.api.gsf.HtmlExtensionTestSupport;
 import org.netbeans.modules.html.editor.completion.HtmlCompletionTestSupport.Match;
+import org.netbeans.modules.html.parser.HtmlDocumentation;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.spi.editor.completion.CompletionItem;
 
@@ -87,6 +88,7 @@ public class HtmlCompletionQueryTest extends HtmlCompletionTestBase {
         super.setUp();
         HtmlVersion.DEFAULT_VERSION_UNIT_TESTS_OVERRIDE = HtmlVersion.HTML41_TRANSATIONAL;
         MockServices.setServices(MockMimeLookup.class);
+        HtmlDocumentation.setupDocumentationForUnitTests();
     }
 
     public static Test suite() throws IOException, BadLocationException {

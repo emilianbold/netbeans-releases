@@ -256,8 +256,8 @@ public final class Mutex extends Object {
         this.registeredThreads = new HashMap<Thread,ThreadInfo>(7);
         this.waiters = new LinkedList<QueueCell>();
         this.cnt = counter++;
-        if (LOG.isLoggable(Level.FINE)) {
-            LOG.log(Level.FINE, "[" + cnt + "] created here", new Exception());
+        if (LOG.isLoggable(Level.FINER)) {
+            LOG.log(Level.FINER, "[" + cnt + "] created here", new Exception());
         }
         return lock;
     }
@@ -621,7 +621,7 @@ public final class Mutex extends Object {
 
     private void doLog(String action, Object ... params) {
         String tid = Integer.toHexString(Thread.currentThread().hashCode());
-        LOG.log(Level.FINE, "[#" + cnt + "@" + tid + "] " + action, params);
+        LOG.log(Level.FINER, "[#" + cnt + "@" + tid + "] " + action, params);
     }
     
     /** enters this mutex with given mode
@@ -629,7 +629,7 @@ public final class Mutex extends Object {
     * @param t
     */
     private boolean enter(int requested, Thread t, boolean block) {
-        boolean log = LOG.isLoggable(Level.FINE);
+        boolean log = LOG.isLoggable(Level.FINER);
 
         if (log) doLog("Entering {0}, {1}", requested, block); // NOI18N
 
@@ -733,7 +733,7 @@ public final class Mutex extends Object {
     
     /** privilegedEnter serves for processing posted requests */
     private boolean reenter(Thread t, int mode) {
-        boolean log = LOG.isLoggable(Level.FINE);
+        boolean log = LOG.isLoggable(Level.FINER);
 
         if (log) doLog("Re-Entering {0}", mode); // NOI18N
 
@@ -834,7 +834,7 @@ public final class Mutex extends Object {
 
     /** Leaves this mutex */
     final void leave(Thread t) {
-        boolean log = LOG.isLoggable(Level.FINE);
+        boolean log = LOG.isLoggable(Level.FINER);
 
         if (log) doLog("Leaving {0}", grantedMode); // NOI18N
 
@@ -1619,11 +1619,15 @@ public final class Mutex extends Object {
             try {
                 while (!signal) {
                     try {
+                        long start = System.currentTimeMillis();
                         wait();
+                        if (LOG.isLoggable(Level.FINE) && EventQueue.isDispatchThread() && (System.currentTimeMillis() - start) > 1000) {
+                            LOG.log(Level.WARNING, toString(), new IllegalStateException("blocking on a mutex from EQ"));
+                        }
                         return;
                     } catch (InterruptedException e) {
                         wasInterrupted = true;
-                        Logger.getLogger(Mutex.class.getName()).log(Level.FINE, null, e);
+                        LOG.log(Level.FINE, null, e);
                     }
                 }
             } finally {

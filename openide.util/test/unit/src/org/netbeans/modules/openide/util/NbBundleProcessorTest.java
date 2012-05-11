@@ -296,11 +296,11 @@ public class NbBundleProcessorTest extends NbTestCase {
         assertEquals("", err.toString());
         err.reset();
         assertTrue(err.toString(), AnnotationProcessorTestUtils.runJavac(src, "C2.java", dest, null, err));
-        assertTrue(err.toString(), err.toString().contains("{1}"));
-        assertFalse(err.toString(), err.toString().contains("{0}"));
+        assertTrue(err.toString(), err.toString().contains("Undocumented format parameter {1}"));
+        assertFalse(err.toString(), err.toString().contains("Undocumented format parameter {0}"));
         err.reset();
         assertTrue(err.toString(), AnnotationProcessorTestUtils.runJavac(src, "C3.java", dest, null, err));
-        assertTrue(err.toString(), err.toString().contains("{0}"));
+        assertTrue(err.toString(), err.toString().contains("Undocumented format parameter {0}"));
     }
 
     private static boolean isJDK7EarlyBuild() {

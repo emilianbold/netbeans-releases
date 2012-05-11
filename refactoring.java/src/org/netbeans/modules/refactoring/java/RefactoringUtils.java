@@ -512,13 +512,8 @@ public class RefactoringUtils {
 
     public static boolean elementExistsIn(TypeElement target, Element member, CompilationInfo info) {
         for (Element currentMember : target.getEnclosedElements()) {
-            if (info.getElements().hides(member, currentMember) || info.getElements().hides(currentMember, member)) {
-                return true;
-            }
-            if (member instanceof ExecutableElement
-                    && currentMember instanceof ExecutableElement
-                    && (info.getElements().overrides((ExecutableElement) member, (ExecutableElement) currentMember, target)
-                    || (info.getElements().overrides((ExecutableElement) currentMember, (ExecutableElement) member, target)))) {
+            if(currentMember.getKind().equals(member.getKind())
+                    && currentMember.getSimpleName().equals(member.getSimpleName())) {
                 return true;
             }
         }
@@ -912,19 +907,19 @@ public class RefactoringUtils {
         return null;
     }
 
-    public static boolean isSetter(ExecutableElement el, Element propertyElement) {
+    public static boolean isSetter(CompilationInfo info, ExecutableElement el, Element propertyElement) {
         String setterName = getSetterName(propertyElement.getSimpleName().toString());
 
         return el.getSimpleName().contentEquals(setterName)
                 && el.getReturnType().getKind() == TypeKind.VOID
                 && el.getParameters().size() == 1
-                && el.getParameters().iterator().next().asType().equals(propertyElement.asType());
+                && info.getTypes().isSameType(el.getParameters().iterator().next().asType(), propertyElement.asType());
     }
 
-    public static boolean isGetter(ExecutableElement el, Element propertyElement) {
+    public static boolean isGetter(CompilationInfo info, ExecutableElement el, Element propertyElement) {
         String getterName = getGetterName(propertyElement.getSimpleName().toString());
         return el.getSimpleName().contentEquals(getterName)
-                && el.getReturnType().equals(propertyElement.asType())
+                && info.getTypes().isSameType(el.getReturnType(),propertyElement.asType())
                 && el.getParameters().isEmpty();
     }
 

@@ -210,7 +210,7 @@ public class CsmStatementResolver {
 
                 // check if offset in parameters
                 CsmFunctionParameterList paramList = fun.getParameterList();
-//                if (paramList != null) {
+                if (paramList != null) {
                     CsmParameter param = CsmOffsetUtilities.findObject(paramList.getParameters(), context, offset);
                     if (CsmOffsetUtilities.isInObject(paramList, offset) || (param != null && !CsmOffsetUtilities.sameOffsets(fun, param))) {
                         context.add(fun);
@@ -224,7 +224,7 @@ public class CsmStatementResolver {
                             }
                         }
                     }
-//                }
+                }
                     
                 if (CsmKindUtilities.isFunctionDefinition(fun)) {
                     CsmFunctionDefinition funDef = (CsmFunctionDefinition)fun;

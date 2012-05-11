@@ -107,6 +107,11 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
         return retval;
     }
 
+    VarAssignmentImpl createAssignment(final Scope scope, final boolean conditionalBlock, final OffsetRange blockRange, final OffsetRange nameRange, final String typeName) {
+        VarAssignmentImpl retval = new VarAssignmentImpl(this, scope, conditionalBlock, blockRange, nameRange, typeName);
+        return retval;
+    }
+
     @Override
     public FileObject getRealFileObject() {
         return (indexedElement != null) ? indexedElement.getFileObject() : null;
@@ -419,7 +424,7 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
         Set<String> typeNames = new HashSet<String>(getTypeNames(getNameRange().getEnd()+1));
         if (typeNames.size() == 1) {
             for (String typeName : typeNames) {
-                if (!typeName.contains("@")) {
+                if (!typeName.contains(VariousUtils.PRE_OPERATION_TYPE_DELIMITER)) {
                     sb.append(typeName);
                     break;
                 }

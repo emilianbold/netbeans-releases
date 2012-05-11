@@ -54,11 +54,8 @@ import java.util.logging.Logger;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.spi.editor.mimelookup.MimeDataProvider;
 import org.netbeans.spi.editor.mimelookup.MimeLookupInitializer;
-import org.openide.util.Lookup;
+import org.openide.util.*;
 import org.openide.util.Lookup.Template;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
-import org.openide.util.WeakListeners;
 import org.openide.util.lookup.ProxyLookup;
 
 
@@ -181,7 +178,7 @@ public final class MimePathLookup extends ProxyLookup implements LookupListener 
             LOG.fine("MimeLookup for '" + mimePath.getPath() + "' rebuilt."); //NOI18N
         }
 
-        setLookups(lookups.toArray(new Lookup[lookups.size()]));
+        setLookups(new RequestProcessor("MimePathLookupFiring", 1), lookups.toArray(new Lookup[lookups.size()])); // NOI18N
     }
 
     private boolean isDefaultProvider(MimeDataProvider provider) {
@@ -192,7 +189,7 @@ public final class MimePathLookup extends ProxyLookup implements LookupListener 
     // LookupListener implementation
     //-------------------------------------------------------------
 
-    public void resultChanged(LookupEvent ev) {
+    public synchronized void resultChanged(LookupEvent ev) {
         rebuild();
     }
 

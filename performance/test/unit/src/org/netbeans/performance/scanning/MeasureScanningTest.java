@@ -57,10 +57,10 @@ public class MeasureScanningTest {
         System.setProperty("suitename", MeasureScanningTest.class.getCanonicalName());
         System.setProperty("suite", "Scanning suite");
 
-        suite.addTest(NbModuleSuite.createConfiguration(JavaNavigatorPerfTest.class)
-                .addTest(ScanProjectPerfTest.class)
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ScanProjectPerfTest.class)
                 .addTest(ScanSeveralProjectsPerfTest.class)
-                .enableModules(".*").clusters(".*").reuseUserDir(false).suite());
+                .addTest(JavaNavigatorPerfTest.class)                
+                .enableModules(".*").clusters(".*").reuseUserDir(false)));
         return suite;
     }
 }

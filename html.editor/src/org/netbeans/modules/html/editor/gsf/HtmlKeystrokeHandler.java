@@ -144,6 +144,11 @@ public class HtmlKeystrokeHandler implements KeystrokeHandler {
 
     @Override
     public List<OffsetRange> findLogicalRanges(ParserResult info, int caretOffset) {
+        //since the HtmlKeystrokeHandler is also registered for XhtmlElLanguage the ELParserResult
+        //may get here under some circumstances. Not a clean solution though...
+        if(!(info instanceof HtmlParserResult)) {
+            return Collections.emptyList();
+        }
         HtmlParserResult result = (HtmlParserResult)info;
 
         //OffsetRange implements Comparable

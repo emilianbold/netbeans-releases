@@ -149,14 +149,14 @@ public class RemoteLogger {
     }
     
     public static void info(Exception exception) {
-        if (instance.isLoggable(Level.WARNING)) {
-            instance.log(Level.WARNING, "Exception occurred:", exception);
+        if (instance.isLoggable(Level.INFO)) {
+            instance.log(Level.INFO, "Exception occurred:", exception);
         }
     }
 
     public static void info(Exception exception, Object source) {
-        if (instance.isLoggable(Level.WARNING)) {
-            instance.log(Level.WARNING, "Exception from " + source, exception);
+        if (instance.isLoggable(Level.INFO)) {
+            instance.log(Level.INFO, "Exception from " + source, exception);
         }
     }
 

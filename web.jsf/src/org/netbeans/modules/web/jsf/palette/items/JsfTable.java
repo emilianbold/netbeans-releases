@@ -55,17 +55,18 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerUtil;
 import org.netbeans.modules.web.jsf.api.palette.PaletteItem;
+import org.netbeans.modules.web.jsfapi.api.DefaultLibraryInfo;
 import org.openide.text.ActiveEditorDrop;
 import org.openide.util.NbBundle;
 
 public final class JsfTable extends EntityClass implements ActiveEditorDrop, PaletteItem {
     private static String [] BEGIN = {
-        "<h:form>\n <h:dataTable value=\"#'{'{0}'}'\" var=\"{1}\">\n",
-        "<h:form>\n <h1><h:outputText value=\"List\"/></h1>\n <h:dataTable value=\"#'{'{0}'}'\" var=\"{1}\">\n",
+        "<__HTML__:form>\n <__HTML__:dataTable value=\"#'{'{0}'}'\" var=\"{1}\">\n",
+        "<__HTML__:form>\n <h1><__HTML__:outputText value=\"List\"/></h1>\n <__HTML__:dataTable value=\"#'{'{0}'}'\" var=\"{1}\">\n",
     };
     private static String [] END = {
-        "</h:dataTable>\n </h:form>\n",
-        "</h:dataTable>\n </h:form>\n",
+        "</__HTML__:dataTable>\n </__HTML__:form>\n",
+        "</__HTML__:dataTable>\n </__HTML__:form>\n",
     };
     private static String [] ITEM = {
         "",
@@ -95,13 +96,15 @@ public final class JsfTable extends EntityClass implements ActiveEditorDrop, Pal
     protected String createBody(JTextComponent target, boolean surroundWithFView) throws IOException {
         final StringBuffer stringBuffer = new StringBuffer();
         if (surroundWithFView) {
-            stringBuffer.append("<f:view>\n");
+            stringBuffer.append(PaletteUtils.createViewTag(target, false)).append("\n"); // NOI18N
         }
-        stringBuffer.append(MessageFormat.format(BEGIN [formType], new Object [] {variable, "item"})); //NOI18N
+        stringBuffer.append(MessageFormat.format(
+                BEGIN[formType].replaceAll("__HTML__", jsfLibrariesSupport.getLibraryPrefix(DefaultLibraryInfo.HTML)), //NOI18N,
+                new Object [] {variable, "item"})); //NOI18N
         
-        stringBuffer.append(END [formType]);
+        stringBuffer.append(END[formType].replaceAll("__HTML__", jsfLibrariesSupport.getLibraryPrefix(DefaultLibraryInfo.HTML))); //NOI18N
         if (surroundWithFView) {
-            stringBuffer.append("</f:view>\n");
+            stringBuffer.append(PaletteUtils.createViewTag(target, true)).append("\n"); // NOI18N
         }
         return stringBuffer.toString();
     }

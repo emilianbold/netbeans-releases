@@ -43,9 +43,6 @@
 package org.netbeans.modules.php.editor.parser;
 
 import java.io.File;
-import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
-import org.netbeans.modules.php.api.util.FileUtils;
-import org.netbeans.modules.php.editor.PHPLanguage;
 import org.netbeans.modules.php.editor.PHPTestBase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -101,20 +98,5 @@ public abstract class ParserTestBase extends PHPTestBase {
             assertFile(FileUtil.toFile(resultFO), goldenFile, getWorkDir());
         }
     }
-
-
-
-    @Override
-    protected String getPreferredMimeType() {
-        return FileUtils.PHP_MIME_TYPE;
-    }
-
-    @Override
-    protected DefaultLanguageConfig getPreferredLanguage() {
-        return new PHPLanguage();
-    }
-
-
-
 
 }

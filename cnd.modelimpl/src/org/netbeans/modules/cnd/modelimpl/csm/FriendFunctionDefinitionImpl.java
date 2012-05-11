@@ -44,8 +44,8 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
-import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.IOException;
+import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFriendFunction;
@@ -86,8 +86,7 @@ public final class FriendFunctionDefinitionImpl extends FunctionDefinitionImpl<C
         NameHolder nameHolder = NameHolder.createFunctionName(ast);
         CharSequence name = QualifiedNameCache.getManager().getString(nameHolder.getName());
         if (name.length() == 0) {
-            DiagnosticExceptoins.register(new AstRendererException((FileImpl) file, startOffset, "Empty function name.")); // NOI18N
-            return null;
+            AstRendererException.throwAstRendererException((FileImpl) file, ast, startOffset, "Empty function name."); // NOI18N
         }
         CharSequence rawName = initRawName(ast);
         
@@ -116,7 +115,7 @@ public final class FriendFunctionDefinitionImpl extends FunctionDefinitionImpl<C
 
         CsmCompoundStatement body = AstRenderer.findCompoundStatement(ast, file, friendFunctionDefinitionImpl);
         if (body == null) {
-            throw new AstRendererException((FileImpl)file, startOffset,
+            throw AstRendererException.throwAstRendererException((FileImpl)file, ast, startOffset,
                     "Null body in method definition."); // NOI18N
         }        
         friendFunctionDefinitionImpl.setCompoundStatement(body);

@@ -45,14 +45,12 @@ package org.netbeans.modules.mercurial.ui.log;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.logging.Level;
 import org.netbeans.modules.mercurial.HgException;
-import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.util.HgCommand;
@@ -331,26 +329,11 @@ public class HgLogMessage {
         return revisionNumber == null ? null : new HgRevision(changesetId, revisionNumber);
     }
 
-    void refreshChangedPaths (HgProgressSupport supp, boolean incoming) {
-        HgLogMessage[] messages;
-        if (incoming) {
-            messages = HgCommand.getIncomingMessages(new File(rootURL), getCSetShortID(), true, true, false, 1, supp.getLogger());
-        } else {
-            messages = HgCommand.getLogMessages(new File(rootURL), 
-                    null, 
-                    getCSetShortID(),
-                    getCSetShortID(),
-                    true,
-                    true,
-                    false,
-                    1,
-                    Collections.<String>emptyList(),
-                    supp.getLogger(),
-                    true);
-        }
+    public void refreshChangedPaths (HgLogMessageChangedPath[] newPaths) {
+        assert getChangedPaths().length == 0 : "Why refreshing already loaded change paths??? length=" + getChangedPaths().length;
         paths.clear();
         dummyPaths.clear();
-        paths.addAll(Arrays.asList(messages.length == 1 ? messages[0].getChangedPaths() : new HgLogMessageChangedPath[0]));
+        paths.addAll(Arrays.asList(newPaths));
     }
     
     public static class HgRevision {

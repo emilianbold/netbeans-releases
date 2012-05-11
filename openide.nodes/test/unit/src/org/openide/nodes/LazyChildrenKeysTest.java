@@ -73,7 +73,7 @@ public class LazyChildrenKeysTest extends NbTestCase {
 
             @Override
             protected Node[] createNodes(Node key) {
-                if (EntrySupport.Lazy.isDummyNode(key)) {
+                if (EntrySupportLazy.isDummyNode(key)) {
                     fail("Should not call createNodes() for DummyNode");
                 }
                 return super.createNodes(key);

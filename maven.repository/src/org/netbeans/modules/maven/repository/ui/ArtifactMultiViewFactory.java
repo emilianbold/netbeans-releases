@@ -175,14 +175,14 @@ public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
                         }
                         if (repos.isEmpty()) {
                             //add central repo
-                            repos.add(EmbedderFactory.createRemoteRepository(embedder, RepositorySystem.DEFAULT_REMOTE_REPO_URL, RepositorySystem.DEFAULT_REMOTE_REPO_ID));
+                            repos.add(embedder.createRemoteRepository(RepositorySystem.DEFAULT_REMOTE_REPO_URL, RepositorySystem.DEFAULT_REMOTE_REPO_ID));
                             //add repository form info
                             if (info != null && !RepositorySystem.DEFAULT_REMOTE_REPO_ID.equals(info.getRepoId())) {
                                 RepositoryInfo rinfo = RepositoryPreferences.getInstance().getRepositoryInfoById(info.getRepoId());
                                 if (rinfo != null) {
                                     String url = rinfo.getRepositoryUrl();
                                     if (url != null) {
-                                        repos.add(EmbedderFactory.createRemoteRepository(embedder, url, rinfo.getId()));
+                                        repos.add(embedder.createRemoteRepository(url, rinfo.getId()));
                                     }
                                 }
                             }

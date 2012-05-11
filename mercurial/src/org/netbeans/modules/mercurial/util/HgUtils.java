@@ -143,6 +143,7 @@ public class HgUtils {
     private static final String IGNORE_SYNTAX_REGEXP = "regexp";        //NOI18N
 
     private static HashMap<String, Set<Pattern>> ignorePatterns;
+    private static HashMap<String, Long> ignoreFilesTimestamps;
 
 
     /**
@@ -342,16 +343,26 @@ public class HgUtils {
         }
         String key = file.getAbsolutePath();
         ignorePatterns.remove(key);
+        ignoreFilesTimestamps.remove(key);
     }
 
     private static Set<Pattern> getIgnorePatterns(File file) {
         if (ignorePatterns == null) {
+            ignoreFilesTimestamps = new HashMap<String, Long>();
             ignorePatterns = new HashMap<String, Set<Pattern>>();
         }
         String key = file.getAbsolutePath();
         Set<Pattern> patterns = ignorePatterns.get(key);
-        if (patterns == null) {
+        Long oldTs = ignoreFilesTimestamps.get(key);
+        long ts;
+        if (EventQueue.isDispatchThread()) {
+            ts = oldTs == null ? 0 : oldTs; //keep cached
+        } else {
+            ts = new File(file, FILENAME_HGIGNORE).lastModified(); //check for external modification
+        }
+        if (patterns == null || oldTs == null && ts > 0 || oldTs != null && (ts == 0 || oldTs < ts)) {
             patterns = new HashSet<Pattern>(5);
+            ignoreFilesTimestamps.put(key, ts);
             addIgnorePatterns(patterns, file);
             ignorePatterns.put(key, patterns);
         }

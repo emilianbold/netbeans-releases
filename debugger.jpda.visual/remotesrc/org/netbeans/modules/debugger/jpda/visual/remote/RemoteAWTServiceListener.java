@@ -55,9 +55,11 @@ import java.util.Map;
 public class RemoteAWTServiceListener implements InvocationHandler {
     
     private final Component c;
+    private final Class listenerClass;
     
-    public RemoteAWTServiceListener(Component c) {
+    public RemoteAWTServiceListener(Component c, Class listenerClass) {
         this.c = c;
+        this.listenerClass = listenerClass;
     }
 
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
@@ -65,7 +67,7 @@ public class RemoteAWTServiceListener implements InvocationHandler {
         if ("equals".equals(methodName) && args.length == 1) {
             return (proxy == args[0]) ? Boolean.TRUE : Boolean.FALSE;
         }
-        logEventData(methodName, args.length > 0 ? args[0] : null);
+        logEventData(methodName, args.length > 0 ? args[0] : null, listenerClass);
         return null;
     }
     
@@ -83,7 +85,7 @@ public class RemoteAWTServiceListener implements InvocationHandler {
         } catch (SecurityException ex) {
             return null;
         }
-        RemoteAWTServiceListener rl = new RemoteAWTServiceListener(c);
+        RemoteAWTServiceListener rl = new RemoteAWTServiceListener(c, listenerClass);
         Object listener = rl.createLoggingListener(listenerClass);
         try {
             addListenerMethod.invoke(c, new Object[] { listener });
@@ -115,7 +117,7 @@ public class RemoteAWTServiceListener implements InvocationHandler {
         }
     }
     
-    private void logEventData(String methodName, Object event) {
+    private void logEventData(String methodName, Object event, Class listenerClass) {
         //System.err.println("RemoteServiceListener.logEventData("+methodName+", "+event+")");
         String toString = String.valueOf(event);
         Map properties = new HashMap();
@@ -159,7 +161,7 @@ public class RemoteAWTServiceListener implements InvocationHandler {
             data[i++] = value;
         }
         String[] stack = retrieveStack();
-        RemoteAWTService.pushEventData(c, data, stack);
+        RemoteAWTService.pushEventData(c, listenerClass, data, stack);
     }
     
     private static final int STACK_OFFSET = 8;

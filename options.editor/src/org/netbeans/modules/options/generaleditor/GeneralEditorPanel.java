@@ -94,13 +94,23 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
         loc (lSearch, "Search");
         loc (lEditorSearchType, "Editor_Search_Type");
         loc (cboEditorSearchType, "Editor_Search_Type");
-
+                
         cbUseCodeFolding.setMnemonic(NbBundle.getMessage (GeneralEditorPanel.class, "MNEMONIC_Use_Folding").charAt(0));
         cboRemoveTrailingWhitespace.setRenderer(new RemoveTrailingWhitespaceRenderer(cboRemoveTrailingWhitespace.getRenderer()));
         cboRemoveTrailingWhitespace.setModel(new DefaultComboBoxModel(new Object [] { "never", "always", "modified-lines" })); //NOI18N
         cboEditorSearchType.setRenderer(new EditorSearchTypeRenderer(cboEditorSearchType.getRenderer()));
         cboEditorSearchType.setModel(new DefaultComboBoxModel(new Object [] { "default", "closing"})); //NOI18N
-        cboEditorSearchType.setToolTipText(NbBundle.getMessage(GeneralEditorPanel.class, "Editor_Search_Type_Tooltip"));
+        cboEditorSearchType.addActionListener( new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (cboEditorSearchType.getSelectedItem().equals("default"))
+                    Mnemonics.setLocalizedText(lSearchtypeTooltip,  NbBundle.getMessage (GeneralEditorPanel.class, "Editor_Search_Type_Tooltip_default"));
+                else
+                    Mnemonics.setLocalizedText(lSearchtypeTooltip,  NbBundle.getMessage (GeneralEditorPanel.class, "Editor_Search_Type_Tooltip_closing"));
+            }
+        });
+        Mnemonics.setLocalizedText(lSearchtypeTooltip,  NbBundle.getMessage (GeneralEditorPanel.class, "Editor_Search_Type_Tooltip_closing"));
     }
     
     /** This method is called from within the constructor to
@@ -134,6 +144,7 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
         jSeparator5 = new javax.swing.JSeparator();
         lSearch = new javax.swing.JLabel();
         cboEditorSearchType = new javax.swing.JComboBox();
+        lSearchtypeTooltip = new javax.swing.JLabel();
 
         setForeground(new java.awt.Color(99, 130, 191));
 
@@ -160,7 +171,7 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
 
         cbCamelCaseBehavior.setText("Enable Camel Case Navigation");
 
-        lCamelCaseBehaviorExample.setText("Example: Caret stops at J, T, N in \"JavaTypeName\" when using next/previous word acctions");
+        lCamelCaseBehaviorExample.setText("<html>Example: Caret stops at J, T, N in \"JavaTypeName\"<br>when using next/previous word acctions</html>");
 
         lWhenSavingFiles.setText("When Saving Files");
 
@@ -176,6 +187,8 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
 
         cboEditorSearchType.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
+        lSearchtypeTooltip.setText("<html>In Closing type Enter accepts search match, Esc jumps to start. Both close searchbar. <br /> Default type closes searchbar by Esc or button. Enter means find a new instance.</html>");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -183,60 +196,63 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
             .addGroup(layout.createSequentialGroup()
                 .addComponent(lWhenSavingFiles)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jSeparator4, javax.swing.GroupLayout.DEFAULT_SIZE, 755, Short.MAX_VALUE))
+                .addComponent(jSeparator4))
             .addGroup(layout.createSequentialGroup()
                 .addComponent(lCamelCaseBehavior)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jSeparator3, javax.swing.GroupLayout.DEFAULT_SIZE, 730, Short.MAX_VALUE))
+                .addComponent(jSeparator3))
             .addGroup(layout.createSequentialGroup()
                 .addComponent(lCodeFolding)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jSeparator1, javax.swing.GroupLayout.DEFAULT_SIZE, 792, Short.MAX_VALUE))
-            .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(lUseCodeFolding)
-                            .addComponent(lCollapseByDefault)
-                            .addComponent(lRemoveTrailingWhitespace))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(lCamelCaseBehaviorExample)
-                            .addComponent(cboRemoveTrailingWhitespace, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(155, 155, 155)
-                        .addComponent(cbCamelCaseBehavior))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(155, 155, 155)
-                        .addComponent(cbFoldImports))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(155, 155, 155)
-                        .addComponent(cbFoldInnerClasses))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(155, 155, 155)
-                        .addComponent(cbFoldMethods)
-                        .addGap(18, 18, 18)
-                        .addComponent(cbFoldTags))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(155, 155, 155)
-                        .addComponent(cbUseCodeFolding))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(155, 155, 155)
-                        .addComponent(cbFoldJavadocComments))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(155, 155, 155)
-                        .addComponent(cbFoldInitialComments))
-                    .addGroup(layout.createSequentialGroup()
+                .addComponent(jSeparator1))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                         .addComponent(lSearch)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jSeparator5, javax.swing.GroupLayout.DEFAULT_SIZE, 813, Short.MAX_VALUE)))
+                        .addComponent(jSeparator5))
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                                .addContainerGap()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(lUseCodeFolding)
+                                    .addComponent(lCollapseByDefault)
+                                    .addComponent(lRemoveTrailingWhitespace))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(lCamelCaseBehaviorExample, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(cboRemoveTrailingWhitespace, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                                .addGap(155, 155, 155)
+                                .addComponent(cbCamelCaseBehavior))
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                                .addGap(155, 155, 155)
+                                .addComponent(cbFoldImports)
+                                .addGap(18, 18, 18)
+                                .addComponent(cbFoldTags))
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                                .addGap(155, 155, 155)
+                                .addComponent(cbFoldInnerClasses)
+                                .addGap(18, 18, 18)
+                                .addComponent(cbFoldInitialComments))
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                                .addGap(155, 155, 155)
+                                .addComponent(cbFoldMethods)
+                                .addGap(18, 18, 18)
+                                .addComponent(cbFoldJavadocComments))
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                                .addGap(155, 155, 155)
+                                .addComponent(cbUseCodeFolding)))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap(24, javax.swing.GroupLayout.PREFERRED_SIZE))
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(lEditorSearchType)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(cboEditorSearchType, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(lSearchtypeTooltip, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(cboEditorSearchType, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
 
@@ -257,18 +273,18 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lCollapseByDefault)
                     .addComponent(cbFoldMethods)
-                    .addComponent(cbFoldTags))
+                    .addComponent(cbFoldJavadocComments))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(cbFoldInnerClasses)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(cbFoldInnerClasses)
+                            .addComponent(cbFoldInitialComments))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(cbFoldImports)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(cbFoldJavadocComments)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(cbFoldInitialComments)
-                        .addGap(19, 19, 19)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(cbFoldImports)
+                            .addComponent(cbFoldTags))
+                        .addGap(18, 18, 18)
                         .addComponent(jSeparator3, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(lCamelCaseBehavior))
                 .addGap(2, 2, 2)
@@ -276,7 +292,7 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(cbCamelCaseBehavior)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(lCamelCaseBehaviorExample)
+                        .addComponent(lCamelCaseBehaviorExample, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
                         .addComponent(jSeparator4, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(lWhenSavingFiles))
@@ -292,7 +308,9 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lEditorSearchType)
                     .addComponent(cboEditorSearchType, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(59, Short.MAX_VALUE))
+                .addGap(18, 18, 18)
+                .addComponent(lSearchtypeTooltip, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(33, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
     
@@ -319,6 +337,7 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
     private javax.swing.JLabel lEditorSearchType;
     private javax.swing.JLabel lRemoveTrailingWhitespace;
     private javax.swing.JLabel lSearch;
+    private javax.swing.JLabel lSearchtypeTooltip;
     private javax.swing.JLabel lUseCodeFolding;
     private javax.swing.JLabel lWhenSavingFiles;
     // End of variables declaration//GEN-END:variables

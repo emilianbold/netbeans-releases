@@ -54,7 +54,6 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.text.NbDocument;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 
 
@@ -147,13 +146,11 @@ public class Utils {
         Node[] nodes = TopComponent.getRegistry ().getActivatedNodes ();
         if ((nodes == null) || (nodes.length != 1)) return null;
         Node node = nodes [0];
-        DataObject dob = (DataObject) node.getLookup().lookup (DataObject.class);
+        DataObject dob = node.getLookup().lookup (DataObject.class);
         if (dob != null && !dob.isValid()) {
             return null;
         }
-        return (EditorCookie) node.getCookie (
-            EditorCookie.class
-        );
+        return node.getLookup().lookup (EditorCookie.class);
     }
 //
 //    public static Line getCurrentLine () {

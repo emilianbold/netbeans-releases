@@ -64,7 +64,6 @@ import java.beans.PropertyEditor;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 
-import java.text.MessageFormat;
 
 import java.util.EventObject;
 import java.util.logging.Level;
@@ -409,10 +408,8 @@ class EditablePropertyDisplayer extends EditorPropertyDisplayer implements Prope
             result = PropUtils.findLocalizedMessage(exception, getEnteredValue(), getProperty().getDisplayName());
         } else if (PropertyEnv.STATE_INVALID.equals(envState)) {
             //create a generic message if state is invalid but we don't know why
-            result = MessageFormat.format(
-                    NbBundle.getMessage(EditablePropertyDisplayer.class, "FMT_CannotUpdateProperty"),
-                    new Object[] { newValue, getProperty().getDisplayName() }
-                ); //NOI18N
+            result = NbBundle.getMessage(
+                    EditablePropertyDisplayer.class, "FMT_CannotUpdateProperty", newValue,getProperty().getDisplayName()); //NOI18N
         }
 
         return result;

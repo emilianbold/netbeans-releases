@@ -51,6 +51,8 @@ import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.StyledDocument;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -63,6 +65,9 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import org.netbeans.modules.xml.api.EncodingUtil;
+import org.openide.cookies.EditorCookie;
+import org.openide.loaders.DataObject;
+import org.openide.nodes.Node;
 
 /**
  * JSP 'open info' parser allowing to fastly determine encoding for JSPs in standart syntax
@@ -130,17 +135,31 @@ public class FastOpenInfoParser {
             }
 
             String enc = null;
-            
+            InputStream is = null;
+
+            // when the file is locked there cannot be used read input stream from fileObject
+            if (fo.isLocked()) {
+                try {
+                    DataObject dataObject = DataObject.find(fo);
+                    Node.Cookie obj = dataObject.getLookup().lookup(org.openide.cookies.EditorCookie.class);
+                    StyledDocument document = ((EditorCookie) obj).getDocument();
+                    String text = document.getText(0, document.getLength() < 8192 ? document.getLength() : 8192);
+                    is = new ByteArrayInputStream(text.getBytes());
+                } catch (BadLocationException ex) {
+                    LOGGER.log(Level.SEVERE, null, ex);
+                }
+            }
+
             //get encoding from the disk file if webmodule is null and useEditor is true (during file save)
-            //XXX may be fixed better - to get the editor document instance from the fileobject (but I need to add some deps)
-            
             //#64418 - create a ByteArrayInputStream - we need a an inputstream with marks supported
-            byte[] buffer = new byte[8192*4];
-            InputStream _is = fo.getInputStream();
-            int readed = _is.read(buffer);
-            InputStream is = new ByteArrayInputStream(buffer, 0, readed);
-            _is.close();
-            
+            if (is == null) {
+                byte[] buffer = new byte[8192*4];
+                InputStream _is = fo.getInputStream();
+                int readed = _is.read(buffer);
+                is = new ByteArrayInputStream(buffer, 0, readed);
+                _is.close();
+            }
+
             if (isXMLSyntax(fo)) {
                 //XML document - detect encoding acc. to fisrt 4 bytes or xml prolog
                 enc = EncodingUtil.detectEncoding(is);
@@ -149,16 +168,15 @@ public class FastOpenInfoParser {
                 //find <%@page encoding or contentType attributes
                 enc = parseEncodingFromFile(is);
             }
-            
             LOGGER.fine("[fast open parser] detected " + enc + " encoding.");
             return enc == null ? null : new JspParserAPI.JspOpenInfo(isXMLSyntax(fo), enc);
             
         } catch (IOException e) {
-            //do not handle
+            LOGGER.log(Level.INFO, null, e);
         } catch (SAXException se) {
-            //do not handle
+            LOGGER.log(Level.INFO, null, se);
         } catch (ParserConfigurationException pce) {
-            //do not handle
+            LOGGER.log(Level.INFO, null, pce);
         } finally {
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.fine("[fast open parser] taken " + (System.currentTimeMillis() - start) + "ms.");

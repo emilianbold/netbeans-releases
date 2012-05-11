@@ -41,11 +41,7 @@
  */
 package org.netbeans.modules.web.el.refactoring;
 
-import com.sun.el.parser.AstIdentifier;
-import com.sun.el.parser.AstMethodSuffix;
-import com.sun.el.parser.AstPropertySuffix;
-import com.sun.el.parser.Node;
-import com.sun.el.parser.NodeVisitor;
+import com.sun.el.parser.*;
 import com.sun.source.tree.Tree.Kind;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -74,12 +70,8 @@ import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
-import org.netbeans.modules.web.el.CompilationContext;
-import org.netbeans.modules.web.el.ELElement;
-import org.netbeans.modules.web.el.ELIndex;
+import org.netbeans.modules.web.el.*;
 import org.netbeans.modules.web.el.ELIndexer.Fields;
-import org.netbeans.modules.web.el.ELTypeUtilities;
-import org.netbeans.modules.web.el.ELVariableResolvers;
 import org.netbeans.modules.web.el.spi.ELVariableResolver.VariableInfo;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -238,7 +230,7 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
                     TypeMirror enclosing = fmbType.asType();
                     for (int i = 0; i < parent.jjtGetNumChildren(); i++) {
                         Node child = parent.jjtGetChild(i);
-                        if (!(child instanceof AstPropertySuffix || child instanceof AstMethodSuffix)) {
+                        if (!(child instanceof AstDotSuffix || NodeUtil.isMethodCall(child))) {
                             continue;
                         }
                         if (enclosing == null) {

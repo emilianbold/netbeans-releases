@@ -95,7 +95,7 @@ final class SearchTask implements Runnable, Cancellable {
     /** Runs the search task. */
     @Override
     public void run() {
-        if (searchComposition.isTerminated()) {
+        if (interrupted) {
             return;
         }
         if (isSearchAndReplace()) {

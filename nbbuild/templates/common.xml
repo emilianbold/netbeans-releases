@@ -645,7 +645,7 @@ made subject to such option by the copyright holder.
             <metaproperty name="test.excludes" value="test.config.${test.config}.excludes"/>
             <mkdir dir="${build.test.@{test.type}.results.dir}"/>
             <condition property="test.runner" value ="testng" else="junit">
-                <available classname="org.testng.annotations.Test" classpathref="test.@{test.type}.run.cp"/>
+                <available classname="org.testng.annotations.Test" classpath="${test.@{test.type}.runtime.cp}"/>
             </condition>
             <antcall target="-do-${test.runner}">
                 <param name="run.test.type" value="@{test.type}"/>

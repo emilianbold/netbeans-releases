@@ -49,8 +49,8 @@ import org.openide.filesystems.FileStateInvalidException;
 import java.io.File;
 import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.versioning.spi.testvcs.TestVCS;
-import org.netbeans.modules.versioning.spi.testvcs.TestVCSCollocationQuery;
+import org.netbeans.modules.versioning.core.spi.testvcs.TestVCS;
+import org.netbeans.modules.versioning.core.spi.testvcs.TestVCSCollocationQuery;
 import org.openide.util.test.MockLookup;
 
 /**
@@ -79,6 +79,15 @@ public class VCSCollocationQueryTest extends NbTestCase {
         folder.mkdirs();
         File file = new File(folder, "somefile");
         file.createNewFile();
+        
+        assertRoot(folder, file);
+    }
+    
+    public void testBlankInPath() throws FileStateInvalidException, IOException, Exception {
+        File folder = createVersionedFolder();
+        File folder2 = new File(folder, "some folder");
+        folder2.mkdirs();
+        File file = new File(folder2, "somefile");
         
         assertRoot(folder, file);
     }

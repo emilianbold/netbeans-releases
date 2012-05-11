@@ -28,6 +28,7 @@ core.ide,\
 core.kit,\
 core.multiview,\
 core.netigso,\
+core.osgi,\
 core.output2,\
 core.startup,\
 core.ui,\

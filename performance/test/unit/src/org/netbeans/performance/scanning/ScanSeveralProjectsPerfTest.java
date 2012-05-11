@@ -193,7 +193,7 @@ public class ScanSeveralProjectsPerfTest extends NbTestCase {
         return NbModuleSuite.create(NbModuleSuite.emptyConfiguration().
                 addTest(ScanSeveralProjectsPerfTest.class).
                 clusters(".*").gui(true).
-                enableModules("php.*", ".*"));
+                enableModules(".*", ".*"));
     }
 
     public PerformanceData[] getPerformanceData() {

@@ -141,7 +141,144 @@ public class ToolTipAnnotation extends Annotation
                 }
             }
         }
+        //TODO: review, replace the code depending on lexer.model - part I
     }
+
+//    private static String getIdentifier(final StyledDocument doc, final JEditorPane ep, final int offset) {
+//        String t = null;
+//        if ((ep.getSelectionStart() <= offset) && (offset <= ep.getSelectionEnd())) {
+//            t = ep.getSelectedText();
+//        }
+//        if (t != null) { return t; }
+//        int line = NbDocument.findLineNumber(doc, offset);
+//        int col = NbDocument.findLineColumn(doc, offset);
+//        Element lineElem = NbDocument.findLineRootElement(doc).getElement(line);
+//        try {
+//            if (lineElem == null) { return null; }
+//            int lineStartOffset = lineElem.getStartOffset();
+//            int lineLen = lineElem.getEndOffset() - lineStartOffset;
+//            if (col + 1 >= lineLen) {
+//                // do not evaluate when mouse hover behind the end of line (112662)
+//                return null;
+//            }
+//            t = doc.getText(lineStartOffset, lineLen);
+//            return getExpressionToEvaluate(t, col);
+//        } catch (BadLocationException e) {
+//            return null;
+//        }
+//    }
+//
+//    static String getExpressionToEvaluate(String text, int col) {
+//        int identStart = col;
+//        boolean isInFieldDeclaration = false;
+//        while (identStart > 0 && ((text.charAt(identStart - 1) == ' ') || isPHPIdentifier(text.charAt(identStart - 1)) || (text.charAt(identStart - 1) == '.') || (text.charAt(identStart - 1) == '>'))) {
+//            identStart--;
+//            if (text.charAt(identStart) == '>') { // NOI18N
+//                if (text.charAt(identStart - 1) == '-') { // NOI18N
+//                    identStart--; // matched object operator ->
+//                } else {
+//                    identStart++;
+//                    break;
+//                }
+//            }
+//            if (text.charAt(identStart) == ' ') {
+//                String possibleAccessModifier = text.substring(0, identStart).trim();
+//                if (endsWithAccessModifier(possibleAccessModifier)) {
+//                    isInFieldDeclaration = true;
+//                }
+//                break;
+//            }
+//        }
+//        int identEnd = col;
+//        while (identEnd < text.length() && Character.isJavaIdentifierPart(text.charAt(identEnd))) {
+//            identEnd++;
+//        }
+//        if (identStart == identEnd) {
+//            return null;
+//        }
+//        String simpleExpression = text.substring(identStart, identEnd).trim();
+//        String result = simpleExpression;
+//        if (isInFieldDeclaration && simpleExpression.length() > 1) {
+//            result = "$this->" + simpleExpression.substring(1); //NOI18N
+//        }
+//        return result;
+//    }
+//
+//    private static boolean endsWithAccessModifier(final String possibleAccessModifier) {
+//        String lowerCased = possibleAccessModifier.toLowerCase();
+//        return lowerCased.endsWith("private") || lowerCased.endsWith("protected") || lowerCased.endsWith("public") || lowerCased.endsWith("var"); //NOI18N
+//    }
+//
+//    static boolean isPHPIdentifier(char ch) {
+//        return isDollarMark(ch) || Character.isJavaIdentifierPart(ch);
+//    }
+//
+//    static boolean isPHPIdentifier(String text) {
+//        for (int i = 0; i < text.length(); i++) {
+//            if (!isPHPIdentifier(text.charAt(i))) {
+//                return false;
+//            }
+//        }
+//        return text.length() > 0;
+//    }
+//
+//    private static boolean isDollarMark(char ch) {
+//        return ch == '$';//NOI18N
+//    }
+//
+//    private boolean isPhpDataObject( DataObject dataObject ) {
+//        return Utils.isPhpFile( dataObject.getPrimaryFile() );
+//    }
+//
+//    //TODO: review, replace the code depending on lexer.model - part II (methods computeVariable, getExpression)
+//    /*private void computeVariable( FileObject fObject, int offset ){
+//        PhpModel model = ModelAccess.getAccess().getModel(
+//                ModelAccess.getModelOrigin( fObject ));
+//        if ( model == null ){
+//            return;
+//        }
+//        SourceElement element = model.findSourceElement(offset);
+//        if ( element == null ){
+//            return;
+//        }
+//        String expression = getExpression( element );
+//        if ( expression != null ) {
+//            sendEvalCommand( expression );
+//        }
+//    }
+//
+//    private String getExpression( SourceElement element ) {
+//        if ( element == null ){
+//            return null;
+//        }
+//        if ( element instanceof Expression ){
+//            return element.getText();
+//        }
+//        else {
+//            return getExpression( element.getParent() );
+//        }
+//    }*/
+//
+//    private void sendEvalCommand( String str ){
+//        DebugSession session = getSession();
+//        if ( session == null ){
+//            return;
+//        }
+//        EvalCommand command = new EvalCommand( session.getTransactionId() );
+//        command.setData( str );
+//        command.addPropertyChangeListener( this );
+//        session.sendCommandLater(command);
+//    }
+//    private void sendPropertyGetCommand( String str ){
+//        DebugSession session = getSession();
+//        if ( session == null ){
+//            return;
+//        }
+//        PropertyGetCommand command = new PropertyGetCommand( session.getTransactionId() );
+//        command.setName( str );
+//        command.addPropertyChangeListener( this );
+//        session.sendCommandLater(command);
+//    }
 
     private String getSelectedText( JEditorPane pane , int offset ){
         if ((pane != null && pane.getSelectionStart() <= offset) &&

@@ -44,16 +44,30 @@ package org.netbeans.modules.maven.api;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import junit.framework.TestCase;
+import java.util.Collections;
+import org.apache.maven.project.MavenProject;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.maven.model.ModelOperation;
+import org.netbeans.modules.maven.model.Utilities;
+import org.netbeans.modules.maven.model.pom.POMModel;
+import org.netbeans.modules.maven.model.pom.Repository;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.test.TestFileUtils;
 
 /**
  *
  * @author mkleint
  */
-public class ModelUtilsTest extends TestCase {
+public class ModelUtilsTest extends NbTestCase {
     
     public ModelUtilsTest(String testName) {
         super(testName);
+    }
+
+    @Override protected void setUp() throws Exception {
+        clearWorkDir();
     }
 
     public void testCheckLibrary() throws MalformedURLException {
@@ -150,6 +164,42 @@ public class ModelUtilsTest extends TestCase {
         assertEquals("org.richfaces.ui", result.getGroupId());
         assertEquals("richfaces-components-ui", result.getArtifactId());
         assertEquals("4.0.0.Final", result.getVersion());
+    }
+
+    public void testAddModelRepository() throws Exception { // #212336
+        FileObject pom = TestFileUtils.writeFile(FileUtil.toFileObject(getWorkDir()), "pom.xml",
+                "<project xmlns='http://maven.apache.org/POM/4.0.0'>\n"
+                + "    <modelVersion>4.0.0</modelVersion>\n"
+                + "    <groupId>grp</groupId>\n"
+                + "    <artifactId>art</artifactId>\n"
+                + "    <version>1.0</version>\n"
+                + "</project>\n");
+        final MavenProject mp = ProjectManager.getDefault().findProject(pom.getParent()).getLookup().lookup(NbMavenProject.class).getMavenProject();
+        Utilities.performPOMModelOperations(pom, Collections.singletonList(new ModelOperation<POMModel>() {
+            @Override public void performOperation(POMModel model) {
+                Repository added = ModelUtils.addModelRepository(mp, model, "http://repo1.maven.org/maven2/");
+                assertNull(added);
+                added = ModelUtils.addModelRepository(mp, model, "http://nowhere.net/maven2/");
+                assertNotNull(added);
+                added.setId("nowhere.net");
+                added = ModelUtils.addModelRepository(mp, model, "http://nowhere.net/maven2/");
+                assertNull(added);
+            }
+        }));
+        assertEquals("<project xmlns='http://maven.apache.org/POM/4.0.0'>\n"
+                + "    <modelVersion>4.0.0</modelVersion>\n"
+                + "    <groupId>grp</groupId>\n"
+                + "    <artifactId>art</artifactId>\n"
+                + "    <version>1.0</version>\n"
+                + "    <repositories>\n"
+                + "        <repository>\n"
+                + "            <url>http://nowhere.net/maven2/</url>\n"
+                // XXX would be nice to fix IdPOMComponentImpl to put <id> first
+                + "            <id>nowhere.net</id>\n"
+                + "        </repository>\n"
+                + "    </repositories>\n"
+                + "</project>\n",
+                pom.asText().replace("\r\n", "\n"));
     }
     
 }

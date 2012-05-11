@@ -147,6 +147,11 @@ public abstract class AbstractServiceProviderProcessor extends AbstractProcessor
             processingEnv.getMessager().printMessage(Kind.ERROR, annotation.getName() + " is not applicable to a " + el.getKind(), el);
             return;
         }
+        if (el.getEnclosingElement().getKind() == ElementKind.CLASS && !el.getModifiers().contains(Modifier.STATIC)) {
+            processingEnv.getMessager().printMessage(Kind.ERROR, "Inner class needs to be static to be annotated with @ServiceProvider", el);
+            return;
+        }
+        
         TypeElement clazz = (TypeElement) el;
         String impl = processingEnv.getElementUtils().getBinaryName(clazz).toString();
         String xface = processingEnv.getElementUtils().getBinaryName((TypeElement) processingEnv.getTypeUtils().asElement(type)).toString();
@@ -279,6 +284,10 @@ public abstract class AbstractServiceProviderProcessor extends AbstractProcessor
         }
         if (clazz.getModifiers().contains(Modifier.ABSTRACT)) {
             processingEnv.getMessager().printMessage(Kind.ERROR, clazz + " must not be abstract", clazz, ann);
+            return false;
+        }
+        if (clazz.getEnclosingElement().getKind() != ElementKind.PACKAGE && !clazz.getModifiers().contains(Modifier.STATIC)) {
+            processingEnv.getMessager().printMessage(Kind.ERROR, clazz + " must be static", clazz, ann);
             return false;
         }
         {

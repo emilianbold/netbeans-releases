@@ -42,6 +42,8 @@
 package org.netbeans.modules.php.editor;
 
 import org.netbeans.modules.csl.api.test.CslTestBase;
+import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
+import org.netbeans.modules.php.api.util.FileUtils;
 
 /**
  *
@@ -51,6 +53,10 @@ public class PHPTestBase extends CslTestBase {
 
     private static final int TEST_TIMEOUT = Integer.getInteger("nb.php.test.timeout", 10000); //NOI18N
 
+    static {
+        System.setProperty("nb.php.test.run", "true"); //NOI18N
+    }
+
     public PHPTestBase(String testName) {
         super(testName);
     }
@@ -58,6 +64,16 @@ public class PHPTestBase extends CslTestBase {
     @Override
     protected int timeOut() {
         return TEST_TIMEOUT;
+    }
+
+    @Override
+    protected DefaultLanguageConfig getPreferredLanguage() {
+        return new PHPLanguage();
+    }
+
+    @Override
+    protected String getPreferredMimeType() {
+        return FileUtils.PHP_MIME_TYPE;
     }
 
 }

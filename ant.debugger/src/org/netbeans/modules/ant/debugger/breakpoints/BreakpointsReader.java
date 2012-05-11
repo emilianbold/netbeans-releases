@@ -44,8 +44,6 @@
 
 package org.netbeans.modules.ant.debugger.breakpoints;
 
-import java.lang.IllegalArgumentException;
-import java.lang.IndexOutOfBoundsException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import org.netbeans.api.debugger.Breakpoint;
@@ -65,12 +63,14 @@ import org.openide.text.Line;
 public class BreakpointsReader implements Properties.Reader {
     
     
+    @Override
     public String [] getSupportedClassNames () {
         return new String[] {
             AntBreakpoint.class.getName (), 
         };
     }
     
+    @Override
     public Object read (String typeID, Properties properties) {
         if (!(typeID.equals (AntBreakpoint.class.getName ())))
             return null;
@@ -99,6 +99,7 @@ public class BreakpointsReader implements Properties.Reader {
         return b;
     }
     
+    @Override
     public void write (Object object, Properties properties) {
         AntBreakpoint b = (AntBreakpoint) object;
         FileObject fo = (FileObject) b.getLine ().getLookup ().
@@ -127,15 +128,14 @@ public class BreakpointsReader implements Properties.Reader {
             return null;
         }
         if (file == null) return null;
-        DataObject dataObject = null;
+        DataObject dataObject;
         try {
             dataObject = DataObject.find (file);
         } catch (DataObjectNotFoundException ex) {
             return null;
         }
         if (dataObject == null) return null;
-        LineCookie lineCookie = (LineCookie) dataObject.getCookie
-            (LineCookie.class);
+        LineCookie lineCookie = dataObject.getLookup().lookup(LineCookie.class);
         if (lineCookie == null) return null;
         Line.Set ls = lineCookie.getLineSet ();
         if (ls == null) return null;

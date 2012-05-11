@@ -97,19 +97,12 @@ public final class RepositoryPreferences {
     public static final int FREQ_NEVER = 3;
     private final Map<String,RepositoryInfo> infoCache = new HashMap<String,RepositoryInfo>();
     private final Map<Object,List<RepositoryInfo>> transients = new LinkedHashMap<Object,List<RepositoryInfo>>();
-    private final RepositoryInfo local;
+    private RepositoryInfo local;
     private final RepositoryInfo central;
     private final ChangeSupport cs = new ChangeSupport(this);
     
-    //for tests to change
-    static boolean CONSIDER_MIRRORS = true;
-    
-
-    @Messages("local=Local")
     private RepositoryPreferences() {
         try {
-            local = new RepositoryInfo(RepositorySystem.DEFAULT_LOCAL_REPO_ID, local(), EmbedderFactory.getProjectEmbedder().getLocalRepository().getBasedir(), null);
-            local.setMirrorStrategy(RepositoryInfo.MirrorStrategy.NONE);
             central = new RepositoryInfo(RepositorySystem.DEFAULT_REMOTE_REPO_ID, /* XXX pull display name from superpom? */RepositorySystem.DEFAULT_REMOTE_REPO_ID, null, RepositorySystem.DEFAULT_REMOTE_REPO_URL);
             //this repository can be mirrored
             central.setMirrorStrategy(RepositoryInfo.MirrorStrategy.ALL);
@@ -150,7 +143,17 @@ public final class RepositoryPreferences {
     }
 
     /** @since 2.2 */
-    public @NonNull RepositoryInfo getLocalRepository() {
+    @Messages("local=Local")
+    public @NonNull synchronized RepositoryInfo getLocalRepository() {
+        if (local == null) {
+            try {
+                //TODO do we care about changing the instance when localrepo location changes?
+                local = new RepositoryInfo(RepositorySystem.DEFAULT_LOCAL_REPO_ID, local(), EmbedderFactory.getProjectEmbedder().getLocalRepository().getBasedir(), null);
+                local.setMirrorStrategy(RepositoryInfo.MirrorStrategy.NONE);
+            } catch (URISyntaxException x) {
+                throw new AssertionError(x);
+            }
+        }
         return local;
     }
 
@@ -184,7 +187,7 @@ public final class RepositoryPreferences {
 
     public List<RepositoryInfo> getRepositoryInfos() {
         List<RepositoryInfo> toRet = new ArrayList<RepositoryInfo>();
-        toRet.add(local);
+        toRet.add(getLocalRepository());
         Set<String> ids = new HashSet<String>();
         ids.add(RepositorySystem.DEFAULT_LOCAL_REPO_ID);
         Set<String> urls = new HashSet<String>();
@@ -237,7 +240,6 @@ public final class RepositoryPreferences {
                 }
             }
         }
-        if (CONSIDER_MIRRORS) {
             MavenEmbedder embedder2 = EmbedderFactory.getOnlineEmbedder();
             DefaultMirrorSelector selectorWithGroups = new DefaultMirrorSelector();
             DefaultMirrorSelector selectorWithoutGroups = new DefaultMirrorSelector();
@@ -272,9 +274,6 @@ public final class RepositoryPreferences {
                 }
             }
             return semiTreed;
-        } else {
-            return toRet;
-        }
     }
     
     /**
@@ -427,10 +426,10 @@ public final class RepositoryPreferences {
      */
     public List<ArtifactRepository> remoteRepositories(MavenEmbedder embedder) {
         List<ArtifactRepository> remotes = new ArrayList<ArtifactRepository>();
-        for (RepositoryInfo info : RepositoryPreferences.getInstance().getRepositoryInfos()) {
+        for (RepositoryInfo info : getRepositoryInfos()) {
             // XXX should there be a String preferredId parameter to limit the remote repositories used in case we have a "reference" ID somehow?
             if (!info.isLocal()) {
-                remotes.add(EmbedderFactory.createRemoteRepository(embedder, info.getRepositoryUrl(), info.getId()));
+                remotes.add(embedder.createRemoteRepository(info.getRepositoryUrl(), info.getId()));
             }
             // XXX do we care to handle mirrors specially?
         }

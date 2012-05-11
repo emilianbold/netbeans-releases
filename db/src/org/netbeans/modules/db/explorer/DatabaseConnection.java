@@ -1141,8 +1141,10 @@ public final class DatabaseConnection implements DBConnection {
     }
 
     public void disconnect() throws DatabaseException {
-        connector.performDisconnect();
-        propertySupport.firePropertyChange("disconnected", null, null);
+        if (!connector.isDisconnected()) {
+            connector.performDisconnect();
+            propertySupport.firePropertyChange("disconnected", null, null);
+        }
     }
 
     // Needed by unit tests as well as internally

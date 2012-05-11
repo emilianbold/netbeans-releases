@@ -60,13 +60,14 @@ import org.netbeans.modules.cloud.oracle.OracleInstanceManager;
 import org.netbeans.modules.cloud.oracle.serverplugin.OracleJ2EEInstance;
 import org.netbeans.modules.j2ee.weblogic9.DomainSupport;
 import org.netbeans.modules.j2ee.weblogic9.DomainSupport.WLDomain;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Petr Hejl
  */
-public class CustomizerInstanceGeneral extends javax.swing.JPanel {
+public class CustomizerInstanceGeneral extends javax.swing.JPanel implements HelpCtx.Provider {
 
     public static final String FAKE_EE5_INSTANCE_ID = "javaee-api-5.0";
 
@@ -219,4 +220,9 @@ public class CustomizerInstanceGeneral extends javax.swing.JPanel {
     private javax.swing.JLabel classpathLabel;
     private javax.swing.JLabel warningLabel;
     // End of variables declaration//GEN-END:variables
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(CustomizerInstanceGeneral.class.getName());
+    }
 }

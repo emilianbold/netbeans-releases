@@ -45,9 +45,27 @@
 package org.netbeans.modules.websvc.rest.wizard;
 
 import java.awt.Component;
+import java.awt.FlowLayout;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.swing.BoxLayout;
 import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.api.java.source.ui.ScanDialog;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.websvc.rest.model.api.RestApplication;
+import org.netbeans.modules.websvc.rest.spi.RestSupport;
+import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
+import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  * @author nam
@@ -61,26 +79,18 @@ final class PatternResourcesSetupPanel extends AbstractPanel {
         super(name, wizardDescriptor);
     }
     
+    @Override
     public boolean isFinishPanel() {
         return true;
     }
 
     public enum Pattern {
-        CONTAINER(ContainerItemSetupPanelVisual.class),
-        STANDALONE(SingletonSetupPanelVisual.class),
-        CLIENTCONTROLLED(ContainerItemSetupPanelVisual.class);
-        
-        private Class<? extends JComponent> componentClass;
-        Pattern(Class<? extends JComponent> componentClass) {
-            this.componentClass = componentClass;
-        }
-        
-        public JComponent createUI(String name) {
-            try {
-                return componentClass.getConstructor(String.class).newInstance(name);
-            } catch(Exception ex) {
-                throw new IllegalArgumentException(ex);
-            }
+        CONTAINER,
+        STANDALONE,
+        CLIENTCONTROLLED;
+                
+        public JComponent createUI(String name) {   
+            return new PatternPanel(name, this);
         }
     }
 
@@ -91,6 +101,7 @@ final class PatternResourcesSetupPanel extends AbstractPanel {
         }
     }
     
+    @Override
     public JComponent getComponent() {
         if (component == null) {
             component = currentPattern.createUI(panelName);
@@ -118,4 +129,124 @@ final class PatternResourcesSetupPanel extends AbstractPanel {
         return new HelpCtx(PatternResourcesSetupPanel.class.getCanonicalName() + "." + this.currentPattern);
     }
     
+    static class PatternPanel extends JPanel implements AbstractPanel.Settings, 
+        SourcePanel
+    {
+        private static final long serialVersionUID = -5802330662876130253L;
+        
+        PatternPanel(String name , Pattern pattern) {
+            JPanel panel = null;
+            switch( pattern){
+                case CONTAINER:
+                case CLIENTCONTROLLED:
+                    panel = new ContainerItemSetupPanelVisual(name);
+                    break;
+                case STANDALONE:
+                    panel = new SingletonSetupPanelVisual(name );
+                    break;
+                default :
+                    assert false;
+            }
+            setLayout( new BoxLayout(this, BoxLayout.Y_AXIS));
+            add( panel );
+            mainPanel = (AbstractPanel.Settings)panel;
+            jerseyPanel = new JerseyPanel( this );
+            mainPanel.addChangeListener(jerseyPanel );
+            add( jerseyPanel );
+        }
+        
+        @Override
+        public SourceGroup getSourceGroup(){
+            return ((SourcePanel)mainPanel).getSourceGroup();
+        }
+
+        @Override
+        public void read(final WizardDescriptor wizard) {
+            mainPanel.read(wizard);
+            Project project = Templates.getProject(wizard);
+            WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
+            Profile profile = webModule.getJ2eeProfile();
+            final RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
+            boolean hasSpringSupport = restSupport!= null && restSupport.hasSpringSupport();
+            boolean isJee6 = Profile.JAVA_EE_6_WEB.equals(profile) || 
+                Profile.JAVA_EE_6_FULL.equals(profile);
+            if ( hasSpringSupport ){
+                wizard.putProperty( WizardProperties.USE_JERSEY, true);
+            }
+            if (jerseyPanel != null) {
+                if (!isJee6 || hasSpringSupport
+                        || restSupport.isRestSupportOn())
+                {
+                    remove(jerseyPanel);
+                    jerseyPanel = null;
+                }
+                if (restSupport instanceof WebRestSupport) {
+                    ScanDialog.runWhenScanFinished(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            List<RestApplication> restApplications = ((WebRestSupport) restSupport)
+                                    .getRestApplications();
+                            boolean configured = restApplications != null
+                                    && !restApplications.isEmpty();
+                            configureJersey(configured, wizard);
+                        }
+                    }, NbBundle.getMessage(PatternResourcesSetupPanel.class,
+                            "LBL_SearchAppConfig")); // NOI18N
+
+                }
+                else {
+                    jerseyPanel.read(wizard);
+                }
+            }
+        }
+
+        @Override
+        public void store(WizardDescriptor wizard) {
+            mainPanel.store(wizard);
+            if ( hasJerseyPanel() ){
+                jerseyPanel.store(wizard);
+            }
+        }
+
+        @Override
+        public boolean valid(WizardDescriptor wizard) {
+            boolean isValid = ((AbstractPanel.Settings)mainPanel).valid(wizard);
+            if ( isValid && hasJerseyPanel() ){
+                return jerseyPanel.valid(wizard);
+            }
+            else {
+                return isValid;
+            }
+        }
+
+        @Override
+        public void addChangeListener(ChangeListener l) {
+            mainPanel.addChangeListener(l);
+            if ( hasJerseyPanel() ){
+                jerseyPanel.addChangeListener(l);
+            }
+        }
+        
+        private boolean hasJerseyPanel(){
+            return jerseyPanel != null;
+        }
+        
+        private void configureJersey(boolean remove, WizardDescriptor wizard){
+            if ( jerseyPanel == null ){
+                return;
+            }
+            if ( remove )
+            {
+                remove( jerseyPanel );
+                jerseyPanel = null;
+            }
+            else {
+                jerseyPanel.read(wizard);
+            }
+        }
+
+        private AbstractPanel.Settings mainPanel;    
+        private JerseyPanel jerseyPanel;
+    }
 }

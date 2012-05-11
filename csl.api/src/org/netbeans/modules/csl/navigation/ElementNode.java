@@ -45,10 +45,14 @@ package org.netbeans.modules.csl.navigation;
 
 
 import java.awt.Image;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import javax.swing.Action;
@@ -182,16 +186,31 @@ public class ElementNode extends AbstractNode {
         }
         return WAIT_NODE;
     }
-    
+
+    /**
+     * Refreshes the Node recursively. Only initiates the refresh; the refresh
+     * itself may happen asynchronously.
+     */
     public void refreshRecursively() {
-        Children ch = getChildren();
-        if ( ch instanceof ElementChildren ) {
-           ((ElementChildren)ch).resetKeys((List<StructureItem>)description.getNestedItems(), ui.getFilters());
-           for( Node sub : ch.getNodes() ) {
-               ui.expandNode(sub);
-               ((ElementNode)sub).refreshRecursively();
-           }
-        }        
+        List<Node> toExpand = new ArrayList<Node>();
+        refreshRecursively(Collections.singleton(this), toExpand);
+        ui.performExpansion(toExpand, Collections.<Node>emptyList());
+    }
+
+    private void refreshRecursively(Collection<ElementNode> toDo, final Collection<Node> toExpand) {
+        for (ElementNode elnod : toDo) {
+            final Children ch = elnod.getChildren();
+            if ( ch instanceof ElementChildren ) {
+                ((ElementChildren)ch).resetKeys((List<StructureItem>)description.getNestedItems(), ui.getFilters());
+
+                Collection<ElementNode> children = Arrays.<ElementNode>asList((ElementNode[])ch.getNodes());
+                toExpand.addAll(children);
+                refreshRecursively(children, toExpand);
+                for( Node sub : ch.getNodes() ) {
+                    toExpand.add(sub);
+                }
+            }
+        }
     }
 
     public ElementNode getMimeRootNodeForOffset(ParserResult info, int offset) {
@@ -258,6 +277,13 @@ public class ElementNode extends AbstractNode {
     }
 
     public void updateRecursively( StructureItem newDescription ) {
+           List<Node> nodesToExpand = new LinkedList<Node>();
+           List<Node> nodesToExpandRec = new LinkedList<Node>();
+           updateRecursively(newDescription, nodesToExpand, nodesToExpandRec);
+           ui.performExpansion(nodesToExpand, nodesToExpandRec);
+    }
+
+    private void updateRecursively( StructureItem newDescription, List<Node> nodesToExpand, List<Node> nodesToExpandRec ) {
         Children ch = getChildren();
 
         //If a node that was a LEAF now has children the child type has to be changed from Children.LEAF
@@ -293,17 +319,19 @@ public class ElementNode extends AbstractNode {
                 ElementNode node = oldD2node.get(newSub);
                 if ( node != null ) { // filtered out
                     if ( !oldSubs.contains(newSub)) {
-                        ui.expandNode(node); // Make sure new nodes get expanded
-                    }     
-                    node.updateRecursively( newSub ); // update the node recursively
+                       nodesToExpand.add(node);
+                    }
+                    node.updateRecursively( newSub, nodesToExpand, nodesToExpandRec ); // update the node recursively
                 } else { // a new node
                     if (! alreadyExpanded) {
                         alreadyExpanded = true;
-                        ui.expandNodeByDefault(this);
+                        if (ui.isExpandedByDefault(this)) {
+                            nodesToExpand.add(this);
+                        }
                     }
                     for (Node newNode : nodes) {
                         if (newNode instanceof ElementNode  &&  ((ElementNode) newNode).getDescription() == newSub) {
-                            ui.expandNodeByDefaultRecursively(newNode);
+                            nodesToExpandRec.add(newNode);
                             break;
                         }
                     }

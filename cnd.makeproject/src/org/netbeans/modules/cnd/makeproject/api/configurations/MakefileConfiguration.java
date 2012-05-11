@@ -74,7 +74,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
-public class MakefileConfiguration {
+public class MakefileConfiguration implements Cloneable {
     private MakeConfiguration makeConfiguration;
     
     private StringConfiguration buildCommandWorkingDir;

@@ -359,7 +359,6 @@ public final class HintsPanel extends javax.swing.JPanel   {
 
         jSplitPane1.setBorder(null);
         jSplitPane1.setDividerLocation(320);
-        jSplitPane1.setOpaque(false);
 
         treePanel.setOpaque(false);
         treePanel.setLayout(new java.awt.BorderLayout());
@@ -396,7 +395,6 @@ public final class HintsPanel extends javax.swing.JPanel   {
 
         org.openide.awt.Mnemonics.setLocalizedText(toProblemCheckBox, org.openide.util.NbBundle.getMessage(HintsPanel.class, "CTL_InTasklist_CheckBox")); // NOI18N
         toProblemCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        toProblemCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -470,7 +468,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
             editingButtonsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, editingButtonsLayout.createSequentialGroup()
                 .addComponent(openInEditor)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 125, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 198, Short.MAX_VALUE)
                 .addComponent(saveButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(cancelEdit))
@@ -508,15 +506,15 @@ public final class HintsPanel extends javax.swing.JPanel   {
         detailsPanel.setLayout(detailsPanelLayout);
         detailsPanelLayout.setHorizontalGroup(
             detailsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(optionsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 426, Short.MAX_VALUE)
-            .addComponent(descriptionPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 426, Short.MAX_VALUE)
+            .addComponent(optionsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(descriptionPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         detailsPanelLayout.setVerticalGroup(
             detailsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(detailsPanelLayout.createSequentialGroup()
-                .addComponent(optionsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 98, Short.MAX_VALUE)
+                .addComponent(optionsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 97, Short.MAX_VALUE)
                 .addGap(12, 12, 12)
-                .addComponent(descriptionPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 176, Short.MAX_VALUE))
+                .addComponent(descriptionPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 175, Short.MAX_VALUE))
         );
 
         jSplitPane1.setRightComponent(detailsPanel);
@@ -572,7 +570,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
                 .addComponent(importButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(exportButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 167, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 329, Short.MAX_VALUE)
                 .addComponent(editScriptButton)
                 .addGap(35, 35, 35)
                 .addComponent(okButton)
@@ -614,7 +612,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
             .addGroup(configurationsPanelLayout.createSequentialGroup()
                 .addComponent(configLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(configCombo, 0, 658, Short.MAX_VALUE))
+                .addComponent(configCombo, 0, 642, Short.MAX_VALUE))
         );
         configurationsPanelLayout.setVerticalGroup(
             configurationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -629,6 +627,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
 
         org.openide.awt.Mnemonics.setLocalizedText(refactoringsLabel, org.openide.util.NbBundle.getMessage(HintsPanel.class, "HintsPanel.refactoringsLabel.text")); // NOI18N
 
+        searchLabel.setLabelFor(searchTextField);
         org.openide.awt.Mnemonics.setLocalizedText(searchLabel, org.openide.util.NbBundle.getMessage(HintsPanel.class, "HintsPanel.searchLabel.text")); // NOI18N
 
         javax.swing.GroupLayout searchPanelLayout = new javax.swing.GroupLayout(searchPanel);
@@ -637,7 +636,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
             searchPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, searchPanelLayout.createSequentialGroup()
                 .addComponent(refactoringsLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 508, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 493, Short.MAX_VALUE)
                 .addComponent(searchLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(searchTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 121, javax.swing.GroupLayout.PREFERRED_SIZE))

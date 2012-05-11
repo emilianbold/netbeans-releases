@@ -547,7 +547,7 @@ final class PropertyDialogManager implements VetoableChangeListener, ActionListe
     }
 
     private static String getString(String key) {
-        return NbBundle.getBundle(PropertyDialogManager.class).getString(key);
+        return NbBundle.getMessage(PropertyDialogManager.class, key);
     }
 
     /** For testing purposes we need to _not_ notify some exceptions.

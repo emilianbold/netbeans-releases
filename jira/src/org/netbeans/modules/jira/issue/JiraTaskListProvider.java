@@ -64,7 +64,7 @@ import javax.swing.Action;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.api.Util;
+import org.netbeans.modules.bugtracking.api.RepositoryManager;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.TaskListIssueProvider;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
@@ -76,7 +76,6 @@ import org.netbeans.modules.jira.kenai.KenaiRepository;
 import org.netbeans.modules.jira.util.JiraUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
@@ -396,7 +395,7 @@ public final class JiraTaskListProvider extends TaskListIssueProvider implements
     }
 
     private void addCommonIssues (Map<String, List<String>> repositoryIssues) {
-        Collection<Repository> repositories = Util.getRepositories(JiraConnector.ID);
+        Collection<Repository> repositories = RepositoryManager.getInstance().getRepositories(JiraConnector.ID);
             for (Repository repository : repositories) {
                 // all issues for this repository
                 List<String> issueAttributes = repositoryIssues.get(repository.getUrl());

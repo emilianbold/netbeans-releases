@@ -87,10 +87,11 @@ public abstract class JavaProjectProfilingSupportProvider extends ProjectProfili
     @Override
     public void setupProjectSessionSettings(SessionSettings ss) {
         JavaPlatform platform = getProjectJavaPlatform();
-        
-        ss.setSystemArchitecture(platform.getPlatformArchitecture());
-        ss.setJavaVersionString(platform.getPlatformJDKVersion());
-        ss.setJavaExecutable(platform.getPlatformJavaFile());
+        if (platform != null) {
+            ss.setSystemArchitecture(platform.getPlatformArchitecture());
+            ss.setJavaVersionString(platform.getPlatformJDKVersion());
+            ss.setJavaExecutable(platform.getPlatformJavaFile());
+        }
     }
 
     @Override
@@ -112,6 +113,7 @@ public abstract class JavaProjectProfilingSupportProvider extends ProjectProfili
                     platform = JavaPlatformSelector.getDefault().selectPlatformToUse();
 
                     if (platform == null) {
+                        projectJavaPlatform = null;
                         return null;
                     }
                     projectJavaPlatform = platform;

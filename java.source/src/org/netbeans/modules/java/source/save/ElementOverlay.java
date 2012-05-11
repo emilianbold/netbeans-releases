@@ -78,6 +78,12 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import org.netbeans.modules.java.source.builder.ASTService;
 import org.netbeans.modules.java.source.builder.QualIdentTree;
+import org.netbeans.modules.refactoring.api.AbstractRefactoring;
+import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
+import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
+import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
@@ -85,6 +91,31 @@ import org.netbeans.modules.java.source.builder.QualIdentTree;
  */
 public class ElementOverlay {
 
+    private static final Logger LOG = Logger.getLogger(ElementOverlay.class.getName());
+    private static final ThreadLocal<ElementOverlay> transactionOverlay = new ThreadLocal<ElementOverlay>();
+    
+    public static void beginTransaction() {
+        transactionOverlay.set(new ElementOverlay());
+        LOG.log(Level.FINE, "transaction started");
+    }
+    
+    public static void endTransaction() {
+        transactionOverlay.set(null);
+        LOG.log(Level.FINE, "transaction end");
+    }
+    
+    public static ElementOverlay getOrCreateOverlay() {
+        ElementOverlay overlay = transactionOverlay.get();
+        
+        if (overlay == null) {
+            overlay = new ElementOverlay();
+        }
+        
+        return overlay;
+    }
+
+    private ElementOverlay() {}
+    
     private final Map<String, List<String>> class2Enclosed = new HashMap<String, List<String>>();
     private final Map<String, Collection<String>> class2SuperElementTrees = new HashMap<String, Collection<String>>();
     private final Set<String> packages = new HashSet<String>();
@@ -755,6 +786,54 @@ public class ElementOverlay {
             if (packageNameTree != null) {
                 fqn.append(packageNameTree.toString()); //XXX: should not use toString
             }
+        }
+    }
+
+    //TODO: need to have some kind of "transactions" for ElementOverlay handling, so that the whole Java refactoring
+    //runs with the same instance of ElementOverlay. A real API to begin&end the "transaction" would be better
+    @ServiceProvider(service=RefactoringPluginFactory.class, position=Integer.MIN_VALUE)
+    public static class RunFirstFactory implements RefactoringPluginFactory {
+        @Override public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
+            return new RefactoringPlugin() {
+                @Override public Problem preCheck() { return null; }
+                @Override
+                public Problem checkParameters() { return null; }
+
+                @Override
+                public Problem fastCheckParameters() { return null; }
+
+                @Override
+                public void cancelRequest() { endTransaction(); }
+
+                @Override
+                public Problem prepare(RefactoringElementsBag refactoringElements) {
+                    beginTransaction();
+                    return null;
+                }
+            };
+        }
+    }
+    
+    @ServiceProvider(service=RefactoringPluginFactory.class, position=Integer.MAX_VALUE)
+    public static class RunLastFactory implements RefactoringPluginFactory {
+        @Override public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
+            return new RefactoringPlugin() {
+                @Override public Problem preCheck() { return null; }
+                @Override
+                public Problem checkParameters() { return null; }
+
+                @Override
+                public Problem fastCheckParameters() { return null; }
+
+                @Override
+                public void cancelRequest() { endTransaction(); }
+
+                @Override
+                public Problem prepare(RefactoringElementsBag refactoringElements) {
+                    endTransaction();
+                    return null;
+                }
+            };
         }
     }
 }

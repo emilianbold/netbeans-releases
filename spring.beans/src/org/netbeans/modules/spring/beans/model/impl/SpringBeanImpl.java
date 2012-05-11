@@ -45,6 +45,7 @@ import java.util.*;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
@@ -55,6 +56,7 @@ import org.netbeans.modules.spring.api.beans.SpringAnnotations;
 import org.netbeans.modules.spring.api.beans.model.Location;
 import org.netbeans.modules.spring.api.beans.model.SpringBean;
 import org.netbeans.modules.spring.api.beans.model.SpringBeanProperty;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -144,12 +146,47 @@ public class SpringBeanImpl extends PersistentObject implements SpringBean, Refr
     }
 
     private void refreshLocation(String fqn) {
-        String classRelativePath = fqn.replace('.', '/') + ".java"; //NOI18N
-        ClassPath classPath = getHelper().getClasspathInfo().getClassPath(ClasspathInfo.PathKind.SOURCE);
-        FileObject classFO = classPath.findResource(classRelativePath);
-        if (classFO != null) {
-            location = new SpringAnnotatedBeanLocation(FileUtil.toFile(classFO));
+        String cpBase = fqn.replace('.', '/'); //NOI18N
+        ClassPath sourceCP = getHelper().getClasspathInfo().getClassPath(ClasspathInfo.PathKind.SOURCE);
+        FileObject classFO = sourceCP.findResource(cpBase + ".java"); //NOI18N
+
+        if (classFO == null) {
+            ClassPath compileCP = getHelper().getClasspathInfo().getClassPath(ClasspathInfo.PathKind.COMPILE);
+            classFO = searchForFile(compileCP, cpBase);
         }
+
+        if (classFO != null) {
+            location = new SpringAnnotatedBeanLocation(classFO);
+        }
+    }
+
+    private static FileObject searchForFile(ClassPath cp, String cpBase) {
+        FileObject file = getFileFromClasspath(cp, cpBase + ".java"); //NOI18N
+        if (file == null) {
+            return getFileFromClasspath(cp, cpBase + ".class"); //NOI18N
+        } else {
+            return file;
+        }
+    }
+
+    private static FileObject getFileFromClasspath(ClassPath cp, String classRelativePath) {
+        for (ClassPath.Entry entry : cp.entries()) {
+            FileObject roots[];
+            if (entry.isValid()) {
+                roots = new FileObject[]{entry.getRoot()};
+            } else {
+                SourceForBinaryQuery.Result res = SourceForBinaryQuery.findSourceRoots(entry.getURL());
+                roots = res.getRoots();
+            }
+            for (FileObject root : roots) {
+                FileObject metaInf = root.getFileObject(classRelativePath);
+                if (metaInf != null) {
+                    return metaInf;
+                }
+            }
+        }
+
+        return null;
     }
 
     private static AnnotationMirror getAnnotationMirror(Map<String, ? extends AnnotationMirror> types) {

@@ -58,6 +58,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -69,7 +70,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.web.examples.WebSampleProjectGenerator;
 
-public class JavaEESamplesWizardIterator implements WizardDescriptor.InstantiatingIterator {
+public class JavaEESamplesWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
     
     private int index;
     private WizardDescriptor.Panel[] panels;
@@ -94,7 +95,17 @@ public class JavaEESamplesWizardIterator implements WizardDescriptor.Instantiati
         };
     }
     
+    @Override
     public Set<FileObject> instantiate() throws IOException {
+        assert false : "This method cannot be called if the class implements WizardDescriptor.ProgressInstantiatingIterator.";
+        return null;
+    }
+
+    @Override
+    public Set instantiate(ProgressHandle handle) throws IOException {
+        handle.start(2);
+        handle.progress(NbBundle.getMessage(JavaEESamplesWizardIterator.class, "LBL_NewSampleProjectWizardIterator_WizardProgress_CreatingProject"), 1);
+
         Set resultSet = new LinkedHashSet();
         File dirF = FileUtil.normalizeFile((File) wiz.getProperty(WizardProperties.PROJ_DIR));
         String name = (String)wiz.getProperty(WizardProperties.NAME);
@@ -119,7 +130,8 @@ public class JavaEESamplesWizardIterator implements WizardDescriptor.Instantiati
         }
 
         ProjectManager.getDefault().clearNonProjectCache();
-        
+        handle.progress(NbBundle.getMessage(JavaEESamplesWizardIterator.class, "LBL_NewSampleProjectWizardIterator_WizardProgress_PreparingToOpen"), 2);
+
         // Always open top dir as a project:
         resultSet.add(dir);
         // Look for nested projects to open as well:
@@ -130,15 +142,17 @@ public class JavaEESamplesWizardIterator implements WizardDescriptor.Instantiati
                 resultSet.add(subfolder);
             }
         }
-        
+
         File parent = dirF.getParentFile();
         if (parent != null && parent.exists()) {
             ProjectChooser.setProjectsFolder(parent);
         }
-        
+
+        handle.finish();
         return resultSet;
     }
     
+    @Override
     public void initialize(WizardDescriptor wiz) {
         this.wiz = wiz;
         index = 0;
@@ -167,6 +181,7 @@ public class JavaEESamplesWizardIterator implements WizardDescriptor.Instantiati
         wiz.putProperty(WizardProperties.NAME, template.getName());
     }
     
+    @Override
     public void uninitialize(WizardDescriptor wiz) {
         this.wiz.putProperty(WizardProperties.PROJ_DIR, null);
         this.wiz.putProperty(WizardProperties.NAME, null);
@@ -174,19 +189,23 @@ public class JavaEESamplesWizardIterator implements WizardDescriptor.Instantiati
         panels = null;
     }
     
+    @Override
     public String name() {
         return NbBundle.getMessage(JavaEESamplesWizardIterator.class, "LBL_Order", 
                 new Object[] {new Integer(index + 1), new Integer(panels.length)});
     }
     
+    @Override
     public boolean hasNext() {
         return index < panels.length - 1;
     }
     
+    @Override
     public boolean hasPrevious() {
         return index > 0;
     }
     
+    @Override
     public void nextPanel() {
         if (!hasNext()) {
             throw new NoSuchElementException();
@@ -194,6 +213,7 @@ public class JavaEESamplesWizardIterator implements WizardDescriptor.Instantiati
         index++;
     }
     
+    @Override
     public void previousPanel() {
         if (!hasPrevious()) {
             throw new NoSuchElementException();
@@ -201,12 +221,15 @@ public class JavaEESamplesWizardIterator implements WizardDescriptor.Instantiati
         index--;
     }
     
+    @Override
     public WizardDescriptor.Panel current() {
         return panels[index];
     }
     
     // If nothing unusual changes in the middle of the wizard, simply:
+    @Override
     public final void addChangeListener(ChangeListener l) {}
+    @Override
     public final void removeChangeListener(ChangeListener l) {}
     
     private static void unZipFile(InputStream source, FileObject projectRoot) throws IOException {
@@ -264,5 +287,5 @@ public class JavaEESamplesWizardIterator implements WizardDescriptor.Instantiati
         assert dirFO != null : "At least disk roots must be mounted! " + rootF; // NOI18N
         dirFO.getFileSystem().refresh(false);
     }
-    
+
 }

@@ -47,7 +47,7 @@ import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.lib.profiler.common.Profiler;
+import org.netbeans.modules.profiler.api.JavaPlatform;
 import org.netbeans.modules.profiler.nbimpl.actions.ProfilerLauncher;
 import org.openide.filesystems.FileUtil;
 
@@ -79,7 +79,10 @@ public class StartProfilerTask extends Task {
                     getProject().setProperty(e.getKey(), e.getValue());
                 }
                 if (!NetBeansProfiler.getDefaultNB().startEx(s.getProfilingSettings(), s.getSessionSettings())) {
-                    throw new BuildException("User abort");
+                    throw new BuildException("User abort"); // NOI18N
+                }
+                if (isFreeForm) {
+                    getProject().setProperty("profiler.configured", "true"); // NOI18N
                 }
             }
         }

@@ -90,7 +90,7 @@ public class OracleServerInstanceImplementation implements ServerInstanceImpleme
 //
 //            @Override
 //            public void stateChanged(ChangeEvent e) {
-//                if (!panel.getServiceInstance().equals(ai.getServiceInstance())) {
+//                if (!panel.getJavaServiceName().equals(ai.getJavaServiceName())) {
 //                    // this field is part of URL (that is server unique key) of J2EE server
 //                    // corresponding to this cloud and therefore value cannot be modified
 //                }

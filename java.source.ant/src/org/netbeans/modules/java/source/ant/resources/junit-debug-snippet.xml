@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+Copyright 2010-2012 Oracle and/or its affiliates. All rights reserved.
 
 Oracle and Java are registered trademarks of Oracle and/or its affiliates.
 Other names may be trademarks of their respective owners.
@@ -44,9 +44,24 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 <project name="{0} (debug-test)" default="debug-test" basedir=".">
+    <target name="-init">
+        <condition property="testng.available" value="true" else="false">
+            <available classname="org.testng.annotations.Test" classpath="${classpath}"/>
+        </condition>
+        <condition property="testng.mode" value="-mixed" else="">
+            <and>
+                <istrue value="${testng.available}"/>
+                <available classname="org.junit.Test" classpath="${classpath}"/>
+            </and>
+        </condition>
+    </target>
     <target name="-check-run-test-single-method-supported" if="methodname">
-        <available property="run.test.single.method.supported"
-                   resource="org/apache/tools/ant/taskdefs/optional/junit/JUnit4TestMethodAdapter.class"/>
+        <condition property="run.test.single.method.supported">
+            <or>
+                <available resource="org/apache/tools/ant/taskdefs/optional/junit/JUnit4TestMethodAdapter.class"/>
+                <istrue value="${testng.available}"/>
+            </or>
+        </condition>
         <fail unless="run.test.single.method.supported">Execution of a single test method is not supported by this version of Ant.</fail>
     </target>
     <target name="-init-debug-args">
@@ -69,7 +84,7 @@ made subject to such option by the copyright holder.
             <isset property="debug.transport"/>
         </condition>
     </target>
-    <target name="-prepare-execution" depends="-init-debug-args">
+    <target name="-prepare-junit-execution" depends="-init-debug-args">
         <property name="test.result.dir" location="${java.io.tmpdir}"/>
         <property name="test.result.file"
                   location="${test.result.dir}/TEST-${classname}.xml"/>
@@ -104,20 +119,70 @@ made subject to such option by the copyright holder.
                 </junit>
             </sequential>
         </macrodef>
+        <macrodef name="testng-debug-template">
+            <attribute name="test"/>
+            <attribute name="method" default=""/>
+            <sequential/>
+        </macrodef>
         <translate-classpath classpath="${classpath}" targetProperty="classpath-translated"/>
     </target>
+    <target name="-prepare-testng-execution" depends="-init-debug-args" if="${testng.available}">
+        <macrodef name="junit-debug-template">
+            <element name="test-spec" implicit="yes"/>
+            <sequential/>
+        </macrodef>
+        <macrodef name="testng-debug-template">
+            <attribute name="test"/>
+            <attribute name="method" default=""/>
+            <sequential>
+                <property name="test.results.dir" location="${java.io.tmpdir}/${classname}"/>
+                <property  name="tmp.dir" value="${basedir}"/>
+                <translate-classpath classpath="${classpath}" targetProperty="classpath-translated" />
+                <nbjpdastart addressproperty="jpda.address" name="${classname}" stopclassname="" transport="${debug-transport}" listeningcp="${classpath}">
+                    <classpath>
+                        <path path="${classpath-translated}"/>
+                    </classpath>
+                    <bootclasspath>
+                        <path path="${platform.bootcp}"/>
+                    </bootclasspath>
+                </nbjpdastart>
+                <condition else="-testclass @{test}" property="testng.cmd.args" value="-methods @{test}.@{method}">
+                    <length string="@{method}" when="gt" length="0" trim="true"/>
+                </condition>
+                <property name="work.dir" value="${basedir}"/>
+                <java classname="org.testng.TestNG" dir="${work.dir}" jvm="${platform.java}" fork="true">
+                    <jvmarg value="-Xrunjdwp:transport=${debug-transport},address=${jpda.address}"/>
+                    <jvmarg line="${run.jvmargs}"/>
+                    <classpath path="${classpath-translated}" />
+                    <syspropertyset>
+                        <propertyref prefix="run-sys-prop."/>
+                        <mapper from="run-sys-prop.*" to="*" type="glob"/>
+                    </syspropertyset>
+                    <arg line="${testng.mode}"/>
+                    <arg line="-d ${test.results.dir}"/>
+                    <arg line="-listener org.testng.reporters.VerboseReporter"/>
+                    <arg line="${testng.cmd.args}"/>
+                </java>
+                <delete dir="${test.results.dir}" quiet="true"/>
+            </sequential>
+        </macrodef>
+        <translate-classpath classpath="${classpath}" targetProperty="classpath-translated"/>
+    </target>
+    <target name="-prepare-execution" depends="-init-debug-args,-prepare-junit-execution,-prepare-testng-execution"/>
     <target name="-debug-test-class" depends="-prepare-execution" unless="methodname">
         <junit-debug-template>
             <test name="${classname}" todir="${test.result.dir}"/>
         </junit-debug-template>
+        <testng-debug-template test="${classname}" />
     </target>
     <target name="-debug-test-method" depends="-check-run-test-single-method-supported,-prepare-execution" if="methodname">
         <junit-debug-template>
             <test name="${classname}" methods="${methodname}"
                   todir="${test.result.dir}"/>
         </junit-debug-template>
+        <testng-debug-template test="${classname}" method="${methodname}" />
     </target>
-    <target name="debug-test" depends="-debug-test-class,-debug-test-method">
+    <target name="debug-test" depends="-init,-debug-test-class,-debug-test-method">
         <!-- This target is intended to be used in conjunction with the
         org.apache.tools.ant.module.spi.AntLogger. Note, the next task
         deletes just created test report. -->

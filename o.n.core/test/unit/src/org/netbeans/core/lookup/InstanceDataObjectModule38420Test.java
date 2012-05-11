@@ -46,6 +46,7 @@ package org.netbeans.core.lookup;
 
 import java.lang.ref.WeakReference;
 import javax.swing.Action;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.util.Lookup;
 
 /** A test.
@@ -56,6 +57,7 @@ public class InstanceDataObjectModule38420Test extends InstanceDataObjectModuleT
         super(name);
     }
 
+    @RandomlyFails // NB-Core-Build #8196
     public void testEnableDisableOfModulePreservesExistingInstances () throws Exception {
         Lookup.Result res = Lookup.getDefault ().lookupResult(Action.class);
         Action found = null;

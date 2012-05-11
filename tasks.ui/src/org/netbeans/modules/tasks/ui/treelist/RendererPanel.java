@@ -63,8 +63,6 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
-import org.netbeans.modules.tasks.ui.dashboard.ClosedCategoryNode;
-import org.netbeans.modules.tasks.ui.dashboard.ClosedRepositoryNode;
 import org.netbeans.modules.tasks.ui.dashboard.TitleNode;
 
 /**
@@ -127,7 +125,7 @@ final class RendererPanel extends JPanel {
     }
 
     public void configure(Color foreground, Color background, boolean isSelected, boolean hasFocus, int nestingDepth, int rowHeight, int rowWidth) {
-        if ((isRoot && node.isExpandable()) || node instanceof ClosedCategoryNode || node instanceof ClosedRepositoryNode) {
+        if (isRoot && node.isExpandable()) {
             foreground = isSelected ? expandableRootSelectedForeground : expandableRootForeground;
             background = isSelected ? expandableRootSelectedBackground : expandableRootBackground;
         } else if (node instanceof TitleNode) {

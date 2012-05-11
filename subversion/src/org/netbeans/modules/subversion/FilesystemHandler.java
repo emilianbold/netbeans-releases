@@ -46,7 +46,6 @@ package org.netbeans.modules.subversion;
 
 import java.awt.EventQueue;
 import java.util.Map.Entry;
-import javax.swing.SwingUtilities;
 import org.netbeans.modules.versioning.util.FileUtils;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.subversion.client.SvnClient;
@@ -292,9 +291,6 @@ class FilesystemHandler extends VCSInterceptor {
     @Override
     public void doMove(final File from, final File to) throws IOException {
         Subversion.LOG.log(Level.FINE, "doMove {0} -> {1}", new Object[]{from, to});
-        if (SwingUtilities.isEventDispatchThread()) {
-            Subversion.LOG.log(Level.INFO, "Warning: launching external process in AWT", new Exception().fillInStackTrace());
-        }
         svnMoveImplementation(from, to);
     }
 
@@ -351,9 +347,6 @@ class FilesystemHandler extends VCSInterceptor {
     @Override
     public void doCopy(final File from, final File to) throws IOException {
         Subversion.LOG.log(Level.FINE, "doCopy {0} -> {1}", new Object[]{from, to});
-        if (SwingUtilities.isEventDispatchThread()) {
-            Subversion.LOG.log(Level.INFO, "Warning: launching external process in AWT", new Exception().fillInStackTrace());
-        }
         svnCopyImplementation(from, to);
     }
 

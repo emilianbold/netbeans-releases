@@ -561,7 +561,10 @@ public final class MultiViewPeer implements PropertyChangeListener {
                             break;
                         }
                     }
-                    assert match : "No match for description ID " + obj.toString();
+                    if( !match ) {
+                        throw new IOException( "Cannot find multiview description for id \"" + obj
+                                + "\". Maybe some module(s) is not installed or activated." );
+                    }
                 }
                 else if (obj instanceof MultiViewElement) {
                     assert lastDescription != null;

@@ -41,11 +41,7 @@
  */
 package org.netbeans.modules.web.el;
 
-import com.sun.el.parser.AstIdentifier;
-import com.sun.el.parser.AstMethodSuffix;
-import com.sun.el.parser.AstPropertySuffix;
-import com.sun.el.parser.Node;
-import com.sun.el.parser.NodeVisitor;
+import com.sun.el.parser.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -128,12 +124,12 @@ public final class ELIndexer extends EmbeddingIndexer {
             if (node instanceof AstIdentifier) {
                 String identifier = ((AstIdentifier) node).getImage();
                 getCurrent().addPair(Fields.IDENTIFIER, identifier, true, true);
-            } else if (node instanceof AstPropertySuffix) {
-                String property = ((AstPropertySuffix) node).getImage();
-                getCurrent().addPair(Fields.PROPERTY, property, true, true);
-            } else if (node instanceof AstMethodSuffix) {
-                String method = ((AstMethodSuffix) node).getImage();
+            } else if (NodeUtil.isMethodCall(node)) {
+                String method = node.getImage();
                 getCurrent().addPair(Fields.METHOD, method, true, true);
+            } else if (node instanceof AstDotSuffix) {
+                String property = ((AstDotSuffix) node).getImage();
+                getCurrent().addPair(Fields.PROPERTY, property, true, true);
             }
         }
     }

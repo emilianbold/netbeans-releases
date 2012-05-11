@@ -202,6 +202,22 @@ public class ServiceProviderProcessorTest extends NbTestCase {
         baos = new ByteArrayOutputStream();
         assertFalse(AnnotationProcessorTestUtils.runJavac(src, "C7", dest, null, baos));
         assertTrue(baos.toString(), baos.toString().contains("not applicable"));
+
+        AnnotationProcessorTestUtils.makeSource(src, "p.C8",
+                "class C8 {",
+                "@org.openide.util.lookup.ServiceProvider(service=" + xfaceName + ".class)",
+                "public static class Inner implements " + xfaceName + " {}",
+                "}");
+        assertTrue(AnnotationProcessorTestUtils.runJavac(src, "C8", dest, null, baos));
+
+        AnnotationProcessorTestUtils.makeSource(src, "p.C9",
+                "class C9 {",
+                "@org.openide.util.lookup.ServiceProvider(service=" + xfaceName + ".class)",
+                "public class Inner implements " + xfaceName + " {}",
+                "}");
+        baos = new ByteArrayOutputStream();
+        assertFalse(AnnotationProcessorTestUtils.runJavac(src, "C9", dest, null, baos));
+        assertTrue(baos.toString(), baos.toString().contains("static"));
     }
 
     public void testInvalidInput() throws Exception { // #195983
@@ -217,6 +233,21 @@ public class ServiceProviderProcessorTest extends NbTestCase {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         assertFalse(AnnotationProcessorTestUtils.runJavac(src, "C1", dest, null, baos));
         assertTrue(baos.toString(), baos.toString().contains("not applicable"));
+    }
+    
+    public void testInnerClassError() throws Exception {
+        clearWorkDir();
+        File src = new File(getWorkDir(), "src");
+        File dest = new File(getWorkDir(), "classes");
+
+        AnnotationProcessorTestUtils.makeSource(src, "p.C1",
+                "public class C1 {",
+                "  @org.openide.util.lookup.ServiceProvider(service=java.io.Serializable.class)",
+                "  public class Inner implements java.io.Serializable {}",
+                "}");
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        assertFalse("Compilation should fail", AnnotationProcessorTestUtils.runJavac(src, "C1", dest, null, baos));
+        assertTrue("Error should contain warning about static:\n" + baos.toString(), baos.toString().contains("needs to be static"));
     }
 
 }

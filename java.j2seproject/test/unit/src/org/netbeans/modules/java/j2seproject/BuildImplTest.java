@@ -623,7 +623,7 @@ public final class BuildImplTest extends NbTestCase {
         p.setProperty("javac.includes", "pkg/SomeTest.java");
         p.setProperty("test.includes", "pkg/SomeTest.java");
         assertBuildSuccess(ActionUtils.runTarget(buildXml, new String[] {"test-single"}, p));
-        assertTrue("wrong default suite name", output.contains("testRunSingleTestWithDep"));
+        assertTrue("wrong default suite name: " + output, output.contains("testRunSingleTestWithDep"));
         assertTrue("wrong tests executed", output.contains("Total tests run: 1, Failures: 0, Skips: 0"));
     }
 

@@ -90,18 +90,22 @@ import org.openide.util.actions.Presenter;
 @ActionReference(path = "Loaders/text/x-ant+xml/Actions", position = 300)
 public final class RunTargetsAction extends SystemAction implements ContextAwareAction {
 
+    @Override
     public String getName () {
         return NbBundle.getMessage (RunTargetsAction.class, "LBL_run_targets_action");
     }
 
+    @Override
     public HelpCtx getHelpCtx () {
         return HelpCtx.DEFAULT_HELP;
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         assert false : "Action should never be called without a context";
     }
 
+    @Override
     public Action createContextAwareInstance(Lookup actionContext) {
         return new ContextAction(actionContext);
     }
@@ -115,10 +119,10 @@ public final class RunTargetsAction extends SystemAction implements ContextAware
         
         public ContextAction(Lookup lkp) {
             super(SystemAction.get(RunTargetsAction.class).getName());
-            Collection/*<AntProjectCookie>*/ apcs = lkp.lookup(new Lookup.Template(AntProjectCookie.class)).allInstances();
+            Collection<? extends AntProjectCookie> apcs = lkp.lookupAll(AntProjectCookie.class);
             AntProjectCookie _project = null;
             if (apcs.size() == 1) {
-                _project = (AntProjectCookie) apcs.iterator().next();
+                _project = apcs.iterator().next();
                 if (_project.getParseException() != null) {
                     _project = null;
                 }
@@ -127,10 +131,12 @@ public final class RunTargetsAction extends SystemAction implements ContextAware
             super.setEnabled(project != null);
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             assert false : "Action should not be called directly";
         }
 
+        @Override
         public JMenuItem getPopupPresenter() {
             if (project != null) {
                 return createMenu(project);
@@ -139,6 +145,7 @@ public final class RunTargetsAction extends SystemAction implements ContextAware
             }
         }
 
+        @Override
         public void setEnabled(boolean b) {
             assert false : "No modifications to enablement status permitted";
         }
@@ -146,7 +153,7 @@ public final class RunTargetsAction extends SystemAction implements ContextAware
     }
 
     /**
-     * Create the submenu.
+     * Create the sub-menu.
      */
     private static JMenu createMenu(AntProjectCookie project) {
         return new LazyMenu(project);
@@ -162,6 +169,7 @@ public final class RunTargetsAction extends SystemAction implements ContextAware
             this.project = project;
         }
         
+        @Override
         public JPopupMenu getPopupMenu() {
             if (!initialized) {
                 initialized = true;
@@ -257,11 +265,13 @@ public final class RunTargetsAction extends SystemAction implements ContextAware
             this.target = target;
         }
         
+        @Override
         public void actionPerformed(ActionEvent ev) {
             // #16720 part 2: don't do this in the event thread...
             RequestProcessor.getDefault().post(this);
         }
         
+        @Override
         public void run() {
             try {
                 DebuggerAntLogger.getDefault ().debugFile (project.getFile ());
@@ -292,6 +302,7 @@ public final class RunTargetsAction extends SystemAction implements ContextAware
             this.allTargets = allTargets;
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             String title = NbBundle.getMessage(RunTargetsAction.class, "TITLE_run_advanced");
             AdvancedActionPanel panel = new AdvancedActionPanel(project, allTargets);

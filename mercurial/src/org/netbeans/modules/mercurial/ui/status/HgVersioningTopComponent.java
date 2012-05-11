@@ -123,7 +123,7 @@ public class HgVersioningTopComponent extends TopComponent implements Externaliz
     public void writeExternal(ObjectOutput out) throws IOException {
         super.writeExternal(out);
         out.writeObject(this.contentTitle);
-        out.writeObject(context.getRootFiles().toArray(new File[context.getRootFiles().size()]));
+        out.writeObject(context == null ? new File[0] : context.getRootFiles().toArray(new File[context.getRootFiles().size()]));
     }
 
     @Override

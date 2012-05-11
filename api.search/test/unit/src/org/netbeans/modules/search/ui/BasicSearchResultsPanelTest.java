@@ -47,6 +47,7 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.netbeans.modules.search.TextDetail;
+import org.openide.explorer.view.OutlineView;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -66,6 +67,8 @@ public class BasicSearchResultsPanelTest {
     private Node c3;
     private RootNode rootNode;
 
+    private AbstractSearchResultsPanel resultsPanel;
+
     @Before
     public void setUp() {
         rootNode = new RootNode();
@@ -75,6 +78,18 @@ public class BasicSearchResultsPanelTest {
         a1 = a.getChildren().getNodeAt(0);
         b2 = b.getChildren().getNodeAt(1);
         c3 = c.getChildren().getNodeAt(2);
+        resultsPanel = new AbstractSearchResultsPanel(null, null) {
+
+            @Override
+            protected OutlineView getOutlineView() {
+                return null;
+            }
+
+            @Override
+            protected boolean isDetailNode(Node n) {
+                return n.getLookup().lookup(TextDetail.class) != null;
+            }
+        };
     }
 
     @Test
@@ -107,12 +122,12 @@ public class BasicSearchResultsPanelTest {
     }
 
     private Node next(Node fromNode) {
-        return BasicAbstractResultsPanel.findTextDetailNode(fromNode, 1, null,
+        return resultsPanel.findDetailNode(fromNode, 1, null,
                 false);
     }
 
     private Node prev(Node fromNode) {
-        return BasicAbstractResultsPanel.findTextDetailNode(fromNode, -1, null,
+        return resultsPanel.findDetailNode(fromNode, -1, null,
                 false);
     }
 

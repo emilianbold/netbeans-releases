@@ -52,14 +52,12 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
-import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaClient;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.api.Util;
+import org.netbeans.modules.bugtracking.api.RepositoryManager;
 import org.netbeans.modules.bugtracking.spi.RepositoryController;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
@@ -160,7 +158,7 @@ public class BugzillaRepositoryController implements RepositoryController, Docum
         // is name unique?
         Collection<Repository> repositories = null;
         if(repository.getTaskRepository() == null) {
-            repositories = Util.getRepositories(BugzillaConnector.ID);
+            repositories = RepositoryManager.getInstance().getRepositories(BugzillaConnector.ID);
             for (Repository repo : repositories) {
                 if(name.equals(repo.getDisplayName())) {
                     errorMessage = NbBundle.getMessage(BugzillaRepositoryController.class, "MSG_NAME_ALREADY_EXISTS");  // NOI18N

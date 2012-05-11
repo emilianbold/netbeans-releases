@@ -62,7 +62,7 @@ import org.openide.util.NbBundle;
 public class BookmarksTable extends ETable {
     
     BookmarksTable() {
-        super(new BookmarksTableModel());
+        super(new BookmarksTableModel(false));
         init();
     }
 
@@ -83,6 +83,7 @@ public class BookmarksTable extends ETable {
 
         col = colModel.getColumn(BookmarksTableModel.LOCATION_COLUMN);
         col.setHeaderValue(NbBundle.getMessage(BookmarksTable.class, "LBL_BookmarkLocation"));
+        col.setCellRenderer(new BookmarkNodeRenderer(false));
 
         getTableHeader().addMouseMotionListener(new MouseMotionAdapter() {
             @Override
@@ -124,6 +125,5 @@ public class BookmarksTable extends ETable {
         }
         return toolTipText;
     }
-    
 
 }

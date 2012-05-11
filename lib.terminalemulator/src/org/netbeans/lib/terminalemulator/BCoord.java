@@ -59,7 +59,7 @@ package org.netbeans.lib.terminalemulator;
  * </ul>
  */
 
-class BCoord implements Comparable {
+final class BCoord implements Comparable {
     public int row;
     public int col;
 
@@ -91,12 +91,6 @@ class BCoord implements Comparable {
 
     public Object clone() {
 	return new BCoord(row, col);
-    } 
-
-    public boolean equals(BCoord target) { // XXX param should be Object and also hashCode should be overriden
-	if (row != target.row)
-	    return false;
-	return col == target.col;
     } 
 
     public String toString() {

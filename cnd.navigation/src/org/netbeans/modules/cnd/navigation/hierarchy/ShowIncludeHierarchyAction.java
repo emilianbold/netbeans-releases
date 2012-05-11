@@ -44,9 +44,7 @@
 
 package org.netbeans.modules.cnd.navigation.hierarchy;
 
-import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.navigation.hierarchy.HierarchyTopComponent.InclideContextFinder;
 import org.openide.cookies.EditorCookie;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -57,29 +55,18 @@ public final class ShowIncludeHierarchyAction extends CookieAction {
     
     @Override
     protected void performAction(Node[] activatedNodes) {
-        CsmFile file = ContextUtils.findFile(activatedNodes);
-        if (file != null){
-            HierarchyTopComponent view = HierarchyTopComponent.findInstance();
-            if (!view.isOpened()) {
-                view.open();
-            }
-            view.setFile(file, false);
-            view.requestActive();
+        HierarchyTopComponent view = HierarchyTopComponent.findInstance();
+        if (!view.isOpened()) {
+            view.open();
         }
+        view.setFile(new InclideContextFinder(activatedNodes), false);
+        view.requestActive();
     }
     
     @Override
     protected boolean enable(Node[] activatedNodes) {
         if (activatedNodes != null && activatedNodes.length > 0) {
-            if (ContextUtils.USE_REFERENCE_RESOLVER) {
-                CsmReference ref = ContextUtils.findReference(activatedNodes[0]);
-                if (ref != null) {
-                    if (ref.getClosestTopLevelObject() != null) {
-                        return CsmKindUtilities.isInclude(ref.getClosestTopLevelObject());
-                    }
-                }
-            }
-            return ContextUtils.findFile(activatedNodes[0]) != null;
+            return true;
         }
         return false;
     }

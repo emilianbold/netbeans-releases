@@ -205,6 +205,7 @@ public abstract class AbstractRefactoring {
     @CheckForNull
     public final Problem prepare(@NonNull RefactoringSession session) {
         try {
+            session.started();
             Parameters.notNull("session", session); // NOI18N
             long time = System.currentTimeMillis();
 
@@ -306,7 +307,7 @@ public abstract class AbstractRefactoring {
             progressSupport.removeProgressListener(listener); 
         }
 
-        if (pluginsWithProgress != null) {
+        if (pluginsWithProgress != null && progressSupport!=null && progressSupport.isEmpty()) {
             Iterator pIt=pluginsWithProgress.iterator();
             
             while(pIt.hasNext()) {

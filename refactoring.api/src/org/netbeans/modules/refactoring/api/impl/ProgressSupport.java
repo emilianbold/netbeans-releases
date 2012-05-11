@@ -61,6 +61,10 @@ public final class ProgressSupport {
     private int counter;
     private boolean deterministic;
 
+    public boolean isEmpty() {
+        return progressListenerList.isEmpty();
+    }
+    
     public synchronized void addProgressListener(ProgressListener listener) {
         progressListenerList.add(listener);
     }

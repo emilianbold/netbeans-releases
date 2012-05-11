@@ -179,6 +179,8 @@ public class HintsSettings {
 	cs.fireChange();
     }
     
+    private static final String PREFERENCES_LOCATION = "org/netbeans/modules/java/hints";
+    
     /** Gets preferences node, which stores the options for given hint.
      * The preferences node is created
      * by calling <code>NbPreferences.forModule(this.getClass()).node(profile).node(getId());</code>
@@ -186,7 +188,6 @@ public class HintsSettings {
      * @param profile Profile to get the node for. May be null for current profile
      * @return Preferences node for given hint.
      */
-    //XXX: move to HintsSettings
     public static Preferences getPreferences(String hintId, String profile) {
         Map<String, Preferences> override = getPreferencesOverride();
 
@@ -199,6 +200,6 @@ public class HintsSettings {
         }
 
         profile = profile == null ? HintsSettings.getCurrentProfileId() : profile;
-        return NbPreferences.forModule(RulesManager.class).node(profile).node(hintId);
+        return NbPreferences.root().node(PREFERENCES_LOCATION).node(profile).node(hintId);
     }
 }

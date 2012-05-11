@@ -218,7 +218,7 @@ public class ConfigurationPanel extends JPanel implements Runnable {
                             ConfigurationPanel.this.invalidate();
                             ConfigurationPanel.this.revalidate();
                             ConfigurationPanel.this.repaint();
-                            if (featureInfo.isPresent()) {
+                            if (featureInfo != null && featureInfo.isPresent()) {
                                 msg = NbBundle.getMessage(ConfigurationPanel.class, "MSG_EnableFailed");
                             } else {
                                 msg = NbBundle.getMessage(ConfigurationPanel.class, "MSG_DownloadFailed");

@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,12 +34,11 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.languages.yaml;
 
 import java.io.ByteArrayOutputStream;
@@ -75,6 +74,7 @@ import org.openide.util.NbBundle;
 
 /**
  * Parser for YAML. Delegates to the YAML parser shipped with JRuby (jvyamlb)
+ *
  * @author Tor Norbye
  */
 public class YamlParser extends Parser {
@@ -83,8 +83,7 @@ public class YamlParser extends Parser {
     /**
      * The max length for files we will try to parse (to avoid OOMEs).
      */
-    private static final int MAX_LENGTH = 512*1024;
-
+    private static final int MAX_LENGTH = 512 * 1024;
     private YamlParserResult lastResult;
 
     @Override
@@ -96,7 +95,7 @@ public class YamlParser extends Parser {
     public void removeChangeListener(ChangeListener changeListener) {
         // FIXME parsing API
     }
-    
+
     @Override
     public void cancel() {
         // FIXME parsing API
@@ -110,7 +109,7 @@ public class YamlParser extends Parser {
 
     private static String asString(CharSequence sequence) {
         if (sequence instanceof String) {
-            return (String)sequence;
+            return (String) sequence;
         } else {
             return sequence.toString();
         }
@@ -159,8 +158,9 @@ public class YamlParser extends Parser {
         return result.toString();
     }
     // for test package private
+
     YamlParserResult parse(String source, Snapshot snapshot) {
-        
+
         source = replacePhpFragments(source);
 
         try {
@@ -184,7 +184,7 @@ public class YamlParser extends Parser {
                 // I'm encoding the string, one character at a time, flushing after
                 // each operation to compute the current byte offset. I then build
                 // up an array of these offsets such that I can do quick translations.
-                ByteArrayOutputStream out = new ByteArrayOutputStream(2*source.length());
+                ByteArrayOutputStream out = new ByteArrayOutputStream(2 * source.length());
                 OutputStreamWriter writer = new OutputStreamWriter(out, "UTF-8"); // NOI18N
                 utf8toByte = new int[source.length()];
                 int currentPos = 0;
@@ -233,11 +233,10 @@ public class YamlParser extends Parser {
         } catch (Exception ex) {
             int pos = 0;
             if (ex instanceof PositionedParserException) {
-                PositionedParserException ppe = (PositionedParserException)ex;
+                PositionedParserException ppe = (PositionedParserException) ex;
                 pos = ppe.getPosition().offset;
-            }
-            else if (ex instanceof PositionedScannerException) {
-                PositionedScannerException pse = (PositionedScannerException)ex;
+            } else if (ex instanceof PositionedScannerException) {
+                PositionedScannerException pse = (PositionedScannerException) ex;
                 pos = pse.getPosition().offset;
                 // The scanner possition is on the next token. We need to reallocate it
                 // on the previous token.
@@ -277,7 +276,7 @@ public class YamlParser extends Parser {
                         pos, pos, Severity.ERROR);
                 result.addError(error);
             }
-            
+
             return result;
         }
     }
@@ -321,7 +320,7 @@ public class YamlParser extends Parser {
                     // Marker
                     sb.append(marker);
                     // Replace with spaces to preserve offsets
-                    for (int i = 0, n = t.length()-marker.length(); i < n; i++) { // -2: account for the __
+                    for (int i = 0, n = t.length() - marker.length(); i < n; i++) { // -2: account for the __
                         sb.append(' ');
                     }
                 } else if (id == YamlTokenId.RUBY || id == YamlTokenId.RUBYCOMMENT || id == YamlTokenId.DELIMITER) {
@@ -343,5 +342,4 @@ public class YamlParser extends Parser {
             lastResult = new YamlParserResult(Collections.<Node>emptyList(), this, snapshot, false, null, null);
         }
     }
- 
 }

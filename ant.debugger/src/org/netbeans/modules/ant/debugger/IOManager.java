@@ -49,9 +49,6 @@ import java.util.Hashtable;
 import java.util.LinkedList;
 import javax.swing.SwingUtilities;
 import org.openide.awt.StatusDisplayer;
-import org.openide.text.Annotatable;
-import org.openide.text.Line;
-import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
@@ -88,7 +85,7 @@ public class IOManager {
     
     // public interface ........................................................
 
-    private LinkedList buffer = new LinkedList ();
+    private final LinkedList buffer = new LinkedList ();
     private RequestProcessor.Task task;
     
     /**
@@ -105,6 +102,7 @@ public class IOManager {
         }
         if (task == null)
             task = RequestProcessor.getDefault ().post (new Runnable () {
+                @Override
                 public void run () {
                     synchronized (buffer) {
                         int i, k = buffer.size ();
@@ -145,10 +143,13 @@ public class IOManager {
     // innerclasses ............................................................
     
     private class Listener implements OutputListener {
+        @Override
         public void outputLineSelected (OutputEvent ev) {
         }
+        @Override
         public void outputLineAction (final OutputEvent ev) {
             SwingUtilities.invokeLater (new Runnable () {
+                @Override
                 public void run () {
                     String t = ev.getLine ();
                     Object a = lines.get (t);
@@ -157,6 +158,7 @@ public class IOManager {
                 }
             });
         }
+        @Override
         public void outputLineCleared (OutputEvent ev) {
             lines = new Hashtable ();
         }

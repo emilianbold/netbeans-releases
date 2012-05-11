@@ -1038,4 +1038,30 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
     }
     */
 
+    /* XXX currently fails
+    public void testTemplates() throws Exception { // #167205
+        List<String> warnings = new ArrayList<String>();
+        for (FileObject f : NbCollections.iterable(FileUtil.getConfigFile("Templates").getData(true))) {
+            if (!Boolean.TRUE.equals(f.getAttribute("template"))) {
+                continue; // will not appear in Template Manager
+            }
+            if (f.getSize() > 0) {
+                continue; // Open in Editor will be enabled
+            }
+            if (f.getAttribute("instantiatingIterator") != null) { // TemplateWizard.CUSTOM_ITERATOR
+                continue; // probably not designed to be edited as text
+            }
+            if (f.getAttribute("templateWizardIterator") != null) { // TemplateWizard.EA_ITERATOR
+                continue; // same
+            }
+            String path = f.getPath();
+            if (path.equals("Templates/Other/file")) {
+                continue; // intentionally empty and uneditable
+            }
+            warnings.add(path + " is empty but has no iterator and will therefore not be editable");
+        }
+        assertNoErrors("Problems in templates", warnings);
+    }
+    */
+
 }

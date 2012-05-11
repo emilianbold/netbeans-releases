@@ -385,6 +385,8 @@ public class ModelHandle2 {
         private boolean defaul = false;
 
         private List<String> activatedProfiles;
+        private Map<String, String> properties;
+
         private boolean shared = false;
         
         Configuration() {}
@@ -408,6 +410,15 @@ public class ModelHandle2 {
         public void setActivatedProfiles(List<String> activatedProfiles) {
             this.activatedProfiles = activatedProfiles;
         }
+        
+
+        public Map<String, String> getProperties() {
+            return properties;
+        }
+
+        public void setProperties(Map<String, String> properties) {
+            this.properties = properties;
+        }        
 
         @Messages({
             "DefaultConfig=<default config>",

@@ -42,6 +42,7 @@
 package org.netbeans.modules.html.editor.hints;
 
 import java.util.regex.Pattern;
+import org.netbeans.modules.csl.api.HintSeverity;
 
 /**
  *
@@ -50,6 +51,7 @@ import java.util.regex.Pattern;
 public class Encoding extends PatternRule {
 
     private static final String[] PATTERNS_SOURCES = new String[]{
+        "Internal encoding declaration named an unsupported chararacter encoding .*?",
         "The internal character encoding declaration specified .*? which is not a rough superset of ASCII",
         "The encoding .*? is not",
         "Authors should not use the character encoding",
@@ -76,6 +78,11 @@ public class Encoding extends PatternRule {
     @Override
     public Pattern[] getPatterns() {
         return PATTERNS;
+    }
+    
+    @Override
+    public HintSeverity getDefaultSeverity() {
+        return HintSeverity.WARNING;
     }
     
 }

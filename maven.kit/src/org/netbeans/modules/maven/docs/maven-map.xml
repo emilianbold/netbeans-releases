@@ -19,4 +19,5 @@
     <mapID target="org.netbeans.modules.maven.newproject.ChooseWizardPanel" url="csh/maven-newproj-archetype.html"/>
     <mapID target="org.netbeans.modules.maven.newproject.NbmWizardPanel" url="csh/maven-newproj-options.html"/>
     <mapID target="org.netbeans.modules.maven.apisupport.NbmWizardPanel" url="csh/maven-newproj-options.html"/>
+    <mapID target="org.netbeans.modules.maven.newproject.UseOpenWizardPanel" url="csh/maven-newproj-existing.html"/>
 </map>
