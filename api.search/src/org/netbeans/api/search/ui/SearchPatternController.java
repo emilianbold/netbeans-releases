@@ -60,6 +60,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.search.SearchHistory;
 import org.netbeans.api.search.SearchPattern;
+import org.netbeans.modules.search.FindDialogMemory;
 import org.netbeans.modules.search.ui.PatternChangeListener;
 import org.netbeans.modules.search.ui.TextFieldFocusListener;
 import org.netbeans.modules.search.ui.UiUtils;
@@ -174,6 +175,9 @@ public final class SearchPatternController
 
         if (data.size() > 0) {
             setSearchPattern(data.get(0));
+        }
+        if (!FindDialogMemory.getDefault().isTextPatternSpecified()) {
+            component.setSelectedItem("");                              //NOI18N
         }
     }
 
