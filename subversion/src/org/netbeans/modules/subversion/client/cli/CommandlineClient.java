@@ -141,7 +141,10 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
         cli = new Commandline();
     }
 
-    public void checkSupportedVersion() throws SVNClientException {
+    /**
+     * @return true if old 1.5 format is supported
+     */
+    public boolean checkSupportedVersion() throws SVNClientException {
         VersionCommand cmd = new VersionCommand();
         try {
             config(cmd);
@@ -153,7 +156,7 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
                 }
                 throw new SVNClientException(ERR_CLI_NOT_AVALABLE + "\n" + cmd.getOutput());
             } else {
-                supportedMetadataFormat = cmd.isMetadataFormatSupported();
+                return supportedMetadataFormat = cmd.isMetadataFormatSupported();
             }
         } catch (IOException ex) {
             Subversion.LOG.log(Level.FINE, null, ex);
