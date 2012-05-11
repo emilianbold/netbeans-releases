@@ -56,6 +56,7 @@ import javax.swing.event.ChangeListener;
 import org.glassfish.tools.ide.data.GlassFishAdminInterface;
 import org.glassfish.tools.ide.data.GlassFishServer;
 import org.glassfish.tools.ide.data.GlassFishVersion;
+import org.netbeans.api.keyring.Keyring;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.common.nodes.Hk2InstanceNode;
 import org.netbeans.modules.glassfish.common.ui.InstanceCustomizer;
@@ -82,7 +83,8 @@ import org.openide.windows.InputOutput;
  *
  * @author Peter Williams
  */
-public class GlassfishInstance implements ServerInstanceImplementation, Lookup.Provider, LookupListener, GlassFishServer {
+public class GlassfishInstance implements ServerInstanceImplementation,
+        Lookup.Provider, LookupListener, GlassFishServer {
 
     ////////////////////////////////////////////////////////////////////////////
     // Class attributes                                                       //
@@ -104,6 +106,45 @@ public class GlassfishInstance implements ServerInstanceImplementation, Lookup.P
     // Static methods                                                         //
     ////////////////////////////////////////////////////////////////////////////
 
+    /**
+     * Find all modules that have NetBeans support, add them to
+     * <code>GlassfishInstance<code> local lookup if server supports them.
+     * <p/>
+     * @param instance <code>GlassfishInstance<code> local lookup to be updated.
+     */
+    static void updateModuleSupport(GlassfishInstance instance) {
+        instance.updateFactories();
+        instance.lookupResult.addLookupListener(instance);
+    }
+
+    /**
+     * Mark this GlassFish server URL as under construction.
+     * <p/>
+     * Will do nothing if provided <code>url</code> argument
+     * is <code>null</code>.
+     * <p/>
+     * @param url GlassFish server URL
+     */
+    private static void tagUnderConstruction(String url) {
+        if (url != null) {
+            GlassfishInstanceProvider.activeRegistrationSet.add(url);
+        }
+    }
+    
+    /**
+     * Remove under construction URL mark from this GlassFish server.
+     * <p/>
+     * Will do nothing if provided <code>url</code> argument
+     * is <code>null</code>.
+     * <p/>
+     * @param url GlassFish server URL
+     */
+    private static void untagUnderConstruction(String url) {
+        if (url != null) {
+            GlassfishInstanceProvider.activeRegistrationSet.remove(url);
+        }
+    }
+
     /** 
      * Creates a GlassfishInstance object for a server installation.  This
      * instance should be added to the the provider registry if the caller wants
@@ -115,9 +156,10 @@ public class GlassfishInstance implements ServerInstanceImplementation, Lookup.P
      * @param adminPort admin port for this server instance.
      * @return GlassfishInstance object for this server instance.
      */
-    public static GlassfishInstance create(String displayName, String installRoot, 
-            String glassfishRoot, String domainsDir, String domainName, int httpPort, 
-            int adminPort,String url, String uriFragment, GlassfishInstanceProvider gip) {
+    public static GlassfishInstance create(String displayName,
+            String installRoot, String glassfishRoot, String domainsDir,
+            String domainName, int httpPort, int adminPort,String url,
+            String uriFragment, GlassfishInstanceProvider gip) {
         Map<String, String> ip = new HashMap<String, String>();
         ip.put(GlassfishModule.DISPLAY_NAME_ATTR, displayName);
         ip.put(GlassfishModule.INSTALL_FOLDER_ATTR, installRoot);
@@ -135,17 +177,53 @@ public class GlassfishInstance implements ServerInstanceImplementation, Lookup.P
                 ip.put(GlassfishModule.HOSTNAME_ATTR, urlParts[2]);
             }
         }
-        GlassfishInstance result = new GlassfishInstance(ip, gip, true);
-        return result;
-    }
-    
-    public static GlassfishInstance create(Map<String, String> ip,GlassfishInstanceProvider gip, boolean updateNow) {
-        return new GlassfishInstance(ip, gip, updateNow);
+        return create(ip, gip, true);
     }
 
-    public static GlassfishInstance create(Map<String, String> ip,GlassfishInstanceProvider gip) {
-        GlassfishInstance result = new GlassfishInstance(ip, gip, true);
-        return result;
+    /**
+     * Constructs an instance of GlassFish instance data object and initializes
+     * it.
+     * <p/>
+     * @param ip GlassFish instance properties.
+     * @param gip GlassFish instance provider.
+     * @param updateNow Trigger lookup update.
+     * @return Initialized GlassFish instance data object.
+     */
+    public static GlassfishInstance create(Map<String, String> ip,
+            GlassfishInstanceProvider gip, boolean updateNow) {
+        String deployerUri = ip.get(GlassfishModule.URL_ATTR);
+        GlassfishInstance instance = null;
+        try {
+            instance = new GlassfishInstance(ip, gip);
+            tagUnderConstruction(deployerUri);
+            CommonServerSupport commonSupport = new CommonServerSupport(instance);
+            if (!instance.isPublicAccess()) {
+                instance.ic.add(commonSupport);
+                instance.allowPublicAccess();
+            }
+            if (updateNow) {
+                updateModuleSupport(instance);
+            }
+        } finally {
+            untagUnderConstruction(deployerUri);
+        }
+        return instance;
+    }
+
+    /**
+     * Constructs an instance of GlassFish instance data object and initializes
+     * it.
+     * <p/>
+     * Lookup update will be done by default.
+     * <p/>
+     * @param ip GlassFish instance properties.
+     * @param gip GlassFish instance provider.
+     * @param updateNow Trigger lookup update.
+     * @return Initialized GlassFish instance data object.
+     */
+    public static GlassfishInstance create(Map<String, String> ip,
+            GlassfishInstanceProvider gip) {
+        return create(ip, gip, true);
     }
     
     /**
@@ -232,6 +310,7 @@ public class GlassfishInstance implements ServerInstanceImplementation, Lookup.P
         }
         return result;
     }
+
     ////////////////////////////////////////////////////////////////////////////
     // Instance attributes                                                    //
     ////////////////////////////////////////////////////////////////////////////
@@ -239,20 +318,23 @@ public class GlassfishInstance implements ServerInstanceImplementation, Lookup.P
     // Server properties
     private boolean removable = true;
     
-    /** GlassFish properties. */
+    /** GlassFish server properties. */
     private transient Map<String, String> properties;
 
-    /** GlassFish server version. Initial storedValue is <code>null</code>. Proper
-     *  GlassFish server version is set after first <code>version</code>
+    /** GlassFish server version. Initial storedValue is <code>null</code>.
+     *  Proper GlassFish server version is set after first <code>version</code>
      *  administration command response is received. */
     private transient GlassFishVersion version;
 
-    private transient CommonServerSupport commonSupport;
+    //private transient CommonServerSupport commonSupport;
     private transient InstanceContent ic;
-    private transient Lookup lookup;
+    private transient Lookup localLookup;
     private transient Lookup full;
-    final private transient Lookup.Result<GlassfishModuleFactory> lookupResult = Lookups.forPath(Util.GF_LOOKUP_PATH).lookupResult(GlassfishModuleFactory.class);;
-    private transient Collection<? extends GlassfishModuleFactory> currentFactories = Collections.emptyList();
+    final private transient Lookup.Result<GlassfishModuleFactory>
+            lookupResult = Lookups.forPath(Util.GF_LOOKUP_PATH).lookupResult(
+            GlassfishModuleFactory.class);;
+    private transient Collection<? extends GlassfishModuleFactory>
+            currentFactories = Collections.emptyList();
     
     // API instance
     private ServerInstance commonInstance;
@@ -261,46 +343,34 @@ public class GlassfishInstance implements ServerInstanceImplementation, Lookup.P
     ////////////////////////////////////////////////////////////////////////////
     // Constructors                                                           //
     ////////////////////////////////////////////////////////////////////////////
+
     @SuppressWarnings("LeakingThisInConstructor")
-    private GlassfishInstance(Map<String, String> ip, GlassfishInstanceProvider instanceProvider, boolean updateNow) {
+    private GlassfishInstance(Map<String, String> ip,
+            GlassfishInstanceProvider instanceProvider) {
         String deployerUri = ip.get(GlassfishModule.URL_ATTR);
         this.version = null;
-        try {
-            ic = new InstanceContent();
-            lookup = new AbstractLookup(ic);
-            full = lookup;
-            this.instanceProvider = instanceProvider;
-            String domainDirPath = ip.get(GlassfishModule.DOMAINS_FOLDER_ATTR);
-            String domainName = ip.get(GlassfishModule.DOMAIN_NAME_ATTR);
-            if (null != domainDirPath && null != domainName) {
-                File domainDir = new File(domainDirPath,domainName);
-                PortCollection pc = new PortCollection();
-                if (Util.readServerConfiguration(domainDir, pc)) {
-                    ip.put(GlassfishModule.ADMINPORT_ATTR, Integer.toString(pc.getAdminPort()));
-                    ip.put(GlassfishModule.HTTPPORT_ATTR, Integer.toString(pc.getHttpPort()));
-                }
+        ic = new InstanceContent();
+        localLookup = new AbstractLookup(ic);
+        full = localLookup;
+        this.instanceProvider = instanceProvider;
+        String domainDirPath = ip.get(GlassfishModule.DOMAINS_FOLDER_ATTR);
+        String domainName = ip.get(GlassfishModule.DOMAIN_NAME_ATTR);
+        if (null != domainDirPath && null != domainName) {
+            File domainDir = new File(domainDirPath,domainName);
+            PortCollection pc = new PortCollection();
+            if (Util.readServerConfiguration(domainDir, pc)) {
+                ip.put(GlassfishModule.ADMINPORT_ATTR,
+                        Integer.toString(pc.getAdminPort()));
+                ip.put(GlassfishModule.HTTPPORT_ATTR,
+                        Integer.toString(pc.getHttpPort()));
             }
-            this.properties = prepareProperties(ip);
-            commonSupport = new CommonServerSupport(lookup, this, instanceProvider);
-
-            // Flag this server URI as under construction
-            GlassfishInstanceProvider.activeRegistrationSet.add(deployerUri);
-            if (null == instanceProvider.getInstance(deployerUri)) {
-                ic.add(this); // Server instance in lookup (to find instance from node lookup)
-
-                ic.add(commonSupport); // Common action support, e.g start/stop, etc.
-                commonInstance = ServerInstanceFactory.createServerInstance(this);
-
-                // make this instance publicly accessible
-                instanceProvider.addServerInstance(this);
-            }
-            if (updateNow) {
-                updateModuleSupport();
-            }
-        } finally {
-            if(deployerUri != null) {
-                GlassfishInstanceProvider.activeRegistrationSet.remove(deployerUri);
-            }
+        }
+        this.properties = prepareProperties(ip);
+        if (!isPublicAccess()) {
+            // Add this instance into local lookup (to find instance from
+            // node lookup).
+            ic.add(this); 
+            commonInstance = ServerInstanceFactory.createServerInstance(this);
         }
     }
 
@@ -326,37 +396,33 @@ public class GlassfishInstance implements ServerInstanceImplementation, Lookup.P
         this.properties = properties;
     }
 
+    /**
+     * Get local <code>Lookup</code> object.
+     * <P/>
+     * Allow to access local lookup object in server support objects (e.g. 
+     * <code>CommonServerSupport</code>).
+     * <p/>
+     * @return Local <code>Lookup</code> object.
+     */
+    Lookup localLookup() {
+        return localLookup;
+    }
+
+    /**
+     * Get local instance provider object.
+     * <p/>
+     * Allow to access local instance provider object in server support objects
+     * (e.g. <code>CommonServerSupport</code>).
+     * <p/>
+     * @return Local instance provider object.
+     */
+    public GlassfishInstanceProvider getInstanceProvider() {
+        return instanceProvider;
+    }
+    
     ////////////////////////////////////////////////////////////////////////////
     // Fake Getters from GlassFishServer interface                            //
     ////////////////////////////////////////////////////////////////////////////
-
-    /**
-     * Returns property value to which the specified <code>key</code> is mapped,
-     * or <code>null</code> if this map contains no mapping for the
-     * <code>key</code>.
-     * <p/>
-     * @param key GlassFish property <code>key</code>.
-     * @return GlassFish property or <code>null</code> if no value with
-     *         given <code>key</code> is stored.
-     */
-    public String getProperty(String key) {
-        return properties.get(key);
-    }
-
-    /**
-     * Associates the specified <code>value</code> with the specified
-     * <code>key</code> in this map.
-     * <p/>
-     * If the map previously contained a mapping for the key, the old value
-     * is replaced by the specified value.
-     * <p/>
-     * @param properties GlassFish properties to set
-     * @return Previous value associated with <code>key</code>, or
-     *         <code>null</code> if there was no mapping for <code>key</code>.
-     */
-    public String putProperty(String key, String value) {
-        return properties.put(key, value);
-    }
 
     /**
      * Get GlassFish display name stored properties.
@@ -493,9 +559,37 @@ public class GlassfishInstance implements ServerInstanceImplementation, Lookup.P
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    // Fake Getters                                                           //
+    // Fake Getters and Setters                                               //
     ////////////////////////////////////////////////////////////////////////////
-    
+
+    /**
+     * Returns property value to which the specified <code>key</code> is mapped,
+     * or <code>null</code> if this map contains no mapping for the
+     * <code>key</code>.
+     * <p/>
+     * @param key GlassFish property <code>key</code>.
+     * @return GlassFish property or <code>null</code> if no value with
+     *         given <code>key</code> is stored.
+     */
+    public String getProperty(String key) {
+        return properties.get(key);
+    }
+
+    /**
+     * Associates the specified <code>value</code> with the specified
+     * <code>key</code> in this map.
+     * <p/>
+     * If the map previously contained a mapping for the key, the old value
+     * is replaced by the specified value.
+     * <p/>
+     * @param properties GlassFish properties to set
+     * @return Previous value associated with <code>key</code>, or
+     *         <code>null</code> if there was no mapping for <code>key</code>.
+     */
+    public String putProperty(String key, String value) {
+        return properties.put(key, value);
+    }
+
     /**
      * Get GlassFish server port from stored properties.
      * <p/>
@@ -503,6 +597,39 @@ public class GlassfishInstance implements ServerInstanceImplementation, Lookup.P
      */
     public String getHttpPort() {
         return properties.get(GlassfishModule.HTTPPORT_ATTR);
+    }
+
+    /**
+     * Get GlassFish server administration port from stored properties.
+     * <p/>
+     * @return GlassFish server administration port as <code>String</code>.
+     */
+    public String getHttpAdminPort() {
+        return properties.get(GlassfishModule.ADMINPORT_ATTR);
+    }
+
+    /**
+     * Retrieve password attribute from stored properties and NetBeans
+     * key store.
+     * <p/>
+     * @return Retrieved password attribute.
+     */
+    public String getPassword() {
+        String retVal = properties.get(GlassfishModule.PASSWORD_ATTR);
+        String key = properties.get(GlassfishModule.URL_ATTR);
+        char[] retChars = Keyring.read(key);
+        if (null == retChars || retChars.length < 1 ||
+                !GlassfishModule.PASSWORD_CONVERTED_FLAG.equals(retVal)) {
+            retChars = retVal.toCharArray();
+            if (null != key) {
+                Keyring.save(key, retChars, "a Glassfish/SJSAS passord");
+                properties.put(GlassfishModule.PASSWORD_ATTR,
+                        GlassfishModule.PASSWORD_CONVERTED_FLAG) ;
+            }
+        } else {
+            retVal = String.copyValueOf(retChars);
+        }
+        return retVal;
     }
 
     public String getInstallRoot() {
@@ -582,8 +709,130 @@ public class GlassfishInstance implements ServerInstanceImplementation, Lookup.P
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    // Methods                                                           //
+    // Methods dependent on linked CommonServerSupport instance               //
     ////////////////////////////////////////////////////////////////////////////
+    // It was too complicated to remove this dependency completely. All       //
+    // methods that are dependent on CommonServerSupport instance were marked //
+    // as deprecated.                                                         //
+    // All of them should be moved to CommonServerSupport class itself and    //
+    // used in context of this class in the future.                           //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Get <code>CommonServerSupport</code> instance associated with
+     * this object.
+     * <p/>
+     * @return <code>CommonServerSupport</code> instance associated with
+     * this object.
+     * @deprecated GlassfishInstance class should not be dependent
+     *             on CommonServerSupport.
+     */
+    @Deprecated
+    public final CommonServerSupport getCommonSupport() {
+        return localLookup.lookup(CommonServerSupport.class);
+    }
+
+    /**
+     * Add change event listener to <code>CommonServerSupport</code> instance.
+     * <p/>
+     * @param listener Change event listener to be added.
+     * @deprecated GlassfishInstance class should not be dependent
+     *             on CommonServerSupport.
+     */
+    @Deprecated
+    public final void addChangeListener(final ChangeListener listener) {
+        getCommonSupport().addChangeListener(listener);
+    }
+
+    /**
+     * Remove change event listener from <code>CommonServerSupport</code>
+     * instance.
+     * <p/>
+     * @param listener Change event listener to be removed.
+     * @deprecated GlassfishInstance class should not be dependent
+     *             on CommonServerSupport.
+     */
+    @Deprecated
+    public final void removeChangeListener(final ChangeListener listener) {
+        getCommonSupport().removeChangeListener(listener);
+    }
+    
+    /**
+     * Get GlassFish server state.
+     * <p/>
+     * Server state is refreshed if actual state is unknown.
+     * <p/>
+     * @return GlassFish server state.
+     * @deprecated GlassfishInstance class should not be dependent
+     *             on CommonServerSupport.
+     */
+    @Deprecated
+    public final ServerState getServerState() {
+        return getCommonSupport().getServerState();
+    }
+
+    /**
+     * Stop GlassFish instance if it was started by IDE.
+     * <p/>
+     * @param timeout Time to wait for successful completion.
+     * @deprecated GlassfishInstance class should not be dependent
+     *             on CommonServerSupport.
+     */
+    @Deprecated
+    final void stopIfStartedByIde(long timeout) {
+        CommonServerSupport commonSupport = getCommonSupport();
+        if(commonSupport.isStartedByIde()) {
+            ServerState state = commonSupport.getServerState();
+            if(state == ServerState.STARTING ||
+                    (state == ServerState.RUNNING && commonSupport.isReallyRunning())) {
+                try {
+                    Future<OperationState> stopServerTask = commonSupport.stopServer(null);
+                    if(timeout > 0) {
+                        OperationState opState = stopServerTask.get(timeout, TimeUnit.MILLISECONDS);
+                        if(opState != OperationState.COMPLETED) {
+                            Logger.getLogger("glassfish").info("Stop server failed..."); // NOI18N
+                        }
+                    }
+                } catch(TimeoutException ex) {
+                    Logger.getLogger("glassfish").log(Level.FINE, "Server {0} timed out sending stop-domain command.", getDeployerUri()); // NOI18N
+                } catch(Exception ex) {
+                    Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex); // NOI18N
+                }
+            }
+        } else {
+            // prevent j2eeserver from stoping an authenticated server that
+            // it did not start.
+            commonSupport.disableStop();
+        }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Methods                                                                //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Check if this instance is publicly accessible.
+     * <p/>
+     * @return <code>true</code> if this instance is publicly accessible
+     *         or <code>false</code> otherwise.
+     */
+    private boolean isPublicAccess() {
+        return instanceProvider.getInternalInstance(getUrl()) != null;
+    }
+
+    /**
+     * Make this instance publicly accessible if it was not done yet.
+     * <p/>
+     * Used during initialization phase to register this object into
+     * <code>GlassfishInstanceProvider</code>.
+     * <code>CommonServerSupport</code> instance related to this object must be
+     * also initialized.
+     */
+    private void allowPublicAccess() {
+        if (!isPublicAccess()) {
+            instanceProvider.addServerInstance(this);
+        }
+    }
 
     /**
      * Get property storedValue with given <code>name</code> as <code>int</code>
@@ -644,10 +893,10 @@ public class GlassfishInstance implements ServerInstanceImplementation, Lookup.P
             currentFactories = factories;
 
             List<Lookup> proxies = new ArrayList<Lookup>();
-            proxies.add(lookup);
+            proxies.add(localLookup);
             for (GlassfishModuleFactory moduleFactory : added) {
                 if(moduleFactory.isModuleSupported(homeFolder, asenvProps)) {
-                    Object t = moduleFactory.createModule(lookup);
+                    Object t = moduleFactory.createModule(localLookup);
                     if (null == t) {
                         Logger.getLogger("glassfish").log(Level.WARNING, "{0} created a null module", moduleFactory); // NOI18N
                     } else {
@@ -666,13 +915,6 @@ public class GlassfishInstance implements ServerInstanceImplementation, Lookup.P
 
     }
     
-    final void updateModuleSupport() {
-        // Find all modules that have NetBeans support, add them to lookup if server
-        // supports them.
-        updateFactories();
-        lookupResult.addLookupListener(this);
-    }
-
     @Override
     public void resultChanged(LookupEvent ev) {
         updateFactories();
@@ -689,48 +931,6 @@ public class GlassfishInstance implements ServerInstanceImplementation, Lookup.P
         }
     }
     
-    public CommonServerSupport getCommonSupport() {
-        return commonSupport;
-    }
-
-    public void addChangeListener(final ChangeListener listener) {
-        commonSupport.addChangeListener(listener);
-    }
-
-    public void removeChangeListener(final ChangeListener listener) {
-        commonSupport.removeChangeListener(listener);
-    }
-    
-    public ServerState getServerState() {
-        return commonSupport.getServerState();
-    }
-
-    void stopIfStartedByIde(long timeout) {
-        if(commonSupport.isStartedByIde()) {
-            ServerState state = commonSupport.getServerState();
-            if(state == ServerState.STARTING ||
-                    (state == ServerState.RUNNING && commonSupport.isReallyRunning())) {
-                try {
-                    Future<OperationState> stopServerTask = commonSupport.stopServer(null);
-                    if(timeout > 0) {
-                        OperationState opState = stopServerTask.get(timeout, TimeUnit.MILLISECONDS);
-                        if(opState != OperationState.COMPLETED) {
-                            Logger.getLogger("glassfish").info("Stop server failed..."); // NOI18N
-                        }
-                    }
-                } catch(TimeoutException ex) {
-                    Logger.getLogger("glassfish").log(Level.FINE, "Server {0} timed out sending stop-domain command.", getDeployerUri()); // NOI18N
-                } catch(Exception ex) {
-                    Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex); // NOI18N
-                }
-            }
-        } else {
-            // prevent j2eeserver from stoping an authenticated server that
-            // it did not start.
-            commonSupport.disableStop();
-        }
-    }
-
     // ------------------------------------------------------------------------
     // ServerInstance interface implementation
     // ------------------------------------------------------------------------
@@ -738,7 +938,7 @@ public class GlassfishInstance implements ServerInstanceImplementation, Lookup.P
     // TODO -- this should be done differently
     @Override
     public String getServerDisplayName() {
-        return commonSupport.getInstanceProvider().getDisplayName(getDeployerUri());
+        return instanceProvider.getDisplayName(getDeployerUri());
     }
 
     @Override
@@ -755,11 +955,14 @@ public class GlassfishInstance implements ServerInstanceImplementation, Lookup.P
     
     @Override
     public JComponent getCustomizer() {
+        // CommonServerSupport is stored in shared localLookup instance.
+        // But this should be made independent on CommonServerSupport object.
+        CommonServerSupport commonSupport = getCommonSupport();
         JPanel commonCustomizer = new InstanceCustomizer(commonSupport);
         JPanel vmCustomizer = new VmCustomizer(commonSupport);
 
         Collection<JPanel> pages = new LinkedList<JPanel>();
-        Collection<? extends CustomizerCookie> lookupAll = lookup.lookupAll(CustomizerCookie.class);
+        Collection<? extends CustomizerCookie> lookupAll = localLookup.lookupAll(CustomizerCookie.class);
         for(CustomizerCookie cookie : lookupAll) {
             pages.addAll(cookie.getCustomizerPages());
         }
@@ -802,7 +1005,7 @@ public class GlassfishInstance implements ServerInstanceImplementation, Lookup.P
             io.closeInputOutput();
         }
 
-        Collection<? extends RemoveCookie> lookupAll = lookup.lookupAll(RemoveCookie.class);
+        Collection<? extends RemoveCookie> lookupAll = localLookup.lookupAll(RemoveCookie.class);
         for(RemoveCookie cookie: lookupAll) {
             cookie.removeInstance(getDeployerUri());
         }
@@ -826,29 +1029,36 @@ public class GlassfishInstance implements ServerInstanceImplementation, Lookup.P
         if (null == other.getDeployerUri()) {
             return false;
         }
-//        if (null == commonSupport) {
-//            return false;
-//        }
         if (null == getDomainName()) {
             return false;
         }
-//        if (null == other.getCommonSupport()) {
-//            return false;
-//        }
         if (null == getDomainName()) {
             return false;
         }
-        return getDeployerUri().replace("127.0.0.1", "localhost").equals(other.getDeployerUri().replace("127.0.0.1", "localhost")) &&
-                getDomainName().equals(other.getCommonSupport().getDomainName()) &&
-                getDomainsRoot().equals(other.getCommonSupport().getDomainsRoot()) &&
-                getHttpPort().equals(other.getHttpPort());
+        return getDeployerUri().replace("127.0.0.1", "localhost").
+                equals(other.getDeployerUri().
+                replace("127.0.0.1", "localhost"))
+                && getDomainName().equals(other.getDomainName()) 
+                && getDomainsRoot().equals(other.getDomainsRoot())
+                && getHttpPort().equals(other.getHttpPort());
     }
 
+    /**
+     * Generate hash code for GlassFish instance data object.
+     * <p/>
+     * Hash code is based on server addres, port, domain name and domains root
+     * directory.
+     * <p/>
+     * @return Hash code for GlassFish instance data object.
+     */
     @Override
     public int hashCode() {
-        String tmp = getDeployerUri().replace("127.0.0.1", "localhost")+getHttpPort()+
-                getDomainsRoot()+getDomainName();
-        return tmp.hashCode();
+        StringBuilder sb = new StringBuilder(
+                getDeployerUri().replace("127.0.0.1", "localhost"));
+        sb.append(getHttpPort());
+        sb.append(getDomainsRoot());
+        sb.append(getDomainName());
+        return sb.toString().hashCode();
     }
 
 }

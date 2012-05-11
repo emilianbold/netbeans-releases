@@ -60,7 +60,6 @@ import org.glassfish.tools.ide.admin.ResultString;
 import org.glassfish.tools.ide.admin.ServerAdmin;
 import org.glassfish.tools.ide.admin.TaskState;
 import org.glassfish.tools.ide.data.IdeContext;
-import org.netbeans.api.keyring.Keyring;
 import org.netbeans.modules.glassfish.common.nodes.actions.RefreshModulesCookie;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.ServerState;
@@ -71,7 +70,6 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
@@ -84,13 +82,15 @@ import org.openide.util.lookup.Lookups;
 public class CommonServerSupport implements GlassfishModule2, RefreshModulesCookie {
 
     ////////////////////////////////////////////////////////////////////////////
+    // Static methods                                                         //
+    ////////////////////////////////////////////////////////////////////////////
+
+    ////////////////////////////////////////////////////////////////////////////
     // Instance attributes                                                    //
     ////////////////////////////////////////////////////////////////////////////
 
     /** Managed GlassFish instance. */
     private final GlassfishInstance instance;
-
-    private final transient Lookup lookup;
 
     private volatile ServerState serverState = ServerState.UNKNOWN;
     private final Object stateMonitor = new Object();
@@ -101,15 +101,12 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
 
     private volatile boolean startedByIde = false;
     private transient boolean isRemote = false;
-    private GlassfishInstanceProvider instanceProvider;
     // prevent j2eeserver from stopping an authenticated domain that
     // the IDE did not start.
     private boolean stopDisabled = false;
 
-    CommonServerSupport(Lookup lookup, GlassfishInstance instance, GlassfishInstanceProvider instanceProvider) {
+    CommonServerSupport(GlassfishInstance instance) {
         this.instance = instance;
-        this.lookup = lookup;
-        this.instanceProvider = instanceProvider;
         this.isRemote = instance.getProperties().get(
                 GlassfishModule.DOMAINS_FOLDER_ATTR) == null;
         // !PW FIXME hopefully temporary patch for JavaONE 2008 to make it easier
@@ -121,7 +118,8 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
     }
 
     private FileObject getInstanceFileObject() {
-        FileObject dir = FileUtil.getConfigFile(instanceProvider.getInstancesDirName());
+        FileObject dir = FileUtil.getConfigFile(
+                instance.getInstanceProvider().getInstancesDirName());
         if(dir != null) {
             String instanceFN = instance.getProperty(GlassfishInstanceProvider.INSTANCE_FO_ATTR);
             if(instanceFN != null) {
@@ -131,83 +129,81 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
         return null;
     }
 
+    @Override
+    public String getPassword() {
+        return instance.getPassword();
+    }
+
+    /** @deprecated Use in <code>GlassfishInstance</code> context. */
     @Deprecated
     public String getInstallRoot() {
         return instance.getInstallRoot();
     }
 
+    /** @deprecated Use in <code>GlassfishInstance</code> context. */
     @Deprecated
     public String getGlassfishRoot() {
         return instance.getGlassfishRoot();
     }
 
+    /** @deprecated Use in <code>GlassfishInstance</code> context. */
     @Deprecated
     public String getDisplayName() {
         return instance.getDisplayName();
     }
 
+    /** @deprecated Use in <code>GlassfishInstance</code> context. */
     @Deprecated
     public String getDeployerUri() {
         return instance.getDeployerUri();
     }
 
+    /** @deprecated Use in <code>GlassfishInstance</code> context. */
     @Deprecated
     public String getUserName() {
         return instance.getUserName();
     }
 
-    @Override
-    public String getPassword() {
-        String retVal = instance.getProperty(PASSWORD_ATTR);
-        String key = instance.getProperty(URL_ATTR);
-        char[] retChars = Keyring.read(key);
-        if (null == retChars || retChars.length < 1 || !GlassfishModule.PASSWORD_CONVERTED_FLAG.equals(retVal)) {
-            retChars = retVal.toCharArray();
-            if (null != key) {
-                Keyring.save(key, retChars, "a Glassfish/SJSAS passord");
-                instance.putProperty(PASSWORD_ATTR,
-                        GlassfishModule.PASSWORD_CONVERTED_FLAG) ;
-            }
-        } else {
-            retVal = String.copyValueOf(retChars);
-        }
-        return retVal;
-    }
-
+    /** @deprecated Use in <code>GlassfishInstance</code> context. */
     @Deprecated
     public String getAdminPort() {
-        return instance.getProperty(ADMINPORT_ATTR);
+        return instance.getHttpAdminPort();
     }
 
+    /** @deprecated Use in <code>GlassfishInstance</code> context. */
     @Deprecated
     public String getHttpPort() {
-        return instance.getProperty(HTTPPORT_ATTR);
+        return instance.getHttpPort();
     }
 
+    /** @deprecated Use in <code>GlassfishInstance</code> context. */
     @Deprecated
     public int getHttpPortNumber() {
         return instance.getPort();
     }
 
+    /** @deprecated Use in <code>GlassfishInstance</code> context. */
     @Deprecated
     public int getAdminPortNumber() {
         return instance.getAdminPort();
     }
 
+    /** @deprecated Use in <code>GlassfishInstance</code> context. */
     @Deprecated
     public String getHostName() {
         return instance.getProperty(HOSTNAME_ATTR);
     }
 
-    @Deprecated
-    public String getDomainsRoot() {
+   /** @deprecated Use in <code>GlassfishInstance</code> context. */
+   @Deprecated
+   public String getDomainsRoot() {
         return instance.getDomainsRoot();
     }
 
+    /** @deprecated Use in <code>GlassfishInstance</code> context. */
     @Deprecated
     public String getDomainName() {
-        String retVal = instance.getProperty(DOMAIN_NAME_ATTR);
-        return retVal;
+        return instance.getDomainName();
     }
 
     public void setServerState(final ServerState newState) {
@@ -244,7 +240,7 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
 
     @Override
     public GlassfishInstanceProvider getInstanceProvider() {
-        return instanceProvider;
+        return instance.getInstanceProvider();
     }
 
     @Override
@@ -270,7 +266,8 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
 
     private List<Recognizer> getRecognizers() {
         List<Recognizer> recognizers;
-        Collection<? extends RecognizerCookie> cookies = lookup.lookupAll(RecognizerCookie.class);
+        Collection<? extends RecognizerCookie> cookies = 
+                instance.localLookup().lookupAll(RecognizerCookie.class);
         if(!cookies.isEmpty()) {
             recognizers = new LinkedList<Recognizer>();
             for(RecognizerCookie cookie: cookies) {
@@ -698,7 +695,7 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
 
     @Override
     public CommandFactory getCommandFactory() {
-        return instanceProvider.getCommandFactory();
+        return instance.getInstanceProvider().getCommandFactory();
     }
 
     @Override

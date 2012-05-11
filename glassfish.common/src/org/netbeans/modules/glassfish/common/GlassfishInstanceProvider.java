@@ -486,7 +486,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
             }
         }
         for (GlassfishInstance gi : instanceMap.values()) {
-            gi.updateModuleSupport();
+            GlassfishInstance.updateModuleSupport(gi);
         }
     }
 
@@ -547,8 +547,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
                 instanceFO = dir.createData(name);
             }
 
-            CommonServerSupport css = instance.getCommonSupport();
-            Map<String, String> attrMap = css.getInstanceProperties();
+            Map<String, String> attrMap = instance.getProperties();
             for(Map.Entry<String, String> entry: attrMap.entrySet()) {
                 String key = entry.getKey();
                 if(!filterKey(key)) {
@@ -561,8 +560,8 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
                 }
             }
             
-            css.setProperty(INSTANCE_FO_ATTR, instanceFO.getName());
-            css.setFileObject(instanceFO);
+            instance.putProperty(INSTANCE_FO_ATTR, instanceFO.getName());
+            instance.getCommonSupport().setFileObject(instanceFO);
         }
     }
     
