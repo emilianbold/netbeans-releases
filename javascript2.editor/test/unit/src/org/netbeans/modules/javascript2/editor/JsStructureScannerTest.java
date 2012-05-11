@@ -92,4 +92,7 @@ public class JsStructureScannerTest extends JsTestBase {
         checkStructure("testfiles/coloring/issue198032.js");
     }
     
+    public void testFormatter() throws Exception {
+        checkStructure("testfiles/coloring/Formatter.js");
+    }
 }

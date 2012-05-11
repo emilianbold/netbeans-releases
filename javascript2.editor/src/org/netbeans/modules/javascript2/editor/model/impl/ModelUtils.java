@@ -319,7 +319,10 @@ public class ModelUtils {
                 if (aNode.getBase() instanceof IdentNode) {
                     IdentNode iNode = (IdentNode)aNode.getBase();
                     if (iNode.getName().equals("this")) {
-                        result.add(new TypeUsageImpl("@this." + aNode.getProperty().getName(), iNode.getStart(), false));                //NOI18N
+                        List<? extends Node> path = getPath();
+                        if (!(path.size() > 0 && path.get(path.size() - 1) instanceof CallNode)) {
+                            result.add(new TypeUsageImpl("@this." + aNode.getProperty().getName(), iNode.getStart(), false));                //NOI18N
+                        }
                         return null;
                     }
                 }
@@ -372,10 +375,6 @@ public class ModelUtils {
             }
             return super.visit(uNode, onset);
         }
-        
-        
-        
-        
         
     }
 }
