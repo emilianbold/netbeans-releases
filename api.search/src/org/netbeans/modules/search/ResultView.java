@@ -280,10 +280,12 @@ public final class ResultView extends TopComponent {
             tabs.remove(panel);
             if (tabs.getTabCount() == 0) {
                 contentCards.show(this, CARD_NAME_EMPTY);
+                updateLookup();
             } else if (tabs.getTabCount() == 1) {
                 Component c = tabs.getComponentAt(0);
                 singlePanel.add(c);
                 contentCards.show(this, CARD_NAME_SINGLE);
+                updateLookup();
             }
             this.repaint();
         } else if (singlePanel.getComponents().length == 1)  {
@@ -482,6 +484,7 @@ public final class ResultView extends TopComponent {
                 && tabs.getTabCount() == 0) {
             singlePanel.add(panel);
             contentCards.show(this, CARD_NAME_SINGLE);
+            updateLookup();
         } else if (singlePanel.getComponents().length == 1) {
             ResultViewPanel comp =
                     (ResultViewPanel) singlePanel.getComponents()[0];

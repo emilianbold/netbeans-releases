@@ -845,7 +845,6 @@ class SummaryCellRenderer implements ListCellRenderer {
             labels.add(more100Label = new JLabel());
             labels.add(new JLabel("/")); //NOI18N
             labels.add(allLabel = new JLabel());
-            labels.add(new JLabel(NbBundle.getMessage(SummaryCellRenderer.class, "MSG_ShowMoreSuffix"))); //NOI18N
             for (JLabel lbl : labels) {
                 lbl.setBorder(BorderFactory.createEmptyBorder());
                 add(lbl);

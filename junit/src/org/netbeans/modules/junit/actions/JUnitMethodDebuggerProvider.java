@@ -92,10 +92,8 @@ public class JUnitMethodDebuggerProvider extends TestMethodDebuggerProvider {
             if (ec != null) {
                 JEditorPane pane = NbDocument.findRecentEditorPane(ec);
                 if (pane != null) {
-                    String text = pane.getText();
-                    if (text.contains("org.junit.") || text.contains("junit.") //NOI18N
-                            || text.contains(".junit.") || text.contains("TestBase") //NOI18N
-                            || text.contains("MercurialTestCase")) {  //NOI18N
+                    SingleMethod sm = getTestMethod(pane.getDocument(), pane.getCaret().getDot());
+                    if(sm != null) {
                         return true;
                     }
                 }
