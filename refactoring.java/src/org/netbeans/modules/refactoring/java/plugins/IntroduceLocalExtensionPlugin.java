@@ -133,7 +133,7 @@ public final class IntroduceLocalExtensionPlugin extends JavaRefactoringPlugin {
     }
 
     private Set<FileObject> getRelevantFiles() {
-        ClasspathInfo cpInfo = RefactoringUtils.getClasspathInfoFor(treePathHandle);
+        ClasspathInfo cpInfo = RefactoringUtils.getClasspathInfoFor(true, treePathHandle.getFileObject());
         Set<FileObject> set = new LinkedHashSet<FileObject>();
         ClassIndex idx = cpInfo.getClassIndex();
         Set<FileObject> resources = idx.getResources(treePathHandle.getElementHandle(), EnumSet.of(ClassIndex.SearchKind.TYPE_REFERENCES, ClassIndex.SearchKind.IMPLEMENTORS),EnumSet.of(ClassIndex.SearchScope.SOURCE));

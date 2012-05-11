@@ -53,7 +53,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.logging.Logger;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.openide.text.NbDocumentRefactoringHack;
 import org.netbeans.modules.refactoring.spi.impl.UndoableWrapper;
 import org.netbeans.modules.refactoring.spi.impl.UndoableWrapper.UndoableEditDelegate;
 import org.openide.cookies.EditorCookie;
@@ -62,6 +61,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.CloneableEditorSupport;
+import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
@@ -265,7 +265,9 @@ abstract class BackupFacility2 {
                     } else {
                         EditorCookie editor = dob.getLookup().lookup(EditorCookie.class);
                         if (editor != null  && doc!=null && editor.isModified()) {
-                            UndoableEditDelegate edit = undo?NbDocumentRefactoringHack.getEditToBeUndoneOfType(editor, UndoableWrapper.UndoableEditDelegate.class):NbDocumentRefactoringHack.getEditToBeRedoneOfType(editor, UndoableWrapper.UndoableEditDelegate.class);
+                            UndoableEditDelegate edit = undo
+                                    ? NbDocument.getEditToBeUndoneOfType(editor, UndoableWrapper.UndoableEditDelegate.class)
+                                    : NbDocument.getEditToBeRedoneOfType(editor, UndoableWrapper.UndoableEditDelegate.class);
                             if (edit == null) {
                                 try {
                                     LOG.fine("Editor Undo Different");

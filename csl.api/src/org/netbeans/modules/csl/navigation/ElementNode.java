@@ -201,14 +201,11 @@ public class ElementNode extends AbstractNode {
         for (ElementNode elnod : toDo) {
             final Children ch = elnod.getChildren();
             if ( ch instanceof ElementChildren ) {
-                ((ElementChildren)ch).resetKeys((List<StructureItem>)description.getNestedItems(), ui.getFilters());
+                ((ElementChildren)ch).resetKeys((List<StructureItem>)elnod.description.getNestedItems(), elnod.ui.getFilters());
 
-                Collection<ElementNode> children = Arrays.<ElementNode>asList((ElementNode[])ch.getNodes());
+                Collection<ElementNode> children = (Collection<ElementNode>)(List)Arrays.asList((Node[])ch.getNodes());
                 toExpand.addAll(children);
                 refreshRecursively(children, toExpand);
-                for( Node sub : ch.getNodes() ) {
-                    toExpand.add(sub);
-                }
             }
         }
     }

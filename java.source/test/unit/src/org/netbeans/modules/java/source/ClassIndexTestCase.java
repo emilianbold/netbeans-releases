@@ -46,6 +46,7 @@ import java.net.URL;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.source.indexing.TransactionContext;
 import org.netbeans.modules.java.source.parsing.FileManagerTransaction;
+import org.netbeans.modules.java.source.parsing.ProcessorGenerated;
 import org.netbeans.modules.java.source.usages.ClassIndexEventsTransaction;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl.State;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
@@ -89,7 +90,8 @@ public class ClassIndexTestCase extends NbTestCase {
             return TransactionContext.beginTrans().
                     register(ClassIndexEventsTransaction.class, 
                              ClassIndexEventsTransaction.create(true)).
-                    register(FileManagerTransaction.class, FileManagerTransaction.writeThrough());
+                    register(FileManagerTransaction.class, FileManagerTransaction.writeThrough()).
+                    register(ProcessorGenerated.class, ProcessorGenerated.nullWrite());
         } catch (IllegalStateException ise) {
             // ignore, tx may have been created by a previous test
             return null;

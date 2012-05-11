@@ -481,6 +481,9 @@ public final class TreeUtilities {
             case ENHANCED_FOR_LOOP:
                 stmts = Collections.singletonList(((EnhancedForLoopTree)path.getLeaf()).getStatement());
                 break;
+            case CASE:
+                stmts = ((CaseTree)path.getLeaf()).getStatements();
+                break;
             case METHOD:
                 stmts = ((MethodTree)path.getLeaf()).getParameters();
                 break;

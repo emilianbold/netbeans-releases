@@ -501,7 +501,7 @@ public class UtilitiesTest extends TestBase {
                                   "package test;\n" +
                                   "public class Test {\n" +
                                   "    class Inner {\n" +
-                                  "        Inner(int $0) { }\n" +
+                                  "        Inner(int $0) { super(); }\n" +
                                   "    }\n" +
                                   "    public static void main(String[] $1) {\n" +
                                   "        int $2 = 1;\n" +

@@ -62,10 +62,10 @@ import javax.swing.undo.UndoableEdit;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.openide.text.NbDocumentRefactoringHack;
 import org.openide.awt.UndoRedo;
 import org.openide.cookies.EditorCookie;
 import org.openide.text.CloneableEditorSupport;
+import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.windows.CloneableOpenSupport;
@@ -99,12 +99,12 @@ public class UndoableEditWrapperTest extends NbTestCase {
 //        });
         doc.insertString(0, "Test", null);
         Class wrapEditClass = TestingUndoableEditWrapper.WrapCompoundEdit.class;
-        assertNotNull(NbDocumentRefactoringHack.getEditToBeUndoneOfType(env.support, wrapEditClass));
+        assertNotNull(NbDocument.getEditToBeUndoneOfType(env.support, wrapEditClass));
         Class wrapEditClass2 = TestingUndoableEditWrapper2.WrapCompoundEdit2.class;
-        assertNotNull(NbDocumentRefactoringHack.getEditToBeUndoneOfType(env.support, wrapEditClass2));
+        assertNotNull(NbDocument.getEditToBeUndoneOfType(env.support, wrapEditClass2));
         
         // A trick to get whole edit
-        UndoableEdit wholeEdit = NbDocumentRefactoringHack.getEditToBeUndoneOfType(env.support, UndoableEdit.class);
+        UndoableEdit wholeEdit = NbDocument.getEditToBeUndoneOfType(env.support, UndoableEdit.class);
         assertTrue(wholeEdit instanceof List);
         @SuppressWarnings("unchecked")
         List<? extends UndoableEdit> listEdit = (List<? extends UndoableEdit>) wholeEdit;

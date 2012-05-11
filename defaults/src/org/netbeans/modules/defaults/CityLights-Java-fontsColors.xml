@@ -106,6 +106,8 @@ made subject to such option by the copyright holder.
     <fontcolor name="javadoc-tag" foreColor="0000CC" default="comment">
         <font style="bold" />
     </fontcolor>
+    <fontcolor name="javadoc-identifier" foreColor="green" default="comment"/>
+    
     <fontcolor name="html-tag" foreColor="blue" default="default"/>
 
 </fontscolors>

@@ -474,7 +474,7 @@ public class ClassPathFileChooser extends JPanel implements ExplorerManager.Prov
             }
             else if (!onlySources)  { // add the class-path location directly
                 FileObject fo = cpEntry.getRoot();
-                Node n = createPackageRootNode(fo, project, filter);
+                Node n = fo != null ? createPackageRootNode(fo, project, filter) : null;
                 if (n != null) {
                     packageRoots.add(fo);
                     nodeList.add(n);
