@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,69 +37,39 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.languages.yaml;
 
-package org.netbeans.libs.svnclientadapter;
-
-import java.util.Collection;
-import java.util.logging.Logger;
-import org.openide.util.Lookup;
-import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
+import java.util.prefs.Preferences;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 
 /**
  *
- * @author Tomas Stupka
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public abstract class SvnClientAdapterFactory {
-    
-    public static final String JAVAHL_WIN32_MODULE_CODE_NAME = "org.netbeans.libs.svnjavahlwin32";
-    
-    protected static final Logger LOG = Logger.getLogger("org.netbeans.libs.svnclientadapter");// NOI18N
-    private static SvnClientAdapterFactory instance;
-    private static Client client;
+public class IndentUtils {
 
-    public SvnClientAdapterFactory() { }
-
-    public enum Client {
-        JAVAHL,
-        SVNKIT
+    private IndentUtils() {
     }
 
-    public static synchronized SvnClientAdapterFactory getInstance(Client client) {
-        if (instance == null || SvnClientAdapterFactory.client != client) {
-            instance = null;
-            Collection<SvnClientAdapterFactory> cl = (Collection<SvnClientAdapterFactory>) Lookup.getDefault().lookupAll(SvnClientAdapterFactory.class);
-            for (SvnClientAdapterFactory f : cl) {
-                if(f.provides() == client) {
-                    if(f.isAvailable()) {
-                        instance = f;
-                        SvnClientAdapterFactory.client = client;
-                        break;
-                    }
-                }
-            }
+    public static int getIndentSize() {
+        Preferences prefs = MimeLookup.getLookup(MimePath.get(YamlTokenId.YAML_MIME_TYPE)).lookup(Preferences.class);
+        return prefs.getInt(SimpleValueNames.SPACES_PER_TAB, 4);
+    }
+
+    private static void indent(final StringBuilder sb, final int indent) {
+        for (int i = 0; i < indent; i++) {
+            sb.append(' ');
         }
-        return instance;
     }
 
-    /**
-     * Creates a new {@link ISVNClientAdapter} instance
-     * @return
-     */
-    public abstract ISVNClientAdapter createClient();
+    public static String getIndentString(final int indent) {
+        StringBuilder sb = new StringBuilder(indent);
+        indent(sb, indent);
+        return sb.toString();
+    }
 
-    /**
-     * Returns the client type provided by this factory
-     * @return
-     */
-    protected abstract Client provides();
-
-    /**
-     * Setups the {@link SvnClientAdapterFactory}
-     * @return true if the client is available, otherwise false
-     */
-    protected abstract boolean isAvailable();
-
-    
 }

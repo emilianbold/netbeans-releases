@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import javax.swing.SwingUtilities;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbPreferences;
@@ -90,7 +91,13 @@ public class InstallLibraryTask implements Runnable {
             } else {
                 // IDE license accepted, JUnit N/A => use prompt & wizard way
                 LOG.fine("IDE license accepted, JUnit N/A => use prompt & wizard way"); 
-                JUnitLibraryInstaller.install(false);
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        JUnitLibraryInstaller.install(false);
+                    }
+                });
             }
         } catch (IOException ex) {
             LOG.log(Level.INFO, "while reading " + licenseAcceptedFile, ex);
