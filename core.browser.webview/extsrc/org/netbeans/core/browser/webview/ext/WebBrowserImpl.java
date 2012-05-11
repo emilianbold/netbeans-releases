@@ -52,9 +52,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.embed.swing.JFXPanel;
@@ -411,6 +411,7 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
     }
 
     private void createBrowser() {
+        Platform.setImplicitExit(false);
         WebView view = new WebView();
         view.setMinSize(100, 100);
         final WebEngine eng = view.getEngine();
@@ -503,12 +504,7 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
                     }
                 });
                 try {
-                    if (!latch.await(5, TimeUnit.SECONDS)) {
-                        // adding 5 seconds timeout here to prevent permanent lock here
-                        // I have no idea what's wrong here
-                        Logger.getLogger (WebBrowserImpl.class.getName ()).log(Level.WARNING, "timeout to prevent permant thread lock",
-                                new RuntimeException("JavaFX thread has not responsed in 5 seconds!")); // NOI18N
-                    }
+                    latch.await();
                 } catch (InterruptedException ex) {
                     Exceptions.printStackTrace(ex);
                 }
