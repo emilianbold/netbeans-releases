@@ -68,18 +68,20 @@ import org.netbeans.modules.subversion.client.SvnClientFactory;
  * @author  Marian Petras
  */
 public class CheckoutPanel extends JPanel {
-    private final boolean wcFormat17;
 
     /**
      * Creates new form CheckoutPanel
      */
     public CheckoutPanel() {
-        boolean oldFormat = SvnClientFactory.isSvnKit() || SvnClientFactory.isJavaHl();
-        if (SvnClientFactory.isCLI()) {
-            oldFormat = !SvnClientFactory.isCLIOldFormat();
-        }
-        wcFormat17 = oldFormat;
         initComponents();
+        if (SvnClientFactory.isSvnKit()) {
+            workingCopyFormat.setVisible(false);
+        } else {
+            boolean newFormat = SvnClientFactory.isJavaHl() || SvnClientFactory.isCLI() && !SvnClientFactory.isCLIOldFormat();
+            workingCopyFormat.setText(getString(newFormat ? "MSG_WorkingCopyFormat17" : "MSG_WorkingCopyFormat16")); //NOI18N
+            preferOldFormatCheckBox.setSelected(false);
+            preferOldFormatCheckBox.setVisible(false);
+        }
     }
 
     // <editor-fold defaultstate="collapsed" desc="UI Definition Code">
@@ -122,7 +124,7 @@ public class CheckoutPanel extends JPanel {
         Mnemonics.setLocalizedText(lblLocalFolder, getString("CTL_Checkout_LocalFolder")); // NOI18N
         Mnemonics.setLocalizedText(browseWorkdirButton, getString("CTL_Checkout_Browse2")); // NOI18N
         Mnemonics.setLocalizedText(lblWorkingCopy, getString("CTL_Checkout_WorkingCopy")); // NOI18N
-        workingCopyFormat.setText(getString(wcFormat17 ? "MSG_WorkingCopyFormat17" : "MSG_WorkingCopyFormat16")); //NOI18N
+        Mnemonics.setLocalizedText(preferOldFormatCheckBox, getString("CTL_PreferOldFormat.text")); // NOI18N
 
         scanForProjectsCheckBox.setSelected(true);
         scanForProjectsCheckBox.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -163,7 +165,8 @@ public class CheckoutPanel extends JPanel {
                                                 .addPreferredGap(RELATED)
                                                 .addComponent(browseWorkdirButton))
                                         .addComponent(workingCopy, 0, DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(workingCopyFormat, 0, DEFAULT_SIZE, Short.MAX_VALUE)))
+                                        .addComponent(workingCopyFormat, 0, DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addComponent(preferOldFormatCheckBox)))
                         .addComponent(scanForProjectsCheckBox)
         );
         layout.setVerticalGroup(
@@ -197,6 +200,7 @@ public class CheckoutPanel extends JPanel {
                                 .addComponent(workingCopy))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(workingCopyFormat)        
+                        .addComponent(preferOldFormatCheckBox)        
                         .addGap(18)
                         .addComponent(scanForProjectsCheckBox)
         );
@@ -211,6 +215,7 @@ public class CheckoutPanel extends JPanel {
         browseRevisionButton.getAccessibleContext().setAccessibleDescription(getString("ASCD_Browse_Revision_Number"));  //NOI18N
         atWorkingDirLevelCheckBox.getAccessibleContext().setAccessibleDescription(getString("ASCD_Checkout_only_folder_contents"));  //NOI18N
         exportCheckBox.getAccessibleContext().setAccessibleDescription(getString("ASCD_Checkout_Export"));  //NOI18N
+        preferOldFormatCheckBox.getAccessibleContext().setAccessibleDescription(getString("ASCD_PreferOldFomat")); //NOI18N
     }// </editor-fold>
 
     private static String getString(String msgKey) {
@@ -219,6 +224,7 @@ public class CheckoutPanel extends JPanel {
 
     final JCheckBox atWorkingDirLevelCheckBox = new JCheckBox();
     final JCheckBox exportCheckBox = new JCheckBox();
+    final JCheckBox preferOldFormatCheckBox = new JCheckBox();
     final JButton browseRepositoryButton = new JButton();
     final JButton browseWorkdirButton = new JButton();
     private JLabel lblLocalFolder;
