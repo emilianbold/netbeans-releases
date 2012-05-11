@@ -246,19 +246,30 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         if (this.isArtificial()) {
             return;
         }
-        Collection<FileImpl> allFileImpls = this.getAllFileImpls();
+        Set<FileImpl> allFileImpls = new HashSet<FileImpl>(this.getAllFileImpls());
+        Storage storageForSelf = this.includedFileContainer.getStorageForProject(this);
+        if (storageForSelf != null) {
+            for (Map.Entry<CharSequence, FileEntry> entry : storageForSelf.getInternalMap().entrySet()) {
+                FileImpl file = getFileContainer().getFile(entry.getKey(), true);
+                if (file == null || !allFileImpls.contains(file)) {
+                    CndUtils.assertTrueInConsole(false, "no file enty for included file ", entry);
+                }
+            }
+        }
         for (FileImpl fileImpl : allFileImpls) {
-            checkFileEntryConsistency(fileImpl);
+            CharSequence fileKey = fileImpl.getAbsolutePath();
+            checkFileEntryConsistency(fileKey);
         }
     }
 
-    private void checkFileEntryConsistency(FileImpl fileImpl) {
-        CharSequence fileKey = fileImpl.getAbsolutePath();
+    private void checkFileEntryConsistency(CharSequence fileKey) {
         FileEntry entry = getFileContainer().getEntry(fileKey);
         if (entry != null) {
             Object lock = entry.getLock();
             synchronized (lock) {
                 List<PreprocessorStatePair> fcPairs = new ArrayList<PreprocessorStatePair>(entry.getStatePairs());
+                CsmUID<CsmFile> testFileUID = entry.getTestFileUID();
+                FileImpl fileImpl = (FileImpl) UIDCsmConverter.UIDtoFile(testFileUID);
                 if (fcPairs.isEmpty() && fileImpl.getState() != FileImpl.State.INITIAL) {
                     CndUtils.assertTrueInConsole(false, "no states for own file ", fileImpl);
                 }
@@ -284,7 +295,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 }
             }
         } else {
-            CndUtils.assertTrueInConsole(false, "no entry for ", fileImpl);
+            CndUtils.assertTrueInConsole(false, "no entry for ", fileKey);
         }
     }
 
@@ -926,12 +937,14 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             getProjectRoots().addSources(sources);
             getProjectRoots().addSources(headers);
             getProjectRoots().addSources(excluded);
+            checkConsistency();
             for(NativeFileItem nativeFileItem : excluded) {
                 FileImpl file = getFile(nativeFileItem.getAbsolutePath(), true);
                 if (file != null) {
                     removeFile(nativeFileItem.getAbsolutePath());
                 }
             }
+            checkConsistency();
             CreateFilesWorker worker = new CreateFilesWorker(this);
             worker.createProjectFilesIfNeed(sources, true, readOnlyRemovedFilesSet, validator);
             if (status != Status.Validating  || RepositoryUtils.getRepositoryErrorCount(this) == 0){
@@ -946,12 +959,14 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 worker.createProjectFilesIfNeed(sources, true, readOnlyRemovedFilesSet, validator);
                 worker.createProjectFilesIfNeed(headers, false, readOnlyRemovedFilesSet, validator);
             }
+            checkConsistency();
             if (validator != null && false) {
                 // update all opened libraries using our storages associated with libs
                 for (CsmProject lib : this.getLibraries()) {
                     ProjectBase libProject = (ProjectBase)lib;
                     libProject.mergeFileContainerFromStorage(this);
                 }
+                checkConsistency();
             }
         } finally {
             disposeLock.readLock().unlock();
@@ -2471,16 +2486,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             state = APTHandlersSupport.createCleanPreprocState(state);
         }
         getFileContainer().putFile(impl, state);
-        FileEntry entry = getFileContainer().getEntry(impl.getAbsolutePath());
-        assert entry != null;
-        Object lock = entry.getLock();
-        synchronized (lock) {
-            Collection<FileEntry> includedFileEntries = this.getIncludedFileEntries(lock, impl.getAbsolutePath());
-            if (!includedFileEntries.isEmpty() && entry.getStatePairs().isEmpty()) {
-                FileEntry includedFileEntry = this.includedFileContainer.getIncludedFileEntry(lock, this, impl.getAbsolutePath());
-                CndUtils.assertTrueInConsole(false, "obsolete states found for " + impl);
-            }
-        }
     }
 
     protected Collection<Key> getLibrariesKeys() {
