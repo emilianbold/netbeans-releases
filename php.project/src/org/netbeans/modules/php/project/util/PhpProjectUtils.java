@@ -335,9 +335,12 @@ public final class PhpProjectUtils {
     }
 
     /**
-     *
-     * @param numbers
-     * @return
+     * Get number intervals for the given numbers.
+     * <p>
+     * For example, for numbers [2, 1, 3, 102, 5, 77, 103, 4], these intervals are returned:
+     * [[1, 5], [77, 77], [102, 103]].
+     * @param numbers numbers to get number intervals for
+     * @return number intervals for the given numbers, never {@code null}
      */
     public static List<Pair<Integer, Integer>> getIntervals(List<Integer> numbers) {
         if (numbers.isEmpty()) {
