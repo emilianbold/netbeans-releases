@@ -221,8 +221,14 @@ public class JSPELPlugin implements ELPlugin {
         }
 
         try {
-            JarFileSystem jfs = new JarFileSystem(FileUtil.normalizeFile(f));
-            FileObject tldFile = jfs.getRoot().getFileObject(tldPath);
+            FileObject tldFile = null;
+            if (tldPath.endsWith(jarPath)) {
+                // tld is not inside any .JAR file
+                tldFile = FileUtil.toFileObject(new File(tldPath));
+            } else {
+                JarFileSystem jfs = new JarFileSystem(FileUtil.normalizeFile(f));
+                tldFile = jfs.getRoot().getFileObject(tldPath);
+            }
             TldLibrary tldLib = TldLibrary.create(tldFile);
 
             Iterator<Entry<String, LibraryDescriptor.Function>> iterator = tldLib.getFunctions().entrySet().iterator();

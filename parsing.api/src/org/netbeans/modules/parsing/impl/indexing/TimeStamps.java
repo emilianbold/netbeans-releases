@@ -52,12 +52,14 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.URL;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.NonNull;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -73,100 +75,118 @@ public final class TimeStamps {
     private static final String TIME_STAMPS_FILE = "timestamps.properties"; //NOI18N
     private static final String VERSION = "#v2"; //NOI18N
 
-    private final URL root;
+    
+    private final Implementation impl;
+    
 
-    private final LongHashMap<String> timestamps = new LongHashMap<String>();
-    private final Set<String> unseen;
-
-    private FileObject rootFoCache;
-
-    private TimeStamps(final URL root, boolean detectDeletedFiles) throws IOException {
-        assert root != null;
-        this.root = root;
-        this.unseen = detectDeletedFiles ? new HashSet<String>() : null;
-        load();
+    private TimeStamps(@NonNull final Implementation impl) throws IOException {
+        assert impl != null;
+        this.impl = impl;
+    }
+    
+    public boolean checkAndStoreTimestamp(FileObject f, String relativePath) {
+        return impl.checkAndStoreTimestamp(f, relativePath);
     }
 
-    //where
-    private void load () throws IOException {
-        final File cacheDir = FileUtil.toFile(CacheFolder.getDataFolder(root));
-        final File f = new File (cacheDir, TIME_STAMPS_FILE);
-        if (f.exists()) {
-            try {
-                boolean readOldPropertiesFormat = false;
-                {
-                    final BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(f), "UTF-8")); //NOI18N
-                    try {
-                        String line = in.readLine();
-                        if (line != null && line.startsWith(VERSION)) {
-                            // it's the new format
-                            LOG.log(Level.FINE, "{0}: reading {1} timestamps", new Object [] { f.getPath(), VERSION }); //NOI18N
+    public Set<String> getUnseenFiles() {
+        return impl.getUnseenFiles();
+    }
+    
+    public void store () throws IOException {
+        impl.store();
+    }
+    
+    void resetToNow() {
+        final long now = System.currentTimeMillis();
+        impl.reset(now);
+    }
 
-                            while (null != (line = in.readLine())) {
-                                int idx = line.indexOf('='); //NOI18N
-                                if (idx != -1) {
-                                    try {
-                                        long ts = Long.parseLong(line.substring(idx + 1));
-                                        timestamps.put(line.substring(0, idx), ts);
-                                    } catch (NumberFormatException nfe) {
-                                        LOG.log(Level.FINE, "Invalid timestamp: line={0}, timestamps={1}, exception={2}", new Object[] { line, f.getPath(), nfe }); //NOI18N
-                                    }
-                                }
-                            }
-                        } else {
-                            // it's the old format from Properties.store()
-                            readOldPropertiesFormat = true;
-                        }
-                    } finally {
-                        in.close();
-                    }
-                }
+    public static TimeStamps forRoot(
+            @NonNull final URL root,
+            final boolean detectDeletedFiles) throws IOException {
+        return new TimeStamps(new RegularImpl(root, detectDeletedFiles));
+    }
+    
+    public static TimeStamps changedTransient() throws IOException {
+        return new TimeStamps(new AllChangedTransientImpl());
+    }
 
-                if (readOldPropertiesFormat) {
-                    LOG.log(Level.FINE, "{0}: reading old Properties timestamps", f.getPath()); //NOI18N
-                    final Properties p = new Properties();
-                    final InputStream in = new FileInputStream(f);
-                    try {
-                        p.load(in);
-                    } finally {
-                        in.close();
-                    }
+    public static boolean existForRoot (final URL root) throws IOException {
+        assert root != null;
 
-                    for(Map.Entry<Object, Object> entry : p.entrySet()) {
-                        try {
-                            timestamps.put((String) entry.getKey(), Long.parseLong((String) entry.getValue()));
-                        } catch (NumberFormatException nfe) {
-                            LOG.log(Level.FINE, "Invalid timestamp: key={0}, value={1}, timestamps={2}, exception={3}", //NOI18N
-                                    new Object[] { entry.getKey(), entry.getValue(), f, nfe });
-                        }
-                    }
-                }
-                
-                if (unseen != null) {
-                    for (Object k : timestamps.keySet()) {
-                        unseen.add((String)k);
-                    }
-                }
+        FileObject cacheDir = CacheFolder.getDataFolder(root, true);
+        if (cacheDir != null) {
+            return new File (FileUtil.toFile(cacheDir),TIME_STAMPS_FILE).exists();
+        }
+        
+        return false;
+    }
+    
+    private static interface Implementation {
+        boolean checkAndStoreTimestamp(FileObject root, String relativePath);
+        Set<String> getUnseenFiles();
+        void reset(long time);
+        void store() throws IOException;
+    }
+    
+    private static final class RegularImpl implements Implementation {
+        
+        private final URL root;
+        private final LongHashMap<String> timestamps = new LongHashMap<String>();
+        private final Set<String> unseen;
+        private FileObject rootFoCache;
+        
+        private RegularImpl(
+                @NonNull final URL root,
+                final boolean detectDeletedFiles) throws IOException {
+            assert root != null;
+            this.root = root;
+            this.unseen = detectDeletedFiles ? new HashSet<String>() : null;
+            load();
+        }
 
-                if (LOG.isLoggable(Level.FINEST)) {
-                    LOG.log(Level.FINEST, "Timestamps loaded from {0}:", f.getPath()); //NOI18N
-                    for(LongHashMap.Entry<String> entry : timestamps.entrySet()) {
-                        LOG.log(Level.FINEST, "{0}={1}", new Object [] { entry.getKey(), Long.toString(entry.getValue()) }); //NOI18N
-                    }
-                    LOG.log(Level.FINEST, "---------------------------"); //NOI18N
+        @Override
+        public boolean checkAndStoreTimestamp(FileObject f, String relativePath) {
+            if (rootFoCache == null) {
+                rootFoCache = URLMapper.findFileObject(root);
+            }
+            String fileId = relativePath != null ? relativePath : URLMapper.findURL(f, URLMapper.EXTERNAL).toExternalForm();
+            long fts = f.lastModified().getTime();
+            long lts = timestamps.put(fileId, fts);
+            if (lts == LongHashMap.NO_VALUE) {
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, "{0}: lastTimeStamp=null, fileTimeStamp={1} is out of date", new Object [] { f.getPath(), fts }); //NOI18N
                 }
-            } catch (Exception e) {
-                // #176001: catching all exceptions, because j.u.Properties can throw IllegalArgumentException
-                // from its load() method
-                // In case of any exception props are empty, everything is scanned
-                timestamps.clear();
-                LOG.log(Level.FINE, null, e);
+                return false;
+            }
+
+            if (unseen != null) {
+                unseen.remove(fileId);
+            }
+            boolean isUpToDate = lts == fts;
+            if (!isUpToDate) {
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, "{0}: lastTimeStamp={1}, fileTimeStamp={2} is out of date", new Object [] { f.getPath(), lts, fts }); //NOI18N
+                }
+            }
+
+            return isUpToDate;
+        }
+        
+        @Override
+        public Set<String> getUnseenFiles() {
+            return unseen;
+        }
+        
+        @Override
+        public void reset(final long value) {
+            for (LongHashMap.Entry<String> entry : timestamps.entrySet()) {
+                entry.setValue(value);
             }
         }
-    }
 
-    public void store () throws IOException {
-        if (true) {
+        @Override
+        public void store() throws IOException {
             final File cacheDir = FileUtil.toFile(CacheFolder.getDataFolder(root));
             final File f = new File(cacheDir, TIME_STAMPS_FILE);
             assert f != null;
@@ -198,58 +218,104 @@ public final class TimeStamps {
                 LOG.log(Level.FINE, null, e);
             }
         }
-    }
+        
+        private void load () throws IOException {
+            final File cacheDir = FileUtil.toFile(CacheFolder.getDataFolder(root));
+            final File f = new File (cacheDir, TIME_STAMPS_FILE);
+            if (f.exists()) {
+                try {
+                    boolean readOldPropertiesFormat = false;
+                    {
+                        final BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(f), "UTF-8")); //NOI18N
+                        try {
+                            String line = in.readLine();
+                            if (line != null && line.startsWith(VERSION)) {
+                                // it's the new format
+                                LOG.log(Level.FINE, "{0}: reading {1} timestamps", new Object [] { f.getPath(), VERSION }); //NOI18N
 
-    void resetToNow() {
-        final long now = System.currentTimeMillis();
-        for (LongHashMap.Entry<String> entry : timestamps.entrySet()) {
-            entry.setValue(now);
-        }
-    }
+                                while (null != (line = in.readLine())) {
+                                    int idx = line.indexOf('='); //NOI18N
+                                    if (idx != -1) {
+                                        try {
+                                            long ts = Long.parseLong(line.substring(idx + 1));
+                                            timestamps.put(line.substring(0, idx), ts);
+                                        } catch (NumberFormatException nfe) {
+                                            LOG.log(Level.FINE, "Invalid timestamp: line={0}, timestamps={1}, exception={2}", new Object[] { line, f.getPath(), nfe }); //NOI18N
+                                        }
+                                    }
+                                }
+                            } else {
+                                // it's the old format from Properties.store()
+                                readOldPropertiesFormat = true;
+                            }
+                        } finally {
+                            in.close();
+                        }
+                    }
 
-    public Set<String> getUnseenFiles() {
-        return unseen;
-    }
+                    if (readOldPropertiesFormat) {
+                        LOG.log(Level.FINE, "{0}: reading old Properties timestamps", f.getPath()); //NOI18N
+                        final Properties p = new Properties();
+                        final InputStream in = new FileInputStream(f);
+                        try {
+                            p.load(in);
+                        } finally {
+                            in.close();
+                        }
 
-    public boolean checkAndStoreTimestamp(FileObject f, String relativePath) {
-        if (rootFoCache == null) {
-            rootFoCache = URLMapper.findFileObject(root);
-        }
-        String fileId = relativePath != null ? relativePath : URLMapper.findURL(f, URLMapper.EXTERNAL).toExternalForm();
-        long fts = f.lastModified().getTime();
-        long lts = timestamps.put(fileId, fts);
-        if (lts == LongHashMap.NO_VALUE) {
-            if (LOG.isLoggable(Level.FINE)) {
-                LOG.log(Level.FINE, "{0}: lastTimeStamp=null, fileTimeStamp={1} is out of date", new Object [] { f.getPath(), fts }); //NOI18N
+                        for(Map.Entry<Object, Object> entry : p.entrySet()) {
+                            try {
+                                timestamps.put((String) entry.getKey(), Long.parseLong((String) entry.getValue()));
+                            } catch (NumberFormatException nfe) {
+                                LOG.log(Level.FINE, "Invalid timestamp: key={0}, value={1}, timestamps={2}, exception={3}", //NOI18N
+                                        new Object[] { entry.getKey(), entry.getValue(), f, nfe });
+                            }
+                        }
+                    }
+
+                    if (unseen != null) {
+                        for (Object k : timestamps.keySet()) {
+                            unseen.add((String)k);
+                        }
+                    }
+
+                    if (LOG.isLoggable(Level.FINEST)) {
+                        LOG.log(Level.FINEST, "Timestamps loaded from {0}:", f.getPath()); //NOI18N
+                        for(LongHashMap.Entry<String> entry : timestamps.entrySet()) {
+                            LOG.log(Level.FINEST, "{0}={1}", new Object [] { entry.getKey(), Long.toString(entry.getValue()) }); //NOI18N
+                        }
+                        LOG.log(Level.FINEST, "---------------------------"); //NOI18N
+                    }
+                } catch (Exception e) {
+                    // #176001: catching all exceptions, because j.u.Properties can throw IllegalArgumentException
+                    // from its load() method
+                    // In case of any exception props are empty, everything is scanned
+                    timestamps.clear();
+                    LOG.log(Level.FINE, null, e);
+                }
             }
+        }        
+    }
+    
+    private static class AllChangedTransientImpl implements Implementation {
+
+        @Override
+        public boolean checkAndStoreTimestamp(FileObject root, String relativePath) {
             return false;
         }
 
-        if (unseen != null) {
-            unseen.remove(fileId);
-        }
-        boolean isUpToDate = lts == fts;
-        if (!isUpToDate) {
-            if (LOG.isLoggable(Level.FINE)) {
-                LOG.log(Level.FINE, "{0}: lastTimeStamp={1}, fileTimeStamp={2} is out of date", new Object [] { f.getPath(), lts, fts }); //NOI18N
-            }
+        @Override
+        public Set<String> getUnseenFiles() {
+            return Collections.<String>emptySet();
         }
 
-        return isUpToDate;
-    }    
+        @Override
+        public void reset(long time) {
+        }
 
-    public static TimeStamps forRoot(final URL root, boolean detectDeletedFiles) throws IOException {
-        return new TimeStamps(root, detectDeletedFiles);
+        @Override
+        public void store() throws IOException {
+        }
     }
-
-    public static boolean existForRoot (final URL root) throws IOException {
-        assert root != null;
-
-        FileObject cacheDir = CacheFolder.getDataFolder(root, true);
-        if (cacheDir != null) {
-            return new File (FileUtil.toFile(cacheDir),TIME_STAMPS_FILE).exists();
-        }
-        
-        return false;
-    }
+    
 }

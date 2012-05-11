@@ -64,6 +64,7 @@ public class ListImpl<T extends SettingsComponent> extends SettingsComponentImpl
     }
     
 
+    @Override
     public Class<T> getListClass() {
         return clazz;
     }
@@ -73,14 +74,17 @@ public class ListImpl<T extends SettingsComponent> extends SettingsComponentImpl
     // child elements
 
     // child elements
+    @Override
     public List<T> getListChildren() {
         return getChildren(clazz);
     }
 
+    @Override
     public void addListChild(T child) {
         appendChild(childname.getQName().getLocalPart(), child);
     }
 
+    @Override
     public void removeListChild(T child) {
         removeChild(childname.getQName().getLocalPart(), child);
     }
@@ -88,6 +92,7 @@ public class ListImpl<T extends SettingsComponent> extends SettingsComponentImpl
 
 
     // child elements
+    @Override
     public void accept(SettingsComponentVisitor visitor) {
         visitor.visit(this);
     }

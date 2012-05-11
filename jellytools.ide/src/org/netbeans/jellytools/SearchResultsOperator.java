@@ -43,10 +43,8 @@ import java.awt.Container;
 import javax.swing.JButton;
 import javax.swing.tree.TreePath;
 import org.netbeans.jellytools.nodes.OutlineNode;
-import org.netbeans.jemmy.JemmyException;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.Timeouts;
-import org.netbeans.jemmy.Waitable;
-import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.JButtonOperator;
 
 /**
@@ -186,33 +184,18 @@ public class SearchResultsOperator extends TopComponentOperator {
      * Waits until search is finished.
      */
     public void waitEndOfSearch() {
-        Waiter waiter = new Waiter(new Waitable() {
-
-            @Override
-            public Object actionProduced(Object param) {
-                // wait until stop button is replaced by Modify Criteria button
-                return btStopSearch().getToolTipText().equals("Modify Criteria") ? Boolean.TRUE : null;
-            }
-
-            @Override
-            public String getDescription() {
-                return "Wait for a search to be finished";
-            }
-        });
-        waiter.getTimeouts().
-                setTimeout("Waiter.WaitingTime",
-                getTimeouts().
-                getTimeout("SearchResultsOperator.SearchTime"));
-        try {
-            waiter.waitAction(null);
-        } catch (InterruptedException e) {
-            throw (new JemmyException("Waiting has been interrupted", e));
-        }
+        // wait here because there is no other way how to detect start of searching
+        new EventTool().waitNoEvent(300);
+        // wait until Stop button is replaced by Modify Criteria button
+        JButtonOperator.waitJComponent(
+                (Container) SearchResultsOperator.this.getSource(),
+                "Modify Criteria",
+                true,
+                true);
     }
 
     /** Performs verification by accessing all sub-components */
     public void verify() {
-        btStopSearch();
         btShowDetails();
         btModifySearch();
         outlineResult();

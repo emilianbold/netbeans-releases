@@ -43,55 +43,21 @@
 package org.netbeans.modules.hudson.maven;
 
 import java.io.InputStream;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.modules.maven.api.execute.RunConfig;
-import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.modules.maven.spi.actions.AbstractMavenActionsProvider;
 import org.netbeans.modules.maven.spi.actions.MavenActionsProvider;
-import org.netbeans.spi.project.ActionProvider;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.ServiceProvider;
+import org.netbeans.spi.project.ProjectServiceProvider;
 
 /**
  * Enables developers to run and debug Hudson plugins.
  */
-@ServiceProvider(service=MavenActionsProvider.class, position=57)
-public class HpiActionGoalProvider implements MavenActionsProvider {
+@ProjectServiceProvider(service=MavenActionsProvider.class, projectType="org-netbeans-modules-maven/hpi")
+public class HpiActionGoalProvider extends AbstractMavenActionsProvider {
 
-    private static final HashSet<String> ACTIONS = new HashSet<String>(Arrays.asList(ActionProvider.COMMAND_RUN, ActionProvider.COMMAND_DEBUG));
+    @StaticResource private static final String MAPPINGS = "org/netbeans/modules/hudson/maven/action-mappings.xml";
 
-    private static final AbstractMavenActionsProvider delegate = new AbstractMavenActionsProvider() {
-        protected InputStream getActionDefinitionStream() {
-            return HpiActionGoalProvider.class.getResourceAsStream("action-mappings.xml"); // NOI18N
-        }
-    };
-
-    public RunConfig createConfigForDefaultAction(String actionName, Project project, Lookup lookup) {
-        if (isActionEnable(actionName, project, null)) {
-            return delegate.createConfigForDefaultAction(actionName, project, lookup);
-        } else {
-            return null;
-        }
-    }
-
-    public NetbeansActionMapping getMappingForAction(String actionName, Project project) {
-        if (isActionEnable(actionName, project, null)) {
-            return delegate.getMappingForAction(actionName, project);
-        } else {
-            return null;
-        }
-    }
-
-    public boolean isActionEnable(String action, Project project, Lookup lookup) {
-        return ACTIONS.contains(action) && "hpi".equals(project.getLookup().lookup(NbMavenProject.class).getPackagingType());
-    }
-
-    public Set<String> getSupportedDefaultActions() {
-        return ACTIONS;
+    @Override protected InputStream getActionDefinitionStream() {
+        return HpiActionGoalProvider.class.getClassLoader().getResourceAsStream(MAPPINGS);
     }
 
 }

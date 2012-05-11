@@ -410,13 +410,13 @@ public class ProxyFileManager implements JavaFileManager {
         final boolean write = marker.allowsWrite() || !hasSibling;
         if (result != null && hasSibling) {
             if (type == GeneratedFileMarker.Type.SOURCE) {
-                marker.mark(result.toUri().toURL(), type);
+                marker.mark(result, type);
             } else if (type == GeneratedFileMarker.Type.RESOURCE) {
                 try {
                     result.openInputStream().close();
                 } catch (IOException ioe) {
                     //Marking only created files
-                    marker.mark(result.toUri().toURL(), type);
+                    marker.mark(result, type);
                 }
             }
         }
@@ -425,7 +425,7 @@ public class ProxyFileManager implements JavaFileManager {
 
     private void markerFinished() {
         if (siblings.getProvider().hasSibling()) {
-            marker.finished(siblings.getProvider().getSibling());
+            marker.finished(siblings.getProvider().getSibling(), this);
         }
     }
 

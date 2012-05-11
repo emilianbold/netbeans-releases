@@ -44,7 +44,7 @@
 
 package org.netbeans.modules.cnd.repository.queue;
 
-import java.util.*;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.locks.ReadWriteLock;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
@@ -102,7 +102,8 @@ public class RepositoryThreadManager {
     public RepositoryThreadManager(RepositoryWriter writer, ReadWriteLock rwLock) {
 	this.writer = writer;
         this.rwLock = rwLock;
-        queue = Stats.queueUseTicking ? new TickingRepositoryQueue() : new RepositoryQueue();        
+        queue = Stats.queueUseTicking ? new TickingRepositoryQueue() : new RepositoryQueue();
+        queue.start();
     }
 
     public RepositoryQueue startup() {
@@ -140,7 +141,7 @@ public class RepositoryThreadManager {
 		try {
 		    threadsWaitLock.wait();
 		} catch (InterruptedException ex) {
-		    ex.printStackTrace();
+		    ex.printStackTrace(System.err);
 		}
 	    }
 	}

@@ -43,6 +43,7 @@ package org.netbeans.modules.versioning.ui.history;
 
 import java.io.File;
 import java.util.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.spi.VCSHistoryProvider;
@@ -102,11 +103,11 @@ public class History {
     VersioningSystem getLocalHistory(FileObject fo) {
         File file = FileUtil.toFile(fo);
         if(file == null) {
-            LOG.fine("local history available only for local files"); // NOI18N
+            LOG.log(Level.FINE, "local history available only for local files {0}", fo); // NOI18N
             return null; // XXX currently LocalHistory works only with io.File. 
         }
         VersioningSystem vs = Utils.getLocalHistory(file);
-        if(vs != null) {
+        if(vs == null) {
             LOG.fine("local history not available"); // NOI18N
         } 
         return vs;

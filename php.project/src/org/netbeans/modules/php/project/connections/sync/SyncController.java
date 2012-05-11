@@ -224,6 +224,7 @@ public final class SyncController implements Cancellable {
     public boolean cancel() {
         cancelled = true;
         remoteClient.cancel();
+        disconnect();
         return true;
     }
 

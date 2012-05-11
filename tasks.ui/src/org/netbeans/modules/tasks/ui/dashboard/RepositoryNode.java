@@ -172,7 +172,7 @@ public class RepositoryNode extends TreeListNode implements PropertyChangeListen
     @Override
     public final Action[] getPopupActions() {
         List<Action> actions = new ArrayList<Action>();
-        actions.add(getCategoryAction());
+        actions.add(getRepositoryAction());
         actions.addAll(Actions.getRepositoryPopupActions(this));
         return actions.toArray(new Action[actions.size()]);
     }
@@ -258,7 +258,7 @@ public class RepositoryNode extends TreeListNode implements PropertyChangeListen
         refreshChildren();
     }
 
-    private Action getCategoryAction() {
+    private Action getRepositoryAction() {
         if (opened) {
             if (closeRepositoryAction == null) {
                 closeRepositoryAction = new CloseRepositoryNodeAction(this);

@@ -141,17 +141,12 @@ public class LibraryUtils {
         // create coherence library if not exists in this version yet
         Version coherenceVersion = CoherenceProperties.getServerVersion(serverRoot);
         String libraryName = LibraryUtils.getCoherenceLibraryDisplayName(coherenceVersion);
-        String message;
         if (LibraryUtils.registerCoherenceLibrary(libraryName, serverRoot)) {
-            message = NbBundle.getMessage(LibraryUtils.class, "MSG_CoherenceLibraryCreated", libraryName); //NOI18N
-        } else {
-            message = NbBundle.getMessage(LibraryUtils.class, "MSG_CoherenceLibraryExists", libraryName); //NOI18N
+            LOGGER.log(
+                    Level.INFO,
+                    "Coherence library created; libraryDisplayName={0}, version={1}", //NOI18N
+                    new Object[]{libraryName, coherenceVersion});
         }
-
-        NotifyDescriptor descriptor = new NotifyDescriptor.Message(
-                message,
-                NotifyDescriptor.Message.INFORMATION_MESSAGE);
-        DialogDisplayer.getDefault().notify(descriptor);
     }
 
     /**

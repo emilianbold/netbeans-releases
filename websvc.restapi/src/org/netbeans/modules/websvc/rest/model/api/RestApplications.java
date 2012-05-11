@@ -49,5 +49,6 @@ import java.util.List;
  * @author mkuchtiak
  */
 public interface RestApplications {
-    public List<RestApplication> getRestApplications();
+    List<RestApplication> getRestApplications();
+
 }

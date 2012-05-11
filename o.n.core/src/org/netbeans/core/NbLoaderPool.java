@@ -660,13 +660,9 @@ public final class NbLoaderPool extends DataLoaderPool implements PropertyChange
     * loader pool is singleton too.
     * @return loader pool instance
     */
-    public static synchronized NbLoaderPool getNbLoaderPool () {
-        if (nbLoaderPool == null) {
-            nbLoaderPool = (NbLoaderPool)DataLoaderPool.getDefault ();
-        }
-        return nbLoaderPool;
+    public static NbLoaderPool getNbLoaderPool () {
+        return (NbLoaderPool)DataLoaderPool.getDefault ();
     }
-    private static NbLoaderPool nbLoaderPool = null;
 
 
         private static final long serialVersionUID =-8488524097175567566L;

@@ -142,6 +142,7 @@ public class TopLoggingNbLoggerConsoleTest extends TopLoggingTest {
         fail("msg shall be logged to file: " + disk);
     }
 
+    @RandomlyFails // NB-Core-Build #8225: "msg shall be logged to file: "
     public void testCycleWithConsoleLogger() throws Exception {
         ConsoleHandler h = new ConsoleHandler();
 

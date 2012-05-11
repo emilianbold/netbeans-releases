@@ -61,7 +61,11 @@ import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.ui.ElementHeaders;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.lib.editor.codetemplates.spi.*;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.java.preprocessorbridge.api.JavaSourceUtil;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -102,6 +106,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
     private List<Element> typeVars = null;
     private Map<CodeTemplateParameter, String> param2hints = new HashMap<CodeTemplateParameter, String>();
     private Map<CodeTemplateParameter, TypeMirror> param2types = new HashMap<CodeTemplateParameter, TypeMirror>();
+    private Set<String> autoImportedTypeNames = new HashSet<String>();
     private ErrChecker errChecker = new ErrChecker();
     
     private JavaCodeTemplateProcessor(CodeTemplateInsertRequest request) {
@@ -317,23 +322,57 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
     }
     
     private void updateImports() {
-        if (!param2types.isEmpty()) {
-            AutoImport imp = AutoImport.get(cInfo);
-            for (Map.Entry<CodeTemplateParameter, TypeMirror> entry : param2types.entrySet()) {
-                CodeTemplateParameter param = entry.getKey();
-                TypeMirror tm = param2types.get(param);
-                TreePath tp = cInfo.getTreeUtilities().pathFor(caretOffset + param.getInsertTextOffset());
-                CharSequence typeName = imp.resolveImport(tp, tm);
-                if (CAST.equals(param2hints.get(param))) {
-                    param.setValue("(" + typeName + ")"); //NOI18N
-                } else if (INSTANCE_OF.equals(param2hints.get(param))) {
-                    String value = param.getValue().substring(param.getValue().lastIndexOf('.') + 1); //NOI18N
-                    param.setValue(typeName + "." + value); //NOI18N
-                } else {
-                    param.setValue(typeName.toString());
-                }
+        AutoImport imp = AutoImport.get(cInfo);
+        for (Map.Entry<CodeTemplateParameter, TypeMirror> entry : param2types.entrySet()) {
+            CodeTemplateParameter param = entry.getKey();
+            TypeMirror tm = param2types.get(param);
+            TreePath tp = cInfo.getTreeUtilities().pathFor(caretOffset + param.getInsertTextOffset());
+            CharSequence typeName = imp.resolveImport(tp, tm);
+            if (CAST.equals(param2hints.get(param))) {
+                param.setValue("(" + typeName + ")"); //NOI18N
+            } else if (INSTANCE_OF.equals(param2hints.get(param))) {
+                String value = param.getValue().substring(param.getValue().lastIndexOf('.') + 1); //NOI18N
+                param.setValue(typeName + "." + value); //NOI18N
+            } else {
+                param.setValue(typeName.toString());
             }
         }
+        if (!autoImportedTypeNames.isEmpty()) {
+            try {
+                ModificationResult.runModificationTask(Collections.singleton(cInfo.getSnapshot().getSource()), new UserTask() {
+                    @Override
+                    public void run(ResultIterator resultIterator) throws Exception {
+                        WorkingCopy copy = WorkingCopy.get(resultIterator.getParserResult());
+                        copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                        for (Element usedElement : Utilities.getUsedElements(copy)) {
+                            switch (usedElement.getKind()) {
+                                case CLASS:
+                                case INTERFACE:
+                                case ENUM:
+                                case ANNOTATION_TYPE:
+                                    autoImportedTypeNames.remove(((TypeElement)usedElement).getQualifiedName().toString());
+                            }
+                        }
+                        TreeMaker tm = copy.getTreeMaker();
+                        CompilationUnitTree cut = copy.getCompilationUnit();
+                        for (String typeName : autoImportedTypeNames) {
+                            for (ImportTree importTree : cut.getImports()) {
+                                if (!importTree.isStatic()) {
+                                    if (typeName.equals(importTree.getQualifiedIdentifier().toString())) {
+                                        cut = tm.removeCompUnitImport(cut, importTree);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        copy.rewrite(copy.getCompilationUnit(), cut);
+                    }
+                }).commit();
+            } catch (Exception e) {
+                Exceptions.printStackTrace(e);
+            }
+        }
+        autoImportedTypeNames = imp.getAutoImportedTypes();
     }
     
     private String getProposedValue(CodeTemplateParameter param) {
@@ -894,70 +933,66 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
             JTextComponent c = request.getComponent();
             caretOffset = c.getSelectionStart();
             final Document doc = c.getDocument();
-            final JavaSource js = JavaSource.forDocument(doc);
-            if (js != null) {
+            final FileObject fo = NbEditorUtilities.getFileObject(doc);
+            if (fo != null) {
                 final AtomicBoolean cancel = new AtomicBoolean();
                 ProgressUtils.runOffEventDispatchThread(new Runnable() {
                     public void run() {
                         try {
-                            js.runUserActionTask(new Task<CompilationController>() {
-                                public void run(final CompilationController c) throws IOException {
-                                    if (cInfo != null || cancel.get())
-                                        return;
-                                    CompilationController controller = (CompilationController) JavaSourceUtil.createControllerHandle(c.getSnapshot().getSource().getFileObject(), null).getCompilationController();
-                                    controller.toPhase(JavaSource.Phase.RESOLVED);
-                                    cInfo = controller;
-                                    final TreeUtilities tu = cInfo.getTreeUtilities();
-                                    treePath = tu.pathFor(caretOffset);
-                                    scope = tu.scopeFor(caretOffset);
-                                    enclClass = scope.getEnclosingClass();
-                                    final boolean isStatic = enclClass != null ? tu.isStaticContext(scope) : false;
-                                    if (enclClass == null) {
-                                        CompilationUnitTree cut = treePath.getCompilationUnit();
-                                        Iterator<? extends Tree> it = cut.getTypeDecls().iterator();
-                                        if (it.hasNext())
-                                            enclClass = (TypeElement)cInfo.getTrees().getElement(TreePath.getPath(cut, it.next()));
-                                    }
-                                    final Trees trees = controller.getTrees();
-                                    final SourcePositions sp = trees.getSourcePositions();
-                                    final Collection<? extends Element> illegalForwardRefs = Utilities.getForwardReferences(treePath, caretOffset, sp, trees);
-                                    final ExecutableElement method = scope.getEnclosingMethod();
-                                    ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
-                                        public boolean accept(Element e, TypeMirror t) {
-                                            switch (e.getKind()) {
-                                            case TYPE_PARAMETER:
-                                                return true;
-                                            case LOCAL_VARIABLE:
-                                            case RESOURCE_VARIABLE:
-                                            case EXCEPTION_PARAMETER:
-                                            case PARAMETER:
-                                                return (method == e.getEnclosingElement() || e.getModifiers().contains(Modifier.FINAL)) &&
-                                                        !illegalForwardRefs.contains(e);
-                                            case FIELD:
-                                                if (e.getSimpleName().contentEquals("this")) //NOI18N
-                                                    return !isStatic;
-                                                if (e.getSimpleName().contentEquals("super")) //NOI18N
-                                                    return false;
-                                                if (illegalForwardRefs.contains(e))
-                                                    return false;
-                                            default:
-                                                return (!isStatic || e.getModifiers().contains(Modifier.STATIC)) && tu.isAccessible(scope, e, t);
-                                            }
-                                        }
-                                    };
-                                    locals = new ArrayList<Element>();
-                                    typeVars = new ArrayList<Element>();
-                                    for (Element element : cInfo.getElementUtilities().getLocalMembersAndVars(scope, acceptor)) {
-                                        switch(element.getKind()) {
-                                            case TYPE_PARAMETER:
-                                                typeVars.add(element);
-                                                break;
-                                            default:
-                                                locals.add(element);
-                                        }
+                            if (cInfo != null || cancel.get())
+                                return;
+                            CompilationController controller = (CompilationController) JavaSourceUtil.createControllerHandle(fo, null).getCompilationController();
+                            controller.toPhase(JavaSource.Phase.RESOLVED);
+                            cInfo = controller;
+                            final TreeUtilities tu = cInfo.getTreeUtilities();
+                            treePath = tu.pathFor(caretOffset);
+                            scope = tu.scopeFor(caretOffset);
+                            enclClass = scope.getEnclosingClass();
+                            final boolean isStatic = enclClass != null ? tu.isStaticContext(scope) : false;
+                            if (enclClass == null) {
+                                CompilationUnitTree cut = treePath.getCompilationUnit();
+                                Iterator<? extends Tree> it = cut.getTypeDecls().iterator();
+                                if (it.hasNext())
+                                    enclClass = (TypeElement)cInfo.getTrees().getElement(TreePath.getPath(cut, it.next()));
+                            }
+                            final Trees trees = controller.getTrees();
+                            final SourcePositions sp = trees.getSourcePositions();
+                            final Collection<? extends Element> illegalForwardRefs = Utilities.getForwardReferences(treePath, caretOffset, sp, trees);
+                            final ExecutableElement method = scope.getEnclosingMethod();
+                            ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
+                                public boolean accept(Element e, TypeMirror t) {
+                                    switch (e.getKind()) {
+                                    case TYPE_PARAMETER:
+                                        return true;
+                                    case LOCAL_VARIABLE:
+                                    case RESOURCE_VARIABLE:
+                                    case EXCEPTION_PARAMETER:
+                                    case PARAMETER:
+                                        return (method == e.getEnclosingElement() || e.getModifiers().contains(Modifier.FINAL)) &&
+                                                !illegalForwardRefs.contains(e);
+                                    case FIELD:
+                                        if (e.getSimpleName().contentEquals("this")) //NOI18N
+                                            return !isStatic;
+                                        if (e.getSimpleName().contentEquals("super")) //NOI18N
+                                            return false;
+                                        if (illegalForwardRefs.contains(e))
+                                            return false;
+                                    default:
+                                        return (!isStatic || e.getModifiers().contains(Modifier.STATIC)) && tu.isAccessible(scope, e, t);
                                     }
                                 }
-                            },true);
+                            };
+                            locals = new ArrayList<Element>();
+                            typeVars = new ArrayList<Element>();
+                            for (Element element : cInfo.getElementUtilities().getLocalMembersAndVars(scope, acceptor)) {
+                                switch(element.getKind()) {
+                                    case TYPE_PARAMETER:
+                                        typeVars.add(element);
+                                        break;
+                                    default:
+                                        locals.add(element);
+                                }
+                            }
                         } catch(IOException ioe) {
                             Exceptions.printStackTrace(ioe);
                         }

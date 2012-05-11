@@ -86,7 +86,6 @@ import org.openide.util.Exceptions;
     List<BackupFacility2.Handle> ids = new ArrayList<BackupFacility2.Handle>();
     private boolean commited = false;
     Collection<? extends ModificationResult> results;
-    private Set<File> newFiles;
     
     /**
      * RefactoringCommit is just collection of ModificationResults
@@ -126,6 +125,7 @@ import org.openide.util.Exceptions;
      }
      
     
+    @Override
     public void commit() {
         try {
             if (commited) {
@@ -138,20 +138,24 @@ import org.openide.util.Exceptions;
                 }
             } else {
                 commited = true;
-                 for (ModificationResult result : results) {
-                     Handle backupid = BackupFacility2.getDefault().backup(result.getModifiedFileObjects());
-                     ids.add(backupid);
-                    if (newFiles == null) {
-                        newFiles = new HashSet<File>();
+                for (ModificationResult result : results) {
+                    Handle backupid = BackupFacility2.getDefault().backup(result.getModifiedFileObjects());
+                    ids.add(backupid);
+                    Handle backupid2 = null;
+                    if (!result.getNewFiles().isEmpty()) {
+                        backupid2 = BackupFacility2.getDefault().backup(result.getNewFiles().toArray(new File[result.getNewFiles().size()]));
+                        ids.add(backupid2);
                     }
-                    newFiles.addAll(result.getNewFiles());
                     result.commit();
                     backupid.storeChecksum();
+                    if (backupid2!=null) {
+                        backupid2.storeChecksum();
+                    }
 
-                openNewFiles(newFiles);
+                    openNewFiles(result.getNewFiles());
+                }
             }
-            }
-            
+        
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
@@ -159,34 +163,18 @@ import org.openide.util.Exceptions;
     
      private boolean newFilesStored = false;
 
+    @Override
      public void rollback() {
-             for (BackupFacility2.Handle id : ids) {
-                 try {
-                     id.restore();
-                 } catch (IOException ex) {
-                     throw new RuntimeException(ex);
-                 }
+         for (BackupFacility2.Handle id : ids) {
+             try {
+                 id.restore();
+             } catch (IOException ex) {
+                 throw new RuntimeException(ex);
              }
-             boolean localStored = false;
-             if (newFiles != null) {
-                 for (File f : newFiles) {
-                     try {
-                         FileObject fo = FileUtil.toFileObject(f);
-                         if (!newFilesStored) {
-                             ids.add(BackupFacility2.getDefault().backup(fo));
-                             localStored = true;
-                         }
-                         fo.delete();
-                     } catch (IOException ex) {
-                         Exceptions.printStackTrace(ex);
-                     }
-                 }
-                 newFilesStored |= localStored;
-             }
-
+         }
      }
 
-    private static void openNewFiles(Set<File> newFiles) {
+    private static void openNewFiles(Collection<? extends File> newFiles) {
         if (newFiles == null) {
             return;
         }

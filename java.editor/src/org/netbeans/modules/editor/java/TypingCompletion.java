@@ -194,7 +194,7 @@ class TypingCompletion {
         // Restore javaTS position
         javaTS.moveIndex(index);
         javaTS.moveNext();
-        if (isForLoopOrTryWithResourcesSemicolon(javaTS) || posWithinAnyQuote(context, javaTS)) {
+        if (isForLoopOrTryWithResourcesSemicolon(javaTS) || posWithinAnyQuote(context, javaTS) || (lastParenPos == context.getOffset() && !javaTS.token().id().equals(JavaTokenId.RPAREN))) {
             return -1;
         }
         context.setText("", 0); // NOI18N

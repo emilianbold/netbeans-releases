@@ -44,9 +44,9 @@
 
 package org.netbeans.modules.editor.lib2.view;
 
-import java.util.Map;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.logging.Logger;
 
 
@@ -126,11 +126,10 @@ public final class TextLayoutCache {
     }
 
     /**
-     * Get valid text layout for the given view. If it's not cached it gets created.
+     * Move the cache entry for the given paragraphView to the beginning of cache
+     * (possibly adding it to the cache if not present).
      *
      * @param paragraphView non-null paragraph view.
-     * @param childView non-null view which is a child of paragraph view.
-     * @return text layout or null if it could not be created.
      */
     void activate(ParagraphView paragraphView) {
         assert (paragraphView != null);
@@ -138,7 +137,7 @@ public final class TextLayoutCache {
         if (entry == null) {
             entry = new Entry(paragraphView);
             paragraph2entry.put(paragraphView, entry);
-            if (paragraph2entry.size() >= capacity) { // Cache full => remove LRU
+            if (paragraph2entry.size() > capacity) { // Cache full => remove LRU
                 removeTailEntry();
             }
             addChainEntryFirst(entry);
@@ -231,6 +230,11 @@ public final class TextLayoutCache {
         entry.previous = entry.next = null;
     }
 
+    @Override
+    public String toString() {
+        return "size=" + size() + ", capacity=" + capacity + ", head=" + head + ", tail=" + tail; // NOI18N
+    }
+
     private static final class Entry {
 
         ParagraphView paragraphView;
@@ -249,12 +253,16 @@ public final class TextLayoutCache {
 
         @Override
         public String toString() {
-            return "Entry: pView=" + paragraphView + "\n" + "previous=" + // NOI18N
-                    previous.toStringSuper() + ", next=" + next.toStringSuper();
+            return "Entry[pView=" + paragraphView + "\n" + "previous=" + // NOI18N
+                    toString(previous) + ", next=" + toString(next) + "]"; // NOI18N
         }
         
-        public String toStringSuper() {
-            return super.toString();
+        public String toStringShort() {
+            return "Entry@" + System.identityHashCode(this);
+        }
+        
+        private static String toString(Entry entry) {
+            return (entry != null) ? entry.toStringShort() : "null";
         }
         
     }

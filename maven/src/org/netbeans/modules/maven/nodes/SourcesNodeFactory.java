@@ -41,7 +41,8 @@
  */
 
 package org.netbeans.modules.maven.nodes;
-import java.util.ArrayList;
+
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -54,6 +55,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
+import static org.netbeans.modules.maven.nodes.Bundle.*;
 import org.netbeans.modules.maven.spi.nodes.AbstractMavenNodeList;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ui.support.NodeFactory;
@@ -61,7 +63,7 @@ import org.netbeans.spi.project.ui.support.NodeList;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -71,12 +73,8 @@ import org.openide.util.RequestProcessor;
 @NodeFactory.Registration(projectType="org-netbeans-modules-maven",position=100)
 public class SourcesNodeFactory implements NodeFactory {
     
-    /** Creates a new instance of SourcesNodeFactory */
-    public SourcesNodeFactory() {
-    }
-    
     @Override
-    public NodeList createNodes(Project project) {
+    public NodeList<?> createNodes(Project project) {
         NbMavenProjectImpl prj = project.getLookup().lookup(NbMavenProjectImpl.class);
         return  new NList(prj);
     }
@@ -90,15 +88,12 @@ public class SourcesNodeFactory implements NodeFactory {
         
         @Override
         public List<SourceGroup> keys() {
-            List<SourceGroup> list = new ArrayList<SourceGroup>();
             Sources srcs = ProjectUtils.getSources(project);
             SourceGroup[] javagroup = srcs.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-            for (SourceGroup sg : javagroup) {
-                list.add(sg);
-            }
-            return list;
+            return Arrays.asList(javagroup);
         }
         
+        @Messages({"# {0} - label of source group", "# {1} - project name", "ERR_WrongSG={0} is owned by project {1}, cannot be used here, see issue #138310 for details."})
         @Override
         public Node node(SourceGroup group) {
             Project owner = FileOwnerQuery.getOwner(group.getRootFolder());
@@ -110,7 +105,7 @@ public class SourcesNodeFactory implements NodeFactory {
                 }
                 AbstractNode erroNode = new AbstractNode(Children.LEAF);
                 String prjText = ProjectUtils.getInformation(owner).getDisplayName();
-                erroNode.setDisplayName(NbBundle.getMessage(SourcesNodeFactory.class, "ERR_WrongSG", group.getDisplayName(), prjText));
+                erroNode.setDisplayName(ERR_WrongSG(group.getDisplayName(), prjText));
                 return erroNode;
             }
             return PackageView.createPackageView(group);

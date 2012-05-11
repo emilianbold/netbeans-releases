@@ -556,41 +556,13 @@ public class JavaFixUtilities {
         @Override
         public Number visitIdentifier(IdentifierTree node, Void p) {
             String name = node.getName().toString();
-            TreePath tp = parameters.get(name);
-
-            if (tp != null) {
-                if (tp.getLeaf() instanceof Hacks.RenameTree) {
-                    Hacks.RenameTree rt = (Hacks.RenameTree) tp.getLeaf();
-                    Tree nue = make.setLabel(rt.originalTree, rt.newName);
-
-                    rewrite(node, nue);
-
-                    return null;
+            Tree newNode = handleIdentifier(name, node);
+            
+            if (newNode != null) {
+                rewrite(node, newNode);
+                if (NUMBER_LITERAL_KINDS.contains(newNode.getKind())) {
+                    return (Number) ((LiteralTree) newNode).getValue();
                 }
-                if (!parameterNames.containsKey(name)) {
-                    rewrite(node, tp.getLeaf());
-                    if (NUMBER_LITERAL_KINDS.contains(tp.getLeaf().getKind())) {
-                        return (Number) ((LiteralTree) tp.getLeaf()).getValue();
-                    }
-                    Tree target = tp.getLeaf();
-                    //TODO: might also remove parenthesis, but needs to ensure the diff will still be minimal
-//                    while (target.getKind() == Kind.PARENTHESIZED
-//                           && !requiresParenthesis(((ParenthesizedTree) target).getExpression(), getCurrentPath().getParentPath().getLeaf())) {
-//                        target = ((ParenthesizedTree) target).getExpression();
-//                    }
-                    if (requiresParenthesis(target, node, getCurrentPath().getParentPath().getLeaf())) {
-                        target = make.Parenthesized((ExpressionTree) target);
-                    }
-                    rewrite(node, target);
-                    return null;
-                }
-            }
-
-            String variableName = parameterNames.get(name);
-
-            if (variableName != null) {
-                rewrite(node, make.Identifier(variableName));
-                return null;
             }
 
             Element e = info.getTrees().getElement(getCurrentPath());
@@ -600,6 +572,55 @@ public class JavaFixUtilities {
             }
 
             return super.visitIdentifier(node, p);
+        }
+
+        @Override
+        public Number visitTypeParameter(TypeParameterTree node, Void p) {
+            String name = node.getName().toString();
+            Tree newNode = handleIdentifier(name, node);
+            
+            if (newNode != null) {
+                rewrite(node, newNode);
+                if (NUMBER_LITERAL_KINDS.contains(newNode.getKind())) {
+                    return (Number) ((LiteralTree) newNode).getValue();
+                }
+            }
+            
+            return super.visitTypeParameter(node, p);
+        }
+        
+        private Tree handleIdentifier(String name, Tree node) {
+            TreePath tp = parameters.get(name);
+
+            if (tp != null) {
+                if (tp.getLeaf() instanceof Hacks.RenameTree) {
+                    Hacks.RenameTree rt = (Hacks.RenameTree) tp.getLeaf();
+                    return make.setLabel(rt.originalTree, rt.newName);
+                }
+                if (!parameterNames.containsKey(name)) {
+                    Tree target = tp.getLeaf();
+                    if (NUMBER_LITERAL_KINDS.contains(target.getKind())) {
+                        return target;
+                    }
+                    //TODO: might also remove parenthesis, but needs to ensure the diff will still be minimal
+//                    while (target.getKind() == Kind.PARENTHESIZED
+//                           && !requiresParenthesis(((ParenthesizedTree) target).getExpression(), getCurrentPath().getParentPath().getLeaf())) {
+//                        target = ((ParenthesizedTree) target).getExpression();
+//                    }
+                    if (requiresParenthesis(target, node, getCurrentPath().getParentPath().getLeaf())) {
+                        target = make.Parenthesized((ExpressionTree) target);
+                    }
+                    return target;
+                }
+            }
+
+            String variableName = parameterNames.get(name);
+
+            if (variableName != null) {
+                return make.Identifier(variableName);
+            }
+            
+            return null;
         }
 
         @Override
@@ -658,6 +679,28 @@ public class JavaFixUtilities {
             }
 
             return super.visitVariable(node, p);
+        }
+
+        @Override
+        public Number visitMethod(MethodTree node, Void p) {
+            String name = node.getName().toString();
+            String newName = name;
+
+            if (name.startsWith("$")) {
+                if (parameterNames.containsKey(name)) {
+                    newName = parameterNames.get(name);
+                }
+            }
+
+            List<? extends TypeParameterTree> typeParams = resolveMultiParameters(node.getTypeParameters());
+            List<? extends VariableTree> params = resolveMultiParameters(node.getParameters());
+            List<? extends ExpressionTree> thrown = resolveMultiParameters(node.getThrows());
+            
+            MethodTree nue = make.Method(node.getModifiers(), newName, node.getReturnType(), typeParams, params, thrown, node.getBody(), (ExpressionTree) node.getDefaultValue());
+            
+            rewrite(node, nue);
+            
+            return super.visitMethod(node, p);
         }
 
         @Override

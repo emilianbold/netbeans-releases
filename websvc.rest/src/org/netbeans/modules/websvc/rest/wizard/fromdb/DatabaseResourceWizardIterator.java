@@ -72,6 +72,7 @@ import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceLocation;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
@@ -97,6 +98,8 @@ import org.netbeans.modules.websvc.rest.codegen.model.EntityClassInfo;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceBeanModel;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceModelBuilder;
 import org.netbeans.modules.websvc.rest.codegen.model.TypeUtil;
+import org.netbeans.modules.websvc.rest.spi.RestSupport;
+import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
 import org.netbeans.modules.websvc.rest.support.PersistenceHelper;
 import org.netbeans.modules.websvc.rest.support.PersistenceHelper.PersistenceUnit;
 import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
@@ -290,29 +293,51 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
 
             Set<FileObject> files = getAffectedFiles(generator, helper );
 
-            RestUtils.ensureRestDevelopmentReady(project);
+            final RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
+            String restAppPackage = null;
+            String restAppClass = null;
+            
+            if( restSupport instanceof WebRestSupport) {
+                Object useJersey = wizard.getProperty(WizardProperties.USE_JERSEY);
+                if ( useJersey != null && useJersey.toString().equals("true")){     // NOI18N 
+                    ((WebRestSupport)restSupport).enableRestSupport( WebRestSupport.RestConfig.DD);
+                }
+                else {
+                    restAppPackage = (String) wizard
+                            .getProperty(WizardProperties.APPLICATION_PACKAGE);
+                    restAppClass = (String) wizard
+                            .getProperty(WizardProperties.APPLICATION_CLASS);
+                    if (restAppPackage != null && restAppClass != null) {
+                        ((WebRestSupport) restSupport)
+                                .enableRestSupport(WebRestSupport.RestConfig.IDE);
+                    }
+                }
+            }
+            if ( restSupport!= null ){
+                restSupport.ensureRestDevelopmentReady();
+            }
+            
             final Set<String> entities = Util.getEntities(project, files);
-            RestUtils.configRestPackages(project, 
-                    wizard.getProperty(WizardProperties.RESOURCE_PACKAGE).toString());
             
             if (!RestUtils.hasSpringSupport(project) && RestUtils.isJavaEE6(project)) {
                 String targetPackage = null;
                 String resourcePackage = null;
                 String controllerPackage = null;
                 FileObject targetResourceFolder = null;
+                
+                SourceGroup targetSourceGroup=null;
 
                 FileObject targetFolder = (FileObject) wizard.getProperty(WizardProperties.TARGET_SRC_ROOT);
                 if (targetFolder != null) {
                     targetPackage = SourceGroupSupport.packageForFolder(targetFolder);
                     resourcePackage = (String) wizard.getProperty(WizardProperties.RESOURCE_PACKAGE);
                     SourceGroup[] sourceGroups = SourceGroupSupport.getJavaSourceGroups(project);
-                    SourceGroup targetSourceGroup = SourceGroupSupport.findSourceGroupForFile(sourceGroups, targetFolder);
+                    targetSourceGroup = SourceGroupSupport.findSourceGroupForFile(sourceGroups, targetFolder);
                     if (targetSourceGroup != null) {
                         targetResourceFolder = SourceGroupSupport.getFolderForPackage(targetSourceGroup, resourcePackage, true);
                     }
                 } else {
                     targetFolder = Templates.getTargetFolder(wizard);
-                    SourceGroup targetSourceGroup = null;
                     targetPackage = "";
                     if (targetFolder != null) {
                         SourceGroup[] sourceGroups = SourceGroupSupport.getJavaSourceGroups(project);
@@ -328,6 +353,13 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
                     if (targetSourceGroup != null) {
                         targetResourceFolder = SourceGroupSupport.getFolderForPackage(targetSourceGroup, resourcePackage, true);
                     }
+                }
+                
+                // create application config class if required
+                final FileObject restAppPack = restAppPackage == null ? null :  
+                    SourceGroupSupport.getFolderForPackage(targetSourceGroup, restAppPackage, true);
+                if ( restAppPack != null && restAppClass!= null ){
+                    RestUtils.createApplicationConfigClass( restAppPack, restAppClass);
                 }
                 
                 if (targetResourceFolder == null) {
@@ -353,7 +385,7 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
 
                 Util.generateRESTFacades(project, entities, model[0],
                         targetResourceFolder, resourcePackage);
-
+                restSupport.configure(resourcePackage);
             } 
             else {   
                 assert !files.isEmpty();
@@ -410,27 +442,30 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
                     controllerPackage = targetPackage + 
                         EntityResourcesGenerator.CONTROLLER_FOLDER;
                 }
+                
+                // create application config class if required
+                final FileObject restAppPack = restAppPackage == null ? null :  
+                    FileUtil.createFolder(targetFolder, restAppPackage.replace('.', '/'));
+                if ( restAppPack != null && restAppClass!= null ){
+                    GenerationUtils.createClass(restAppPack,restAppClass, null );
+                }
 
                 final EntityResourcesGenerator gen = EntityResourcesGeneratorFactory.newInstance(project);
-                gen.initialize(model[0], project, targetFolder, targetPackage, 
+                gen.initialize(model[0], project, targetFolder, targetPackage,
                         resourcePackage, controllerPackage, pu);
 
-                /*RequestProcessor.Task transformTask = RequestProcessor.getDefault().create(new Runnable() {
+                try {
+                    RestUtils.disableRestServicesChangeListner(project);
+                    gen.generate(null);
+                    restSupport.configure(resourcePackage);
+                }
+                catch (Exception iox) {
+                    Exceptions.printStackTrace(iox);
+                }
+                finally {
+                    RestUtils.enableRestServicesChangeListner(project);
 
-                    public void run() {*/
-                        try {
-                            RestUtils.disableRestServicesChangeListner(project);
-                            gen.generate(null);
-
-                       } catch (Exception iox) {
-                            Exceptions.printStackTrace(iox);
-                        } finally {
-                            RestUtils.enableRestServicesChangeListner(project);
-
-                        }
-                    /*}
-                });
-                transformTask.schedule(50);*/
+                }
             }
 
         }

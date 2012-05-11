@@ -214,17 +214,19 @@ public final class ProjectActionEvent {
         if (configuration.getPlatformInfo().isLocalhost()) {
             command = CndPathUtilitities.expandMacro(command, "${OUTPUT_PATH}", outputValue); // NOI18N
         } else { //            if (!configuration.getDevelopmentHost().isLocalhost()) {
-            PathMap mapper = RemoteSyncSupport.getPathMap(getProject());
-            if (mapper != null) {
-                String aValue = mapper.getRemotePath(outputValue, true);
-                if (aValue != null) {
-                    outputValue = aValue;
+            if (!outputValue.isEmpty()) {
+                PathMap mapper = RemoteSyncSupport.getPathMap(getProject());
+                if (mapper != null) {
+                    String aValue = mapper.getRemotePath(outputValue, true);
+                    if (aValue != null) {
+                        outputValue = aValue;
+                    }
+                } else {
+                    LOGGER.log(Level.SEVERE, "Path Mapper not found for project {0} - using local path {1}", new Object[]{getProject(), outputValue}); //NOI18N
                 }
-            } else {
-                LOGGER.log(Level.SEVERE, "Path Mapper not found for project {0} - using local path {1}", new Object[]{getProject(), outputValue}); //NOI18N
             }
 
-            command = CndPathUtilitities.expandMacro(command, "${OUTPUT_PATH}", mapper.getRemotePath(outputValue, true)); // NOI18N
+            command = CndPathUtilitities.expandMacro(command, "${OUTPUT_PATH}", outputValue); // NOI18N
         }
 
         return configuration.expandMacros(command);

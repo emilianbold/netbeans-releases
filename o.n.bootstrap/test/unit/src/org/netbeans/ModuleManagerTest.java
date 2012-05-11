@@ -134,6 +134,8 @@ public class ModuleManagerTest extends SetupHid {
             Module m1 = mgr.create(new File(jars, "simple-module.jar"), null, false, false, false);
             assertEquals("org.foo", m1.getCodeNameBase());
             assertEquals("org.bar", m2.getCodeNameBase());
+            assertCnb(m1);
+            assertCnb(m2);
             assertEquals(Collections.EMPTY_SET, m1.getDependencies());
             assertEquals(Dependency.create(Dependency.TYPE_MODULE, "org.foo/1"), m2.getDependencies());
             Map<String,Module> modulesByName = new HashMap<String,Module>();
@@ -902,8 +904,8 @@ public class ModuleManagerTest extends SetupHid {
         try {
             Module m1 = mgr.create(new File(jars, "prov-foo.jar"), null, false, false, false);
             Module m2 = mgr.create(new File(jars, "req-foo.jar"), null, false, false, false);
-            assertEquals(Collections.singletonList("foo"), Arrays.asList(m1.getProvides()));
-            assertEquals(Collections.EMPTY_LIST, Arrays.asList(m2.getProvides()));
+            assertEquals(Collections.singletonList("foo"), assertCnb(m1));
+            assertEquals(Collections.EMPTY_LIST, assertCnb(m2));
             assertEquals(Collections.EMPTY_SET, m1.getDependencies());
             assertEquals(Dependency.create(Dependency.TYPE_REQUIRES, "foo"), m2.getDependencies());
             Map<String,Module> modulesByName = new HashMap<String,Module>();
@@ -1134,8 +1136,8 @@ public class ModuleManagerTest extends SetupHid {
             } else {
                 m2 = mgr.create(new File(jars, "needs-foo.jar"), null, false, false, false);
             }
-            assertEquals(Collections.singletonList("foo"), Arrays.asList(m1.getProvides()));
-            assertEquals(Collections.EMPTY_LIST, Arrays.asList(m2.getProvides()));
+            assertEquals(Collections.singletonList("foo"), assertCnb(m1));
+            assertEquals(Collections.EMPTY_LIST, assertCnb(m2));
             assertEquals(1, m1.getDependencies().size());
             int type = recommends ? Dependency.TYPE_RECOMMENDS : Dependency.TYPE_NEEDS;
             assertEquals(Dependency.create(type, "foo"), m2.getDependencies());
@@ -1321,8 +1323,8 @@ public class ModuleManagerTest extends SetupHid {
 "OpenIDE-Module-Recommends: foo\n";
                 m3 = mgr.create(copyJar(m2.getJarFile(), manifest), null, false, false, false);
             }
-            assertEquals(Collections.singletonList("foo"), Arrays.asList(m1.getProvides()));
-            assertEquals(Collections.EMPTY_LIST, Arrays.asList(m2.getProvides()));
+            assertEquals(Collections.singletonList("foo"), assertCnb(m1));
+            assertEquals(Collections.EMPTY_LIST, assertCnb(m2));
             assertEquals(1, m1.getDependencies().size());
             int type = recommends ? Dependency.TYPE_RECOMMENDS : Dependency.TYPE_NEEDS;
             assertEquals(Dependency.create(type, "foo"), m2.getDependencies());
@@ -1401,7 +1403,7 @@ public class ModuleManagerTest extends SetupHid {
         mgr.mutexPrivileged().enterWriteAccess();
         try {
             Module m2 = mgr.create(new File(jars, "recommends-foo.jar"), null, false, false, false);
-            assertEquals(Collections.EMPTY_LIST, Arrays.asList(m2.getProvides()));
+            assertEquals(Collections.EMPTY_LIST, assertCnb(m2));
             assertEquals(Dependency.create(Dependency.TYPE_RECOMMENDS, "foo"), m2.getDependencies());
             Map<String,Module> modulesByName = new HashMap<String,Module>();
             modulesByName.put(m2.getCodeNameBase(), m2);
@@ -1457,7 +1459,7 @@ public class ModuleManagerTest extends SetupHid {
         mgr.mutexPrivileged().enterWriteAccess();
         try {
             Module m2 = mgr.create(new File(jars, "recommends-foo.jar"), null, false, false, false);
-            assertEquals(Collections.EMPTY_LIST, Arrays.asList(m2.getProvides()));
+            assertEquals(Collections.EMPTY_LIST, assertCnb(m2));
             
             Module m1;
             {
@@ -2717,4 +2719,18 @@ public class ModuleManagerTest extends SetupHid {
         return mgr.createFixed(new Manifest(new ByteArrayInputStream(manifest.getBytes())), null, ModuleManagerTest.class.getClassLoader());
     }
 
+    private static Collection<String> assertCnb(Module m) {
+        String token = "cnb." + m.getCodeNameBase();
+        List<String> arr = new ArrayList<String>();
+        boolean ok = false;
+        for (String t : m.getProvides()) {
+            if (token.equals(t)) {
+                ok = true;
+            } else {
+                arr.add(t);
+            }
+        }
+        assertTrue(token + " is not among the list of provides of module " + m + " which is " + arr, ok);
+        return arr;
+    }
 }

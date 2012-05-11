@@ -20,14 +20,16 @@ import javafx.stage.Stage;
 public class ${name} extends Application {
 
     public static void main(String[] args) {
-        Application.launch(${name}.class, args);
+        launch(args);
     }
 
     @Override
     public void start(Stage stage) throws Exception {
         Parent root = FXMLLoader.load(getClass().getResource("${fxmlname}.fxml"));
         
-        stage.setScene(new Scene(root));
+        Scene scene = new Scene(root);
+
+        stage.setScene(scene);
         stage.show();
     }
 

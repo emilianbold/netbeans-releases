@@ -115,6 +115,8 @@ final class TestNGOutputReader {
     private Project project;
     private File resultsDir;
     private Map<String, Report> reports;
+    private int successPercentage;
+    private int passedWithErrorsFailure;
 
     /**
      * Creates a new instance of TestNGOutputReader
@@ -193,6 +195,8 @@ final class TestNGOutputReader {
         String in = getMessage(msg);
         //suite starting
         if (in.startsWith("RUNNING: ")) {
+            passedWithErrorsFailure = 0;
+            successPercentage = -1;
             Matcher m = Pattern.compile(RegexpUtils.RUNNING_SUITE_REGEX).matcher(in);
             if (m.matches()) {
                 suiteStarted(m.group(1), Integer.valueOf(m.group(2)), m.group(3));
@@ -209,6 +213,10 @@ final class TestNGOutputReader {
             } else {
                 suiteFinished(suiteStat);
                 suiteStat = null;
+            }
+            if (txt.size() > 0) {
+                addStackTrace(txt);
+                txt.clear();
             }
             return;
         } else if (suiteSummary) {
@@ -246,6 +254,11 @@ final class TestNGOutputReader {
             Matcher m = Pattern.compile(RegexpUtils.TEST_REGEX).matcher(in);
             if (m.matches()) {
                 testStarted(m.group(1), m.group(2), m.group(4), m.group(6));
+                String percent = m.group(12);
+                if (percent != null) {
+                    percent = percent.substring(percent.indexOf(": ") + 2, percent.length() - 1);
+                    successPercentage = Integer.parseInt(percent);
+                }
             } else {
                 Matcher m2 = Pattern.compile(RegexpUtils.TEST_REGEX_2).matcher(in);
                 if (m2.matches()) {
@@ -261,7 +274,9 @@ final class TestNGOutputReader {
         Matcher m = Pattern.compile(RegexpUtils.TEST_REGEX).matcher(in);
         if (in.startsWith("PASSED: ")) {
             if (m.matches()) {
-                testFinished("PASSED", m.group(1), m.group(2), m.group(4), m.group(6), m.group(8));
+                if(successPercentage == -1) {
+                    testFinished("PASSED", m.group(1), m.group(2), m.group(4), m.group(6), m.group(8));
+                }
             } else {
                 Matcher m2 = Pattern.compile(RegexpUtils.TEST_REGEX_2).matcher(in);
                 if (m2.matches()) {
@@ -274,6 +289,30 @@ final class TestNGOutputReader {
         }
 
         if (in.startsWith("PASSED with failures: ")) {
+            if (m.matches()) {
+                passedWithErrorsFailure++;
+                int currentInvocation = Integer.parseInt(m.group(10));
+                int invocationCount = Integer.parseInt(m.group(11));
+                if (currentInvocation == invocationCount) {
+                    double actual = (double)(invocationCount - passedWithErrorsFailure) / (double)invocationCount;
+                    double expected = (double)successPercentage / 100.0;
+                    if(actual == 100) {
+                        testFinished("PASSED", m.group(1), m.group(2), m.group(4), m.group(6), m.group(8));
+                    } else if (actual < expected) {
+                        testFinished("FAILED", m.group(1), m.group(2), m.group(4), m.group(6), m.group(8));
+                    } else {
+                        testFinished("PASSED with failures", m.group(1), m.group(2), m.group(4), m.group(6), m.group(8));
+                    }
+                }
+            } else {
+                Matcher m2 = Pattern.compile(RegexpUtils.TEST_REGEX_2).matcher(in);
+                if (m2.matches()) {
+                    testFinished("PASSED with failures", m2.group(1), m2.group(2), m2.group(4), "UNKNOWN#" + x, "0");
+                } else {
+                    assert false : "Cannot match: '" + in + "'.";
+                }
+            }
+            return;
         }
 
         if (in.startsWith("SKIPPED: ")) {
@@ -701,6 +740,8 @@ final class TestNGOutputReader {
         assert tc != null;
         if ("PASSED".equals(st)) {
             tc.setStatus(Status.PASSED);
+        } else if ("PASSED with failures".equals(st)) {
+            tc.setStatus(Status.PASSEDWITHERRORS);
         } else if ("FAILED".equals(st)) {
             tc.setStatus(Status.FAILED);
         } else if ("SKIPPED".equals(st)) {

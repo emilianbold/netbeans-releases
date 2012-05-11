@@ -186,6 +186,11 @@ public class GsfDataObject extends MultiDataObject {
     implements OpenCookie, EditCookie, EditorCookie, PrintCookie, 
                EditorCookie.Observable, SaveAsCapable, LineCookie,
                CloseCookie, CookieSet.Factory {
+
+        @Override
+        protected boolean asynchronousOpen() {
+            return true;
+        }
         
         @Override
         public <T extends Cookie> T createCookie(Class<T> klass) {

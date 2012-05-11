@@ -51,16 +51,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
-import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
-import org.netbeans.modules.cnd.api.remote.CommandProvider;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 
 /**
  * This class evolutioned from cnd.api.utils.Path
@@ -331,9 +331,9 @@ public final class PlatformInfo {
         if (executionEnvironment.isLocal()) {
             return file.listFiles();
         } else {
-            CommandProvider provider = Lookup.getDefault().lookup(CommandProvider.class);
-            if (provider.run(executionEnvironment, "ls -A1", null) == 0) { //NOI18N
-                String files = provider.getOutput();
+            final ExitStatus res = ProcessUtils.execute(executionEnvironment, "ls", "-A1"); //NOI18N
+            if (res.isOK()) {
+                String files = res.output;
                 if (files != null) {
                     BufferedReader bufferedReader = new BufferedReader(new StringReader(files));
                     String line;
@@ -360,8 +360,7 @@ public final class PlatformInfo {
         if (executionEnvironment.isLocal()) {
             return file.isDirectory();
         } else {
-            CommandProvider provider = Lookup.getDefault().lookup(CommandProvider.class);
-            return provider.run(executionEnvironment, "test -d \"" + file.getPath() + "\"", null) == 0; //NOI18N
+            return ProcessUtils.execute(executionEnvironment, "test",  "-d", "\"" + file.getPath() + "\"").isOK(); //NOI18N
         }
     }
 
@@ -370,8 +369,7 @@ public final class PlatformInfo {
         if (executionEnvironment.isLocal()) {
             return file.isFile();
         } else {
-            CommandProvider provider = Lookup.getDefault().lookup(CommandProvider.class);
-            return provider.run(executionEnvironment, "test -f \"" + file.getPath() + "\"", null) == 0; //NOI18N
+            return ProcessUtils.execute(executionEnvironment, "test", "-f", "\"" + file.getPath() + "\"").isOK(); //NOI18N
         }
     }
 
@@ -380,11 +378,10 @@ public final class PlatformInfo {
         if (executionEnvironment.isLocal()) {
             return file.canRead();
         } else {
-            CommandProvider provider = Lookup.getDefault().lookup(CommandProvider.class);
-            return provider.run(executionEnvironment, "test -r \"" + file.getPath() + "\"", null) == 0; //NOI18N
+            return ProcessUtils.execute(executionEnvironment, "test", "-r" ,"\"" + file.getPath() + "\"").isOK(); //NOI18N
         }
-
     }
+
     private static Map<ExecutionEnvironment, PlatformInfo> map =
             new HashMap<ExecutionEnvironment, PlatformInfo>();
 

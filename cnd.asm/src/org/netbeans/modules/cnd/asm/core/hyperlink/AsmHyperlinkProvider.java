@@ -59,6 +59,7 @@ import org.openide.windows.TopComponent;
 
 import org.netbeans.modules.cnd.asm.core.assistance.GoToLabelAction;
 import org.netbeans.modules.cnd.asm.core.dataobjects.AsmObjectUtilities;
+import org.netbeans.modules.cnd.asm.model.AsmModelAccessor;
 import org.netbeans.modules.cnd.asm.model.AsmState;
 
 public class AsmHyperlinkProvider implements HyperlinkProvider {
@@ -71,8 +72,13 @@ public class AsmHyperlinkProvider implements HyperlinkProvider {
         lastResult = new int[]{-1, -1, -1};
     }
 
+    @Override
     public boolean isHyperlinkPoint(Document doc, int offset) {
-        AsmState state = AsmObjectUtilities.getAccessor(doc).getState();
+        AsmModelAccessor acc = AsmObjectUtilities.getAccessor(doc);
+        if (acc == null) {
+            return false;
+        }
+        AsmState state = acc.getState();
         lastDocument = doc;
         if (state != null) {
             int res[] = labelResolver.computeLabel(state, offset);

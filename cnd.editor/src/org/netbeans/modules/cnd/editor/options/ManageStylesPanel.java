@@ -253,7 +253,7 @@ private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
                     try {
                         n = Integer.parseInt(v);
                     } catch (NumberFormatException e) {
-                        e.printStackTrace();
+                        e.printStackTrace(System.err);
                     }
                     if (maxId <= n) {
                         maxId = n + 1;
@@ -302,6 +302,7 @@ private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
         }
     }
 
+    @Override
     public void valueChanged(ListSelectionEvent e) {
         if (e.getValueIsAdjusting()) {
             return;
@@ -309,16 +310,20 @@ private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
         checkSelection();
     }
 
+    @Override
     public void keyTyped(KeyEvent e) {
     }
 
+    @Override
     public void keyPressed(KeyEvent e) {
         processKeyEvent(e);
     }
 
+    @Override
     public void keyReleased(KeyEvent e) {
     }
 
+    @Override
     public void mouseClicked(MouseEvent e) {
         Object ob[] = stylesList.getSelectedValues();
         if (ob.length != 1) {
@@ -330,15 +335,19 @@ private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
         }
     }
 
+    @Override
     public void mousePressed(MouseEvent e) {
     }
 
+    @Override
     public void mouseReleased(MouseEvent e) {
     }
 
+    @Override
     public void mouseEntered(MouseEvent e) {
     }
 
+    @Override
     public void mouseExited(MouseEvent e) {
     }
 
@@ -348,10 +357,12 @@ private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
             this.objects = objects;
         }
 
+        @Override
         public int getSize() {
             return objects.size();
         }
 
+        @Override
         public MyListItem getElementAt(int index) {
             return objects.get(index);
         }
@@ -380,8 +391,32 @@ private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
             return name;
         }
 
+        @Override
         public int compareTo(ManageStylesPanel.MyListItem o) {
             return name.compareTo(o.name);
         }
+
+        @Override
+        public int hashCode() {
+            int hash = 3;
+            hash = 97 * hash + (this.name != null ? this.name.hashCode() : 0);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final MyListItem other = (MyListItem) obj;
+            if ((this.name == null) ? (other.name != null) : !this.name.equals(other.name)) {
+                return false;
+            }
+            return true;
+        }
+        
     }
 }

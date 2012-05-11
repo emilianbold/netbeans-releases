@@ -112,7 +112,9 @@ public class JUnitTestSession extends TestSession{
             if (cpp != null){
                 for(FileObject file: roots){
                     ClassPath path = cpp.findClassPath(file, ClassPath.COMPILE);
-                    setCP.add(path);
+                    if(path != null) {
+                        setCP.add(path);
+                    }
                 }
             }
 

@@ -41,7 +41,9 @@
  */
 package org.netbeans.modules.html.editor.gsf;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.html.editor.lib.api.elements.Element;
 import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
@@ -52,22 +54,29 @@ import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.html.editor.api.HtmlKit;
-import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
-import org.netbeans.modules.html.editor.lib.api.elements.Node;
+import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
+import org.netbeans.modules.html.editor.lib.api.elements.*;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.filesystems.FileObject;
 
 /**
+ * Represents a handle for OpenTags obtained from HtmlParserResult. 
+ * 
+ * The handle may be held out of the parsing task and later resolved
+ * back to node by {@link #resolve(org.netbeans.modules.csl.spi.ParserResult) 
  *
  * @author mfukala@netbeans.org
  */
 public class HtmlElementHandle implements ElementHandle {
 
-    private Element node;
     private FileObject fo;
+    private String name;
+    private String elementPath;
 
-    HtmlElementHandle(Element node, FileObject fo) {
-        this.node = node;
+    public HtmlElementHandle(OpenTag node, FileObject fo) {
         this.fo = fo;
+        this.name = node.id().toString();
+        this.elementPath = ElementUtils.encodeToString(new TreePath(node));
     }
 
     @Override
@@ -82,7 +91,7 @@ public class HtmlElementHandle implements ElementHandle {
 
     @Override
     public String getName() {
-        return node.id().toString();
+        return name;
     }
 
     @Override
@@ -105,48 +114,60 @@ public class HtmlElementHandle implements ElementHandle {
         if (!(handle instanceof HtmlElementHandle)) {
             return false;
         }
+        HtmlElementHandle htmlHandle = (HtmlElementHandle)handle;
+        return htmlHandle.elementPath.equals(elementPath);
+    }
 
-        Element foreignNode = ((HtmlElementHandle) handle).node();
-        if (node == foreignNode) {
-            return true;
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 41 * hash + (this.elementPath != null ? this.elementPath.hashCode() : 0);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
         }
-
-        TreePath fnPath = new TreePath(foreignNode);
-        TreePath path = new TreePath(node);
-
-        return path.equals(fnPath);
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final HtmlElementHandle other = (HtmlElementHandle) obj;
+        if ((this.elementPath == null) ? (other.elementPath != null) : !this.elementPath.equals(other.elementPath)) {
+            return false;
+        }
+        return true;
     }
 
     @Override
     public String toString() {
-        return new TreePath(node).toString();
+        return elementPath;
     }
     
-    
-
-    Element node() {
-        return node;
+    public OpenTag resolve(ParserResult result) {
+        if(!(result instanceof HtmlParserResult)) {
+            return null;
+        }
+        
+        HtmlParserResult htmlParserResult = (HtmlParserResult)result;
+        Node root = htmlParserResult.root();
+        
+        return ElementUtils.query(root, elementPath);
     }
-
-    public int from() {
-        return node().from();
-    }
-
-    public int to() {
-        return node().type() == ElementType.OPEN_TAG ? ((OpenTag)node()).semanticEnd() : node().to();
-    }
-
+        
     @Override
     public OffsetRange getOffsetRange(ParserResult result) {
-        ElementHandle object = HtmlGSFParser.resolveHandle(result, this);
-        if (object instanceof HtmlElementHandle) {
-            HtmlElementHandle heh = (HtmlElementHandle) object;
-            int from = result.getSnapshot().getOriginalOffset(heh.from());
-            int to = result.getSnapshot().getOriginalOffset(heh.to());
-            return from != -1 && to != -1 ? new OffsetRange(from, to) : OffsetRange.NONE;
-        } else {
-            throw new IllegalArgumentException("Foreign element: " + object + " of type " +
-                    ((object != null) ? object.getClass().getName() : "null")); //NOI18N
+        OpenTag node = resolve(result);
+        if(node == null) {
+            return OffsetRange.NONE;
         }
+        
+        Snapshot snapshot = result.getSnapshot();
+        int dfrom = snapshot.getOriginalOffset(node.from());
+        int dto = snapshot.getOriginalOffset(node.semanticEnd());
+        
+        return dfrom != -1 && dto != -1 ? new OffsetRange(dfrom, dto) : OffsetRange.NONE;
     }
+    
 }

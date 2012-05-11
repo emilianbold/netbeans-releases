@@ -173,7 +173,7 @@ made subject to such option by the copyright holder.
                         <folder name="javax.servlet.ServletRequestAttributeListener"/>
                         <folder name="javax.servlet.ServletRequestListener"/>
                         <folder name="javax.servlet.http.HttpSessionActivationListener"/>
-                        <folder name="javax.servlet.http.HttpSessionAttributeListene"/>
+                        <folder name="javax.servlet.http.HttpSessionAttributeListener"/>
                         <folder name="javax.servlet.http.HttpSessionListener"/>
                     </folder>
                 </folder>

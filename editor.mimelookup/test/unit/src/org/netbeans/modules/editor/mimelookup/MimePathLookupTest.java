@@ -45,10 +45,16 @@
 package org.netbeans.modules.editor.mimelookup;
 
 import java.util.Collection;
+import java.util.concurrent.CyclicBarrier;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -60,6 +66,8 @@ import org.openide.util.LookupListener;
 @RandomlyFails // NB-Core-Build #1103, probably due to TestUtilities.sleepForWhile
 public class MimePathLookupTest extends NbTestCase {
 
+    private TestHandler handler;
+    
     /** Creates a new instance of MimePathLookupTest */
     public MimePathLookupTest(String name) {
         super(name);
@@ -72,6 +80,17 @@ public class MimePathLookupTest extends NbTestCase {
         EditorTestLookup.setLookup(new String[0], getWorkDir(), new Object[] {},
             getClass().getClassLoader()
         );
+        handler = new TestHandler();
+        final Logger log = Logger.getLogger(MimePathLookup.class.getName());
+        log.setLevel(Level.FINE);
+        log.addHandler(handler);
+    }
+    
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        final Logger log = Logger.getLogger(MimePathLookupTest.class.getName());
+        log.removeHandler(handler);
     }
     
     public void testAddingMimeDataProvider() throws Exception {
@@ -195,8 +214,120 @@ public class MimePathLookupTest extends NbTestCase {
     private static class L implements LookupListener {
         public int resultChangedCnt = 0;
         
+        @Override
         public void resultChanged(LookupEvent ev) {
             resultChangedCnt++;
         }
     } // End of L class
+    
+    void addMimeDataProvider3() throws Exception {
+        addMimeDataProvider3(
+            "Services/org-netbeans-modules-editor-mimelookup-DummyMimeDataProvider.instance",
+            DummyMimeDataProvider.Marker.class
+        );
+        addMimeDataProvider3(
+            "Services/org-netbeans-modules-editor-mimelookup-DummyMimeLookupInitializer.instance",
+            DummyMimeLookupInitializer.Marker.class
+        );
+}
+    
+    private <T> void addMimeDataProvider3(String instanceFile, Class<T> markerClass) throws Exception {
+        MimePath path = MimePath.get("text/x-java");
+        Lookup lookup = MimeLookup.getLookup(path);
+        Collection markers = lookup.lookupAll(markerClass);
+        assertEquals("There should be no markers", 0, markers.size());
+        
+        // Add the data provider
+        TestUtilities.createFile(getWorkDir(), instanceFile);
+    }
+    
+    public void testRebuildNoDeadlock() throws Exception {
+        CyclicBarrier barrier= new CyclicBarrier(2);
+        
+        final Task1 task1 = new Task1();
+        Thread t1 = new Thread(task1, "Thread 1");
+        final Task2 task2 = new Task2(barrier);
+        Thread t2 = new Thread(task2, "Thread 2");
+        handler.setBarrier(barrier);
+        t1.start();
+        t2.start();
+        t1.join(60000);
+        t2.join(60000); // wait max 1 min for the test to finish
+        assertTrue(task1.done);
+        assertTrue(task2.done);
+    }
+    
+    private static class Task1 implements Runnable {
+
+        volatile boolean done = false;
+
+        @Override
+        public void run() {
+            // System.out.println("T1 running");
+            MimePath path = MimePath.get("text/x-java");
+            Lookup lookup = MimeLookup.getLookup(path);
+            lookup.lookup(Task1.class);
+            // System.out.println("T1 done");
+            done = true;
+        }
+        
+    }
+    
+    private class Task2 implements Runnable {
+
+        volatile boolean done = false;
+        private CyclicBarrier barrier;
+
+        public Task2(CyclicBarrier b) {
+            barrier = b;
+        }
+        
+        @Override
+        public void run() {
+            
+            try {
+                barrier.await();
+                // System.out.println("T2 running");
+                addMimeDataProvider3();
+                // System.out.println("T2 done");
+                done = true;
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        
+    }
+    
+    private static class TestHandler extends Handler {
+        
+        private CyclicBarrier barrier;
+        
+        void setBarrier(CyclicBarrier b) {
+            this.barrier = b;
+        }
+        
+        @Override
+        public void publish(LogRecord record) {
+            final String message = record.getMessage();
+            if (message.startsWith("Rebuilding MimeLookup for") && Thread.currentThread().getName().equals("Thread 1")) {
+                try {
+                    // System.out.println("Publish enter");
+                    barrier.await();
+                    // System.out.println("Publish waiting");
+                    Thread.sleep(5000); // Give the other thread a chance to deadlock
+                    // System.out.println("Publish exit");
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+
+        @Override
+        public void flush() {
+        }
+
+        @Override
+        public void close() throws SecurityException {
+        }
+    }
 }

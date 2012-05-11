@@ -439,6 +439,10 @@ public class ActionFactory {
                     return;
                 }
                 final BaseDocument doc = (BaseDocument) target.getDocument();
+                if (doc instanceof GuardedDocument && ((GuardedDocument) doc).isPosGuarded(target.getCaretPosition())) {
+                    target.getToolkit().beep();
+                    return;
+                }
                 doc.runAtomicAsUser (new Runnable () {
                     public void run () {
                         DocumentUtilities.setTypingModification(doc, true);
@@ -487,12 +491,12 @@ public class ActionFactory {
 
                                     int column = start - startLineStartOffset;
 
-                                    // remove the line
-                                    doc.remove(startLineStartOffset, Math.min(doc.getLength(),endLineEndOffset) - startLineStartOffset);
-
                                     // insert the text before the previous line
                                     doc.insertString(previousLineStartOffset, linesText, null);
-
+                                    
+                                    // remove the line
+                                    doc.remove(startLineStartOffset + linesText.length(), Math.min(doc.getLength(),endLineEndOffset) - startLineStartOffset);
+                                    
                                     if (selection) {
                                         // select moved lines
                                         if (backwardSelection) {
@@ -535,6 +539,10 @@ public class ActionFactory {
                     return;
                 }
                 final BaseDocument doc = (BaseDocument) target.getDocument();
+                if (doc instanceof GuardedDocument && ((GuardedDocument) doc).isPosGuarded(target.getCaretPosition())) {
+                    target.getToolkit().beep();
+                    return;
+                }
                 doc.runAtomicAsUser (new Runnable () {
                     public void run () {
                         DocumentUtilities.setTypingModification(doc, true);
@@ -546,7 +554,7 @@ public class ActionFactory {
                             boolean backwardSelection = false;
                             int start = target.getCaretPosition();
                             int end = start;
-
+                            
                             // check if there is a selection
                             if (Utilities.isSelectionShowing(caret)) {
                                 int selStart = caret.getDot();

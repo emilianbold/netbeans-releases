@@ -44,12 +44,17 @@
 
 package org.netbeans.core.ui.options.filetypes;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.NotifyDescriptor.Message;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
@@ -57,34 +62,36 @@ import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
 
 /** Open the selected file with choosen MIME type and store the choice.
  * 
  * @author Jiri Skrivanek
  */
 @ActionID(id = "org.netbeans.core.ui.options.filetypes.OpenAsAction", category = "Edit")
-@ActionRegistration(displayName = "#OpenAsAction.name", /* XXX might work to be context action on DataObject */ lazy=false)
+@ActionRegistration(
+    displayName = "#OpenAsAction.name",
+    iconBase="org/netbeans/core/ui/options/filetypes/openFileAs.png"
+)
 @ActionReference(path = "Loaders/content/unknown/Actions", position = 150)
-public final class OpenAsAction extends NodeAction {
-    
+public final class OpenAsAction implements ActionListener {
     private static final Logger LOGGER = Logger.getLogger(OpenAsAction.class.getName());
-    private OpenAsPanel openAsPanel;
+    private final DataObject dob;
+
+    public OpenAsAction(DataObject obj) {
+        this.dob = obj;
+    }
+    
+    
 
     /** Opens a dialog with list of available MIME types and when user selects one
      * and clicks OK, it opens the file in editor.
      */
     @Override
-    protected void performAction(Node[] activatedNodes) {
-        if(openAsPanel == null) {
-            openAsPanel = new OpenAsPanel();
-        }
+    public void actionPerformed(ActionEvent ev) {
+        OpenAsPanel openAsPanel = new OpenAsPanel();
         FileAssociationsModel model = new FileAssociationsModel();
         openAsPanel.setModel(model);
-        final DataObject dob = activatedNodes[0].getLookup().lookup(DataObject.class);
         FileObject fo = dob.getPrimaryFile();
         String extension = fo.getExt();
         openAsPanel.setExtension(extension);
@@ -100,10 +107,10 @@ public final class OpenAsAction extends NodeAction {
             String mimeType = openAsPanel.getMimeType();
             if (mimeType != null) {
                 dob.addPropertyChangeListener(new PropertyChangeListener() {
-
+                    @Override
                     public void propertyChange(PropertyChangeEvent evt) {
                         if (evt.getPropertyName().equals(DataObject.PROP_VALID) && !(Boolean)evt.getNewValue()) {
-                            LOGGER.fine("PROP_VALID " + evt.getNewValue() + " - " + evt);
+                            LOGGER.log(Level.FINE, "PROP_VALID {0} - {1}", new Object[]{evt.getNewValue(), evt});
                             try {
                                 // find a new DataObject and try to open it
                                 OpenCookie openCookie = DataObject.find(dob.getPrimaryFile()).getCookie(OpenCookie.class);
@@ -122,34 +129,35 @@ public final class OpenAsAction extends NodeAction {
                 });
                 model.setMimeType(extension, mimeType);
                 model.store();
-                // open always - if was choosen MIME type with default loader and propertyChange PROP_VALID is never fired
-                OpenCookie openCookie = dob.getCookie(OpenCookie.class);
-                if(openCookie != null) {
-                    openCookie.open();
+                try {
+                    dob.setValid(false);
+                } catch (PropertyVetoException ex) {
+                    LOGGER.log(Level.INFO, "Can't convert", ex); // NOI18N
+                    final Message nd = new Message(
+                        NbBundle.getMessage(OpenAsAction.class, "ERR_CantConvert", fo.getPath(), mimeType),
+                        NotifyDescriptor.ERROR_MESSAGE
+                    );
+                    DialogDisplayer.getDefault().notify(nd);
+                    return;
                 }
+                try {
+                    // open always - if was choosen MIME type with default loader and propertyChange PROP_VALID is never fired
+                    OpenCookie openCookie;
+                    openCookie = DataObject.find(fo).getLookup().lookup(OpenCookie.class);
+                    if(openCookie != null) {
+                        openCookie.open();
+                        return;
+                    }
+                } catch (DataObjectNotFoundException ex) {
+                    LOGGER.log(Level.INFO, null, ex);
+                }
+                final Message nd = new Message(
+                    NbBundle.getMessage(OpenAsAction.class, "ERR_CantOpen", fo.getPath()),
+                    NotifyDescriptor.ERROR_MESSAGE
+                );
+                DialogDisplayer.getDefault().notify(nd);
             }
         }
-    }
-
-    @Override
-    protected boolean asynchronous() {
-        return false;
-    }
-       
-    @Override
-    protected boolean enable(Node[] activatedNodes) {
-        // exactly one node should be selected
-        return (activatedNodes != null) && (activatedNodes.length == 1);
-    }
-
-    @Override
-    public String getName() {
-        return NbBundle.getMessage(OpenAsAction.class, "OpenAsAction.name");  //NOI18N
-    }
-
-    @Override
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx(OpenAsAction.class);
     }
 }
 

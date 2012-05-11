@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.cnd.completion.cplusplus.hyperlink;
 
+import org.junit.Test;
+
 /**
  *
  * @author Vladimir Voskresensky
@@ -900,7 +902,36 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug211265.cpp", 22, 10, "bug211265.cpp", 16, 9);
         performTest("bug211265.cpp", 10, 9, "bug211265.cpp", 3, 9);
     }
+
+    public void testBug211534() throws Exception {
+        // Bug 211534 - Code model does not handle some implicit type conversions
+        performTest("bug211534.cpp", 236, 59, "bug211534.cpp", 36, 5);
+    }
     
+    @Test
+    public void testBug211971() throws Exception {
+        // Bug 211971 - Incorrect mark occurrences if namespace and class have the same name
+        performTest("bug211971.cc", 1, 15, "bug211971.cc", 1, 1);
+        performTest("bug211971.cc", 7, 5, "bug211971.cc", 1, 1);
+        performTest("bug211971.cc", 7, 15, "bug211971.cc", 2, 3);
+        performTest("bug211971.cc", 7, 25, "bug211971.cc", 3, 7);
+    }
+    
+    public void testBug161749() throws Exception {
+        // Bug 161749 - problems with restrict, __restrict and __restrict__
+        performTest("bug161749.c", 1, 34, "bug161749.c", 1, 19);
+        performTest("bug161749.c", 2, 34, "bug161749.c", 2, 19);
+
+        performTest("bug161749.c", 4, 40, "bug161749.c", 4, 19);
+        performTest("bug161749.c", 5, 40, "bug161749.c", 5, 19);
+
+        performTest("bug161749.c", 7, 42, "bug161749.c", 7, 19);
+        performTest("bug161749.c", 8, 42, "bug161749.c", 8, 19);
+
+        performTest("bug161749.c", 10, 44, "bug161749.c", 10, 19);
+        performTest("bug161749.c", 11, 44, "bug161749.c", 11, 19);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

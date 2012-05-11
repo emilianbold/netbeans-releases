@@ -641,6 +641,38 @@ public class JavaFixUtilitiesTest extends TestBase {
                            "    }\n" +
 		           "}\n");
     }
+    
+    public void testReplaceTypeParameters1() throws Exception {
+        performRewriteTest("package test;\n" +
+                           "import java.io.InputStream;\n" +
+                           "public class Test {\n" +
+                           "    private <A, B> void t() {\n" +
+                           "    }\n" +
+                           "}\n",
+                           "$mods$ <$O, $T> $ret $name() { $body$; } => $mods$ <$T, $O> $ret $name() { $body$; }",
+                           "package test;\n" +
+                           "import java.io.InputStream;\n" +
+                           "public class Test {\n" +
+                           "    private <B, A> void t() {\n" +
+                           "    }\n" +
+		           "}\n");
+    }
+    
+    public void testReplaceTypeParameters2() throws Exception {
+        performRewriteTest("package test;\n" +
+                           "import java.io.InputStream;\n" +
+                           "public class Test {\n" +
+                           "    private <A, B> void t() {\n" +
+                           "    }\n" +
+                           "}\n",
+                           "$mods$ <$T$> $ret $name() { $body$; } => $mods$ <C, $T$> $ret $name() { $body$; }",
+                           "package test;\n" +
+                           "import java.io.InputStream;\n" +
+                           "public class Test {\n" +
+                           "    private <C, A, B> void t() {\n" +
+                           "    }\n" +
+		           "}\n");
+    }
 
     public void performRewriteTest(String code, String rule, String golden) throws Exception {
 	prepareTest("test/Test.java", code);

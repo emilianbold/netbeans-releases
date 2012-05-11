@@ -381,13 +381,16 @@ public class Reformatter implements ReformatTask {
         private static final String PRE_TAG = "<pre>"; //NOI18N
         private static final String PRE_END_TAG = "</pre>"; //NOI18N
         private static final String JDOC_CODE_TAG = "@code"; //NOI18N
+        private static final String JDOC_DOCROOT_TAG = "@docRoot"; //NOI18N
         private static final String JDOC_EXCEPTION_TAG = "@exception"; //NOI18N
+        private static final String JDOC_INHERITDOC_TAG = "@inheritDoc"; //NOI18N
         private static final String JDOC_LINK_TAG = "@link"; //NOI18N
         private static final String JDOC_LINKPLAIN_TAG = "@linkplain"; //NOI18N
         private static final String JDOC_LITERAL_TAG = "@literal"; //NOI18N
         private static final String JDOC_PARAM_TAG = "@param"; //NOI18N
         private static final String JDOC_RETURN_TAG = "@return"; //NOI18N
         private static final String JDOC_THROWS_TAG = "@throws"; //NOI18N
+        private static final String JDOC_VALUE_TAG = "@value"; //NOI18N
         private static final String ERROR = "<error>"; //NOI18N
         private static final int ANY_COUNT = -1;
 
@@ -533,8 +536,7 @@ public class Reformatter implements ReformatTask {
                 }
                 if (tree.getKind() != Tree.Kind.ERRONEOUS && tree.getKind() != Tree.Kind.BLOCK
                         && (tree.getKind() != Tree.Kind.CLASS || getCurrentPath().getLeaf().getKind() != Tree.Kind.NEW_CLASS)
-                        && (tree.getKind() != Tree.Kind.NEW_ARRAY
-                        || getCurrentPath().getLeaf().getKind() != Tree.Kind.ASSIGNMENT && getCurrentPath().getLeaf().getKind() != Tree.Kind.VARIABLE)) {
+                        && (tree.getKind() != Tree.Kind.NEW_ARRAY)) {
                     int startPos = (int)sp.getStartPosition(getCurrentPath().getCompilationUnit(), tree);
                     if (startPos >= 0 && startPos > tokens.offset()) {
                         tokens.move(startPos);
@@ -3353,6 +3355,7 @@ public class Reformatter implements ReformatTask {
                 int identStart = -1;
                 boolean afterText = false;
                 boolean insideTag = false;
+                int nestedParenCnt = 0;
                 Pair<Integer, Integer> toAdd = null;
                 while (javadocTokens.moveNext()) {
                     switch (javadocTokens.token().id()) {
@@ -3370,6 +3373,9 @@ public class Reformatter implements ReformatTask {
                             } else if (JDOC_LINK_TAG.equalsIgnoreCase(tokenText)
                                     || JDOC_LINKPLAIN_TAG.equalsIgnoreCase(tokenText)
                                     || JDOC_CODE_TAG.equalsIgnoreCase(tokenText)
+                                    || JDOC_DOCROOT_TAG.equalsIgnoreCase(tokenText)
+                                    || JDOC_INHERITDOC_TAG.equalsIgnoreCase(tokenText)
+                                    || JDOC_VALUE_TAG.equalsIgnoreCase(tokenText)
                                     || JDOC_LITERAL_TAG.equalsIgnoreCase(tokenText)) {
                                 insideTag = true;
                                 marks.add(Pair.of(currWSOffset >= 0 ? currWSOffset : javadocTokens.offset() - offset, 5));
@@ -3425,9 +3431,17 @@ public class Reformatter implements ReformatTask {
                                         } else {
                                             addNow = true;
                                         }
-                                        if (insideTag && c == '}') {
-                                            insideTagEndOffset = javadocTokens.offset() + i - offset - 1;
-                                            insideTag = false;
+                                        if (insideTag) {
+                                            if (c == '{') {
+                                                nestedParenCnt++;
+                                            } else if (c == '}') {
+                                                if (nestedParenCnt > 0) {
+                                                    nestedParenCnt--;
+                                                } else {
+                                                    insideTagEndOffset = javadocTokens.offset() + i - offset - 1;
+                                                    insideTag = false;
+                                                }
+                                            }
                                         }
                                         if (lastWSOffset == -2)
                                             lastWSOffset = javadocTokens.offset() + i - offset;

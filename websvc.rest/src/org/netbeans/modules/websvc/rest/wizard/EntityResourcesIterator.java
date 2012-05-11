@@ -58,11 +58,14 @@ import org.netbeans.modules.websvc.rest.codegen.EntityResourcesGenerator;
 import org.netbeans.modules.websvc.rest.codegen.EntityResourcesGeneratorFactory;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceBeanModel;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceModelBuilder;
+import org.netbeans.modules.websvc.rest.spi.RestSupport;
+import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
 import org.netbeans.modules.websvc.rest.support.PersistenceHelper.PersistenceUnit;
 import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
@@ -84,7 +87,31 @@ public class EntityResourcesIterator implements TemplateWizard.Iterator {
     
     public Set<DataObject> instantiate(TemplateWizard wizard) throws IOException {
         final Project project = Templates.getProject(wizard);
-        RestUtils.ensureRestDevelopmentReady(project);
+
+        String restAppPackage = null;
+        String restAppClass = null;
+        
+        final RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
+        if( restSupport instanceof WebRestSupport) {
+            Object useJersey = wizard.getProperty(WizardProperties.USE_JERSEY);
+            if ( useJersey != null && useJersey.toString().equals("true")){     // NOI18N 
+                ((WebRestSupport)restSupport).enableRestSupport( WebRestSupport.RestConfig.DD);
+            }
+            else {
+                restAppPackage = (String) wizard
+                        .getProperty(WizardProperties.APPLICATION_PACKAGE);
+                restAppClass = (String) wizard
+                        .getProperty(WizardProperties.APPLICATION_CLASS);
+                if (restAppPackage != null && restAppClass != null) {
+                    ((WebRestSupport) restSupport)
+                            .enableRestSupport(WebRestSupport.RestConfig.IDE);
+                }
+            }
+        }
+        if ( restSupport!= null ){
+            restSupport.ensureRestDevelopmentReady();
+        }
+
         FileObject targetFolder = Templates.getTargetFolder(wizard);
         FileObject wizardSrcRoot = (FileObject)wizard.getProperty(
                 WizardProperties.TARGET_SRC_ROOT);
@@ -99,8 +126,9 @@ public class EntityResourcesIterator implements TemplateWizard.Iterator {
         if ( wizardSrcRoot != null ){
             targetFolder  = wizardSrcRoot;
         }
+        
         String targetPackage = SourceGroupSupport.packageForFolder(targetFolder);
-        String resourcePackage = (String) wizard.getProperty(WizardProperties.RESOURCE_PACKAGE);
+        final String resourcePackage = (String) wizard.getProperty(WizardProperties.RESOURCE_PACKAGE);
         String controllerPackage = (String) wizard.getProperty(WizardProperties.CONTROLLER_PACKAGE);
         List<String> entities = (List<String>) wizard.
             getProperty(org.netbeans.modules.j2ee.persistence.wizard.WizardProperties.ENTITY_CLASS);
@@ -123,11 +151,19 @@ public class EntityResourcesIterator implements TemplateWizard.Iterator {
                 EntityResourcesIterator.class,
                 "LBL_RestSevicicesFromEntitiesProgress"));
         
+        // create application config class if required
+        final FileObject restAppPack = restAppPackage == null ? null :  
+            FileUtil.createFolder(targetFolder, restAppPackage.replace('.', '/'));
+        final String appClassName = restAppClass;
         transformTask = RequestProcessor.getDefault().create(new Runnable() {
             public void run() {
                 try {
+                    if ( restAppPack != null && appClassName!= null ){
+                        RestUtils.createApplicationConfigClass( restAppPack, appClassName);
+                    }
                     RestUtils.disableRestServicesChangeListner(project);
                     generator.generate(progressDialog.getProgressHandle());
+                    restSupport.configure(resourcePackage);
                 } catch(Exception iox) {
                     Exceptions.printStackTrace(iox);
                 } finally {
@@ -147,8 +183,6 @@ public class EntityResourcesIterator implements TemplateWizard.Iterator {
         params[3] = "REST FROM ENTITY"; //NOI18N
         LogUtils.logWsWizard(params);
         
-        RestUtils.configRestPackages(project, resourcePackage );
-
         progressDialog.open();   
         return Collections.<DataObject>singleton(DataFolder.findFolder(targetFolder));
     }

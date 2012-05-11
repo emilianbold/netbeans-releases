@@ -138,7 +138,7 @@ public interface NativeFileItem {
      * It looks like MACRO=VALUE
      */
     public List<String> getUserMacroDefinitions();
-    
+
     /**
      * Returns the language of the file. 
      * @return the language of the file

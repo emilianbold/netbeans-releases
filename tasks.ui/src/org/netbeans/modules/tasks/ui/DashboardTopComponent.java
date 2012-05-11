@@ -62,6 +62,8 @@ import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.windows.WindowManager;
 import java.util.List;
+import javax.swing.SwingUtilities;
+import org.netbeans.modules.bugtracking.api.RepositoryManager;
 import org.netbeans.modules.tasks.ui.dashboard.TaskNode;
 
 /**
@@ -194,15 +196,27 @@ public final class DashboardTopComponent extends TopComponent {
         filterPanel.addDocumentListener(filterListener);
         add(filterPanel, new GridBagConstraints(0, 3, 2, 1, 1.0, 0, GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, new Insets(0, 1, 0, 0), 0, 0));
 
-        dashboardComponent = DashboardViewer.getInstance().getComponent();
+        final DashboardViewer dashboard = DashboardViewer.getInstance();
+        dashboardComponent = dashboard.getComponent();
         add(dashboardComponent, new GridBagConstraints(0, 5, 2, 1, 1.0, 0.8, GridBagConstraints.NORTH, GridBagConstraints.BOTH, new Insets(1, 1, 0, 0), 0, 0));
+        RepositoryManager.getInstance().addPropertChangeListener(dashboard);
 
         addComponentListener(componentAdapter);
+
+        //load data after the component is displayed
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                dashboard.loadData();
+            }
+        });
     }
 
     @Override
     protected void componentClosed() {
         filterPanel.removeDocumentListener(filterListener);
+        RepositoryManager.getInstance().removePropertChangeListener(DashboardViewer.getInstance());
         super.componentClosed();
     }
 

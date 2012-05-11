@@ -44,6 +44,7 @@ package org.netbeans.core.osgi;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.core.startup.CoreBridge;
@@ -89,26 +90,31 @@ public class OSGiMainLookup extends ProxyLookup {
     }
 
     static void bundlesAdded(List<Bundle> bundles) {
-        // XXX extend existing classLoader
-        get().setClassLoader();
+        OSGiMainLookup l = get();
         for (Bundle bundle : bundles) {
-            get().moduleInfoContent.add(bundle, moduleInfoConvertor);
+            l.moduleInfoContent.add(bundle, moduleInfoConvertor);
+            l.loadedBundles.add(bundle);
         }
+        l.setClassLoader();
     }
 
     static void bundlesRemoved(List<Bundle> bundles) {
-        get().setClassLoader();
+        OSGiMainLookup l = get();
         for (Bundle bundle : bundles) {
-            get().moduleInfoContent.remove(bundle, moduleInfoConvertor);
+            l.moduleInfoContent.remove(bundle, moduleInfoConvertor);
+            l.loadedBundles.remove(bundle);
         }
+        l.setClassLoader();
     }
 
     static void loadServicesFolder() {
-        get().nonClassLoaderDelegates.add(CoreBridge.getDefault().lookupCacheLoad());
-        get().setDelegates();
+        OSGiMainLookup l = get();
+        l.nonClassLoaderDelegates.add(CoreBridge.getDefault().lookupCacheLoad());
+        l.setDelegates();
     }
 
     private ClassLoader classLoader;
+    private final Set<Bundle> loadedBundles = Collections.synchronizedSet(new HashSet<Bundle>());
     private final List<Lookup> nonClassLoaderDelegates = new ArrayList<Lookup>();
     private final InstanceContent moduleInfoContent = new InstanceContent();
     private static final InstanceContent.Convertor<Bundle,ModuleInfo> moduleInfoConvertor = new InstanceContent.Convertor<Bundle, ModuleInfo>() {
@@ -136,7 +142,7 @@ public class OSGiMainLookup extends ProxyLookup {
     }
 
     private void setClassLoader() {
-        classLoader = new OSGiClassLoader(context);
+        classLoader = new OSGiClassLoader(context, loadedBundles);
         // XXX should it be set as thread CCL? would help some NB APIs, but might break OSGi conventions
         setDelegates();
     }

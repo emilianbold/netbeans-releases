@@ -45,7 +45,7 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import java.util.ArrayList;
 
-public class LibrariesConfiguration extends VectorConfiguration<LibraryItem> {
+public class LibrariesConfiguration extends VectorConfiguration<LibraryItem> implements Cloneable {
 
     public LibrariesConfiguration() {
         super(null);

@@ -576,7 +576,7 @@ public class JavaActionsTest extends TestBase {
             "    <target name=\"-profile-check\">\n" +
             "        <startprofiler freeform=\"true\"/>\n" +
             "    </target>\n" +
-            "    <target depends=\"-profile-check,dist\" if=\"profiler.configured\" name=\"profile\">\n" +
+            "    <target depends=\"-profile-check\" if=\"profiler.configured\" name=\"profile\">\n" +
             "        <path id=\"cp\">\n" +
             "            <!---->\n" +
             "        </path>\n" +
@@ -611,7 +611,7 @@ public class JavaActionsTest extends TestBase {
             "    <target name=\"-profile-check\">\n" +
             "        <startprofiler freeform=\"true\"/>\n" +
             "    </target>\n" +
-            "    <target depends=\"-profile-check,dist\" if=\"profiler.configured\" name=\"profile\">\n" +
+            "    <target depends=\"-profile-check\" if=\"profiler.configured\" name=\"profile\">\n" +
             "        <task1/>\n" +
             "        <java classpath=\"${cp}\" fork=\"true\">\n" +
             "            <stuff/>\n" +

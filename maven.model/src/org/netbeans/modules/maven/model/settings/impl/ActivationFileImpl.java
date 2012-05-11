@@ -63,6 +63,7 @@ public class ActivationFileImpl extends SettingsComponentImpl implements Activat
     // attributes
 
     // child elements
+    @Override
     public void accept(SettingsComponentVisitor visitor) {
         visitor.visit(this);
     }

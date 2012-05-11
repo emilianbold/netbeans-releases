@@ -81,8 +81,6 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPParser;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
-import org.netbeans.modules.cnd.modelimpl.syntaxerr.BaseParserErrorFilter;
-import org.openide.util.NbBundle;
 
 /**
  * Extends CPPParser to implement logic, ported from Support.cpp.
@@ -309,9 +307,30 @@ public class CPPParserEx extends CPPParser {
             return qiInvalid;
         }
     }
+    
+    /**
+     * Checks if the rest looks like a ctor
+     * @param la
+     * @return 
+     */
+    private int ctorCheck(int lookahead_offset) {
+        // Skip over any template qualifiers <...>
+        if (LA(lookahead_offset) == LESSTHAN) {
+            if ((lookahead_offset = skipTemplateQualifiers(lookahead_offset)) < 0) {
+                return qiInvalid;
+            }
+        }
+        if (LA(lookahead_offset) == LPAREN) {
+            //printf("support.cpp qualifiedItemIs qiCtor returned\n");
+            return qiCtor;
+        } else {
+            // no leading SCOPE and not constructor
+            return qiType;
+        }
+    }
 
-    protected final /*QualifiedItem*/ int _qualifiedItemIs(int lookahead_offset) throws TokenStreamException {
-
+    private /*QualifiedItem*/ int _qualifiedItemIs(int lookahead_offset) throws TokenStreamException {
+        
         int tmp_k = lookahead_offset + 1;
 
         int final_type_idx = 0;
@@ -336,8 +355,7 @@ public class CPPParserEx extends CPPParser {
                     //printf("support.cpp qualifiedItemIs qiInvalid returned\n");
                     return qiInvalid;
                 } else {
-                    //printf("support.cpp qualifiedItemIs qiCtor returned\n");
-                    return qiCtor;
+                    return ctorCheck(tmp_k+1);
                 }
             }
 
@@ -378,9 +396,7 @@ public class CPPParserEx extends CPPParser {
                 }
 
                 if (strcmp(tmp_str, (LT(final_type_idx).getText())) == 0) {
-                    // Like class T  T()
-                    //printf("support.cpp qualifiedItemIs qiCtor(2) returned\n");
-                    return qiCtor;
+                    return ctorCheck(tmp_k);
                 } else {
                     //printf("support.cpp qualifiedItemIs qiType returned\n");
                     return qiType;
@@ -392,6 +408,7 @@ public class CPPParserEx extends CPPParser {
         //printf("support.cpp qualifiedItemIs second switch reached\n");
         switch (LT(tmp_k).getType()) {
             case IDENT:
+                assert false : "Impossible case"; //NOI18N
                 // IDENT but not a typename
                 // Do not allow id::
                 if (LT(tmp_k + 1).getType() == SCOPE) {

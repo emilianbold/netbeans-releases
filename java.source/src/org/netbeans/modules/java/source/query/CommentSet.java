@@ -55,11 +55,11 @@ import org.netbeans.api.java.source.Comment;
  */
 public interface CommentSet {
     /**
-     * Define position of comment against coresponding tree element within java source.
+     * Define position of comment against corresponding tree element within java source.
      */
     public enum RelativePosition {
         /**
-         * Represents preceding comment position. This comment is mean to be before coresponding tree in 
+         * Represents preceding comment position. This comment is mean to be before corresponding tree in 
          * common literal sense.
          */
         PRECEDING,
@@ -69,12 +69,12 @@ public interface CommentSet {
          */
         INLINE,
         /**
-         * This comment is inside coresponding tree. This allows specifing inner comments for block like empty 
+         * This comment is inside corresponding tree. This allows specifying inner comments for block like empty 
          * statements. 
          */
         INNER,
         /**
-         * Represents trailing comment position. This comment is mean to be following coresponding tree in 
+         * Represents trailing comment position. This comment is mean to be following corresponding tree in 
          * common literal sense. 
          */
         TRAILING
@@ -167,7 +167,7 @@ public interface CommentSet {
 
     /**
      * Returns true if there has been added any newly created comment.
-     * @return true if this list containes newly create comments by user.
+     * @return true if this list contains newly create comments by user.
      * @see org.netbeans.api.java.source.Comment#isNew() 
      */
     boolean hasChanges();
@@ -198,7 +198,7 @@ public interface CommentSet {
 
     /**
      * Adds comment with specified positioning.
-     * @param positioning relative position of comment against coresponding tree. 
+     * @param positioning relative position of comment against corresponding tree. 
      * @param c comment to add.
      * 
      * @see org.netbeans.modules.java.source.query.CommentSet.RelativePosition

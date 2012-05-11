@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -257,15 +257,6 @@ public class TestSession {
      */
     public void addTestCase(Testcase testCase) {
         assert !testSuites.isEmpty() : "No suites running";
-        //XXX: is this really needed?
-        if (testCase.getClassName() != null) {
-            for (Testcase each : getAllTestCases()) {
-                if (testCase.getClassName().equals(each.getClassName())
-                        && testCase.getName().equals(each.getName())) {
-                    return;
-                }
-            }
-        }
         // add pending output to the newly created testcase
         testCase.addOutputLines(output);
         output.clear();
@@ -293,6 +284,8 @@ public class TestSession {
             report.setTotalTests(report.getTotalTests() + 1);
             if (testcase.getStatus() == Status.PASSED) {
                 report.setPassed(report.getPassed() + 1);
+            } else if (testcase.getStatus() == Status.PASSEDWITHERRORS) {
+                report.setPassedWithErrors(report.getPassedWithErrors() + 1);
             } else if (testcase.getStatus() == Status.ERROR) {
                 report.setErrors(report.getErrors() + 1);
             } else if (testcase.getStatus() == Status.FAILED) {
@@ -311,6 +304,7 @@ public class TestSession {
         result.elapsedTime(report.getElapsedTimeMillis());
         result.failed(report.getFailures());
         result.passed(report.getDetectedPassedTests());
+        result.passedWithErrors(report.getPassedWithErrors());
         result.pending(report.getPending());
         result.errors(report.getErrors());
     }
@@ -352,6 +346,7 @@ public class TestSession {
     public static final class SessionResult {
 
         private int passed;
+        private int passedWithErrors;
         private int failed;
         private int errors;
         private int pending;
@@ -367,6 +362,10 @@ public class TestSession {
 
         private int passed(int passedCount) {
             return passed += passedCount;
+        }
+
+        private int passedWithErrors(int passedWithErrorsCount) {
+            return passedWithErrors += passedWithErrorsCount;
         }
 
         private int pending(int pendingCount) {
@@ -389,12 +388,16 @@ public class TestSession {
             return passed;
         }
 
+        public int getPassedWithErrors() {
+            return passedWithErrors;
+        }
+
         public int getPending() {
             return pending;
         }
 
         public int getTotal() {
-            return getPassed() + getFailed() + getErrors() + getPending();
+            return getPassed() + getPassedWithErrors() + getFailed() + getErrors() + getPending();
         }
 
         public long getElapsedTime() {

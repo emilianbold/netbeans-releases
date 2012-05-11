@@ -236,13 +236,7 @@ public final class IsOverriddenAnnotationAction extends AbstractAction {
     static void mouseClicked(Map<String, List<ElementDescription>> caption2Descriptions, JTextComponent c, Point p) {
         if (caption2Descriptions.size() == 1 && caption2Descriptions.values().iterator().next().size() == 1) {
             ElementDescription desc = caption2Descriptions.values().iterator().next().get(0);
-            FileObject file = desc.getSourceFile();
-
-            if (file != null) {
-                ElementOpen.open(file, desc.getHandle());
-            } else {
-                Toolkit.getDefaultToolkit().beep();
-            }
+            desc.open();
 
             return ;
         }

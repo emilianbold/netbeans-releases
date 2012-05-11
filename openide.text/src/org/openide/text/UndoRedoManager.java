@@ -253,7 +253,7 @@ final class UndoRedoManager extends UndoRedo.Manager {
     void mergeSaveActionsToLastEdit(WrapUndoEdit lastWrapEdit) {
         if (saveActionsEdit != null) {
             checkLogOp("    mergeSaveActionsToLastEdit-lastWrapEdit", lastWrapEdit); // NOI18N
-            CompoundEdit compoundEdit = new CompoundEdit();
+            StableCompoundEdit compoundEdit = new StableCompoundEdit();
             compoundEdit.addEdit(lastWrapEdit.delegate());
             compoundEdit.addEdit(saveActionsEdit);
             compoundEdit.end();

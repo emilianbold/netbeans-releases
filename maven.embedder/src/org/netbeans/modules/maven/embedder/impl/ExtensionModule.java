@@ -44,7 +44,9 @@ package org.netbeans.modules.maven.embedder.impl;
 import com.google.inject.Binder;
 import com.google.inject.Module;
 import org.apache.maven.plugin.internal.PluginDependenciesResolver;
+import org.sonatype.aether.impl.internal.SimpleLocalRepositoryManagerFactory;
 import org.sonatype.aether.spi.connector.RepositoryConnectorFactory;
+import org.sonatype.aether.spi.localrepo.LocalRepositoryManagerFactory;
 import org.sonatype.guice.plexus.config.Roles;
 
 /**
@@ -60,6 +62,10 @@ public class ExtensionModule implements Module {
     public void configure(Binder binder) {
         binder.bind(PluginDependenciesResolver.class).to(NbPluginDependenciesResolver.class);
         binder.bind(Roles.componentKey(RepositoryConnectorFactory.class, "offline")).to(OfflineConnector.class);
+        //#212214 the EnhancedLocalRepositoryManager will claim artifact is not locally present even if file is there but some metadata is missing
+        //we just replace it with the simple variant that relies on file's presence only. 
+        //I'm a bit afraid to remove the binding altogether, that's why we map simple to enhanced.
+        binder.bind(Roles.componentKey(LocalRepositoryManagerFactory.class, "enhanced")).to(SimpleLocalRepositoryManagerFactory.class);
     }
     
 }

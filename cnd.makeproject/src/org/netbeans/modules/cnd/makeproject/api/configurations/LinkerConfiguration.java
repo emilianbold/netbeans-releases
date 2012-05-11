@@ -43,30 +43,30 @@
  */
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
-import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
+import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.LinkerDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.configurations.CCCCompilerConfiguration.OptionToString;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
+import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.LibrariesNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.OptionsNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.VectorNodeProp;
-import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
-import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
-import org.netbeans.modules.cnd.api.toolchain.Tool;
-import org.netbeans.modules.cnd.makeproject.api.configurations.CCCCompilerConfiguration.OptionToString;
 import org.netbeans.modules.cnd.makeproject.platform.Platforms;
+import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Sheet;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
-public class LinkerConfiguration implements AllOptionsProvider {
+public class LinkerConfiguration implements AllOptionsProvider, Cloneable {
 
     private MakeConfiguration makeConfiguration;
     private StringConfiguration output;
@@ -346,7 +346,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
         LinkerDescriptor linker = null;
         String linkDriver = null;
-        String[] texts = null;
+        String[] texts;
         if (compilerSet != null) {
             linker = compilerSet == null ? null : compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker();
             if (conf.hasCPPFiles(configurationDescriptor)) {

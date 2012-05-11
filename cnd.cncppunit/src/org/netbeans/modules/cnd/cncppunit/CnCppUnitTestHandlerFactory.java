@@ -116,9 +116,12 @@ public class CnCppUnitTestHandlerFactory implements TestHandlerFactory {
         @Override
         public void updateUI(Manager manager, TestSession session) {
             Testcase testcase = new Testcase(matcher.group(1), C_UNIT, session);
-            testcase.setTimeMillis(0);
-            testcase.setClassName(session.getCurrentSuite().getName());
-            session.addTestCase(testcase);
+            if(!(session.getCurrentTestCase() != null && session.getCurrentTestCase().getName().equals(testcase.getName()) &&
+                    session.getCurrentTestCase().getTrouble() != null)) {
+                testcase.setTimeMillis(0);
+                testcase.setClassName(session.getCurrentSuite().getName());
+                session.addTestCase(testcase);
+            }
         }
     }
 
@@ -214,10 +217,12 @@ public class CnCppUnitTestHandlerFactory implements TestHandlerFactory {
                 currentSuiteName = suiteName;
 
                 Testcase testcase = new Testcase(matcher.group(2), CPP_UNIT, session);
-                testcase.setTimeMillis(0);
-                testcase.setClassName(suiteName);
-
-                session.addTestCase(testcase);
+                if(!(session.getCurrentTestCase() != null && session.getCurrentTestCase().getName().equals(testcase.getName()) &&
+                        session.getCurrentTestCase().getTrouble() != null)) {
+                    testcase.setTimeMillis(0);
+                    testcase.setClassName(suiteName);
+                    session.addTestCase(testcase);
+                }
             }
         }
 

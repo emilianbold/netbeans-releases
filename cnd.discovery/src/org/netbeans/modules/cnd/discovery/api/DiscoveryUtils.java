@@ -241,8 +241,7 @@ public class DiscoveryUtils {
     /**
      * parse compile line
      */
-    public static List<String> gatherCompilerLine(String line, LogOrigin isScriptOutput,
-            List<String> userIncludes, Map<String, String> userMacros, Set<String> libraries, List<String> languageArtifacts, ProjectBridge bridge, boolean isCpp){
+    public static List<String> gatherCompilerLine(String line, LogOrigin isScriptOutput, List<String> userIncludes, Map<String, String> userMacros, List<String> undefinedMacros, Set<String> libraries, List<String> languageArtifacts, ProjectBridge bridge, boolean isCpp){
         List<String> list = DiscoveryUtils.scanCommandLine(line);
         boolean hasQuotes = false;
         for(String s : list){
@@ -280,13 +279,12 @@ public class DiscoveryUtils {
                 st.next();
             }
         }
-        return gatherCompilerLine(st, isScriptOutput, userIncludes, userMacros, libraries, languageArtifacts, bridge, isCpp);
+        return gatherCompilerLine(st, isScriptOutput, userIncludes, userMacros, undefinedMacros, libraries, languageArtifacts, bridge, isCpp);
     }
     /**
      * parse compile line
      */
-    public static List<String> gatherCompilerLine( Iterator<String> st, LogOrigin isScriptOutput,
-            List<String> userIncludes, Map<String, String> userMacros, Set<String> libraries, List<String> languageArtifacts, ProjectBridge bridge, boolean isCpp){
+    public static List<String> gatherCompilerLine( Iterator<String> st, LogOrigin isScriptOutput, List<String> userIncludes, Map<String, String> userMacros, List<String> undefinedMacros, Set<String> libraries, List<String> languageArtifacts, ProjectBridge bridge, boolean isCpp){
         boolean TRACE = false;
         String option; 
         List<String> what = new ArrayList<String>(1);
@@ -346,10 +344,17 @@ public class DiscoveryUtils {
                             // do nothing
                             break;
                     }
-                    userMacros.put(macro.substring(0,i), value);
+                    addDef(macro.substring(0,i), value, userMacros, undefinedMacros);
                 } else {
-                    userMacros.put(macro, null);
+                    addDef(macro, null, userMacros, undefinedMacros);
                 }
+            } else if (option.startsWith("-U")){ // NOI18N
+                String macro = option.substring(2);
+                if (macro.length()==0 && st.hasNext()){
+                    macro = st.next();
+                }
+                macro = removeQuotes(macro);
+                addUndef(macro, userMacros, undefinedMacros);
             } else if (option.startsWith("-I")){ // NOI18N
                 String path = option.substring(2);
                 if (path.length()==0 && st.hasNext()){
@@ -416,10 +421,6 @@ public class DiscoveryUtils {
             } else if (option.startsWith("-iquote")){ // NOI18N
                 //Search dir only for header files requested with "#include " file ""
                 if (option.equals("-iquote") && st.hasNext()) { // NOI18N
-                    st.next();
-                }
-            } else if (option.startsWith("-U")) { // NOI18N
-                if (option.equals("-U") && st.hasNext()){  //NOI18N
                     st.next();
                 }
             } else if (option.equals("-K")){ // NOI18N
@@ -513,7 +514,7 @@ public class DiscoveryUtils {
                     st.next();
                 }
             } else if (option.startsWith("-")){ // NOI18N
-                addMacrosByFlags(option, userMacros, bridge, isCpp);
+                addMacrosByFlags(option, userMacros, undefinedMacros, bridge, isCpp);
             } else if (option.startsWith("ccfe")){ // NOI18N
                 // Skip option
             } else if (option.startsWith(">")){ // NOI18N
@@ -546,17 +547,38 @@ public class DiscoveryUtils {
         return what;
     }
 
-    private static void addMacrosByFlags(String option, Map<String, String> userMacros, ProjectBridge bridge, boolean isCpp) {
+    private static void addDef(String macro, String value, Map<String, String> userMacros, List<String> undefinedMacros) {
+        undefinedMacros.remove(macro);
+        userMacros.put(macro, value);
+    }
+
+    private static void addUndef(String macro, Map<String, String> userMacros, List<String> undefinedMacros) {
+        if (userMacros.containsKey(macro)) {
+            userMacros.remove(macro);
+        } else {
+            if (!undefinedMacros.contains(macro)) {
+                undefinedMacros.add(macro);
+            }
+        }
+    }
+    
+    private static void addMacrosByFlags(String option, Map<String, String> userMacros, List<String> undefinedMacros, ProjectBridge bridge, boolean isCpp) {
         if (bridge != null) {
             List<String> optionToMacros = bridge.getOptionToMacros(option, isCpp);
             if (optionToMacros != null) {
                 for(String macro : optionToMacros) {
                     int i = macro.indexOf('=');
                     if (i > 0) {
-                        userMacros.put(macro.substring(0, i), macro.substring(i+1));
+                        addDef(macro.substring(0, i), macro.substring(i+1), userMacros, undefinedMacros);
                     } else {
-                        userMacros.put(macro, null);
+                        addDef(macro, null, userMacros, undefinedMacros);
                     }
+                }
+            }
+            optionToMacros = bridge.getOptionToUndefinedMacros(option, isCpp);
+            if (optionToMacros != null) {
+                for(String macro : optionToMacros) {
+                    addUndef(macro, userMacros, undefinedMacros);
                 }
             }
         }

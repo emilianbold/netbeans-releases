@@ -123,7 +123,7 @@ public class Utilities {
     
     private static BaseDocument getDocument(final DataObject modelSourceDataObject) throws IOException {
         if (modelSourceDataObject != null && modelSourceDataObject.isValid()) {
-            EditorCookie ec = modelSourceDataObject.getCookie(EditorCookie.class);
+            EditorCookie ec = modelSourceDataObject.getLookup().lookup(EditorCookie.class);
             assert ec != null : "Data object "+modelSourceDataObject.getPrimaryFile().getPath()+" has no editor cookies.";
             Document doc;
             try {

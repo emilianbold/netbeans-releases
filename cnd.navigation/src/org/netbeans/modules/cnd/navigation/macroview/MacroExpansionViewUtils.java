@@ -271,9 +271,11 @@ public final class MacroExpansionViewUtils {
      */
     public static void setupMimeType(Document doc) {
         Object mimeTypeObj = doc.getProperty(NbEditorDocument.MIME_TYPE_PROP);
-        if (mimeTypeObj != null) {
+        if (mimeTypeObj instanceof String) {
             if ("text/plain".equals(mimeTypeObj)) { // NOI18N
                 doc.putProperty(NbEditorDocument.MIME_TYPE_PROP, MIMENames.CPLUSPLUS_MIME_TYPE);
+            } else {
+                doc.putProperty(NbEditorDocument.MIME_TYPE_PROP, mimeTypeObj);
             }
         }
     }

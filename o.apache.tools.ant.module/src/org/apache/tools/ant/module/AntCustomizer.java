@@ -305,7 +305,6 @@ public class AntCustomizer extends JPanel implements ActionListener {
 
         org.openide.awt.Mnemonics.setLocalizedText(propertiesLabel, org.openide.util.NbBundle.getMessage(AntCustomizer.class, "AntCustomizer.propertiesLabel.text")); // NOI18N
 
-        propertiesPanel.setBackground(new java.awt.Color(255, 204, 204));
         propertiesPanel.setLayout(new java.awt.BorderLayout());
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);

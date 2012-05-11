@@ -42,9 +42,8 @@
 package org.netbeans.modules.maven.model.pom.impl;
 
 import java.util.Collections;
+import org.netbeans.modules.maven.model.pom.*;
 import org.w3c.dom.Element;
-import org.netbeans.modules.maven.model.pom.*;	
-import org.netbeans.modules.maven.model.pom.POMComponentVisitor;	
 
 /**
  *
@@ -63,69 +62,84 @@ public class ContributorImpl extends POMComponentImpl implements Contributor {
     // attributes
 
     // child elements
+    @Override
     public void accept(POMComponentVisitor visitor) {
         visitor.visit(this);
     }
 
+    @Override
     public String getUrl() {
         return getChildElementText(getModel().getPOMQNames().URL.getQName());
     }
 
+    @Override
     public void setUrl(String url) {
         setChildElementText(getModel().getPOMQNames().URL.getName(), url,
                 getModel().getPOMQNames().URL.getQName());
     }
 
+    @Override
     public String getName() {
         return getChildElementText(getModel().getPOMQNames().NAME.getQName());
     }
 
+    @Override
     public void setName(String name) {
         setChildElementText(getModel().getPOMQNames().NAME.getName(), name,
                 getModel().getPOMQNames().NAME.getQName());
     }
 
+    @Override
     public String getEmail() {
         return getChildElementText(getModel().getPOMQNames().EMAIL.getQName());
     }
 
+    @Override
     public void setEmail(String email) {
         setChildElementText(getModel().getPOMQNames().EMAIL.getName(), email,
                 getModel().getPOMQNames().EMAIL.getQName());
     }
 
+    @Override
     public String getOrganization() {
         return getChildElementText(getModel().getPOMQNames().ORGANIZATION.getQName());
     }
 
+    @Override
     public void setOrganization(String organization) {
         setChildElementText(getModel().getPOMQNames().ORGANIZATION.getName(), organization,
                 getModel().getPOMQNames().ORGANIZATION.getQName());
     }
 
+    @Override
     public String getOrganizationUrl() {
         return getChildElementText(getModel().getPOMQNames().ORGANIZATIONURL.getQName());
     }
 
+    @Override
     public void setOrganizationUrl(String url) {
         setChildElementText(getModel().getPOMQNames().ORGANIZATIONURL.getName(), url,
                 getModel().getPOMQNames().ORGANIZATIONURL.getQName());
     }
 
+    @Override
     public String getTimezone() {
         return getChildElementText(getModel().getPOMQNames().TIMEZONE.getQName());
     }
 
+    @Override
     public void setTimezone(String zone) {
         setChildElementText(getModel().getPOMQNames().TIMEZONE.getName(), zone,
                 getModel().getPOMQNames().TIMEZONE.getQName());
     }
 
+    @Override
     public java.util.List<String> getRoles() {
         StringList list = getRolesList();
         return list != null ? list.getListChildren() : null;
     }
 
+    @Override
     public void addRole(String role) {
         StringList list = getRolesList();
         if (list != null) {
@@ -135,14 +149,14 @@ public class ContributorImpl extends POMComponentImpl implements Contributor {
         setChild(StringListImpl.class,
                  getModel().getPOMQNames().ROLES.getName(),
                  getModel().getFactory().create(this, getModel().getPOMQNames().ROLES.getQName()),
-                 Collections.EMPTY_LIST);
+                 Collections.<Class<? extends POMComponent>>emptySet());
         list = getRolesList();
         if (list != null) {
             list.addListChild(role);
-            return;
         }
     }
 
+    @Override
     public void removeRole(String role) {
         StringList list = getRolesList();
         if (list != null) {

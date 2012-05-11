@@ -54,6 +54,7 @@ import java.util.Map;
 import junit.framework.TestCase;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.Configuration;
+import org.netbeans.modules.maven.model.pom.DistributionManagement;
 import org.netbeans.modules.maven.model.pom.MailingList;
 import org.netbeans.modules.maven.model.pom.POMExtensibilityElement;
 import org.netbeans.modules.maven.model.pom.POMModel;
@@ -169,15 +170,20 @@ public class ModelTest extends TestCase {
                 "xdoc",
                 "xsd"
             };
+            
             assertEquals(Arrays.asList(goals), ex.getGoals());
-
-//        model.startTransaction();
-//        try {
-//            parent.setGroupId("XXX");
-//            assertEquals("XXX", parent.getGroupId());
-//        } finally {
-//            model.endTransaction();
-//        }
+            DistributionManagement dm = prj.getDistributionManagement();
+            assertEquals("dav:https://dav.codehaus.org/repository/mojo/", dm.getRepository().getUrl());
+            assertEquals("dav:https://dav.codehaus.org/snapshots.repository/mojo/", dm.getSnapshotRepository().getUrl());
+            assertEquals("dav:https://dav.codehaus.org/mojo/nbm-maven-plugin", dm.getSite().getUrl());
+            
+            //        model.startTransaction();
+            //        try {
+            //            parent.setGroupId("XXX");
+            //            assertEquals("XXX", parent.getGroupId());
+            //        } finally {
+            //            model.endTransaction();
+            //        }
 
         } finally {
             File file = source.getLookup().lookup(File.class);

@@ -67,6 +67,7 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.java.api.common.SourceRoots;
@@ -121,7 +122,7 @@ public class J2SELogicalViewProvider implements LogicalViewProvider2 {
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private final PropertyChangeListener pcl;
     private Map<URL,Object[]> activeLibManLocs;
-    private boolean listenersInited;
+    private volatile boolean listenersInited;
     
     public J2SELogicalViewProvider(J2SEProject project, UpdateHelper helper, PropertyEvaluator evaluator, ReferenceHelper resolver) {
         this.project = project;
@@ -142,15 +143,24 @@ public class J2SELogicalViewProvider implements LogicalViewProvider2 {
         };
     }
 
-    private synchronized void initListeners() {
+    private void initListeners() {
         if (listenersInited) {
             return;
         }
-        evaluator.addPropertyChangeListener(pcl);
-        JavaPlatformManager.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(pcl, JavaPlatformManager.getDefault()));
-        LibraryManager.addOpenManagersPropertyChangeListener(new OpenManagersWeakListener(pcl));
-        addLibraryManagerListener();
-        listenersInited = true;
+        ProjectManager.mutex().readAccess(new Runnable() {
+            @Override
+            public void run() {
+                synchronized (J2SELogicalViewProvider.class) {
+                    if (!listenersInited) {
+                        evaluator.addPropertyChangeListener(pcl);
+                        JavaPlatformManager.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(pcl, JavaPlatformManager.getDefault()));
+                        LibraryManager.addOpenManagersPropertyChangeListener(new OpenManagersWeakListener(pcl));
+                        addLibraryManagerListener();
+                        listenersInited = true;
+                    }
+                }
+            }
+        });
     }
 
     private void addLibraryManagerListener() {
