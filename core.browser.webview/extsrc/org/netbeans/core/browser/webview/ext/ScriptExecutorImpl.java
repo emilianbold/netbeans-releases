@@ -74,7 +74,7 @@ public class ScriptExecutorImpl implements ScriptExecutor {
         sb.append("postMessageToNetBeans=function(e) {alert('"); // NOI18N
         sb.append(WebBrowserImpl.PAGE_INSPECTION_PREFIX);
         sb.append("'+JSON.stringify(e));};\n"); // NOI18N
-        String quoted = JSONValue.escape(script);
+        String quoted = '\"'+JSONValue.escape(script)+'\"';
         // We don't want to depend on what is the type of WebBrowser.executeJavaScript()
         // for various types of script results => we stringify the result
         // (i.e. pass strings only through executeJavaScript()). We decode
