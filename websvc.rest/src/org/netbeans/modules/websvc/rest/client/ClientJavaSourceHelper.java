@@ -83,6 +83,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.editor.GuardedException;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
@@ -321,7 +322,19 @@ public class ClientJavaSourceHelper {
                 result.commit();
             }
         } catch (java.io.IOException ex) {
-            Exceptions.printStackTrace(ex);
+            if (ex.getCause() instanceof GuardedException) {
+                DialogDisplayer.getDefault().notify(
+                        new NotifyDescriptor.Message(
+                            NbBundle.getMessage(ClientJavaSourceHelper.class, 
+                                    "ERR_CannotApplyGuarded"),              // NOI18N
+                            NotifyDescriptor.ERROR_MESSAGE));
+                Logger.getLogger(ClientJavaSourceHelper.class.getName()).
+                    log(Level.FINE, null, ex);
+            }
+            else {
+                Logger.getLogger(ClientJavaSourceHelper.class.getName()).
+                    log(Level.WARNING, null, ex);
+            }
         }
     }
 

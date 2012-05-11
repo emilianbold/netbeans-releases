@@ -151,8 +151,10 @@ public class CndUtils {
     }
 
     public static int getNumberCndWorkerThreads() {
-        int threadCount = Integer.getInteger("cnd.modelimpl.parser.threads", // NOI18N
-                Runtime.getRuntime().availableProcessors()).intValue(); // NOI18N
+        int threadCount = Math.min(4, Runtime.getRuntime().availableProcessors()-2);
+        if (System.getProperty("cnd.modelimpl.parser.threads") != null) { // NOI18N
+            threadCount = Integer.getInteger("cnd.modelimpl.parser.threads").intValue(); // NOI18N
+        }
         return Math.max(threadCount, 1);
     }
 
