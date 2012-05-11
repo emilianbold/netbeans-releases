@@ -703,6 +703,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
             return ;
         }
         this.wasStored = true;
+        InstallSupport support = model.getInstallSupport ();
         if (WizardDescriptor.CANCEL_OPTION.equals (wd.getValue ()) || WizardDescriptor.CLOSED_OPTION.equals (wd.getValue ())) {
             try {
                 model.doCleanup (true);
@@ -710,9 +711,14 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
                 Logger.getLogger (InstallStep.class.getName ()).log (Level.INFO, x.getMessage (), x);
             }
         } else if (restarter != null) {
-            InstallSupport support = model.getInstallSupport ();
             assert support != null : "OperationSupport cannot be null because OperationContainer " +
                     "contains elements: " + model.getBaseContainer ().listAll () + " and invalid elements " + model.getBaseContainer ().listInvalid ();
+            if (support == null) {
+                log.log(Level.WARNING, "Installation failed: OperationSupport was null because OperationContainer "
+                        + "does not contain any elements: " + model.getBaseContainer().listAll()
+                        + " or contains invalid elements " + model.getBaseContainer().listInvalid());
+                return ;
+            }
             if (panel.restartNow ()) {
                 resetLastCheckWhenUpdatingFirstClassModules (model.getAllUpdateElements ());
                 handleLazyUnits (clearLazyUnits, false);
