@@ -56,6 +56,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Pattern;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.*;
@@ -399,7 +400,13 @@ public class CsmUtilities {
     public static boolean isAnyNativeProjectOpened() {
         return !NativeProjectRegistry.getDefault().getOpenProjects().isEmpty();
     }
-    
+
+    private static final Pattern VCS_TMP_FILE = Pattern.compile("[\\\\/]vcs-[0-9]*[\\\\/]vcs-[0-9]*"); // NOI18N
+    // /var/tmp/vcs-123123/vcs-123123/file.cpp
+    public static boolean isTemporaryVCSFile(FileObject fo) {
+        return VCS_TMP_FILE.matcher(fo.getPath()).find();
+    }
+
     public static boolean isCsmSuitable(FileObject fo) {
         // workaround for #194431 - Path should be absolute: Templates/cFiles/CSimpleTest.c
         // fo.isVirtual returns false, FileUtil.toFile() return non-null for such files
