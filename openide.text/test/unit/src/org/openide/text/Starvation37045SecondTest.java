@@ -83,7 +83,7 @@ public class Starvation37045SecondTest extends NbTestCase implements CloneableEd
         support = new CES (this, org.openide.util.Lookup.EMPTY);
     }
     
-    
+    @RandomlyFails // NB-Core-Build #8260
     public void testTheStarvation37045 () throws Exception {
         org.openide.util.Task task;
         

@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.languages.yaml;
 
 import java.awt.Color;
@@ -70,15 +69,14 @@ import org.netbeans.spi.editor.highlighting.support.AbstractHighlightsContainer;
 import org.openide.util.WeakListeners;
 
 /**
- * Implementation of Highlighting SPI creating coloured background
- * for embedded java sections.
+ * Implementation of Highlighting SPI creating coloured background for embedded
+ * java sections.
  *
  * @author Marek Fukala
  */
 public class EmbeddedSectionsHighlighting extends AbstractHighlightsContainer implements TokenHierarchyListener {
 
     private static final Logger LOG = Logger.getLogger(EmbeddedSectionsHighlighting.class.getName());
-    
     private final Document document;
     private final AttributeSet rubyBackground;
     private TokenHierarchy<? extends Document> hierarchy = null;
@@ -86,7 +84,7 @@ public class EmbeddedSectionsHighlighting extends AbstractHighlightsContainer im
 
     EmbeddedSectionsHighlighting(Document document) {
         this.document = document;
-        
+
         // load the background color for the embedding token
         AttributeSet attribs = null;
         String mimeType = (String) document.getProperty("mimeType"); //NOI18N
@@ -94,9 +92,9 @@ public class EmbeddedSectionsHighlighting extends AbstractHighlightsContainer im
         if (fcs != null) {
             Color jsBC = getColoring(fcs, YamlTokenId.RUBY.primaryCategory());
             if (jsBC != null) {
-                 attribs = AttributesUtilities.createImmutable(
-                    StyleConstants.Background, jsBC, 
-                    ATTR_EXTENDS_EOL, Boolean.TRUE);
+                attribs = AttributesUtilities.createImmutable(
+                        StyleConstants.Background, jsBC,
+                        ATTR_EXTENDS_EOL, Boolean.TRUE);
             }
         }
         rubyBackground = attribs;
@@ -123,19 +121,17 @@ public class EmbeddedSectionsHighlighting extends AbstractHighlightsContainer im
     // ----------------------------------------------------------------------
     //  TokenHierarchyListener implementation
     // ----------------------------------------------------------------------
-
     public void tokenHierarchyChanged(TokenHierarchyEvent evt) {
         synchronized (this) {
             version++;
         }
-        
+
         fireHighlightsChange(evt.affectedStartOffset(), evt.affectedEndOffset());
     }
-    
+
     // ----------------------------------------------------------------------
     //  Private implementation
     // ----------------------------------------------------------------------
-
     private static Color getColoring(FontColorSettings fcs, String tokenName) {
         AttributeSet as = fcs.getTokenFontColors(tokenName);
         if (as != null) {
@@ -143,29 +139,28 @@ public class EmbeddedSectionsHighlighting extends AbstractHighlightsContainer im
         }
         return null;
     }
-    
+
     private static boolean isWhitespace(Document document, int startOffset, int endOffset) throws BadLocationException {
         CharSequence chars = DocumentUtilities.getText(document, startOffset, endOffset - startOffset);
-        for(int i = 0; i < chars.length(); i++) {
+        for (int i = 0; i < chars.length(); i++) {
             if (!Character.isWhitespace(chars.charAt(i))) {
                 return false;
             }
         }
         return true;
     }
-    
+
     private class Highlights implements HighlightsSequence {
 
         private final long version;
         private final TokenHierarchy<?> scanner;
         private final int startOffset;
         private final int endOffset;
-
         private TokenSequence<?> sequence = null;
         private int sectionStart = -1;
         private int sectionEnd = -1;
         private boolean finished = false;
-        
+
         private Highlights(long version, TokenHierarchy<?> scanner, int startOffset, int endOffset) {
             this.version = version;
             this.scanner = scanner;
@@ -199,8 +194,8 @@ public class EmbeddedSectionsHighlighting extends AbstractHighlightsContainer im
                                     // multiline scriplet section
                                     // adjust the sections start to the beginning of the firts line
                                     int firstLineStartOffset = Utilities.getRowStartFromLineOffset((BaseDocument) document, startLine);
-                                    if (firstLineStartOffset < sectionStart - delimiterSize && 
-                                        isWhitespace(document, firstLineStartOffset, sectionStart - delimiterSize)) // always preceeded by the delimiter
+                                    if (firstLineStartOffset < sectionStart - delimiterSize
+                                            && isWhitespace(document, firstLineStartOffset, sectionStart - delimiterSize)) // always preceeded by the delimiter
                                     {
                                         sectionStart = firstLineStartOffset;
                                     }
@@ -213,9 +208,9 @@ public class EmbeddedSectionsHighlighting extends AbstractHighlightsContainer im
                                     } else {
                                         lastLineEndOffset = document.getLength() + 1;
                                     }
-                                    
+
                                     if (sectionEnd + 2 >= lastLineEndOffset || // unclosed section
-                                        isWhitespace(document, sectionEnd + 2, lastLineEndOffset)) // always succeeded by '%>' hence +2
+                                            isWhitespace(document, sectionEnd + 2, lastLineEndOffset)) // always succeeded by '%>' hence +2
                                     {
                                         sectionEnd = lastLineEndOffset;
                                     }
@@ -223,12 +218,12 @@ public class EmbeddedSectionsHighlighting extends AbstractHighlightsContainer im
                             } catch (BadLocationException ble) {
                                 LOG.log(Level.WARNING, null, ble);
                             }
-                            
+
                             return true;
                         }
                     }
                 }
-                
+
                 sectionStart = -1;
                 sectionEnd = -1;
                 finished = true;
@@ -237,7 +232,6 @@ public class EmbeddedSectionsHighlighting extends AbstractHighlightsContainer im
             }
         }
 
-        
         public int getStartOffset() {
             synchronized (EmbeddedSectionsHighlighting.this) {
                 if (finished) {
@@ -270,20 +264,20 @@ public class EmbeddedSectionsHighlighting extends AbstractHighlightsContainer im
                 }
             }
         }
-        
+
         private boolean checkVersion() {
             return this.version == EmbeddedSectionsHighlighting.this.version;
         }
-   } // End of Highlights class
-    
+    } // End of Highlights class
+
     public static final class Factory implements HighlightsLayerFactory {
+
         public HighlightsLayer[] createLayers(Context context) {
-            return new HighlightsLayer[]{ HighlightsLayer.create(
-                "rhtml-embedded-ruby-scriplets-highlighting-layer", //NOI18N
-                ZOrder.BOTTOM_RACK.forPosition(100), 
-                true, 
-                new EmbeddedSectionsHighlighting(context.getDocument())
-            )};
+            return new HighlightsLayer[]{HighlightsLayer.create(
+                        "rhtml-embedded-ruby-scriplets-highlighting-layer", //NOI18N
+                        ZOrder.BOTTOM_RACK.forPosition(100),
+                        true,
+                        new EmbeddedSectionsHighlighting(context.getDocument()))};
         }
     } // End of Factory class
 }

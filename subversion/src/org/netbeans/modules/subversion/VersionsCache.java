@@ -255,6 +255,9 @@ public class VersionsCache {
             } else {
                 File svnBase = new File(svnDir, "text-base/" + referenceFile.getName() + ".svn-base"); //NOI18N
                 if (!svnBase.exists()) {
+                    if (new File(svnDir, "pristine").exists()) { //NOI18N - svn1.7, file is directly in the root of a checkout
+                        return getContentBase(referenceFile, new File(Utils.getTempFolder(), referenceFile.getName() + ".netbeans-base")); //NOI18N
+                    }
                     return null;
                 }
                 File expanded = new File(svnDir, "text-base/" + referenceFile.getName() + ".netbeans-base"); //NOI18N

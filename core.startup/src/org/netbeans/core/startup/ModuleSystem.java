@@ -297,6 +297,7 @@ public final class ModuleSystem {
         } finally {
             mgr.mutexPrivileged().exitWriteAccess();
         }
+        installer.preloadCache(mgr.getModules());
         ev.log(Events.PERF_END, "ModuleSystem.restore"); // NOI18N	
     	ev.log(Events.PERF_START, "ModuleSystem.waitOnStart"); // NOI18N
         installer.waitOnStart();

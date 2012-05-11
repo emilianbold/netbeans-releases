@@ -98,7 +98,11 @@ public final class LayeredDocumentIndex implements DocumentIndex {
 
     @Override
     public Status getStatus() throws IOException {
-        return base.getStatus();
+        if (isTransientUpdate()) {
+            return Status.VALID;
+        } else {
+            return base.getStatus();
+        }
     }
 
     @Override
@@ -171,7 +175,7 @@ public final class LayeredDocumentIndex implements DocumentIndex {
     }
     
     public boolean begin() {
-        if (base instanceof Runnable) {
+        if (!isTransientUpdate() && base instanceof Runnable) {
             ((Runnable)base).run();
             return true;
         }

@@ -46,6 +46,7 @@ package org.openide.windows;
 
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
+import java.beans.FeatureDescriptor;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -54,8 +55,11 @@ import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.openide.windows.GlobalActionContextImpl;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.Lookup.Result;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
@@ -131,6 +135,14 @@ implements org.openide.util.LookupListener {
         assertEquals ("Item should return null", null, item.getInstance());
         assertEquals ("Name is null", "none", item.getId ());
         assertActionMap ();
+        
+        Result<MyNode> subclass = lookup.lookup (new Lookup.Template<MyNode> (MyNode.class));
+        assertTrue("No items are returned", subclass.allItems().isEmpty());
+        
+        Result<FeatureDescriptor> superclass = lookup.lookup (new Lookup.Template<FeatureDescriptor>(FeatureDescriptor.class));
+        assertEquals("One item is returned", 1, superclass.allItems().size());
+        item = (Lookup.Item)superclass.allItems ().iterator ().next ();
+        assertEquals ("Item should return null", null, item.getInstance());
         
         tc.setActivatedNodes (new Node[0]);
         assertEquals ("No change", 3, cnt);
@@ -308,4 +320,9 @@ implements org.openide.util.LookupListener {
         }
     }
 
+    private static final class MyNode extends AbstractNode {
+        public MyNode() {
+            super(Children.LEAF);
+        }
+    }
 }

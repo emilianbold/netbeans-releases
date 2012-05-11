@@ -72,6 +72,7 @@ import org.netbeans.modules.parsing.impl.indexing.PathRegistry;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
 import org.netbeans.modules.parsing.impl.indexing.TransientUpdateSupport;
+import org.netbeans.modules.parsing.impl.indexing.URLCache;
 import org.netbeans.modules.parsing.impl.indexing.Util;
 import org.netbeans.modules.parsing.impl.indexing.lucene.LayeredDocumentIndex;
 import org.netbeans.modules.parsing.impl.indexing.lucene.LuceneIndexFactory;
@@ -388,7 +389,7 @@ public final class QuerySupport {
                     if (srcRoots != null) {
                         LOG.log(Level.FINE, "Translating {0} -> {1}", new Object [] { binRootUrl, srcRoots }); //NOI18N
                         for(URL srcRootUrl : srcRoots) {
-                            FileObject srcRoot = RepositoryUpdater.URLCache.getInstance().findFileObject(srcRootUrl);
+                            FileObject srcRoot = URLCache.getInstance().findFileObject(srcRootUrl);
                             if (srcRoot != null) {
                                 roots.add(srcRoot);
                             }
@@ -416,7 +417,7 @@ public final class QuerySupport {
             roots = new HashSet<FileObject>();
             Set<URL> urls = PathRegistry.getDefault().getRootsMarkedAs(classpathId);
             for(URL url : urls) {
-                FileObject f = RepositoryUpdater.URLCache.getInstance().findFileObject(url);
+                FileObject f = URLCache.getInstance().findFileObject(url);
                 if (f != null) {
                     roots.add(f);
                 }

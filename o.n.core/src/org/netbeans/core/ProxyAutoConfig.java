@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -41,26 +41,9 @@
  */
 package org.netbeans.core;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.net.InetSocketAddress;
-import java.net.MalformedURLException;
-import java.net.Proxy;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.StringTokenizer;
+import java.io.*;
+import java.net.*;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.script.Invocable;
@@ -201,8 +184,8 @@ public class ProxyAutoConfig {
     }
 
     private static InputStream downloadPAC(String pacURL) throws IOException {
-        InputStream is = null;
-        URL url = null;
+        InputStream is;
+        URL url;
         try {
             url = new URL(pacURL);
         } catch (MalformedURLException ex) {
@@ -234,7 +217,7 @@ public class ProxyAutoConfig {
         if (protocol == null) {
             return null;
         } else {
-            if ("http".equals(protocol)) { // NOI18N
+            if (("http".equals(protocol)) || ("https".equals(protocol))) { // NOI18N
                 proxyType = Proxy.Type.HTTP;
             } else {
                 proxyType = Proxy.Type.SOCKS;
@@ -312,7 +295,7 @@ public class ProxyAutoConfig {
             LOGGER.log(Level.INFO, ex.getMessage(), ex);
         }
         try {
-            String line = null;
+            String line;
             boolean doAppend = false;
             while ((line = reader.readLine()) != null) {
                 line = line.trim();

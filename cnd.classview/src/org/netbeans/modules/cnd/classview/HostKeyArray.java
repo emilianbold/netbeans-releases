@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.cnd.classview;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -63,9 +64,9 @@ import org.netbeans.modules.cnd.api.model.CsmQualifiedNamedElement;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.classview.model.CVUtil;
 import org.netbeans.modules.cnd.modelutil.AbstractCsmNode;
-import org.openide.util.CharSequences;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.CharSequences;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -583,7 +584,7 @@ abstract public class HostKeyArray extends Children.Keys<PersistentKey> implemen
         }
     }
     
-    private static class MyComparator implements Comparator<java.util.Map.Entry<PersistentKey, SortedName>> {
+    private static class MyComparator implements Comparator<java.util.Map.Entry<PersistentKey, SortedName>>, Serializable {
         @Override
         public int compare(java.util.Map.Entry<PersistentKey, SortedName> o1, java.util.Map.Entry<PersistentKey, SortedName> o2) {
             SortedName n1 = o1.getValue();

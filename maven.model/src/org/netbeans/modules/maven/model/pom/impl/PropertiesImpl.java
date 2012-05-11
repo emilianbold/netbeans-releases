@@ -45,9 +45,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.xml.namespace.QName;
+import org.netbeans.modules.maven.model.pom.*;
 import org.w3c.dom.Element;
-import org.netbeans.modules.maven.model.pom.*;	
-import org.netbeans.modules.maven.model.pom.POMComponentVisitor;	
 
 /**
  *
@@ -68,16 +67,19 @@ public class PropertiesImpl extends POMComponentImpl implements Properties {
     // child elements
 
 
+    @Override
     public void setProperty(String key, String value) {
         QName qname = POMQName.createQName(key, getModel().getPOMQNames().isNSAware());
         setChildElementText(qname.getLocalPart(), value,
                 qname);
     }
 
+    @Override
     public String getProperty(String key) {
         return getChildElementText(POMQName.createQName(key, getModel().getPOMQNames().isNSAware()));
     }
 
+    @Override
     public Map<String, String> getProperties() {
         Map<String, String> toRet = new HashMap<String, String>();
         List<POMComponent> chlds = getChildren();
@@ -90,6 +92,7 @@ public class PropertiesImpl extends POMComponentImpl implements Properties {
         return toRet;
     }
 
+    @Override
     public void accept(POMComponentVisitor visitor) {
         visitor.visit(this);
     }

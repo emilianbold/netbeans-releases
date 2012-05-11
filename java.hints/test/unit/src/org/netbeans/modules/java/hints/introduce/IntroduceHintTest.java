@@ -1323,6 +1323,43 @@ public class IntroduceHintTest extends NbTestCase {
                        4, 2);
     }
 
+    public void testIntroduceMethodReplaceDuplicates206193() throws Exception {
+        performFixTest("package test;\n" +
+                       "public class Test {\n" +
+                       "    public static void test1() {\n" +
+                       "        |int i1 = 0;\n" +
+                       "        int i2 = 2;\n" +
+                       "        System.err.println(i1 + i2);|\n" +
+                       "        System.err.println(i2);\n" +
+                       "    }\n" +
+                       "    public static void test2() {\n" +
+                       "        int i1 = 0;\n" +
+                       "        int i2 = 2;\n" +
+                       "        System.err.println(i1 + i2);\n" +
+                       "        System.err.println(i2);\n" +
+                       "    }\n" +
+                       "}",
+                       "package test;\n" +
+                       "public class Test {\n" +
+                       "    public static void test1() {\n" +
+                       "        int i2 = name();\n" +
+                       "        System.err.println(i2);\n" +
+                       "    }\n" +
+                       "    public static void test2() {\n" +
+                       "        int i2 = name();\n" +
+                       "        System.err.println(i2);\n" +
+                       "    }\n" +
+                       "    private static int name() {\n" +
+                       "        int i1 = 0;\n" +
+                       "        int i2 = 2;\n" +
+                       "        System.err.println(i1 + i2);\n" +
+                       "        return i2;\n" +
+                       "    }\n" +
+                       "}",
+                       new DialogDisplayerImpl3("name", EnumSet.of(Modifier.PRIVATE), true, true),
+                       1, 0);
+    }
+    
     public void testIntroduceMethodFromSingleStatement153399a() throws Exception {
         performFixTest("package test;\n" +
                        "public class Test {\n" +

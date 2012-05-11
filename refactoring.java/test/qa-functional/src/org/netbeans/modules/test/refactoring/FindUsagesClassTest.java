@@ -183,6 +183,7 @@ public class FindUsagesClassTest extends FindUsagesTestCase{
         ref(jtbop.isSelected());
         previewTree = result.getPreviewTree();
         browseChildren(previewTree.getModel(), previewTree.getModel().getRoot(), 0);
+        jtbol.pushNoBlock();
     }
 
     public void testNext() {        // Unstable, ordering can be different
@@ -200,7 +201,7 @@ public class FindUsagesClassTest extends FindUsagesTestCase{
         for (int i = 0; i < 5; i++) {
             next.push();
             int[] selectionRows = preview.getSelectionRows();            
-            String file = getFileForSelectedNode(preview);
+            String file = getFileForSelectedNode(preview).replaceAll(".java", "");
             EditorOperator edt = new EditorOperator(file);
             String txt = edt.txtEditorPane().getSelectionStart() + " " + edt.txtEditorPane().getSelectionEnd() + " " + edt.txtEditorPane().getSelectedText();
             if (map.get(file) == null) {
@@ -225,7 +226,7 @@ public class FindUsagesClassTest extends FindUsagesTestCase{
         for (int i = 0; i < 5; i++) {
             prev.push();
             int[] selectionRows = preview.getSelectionRows();            
-            String file = getFileForSelectedNode(preview);
+            String file = getFileForSelectedNode(preview).replaceAll(".java", "");
             EditorOperator edt = new EditorOperator(file);
             String txt = edt.txtEditorPane().getSelectionStart() + " " + edt.txtEditorPane().getSelectionEnd() + " " + edt.txtEditorPane().getSelectedText();
             if (map.get(file) == null) {

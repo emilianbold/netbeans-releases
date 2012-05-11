@@ -49,6 +49,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.editor.bookmarks.BookmarkInfo;
 import org.netbeans.modules.editor.bookmarks.BookmarkManager;
@@ -64,6 +65,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  * Tree of nodes used for tree view and other purposes.
@@ -102,7 +104,8 @@ public final class BookmarksNodeTree {
                 if (projectBookmarks.containsAnyBookmarks()) {
                     FileObject[] sortedFileObjects = lockedBookmarkManager.getSortedFileObjects(projectBookmarks);
                     ProjectBookmarksChildren children = new ProjectBookmarksChildren(projectBookmarks, sortedFileObjects);
-                    LogicalViewProvider lvp = projectBookmarks.getProject().getLookup().lookup(LogicalViewProvider.class);
+                    Project prj = projectBookmarks.getProject();
+                    LogicalViewProvider lvp = (prj != null) ? prj.getLookup().lookup(LogicalViewProvider.class) : null;
                     Node prjNode = (lvp != null) ? lvp.createLogicalView() : null;
                     if (prjNode == null) {
                         prjNode = new AbstractNode(Children.LEAF);
@@ -256,7 +259,10 @@ public final class BookmarksNodeTree {
         
         ProjectBookmarksChildren(ProjectBookmarks projectBookmarks, FileObject[] sortedFileObjects) {
             this.projectBookmarks = projectBookmarks;
-            projectDisplayName = ProjectUtils.getInformation(projectBookmarks.getProject()).getDisplayName();
+            Project prj = projectBookmarks.getProject();
+            projectDisplayName = (prj != null)
+                    ? ProjectUtils.getInformation(prj).getDisplayName()
+                    : NbBundle.getMessage (BookmarksView.class, "LBL_NullProjectDisplayName");
             setKeys(sortedFileObjects);
         }
         

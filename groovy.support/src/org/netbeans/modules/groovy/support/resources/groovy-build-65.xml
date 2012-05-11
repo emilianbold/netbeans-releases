@@ -13,7 +13,7 @@
             <element name="customize" optional="true"/>
             <sequential>
                 <taskdef name="groovyc" classpath="${javac.classpath}" classname="org.codehaus.groovy.ant.Groovyc"/>
-                <groovyc destdir="@{destdir}" encoding="${source.encoding}" excludes="@{excludes}" includes="@{includes}" sourcepath="@{sourcepath}" srcdir="@{srcdir}">
+                <groovyc destdir="@{destdir}" encoding="${source.encoding}" excludes="@{excludes}" includes="@{includes}" sourcepath="@{sourcepath}" srcdir="@{srcdir}" fork="true">
                     <classpath>
                         <path path="@{classpath}"/>
                     </classpath>

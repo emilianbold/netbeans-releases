@@ -41,8 +41,9 @@
  */
 package org.netbeans.modules.maven.model.pom.impl;
 
+import java.util.ArrayList;
+import org.netbeans.modules.maven.model.pom.*;
 import org.w3c.dom.Element;
-import org.netbeans.modules.maven.model.pom.*;	
 
 /**
  *
@@ -50,10 +51,12 @@ import org.netbeans.modules.maven.model.pom.*;
  */
 public class PluginExecutionImpl extends IdPOMComponentImpl implements PluginExecution {
 
-    private static final Class<? extends POMComponent>[] ORDER = new Class[] {
-        StringList.class, //goals
-        Configuration.class
-    };
+    private static final java.util.List<Class<? extends POMComponent>> ORDER;
+    static {
+        ORDER = new ArrayList<Class<? extends POMComponent>>();
+        ORDER.add(StringList.class); //goals
+        ORDER.add(Configuration.class);
+    }
 
     public PluginExecutionImpl(POMModel model, Element element) {
         super(model, element);
@@ -66,19 +69,23 @@ public class PluginExecutionImpl extends IdPOMComponentImpl implements PluginExe
     // attributes
 
     // child elements
+    @Override
     public void accept(POMComponentVisitor visitor) {
         visitor.visit(this);
     }
 
+    @Override
     public String getPhase() {
         return getChildElementText(getModel().getPOMQNames().PHASE.getQName());
     }
 
+    @Override
     public void setPhase(String phase) {
         setChildElementText(getModel().getPOMQNames().PHASE.getName(), phase,
                 getModel().getPOMQNames().PHASE.getQName());
     }
 
+    @Override
     public Boolean isInherited() {
         String str = getChildElementText(getModel().getPOMQNames().INHERITED.getQName());
         if (str != null) {
@@ -87,21 +94,25 @@ public class PluginExecutionImpl extends IdPOMComponentImpl implements PluginExe
         return Boolean.TRUE;
     }
 
+    @Override
     public void setInherited(Boolean inherited) {
         setChildElementText(getModel().getPOMQNames().INHERITED.getName(),
                 inherited == null ? null : inherited.toString(),
                 getModel().getPOMQNames().INHERITED.getQName());
     }
 
+    @Override
     public Configuration getConfiguration() {
         return getChild(Configuration.class);
     }
 
+    @Override
     public void setConfiguration(Configuration config) {
         setChild(Configuration.class, getModel().getPOMQNames().CONFIGURATION.getName(), config,
                 getClassesBefore(ORDER, Configuration.class));
     }
 
+    @Override
     public java.util.List<String> getGoals() {
         java.util.List<StringList> lists = getChildren(StringList.class);
         for (StringList list : lists) {
@@ -112,6 +123,7 @@ public class PluginExecutionImpl extends IdPOMComponentImpl implements PluginExe
         return null;
     }
 
+    @Override
     public void addGoal(String goal) {
         java.util.List<StringList> lists = getChildren(StringList.class);
         for (StringList list : lists) {
@@ -133,6 +145,7 @@ public class PluginExecutionImpl extends IdPOMComponentImpl implements PluginExe
         }
     }
 
+    @Override
     public void removeGoal(String goal) {
         java.util.List<StringList> lists = getChildren(StringList.class);
         for (StringList list : lists) {

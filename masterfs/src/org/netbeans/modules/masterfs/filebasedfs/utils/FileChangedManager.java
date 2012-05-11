@@ -65,6 +65,12 @@ import org.openide.util.lookup.ServiceProviders;
 })
 public class FileChangedManager extends SecurityManager {
     private static final Logger LOG = Logger.getLogger(FileChangedManager.class.getName());
+    private static final boolean isFine;
+    private static final boolean isFiner;
+    static {
+        isFine = LOG.isLoggable(Level.FINE);
+        isFiner = LOG.isLoggable(Level.FINER);
+    }
     private static  FileChangedManager INSTANCE;
     private static final int CREATE_HINT = 2;
     private static final int DELETE_HINT = 1;
@@ -80,7 +86,9 @@ public class FileChangedManager extends SecurityManager {
     private static final ThreadLocal<AtomicBoolean> IDLE_ON = new ThreadLocal<AtomicBoolean>();
     
     public FileChangedManager() {
-        LOG.fine("Initializing FileChangedManager");
+        if (isFine) {
+            LOG.fine("Initializing FileChangedManager");
+        }
     }
     
     public static synchronized FileChangedManager getInstance() {
@@ -197,7 +205,7 @@ public class FileChangedManager extends SecurityManager {
             AtomicBoolean goOn = IDLE_ON.get();
             if (goOn != null && !goOn.get()) {
                 final String msg = "Interrupting manually"; // NOI18N
-                LOG.fine(msg);
+                if (isFine) LOG.fine(msg);
                 throw new InterruptedException(msg);
             }
             int l = pingIO(0);
@@ -243,11 +251,11 @@ public class FileChangedManager extends SecurityManager {
             try {
                 waitIOLoadLowerThan(maxLoad);
             } catch (InterruptedException ex) {
-                LOG.log(Level.FINE, "Interrupted {0}", ex.getMessage());
+                if (isFine) LOG.log(Level.FINE, "Interrupted {0}", ex.getMessage());
             }
         } else {
             ioLoad += inc;
-            LOG.log(Level.FINER, "I/O load: {0} (+{1})", new Object[] { ioLoad, inc });
+            if (isFiner) LOG.log(Level.FINER, "I/O load: {0} (+{1})", new Object[] { ioLoad, inc });
         }
         return ioLoad;
     }

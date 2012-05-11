@@ -42,8 +42,9 @@
 package org.netbeans.modules.tasks.ui.dashboard;
 
 import java.awt.Component;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.*;
-import java.util.List;
 import java.util.Map.Entry;
 import javax.accessibility.AccessibleContext;
 import javax.swing.*;
@@ -51,7 +52,6 @@ import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.RepositoryManager;
-import org.netbeans.modules.bugtracking.api.Util;
 import org.netbeans.modules.tasks.ui.LinkButton;
 import org.netbeans.modules.tasks.ui.actions.CreateCategoryAction;
 import org.netbeans.modules.tasks.ui.actions.CreateRepositoryAction;
@@ -74,7 +74,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author S. Aubrecht
  */
-public final class DashboardViewer {
+public final class DashboardViewer implements PropertyChangeListener{
 
     public static final String PREF_ALL_PROJECTS = "allProjects"; //NOI18N
     public static final String PREF_COUNT = "count"; //NOI18N
@@ -128,12 +128,6 @@ public final class DashboardViewer {
                 Component view = getViewport().getView();
                 return view != null ? view.requestFocusInWindow() : super.requestFocusInWindow();
             }
-
-            @Override
-            public void addNotify() {
-                super.addNotify();
-                DashboardViewer.this.loadData();
-            }
         };
         dashboardComponent.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         dashboardComponent.setBorder(BorderFactory.createEmptyBorder());
@@ -174,6 +168,21 @@ public final class DashboardViewer {
      */
     public static DashboardViewer getInstance() {
         return Holder.theInstance;
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt.getPropertyName().equals(RepositoryManager.EVENT_REPOSITORIES_CHANGED)) {
+            requestProcessor.post(new Runnable() {
+            @Override
+            public void run() {
+                //TODO needs to be optimalized
+                titleRepositoryNode.setProgressVisible(true);
+                loadRepositories();
+                titleRepositoryNode.setProgressVisible(false);
+            }
+        });
+        }
     }
 
     private static class Holder {
@@ -539,7 +548,7 @@ public final class DashboardViewer {
         return expandedNodes.contains(node);
     }
 
-    private void loadData() {
+    public void loadData() {
         requestProcessor.post(new Runnable() {
             @Override
             public void run() {
@@ -562,11 +571,8 @@ public final class DashboardViewer {
         for (CategoryEntry categoryEntry : categoryEntries) {
             List<Issue> tasks = loadTasks(categoryEntry.getTaskEntries());
             // was category closed
-            if (names.contains(categoryEntry.getCategoryName())) {
-                catNodes.add(new CategoryNode(new Category(categoryEntry.getCategoryName(), tasks), false));
-            } else {
-                catNodes.add(new CategoryNode(new Category(categoryEntry.getCategoryName(), tasks)));
-            }
+            boolean open = !names.contains(categoryEntry.getCategoryName());
+            catNodes.add(new CategoryNode(new Category(categoryEntry.getCategoryName(), tasks), open));
         }
         if (!SwingUtilities.isEventDispatchThread()) {
             SwingUtilities.invokeLater(new Runnable() {
@@ -614,19 +620,15 @@ public final class DashboardViewer {
 
     private void loadRepositories() {
         List<Repository> allRepositories = new ArrayList<Repository>(RepositoryManager.getInstance().getRepositories());
-        List<String> ids = DashboardStorage.getInstance().readClosedRepositories();
+        List<String> closedIds = DashboardStorage.getInstance().readClosedRepositories();
         final List<RepositoryNode> repoNodes = new ArrayList<RepositoryNode>(allRepositories.size());
 
         for (Repository repository : allRepositories) {
-            // was repository closed
             RepositoryNode repositoryNode;
-            if (ids.contains(repository.getId())) {
-                repositoryNode = new RepositoryNode(repository, false, false);
-            } else {
-                repositoryNode = new RepositoryNode(repository, false, true);
-                //TODO uncomment when query updateContent is fixed
-                //refreshQueries(repository.getQueries());
-            }
+            boolean open = !closedIds.contains(repository.getId());
+            //TODO uncommit when the query refresh bug is fixed
+//            refreshQueries(repository.getQueries());
+            repositoryNode = new RepositoryNode(repository, false, open);
             repoNodes.add(repositoryNode);
         }
         if (!SwingUtilities.isEventDispatchThread()) {
@@ -696,7 +698,7 @@ public final class DashboardViewer {
             int index = model.getRootNodes().indexOf(titleCategoryNode) + 1;
             for (CategoryNode categoryNode : categoryNodes) {
                 if (isCategoryInFilter(categoryNode)) {
-                    taskHits += categoryNode.getTotalCount();
+                    taskHits += categoryNode.getTotalTaskCount();
                     mapCategoryToNode.put(categoryNode.getCategory(), categoryNode);
                     addRootToModel(index++, categoryNode);
                 }

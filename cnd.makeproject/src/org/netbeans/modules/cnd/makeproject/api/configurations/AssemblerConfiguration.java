@@ -43,17 +43,17 @@
  */
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
-import org.netbeans.modules.cnd.makeproject.configurations.ui.OptionsNodeProp;
-import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
-import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
+import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
+import org.netbeans.modules.cnd.makeproject.configurations.ui.OptionsNodeProp;
+import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 
-public class AssemblerConfiguration extends BasicCompilerConfiguration {
+public class AssemblerConfiguration extends BasicCompilerConfiguration implements Cloneable {
     // Constructors
 
     public AssemblerConfiguration(String baseDir, AssemblerConfiguration master) {
@@ -112,17 +112,15 @@ public class AssemblerConfiguration extends BasicCompilerConfiguration {
         }
         AbstractCompiler compiler = (AbstractCompiler) tool;
 
-        String options = ""; // NOI18N
-        options += getAsFlagsBasic(compiler) + " "; // NOI18N
+        StringBuilder options = new StringBuilder();
+        options.append(getAsFlagsBasic(compiler)).append(' ');
         AssemblerConfiguration master = this;
         while (master != null) {
-            options += master.getCommandLineConfiguration().getValue() + " "; // NOI18N
+            options.append(master.getCommandLineConfiguration().getValue()).append(' ');
             master = (AssemblerConfiguration)master.getMaster();
         }
-        if (master != null) {
-        }
-        options += getAllOptions2(compiler) + " "; // NOI18N
-        return CppUtils.reformatWhitespaces(options);
+        options.append(getAllOptions2(compiler)).append(' ');
+        return CppUtils.reformatWhitespaces(options.toString());
     }
 
     public String getAllOptions2(AbstractCompiler compiler) {

@@ -64,6 +64,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.netbeans.core.windows.Debug;
+import org.netbeans.core.windows.Switches;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.openide.windows.TopComponent;
 
@@ -170,6 +171,9 @@ final class ViewHierarchy {
 ////            System.out.println("updateViewHierarchy...mazimized=" + maximizedModeView);
 //            setMaximizedViewIntoDesktop(maximizedModeView);
 //        }
+        if( null == currentSplitRoot && shouldUseFakeSplitRoot() ) {
+            currentSplitRoot = getFakeSplitRoot();
+        }
         if (desktop.getSplitRoot() == null) {
             setSplitRootIntoDesktop(currentSplitRoot);
         }
@@ -1091,6 +1095,35 @@ final class ViewHierarchy {
     
     private static void debugLog(String message) {
         Debug.log(ViewHierarchy.class, message);
+    }
+
+    private boolean shouldUseFakeSplitRoot() {
+        return Constants.SWITCH_HIDE_EMPTY_DOCUMENT_AREA;
+    }
+
+    private ViewElement fakeSplitRoot;
+
+    //#209678 - with option SWITCH_HIDE_EMPTY_DOCUMENT_AREA closing all editor
+    //windows will hide all sliding bars, so let's use a dummy split root
+    //to keep sliding bars visible when no window is docked
+    private ViewElement getFakeSplitRoot() {
+        if( null == fakeSplitRoot ) {
+            final JPanel panel = new JPanel();
+            panel.setOpaque( false );
+            fakeSplitRoot = new ViewElement( controller, 1.0 ) {
+
+                @Override
+                public Component getComponent() {
+                    return panel;
+                }
+
+                @Override
+                public boolean updateAWTHierarchy( Dimension availableSpace ) {
+                    return false;
+                }
+            };
+        }
+        return fakeSplitRoot;
     }
 }
 

@@ -61,7 +61,7 @@ public class cc extends GeneralPHP
   }
 
   protected static final int DOLLAR_COMPLETION_LIST = 16;
-  protected static final int SLASHSTAR_COMPLETION_LIST = 219;
+  protected static final int SLASHSTAR_COMPLETION_LIST = 220;
   protected static final int JAVADOC_COMPLETION_LIST = 49;
 
 /*

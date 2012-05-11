@@ -523,37 +523,6 @@ public final class ProjectUtilities {
         return set.toArray(new FileObject[set.size()]);
     }
 
-    public static boolean backupBuildScript(final Project project) {
-        final FileObject buildFile = AntProjectSupport.get(project).getProjectBuildScript();
-        final FileObject buildBackupFile = project.getProjectDirectory().getFileObject("build-before-profiler.xml"); //NOI18N
-
-        if (buildFile != null) {
-            if (buildBackupFile != null) {
-                // clean up the old backup file
-                try {
-                    buildBackupFile.delete();
-                } catch (IOException e) {
-                    ProfilerLogger.log(e);
-
-                    return false;
-
-                    // cannot delete already existing backup
-                }
-            }
-            // copy over the new build file
-            try {
-                buildFile.copy(project.getProjectDirectory(), "build-before-profiler", "xml"); //NOI18N
-            } catch (IOException e1) {
-                ProfilerLogger.log(e1);
-
-                return false;
-            }
-            return true;
-        }
-
-        return false;
-    }
-
 //    public static SimpleFilter computeProjectOnlyInstrumentationFilter(Project project, SimpleFilter predefinedInstrFilter,
 //                                                                       String[][] projectPackagesDescr) {
 //        // TODO: projectPackagesDescr[1] should only contain packages from subprojects, currently contains also toplevel project packages

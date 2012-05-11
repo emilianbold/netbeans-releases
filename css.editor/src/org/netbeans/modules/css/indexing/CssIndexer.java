@@ -80,6 +80,8 @@ public class CssIndexer extends EmbeddingIndexer {
     public static final String HTML_ELEMENTS_KEY = "htmlElements"; //NOI18N
     public static final String COLORS_KEY = "colors"; //NOI18N
 
+    public static final char VIRTUAL_ELEMENT_MARKER = '!'; //NOI18N
+    
     //used during the indexing (content is mutable)
     private static final Map<FileObject, AtomicLong> importsHashCodes = new HashMap<FileObject, AtomicLong>();
     
@@ -148,7 +150,11 @@ public class CssIndexer extends EmbeddingIndexer {
             StringBuilder sb = new StringBuilder();
             Iterator<Entry> i = entries.iterator();
             while (i.hasNext()) {
-                sb.append(i.next().getName());
+                Entry entry = i.next();
+                sb.append(entry.getName());
+                if(entry.isVirtual()) {
+                    sb.append(VIRTUAL_ELEMENT_MARKER);
+                }
                 if (i.hasNext()) {
                     sb.append(','); //NOI18N
                 }
@@ -164,7 +170,7 @@ public class CssIndexer extends EmbeddingIndexer {
     public static class Factory extends EmbeddingIndexerFactory {
 
         public static final String NAME = "css"; //NOI18N
-        public static final int VERSION = 1;
+        public static final int VERSION = 2;
 
         @Override
         public EmbeddingIndexer createIndexer(Indexable indexable, Snapshot snapshot) {

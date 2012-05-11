@@ -52,7 +52,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author marekfukala
  */
-public final class JsfSupportHandle {
+public class JsfSupportHandle {
 
     private JsfSupport instance;
     private Throwable caller;
@@ -72,6 +72,9 @@ public final class JsfSupportHandle {
     synchronized JsfSupport get() {
         return instance;
     }
-    
+
+    protected boolean isEnabled() {
+        return true;
+    }
 
 }

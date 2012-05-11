@@ -46,9 +46,16 @@ package org.netbeans.modules.cnd.classview;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.api.project.*;
-
-import  org.netbeans.modules.cnd.api.model.*;
+import org.netbeans.modules.cnd.api.model.CsmChangeEvent;
+import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
+import org.netbeans.modules.cnd.api.model.CsmNamespace;
+import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
+import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.classview.model.ProjectNode;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -150,7 +157,7 @@ import org.openide.nodes.Node;
             return null;
         }
         List<CsmObject> path = new ArrayList<CsmObject>();
-        CsmObject scope = null;
+        CsmObject scope;
         if (CsmKindUtilities.isFunctionDefinition(decl)){
             CsmFunction func = ((CsmFunctionDefinition)decl).getDeclaration();
             if (func != null){
@@ -198,27 +205,6 @@ import org.openide.nodes.Node;
         return res;
     }
 
-    private void dump(Project[] projects) {
-        if( Diagnostic.DEBUG ) {
-            Diagnostic.trace("Dumping projects:"); // NOI18N
-            for( int i = 0; i < projects.length; i++ ) {
-                dump(projects[i]);
-            }
-        }
-    }
-    
-    private void dump(Project p) {
-        if( Diagnostic.DEBUG ) {
-            ProjectInformation pi = ProjectUtils.getInformation(p);
-            Diagnostic.trace("Project " + pi.getName() + " (" + pi.getDisplayName() + ')'); // NOI18N
-            SourceGroup[] sg = ProjectUtils.getSources(p).getSourceGroups(Sources.TYPE_GENERIC);
-            Diagnostic.trace("  Source groups are"); // NOI18N
-            for( int i = 0; i < sg.length; i++ ) {
-                Diagnostic.trace("    " + sg[i].getName() + " (" + sg[i].getDisplayName() + ") " + sg[i].getRootFolder().getName()); // NOI18N
-            }
-        }
-    }
-    
     private RootNode root;
     
 }

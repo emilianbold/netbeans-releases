@@ -19,21 +19,21 @@
           <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="fldText" max="32767" attributes="0"/>
                   <Component id="cbScope" alignment="0" max="32767" attributes="0"/>
                   <Component id="cbFilename" alignment="0" max="32767" attributes="0"/>
+                  <Component id="cbSearchPattern" alignment="0" max="32767" attributes="0"/>
                   <Group type="102" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="cbCaseSensitive" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="cbWholeWords" min="-2" max="-2" attributes="0"/>
+                          </Group>
                           <Component id="lblText" min="-2" max="-2" attributes="0"/>
                           <Component id="lblScope" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="lblFilename" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="cbCaseSensitive" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                              <Component id="cdWholeWords" min="-2" max="-2" attributes="0"/>
-                          </Group>
                       </Group>
-                      <EmptySpace min="0" pref="177" max="32767" attributes="0"/>
+                      <EmptySpace min="0" pref="181" max="32767" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -46,11 +46,11 @@
               <EmptySpace max="-2" attributes="0"/>
               <Component id="lblText" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="fldText" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
+              <Component id="cbSearchPattern" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="cbCaseSensitive" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="cdWholeWords" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="cbWholeWords" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Component id="lblScope" min="-2" max="-2" attributes="0"/>
@@ -69,7 +69,7 @@
     <Component class="javax.swing.JLabel" name="lblText">
       <Properties>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="fldText"/>
+          <ComponentRef name="cbSearchPattern"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/cnd/search/ui/Bundle.properties" key="CNDSearchPanel.lblText.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -79,7 +79,7 @@
         <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
       </AuxValues>
     </Component>
-    <Component class="javax.swing.JTextField" name="fldText">
+    <Component class="javax.swing.JComboBox" name="cbSearchPattern">
     </Component>
     <Component class="javax.swing.JCheckBox" name="cbCaseSensitive">
       <Properties>
@@ -91,10 +91,10 @@
         <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
       </AuxValues>
     </Component>
-    <Component class="javax.swing.JCheckBox" name="cdWholeWords">
+    <Component class="javax.swing.JCheckBox" name="cbWholeWords">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/cnd/search/ui/Bundle.properties" key="CNDSearchPanel.cdWholeWords.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/cnd/search/ui/Bundle.properties" key="CNDSearchPanel.cbWholeWords.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <AuxValues>

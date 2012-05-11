@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.cnd.makeproject;
 
-import org.netbeans.modules.cnd.makeproject.api.support.*;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -57,7 +56,6 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import java.util.prefs.Preferences;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -66,20 +64,16 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.makeproject.api.LogicalFolderItemsInfo;
 import org.netbeans.modules.cnd.makeproject.api.LogicalFoldersInfo;
+import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator.ProjectParameters;
+import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator.ProjectParameters;
-import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
+import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectGenerator;
+import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectHelper;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.MakeSampleProjectGenerator;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
@@ -88,11 +82,18 @@ import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.CreateFromTemplateHandler;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 /**
  * Creates a MakeProject from scratch according to some initial configuration.
@@ -180,7 +181,7 @@ public class MakeProjectGeneratorImpl {
      */
     public static MakeProject createProject(ProjectParameters prjParams) throws IOException {
         FileObject dirFO = createProjectDir(prjParams);
-        MakeProjectHelper h = createProject(dirFO, prjParams, false); //NOI18N
+        createProject(dirFO, prjParams, false); //NOI18N
         MakeProject p = (MakeProject) ProjectManager.getDefault().findProject(dirFO);
         ProjectManager.getDefault().saveProject(p);
         p.setRemoteMode(prjParams.getRemoteMode());
@@ -344,8 +345,8 @@ public class MakeProjectGeneratorImpl {
             if (br != null) {
                 br.close();
             }
-            if (os != null) {
-                os.close();
+            if (bw != null) {
+                bw.close();
             }
         }
     }

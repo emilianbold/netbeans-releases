@@ -59,19 +59,6 @@ import org.openide.filesystems.FileObject;
                         }
 )
 public final class NbModuleAntProjectSupportProvider extends AbstractAntProjectSupportProvider {
-    
-    @Override
-    public String getProfilerTargetName(FileObject buildScript, int type, FileObject profiledClassFile) {
-        switch (type) {
-            case AntProjectSupport.TARGET_PROFILE:
-                return "profile"; //NOI18N
-            case AntProjectSupport.TARGET_PROFILE_TEST_SINGLE:
-                return "profile-test-single-nb"; //NOI18N
-            default:
-                return null; // not applicable for NBM projects
-        }
-    }
-
     @Override
     public FileObject getProjectBuildScript() {
         return getProject().getProjectDirectory().getFileObject("build.xml"); //NOI18N

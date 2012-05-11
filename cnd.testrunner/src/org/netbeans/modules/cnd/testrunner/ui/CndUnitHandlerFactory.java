@@ -267,9 +267,12 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
         @Override
         public void updateUI( Manager manager, TestSession session) {
             Testcase testcase = new Testcase(matcher.group(2), CPP_UNIT, session);
-            testcase.setTimeMillis(toMillis(matcher.group(1)));
-            testcase.setClassName(matcher.group(3));
-            session.addTestCase(testcase);
+            if(!(session.getCurrentTestCase() != null && session.getCurrentTestCase().getName().equals(testcase.getName()) &&
+                    session.getCurrentTestCase().getTrouble() != null)) {
+                testcase.setTimeMillis(toMillis(matcher.group(1)));
+                testcase.setClassName(matcher.group(3));
+                session.addTestCase(testcase);
+            }
         }
     }
 

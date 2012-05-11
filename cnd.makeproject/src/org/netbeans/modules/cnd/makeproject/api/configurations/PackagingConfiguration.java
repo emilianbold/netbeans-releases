@@ -68,7 +68,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 
-public class PackagingConfiguration {
+public class PackagingConfiguration implements Cloneable {
 
     private MakeConfiguration makeConfiguration;    // Types
     private StringConfiguration type;

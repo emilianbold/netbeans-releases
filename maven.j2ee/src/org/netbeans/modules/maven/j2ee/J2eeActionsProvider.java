@@ -43,40 +43,37 @@
 package org.netbeans.modules.maven.j2ee;
 
 import java.io.InputStream;
-import java.util.ArrayList;
+import org.netbeans.api.annotations.common.StaticResource;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.spi.actions.AbstractMavenActionsProvider;
-import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.spi.actions.MavenActionsProvider;
 import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.LookupProvider.Registration.ProjectType;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.util.Lookup;
 
 /**
  * j2ee specific defaults for project running and debugging..
  * @author mkleint
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.maven.spi.actions.MavenActionsProvider.class, position=50)
+@ProjectServiceProvider(service=MavenActionsProvider.class, projectTypes={
+    @ProjectType(id="org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR),
+    @ProjectType(id="org-netbeans-modules-maven/" + NbMavenProject.TYPE_EAR),
+    @ProjectType(id="org-netbeans-modules-maven/" + NbMavenProject.TYPE_EJB),
+    // XXX TYPE_APPCLIENT listed here, but webActionMappings.xml has no bindings for it
+    @ProjectType(id="org-netbeans-modules-maven/" + NbMavenProject.TYPE_APPCLIENT)
+})
 public class J2eeActionsProvider extends AbstractMavenActionsProvider {
 
-    private ArrayList<String> supported;
     private static final String ACT_RUN = ActionProvider.COMMAND_RUN_SINGLE + ".deploy";
     private static final String ACT_DEBUG = ActionProvider.COMMAND_DEBUG_SINGLE + ".deploy";
     private static final String ACT_PROFILE = ActionProvider.COMMAND_PROFILE_SINGLE + ".deploy";
-    
-    /** Creates a new instance of J2eeActionsProvider */
-    public J2eeActionsProvider() {
-        supported = new ArrayList<String>();
-        supported.add(NbMavenProject.TYPE_WAR);
-        supported.add(NbMavenProject.TYPE_EAR);
-        supported.add(NbMavenProject.TYPE_EJB);
-        supported.add(NbMavenProject.TYPE_APPCLIENT);
-    }
-    
-    
-    public InputStream getActionDefinitionStream() {
-        String path = "/org/netbeans/modules/maven/j2ee/webActionMappings.xml"; //NOI18N
-        InputStream in = getClass().getResourceAsStream(path);
-        assert in != null : "no instream for " + path;  //NOI18N
-        return in;
+    @StaticResource private static final String MAPPINGS = "org/netbeans/modules/maven/j2ee/webActionMappings.xml";
+
+    @Override
+    protected InputStream getActionDefinitionStream() {
+        return J2eeActionsProvider.class.getClassLoader().getResourceAsStream(MAPPINGS);
     }
 
     @Override
@@ -90,8 +87,7 @@ public class J2eeActionsProvider extends AbstractMavenActionsProvider {
                    ActionProvider.COMMAND_DEBUG.equals(action) ||
                    ActionProvider.COMMAND_PROFILE.equals(action)) {
             //performance, don't read the xml file to figure enablement..
-            NbMavenProject mp = project.getLookup().lookup(NbMavenProject.class);
-            return supported.contains(mp.getPackagingType());
+            return true;
         } else {
             return false;
         }

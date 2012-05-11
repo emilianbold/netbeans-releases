@@ -50,6 +50,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.Stack;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
@@ -88,6 +89,7 @@ public class JspFoldManager implements FoldManager {
     private BaseDocument doc;
     private final List<Fold> currentFolds = new ArrayList<Fold>(20);
     private Preferences prefs;
+    private AtomicBoolean managerReleased = new AtomicBoolean(false);
 
     //typically only one folding task (on the edited gile) runs so
     //the RequestProcessor's throughtput 1 should be enough,
@@ -136,6 +138,7 @@ public class JspFoldManager implements FoldManager {
     }
 
     public void release() {
+        managerReleased.set(true);
     }
 
     public void insertUpdate(DocumentEvent evt, FoldHierarchyTransaction transaction) {
@@ -428,6 +431,9 @@ public class JspFoldManager implements FoldManager {
                                 FoldInfo f = (FoldInfo) newFolds.next();
                                 if (f.getStartOffset() >= 0 && f.getEndOffset() >= 0 && f.getStartOffset() < f.getEndOffset() && f.getEndOffset() <= getDocument().getLength()) {
                                     try {
+                                        if (managerReleased.get() == true) {
+                                            break;
+                                        } 
                                         currentFolds.add(getOperation().addToHierarchy(f.foldType, f.description, isInitiallyCollapsed(f.foldType), f.getStartOffset(), f.getEndOffset(), 0, 0, null, fhTran));
                                     } catch (BadLocationException ignore) {
                                     }

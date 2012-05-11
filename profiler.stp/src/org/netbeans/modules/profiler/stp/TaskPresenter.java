@@ -239,6 +239,7 @@ public class TaskPresenter implements TaskChooser.Item {
             label.setIcon(icon);
             label.setText(title);
             label.setIconTextGap(10);
+            label.setLabelFor(this);
             gridBagConstraints = new GridBagConstraints();
             gridBagConstraints.gridx = 0;
             gridBagConstraints.gridy = 0;

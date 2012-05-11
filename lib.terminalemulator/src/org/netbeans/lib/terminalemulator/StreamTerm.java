@@ -67,7 +67,7 @@ public class StreamTerm extends Term {
     private boolean connected = false;
 
     // Objects used with getIn() and getOut()
-    private Writer writer;      // processes writes from child process
+    private transient Writer writer;      // processes writes from child process
     private Pipe pipe;          // buffers keystrokes to child process
 
     // Objects used with connect()

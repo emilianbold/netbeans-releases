@@ -106,7 +106,7 @@ public class CustomizerProvider implements CardCustomizerProvider {
                 return false;
             }
             Problem problem = pnl.getValidationGroup().performValidation();
-            return problem != null && problem.isFatal();
+            return problem == null || !problem.isFatal();
         }
 
         public Component getComponent() {

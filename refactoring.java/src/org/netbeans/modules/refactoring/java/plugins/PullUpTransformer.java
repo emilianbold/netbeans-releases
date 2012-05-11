@@ -139,7 +139,9 @@ public class PullUpTransformer extends RefactoringVisitor {
                                 (BlockTree) null,
                                 (ExpressionTree)method.getDefaultValue());
                         nju = genUtils.importFQNs(nju);
-                        RefactoringUtils.copyJavadoc(methodElm, nju, workingCopy);
+                        method = genUtils.importComments(method, workingCopy.getTrees().getPath(methodElm).getCompilationUnit());
+                        genUtils.copyComments(method, nju, false);
+                        genUtils.copyComments(method, nju, true);
                         njuClass = genUtils.insertClassMember(njuClass, nju);
                         rewrite(tree, njuClass);
                     } else {                        
@@ -160,7 +162,8 @@ public class PullUpTransformer extends RefactoringVisitor {
                                         oldOne.getThrows(),
                                         oldOne.getBody(),
                                         (ExpressionTree) oldOne.getDefaultValue());
-                                RefactoringUtils.copyJavadoc(methodElm, m, workingCopy);
+                                genUtils.copyComments(oldOne, m, false);
+                                genUtils.copyComments(oldOne, m, true);
                                 njuClass = genUtils.insertClassMember(njuClass, m);
                             } else if (members[i].getGroup() == Group.FIELD) {
                                 VariableTree oldOne = (VariableTree) newMethodTree;
@@ -169,7 +172,8 @@ public class PullUpTransformer extends RefactoringVisitor {
                                         oldOne.getName(),
                                         oldOne.getType(),
                                         oldOne.getInitializer());
-                                RefactoringUtils.copyJavadoc(methodElm, m, workingCopy);
+                                genUtils.copyComments(oldOne, m, false);
+                                genUtils.copyComments(oldOne, m, true);
                                 njuClass = genUtils.insertClassMember(njuClass, m);
                             } else if (members[i].getGroup() == Group.TYPE) {
                                 ClassTree oldOne = (ClassTree) newMethodTree;
@@ -207,7 +211,8 @@ public class PullUpTransformer extends RefactoringVisitor {
                                         break;
                                 }
                                                                 
-                                RefactoringUtils.copyJavadoc(methodElm, m, workingCopy);
+                                genUtils.copyComments(oldOne, m, false);
+                                genUtils.copyComments(oldOne, m, true);
                                 njuClass = genUtils.insertClassMember(njuClass, m);
                                 
                             }

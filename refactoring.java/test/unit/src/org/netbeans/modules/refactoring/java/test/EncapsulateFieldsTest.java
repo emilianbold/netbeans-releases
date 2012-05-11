@@ -81,6 +81,21 @@ public class EncapsulateFieldsTest extends RefactoringTestBase {
                 + "public int getJ() { return j; }\n"
                 + "public void setJ(int j) { this.j = j; } }"));
     }
+    
+    public void testEncapsulateStaticFields() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("encap/A.java", "package encap; public class A { public Object i; public static Object j; }"));
+        performEncapsulate(src.getFileObject("encap/A.java"), new int[]{0, 1});
+        verifyContent(src,
+                new File("encap/A.java", "package encap; public class A {\n"
+                + "public static Object getJ() { return j; }\n"
+                + "public static void setJ(Object aJ) { j = aJ; }\n"
+                + "private Object i;\n"
+                + "private static Object j;\n"
+                + "public Object getI() { return i; }\n"
+                + "public void setI(Object i) { this.i = i; }\n"
+                + "}"));
+    }
 
     public void testSelfEncapsulateFields() throws Exception {
         writeFilesAndWaitForScan(src,

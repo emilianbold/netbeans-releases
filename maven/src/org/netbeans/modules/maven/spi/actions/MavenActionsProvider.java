@@ -46,13 +46,15 @@ import java.util.Set;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  * Interface that allows to put additional items to project's popup plus to provide specific
  * implementations of ActionProvider actions.
- * Implementations should be registered in default lookup using {@link org.openide.util.lookup.ServiceProvider}.
- * or some other custom aspect of the project from dependant modules..
+ * Implementations should be registered in default lookup using {@link ServiceProvider},
+ * or since 2.50 may also be registered using {@link ProjectServiceProvider} if applicable to just some packagings.
  * 
  * @author  Milos Kleint
  */

@@ -44,29 +44,23 @@
 
 package org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints;
 
-import java.util.List;
-import java.util.ArrayList;
-
-import java.awt.Window;
-import java.awt.GridBagLayout;
-import java.awt.GridBagConstraints;
 import java.awt.BorderLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.event.ActionListener;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
-
-import javax.swing.SwingUtilities;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JComboBox;
-
-
-import org.openide.util.HelpCtx;
-
+import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.DebuggerManager;
-
-import org.netbeans.spi.debugger.ui.Controller;
 import org.netbeans.spi.debugger.ui.BreakpointType;
+import org.netbeans.spi.debugger.ui.Controller;
+import org.openide.util.HelpCtx;
 
 /**
  * The panel inserted into the Customize/NewBreakpoint dialog created in 
@@ -98,42 +92,40 @@ public class EditBreakpointPanel extends javax.swing.JPanel
 	if (editableBreakpoint != null)
 	    customizing = true;
 
-	// get a list of all available breakpoint types
-	final List<? extends BreakpointType> breakpointTypes =
-	    DebuggerManager.getDebuggerManager().lookup(null,
-							BreakpointType.class);
-	if (breakpointTypes == null) {
-	    System.out.println("No BreakpointTypes"); // NOI18N
-	}
+        // get a list of all available breakpoint types
+        final List<? extends BreakpointType> breakpointTypes =
+                DebuggerManager.getDebuggerManager().lookup(null, BreakpointType.class);
 
-	if (breakpointTypes.size() == 0) {
-	    System.out.println("Zero BreakpointTypes"); // NOI18N
-	}
-	initComponents();
+        int defaultEntry = -1;
 
-	int defaultEntry = -1;
-	int customizing_entry = 0;
+        initComponents();
 
-	for (int btx = 0; btx < breakpointTypes.size(); btx++) {
-	    BreakpointType bt = (BreakpointType) breakpointTypes.get(btx);
-	    String category = bt.getCategoryDisplayName();
-	    if (customizing) {
-		if (editableBreakpoint.isOfType(bt)) {
-		    String type = bt.getTypeDisplayName();
-		    customizing_entry = btx;
-		    types.add(bt);
-		    combo_type.addItem(type);
-		}
-	    } else {
-		if (NativeBreakpointType.isOurs(category)) {
-		    String type = bt.getTypeDisplayName();
-		    if (bt.isDefault())
-			defaultEntry = combo_type.getItemCount();
-		    types.add(bt);
-		    combo_type.addItem(type);
-		}
-	    }
-	}
+        if (breakpointTypes == null) {
+            System.out.println("No BreakpointTypes"); // NOI18N
+        } else if (breakpointTypes.isEmpty()) {
+            System.out.println("Zero BreakpointTypes"); // NOI18N
+        } else {
+            for (BreakpointType bt : breakpointTypes) {
+                String category = bt.getCategoryDisplayName();
+                if (customizing) {
+                    if (editableBreakpoint.isOfType(bt)) {
+                        String type = bt.getTypeDisplayName();
+                        types.add(bt);
+                        combo_type.addItem(type);
+                    }
+                } else {
+                    if (NativeBreakpointType.isOurs(category)) {
+                        String type = bt.getTypeDisplayName();
+                        if (bt.isDefault()) {
+                            defaultEntry = combo_type.getItemCount();
+                        }
+                        types.add(bt);
+                        combo_type.addItem(type);
+                    }
+                }
+            }
+        }
+
 	if (customizing) {
 	    combo_type.setSelectedIndex(0);
 	    BreakpointType bt = editableBreakpoint.getBreakpointType();
@@ -141,6 +133,7 @@ public class EditBreakpointPanel extends javax.swing.JPanel
 	    switchTo(bt, editableBreakpoint);
 	} else {
 	    combo_type.addActionListener(new ActionListener() {
+                @Override
 		public void actionPerformed(ActionEvent e) {
 		    int x = combo_type.getSelectedIndex();
 		    BreakpointType bt = types.get(x);
@@ -232,6 +225,7 @@ public class EditBreakpointPanel extends javax.swing.JPanel
     }
 
     // Implements HelpCtx.Provider
+    @Override
     public HelpCtx getHelpCtx () {
         return new HelpCtx ("Breakpoints");     // NOI18N
     }

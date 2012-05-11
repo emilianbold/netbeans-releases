@@ -80,7 +80,7 @@ public final class FormattingSupport {
 
     public static CharSequence getFormattedText(Document doc, int caretOffset, CharSequence textToFormat) {
         if (doc == null) {
-            System.err.println("original document is not specified for getFormattedText" + doc);
+            System.err.println("original document is not specified for getFormattedText");
             return textToFormat;
         }
         String mimeType = (String) doc.getProperty(BaseDocument.MIME_TYPE_PROP);
@@ -102,7 +102,7 @@ public final class FormattingSupport {
                 writer.close();
             }
             DataObject dob = DataObject.find(data);
-            EditorCookie ec = dob.getCookie(EditorCookie.class);
+            EditorCookie ec = dob.getLookup().lookup(EditorCookie.class);
             if (ec != null) {
                 StyledDocument fmtDoc = ec.openDocument();
                 Reformat fmt = Reformat.get(fmtDoc);
@@ -115,7 +115,7 @@ public final class FormattingSupport {
                 } finally {
                     fmt.unlock();
                 }
-                SaveCookie save = dob.getCookie(SaveCookie.class);
+                SaveCookie save = dob.getLookup().lookup(SaveCookie.class);
                 if (save != null) {
                     save.save();
                 }

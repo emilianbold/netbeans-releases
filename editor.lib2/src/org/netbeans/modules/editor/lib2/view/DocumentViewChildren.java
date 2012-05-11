@@ -450,9 +450,9 @@ public class DocumentViewChildren extends ViewChildren<ParagraphView> {
         int pCount = size();
         assert (startIndex < endIndex) : "startIndex=" + startIndex + " >= endIndex=" + endIndex; // NOI18N
         assert (endIndex <= pCount) : "endIndex=" + endIndex + " > pCount=" + pCount; // NOI18N
-        int rStartIndex = startIndex;
-        int rEndIndex = endIndex;
-        int origEndIndex = endIndex; // For error tracing only
+        int rStartIndex = startIndex; // Rebuild start index
+        int rEndIndex = endIndex; // Rebuild end index
+        int origEndIndex = endIndex; // Originally requested end index - for error tracing only
         boolean updated = false;
         TextLayoutCache tlCache = docView.op.getTextLayoutCache();
         if (pCount > 0) {
@@ -483,7 +483,7 @@ public class DocumentViewChildren extends ViewChildren<ParagraphView> {
                 }
             }
             // Here the startIndex points to first index to be built or to endIndex
-            // Go back till startIndex + 1 and search for first pView with null 
+            // Go back till startIndex + 1 and search for first pView with null children
             if (rStartIndex < rEndIndex) {
                 // There will be at least one view to rebuild
                 pView = get(rEndIndex - 1);
@@ -516,13 +516,17 @@ public class DocumentViewChildren extends ViewChildren<ParagraphView> {
             for (int pIndex = startIndex; pIndex < endIndex; pIndex++) {
                 pView = get(pIndex);
                 if (!pView.isChildrenValid()) {
+                    String cacheIntegrity = tlCache.findIntegrityError();
                     StringBuilder sb = new StringBuilder(200);
                     sb.append("Null children of pView[").append(pIndex). // NOI18N
                             append("] from <").append(startIndex).append(",").append(endIndex). // NOI18N
                             append("> origEndIndex=").append(origEndIndex).append(", rebuild<"). // NOI18N
-                            append(rStartIndex).append(",").append(rEndIndex). // NOI18N
-                            append(">. cache integrity: ").append(tlCache.findIntegrityError()). // NOI18N
-                            append(" docView:\n"); // NOI18N
+                            append(rStartIndex).append(",").append(rEndIndex).append(">."); // NOI18N
+                    if (cacheIntegrity != null) {
+                            sb.append(">. TLCache integrity: ").append(tlCache.findIntegrityError()); // NOI18N
+                    }
+                    sb.append(" TLCache: ").append(tlCache);
+                    sb.append(" docView:\n"); // NOI18N
                     docView.appendViewInfo(sb, 4, "", pIndex);
                     throw new IllegalStateException(sb.toString());
                 }

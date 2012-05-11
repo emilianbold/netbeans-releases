@@ -48,11 +48,18 @@ import java.util.Stack;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CppTokenId;
+import static org.netbeans.cnd.api.lexer.CppTokenId.PREPROCESSOR_ELIF;
+import static org.netbeans.cnd.api.lexer.CppTokenId.PREPROCESSOR_ELSE;
+import static org.netbeans.cnd.api.lexer.CppTokenId.PREPROCESSOR_ENDIF;
+import static org.netbeans.cnd.api.lexer.CppTokenId.PREPROCESSOR_IF;
+import static org.netbeans.cnd.api.lexer.CppTokenId.PREPROCESSOR_IFDEF;
+import static org.netbeans.cnd.api.lexer.CppTokenId.PREPROCESSOR_IFNDEF;
+import static org.netbeans.cnd.api.lexer.CppTokenId.PREPROCESSOR_START;
+import static org.netbeans.cnd.api.lexer.CppTokenId.WHITESPACE;
 import org.netbeans.cnd.api.lexer.FortranTokenId;
+import org.netbeans.modules.cnd.editor.fortran.options.FortranCodeStyle;
 import org.netbeans.modules.cnd.editor.fortran.reformat.FortranDiffLinkedList.DiffResult;
 import org.netbeans.modules.cnd.editor.fortran.reformat.FortranReformatter.Diff;
-import org.netbeans.modules.cnd.editor.fortran.options.FortranCodeStyle;
-import static org.netbeans.cnd.api.lexer.CppTokenId.*;
 
 /**
  *
@@ -186,7 +193,7 @@ public class FortranPreprocessorFormatter {
             }
         }
         if (previous != null && previous.id() == FortranTokenId.WHITESPACE) {
-            if (!Diff.equals(previous.text().toString(), 0, spaces, isIndent)){
+            if (!Diff.equals(previous.text().toString(), 0, spaces, isIndent, context.expandTabToSpaces, context.tabSize)){
                 ts.replacePrevious(previous, 0, spaces, isIndent);
             }
         } else {
@@ -198,7 +205,7 @@ public class FortranPreprocessorFormatter {
 
     private void indentAfter(TokenSequence<CppTokenId> prep, Token<CppTokenId> next, int spaces) {
         if (next.id() == WHITESPACE) {
-            if (!Diff.equals(next.text().toString(), 0, spaces, false)){
+            if (!Diff.equals(next.text().toString(), 0, spaces, false, context.expandTabToSpaces, context.tabSize)){
                 diffs.addFirst(prep.offset() + prep.token().length(),
                                prep.offset() + prep.token().length() + next.length(), 0, spaces, false);
             }

@@ -85,7 +85,7 @@ public final class ToolbarConfiguration implements ToolbarPool.Configuration {
 
     private final JPanel toolbarPanel;
 
-    private static WeakHashMap<String, ToolbarConfiguration> name2config = new WeakHashMap<String, ToolbarConfiguration>(10);
+    private static Map<String,ToolbarConfiguration> name2config = new HashMap<String,ToolbarConfiguration>(10);
     
     /** Toolbar menu is global so it is static. It it the same for all toolbar
      configurations. */

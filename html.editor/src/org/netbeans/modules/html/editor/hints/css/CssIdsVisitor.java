@@ -79,7 +79,7 @@ public class CssIdsVisitor implements ElementVisitor {
         this.rule = rule;
         
         referredFiles = context.getCssDependenciesGraph().getAllReferedFiles();
-        ids = context.getCssIndex().findAll(RefactoringElementType.ID);
+        ids = context.getCssIndex().findAllIdDeclarations();
         ids2files = createReversedMap(ids);
     }
 
@@ -116,13 +116,17 @@ public class CssIdsVisitor implements ElementVisitor {
         if (value == null) {
             return;
         }
+        
+        if(value.length() == 0) {
+            return ; //ignore empty value
+        }
+        
         //all files containing the id declaration
         Collection<FileObject> filesWithTheId = elements2files.get(value.toString());
 
         //all referred files with the id declaration
         Collection<FileObject> referredFilesWithTheId = new LinkedList<FileObject>();
         if (filesWithTheId != null) {
-            filesWithTheId.remove(context.getFile());
             referredFilesWithTheId.addAll(filesWithTheId);
             referredFilesWithTheId.retainAll(referredFiles);
         }

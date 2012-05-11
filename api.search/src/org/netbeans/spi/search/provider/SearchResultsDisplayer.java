@@ -44,7 +44,6 @@ package org.netbeans.spi.search.provider;
 import javax.swing.JComponent;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.modules.search.ui.DefaultSearchResultsPanel;
 import org.openide.nodes.Node;
 
 /**
@@ -96,46 +95,14 @@ public abstract class SearchResultsDisplayer<T> {
      * @param title Title that will be shown in the tab of search results
      * window.
      */
-    public static <U> SearchResultsDisplayer<U> createDefault(
-            @NonNull final NodeDisplayer<U> helper,
-            @NonNull final SearchComposition<U> searchComposition,
-            @NullAllowed final SearchProvider.Presenter presenter,
-            @NonNull final String title) {
+    public static <U> DefaultSearchResultsDisplayer<U> createDefault(
+            @NonNull NodeDisplayer<U> helper,
+            @NonNull SearchComposition<U> searchComposition,
+            @NullAllowed SearchProvider.Presenter presenter,
+            @NonNull String title) {
 
-        return new SearchResultsDisplayer<U>() {
-            private DefaultSearchResultsPanel panel = null;
-
-            @Override
-            public synchronized JComponent getVisualComponent() {
-                if (panel == null) {
-                    panel = new DefaultSearchResultsPanel(helper,
-                            searchComposition, presenter);
-                }
-                return panel;
-            }
-
-            @Override
-            public void addMatchingObject(U object) {
-                panel.addMatchingObject(object);
-            }
-
-            @Override
-            public String getTitle() {
-                return title;
-            }
-
-            @Override
-            public void searchStarted() {
-                super.searchStarted();
-                panel.searchStarted();
-            }
-
-            @Override
-            public void searchFinished() {
-                super.searchFinished();
-                panel.searchFinished();
-            }
-        };
+        return new DefaultSearchResultsDisplayer(helper, searchComposition,
+                presenter, title);
     }
 
     /**

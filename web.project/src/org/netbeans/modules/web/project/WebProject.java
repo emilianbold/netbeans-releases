@@ -1118,6 +1118,12 @@ public final class WebProject implements Project {
             if (!props.containsKey(ProjectProperties.JAVAC_PROCESSORPATH))props.setProperty(ProjectProperties.JAVAC_PROCESSORPATH,"${" + ProjectProperties.JAVAC_CLASSPATH + "}"); //NOI18N
             if (!props.containsKey("javac.test.processorpath"))props.setProperty("javac.test.processorpath", "${" + ProjectProperties.JAVAC_TEST_CLASSPATH + "}"); // NOI18N
 
+            // #207149
+            if (!props.containsKey(WebProjectProperties.J2EE_COPY_STATIC_FILES_ON_SAVE)) {
+                boolean b = Boolean.parseBoolean(props.getProperty(WebProjectProperties.J2EE_COMPILE_ON_SAVE));
+                props.setProperty(WebProjectProperties.J2EE_COPY_STATIC_FILES_ON_SAVE, b ? "true" : "false");
+            } 
+            
             updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
 
             try {
@@ -1528,7 +1534,7 @@ public final class WebProject implements Project {
         }
 
         private boolean isCopyOnSaveEnabled() {
-            return Boolean.parseBoolean(WebProject.this.evaluator().getProperty(WebProjectProperties.J2EE_COMPILE_ON_SAVE));
+            return Boolean.parseBoolean(WebProject.this.evaluator().getProperty(WebProjectProperties.J2EE_COPY_STATIC_FILES_ON_SAVE));
         }
         
         public void initialize() throws FileStateInvalidException {
@@ -1590,7 +1596,7 @@ public final class WebProject implements Project {
         public void propertyChange(PropertyChangeEvent evt) {
             if (WebProjectProperties.WEB_DOCBASE_DIR.equals(evt.getPropertyName())
                     || WebProjectProperties.WEBINF_DIR.equals(evt.getPropertyName())
-                    || WebProjectProperties.J2EE_COMPILE_ON_SAVE.equals(evt.getPropertyName())
+                    || WebProjectProperties.J2EE_COPY_STATIC_FILES_ON_SAVE.equals(evt.getPropertyName())
                     || WebProjectProperties.RESOURCE_DIR.equals(evt.getPropertyName())) {
                 try {
                     cleanup();

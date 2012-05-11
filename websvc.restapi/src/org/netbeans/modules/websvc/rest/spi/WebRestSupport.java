@@ -42,41 +42,38 @@
 
 package org.netbeans.modules.websvc.rest.spi;
 
+import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.*;
+
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.URL;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
+import org.netbeans.api.java.source.Comment.Style;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.*;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
-import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
-import org.netbeans.modules.j2ee.dd.api.web.Servlet;
-import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
-import org.netbeans.modules.j2ee.dd.api.web.ServletMapping25;
-import org.netbeans.modules.j2ee.dd.api.web.WebApp;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.j2ee.dd.api.web.*;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.javaee.specs.support.api.JaxRsStackSupport;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.spi.webmodule.WebModuleProvider;
-import org.netbeans.modules.websvc.rest.model.api.RestApplication;
-import org.netbeans.modules.websvc.rest.model.api.RestApplicationModel;
-import org.netbeans.modules.websvc.rest.model.api.RestApplications;
+import org.netbeans.modules.websvc.rest.model.api.*;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -85,6 +82,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -92,6 +90,9 @@ import org.openide.util.NbBundle;
  */
 public abstract class WebRestSupport extends RestSupport {
 
+    
+    private static final String GET_REST_RESOURCE_CLASSES = "getRestResourceClasses";//NOI18N
+    private static final String GET_CLASSES = "getClasses";                         //NOI18N
     
     public static final String PROP_REST_RESOURCES_PATH = "rest.resources.path";//NOI18N
     public static final String PROP_REST_CONFIG_TYPE = "rest.config.type"; //NOI18N
@@ -108,6 +109,11 @@ public abstract class WebRestSupport extends RestSupport {
     protected static final String JERSEY_SPRING_JAR_PATTERN = "jersey-spring.*\\.jar";//NOI18N
     protected static final String JERSEY_PROP_PACKAGES = "com.sun.jersey.config.property.packages"; //NOI18N
     protected static final String JERSEY_PROP_PACKAGES_DESC = "Multiple packages, separated by semicolon(;), can be specified in param-value"; //NOI18N
+    
+    private volatile PropertyChangeListener restModelListener;
+    
+    private RequestProcessor REST_APP_MODIFICATION_RP = new RequestProcessor(WebRestSupport.class);
+
 
     /** Creates a new instance of WebProjectRestSupport */
     public WebRestSupport(Project project) {
@@ -120,6 +126,21 @@ public abstract class WebRestSupport extends RestSupport {
             return false;
         }
         return getProjectProperty(PROP_REST_CONFIG_TYPE) != null;
+    }
+    
+    public void enableRestSupport( RestConfig config ){
+        String type =null;
+        switch( config){
+            case IDE: 
+                type= CONFIG_TYPE_IDE;
+                break;
+            case DD:
+                type = CONFIG_TYPE_DD;
+                break;
+        }
+        if ( type!= null ){
+            setProjectProperty(PROP_REST_CONFIG_TYPE, type);
+        }
     }
 
     @Override
@@ -184,6 +205,54 @@ public abstract class WebRestSupport extends RestSupport {
             }
         }
         return null;
+    }
+    
+    @Override
+    public void upgrade() {
+        if (!isRestSupportOn()) {
+            return;
+        }
+        try {
+            FileObject ddFO = getDeploymentDescriptor();
+            if (ddFO == null) {
+                return;
+            }
+
+            WebApp webApp = findWebApp();
+            if (webApp == null) {
+                return;
+            }
+
+            Servlet adaptorServlet = getRestServletAdaptorByName(webApp, REST_SERVLET_ADAPTOR);
+            if (adaptorServlet != null) {
+                // Starting with jersey 0.8, the adaptor class is under 
+                // com.sun.jersey package instead of com.sun.we.rest package.
+                if (REST_SERVLET_ADAPTOR_CLASS_OLD.equals(adaptorServlet.getServletClass())) {
+                    boolean isSpring = hasSpringSupport();
+                    if (isSpring) {
+                        adaptorServlet.setServletClass(REST_SPRING_SERVLET_ADAPTOR_CLASS);
+                        InitParam initParam =
+                                (InitParam) adaptorServlet.findBeanByName("InitParam", //NOI18N
+                                "ParamName", //NOI18N
+                                JERSEY_PROP_PACKAGES);
+                        if (initParam == null) {
+                            try {
+                                initParam = (InitParam) adaptorServlet.createBean("InitParam"); //NOI18N
+                                initParam.setParamName(JERSEY_PROP_PACKAGES);
+                                initParam.setParamValue("."); //NOI18N
+                                initParam.setDescription(JERSEY_PROP_PACKAGES_DESC);
+                                adaptorServlet.addInitParam(initParam);
+                            } catch (ClassNotFoundException ex) {}
+                        }
+                    } else {
+                        adaptorServlet.setServletClass(REST_SERVLET_ADAPTOR_CLASS);
+                    }
+                    webApp.write(ddFO);
+                }
+            }
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
+        }
     }
 
     public FileObject getDeploymentDescriptor() {
@@ -274,6 +343,52 @@ public abstract class WebRestSupport extends RestSupport {
             }
         }
         return null;
+    }
+    
+    /*
+     * Make REST support configuration for current porject state:
+     * - Modify Application config class getClasses() method 
+     * or 
+     * - Update deployment descriptor with Jersey specific options
+     */
+    @Override
+    public void configure(String... packages) throws IOException{
+        String configType = getProjectProperty(PROP_REST_CONFIG_TYPE);
+        if ( CONFIG_TYPE_DD.equals( configType)){
+            configRestPackages(packages);
+        }
+        else if (CONFIG_TYPE_IDE.equals(configType)) {
+            RestApplicationModel restAppModel = getRestApplicationsModel();
+            if (restAppModel != null) {
+                try {
+                    restAppModel.runReadActionWhenReady(
+                            new MetadataModelAction<RestApplications, Void>() {
+
+                                @Override
+                                public Void run(final RestApplications metadata)
+                                        throws IOException 
+                                {
+                                    List<RestApplication> applications = 
+                                            metadata.getRestApplications();
+                                    if ( applications!= null && 
+                                            !applications.isEmpty())
+                                    {
+                                        RestApplication application = 
+                                                applications.get(0);
+                                        String clazz = application.
+                                                getApplicationClass();
+                                        reconfigApplicationClass(clazz);
+                                    }
+                                    return null;
+                                }
+                            });
+                } 
+                catch (MetadataModelException ex) {
+                    Logger.getLogger(WebRestSupport.class.getName()).log(
+                            Level.INFO, ex.getLocalizedMessage(), ex);
+                } 
+            }
+        }
     }
     
     public void addResourceConfigToWebApp(String resourcePath) throws IOException {
@@ -404,78 +519,6 @@ public abstract class WebRestSupport extends RestSupport {
     protected void logResourceCreation(Project prj) {
     }
     
-    @Override
-    public void configRestPackages( String... packs ) throws IOException {
-        try {
-            FileObject ddFO = getWebXml();
-            WebApp webApp = getWebApp();
-            if (webApp == null) {
-                return;
-            }
-            if (webApp.getStatus() == WebApp.STATE_INVALID_UNPARSABLE) {
-                return;
-            }
-            if (!hasSpringSupport()) {
-                return;
-            }
-            boolean needsSave = false;
-            Servlet adaptorServlet = getRestServletAdaptor(webApp);
-            if (adaptorServlet == null) {
-                adaptorServlet = (Servlet) webApp.createBean("Servlet"); // NOI18N
-                adaptorServlet.setServletName(REST_SERVLET_ADAPTOR);
-                adaptorServlet
-                        .setServletClass(REST_SPRING_SERVLET_ADAPTOR_CLASS);
-                InitParam initParam = createSpringInitParam(adaptorServlet,
-                        packs);
-                adaptorServlet.addInitParam(initParam);
-                webApp.addServlet(adaptorServlet);
-                needsSave = true;
-            }
-            else {
-                InitParam[] initParams = adaptorServlet.getInitParam();
-                boolean initParamFound = false;
-                for (InitParam initParam : initParams) {
-                    if (initParam.getParamName().equals(JERSEY_PROP_PACKAGES)) {
-                        initParamFound = true;
-                        String paramValue = initParam.getParamValue();
-                        if (paramValue != null) {
-                            paramValue = paramValue.trim();
-                        }
-                        else {
-                            paramValue = "";
-                        }
-                        if (paramValue.length() == 0 || paramValue.equals("."))
-                        { // NOI18N
-                            initParam.setParamValue(getPackagesList(packs));
-                            needsSave = true;
-                        }
-                        else {
-                            String[] existed = paramValue.split(";");
-                            LinkedHashSet<String> set = new LinkedHashSet<String>();
-                            set.addAll(Arrays.asList(existed));
-                            set.addAll(Arrays.asList(packs));
-                            initParam.setParamValue(getPackagesList(set));
-                            needsSave = existed.length != set.size();
-                        }
-                    }
-                }
-                if (!initParamFound) {
-                    InitParam initParam = createSpringInitParam(adaptorServlet,
-                            packs);
-                    adaptorServlet.addInitParam(initParam);
-                    needsSave = true;
-                }
-            }
-            if (needsSave) {
-                webApp.write(ddFO);
-                logResourceCreation(project);
-            }
-        }
-        catch (ClassNotFoundException e) {
-            throw new IllegalArgumentException(e);
-        }
-    }
-
     public List<RestApplication> getRestApplications() {
         RestApplicationModel applicationModel = getRestApplicationsModel();
         if (applicationModel != null) {
@@ -598,7 +641,7 @@ public abstract class WebRestSupport extends RestSupport {
         return getPackagesList( Arrays.asList( packs));
     }
     
-    private InitParam createSpringInitParam( Servlet adaptorServlet,
+    private InitParam createJerseyPackagesInitParam( Servlet adaptorServlet,
             String... packs ) throws ClassNotFoundException
     {
         InitParam initParam = (InitParam) adaptorServlet
@@ -643,6 +686,267 @@ public abstract class WebRestSupport extends RestSupport {
         }
 
     }
+    
+    protected void reconfigApplicationClass( final String appClassFqn ) {
+        if ( restModelListener == null ){
+            scheduleReconfigAppClass(appClassFqn);
+            restModelListener = new PropertyChangeListener() {
+                
+                @Override
+                public void propertyChange( PropertyChangeEvent evt ) {
+                    scheduleReconfigAppClass(appClassFqn);
+                }
+            };
+            addModelListener(restModelListener);
+        }
+    }
+    
+    private void scheduleReconfigAppClass(final String fqn ){
+        Runnable runnable = new Runnable() {
+            
+            @Override
+            public void run() {
+                try {
+                    doReconfigApplicationClass(fqn);
+                }
+                catch(IOException e ){
+                    Logger.getLogger(WebRestSupport.class.getName()).log(
+                            Level.INFO, e.getLocalizedMessage(), e);
+                }                
+            }
+        };
+        REST_APP_MODIFICATION_RP.post(runnable);
+    }
 
+    protected void doReconfigApplicationClass( String appClassFqn ) throws IOException{
+        JavaSource javaSource = getJavaSourceFromClassName(appClassFqn);
+        if ( javaSource == null ){
+            return;
+        }
+        javaSource.runModificationTask( new Task<WorkingCopy>() {
 
+            @Override
+            public void run(WorkingCopy workingCopy) throws Exception {
+                workingCopy.toPhase(Phase.ELEMENTS_RESOLVED);
+                CompilationUnitTree tree = workingCopy.getCompilationUnit();
+                for (Tree typeDeclaration : tree.getTypeDecls()){
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDeclaration.getKind())){
+                        MethodTree getClasses = null;
+                        MethodTree restResources = null;
+                        ClassTree classTree = (ClassTree) typeDeclaration;
+                        List<? extends Tree> members = classTree.getMembers();
+                        for (Tree member : members) {
+                            if ( member.getKind().equals(Kind.METHOD)){
+                                MethodTree method = (MethodTree)member;
+                                String name = method.getName().toString();
+                                if ( name.equals(GET_CLASSES)){      
+                                    getClasses = method;
+                                }
+                                else if ( name.equals(GET_REST_RESOURCE_CLASSES)){
+                                    restResources = method;
+                                }
+                            }
+                        }
+                        TreeMaker maker = workingCopy.getTreeMaker();
+                        ClassTree modified = classTree;
+                        modified = removeResourcesMethod( restResources,
+                                maker, modified);
+                        modified = createMethods(getClasses, 
+                                maker, modified , restResources== null);
+
+                        workingCopy.rewrite(classTree, modified);
+                    }
+                }
+            }
+
+        }).commit();
+    }
+
+    protected FileObject getFileObjectFromClassName(String qualifiedClassName) 
+            throws IOException 
+    {
+        FileObject root = findSourceRoot();
+        ClasspathInfo cpInfo = ClasspathInfo.create(root);
+        ClassIndex ci = cpInfo.getClassIndex();
+        int beginIndex = qualifiedClassName.lastIndexOf('.')+1;
+        String simple = qualifiedClassName.substring(beginIndex);
+        Set<ElementHandle<TypeElement>> handles = ci.getDeclaredTypes(
+                simple, ClassIndex.NameKind.SIMPLE_NAME, 
+                Collections.singleton(ClassIndex.SearchScope.SOURCE));
+        for (ElementHandle<TypeElement> handle : handles) {
+            if (qualifiedClassName.equals(handle.getQualifiedName())) {
+                return SourceUtils.getFile(handle, cpInfo);
+            }
+        }
+        return null;
+    }
+    
+    protected JavaSource getJavaSourceFromClassName(String qualifiedClassName)
+            throws IOException 
+    {
+        FileObject fo = getFileObjectFromClassName(qualifiedClassName);
+        if (fo != null) {
+            return JavaSource.forFileObject(fo);
+        } else {
+            return null;
+        }
+    }
+    
+    private void configRestPackages( String... packs ) throws IOException {
+        try {
+            FileObject ddFO = getWebXml();
+            WebApp webApp = getWebApp();
+            if (webApp == null) {
+                return;
+            }
+            if (webApp.getStatus() == WebApp.STATE_INVALID_UNPARSABLE) {
+                return;
+            }
+            boolean needsSave = false;
+            Servlet adaptorServlet = getRestServletAdaptor(webApp);
+            if (adaptorServlet == null) {
+                adaptorServlet = (Servlet) webApp.createBean("Servlet"); // NOI18N
+                adaptorServlet.setServletName(REST_SERVLET_ADAPTOR);
+                if ( hasSpringSupport() ){
+                    adaptorServlet
+                        .setServletClass(REST_SPRING_SERVLET_ADAPTOR_CLASS);
+                }
+                else {
+                    adaptorServlet
+                        .setServletClass(REST_SERVLET_ADAPTOR_CLASS);
+                }
+                InitParam initParam = createJerseyPackagesInitParam(adaptorServlet,
+                        packs);
+                adaptorServlet.addInitParam(initParam);
+                webApp.addServlet(adaptorServlet);
+                needsSave = true;
+            }
+            else {
+                InitParam[] initParams = adaptorServlet.getInitParam();
+                boolean initParamFound = false;
+                for (InitParam initParam : initParams) {
+                    if (initParam.getParamName().equals(JERSEY_PROP_PACKAGES)) {
+                        initParamFound = true;
+                        String paramValue = initParam.getParamValue();
+                        if (paramValue != null) {
+                            paramValue = paramValue.trim();
+                        }
+                        else {
+                            paramValue = "";
+                        }
+                        if (paramValue.length() == 0 || paramValue.equals(".")){ // NOI18N
+                            initParam.setParamValue(getPackagesList(packs));
+                            needsSave = true;
+                        }
+                        else {
+                            String[] existed = paramValue.split(";");
+                            LinkedHashSet<String> set = new LinkedHashSet<String>();
+                            set.addAll(Arrays.asList(existed));
+                            set.addAll(Arrays.asList(packs));
+                            initParam.setParamValue(getPackagesList(set));
+                            needsSave = existed.length != set.size();
+                        }
+                    }
+                }
+                if (!initParamFound) {
+                    InitParam initParam = createJerseyPackagesInitParam(adaptorServlet,
+                            packs);
+                    adaptorServlet.addInitParam(initParam);
+                    needsSave = true;
+                }
+            }
+            if (needsSave) {
+                webApp.write(ddFO);
+                logResourceCreation(project);
+            }
+        }
+        catch (ClassNotFoundException e) {
+            throw new IllegalArgumentException(e);
+        }
+    }
+    
+    private ClassTree removeResourcesMethod( MethodTree restResources, 
+            TreeMaker maker, ClassTree modified )
+    {
+        return maker.removeClassMember(modified, restResources);
+    }
+    
+    private ClassTree createMethods( MethodTree getClasses,
+            TreeMaker maker,ClassTree modified, boolean addComment) throws IOException
+    {
+        WildcardTree wildCard = maker.Wildcard(Kind.UNBOUNDED_WILDCARD, 
+                null);
+        ParameterizedTypeTree wildClass = maker.ParameterizedType(
+                maker.QualIdent(Class.class.getCanonicalName()), 
+                Collections.singletonList(wildCard));
+        ParameterizedTypeTree wildSet = maker.ParameterizedType(
+                maker.QualIdent(Set.class.getCanonicalName()), 
+                Collections.singletonList(wildClass));
+        if ( getClasses == null ){
+            ModifiersTree modifiersTree = maker.Modifiers(
+                    EnumSet.of(Modifier.PUBLIC));
+            MethodTree methodTree = maker.Method(modifiersTree, 
+                    GET_CLASSES, wildSet, 
+                    Collections.<TypeParameterTree>emptyList(), 
+                    Collections.<VariableTree>emptyList(), 
+                    Collections.<ExpressionTree>emptyList(), 
+                    "{return "+GET_REST_RESOURCE_CLASSES+"();}", null);
+            modified = maker.addClassMember(modified, methodTree);
+        }
+        StringBuilder builder = new StringBuilder();
+        collectRestResources(builder);
+        ModifiersTree modifiersTree = maker.Modifiers(EnumSet
+                .of(Modifier.PRIVATE));
+        MethodTree methodTree = maker.Method(modifiersTree,
+                GET_REST_RESOURCE_CLASSES, wildSet,
+                Collections.<TypeParameterTree> emptyList(),
+                Collections.<VariableTree> emptyList(),
+                Collections.<ExpressionTree> emptyList(), builder.toString(),
+                null);
+        if (addComment) {
+            Comment comment = Comment.create(Style.JAVADOC, -2, -2, -2,
+                    "Do not modify this method. It is "
+                            + "automatically generated by "
+                            + "NetBeans REST support."); // NOI18N
+            maker.addComment(methodTree, comment, true);
+        }
+        modified = maker.addClassMember(modified, methodTree);
+        return modified;
+    }
+
+    private void collectRestResources( final StringBuilder builder ) throws IOException {
+        builder.append('{');
+        builder.append("Set<Class<?>> resources = new java.util.HashSet<Class<?>>();");// NOI18N
+        RestServicesModel model = getRestServicesModel();
+        try {
+            model.runReadAction(new MetadataModelAction<RestServicesMetadata, Void>()
+            {
+
+                @Override
+                public Void run( RestServicesMetadata metadata )
+                        throws Exception
+                {
+                    RestServices services = metadata.getRoot();
+                    RestServiceDescription[] descriptions = services.
+                        getRestServiceDescription();
+                    for (RestServiceDescription description : descriptions){
+                        String className = description.getClassName();
+                        builder.append("resources.add(");       // NOI18N
+                        builder.append( className );
+                        builder.append(".class);");             // NOI18N
+                    }
+                    return null;
+                }
+
+            });
+        }
+        catch (MetadataModelException e) {
+            Logger.getLogger(WebRestSupport.class.getName()).log(Level.INFO,
+                    e.getLocalizedMessage(), e);
+        }
+        finally{
+            builder.append("return resources;");                // NOI18N
+            builder.append('}');
+        }
+    }
 }

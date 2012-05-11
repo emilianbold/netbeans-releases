@@ -254,7 +254,12 @@ public class HistoryProvider implements VCSHistoryProvider {
             }
             List<Node> nodes = new ArrayList<Node>(files.length);
             for (File f : files) {
-                nodes.add(new AbstractNode(Children.LEAF, Lookups.fixed(f)));
+                nodes.add(new AbstractNode(Children.LEAF, Lookups.fixed(f)) {
+                    @Override
+                    public String getDisplayName() {
+                        return getLookup().lookup(File.class).getName();
+                    }
+                });
             }
             SearchHistoryAction.openSearch(repositories.iterator().next(), files, Utils.getContextDisplayName(VCSContext.forNodes(nodes.toArray(new Node[nodes.size()]))));
         }

@@ -43,9 +43,8 @@ package org.netbeans.modules.maven.model.pom.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.maven.model.pom.*;
 import org.w3c.dom.Element;
-import org.netbeans.modules.maven.model.pom.*;	
-import org.netbeans.modules.maven.model.pom.POMComponentVisitor;
 
 /**
  *
@@ -65,6 +64,7 @@ public class StringListImpl extends POMComponentImpl implements StringList {
 
 
     // child elements
+    @Override
     public List<String> getListChildren() {
         List<POMExtensibilityElement> el = getChildren(POMExtensibilityElement.class);
         List<String> toRet = new ArrayList<String>();
@@ -76,6 +76,7 @@ public class StringListImpl extends POMComponentImpl implements StringList {
         return toRet.size() > 0 ? toRet : null;
     }
 
+    @Override
     public void addListChild(String child) {
         assert child != null;
         POMExtensibilityElement el = getModel().getFactory().createPOMExtensibilityElement(childname.getQName());
@@ -84,6 +85,7 @@ public class StringListImpl extends POMComponentImpl implements StringList {
 
     }
 
+    @Override
     public void removeListChild(String child) {
         assert child != null;
         List<POMExtensibilityElement> el = getChildren(POMExtensibilityElement.class);
@@ -98,6 +100,7 @@ public class StringListImpl extends POMComponentImpl implements StringList {
 
 
     // child elements
+    @Override
     public void accept(POMComponentVisitor visitor) {
         visitor.visit(this);
     }

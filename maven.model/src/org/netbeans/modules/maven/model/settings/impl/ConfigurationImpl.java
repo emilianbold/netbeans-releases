@@ -67,14 +67,17 @@ public class ConfigurationImpl extends SettingsComponentImpl implements Configur
 
     // child elements
 
+    @Override
     public void accept(SettingsComponentVisitor visitor) {
         visitor.visit(this);
     }
 
+    @Override
     public List<SettingsExtensibilityElement> getConfigurationElements() {
         return getChildren(SettingsExtensibilityElement.class);
     }
 
+    @Override
     public void setSimpleParameter(String parameter, String value) {
         List<SettingsExtensibilityElement> list = getConfigurationElements();
         for (SettingsExtensibilityElement e : list) {
@@ -98,6 +101,7 @@ public class ConfigurationImpl extends SettingsComponentImpl implements Configur
         }
     }
 
+    @Override
     public String getSimpleParameter(String parameter) {
         List<SettingsExtensibilityElement> list = getConfigurationElements();
         for (SettingsExtensibilityElement e : list) {

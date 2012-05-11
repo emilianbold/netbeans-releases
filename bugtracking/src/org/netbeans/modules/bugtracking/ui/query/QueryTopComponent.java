@@ -400,7 +400,7 @@ public final class QueryTopComponent extends TopComponent
         if(evt.getPropertyName().equals(QueryProvider.EVENT_QUERY_SAVED)) {
             setSaved();
         } else if(evt.getPropertyName().equals(QueryProvider.EVENT_QUERY_REMOVED)) {
-            if(query != null && evt.getSource() == query) {
+            if(query != null && query.isData(evt.getSource())) {
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
@@ -490,8 +490,9 @@ public final class QueryTopComponent extends TopComponent
      ***********/
 
     private void onNewClick() {
-        RepositoryImpl repo = BugtrackingUtil.createRepository();
-        if(repo != null) {
+        RepositoryImpl repoImpl = BugtrackingUtil.createRepository();
+        if(repoImpl != null) {
+            Repository repo = repoImpl.getRepository();
             repositoryComboBox.addItem(repo);
             repositoryComboBox.setSelectedItem(repo);
         }

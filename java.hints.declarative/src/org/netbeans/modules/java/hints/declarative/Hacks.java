@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009-2012 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,15 +34,12 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009-2012 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.java.hints.declarative;
 
 import com.sun.source.tree.Scope;
-import com.sun.source.tree.Tree;
-import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.JCTree.JCErroneous;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -158,23 +155,6 @@ public class Hacks {
         return result;
     }
 
-
-    public static Tree createRenameTree(@NonNull Tree originalTree, @NonNull String newName) {
-        return new RenameTree(originalTree, newName);
-    }
-
-    static final class RenameTree extends JCErroneous {
-
-        final Tree originalTree;
-        final String newName;
-
-        public RenameTree(@NonNull Tree originalTree, @NonNull String newName) {
-            super(com.sun.tools.javac.util.List.<JCTree>nil());
-            this.originalTree = originalTree;
-            this.newName = newName;
-        }
-
-    }
 
     public static @CheckForNull TypeMirror parseFQNType(@NonNull CompilationInfo info, @NonNull String spec) {
         TypeElement jlObject = info.getElements().getTypeElement("java.lang.Object");

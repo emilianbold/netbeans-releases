@@ -86,16 +86,7 @@ public final class InstalledFileLocatorImpl extends InstalledFileLocator {
     
     private final File[] dirs;
     public InstalledFileLocatorImpl() {
-        List<File> _dirs = new ArrayList<File>();
-        addDir(_dirs, System.getProperty("netbeans.user")); // NOI18N
-        String nbdirs = System.getProperty("netbeans.dirs"); // #27151
-        if (nbdirs != null) {
-            StringTokenizer tok = new StringTokenizer(nbdirs, File.pathSeparator);
-            while (tok.hasMoreTokens()) {
-                addDir(_dirs, tok.nextToken());
-            }
-        }
-        addDir(_dirs, System.getProperty("netbeans.home"));
+        List<File> _dirs = computeDirs();
         dirs = _dirs.toArray(new File[_dirs.size()]);
     }
     
@@ -514,5 +505,19 @@ public final class InstalledFileLocatorImpl extends InstalledFileLocator {
 
     private static synchronized void scheduleSave() {
         cacheMiss = true;
+    }
+
+    static List<File> computeDirs() {
+        List<File> _dirs = new ArrayList<File>();
+        addDir(_dirs, System.getProperty("netbeans.user")); // NOI18N
+        String nbdirs = System.getProperty("netbeans.dirs"); // #27151
+        if (nbdirs != null) {
+            StringTokenizer tok = new StringTokenizer(nbdirs, File.pathSeparator);
+            while (tok.hasMoreTokens()) {
+                addDir(_dirs, tok.nextToken());
+            }
+        }
+        addDir(_dirs, System.getProperty("netbeans.home"));
+        return _dirs;
     }
 }

@@ -198,7 +198,7 @@ DEFS="${DEFS} -J-Dcnd.semantic.line.limit=-1"
 ##DEFS="${DEFS} -J-Dcnd.modelimpl.no.reparse.include=true"
 
 #to solve the issue with breakpoints hit in popup dialogs which hangs debugger and system
-#DEFS="${DEFS} -J-Dsun.awt.disablegrab=true"
+DEFS="${DEFS} -J-Dsun.awt.disablegrab=true"
 
 if [ -z "${NB_COPY}" ]; then
     echo "Using original NB location: ${NBDIST}"

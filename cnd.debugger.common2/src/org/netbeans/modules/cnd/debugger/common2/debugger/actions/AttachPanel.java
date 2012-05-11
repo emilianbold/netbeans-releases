@@ -192,8 +192,6 @@ public final class AttachPanel extends TopComponent {
         this.dialogManager = dialogManager;
         this.okButton = okButton;
 
-        lastHostChoice = null;
-        hostCombo.setSelectedIndex(0);   // always localhost when dialog first shown
         filterCombo.setSelectedItem(lastFilter);
         executableProjectPanel.initGui();
 
@@ -319,37 +317,10 @@ public final class AttachPanel extends TopComponent {
         filterLabel.setLabelFor(filterCombo);
         filterCombo.setToolTipText(Catalog.get("RegExp")); //NOI18N
         filterCombo.setEditable(true);
-        filterCombo.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent evt) {
-                String filter = (String) filterCombo.getSelectedItem();
-                if (filter != null && !filter.equals(lastFilter)) {
-                    lastFilter = filter;
-                    refreshProcesses(null, false);
-                }
-
-            // An attempt to fix 6642223 ...
-		/* LATER
-            System.out.printf("filterCombo.actionPerformed: %s\n", evt);
-            if ("comboBoxChanged".equals(evt.getActionCommand())) {
-            // selection changed (arrow movement) do nothin
-            } else if ("comboBoxEdited".equals(evt.getActionCommand())) {
-            // selection accepted ... process it.
-            filterActivated(evt);
-            } else {
-            // fallback behaviour in case "comboBoxEdited" ever
-            // changes (see 4808758).
-            filterActivated(evt);
-            }
-             */
-            // ... but it's impossible AFAIK. See 6642299.
-            }
-        });
-
+        
         final JTextComponent cbEditor = (JTextComponent) filterCombo.getEditor().getEditorComponent();
         cbEditor.getDocument().addDocumentListener(new AnyChangeDocumentListener() {
             public void documentChanged(DocumentEvent e) {
-                lastFilter = cbEditor.getText();
                 refreshProcesses(null, false);
             }
         });
@@ -368,15 +339,14 @@ public final class AttachPanel extends TopComponent {
                     JComboBox cb = (JComboBox) evt.getSource();
                     if (cb != null && cb.getItemCount() > 0) {
                         String hostName = getHostName();
-                        if (hostName != null && !hostName.equals(lastHostChoice)) {
+                        if (hostName != null) {
                             refreshProcesses(hostName, true);
-                            lastHostChoice = hostName;
                         }
                     }
                 }
             }
         });
-
+        
         if (!NativeDebuggerManager.isStandalone()) {
             hostsButton.setEnabled(false);	// IZ 147543
         }
@@ -726,10 +696,17 @@ public final class AttachPanel extends TopComponent {
     private void tableInfo(final String infoKey) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                procTable.setEnabled(false);
+                setUIEnabled(false);
                 processModel.setDataVector(new Object[][]{{Catalog.get(infoKey)}}, new Object[]{" "}); //NOI18N
             }
         });
+    }
+    
+    private void setUIEnabled(boolean st) {
+        filterCombo.setEnabled(st);
+        refreshButton.setEnabled(st);
+        hostCombo.setEnabled(st);
+        procTable.setEnabled(st);
     }
 
     /**
@@ -740,7 +717,7 @@ public final class AttachPanel extends TopComponent {
         if (!filterReady) {
             return;
         }
-
+        
         JTextComponent cbEditor = (JTextComponent) filterCombo.getEditor().getEditorComponent();
         Object selected = request ? filterCombo.getSelectedItem() : cbEditor.getText();
 
@@ -879,7 +856,7 @@ public final class AttachPanel extends TopComponent {
 
             public void run() {
                 processModel.setDataVector(psData.processes(re), psData.header());
-                procTable.setEnabled(true);
+                setUIEnabled(true);
 
                 // It seems we need to reassign the renderer whenever we
                 // setDataVector ...
@@ -955,6 +932,22 @@ public final class AttachPanel extends TopComponent {
     private javax.swing.JLabel hostLabel;
     private javax.swing.JButton hostsButton;
     private final AttachController controller = new AttachController();
+    
+    private void saveState() {
+        if (hostCombo != null && hostCombo.getItemCount() > 0) {
+            String hostName = getHostName();
+            if (hostName != null) {
+                lastHostChoice = hostName;
+            }
+        }
+        
+        if (filterCombo != null) {
+            String filter = (String) filterCombo.getSelectedItem();
+            if (filter != null) {
+                lastFilter = filter;
+            }
+        }
+    }
 
     public static abstract class AnyChangeDocumentListener implements DocumentListener {
         protected abstract void documentChanged(DocumentEvent e);
@@ -1006,6 +999,7 @@ public final class AttachPanel extends TopComponent {
         final public boolean ok() {
             //System.out.println("AttachPanel.ok");
             if (isValid()) {
+                saveState();
                 // Workaround for IZ 134708
                 SwingUtilities.invokeLater(new Runnable() {
 

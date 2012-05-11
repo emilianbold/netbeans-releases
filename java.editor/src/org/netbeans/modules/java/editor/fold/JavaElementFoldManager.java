@@ -500,7 +500,8 @@ public class JavaElementFoldManager extends JavaFoldManager {
         @Override
         public Object visitVariable(VariableTree node,Object p) {
             super.visitVariable(node, p);
-            handleTree(node, null, true);
+            if (TreeUtilities.CLASS_TREE_KINDS.contains(getCurrentPath().getParentPath().getLeaf().getKind()))
+                handleTree(node, null, true);
             return null;
         }
         

@@ -45,8 +45,24 @@
 package org.netbeans.modules.websvc.rest.wizard;
 
 import java.awt.Component;
+import java.util.List;
+
+import javax.swing.BoxLayout;
+import javax.swing.JPanel;
+import javax.swing.event.ChangeListener;
+
+import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.api.java.source.ui.ScanDialog;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.websvc.rest.model.api.RestApplication;
+import org.netbeans.modules.websvc.rest.spi.RestSupport;
+import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
+import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  * @author Pavel Buzek
@@ -54,7 +70,7 @@ import org.openide.util.HelpCtx;
  */
 public final class EntityResourcesSetupPanel extends AbstractPanel {
     
-    private EntityResourcesSetupPanelVisual component;
+    private FinishEntityPanel component;
     
     /** Create the wizard panel descriptor. */
     public EntityResourcesSetupPanel(String name, 
@@ -70,7 +86,7 @@ public final class EntityResourcesSetupPanel extends AbstractPanel {
 
     public Component getComponent() {
         if (component == null) {
-            component = new EntityResourcesSetupPanelVisual(panelName,
+            component = new FinishEntityPanel(panelName,
                     withoutController);
             component.addChangeListener(this);
         }
@@ -84,6 +100,125 @@ public final class EntityResourcesSetupPanel extends AbstractPanel {
     public boolean isValid() {
         getComponent();
         return component.valid(wizardDescriptor);
+    }
+    
+    static class FinishEntityPanel extends JPanel implements AbstractPanel.Settings, 
+        SourcePanel
+    {
+        private static final long serialVersionUID = -1899506976995286218L;
+        
+        FinishEntityPanel(String name , boolean withoutController ){
+            mainPanel = new EntityResourcesSetupPanelVisual(name,
+                    withoutController);
+            setLayout( new BoxLayout(this, BoxLayout.Y_AXIS));
+            add( mainPanel );
+            jerseyPanel = new JerseyPanel( this );
+            mainPanel.addChangeListener(jerseyPanel );
+            add( jerseyPanel );
+        }
+
+        /* (non-Javadoc)
+         * @see org.netbeans.modules.websvc.rest.wizard.SourcePanel#getSourceGroup()
+         */
+        @Override
+        public SourceGroup getSourceGroup() {
+            return mainPanel.getSourceGroup();
+        }
+
+        /* (non-Javadoc)
+         * @see org.netbeans.modules.websvc.rest.wizard.AbstractPanel.Settings#read(org.openide.WizardDescriptor)
+         */
+        @Override
+        public void read( final WizardDescriptor wizard ) {
+            mainPanel.read(wizard);
+            Project project = Templates.getProject(wizard);
+            WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
+            Profile profile = webModule.getJ2eeProfile();
+            final RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
+            boolean hasSpringSupport = restSupport!= null && restSupport.hasSpringSupport();
+            boolean isJee6 = Profile.JAVA_EE_6_WEB.equals(profile) || 
+                Profile.JAVA_EE_6_FULL.equals(profile);
+            if ( hasSpringSupport ){
+                wizard.putProperty( WizardProperties.USE_JERSEY, true);
+            }
+            if (jerseyPanel != null) {
+                if (!isJee6 || hasSpringSupport
+                        || restSupport.isRestSupportOn())
+                {
+                    remove(jerseyPanel);
+                    jerseyPanel = null;
+                }
+                if (restSupport instanceof WebRestSupport) {
+                    ScanDialog.runWhenScanFinished(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            List<RestApplication> restApplications = ((WebRestSupport) restSupport)
+                                    .getRestApplications();
+                            boolean configured = restApplications != null
+                                    && !restApplications.isEmpty();
+                            configureJersey(configured, wizard);
+                        }
+                    }, NbBundle.getMessage(PatternResourcesSetupPanel.class,
+                            "LBL_SearchAppConfig")); // NOI18N
+
+                }
+                else {
+                    jerseyPanel.read(wizard);
+                }
+            }
+        }
+
+        /* (non-Javadoc)
+         * @see org.netbeans.modules.websvc.rest.wizard.AbstractPanel.Settings#store(org.openide.WizardDescriptor)
+         */
+        @Override
+        public void store( WizardDescriptor wizard ) {
+            mainPanel.store(wizard);
+            if ( hasJerseyPanel() ){
+                jerseyPanel.store(wizard);
+            }            
+        }
+
+        @Override
+        public boolean valid(WizardDescriptor wizard) {
+            boolean isValid = ((AbstractPanel.Settings)mainPanel).valid(wizard);
+            if ( isValid && hasJerseyPanel() ){
+                return jerseyPanel.valid(wizard);
+            }
+            else {
+                return isValid;
+            }
+        }
+
+        @Override
+        public void addChangeListener(ChangeListener l) {
+            mainPanel.addChangeListener(l);
+            if ( hasJerseyPanel() ){
+                jerseyPanel.addChangeListener(l);
+            }
+        }
+        
+        private boolean hasJerseyPanel(){
+            return jerseyPanel != null;
+        }
+        
+        private void configureJersey(boolean remove, WizardDescriptor wizard){
+            if ( jerseyPanel == null ){
+                return;
+            }
+            if ( remove )
+            {
+                remove( jerseyPanel );
+                jerseyPanel = null;
+            }
+            else {
+                jerseyPanel.read(wizard);
+            }
+        }
+        
+        private EntityResourcesSetupPanelVisual mainPanel;
+        private JerseyPanel jerseyPanel;
     }
     
     private boolean withoutController;

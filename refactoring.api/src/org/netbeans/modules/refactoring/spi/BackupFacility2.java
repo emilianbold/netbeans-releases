@@ -115,6 +115,8 @@ abstract class BackupFacility2 {
      */
     public abstract Handle backup(FileObject... file) throws IOException;
 
+    public abstract Handle backup(File...files) throws IOException;
+    
     /**
      * does backup
      *
@@ -222,6 +224,12 @@ abstract class BackupFacility2 {
             BackupEntry backup = map.get(l);
             File f = new File(backup.path);
             FileObject fo = FileUtil.toFileObject(f);
+            if (fo==null) {
+                //deleted
+                backup.checkSum = new byte[16];
+                Arrays.fill(backup.checkSum, (byte)0);
+                return;
+            }
             DataObject dob = DataObject.find(fo);
             if (dob != null) {
                 CloneableEditorSupport ces = dob.getLookup().lookup(CloneableEditorSupport.class);
@@ -306,6 +314,7 @@ abstract class BackupFacility2 {
             private URI path;
             private byte[] checkSum;
             private boolean undo = true;
+            private boolean exists = true;
 
             public BackupEntry() {
             }
@@ -333,6 +342,16 @@ abstract class BackupFacility2 {
             }
             return new DefaultHandle(this, list);
         }
+        
+        @Override
+        public Handle backup(File... files) throws IOException {
+            ArrayList<Long> list = new ArrayList<Long>();
+            for (File f : files) {
+                list.add(backup(f));
+            }
+            return new DefaultHandle(this, list);
+        }
+        
 
         /**
          * does backup
@@ -354,6 +373,26 @@ abstract class BackupFacility2 {
                 throw (IOException) new IOException(file.toString()).initCause(ex);
             }
         }
+        
+        /**
+         * does backup
+         *
+         * @param file to backup
+         * @return id of backup file
+         * @throws java.io.IOException if backup failed
+         */
+        public long backup(File file) throws IOException {
+            BackupEntry entry = new BackupEntry();
+            entry.file = File.createTempFile("nbbackup", null); //NOI18N
+            entry.path = file.toURI();
+            entry.exists = file.exists();
+            map.put(currentId, entry);
+            entry.file.deleteOnExit();
+            if (entry.exists)
+                copy(file, entry.file);
+            return currentId++;
+        }
+        
 
         private byte[] getMD5(InputStream is) throws IOException {
             try {
@@ -444,15 +483,20 @@ abstract class BackupFacility2 {
             File backup = File.createTempFile("nbbackup", null); //NOI18N
             backup.deleteOnExit();
             File f = new File(entry.path);
-            if (createNewFile(f)) {
+            boolean exists;
+            if (exists = createNewFile(f)) {
                 backup.createNewFile();
                 copy(f, backup);
             }
             FileObject fileObj = FileUtil.toFileObject(f);
-
-            if (!tryUndoOrRedo(fileObj, entry)) {
-                copy(entry.file, fileObj);
+            if (entry.exists) {
+                if (!tryUndoOrRedo(fileObj, entry)) {
+                    copy(entry.file, fileObj);
+                }
+            } else {
+                fileObj.delete();
             }
+            entry.exists = exists;
             entry.file.delete();
             if (backup.exists()) {
                 entry.file = backup;

@@ -66,6 +66,7 @@ import org.openide.explorer.view.BeanTreeView;
 import org.openide.explorer.view.TreeView;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
+import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
@@ -101,36 +102,38 @@ public class WSDesignViewNavigatorContent extends JPanel
     
     public void navigate(DataObject implClass){
         add(treeView, BorderLayout.CENTER);
-        AbstractNode root = new AbstractNode(new WSChildren(implClass));
+        AbstractNode root = new AbstractNode(Children.create(new WSChildFactory(implClass), true));
         root.setName(NbBundle.getMessage(WSDesignViewNavigatorContent.class, "LBL_Operations"));
         getExplorerManager().setRootContext(root);
         revalidate();
         repaint();
     }
     
-    public class WSChildren extends Children.Keys<MethodModel>{
+    public class WSChildFactory extends ChildFactory<MethodModel>{
         DataObject implClass;
-        public WSChildren(DataObject implClass){
+        public WSChildFactory(DataObject implClass){
             this.implClass = implClass;
-        }
-        protected Node[] createNodes(MethodModel key) {
-            AbstractNode n = new AbstractNode(Children.LEAF);
-            n.setName(key.getOperationName());
-            return new Node[] {n};
         }
         
         @Override
-        protected void addNotify() {
-            updateKeys();
+        protected Node createNodeForKey(MethodModel key) {
+            AbstractNode n = new AbstractNode(Children.LEAF);
+            n.setName(key.getOperationName());
+            return n;
         }
         
-        private void updateKeys(){
-            List<MethodModel> keys = new ArrayList<MethodModel>();
+        @Override
+        protected boolean createKeys(List<MethodModel> list){
             if(implClass != null){
                 ServiceModel model = ServiceModel.getServiceModel(implClass.getPrimaryFile());
-                keys = model.getOperations();
+                if ( model != null ){
+                    List<MethodModel> operations = model.getOperations();
+                    if ( operations != null ){
+                        list.addAll(model.getOperations());
+                    }
+                }
             }
-            this.setKeys(keys);
+            return true;
         }
 
     }

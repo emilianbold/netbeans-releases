@@ -52,10 +52,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import static org.netbeans.modules.hudson.constants.HudsonInstanceConstants.*;
+import static org.netbeans.modules.hudson.impl.Bundle.*;
+import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle.Messages;
-import static org.netbeans.modules.hudson.impl.Bundle.*;
 
 /**
  * Instance properties for Hudson instance
@@ -79,7 +80,7 @@ public class HudsonInstanceProperties extends HashMap<String,String> {
     }
 
     @Override
-    public synchronized String put(String key, String value) {
+    public final synchronized String put(String key, String value) {
         String o = super.put(key, value);
         pcs.firePropertyChange(key, o, value);
         return o;
@@ -112,7 +113,7 @@ public class HudsonInstanceProperties extends HashMap<String,String> {
             set.setDisplayName(get(INSTANCE_NAME));
             
             // Put properties in
-            set.put(new PropertySupport[] {
+            set.put(new Node.Property<?>[] {
                 new HudsonInstanceProperty(INSTANCE_NAME,
                         TXT_Instance_Prop_Name(),
                         DESC_Instance_Prop_Name(),
@@ -125,7 +126,7 @@ public class HudsonInstanceProperties extends HashMap<String,String> {
                         TXT_Instance_Prop_Sync(),
                         DESC_Instance_Prop_Sync(),
                         true, true) {
-                            public Integer getValue() {
+                            @Override public Integer getValue() {
                                 return Integer.valueOf(get(INSTANCE_SYNC));
                             }
                             @Override public void setValue(Integer val) {
@@ -160,7 +161,7 @@ public class HudsonInstanceProperties extends HashMap<String,String> {
         
         private String key;
         
-        public HudsonInstanceProperty(String key, String name, String desc, boolean read, boolean write) {
+        HudsonInstanceProperty(String key, String name, String desc, boolean read, boolean write) {
             super(key, String.class, name, desc, read, write);
             
             this.key = key;

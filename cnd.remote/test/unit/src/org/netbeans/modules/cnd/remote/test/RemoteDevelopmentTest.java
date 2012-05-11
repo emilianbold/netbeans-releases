@@ -47,7 +47,6 @@ import org.netbeans.modules.cnd.remote.pbuild.*;
 import java.util.Collection;
 import junit.framework.Test;
 import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.api.remote.RemoteFileTestCase;
 import org.netbeans.modules.cnd.remote.fs.CndFileUtilTestCase;
 import org.netbeans.modules.cnd.remote.full.FullRemoteBuildTestCase;
 import org.netbeans.modules.cnd.remote.mapper.IncludeMappingsTestCase;
@@ -75,7 +74,6 @@ public class RemoteDevelopmentTest extends CndBaseTestSuite {
    public RemoteDevelopmentTest() {
        this("Remote Development", // NOI18N
            HostSetupTestCase.class,
-           RemoteFileTestCase.class,
            MappingsTestCase.class,
            IncludeMappingsTestCase.class,
            RemoteBuildMakefileTestCase.class,

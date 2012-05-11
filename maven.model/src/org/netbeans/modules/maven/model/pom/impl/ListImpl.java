@@ -42,9 +42,8 @@
 package org.netbeans.modules.maven.model.pom.impl;
 
 import java.util.List;
+import org.netbeans.modules.maven.model.pom.*;
 import org.w3c.dom.Element;
-import org.netbeans.modules.maven.model.pom.*;	
-import org.netbeans.modules.maven.model.pom.POMComponentVisitor;
 
 /**
  *
@@ -61,6 +60,7 @@ public class ListImpl<T extends POMComponent> extends POMComponentImpl implement
     }
     
 
+    @Override
     public Class<T> getListClass() {
         return clazz;
     }
@@ -70,14 +70,17 @@ public class ListImpl<T extends POMComponent> extends POMComponentImpl implement
     // child elements
 
     // child elements
+    @Override
     public List<T> getListChildren() {
         return getChildren(clazz);
     }
 
+    @Override
     public void addListChild(T child) {
         appendChild(childname.getQName().getLocalPart(), child);
     }
 
+    @Override
     public void removeListChild(T child) {
         removeChild(childname.getQName().getLocalPart(), child);
     }
@@ -85,6 +88,7 @@ public class ListImpl<T extends POMComponent> extends POMComponentImpl implement
 
 
     // child elements
+    @Override
     public void accept(POMComponentVisitor visitor) {
         visitor.visit(this);
     }

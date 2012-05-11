@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,12 +37,14 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011-2012 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.analysis;
 
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
@@ -96,11 +98,11 @@ public class ConfigurationsManager {
     }
 
     private void init() {
-        Preferences prefs = NbPreferences.forModule(ConfigurationsManager.class).node("configurations");
+        Preferences prefs = getConfigurationsRoot();
         try {
             for (String kid:prefs.childrenNames()) {
                 if (kid.startsWith(RULE_PREFIX)) {
-                    Preferences p = NbPreferences.forModule(this.getClass()).node(kid);
+                    Preferences p = prefs.node(kid);
                     String displayName = p.get("display.name", "unknown");
                     create(kid.substring(RULE_PREFIX.length()), displayName);
                 }
@@ -116,7 +118,7 @@ public class ConfigurationsManager {
 
     public Configuration create(String id, String displayName) {
         assert !id.startsWith(RULE_PREFIX);
-        Configuration config = new Configuration(RULE_PREFIX + id, displayName);
+        Configuration config = new Configuration(RULE_PREFIX + id, displayName, null);
         configs.add(config);
         changeSupport.fireChange();
         return config;
@@ -124,17 +126,29 @@ public class ConfigurationsManager {
     
     public Configuration duplicate(Configuration orig, String id, String displayName) {
         assert !id.startsWith(RULE_PREFIX);
-        Configuration config = new Configuration(RULE_PREFIX + id, displayName);
+        Configuration config = new Configuration(RULE_PREFIX + id, displayName, null);
         configs.add(config);
         
-        Preferences oldOne = NbPreferences.forModule(this.getClass()).node(orig.id());
-        Preferences newOne = NbPreferences.forModule(this.getClass()).node(config.id());
+        Preferences oldOne = orig.getPreferences();
+        Preferences newOne = config.getPreferences();
         try {
-            for (String name:oldOne.childrenNames()) {
-                Preferences node = oldOne.node(name);
-                for (String key: node.keys()) {
-                    String old = node.get(key, null);
-                    newOne.node(name).put(key, old);
+            List<SimpleEntry<Preferences, Preferences>> todo = new LinkedList<SimpleEntry<Preferences, Preferences>>();
+            boolean first = true;
+            
+            todo.add(new SimpleEntry<Preferences, Preferences>(oldOne, newOne));
+            
+            while (!todo.isEmpty()) {
+                SimpleEntry<Preferences, Preferences> e = todo.remove(0);
+                for (String name:e.getKey().childrenNames()) {
+                    todo.add(new SimpleEntry<Preferences, Preferences>(e.getKey().node(name), e.getValue().node(name)));
+                }
+                if (first) {
+                    first = false;
+                    continue;
+                }
+                for (String key : e.getKey().keys()) {
+                    String old = e.getKey().get(key, null);
+                    e.getValue().put(key, old);
                 }
             }
         } catch (BackingStoreException ex) {
@@ -164,5 +178,12 @@ public class ConfigurationsManager {
         changeSupport.removeChangeListener( listener );
     }
     
+    public static Preferences getConfigurationsRoot() {
+        return NbPreferences.forModule(ConfigurationsManager.class).node("configurations");
+    }
+    
+    public Configuration getTemporaryConfiguration() {
+        return new Configuration("internal-temporary", "internal-temporary", NbPreferences.forModule(ConfigurationsManager.class).node("internal-temporary"));
+    }
     
 }

@@ -78,6 +78,7 @@ public abstract class SettingsComponentImpl extends AbstractDocumentComponent<Se
         return (SettingsModel) super.getModel();
     }
     
+    @Override
     protected void populateChildren(List<SettingsComponent> children) {
         //System.out.println("populateChildren: " + getPeer().getNodeName());
         NodeList nl = getPeer().getChildNodes();
@@ -96,6 +97,7 @@ public abstract class SettingsComponentImpl extends AbstractDocumentComponent<Se
         }
     }
 
+    @Override
     protected Object getAttributeValueOf(Attribute attribute, String stringValue) {
         return stringValue;
     }  
@@ -110,18 +112,22 @@ public abstract class SettingsComponentImpl extends AbstractDocumentComponent<Se
                 rq.getNamespaceURI(), qualified);
     }
         
+    @Override
     public void removeExtensibilityElement(SettingsExtensibilityElement ee) {
         removeChild(EXTENSIBILITY_ELEMENT_PROPERTY, ee);
     }
     
+    @Override
     public void addExtensibilityElement(SettingsExtensibilityElement ee) {
         appendChild(EXTENSIBILITY_ELEMENT_PROPERTY, ee);
     }
     
+    @Override
     public List<SettingsExtensibilityElement> getExtensibilityElements() {
         return getChildren(SettingsExtensibilityElement.class);
     }
     
+    @Override
     public <T extends SettingsExtensibilityElement> List<T> getExtensibilityElements(Class<T> type) {
         return getChildren(type);
     }

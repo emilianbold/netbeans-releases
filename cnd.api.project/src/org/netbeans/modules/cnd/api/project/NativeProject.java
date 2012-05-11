@@ -43,9 +43,9 @@
  */
 package org.netbeans.modules.cnd.api.project;
 
-import org.netbeans.modules.cnd.utils.FSPath;
 import java.io.IOException;
 import java.util.List;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -142,7 +142,7 @@ public interface NativeProject {
      * Macro definitions are not prefixed with the compiler option (usually -D).
      */
     public List<String> getUserMacroDefinitions();
-    
+
     /**
      * Returns a list <NativeProject> of libraries.
      * @return a list <NativeProject> of libraries.

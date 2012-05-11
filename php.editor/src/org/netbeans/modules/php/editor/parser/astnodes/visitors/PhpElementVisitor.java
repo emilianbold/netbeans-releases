@@ -157,34 +157,43 @@ public class PhpElementVisitor extends DefaultTreePathVisitor {
 
     @Override
     public void visit(Variable node) {
-        List<ASTNode> path = getPath();
         String extractVariableName = CodeUtils.extractVariableName(node);
         if (!extractVariableName.startsWith("$")) {//NOI18N
             super.visit(node);
             return;
         }
-        for (ASTNode scopeNode : path) {
-            if (scopeNode instanceof MethodDeclaration) {
-                MethodElement method = elementQuery.getLast(MethodElement.class);
-                assert method != null;
-                elementQuery.createMethodVariable(method, node);
-                super.visit(node);
-                return;
-            } else if (scopeNode instanceof FunctionDeclaration) {
-                FunctionElement function = elementQuery.getLast(FunctionElement.class);
-                assert function != null;
-                elementQuery.createFunctionVariable(function, node);
-                super.visit(node);
-                return;
-            } else if (scopeNode instanceof TypeDeclaration ||
-                    scopeNode instanceof SingleFieldDeclaration ||
-                    scopeNode instanceof StaticFieldAccess ||
-                    scopeNode instanceof FieldsDeclaration) {
-                super.visit(node);
-                return;
+        List<ASTNode> path = getPath();
+        boolean isMethodDeclaration = false;
+        boolean isFunctionDeclaration = false;
+        boolean isTopLevelVariable = true;
+        synchronized (path) {
+            for (ASTNode scopeNode : path) {
+                if (scopeNode instanceof MethodDeclaration) {
+                    isMethodDeclaration = true;
+                    break;
+                } else if (scopeNode instanceof FunctionDeclaration) {
+                    isFunctionDeclaration = true;
+                    break;
+                } else if (scopeNode instanceof TypeDeclaration ||
+                        scopeNode instanceof SingleFieldDeclaration ||
+                        scopeNode instanceof StaticFieldAccess ||
+                        scopeNode instanceof FieldsDeclaration) {
+                    isTopLevelVariable = false;
+                    break;
+                }
             }
         }
-        elementQuery.createTopLevelVariable(node);
+        if (isMethodDeclaration) {
+            MethodElement method = elementQuery.getLast(MethodElement.class);
+            assert method != null;
+            elementQuery.createMethodVariable(method, node);
+        } else if (isFunctionDeclaration) {
+            FunctionElement function = elementQuery.getLast(FunctionElement.class);
+            assert function != null;
+            elementQuery.createFunctionVariable(function, node);
+        } else if (isTopLevelVariable) {
+            elementQuery.createTopLevelVariable(node);
+        }
         super.visit(node);
     }
 

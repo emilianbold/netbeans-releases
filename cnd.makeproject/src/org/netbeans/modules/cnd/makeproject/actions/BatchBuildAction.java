@@ -54,12 +54,12 @@ import org.openide.util.NbBundle;
 
 public final class BatchBuildAction {
 
-    private static final String actionName = NbBundle.getBundle(BatchBuildAction.class).getString("BatchBuildActionName");
+    private static final String actionName = NbBundle.getMessage(BatchBuildAction.class, "BatchBuildActionName");
 
     private BatchBuildAction() {
     }
 
-    public static Action MainBatchBuildAction() {
+    public static Action mainBatchBuildAction() {
         return MainProjectSensitiveActions.mainProjectSensitiveAction(new BatchBuildActionPerformer(), actionName, null);
     }
 
