@@ -44,14 +44,13 @@
 
 package org.netbeans.core.ui.warmup;
 
-import java.lang.reflect.*;
-
 import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.lang.reflect.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -61,20 +60,22 @@ import javax.swing.JMenu;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import static org.netbeans.core.ui.warmup.Bundle.*;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor.Message;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
-import org.openide.windows.WindowManager;
-import org.openide.util.RequestProcessor;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.Places;
 import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbPreferences;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
+import org.openide.windows.WindowManager;
 
 /**
  * A menu preheating task. It is referenced from the layer and may be performed
@@ -193,6 +194,11 @@ public final class MenuWarmUpTask implements Runnable {
             return NbPreferences.root().node("org/openide/actions/FileSystemRefreshAction").getBoolean("manual", false); // NOI18N
         }
 
+        @Messages({
+            "MSG_Refresh=Checking for external changes",
+            "# default delay is 10s. Increase to Integer.MAX_VALUE to effectively disable", "#NOI18N", "MSG_RefreshDelay=10000",
+            "MSG_Refresh_Suspend=Suspended"
+        })
         @Override
         public void run() {
             if (isNoRefresh()) {
@@ -203,9 +209,9 @@ public final class MenuWarmUpTask implements Runnable {
                 LOG.fine("Refresh disabled, aborting");
                 return; // no file refresh
             }
-            final ProgressHandle h = ProgressHandleFactory.createHandle(NbBundle.getMessage(MenuWarmUpTask.class, "MSG_Refresh"), this, null);
+            final ProgressHandle h = ProgressHandleFactory.createHandle(MSG_Refresh(), this, null);
             if (!LOG.isLoggable(Level.FINE)) {
-                int delay = Integer.parseInt(NbBundle.getMessage(MenuWarmUpTask.class, "MSG_RefreshDelay"));
+                int delay = Integer.parseInt(MSG_RefreshDelay());
                 h.setInitialDelay(delay);
             }
             h.start();
@@ -260,7 +266,7 @@ public final class MenuWarmUpTask implements Runnable {
                 public void run() {
                     if (EventQueue.isDispatchThread()) {
                         try {
-                            h.suspend(NbBundle.getMessage(MenuWarmUpTask.class, "MSG_Refresh_Suspend"));
+                            h.suspend(MSG_Refresh_Suspend());
                         } catch (Throwable t) {
                             // ignore any errors
                         }
