@@ -60,6 +60,7 @@ import static javax.swing.GroupLayout.Alignment.LEADING;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
 import static javax.swing.LayoutStyle.ComponentPlacement.UNRELATED;
+import org.netbeans.modules.subversion.client.SvnClientFactory;
 
 /**
  *
@@ -67,11 +68,17 @@ import static javax.swing.LayoutStyle.ComponentPlacement.UNRELATED;
  * @author  Marian Petras
  */
 public class CheckoutPanel extends JPanel {
+    private final boolean wcFormat17;
 
     /**
      * Creates new form CheckoutPanel
      */
     public CheckoutPanel() {
+        boolean oldFormat = SvnClientFactory.isSvnKit() || SvnClientFactory.isJavaHl();
+        if (SvnClientFactory.isCLI()) {
+            oldFormat = !SvnClientFactory.isCLIOldFormat();
+        }
+        wcFormat17 = oldFormat;
         initComponents();
     }
 
@@ -115,6 +122,7 @@ public class CheckoutPanel extends JPanel {
         Mnemonics.setLocalizedText(lblLocalFolder, getString("CTL_Checkout_LocalFolder")); // NOI18N
         Mnemonics.setLocalizedText(browseWorkdirButton, getString("CTL_Checkout_Browse2")); // NOI18N
         Mnemonics.setLocalizedText(lblWorkingCopy, getString("CTL_Checkout_WorkingCopy")); // NOI18N
+        workingCopyFormat.setText(getString(wcFormat17 ? "MSG_WorkingCopyFormat17" : "MSG_WorkingCopyFormat16")); //NOI18N
 
         scanForProjectsCheckBox.setSelected(true);
         scanForProjectsCheckBox.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -154,7 +162,8 @@ public class CheckoutPanel extends JPanel {
                                                 .addComponent(workdirTextField)
                                                 .addPreferredGap(RELATED)
                                                 .addComponent(browseWorkdirButton))
-                                        .addComponent(workingCopy, 0, DEFAULT_SIZE, Short.MAX_VALUE)))
+                                        .addComponent(workingCopy, 0, DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addComponent(workingCopyFormat, 0, DEFAULT_SIZE, Short.MAX_VALUE)))
                         .addComponent(scanForProjectsCheckBox)
         );
         layout.setVerticalGroup(
@@ -186,6 +195,8 @@ public class CheckoutPanel extends JPanel {
                         .addGroup(layout.createParallelGroup(BASELINE)
                                 .addComponent(lblWorkingCopy)
                                 .addComponent(workingCopy))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(workingCopyFormat)        
                         .addGap(18)
                         .addComponent(scanForProjectsCheckBox)
         );
@@ -223,5 +234,6 @@ public class CheckoutPanel extends JPanel {
     final JButton browseRevisionButton = new JButton();
     final JTextField workdirTextField = new JTextField();
     final JLabel workingCopy = new JLabel();
+    final JLabel workingCopyFormat = new JLabel();
     
 }
