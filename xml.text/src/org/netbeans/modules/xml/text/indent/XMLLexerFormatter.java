@@ -232,6 +232,7 @@ public class XMLLexerFormatter {
             // will be set to indent of 1st attribute of a tag. Will be reset to -1 by start tag
             int firstAttributeIndent = -1;
             int lineIndent = -1;
+            boolean wasNewline = false;
             
             while (tokenSequence.moveNext()) {
                 int indentLineStart = 1;
@@ -259,7 +260,7 @@ public class XMLLexerFormatter {
                                 }
                             } else {
                                 // end tag name marker
-                                if (lineIndent > -1 && tokenInSelectionRange) {
+                                if (wasNewline && tokenInSelectionRange) {
                                     // 1st item on a new line, will indent according to the opening tag
                                     TokenElement tag = new TokenElement(TokenType.TOKEN_ELEMENT_END_TAG, image, 
                                             tokenSequence.offset(), tokenSequence.offset() + token.length(), indentLevel);
@@ -333,7 +334,7 @@ public class XMLLexerFormatter {
                     }
                     case PI_END: {
                         indentLevel -= spacesPerTab;
-                        if (lineIndent > -1 && tokenInSelectionRange) {
+                        if (wasNewline && tokenInSelectionRange) {
                             // 1st item on a new line, will indent according to the opening tag
                             TokenElement tag = new TokenElement(TokenType.TOKEN_PI_END_TAG, image, 
                                     tokenSequence.offset(), tokenSequence.offset() + token.length(), indentLevel);
@@ -348,6 +349,7 @@ public class XMLLexerFormatter {
                                 // nothing special here
                                 break;
                             }
+                            wasNewline = true;
                             int tokenOffset = tokenSequence.offset();
                             int nextLine = tokenOffset + lastNewline;
 
@@ -461,7 +463,7 @@ public class XMLLexerFormatter {
                     case ARGUMENT: //attribute of an element
                         settingSpaceValue = token.text().equals("xml:space");
                         // fall through !
-                        if (lineIndent != -1) {
+                        if (wasNewline) {
                             int attrIndent;
                             if (firstAttributeIndent == -1) {
                                 tokenType = TokenType.TOKEN_CHARACTER_DATA;
@@ -510,6 +512,7 @@ public class XMLLexerFormatter {
                 if (tokenId != XMLTokenId.WS && tokenId != XMLTokenId.TEXT) {
                     // clear indicator of the newline
                     lineIndent = -1;
+                    wasNewline = false;
                 }
             }
         } finally {

@@ -168,6 +168,38 @@ public class ToggleBlockCommentAction extends BaseAction {
             });
         }
     }
+    
+    private int findCommentStart(BaseDocument doc, CommentHandler handler, int offsetFrom, int offsetTo) throws BadLocationException {
+        int from = Utilities.getFirstNonWhiteFwd(doc, offsetFrom, offsetTo);
+        if (from == -1) {
+            return offsetFrom;
+        }
+        String startDelim = handler.getCommentStartDelimiter();
+        if (CharSequenceUtilities.equals(
+            DocumentUtilities.getText(doc).subSequence(
+                from, Math.min(offsetTo, from + startDelim.length())),
+            startDelim)) {
+            return from;
+        }
+        
+        return offsetFrom;
+    }
+    
+    private int findCommentEnd(BaseDocument doc, CommentHandler handler, int offsetFrom, int offsetTo) throws BadLocationException {
+        int to = Utilities.getFirstNonWhiteBwd(doc, offsetTo, offsetFrom);
+        if (to == -1) {
+            return offsetTo;
+        }
+        String endDelim = handler.getCommentEndDelimiter();
+        if (DocumentUtilities.getText(doc).subSequence(
+                Math.max(offsetFrom, to - endDelim.length() + 1), to + 1).equals(endDelim)) {
+            // after end of the delimiter
+            return to + 1;
+        }
+        
+        return offsetFrom;
+
+    }
 
     private void commentUncommentBlock(JTextComponent target, TokenHierarchy<?> th, final CommentHandler commentHandler, boolean dynamicCH) throws BadLocationException {
         final Caret caret = target.getCaret();
@@ -199,7 +231,12 @@ public class ToggleBlockCommentAction extends BaseAction {
                 from = Utilities.getFirstNonWhiteFwd(doc, Utilities.getRowStart(doc, from));
                 to = Utilities.getFirstNonWhiteBwd(doc, Utilities.getRowEnd(doc, to)) + 1;
                 lineSelection = true;
+            } else {
+                // check if the line does not begin with WS+comment start or end with WS+comment end
+                from = findCommentStart(doc, commentHandler, from, to);
+                to = findCommentEnd(doc, commentHandler, from, to);
             }
+                    
         }
 
         if(!inComment && from == to) {
