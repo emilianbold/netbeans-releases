@@ -289,6 +289,10 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         return folder;
     }
 
+    public FSPath getFSPath() {
+        return new FSPath(fileSystem, getNormalizedPath());
+    }
+
     public String getNormalizedPath() {
         synchronized (this) {
             if (normalizedPath != null) {
