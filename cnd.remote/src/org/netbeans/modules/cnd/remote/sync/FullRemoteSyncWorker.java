@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.cnd.remote.sync;
 
-import java.io.File;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,8 +49,11 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -61,20 +63,27 @@ import org.openide.util.RequestProcessor;
  */
 /*package-local*/ class FullRemoteSyncWorker implements RemoteSyncWorker {
 
-    private final File[] files;
     private final ExecutionEnvironment executionEnvironment;
+    private final FileSystem sourceFileSystem;
     private final PrintWriter out;
     private final PrintWriter err;
 
-    public FullRemoteSyncWorker(ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, File... files) {
-        this.files = files;
+    public FullRemoteSyncWorker(ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, 
+            FSPath... files) {
         this.executionEnvironment = executionEnvironment;
+        this.sourceFileSystem = (files.length == 0) ? FileSystemProvider.getFileSystem(ExecutionEnvironmentFactory.getLocal()) : files[0].getFileSystem();
         this.out = out;
         this.err = err;
     }
 
     @Override
     public boolean startup(Map<String, String> env2add) {
+
+        if (SyncUtils.isDoubleRemote(executionEnvironment, sourceFileSystem)) {
+            SyncUtils.warnDoubleRemote(executionEnvironment, sourceFileSystem);
+            return false;
+        }
+
         try {
             // call FileSystemProvider.waitWrites
             // and print "waiting..." message in the case it does not return within half a second

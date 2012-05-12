@@ -45,7 +45,10 @@ package org.netbeans.modules.cnd.remote.sync;
 import java.io.File;
 import java.io.PrintWriter;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 
 /**
  * A common base class for RemoteSyncWorker implementations
@@ -54,14 +57,18 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 /*package-local*/ abstract class BaseSyncWorker implements RemoteSyncWorker {
 
     protected final File[] files;
-    protected final File privProjectStorageDir;
+    protected final FSPath[] fsPaths;
+    protected final FileSystem fileSystem;
+    protected final FileObject privProjectStorageDir;
     protected final ExecutionEnvironment executionEnvironment;
     protected final PrintWriter out;
     protected final PrintWriter err;
 
-    public BaseSyncWorker(ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, File privProjectStorageDir, File... files) {
-        this.files = new File[files.length];
-        System.arraycopy(files, 0, this.files, 0, files.length);
+    public BaseSyncWorker(ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, 
+            FileObject privProjectStorageDir, FSPath... paths) {
+        this.fsPaths = paths;
+        this.fileSystem = SyncUtils.getSingleFileSystem(paths);
+        this.files = SyncUtils.toFiles(paths);
         this.privProjectStorageDir = privProjectStorageDir;
         this.executionEnvironment = executionEnvironment;
         this.out = out;

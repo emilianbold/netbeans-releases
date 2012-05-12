@@ -42,8 +42,8 @@
 
 package org.netbeans.modules.cnd.remote.sync.download;
 
-import org.netbeans.modules.cnd.remote.test.RemoteBuildTestBase;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -52,10 +52,11 @@ import java.util.concurrent.TimeUnit;
 import junit.framework.AssertionFailedError;
 import junit.framework.Test;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
-import org.netbeans.modules.cnd.remote.test.RemoteDevelopmentTest;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.cnd.remote.support.RemoteProjectSupport;
 import org.netbeans.modules.cnd.remote.sync.download.FileDownloadInfo.State;
+import org.netbeans.modules.cnd.remote.test.RemoteBuildTestBase;
+import org.netbeans.modules.cnd.remote.test.RemoteDevelopmentTest;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -64,6 +65,7 @@ import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.spi.project.ActionProvider;
+import org.openide.filesystems.FileObject;
 /**
  *
  * @author Vladimir Kvashin
@@ -164,9 +166,8 @@ public class RemoteBuildUpdatesDownloadTestCase extends RemoteBuildTestBase {
         }
     }
 
-    private void checkInfo(NameStatePair[] pairsToCheck, long timeout, File privProjectStorageDir) {
+    private void checkInfo(NameStatePair[] pairsToCheck, long timeout, FileObject privProjectStorageDir) throws IOException {
         List<NameStatePair> pairs = new ArrayList<NameStatePair>(Arrays.asList(pairsToCheck));
-        pairsToCheck = null; // just to reference only one of them
         long stopTime = System.currentTimeMillis() + timeout;
         while (true) {
             List<FileDownloadInfo> updates = HostUpdates.testGetUpdates(getTestExecutionEnvironment(), privProjectStorageDir);

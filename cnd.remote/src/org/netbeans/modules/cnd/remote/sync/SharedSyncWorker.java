@@ -50,7 +50,9 @@ import java.util.Map;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.filesystems.FileSystem;
 
 /**
  *
@@ -59,17 +61,28 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 /*package-local*/ class SharedSyncWorker implements RemoteSyncWorker {
 
     private final File[] files;
+    private final FSPath[] fsPaths;
+    private final FileSystem fileSystem;
     private final String workingDir;
     private final ExecutionEnvironment executionEnvironment;
 
-    public SharedSyncWorker(ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, String workingDir, File... files) {
-        this.files = files;
+    public SharedSyncWorker(ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, 
+            String workingDir, FSPath... paths) {
+        this.fileSystem = SyncUtils.getSingleFileSystem(paths);
+        this.fsPaths = paths;
+        this.files = SyncUtils.toFiles(paths);
         this.executionEnvironment = executionEnvironment;
         this.workingDir = workingDir;
     }
     
     @Override
     public boolean startup(Map<String, String> env2add) {
+
+        if (SyncUtils.isDoubleRemote(executionEnvironment, fileSystem)) {
+            SyncUtils.warnDoubleRemote(executionEnvironment, fileSystem);
+            return false;
+        }
+
         PathMap mapper = HostInfoProvider.getMapper(executionEnvironment);
         if (files != null && files.length > 0) {
             File[] filesToCheck;

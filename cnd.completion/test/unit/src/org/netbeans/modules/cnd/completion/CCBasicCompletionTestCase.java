@@ -353,4 +353,9 @@ public class CCBasicCompletionTestCase extends CompletionBaseTestCase {
         // Bug 188804 - No completion after for
         performTest("bug188804.cpp", 6, 5, "if");
     }
+
+    public void testBug206234() throws Exception {
+        // Bug 206234 - Code Completation in constructor
+        performTest("bug206234.cpp", 13, 37);
+    }
 }
