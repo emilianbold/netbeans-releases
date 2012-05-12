@@ -119,6 +119,7 @@ public class RemoteLinksTestCase extends RemoteFileTestBase {
 
             FileObject baseDirFO = getFileObject(baseDir);
             FileObject dataFileFO = getFileObject(baseDirFO, dataFile);
+            int hashCode = dataFileFO.hashCode();
             assertFalse("FileObject should not be writable: " + dataFileFO.getPath(), dataFileFO.canWrite());
 
             script =
@@ -129,6 +130,7 @@ public class RemoteLinksTestCase extends RemoteFileTestBase {
             assertEquals("Error executing script \"" + script + "\": " + res.error, 0, res.exitCode);
 
             refreshFor(dataFileFO.getPath());
+            assertEquals("FileObject hashCode should not change", hashCode, dataFileFO.hashCode());
             assertTrue("FileObject should be writable: " + dataFileFO.getPath(), dataFileFO.canWrite());
             String content = "another brown fox...";
             writeFile(dataFileFO, content);

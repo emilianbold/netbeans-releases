@@ -113,7 +113,7 @@ public final class RelationshipMappingRename implements JPARefactoring {
         if(handle.getKind() == Kind.VARIABLE) {
             Element resElement = handle.resolveElement(RefactoringUtil.getCompilationInfo(handle, rename));
             VariableElement var = (VariableElement) resElement;
-            Element mainEntTmp = (TypeElement) var.getEnclosingElement();
+            Element mainEntTmp = var.getEnclosingElement();
             TypeElement mainEnt = mainEntTmp instanceof TypeElement ? (TypeElement)mainEntTmp : null;
             if(mainEnt == null)return null;
             List<? extends AnnotationMirror> ans = var.getAnnotationMirrors();
