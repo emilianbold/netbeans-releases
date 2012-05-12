@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.cnd.remote.sync;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Collection;
@@ -53,7 +52,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
-import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.OutputStreamHandler;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
@@ -64,9 +62,12 @@ import org.netbeans.modules.cnd.remote.support.RemoteProjectSupport;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
 
@@ -155,10 +156,10 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
             return;
         }
 
-        final File privProjectStorage = RemoteProjectSupport.getPrivateStorage(pae.getProject());
+        FileObject privProjectStorage = RemoteProjectSupport.getPrivateStorage(pae.getProject());
         MakeConfiguration conf = pae.getConfiguration();
         AtomicReference<String> runDir = new AtomicReference<String>();
-        File[] sourceDirs = RemoteProjectSupport.getProjectSourceDirs(pae.getProject(), conf, runDir);
+        FSPath[] sourceDirs = RemoteProjectSupport.getProjectSourceDirs(pae.getProject(), conf, runDir);
 
         RemoteSyncFactory syncFactory = conf.getRemoteSyncFactory();
         final RemoteSyncWorker worker = (syncFactory == null) ? null : 

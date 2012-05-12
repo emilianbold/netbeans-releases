@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.remote.test.RemoteTestBase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -61,7 +62,7 @@ import org.openide.filesystems.FileUtil;
 public abstract class AbstractSyncWorkerTestCase extends RemoteTestBase {
 
     abstract BaseSyncWorker createWorker(File src, ExecutionEnvironment execEnv, 
-            PrintWriter out, PrintWriter err, File privProjectStorageDir);
+            PrintWriter out, PrintWriter err, FileObject privProjectStorageDir);
 
     protected abstract String getTestNamePostfix();
 
@@ -128,7 +129,7 @@ public abstract class AbstractSyncWorkerTestCase extends RemoteTestBase {
         PrintWriter err = new PrintWriter(System.err);
         System.err.printf("testUploadFile: %s to %s:%s\n", src.getAbsolutePath(), execEnv.getDisplayName(), dst);
         File privProjectStorageDir = createTempFile(src.getName() + "-nbproject-private-", "", true);
-        BaseSyncWorker worker = createWorker(src, execEnv, out, err, privProjectStorageDir);
+        BaseSyncWorker worker = createWorker(src, execEnv, out, err, FileUtil.toFileObject( privProjectStorageDir));
         boolean ok = worker.startup(Collections.<String, String>emptyMap());
         assertTrue(worker.getClass().getSimpleName() + ".startup failed", ok);
         worker.shutdown();

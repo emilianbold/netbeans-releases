@@ -42,14 +42,15 @@
 
 package org.netbeans.modules.cnd.remote.sync;
 
-import java.io.File;
 import java.io.PrintWriter;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 /**
@@ -65,8 +66,9 @@ class FtpSyncFactory extends BaseSyncFactory {
     public static final String ID = "ftp"; //NOI18N
     
     @Override
-    public RemoteSyncWorker createNew( ExecutionEnvironment executionEnvironment,
-            PrintWriter out, PrintWriter err, File privProjectStorageDir, String workingDir, File... files) {
+    public RemoteSyncWorker createNew(ExecutionEnvironment executionEnvironment,
+            PrintWriter out, PrintWriter err, FileObject privProjectStorageDir, String workingDir, 
+            FSPath... files) {
         return new FtpSyncWorker(executionEnvironment, out, err, privProjectStorageDir, files);
     }
 

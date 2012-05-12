@@ -45,14 +45,8 @@ package org.netbeans.modules.cnd.remote.sync.download;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.io.IOException;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -64,6 +58,7 @@ import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.awt.Notification;
 import org.openide.awt.NotificationDisplayer;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -81,12 +76,12 @@ public class HostUpdates {
 
     private static final Map<ExecutionEnvironment, HostUpdates> map = new HashMap<ExecutionEnvironment, HostUpdates>();
 
-    public static void register(Collection<File> localFiles, ExecutionEnvironment env, File privStorageDir) {
+    public static void register(Collection<File> localFiles, ExecutionEnvironment env, FileObject privStorageDir) throws IOException {
         HostUpdates.get(env, true, privStorageDir).register(localFiles);
     }
 
     /** test method */
-    /*package*/ static List<FileDownloadInfo> testGetUpdates(ExecutionEnvironment env, File privProjectStorageDir) {
+    /*package*/ static List<FileDownloadInfo> testGetUpdates(ExecutionEnvironment env, FileObject privProjectStorageDir) throws IOException {
         HostUpdates hu = get(env, false, privProjectStorageDir);
         if (hu != null) {
             return new ArrayList<FileDownloadInfo>(hu.infos);
@@ -94,7 +89,7 @@ public class HostUpdates {
         return Collections.<FileDownloadInfo>emptyList();
     }
 
-    private static HostUpdates get(ExecutionEnvironment env, boolean create, File privStorageDir) {
+    private static HostUpdates get(ExecutionEnvironment env, boolean create, FileObject privStorageDir) throws IOException {
         synchronized (map) {
             HostUpdates updates = map.get(env);
             if (updates == null) {
@@ -118,7 +113,7 @@ public class HostUpdates {
      */
     private final List<FileDownloadInfo> infos = new ArrayList<FileDownloadInfo>();
 
-    private HostUpdates(ExecutionEnvironment env, File privStorageDir) {
+    private HostUpdates(ExecutionEnvironment env, FileObject privStorageDir) throws IOException {
         this.env = env;
         this.mapper = RemotePathMap.getPathMap(env);
         this.persistence = new HostUpdatesPersistence(privStorageDir, env);
@@ -149,6 +144,7 @@ public class HostUpdates {
         showNotification();
     }
 
+    @SuppressWarnings("CallToThreadDumpStack")
     private void showNotification() {
         if (persistence.getRememberChoice()) {
             download();
