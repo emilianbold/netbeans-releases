@@ -75,11 +75,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
-import org.openide.util.Cancellable;
-import org.openide.util.Exceptions;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
+import org.openide.util.*;
 import org.openide.util.actions.NodeAction;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
@@ -222,7 +218,7 @@ class RemoteSyncActions {
 
         protected abstract String getProgressTitle();
         protected abstract String getFileProgressMessage(File file);
-        protected abstract RemoteSyncSupport.Worker createWorker(Project project, ExecutionEnvironment execEnv);
+        protected abstract RemoteSyncSupport.Worker createWorker(Project project, ExecutionEnvironment execEnv) throws IOException;
     }
 
     private static class Uploader extends UpDownLoader {
@@ -242,7 +238,7 @@ class RemoteSyncActions {
         }
 
         @Override
-        protected Worker createWorker(Project project, ExecutionEnvironment execEnv) {
+        protected Worker createWorker(Project project, ExecutionEnvironment execEnv) throws IOException {
             return RemoteSyncSupport.createUploader(project, execEnv);
         }
     }

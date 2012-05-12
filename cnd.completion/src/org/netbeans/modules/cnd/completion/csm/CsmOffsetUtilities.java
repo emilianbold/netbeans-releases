@@ -124,6 +124,15 @@ public class CsmOffsetUtilities {
         }
         if (!CsmKindUtilities.isStatement(obj) || CsmKindUtilities.isCompoundStatement(obj)) {
             // non-statement scope always ends with '}'
+            
+            if(CsmKindUtilities.isFunctionDefinition(obj)) {
+                CsmFunctionDefinition fun = (CsmFunctionDefinition) obj;
+                if(fun.getBody().getStartOffset() == obj.getStartOffset() &&
+                        fun.getBody().getEndOffset() == obj.getEndOffset()) {
+                    return false;
+                }
+            }
+            
             return true;
         }
         // special care is needed for scope statements
