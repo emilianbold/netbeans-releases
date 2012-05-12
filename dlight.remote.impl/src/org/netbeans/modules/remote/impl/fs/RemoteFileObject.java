@@ -214,7 +214,7 @@ public final class RemoteFileObject extends FileObject implements Serializable {
     
     @Override
     public int hashCode() {
-        return getImplementor().hashCode();
+        return System.identityHashCode(this);
     }
 
     @Override
