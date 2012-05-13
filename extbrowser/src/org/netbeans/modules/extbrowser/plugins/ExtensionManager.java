@@ -97,7 +97,6 @@ public final class ExtensionManager {
         new HashMap<BrowserId, ExtensionManagerAccessor>();
     
     static {
-        ACCESSORS.put( BrowserId.FIREFOX, new FFManagerAccessor());
         ACCESSORS.put( BrowserId.CHROME , new ChromeManagerAccessor());
         ACCESSORS.put( BrowserId.CHROMIUM , new ChromiumManagerAccessor());
     }
