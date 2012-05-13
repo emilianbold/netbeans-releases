@@ -105,7 +105,7 @@ public class OracleWizardPanel implements WizardDescriptor.AsynchronousValidatin
     
     @Override
     public HelpCtx getHelp() {
-        return null;
+        return new HelpCtx(OracleWizardPanel.class.getName());
     }
 
     @Override
