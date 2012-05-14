@@ -42,6 +42,7 @@
 package org.netbeans.modules.css.editor.module.main;
 
 import org.netbeans.modules.css.lib.api.properties.Properties;
+import org.netbeans.modules.css.lib.api.properties.Token;
 import org.netbeans.modules.css.lib.properties.GrammarParser;
 import org.netbeans.modules.css.lib.api.properties.PropertyModel;
 import org.netbeans.modules.css.lib.api.properties.Node;
@@ -158,9 +159,9 @@ public class CssModuleTestBase extends CslTestBase {
             if(expectedSuccess) {
                 msg.append(" success expected but was failure.");
                 msg.append(" Uresolved token(s): ");
-                List<String> unresolved = pv.getUnresolvedTokens();
+                List<Token> unresolved = pv.getUnresolvedTokens();
                 for(int i = unresolved.size() - 1; i >= 0; i--) {
-                    String token = unresolved.get(i);
+                    String token = unresolved.get(i).image().toString();
                     msg.append(token);
                     if(i > 0) {
                         msg.append(",");

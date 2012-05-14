@@ -397,24 +397,24 @@ public class PropertyValueTest extends CssTestBase {
 //        System.out.println(p.getGrammarElement().toString2(0));
         
         Node root = pv.getParseTree();
-//        dumpTree(root);
+        dumpTree(root);
         
         assertNotNull(root);
 //        assertNull(root.parent()); //root node has no parent
         assertEquals("font-family", root.name());
         
         Collection<Node> ch = root.children();
-        assertEquals(1, ch.size());
+        assertEquals(3, ch.size());
         
         Iterator<Node> i = ch.iterator();
         Node ch1 = i.next();
         assertNotNull(ch1);
         assertTrue(ch1 instanceof Node.GrammarElementNode);
-        assertEquals("@family-name", ch1.name());
+        assertEquals("@generic-family", ch1.name());
 //        assertEquals(root, ch1.parent());
         
         ch = ch1.children();
-        assertEquals(3, ch.size());
+        assertEquals(1, ch.size());
         
         i = ch.iterator();
         Node ch2 = i.next();
