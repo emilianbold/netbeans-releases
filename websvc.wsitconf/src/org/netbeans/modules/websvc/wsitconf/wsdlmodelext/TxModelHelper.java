@@ -176,7 +176,7 @@ public class TxModelHelper {
             
         } finally {
             if (!isTransaction) {
-                model.endTransaction();
+                WSITModelSupport.doEndTransaction(model);
             }
         }
     }
