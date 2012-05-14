@@ -435,7 +435,7 @@ public class ConfigureFXMLPanelVisual extends JPanel implements ActionListener, 
         }
     }
     
-    static class Panel implements WizardDescriptor.Panel<WizardDescriptor> {
+    static class Panel implements WizardDescriptor.Panel<WizardDescriptor>, WizardDescriptor.FinishablePanel<WizardDescriptor> {
         
         private ConfigureFXMLPanelVisual component;
         private final ChangeSupport changeSupport = new ChangeSupport(this);
@@ -557,6 +557,11 @@ public class ConfigureFXMLPanelVisual extends JPanel implements ActionListener, 
                 }
             }
             return folder;
+        }
+
+        @Override
+        public boolean isFinishPanel() {
+            return true;
         }
     }
 }

@@ -485,7 +485,7 @@ public class ConfigureFXMLControllerPanelVisual extends JPanel implements Docume
         return controllerCheckBox.isSelected() && createNewRadioButton.isSelected();
     }
 
-    static class Panel implements WizardDescriptor.Panel<WizardDescriptor> {
+    static class Panel implements WizardDescriptor.Panel<WizardDescriptor>, WizardDescriptor.FinishablePanel<WizardDescriptor> {
         
         private ConfigureFXMLControllerPanelVisual component;
         private final ChangeSupport changeSupport = new ChangeSupport(this);
@@ -561,6 +561,11 @@ public class ConfigureFXMLControllerPanelVisual extends JPanel implements Docume
 
         private void fireChangeEvent() {
             changeSupport.fireChange();
+        }
+
+        @Override
+        public boolean isFinishPanel() {
+            return true;
         }
     }
 }
