@@ -61,8 +61,8 @@ class NoWebBrowserImpl extends WebBrowser {
 
     private final JLabel component;
     
-    public NoWebBrowserImpl() {
-        component = new JLabel(NbBundle.getMessage(NoWebBrowserImpl.class, "Err_CannotCreateBrowser"));
+    public NoWebBrowserImpl(String cause) {
+        component = new JLabel(NbBundle.getMessage(NoWebBrowserImpl.class, "Err_CannotCreateBrowser", cause));
         component.setEnabled( false );
         component.setHorizontalAlignment( JLabel.CENTER );
         component.setVerticalAlignment( JLabel.CENTER );

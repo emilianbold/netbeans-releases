@@ -44,6 +44,7 @@ package org.netbeans.core.browser.webview;
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -78,12 +79,14 @@ public class WebBrowserImplProvider {
             if (cl != null) {
                 // test that JavaFX has latest required APIs:
                 cl.loadClass("com.sun.javafx.scene.web.Debugger");
+                Class platform = cl.loadClass("javafx.application.Platform");
+                Method m = platform.getMethod("setImplicitExit", boolean.class);
             }
-        } catch(ClassNotFoundException ex)  {
-            log.log(Level.WARNING, "It looks that latest JavaFX runtime (>=2.2.0) "
-                    + "which contains support for WebKit Remote Debugging is not available. "
-                    + "Please upgrade your JavaFX runtime to newer version. ", ex);
-            return new NoWebBrowserImpl();
+        } catch(Throwable ex)  {
+            log.log(Level.INFO, "JavaFX runtime is too old - "
+                    + "minimum version required is 2.2.0b08", ex);            
+            return new NoWebBrowserImpl("JavaFX runtime is too old - "
+                    + "minimum version required is 2.2.0b08");
         }
         try {
             if (cl != null) {
@@ -92,22 +95,11 @@ public class WebBrowserImplProvider {
                 Constructor c = impl.getConstructor(new Class[] {});
                 return (WebBrowser)c.newInstance(new Object[] {});
             }
-        } catch (InstantiationException ex) {
+        } catch (Throwable ex) {
             log.log(Level.INFO, ex.getMessage(), ex);
-        } catch (InvocationTargetException ex) {
-            log.log(Level.INFO, ex.getMessage(), ex);
-        } catch (IllegalAccessException ex) {
-            log.log(Level.INFO, ex.getMessage(), ex);
-        } catch (IllegalArgumentException ex) {
-            log.log(Level.INFO, ex.getMessage(), ex);
-        } catch (NoSuchMethodException ex) {
-            log.log(Level.INFO, ex.getMessage(), ex);
-        } catch (SecurityException ex) {
-            log.log(Level.INFO, ex.getMessage(), ex);
-        } catch (ClassNotFoundException ex) {
-            log.log(Level.INFO, ex.getMessage(), ex);
+            return new NoWebBrowserImpl(ex.getMessage());
         }
-        return new NoWebBrowserImpl();
+        return new NoWebBrowserImpl("cannot create classloader");
     }
 
     
