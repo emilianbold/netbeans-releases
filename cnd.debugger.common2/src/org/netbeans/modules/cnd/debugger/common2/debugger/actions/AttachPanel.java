@@ -693,10 +693,10 @@ public final class AttachPanel extends TopComponent {
         return items;
     }
     
-    private void tableInfo(final String infoKey) {
+    private void tableInfo(final String infoKey, final boolean enabled) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                setUIEnabled(false);
+                setUIEnabled(enabled);
                 processModel.setDataVector(new Object[][]{{Catalog.get(infoKey)}}, new Object[]{" "}); //NOI18N
             }
         });
@@ -771,7 +771,7 @@ public final class AttachPanel extends TopComponent {
             //final boolean getAllProcesses = allProcessesCheckBox.isSelected();
             final boolean getAllProcesses = false;
 
-            tableInfo("MSG_Gathering_Data"); //NOI18N
+            tableInfo("MSG_Gathering_Data", false); //NOI18N
 
             CndRemote.validate(hostName, new Runnable() {
 
@@ -783,7 +783,7 @@ public final class AttachPanel extends TopComponent {
 
                 @Override
                 public void run() {
-                    tableInfo("MSG_PS_Failed"); //NOI18N
+                    tableInfo("MSG_PS_Failed", true); //NOI18N
                 }
             });
         } else {
@@ -848,7 +848,7 @@ public final class AttachPanel extends TopComponent {
         final PsProvider.PsData psData = getPsData();
 
         if (psData == null) {
-            tableInfo("MSG_PS_Failed"); //NOI18N
+            tableInfo("MSG_PS_Failed", true); //NOI18N
             return;
         }
 
