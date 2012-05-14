@@ -73,6 +73,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.queries.VisibilityQuery;
+import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.GuardedDocument;
 import org.netbeans.lib.editor.util.swing.PositionRegion;
 import org.netbeans.modules.editor.indent.api.Reformat;
@@ -99,6 +100,10 @@ import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 
 public final class GlobalFormatAction extends AbstractAction {
+
+    public GlobalFormatAction() {
+        putValue(NAME, BaseKit.formatAction);
+    }
 
     @Override
     public void actionPerformed(ActionEvent e) {

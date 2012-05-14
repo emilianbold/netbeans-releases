@@ -57,6 +57,22 @@ made subject to such option by the copyright holder.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="nbm-external-size">
+            <api name="general"/>
+            <summary>Allowing to specify external NBM content size</summary>
+            <version major="1" minor="32"/>
+            <date day="14" month="5" year="2012"/>
+            <author login="jlahoda"/>
+            <compatibility addition="yes" />
+            <description>
+                <p>
+                    You can now specify the size of the external NBM content in the <code>.external</code> file
+                    by using <code>SIZE:</code> property (e.g. <code>SIZE:42</code>). The size will then be incorporated
+                    in the download size of the NBM.
+                </p>
+            </description>
+            <issue number="212068"/>
+        </change>
         <change id="nbm-external">
             <api name="general"/>
             <summary>External NBM contents</summary>
