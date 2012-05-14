@@ -95,7 +95,7 @@ public class UtilityClass {
                                                ).toEditorFix());
     }
     
-    @Hint(id="org.netbeans.modules.java.hints.UtilityClass_2", displayName="#MSG_PublicConstructor", description="HINT_PublicConstructor", category="api", enabled=false, severity= Severity.HINT)
+    @Hint(id="org.netbeans.modules.java.hints.UtilityClass_2", displayName="#MSG_PublicConstructor", description="#HINT_PublicConstructor", category="api", enabled=false, severity= Severity.HINT)
     @TriggerTreeKind(Kind.METHOD)
     public static ErrorDescription constructor(HintContext ctx) {
         CompilationInfo compilationInfo = ctx.getInfo();
