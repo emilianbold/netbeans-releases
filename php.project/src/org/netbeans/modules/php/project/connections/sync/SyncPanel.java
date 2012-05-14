@@ -618,8 +618,8 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
     void reselectItem(SyncItem syncItem) {
         assert SwingUtilities.isEventDispatchThread();
         assert itemTable.getSelectedRowCount() <= 1 : "Selected rows in table: " + itemTable.getSelectedRowCount();
-        int index = itemsToIndex(displayedItems).get(syncItem);
-        if (index != -1) {
+        Integer index = itemsToIndex(displayedItems).get(syncItem);
+        if (index != null) {
             itemTable.getSelectionModel().setSelectionInterval(index, index);
         }
     }
@@ -645,10 +645,12 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
         assert SwingUtilities.isEventDispatchThread();
         List<Integer> selectedRows = new ArrayList<Integer>(selectedItems.size());
         Map<SyncItem, Integer> itemsToIndex = itemsToIndex(displayedItems);
-        for (SyncItem item : selectedItems) {
-            int index = itemsToIndex.get(item);
-            if (index != -1) {
-                selectedRows.add(index);
+        if (!itemsToIndex.isEmpty()) {
+            for (SyncItem item : selectedItems) {
+                Integer index = itemsToIndex.get(item);
+                if (index != null) {
+                    selectedRows.add(index);
+                }
             }
         }
         // #212269 - minimize ui refreshes
