@@ -101,6 +101,7 @@ import org.netbeans.modules.xml.wsdl.model.WSDLComponentFactory;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.WSDLModelFactory;
 import org.netbeans.modules.xml.xam.ModelSource;
+import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.locator.CatalogModel;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.openide.cookies.SaveCookie;
@@ -163,6 +164,15 @@ public class WSITModelSupport {
             umHolder.setUndoManager(undoManager);
         }
         return model;
+    }
+    
+    public static void doEndTransaction(Model model) {
+        try {
+            model.endTransaction();
+        }
+        catch( IllegalStateException e ){
+            logger.log(Level.WARNING, null, e);
+        }
     }
 
     public static WSDLModel getModelForService(Service service, FileObject implClass, Project p, boolean create, Collection<FileObject> createdFiles) {

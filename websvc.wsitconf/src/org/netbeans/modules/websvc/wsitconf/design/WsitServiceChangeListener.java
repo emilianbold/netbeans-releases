@@ -44,6 +44,9 @@
 package org.netbeans.modules.websvc.wsitconf.design;
 
 import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.design.javamodel.MethodModel;
@@ -147,7 +150,13 @@ public class WsitServiceChangeListener implements ServiceChangeListener {
                 }
             } finally {
                 if (!isTransaction) {
-                    model.endTransaction();
+                    try {
+                        model.endTransaction();
+                    }
+                    catch(IllegalStateException  e ){
+                        Logger.getLogger(WsitServiceChangeListener.class.getName()).
+                            log(Level.WARNING, null , e);
+                    }
                 }
             }
             WSITModelSupport.save(binding);
