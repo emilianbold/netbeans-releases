@@ -90,6 +90,7 @@ import org.openide.util.NbBundle;
  * some changes needed to solve lack of J2SE project internals
  * 
  * @author Martin Adamek
+ * @author Martin Janicek
  */
 @ProjectServiceProvider(service=ActionProvider.class, projectType="org-netbeans-modules-java-j2seproject")
 public class GroovyActionProvider implements ActionProvider {
@@ -99,20 +100,17 @@ public class GroovyActionProvider implements ActionProvider {
     // from J2SEConfigurationProvider
     public static final String PROP_CONFIG = "config"; // NOI18N
 
-    // Commands available from J2SE project
-    private static final String[] supportedActions = {
-        COMMAND_RUN_SINGLE,
-        COMMAND_DEBUG_SINGLE
-    };
-
-
-    private static final String[] platformSensitiveActions = {
-        COMMAND_RUN_SINGLE,
-        COMMAND_DEBUG_SINGLE
-    };
-
     /** Map from commands to ant targets */
-    Map<String,String[]> commands;
+    private static final Map<String,String[]> supportedActions;
+    static {
+        // treated specially: COMMAND_{,RE}BUILD
+        supportedActions = new HashMap<String, String[]>();
+        supportedActions.put(COMMAND_COMPILE_SINGLE, new String[] {"compile-single"}); // NOI18N
+        supportedActions.put(COMMAND_DEBUG_SINGLE, new String[] {"debug-single"}); // NOI18N
+        supportedActions.put(COMMAND_RUN_SINGLE, new String[] {"run-single"}); // NOI18N
+    };
+
+
 
     private final Project project;
     /**Set of commands which are affected by background scanning*/
@@ -120,23 +118,22 @@ public class GroovyActionProvider implements ActionProvider {
     
     public GroovyActionProvider(Project project) {
         this.project = project;
-        commands = new HashMap<String,String[]>();
-        // treated specially: COMMAND_{,RE}BUILD
-        commands.put(COMMAND_RUN_SINGLE, new String[] {"run-single"}); // NOI18N
-        commands.put(COMMAND_DEBUG_SINGLE, new String[] {"debug-single"}); // NOI18N
-
         this.bkgScanSensitiveActions = new HashSet<String>(Arrays.asList(
+            COMMAND_COMPILE_SINGLE,
             COMMAND_RUN_SINGLE,
             COMMAND_DEBUG_SINGLE
         ));
     }
     
+    @Override
     public String[] getSupportedActions() {
-        return supportedActions;
+        return supportedActions.keySet().toArray(new String[0]);
     }
 
+    @Override
     public void invokeAction(final String command, final Lookup context) throws IllegalArgumentException {
         final Runnable action = new Runnable () {
+            @Override
             public void run () {
                 Properties p = new Properties();
                 String[] targetNames;
@@ -148,7 +145,7 @@ public class GroovyActionProvider implements ActionProvider {
                 if (targetNames.length == 0) {
                     targetNames = null;
                 }
-                if (p.keySet().size() == 0) {
+                if (p.keySet().isEmpty()) {
                     p = null;
                 }
                 try {
@@ -177,8 +174,9 @@ public class GroovyActionProvider implements ActionProvider {
         }
     }
 
+    @Override
     public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
-        if (command.equals(COMMAND_RUN_SINGLE)) {
+        if (command.equals(COMMAND_RUN_SINGLE) || command.equals(COMMAND_DEBUG_SINGLE) || command.equals(COMMAND_COMPILE_SINGLE)) {
             FileObject fos[] = findSources(context);
             return fos != null && fos.length == 1;
         }
@@ -188,7 +186,7 @@ public class GroovyActionProvider implements ActionProvider {
     private String[] getTargetNames(String command, Lookup context, Properties p) throws IllegalArgumentException {
         Map<String,String[]> targetsFromConfig = loadTargetsFromConfig();
         String[] targetNames = new String[0];
-        if (command.equals (COMMAND_RUN_SINGLE) || command.equals (COMMAND_DEBUG_SINGLE)) {
+        if (command.equals (COMMAND_RUN_SINGLE) || command.equals (COMMAND_DEBUG_SINGLE) || command.equals(COMMAND_COMPILE_SINGLE)) {
             FileObject[] files = findTestSources(context, false);
             if (files != null) {
                 if (command.equals(COMMAND_RUN_SINGLE)) {
@@ -207,37 +205,19 @@ public class GroovyActionProvider implements ActionProvider {
                     clazz = clazz.substring(0, clazz.length() - 7);
                 }
                 clazz = clazz.replace('/','.');
-//                final boolean hasMainClassFromTest = MainClassChooser.unitTestingSupport_hasMainMethodResult == null ? false :
-//                    MainClassChooser.unitTestingSupport_hasMainMethodResult.booleanValue();
-////                final Collection<ElementHandle<TypeElement>> mainClasses = J2SEProjectUtil.getMainMethods (file);
-//                if (!hasMainClassFromTest){// && mainClasses.isEmpty()) {
-//                    NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(GroovyActionProvider.class, "LBL_No_Main_Classs_Found", clazz), NotifyDescriptor.INFORMATION_MESSAGE);
-//                    DialogDisplayer.getDefault().notify(nd);
-//                    return null;
-//                } else {
-//                    if (!hasMainClassFromTest) {
-////                        if (mainClasses.size() == 1) {
-////                            //Just one main class
-////                            clazz = mainClasses.iterator().next().getBinaryName();
-////                        }
-////                        else {
-////                            //Several main classes, let the user choose
-////                            clazz = showMainClassWarning(file, mainClasses);
-////                            if (clazz == null) {
-////                                return null;
-////                            }
-////                        }
-//                    }
-                    if (command.equals (COMMAND_RUN_SINGLE)) {
-                        p.setProperty("run.class", clazz); // NOI18N
-                        String[] targets = targetsFromConfig.get(command);
-                        targetNames = (targets != null) ? targets : commands.get(COMMAND_RUN_SINGLE);
-                    } else {
-                        p.setProperty("debug.class", clazz); // NOI18N
-                        String[] targets = targetsFromConfig.get(command);
-                        targetNames = (targets != null) ? targets : commands.get(COMMAND_DEBUG_SINGLE);
-                    }
-//                }
+                if (command.equals (COMMAND_RUN_SINGLE)) {
+                    p.setProperty("run.class", clazz); // NOI18N
+                    String[] targets = targetsFromConfig.get(command);
+                    targetNames = (targets != null) ? targets : supportedActions.get(COMMAND_RUN_SINGLE);
+                } else if (command.equals (COMMAND_DEBUG_SINGLE)) {
+                    p.setProperty("debug.class", clazz); // NOI18N
+                    String[] targets = targetsFromConfig.get(command);
+                    targetNames = (targets != null) ? targets : supportedActions.get(COMMAND_DEBUG_SINGLE);
+                } else {
+                    p.setProperty("compile.class", clazz); // NOI18N
+                    String[] targets = targetsFromConfig.get(command);
+                    targetNames = (targets != null) ? targets : supportedActions.get(COMMAND_COMPILE_SINGLE);
+                }
             }
         }
 

@@ -56,10 +56,23 @@ import org.openide.util.NbBundle.Messages;
  * Supplies project-specific file actions (e.g. compile/run) for *.groovy files.
  *
  * @author Petr Hejl
+ * @author Martin Janicek
  */
 public class GroovyProjectModule {
+
+    @Messages("LBL_CompileFile_Action=Compile File")
+    @ActionID(id = "org.netbeans.modules.groovy.support.GroovyProjectModule.compile", category = "Groovy")
+    @ActionRegistration(lazy = false, displayName = "#LBL_CompileFile_Action")
+    @ActionReference(path = "Loaders/text/x-groovy/Actions", position = 600)
+    public static Action compile() {
+        return FileSensitiveActions.fileCommandAction(
+                ActionProvider.COMMAND_COMPILE_SINGLE,
+                LBL_CompileFile_Action(), // NOI18N
+                null);
+    }
+
     @Messages("LBL_RunFile_Action=Run File")
-    @ActionID(id = "org.netbeans.modules.groovy.support.GroovyProjectModule", category = "Groovy")
+    @ActionID(id = "org.netbeans.modules.groovy.support.GroovyProjectModule.run", category = "Groovy")
     @ActionRegistration(lazy = false, displayName = "#LBL_RunFile_Action")
     @ActionReference(path = "Loaders/text/x-groovy/Actions", position = 550, separatorBefore = 530)
     public static Action run() {
@@ -69,4 +82,14 @@ public class GroovyProjectModule {
                 null);
     }
 
+    @Messages("LBL_DebugFile_Action=Debug File")
+    @ActionID(id = "org.netbeans.modules.groovy.support.GroovyProjectModule.debug", category = "Groovy")
+    @ActionRegistration(lazy = false, displayName = "#LBL_DebugFile_Action")
+    @ActionReference(path = "Loaders/text/x-groovy/Actions", position = 600)
+    public static Action debug() {
+        return FileSensitiveActions.fileCommandAction(
+                ActionProvider.COMMAND_DEBUG_SINGLE,
+                LBL_DebugFile_Action(), // NOI18N
+                null);
+    }
 }
