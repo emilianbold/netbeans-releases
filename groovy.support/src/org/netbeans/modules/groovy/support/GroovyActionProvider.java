@@ -242,8 +242,8 @@ public class GroovyActionProvider implements ActionProvider {
     private FileObject getRoot (SourceGroup[] groups, FileObject file) {
         assert file != null : "File can't be null";   //NOI18N
         FileObject srcDir = null;
-        for (int i=0; i< groups.length; i++) {
-            FileObject root = groups[i].getRootFolder();
+        for (SourceGroup sourceGroup : groups) {
+            FileObject root = sourceGroup.getRootFolder();
             assert root != null : "Source Path Root can't be null"; //NOI18N
             if (FileUtil.isParentOf(root, file) || root.equals(file)) {
                 srcDir = root;
@@ -257,7 +257,6 @@ public class GroovyActionProvider implements ActionProvider {
         assert file != null : "File can't be null";   //NOI18N
         FileObject srcDir = null;
         for (FileObject root : groups) {
-            assert root != null : "Source Path Root can't be null"; //NOI18N
             if (FileUtil.isParentOf(root, file) || root.equals(file)) {
                 srcDir = root;
                 break;
