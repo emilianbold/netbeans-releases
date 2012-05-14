@@ -61,4 +61,8 @@ public class JQueryCodeCompletionTest extends JsCodeComplationBase {
         checkCompletion("testfiles/completion/jQuery/simple.js", "$('#test').ad^dClass('.myClass');", false);
     }
     
+    public void testNewFile() throws Exception {
+        checkCompletion("testfiles/completion/jQuery/newFile.js", "jQuery('#f-emblem').a^ddClass('.has-menu');", false);
+    }
+    
 }
