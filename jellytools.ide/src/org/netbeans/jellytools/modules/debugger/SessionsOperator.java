@@ -51,6 +51,7 @@ import org.netbeans.jellytools.TreeTableOperator;
 import org.netbeans.jellytools.modules.debugger.actions.FinishAllAction;
 import org.netbeans.jellytools.modules.debugger.actions.SessionsAction;
 import org.netbeans.jemmy.ComponentChooser;
+import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JTableOperator;
 
 /**
@@ -98,7 +99,13 @@ public class SessionsOperator extends TopComponentOperator {
     
     /** Performs Finish All action on Sessions view. */
     public void finishAll() {
-        new FinishAllAction().perform(this);
+        FinishAllAction faa = new FinishAllAction();
+        try {
+            faa.perform(this);
+        } catch (TimeoutExpiredException tee) {
+            // try it once more because it randomly fails for no apparent reason
+            faa.perform(this);
+        }
     }
     
     /** Calls Make Current popup on given session.
@@ -121,10 +128,12 @@ public class SessionsOperator extends TopComponentOperator {
     private static final ComponentChooser viewSubchooser = new ComponentChooser() {
         private static final String CLASS_NAME="org.netbeans.modules.debugger.ui.views.View";
         
+        @Override
         public boolean checkComponent(Component comp) {
             return comp.getClass().getName().endsWith(CLASS_NAME);
         }
         
+        @Override
         public String getDescription() {
             return "component instanceof "+CLASS_NAME;// NOI18N
         }
