@@ -45,18 +45,10 @@
 package org.netbeans.core.windows.view.ui;
 
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Frame;
-import java.awt.Graphics;
-import java.awt.GraphicsConfiguration;
-import java.awt.GraphicsDevice;
-import java.awt.GraphicsEnvironment;
-import java.awt.Rectangle;
+import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
+import java.lang.reflect.Field;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -68,6 +60,7 @@ import org.netbeans.core.windows.*;
 import org.netbeans.core.windows.view.ui.toolbars.ToolbarConfiguration;
 import org.openide.LifecycleManager;
 import org.openide.awt.*;
+import org.openide.awt.MenuBar;
 import org.openide.cookies.InstanceCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.*;
@@ -135,6 +128,36 @@ public final class MainWindow {
        if (mainMenuBar == null) {
            mainMenuBar = createMenuBar();
            ToolbarPool.getDefault().waitFinished();
+           Toolkit toolkit = Toolkit.getDefaultToolkit();
+           Class<?> xtoolkit = toolkit.getClass();
+           //#183739 - provide proper app name on Linux
+           if (xtoolkit.getName().equals("sun.awt.X11.XToolkit")) { //NOI18N
+               try {
+                    final Field awtAppClassName = xtoolkit.getDeclaredField("awtAppClassName"); //NOI18N
+                    awtAppClassName.setAccessible(true);
+                    awtAppClassName.set(null, NbBundle.getMessage(MainWindow.class, "CTL_MainWindow_Title_No_Project", "").trim()); //NOI18N
+               } catch (Exception x) {
+                   Logger.getLogger(MainWindow.class.getName()).log(Level.FINE, null, x);
+               }
+           }
+           //#198639 - workaround for main menu & mouse issues in Gnome 3
+           if ("gnome-shell".equals(System.getenv("DESKTOP_SESSION"))) { //NOI18N
+               try {
+                   Class<?> xwm = Class.forName("sun.awt.X11.XWM"); //NOI18N
+                   Field awt_wmgr = xwm.getDeclaredField("awt_wmgr"); //NOI18N
+                   awt_wmgr.setAccessible(true);
+                   Field other_wm = xwm.getDeclaredField("OTHER_WM"); //NOI18N
+                   other_wm.setAccessible(true);
+                   if (awt_wmgr.get(null).equals(other_wm.get(null))) {
+                       Field metacity_wm = xwm.getDeclaredField("METACITY_WM"); //NOI18N
+                       metacity_wm.setAccessible(true);
+                       awt_wmgr.set(null, metacity_wm.get(null));
+                       Logger.getLogger(MainWindow.class.getName()).info("installed #198639 workaround"); //NOI18N
+                   }
+               } catch (Exception x) {
+                   Logger.getLogger(MainWindow.class.getName()).log(Level.FINE, null, x);
+               }
+           }
        }
    }
 
