@@ -46,9 +46,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.css.lib.CssTestBase;
-import org.netbeans.modules.css.lib.properties.GrammarParseTreeBuilder;
-import org.netbeans.modules.css.lib.properties.GrammarParser;
 import org.netbeans.modules.css.lib.api.properties.GrammarResolver.Feature;
+import org.netbeans.modules.css.lib.properties.GrammarParser;
 
 /**
  *
@@ -538,23 +537,7 @@ public class GrammarResolverTest extends CssTestBase {
         ResolvedProperty pv = assertResolve(p, "20% serif");
         assertTrue(pv.isResolved());
     }
-    
-    public void testFont2() {
-        PropertyModel p = Properties.getPropertyModel("font");
-        ResolvedProperty pv = assertResolve(p.getGrammarElement(), "20px / 20px fantasy");
-        
-        List<ResolvedToken> resolved = pv.getResolvedTokens();
-        assertNotNull(resolved);
-        assertEquals(4, resolved.size());
-        
-        Iterator<ResolvedToken> itr = resolved.iterator();
-        assertEquals("[S0|font]/[S1]/[L2]/[S7|font-size]/!length (20px)", itr.next().toString());
-        assertEquals("[S0|font]/[S1]/[L2]/[L10]// (/)", itr.next().toString());
-        assertEquals("[S0|font]/[S1]/[L2]/[L10]/[S11|line-height]/!length (20px)", itr.next().toString());
-        assertEquals("[S0|font]/[S1]/[L2]/[S12|font-family]/[L13]/[S14]/[S17|@generic-family]/fantasy (fantasy)", itr.next().toString());
-        
-    }
-
+   
     public void testZeroMultiplicity() {
         String rule = "[marek]?  [jitka]?  [ovecka]";
         String text = "ovecka";
@@ -565,11 +548,11 @@ public class GrammarResolverTest extends CssTestBase {
     public void testFontFamily() {
         PropertyModel p = Properties.getPropertyModel("font-family");
 
-        assertTrue(new PropertyValue(p, "serif").isResolved());
-        assertTrue(new PropertyValue(p, "cursive, serif").isResolved());
+        assertTrue(new ResolvedProperty(p, "serif").isResolved());
+        assertTrue(new ResolvedProperty(p, "cursive, serif").isResolved());
         
         //resolves since the "cursive serif" can be considered as unquoted custom family name
-        assertTrue(new PropertyValue(p, "cursive serif").isResolved());
+        assertTrue(new ResolvedProperty(p, "cursive serif").isResolved());
 
     }
 
