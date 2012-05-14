@@ -1,0 +1,18 @@
+Code completion result for source line:
+jQuery('#test').a|ddClass('.myClass');
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+METHOD     add(jQuery object): jQuery      [PUBLIC]   add
+METHOD     addClass(className): jQuery     [PUBLIC]   addClass
+METHOD     after(content): jQuery          [PUBLIC]   after
+METHOD     ajaxComplete(handler(event, XM  [PUBLIC]   ajaxComplete
+METHOD     ajaxError(handler(event, jqXHR  [PUBLIC]   ajaxError
+METHOD     ajaxSend(handler(event, jqXHR,  [PUBLIC]   ajaxSend
+METHOD     ajaxStart(handler()): jQuery    [PUBLIC]   ajaxStart
+METHOD     ajaxStop(handler()): jQuery     [PUBLIC]   ajaxStop
+METHOD     ajaxSuccess(handler(event, XML  [PUBLIC]   ajaxSuccess
+METHOD     andSelf(): jQuery               [PUBLIC]   andSelf
+METHOD     animate(properties, options):   [PUBLIC]   animate
+METHOD     append(function(index, html)):  [PUBLIC]   append
+METHOD     appendTo(target): jQuery        [PUBLIC]   appendTo
+METHOD     attr(map): jQuery               [PUBLIC]   attr
