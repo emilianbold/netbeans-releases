@@ -39,28 +39,44 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.tasks.ui.filter;
+package org.netbeans.modules.tasks.ui.dashboard;
 
-import org.netbeans.modules.bugtracking.api.Issue;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import javax.swing.ImageIcon;
+import org.netbeans.modules.bugtracking.api.Query;
+import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.tasks.ui.treelist.TreeListNode;
+import org.openide.util.ImageUtilities;
 
-/**
- *
- * @author jpeska
- */
-public class OpenedTaskFilter implements DashboardFilter<Issue> {
+public class ClosedRepositoryNode extends RepositoryNode {
 
-    @Override
-    public boolean isInFilter(Issue task) {
-        return !task.isFinished();
+    public ClosedRepositoryNode(Repository repository, boolean loaded) {
+        super(repository, loaded, false);
     }
 
     @Override
-    public boolean expandNodes() {
+    protected List<TreeListNode> createChildren() {
+        return Collections.emptyList();
+    }
+
+    @Override
+    void updateContent() {
+    }
+
+    @Override
+    public boolean isOpened() {
         return false;
     }
 
     @Override
-    public boolean showHitCount() {
-        return false;
+    Collection<Query> getQueries() {
+        return Collections.emptyList();
+    }
+
+    @Override
+    ImageIcon getRepositoryIcon() {
+        return ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/local_repo.png", true);
     }
 }

@@ -88,10 +88,12 @@ public abstract class TaskContainerNode extends TreeListNode {
 
     abstract void updateCounts();
 
+    abstract boolean isLoaded();
+
     @Override
     protected void childrenLoadingStarted() {
         synchronized (UI_LOCK) {
-            if (refresh) {
+            if (refresh || !isLoaded()) {
                 hideCounts();
                 lblProgress.setVisible(true);
             }
@@ -129,6 +131,7 @@ public abstract class TaskContainerNode extends TreeListNode {
 
     public final void refreshContent() {
         refresh = true;
+        setExpanded(true);
         updateContent();
     }
 
@@ -205,12 +208,23 @@ public abstract class TaskContainerNode extends TreeListNode {
         return lblProgress;
     }
 
-    private void removeTaskListeners() {
+    final void removeTaskListeners() {
         synchronized (LOCK) {
             if (taskListener != null) {
                 for (TaskNode taskNode : filteredTaskNodes) {
                     taskNode.getTask().removePropertyChangeListener(taskListener);
                 }
+            }
+        }
+    }
+
+    final void addTaskListeners() {
+        synchronized (LOCK) {
+            if (taskListener == null) {
+                taskListener = new TaskListener();
+            }
+            for (TaskNode taskNode : filteredTaskNodes) {
+                taskNode.getTask().addPropertyChangeListener(taskListener);
             }
         }
     }
