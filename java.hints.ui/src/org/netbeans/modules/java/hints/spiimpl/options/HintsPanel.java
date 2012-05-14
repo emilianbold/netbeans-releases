@@ -124,6 +124,7 @@ import org.openide.util.RequestProcessor;
 public final class HintsPanel extends javax.swing.JPanel   {
     
     private static final String DELETE = "delete";
+    private static final String DECLARATIVE_HINT_TEMPLATE_LOCATION = "org-netbeans-modules-java-hints/templates/Inspection.hint";
 
     private final static RequestProcessor WORKER = new RequestProcessor(HintsPanel.class.getName(), 1, false, false);
 
@@ -295,7 +296,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
             toSelect = null;
         }
         
-        boolean editEnabled = useConfigCombo && FileUtil.getConfigFile("org-netbeans-modules-java-hints/templates/HintSample.hint")!=null;
+        boolean editEnabled = useConfigCombo && FileUtil.getConfigFile(DECLARATIVE_HINT_TEMPLATE_LOCATION)!=null;
         newButton.setVisible(editEnabled);
         importButton.setVisible(false);
         exportButton.setVisible(false);
@@ -676,14 +677,14 @@ public final class HintsPanel extends javax.swing.JPanel   {
 
     private void newButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newButtonActionPerformed
         try {
-            FileObject tempFO = FileUtil.getConfigFile("org-netbeans-modules-java-hints/templates/HintSample.hint"); // NOI18N
+            FileObject tempFO = FileUtil.getConfigFile(DECLARATIVE_HINT_TEMPLATE_LOCATION); // NOI18N
             FileObject folderFO = FileUtil.getConfigFile("rules");
             if (folderFO == null) {
                 folderFO = FileUtil.getConfigRoot().createFolder("rules");
             }
             DataFolder folder = (DataFolder) DataObject.find(folderFO);
             DataObject template = DataObject.find(tempFO);
-            DataObject newIfcDO = template.createFromTemplate(folder, "Inspection");
+            DataObject newIfcDO = template.createFromTemplate(folder, null);
             RulesManager.getInstance().reload();
             errorTreeModel = constructTM(Utilities.getBatchSupportedHints(cpBased).keySet(), false);
             errorTree.setModel(errorTreeModel);
