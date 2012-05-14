@@ -80,7 +80,7 @@ class ConstantElementImpl extends ModelElementImpl implements ConstantElement, F
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(this);
         QualifiedName qualifiedName = namespaceScope.getQualifiedName();
         sb.append(qualifiedName.toString()).append(Signature.ITEM_DELIMITER);
-        sb.append(getValue() != null ? getValue().replace(String.valueOf(Signature.ITEM_DELIMITER), Signature.ITEM_DELIMITER_ALTERNATIVE) : "?").append(Signature.ITEM_DELIMITER);//NOI18N
+        sb.append(getValue() != null ? Signature.encodeItem(getValue()) : "?").append(Signature.ITEM_DELIMITER);//NOI18N
         return sb.toString();
     }
 

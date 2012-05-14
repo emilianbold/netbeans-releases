@@ -79,7 +79,7 @@ public class Signature {
         public String string(int index) {
             assert index >= 0 && index < positions.length;
             String subString = signature.substring(positions[index], index == positions.length - 1 ? signature.length() : positions[index + 1] - 1);
-            return subString.replace(ITEM_DELIMITER_ALTERNATIVE, String.valueOf(ITEM_DELIMITER));
+            return decodeItem(subString);
         }
 
         public int integer(int index) {
@@ -109,6 +109,22 @@ public class Signature {
                 System.arraycopy(SHARED, 0, a, 0, count);
                 return a;
             }
+        }
+
+        public static String encodeItem(final String item) {
+            String result = null;
+            if (item != null) {
+                result = item.replace(String.valueOf(ITEM_DELIMITER), ITEM_DELIMITER_ALTERNATIVE);
+            }
+            return result;
+        }
+
+        private static String decodeItem(final String item) {
+            String result = null;
+            if (item != null) {
+                result = item.replace(ITEM_DELIMITER_ALTERNATIVE, String.valueOf(ITEM_DELIMITER));
+            }
+            return result;
         }
 
     }

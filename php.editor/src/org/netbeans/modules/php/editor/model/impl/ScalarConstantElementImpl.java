@@ -64,7 +64,7 @@ class ScalarConstantElementImpl extends ModelElementImpl implements ConstantElem
         sb.append(name).append(Signature.ITEM_DELIMITER);
         sb.append(getOffset()).append(Signature.ITEM_DELIMITER);
         sb.append(qualifiedName.getNamespaceName()).append(Signature.ITEM_DELIMITER);
-        sb.append(getValue() != null ? getValue().replace(String.valueOf(Signature.ITEM_DELIMITER), Signature.ITEM_DELIMITER_ALTERNATIVE) : "?").append(Signature.ITEM_DELIMITER);//NOI18N
+        sb.append(getValue() != null ? Signature.encodeItem(getValue()) : "?").append(Signature.ITEM_DELIMITER);//NOI18N
         return sb.toString();
     }
 
