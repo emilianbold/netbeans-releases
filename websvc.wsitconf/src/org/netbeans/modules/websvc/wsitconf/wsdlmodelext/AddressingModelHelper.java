@@ -126,7 +126,7 @@ public class AddressingModelHelper {
             }
         } finally {
             if (!isTransaction) {
-                model.endTransaction();
+                WSITModelSupport.doEndTransaction(model);
             }
         }
     }

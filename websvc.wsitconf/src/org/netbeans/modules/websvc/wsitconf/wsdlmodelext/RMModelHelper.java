@@ -231,7 +231,7 @@ public class RMModelHelper {
                 }
             } finally {
                 if (!isTransaction) {
-                    model.endTransaction();
+                    WSITModelSupport.doEndTransaction(model);   
                 }
             }
         }
@@ -400,7 +400,7 @@ public class RMModelHelper {
                 }                  
             } finally {
                 if (!isTransaction) {
-                    model.endTransaction();
+                    WSITModelSupport.doEndTransaction(model);
                 }
             }
         }
@@ -508,7 +508,7 @@ public class RMModelHelper {
             }
         } finally {
             if (!isTransaction) {
-                model.endTransaction();
+                WSITModelSupport.doEndTransaction(model);
             }
         }
     }
@@ -542,7 +542,7 @@ public class RMModelHelper {
             }
         } finally {
             if (!isTransaction) {
-                model.endTransaction();
+                WSITModelSupport.doEndTransaction(model);
             }
         }
     }
@@ -576,7 +576,7 @@ public class RMModelHelper {
             }
         } finally {
             if (!isTransaction) {
-                model.endTransaction();
+                WSITModelSupport.doEndTransaction(model);
             }
         }
     }

@@ -46,6 +46,7 @@ import java.util.Collections;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.TraitElement;
+import org.netbeans.modules.php.editor.index.Signature;
 import org.netbeans.modules.php.editor.model.ClassConstantElement;
 import org.netbeans.modules.php.editor.model.FieldElement;
 import org.netbeans.modules.php.editor.model.IndexScope;
@@ -97,12 +98,12 @@ public class TraitScopeImpl extends TypeScopeImpl implements TraitScope {
     @Override
     public String getIndexSignature() {
         StringBuilder sb = new StringBuilder();
-        sb.append(getName().toLowerCase()).append(";");//NOI18N
-        sb.append(getName()).append(";");//NOI18N
-        sb.append(getOffset()).append(";");//NOI18N
+        sb.append(getName().toLowerCase()).append(Signature.ITEM_DELIMITER);
+        sb.append(getName()).append(Signature.ITEM_DELIMITER);
+        sb.append(getOffset()).append(Signature.ITEM_DELIMITER);
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(this);
         QualifiedName qualifiedName = namespaceScope.getQualifiedName();
-        sb.append(qualifiedName.toString()).append(";");//NOI18N
+        sb.append(qualifiedName.toString()).append(Signature.ITEM_DELIMITER);
         if (!usedTraits.isEmpty()) {
             StringBuilder traitSb = new StringBuilder();
             for (QualifiedName usedTrait : usedTraits) {
@@ -113,7 +114,7 @@ public class TraitScopeImpl extends TypeScopeImpl implements TraitScope {
             }
             sb.append(traitSb);
         }
-        sb.append(";"); //NOI18N
+        sb.append(Signature.ITEM_DELIMITER);
         return sb.toString();
     }
 
