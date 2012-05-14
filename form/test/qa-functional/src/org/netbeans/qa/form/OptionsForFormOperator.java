@@ -39,28 +39,46 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.tasks.ui.filter;
+package org.netbeans.qa.form;
 
-import org.netbeans.modules.bugtracking.api.Issue;
+import java.awt.Component;
+import javax.swing.JLabel;
+import org.netbeans.jellytools.OptionsOperator;
+import org.netbeans.jemmy.ComponentChooser;
+import org.netbeans.jemmy.EventTool;
+import org.netbeans.jemmy.operators.JLabelOperator;
 
 /**
  *
- * @author jpeska
+ * @author adam.senk@oracle.com
+ * 
+ * This is class is workaround. Since JDK7 has JellyTools problem with some L&Fs.
+ * Clicking on a category doesn't repaint the OptionsOperator-> it is impossible to change
+ * option in selected category.
  */
-public class OpenedTaskFilter implements DashboardFilter<Issue> {
-
-    @Override
-    public boolean isInFilter(Issue task) {
-        return !task.isFinished();
-    }
-
-    @Override
-    public boolean expandNodes() {
-        return false;
-    }
-
-    @Override
-    public boolean showHitCount() {
-        return false;
+public class OptionsForFormOperator extends OptionsOperator {
+    
+    /** Selects a category with given name.
+     * @param name name of category to be selected
+     */
+    public void selectCategory(final String name) {
+        new EventTool().waitNoEvent(300);  // prevent clicking on category button when panel not initialized
+        final StringComparator comparator = this.getComparator();
+        new JLabelOperator(this, new ComponentChooser() {
+            public boolean checkComponent(Component comp) {
+                if(comp.getClass().getName().equals("org.netbeans.modules.options.OptionsPanel$CategoryButton")||// NOI18N
+                        comp.getClass().getName().equals("org.netbeans.modules.options.OptionsPanel$NimbusCategoryButton")) { // NOI18N
+                    if(((JLabel)comp).getText() != null) {
+                        return comparator.equals(((JLabel)comp).getText(), name);
+                    }
+                }
+                return false;
+            }
+            public String getDescription() {
+                return "OptionsPanel$CategoryButton with text "+name; // NOI18N
+            }
+        }).clickMouse(2);
     }
 }
+    
+

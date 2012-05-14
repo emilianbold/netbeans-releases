@@ -48,8 +48,11 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.*;
+import javax.swing.text.html.HTMLEditorKit;
+import javax.swing.text.html.StyleSheet;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.autoupdate.ui.HTMLEditorKitEx;
 import org.netbeans.modules.autoupdate.ui.actions.Installer;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor.Task;
@@ -59,6 +62,7 @@ import org.openide.util.RequestProcessor.Task;
  * @author  Jiri Rechtacek
  */
 public class PanelBodyContainer extends javax.swing.JPanel {
+    private static boolean initHtmlKit;
     private String head = null;
     private String message = null;
     private JScrollPane customPanel;
@@ -73,6 +77,29 @@ public class PanelBodyContainer extends javax.swing.JPanel {
         message = msg;
         this.bodyPanel = bodyPanel;
         initComponents ();
+        
+        HTMLEditorKit htmlkit = new HTMLEditorKitEx();
+        // override the Swing default CSS to make the HTMLEditorKit use the
+        // same font as the rest of the UI.
+
+        // XXX the style sheet is shared by all HTMLEditorKits.  We must
+        // detect if it has been tweaked by ourselves or someone else
+        // (code completion javadoc popup for example) and avoid doing the
+        // same thing again
+
+        StyleSheet css = htmlkit.getStyleSheet();
+
+        if (css.getStyleSheets() == null) {
+            StyleSheet css2 = new StyleSheet();
+            Font f = new JList().getFont();
+            int size = f.getSize();
+            css2.addRule(new StringBuffer("body { font-size: ").append(size) // NOI18N
+                    .append("; font-family: ").append(f.getName()).append("; }").toString()); // NOI18N
+            css2.addStyleSheet(css);
+            htmlkit.setStyleSheet(css2);
+        }
+        
+        tpPanelHeader.setEditorKit(htmlkit);
         writeToHeader (head, message);
         initBodyPanel ();
     }
@@ -143,7 +170,7 @@ public class PanelBodyContainer extends javax.swing.JPanel {
             }
         }
     }
-
+    
     private Timer delay;
     private ProgressHandle handle;
     private void addProgressLine (final long estimatedTime) {
