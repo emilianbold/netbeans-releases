@@ -120,20 +120,17 @@ public class BottomWizardPanel extends javax.swing.JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
                 .addComponent(coherenceInProjectLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 257, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(librariesComboBox, 0, 154, Short.MAX_VALUE)
-                .addContainerGap())
+                .addComponent(librariesComboBox, 0, 166, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(50, Short.MAX_VALUE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(coherenceInProjectLabel)
-                    .addComponent(librariesComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap())
+                    .addComponent(librariesComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -174,7 +171,7 @@ public class BottomWizardPanel extends javax.swing.JPanel {
                     initLibrariesPanel();
                 }
             }
-        } else if (ret == DialogDescriptor.CANCEL_OPTION) {
+        } else {
             setSelectedLibrariesItem(NONE_LIBRARY);
         }
     }
@@ -186,20 +183,6 @@ public class BottomWizardPanel extends javax.swing.JPanel {
         }
         return null;
     }
-
-//    @Override
-//    public boolean isValid() {
-//        if (wizard == null) {
-//            return true;
-//        }
-//        Project project = Templates.getProject(wizard);
-//        if (CoherenceProjectUtils.isCoherenceProject(project)) {
-//            wizard.putProperty(
-//                    WizardDescriptor.PROP_WARNING_MESSAGE,
-//                    NbBundle.getMessage(BottomWizardPanel.class, "WRN_NoCoherenceOnClassPath")); //NOI18N
-//        }
-//        return true;
-//    }
 
     private void initLibrariesPanel() {
         librariesComboBox.removeAllItems();
