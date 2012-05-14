@@ -44,6 +44,7 @@
 
 package org.netbeans.nbbuild;
 
+import java.io.BufferedReader;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -57,6 +58,7 @@ import java.io.FileFilter;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -67,12 +69,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
 import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.jar.Attributes;
+import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -380,7 +384,7 @@ public class MakeUpdateDesc extends MatchingTask {
                     for (Module m : entry.getValue()) {
                         Element module = m.xml;
                         if (module.getAttribute("downloadsize").equals("0")) {
-                            module.setAttribute("downloadsize", Long.toString(m.nbm.length()));
+                            module.setAttribute("downloadsize", Long.toString(m.nbm.length() + m.externalDownloadSize));
                         }
                         Element manifest = (Element) module.getElementsByTagName("manifest").item(0);
                         String name = manifest.getAttribute("OpenIDE-Module-Name");
@@ -462,6 +466,7 @@ public class MakeUpdateDesc extends MatchingTask {
         public File nbm;
         public String relativePath;
         public boolean autoload, eager;
+        public long externalDownloadSize;
     }
 
     private void writeNotification(PrintWriter pw) {
@@ -596,6 +601,18 @@ public class MakeUpdateDesc extends MatchingTask {
                                     }
                                 }
                             }
+                            Enumeration<JarEntry> en = jar.entries();
+                            while (en.hasMoreElements()) {
+                                JarEntry e = en.nextElement();
+                                if (e.getName().endsWith(".external")) {
+                                    InputStream eStream = jar.getInputStream(e);
+                                    try {
+                                        m.externalDownloadSize += externalSize(eStream);
+                                    } finally {
+                                        eStream.close();
+                                    }
+                                }
+                            }
                             moduleCollection.add(m);
                         } finally {
                             jar.close();
@@ -611,6 +628,20 @@ public class MakeUpdateDesc extends MatchingTask {
         return r;
     }
 
+    private long externalSize(InputStream is) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+        for (;;) {
+            String line = br.readLine();
+            if (line == null) {
+                break;
+            }
+            if (line.startsWith("SIZE:")) {
+                return Long.parseLong(line.substring(5).trim());
+            }
+        }
+        return 0;
+    }
+    
     /**
      * Create the equivalent of {@code Info/info.xml} for an OSGi bundle.
      * @param jar a bundle

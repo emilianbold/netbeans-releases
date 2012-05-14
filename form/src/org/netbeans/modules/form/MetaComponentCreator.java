@@ -48,6 +48,8 @@ import java.awt.*;
 import javax.swing.*;
 import javax.swing.border.Border;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 import org.openide.*;
@@ -1367,14 +1369,14 @@ public class MetaComponentCreator {
     private static void showClassLoadingErrorMessage(Throwable ex,
                                                      ClassSource classSource)
     {
-        ErrorManager em = ErrorManager.getDefault();
         String msg = FormUtils.getFormattedBundleString(
             "FMT_ERR_CannotLoadClass4", // NOI18N
             new Object[] { classSource.getClassName(),
                            ClassPathUtils.getClassSourceDescription(classSource) });
-        em.annotate(ex, msg);
-        em.notify(ErrorManager.USER, ex); // Issue 65116 - don't show the exception to the user
-        em.notify(ErrorManager.INFORMATIONAL, ex); // Make sure the exception is in the console and log file
+        Logger.getLogger(MetaComponentCreator.class.getName()).log(Level.INFO, msg, ex);
+        DialogDisplayer.getDefault().notify(
+                    new NotifyDescriptor.Message(msg, NotifyDescriptor.WARNING_MESSAGE));
+        
     }
 
     private static void showCannotAddComponentMessage(String name) {
