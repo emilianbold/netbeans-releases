@@ -48,6 +48,7 @@ import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.NamespaceScope;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.FullyQualifiedElement;
+import org.netbeans.modules.php.editor.index.Signature;
 import org.netbeans.modules.php.editor.model.nodes.ClassConstantDeclarationInfo;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Union2;
@@ -73,13 +74,13 @@ class ConstantElementImpl extends ModelElementImpl implements ConstantElement, F
     @Override
     public String getIndexSignature() {
         StringBuilder sb = new StringBuilder();
-        sb.append(getName().toLowerCase()).append(";");//NOI18N
-        sb.append(getName()).append(";");//NOI18N
-        sb.append(getOffset()).append(";");//NOI18N
+        sb.append(getName().toLowerCase()).append(Signature.ITEM_DELIMITER);
+        sb.append(getName()).append(Signature.ITEM_DELIMITER);
+        sb.append(getOffset()).append(Signature.ITEM_DELIMITER);
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(this);
         QualifiedName qualifiedName = namespaceScope.getQualifiedName();
-        sb.append(qualifiedName.toString()).append(";");//NOI18N
-        sb.append(getValue() != null ? getValue() : "?").append(";");//NOI18N
+        sb.append(qualifiedName.toString()).append(Signature.ITEM_DELIMITER);
+        sb.append(getValue() != null ? Signature.encodeItem(getValue()) : "?").append(Signature.ITEM_DELIMITER);//NOI18N
         return sb.toString();
     }
 

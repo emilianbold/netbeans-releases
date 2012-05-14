@@ -179,6 +179,7 @@ public class Utilities {
     
     public static final class ClassPathBasedHintWrapper {
         private Map<? extends HintMetadata, ? extends Collection<? extends HintDescription>> hints;
+        private List<HintDescription> cpHints;
 
         public synchronized void compute() {
             if (hints != null) return ;
@@ -186,10 +187,12 @@ public class Utilities {
             Set<ClassPath> binaryClassPath = new HashSet<ClassPath>();
             binaryClassPath.addAll(GlobalPathRegistry.getDefault().getPaths(ClassPath.COMPILE));
             binaryClassPath.addAll(GlobalPathRegistry.getDefault().getPaths(ClassPath.BOOT));
-            List<HintDescription> listedHints = org.netbeans.modules.java.hints.spiimpl.Utilities.listClassPathHints(GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE), binaryClassPath);
+            if (cpHints == null) {
+                cpHints = org.netbeans.modules.java.hints.spiimpl.Utilities.listClassPathHints(GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE), binaryClassPath);
+            }
             HashMap<HintMetadata, Collection<HintDescription>> localHints = new HashMap<HintMetadata, Collection<HintDescription>>();
 
-            RulesManagerImpl.sortByMetadata(listedHints, localHints);
+            RulesManagerImpl.sortByMetadata(cpHints, localHints);
             localHints.putAll((Map<HintMetadata, Collection<HintDescription>>) RulesManager.getInstance().readHints(null, null, null));
 
             this.hints = localHints;
@@ -198,6 +201,10 @@ public class Utilities {
         public synchronized Map<? extends HintMetadata, ? extends Collection<? extends HintDescription>> getHints() {
             compute();
             return hints;
+        }
+        
+        public synchronized void reset() {
+            hints = null;
         }
 
     }

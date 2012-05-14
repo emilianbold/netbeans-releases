@@ -414,7 +414,12 @@ public class Util {
             logger.log(Level.INFO, "Cannot create operation: " + operationName + ", " + portType + npe.getLocalizedMessage());
         } finally {
             if (!isTransaction) {
-                model.endTransaction();
+                try {
+                    model.endTransaction();
+                }
+                catch(IllegalStateException e ){
+                    logger.log(Level.WARNING, null, e);
+                }
             }
         }
         

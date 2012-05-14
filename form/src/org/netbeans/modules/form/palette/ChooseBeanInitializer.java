@@ -41,11 +41,14 @@
  */
 package org.netbeans.modules.form.palette;
 
+import javax.lang.model.SourceVersion;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.form.FormUtils;
 import org.netbeans.modules.form.RADComponent;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
 /**
  * Initializer for the "Choose Bean" palette item, letting the user enter the
@@ -58,15 +61,35 @@ class ChooseBeanInitializer implements PaletteItem.ComponentInitializer {
     @Override
     public boolean prepare(PaletteItem item, FileObject classPathRep) {
         NotifyDescriptor.InputLine desc = new NotifyDescriptor.InputLine(
-            FormUtils.getBundleString("MSG_Choose_Bean"), // NOI18N
-            FormUtils.getBundleString("TITLE_Choose_Bean")); // NOI18N
-        DialogDisplayer.getDefault().notify(desc);
-        if (NotifyDescriptor.OK_OPTION.equals(desc.getValue())) {
-            item.setClassFromCurrentProject(desc.getInputText(), classPathRep);
-            return true;
-        } else {
-            return false;
-        }
+            NbBundle.getMessage(ChooseBeanInitializer.class, "MSG_Choose_Bean"), // NOI18N
+            NbBundle.getMessage(ChooseBeanInitializer.class, "TITLE_Choose_Bean")); // NOI18N
+        boolean invalidInput;
+        do {
+            invalidInput = false;
+            DialogDisplayer.getDefault().notify(desc);
+            if (NotifyDescriptor.OK_OPTION.equals(desc.getValue())) {
+                String className = desc.getInputText();
+                if (!SourceVersion.isName(className)) {
+                    invalidInput = true;
+                    DialogDisplayer.getDefault().notify(
+                        new NotifyDescriptor.Message(NbBundle.getMessage(ChooseBeanInitializer.class, "MSG_InvalidClassName"), // NOI18N
+                                                     NotifyDescriptor.WARNING_MESSAGE));
+                } else if (className.indexOf('.') == -1) { // Issue 79573
+                    ClassPath cp = ClassPath.getClassPath(classPathRep,  ClassPath.SOURCE);
+                    String resName = cp != null ? cp.getResourceName(classPathRep) : null;
+                    if (resName != null && resName.indexOf('/') > 0) {
+                        invalidInput = true;
+                        DialogDisplayer.getDefault().notify(
+                            new NotifyDescriptor.Message(FormUtils.getBundleString("MSG_DefaultPackageBean"), // NOI18N
+                                                         NotifyDescriptor.WARNING_MESSAGE));
+                    }
+                }
+                item.setClassFromCurrentProject(className, classPathRep);
+            } else {
+                return false;
+            }
+        } while (invalidInput);
+        return true;
     }
 
     @Override

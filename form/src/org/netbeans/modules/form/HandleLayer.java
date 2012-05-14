@@ -2099,14 +2099,6 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
             }
             if (draggedComponent == null) {
                 // first move event, pre-create visual component to be added
-                if ((item.getComponentClassName().indexOf('.') == -1) // Issue 79573
-                    && (!FormJavaSource.isInDefaultPackage(getFormModel()))) {
-                    String message = FormUtils.getBundleString("MSG_DefaultPackageBean"); // NOI18N
-                    NotifyDescriptor nd = new NotifyDescriptor.Message(message, NotifyDescriptor.WARNING_MESSAGE);
-                    DialogDisplayer.getDefault().notify(nd);
-                    formDesigner.toggleSelectionMode();
-                    return;
-                }
                 draggedComponent = new NewComponentDrag( item );
             }
             draggedComponent.move(e);

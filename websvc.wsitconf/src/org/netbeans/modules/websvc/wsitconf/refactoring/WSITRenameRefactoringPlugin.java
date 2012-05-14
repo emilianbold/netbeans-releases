@@ -47,6 +47,8 @@ package org.netbeans.modules.websvc.wsitconf.refactoring;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Collection;
+import java.util.logging.Level;
+
 import javax.xml.namespace.QName;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
@@ -196,7 +198,12 @@ public final class WSITRenameRefactoringPlugin extends WSITRefactoringPlugin<Ren
                     }
                 }
             } finally {
-                model.endTransaction();
+                try {
+                    model.endTransaction();
+                }
+                catch(IllegalStateException e ){
+                    LOGGER.log(Level.WARNING, null, e);
+                }
             }
         }
 
@@ -242,7 +249,12 @@ public final class WSITRenameRefactoringPlugin extends WSITRefactoringPlugin<Ren
                     }
                 }
             } finally {
-                model.endTransaction();
+                try {
+                    model.endTransaction();
+                }
+                catch(IllegalStateException e ){
+                    LOGGER.log(Level.WARNING, null, e);
+                }
             }
         }
         

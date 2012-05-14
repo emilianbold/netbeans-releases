@@ -115,6 +115,6 @@ class PanelIncludesExcludes implements WizardDescriptor.FinishablePanel {
 
     @Override
     public HelpCtx getHelp() {
-        return new HelpCtx(PanelIncludesExcludes.class);
+        return null;
     }
 }
