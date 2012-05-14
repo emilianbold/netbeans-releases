@@ -157,6 +157,7 @@ public final class ExternalBrowserPlugin {
         for(Iterator<BrowserTabDescriptor> iterator = knownBrowserTabs.iterator() ; iterator.hasNext() ; ) {
             BrowserTabDescriptor browserTab = iterator.next();
             if (key.equals(browserTab.keyForFeature(FEATURE_ROS))) {
+                browserTab.deinitialize();
                 browserTab.browserImpl.wasClosed();
             }
             browserTab.unregisterKey(key);

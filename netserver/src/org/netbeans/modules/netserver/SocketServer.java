@@ -89,7 +89,9 @@ public class SocketServer implements Runnable {
                         break;
                     }
                     else {
-                        key.interestOps(SelectionKey.OP_WRITE);
+                        if (key.isValid()) {
+                            key.interestOps(SelectionKey.OP_WRITE);
+                        }
                     }
                 }
                 getSelector().select();
