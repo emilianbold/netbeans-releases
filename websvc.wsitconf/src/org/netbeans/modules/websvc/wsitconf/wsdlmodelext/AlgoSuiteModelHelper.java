@@ -203,7 +203,7 @@ public class AlgoSuiteModelHelper {
             p.addExtensibilityElement(e);
         } finally {
             if (!isTransaction) {
-                model.endTransaction();
+                WSITModelSupport.doEndTransaction(model);
             }
         }
     }

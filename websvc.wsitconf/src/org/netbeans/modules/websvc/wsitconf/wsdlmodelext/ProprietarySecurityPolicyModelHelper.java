@@ -695,7 +695,7 @@ public class ProprietarySecurityPolicyModelHelper {
                 }
             } finally {
                 if (!isTransaction) {
-                    model.endTransaction();
+                    WSITModelSupport.doEndTransaction(model);
                 }
             }
         } else {
@@ -747,7 +747,7 @@ public class ProprietarySecurityPolicyModelHelper {
             }
         } finally {
             if (!isTransaction) {
-                model.endTransaction();
+                WSITModelSupport.doEndTransaction(model);
             }
         }
     }
@@ -787,7 +787,7 @@ public class ProprietarySecurityPolicyModelHelper {
             ts.setCertSelector(value);
         } finally {
             if (!isTransaction) {
-                model.endTransaction();
+                WSITModelSupport.doEndTransaction(model);
             }
         }
     }
@@ -807,7 +807,7 @@ public class ProprietarySecurityPolicyModelHelper {
             kc.setLoginModule(value);
         } finally {
             if (!isTransaction) {
-                model.endTransaction();
+                WSITModelSupport.doEndTransaction(model);
             }
         }
     }
@@ -827,7 +827,7 @@ public class ProprietarySecurityPolicyModelHelper {
             kc.setServicePrincipal(value);
         } finally {
             if (!isTransaction) {
-                model.endTransaction();
+                WSITModelSupport.doEndTransaction(model);
             }
         }
     }
@@ -847,7 +847,7 @@ public class ProprietarySecurityPolicyModelHelper {
             kc.setCredentialDelegation(value);
         } finally {
             if (!isTransaction) {
-                model.endTransaction();
+                WSITModelSupport.doEndTransaction(model);
             }
         }
     }

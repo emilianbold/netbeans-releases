@@ -160,7 +160,7 @@ public class TransportModelHelper {
                 tcp.enable(enable);
             } finally {
                 if (!isTransaction) {
-                    model.endTransaction();
+                    WSITModelSupport.doEndTransaction(model);
                 }
             }
         } else {
@@ -213,7 +213,7 @@ public class TransportModelHelper {
                 fi.enable(enable);
             } finally {
                 if (!isTransaction) {
-                    model.endTransaction();
+                    WSITModelSupport.doEndTransaction(model);
                 }
             }
         }

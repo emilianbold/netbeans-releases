@@ -842,7 +842,7 @@ public class ProfilesModelHelper {
             
         } finally {
             if (!isTransaction) {
-                model.endTransaction();
+                WSITModelSupport.doEndTransaction(model);
             }
         }
     }
@@ -930,7 +930,7 @@ public class ProfilesModelHelper {
             spmh.setDefaultTargets(output, wss11, rm);
         } finally {
             if (!isTransaction) {
-                model.endTransaction();
+                WSITModelSupport.doEndTransaction(model);
             }
         }
     }
