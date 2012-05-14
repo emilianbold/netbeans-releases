@@ -55,7 +55,7 @@ import org.netbeans.modules.autoupdate.services.OperationContainerImpl;
  * An object that keeps requests for operations upon instances of <code>UpdateEelement</code>
  * (like install, uninstall, update, enable, disable), provides checks whether 
  * chosen operation is allowed (e.g. already installed plugin cannot be scheduled for install again), 
- * provides information which additonal plugins are
+ * provides information which additional plugins are
  * required and so on.
  * <p>
  * Typical scenario how to use:
@@ -64,9 +64,9 @@ import org.netbeans.modules.autoupdate.services.OperationContainerImpl;
  * for chosen operation: {@link #createForInstall}, {@link #createForUninstall}, 
  * {@link #createForUpdate}, {@link #createForEnable},{@link #createForDisable}</li>
  * <li>add instances of <code>UpdateElement</code> (see {@link OperationContainer#add})</li>
- * <li>check if additional requiered instances of <code>UpdateElement</code> are needed 
+ * <li>check if additional required instances of <code>UpdateElement</code> are needed 
  * ({@link OperationInfo#getRequiredElements}), 
- * if so then these requiered instances should be also added</li>
+ * if so then these required instances should be also added</li>
  * <li>next can be tested for broken dependencies ({@link OperationInfo#getBrokenDependencies}) </li>
  * <li>call method {@link #getSupport} to get either {@link InstallSupport} or {@link OperationSupport} 
  * that can be used for performing operation</li>
@@ -200,8 +200,8 @@ public final class OperationContainer<Support> {
     }
     
     /**
-     * The factory method to construct  instance of <code>OperationContainer</code> for installation of custom compomnent
-     * @return newly constructed instance of <code>OperationContainer</code> for installation of custom compomnent
+     * The factory method to construct  instance of <code>OperationContainer</code> for installation of custom component
+     * @return newly constructed instance of <code>OperationContainer</code> for installation of custom component
      */                    
     public static OperationContainer<OperationSupport> createForCustomInstallComponent () {
         OperationContainer<OperationSupport> retval =
@@ -211,8 +211,8 @@ public final class OperationContainer<Support> {
     }
 
     /**
-     * The factory method to construct  instance of <code>OperationContainer</code> for uninstallation of custom compomnent
-     * @return newly constructed instance of <code>OperationContainer</code> for uninstallation of custom compomnent
+     * The factory method to construct  instance of <code>OperationContainer</code> for uninstallation of custom component
+     * @return newly constructed instance of <code>OperationContainer</code> for uninstallation of custom component
      */                        
     public static OperationContainer<OperationSupport> createForCustomUninstallComponent () {
         OperationContainer<OperationSupport> retval =
@@ -320,7 +320,7 @@ public final class OperationContainer<Support> {
     /**
      * Removes <code>updateElement</code>
      * @param updateElement
-     * @return <tt>true</tt> if succesfully added
+     * @return <tt>true</tt> if successfully added
      */
     public boolean remove(UpdateElement updateElement) {
         if (upToDate != null) {
