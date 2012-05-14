@@ -65,4 +65,8 @@ public class JQueryCodeCompletionTest extends JsCodeComplationBase {
         checkCompletion("testfiles/completion/jQuery/newFile.js", "jQuery('#f-emblem').a^ddClass('.has-menu');", false);
     }
     
+    public void testNewFile02() throws Exception {
+        checkCompletion("testfiles/completion/jQuery/newFile.js", "jQuery('#f-emblem').addClass('.has-menu').a^dd(':checked');", false);
+    }
+    
 }

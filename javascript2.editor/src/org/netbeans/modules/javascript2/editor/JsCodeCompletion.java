@@ -551,6 +551,9 @@ class JsCodeCompletion implements CodeCompletionHandler {
                             }
                         }
                     }
+                    
+                    
+                    
                     for (TypeUsage typeUsage : lastResolvedTypes) {
                         FileObject fo = request.info.getSnapshot().getSource().getFileObject();
                         Collection<? extends IndexResult> indexResults = JsIndex.get(fo).findFQN(typeUsage.getType() + "." + name);
@@ -560,6 +563,24 @@ class JsCodeCompletion implements CodeCompletionHandler {
                                 newResolvedTypes.addAll(IndexedElement.getReturnTypes(indexResult));
                             } else {
                                 newResolvedTypes.add(new TypeUsageImpl(typeUsage.getType() + "." + name));
+                            }
+                        }
+                        // from libraries look for top level types
+                        for (JsObject libGlobal : getLibrariesGlobalObjects()) {
+                            for (JsObject object : libGlobal.getProperties().values()) {
+                                if (object.getName().equals(typeUsage.getType())) {
+                                    JsObject property = object.getProperty(name);
+                                    if (property != null) {
+                                        JsElement.Kind jsKind = property.getJSKind();
+                                        if ("@mtd".equals(kind) && jsKind.isFunction()) {
+                                            newResolvedTypes.addAll(((JsFunction) property).getReturnTypes());
+                                        } else {
+                                            newResolvedObjects.add(property);
+                                        }
+                                    }
+                                    newResolvedObjects.add(object);
+                                    break;
+                                }
                             }
                         }
                     }
