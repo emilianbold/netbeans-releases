@@ -326,7 +326,7 @@ public class QmakeProjectWriter {
     private String getLibs() {
         StringBuilder buf = new StringBuilder();
         CompilerSet compilerSet = configuration.getCompilerSet().getCompilerSet();
-        LibraryToString libVisitor = new LibraryToString(compilerSet);
+        LibraryToString libVisitor = new LibraryToString(configuration);
         buf.append(configuration.getLinkerConfiguration().getLibrariesConfiguration().toString(libVisitor));
         if (compilerSet != null) {
             if (0 < buf.length()) {
@@ -345,10 +345,10 @@ public class QmakeProjectWriter {
 
     private static class LibraryToString implements VectorConfiguration.ToString<LibraryItem> {
 
-        private final CompilerSet compilerSet;
+        private final MakeConfiguration configuration;
 
-        public LibraryToString(CompilerSet compilerSet) {
-            this.compilerSet = compilerSet;
+        public LibraryToString(MakeConfiguration configuration) {
+            this.configuration = configuration;
         }
 
         @Override
@@ -359,11 +359,11 @@ public class QmakeProjectWriter {
                     return libFileToOptionsString(item.getPath());
                 case LibraryItem.LIB_ITEM:
                 case LibraryItem.STD_LIB_ITEM:
-                    return item.getOption(null);
+                    return item.getOption(configuration);
                 case LibraryItem.OPTION_ITEM:
                     LibraryItem.OptionItem option = (LibraryItem.OptionItem) item;
                     if (!option.getLibraryOption().contains(PKGCONFIG_BINARY)) {
-                        return item.getOption(null);
+                        return item.getOption(configuration);
                     } else {
                         return ""; // NOI18N
                     }                    
@@ -374,6 +374,7 @@ public class QmakeProjectWriter {
 
         private String libFileToOptionsString(String path) {
             StringBuilder buf = new StringBuilder();
+            CompilerSet compilerSet = configuration.getCompilerSet().getCompilerSet();
             if (compilerSet != null && isDynamicLib(path)) {
                 String searchOption = compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getDynamicLibrarySearchFlag();
                 if (searchOption.length() == 0) {
